@@ -1,4 +1,19 @@
 ﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="MyConnectionOpportunities.ascx.cs" Inherits="RockWeb.Blocks.Connection.MyConnectionOpportunities" %>
+<%@ Import namespace="Rock" %>
+<script>
+    Sys.Application.add_load(function () {
+        $('.js-legend-badge').tooltip({ html: true, container: 'body', delay: { show: 200, hide: 100 } });
+    });
+
+    //Sys.WebForms.PageRequestManager.getInstance().add_endRequest(scrollToGrid);
+    function scrollToGrid() {
+        if (!$('.js-grid-header').visible(true)) {
+            $('html, body').animate({
+                scrollTop: $('.js-grid-header').offset().top + 'px'
+            }, 'fast');
+        }
+    }
+</script>
 
 <asp:UpdatePanel ID="upnlContent" runat="server">
     <ContentTemplate>
@@ -10,6 +25,8 @@
                     My Connection Requests</h1>
 
                 <div class="pull-right">
+                    <asp:Literal ID="lStatusBarContent" runat="server" />
+                   
                     <Rock:Toggle ID="tglMyOpportunities" CssClass="margin-r-md pull-left" runat="server" OnText="My Requests" ActiveButtonCssClass="btn-info" ButtonSizeCssClass="btn-xs" OffText="All Requests" AutoPostBack="true" OnCheckedChanged="tglMyOpportunities_CheckedChanged" Checked="true" />
                     <asp:LinkButton ID="lbConnectionTypes" runat="server" CssClass=" pull-right" OnClick="lbConnectionTypes_Click" CausesValidation="false"><i class="fa fa-gear"></i></asp:LinkButton>
                 </div>
@@ -25,13 +42,9 @@
                             <ul>
                                 <asp:Repeater ID="rptConnectionOpportunities" runat="server" OnItemCommand="rptConnectionOpportunities_ItemCommand">
                                     <ItemTemplate>
-                                        <li class='<%# SelectedOpportunityId.HasValue && (int)Eval("Id") == SelectedOpportunityId.Value ? "active" : "" %>'>
+                                        <li class='<%# SelectedOpportunityId.HasValue && (int)Eval("Id") == SelectedOpportunityId.Value ? "active" : "" %> block-status'>
                                             <asp:LinkButton ID="lbConnectionOpportunity" runat="server" CommandArgument='<%# Eval("Id") %>' CommandName="Display">
-                                        <i class='<%# Eval("IconCssClass") %>'></i>
-                                        <h3><%# Eval("Name") %> </h3>
-                                        <div class="notification">
-                                            <span class="label label-danger"><%# ((int)Eval("ActiveCount")).ToString("#,###,###") %></span>
-                                        </div>
+                                                <%# this.GetOpportunitySummaryHtml( Container.DataItem as OpportunitySummary ) %>
                                             </asp:LinkButton>
                                         </li>
                                     </ItemTemplate>
@@ -43,7 +56,7 @@
 
             </div>
         </div>
-        <asp:Panel ID="pnlGrid" runat="server" CssClass="panel panel-block" Visible="false">
+        <asp:Panel ID="pnlGrid" runat="server" CssClass="panel panel-block js-grid-header" Visible="false">
             <div class="panel-heading">
                 <h1 class="panel-title"><asp:Literal ID="lOpportunityIcon" runat="server" /> <asp:Literal ID="lConnectionRequest" runat="server"></asp:Literal></h1>
             </div>
@@ -62,6 +75,7 @@
                             <asp:ListItem Text="Connected" Value="3" />
                         </Rock:RockCheckBoxList>
                         <Rock:RockCheckBoxList ID="cblCampus" runat="server" Label="Campus" DataTextField="Name" DataValueField="Id" RepeatDirection="Horizontal" />
+                        <Rock:RockCheckBoxList ID="cblLastActivity" runat="server" Label="Last Activity" DataTextField="Name" DataValueField="Id" RepeatDirection="Horizontal" />
                     </Rock:GridFilter>
                     <Rock:Grid ID="gRequests" runat="server" OnRowSelected="gRequests_Edit" CssClass="js-grid-requests" AllowSorting="true" >
                         <Columns>
@@ -70,7 +84,8 @@
                             <Rock:RockBoundField DataField="Campus" HeaderText="Campus" SortExpression="Campus.Name" />
                             <Rock:RockBoundField DataField="Group" HeaderText="Group" SortExpression="AssignedGroup.Name" />
                             <Rock:RockBoundField DataField="Connector" HeaderText="Connector" SortExpression="Connector.PersonAlias.Person.LastName,Connector.PersonAlias.Person.NickName" />
-                            <Rock:RockBoundField DataField="LastActivity" HeaderText="Last Activity" HtmlEncode="false"  />
+                            <Rock:RockBoundField DataField="LastActivity" HeaderText="Last Activity" HtmlEncode="false" />
+                            <Rock:RockBoundField DataField="LastActivityNote" HeaderText="Last Activity Note" HtmlEncode="false" />
                             <asp:TemplateField HeaderText="State" SortExpression="ConnectionState" >
                                 <ItemTemplate>
                                     <%# Eval("StateLabel") %>

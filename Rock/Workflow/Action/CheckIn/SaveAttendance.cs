@@ -1,11 +1,11 @@
 ﻿// <copyright>
-// Copyright 2013 by the Spark Development Network
+// Copyright by the Spark Development Network
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
+// Licensed under the Rock Community License (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-// http://www.apache.org/licenses/LICENSE-2.0
+// http://www.rockrms.com/license
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -30,11 +30,10 @@ namespace Rock.Workflow.Action.CheckIn
     /// <summary>
     /// Saves the selected check-in data as attendance
     /// </summary>
+    [ActionCategory( "Check-In" )]
     [Description( "Saves the selected check-in data as attendance" )]
     [Export( typeof( ActionComponent ) )]
     [ExportMetadata( "ComponentName", "Save Attendance" )]
-    [IntegerField( "Security Code Length", "The number of characters to use for the security code.", true, 3 )]
-    [BooleanField( "Reuse Code For Family", "By default a unique security code is created for each person.  Select this option to use one security code per family.", false )]
     public class SaveAttendance : CheckInActionComponent
     {
         /// <summary>
@@ -54,22 +53,19 @@ namespace Rock.Workflow.Action.CheckIn
                 AttendanceCode attendanceCode = null;
                 DateTime startDateTime = RockDateTime.Now;
 
-                bool reuseCodeForFamily = GetAttributeValue( action, "ReuseCodeForFamily" ).AsBoolean();
-
-                int securityCodeLength = 3;
-                if ( !int.TryParse( GetAttributeValue( action, "SecurityCodeLength" ), out securityCodeLength ) )
-                {
-                    securityCodeLength = 3;
-                }
+                bool reuseCodeForFamily = checkInState.CheckInType != null && checkInState.CheckInType.ReuseSameCode;
+                int securityCodeLength = checkInState.CheckInType != null ? checkInState.CheckInType.SecurityCodeLength : 3;
 
                 var attendanceCodeService = new AttendanceCodeService( rockContext );
                 var attendanceService = new AttendanceService( rockContext );
                 var groupMemberService = new GroupMemberService( rockContext );
                 var personAliasService = new PersonAliasService( rockContext );
 
-                foreach ( var family in checkInState.CheckIn.Families.Where( f => f.Selected ) )
+
+                var family = checkInState.CheckIn.CurrentFamily;
+                if ( family != null )
                 {
-                    foreach ( var person in family.People.Where( p => p.Selected ) )
+                    foreach ( var person in family.GetPeople( true ) )
                     {
                         if ( reuseCodeForFamily && attendanceCode != null )
                         {
@@ -81,24 +77,24 @@ namespace Rock.Workflow.Action.CheckIn
                             person.SecurityCode = attendanceCode.Code;
                         }
 
-                        foreach ( var groupType in person.GroupTypes.Where( g => g.Selected ) )
+                        foreach ( var groupType in person.GetGroupTypes( true ) )
                         {
-                            foreach ( var group in groupType.Groups.Where( g => g.Selected ) )
+                            foreach ( var group in groupType.GetGroups( true ) )
                             {
-                                foreach ( var location in group.Locations.Where( l => l.Selected ) )
+                                if ( groupType.GroupType.AttendanceRule == AttendanceRule.AddOnCheckIn &&
+                                    groupType.GroupType.DefaultGroupRoleId.HasValue &&
+                                    !groupMemberService.GetByGroupIdAndPersonId( group.Group.Id, person.Person.Id, true ).Any() )
                                 {
-                                    if ( groupType.GroupType.AttendanceRule == AttendanceRule.AddOnCheckIn &&
-                                        groupType.GroupType.DefaultGroupRoleId.HasValue &&
-                                        !groupMemberService.GetByGroupIdAndPersonId( group.Group.Id, person.Person.Id, true ).Any() )
-                                    {
-                                        var groupMember = new GroupMember();
-                                        groupMember.GroupId = group.Group.Id;
-                                        groupMember.PersonId = person.Person.Id;
-                                        groupMember.GroupRoleId = groupType.GroupType.DefaultGroupRoleId.Value;
-                                        groupMemberService.Add( groupMember );
-                                    }
+                                    var groupMember = new GroupMember();
+                                    groupMember.GroupId = group.Group.Id;
+                                    groupMember.PersonId = person.Person.Id;
+                                    groupMember.GroupRoleId = groupType.GroupType.DefaultGroupRoleId.Value;
+                                    groupMemberService.Add( groupMember );
+                                }
 
-                                    foreach ( var schedule in location.Schedules.Where( s => s.Selected ) )
+                                foreach ( var location in group.GetLocations( true ) )
+                                {
+                                    foreach ( var schedule in location.GetSchedules( true ) )
                                     {
                                         // Only create one attendance record per day for each person/schedule/group/location
                                         var attendance = attendanceService.Get( startDateTime, location.Location.Id, schedule.Schedule.Id, group.Group.Id, person.Person.Id );
@@ -116,6 +112,8 @@ namespace Rock.Workflow.Action.CheckIn
                                                 attendance.PersonAliasId = primaryAlias.Id;
                                                 attendance.DeviceId = checkInState.Kiosk.Device.Id;
                                                 attendance.SearchTypeValueId = checkInState.CheckIn.SearchType.Id;
+                                                attendance.SearchValue = checkInState.CheckIn.SearchValue;
+                                                attendance.SearchResultGroupId = family.Group.Id;
                                                 attendanceService.Add( attendance );
                                             }
                                         }

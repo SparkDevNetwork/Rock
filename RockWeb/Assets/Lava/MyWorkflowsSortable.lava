@@ -1,0 +1,65 @@
+<link rel="stylesheet" href="/Styles/bootstrap-sortable.css">
+
+{% assign showPriority = false %}
+{% assign showDue = false %}
+{% for action in Actions %}
+  {% assign workflowPriority = action.Activity.Workflow | Attribute:'Priority' %}
+  {% assign workflowDueDate = action.Activity.Workflow | Attribute:'DueDate' %}
+  {% if workflowPriority != '' %}
+    {% assign showPriority = true %}
+  {% endif %}
+  {% if workflowDueDate != '' %} 
+    {% assign showDue = true %}
+  {% endif %}
+{% endfor %}
+
+<div class='panel panel-block'>
+  <div class='panel-heading'>
+    <h4 class='panel-title'>My {% if Role == '0' %}Tasks{% else %}Requests{% endif %}</h4>
+  </div>
+  {% if Actions.size > 0 %}
+    <div class="table-responsive">
+      <table class="table sortable">
+        <thead>
+          <tr>
+            <th>Created</th>
+            <th>Title</th>
+            <th>Type</th>
+            {% if showPriority %}<th>Priority</th>{% endif %}
+            {% if showDue %}<th>Due</th>{% endif %}
+          </tr>
+        </thead>
+        <tbody>
+          {% for action in Actions %}
+		    {% assign workflowPriority = action.Activity.Workflow | Attribute:'Priority' %}
+            {% assign workflowDueDate = action.Activity.Workflow | Attribute:'DueDate' %}
+            <tr>
+              <td data-dateformat="M/D/YY">{{ action.Activity.Workflow.CreatedDateTime | Date:'M/d/yy' }}</td>
+              <td>
+                <a href='/{% if Role == '0' %}WorkflowEntry/{{ action.Activity.Workflow.WorkflowTypeId }}{% else %}Workflow{% endif %}/{{ action.Activity.Workflow.Id }}'>{{ action.Activity.Workflow.Name }}{% if role == '0' %} ({{ action.Activity.ActivityType.Name }}){% endif %}</a>
+                {% if action.Activity.Workflow.Status != 'Active' %}
+                  <span class='label label-info'>{{ action.Activity.Workflow.Status }}</span>
+                {% endif %}
+              </td>
+              <td><i class='fa-fw {{ action.Activity.Workflow.WorkflowType.IconCssClass }}'></i> {{ action.Activity.Workflow.WorkflowType.Name }}</td>
+              {% if showPriority %}
+                <td>{{ workflowPriority }}</td>
+              {% endif %}
+              {% if showDue %}
+                <td data-dateformat="M/D/YY">{{ workflowDueDate | Date:'M/d/yy' }}</td>
+              {% endif %}
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% else %}
+    <div class="panel-body">
+      <div class='alert alert-info'>There are no open tasks assigned to you.</div>
+    </div>
+  {% endif %}
+</div>
+
+
+<script src="/Scripts/moment.min.js"></script>
+<script src="/Scripts/bootstrap-sortable.js"></script>

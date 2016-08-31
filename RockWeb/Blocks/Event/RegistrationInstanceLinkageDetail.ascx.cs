@@ -1,11 +1,11 @@
 ﻿// <copyright>
-// Copyright 2013 by the Spark Development Network
+// Copyright by the Spark Development Network
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
+// Licensed under the Rock Community License (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-// http://www.apache.org/licenses/LICENSE-2.0
+// http://www.rockrms.com/license
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -337,6 +337,7 @@ namespace RockWeb.Blocks.Event
             }
 
             gpLinkageGroup.SetValue( linkage.Group );
+            gpLinkageGroup_SelectItem( null, null );
 
             tbLinkagePublicName.Text = linkage.PublicName;
             tbLinkageUrlSlug.Text = linkage.UrlSlug;
@@ -430,5 +431,26 @@ namespace RockWeb.Blocks.Event
 
         #endregion
 
+        /// <summary>
+        /// Handles the SelectItem event of the gpLinkageGroup control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void gpLinkageGroup_SelectItem( object sender, EventArgs e )
+        {
+            var rockContext = new RockContext();
+            var registrationInstance = new RegistrationInstanceService( rockContext ).Get( PageParameter( "RegistrationInstanceId" ).AsInteger() );
+            var group = new GroupService( rockContext ).Get( gpLinkageGroup.SelectedValue.AsInteger() );
+            bool showGroupTypeWarning = false;
+            if ( registrationInstance != null && group != null )
+            {
+                if ( registrationInstance.RegistrationTemplate.GroupTypeId != group.GroupTypeId )
+                {
+                    showGroupTypeWarning = true;
+                }
+            }
+
+            nbGroupTypeWarning.Visible = showGroupTypeWarning;
+        }
     }
 }

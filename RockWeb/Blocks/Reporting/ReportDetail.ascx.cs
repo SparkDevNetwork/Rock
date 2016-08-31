@@ -1,11 +1,11 @@
 ﻿// <copyright>
-// Copyright 2013 by the Spark Development Network
+// Copyright by the Spark Development Network
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
+// Licensed under the Rock Community License (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-// http://www.apache.org/licenses/LICENSE-2.0
+// http://www.rockrms.com/license
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -210,7 +210,51 @@ namespace RockWeb.Blocks.Reporting
             foreach ( var panelWidget in phReportFields.ControlsOfTypeRecursive<PanelWidget>() )
             {
                 Guid reportFieldGuid = panelWidget.ID.Replace( "reportFieldWidget_", string.Empty ).AsGuid();
-                kvSortFields.CustomKeys.Add( reportFieldGuid.ToString(), panelWidget.Title );
+                if ( SelectedFieldTypeSupportsSorting( panelWidget ) )
+                {
+                    kvSortFields.CustomKeys.Add( reportFieldGuid.ToString(), panelWidget.Title );
+                }
+            }
+        }
+
+        /// <summary>
+        /// Selecteds the field type supports sorting.
+        /// </summary>
+        /// <param name="panelWidget">The panel widget.</param>
+        /// <returns></returns>
+        private bool SelectedFieldTypeSupportsSorting( PanelWidget panelWidget )
+        {
+            try
+            {
+                string ddlFieldsId = panelWidget.ID + "_ddlFields";
+                RockDropDownList ddlFields = phReportFields.ControlsOfTypeRecursive<RockDropDownList>().First( a => a.ID == ddlFieldsId );
+                bool fieldSupportsSorting = true;
+                var fieldTypeSelection = GetSelectedFieldTypeSelection( ddlFields );
+                if ( fieldTypeSelection != null )
+                {
+                    if ( fieldTypeSelection.ReportFieldType == ReportFieldType.DataSelectComponent )
+                    {
+                        var entityTypeId = fieldTypeSelection.FieldSelection.AsIntegerOrNull();
+                        if ( entityTypeId.HasValue )
+                        {
+                            var dataSelectComponent = this.GetDataSelectComponent( new RockContext(), entityTypeId.Value );
+                            if ( dataSelectComponent != null )
+                            {
+                                if ( dataSelectComponent.SortProperties( string.Empty ) == string.Empty )
+                                {
+                                    fieldSupportsSorting = false;
+                                }
+                            }
+                        }
+                    }
+                }
+
+                return fieldSupportsSorting;
+            }
+            catch
+            {
+                // if an exception occurred, ignore and assume it supports sorting
+                return true;
             }
         }
 
@@ -460,13 +504,12 @@ namespace RockWeb.Blocks.Reporting
                 RockDropDownList ddlFields = phReportFields.ControlsOfTypeRecursive<RockDropDownList>().First( a => a.ID == ddlFieldsId );
                 ReportFieldType reportFieldType = ReportFieldType.Property;
                 string fieldSelection = string.Empty;
+                var fieldTypeSelection = GetSelectedFieldTypeSelection( ddlFields );
 
-                string fieldSelectionValue = ddlFields.SelectedItem.Value;
-                string[] fieldSelectionValueParts = fieldSelectionValue.Split( '|' );
-                if ( fieldSelectionValueParts.Count() == 2 )
+                if ( fieldTypeSelection != null )
                 {
-                    reportFieldType = fieldSelectionValueParts[0].ConvertToEnum<ReportFieldType>();
-                    fieldSelection = fieldSelectionValueParts[1];
+                    reportFieldType = fieldTypeSelection.ReportFieldType;
+                    fieldSelection = fieldTypeSelection.FieldSelection;
                 }
                 else
                 {
@@ -541,6 +584,52 @@ namespace RockWeb.Blocks.Reporting
             var qryParams = new Dictionary<string, string>();
             qryParams["ReportId"] = report.Id.ToString();
             NavigateToPage( RockPage.Guid, qryParams );
+        }
+
+        /// <summary>
+        /// Gets the selected field type select.
+        /// </summary>
+        /// <param name="ddlFields">The DDL fields.</param>
+        /// <returns></returns>
+        private FieldTypeSelection GetSelectedFieldTypeSelection( RockDropDownList ddlFields )
+        {
+            ReportFieldType reportFieldType = ReportFieldType.Property;
+            string fieldSelection = string.Empty;
+
+            string fieldSelectionValue = ddlFields.SelectedItem.Value;
+            string[] fieldSelectionValueParts = fieldSelectionValue.Split( '|' );
+            if ( fieldSelectionValueParts.Count() == 2 )
+            {
+                reportFieldType = fieldSelectionValueParts[0].ConvertToEnum<ReportFieldType>();
+                fieldSelection = fieldSelectionValueParts[1];
+                return new FieldTypeSelection { ReportFieldType = reportFieldType, FieldSelection = fieldSelection };
+            }
+            else
+            {
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        private class FieldTypeSelection
+        {
+            /// <summary>
+            /// Gets or sets the type of the report field.
+            /// </summary>
+            /// <value>
+            /// The type of the report field.
+            /// </value>
+            public ReportFieldType ReportFieldType { get; set; }
+
+            /// <summary>
+            /// Gets or sets the field selection.
+            /// </summary>
+            /// <value>
+            /// The field selection.
+            /// </value>
+            public string FieldSelection { get; set; }
         }
 
         /// <summary>
@@ -660,7 +749,7 @@ namespace RockWeb.Blocks.Reporting
                 var listItems = new List<ListItem>();
 
                 // Add Fields for the EntityType
-                foreach ( var entityField in entityFields.OrderBy( a => !a.IsPreviewable ).ThenBy( a => a.Title ) )
+                foreach ( var entityField in entityFields.OrderBy( a => !a.IsPreviewable ).ThenBy( a => a.FieldKind != FieldKind.Property ).ThenBy( a => a.Title ) )
                 {
                     bool isAuthorizedForField = true;
                     var listItem = new ListItem();
@@ -688,6 +777,10 @@ namespace RockWeb.Blocks.Reporting
                     if ( entityField.IsPreviewable )
                     {
                         listItem.Attributes["optiongroup"] = "Common";
+                    }
+                    else if ( entityField.FieldKind == FieldKind.Attribute )
+                    {
+                        listItem.Attributes["optiongroup"] = string.Format( "{0} Attributes", entityType.Name );
                     }
                     else
                     {
@@ -730,7 +823,28 @@ namespace RockWeb.Blocks.Reporting
                     }
                 }
 
-                foreach ( var item in listItems.OrderByDescending( a => ( a.Attributes["optiongroup"] == "Common" ) ).ThenBy( a => a.Text ).ToArray() )
+                var commonFieldListItems = listItems.Where( a => a.Attributes["optiongroup"] == "Common" ).OrderBy( a => a.Text );
+                foreach ( var item in commonFieldListItems)
+                {
+                    ddlFields.Items.Add( item );
+                    listItems.Remove( item );
+                }
+
+                var normalFieldListItems = listItems.Where( a => a.Attributes["optiongroup"] == string.Format( "{0} Fields", entityType.Name ) ).OrderBy( a => a.Text );
+                foreach ( var item in normalFieldListItems )
+                {
+                    ddlFields.Items.Add( item );
+                    listItems.Remove( item );
+                }
+                
+                var attributeFieldListItems = listItems.Where( a => a.Attributes["optiongroup"] == string.Format( "{0} Attributes", entityType.Name ) ).OrderBy( a => a.Text );
+                foreach ( var item in attributeFieldListItems )
+                {
+                    ddlFields.Items.Add( item );
+                    listItems.Remove( item );
+                }
+                
+                foreach ( var item in listItems )
                 {
                     ddlFields.Items.Add( item );
                 }
@@ -769,11 +883,14 @@ namespace RockWeb.Blocks.Reporting
             if ( !reportId.Equals( 0 ) )
             {
                 report = reportService.Get( reportId );
+                pdAuditDetails.SetEntity( report, ResolveRockUrl( "~" ) );
             }
 
             if ( report == null )
             {
                 report = new Report { Id = 0, IsSystem = false, CategoryId = parentCategoryId };
+                // hide the panel drawer that show created and last modified dates
+                pdAuditDetails.Visible = false;
             }
 
             pnlDetails.Visible = true;
@@ -1202,18 +1319,18 @@ namespace RockWeb.Blocks.Reporting
             RockDropDownList ddlFields = panelWidget.ControlsOfTypeRecursive<RockDropDownList>().FirstOrDefault( a => a.ID == panelWidget.ID + "_ddlFields" );
             if ( reportField.ReportFieldType == ReportFieldType.Attribute )
             {
-               var selectedValue = string.Format( "{0}|{1}", reportField.ReportFieldType, reportField.Selection );
-               if ( ddlFields.Items.OfType<ListItem>().Any( a => a.Value == selectedValue ) )
-               {
-                   ddlFields.SelectedValue = selectedValue;
-               }
-               else
-               {
-                   // if this EntityField is not available for the current person, but this reportField already has it configured, let them keep it
-                   var attribute = AttributeCache.Read( fieldSelection.AsGuid(), rockContext );
-                   ddlFields.Items.Add( new ListItem( attribute.Name, selectedValue ) );
-                   ddlFields.SelectedValue = selectedValue;
-               }
+                var selectedValue = string.Format( "{0}|{1}", reportField.ReportFieldType, reportField.Selection );
+                if ( ddlFields.Items.OfType<ListItem>().Any( a => a.Value == selectedValue ) )
+                {
+                    ddlFields.SelectedValue = selectedValue;
+                }
+                else
+                {
+                    // if this EntityField is not available for the current person, but this reportField already has it configured, let them keep it
+                    var attribute = AttributeCache.Read( fieldSelection.AsGuid(), rockContext );
+                    ddlFields.Items.Add( new ListItem( attribute.Name, selectedValue ) );
+                    ddlFields.SelectedValue = selectedValue;
+                }
             }
             else if ( reportField.ReportFieldType == ReportFieldType.Property )
             {

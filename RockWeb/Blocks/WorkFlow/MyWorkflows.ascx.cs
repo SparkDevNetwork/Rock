@@ -1,11 +1,11 @@
 ﻿// <copyright>
-// Copyright 2013 by the Spark Development Network
+// Copyright by the Spark Development Network
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
+// Licensed under the Rock Community License (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-// http://www.apache.org/licenses/LICENSE-2.0
+// http://www.rockrms.com/license
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -114,6 +114,8 @@ namespace RockWeb.Blocks.WorkFlow
         {
             base.OnLoad( e );
 
+            RockPage.AddScriptLink( ResolveRockUrl( "~/Scripts/jquery.visible.min.js" ) );
+
             if ( !Page.IsPostBack )
             {
                 bool? queryStatusFilter = Request.QueryString["StatusFilter"].AsBooleanOrNull();
@@ -196,6 +198,13 @@ namespace RockWeb.Blocks.WorkFlow
             }
 
             GetData();
+
+            ScriptManager.RegisterStartupScript(
+                Page,
+                GetType(),
+                "ScrollToGrid",
+                "scrollToGrid();",
+                true );
         }
 
         /// <summary>
@@ -362,7 +371,18 @@ namespace RockWeb.Blocks.WorkFlow
 
             if ( selectedWorkflowType != null && workflowTypeCounts.Keys.Contains( selectedWorkflowType.Id ) )
             {
-                gWorkflows.DataSource = workflows.Where( w => w.WorkflowTypeId == selectedWorkflowType.Id ).ToList();
+                var workflowQry = workflows.Where( w => w.WorkflowTypeId == selectedWorkflowType.Id ).AsQueryable();
+
+                var sortProperty = gWorkflows.SortProperty;
+                if ( sortProperty != null )
+                {
+                    gWorkflows.DataSource = workflowQry.Sort( sortProperty ).ToList();
+                }
+                else
+                {
+                    gWorkflows.DataSource = workflowQry.OrderByDescending( s => s.CreatedDateTime ).ToList();
+                }
+
                 gWorkflows.DataBind();
                 gWorkflows.Visible = true;
 
@@ -423,8 +443,8 @@ namespace RockWeb.Blocks.WorkFlow
                     {
                         AttributeField boundField = new AttributeField();
                         boundField.DataField = dataFieldExpression;
+                        boundField.AttributeId = attribute.Id;
                         boundField.HeaderText = attribute.Name;
-                        boundField.SortExpression = string.Empty;
 
                         var attributeCache = Rock.Web.Cache.AttributeCache.Read( attribute.Id );
                         if ( attributeCache != null )

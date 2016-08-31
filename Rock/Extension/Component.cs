@@ -1,11 +1,11 @@
 ﻿// <copyright>
-// Copyright 2013 by the Spark Development Network
+// Copyright by the Spark Development Network
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
+// Licensed under the Rock Community License (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-// http://www.apache.org/licenses/LICENSE-2.0
+// http://www.rockrms.com/license
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -140,6 +140,30 @@ namespace Rock.Extension
         }
 
         /// <summary>
+        /// Method that is called before attribute values are updated. Components can
+        /// override this to perform any needed initialization of attribute
+        /// values.
+        /// </summary>
+        /// <param name="request">The request.</param>
+        /// <param name="rootUrl">The root URL.</param>
+        public virtual void InitializeAttributeValues( System.Web.HttpRequest request, string rootUrl )
+        {
+        }
+
+        /// <summary>
+        /// Method that is called when attribute values are updated. Components can
+        /// override this to perform any needed setup/validation based on current attribute
+        /// values.
+        /// </summary>
+        /// <param name="errorMessage">The error message.</param>
+        /// <returns></returns>
+        public virtual bool ValidateAttributeValues( out string errorMessage )
+        {
+            errorMessage = string.Empty;
+            return true;
+        }
+
+        /// <summary>
         /// Gets the order.
         /// </summary>
         /// <value>
@@ -206,13 +230,21 @@ namespace Rock.Extension
         /// </summary>
         public Component()
         {
-            var type = this.GetType();
-            using ( var rockContext = new RockContext() )
+            UpdateAttributes();
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="Component" /> class.
+        /// </summary>
+        /// <param name="updateAttributes">if set to <c>true</c> [update attributes].</param>
+        public Component( bool updateAttributes )
+        {
+            if (updateAttributes )
             {
-                Rock.Attribute.Helper.UpdateAttributes( type, Rock.Web.Cache.EntityTypeCache.GetId( type.FullName ), rockContext );
-                this.LoadAttributes( rockContext );
+                UpdateAttributes();
             }
         }
+
 
         /// <summary>
         /// Gets the type of the entity.
@@ -355,5 +387,16 @@ namespace Rock.Extension
         {
             Security.Authorization.MakeUnPrivate( this, action, person, rockContext );
         }
+
+        private void UpdateAttributes()
+        {
+            var type = this.GetType();
+            using ( var rockContext = new RockContext() )
+            {
+                Rock.Attribute.Helper.UpdateAttributes( type, Rock.Web.Cache.EntityTypeCache.GetId( type.FullName ), rockContext );
+                this.LoadAttributes( rockContext );
+            }
+        }
+
     }
 }

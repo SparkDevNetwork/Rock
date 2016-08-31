@@ -60,12 +60,40 @@
 
                     <Rock:DataTextBox ID="tbEmail" PrependText="<i class='fa fa-envelope'></i>" runat="server" SourceTypeName="Rock.Model.Person, Rock" PropertyName="Email" />
 
+                    <Rock:RockRadioButtonList ID="rblEmailPreference" runat="server" RepeatDirection="Horizontal" Label="Email Preference">
+                        <asp:ListItem Text="Email Allowed" Value="EmailAllowed" />
+                        <asp:ListItem Text="No Mass Emails" Value="NoMassEmails" />
+                        <asp:ListItem Text="Do Not Email" Value="DoNotEmail" />
+                    </Rock:RockRadioButtonList>
+
                 </fieldset>
 
                 <asp:Panel ID="pnlAddress" runat="server">
                     <fieldset>
-                        <legend>Address</legend>
+                        <legend><asp:Literal ID="lAddressTitle" runat="server" /></legend>
+
+                        <div class="clearfix">
+                            <div class="pull-left margin-b-md">
+                                <asp:Literal ID="lPreviousAddress" runat="server" />
+                            </div>
+                            <div class="pull-right">
+                                <asp:LinkButton ID="lbMoved" CssClass="btn btn-default btn-xs" runat="server" OnClick="lbMoved_Click"><i class="fa fa-truck"></i> Moved</asp:LinkButton>
+                            </div>
+                        </div>
+
+                        <asp:HiddenField ID="hfStreet1" runat="server" />
+                        <asp:HiddenField ID="hfStreet2" runat="server" />
+                        <asp:HiddenField ID="hfCity" runat="server" />
+                        <asp:HiddenField ID="hfState" runat="server" />
+                        <asp:HiddenField ID="hfPostalCode" runat="server" />
+                        <asp:HiddenField ID="hfCountry" runat="server" />
+
                         <Rock:AddressControl id="acAddress" runat="server" RequiredErrorMessage="Your Address is Required" />
+                        
+                        <div class="margin-b-sm">
+                            <Rock:RockCheckBox ID="cbIsMailingAddress" runat="server" Text="This is my mailing address" Checked="true" />
+                            <Rock:RockCheckBox ID="cbIsPhysicalAddress" runat="server" Text="This is my physical address" Checked="true" />
+                        </div>
                     </fieldset>
                 </asp:Panel>
 

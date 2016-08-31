@@ -1,11 +1,11 @@
 ﻿// <copyright>
-// Copyright 2013 by the Spark Development Network
+// Copyright by the Spark Development Network
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
+// Licensed under the Rock Community License (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-// http://www.apache.org/licenses/LICENSE-2.0
+// http://www.rockrms.com/license
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -50,6 +50,7 @@ namespace Rock.Jobs
         public virtual void Execute( IJobExecutionContext context )
         {
             JobDataMap dataMap = context.JobDetail.JobDataMap;
+            int remindersSent = 0;
 
             using ( var rockContext = new RockContext() )
             {
@@ -57,7 +58,7 @@ namespace Rock.Jobs
 
                 foreach ( var instance in new RegistrationInstanceService( rockContext )
                     .Queryable( "RegistrationTemplate,Registrations" )
-                    .Where( i => 
+                    .Where( i =>
                         i.IsActive &&
                         i.RegistrationTemplate.IsActive &&
                         i.RegistrationTemplate.ReminderEmailTemplate != "" &&
@@ -69,16 +70,17 @@ namespace Rock.Jobs
                     var template = instance.RegistrationTemplate;
 
                     foreach ( var registration in instance.Registrations
-                        .Where( r => 
+                        .Where( r =>
+                            !r.IsTemporary &&
                             r.ConfirmationEmail != null &&
-                            r.ConfirmationEmail != "") )
+                            r.ConfirmationEmail != "" ) )
                     {
                         var mergeFields = new Dictionary<string, object>();
                         mergeFields.Add( "RegistrationInstance", registration.RegistrationInstance );
                         mergeFields.Add( "Registration", registration );
 
-                        string from = template.ReminderFromName.ResolveMergeFields( mergeFields );
-                        string fromName = template.ReminderFromEmail.ResolveMergeFields( mergeFields );
+                        string from = template.ReminderFromEmail.ResolveMergeFields( mergeFields );
+                        string fromName = template.ReminderFromName.ResolveMergeFields( mergeFields );
                         string subject = template.ReminderSubject.ResolveMergeFields( mergeFields );
                         string message = template.ReminderEmailTemplate.ResolveMergeFields( mergeFields );
 
@@ -88,8 +90,22 @@ namespace Rock.Jobs
 
                     instance.SendReminderDateTime = now;
                     instance.ReminderSent = true;
+                    remindersSent++;
 
                     rockContext.SaveChanges();
+                }
+
+                if ( remindersSent == 0 )
+                {
+                    context.Result = "No reminders to send";
+                }
+                else if ( remindersSent == 1 )
+                {
+                    context.Result = "1 reminder was sent";
+                }
+                else
+                {
+                    context.Result = string.Format( "{0} reminders were sent", remindersSent );
                 }
             }
         }

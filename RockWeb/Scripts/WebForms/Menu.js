@@ -1,4 +1,4 @@
-//CdnPath=http://ajax.aspnetcdn.com/ajax/4.5/6/Menu.js
+//CdnPath=http://ajax.aspnetcdn.com/ajax/4.5.1/1/Menu.js
 var __rootMenuItem;
 var __menuInterval;
 var __scrollPanel;
@@ -315,12 +315,12 @@ function Menu_IsSelectable(link) {
 }
 function Menu_Key(item) {
     var event;
-    if (window.event) {
-        event = window.event;
-    }
-    else {
+    if (item.currentTarget) {
         event = item;
         item = event.currentTarget;
+    }
+    else {
+        event = window.event;        
     }
     var key = (event ? event.keyCode : -1);
     var data = Menu_GetData(item);

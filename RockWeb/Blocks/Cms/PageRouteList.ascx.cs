@@ -1,11 +1,11 @@
 ﻿// <copyright>
-// Copyright 2013 by the Spark Development Network
+// Copyright by the Spark Development Network
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
+// Licensed under the Rock Community License (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-// http://www.apache.org/licenses/LICENSE-2.0
+// http://www.rockrms.com/license
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -120,8 +120,6 @@ namespace RockWeb.Blocks.Cms
                 pageRouteService.Delete( pageRoute );
 
                 rockContext.SaveChanges();
-
-                RemovePageRoute( pageRoute );
             }
 
             BindGrid();
@@ -139,19 +137,6 @@ namespace RockWeb.Blocks.Cms
 
         #endregion
 
-        /// <summary>
-        /// Removes the page route.
-        /// </summary>
-        /// <param name="pageRoute">The page route.</param>
-        private static void RemovePageRoute( PageRoute pageRoute )
-        {
-            var existingRoute = RouteTable.Routes.OfType<Route>().FirstOrDefault( a => a.RouteId() == pageRoute.Id );
-            if ( existingRoute != null )
-            {
-                RouteTable.Routes.Remove( existingRoute );
-            }
-        }
-
         #region Internal Methods
 
         /// <summary>
@@ -168,6 +153,7 @@ namespace RockWeb.Blocks.Cms
                 {
                     a.Id,
                     a.Route,
+                    Site = a.Page.Layout.Site.Name,
                     PageName = a.Page.InternalName,
                     PageId = a.Page.Id,
                     a.IsSystem

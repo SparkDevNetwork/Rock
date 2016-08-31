@@ -1,11 +1,11 @@
 ﻿// <copyright>
-// Copyright 2013 by the Spark Development Network
+// Copyright by the Spark Development Network
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
+// Licensed under the Rock Community License (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-// http://www.apache.org/licenses/LICENSE-2.0
+// http://www.rockrms.com/license
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -21,9 +21,10 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Web.Http;
-
+using System.Web.Http.OData;
 using Rock;
 using Rock.Data;
+using Rock.Financial;
 using Rock.Model;
 using Rock.Rest.Filters;
 using Rock.Security;
@@ -31,7 +32,7 @@ using Rock.Security;
 namespace Rock.Rest.Controllers
 {
     /// <summary>
-    /// 
+    ///
     /// </summary>
     public partial class FinancialTransactionsController
     {
@@ -68,7 +69,7 @@ namespace Rock.Rest.Controllers
         {
             if ( !value.FinancialPaymentDetailId.HasValue )
             {
-                //// manually enforce that FinancialPaymentDetailId has a value so that Pre-V4 check 
+                //// manually enforce that FinancialPaymentDetailId has a value so that Pre-V4 check
                 //// scanners (that don't know about the new FinancialPaymentDetailId) can't post
                 return ControllerContext.Request.CreateErrorResponse(
                     HttpStatusCode.BadRequest,
@@ -166,14 +167,14 @@ namespace Rock.Rest.Controllers
                             var groupId = row["GroupId"];
                             if ( personId != null && personId is int )
                             {
-                                if ( !personIds.Contains( (int)personId ) )
+                                if ( !personIds.Contains( ( int ) personId ) )
                                 {
                                     dataTable.Rows.Remove( row );
                                 }
                             }
                             else if ( groupId != null && groupId is int )
                             {
-                                if ( !groupsIds.Contains( (int)groupId ) )
+                                if ( !groupsIds.Contains( ( int ) groupId ) )
                                 {
                                     dataTable.Rows.Remove( row );
                                 }
@@ -235,7 +236,7 @@ namespace Rock.Rest.Controllers
             else
             {
                 // get transactions for all the persons in the specified group that have specified that group as their GivingGroup
-                GroupMemberService groupMemberService = new GroupMemberService( (RockContext)Service.Context );
+                GroupMemberService groupMemberService = new GroupMemberService( ( RockContext ) Service.Context );
                 var personIdList = groupMemberService.GetByGroupId( groupId ).Where( a => a.Person.GivingGroupId == groupId ).Select( s => s.PersonId ).ToList();
 
                 qry = qry.Where( a => personIdList.Contains( a.AuthorizedPersonAlias.PersonId ) );
@@ -243,7 +244,7 @@ namespace Rock.Rest.Controllers
 
             if ( options.AccountIds != null )
             {
-                qry = qry.Where( a => options.AccountIds.Contains( a.TransactionDetails.FirstOrDefault().AccountId ) );
+                qry = qry.Where( a => a.TransactionDetails.Any( x => options.AccountIds.Contains( x.AccountId ) ) );
             }
 
             var selectQry = qry.Select( a => new
@@ -255,7 +256,7 @@ namespace Rock.Rest.Controllers
                 {
                     d.AccountId,
                     AccountName = d.Account.Name,
-                    a.Summary,
+                    d.Summary,
                     d.Amount
                 } ).OrderBy( x => x.AccountName ),
             } ).OrderBy( a => a.TransactionDateTime );
@@ -277,7 +278,15 @@ namespace Rock.Rest.Controllers
                 detailTable.Columns.Add( "AccountName" );
                 detailTable.Columns.Add( "Summary" );
                 detailTable.Columns.Add( "Amount", typeof( decimal ) );
-                foreach ( var detail in fieldItems.Details )
+                var transactionDetails = fieldItems.Details.ToList();
+
+                // remove any Accounts that were not included (in case there was a mix of included and not included accounts in the transaction)
+                if ( options.AccountIds != null )
+                {
+                    transactionDetails = transactionDetails.Where( a => options.AccountIds.Contains( a.AccountId ) ).ToList();
+                }
+
+                foreach ( var detail in transactionDetails )
                 {
                     var detailArray = new object[] {
                         detail.AccountId,
@@ -293,7 +302,7 @@ namespace Rock.Rest.Controllers
                     fieldItems.TransactionDateTime,
                     fieldItems.CurrencyTypeValueName,
                     fieldItems.Summary,
-                    fieldItems.Details.Sum(a => a.Amount),
+                    transactionDetails.Sum(a => a.Amount),
                     detailTable
                 };
 
@@ -308,8 +317,62 @@ namespace Rock.Rest.Controllers
             return dataSet;
         }
 
+        //[HttpGet]
+        //[System.Web.Http.Route( "api/FinancialTransactions/ChargeStep3/{GatewayId}/{TokenId}" )]
+        //public FinancialTransaction ChargeStep3( int gatewayId, string tokenId )
+        //{
+        //    SetProxyCreation( true );
+        //    var rockContext = (RockContext)Service.Context;
+        //    var financialGateway = new FinancialGatewayService( rockContext ).Get( gatewayId );
+        //    if ( financialGateway == null )
+        //    {
+        //        throw new HttpResponseException( Request.CreateErrorResponse( HttpStatusCode.NotFound, "Gateway does not exist!" ) );
+        //    }
+
+        //    var gateway = financialGateway.GetGatewayComponent();
+        //    if ( gateway == null )
+        //    {
+        //        throw new HttpResponseException( Request.CreateErrorResponse( HttpStatusCode.NotFound, "Gateway component could not be loaded!" ) );
+        //    }
+
+        //    var paymentInfo = new PaymentInfo();
+        //    paymentInfo.AdditionalParameters.Add( "token-id", tokenId );
+
+        //    string errorMessage = string.Empty;
+
+        //    var transaction = gateway.ChargeStep3( financialGateway, paymentInfo, out errorMessage );
+        //    if ( transaction == null || !string.IsNullOrWhiteSpace( errorMessage ) )
+        //    {
+        //        throw new HttpResponseException( Request.CreateErrorResponse( HttpStatusCode.BadRequest, errorMessage ) );
+        //    }
+
+        //    return transaction;
+        //}
+
         /// <summary>
-        /// 
+        /// Gets transactions by people with the supplied givingId.
+        /// </summary>
+        /// <param name="givingId">The giving ID.</param>
+        /// <returns></returns>
+        /// <exception cref="System.Web.Http.HttpResponseException"></exception>
+        [Authenticate, Secured]
+        [HttpGet]
+        [EnableQuery]
+        [System.Web.Http.Route( "api/FinancialTransactions/GetByGivingId/{givingId}" )]
+        public IQueryable<FinancialTransaction> GetByGivingId( string givingId )
+        {
+            if ( string.IsNullOrWhiteSpace( givingId ) || !( givingId.StartsWith( "P" ) || givingId.StartsWith( "G" ) ) )
+            {
+                var response = new HttpResponseMessage( HttpStatusCode.BadRequest );
+                response.Content = new StringContent( "The supplied givingId is not valid" );
+                throw new HttpResponseException( response );
+            }
+
+            return Get().Where( t => t.AuthorizedPersonAlias.Person.GivingId == givingId );
+        }
+
+        /// <summary>
+        ///
         /// </summary>
         public class ContributionStatementOptions
         {

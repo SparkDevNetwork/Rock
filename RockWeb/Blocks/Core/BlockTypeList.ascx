@@ -23,7 +23,7 @@
                             <Rock:RockBoundField HeaderText="Category" DataField="Category" SortExpression="Category" />
                             <Rock:RockBoundField HeaderText="Path" DataField="Path" SortExpression="Path" />
                             <Rock:BadgeField HeaderText="Usage" DataField="BlocksCount" SortExpression="BlocksCount"
-                                ImportantMin="0" ImportantMax="0" InfoMin="1" InfoMax="1" SuccessMin="2" />
+                                DangerMin="0" DangerMax="0" InfoMin="1" InfoMax="1" SuccessMin="2" />
                             <Rock:RockBoundField HeaderText="Status" SortExpression="Status" />
                             <Rock:BoolField DataField="IsSystem" HeaderText="System" SortExpression="IsSystem" />
                             <Rock:DeleteField OnClick="gBlockTypes_Delete" />

@@ -9,7 +9,6 @@
 @import "_variable-overrides.less";
 @import "_print.less";
 
-
 /*
     Rock Theme Styles
 
@@ -151,7 +150,8 @@ footer {
     border: 0;
     box-shadow: none;
 
-    & > .panel-heading {
+    & > .panel-heading,
+    & > .rock-panel-drawer {
         display: none;
     }
 
@@ -183,3 +183,6 @@ footer {
 // Large devices (large desktops, 1200px and up)
 @media (min-width: @screen-lg-min) {
 }
+
+
+@import "_css-overrides.less";

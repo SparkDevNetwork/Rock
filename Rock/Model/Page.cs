@@ -1,11 +1,11 @@
 ﻿// <copyright>
-// Copyright 2013 by the Spark Development Network
+// Copyright by the Spark Development Network
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
+// Licensed under the Rock Community License (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-// http://www.apache.org/licenses/LICENSE-2.0
+// http://www.rockrms.com/license
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -19,8 +19,9 @@ using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
+using System.Linq;
 using System.Runtime.Serialization;
-
+using System.Web.Routing;
 using Newtonsoft.Json;
 
 using Rock.Data;
@@ -296,6 +297,20 @@ namespace Rock.Model
         public string HeaderContent { get; set; }
 
         /// <summary>
+        /// Gets or sets a value indicating whether [allow indexing].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [allow indexing]; otherwise, <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool AllowIndexing
+        {
+            get { return _allowIndexing; }
+            set { _allowIndexing = value; }
+        }
+        private bool _allowIndexing = true;
+
+        /// <summary>
         /// Gets or sets the icon CSS class name for a font vector based icon.
         /// </summary>
         /// <value>
@@ -455,6 +470,25 @@ namespace Rock.Model
                 Dictionary<string, object> parameters = new Dictionary<string, object>();
                 parameters.Add( "PageId", this.Id );
                 Rock.Data.DbService.ExecuteCommand( "spCore_PageViewNullPageId", System.Data.CommandType.StoredProcedure, parameters );
+
+                // since routes have a cascade delete relationship (their presave won't get called), delete routes from route table
+                var routes = RouteTable.Routes;
+                if ( routes != null )
+                {
+                    foreach( var existingRoute in RouteTable.Routes.OfType<Route>().Where( r => r.PageIds().Contains( this.Id ) ) )
+                    { 
+                        var pageAndRouteIds = existingRoute.DataTokens["PageRoutes"] as List<Rock.Web.PageAndRouteId>;
+                        pageAndRouteIds = pageAndRouteIds.Where( p => p.PageId != this.Id ).ToList();
+                        if ( pageAndRouteIds.Any() )
+                        {
+                            existingRoute.DataTokens["PageRoutes"] = pageAndRouteIds;
+                        }
+                        else
+                        {
+                            RouteTable.Routes.Remove( existingRoute );
+                        }
+                    }
+                }
             }
         }
 

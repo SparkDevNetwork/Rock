@@ -1,11 +1,11 @@
 ﻿// <copyright>
-// Copyright 2013 by the Spark Development Network
+// Copyright by the Spark Development Network
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
+// Licensed under the Rock Community License (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-// http://www.apache.org/licenses/LICENSE-2.0
+// http://www.rockrms.com/license
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -42,29 +42,37 @@ namespace RockWeb.Blocks.Cms
     [ContentChannelField("Content Channel", "The content channel to filter on. If blank all content items for the user will be displayed.", false, order:0)]
     [IntegerField( "Max Items", "The maximum number of items to display (default 10)", false, 10, order: 1 )]
     [LinkedPage( "Detail Page", "Page reference to the detail page. This will be included as a variable in the Lava.", false, order: 2 )]
-    [CodeEditorField("Lava Template", "The Lava template to use.", Rock.Web.UI.Controls.CodeEditorMode.Lava, Rock.Web.UI.Controls.CodeEditorTheme.Rock, 300, order: 3, defaultValue: @"<div class='panel panel-block'> 
-    <div class='panel-heading'>
-       <h4 class='panel-title'>Content Channel Items for {{ CurrentPerson.FullName }}</h4>
+    [CodeEditorField("Lava Template", "The Lava template to use.", Rock.Web.UI.Controls.CodeEditorMode.Lava, Rock.Web.UI.Controls.CodeEditorTheme.Rock, 300, order: 3, defaultValue: @"{% assign itemCount = Items | Size %}
+
+{% if itemCount > 0 %}
+    <div class='panel panel-default'> 
+        <div class='panel-heading'>
+           <h5 class='panel-title'>Content Channel Items for {{ CurrentPerson.FullName }}</h5>
+        </div>
+        <div class='panel-body'>
+            <ul>
+                {% for item in Items %}
+                <li>
+                    {% if DetailPage != '' %}
+                        <a href = '{{ DetailPage }}?contentItemId={{ item.Id }}' >{{ item.Title }}</a>
+                    {% else %}
+                        {{ item.Title }}
+                    {% endif %}
+                    
+                    {% case item.Status %}
+                        {% when 'PendingApproval' %}
+                            <span class='label label-warning'>Pending</span>
+                        {% when 'Approved' %}
+                            <span class='label label-success'>Approved</span>
+                        {% when 'Denied' %}
+                            <span class='label label-danger'>Denied</span>
+                    {% endcase %}
+                </li>
+                {% endfor %}
+            <ul>
+        </div>
     </div>
-    <div class='panel-body'>
-        <ul>
-            {% for item in Items %}
-            <li>
-                <a href = '{{ DetailPage }}?Item={{ item.Id }}' >{{ item.Title }}</a>
-                
-                {% case item.Status %}
-                    {% when 'PendingApproval' %}
-                        <span class='label label-warning'>Pending</span>
-                    {% when 'Approved' %}
-                        <span class='label label-success'>Approved</span>
-                    {% when 'Denied' %}
-                        <span class='label label-danger'>Denied</span>
-                {% endcase %}
-            </li>
-            {% endfor %}
-        <ul>
-    </div>
-</div>")]
+{% endif %}" )]
     [BooleanField( "Enable Debug", "Show merge data to help you see what's available to you.", order: 4 )]
     public partial class ContentChannelItemPersonalListLava : Rock.Web.UI.RockBlock
     {

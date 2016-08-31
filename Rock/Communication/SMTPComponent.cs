@@ -1,11 +1,11 @@
 ﻿// <copyright>
-// Copyright 2013 by the Spark Development Network
+// Copyright by the Spark Development Network
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
+// Licensed under the Rock Community License (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-// http://www.apache.org/licenses/LICENSE-2.0
+// http://www.rockrms.com/license
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -142,7 +142,7 @@ namespace Rock.Communication.Transport
                 {
                     var currentPerson = communication.CreatedByPersonAlias.Person;
                     var globalAttributes = Rock.Web.Cache.GlobalAttributesCache.Read();
-                    var globalConfigValues = Rock.Web.Cache.GlobalAttributesCache.GetMergeFields( currentPerson );
+                    var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( null, currentPerson );
 
                     // From - if none is set, use the one in the Organization's GlobalAttributes.
                     string fromAddress = communication.GetMediumDataValue( "FromAddress" );
@@ -158,8 +158,8 @@ namespace Rock.Communication.Transport
                     }
 
                     // Resolve any possible merge fields in the from address
-                    fromAddress = fromAddress.ResolveMergeFields( globalConfigValues, currentPerson );
-                    fromName = fromName.ResolveMergeFields( globalConfigValues, currentPerson );
+                    fromAddress = fromAddress.ResolveMergeFields( mergeFields, currentPerson, communication.EnabledLavaCommands );
+                    fromName = fromName.ResolveMergeFields( mergeFields, currentPerson, communication.EnabledLavaCommands );
 
                     MailMessage message = new MailMessage();
                     message.From = new MailAddress( fromAddress, fromName );
@@ -203,21 +203,18 @@ namespace Rock.Communication.Transport
                     using ( var smtpClient = GetSmtpClient() )
                     {
                         // Add Attachments
+                        var attachments = new List<BinaryFile>();
                         string attachmentIds = communication.GetMediumDataValue( "Attachments" );
                         if ( !string.IsNullOrWhiteSpace( attachmentIds ) )
                         {
                             var binaryFileService = new BinaryFileService( communicationRockContext );
 
-                            foreach ( string idVal in attachmentIds.SplitDelimitedValues() )
+                            foreach ( int binaryFileId in attachmentIds.SplitDelimitedValues().AsIntegerList() )
                             {
-                                int binaryFileId = int.MinValue;
-                                if ( int.TryParse( idVal, out binaryFileId ) )
+                                var binaryFile = binaryFileService.Get( binaryFileId );
+                                if ( binaryFile != null )
                                 {
-                                    var binaryFile = binaryFileService.Get( binaryFileId );
-                                    if ( binaryFile != null )
-                                    {
-                                        message.Attachments.Add( new Attachment( binaryFile.ContentStream, binaryFile.FileName ) );
-                                    }
+                                    attachments.Add( binaryFile );
                                 }
                             }
                         }
@@ -250,16 +247,13 @@ namespace Rock.Communication.Transport
                                         message.To.Add( new MailAddress( recipient.PersonAlias.Person.Email, recipient.PersonAlias.Person.FullName ) );
 
                                         // Create merge field dictionary
-                                        var mergeObjects = recipient.CommunicationMergeValues( globalConfigValues );
+                                        var mergeObjects = recipient.CommunicationMergeValues( mergeFields );
 
                                         // Subject
-                                        message.Subject = communication.Subject.ResolveMergeFields( mergeObjects, currentPerson );
+                                        message.Subject = communication.Subject.ResolveMergeFields( mergeObjects, currentPerson, communication.EnabledLavaCommands );
 
                                         // convert any special microsoft word characters to normal chars so they don't look funny (for example "Hey â€œdouble-quotesâ€ from â€˜single quoteâ€™")
                                         message.Subject = message.Subject.ReplaceWordChars();
-
-                                        // Add any additional headers that specific SMTP provider needs
-                                        AddAdditionalHeaders( message, recipient );
 
                                         // Add text view first as last view is usually treated as the preferred view by email readers (gmail)
                                         string plainTextBody = Rock.Communication.Medium.Email.ProcessTextBody( communication, globalAttributes, mergeObjects, currentPerson );
@@ -283,6 +277,21 @@ namespace Rock.Communication.Transport
                                         {
                                             AlternateView htmlView = AlternateView.CreateAlternateViewFromString( htmlBody, new System.Net.Mime.ContentType( MediaTypeNames.Text.Html ) );
                                             message.AlternateViews.Add( htmlView );
+                                        }
+
+                                        // Add any additional headers that specific SMTP provider needs
+                                        var metaData = new Dictionary<string, string>();
+                                        metaData.Add( "communication_recipient_guid", recipient.Guid.ToString() );
+                                        AddAdditionalHeaders( message, metaData );
+
+                                        // Recreate the attachments
+                                        message.Attachments.Clear();
+                                        if ( attachments.Any() )
+                                        {
+                                            foreach( var attachment in attachments )
+                                            {
+                                                message.Attachments.Add( new Attachment( attachment.ContentStream, attachment.FileName ) );
+                                            }
                                         }
 
                                         smtpClient.Send( message );
@@ -368,9 +377,9 @@ namespace Rock.Communication.Transport
             if ( !string.IsNullOrWhiteSpace( from ) )
             {
                 // Resolve any possible merge fields in the from address
-                var globalConfigValues = Rock.Web.Cache.GlobalAttributesCache.GetMergeFields( null );
-                from = from.ResolveMergeFields( globalConfigValues );
-                fromName = fromName.ResolveMergeFields( globalConfigValues );
+                var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( null );
+                from = from.ResolveMergeFields( mergeFields );
+                fromName = fromName.ResolveMergeFields( mergeFields );
 
                 MailMessage message = new MailMessage();
                 if ( string.IsNullOrWhiteSpace( fromName ) )
@@ -407,7 +416,7 @@ namespace Rock.Communication.Transport
                 {
                     foreach ( var recipientData in recipients )
                     {
-                        foreach ( var g in globalConfigValues )
+                        foreach ( var g in mergeFields )
                         {
                             if ( recipientData.MergeFields.ContainsKey( g.Key ) )
                             {
@@ -429,6 +438,8 @@ namespace Rock.Communication.Transport
                             message.To.Clear();
                             message.To.Add( to );
 
+                            message.Headers.Clear();
+
                             string subject = template.Subject.ResolveMergeFields( recipientData.MergeFields );
                             string body = Regex.Replace( template.Body.ResolveMergeFields( recipientData.MergeFields ), @"\[\[\s*UnsubscribeOption\s*\]\]", string.Empty );
 
@@ -443,11 +454,15 @@ namespace Rock.Communication.Transport
                                 subject = subject.Replace( "~/", appRoot );
                                 body = body.Replace( "~/", appRoot );
                                 body = body.Replace( @" src=""/", @" src=""" + appRoot );
+                                body = body.Replace( @" src='/", @" src='" + appRoot );
                                 body = body.Replace( @" href=""/", @" href=""" + appRoot );
+                                body = body.Replace( @" href='/", @" href='" + appRoot );
                             }
 
                             message.Subject = subject;
                             message.Body = body;
+
+                            AddAdditionalHeaders( message, null );
 
                             smtpClient.Send( message );
 
@@ -485,6 +500,20 @@ namespace Rock.Communication.Transport
         /// <param name="createCommunicationHistory">if set to <c>true</c> [create communication history].</param>
         public void Send( Dictionary<string, string> mediumData, List<string> recipients, string appRoot, string themeRoot, bool createCommunicationHistory )
         {
+            Send( mediumData, recipients, appRoot, themeRoot, createCommunicationHistory, null );
+        }
+
+        /// <summary>
+        /// Sends the specified medium data to the specified list of recipients.
+        /// </summary>
+        /// <param name="mediumData">The medium data.</param>
+        /// <param name="recipients">The recipients.</param>
+        /// <param name="appRoot">The application root.</param>
+        /// <param name="themeRoot">The theme root.</param>
+        /// <param name="createCommunicationHistory">if set to <c>true</c> [create communication history].</param>
+        /// <param name="metaData">The meta data.</param>
+        public void Send( Dictionary<string, string> mediumData, List<string> recipients, string appRoot, string themeRoot, bool createCommunicationHistory, Dictionary<string, string> metaData )
+        {
             try
             {
                 var globalAttributes = GlobalAttributesCache.Read();
@@ -502,9 +531,9 @@ namespace Rock.Communication.Transport
                 if ( !string.IsNullOrWhiteSpace( from ) )
                 {
                     // Resolve any possible merge fields in the from address
-                    var globalConfigValues = Rock.Web.Cache.GlobalAttributesCache.GetMergeFields( null );
-                    from = from.ResolveMergeFields( globalConfigValues );
-                    fromName = fromName.ResolveMergeFields( globalConfigValues );
+                    var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( null );
+                    from = from.ResolveMergeFields( mergeFields );
+                    fromName = fromName.ResolveMergeFields( mergeFields );
 
                     string subject = string.Empty;
                     mediumData.TryGetValue( "Subject", out subject );
@@ -536,6 +565,20 @@ namespace Rock.Communication.Transport
                     {
                         message.From = new MailAddress( from, fromName );
                     }
+
+                    // Reply To
+                    try
+                    {
+                        string replyTo = string.Empty;
+                        mediumData.TryGetValue( "ReplyTo", out replyTo );
+
+                        if ( !string.IsNullOrWhiteSpace( replyTo ) )
+                        {
+                            message.ReplyToList.Add( new MailAddress( replyTo ) );
+                        }
+                    }
+                    catch { }
+
                     CheckSafeSender( message, globalAttributes );
 
                     message.IsBodyHtml = true;
@@ -545,6 +588,8 @@ namespace Rock.Communication.Transport
                     recipients.ForEach( r => message.To.Add( r ) );
                     message.Subject = subject;
                     message.Body = body;
+
+                    AddAdditionalHeaders( message, metaData );
 
                     using ( var smtpClient = GetSmtpClient() )
                     {
@@ -557,16 +602,13 @@ namespace Rock.Communication.Transport
                             recipients, fromName, from, subject, body );
                         RockQueue.TransactionQueue.Enqueue( transaction );
                     }
-
                 }
             }
-
             catch ( Exception ex )
             {
                 ExceptionLogService.LogException( ex, null );
             }
         }
-
 
         /// <summary>
         /// Sends the specified recipients.
@@ -640,8 +682,8 @@ namespace Rock.Communication.Transport
                 if ( !string.IsNullOrWhiteSpace( from ) )
                 {
                     // Resolve any possible merge fields in the from address
-                    var globalConfigValues = Rock.Web.Cache.GlobalAttributesCache.GetMergeFields( null );
-                    string msgFrom = from.ResolveMergeFields( globalConfigValues );
+                    var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( null );
+                    string msgFrom = from.ResolveMergeFields( mergeFields );
 
                     string msgSubject = subject;
                     string msgBody = body;
@@ -695,6 +737,8 @@ namespace Rock.Communication.Transport
                         }
                     }
 
+                    AddAdditionalHeaders( message, null );
+
                     using ( var smtpClient = GetSmtpClient() )
                     {
                         smtpClient.Send( message );
@@ -718,9 +762,16 @@ namespace Rock.Communication.Transport
         /// Adds any additional headers.
         /// </summary>
         /// <param name="message">The message.</param>
-        /// <param name="recipient">The recipient.</param>
-        public virtual void AddAdditionalHeaders( MailMessage message, CommunicationRecipient recipient )
+        /// <param name="headers">The headers.</param>
+        public virtual void AddAdditionalHeaders( MailMessage message, Dictionary<string, string> headers )
         {
+            if ( headers != null )
+            {
+                foreach ( var header in headers )
+                {
+                    message.Headers.Add( header.Key, header.Value );
+                }
+            }
         }
 
         /// <summary>

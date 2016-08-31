@@ -1,11 +1,11 @@
 ﻿// <copyright>
-// Copyright 2013 by the Spark Development Network
+// Copyright by the Spark Development Network
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
+// Licensed under the Rock Community License (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-// http://www.apache.org/licenses/LICENSE-2.0
+// http://www.rockrms.com/license
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -59,18 +59,19 @@ namespace Rock.Jobs
                 .AsNoTracking();
 
             var calculationExceptions = new List<Exception>();
+            int groupRequirementsCalculatedMemberCount = 0;
 
             foreach ( var groupRequirement in groupRequirementQry.Include( i => i.GroupRequirementType ).AsNoTracking().ToList() )
             {
                 try
                 {
                     var currentDateTime = RockDateTime.Now;
-                    var expireDaysCount = groupRequirement.GroupRequirementType.ExpireInDays.Value;
                     var qryGroupMemberRequirementsAlreadyOK = groupMemberRequirementService.Queryable().Where( a => a.GroupRequirementId == groupRequirement.Id );
 
                     if ( groupRequirement.GroupRequirementType.CanExpire && groupRequirement.GroupRequirementType.ExpireInDays.HasValue )
                     {
                         // Expirable: don't recalculate members that already met the requirement within the expiredays (unless they are flagged with a warning)
+                        var expireDaysCount = groupRequirement.GroupRequirementType.ExpireInDays.Value;
                         qryGroupMemberRequirementsAlreadyOK = qryGroupMemberRequirementsAlreadyOK.Where( a => !a.RequirementWarningDateTime.HasValue && a.RequirementMetDateTime.HasValue && SqlFunctions.DateDiff( "day", a.RequirementMetDateTime, currentDateTime ) < expireDaysCount );
                     }
                     else
@@ -81,8 +82,9 @@ namespace Rock.Jobs
 
                     var groupMemberQry = groupMemberService.Queryable().Where( a => a.GroupId == groupRequirement.GroupId ).AsNoTracking();
                     var personQry = groupMemberQry.Where( a => !qryGroupMemberRequirementsAlreadyOK.Any( r => r.GroupMemberId == a.Id ) ).Select( a => a.Person );
-
+                    
                     var results = groupRequirement.PersonQueryableMeetsGroupRequirement( rockContext, personQry, groupRequirement.GroupRoleId ).ToList();
+                    groupRequirementsCalculatedMemberCount += results.Select( a => a.PersonId ).Distinct().Count();
                     foreach ( var result in results )
                     {
                         // use a fresh rockContext per Update so that ChangeTracker doesn't get bogged down
@@ -96,6 +98,8 @@ namespace Rock.Jobs
                     calculationExceptions.Add( new Exception( string.Format( "Exception when calculating group requirement: {0} ", groupRequirement ), ex ) );
                 }
             }
+
+            context.Result = string.Format( "Group member requirements re-calculated for {0} group members", groupRequirementsCalculatedMemberCount );
 
             if ( calculationExceptions.Any() )
             {

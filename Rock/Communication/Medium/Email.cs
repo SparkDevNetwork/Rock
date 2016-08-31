@@ -1,11 +1,11 @@
 ﻿// <copyright>
-// Copyright 2013 by the Spark Development Network
+// Copyright by the Spark Development Network
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
+// Licensed under the Rock Community License (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-// http://www.apache.org/licenses/LICENSE-2.0
+// http://www.rockrms.com/license
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -43,7 +43,7 @@ Unfortunately, you cannot view the contents of this email as it contains formatt
 by your email client.  
 
 You can view an online version of this email here: 
-{{ GlobalAttribute.PublicApplicationRoot }}GetCommunication.ashx?c={{ Communication.Id }}&p={{ Person.UrlEncodedKey }}
+{{ 'Global' | Attribute:'PublicApplicationRoot' }}GetCommunication.ashx?c={{ Communication.Id }}&p={{ Person.UrlEncodedKey }}
 ", "", 3 )]
     public class Email : MediumComponent
     {
@@ -71,15 +71,15 @@ You can view an online version of this email here:
             StringBuilder sbContent = new StringBuilder();
 
             var globalAttributes = Rock.Web.Cache.GlobalAttributesCache.Read();
-            var mergeValues = Rock.Web.Cache.GlobalAttributesCache.GetMergeFields( null );
+            var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( null );
 
             // Requery the Communication object
             communication = new CommunicationService( rockContext ).Get( communication.Id );
-            mergeValues.Add( "Communication", communication );
+            mergeFields.Add( "Communication", communication );
 
             if ( person != null )
             {
-                mergeValues.Add( "Person", person );
+                mergeFields.Add( "Person", person );
 
                 var recipient = new CommunicationRecipientService( rockContext ).Queryable().Where( a => a.CommunicationId == communication.Id ).Where( r => r.PersonAlias != null && r.PersonAlias.PersonId == person.Id ).FirstOrDefault();
                 if ( recipient != null )
@@ -87,9 +87,9 @@ You can view an online version of this email here:
                     // Add any additional merge fields created through a report
                     foreach ( var mergeField in recipient.AdditionalMergeValues )
                     {
-                        if ( !mergeValues.ContainsKey( mergeField.Key ) )
+                        if ( !mergeFields.ContainsKey( mergeField.Key ) )
                         {
-                            mergeValues.Add( mergeField.Key, mergeField.Value );
+                            mergeFields.Add( mergeField.Key, mergeField.Value );
                         }
                     }
                 }
@@ -97,7 +97,7 @@ You can view an online version of this email here:
 
             // Body
             string htmlContent = communication.GetMediumDataValue( "HtmlMessage" );
-            sbContent.Append( Email.ProcessHtmlBody( communication, globalAttributes, mergeValues ) );
+            sbContent.Append( Email.ProcessHtmlBody( communication, globalAttributes, mergeFields ) );
 
             // Attachments
             StringBuilder sbAttachments = new StringBuilder();
@@ -314,7 +314,7 @@ You can view an online version of this email here:
                 }
                 
                 // Resolve merge fields
-                htmlBody = htmlBody.ResolveMergeFields( mergeObjects, currentPersonOverride );
+                htmlBody = htmlBody.ResolveMergeFields( mergeObjects, currentPersonOverride, communication.EnabledLavaCommands );
 
                 // Resolve special syntax needed if option was included in global attribute
                 if ( Regex.IsMatch( htmlBody, @"\[\[\s*UnsubscribeOption\s*\]\]" ) )
@@ -360,7 +360,7 @@ You can view an online version of this email here:
                 plainTextBody = defaultPlainText;
             }
 
-            return plainTextBody.ResolveMergeFields( mergeObjects, currentPersonOverride );
+            return plainTextBody.ResolveMergeFields( mergeObjects, currentPersonOverride, communication.EnabledLavaCommands );
 
         }
 

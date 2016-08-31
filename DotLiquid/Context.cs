@@ -86,6 +86,9 @@ namespace DotLiquid
 
 		public string HandleError(Exception ex)
 		{
+			if ( ex is InterruptException )
+				throw ex;
+
 			Errors.Add(ex);
 			if (_rethrowErrors)
 				throw ex;
@@ -465,7 +468,7 @@ namespace DotLiquid
 			Dictionary<string, object> tempAssigns = new Dictionary<string, object>(Template.NamingConvention.StringComparer);
 
 			Hash lastScope = Scopes.Last();
-			foreach (string k in lastScope.Keys)
+			foreach (string k in lastScope.Keys.ToList())
 				foreach (Hash env in Environments)
 					if (env.ContainsKey(k))
 					{

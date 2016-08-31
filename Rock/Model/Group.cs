@@ -1,11 +1,11 @@
 ﻿// <copyright>
-// Copyright 2013 by the Spark Development Network
+// Copyright by the Spark Development Network
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
+// Licensed under the Rock Community License (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-// http://www.apache.org/licenses/LICENSE-2.0
+// http://www.rockrms.com/license
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -227,6 +227,24 @@ namespace Rock.Model
         }
         private bool _isPublic = true;
 
+        /// <summary>
+        /// Gets or sets the group capacity.
+        /// </summary>
+        /// <value>
+        /// The group capacity.
+        /// </value>
+        [DataMember]
+        public int? GroupCapacity { get; set; }
+
+        /// <summary>
+        /// Gets or sets the required signature document type identifier.
+        /// </summary>
+        /// <value>
+        /// The required signature document type identifier.
+        /// </value>
+        [DataMember]
+        public int? RequiredSignatureDocumentTemplateId { get; set; }
+
         #endregion
 
         #region Virtual Properties
@@ -294,12 +312,21 @@ namespace Rock.Model
         public virtual Rock.Model.DataView SyncDataView { get; set; }
 
         /// <summary>
+        /// Gets or sets the type of the required signature document.
+        /// </summary>
+        /// <value>
+        /// The type of the required signature document.
+        /// </value>
+        [DataMember]
+        public virtual SignatureDocumentTemplate RequiredSignatureDocumentTemplate { get; set; }
+
+        /// <summary>
         /// Gets or sets a collection the Groups that are children of this group.
         /// </summary>
         /// <value>
         /// A collection of Groups that are children of this group.
         /// </value>
-        [DataMember]
+        [LavaInclude]
         public virtual ICollection<Group> Groups
         {
             get { return _groups ?? ( _groups = new Collection<Group>() ); }
@@ -508,6 +535,51 @@ namespace Rock.Model
                 {
                     groupRequirementService.DeleteRange( groupRequirements );
                 }
+
+                // manually set any attendance search group ids to null
+                var attendanceService = new AttendanceService( dbContext as RockContext );
+                foreach ( var attendance in attendanceService.Queryable()
+                    .Where( a => 
+                        a.SearchResultGroupId.HasValue &&
+                        a.SearchResultGroupId.Value == this.Id ) )
+                {
+                    attendance.SearchResultGroupId = null;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Gets a value indicating whether this instance is valid.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if this instance is valid; otherwise, <c>false</c>.
+        /// </value>
+        public override bool IsValid
+        {
+            get
+            {
+                var result = base.IsValid;
+                if ( result )
+                {
+                    string errorMessage;
+                    using ( var rockContext = new RockContext() )
+                    {
+                        // validate that a campus is not required
+                        var groupType = this.GroupType ?? new GroupTypeService( rockContext ).Queryable().Where( g => g.Id == this.GroupTypeId ).FirstOrDefault();
+
+                        if (groupType != null )
+                        {
+                            if (groupType.GroupsRequireCampus && this.CampusId == null )
+                            {
+                                errorMessage = string.Format( "{0} require a campus.", groupType.Name.Pluralize() );
+                                ValidationResults.Add( new ValidationResult( errorMessage ));
+                                result = false;
+                            }
+                        }
+                    }
+                }
+
+                return result;
             }
         }
 
@@ -544,6 +616,7 @@ namespace Rock.Model
             this.HasOptional( p => p.WelcomeSystemEmail ).WithMany().HasForeignKey( p => p.WelcomeSystemEmailId ).WillCascadeOnDelete( false );
             this.HasOptional( p => p.ExitSystemEmail ).WithMany().HasForeignKey( p => p.ExitSystemEmailId ).WillCascadeOnDelete( false );
             this.HasOptional( p => p.SyncDataView ).WithMany().HasForeignKey( p => p.SyncDataViewId ).WillCascadeOnDelete( false );
+            this.HasOptional( p => p.RequiredSignatureDocumentTemplate ).WithMany().HasForeignKey( p => p.RequiredSignatureDocumentTemplateId ).WillCascadeOnDelete( false );
         }
     }
 

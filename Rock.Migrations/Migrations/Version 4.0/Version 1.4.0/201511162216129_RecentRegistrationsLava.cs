@@ -1,11 +1,11 @@
-// <copyright>
-// Copyright 2013 by the Spark Development Network
+﻿// <copyright>
+// Copyright by the Spark Development Network
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
+// Licensed under the Rock Community License (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-// http://www.apache.org/licenses/LICENSE-2.0
+// http://www.rockrms.com/license
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -109,6 +109,27 @@ UPDATE RegistrationTemplate
 SET ReminderEmailTemplate = REPLACE(ReminderEmailTemplate, 'using our <a href=""{{ externalSite }}/Registration?RegistrationInstanceId={{ RegistrationInstance.Id }}"">', 'using our <a href=""{{ externalSite }}/Registration?RegistrationId={{ Registration.Id }}"">')
 WHERE [ReminderEmailTemplate] LIKE '%using our <a href=""{{ externalSite }}/Registration?RegistrationInstanceId={{ RegistrationInstance.Id }}"">%'
 " );
+
+            // JE: Fix for baptism badge
+            Sql( @"DECLARE @AttributeId int = (SELECT TOP 1 [Id] FROM [Attribute] WHERE [Guid] = '01C9BA59-D8D4-4137-90A6-B3C06C70BBC3')
+DECLARE @EntityId int = (SELECT TOP 1 [Id] FROM [PersonBadge] WHERE [Guid] = '66972BFF-42CD-49AB-9A7A-E1B9DECA4EBE')
+
+IF @AttributeId IS NOT NULL AND @EntityId IS NOT NULL
+BEGIN
+	UPDATE [AttributeValue]
+		SET [Value] = '{% if Person.BaptismDate != empty -%}
+    <div class=""badge badge-baptism"" data-toggle=""tooltip"" data-original-title=""{ { Person.NickName } }
+            was baptized on { { Person.BaptismDate } }."">
+< i class=""badge-icon fa fa-tint""></i>
+    </div>
+{% else -%}
+    <div class=""badge badge-baptism"" data-toggle=""tooltip"" data-original-title=""No baptism date entered for {{ Person.NickName }}."">
+        <i class=""badge-icon badge-disabled fa fa-tint""></i>
+    </div>
+{% endif -%}'
+		WHERE[AttributeId] = @AttributeId AND[EntityId] = @EntityId
+        AND[CreatedDateTime] = [ModifiedDateTime]
+    END");
         }
         
         /// <summary>

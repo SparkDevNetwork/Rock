@@ -1,11 +1,11 @@
 ﻿// <copyright>
-// Copyright 2013 by the Spark Development Network
+// Copyright by the Spark Development Network
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
+// Licensed under the Rock Community License (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-// http://www.apache.org/licenses/LICENSE-2.0
+// http://www.rockrms.com/license
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -19,6 +19,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Text.RegularExpressions;
 using System.Linq;
+using System.Web.UI.HtmlControls;
 
 using Rock;
 using Rock.Attribute;
@@ -30,10 +31,6 @@ namespace RockWeb.Blocks.CheckIn
     [DisplayName("Search")]
     [Category("Check-in")]
     [Description("Displays keypad for searching on phone numbers.")]
-    [IntegerField( "Minimum Phone Number Length", "Minimum length for phone number searches (defaults to 4).", false, 4 )]
-    [IntegerField( "Maximum Phone Number Length", "Maximum length for phone number searches (defaults to 10).", false, 10 )]
-    [TextField("Search Regex", "Regular Expression to run the search input through before sending it to the workflow. Useful for stripping off characters.", false)]
-    [DefinedValueField(Rock.SystemGuid.DefinedType.CHECKIN_SEARCH_TYPE, "Search Type", "The type of search to use for check-in (default is phone number).", true, false, Rock.SystemGuid.DefinedValue.CHECKIN_SEARCH_TYPE_PHONE_NUMBER, order: 4 )]
     public partial class Search : CheckInBlock
     {
         protected override void OnInit( EventArgs e )
@@ -47,6 +44,12 @@ namespace RockWeb.Blocks.CheckIn
             {
                 NavigateToHomePage();
             }
+
+            var bodyTag = this.Page.Master.FindControl( "bodyTag" ) as HtmlGenericControl;
+            if ( bodyTag != null )
+            {
+                bodyTag.AddCssClass( "checkin-search-bg" );
+            }
         }
 
         protected override void OnLoad( EventArgs e )
@@ -56,15 +59,13 @@ namespace RockWeb.Blocks.CheckIn
             {
                 this.Page.Form.DefaultButton = lbSearch.UniqueID;
 
-                // set search type
-                var searchTypeValue = GetAttributeValue( "SearchType" ).AsGuid();
-                if ( searchTypeValue == Rock.SystemGuid.DefinedValue.CHECKIN_SEARCH_TYPE_PHONE_NUMBER.AsGuid() )
+                if ( CurrentCheckInType == null || CurrentCheckInType.SearchType.Guid == Rock.SystemGuid.DefinedValue.CHECKIN_SEARCH_TYPE_PHONE_NUMBER.AsGuid() )
                 {
                     pnlSearchName.Visible = false;
                     pnlSearchPhone.Visible = true;
                     lPageTitle.Text = "Search By Phone";
                 }
-                else if ( searchTypeValue == Rock.SystemGuid.DefinedValue.CHECKIN_SEARCH_TYPE_NAME.AsGuid() )
+                else if ( CurrentCheckInType.SearchType.Guid == Rock.SystemGuid.DefinedValue.CHECKIN_SEARCH_TYPE_NAME.AsGuid() )
                 {
                     pnlSearchName.Visible = true;
                     pnlSearchPhone.Visible = false;
@@ -85,13 +86,11 @@ namespace RockWeb.Blocks.CheckIn
             if ( KioskCurrentlyActive )
             {
                 // check search type
-                var searchTypeValue = GetAttributeValue( "SearchType" ).AsGuid();
-
-                if ( searchTypeValue == Rock.SystemGuid.DefinedValue.CHECKIN_SEARCH_TYPE_PHONE_NUMBER.AsGuid() )
+                if ( CurrentCheckInType == null || CurrentCheckInType.SearchType.Guid == Rock.SystemGuid.DefinedValue.CHECKIN_SEARCH_TYPE_PHONE_NUMBER.AsGuid() )
                 {
                     SearchByPhone();
                 }
-                else if ( searchTypeValue == Rock.SystemGuid.DefinedValue.CHECKIN_SEARCH_TYPE_NAME.AsGuid() )
+                else if ( CurrentCheckInType.SearchType.Guid == Rock.SystemGuid.DefinedValue.CHECKIN_SEARCH_TYPE_NAME.AsGuid() )
                 {
                     SearchByName();
                 }
@@ -124,16 +123,16 @@ namespace RockWeb.Blocks.CheckIn
         private void SearchByPhone()
         {
             // TODO: Validate text entered
-            int minLength = int.Parse( GetAttributeValue( "MinimumPhoneNumberLength" ) );
-            int maxLength = int.Parse( GetAttributeValue( "MaximumPhoneNumberLength" ) );
+            int minLength = CurrentCheckInType != null ? CurrentCheckInType.MinimumPhoneSearchLength : 4;
+            int maxLength = CurrentCheckInType != null ? CurrentCheckInType.MaximumPhoneSearchLength : 10;
             if ( tbPhone.Text.Length >= minLength && tbPhone.Text.Length <= maxLength )
             {
                 string searchInput = tbPhone.Text;
 
                 // run regex expression on input if provided
-                if ( !string.IsNullOrWhiteSpace( GetAttributeValue( "SearchRegex" ) ) )
+                if ( CurrentCheckInType != null && !string.IsNullOrWhiteSpace( CurrentCheckInType.RegularExpressionFilter ) )
                 {
-                    Regex regex = new Regex( GetAttributeValue( "SearchRegex" ) );
+                    Regex regex = new Regex( CurrentCheckInType.RegularExpressionFilter );
                     Match match = regex.Match( searchInput );
                     if ( match.Success )
                     {

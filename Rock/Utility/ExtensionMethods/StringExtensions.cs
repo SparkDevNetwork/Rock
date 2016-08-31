@@ -1,11 +1,11 @@
 ﻿// <copyright>
-// Copyright 2013 by the Spark Development Network
+// Copyright by the Spark Development Network
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
+// Licensed under the Rock Community License (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-// http://www.apache.org/licenses/LICENSE-2.0
+// http://www.rockrms.com/license
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -15,6 +15,7 @@
 // </copyright>
 //
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Text;
@@ -23,7 +24,7 @@ using System.Text.RegularExpressions;
 namespace Rock
 {
     /// <summary>
-    /// Handy string extensions
+    /// Handy string extensions that don't require any nuget packages
     /// </summary>
     public static partial class ExtensionMethods
     {
@@ -90,8 +91,6 @@ namespace Rock
             char[] delimiter = new char[] { ',' };
             return Regex.Replace( str, regex, "," ).Split( delimiter, StringSplitOptions.RemoveEmptyEntries );
         }
-
-
 
         /// <summary>
         /// Replaces every instance of oldValue (regardless of case) with the newValue.
@@ -184,7 +183,11 @@ namespace Rock
         /// <returns></returns>
         public static string Left( this string str, int length )
         {
-            if ( str.Length <= length )
+            if ( str == null )
+            {
+                return null;
+            }
+            else if ( str.Length <= length )
             {
                 return str;
             }
@@ -216,8 +219,6 @@ namespace Rock
 
             return truncatedString + "...";
         }
-
-        
 
         /// <summary>
         /// Removes any non-numeric characters.
@@ -281,6 +282,48 @@ namespace Rock
 
             return trueStrings.Contains( str.ToLower() );
         }
+
+        /// <summary>
+        /// Attempts to convert string to an dictionary using the |/comma and ^ delimiter Key/Value syntax.  Returns an empty dictionary if unsuccessful.
+        /// </summary>
+        /// <param name="str">The string.</param>
+        /// <returns></returns>                     
+        public static System.Collections.Generic.Dictionary<string, string> AsDictionary( this string str )
+        {
+            var dictionary = new System.Collections.Generic.Dictionary<string, string>();
+            string[] nameValues = str.Split( new char[] { '|' }, StringSplitOptions.RemoveEmptyEntries );
+            // If we haven't found any pipes, check for commas
+            if ( nameValues.Count() == 1 && nameValues[0] == str)
+            {
+                nameValues = str.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries );
+            }
+            foreach ( string nameValue in nameValues )
+            {
+                string[] nameAndValue = nameValue.Split( new char[] { '^' }, 2 );
+                if ( nameAndValue.Count() == 2 )
+                {
+                    dictionary[nameAndValue[0]] = nameAndValue[1];
+                }
+            }
+            return dictionary;
+        }
+
+        /// <summary>
+        /// Attempts to convert string to an dictionary using the |/comma and ^ delimiter Key/Value syntax.  Returns null if unsuccessful.
+        /// </summary>
+        /// <param name="str">The string.</param>
+        /// <returns></returns>
+        [System.Diagnostics.DebuggerStepThrough()]
+        public static System.Collections.Generic.Dictionary<string, string> AsDictionaryOrNull( this string str )
+        {
+            var dictionary = AsDictionary( str );
+            if ( dictionary.Count() > 0 )
+            {
+                return dictionary;
+            }
+            return null;
+        }
+
 
         /// <summary>
         /// Attempts to convert string to integer.  Returns 0 if unsuccessful.
@@ -558,6 +601,42 @@ namespace Rock
             s = Regex.Replace( s, "[\u02DC\u00A0]", " " );
 
             return s;
+        }
+
+        /// <summary>
+        /// Returns a list of KeyValuePairs from a serialized list of Rock KeyValuePairs (e.g. 'Item1^Value1|Item2^Value2')
+        /// </summary>
+        /// <param name="input">The input.</param>
+        /// <returns></returns>
+        public static List<KeyValuePair<string, object>> ToKeyValuePairList( this string input )
+        {
+            List<KeyValuePair<string, object>> keyPairs = new List<KeyValuePair<string, object>>();
+
+            if ( !string.IsNullOrWhiteSpace( input ) )
+            {
+                var items = input.Split( '|' );
+
+                foreach ( var item in items )
+                {
+                    var parts = item.Split( '^' );
+                    if ( parts.Length == 2 )
+                    {
+                        keyPairs.Add( new KeyValuePair<string, object>( parts[0], parts[1] ) );
+                    }
+                }
+            }
+
+            return keyPairs;
+        }
+
+        /// <summary>
+        /// Removes the spaces.
+        /// </summary>
+        /// <param name="input">The input.</param>
+        /// <returns></returns>
+        public static string RemoveSpaces( this string input )
+        {
+            return input.Replace( " ", "" );
         }
 
         #endregion String Extensions

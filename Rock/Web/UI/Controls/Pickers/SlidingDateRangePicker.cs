@@ -1,11 +1,11 @@
 ﻿// <copyright>
-// Copyright 2013 by the Spark Development Network
+// Copyright by the Spark Development Network
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
+// Licensed under the Rock Community License (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-// http://www.apache.org/licenses/LICENSE-2.0
+// http://www.rockrms.com/license
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -27,7 +27,7 @@ namespace Rock.Web.UI.Controls
     /// <summary>
     /// 
     /// </summary>
-    public class SlidingDateRangePicker : CompositeControl, IRockControl
+    public class SlidingDateRangePicker : CompositeControl, IRockControlAdditionalRendering
     {
         #region IRockControl implementation
 
@@ -90,6 +90,34 @@ namespace Rock.Web.UI.Controls
                 if ( HelpBlock != null )
                 {
                     HelpBlock.Text = value;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the warning text.
+        /// </summary>
+        /// <value>
+        /// The warning text.
+        /// </value>
+        [
+        Bindable( true ),
+        Category( "Appearance" ),
+        DefaultValue( "" ),
+        Description( "The warning block." )
+        ]
+        public string Warning
+        {
+            get
+            {
+                return WarningBlock != null ? WarningBlock.Text : string.Empty;
+            }
+
+            set
+            {
+                if ( WarningBlock != null )
+                {
+                    WarningBlock.Text = value;
                 }
             }
         }
@@ -169,6 +197,14 @@ namespace Rock.Web.UI.Controls
         public HelpBlock HelpBlock { get; set; }
 
         /// <summary>
+        /// Gets or sets the warning block.
+        /// </summary>
+        /// <value>
+        /// The warning block.
+        /// </value>
+        public WarningBlock WarningBlock { get; set; }
+
+        /// <summary>
         /// Gets or sets the required field validator.
         /// </summary>
         /// <value>
@@ -199,6 +235,7 @@ namespace Rock.Web.UI.Controls
             : base()
         {
             HelpBlock = new HelpBlock();
+            WarningBlock = new WarningBlock();
             Label = "Date Range";
         }
 
@@ -298,7 +335,7 @@ namespace Rock.Web.UI.Controls
             _ddlTimeUnitTypeSingular.Items.Clear();
             _ddlTimeUnitTypePlural.Items.Clear();
 
-            foreach ( var item in Enum.GetValues( typeof( TimeUnitType ) ).OfType<TimeUnitType>() )
+            foreach ( var item in this.EnabledSlidingDateRangeUnits )
             {
                 _ddlTimeUnitTypeSingular.Items.Add( new ListItem( item.ConvertToString(), item.ConvertToInt().ToString() ) );
                 _ddlTimeUnitTypePlural.Items.Add( new ListItem( item.ConvertToString().Pluralize(), item.ConvertToInt().ToString() ) );
@@ -411,9 +448,25 @@ namespace Rock.Web.UI.Controls
             {
                 writer.AddAttribute( "class", "js-slidingdaterange-container " + this.CssClass );
                 writer.RenderBeginTag( "div" );
-                
-                RockControlHelper.RenderControl( this, writer, "slidingdaterange");
-                
+
+                RockControlHelper.RenderControl( this, writer, "slidingdaterange" );
+
+                writer.RenderEndTag();
+            }
+        }
+
+        /// <summary>
+        /// Renders content after the label.
+        /// </summary>
+        /// <param name="writer">The writer.</param>
+        public void RenderAfterLabel( HtmlTextWriter writer )
+        {
+            if ( this.PreviewLocation == SlidingDateRangePicker.DateRangePreviewLocation.Top )
+            {
+                // render a div that will get its text from ~api/Utility/CalculateSlidingDateRange (see slidingDateRangePicker.js)
+                writer.WriteLine();
+                writer.AddAttribute( "class", "label label-info js-slidingdaterange-info slidingdaterange-info" );
+                writer.RenderBeginTag( HtmlTextWriterTag.Div );
                 writer.RenderEndTag();
             }
         }
@@ -429,25 +482,15 @@ namespace Rock.Web.UI.Controls
             bool isCurrent = _ddlLastCurrent.SelectedValue == "1";
             bool isDateRange = _ddlLastCurrent.SelectedValue == "2";
             bool isPrevious = _ddlLastCurrent.SelectedValue == "4";
-            _nbNumber.Style[HtmlTextWriterStyle.Display] = ( isLast|| isPrevious ) ? "block" : "none";
+            _nbNumber.Style[HtmlTextWriterStyle.Display] = ( isLast || isPrevious ) ? "block" : "none";
             _ddlTimeUnitTypeSingular.Style[HtmlTextWriterStyle.Display] = ( isCurrent ) ? "block" : "none";
             _ddlTimeUnitTypePlural.Style[HtmlTextWriterStyle.Display] = ( isLast || isPrevious ) ? "block" : "none";
             _drpDateRange.Style[HtmlTextWriterStyle.Display] = ( isDateRange ) ? "block" : "none";
-            
+
             bool needsAutoPostBack = SelectedDateRangeChanged != null;
             _ddlLastCurrent.AutoPostBack = needsAutoPostBack;
             _ddlTimeUnitTypeSingular.AutoPostBack = needsAutoPostBack;
             _ddlTimeUnitTypePlural.AutoPostBack = needsAutoPostBack;
-
-            // render a div that will get its text from ~api/Utility/CalculateSlidingDateRange (see slidingDateRangePicker.js)
-            Panel dateRangePreviewDiv = new Panel();
-            dateRangePreviewDiv.CssClass = "label label-info js-slidingdaterange-info slidingdaterange-info";
-
-            if ( this.PreviewLocation == SlidingDateRangePicker.DateRangePreviewLocation.Top )
-            {
-                writer.WriteLine();
-                dateRangePreviewDiv.RenderControl( writer );
-            }
 
             // render a hidden element that will get its text from ~api/Utility/GetSlidingDateRangeTextValue (see slidingDateRangePicker.js)
             writer.AddAttribute( "type", "hidden" );
@@ -468,9 +511,11 @@ namespace Rock.Web.UI.Controls
             if ( this.PreviewLocation == SlidingDateRangePicker.DateRangePreviewLocation.Right )
             {
                 writer.WriteLine();
-                dateRangePreviewDiv.RenderControl( writer );
+                writer.AddAttribute( "class", "label label-info js-slidingdaterange-info slidingdaterange-info" );
+                writer.RenderBeginTag( HtmlTextWriterTag.Div );
+                writer.RenderEndTag();
             }
-            
+
             writer.RenderEndTag();
 
             RegisterJavaScript();
@@ -583,6 +628,31 @@ namespace Rock.Web.UI.Controls
             }
         }
 
+        /// <summary>
+        /// Gets or sets the enabled sliding date range types.
+        /// </summary>
+        /// <value>
+        /// The enabled sliding date range types.
+        /// </value>
+        [TypeConverter( typeof( SlidingDateRangeUnitArrayConverter ) )]
+        public TimeUnitType[] EnabledSlidingDateRangeUnits
+        {
+            get
+            {
+                var result = ViewState["EnabledSlidingDateRangeUnits"] as TimeUnitType[];
+                if ( result == null || result.Length == 0 )
+                {
+                    result = Enum.GetValues( typeof( TimeUnitType ) ).Cast<TimeUnitType>().ToArray();
+                }
+
+                return result;
+            }
+
+            set
+            {
+                ViewState["EnabledSlidingDateRangeUnits"] = value;
+            }
+        }
         /// <summary>
         /// Gets the date range mode value.
         /// </summary>
@@ -873,6 +943,13 @@ namespace Rock.Web.UI.Controls
                         result.End = null;
                     }
                 }
+
+                // If time unit is days, weeks, months or years subtract a second from time so that end time is with same period
+                if ( result.End.HasValue && timeUnit != TimeUnitType.Hour )
+                {
+                    result.End = result.End.Value.AddSeconds( -1 );
+                }
+
             }
 
             return result;
@@ -935,6 +1012,7 @@ namespace Rock.Web.UI.Controls
 
             return helpHtml;
         }
+
     }
 
     /// <summary>
@@ -1012,4 +1090,81 @@ namespace Rock.Web.UI.Controls
             return result;
         }
     }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    public class SlidingDateRangeUnitArrayConverter : ArrayConverter
+    {
+        /// <summary>
+        /// Returns whether this converter can convert an object of the given type to the type of this converter, using the specified context.
+        /// </summary>
+        /// <param name="context">An <see cref="T:System.ComponentModel.ITypeDescriptorContext" /> that provides a format context.</param>
+        /// <param name="sourceType">A <see cref="T:System.Type" /> that represents the type you want to convert from.</param>
+        /// <returns>
+        /// true if this converter can perform the conversion; otherwise, false.
+        /// </returns>
+        public override bool CanConvertFrom( ITypeDescriptorContext context, Type sourceType )
+        {
+            return sourceType == typeof( string );
+        }
+
+        /// <summary>
+        /// Converts the given object to the type of this converter, using the specified context and culture information.
+        /// </summary>
+        /// <param name="context">An <see cref="T:System.ComponentModel.ITypeDescriptorContext" /> that provides a format context.</param>
+        /// <param name="culture">The <see cref="T:System.Globalization.CultureInfo" /> to use as the current culture.</param>
+        /// <param name="value">The <see cref="T:System.Object" /> to convert.</param>
+        /// <returns>
+        /// An <see cref="T:System.Object" /> that represents the converted value.
+        /// </returns>
+        public override object ConvertFrom( ITypeDescriptorContext context, System.Globalization.CultureInfo culture, object value )
+        {
+            string[] values = ( value as string ).SplitDelimitedValues();
+            return values.Select( a => a.ConvertToEnumOrNull<SlidingDateRangePicker.TimeUnitType>() ).Where( a => a.HasValue ).Select( a => a.Value ).ToArray();
+        }
+
+        /// <summary>
+        /// Returns whether this object supports a standard set of values that can be picked from a list, using the specified context.
+        /// </summary>
+        /// <param name="context">An <see cref="T:System.ComponentModel.ITypeDescriptorContext" /> that provides a format context.</param>
+        /// <returns>
+        /// true if <see cref="M:System.ComponentModel.TypeConverter.GetStandardValues" /> should be called to find a common set of values the object supports; otherwise, false.
+        /// </returns>
+        public override bool GetStandardValuesSupported( ITypeDescriptorContext context )
+        {
+            return true;
+        }
+
+        /// <summary>
+        /// Returns whether the collection of standard values returned from <see cref="M:System.ComponentModel.TypeConverter.GetStandardValues" /> is an exclusive list of possible values, using the specified context.
+        /// </summary>
+        /// <param name="context">An <see cref="T:System.ComponentModel.ITypeDescriptorContext" /> that provides a format context.</param>
+        /// <returns>
+        /// true if the <see cref="T:System.ComponentModel.TypeConverter.StandardValuesCollection" /> returned from <see cref="M:System.ComponentModel.TypeConverter.GetStandardValues" /> is an exhaustive list of possible values; false if other values are possible.
+        /// </returns>
+        public override bool GetStandardValuesExclusive( ITypeDescriptorContext context )
+        {
+            return false;
+        }
+
+        /// <summary>
+        /// Returns a collection of standard values for the data type this type converter is designed for when provided with a format context.
+        /// </summary>
+        /// <param name="context">An <see cref="T:System.ComponentModel.ITypeDescriptorContext" /> that provides a format context that can be used to extract additional information about the environment from which this converter is invoked. This parameter or properties of this parameter can be null.</param>
+        /// <returns>
+        /// A <see cref="T:System.ComponentModel.TypeConverter.StandardValuesCollection" /> that holds a standard set of valid values, or null if the data type does not support a standard set of values.
+        /// </returns>
+        public override StandardValuesCollection GetStandardValues( ITypeDescriptorContext context )
+        {
+            var allTypes = Enum.GetValues( typeof( SlidingDateRangePicker.TimeUnitType ) ).Cast<SlidingDateRangePicker.TimeUnitType>();
+            var optionsList = new List<string>();
+            optionsList.Add( "Hour, Day, Week, Month, Year" );
+            optionsList.Add( "Week, Month, Year" );
+            var result = new StandardValuesCollection( optionsList );
+            return result;
+        }
+
+    }
+
 }

@@ -1,5 +1,20 @@
 {% if AllowedActions.View == true || AllowedActions.Edit == true || AllowedActions.Administrate == true %}
 
+	{% assign countActive = -1 %}
+	{% assign countInactive = -1 %}
+	{% assign countPending = -1 %}
+	{% for member in Group.Members %}
+		{% case member.GroupMemberStatus %}
+			{% when 'Active' %}
+				{% assign countActive = countActive | Plus: 1 %}
+			{% when 'Inactive' %}
+				{% assign countInactive = countInactive | Plus: 1 %}
+			{% when 'Pending' %}
+				{% assign countPending = countPending | Plus: 1 %}
+			{% else %}
+		{% endcase %}
+	{% endfor %}
+
 
 	{% for groupLocation in Group.GroupLocations %}
 		{% if groupLocation.Location.GeoPoint != '' %}
@@ -18,6 +33,21 @@
 	<h1>{{ Group.Name }}</h1>
 
 	{{ Group.Description }}
+
+	{% if Group.GroupType.GroupCapacityRule != 'None' and  Group.GroupCapacity != '' %}
+		{% assign warningLevel = 'warning' %}
+
+		{% if Group.GroupType.GroupCapacityRule == 'Hard' %}
+			{% assign warningLevel = 'danger' %}
+		{% endif %}
+
+		{% assign activeMemberCount = countActive | Plus:1 %} {% comment %}the couter is zero based{% endcomment %}
+		{% assign overageAmount = activeMemberCount | Minus:Group.GroupCapacity %}
+
+		{% if overageAmount > 0 %}
+			<div class="alert alert-{{ warningLevel }} margin-t-sm">This group is over capacity by {{ overageAmount }} {{ 'individual' | PluralizeForQuantity:overageAmount }}.</div>
+		{% endif %}
+	{% endif %}
 
 	<div class="row">
 		<div class="col-md-6">
@@ -69,23 +99,6 @@
 	{% endif %}
 
 	{% if LinkedPages.RosterPage == CurrentPage.Path %}
-
-		{% assign countActive = -1 %}
-		{% assign countInactive = -1 %}
-		{% assign countPending = -1 %}
-		{% for member in Group.Members %}
-			{% case member.GroupMemberStatus %}
-				{% when 'Active' %}
-					{% assign countActive = countActive | Plus: 1 %}
-				{% when 'Inactive' %}
-					{% assign countInactive = countInactive | Plus: 1 %}
-				{% when 'Pending' %}
-					{% assign countPending = countPending | Plus: 1 %}
-				{% else %}
-			{% endcase %}
-		{% endfor %}
-
-
 
 		{% if countPending > -1 %}
 			{% assign icountPending = 0 %}

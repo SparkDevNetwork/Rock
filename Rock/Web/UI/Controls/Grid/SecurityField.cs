@@ -1,11 +1,11 @@
 ﻿// <copyright>
-// Copyright 2013 by the Spark Development Network
+// Copyright by the Spark Development Network
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
+// Licensed under the Rock Community License (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-// http://www.apache.org/licenses/LICENSE-2.0
+// http://www.rockrms.com/license
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -28,6 +28,54 @@ namespace Rock.Web.UI.Controls
     [ToolboxData( "<{0}:SecurityField BoundField=server></{0}:SecurityField>" )]
     public class SecurityField : RockTemplateField, INotRowSelectedField
     {
+        /// <summary>
+        /// Gets or sets the icon CSS class.
+        /// </summary>
+        /// <value>
+        /// The icon CSS class.
+        /// </value>
+        public string IconCssClass
+        {
+            get
+            {
+                string iconCssClass = ViewState["IconCssClass"] as string;
+                if ( string.IsNullOrWhiteSpace( iconCssClass ) )
+                {
+                    iconCssClass = "fa fa-lock";
+                    ViewState["IconCssClass"] = iconCssClass;
+                }
+                return iconCssClass;
+            }
+            set
+            {
+                ViewState["IconCssClass"] = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the button CSS class.
+        /// </summary>
+        /// <value>
+        /// The button CSS class.
+        /// </value>
+        public string ButtonCssClass
+        {
+            get
+            {
+                string buttonCssClass = ViewState["ButtonCssClass"] as string;
+                if ( string.IsNullOrWhiteSpace( buttonCssClass ) )
+                {
+                    buttonCssClass = "btn btn-security btn-sm";
+                    ViewState["ButtonCssClass"] = buttonCssClass;
+                }
+                return buttonCssClass;
+            }
+            set
+            {
+                ViewState["ButtonCssClass"] = value;
+            }
+        }
+
         /// <summary>
         /// Initializes a new instance of the <see cref="SecurityField" /> class.
         /// </summary>
@@ -133,15 +181,16 @@ namespace Rock.Web.UI.Controls
             DataControlFieldCell cell = container as DataControlFieldCell;
             if ( cell != null )
             {
+                SecurityField securityField = cell.ContainingField as SecurityField;
                 HtmlGenericControl aSecure = new HtmlGenericControl( "a" );
                 cell.Controls.Add( aSecure );
-                aSecure.Attributes.Add("class", "btn btn-security btn-sm");
+                aSecure.Attributes.Add("class", securityField.ButtonCssClass );
 
                 // height attribute is used by the modal that pops up when the button is clicked
                 aSecure.Attributes.Add( "height", "500px" );
 
                 HtmlGenericControl buttonIcon = new HtmlGenericControl( "i" );
-                buttonIcon.Attributes.Add( "class", "fa fa-lock" );
+                buttonIcon.Attributes.Add( "class", securityField.IconCssClass );
                 aSecure.Controls.Add( buttonIcon );
 
                 aSecure.DataBinding += new EventHandler( aSecure_DataBinding );

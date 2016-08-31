@@ -1,11 +1,11 @@
 ﻿// <copyright>
-// Copyright 2013 by the Spark Development Network
+// Copyright by the Spark Development Network
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
+// Licensed under the Rock Community License (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-// http://www.apache.org/licenses/LICENSE-2.0
+// http://www.rockrms.com/license
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -24,6 +24,7 @@ using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
 using Rock;
 using Rock.Attribute;
+using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
 using Rock.Web.UI;
@@ -39,6 +40,8 @@ namespace RockWeb.Blocks.Security
 
     [LinkedPage("Detail Page", "Page to edit account details.", order: 0)]
     [BooleanField("Show Home Address", "Shows/hides the home address.", order: 1)]
+    [GroupLocationTypeField( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY, "Location Type",
+        "The type of location that address should use.", false, Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME, "", 14 )]
     public partial class AccountDetail : RockBlock
     {
         #region Base Control Methods
@@ -60,7 +63,7 @@ namespace RockWeb.Blocks.Security
                 lName.Text = CurrentPerson.FullName;
 
                 // Setup Image
-                var imgTag = new LiteralControl( Rock.Model.Person.GetPhotoImageTag( CurrentPerson.PhotoId, CurrentPerson.Age, CurrentPerson.Gender, 188, 188 ) );
+                var imgTag = new LiteralControl( Rock.Model.Person.GetPersonPhotoImageTag( CurrentPerson, 188, 188 ) );
                 if ( CurrentPerson.PhotoId.HasValue )
                 {
                     var imgLink = new HyperLink();
@@ -94,14 +97,44 @@ namespace RockWeb.Blocks.Security
 
                 lEmail.Text = CurrentPerson.Email;
 
+                Guid? locationTypeGuid = GetAttributeValue( "LocationType" ).AsGuidOrNull();
+                if ( locationTypeGuid.HasValue )
+                {
+                    var addressTypeDv = DefinedValueCache.Read( locationTypeGuid.Value );
+
+                    var familyGroupTypeGuid = Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY.AsGuidOrNull();
+
+                    if ( familyGroupTypeGuid.HasValue )
+                    {
+                        var familyGroupType = GroupTypeCache.Read( familyGroupTypeGuid.Value );
+
+                        RockContext rockContext = new RockContext();
+                        var address = new GroupLocationService( rockContext ).Queryable()
+                                            .Where( l => l.Group.GroupTypeId == familyGroupType.Id
+                                                 && l.GroupLocationTypeValueId == addressTypeDv.Id
+                                                 && l.Group.Members.Any( m => m.PersonId == CurrentPerson.Id ) )
+                                            .Select( l => l.Location )
+                                            .FirstOrDefault();
+                        if ( address != null )
+                        {
+                            lAddress.Text = string.Format( "<div class='margin-b-md'><small>{0} Address</small><br />{1}</div>", addressTypeDv.Value, address.FormattedHtmlAddress );
+                        }
+                    }
+                }
+
                 if ( GetAttributeValue( "ShowHomeAddress" ).AsBoolean() )
                 {
                     var homeAddress = CurrentPerson.GetHomeLocation();
                     if ( homeAddress != null )
                     {
-                        lAddress.Text = string.Format( "<div class='margin-b-md'><small>Home Address</small><br />{0}</div>", homeAddress.FormattedHtmlAddress );
+                        
                     }
                 }
+            }
+            else
+            {
+                pnlView.Visible = false;
+                nbNotAuthorized.Visible = true;
             }
         }
 

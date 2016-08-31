@@ -1,11 +1,11 @@
 ﻿// <copyright>
-// Copyright 2013 by the Spark Development Network
+// Copyright by the Spark Development Network
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
+// Licensed under the Rock Community License (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-// http://www.apache.org/licenses/LICENSE-2.0
+// http://www.rockrms.com/license
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -17,9 +17,12 @@
 using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.Linq;
+using System.Text;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 using Newtonsoft.Json;
+using Rock.Chart;
 using Rock.Model;
 
 namespace Rock.Web.UI.Controls
@@ -43,10 +46,10 @@ namespace Rock.Web.UI.Controls
         }
 
         #region Controls
-        
+
         private HiddenFieldWithClass _hfRestUrl;
         private HiddenFieldWithClass _hfRestUrlParams;
-        private HiddenFieldWithClass _hfSeriesNameUrl;
+        private HiddenFieldWithClass _hfSeriesPartitionNameUrl;
         private HiddenFieldWithClass _hfXAxisLabel;
         private HiddenFieldWithClass _hfYAxisLabel;
         private Label _lblChartTitle;
@@ -97,24 +100,49 @@ namespace Rock.Web.UI.Controls
             }
         }
 
+
+        /// <summary>
+        /// Gets the metric value partitions as a position sensitive comma-delimited list of EntityTypeId|EntityId
+        /// </summary>
+        /// <value>
+        /// The metric value EntityTypeId|EntityId of each Partition (by order)
+        /// </value>
+        public string MetricValuePartitionEntityIds
+        {
+            get
+            {
+                return ViewState["MetricValuePartitionEntityIds"] as string;
+            }
+
+            set
+            {
+                ViewState["MetricValuePartitionEntityIds"] = value;
+            }
+        }
+
         /// <summary>
         /// Gets or sets the entity identifier.
         /// </summary>
         /// <value>
         /// The entity identifier.
         /// </value>
+        [Obsolete("use MetricValuePartitionEntityIds instead")]
         public int? EntityId
         {
             get
             {
-                return ViewState["EntityId"] as int?;
+                legacyEntityId = ViewState["EntityId"] as int?;
+                return legacyEntityId;
             }
 
             set
             {
-                ViewState["EntityId"] = value;
+                legacyEntityId = value;
+                ViewState["EntityId"] = legacyEntityId;
             }
         }
+        private int? legacyEntityId;
+
 
         /// <summary>
         /// Gets a value indicating whether to combine values with different EntityId values into one series vs. showing each in its own series
@@ -313,6 +341,25 @@ namespace Rock.Web.UI.Controls
         public ChartOptions Options { get; set; }
 
         /// <summary>
+        /// Gets or sets the chart data (json objects)
+        /// </summary>
+        /// <value>
+        /// The chart data.
+        /// </value>
+        public string ChartData
+        {
+            get
+            {
+                return ViewState["ChartData"] as string;
+            }
+
+            set
+            {
+                ViewState["ChartData"] = value;
+            }
+        }
+
+        /// <summary>
         /// Gets or sets the data source URL.
         /// Defaults to "~/api/MetricValues/GetByMetricId/"
         /// </summary>
@@ -338,16 +385,36 @@ namespace Rock.Web.UI.Controls
         /// <value>
         /// The series name URL.
         /// </value>
+        [Obsolete]
         public string SeriesNameUrl
         {
             get
             {
-                return ViewState["SeriesNameUrl"] as string;
+                return SeriesPartitionNameUrl;
             }
 
             set
             {
-                ViewState["SeriesNameUrl"] = value;
+                SeriesPartitionNameUrl = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the series partition name URL.
+        /// </summary>
+        /// <value>
+        /// The series partition name URL.
+        /// </value>
+        public string SeriesPartitionNameUrl
+        {
+            get
+            {
+                return ViewState["SeriesPartitionNameUrl"] as string;
+            }
+
+            set
+            {
+                ViewState["SeriesPartitionNameUrl"] = value;
             }
         }
 
@@ -521,8 +588,14 @@ namespace Rock.Web.UI.Controls
                 _hfRestUrlParams.Value = string.Empty;
             }
 
-            string scriptFormat =
-@"
+            var scriptFormat = new StringBuilder();
+
+            if ( !string.IsNullOrWhiteSpace( DataSourceUrl ) )
+            { 
+                string restUrl = this.ResolveUrl( this.DataSourceUrl );
+                _hfRestUrl.Value = restUrl;
+
+                scriptFormat.Append( @"
             var restUrl_{0} = $('#{0} .js-rest-url').val() + $('#{0} .js-rest-url-params').val();
 
             $.ajax({{
@@ -531,79 +604,96 @@ namespace Rock.Web.UI.Controls
                 contentType: 'application/json'
             }})
             .done( function (chartData) {{
+" );
+            }
+            else
+            {
+                scriptFormat.Append( @"
+            $(function() {{
+                var chartData = {5};
+");
+            }
 
+            scriptFormat.Append( @"
                 var chartOptions = {1}; 
                 var plotSelector = '#{0} .js-chart-placeholder';
                 var yaxisLabelText = $('#{0} .js-yaxis-value').val();
                 var getSeriesUrl = $('#{0} .js-seriesname-url').val();
                 var combineValues = {4};
-";
+");
 
             if ( this.GetType() == typeof( PieChart ) )
             {
-                scriptFormat += @"
-                Rock.controls.charts.plotPieChartData(chartData, chartOptions, plotSelector);
+                scriptFormat.Append( @"
+                Rock.controls.charts.plotPieChartData(chartData, chartOptions, plotSelector, getSeriesUrl);
                 
-";
+" );
             }
             else if ( this.GetType() == typeof( BarChart ) )
             {
-                scriptFormat += @"
-                Rock.controls.charts.plotBarChartData(chartData, chartOptions, plotSelector);
-";
+                scriptFormat.Append( @"
+                Rock.controls.charts.plotBarChartData(chartData, chartOptions, plotSelector, getSeriesUrl);
+" );
             }
             else
             {
-                scriptFormat += @"
+                scriptFormat.Append( @"
                 Rock.controls.charts.plotChartData(chartData, chartOptions, plotSelector, yaxisLabelText, getSeriesUrl, combineValues);
-";
+");
             }
 
-            scriptFormat += @"
+            scriptFormat.Append( @"
                 // plothover script (tooltip script) 
                 {2}
 
                 // plotclick script
                 {3}
+");
+            if ( !string.IsNullOrWhiteSpace( DataSourceUrl ) )
+            { 
+                scriptFormat.Append( @"
             }})
             .fail(function (jqXHR, textStatus, errorThrown) {{
                 //debugger
+");
+            }
+
+            scriptFormat.Append( @"
             }});
-";
+" );
 
             string chartOptionsJson = JsonConvert.SerializeObject( this.Options, Formatting.Indented, new JsonSerializerSettings() { ReferenceLoopHandling = ReferenceLoopHandling.Ignore, NullValueHandling = NullValueHandling.Ignore } );
 
             _hbChartOptions.Text = "<div style='white-space: pre; max-height: 120px; overflow-y:scroll' Font-Names='Consolas' Font-Size='8'><br />" + chartOptionsJson + "</div>";
 
-            string restUrl = this.ResolveUrl( this.DataSourceUrl );
-            _hfRestUrl.Value = restUrl;
-
-            var seriesNameUrl = this.SeriesNameUrl;
+            var seriesPartitionNameUrl = this.SeriesPartitionNameUrl;
             if ( this.MetricId.HasValue )
             {
-                seriesNameUrl = seriesNameUrl ?? "~/api/MetricValues/GetSeriesName/";
-                seriesNameUrl = this.ResolveUrl( seriesNameUrl.EnsureTrailingForwardslash() + this.MetricId + "/" );
+                seriesPartitionNameUrl = seriesPartitionNameUrl ?? "~/api/MetricValues/GetSeriesPartitionName/";
+                seriesPartitionNameUrl = this.ResolveUrl( seriesPartitionNameUrl.EnsureTrailingForwardslash() + this.MetricId + "/" );
             }
 
-            if ( !string.IsNullOrWhiteSpace( seriesNameUrl ) )
+            if ( !string.IsNullOrWhiteSpace( seriesPartitionNameUrl ) )
             {
-                _hfSeriesNameUrl.Value = seriesNameUrl;
+                _hfSeriesPartitionNameUrl.Value = seriesPartitionNameUrl;
             }
             else
             {
-                _hfSeriesNameUrl.Value = null;
+                _hfSeriesPartitionNameUrl.Value = null;
             }
 
             string tooltipScript = ShowTooltip ? string.Format( "Rock.controls.charts.bindTooltip('{0}', {1})", this.ClientID, this.TooltipFormatter ?? "null" ) : null;
             string chartClickScript = GetChartClickScript();
+            string chartData = string.IsNullOrEmpty( ChartData ) ? "[]" : ChartData;
 
             string script = string.Format(
-                scriptFormat,
+                scriptFormat.ToString(),
                 this.ClientID,      // {0}
                 chartOptionsJson,   // {1}
                 tooltipScript,      // {2}
                 chartClickScript,   // {3}
-                this.CombineValues.ToTrueFalse().ToLower() );  // {4}
+                this.CombineValues.ToTrueFalse().ToLower(),  // {4}
+                chartData );        // {5}
 
             ScriptManager.RegisterStartupScript( this, this.GetType(), "flot-chart-script_" + this.ClientID, script, true );
         }
@@ -648,9 +738,34 @@ namespace Rock.Web.UI.Controls
                 qryParams.Add( string.Format( "metricValueType={0}", this.MetricValueType ) );
             }
 
-            if ( this.EntityId.HasValue )
+            var entityTypeEntityIds = (MetricValuePartitionEntityIds ?? string.Empty).Split( ',' ).Select( a => a.Split( '|' ) ).Where( a => a.Length == 2 ).Select( a => new
             {
-                filterParams.Add( string.Format( "(EntityId eq {0} or EntityId eq null)", this.EntityId ) );
+                EntityTypeId = a[0].AsIntegerOrNull(),
+                EntityId = a[1].AsIntegerOrNull()
+            } ).ToList();
+
+            if ( entityTypeEntityIds.Any() )
+            {
+                var position = 0;
+                foreach ( var metricPartition in metric.MetricPartitions.OrderBy(a => a.Order ))
+                {
+                    if ( entityTypeEntityIds.Count() > position )
+                    {
+                        var entry = entityTypeEntityIds[position];
+                        if ( entry.EntityTypeId == metricPartition.EntityTypeId && entry.EntityId.HasValue )
+                        {
+                            filterParams.Add( string.Format( "MetricValuePartitions/any(metricValuePartition: metricValuePartition/EntityId eq {0} and metricValuePartition/MetricPartitionId eq {1})", entry.EntityId.Value, metricPartition.Id ) );
+                        }
+                    }
+                    
+                    position++;
+                }
+            }
+            else if ( this.legacyEntityId.HasValue )
+            {
+                
+                int partitionId = metric.MetricPartitions.OrderBy( a => a.Order ).First().Id;
+                filterParams.Add( string.Format( "MetricValuePartitions/any(metricValuePartition: metricValuePartition/EntityId eq {0} and metricValuePartition/MetricPartitionId eq {1})", this.legacyEntityId, partitionId ) );
             }
 
             if ( filterParams.Count > 0 )
@@ -720,9 +835,9 @@ namespace Rock.Web.UI.Controls
             _hfRestUrl.ID = string.Format( "hfRestUrl_{0}", this.ID );
             _hfRestUrl.CssClass = "js-rest-url";
 
-            _hfSeriesNameUrl = new HiddenFieldWithClass();
-            _hfSeriesNameUrl.ID = string.Format( "hfSeriesNameUrl_{0}", this.ID );
-            _hfSeriesNameUrl.CssClass = "js-seriesname-url";
+            _hfSeriesPartitionNameUrl = new HiddenFieldWithClass();
+            _hfSeriesPartitionNameUrl.ID = string.Format( "hfSeriesPartitionNameUrl_{0}", this.ID );
+            _hfSeriesPartitionNameUrl.CssClass = "js-seriesname-url";
 
             _lblChartTitle = new Label();
             _lblChartTitle.ID = string.Format( "lblChartTitle_{0}", this.ID );
@@ -742,7 +857,7 @@ namespace Rock.Web.UI.Controls
             Controls.Add( _hfYAxisLabel );
             Controls.Add( _hfRestUrlParams );
             Controls.Add( _hfRestUrl );
-            Controls.Add( _hfSeriesNameUrl );
+            Controls.Add( _hfSeriesPartitionNameUrl );
             Controls.Add( _lblChartTitle );
             Controls.Add( _lblChartSubtitle );
             Controls.Add( _pnlChartPlaceholder );
@@ -769,7 +884,7 @@ namespace Rock.Web.UI.Controls
                 _hfMetricId.RenderControl( writer );
                 _hfRestUrlParams.RenderControl( writer );
                 _hfRestUrl.RenderControl( writer );
-                _hfSeriesNameUrl.RenderControl( writer );
+                _hfSeriesPartitionNameUrl.RenderControl( writer );
                 _hfXAxisLabel.RenderControl( writer );
                 _hfYAxisLabel.RenderControl( writer );
 

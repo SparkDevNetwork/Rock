@@ -1,11 +1,11 @@
 ﻿// <copyright>
-// Copyright 2013 by the Spark Development Network
+// Copyright by the Spark Development Network
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
+// Licensed under the Rock Community License (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-// http://www.apache.org/licenses/LICENSE-2.0
+// http://www.rockrms.com/license
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -179,6 +179,7 @@ namespace RockWeb.Blocks.Event
                     string newPerson = ppPerson.PersonName;
                     History.EvaluateChange( registrantChanges, "Person", prevPerson, newPerson );
                 }
+                int? personId = ppPerson.PersonId.Value;
                 registrant.PersonAliasId = ppPerson.PersonAliasId.Value;
 
                 // Get the name of registrant for history
@@ -204,7 +205,7 @@ namespace RockWeb.Blocks.Event
                 foreach ( var dbFee in registrant.Fees.ToList() )
                 {
                     if ( !RegistrantState.FeeValues.Keys.Contains( dbFee.RegistrationTemplateFeeId ) ||
-                        RegistrantState.FeeValues[dbFee.RegistrationTemplateFeeId] != null ||
+                        RegistrantState.FeeValues[dbFee.RegistrationTemplateFeeId] == null ||
                         !RegistrantState.FeeValues[dbFee.RegistrationTemplateFeeId]
                             .Any( f =>
                                 f.Option == dbFee.Option &&
@@ -262,6 +263,64 @@ namespace RockWeb.Blocks.Event
                     }
                 }
 
+                if ( TemplateState.RequiredSignatureDocumentTemplate != null )
+                {
+                    var person = new PersonService( rockContext ).Get( personId.Value );
+
+                    var documentService = new SignatureDocumentService( rockContext );
+                    var binaryFileService = new BinaryFileService( rockContext );
+                    SignatureDocument document = null;
+
+                    int? signatureDocumentId = hfSignedDocumentId.Value.AsIntegerOrNull();
+                    int? binaryFileId = fuSignedDocument.BinaryFileId;
+                    if ( signatureDocumentId.HasValue )
+                    {
+                        document = documentService.Get( signatureDocumentId.Value );
+                    }
+
+                    if ( document == null && binaryFileId.HasValue )
+                    {
+                        var instance = new RegistrationInstanceService( rockContext ).Get( RegistrationInstanceId );
+
+                        document = new SignatureDocument();
+                        document.SignatureDocumentTemplateId = TemplateState.RequiredSignatureDocumentTemplate.Id;
+                        document.AppliesToPersonAliasId = registrant.PersonAliasId.Value;
+                        document.AssignedToPersonAliasId = registrant.PersonAliasId.Value;
+                        document.Name = string.Format( "{0}_{1}",
+                            ( instance != null ? instance.Name : TemplateState.Name ),
+                            ( person != null ? person.FullName.RemoveSpecialCharacters() : string.Empty ) );
+                        document.Status = SignatureDocumentStatus.Signed;
+                        document.LastStatusDate = RockDateTime.Now;
+                        documentService.Add( document );
+                    }
+
+                    if ( document != null )
+                    {
+                        int? origBinaryFileId = document.BinaryFileId;
+                        document.BinaryFileId = binaryFileId;
+
+                        if ( origBinaryFileId.HasValue && origBinaryFileId.Value != document.BinaryFileId )
+                        {
+                            // if a new the binaryFile was uploaded, mark the old one as Temporary so that it gets cleaned up
+                            var oldBinaryFile = binaryFileService.Get( origBinaryFileId.Value );
+                            if ( oldBinaryFile != null && !oldBinaryFile.IsTemporary )
+                            {
+                                oldBinaryFile.IsTemporary = true;
+                            }
+                        }
+
+                        // ensure the IsTemporary is set to false on binaryFile associated with this document
+                        if ( document.BinaryFileId.HasValue )
+                        {
+                            var binaryFile = binaryFileService.Get( document.BinaryFileId.Value );
+                            if ( binaryFile != null && binaryFile.IsTemporary )
+                            {
+                                binaryFile.IsTemporary = false;
+                            }
+                        }
+                    }
+                }
+
                 if ( !registrant.IsValid )
                 {
                     // Controls will render the error messages                    
@@ -286,7 +345,7 @@ namespace RockWeb.Blocks.Event
                             string originalValue = registrant.GetAttributeValue( attribute.Key );
                             var fieldValue = RegistrantState.FieldValues
                                 .Where( f => f.Key == field.Id )
-                                .Select( f => f.Value )
+                                .Select( f => f.Value.FieldValue )
                                 .FirstOrDefault();
                             string newValue = fieldValue != null ? fieldValue.ToString() : string.Empty;
 
@@ -319,44 +378,48 @@ namespace RockWeb.Blocks.Event
 
                 if ( newRegistrant && TemplateState.GroupTypeId.HasValue && ppPerson.PersonId.HasValue )
                 {
-                    var registration = new RegistrationService( rockContext ).Get( registrant.RegistrationId );
-                    if ( registration != null &&
-                        registration.Group != null &&
-                        registration.Group.GroupTypeId == TemplateState.GroupTypeId.Value )
+                    using ( var newRockContext = new RockContext() )
                     {
-                        int? groupRoleId = TemplateState.GroupMemberRoleId.HasValue ?
-                            TemplateState.GroupMemberRoleId.Value :
-                            registration.Group.GroupType.DefaultGroupRoleId;
-                        if ( groupRoleId.HasValue )
+                        var reloadedRegistrant = new RegistrationRegistrantService( newRockContext ).Get( registrant.Id );
+                        if ( reloadedRegistrant != null &&
+                            reloadedRegistrant.Registration != null &&
+                            reloadedRegistrant.Registration.Group != null &&
+                            reloadedRegistrant.Registration.Group.GroupTypeId == TemplateState.GroupTypeId.Value )
                         {
-                            var groupMemberService = new GroupMemberService( rockContext );
-                            var groupMember = groupMemberService
-                                .Queryable().AsNoTracking()
-                                .Where( m =>
-                                    m.GroupId == registration.Group.Id &&
-                                    m.PersonId == registrant.PersonId &&
-                                    m.GroupRoleId == groupRoleId.Value )
-                                .FirstOrDefault();
-                            if ( groupMember == null )
+                            int? groupRoleId = TemplateState.GroupMemberRoleId.HasValue ?
+                                TemplateState.GroupMemberRoleId.Value :
+                                reloadedRegistrant.Registration.Group.GroupType.DefaultGroupRoleId;
+                            if ( groupRoleId.HasValue )
                             {
-                                groupMember = new GroupMember();
-                                groupMemberService.Add( groupMember );
-                                groupMember.GroupId = registration.Group.Id;
-                                groupMember.PersonId = ppPerson.PersonId.Value;
-                                groupMember.GroupRoleId = groupRoleId.Value;
-                                groupMember.GroupMemberStatus = TemplateState.GroupMemberStatus;
+                                var groupMemberService = new GroupMemberService( newRockContext );
+                                var groupMember = groupMemberService
+                                    .Queryable().AsNoTracking()
+                                    .Where( m =>
+                                        m.GroupId == reloadedRegistrant.Registration.Group.Id &&
+                                        m.PersonId == reloadedRegistrant.PersonId &&
+                                        m.GroupRoleId == groupRoleId.Value )
+                                    .FirstOrDefault();
+                                if ( groupMember == null )
+                                {
+                                    groupMember = new GroupMember();
+                                    groupMemberService.Add( groupMember );
+                                    groupMember.GroupId = reloadedRegistrant.Registration.Group.Id;
+                                    groupMember.PersonId = ppPerson.PersonId.Value;
+                                    groupMember.GroupRoleId = groupRoleId.Value;
+                                    groupMember.GroupMemberStatus = TemplateState.GroupMemberStatus;
 
-                                rockContext.SaveChanges();
+                                    newRockContext.SaveChanges();
 
-                                registrantChanges.Add( string.Format( "Registrant added to {0} group", registration.Group.Name ) );
+                                    registrantChanges.Add( string.Format( "Registrant added to {0} group", reloadedRegistrant.Registration.Group.Name ) );
+                                }
+                                else
+                                {
+                                    registrantChanges.Add( string.Format( "Registrant group member reference updated to existing person in {0} group", reloadedRegistrant.Registration.Group.Name ) );
+                                }
+
+                                reloadedRegistrant.GroupMemberId = groupMember.Id;
+                                newRockContext.SaveChanges();
                             }
-                            else
-                            {
-                                registrantChanges.Add( string.Format( "Registrant group member reference updated to existing person in {0} group", registration.Group.Name ) );
-                            }
-
-                            registrant.GroupMemberId = groupMember.Id;
-                            rockContext.SaveChanges();
                         }
                     }
                 }
@@ -497,12 +560,55 @@ namespace RockWeb.Blocks.Event
                 {
                     RegistrantState = new RegistrantInfo();
                     RegistrantState.RegistrationId = registrationId ?? 0;
-                    RegistrantState.Cost = TemplateState.Cost;
+                    if ( TemplateState.SetCostOnInstance.HasValue && TemplateState.SetCostOnInstance.Value )
+                    {
+                        var instance = new RegistrationInstanceService( rockContext ).Get( RegistrationInstanceId );
+                        if ( instance != null )
+                        {
+                            RegistrantState.Cost = instance.Cost ?? 0.0m;
+                        }
+                    }
+                    else
+                    {
+                        RegistrantState.Cost = TemplateState.Cost;
+                    }
                 }
 
                 if ( registrant != null && registrant.PersonAlias != null && registrant.PersonAlias.Person != null )
                 {
                     ppPerson.SetValue( registrant.PersonAlias.Person );
+                    if ( TemplateState != null && TemplateState.RequiredSignatureDocumentTemplate != null )
+                    {
+                        fuSignedDocument.Label = TemplateState.RequiredSignatureDocumentTemplate.Name;
+                        if ( TemplateState.RequiredSignatureDocumentTemplate.BinaryFileType != null )
+                        {
+                            fuSignedDocument.BinaryFileTypeGuid = TemplateState.RequiredSignatureDocumentTemplate.BinaryFileType.Guid;
+                        }
+
+                        var signatureDocument = new SignatureDocumentService( rockContext )
+                            .Queryable().AsNoTracking()
+                            .Where( d =>
+                                d.SignatureDocumentTemplateId == TemplateState.RequiredSignatureDocumentTemplateId.Value &&
+                                d.AppliesToPersonAlias != null &&
+                                d.AppliesToPersonAlias.PersonId == registrant.PersonAlias.PersonId &&
+                                d.LastStatusDate.HasValue &&
+                                d.Status == SignatureDocumentStatus.Signed &&
+                                d.BinaryFile != null )
+                            .OrderByDescending( d => d.LastStatusDate.Value )
+                            .FirstOrDefault();
+
+                        if ( signatureDocument != null )
+                        {
+                            hfSignedDocumentId.Value = signatureDocument.Id.ToString();
+                            fuSignedDocument.BinaryFileId = signatureDocument.BinaryFileId;
+                        }
+
+                        fuSignedDocument.Visible = true;
+                    }
+                    else
+                    {
+                        fuSignedDocument.Visible = false;
+                    }
                 }
                 else
                 {
@@ -554,7 +660,7 @@ namespace RockWeb.Blocks.Event
                                 object fieldValue = null;
                                 if ( RegistrantState.FieldValues.ContainsKey( field.Id ) )
                                 {
-                                    fieldValue = RegistrantState.FieldValues[field.Id];
+                                    fieldValue = RegistrantState.FieldValues[field.Id].FieldValue;
                                 }
 
                                 if ( field.AttributeId.HasValue )
@@ -749,7 +855,7 @@ namespace RockWeb.Blocks.Event
 
                                 if ( value != null )
                                 {
-                                    RegistrantState.FieldValues.AddOrReplace( field.Id, value );
+                                    RegistrantState.FieldValues.AddOrReplace( field.Id, new FieldValueObject( field, value ) );
                                 }
                                 else
                                 {

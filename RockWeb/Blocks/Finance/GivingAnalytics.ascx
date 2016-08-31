@@ -1,5 +1,11 @@
 ﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="GivingAnalytics.ascx.cs" Inherits="RockWeb.Blocks.Finance.GivingAnalytics" %>
 
+<style>
+    .filter-options .rock-check-box-list label {
+        cursor: pointer;
+    }
+</style>
+
 <asp:UpdatePanel ID="upnlContent" runat="server">
     <ContentTemplate>
 
@@ -37,8 +43,8 @@
                         <Rock:SlidingDateRangePicker ID="drpSlidingDateRange" runat="server" Label="Date Range" EnabledSlidingDateRangeTypes="Previous, Last, Current, DateRange"/>
                         <Rock:NumberRangeEditor ID="nreAmount" runat="server" CssClass="input-width-sm" NumberType="Currency" Label="Total Amount" />
                         <Rock:DataViewPicker ID="dvpDataView" runat="server" Label="Limit by DataView" AutoPostBack="true" OnSelectedIndexChanged="dvpDataView_SelectedIndexChanged" />
-                        <Rock:RockCheckBoxList ID="cblCurrencyTypes" runat="server" Label="Currency Types" RepeatDirection="Vertical" />
-                        <Rock:RockCheckBoxList ID="cblTransactionSource" runat="server" Label="Transaction Source" RepeatDirection="Vertical" />
+                        <Rock:RockCheckBoxList ID="cblCurrencyTypes" runat="server" FormGroupCssClass="currency-list js-currency-list" Label="Currency Types" RepeatDirection="Vertical" />
+                        <Rock:RockCheckBoxList ID="cblTransactionSource" runat="server" FormGroupCssClass="source-list js-source-list" Label="Transaction Source" RepeatDirection="Vertical" />
                         <asp:PlaceHolder ID="phAccounts" runat="server" />
 
                     </div>
@@ -122,10 +128,11 @@
 
                                 <asp:Panel ID="pnlChartAmountGrid" runat="server" Visible="false">
                                     <div class="grid">
-                                        <Rock:Grid ID="gChartAmount" runat="server" AllowSorting="true" DataKeyNames="DateTimeStamp,SeriesId" RowItemText="Amount Summary">
+                                        <Rock:Grid ID="gChartAmount" runat="server" AllowSorting="true" DataKeyNames="DateTimeStamp,SeriesName" RowItemText="Amount Summary">
                                             <Columns>
                                                 <Rock:DateField DataField="DateTime" HeaderText="Date" SortExpression="DateTimeStamp" />
-                                                <Rock:RockBoundField DataField="SeriesId" HeaderText="Series" SortExpression="SeriesId" />
+                                                <Rock:RockBoundField DataField="SeriesName" HeaderText="Series" SortExpression="SeriesId" />
+                                                <Rock:RockBoundField DataField="SeriesAddlInfo" HeaderText="Series Addl Info" SortExpression="SeriesAddlInfo" />
                                                 <Rock:CurrencyField DataField="YValue" HeaderText="Amount" SortExpression="YValue" />
                                             </Columns>
                                         </Rock:Grid>
@@ -197,8 +204,10 @@
 
                                 <Rock:NotificationBox ID="nbGiversError" runat="server" NotificationBoxType="Danger" Dismissable="true" Visible="false" />
 
-                                <Rock:Grid ID="gGiversGifts" runat="server" AllowSorting="true" RowItemText="Person" OnRowSelected="gGiversGifts_RowSelected"
-                                    ExportSource="ColumnOutput" ExportFilename="GivingAnalytics" />
+                                <div class="margin-b-md">
+                                    <Rock:Grid ID="gGiversGifts" runat="server" AllowSorting="true" RowItemText="Person" OnRowSelected="gGiversGifts_RowSelected"
+                                        ExportSource="ColumnOutput" ExportFilename="GivingAnalytics" />
+                                </div>
 
                             </asp:Panel>
 
@@ -269,6 +278,7 @@
                 });
 
                 showFilterByOptions();
+
             });
         </script>
     </ContentTemplate>

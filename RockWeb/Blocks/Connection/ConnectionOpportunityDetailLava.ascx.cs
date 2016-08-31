@@ -1,11 +1,11 @@
 ﻿// <copyright>
-// Copyright 2013 by the Spark Development Network
+// Copyright by the Spark Development Network
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
+// Licensed under the Rock Community License (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-// http://www.apache.org/licenses/LICENSE-2.0
+// http://www.rockrms.com/license
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -26,6 +26,7 @@ using Rock.Data;
 using Rock.Model;
 using Rock.Security;
 using Rock.Web;
+using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
@@ -142,18 +143,20 @@ namespace RockWeb.Blocks.Connection
                 }
                 var opportunity = qry.FirstOrDefault();
 
-                var mergeFields = new Dictionary<string, object>();
+                var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson );
+                Dictionary<string, object> linkedPages = new Dictionary<string, object>();
+                linkedPages.Add( "SignupPage", LinkedPageRoute( "SignupPage" ) );
+                mergeFields.Add( "LinkedPages", linkedPages );
+
+                mergeFields.Add( "CampusContext", RockPage.GetCurrentContext( EntityTypeCache.Read( "Rock.Model.Campus" ) ) as Campus );
+
+                // run opportunity summary and details through lava
+                opportunity.Summary = opportunity.Summary.ResolveMergeFields(mergeFields);
+                opportunity.Description = opportunity.Description.ResolveMergeFields( mergeFields );
+
                 mergeFields.Add( "Opportunity", opportunity );
 
                 // add linked pages
-                Dictionary<string, object> linkedPages = new Dictionary<string, object>();
-                linkedPages.Add( "SignupPage", LinkedPageUrl( "SignupPage", null ) );
-                mergeFields.Add( "LinkedPages", linkedPages );
-
-                mergeFields.Add( "CurrentPerson", CurrentPerson );
-
-                var globalAttributeFields = Rock.Web.Cache.GlobalAttributesCache.GetMergeFields( CurrentPerson );
-                globalAttributeFields.ToList().ForEach( d => mergeFields.Add( d.Key, d.Value ) );
 
                 lOutput.Text = GetAttributeValue( "LavaTemplate" ).ResolveMergeFields( mergeFields );
 

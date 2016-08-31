@@ -1,11 +1,11 @@
 ﻿// <copyright>
-// Copyright 2013 by the Spark Development Network
+// Copyright by the Spark Development Network
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
+// Licensed under the Rock Community License (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-// http://www.apache.org/licenses/LICENSE-2.0
+// http://www.rockrms.com/license
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -18,10 +18,11 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data.Entity;
+using System.Data.Entity.SqlServer;
 using System.Linq;
+using System.Text;
 using System.Web.UI;
 using System.Web.UI.WebControls;
-
 using Rock;
 using Rock.Attribute;
 using Rock.Data;
@@ -42,21 +43,41 @@ namespace RockWeb.Blocks.Connection
     [LinkedPage( "Configuration Page", "Page used to modify and create connection opportunities.", true, "", "", 0 )]
     [LinkedPage( "Detail Page", "Page used to view details of an requests.", true, "", "", 1 )]
     [ConnectionTypesField("Connection Types", "Optional list of connection types to limit the display to (All will be displayed by default).", false, order:2 )]
+    [BooleanField( "Show Last Activity Note", "If enabled, the block will show the last activity note for each request in the list.", false, order:3 )]
+
+    [CodeEditorField( "StatusTemplate", "Lava Template that can be used to customize what is displayed in the status bar. Includes common merge fields plus ConnectionOpportunities, ConnectionTypes and the default IdleTooltip.", CodeEditorMode.Lava, CodeEditorTheme.Rock, defaultValue:
+@"<div class='pull-left badge-legend padding-r-md'>
+    <span class='pull-left badge badge-info js-legend-badge' data-toggle='tooltip' data-original-title='Assigned To You'>&nbsp;</span>
+    <span class='pull-left badge badge-warning js-legend-badge' data-toggle='tooltip' data-original-title='Unassigned Item'>&nbsp;</span>
+    <span class='pull-left badge badge-critical js-legend-badge' data-toggle='tooltip' data-original-title='Critical Status'>&nbsp;</span>
+    <span class='pull-left badge badge-danger js-legend-badge' data-toggle='tooltip' data-original-title='{{ IdleTooltip }}'>&nbsp;</span> 
+</div>", order:4
+)]
+
+    [CodeEditorField( "OpportunitySummaryTemplate", "Lava Template that can be used to customize what is displayed in each Opportunity Summary. Includes common merge fields plus the OpportunitySummary, ConnectionOpportunity, and its ConnectionRequests.", CodeEditorMode.Lava, CodeEditorTheme.Rock, defaultValue:
+@"<i class='{{ OpportunitySummary.IconCssClass }}'></i>
+<h3>{{ OpportunitySummary.Name }}</h3>
+<div class='status-list'>
+    <span class='badge badge-info'>{{ OpportunitySummary.AssignedToYou | Format:'#,###,###' }}</span>
+    <span class='badge badge-warning'>{{ OpportunitySummary.UnassignedCount | Format:'#,###,###' }}</span>
+    <span class='badge badge-critical'>{{ OpportunitySummary.CriticalCount | Format:'#,###,###' }}</span>
+    <span class='badge badge-danger'>{{ OpportunitySummary.IdleCount | Format:'#,###,###' }}</span>
+</div>
+", order: 5
+)]
     public partial class MyConnectionOpportunities : Rock.Web.UI.RockBlock
     {
-
         #region Fields
 
         private const string TOGGLE_SETTING = "MyConnectionOpportunities_Toggle";
         private const string SELECTED_OPPORTUNITY_SETTING = "MyConnectionOpportunities_SelectedOpportunity";
-
+        DateTime _midnightToday = RockDateTime.Today.AddDays( 1 );
         #endregion
 
         #region Properties
 
         protected int? SelectedOpportunityId { get; set; }
         protected List<ConnectionTypeSummary> SummaryState { get; set; }
-
         #endregion
 
         #region Base Control Methods
@@ -92,6 +113,7 @@ namespace RockWeb.Blocks.Connection
             gRequests.GridRebind += gRequests_GridRebind;
             gRequests.ShowConfirmDeleteDialog = false;
             gRequests.PersonIdField = "PersonId";
+            gRequests.Columns[6].Visible = GetAttributeValue( "ShowLastActivityNote" ).AsBoolean();
 
             this.BlockUpdated += Block_BlockUpdated;
             this.AddConfigurationUpdateTrigger( upnlContent );
@@ -101,18 +123,12 @@ namespace RockWeb.Blocks.Connection
         e.preventDefault();
         Rock.dialogs.confirm('Are you sure you want to delete this connection request? All of the activities for this request will also be deleted, and any existing workflow associations will be lost!', function (result) {
             if (result) {
-                Rock.dialogs.confirm('Are you really sure?', function (result) {
-                    if (result) {
-                        window.location = e.target.href ? e.target.href : e.target.parentElement.href;
-                    }
-                });
+                window.location = e.target.href ? e.target.href : e.target.parentElement.href; 
             }
         });
     });
 ";
             ScriptManager.RegisterStartupScript( gRequests, gRequests.GetType(), "deleteRequestScript", deleteScript, true );
-
-
         }
 
         /// <summary>
@@ -132,6 +148,8 @@ namespace RockWeb.Blocks.Connection
                 rFilter.SaveUserPreference( "State", "State", "0;-2" );
 
                 GetSummaryData();
+
+                RockPage.AddScriptLink( ResolveRockUrl( "~/Scripts/jquery.visible.min.js" ) );
             }
         }
 
@@ -216,6 +234,31 @@ namespace RockWeb.Blocks.Connection
         }
 
         /// <summary>
+        /// Gets the opportunity summary HTML.
+        /// </summary>
+        /// <param name="opportunitySummaryId">The opportunity summary identifier.</param>
+        /// <returns></returns>
+        public string GetOpportunitySummaryHtml( OpportunitySummary opportunitySummary )
+        {
+            var template = this.GetAttributeValue( "OpportunitySummaryTemplate" );
+
+            var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson, new Rock.Lava.CommonMergeFieldsOptions { GetLegacyGlobalMergeFields = false } );
+            mergeFields.Add( "OpportunitySummary", DotLiquid.Hash.FromAnonymousObject( opportunitySummary ) );
+
+            string result = null; 
+            using ( var rockContext = new RockContext() )
+            {
+                var connectionOpportunity = new ConnectionOpportunityService( rockContext ).Queryable().AsNoTracking().FirstOrDefault( a => a.Id == opportunitySummary.Id );
+                mergeFields.Add( "ConnectionOpportunity", connectionOpportunity );
+                mergeFields.Add( "ConnectionRequests", connectionOpportunity.ConnectionRequests );
+
+                result = template.ResolveMergeFields( mergeFields );
+            }
+
+            return result;
+        }
+
+        /// <summary>
         /// Handles the ItemCommand event of the rptConnectionOpportunities control.
         /// </summary>
         /// <param name="source">The source of the event.</param>
@@ -228,6 +271,13 @@ namespace RockWeb.Blocks.Connection
             SelectedOpportunityId = selectedOpportunityValue.AsIntegerOrNull();
 
             BindSummaryData();
+
+            ScriptManager.RegisterStartupScript(
+                Page,
+                GetType(),
+                "ScrollToGrid",
+                "scrollToGrid();",
+                true );
         }
 
         #endregion
@@ -247,9 +297,10 @@ namespace RockWeb.Blocks.Connection
             personId = ppConnector.PersonId;
             rFilter.SaveUserPreference( "Connector", "Connector", personId.HasValue ? personId.Value.ToString() : string.Empty );
 
-            rFilter.SaveUserPreference( "Campus", "Campus", cblStatus.SelectedValues.AsDelimited( ";" ) );
+            rFilter.SaveUserPreference( "Campus", "Campus", cblCampus.SelectedValues.AsDelimited( ";" ) );
             rFilter.SaveUserPreference( "State", "State", cblState.SelectedValues.AsDelimited( ";" ) );
             rFilter.SaveUserPreference( MakeKeyUniqueToOpportunity( "Status" ), "Status", cblStatus.SelectedValues.AsDelimited( ";" ) );
+            rFilter.SaveUserPreference( MakeKeyUniqueToOpportunity( "LastActivity" ), "Last Activity", cblLastActivity.SelectedValues.AsDelimited( ";" ) );
 
             BindGrid();
         }
@@ -302,6 +353,10 @@ namespace RockWeb.Blocks.Connection
                 else if ( e.Key == MakeKeyUniqueToOpportunity( "Status" ) )
                 {
                     e.Value = ResolveValues( e.Value, cblStatus );
+                }
+                else if ( e.Key == MakeKeyUniqueToOpportunity( "LastActivity" ) )
+                {
+                    e.Value = ResolveValues( e.Value, cblLastActivity );
                 }
                 else
                 {
@@ -448,12 +503,41 @@ namespace RockWeb.Blocks.Connection
                         SummaryState.Add( connectionTypeSummary );
                     }
 
+                    // Count number of idle requests (no activity in past X days)
+
+                    var connectionRequestsQry = new ConnectionRequestService( rockContext ).Queryable().Where( a => a.ConnectionOpportunityId == opportunity.Id );
+                    var currentDateTime = RockDateTime.Now;
+                    int idleCount = connectionRequestsQry
+                                        .Where( cr => 
+                                            (
+                                                cr.ConnectionState == ConnectionState.Active 
+                                                || (cr.ConnectionState == ConnectionState.FutureFollowUp && cr.FollowupDate.HasValue && cr.FollowupDate.Value < _midnightToday)
+                                            )
+                                            && (
+                                                ( cr.ConnectionRequestActivities.Any() && cr.ConnectionRequestActivities.Max(ra => ra.CreatedDateTime) < SqlFunctions.DateAdd( "day", -cr.ConnectionOpportunity.ConnectionType.DaysUntilRequestIdle, currentDateTime )) )
+                                                || ( !cr.ConnectionRequestActivities.Any() && cr.CreatedDateTime < SqlFunctions.DateAdd( "day", -cr.ConnectionOpportunity.ConnectionType.DaysUntilRequestIdle, currentDateTime ) )
+                                               )
+                                        .Count();
+
+                    // Count the number requests that have a status that is considered critical.
+                    int criticalCount = connectionRequestsQry
+                                            .Where( r => 
+                                                r.ConnectionStatus.IsCritical 
+                                                && (
+                                                    r.ConnectionState == ConnectionState.Active 
+                                                    || (r.ConnectionState == ConnectionState.FutureFollowUp && r.FollowupDate.HasValue && r.FollowupDate.Value < _midnightToday)
+                                                    )
+                                                    )
+                                            .Count();
+
                     // Add the opportunity
                     var opportunitySummary = new OpportunitySummary
                     {
                         Id = opportunity.Id,
                         Name = opportunity.Name,
-                        IconCssClass = opportunity.IconCssClass
+                        IconCssClass = opportunity.IconCssClass,
+                        IdleCount = idleCount,
+                        CriticalCount = criticalCount
                     };
 
                     // If the user is limited requests with specific campus(es) set the list, otherwise leave it to be null
@@ -496,13 +580,39 @@ namespace RockWeb.Blocks.Connection
                         ) )
                     .ToList();
 
-                // The count of active requests 
-                opportunity.ActiveCount = opportunityRequests.Count();
+                // The count of active requests assigned to the current person
+                opportunity.AssignedToYou = opportunityRequests.Count( r => r.ConnectorPersonId == CurrentPersonId );
+
+                // The count of active requests that are unassigned
+                opportunity.UnassignedCount = opportunityRequests.Count( r => r.ConnectorPersonId == -1 );
 
                 // Flag indicating if current user is connector for any of the active types
                 opportunity.HasActiveRequestsForConnector = opportunityRequests.Any( r => r.ConnectorPersonId == CurrentPersonId );
             }
 
+            //Set the Idle tooltip
+            var connectionTypes = opportunities.Where( o => allOpportunities.Contains( o.Id ) ).Select( o => o.ConnectionType ).Distinct().ToList();
+            StringBuilder sb = new StringBuilder();
+            if ( connectionTypes.Select( t => t.DaysUntilRequestIdle ).Distinct().Count() == 1 )
+            {
+                sb.Append( String.Format( "Idle (no activity in {0} days)", connectionTypes.Select( t => t.DaysUntilRequestIdle ).Distinct().First() ) );
+            }
+            else
+            {
+                sb.Append( "Idle (no activity in several days)<br/><ul class='list-unstyled'>" );
+                foreach ( var connectionType in connectionTypes )
+                {
+                    sb.Append( String.Format( "<li>{0}: {1} days</li>", connectionType.Name, connectionType.DaysUntilRequestIdle ) );
+                }
+                sb.Append( "</ul>" );
+            }
+
+            var statusTemplate = this.GetAttributeValue( "StatusTemplate" );
+            var statusMergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields(this.RockPage);
+            statusMergeFields.Add( "ConnectionOpportunities", allOpportunities );
+            statusMergeFields.Add( "ConnectionTypes", connectionTypes );
+            statusMergeFields.Add( "IdleTooltip", sb.ToString() );
+            lStatusBarContent.Text = statusTemplate.ResolveMergeFields( statusMergeFields );
             BindSummaryData();
         }
 
@@ -593,6 +703,14 @@ namespace RockWeb.Blocks.Connection
                     cblStatus.DataBind();
                     cblStatus.SetValues( rFilter.GetUserPreference( MakeKeyUniqueToOpportunity( "Status" ) ).SplitDelimitedValues().AsIntegerList() );
                 }
+
+                cblLastActivity.Items.Clear();
+                if ( SelectedOpportunityId.HasValue )
+                {
+                    cblLastActivity.DataSource = new ConnectionOpportunityService( rockContext ).Get( SelectedOpportunityId.Value ).ConnectionType.ConnectionActivityTypes.ToList();
+                    cblLastActivity.DataBind();
+                    cblLastActivity.SetValues( rFilter.GetUserPreference( MakeKeyUniqueToOpportunity( "LastActivity" ) ).SplitDelimitedValues().AsIntegerList() );
+                }
             }
         }
 
@@ -649,12 +767,12 @@ namespace RockWeb.Blocks.Connection
                     }
 
                     // Filter by State
-                    var midnightToday = RockDateTime.Today.AddDays(1);
+                    
                     if ( tglMyOpportunities.Checked )
                     {
                         requests = requests
                             .Where( r => r.ConnectionState == ConnectionState.Active || 
-                                    ( r.ConnectionState == ConnectionState.FutureFollowUp && r.FollowupDate.HasValue && r.FollowupDate.Value < midnightToday ) );
+                                    ( r.ConnectionState == ConnectionState.FutureFollowUp && r.FollowupDate.HasValue && r.FollowupDate.Value < _midnightToday ) );
                     }
                     else
                     {
@@ -674,7 +792,7 @@ namespace RockWeb.Blocks.Connection
                             requests = requests
                                 .Where( r =>
                                     ( futureFollowup && r.ConnectionState == ConnectionState.FutureFollowUp &&
-                                        r.FollowupDate.HasValue && r.FollowupDate.Value < midnightToday ) ||
+                                        r.FollowupDate.HasValue && r.FollowupDate.Value < _midnightToday ) ||
                                     states.Contains( r.ConnectionState ) );
                         }
                     }
@@ -695,6 +813,15 @@ namespace RockWeb.Blocks.Connection
                             .Where( r =>
                                 r.Campus != null &&
                                 campusIds.Contains( r.CampusId.Value ) );
+                    }
+
+                    // Filter by Last Activity Note
+                    List<int> lastActivityIds = cblLastActivity.SelectedValuesAsInt;
+                    if ( lastActivityIds.Any() )
+                    {
+                        requests = requests
+                            .Where( r => lastActivityIds.Contains(
+                                r.ConnectionRequestActivities.OrderByDescending( a => a.CreatedDateTime ).Select( a => a.ConnectionActivityTypeId ).FirstOrDefault() ) );
                     }
 
 
@@ -721,6 +848,8 @@ namespace RockWeb.Blocks.Connection
                         Group = r.AssignedGroup != null ? r.AssignedGroup.Name : "",
                         Connector = r.ConnectorPersonAlias != null ? r.ConnectorPersonAlias.Person.FullName : "",
                         LastActivity = FormatActivity( r.ConnectionRequestActivities.OrderByDescending( a => a.CreatedDateTime ).FirstOrDefault() ),
+                        LastActivityNote = gRequests.Columns[6].Visible ? r.ConnectionRequestActivities.OrderByDescending(
+                            a => a.CreatedDateTime ).Select( a => a.Note ).FirstOrDefault() : "",
                         Status = r.ConnectionStatus.Name,
                         StatusLabel = r.ConnectionStatus.IsCritical ? "warning" : "info",
                         ConnectionState = r.ConnectionState,
@@ -822,7 +951,10 @@ namespace RockWeb.Blocks.Connection
             public string IconCssClass { get; set; }
             public bool CampusSpecificConnector { get; set; }
             public List<int> ConnectorCampusIds { get; set; }  // Will be null if user is a connector for all campuses
-            public int ActiveCount { get; set; }
+            public int AssignedToYou { get; set; }
+            public int UnassignedCount { get; set; }
+            public int CriticalCount { get; set; }
+            public int IdleCount { get; set; }
             public bool HasActiveRequestsForConnector { get; set; }
         }
 

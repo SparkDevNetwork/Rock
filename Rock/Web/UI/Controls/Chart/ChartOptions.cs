@@ -1,11 +1,11 @@
 ﻿// <copyright>
-// Copyright 2013 by the Spark Development Network
+// Copyright by the Spark Development Network
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
+// Licensed under the Rock Community License (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-// http://www.apache.org/licenses/LICENSE-2.0
+// http://www.rockrms.com/license
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -746,6 +746,14 @@ function (val, axis) {
         public double? radius { get; set; }
 
         /// <summary>
+        /// Sets the radius of the donut hole. If value is between 0 and 1 (inclusive) then it will use that as a percentage of the radius, otherwise it will use the value as a direct pixel length.
+        /// </summary>
+        /// <value>
+        /// The radius.
+        /// </value> 
+        public double? innerRadius { get; set; }
+
+        /// <summary>
         /// Factor of PI used for the starting angle (in radians) It can range between 0 and 2 (where 0 and 2 have the same result).
         /// Default is 1.5
         /// </summary>
@@ -886,6 +894,14 @@ function (val, axis) {
         /// The pie.
         /// </value>
         public Pie pie { get; set; }
+
+        /// <summary>
+        /// Gets or sets the size of the shadow.
+        /// </summary>
+        /// <value>
+        /// The size of the shadow.
+        /// </value>
+        public int? shadowSize { get; set; }
     }
 
     /// <summary>

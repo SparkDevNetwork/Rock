@@ -9,7 +9,7 @@
         <asp:Panel ID="pnlView" runat="server" CssClass="panel panel-block">
             <div class="panel-heading clearfix">
                 <h1 class="panel-title pull-left">
-                    <i class="fa fa-map-marker"></i>Group Finder
+                    <i class="fa fa-map-marker"></i> Group Finder
                 </h1>
             </div>
 
@@ -21,6 +21,7 @@
                     <asp:ValidationSummary ID="valSummary" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" />
 
                     <Rock:AddressControl ID="acAddress" runat="server" Required="true" RequiredErrorMessage="Your Address is Required" />
+                    <Rock:RockCheckBoxList ID="cblCampus" runat="server" Label="Campuses" DataTextField="Name" DataValueField="Id" RepeatDirection="Horizontal" />
                     <asp:PlaceHolder ID="phFilterControls" runat="server" />
 
                     <div class="actions">
@@ -33,6 +34,8 @@
                 <asp:Panel ID="pnlResults" runat="server" Visible="false">
 
                     <asp:Literal ID="lMapStyling" runat="server" />
+
+                    <Rock:RockDropDownList ID="ddlPageSize" runat="server" OnSelectedIndexChanged="ddlPageSize_SelectedIndexChanged" AutoPostBack="true" Label="Number of groups to show" />
 
                     <asp:Panel ID="pnlMap" runat="server" CssClass="margin-v-sm">
                         <div id="map_wrapper">
@@ -90,6 +93,10 @@
                                             <asp:ListItem Text="Day of Week" Value="Day" />
                                             <asp:ListItem Text="Time of Day" Value="Time" />
                                         </Rock:RockCheckBoxList>
+                                        <Rock:RockCheckBox ID="cbFilterCampus" runat="server" Label="Display Campus Filter" Text="Yes"
+                                            Help="Display the campus filter" ValidationGroup="GroupFinderSettings" />
+                                        <Rock:RockCheckBox ID="cbCampusContext" runat="server" Label="Enable Campus Context" Text="Yes"
+                                            Help="If the page has a campus context it's value will be used as a filter" ValidationGroup="GroupFinderSettings" />
                                         <Rock:RockCheckBoxList ID="cblAttributes" runat="server" Label="Display Attribute Filters" RepeatDirection="Horizontal"
                                             Help="The group attributes that should be available for user to filter results by." ValidationGroup="GroupFinderSettings" />
                                     </div>
@@ -165,6 +172,9 @@
                                             Help="Should the average group member age be displayed for each group in the result grid?" ValidationGroup="GroupFinderSettings" />
                                         <Rock:RockCheckBox ID="cbProximity" runat="server" Label="Show Distance" Text="Yes"
                                             Help="Should the distance to each group be displayed? Using this option will require the user to enter their address when searching for groups." ValidationGroup="GroupFinderSettings" />
+                                        <Rock:RockCheckBox ID="cbSortByDistance" runat="server" Label="Sort by Distance" Text="Yes"
+                                            Help="Should the results be sorted from closest to furthest distance?" ValidationGroup="GroupFinderSettings" />
+                                        <Rock:RockTextBox ID="tbPageSizes" runat="server" Label="Page Sizes" Help="To limit the number of groups displayed and to show a dropdown of page sizes, enter a comma delimited list of page sizes. For example: 10,20 will present a drop down with 10,20,All as options with the default as 10" />
                                         <Rock:RockCheckBoxList ID="cblGridAttributes" runat="server" Label="Show Attribute Columns" RepeatDirection="Horizontal"
                                             Help="The group attribute values that should be displayed in the result grid." ValidationGroup="GroupFinderSettings" />
                                     </div>

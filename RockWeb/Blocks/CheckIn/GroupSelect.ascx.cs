@@ -1,11 +1,11 @@
 ﻿// <copyright>
-// Copyright 2013 by the Spark Development Network
+// Copyright by the Spark Development Network
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
+// Licensed under the Rock Community License (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-// http://www.apache.org/licenses/LICENSE-2.0
+// http://www.rockrms.com/license
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -19,6 +19,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Web.UI;
+using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
 
 using Rock;
@@ -32,12 +33,86 @@ namespace RockWeb.Blocks.CheckIn
     [Description("Displays a list of groups that a person is configured to checkin to.")]
     public partial class GroupSelect : CheckInBlock
     {
+        /// <summary>
+        /// Determines if the block requires that a selection be made. This is used to determine if user should
+        /// be redirected to this block or not.
+        /// </summary>
+        /// <param name="backingUp">if set to <c>true</c> [backing up].</param>
+        /// <returns></returns>
+        public override bool RequiresSelection( bool backingUp )
+        {
+            if ( CurrentWorkflow == null || CurrentCheckInState == null )
+            {
+                NavigateToHomePage();
+                return false;
+            }
+            else
+            {
+                ClearSelection();
+
+                var person = CurrentCheckInState.CheckIn.CurrentPerson;
+                if ( person == null )
+                {
+                    GoBack( true );
+                    return false;
+                }
+
+                var schedule = person.CurrentSchedule;
+
+                var groupTypes = person.SelectedGroupTypes( schedule );
+                if ( groupTypes == null || !groupTypes.Any() )
+                {
+                    GoBack( true );
+                    return false;
+                }
+
+                var availGroups = groupTypes.SelectMany( t => t.GetAvailableGroups( schedule ) ).ToList();
+                if ( availGroups.Count == 1 )
+                {
+                    if ( backingUp )
+                    {
+                        GoBack( true );
+                        return false;
+                    }
+                    else
+                    {
+                        var group = availGroups.First();
+                        if ( schedule == null )
+                        {
+                            group.Selected = true;
+                        }
+                        else
+                        {
+                            group.SelectedForSchedule.Add( schedule.Schedule.Id );
+                        }
+
+                        return !ProcessSelection( person, schedule );
+                    }
+                }
+                else
+                {
+                    return true;
+                }
+
+            }
+        }
+
+        /// <summary>
+        /// Raises the <see cref="E:System.Web.UI.Control.Load" /> event.
+        /// </summary>
+        /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
             base.OnLoad( e );
 
             RockPage.AddScriptLink( "~/Scripts/iscroll.js" );
             RockPage.AddScriptLink( "~/Scripts/CheckinClient/checkin-core.js" );
+
+            var bodyTag = this.Page.Master.FindControl( "bodyTag" ) as HtmlGenericControl;
+            if ( bodyTag != null )
+            {
+                bodyTag.AddCssClass( "checkin-groupselect-bg" );
+            }
 
             if ( CurrentWorkflow == null || CurrentCheckInState == null )
             {
@@ -49,31 +124,28 @@ namespace RockWeb.Blocks.CheckIn
                 {
                     ClearSelection();
 
-                    CheckInPerson person = null;
-                    List<CheckInGroupType> groupTypes = null;
-
-                    person = CurrentCheckInState.CheckIn.Families.Where( f => f.Selected )
-                        .SelectMany( f => f.People.Where( p => p.Selected ) )
-                        .FirstOrDefault();
-
-                    if ( person != null )
+                    var person = CurrentCheckInState.CheckIn.CurrentPerson;
+                    if ( person == null )
                     {
-                        groupTypes = person.GroupTypes.Where( t => t.Selected ).ToList();
+                        GoBack();
                     }
 
+                    var schedule = person.CurrentSchedule;
+
+                    var groupTypes = person.SelectedGroupTypes( schedule );
                     if ( groupTypes == null || !groupTypes.Any() )
                     {
                         GoBack();
                     }
 
-                    lTitle.Text = person.ToString();
+                    lTitle.Text = GetPersonScheduleSubTitle();
+
                     lSubTitle.Text = groupTypes
                         .Where( t => t.GroupType != null )
                         .Select( t => t.GroupType.Name )
                         .ToList().AsDelimited( ", " );
 
-                    var availGroups = groupTypes
-                        .SelectMany( t => t.Groups.Where( g => !g.ExcludedByFilter) ).ToList();
+                    var availGroups = groupTypes.SelectMany( t => t.GetAvailableGroups( schedule ) ).ToList();
                     if ( availGroups.Count == 1 )
                     {
                         if ( UserBackedUp )
@@ -82,8 +154,17 @@ namespace RockWeb.Blocks.CheckIn
                         }
                         else
                         {
-                            availGroups.FirstOrDefault().Selected = true;
-                            ProcessSelection();
+                            var group = availGroups.First();
+                            if ( schedule == null )
+                            {
+                                group.Selected = true;
+                            }
+                            else
+                            {
+                                group.SelectedForSchedule.Add( schedule.Schedule.Id );
+                            }
+
+                            ProcessSelection( person, schedule );
                         }
                     }
                     else
@@ -103,70 +184,128 @@ namespace RockWeb.Blocks.CheckIn
         /// </summary>
         private void ClearSelection()
         {
-            foreach ( var family in CurrentCheckInState.CheckIn.Families )
+            var person = CurrentCheckInState.CheckIn.CurrentPerson;
+            if ( person != null )
             {
-                foreach ( var person in family.People )
+                var schedule = person.CurrentSchedule;
+                foreach ( var groupType in person.SelectedGroupTypes( schedule ) )
                 {
-                    foreach ( var groupType in person.GroupTypes )
+                    foreach( var group in groupType.SelectedGroups( schedule ) )
                     {
-                        foreach ( var group in groupType.Groups )
+                        group.Selected = false;
+                        group.SelectedForSchedule = schedule != null ?
+                            group.SelectedForSchedule.Where( s => s != schedule.Schedule.Id ).ToList() :
+                            new List<int>();
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Handles the ItemCommand event of the rSelection control.
+        /// </summary>
+        /// <param name="source">The source of the event.</param>
+        /// <param name="e">The <see cref="RepeaterCommandEventArgs"/> instance containing the event data.</param>
+        protected void rSelection_ItemCommand( object source, RepeaterCommandEventArgs e )
+        {
+            if ( KioskCurrentlyActive )
+            {
+                var person = CurrentCheckInState.CheckIn.CurrentPerson;
+                if ( person != null )
+                {
+                    var schedule = person.CurrentSchedule;
+
+                    var groupTypes = person.SelectedGroupTypes( schedule );
+                    if ( groupTypes != null && groupTypes.Any() )
+                    {
+                        int id = Int32.Parse( e.CommandArgument.ToString() );
+                        var group = groupTypes
+                            .SelectMany( t => t.Groups )
+                            .Where( g => g.Group.Id == id )
+                            .FirstOrDefault();
+
+                        // deselect any group types that don't contain the group
+                        foreach ( var groupType in groupTypes )
                         {
-                            group.Selected = false;
+                            if ( schedule == null )
+                            {
+                                groupType.Selected = groupType.Groups.Contains( group );
+                            }
+                            else
+                            {
+                                if ( !groupType.SelectedForSchedule.Contains( schedule.Schedule.Id ) )
+                                {
+                                    groupType.SelectedForSchedule.Remove( schedule.Schedule.Id );
+                                }
+                            }
+                        }
+
+                        if ( group != null )
+                        {
+                            if ( schedule == null )
+                            {
+                                group.Selected = true;
+                            }
+                            else
+                            {
+                                group.SelectedForSchedule.Add( schedule.Schedule.Id );
+                            }
+
+                            ProcessSelection( person, schedule );
                         }
                     }
                 }
             }
         }
 
-        protected void rSelection_ItemCommand( object source, RepeaterCommandEventArgs e )
-        {
-            if ( KioskCurrentlyActive )
-            {
-                var groupTypes = CurrentCheckInState.CheckIn.Families.Where( f => f.Selected )
-                    .SelectMany( f => f.People.Where( p => p.Selected )
-                        .SelectMany( p => p.GroupTypes.Where( t => t.Selected ) ) )
-                            .ToList();
-
-                if ( groupTypes != null && groupTypes.Any() )
-                {
-                    int id = Int32.Parse( e.CommandArgument.ToString() );
-                    var group = groupTypes.SelectMany( t => t.Groups)
-                        .Where( g => g.Group.Id == id ).FirstOrDefault();
-
-                    // deselect any group types that don't contain the group
-                    foreach ( var groupType in groupTypes )
-                    {
-                        groupType.Selected = groupType.Groups.Contains(group);
-                    }
-
-                    if ( group != null )
-                    {
-                        group.Selected = true;
-                        ProcessSelection();
-                    }
-                }
-            }
-        }
-
+        /// <summary>
+        /// Handles the Click event of the lbBack control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void lbBack_Click( object sender, EventArgs e )
         {
-            GoBack();
+            GoBack( true );
         }
 
+        /// <summary>
+        /// Handles the Click event of the lbCancel control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void lbCancel_Click( object sender, EventArgs e )
         {
             CancelCheckin();
         }
 
-        protected void ProcessSelection()
+        /// <summary>
+        /// Processes the selection.
+        /// </summary>
+        /// <param name="person">The person.</param>
+        /// <param name="schedule">The schedule.</param>
+        /// <returns></returns>
+        protected bool ProcessSelection( CheckInPerson person, CheckInSchedule schedule )
         {
-            ProcessSelection( maWarning, () => CurrentCheckInState.CheckIn.Families.Where( f => f.Selected )
-                .SelectMany( f => f.People.Where( p => p.Selected )
-                    .SelectMany( p => p.GroupTypes.Where( t => t.Selected )
-                        .SelectMany( t => t.Groups.Where( g => g.Selected ) 
-                            .SelectMany( g => g.Locations.Where( l => !l.ExcludedByFilter ) ) ) ) )
-                .Count() <= 0,
-                "<p>Sorry, based on your selection, there are currently not any available locations that can be checked into.</p>" );
+            if ( person != null )
+            {
+                if ( !ProcessSelection(
+                    maWarning,
+                    () => person.SelectedGroupTypes( schedule )
+                        .SelectMany( t => t.SelectedGroups( schedule )
+                            .SelectMany( g => g.Locations.Where( l => !l.ExcludedByFilter ) ) )
+                        .Count() <= 0,
+                    "<p>Sorry, based on your selection, there are currently not any available locations that can be checked into.</p>",
+                    true ) )
+                {
+                    ClearSelection();
+                }
+                else
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
     }
 }

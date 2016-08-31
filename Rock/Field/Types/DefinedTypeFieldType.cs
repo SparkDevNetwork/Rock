@@ -1,11 +1,11 @@
 ﻿// <copyright>
-// Copyright 2013 by the Spark Development Network
+// Copyright by the Spark Development Network
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
+// Licensed under the Rock Community License (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-// http://www.apache.org/licenses/LICENSE-2.0
+// http://www.rockrms.com/license
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -51,7 +51,7 @@ namespace Rock.Field.Types
             Guid? guid = value.AsGuidOrNull();
             if (guid.HasValue)
             {
-                var definedType = new DefinedTypeService( new RockContext() ).Get( guid.Value );
+                var definedType = DefinedTypeCache.Read( guid.Value );
                 if (definedType != null)
                 { 
                     formattedValue = definedType.Name;
@@ -59,6 +59,30 @@ namespace Rock.Field.Types
             }
 
             return base.FormatValue( parentControl, formattedValue, configurationValues, condensed );
+        }
+
+        /// <summary>
+        /// Returns the value that should be used for sorting, using the most appropriate datatype
+        /// </summary>
+        /// <param name="parentControl">The parent control.</param>
+        /// <param name="value">The value.</param>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <returns></returns>
+        public override object SortValue( System.Web.UI.Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues )
+        {
+            string formattedValue = string.Empty;
+
+            Guid? guid = value.AsGuidOrNull();
+            if ( guid.HasValue )
+            {
+                var definedType = DefinedTypeCache.Read( guid.Value );
+
+                // sort by Order then Name (using a padded string)
+                var sortValue = definedType.Order.ToString().PadLeft( 10 ) + "," + definedType.Name;
+                return sortValue;
+            }
+
+            return base.SortValue( parentControl, value, configurationValues );
         }
 
         #endregion

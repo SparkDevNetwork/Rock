@@ -1,11 +1,11 @@
 ﻿// <copyright>
-// Copyright 2013 by the Spark Development Network
+// Copyright by the Spark Development Network
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
+// Licensed under the Rock Community License (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-// http://www.apache.org/licenses/LICENSE-2.0
+// http://www.rockrms.com/license
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -388,26 +388,6 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
-        /// Gets or sets the person merge page route
-        /// </summary>
-        /// <value>
-        /// The merge page route.
-        /// </value>
-        [Obsolete( "Use PersonMergePageRoute instead" )]
-        public virtual string MergePageRoute
-        {
-            get
-            {
-                return PersonMergePageRoute;
-            }
-
-            set
-            {
-                PersonMergePageRoute = value;
-            }
-        }
-
-        /// <summary>
         /// Gets or sets the person merge page route.
         /// </summary>
         /// <value>
@@ -513,6 +493,15 @@ namespace Rock.Web.UI.Controls
         {
             get { return ViewState["CurrentPageRows"] as int? ?? 0; }
             set { ViewState["CurrentPageRows"] = value; }
+        }
+
+        /// <summary>
+        /// Gets or sets a flag indicating databind is for an export
+        /// </summary>
+        public virtual bool IsExporting
+        {
+            get { return this.ViewState["IsExporting"] as bool? ?? false; }
+            private set { ViewState["IsExporting"] = value; }
         }
 
         /// <summary>
@@ -765,20 +754,19 @@ namespace Rock.Web.UI.Controls
         /// <param name="writer">The <see cref="T:System.Web.UI.HtmlTextWriter" /> object that receives the control content.</param>
         public override void RenderControl( HtmlTextWriter writer )
         {
-            if ( this.DataSource != null )
+           
+            if ( this.EnableResponsiveTable )
             {
-                if ( this.EnableResponsiveTable )
-                {
-                    writer.AddAttribute( HtmlTextWriterAttribute.Class, "table-responsive" );
-                }
-
-                if ( DisplayType == GridDisplayType.Light )
-                {
-                    writer.AddAttribute( HtmlTextWriterAttribute.Class, "table-no-border" );
-                }
-
-                writer.RenderBeginTag( HtmlTextWriterTag.Div );
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, "table-responsive" );
             }
+
+            if ( DisplayType == GridDisplayType.Light )
+            {
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, "table-no-border" );
+            }
+
+            writer.RenderBeginTag( HtmlTextWriterTag.Div );
+            
 
             this.AddCssClass( "grid-table" );
             this.AddCssClass( "table" );
@@ -802,10 +790,7 @@ namespace Rock.Web.UI.Controls
 
             base.RenderControl( writer );
 
-            if ( this.DataSource != null )
-            {
-                writer.RenderEndTag();
-            }
+            writer.RenderEndTag();
         }
 
         /// <summary>
@@ -991,7 +976,7 @@ namespace Rock.Web.UI.Controls
             }
             else if ( this.DataSourceAsDataTable != null )
             {
-                itemCount = this.DataSourceAsDataTable.Rows.Count;
+                itemCount = this.DataSourceAsDataTable.DefaultView.Count;
             }
             else if ( this.DataSourceAsList != null )
             {
@@ -1088,31 +1073,42 @@ namespace Rock.Web.UI.Controls
         {
             base.OnRowDataBound( e );
 
-            if ( e.Row.RowType == DataControlRowType.Header && this.AllowSorting )
+            if ( e.Row.RowType == DataControlRowType.Header)
             {
-                string asc = SortDirection.Ascending.ToString();
-                string desc = SortDirection.Descending.ToString();
-
-                // Remove the sort css classes and add the data priority
+                //add data priority
                 for ( int i = 0; i < e.Row.Cells.Count; i++ )
                 {
                     var cell = e.Row.Cells[i];
-                    cell.RemoveCssClass( asc );
-                    cell.RemoveCssClass( desc );
                     cell.Attributes.Add( "data-priority", _columnDataPriorities[i] );
                 }
 
-                // Add the new sort css class
-                SortProperty sortProperty = this.SortProperty;
-                if ( sortProperty != null )
+                if ( this.AllowSorting )
                 {
-                    foreach ( var column in this.Columns )
+
+                    string asc = SortDirection.Ascending.ToString();
+                    string desc = SortDirection.Descending.ToString();
+
+                    // Remove the sort css classes
+                    for ( int i = 0; i < e.Row.Cells.Count; i++ )
                     {
-                        var dcf = column as DataControlField;
-                        if ( dcf != null && dcf.SortExpression == this.SortProperty.Property )
+                        var cell = e.Row.Cells[i];
+                        cell.RemoveCssClass( asc );
+                        cell.RemoveCssClass( desc );
+                    }
+
+
+                    // Add the new sort css class
+                    SortProperty sortProperty = this.SortProperty;
+                    if ( sortProperty != null )
+                    {
+                        foreach ( var column in this.Columns )
                         {
-                            e.Row.Cells[this.Columns.IndexOf( dcf )].AddCssClass( sortProperty.Direction.ToString().ToLower() );
-                            break;
+                            var dcf = column as DataControlField;
+                            if ( dcf != null && dcf.SortExpression == this.SortProperty.Property )
+                            {
+                                e.Row.Cells[this.Columns.IndexOf( dcf )].AddCssClass( sortProperty.Direction.ToString().ToLower() );
+                                break;
+                            }
                         }
                     }
                 }
@@ -1212,17 +1208,17 @@ namespace Rock.Web.UI.Controls
         /// <param name="e">The <see cref="Rock.Web.UI.Controls.NumericalEventArgs"/> instance containing the event data.</param>
         public void pagerTemplate_NavigateClick( object sender, NumericalEventArgs e )
         {
-            if ( e.Number <= 0 && this.PageIndex > 0 )
+            if ( e.Number < 0  )
             {
-                this.PageIndex--;
+                this.PageIndex = 0;
             }
-            else if ( e.Number >= 11 && this.PageIndex < ( this.PageCount - 1 ) )
+            else if ( e.Number > this.PageCount - 1 )
             {
-                this.PageIndex++;
+                this.PageIndex = this.PageCount - 1;
             }
-            else if ( e.Number > 0 && e.Number <= this.PageCount )
+            else 
             {
-                this.PageIndex = ( e.Number - 1 );
+                this.PageIndex = e.Number;
             }
 
             RebindGrid( e, false );
@@ -1299,6 +1295,11 @@ namespace Rock.Web.UI.Controls
                     if ( rockPage.CurrentPerson != null )
                     {
                         communication.SenderPersonAliasId = rockPage.CurrentPersonAliasId;
+                    }
+
+                    if ( rockPage.Request != null && rockPage.Request.Url != null )
+                    {
+                        communication.MediumData.AddOrReplace( "UrlReferrer", rockPage.Request.Url.AbsoluteUri );
                     }
 
                     communicationService.Add( communication );
@@ -1416,7 +1417,7 @@ namespace Rock.Web.UI.Controls
         {
             // disable paging if no specific keys where selected (or if no select option is shown)
             bool selectAll = !SelectedKeys.Any();
-            RebindGrid( e, selectAll );
+            RebindGrid( e, selectAll, true );
 
             // create default settings
             string filename = ExportFilename;
@@ -1507,7 +1508,7 @@ namespace Rock.Web.UI.Controls
                         }
                     }
 
-                    GridViewRowEventArgs args = new GridViewRowEventArgs( gridViewRow );
+                    var args = new RockGridViewRowEventArgs( gridViewRow, true );
                     gridViewRow.DataItem = dataItem;
                     this.OnRowDataBound( args );
                     columnCounter = 0;
@@ -1548,10 +1549,9 @@ namespace Rock.Web.UI.Controls
             }
             else
             {
-                var gridDataFields = this.Columns.OfType<BoundField>().ToList();
-
                 if ( this.DataSourceAsDataTable != null )
                 {
+                    var gridDataFields = this.Columns.OfType<BoundField>().ToList();
                     DataTable data = this.DataSourceAsDataTable;
 
                     // print headings
@@ -1575,6 +1575,27 @@ namespace Rock.Web.UI.Controls
                 }
                 else
                 {
+                    var definedValueFields = this.Columns.OfType<DefinedValueField>().ToList();
+                    var attributeFields = this.Columns.OfType<AttributeField>().ToList();
+                    var lavaFields = new List<LiquidField>();
+                    var visibleFields = new Dictionary<int, DataControlField>();
+
+                    int fieldOrder = 0;
+                    foreach( DataControlField dataField in this.Columns )
+                    {
+                        if ( dataField is LiquidField )
+                        {
+                            var lavaField = dataField as LiquidField;
+                            lavaFields.Add( lavaField );
+                            visibleFields.Add( fieldOrder++, lavaField );
+                        }
+                        if ( dataField is BoundField )
+                        {
+                            var boundField = dataField as BoundField;
+                            visibleFields.Add( fieldOrder++, boundField );
+                        }
+                    }
+
                     var oType = GetDataSourceObjectType();
 
                     // get all properties of the objects in the grid
@@ -1582,47 +1603,65 @@ namespace Rock.Web.UI.Controls
 
                     // Inspect the collection of Fields that appear in the Grid and add the corresponding data item properties to the set of fields to be exported.
                     // The fields are exported in the same order as they appear in the Grid.
-                    var orderedProps = new SortedDictionary<int, PropertyInfo>();
-                    var hiddenProps = new List<PropertyInfo>();
-
+                    var props = new List<PropertyInfo>();
                     foreach ( PropertyInfo prop in allprops )
                     {
                         // skip over virtual properties that aren't shown in the grid since they are probably lazy loaded and it is too late to get them
-                        if ( prop.GetGetMethod().IsVirtual &&
-                            prop.GetCustomAttributes( typeof( Rock.Data.PreviewableAttribute ) ).Count() == 0 )
+                        if ( prop.GetGetMethod().IsVirtual && prop.GetCustomAttributes( typeof( Rock.Data.PreviewableAttribute ) ).Count() == 0 )
                         {
                             continue;
                         }
 
-                        // Find a matching field in the Grid and add it to the list of exported properties.
-                        var gridField = gridDataFields.FirstOrDefault( a => a.DataField == prop.Name || a.DataField.StartsWith( prop.Name + "." ) );
-                        if ( gridField != null )
+                        // Skip the lava property (is added through columns)
+                        if ( prop.Name.StartsWith( "Data_Lava_"))
                         {
-                            int fieldIndex = gridDataFields.IndexOf( gridField );
-                            orderedProps.Add( fieldIndex, prop );
+                            continue;
                         }
-                        else
-                        {
-                            hiddenProps.Add( prop );
-                        }
+
+                        props.Add( prop );
                     }
 
-                    var props = orderedProps.Values.ToList();
-                    props.AddRange( hiddenProps );
+                    var lavaDataFields = new Dictionary<string, LiquidFieldTemplate.DataFieldInfo>();
 
-                    // print column headings
-                    foreach ( PropertyInfo prop in props )
+                    // Grid column headings
+                    var boundPropNames = new List<string>();
+                    foreach ( DataControlField dataField in visibleFields.OrderBy( f => f.Key ).Select( f => f.Value ) )
                     {
-                        var gridDataField = gridDataFields.FirstOrDefault( a => a.DataField == prop.Name || a.DataField.StartsWith( prop.Name + "." ) );
-                        if ( gridDataField != null )
+                        worksheet.Cells[3, columnCounter].Value = dataField.HeaderText;
+
+                        var boundField = dataField as BoundField;
+                        if ( boundField != null )
                         {
-                            worksheet.Cells[3, columnCounter].Value = gridDataField.HeaderText;
-                        }
-                        else
-                        {
-                            worksheet.Cells[3, columnCounter].Value = prop.Name.SplitCase();
+                            var prop = props.FirstOrDefault( p => boundField.DataField == p.Name || boundField.DataField.StartsWith( p.Name + "." ) );
+                            if ( prop != null )
+                            {
+                                if ( lavaFields.Any() )
+                                {
+                                    var mergeFieldName = boundField.HeaderText.Replace( " ", string.Empty ).RemoveSpecialCharacters();
+                                    lavaDataFields.AddOrIgnore( mergeFieldName, new LiquidFieldTemplate.DataFieldInfo { PropertyInfo = prop, GridField = boundField } );
+                                }
+
+                                boundPropNames.Add( prop.Name );
+                                if ( prop.PropertyType == typeof( DateTime ) || prop.PropertyType == typeof( DateTime? ) )
+                                {
+                                    worksheet.Column( columnCounter ).Style.Numberformat.Format = "MM/dd/yyyy hh:mm";
+                                }
+                            }
                         }
 
+                        columnCounter++;
+                    }
+
+                    // headings for data not associated with a bound field
+                    foreach ( var prop in props.Where( p => !boundPropNames.Contains( p.Name ) ) )
+                    {
+                        if ( lavaFields.Any() )
+                        {
+                            var mergeFieldName = prop.Name;
+                            lavaDataFields.AddOrIgnore( mergeFieldName, new LiquidFieldTemplate.DataFieldInfo { PropertyInfo = prop, GridField = null } );
+                        }
+
+                        worksheet.Cells[3, columnCounter].Value = prop.Name.SplitCase();
                         if ( prop.PropertyType == typeof( DateTime ) || prop.PropertyType == typeof( DateTime? ) )
                         {
                             worksheet.Column( columnCounter ).Style.Numberformat.Format = "MM/dd/yyyy hh:mm";
@@ -1631,16 +1670,8 @@ namespace Rock.Web.UI.Controls
                         columnCounter++;
                     }
 
-                    // Get any defined value columns
-                    List<DefinedValueField> definedValueFields = this.Columns.OfType<DefinedValueField>().ToList();
-
-                    // Get any attribute columns
-                    List<AttributeField> attributeFields = this.Columns.OfType<AttributeField>().ToList();
-                    foreach ( var attributeField in attributeFields )
-                    {
-                        worksheet.Cells[3, columnCounter].Value = attributeField.HeaderText;
-                        columnCounter++;
-                    }
+                    string appRoot =  ( (RockPage)Page ).ResolveRockUrl( "~/" );
+                    string themeRoot = ( (RockPage)Page ).ResolveRockUrl( "~~/" );
 
                     // print data
                     int dataIndex = 0;
@@ -1660,11 +1691,98 @@ namespace Rock.Web.UI.Controls
                             }
                         }
 
+                        Rock.Attribute.IHasAttributes dataItemWithAttributes = null;
+                        if ( attributeFields.Any() )
+                        {
+                            // First check to see if there is an object list
+                            if ( ObjectList != null )
+                            {
+                                // If an object list exists, check to see if the associated object has attributes
+                                string key = DataKeys[dataIndex].Value.ToString();
+                                if ( !string.IsNullOrWhiteSpace( key ) && ObjectList.ContainsKey( key ) )
+                                {
+                                    dataItemWithAttributes = ObjectList[key] as Rock.Attribute.IHasAttributes;
+                                }
+                            }
+
+                            // Then check if DataItem has attributes
+                            if ( dataItemWithAttributes == null )
+                            {
+                                dataItemWithAttributes = item as Rock.Attribute.IHasAttributes;
+                            }
+
+                            if ( dataItemWithAttributes != null )
+                            {
+                                if ( dataItemWithAttributes.Attributes == null )
+                                {
+                                    dataItemWithAttributes.LoadAttributes();
+                                }
+                            }
+                        }
+
                         columnCounter = 0;
-                        foreach ( PropertyInfo prop in props )
+
+                        foreach( var dataField in visibleFields.OrderBy( f => f.Key ).Select( f => f.Value ) )
                         {
                             columnCounter++;
 
+                            var attributeField = dataField as AttributeField;
+                            if ( attributeField != null )
+                            {
+                                bool exists = dataItemWithAttributes.Attributes.ContainsKey( attributeField.DataField );
+                                if ( exists )
+                                {
+                                    var attrib = dataItemWithAttributes.Attributes[attributeField.DataField];
+                                    string rawValue = dataItemWithAttributes.GetAttributeValue( attributeField.DataField );
+                                    string resultHtml = attrib.FieldType.Field.FormatValue( null, rawValue, attrib.QualifierValues, false );
+                                    worksheet.Cells[rowCounter, columnCounter].Value = resultHtml;
+                                }
+                                continue;
+                            } 
+                            
+                            var boundField = dataField as BoundField;
+                            if ( boundField != null )
+                            {
+                                var prop = props.FirstOrDefault( p => boundField.DataField == p.Name || boundField.DataField.StartsWith( p.Name + "." ) );
+                                if ( prop != null )
+                                {
+                                    object propValue = prop.GetValue( item, null );
+
+                                    var definedValueAttribute = prop.GetCustomAttributes( typeof( DefinedValueAttribute ), true ).FirstOrDefault();
+
+                                    bool isDefinedValue = ( definedValueAttribute != null || definedValueFields.Any( f => f.DataField == prop.Name ) );
+
+                                    var cell = worksheet.Cells[rowCounter, columnCounter];
+                                    SetExcelValue( cell, this.GetExportValue( prop, propValue, isDefinedValue, cell ) );
+                                }
+                                continue;
+                            }
+
+                            var lavaField = dataField as LiquidField;
+                            if ( lavaField != null )
+                            {
+                                var mergeValues = new Dictionary<string, object>();
+                                foreach ( var dataFieldItem in lavaDataFields )
+                                {
+                                    var dataFieldValue = dataFieldItem.Value.PropertyInfo.GetValue( item, null );
+                                    if ( dataFieldItem.Value.GridField is DefinedValueField )
+                                    {
+                                        var definedValue = ( dataFieldItem.Value.GridField as DefinedValueField ).GetDefinedValue( dataFieldValue );
+                                        dataFieldValue = definedValue != null ? definedValue.Value : null;
+                                    }
+                                    mergeValues.Add( dataFieldItem.Key, dataFieldValue );
+                                }
+
+                                string resolvedValue = lavaField.LiquidTemplate.ResolveMergeFields( mergeValues );
+                                worksheet.Cells[rowCounter, columnCounter].Value = resolvedValue.Replace( "~~/", themeRoot ).Replace( "~/", appRoot );
+
+                                continue;
+                            }
+                        }
+
+                        foreach ( var prop in props.Where( p => !boundPropNames.Contains( p.Name ) ) )
+                        {
+                            columnCounter++;
                             object propValue = prop.GetValue( item, null );
 
                             var definedValueAttribute = prop.GetCustomAttributes( typeof( DefinedValueAttribute ), true ).FirstOrDefault();
@@ -1673,50 +1791,6 @@ namespace Rock.Web.UI.Controls
 
                             var cell = worksheet.Cells[rowCounter, columnCounter];
                             SetExcelValue( cell, this.GetExportValue( prop, propValue, isDefinedValue, cell ) );
-                        }
-
-                        if ( attributeFields.Any() )
-                        {
-                            Rock.Attribute.IHasAttributes dataItem = null;
-
-                            // First check to see if there is an object list
-                            if ( ObjectList != null )
-                            {
-                                // If an object list exists, check to see if the associated object has attributes
-                                string key = DataKeys[dataIndex].Value.ToString();
-                                if ( !string.IsNullOrWhiteSpace( key ) && ObjectList.ContainsKey( key ) )
-                                {
-                                    dataItem = ObjectList[key] as Rock.Attribute.IHasAttributes;
-                                }
-                            }
-
-                            // Then check if DataItem has attributes
-                            if ( dataItem == null )
-                            {
-                                dataItem = item as Rock.Attribute.IHasAttributes;
-                            }
-
-                            if ( dataItem != null )
-                            {
-                                if ( dataItem.Attributes == null )
-                                {
-                                    dataItem.LoadAttributes();
-                                }
-
-                                foreach ( var attributeField in attributeFields )
-                                {
-                                    columnCounter++;
-
-                                    bool exists = dataItem.Attributes.ContainsKey( attributeField.DataField );
-                                    if ( exists )
-                                    {
-                                        var attrib = dataItem.Attributes[attributeField.DataField];
-                                        string rawValue = dataItem.GetAttributeValue( attributeField.DataField );
-                                        string resultHtml = attrib.FieldType.Field.FormatValue( null, rawValue, attrib.QualifierValues, false );
-                                        worksheet.Cells[rowCounter, columnCounter].Value = resultHtml;
-                                    }
-                                }
-                            }
                         }
 
                         rowCounter++;
@@ -1734,6 +1808,24 @@ namespace Rock.Web.UI.Controls
             conditionalFormatting.Style.Fill.BackgroundColor.Color = Color.FromArgb( 240, 240, 240 );
             
             var table = worksheet.Tables.Add( range, "table1" );
+            
+            // ensure each column in the table has a unique name
+            var columnNames = worksheet.Cells[3, 1, 3, columnCounter].Select( a => new { OrigColumnName = a.Text, Cell = a } ).ToList();
+            columnNames.Reverse();
+            foreach ( var col in columnNames )
+            {
+                int duplicateSuffix = 0;
+                string uniqueName = col.OrigColumnName;
+                
+                // increment the suffix by 1 until there is only one column with that name
+                while ( columnNames.Where(a => a.Cell.Text == uniqueName ).Count() > 1 )
+                {
+                    duplicateSuffix++;
+                    uniqueName = col.OrigColumnName + duplicateSuffix.ToString();
+                    col.Cell.Value = uniqueName;
+                }
+            }
+
             table.ShowFilter = true;
             table.TableStyle = OfficeOpenXml.Table.TableStyles.None;
 
@@ -1828,7 +1920,8 @@ namespace Rock.Web.UI.Controls
         /// </summary>
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         /// <param name="disablePaging">if set to <c>true</c> [disable paging].</param>
-        private void RebindGrid( EventArgs e, bool disablePaging )
+        /// <param name="isExporting">if set to <c>true</c> [is exporting].</param>
+        private void RebindGrid( EventArgs e, bool disablePaging, bool isExporting = false )
         {
             var origPaging = this.AllowPaging;
             if ( disablePaging )
@@ -1836,7 +1929,9 @@ namespace Rock.Web.UI.Controls
                 this.AllowPaging = false;
             }
 
-            OnGridRebind( e );
+            var eventArg = new GridRebindEventArgs( isExporting );
+            OnGridRebind( eventArg );
+
             this.AllowPaging = origPaging;
         }
 
@@ -2062,22 +2157,21 @@ namespace Rock.Web.UI.Controls
             idCol.DataField = "Id";
             idCol.Visible = false;
             columns.Add( idCol );
-
+            idCol.HeaderText = "Id";
             columns.AddRange( displayColumns.Count > 0 ? displayColumns : allColumns );
 
             if ( columns.Count == 1 )
             {
                 // if the only column is the Id column, show it
-                idCol.HeaderText = "Id";
                 idCol.Visible = true;
             }
 
             return columns;
         }
 
-        private Dictionary<int, Dictionary<string, string>> GetPersonData()
+        private Dictionary<int, Dictionary<string, object>> GetPersonData()
         {
-            var personData = new Dictionary<int, Dictionary<string, string>>();
+            var personData = new Dictionary<int, Dictionary<string, object>>();
 
             if ( this.PersonIdField != null )
             {
@@ -2091,10 +2185,11 @@ namespace Rock.Web.UI.Controls
 
                     foreach ( DataRow row in data.Rows )
                     {
-                        if ( !keysSelected.Any() || keysSelected.Contains( row[dataKeyColumn] ) )
+                        object dataKey = row[dataKeyColumn];
+                        if ( !keysSelected.Any() || keysSelected.Contains( dataKey ) )
                         {
                             int? personId = null;
-                            var mergeValues = new Dictionary<string, string>();
+                            var mergeValues = new Dictionary<string, object>();
                             for ( int i = 0; i < data.Columns.Count; i++ )
                             {
                                 if ( data.Columns[i].ColumnName == this.PersonIdField )
@@ -2104,13 +2199,30 @@ namespace Rock.Web.UI.Controls
 
                                 if ( CommunicateMergeFields.Contains( data.Columns[i].ColumnName ) )
                                 {
-                                    mergeValues.Add( data.Columns[i].ColumnName, row[i].ToString() );
+                                    mergeValues.Add( data.Columns[i].ColumnName, row[i] );
                                 }
                             }
 
                             // Add the personId if none are selected or if it's one of the selected items.
                             if ( personId.HasValue )
                             {
+                                // Allow calling block to add additional merge fields
+                                var eventArg = new GetRecipientMergeFieldsEventArgs( dataKey, personId, row );
+                                OnGetRecipientMergeFields( eventArg );
+                                {
+                                    if ( eventArg.MergeValues != null )
+                                    {
+                                        foreach( var mergeValue in eventArg.MergeValues )
+                                        {
+                                            if ( !CommunicateMergeFields.Contains( mergeValue.Key ) )
+                                            {
+                                                CommunicateMergeFields.Add( mergeValue.Key );
+                                            }
+                                            mergeValues.Add( mergeValue.Key, mergeValue.Value );
+                                        }
+                                    }
+                                }
+
                                 personData.AddOrIgnore( personId.Value, mergeValues );
                             }
                         }
@@ -2124,14 +2236,34 @@ namespace Rock.Web.UI.Controls
                     {
                         Type oType = data.GetType().GetProperty( "Item" ).PropertyType;
 
-                        PropertyInfo personIdProp = oType.GetProperty( this.PersonIdField );
                         PropertyInfo idProp = !string.IsNullOrEmpty( dataKeyColumn ) ? oType.GetProperty( dataKeyColumn ) : null;
+
+                        var personIdProp = new List<PropertyInfo>();
+                        var propPath = this.PersonIdField.Split( new char[] { '.' }, StringSplitOptions.RemoveEmptyEntries ).ToList<string>();
+                        while ( propPath.Any() )
+                        {
+                            var property = oType.GetProperty( propPath.First() );
+                            if ( property != null )
+                            {
+                                personIdProp.Add( property );
+                                oType = property.PropertyType;
+                            }
+                            propPath = propPath.Skip( 1 ).ToList();
+                        }
 
                         foreach ( var item in data )
                         {
-                            if ( personIdProp == null )
+                            if ( !personIdProp.Any() )
                             {
-                                personIdProp = item.GetType().GetProperty( this.PersonIdField );
+                                while ( propPath.Any() )
+                                {
+                                    var property = item.GetType().GetProperty( propPath.First() );
+                                    if ( property != null )
+                                    {
+                                        personIdProp.Add( property );
+                                    }
+                                    propPath = propPath.Skip( 1 ).ToList();
+                                }
                             }
 
                             if ( idProp == null )
@@ -2139,24 +2271,57 @@ namespace Rock.Web.UI.Controls
                                 idProp = item.GetType().GetProperty( dataKeyColumn );
                             }
 
-                            if ( personIdProp != null && idProp != null )
+                            if ( personIdProp.Any() && idProp != null )
                             {
-                                object personIdValue = personIdProp.GetValue( item, null );
-                                if ( personIdValue != null )
+                                var personIdObjTree = new List<object>();
+                                personIdObjTree.Add( item );
+                                bool propFound = true;
+                                foreach( var prop in personIdProp )
                                 {
-                                    int personId = (int)personIdValue;
+                                    object obj = prop.GetValue( personIdObjTree.Last(), null );
+                                    if (obj != null )
+                                    {
+                                        personIdObjTree.Add( obj );
+                                    }
+                                    else
+                                    {
+                                        propFound = false;
+                                        break;
+                                    }
+                                }
+
+                                if ( propFound && personIdObjTree.Last() is int )
+                                {
+                                    int personId = (int)personIdObjTree.Last();
                                     int id = (int)idProp.GetValue( item, null );
 
                                     // Add the personId if none are selected or if it's one of the selected items.
                                     if ( !keysSelected.Any() || keysSelected.Contains( id ) )
                                     {
-                                        var mergeValues = new Dictionary<string, string>();
+                                        var mergeValues = new Dictionary<string, object>();
                                         foreach ( string mergeField in CommunicateMergeFields )
                                         {
                                             object obj = item.GetPropertyValue( mergeField );
                                             if ( obj != null )
                                             {
-                                                mergeValues.Add( mergeField.Replace( '.', '_' ), obj.ToString() );
+                                                mergeValues.Add( mergeField.Replace( '.', '_' ), obj );
+                                            }
+                                        }
+
+                                        // Allow calling block to add additional merge fields
+                                        var eventArg = new GetRecipientMergeFieldsEventArgs( id, personId, item );
+                                        OnGetRecipientMergeFields( eventArg );
+                                        {
+                                            if ( eventArg.MergeValues != null )
+                                            {
+                                                foreach ( var mergeValue in eventArg.MergeValues )
+                                                {
+                                                    if ( !CommunicateMergeFields.Contains( mergeValue.Key ) )
+                                                    {
+                                                        CommunicateMergeFields.Add( mergeValue.Key );
+                                                    }
+                                                    mergeValues.Add( mergeValue.Key, mergeValue.Value );
+                                                }
                                             }
                                         }
 
@@ -2283,8 +2448,24 @@ namespace Rock.Web.UI.Controls
         {
             var entitySet = new Rock.Model.EntitySet();
 
-            // the datasource is a DataTable so there isn't an EntityTypeId
-            entitySet.EntityTypeId = null;
+            // if the EntityTypeId was set for the Grid, use that, otherwise, we don't know since this is a DataTable
+            if ( this.EntityTypeId.HasValue )
+            {
+                entitySet.EntityTypeId = this.EntityTypeId;
+            }
+            else
+            {
+                entitySet.EntityTypeId = null;
+            }
+            
+            bool isPersonEntitySet = this.EntityTypeId == EntityTypeCache.GetId<Rock.Model.Person>();
+            string dataKeyField = this.DataKeyNames.FirstOrDefault() ?? "Id";
+            if ( isPersonEntitySet && !string.IsNullOrEmpty(this.PersonIdField) )
+            {
+                dataKeyField = this.PersonIdField;
+            }
+
+            DataColumn dataKeyColumn = this.DataSourceAsDataTable.Columns.OfType<DataColumn>().FirstOrDefault( a => a.ColumnName == dataKeyField );
 
             entitySet.ExpireDateTime = RockDateTime.Now.AddMinutes( 5 );
 
@@ -2295,8 +2476,16 @@ namespace Rock.Web.UI.Controls
                 {
                     var item = new Rock.Model.EntitySetItem();
 
-                    // the datasource is a DataTable (not an Entity), so just set it to zero.  The entire datarow will be put into AdditionalMergeValues
-                    item.EntityId = 0;
+                    if ( entitySet.EntityTypeId.HasValue && dataKeyColumn != null )
+                    {
+                        // we know the EntityTypeId, so set the EntityId to the dataKeyColumn value
+                        item.EntityId = ( row[dataKeyColumn] as int? ) ?? 0;
+                    }
+                    else
+                    {
+                        // the datasource is a DataTable (not an Entity), so just set it to zero.  The entire datarow will be put into AdditionalMergeValues
+                        item.EntityId = 0;
+                    }
 
                     item.Order = itemOrder++;
                     item.AdditionalMergeValues = new Dictionary<string, object>();
@@ -2624,10 +2813,10 @@ namespace Rock.Web.UI.Controls
         public event GridRebindEventHandler GridRebind;
 
         /// <summary>
-        /// Raises the <see cref="E:GridRebind"/> event.
+        /// Raises the <see cref="E:GridRebind" /> event.
         /// </summary>
-        /// <param name="e">The <see cref="System.EventArgs"/> instance containing the event data.</param>
-        protected virtual void OnGridRebind( EventArgs e )
+        /// <param name="e">The <see cref="GridRebindEventArgs"/> instance containing the event data.</param>
+        protected virtual void OnGridRebind( GridRebindEventArgs e )
         {
             if ( GridRebind != null )
             {
@@ -2649,6 +2838,23 @@ namespace Rock.Web.UI.Controls
             if ( RowSelected != null )
             {
                 RowSelected( this, e );
+            }
+        }
+
+        /// <summary>
+        /// Occurs when grid gets recipient merge fields.
+        /// </summary>
+        public event EventHandler<GetRecipientMergeFieldsEventArgs> GetRecipientMergeFields;
+
+        /// <summary>
+        /// Raises the <see cref="E:GetRecipientMergeFields" /> event.
+        /// </summary>
+        /// <param name="e">The <see cref="GetRecipientMergeFieldsEventArgs"/> instance containing the event data.</param>
+        protected virtual void OnGetRecipientMergeFields( GetRecipientMergeFieldsEventArgs e )
+        {
+            if ( GetRecipientMergeFields != null )
+            {
+                GetRecipientMergeFields( this, e );
             }
         }
 
@@ -2756,8 +2962,8 @@ namespace Rock.Web.UI.Controls
     /// Delegate used for raising the grid rebind event
     /// </summary>
     /// <param name="sender">The sender.</param>
-    /// <param name="e">The <see cref="System.EventArgs"/> instance containing the event data.</param>
-    public delegate void GridRebindEventHandler( object sender, EventArgs e );
+    /// <param name="e">The <see cref="GridRebindEventArgs"/> instance containing the event data.</param>
+    public delegate void GridRebindEventHandler( object sender, GridRebindEventArgs e );
 
     /// <summary>
     /// Delegate used for raising the grid items per page changed event
@@ -2787,6 +2993,73 @@ namespace Rock.Web.UI.Controls
         public NumericalEventArgs( int number )
         {
             Number = number;
+        }
+    }
+
+    /// <summary>
+    /// Event argument for rebind
+    /// </summary>
+    /// <seealso cref="System.EventArgs" />
+    public class GridRebindEventArgs : EventArgs
+    {
+        /// <summary>
+        /// Gets a value indicating whether this instance is exporting.
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if this instance is exporting; otherwise, <c>false</c>.
+        /// </value>
+        public bool IsExporting { get; private set; }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="GridRebindEventArgs"/> class.
+        /// </summary>
+        public GridRebindEventArgs() : base()
+        {
+            IsExporting = false;
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="GridRebindEventArgs"/> class.
+        /// </summary>
+        /// <param name="isExporting">if set to <c>true</c> [is exporting].</param>
+        public GridRebindEventArgs( bool isExporting ) : base()
+        {
+            IsExporting = isExporting;
+        }
+    }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <seealso cref="System.Web.UI.WebControls.GridViewRowEventArgs" />
+    public class RockGridViewRowEventArgs : GridViewRowEventArgs
+    {
+
+        /// <summary>
+        /// Gets a value indicating whether this instance is exporting.
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if this instance is exporting; otherwise, <c>false</c>.
+        /// </value>
+        public bool IsExporting { get; private set; }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="RockGridViewRowEventArgs"/> class.
+        /// </summary>
+        /// <param name="row">A <see cref="T:System.Web.UI.WebControls.GridViewRow" /> object that represents the row being created or data-bound.</param>
+        public RockGridViewRowEventArgs( GridViewRow row ) : base( row )
+        {
+            IsExporting = false;
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="RockGridViewRowEventArgs"/> class.
+        /// </summary>
+        /// <param name="row">The row.</param>
+        /// <param name="isExporting">if set to <c>true</c> [is exporting].</param>
+        public RockGridViewRowEventArgs( GridViewRow row, bool isExporting ) : base( row)
+        {
+            IsExporting = isExporting;
         }
     }
 
@@ -2838,6 +3111,55 @@ namespace Rock.Web.UI.Controls
             DataKey = dataKey;
             OldIndex = oldIndex;
             NewIndex = newIndex;
+        }
+    }
+
+    /// <summary>
+    /// Event handler used when getting recipient merge fields for new communication
+    /// </summary>
+    public class GetRecipientMergeFieldsEventArgs : EventArgs
+    {
+        /// <summary>
+        /// Gets the data key.
+        /// </summary>
+        public object DataKey { get; private set; }
+
+        /// <summary>
+        /// Gets the person identifier.
+        /// </summary>
+        /// <value>
+        /// The person identifier.
+        /// </value>
+        public int? PersonId { get; private set; }
+
+        /// <summary>
+        /// Gets the data item.
+        /// </summary>
+        /// <value>
+        /// The data item.
+        /// </value>
+        public object DataItem { get; private set; }
+
+        /// <summary>
+        /// Gets or sets the merge values.
+        /// </summary>
+        /// <value>
+        /// The merge values.
+        /// </value>
+        public Dictionary<string, object> MergeValues { get; set; }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="GetRecipientMergeFieldsEventArgs" /> class.
+        /// </summary>
+        /// <param name="dataKey">The data key.</param>
+        /// <param name="personId">The person identifier.</param>
+        /// <param name="dataItem">The data item.</param>
+        public GetRecipientMergeFieldsEventArgs( object dataKey, int? personId, object dataItem )
+        {
+            DataKey = dataKey;
+            PersonId = personId;
+            DataItem = dataItem;
+            MergeValues = new Dictionary<string, object>();
         }
     }
 
@@ -3131,7 +3453,7 @@ namespace Rock.Web.UI.Controls
                 PageLink[i] = new LinkButton();
                 PageLinkListItem[i].Controls.Add( PageLink[i] );
                 PageLink[i].ID = string.Format( "pageLink{0}", i );
-                PageLink[i].Click += new EventHandler( lbPage_Click );
+                PageLink[i].Command += lbPage_Command;
             }
 
             PageLink[0].Text = "&laquo;";
@@ -3153,50 +3475,52 @@ namespace Rock.Web.UI.Controls
             {
                 if ( pageCount > 1 )
                 {
-                    int totalGroups = (int)( ( pageCount - 1 ) / 10 );
-                    int currentGroup = (int)( pageIndex / 10 );
+                    int totalGroups = (int)( ( pageCount - 1 ) / 10 ) + 1;
+                    int currentGroupIndex = (int)( pageIndex / 10 );
 
-                    int prevPageIndex = 0;
-                    if ( pageIndex <= 0 )
+                    int prevPageIndex = ( ( currentGroupIndex - 1 ) * 10 ) + 9;
+                    if ( prevPageIndex < 0 )
                     {
+                        prevPageIndex = 0;
                         PageLinkListItem[0].Attributes["class"] = "prev disabled";
                         PageLink[0].Enabled = false;
                     }
                     else
                     {
-                        prevPageIndex = pageIndex - ( currentGroup > 0 ? 10 : 1 );
                         PageLinkListItem[0].Attributes["class"] = "prev";
                         PageLink[0].Enabled = true;
                     }
+                    PageLink[0].CommandName = prevPageIndex.ToString();
 
-                    int nextPageIndex = pageIndex;
-                    if ( pageIndex >= pageCount - 1 )
+                    int nextPageIndex = ( currentGroupIndex + 1 ) * 10;
+                    if ( nextPageIndex >= pageCount - 1 )
                     {
+                        nextPageIndex = pageCount - 1;
                         PageLinkListItem[PageLinkListItem.Length - 1].Attributes["class"] = "next disabled";
                         PageLink[PageLinkListItem.Length - 1].Enabled = false;
                     }
                     else
                     {
-                        nextPageIndex = pageIndex + ( currentGroup < totalGroups ? 10 : 1 );
                         PageLinkListItem[PageLinkListItem.Length - 1].Attributes["class"] = "next";
                         PageLink[PageLinkListItem.Length - 1].Enabled = true;
                     }
+                    PageLink[PageLinkListItem.Length - 1].CommandName = nextPageIndex.ToString();
 
                     NavigationPanel.Visible = true;
                     for ( int i = 1; i < PageLink.Length - 1; i++ )
                     {
-                        int currentPage = currentGroup + ( i - 1 );
+                        int buttonPageIndex = ( currentGroupIndex * 10 ) + ( i - 1 );
 
                         HtmlGenericControl li = PageLinkListItem[i];
                         LinkButton lb = PageLink[i];
 
-                        if ( currentPage < pageCount )
+                        if ( buttonPageIndex < pageCount )
                         {
-                            li.Attributes["class"] = currentPage == pageIndex ? "active" : string.Empty;
+                            li.Attributes["class"] = buttonPageIndex == pageIndex ? "active" : string.Empty;
                             li.Visible = true;
-
-                            lb.Text = ( currentPage + 1 ).ToString( "N0" );
+                            lb.Text = ( buttonPageIndex + 1 ).ToString( "N0" );
                             lb.Visible = true;
+                            lb.CommandName = buttonPageIndex.ToString();
                         }
                         else
                         {
@@ -3229,18 +3553,18 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
-        /// Handles the Click event of the lbPage control.
+        /// Handles the Command event of the lbPage control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
-        protected void lbPage_Click( object sender, EventArgs e )
+        /// <param name="e">The <see cref="CommandEventArgs"/> instance containing the event data.</param>
+        void lbPage_Command( object sender, CommandEventArgs e )
         {
             if ( NavigateClick != null )
             {
                 LinkButton lbPage = sender as LinkButton;
                 if ( lbPage != null )
                 {
-                    int? pageIndex = lbPage.ID.Substring(8).AsIntegerOrNull();
+                    int? pageIndex = lbPage.CommandName.AsIntegerOrNull();
                     if ( pageIndex.HasValue )
                     {
                         NumericalEventArgs eventArgs = new NumericalEventArgs( pageIndex.Value );

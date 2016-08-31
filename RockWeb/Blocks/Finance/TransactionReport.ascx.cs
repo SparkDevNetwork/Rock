@@ -1,11 +1,11 @@
 ﻿// <copyright>
-// Copyright 2013 by the Spark Development Network
+// Copyright by the Spark Development Network
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
+// Licensed under the Rock Community License (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-// http://www.apache.org/licenses/LICENSE-2.0
+// http://www.rockrms.com/license
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -39,6 +39,8 @@ namespace RockWeb.Blocks.Finance
     [TextField( "Transaction Label", "The label to use to describe the transactions (e.g. 'Gifts', 'Donations', etc.)", true, "Gifts", "", 1 )]
     [TextField( "Account Label", "The label to use to describe accounts.", true, "Accounts", "", 2 )]
     [AccountsField( "Accounts", "List of accounts to allow the person to view", false, "", "", 3 )]
+
+    [DefinedValueField( Rock.SystemGuid.DefinedType.FINANCIAL_TRANSACTION_TYPE, "Transaction Types", "Optional list of transation types to limit the list to (if none are selected all types will be included).", false, true, "", "", 4 )]
     public partial class TransactionReport : Rock.Web.UI.RockBlock
     {
         #region Base Control Methods
@@ -59,6 +61,8 @@ namespace RockWeb.Blocks.Finance
             gTransactions.RowItemText = GetAttributeValue( "TransactionLabel" );
             gTransactions.EmptyDataText = string.Format( "No {0} found with the provided criteria.", GetAttributeValue( "TransactionLabel" ).ToLower() );
             gTransactions.GridRebind += gTransactions_GridRebind;
+
+            gTransactions.Actions.ShowMergeTemplate = false;
         }
 
         /// <summary>
@@ -201,6 +205,16 @@ namespace RockWeb.Blocks.Finance
                 var lastDate = drpFilterDates.UpperValue.Value.AddDays( 1 ); // add one day to ensure we get all transactions till midnight
                 qry = qry.Where( t => t.TransactionDateTime.Value < lastDate );
             }
+
+            // Transaction Types
+            var transactionTypeValueIdList = GetAttributeValue( "TransactionTypes" ).SplitDelimitedValues().AsGuidList().Select( a => DefinedValueCache.Read( a ) ).Where( a => a != null ).Select( a => a.Id ).ToList();
+
+            if ( transactionTypeValueIdList.Any() )
+            {
+                qry = qry.Where( t => transactionTypeValueIdList.Contains( t.TransactionTypeValueId ) );
+            }
+
+            qry = qry.OrderByDescending( a => a.TransactionDateTime );
 
             var txns = qry.ToList();
 

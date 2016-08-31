@@ -63,8 +63,7 @@
 
                 <div class="checkin-scroll-panel">
                     <div class="scroller">
-                        <p>There are no current or future schedules for this kiosk!</p>
-
+                        <p>There are no current or future schedules for this kiosk today!</p>
                     </div>
                 </div>
 

@@ -1,11 +1,11 @@
 ﻿// <copyright>
-// Copyright 2013 by the Spark Development Network
+// Copyright by the Spark Development Network
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
+// Licensed under the Rock Community License (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-// http://www.apache.org/licenses/LICENSE-2.0
+// http://www.rockrms.com/license
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -16,9 +16,12 @@
 //
 using System;
 using System.Collections.Generic;
+using System.Globalization;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Newtonsoft.Json;
 
 namespace Rock.Utility
 {
@@ -45,6 +48,27 @@ namespace Rock.Utility
             : base( textWriter )
         {
             SerializeInSimpleMode = serializeInSimpleMode;
+        }
+
+        /// <summary>
+        /// Serializes the object in simple mode.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <param name="formatting">The formatting.</param>
+        /// <param name="jsonSettings">The json settings.</param>
+        /// <returns></returns>
+        public static string SerializeObjectInSimpleMode( object value, Formatting formatting, JsonSerializerSettings jsonSettings )
+        {
+            JsonSerializer jsonSerializer = JsonSerializer.CreateDefault( jsonSettings );
+            jsonSerializer.Formatting = formatting;
+
+            var stringWriter = new StringWriter( new StringBuilder( 256 ), CultureInfo.InvariantCulture );
+            using ( var jsonTextWriter = new Rock.Utility.RockJsonTextWriter( stringWriter, true ) )
+            {
+                jsonTextWriter.Formatting = jsonSerializer.Formatting;
+                jsonSerializer.Serialize( jsonTextWriter, value, null );
+            }
+            return stringWriter.ToString();
         }
     }
 }

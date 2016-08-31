@@ -37,7 +37,7 @@
     <meta charset="utf-8">
     <title></title>
 
-    <script src="<%# ResolveRockUrl("~/Scripts/jquery-1.10.2.min.js" ) %>"></script>
+    <script src="<%# ResolveRockUrl("~/Scripts/jquery-1.12.4.min.js" ) %>"></script>
     <script src="<%# ResolveRockUrl("~/Scripts/jquery.jquery-dotimeout.js" ) %>"></script>
 
     <!-- Set the viewport width to device width for mobile -->
@@ -55,11 +55,11 @@
     <asp:ContentPlaceHolder ID="head" runat="server"></asp:ContentPlaceHolder>
 
     <!-- Icons -->
-    <link rel="shortcut icon" href="<%# ResolveRockUrl("~/Assets/Icons/favicon.ico", true) %>">
-    <link rel="apple-touch-icon-precomposed" sizes="144x144" href="<%# ResolveRockUrl("~/Assets/Icons/touch-icon-ipad-retina.png", true) %>">
-    <link rel="apple-touch-icon-precomposed" sizes="114x114" href="<%# ResolveRockUrl("~/Assets/Icons/touch-icon-iphone-retina.png", true) %>">
-    <link rel="apple-touch-icon-precomposed" sizes="72x72" href="<%# ResolveRockUrl("~/Assets/Icons/touch-icon-ipad.png", true) %>">
-    <link rel="apple-touch-icon-precomposed" href="<%# ResolveRockUrl("~/Assets/Icons/touch-icon-iphone.png", true) %>">
+    <link rel="shortcut icon" href="<%# ResolveRockUrl("~/Assets/Icons/favicon.ico", true) %>"/>
+    <link rel="apple-touch-icon-precomposed" sizes="144x144" href="<%# ResolveRockUrl("~/Assets/Icons/touch-icon-ipad-retina.png", true) %>"/>
+    <link rel="apple-touch-icon-precomposed" sizes="114x114" href="<%# ResolveRockUrl("~/Assets/Icons/touch-icon-iphone-retina.png", true) %>"/>
+    <link rel="apple-touch-icon-precomposed" sizes="72x72" href="<%# ResolveRockUrl("~/Assets/Icons/touch-icon-ipad.png", true) %>"/>
+    <link rel="apple-touch-icon-precomposed" href="<%# ResolveRockUrl("~/Assets/Icons/touch-icon-iphone.png", true) %>"/>
 
 </head>
 <body>
@@ -93,7 +93,7 @@
 			                </div>
 
                             <div class="navbar-mobile-logo">
-                                <asp:Literal ID="lLogoSvg" runat="server" />
+                                <asp:Literal ID="lLogoSvg" runat="server" EnableViewState="false" />
                             </div>
 
                             <div class="navbar-content">
@@ -103,7 +103,7 @@
                     </nav>
 
                 </header>
-                
+
                 <main>
                     <asp:ContentPlaceHolder ID="feature" runat="server"></asp:ContentPlaceHolder>
 
@@ -152,7 +152,9 @@
     <script>
         Sys.Application.add_load( function () {
             $('.navbar-side > li').hover(function () {
-                $(this).doTimeout('hover', 250, 'addClass', 'open');
+                if (!$('body').hasClass('zone-highlight')) {
+                    $(this).doTimeout('hover', 250, 'addClass', 'open');
+                }
             }, function () {
                 $(this).doTimeout('hover', 250, 'removeClass', 'open');
             });
@@ -174,15 +176,11 @@
             // show/hide sidebar nav
             $('.navbar-minimize').click(function () {
                 if ($('.navbar-static-side').is(":visible")) {
-                    $('body').addClass('navbar-side-close');
-                    $('body').removeClass('navbar-side-open');
+                    $('body').addClass('navbar-side-close').removeClass('navbar-side-open');
                 } else {
-                    $('body').addClass('navbar-side-open');
-                    $('body').removeClass('navbar-side-close');
+                    $('body').addClass('navbar-side-open').removeClass('navbar-side-close');
                 }
             });
-
-
         });
     </script>
 

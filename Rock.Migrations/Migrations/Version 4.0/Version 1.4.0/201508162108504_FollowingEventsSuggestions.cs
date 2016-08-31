@@ -1,11 +1,11 @@
-// <copyright>
-// Copyright 2013 by the Spark Development Network
+﻿// <copyright>
+// Copyright by the Spark Development Network
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
+// Licensed under the Rock Community License (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-// http://www.apache.org/licenses/LICENSE-2.0
+// http://www.rockrms.com/license
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -294,6 +294,9 @@ namespace Rock.Migrations
             RockMigrationHelper.AddSecurityRoleGroup( "RSR - Event Registration Administration", "Gives access to create and administrate event registration templates and instances.", Rock.SystemGuid.Group.GROUP_EVENT_REGISTRATION_ADMINISTRATORS );
             RockMigrationHelper.AddSecurityAuthForPage( Rock.SystemGuid.Page.EVENT_REGISTRATION, 0, Rock.Security.Authorization.VIEW, true, Rock.SystemGuid.Group.GROUP_EVENT_REGISTRATION_ADMINISTRATORS, 0, "4C63D597-1C2E-D7BA-4C71-34724D5C9670" );
             RockMigrationHelper.AddSecurityAuthForPage( Rock.SystemGuid.Page.EVENT_REGISTRATION, 0, Rock.Security.Authorization.EDIT, true, Rock.SystemGuid.Group.GROUP_EVENT_REGISTRATION_ADMINISTRATORS, 0, "514591FB-4972-93AE-438C-A410739BDBD1" );
+
+            // Add a reminder to enable the following jobs
+            RockMigrationHelper.AddDefinedValue( "4BF34677-37E9-4E71-BD03-252B66C9373D", "Enable Following Jobs", @"Two new jobs have been added for sending following suggestions and following reminders. Make sure to activate both these jobs when you are ready start using the Following features.", "27E02D09-E3B1-4D89-920B-0DFDDA298D72" );
 
         }
         

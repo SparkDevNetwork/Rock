@@ -1,11 +1,11 @@
 ﻿// <copyright>
-// Copyright 2013 by the Spark Development Network
+// Copyright by the Spark Development Network
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
+// Licensed under the Rock Community License (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-// http://www.apache.org/licenses/LICENSE-2.0
+// http://www.rockrms.com/license
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -743,11 +743,14 @@ namespace RockWeb.Blocks.Event
             if ( !eventItemOccurrenceId.Equals( 0 ) )
             {
                 eventItemOccurrence = new EventItemOccurrenceService( rockContext ).Get( eventItemOccurrenceId );
+                pdAuditDetails.SetEntity( eventItemOccurrence, ResolveRockUrl( "~" ) );
             }
 
             if ( eventItemOccurrence == null )
             {
                 eventItemOccurrence = new EventItemOccurrence { Id = 0 };
+                // hide the panel drawer that show created and last modified dates
+                pdAuditDetails.Visible = false;
             }
 
             if ( !canEdit )
@@ -797,6 +800,8 @@ namespace RockWeb.Blocks.Event
 
         private void ShowEditDetails( EventItemOccurrence eventItemOccurrence )
         {
+            LinkageState = new EventItemOccurrenceGroupMap { Guid = Guid.Empty };
+
             if ( eventItemOccurrence == null )
             {
                 eventItemOccurrence = new EventItemOccurrence();
@@ -805,10 +810,64 @@ namespace RockWeb.Blocks.Event
             if ( eventItemOccurrence.Id == 0 )
             {
                 lActionTitle.Text = ActionTitle.Add( "Event Occurrence" ).FormatAsHtmlTitle();
+
+                var copyFromOccurrenceId = PageParameter( "CopyFromId" ).AsInteger();
+                if ( copyFromOccurrenceId > 0 )
+                {
+                    var oldOccurrence = new EventItemOccurrenceService( new RockContext() ).Get( copyFromOccurrenceId );
+                    if ( oldOccurrence != null )
+                    {
+                        // clone the workflow type
+                        eventItemOccurrence = oldOccurrence.Clone( false );
+                        eventItemOccurrence.Schedule = oldOccurrence.Schedule;
+                        eventItemOccurrence.EventItem = oldOccurrence.EventItem;
+                        eventItemOccurrence.ContactPersonAlias = oldOccurrence.ContactPersonAlias;
+                        eventItemOccurrence.CreatedByPersonAlias = null;
+                        eventItemOccurrence.CreatedByPersonAliasId = null;
+                        eventItemOccurrence.CreatedDateTime = RockDateTime.Now;
+                        eventItemOccurrence.ModifiedByPersonAlias = null;
+                        eventItemOccurrence.ModifiedByPersonAliasId = null;
+                        eventItemOccurrence.ModifiedDateTime = RockDateTime.Now;
+                        eventItemOccurrence.Id = 0;
+                        eventItemOccurrence.Guid = Guid.NewGuid();                        
+
+                        // Clone the linkage
+                        var linkage = oldOccurrence.Linkages.FirstOrDefault();
+                        if ( linkage != null )
+                        {
+                            LinkageState = linkage.Clone( false );
+                            LinkageState.EventItemOccurrenceId = 0;
+                            LinkageState.CreatedByPersonAlias = null;
+                            LinkageState.CreatedByPersonAliasId = null;
+                            LinkageState.CreatedDateTime = RockDateTime.Now;
+                            LinkageState.ModifiedByPersonAlias = null;
+                            LinkageState.ModifiedByPersonAliasId = null;
+                            LinkageState.ModifiedDateTime = RockDateTime.Now;
+                            LinkageState.Id = 0;
+                            LinkageState.Guid = Guid.NewGuid();
+                            LinkageState.RegistrationInstance = linkage.RegistrationInstance != null ? linkage.RegistrationInstance.Clone( false ) : new RegistrationInstance();
+                            LinkageState.RegistrationInstance.RegistrationTemplate =
+                                linkage.RegistrationInstance != null && linkage.RegistrationInstance.RegistrationTemplate != null ?
+                                linkage.RegistrationInstance.RegistrationTemplate.Clone( false ) : new RegistrationTemplate();
+                            LinkageState.Group = linkage.Group != null ? linkage.Group.Clone( false ) : new Group();
+                        }
+                    }
+                }                    
             }
             else
             {
                 lActionTitle.Text = ActionTitle.Edit( "Event Occurrence" ).FormatAsHtmlTitle();
+               
+                var registration = eventItemOccurrence.Linkages.FirstOrDefault();
+                if ( registration != null )
+                {
+                    LinkageState = registration.Clone( false );
+                    LinkageState.RegistrationInstance = registration.RegistrationInstance != null ? registration.RegistrationInstance.Clone( false ) : new RegistrationInstance();
+                    LinkageState.RegistrationInstance.RegistrationTemplate =
+                        registration.RegistrationInstance != null && registration.RegistrationInstance.RegistrationTemplate != null ?
+                        registration.RegistrationInstance.RegistrationTemplate.Clone( false ) : new RegistrationTemplate();
+                    LinkageState.Group = registration.Group != null ? registration.Group.Clone( false ) : new Group();
+                }
             }
 
             SetEditMode( true );
@@ -834,18 +893,6 @@ namespace RockWeb.Blocks.Event
             tbEmail.Text = eventItemOccurrence.ContactEmail;
 
             htmlOccurrenceNote.Text = eventItemOccurrence.Note;
-
-            LinkageState = new EventItemOccurrenceGroupMap { Guid = Guid.Empty };
-            var registration = eventItemOccurrence.Linkages.FirstOrDefault();
-            if ( registration != null )
-            {
-                LinkageState = registration.Clone( false );
-                LinkageState.RegistrationInstance = registration.RegistrationInstance != null ? registration.RegistrationInstance.Clone( false ) : new RegistrationInstance();
-                LinkageState.RegistrationInstance.RegistrationTemplate =
-                    registration.RegistrationInstance != null && registration.RegistrationInstance.RegistrationTemplate != null ?
-                    registration.RegistrationInstance.RegistrationTemplate.Clone( false ) : new RegistrationTemplate();
-                LinkageState.Group = registration.Group != null ? registration.Group.Clone( false ) : new Group();
-            }
 
             DisplayRegistration();
         }

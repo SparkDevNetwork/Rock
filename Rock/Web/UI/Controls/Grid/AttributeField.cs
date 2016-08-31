@@ -1,11 +1,11 @@
 ﻿// <copyright>
-// Copyright 2013 by the Spark Development Network
+// Copyright by the Spark Development Network
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
+// Licensed under the Rock Community License (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-// http://www.apache.org/licenses/LICENSE-2.0
+// http://www.rockrms.com/license
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -34,6 +34,22 @@ namespace Rock.Web.UI.Controls
     public class AttributeField : RockBoundField
     {
         /// <summary>
+        /// Gets or sets the attribute identifier.
+        /// </summary>
+        /// <value>
+        /// The attribute identifier.
+        /// </value>
+        public int? AttributeId
+        {
+            get { return ViewState["AttributeId"] as int?; }
+            set
+            {
+                ViewState["AttributeId"] = value;
+                this.SortExpression = string.Format( "attribute:{0}", value );
+            }
+        }
+
+        /// <summary>
         /// Gets or sets a value indicating whether this <see cref="AttributeField"/> is condensed.
         /// </summary>
         /// <value>
@@ -52,7 +68,7 @@ namespace Rock.Web.UI.Controls
         /// <returns></returns>
         public override object GetExportValue( GridViewRow row )
         {
-            return GetRowValue( row );
+            return GetRowValue( row, false, false );
         }
 
         /// <summary>
@@ -67,7 +83,7 @@ namespace Rock.Web.UI.Controls
             var row = controlContainer as GridViewRow;
             if ( row != null )
             {
-                return GetRowValue( row );
+                return GetRowValue( row, this.Condensed, true );
             }
 
             return string.Empty;
@@ -77,8 +93,10 @@ namespace Rock.Web.UI.Controls
         /// Gets the row value.
         /// </summary>
         /// <param name="row">The row.</param>
+        /// <param name="condensed">if set to <c>true</c> [condensed].</param>
+        /// <param name="formatAsHtml">if set to <c>true</c> [format as HTML].</param>
         /// <returns></returns>
-        private object GetRowValue( GridViewRow row )
+        private object GetRowValue( GridViewRow row, bool condensed, bool formatAsHtml )
         {
             // First try to get an IHasAttributes from the grid's object list
             IHasAttributes dataItem = GetAttributeObject( row );
@@ -95,13 +113,40 @@ namespace Rock.Web.UI.Controls
                     dataItem.LoadAttributes();
                 }
 
+                AttributeCache attrib = null;
+                string rawValue = string.Empty;
+
                 bool exists = dataItem.Attributes.ContainsKey( this.DataField );
                 if ( exists )
                 {
-                    var attrib = dataItem.Attributes[this.DataField];
-                    string rawValue = dataItem.GetAttributeValue( this.DataField );
-                    string resultHtml = attrib.FieldType.Field.FormatValueAsHtml( null, rawValue, attrib.QualifierValues, Condensed );
-                    return new HtmlString( resultHtml ?? string.Empty );
+                    attrib = dataItem.Attributes[this.DataField];
+                    rawValue = dataItem.GetAttributeValue( this.DataField );
+                }
+                else
+                {
+                    if ( AttributeId.HasValue )
+                    {
+                        attrib = dataItem.Attributes.Where( a => a.Value.Id == AttributeId.Value ).Select( a => a.Value ).FirstOrDefault();
+                        if ( attrib != null )
+                        {
+                            exists = true;
+                            rawValue = dataItem.GetAttributeValue( attrib.Key );
+                        }
+                    }
+                }
+
+                if ( exists )
+                { 
+                    if ( formatAsHtml )
+                    {
+                        string resultHtml = attrib.FieldType.Field.FormatValueAsHtml( null, rawValue, attrib.QualifierValues, condensed );
+                        return new HtmlString( resultHtml ?? string.Empty );
+                    }
+                    else
+                    {
+                        string result = attrib.FieldType.Field.FormatValue( null, rawValue, attrib.QualifierValues, condensed );
+                        return result ?? string.Empty;
+                    }
                 }
             }
 

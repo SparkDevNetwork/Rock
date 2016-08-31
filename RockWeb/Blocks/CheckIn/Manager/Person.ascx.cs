@@ -1,11 +1,11 @@
 ﻿// <copyright>
-// Copyright 2013 by the Spark Development Network
+// Copyright by the Spark Development Network
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
+// Licensed under the Rock Community License (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-// http://www.apache.org/licenses/LICENSE-2.0
+// http://www.rockrms.com/license
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -31,7 +31,7 @@ using Rock.Security;
 namespace RockWeb.Blocks.CheckIn.Manager
 {
     /// <summary>
-    /// Template block for developers to use to start a new block.
+    /// Block used to display person and details about recent check-ins
     /// </summary>
     [DisplayName( "Person Profile" )]
     [Category( "Check-in > Manager" )]
@@ -166,7 +166,7 @@ namespace RockWeb.Blocks.CheckIn.Manager
                 {
                     lName.Text = person.FullName;
 
-                    string photoTag = Rock.Model.Person.GetPhotoImageTag( person, 120, 120 );
+                    string photoTag = Rock.Model.Person.GetPersonPhotoImageTag( person, 120, 120 );
                     if ( person.PhotoId.HasValue )
                     {
                         lPhoto.Text = string.Format( "<div class='photoframe'><a href='{0}'>{1}</a></div>", person.PhotoUrl, photoTag );
@@ -255,7 +255,7 @@ namespace RockWeb.Blocks.CheckIn.Manager
                     }
 
                     var attendances = new AttendanceService( rockContext )
-                        .Queryable( "Schedule,Group,Location" )
+                        .Queryable( "Schedule,Group,Location,AttendanceCode" )
                         .Where( a =>
                             a.PersonAliasId.HasValue &&
                             a.PersonAliasId == personAliasId &&
@@ -280,7 +280,8 @@ namespace RockWeb.Blocks.CheckIn.Manager
                             Schedule = a.Schedule.Name,
                             IsActive =
                                 a.StartDateTime > DateTime.Today &&
-                                activeScheduleIds.Contains( a.ScheduleId.Value )
+                                activeScheduleIds.Contains( a.ScheduleId.Value ),
+                            Code = a.AttendanceCode != null ? a.AttendanceCode.Code : ""
                         } ).ToList();
 
                     // Set active locations to be a link to the room in manager page
@@ -315,6 +316,7 @@ namespace RockWeb.Blocks.CheckIn.Manager
             public string Location { get; set; }
             public string Schedule { get; set; }
             public bool IsActive { get; set; }
+            public string Code { get; set; }
         }
 
         #endregion

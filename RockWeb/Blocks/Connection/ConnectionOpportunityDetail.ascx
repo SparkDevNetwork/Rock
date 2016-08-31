@@ -30,7 +30,7 @@
                         <Rock:HighlightLabel ID="hlStatus" runat="server" />
                     </div>
                 </div>
-
+                <Rock:PanelDrawer ID="pdAuditDetails" runat="server"></Rock:PanelDrawer>
                 <div class="panel-body">
                     <Rock:NotificationBox ID="nbEditModeMessage" runat="server" NotificationBoxType="Info" />
 
@@ -165,8 +165,18 @@
 
                 <div class="row">
                     <div class="col-md-6">
-                        <Rock:RockDropDownList ID="ddlTriggerType" runat="server" Label="Launch Workflow When" DataTextField="Name" DataValueField="Id" 
-                            OnSelectedIndexChanged="ddlTriggerType_SelectedIndexChanged" AutoPostBack="true" Required="true" ValidationGroup="WorkflowDetails" />
+                        <Rock:RockDropDownList ID="ddlTriggerType" runat="server" Label="Launch Workflow When" 
+                            OnSelectedIndexChanged="ddlTriggerType_SelectedIndexChanged" AutoPostBack="true" Required="true" ValidationGroup="WorkflowDetails" >
+                            <asp:ListItem Value="0" Text="Request Started" />
+                            <asp:ListItem Value="8" Text="Request Assigned" />
+                            <asp:ListItem Value="7" Text="Request Transferred" />
+                            <asp:ListItem Value="1" Text="Request Connected" />
+                            <asp:ListItem Value="5" Text="Placement Group Assigned" />
+                            <asp:ListItem Value="2" Text="Status Changed" />
+                            <asp:ListItem Value="3" Text="State Changed" />
+                            <asp:ListItem Value="4" Text="Activity Added" />
+                            <asp:ListItem Value="6" Text="Manual" />
+                        </Rock:RockDropDownList>
                     </div>
                     <div class="col-md-6">
                         <Rock:RockDropDownList ID="ddlWorkflowType" runat="server" Label="Workflow Type" DataTextField="Name" DataValueField="Id" 

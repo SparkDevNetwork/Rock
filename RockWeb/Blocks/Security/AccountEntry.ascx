@@ -75,8 +75,8 @@
                         <dt></dt>
                         <dd><div id="availabilityMessage" class="alert"/></dd>
                     </dl>
-                    <Rock:RockTextBox ID="tbPassword" runat="server" Label="Password" Required="true" TextMode="Password" ></Rock:RockTextBox>
-                    <Rock:RockTextBox ID="tbPasswordConfirm" runat="server" Label="Confirmation" Required="true" TextMode="Password" ></Rock:RockTextBox>
+                    <Rock:RockTextBox ID="tbPassword" runat="server" Label="Password" Required="true" TextMode="Password" ValidateRequestMode="Disabled" ></Rock:RockTextBox>
+                    <Rock:RockTextBox ID="tbPasswordConfirm" runat="server" Label="Confirmation" Required="true" TextMode="Password" ValidateRequestMode="Disabled" ></Rock:RockTextBox>
                     <asp:CompareValidator ID="covalPassword" runat="server" ControlToCompare="tbPassword" ControlToValidate="tbPasswordConfirm" ErrorMessage="Password and Confirmation do not match" Display="Dynamic" CssClass="validation-error"></asp:CompareValidator>
 
                 </fieldset>
@@ -104,12 +104,13 @@
                         <asp:Repeater ID="rPhoneNumbers" runat="server">
                                     <ItemTemplate>
                                         <div class="form-group phonegroup">
-                                            <div class="control-label col-sm-1 phonegroup-label"><%# Rock.Web.Cache.DefinedValueCache.Read( (int)Eval("NumberTypeValueId")).Value  %></div>
+                                            <div class="control-label col-sm-1 phonegroup-label"><%# Eval("NumberTypeValue.Value")  %>&nbsp;</div>
                                             <div class="controls col-sm-11 phonegroup-number">
                                                 <div class="row">
                                                     <div class="col-sm-7">
                                                         <asp:HiddenField ID="hfPhoneType" runat="server" Value='<%# Eval("NumberTypeValueId")  %>' />
-                                                        <Rock:PhoneNumberBox ID="pnbPhone" runat="server" CountryCode='<%# Eval("CountryCode") %>' Number='<%# Eval("NumberFormatted")  %>' />
+                                                        <Rock:PhoneNumberBox ID="pnbPhone" runat="server" CountryCode='<%# Eval("CountryCode") %>' 
+                                                            Number='<%# Eval("NumberFormatted")  %>'  />
                                                     </div>    
                                                     <div class="col-sm-5 margin-t-sm">
                                                         <div class="row">

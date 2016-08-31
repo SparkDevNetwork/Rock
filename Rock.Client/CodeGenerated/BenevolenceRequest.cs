@@ -5,13 +5,13 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 // <copyright>
-// Copyright 2013 by the Spark Development Network
+// Copyright by the Spark Development Network
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
+// Licensed under the Rock Community License (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-// http://www.apache.org/licenses/LICENSE-2.0
+// http://www.rockrms.com/license
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -33,6 +33,9 @@ namespace Rock.Client
     {
         /// <summary />
         public int Id { get; set; }
+
+        /// <summary />
+        public int? CampusId { get; set; }
 
         /// <summary />
         public int? CaseWorkerPersonAliasId { get; set; }
@@ -71,6 +74,9 @@ namespace Rock.Client
         /// If the ModifiedByPersonAliasId is being set manually and should not be overwritten with current user when saved, set this value to true
         /// </summary>
         public bool ModifiedAuditValuesAlreadyUpdated { get; set; }
+
+        /// <summary />
+        public string ProvidedNextSteps { get; set; }
 
         /// <summary />
         public DateTime RequestDateTime { get; set; }
@@ -123,6 +129,7 @@ namespace Rock.Client
         public void CopyPropertiesFrom( BenevolenceRequest source )
         {
             this.Id = source.Id;
+            this.CampusId = source.CampusId;
             this.CaseWorkerPersonAliasId = source.CaseWorkerPersonAliasId;
             this.CellPhoneNumber = source.CellPhoneNumber;
             this.ConnectionStatusValueId = source.ConnectionStatusValueId;
@@ -135,6 +142,7 @@ namespace Rock.Client
             this.LastName = source.LastName;
             this.LocationId = source.LocationId;
             this.ModifiedAuditValuesAlreadyUpdated = source.ModifiedAuditValuesAlreadyUpdated;
+            this.ProvidedNextSteps = source.ProvidedNextSteps;
             this.RequestDateTime = source.RequestDateTime;
             this.RequestedByPersonAliasId = source.RequestedByPersonAliasId;
             this.RequestStatusValueId = source.RequestStatusValueId;
@@ -160,10 +168,16 @@ namespace Rock.Client
         public ICollection<BenevolenceResult> BenevolenceResults { get; set; }
 
         /// <summary />
+        public Campus Campus { get; set; }
+
+        /// <summary />
         public PersonAlias CaseWorkerPersonAlias { get; set; }
 
         /// <summary />
         public DefinedValue ConnectionStatusValue { get; set; }
+
+        /// <summary />
+        public ICollection<BenevolenceRequestDocument> Documents { get; set; }
 
         /// <summary />
         public Location Location { get; set; }

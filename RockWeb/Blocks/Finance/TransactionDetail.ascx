@@ -76,9 +76,10 @@
                             <Rock:RockDropDownList ID="ddlSourceType" runat="server" Label="Source" />
                             <Rock:RockDropDownList ID="ddlCurrencyType" runat="server" Label="Currency Type" AutoPostBack="true" OnSelectedIndexChanged="ddlCurrencyType_SelectedIndexChanged" />
                             <Rock:RockDropDownList ID="ddlCreditCardType" runat="server" Label="Credit Card Type" />
-                            <Rock:FinancialGatewayPicker ID="gpPaymentGateway" runat="server" Label="Payment Gateway" />
+                            <Rock:FinancialGatewayPicker ID="gpPaymentGateway" runat="server" Label="Payment Gateway" ShowAll="true" />
                             <Rock:DataTextBox ID="tbTransactionCode" runat="server" Label="Transaction Code"
                                 SourceTypeName="Rock.Model.FinancialTransaction, Rock" PropertyName="TransactionCode" />
+                            <asp:PlaceHolder ID="phAttributeEdits" runat="server" EnableViewState="false"></asp:PlaceHolder>
                         </div>
                         <div class="col-md-6">
                             <Rock:RockCheckBox ID="cbIsRefund" runat="server" Label="This is a Refund" Text="Yes" AutoPostBack="true" OnCheckedChanged="cbIsRefund_CheckedChanged" />
@@ -109,6 +110,7 @@
                     <div class="row">
                         <div class="col-md-6">
                             <asp:Literal ID="lDetailsLeft" runat="server" />
+                            <asp:PlaceHolder ID="phAttributes" runat="server"></asp:PlaceHolder>
                         </div>
                         <div class="col-md-6">
 
@@ -145,6 +147,17 @@
                                     </Columns>
                                 </Rock:Grid>
                             </asp:Panel>
+
+                            <asp:Panel ID="pnlRelated" runat="server">
+                                <Rock:Grid ID="gRelated" runat="server" RowItemText="Transaction" DisplayType="Light">
+                                    <Columns>
+                                        <asp:HyperLinkField DataTextField="TransactionDateTime" DataNavigateUrlFields="Id" HeaderText="Related Transactions" />
+                                        <Rock:RockBoundField DataField="TransactionCode" />
+                                        <Rock:CurrencyField DataField="TotalAmount" ItemStyle-HorizontalAlign="Right" />
+                                    </Columns>
+                                </Rock:Grid>
+                            </asp:Panel>
+
                         </div>
                     </div>
 

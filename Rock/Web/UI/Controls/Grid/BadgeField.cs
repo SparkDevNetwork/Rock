@@ -1,11 +1,11 @@
 ﻿// <copyright>
-// Copyright 2013 by the Spark Development Network
+// Copyright by the Spark Development Network
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
+// Licensed under the Rock Community License (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-// http://www.apache.org/licenses/LICENSE-2.0
+// http://www.rockrms.com/license
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -36,18 +36,11 @@ namespace Rock.Web.UI.Controls
         /// <value>
         /// The minimum value to be considered Important.
         /// </value>
-        //[Obsolete( "Use DangerMin instead." )]
+        [Obsolete( "Use DangerMin instead." )]
         public int ImportantMin
         {
-            get
-            {
-                int? i = ViewState["ImportantMin"] as int?;
-                return ( i == null ) ? int.MaxValue : i.Value;
-            }
-            set
-            {
-                ViewState["ImportantMin"] = value;
-            }
+            get { return DangerMin; }
+            set { DangerMin = value; }
         }
 
         /// <summary>
@@ -56,18 +49,11 @@ namespace Rock.Web.UI.Controls
         /// <value>
         /// The maximum value to be considered Important.
         /// </value>
-        //[Obsolete( "Use DangerMax instead." )]
+        [Obsolete( "Use DangerMax instead." )]
         public int ImportantMax
         {
-            get
-            {
-                int? i = ViewState["ImportantMax"] as int?;
-                return ( i == null ) ? int.MaxValue : i.Value;
-            }
-            set
-            {
-                ViewState["ImportantMax"] = value;
-            }
+            get { return DangerMax; }
+            set { DangerMax = value; }
         }
 
         /// <summary>
@@ -313,7 +299,7 @@ namespace Rock.Web.UI.Controls
             int count = (int)e.FieldValue;
 
             // Remove ImportantMin and ImportanMax once after deprecation period.
-            if ( ( DangerMin <= count && count <= DangerMax ) || ( ImportantMin <= count && count <= ImportantMax ) )
+            if ( DangerMin <= count && count <= DangerMax ) 
             {
                 e.BadgeType = "Danger";
             }

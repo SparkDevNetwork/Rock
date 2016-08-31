@@ -15,7 +15,7 @@
       <div class="pull-right">
         {% if eventItemOccurrence.DetailPage != null %}
         <a href="{{ eventItemOccurrence.DetailPage }}">
-          <i> View page -> </i>
+          View Details <i class="fa fa-chevron-right"></i>
         </a>
 		{% else %}
 		<a href="{{ DetailsPage }}?EventOccurrenceId={{ eventItemOccurrence.EventItemOccurrence.Id }}">
@@ -30,7 +30,11 @@
           <b>Date</b>
         </div>
         <div class="row">
-          {{ eventItemOccurrence.Date }}
+          {% if eventItemOccurrence.EventItemOccurrence.Schedule.EffectiveStartDate != eventItemOccurrence.EventItemOccurrence.Schedule.EffectiveEndDate %}
+            {{ eventItemOccurrence.EventItemOccurrence.Schedule.EffectiveStartDate  | Date: 'MMM d' }} -  {{ eventItemOccurrence.EventItemOccurrence.Schedule.EffectiveEndDate  | Date: 'MMM d'}}
+          {% else %}
+            {{ eventItemOccurrence.Date | Date: 'MMM d'}}
+          {% endif %}
         </div>
       </div>
       <div class="col-md-2">

@@ -15,6 +15,7 @@
                         <ContentTemplate>
                             <asp:HiddenField ID="hfVersion" runat="server" />
                             <asp:Panel ID="pnlEdit" runat="server" Visible="false">
+                                <Rock:NotificationBox ID="nbInvalidHtml" runat="server" NotificationBoxType="Warning" Visible="false" />
 
                                 <!-- Approval -->
                                 <asp:UpdatePanel ID="upnlApproval" runat="server">
@@ -47,8 +48,7 @@
                                 <Rock:DateRangePicker ID="drpDateRange" runat="server" Label="Display from" />
 
                                 <Rock:HtmlEditor ID="htmlEditor" runat="server" ResizeMaxWidth="720" Height="140" />
-                                <Rock:CodeEditor ID="ceHtml" runat="server" EditorHeight="280" />
-
+                                
                                 <Rock:RockCheckBox ID="cbOverwriteVersion" runat="server" Text="Don't save as a new version" />
 
                             </asp:Panel>

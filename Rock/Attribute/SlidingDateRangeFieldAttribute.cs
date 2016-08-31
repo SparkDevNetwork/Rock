@@ -1,11 +1,11 @@
 ﻿// <copyright>
-// Copyright 2013 by the Spark Development Network
+// Copyright by the Spark Development Network
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
+// Licensed under the Rock Community License (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-// http://www.apache.org/licenses/LICENSE-2.0
+// http://www.rockrms.com/license
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -33,6 +33,11 @@ namespace Rock.Attribute
         protected const string ENABLED_SLIDING_DATE_RANGE_TYPES = "enabledSlidingDateRangeTypes";
 
         /// <summary>
+        /// Enabled SlidingDateRangeUnits
+        /// </summary>
+        protected const string ENABLED_SLIDING_DATE_RANGE_UNITS = "enabledSlidingDateRangeUnits";
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="SlidingDateRangeFieldAttribute" /> class.
         /// </summary>
         /// <param name="name">The name.</param>
@@ -43,12 +48,35 @@ namespace Rock.Attribute
         /// <param name="order">The order.</param>
         /// <param name="key">The key.</param>
         /// <param name="enabledSlidingDateRangeTypes">The enabled sliding date range types. Choose from: 'Previous, Last, Current, Next, Upcoming, DateRange'</param>
-        public SlidingDateRangeFieldAttribute( string name, string description = "", bool required = true, string defaultValue = ",", string category = "", int order = 0, string key = null, string enabledSlidingDateRangeTypes = null )
+        public SlidingDateRangeFieldAttribute( string name, string description, bool required, string defaultValue, string category, int order, string key,
+            string enabledSlidingDateRangeTypes )
+            : this( name, description, required, defaultValue, category, order, key, enabledSlidingDateRangeTypes, null )
+        {
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="SlidingDateRangeFieldAttribute" /> class.
+        /// </summary>
+        /// <param name="name">The name.</param>
+        /// <param name="description">The description.</param>
+        /// <param name="required">if set to <c>true</c> [required].</param>
+        /// <param name="defaultValue">The default value.</param>
+        /// <param name="category">The category.</param>
+        /// <param name="order">The order.</param>
+        /// <param name="key">The key.</param>
+        /// <param name="enabledSlidingDateRangeTypes">The enabled sliding date range types. Choose from: 'Previous, Last, Current, Next, Upcoming, DateRange'</param>
+        /// <param name="enabledSlidingDateRangeUnits">The enabled sliding date range units.</param>
+        public SlidingDateRangeFieldAttribute( string name, string description = "", bool required = true, string defaultValue = ",", string category = "", int order = 0, string key = null,
+            string enabledSlidingDateRangeTypes = null, string enabledSlidingDateRangeUnits = null )
             : base( name, description, required, defaultValue, category, order, key, typeof( Rock.Field.Types.SlidingDateRangeFieldType ).FullName )
         {
             if ( enabledSlidingDateRangeTypes != null )
             {
                 FieldConfigurationValues.Add( ENABLED_SLIDING_DATE_RANGE_TYPES, new Field.ConfigurationValue( enabledSlidingDateRangeTypes ) );
+            }
+            if ( enabledSlidingDateRangeUnits != null )
+            {
+                FieldConfigurationValues.Add( ENABLED_SLIDING_DATE_RANGE_UNITS, new Field.ConfigurationValue( enabledSlidingDateRangeUnits ) );
             }
         }
     }

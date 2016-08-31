@@ -1,11 +1,11 @@
 ﻿// <copyright>
-// Copyright 2013 by the Spark Development Network
+// Copyright by the Spark Development Network
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
+// Licensed under the Rock Community License (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-// http://www.apache.org/licenses/LICENSE-2.0
+// http://www.rockrms.com/license
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -17,6 +17,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Data.Entity;
 using System.Linq;
 using System.Reflection;
 using System.Web;
@@ -33,6 +34,8 @@ namespace Rock.Reporting
     /// </summary>
     public static class EntityHelper
     {
+        private static Dictionary<int, string> _workflowTypeNameLookup = null;
+        
         /// <summary>
         /// Gets the entity fields.
         /// </summary>
@@ -43,6 +46,7 @@ namespace Rock.Reporting
         public static List<EntityField> GetEntityFields( Type entityType, bool includeOnlyReportingFields = true, bool limitToFilterableFields = true )
         {
             List<EntityField> entityFields = null;
+            _workflowTypeNameLookup = null;
 
             if ( HttpContext.Current != null )
             {
@@ -188,6 +192,16 @@ namespace Rock.Reporting
                                 a.EntityTypeQualifierColumn == string.Empty ||
                                 a.EntityTypeQualifierColumn == "ContentChannelTypeId" );
                     }
+                    else if ( entityType == typeof( Rock.Model.Workflow ) )
+                    {
+                        // in the case of Workflow, show attributes that are entity global, but also ones that are qualified by WorkflowTypeId (and have a valid WorkflowTypeId)
+                        var validWorkflowTypeIds = new WorkflowTypeService(rockContext).Queryable().Select(a=> a.Id).ToList().Select(a => a.ToString()).ToList();
+                        qryAttributes = qryAttributes
+                            .Where( a =>
+                                a.EntityTypeQualifierColumn == null ||
+                                a.EntityTypeQualifierColumn == string.Empty ||
+                                (a.EntityTypeQualifierColumn == "WorkflowTypeId" && validWorkflowTypeIds.Contains(a.EntityTypeQualifierValue) ));
+                    }
                     else
                     {
                         qryAttributes = qryAttributes.Where( a => a.EntityTypeQualifierColumn == string.Empty && a.EntityTypeQualifierValue == string.Empty );
@@ -205,7 +219,7 @@ namespace Rock.Reporting
             // Order the fields by title, name
             int index = 0;
             var sortedFields = new List<EntityField>();
-            foreach ( var entityField in entityFields.OrderBy( p => p.Title ).ThenBy( p => p.Name ) )
+            foreach ( var entityField in entityFields.OrderBy( p => !string.IsNullOrEmpty(p.AttributeEntityTypeQualifierName)).ThenBy( p => p.Title ).ThenBy( p => p.Name ) )
             {
                 entityField.Index = index;
                 index++;
@@ -312,10 +326,11 @@ namespace Rock.Reporting
                 {
                     using ( var rockContext = new RockContext() )
                     {
-                        var groupType = new GroupTypeService( rockContext ).Get( attribute.EntityTypeQualifierValue.AsInteger() );
+                        var groupType = GroupTypeCache.Read( attribute.EntityTypeQualifierValue.AsInteger(), rockContext );
                         if ( groupType != null )
                         {
                             // Append the Qualifier to the title
+                            entityField.AttributeEntityTypeQualifierName = groupType.Name;
                             entityField.Title = string.Format( "{0} ({1})", attribute.Name, groupType.Name );
                         }
                     }
@@ -330,11 +345,34 @@ namespace Rock.Reporting
                         if ( contentChannelType != null )
                         {
                             // Append the Qualifier to the title
+                            entityField.AttributeEntityTypeQualifierName = contentChannelType.Name;
                             entityField.Title = string.Format( "{0} ({1})", attribute.Name, contentChannelType.Name );
                         }
                     }
                 }
+
+                // Special processing for Entity Type "Workflow" to handle sub-types that are distinguished by WorkflowTypeId.
+                if ( attribute.EntityTypeId == EntityTypeCache.GetId( typeof( Rock.Model.Workflow ) ) && attribute.EntityTypeQualifierColumn == "WorkflowTypeId" )
+                {
+                    using ( var rockContext = new RockContext() )
+                    {
+                        int workflowTypeId = attribute.EntityTypeQualifierValue.AsInteger();
+                        if (_workflowTypeNameLookup == null)
+                        {
+                            _workflowTypeNameLookup = new WorkflowTypeService( rockContext ).Queryable().ToDictionary( k => k.Id, v => v.Name );
+                        }
+
+                        var workflowTypeName = _workflowTypeNameLookup.ContainsKey( workflowTypeId ) ? _workflowTypeNameLookup[workflowTypeId] : null;
+                        if ( workflowTypeName != null )
+                        {
+                            // Append the Qualifier to the title for Workflow Attributes
+                            entityField.AttributeEntityTypeQualifierName = workflowTypeName;
+                            entityField.Title = string.Format( "({1}) {0} ", attribute.Name, workflowTypeName );
+                        }
+                    }
+                }
             }
+            
             return entityField;
         }
     }
@@ -369,6 +407,14 @@ namespace Rock.Reporting
         /// The title without qualifier.
         /// </value>
         public string TitleWithoutQualifier { get; set; }
+
+        /// <summary>
+        /// Gets or sets the name of the attribute entity type qualifier.
+        /// </summary>
+        /// <value>
+        /// The name of the attribute entity type qualifier.
+        /// </value>
+        public string AttributeEntityTypeQualifierName { get; set; }
 
         /// <summary>
         /// Gets or sets whether this field is a Property or an Attribute
@@ -453,28 +499,6 @@ namespace Rock.Reporting
         ///   <c>true</c> if [is previewable]; otherwise, <c>false</c>.
         /// </value>
         public bool IsPreviewable { get; set; }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="EntityField"/> class.
-        /// </summary>
-        [Obsolete( "Use one of the other EntityField constructors instead" )]
-        public EntityField()
-        {
-            FieldConfig = new Dictionary<string, ConfigurationValue>();
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="EntityField"/> class.
-        /// </summary>
-        /// <param name="name">The name.</param>
-        /// <param name="fieldKind">Kind of the field.</param>
-        /// <param name="propertyType">Type of the property.</param>
-        /// <param name="attributeGuid">The attribute unique identifier.</param>
-        [Obsolete( "Use one of the other EntityField constructors instead" )]
-        public EntityField( string name, FieldKind fieldKind, Type propertyType, Guid? attributeGuid = null )
-            : this( name, fieldKind, propertyType, null, attributeGuid )
-        {
-        }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="EntityField" /> class.

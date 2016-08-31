@@ -1,11 +1,11 @@
 ﻿// <copyright>
-// Copyright 2013 by the Spark Development Network
+// Copyright by the Spark Development Network
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
+// Licensed under the Rock Community License (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-// http://www.apache.org/licenses/LICENSE-2.0
+// http://www.rockrms.com/license
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -41,8 +41,8 @@ namespace RockWeb.Blocks.Core
     [TextField( "Entity Type Qualifier Property", "", false )]
     [TextField( "Entity Type Qualifier Value", "", false )]
 
-    [CategoryField( "Root Category", "Select the root category to use as a starting point for the parent category picker.", false, Category = "CustomSetting" )]
-    [CategoryField( "Exclude Categories", "Select any category that you need to exclude from the parent category picker", true, Category = "CustomSetting" )]
+    [CategoryField( "Root Category", "Select the root category to use as a starting point for the parent category picker.", false, required:false, category: "CustomSetting" )]
+    [CategoryField( "Exclude Categories", "Select any category that you need to exclude from the parent category picker", true, required:false, category: "CustomSetting" )]
     public partial class CategoryDetail : RockBlockCustomSettings, IDetailBlock
     {
         #region Control Methods
@@ -320,6 +320,7 @@ namespace RockWeb.Blocks.Core
             if ( !categoryId.Equals( 0 ) )
             {
                 category = categoryService.Get( categoryId );
+                pdAuditDetails.SetEntity( category, ResolveRockUrl( "~" ) );
             }
 
             if ( category == null )
@@ -331,6 +332,8 @@ namespace RockWeb.Blocks.Core
                 category.EntityTypeId = entityTypeId;
                 category.EntityTypeQualifierColumn = entityTypeQualifierProperty;
                 category.EntityTypeQualifierValue = entityTypeQualifierValue;
+                // hide the panel drawer that show created and last modified dates
+                pdAuditDetails.Visible = false;
             }
 
             if (category.EntityTypeId != entityTypeId || !category.IsAuthorized( Authorization.VIEW, CurrentPerson ) )

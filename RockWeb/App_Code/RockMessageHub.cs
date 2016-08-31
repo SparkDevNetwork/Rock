@@ -1,11 +1,11 @@
 ﻿// <copyright>
-// Copyright 2013 by the Spark Development Network
+// Copyright by the Spark Development Network
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
+// Licensed under the Rock Community License (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-// http://www.apache.org/licenses/LICENSE-2.0
+// http://www.rockrms.com/license
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -23,11 +23,21 @@ using Microsoft.AspNet.SignalR.Hubs;
 
 /// <summary>
 /// This is the hub for sending/receiving messages. Javascript clients need to
-/// implement a receiveNotification handler:
+/// implement a receiveNotification handler as shown below and
+/// ensure to add the signalR-2.1.2.min.js before including /SignalR/hubs
 /// <code>
-///     proxy.client.receiveNotification = function (message) {
-///            //do something here...
-///        }
+///     // in OnInit
+///     RockPage.AddScriptLink( "~/Scripts/jquery.signalR-2.1.2.min.js", fingerprint: false );
+///
+///     /* in the ascx */
+///     <script src="/SignalR/hubs"></script>
+///     <script type="text/javascript">
+///     $(function () {
+///         var proxy = $.connection.rockMessageHub;
+///         proxy.client.receiveNotification = function (message) {
+///             //do something here...
+///         }
+///     })
 /// </code>
 /// </summary>
 namespace RockWeb
@@ -35,9 +45,9 @@ namespace RockWeb
     [HubName( "rockMessageHub" )]
     public class RockMessageHub : Hub
     {
-        public void Send(string message)
+        public void Send( string name, string message )
         {
-            Clients.All.receiveNotification( message );
+            Clients.All.receiveNotification( name, message );
         }
     }
 }

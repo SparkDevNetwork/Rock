@@ -1,11 +1,11 @@
 ﻿// <copyright>
-// Copyright 2013 by the Spark Development Network
+// Copyright by the Spark Development Network
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
+// Licensed under the Rock Community License (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-// http://www.apache.org/licenses/LICENSE-2.0
+// http://www.rockrms.com/license
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -191,7 +191,7 @@ namespace Rock.Web.UI.Controls.Communication
 
             htmlMessage = new HtmlEditor();
             htmlMessage.ID = string.Format( "htmlMessage_{0}", this.ID );
-            htmlMessage.AdditionalConfigurations = "autoParagraph: false,";
+            //htmlMessage.AdditionalConfigurations = "autoParagraph: false,";
             htmlMessage.Help = "<span class='tip tip-lava'></span> <span class='tip tip-html'>";
             this.AdditionalMergeFields.ForEach( m => htmlMessage.MergeFields.Add( m ) );
             htmlMessage.Label = "Message";
@@ -241,7 +241,7 @@ namespace Rock.Web.UI.Controls.Communication
         }
 
         /// <summary>
-        /// On new communicaiton, initializes controls from sender values
+        /// On new communication, initializes controls from sender values
         /// </summary>
         /// <param name="sender">The sender.</param>
         /// <exception cref="System.NotImplementedException"></exception>
@@ -408,6 +408,24 @@ function removeAttachment(source, hf, fileId)
     $(source).closest($('li')).remove();
 }";
             ScriptManager.RegisterStartupScript( this, this.GetType(), "removeAttachment", script, true );
+        }
+
+        /// <summary>
+        /// Called when [communication save].
+        /// </summary>
+        /// <param name="rockContext">The rock context.</param>
+        public override void OnCommunicationSave( RockContext rockContext )
+        {
+            var binaryFileIds = hfAttachments.Value.SplitDelimitedValues().AsIntegerList();
+            if ( binaryFileIds.Any() )
+            {
+                var binaryFileService = new BinaryFileService( rockContext );
+                foreach( var binaryFile in binaryFileService.Queryable()
+                    .Where( f => binaryFileIds.Contains( f.Id ) ) )
+                {
+                    binaryFile.IsTemporary = false;
+                }
+            }
         }
 
         #endregion

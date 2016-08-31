@@ -1,11 +1,11 @@
 ﻿// <copyright>
-// Copyright 2013 by the Spark Development Network
+// Copyright by the Spark Development Network
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
+// Licensed under the Rock Community License (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-// http://www.apache.org/licenses/LICENSE-2.0
+// http://www.rockrms.com/license
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -24,7 +24,7 @@ using Rock.Web.UI.Controls;
 namespace Rock.Field.Types
 {
     /// <summary>
-    /// 
+    /// Field used to edit text in a multi-line text box
     /// </summary>
     public class MemoFieldType : FieldType
     {
@@ -54,7 +54,7 @@ namespace Rock.Field.Types
         {
             var controls = base.ConfigurationControls();
 
-            // Add nuber box for selecting the number of rows
+            // Add number box for selecting the number of rows
             var nb = new NumberBox();
             controls.Add( nb );
             nb.AutoPostBack = true;
@@ -70,7 +70,7 @@ namespace Rock.Field.Types
             cb.CheckedChanged += OnQualifierUpdated;
             cb.Label = "Allow HTML";
             cb.Text = "Yes";
-            cb.Help = "Controls whether server shold prevent HTML from being entered in this field or not.";
+            cb.Help = "Controls whether server should prevent HTML from being entered in this field or not.";
 
             return controls;
         }
@@ -84,7 +84,7 @@ namespace Rock.Field.Types
         {
             Dictionary<string, ConfigurationValue> configurationValues = new Dictionary<string, ConfigurationValue>();
             configurationValues.Add( NUMBER_OF_ROWS, new ConfigurationValue( "Rows", "The number of rows to display (default is 3).", "" ) );
-            configurationValues.Add( ALLOW_HTML, new ConfigurationValue( "Allow HTML", "Controls whether server shold prevent HTML from being entered in this field or not.", "" ) );
+            configurationValues.Add( ALLOW_HTML, new ConfigurationValue( "Allow HTML", "Controls whether server should prevent HTML from being entered in this field or not.", "" ) );
 
             if ( controls != null )
             {

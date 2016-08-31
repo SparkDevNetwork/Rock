@@ -1,11 +1,11 @@
 ﻿// <copyright>
-// Copyright 2013 by the Spark Development Network
+// Copyright by the Spark Development Network
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
+// Licensed under the Rock Community License (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-// http://www.apache.org/licenses/LICENSE-2.0
+// http://www.rockrms.com/license
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -34,7 +34,7 @@ namespace Rock.Model
         /// <returns>An enumerable collection of <see cref="Rock.Model.GroupTypeRole"/> with a SortOrder that matches the provided value.</returns>
         public IEnumerable<GroupTypeRole> GetBySortOrder( int? sortOrder )
         {
-            return Queryable().Where( t => ( t.Order == sortOrder || ( sortOrder == null && t.Order == null ) ) );
+            return Queryable().Where( t => t.Order == sortOrder );
         }
 
         /// <summary>

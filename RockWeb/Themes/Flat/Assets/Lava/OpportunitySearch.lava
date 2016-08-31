@@ -1,4 +1,3 @@
-
 {% assign opportunityCount = Opportunities | Size %}
 
 {% if opportunityCount == 0 %}
@@ -11,7 +10,7 @@
   <div class="panel panel-default margin-t-md">
     <div class="panel-heading clearfix">
       <h2 class="panel-title pull-left">
-        <i class='{{opportunity.IconCssClass}}'></i> {{ opportunity.Name }}
+        <i class='{{opportunity.IconCssClass}}'></i> {{ opportunity.PublicName }}
       </h2>
     </div>
     <div class="panel-body">
@@ -20,7 +19,11 @@
       </div>
       <div class="col-md-10">
         <p>{{opportunity.Summary}}</p>
-        <a class="btn btn-default" href="{{ DetailPage }}?OpportunityId={{ opportunity.Id }}" role="button">More Info</a>
+		{% if DetailPage contains "?" %}
+			<a class="btn btn-default" href="{{ DetailPage }}&OpportunityId={{ opportunity.Id }}" role="button">More Info</a>
+		{% else %}
+			<a class="btn btn-default" href="{{ DetailPage }}?OpportunityId={{ opportunity.Id }}" role="button">More Info</a>
+		{% endif %}
       </div>
     </div>
   </div>

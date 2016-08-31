@@ -1,11 +1,11 @@
 ﻿// <copyright>
-// Copyright 2013 by the Spark Development Network
+// Copyright by the Spark Development Network
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
+// Licensed under the Rock Community License (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-// http://www.apache.org/licenses/LICENSE-2.0
+// http://www.rockrms.com/license
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -68,7 +68,7 @@ namespace RockWeb.Blocks.Cms
             string imageFileTypeWhiteList = globalAttributesCache.GetValue( "ContentImageFiletypeWhitelist" );
             string fileTypeBlackList = globalAttributesCache.GetValue( "ContentFiletypeBlacklist" );
 
-            var iframeUrl = ResolveRockUrl( "~/ckeditorplugins/rockfilebrowser" );
+            var iframeUrl = ResolveRockUrl( "~/htmleditorplugins/rockfilebrowser" );
             string rootFolder = GetAttributeValue( "RootFolder" );
             string browseMode = GetAttributeValue( "BrowseMode" );
             if ( string.IsNullOrWhiteSpace( browseMode ) )
@@ -77,9 +77,12 @@ namespace RockWeb.Blocks.Cms
             }
 
             iframeUrl += "?rootFolder=" + HttpUtility.UrlEncode( Encryption.EncryptString( rootFolder ) );
-            iframeUrl += "&browserMode=" + browseMode;
+            iframeUrl += "&browseMode=" + browseMode;
             iframeUrl += "&fileTypeBlackList=" + HttpUtility.UrlEncode( fileTypeBlackList );
-            iframeUrl += "&imageFileTypeWhiteList=" + HttpUtility.UrlEncode( imageFileTypeWhiteList );
+            if ( browseMode == "image" )
+            {
+                iframeUrl += "&imageFileTypeWhiteList=" + HttpUtility.UrlEncode( imageFileTypeWhiteList );
+            }
             iframeUrl += "&theme=" + this.RockPage.Site.Theme;
 
             iframeFileBrowser.Src = iframeUrl;

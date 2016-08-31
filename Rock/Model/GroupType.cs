@@ -1,11 +1,11 @@
 ﻿// <copyright>
-// Copyright 2013 by the Spark Development Network
+// Copyright by the Spark Development Network
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
+// Licensed under the Rock Community License (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-// http://www.apache.org/licenses/LICENSE-2.0
+// http://www.rockrms.com/license
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -167,6 +167,15 @@ namespace Rock.Model
         public bool TakesAttendance { get; set; }
 
         /// <summary>
+        /// Gets or sets a value indicating whether [attendance counts as weekend service].
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if [attendance counts as weekend service]; otherwise, <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool AttendanceCountsAsWeekendService { get; set; }
+
+        /// <summary>
         /// Gets or sets a value indicating if an attendance reminder should be sent to group leaders.
         /// </summary>
         /// <value>
@@ -198,6 +207,15 @@ namespace Rock.Model
         /// </example>
         [DataMember]
         public AttendanceRule AttendanceRule { get; set; }
+
+        /// <summary>
+        /// Gets or sets the group capacity rule.
+        /// </summary>
+        /// <value>
+        /// The group capacity rule.
+        /// </value>
+        [DataMember]
+        public GroupCapacityRule GroupCapacityRule { get; set; }
 
         /// <summary>
         /// Gets or sets the <see cref="Rock.Model.PrintTo"/> indicating the type of  location of where attendee labels for <see cref="Rock.Model.Group">Groups</see> of this GroupType should print.
@@ -289,6 +307,32 @@ namespace Rock.Model
         [DataMember]
         public bool IgnorePersonInactivated { get; set; }
 
+        /// <summary>
+        /// Gets or sets a value indicating whether [groups require campus].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [groups require campus]; otherwise, <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool GroupsRequireCampus { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether [group attendance requires location].
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if [group attendance requires location]; otherwise, <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool GroupAttendanceRequiresLocation { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether [group attendance requires schedule].
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if [group attendance requires schedule]; otherwise, <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool GroupAttendanceRequiresSchedule { get; set; }
         #endregion
 
         #region Virtual Properties
@@ -518,6 +562,27 @@ namespace Rock.Model
         /// User must already belong to the group before they will be allowed to check-in
         /// </summary>
         AlreadyBelongs = 2
+    }
+
+    /// <summary>
+    /// Group Capacity Rule
+    /// </summary>
+    public enum GroupCapacityRule
+    {
+        /// <summary>
+        /// The group does not have capacity limitations
+        /// </summary>
+        None = 0,
+
+        /// <summary>
+        /// The group can not go over capacity
+        /// </summary>
+        Hard = 1,
+
+        /// <summary>
+        /// A warning will be shown if a group is going to go over capacity
+        /// </summary>
+        Soft = 2
     }
 
     /// <summary>

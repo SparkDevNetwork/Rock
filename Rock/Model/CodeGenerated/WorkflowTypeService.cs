@@ -5,13 +5,13 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 // <copyright>
-// Copyright 2013 by the Spark Development Network
+// Copyright by the Spark Development Network
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
+// Licensed under the Rock Community License (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-// http://www.apache.org/licenses/LICENSE-2.0
+// http://www.rockrms.com/license
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -51,6 +51,18 @@ namespace Rock.Model
         public bool CanDelete( WorkflowType item, out string errorMessage )
         {
             errorMessage = string.Empty;
+ 
+            if ( new Service<RegistrationInstance>( Context ).Queryable().Any( a => a.RegistrationWorkflowTypeId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", WorkflowType.FriendlyTypeName, RegistrationInstance.FriendlyTypeName );
+                return false;
+            }  
+ 
+            if ( new Service<RegistrationTemplate>( Context ).Queryable().Any( a => a.RegistrationWorkflowTypeId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", WorkflowType.FriendlyTypeName, RegistrationTemplate.FriendlyTypeName );
+                return false;
+            }  
             return true;
         }
     }
@@ -100,6 +112,7 @@ namespace Rock.Model
             target.Name = source.Name;
             target.Order = source.Order;
             target.ProcessingIntervalSeconds = source.ProcessingIntervalSeconds;
+            target.WorkflowIdPrefix = source.WorkflowIdPrefix;
             target.WorkTerm = source.WorkTerm;
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;

@@ -1,11 +1,11 @@
 ﻿// <copyright>
-// Copyright 2013 by the Spark Development Network
+// Copyright by the Spark Development Network
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
+// Licensed under the Rock Community License (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-// http://www.apache.org/licenses/LICENSE-2.0
+// http://www.rockrms.com/license
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -279,25 +279,33 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Creates a new <see cref="Rock.Model.UserLogin" />
+        /// Creates the specified rock context.
         /// </summary>
         /// <param name="rockContext">The rock context.</param>
-        /// <param name="person">The <see cref="Rock.Model.Person" /> that this <see cref="UserLogin" /> will be associated with.</param>
-        /// <param name="serviceType">The <see cref="Rock.Model.AuthenticationServiceType" /> type of Login</param>
+        /// <param name="person">The person.</param>
+        /// <param name="serviceType">Type of the service.</param>
         /// <param name="entityTypeId">The entity type identifier.</param>
-        /// <param name="username">A <see cref="System.String" /> containing the UserName.</param>
-        /// <param name="password">A <see cref="System.String" /> containing the unhashed/unencrypted password.</param>
-        /// <param name="isConfirmed">A <see cref="System.Boolean" /> flag indicating if the user has been confirmed.</param>
+        /// <param name="username">The username.</param>
+        /// <param name="password">The password.</param>
+        /// <param name="isConfirmed">if set to <c>true</c> [is confirmed].</param>
+        /// <param name="isRequirePasswordChange">if set to <c>true</c> [is require password change].</param>
         /// <returns></returns>
-        /// <exception cref="System.ArgumentOutOfRangeException">Thrown when the Username already exists.</exception>
-        /// <exception cref="System.ArgumentException">Thrown when the service does not exist or is not active.</exception>
+        /// <exception cref="System.ArgumentOutOfRangeException">username;Username already exists</exception>
+        /// <exception cref="System.ArgumentException">
+        /// entityTypeId
+        /// or
+        /// Invalid EntityTypeId, entity does not exist;entityTypeId
+        /// or
+        /// Invalid Person, person does not exist;person
+        /// </exception>
         public static UserLogin Create( RockContext rockContext,
             Rock.Model.Person person,
             AuthenticationServiceType serviceType,
             int entityTypeId,
             string username,
             string password,
-            bool isConfirmed )
+            bool isConfirmed,
+            bool isRequirePasswordChange)
         {
             if ( person != null )
             {
@@ -319,6 +327,7 @@ namespace Rock.Model
                     user.IsConfirmed = isConfirmed;
                     user.LastPasswordChangedDateTime = createDate;
                     user.PersonId = person.Id;
+                    user.IsPasswordChangeRequired = isRequirePasswordChange;
 
                     if ( serviceType == AuthenticationServiceType.Internal )
                     {
@@ -351,6 +360,30 @@ namespace Rock.Model
             {
                 throw new ArgumentException( "Invalid Person, person does not exist", "person" );
             }
+        }
+
+        /// <summary>
+        /// Creates a new <see cref="Rock.Model.UserLogin" />
+        /// </summary>
+        /// <param name="rockContext">The rock context.</param>
+        /// <param name="person">The <see cref="Rock.Model.Person" /> that this <see cref="UserLogin" /> will be associated with.</param>
+        /// <param name="serviceType">The <see cref="Rock.Model.AuthenticationServiceType" /> type of Login</param>
+        /// <param name="entityTypeId">The entity type identifier.</param>
+        /// <param name="username">A <see cref="System.String" /> containing the UserName.</param>
+        /// <param name="password">A <see cref="System.String" /> containing the unhashed/unencrypted password.</param>
+        /// <param name="isConfirmed">A <see cref="System.Boolean" /> flag indicating if the user has been confirmed.</param>
+        /// <returns></returns>
+        /// <exception cref="System.ArgumentOutOfRangeException">Thrown when the Username already exists.</exception>
+        /// <exception cref="System.ArgumentException">Thrown when the service does not exist or is not active.</exception>
+        public static UserLogin Create( RockContext rockContext,
+            Rock.Model.Person person,
+            AuthenticationServiceType serviceType,
+            int entityTypeId,
+            string username,
+            string password,
+            bool isConfirmed )
+        {
+            return UserLoginService.Create( rockContext, person, serviceType, entityTypeId, username, password, isConfirmed, false );
         }
 
         /// <summary>
@@ -390,7 +423,8 @@ namespace Rock.Model
                                 EntityTypeId = personEntityTypeId,
                                 CategoryId = activityCategoryId,
                                 EntityId = userLogin.PersonId.Value,
-                                Summary = summary.ToString()
+                                Summary = summary.ToString(),
+                                Verb = "LOGIN"
                             } );
                         }
 

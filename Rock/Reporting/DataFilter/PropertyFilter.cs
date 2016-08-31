@@ -1,11 +1,11 @@
 ﻿// <copyright>
-// Copyright 2013 by the Spark Development Network
+// Copyright by the Spark Development Network
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
+// Licensed under the Rock Community License (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-// http://www.apache.org/licenses/LICENSE-2.0
+// http://www.rockrms.com/license
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -163,24 +163,47 @@ namespace Rock.Reporting.DataFilter
             // add Empty option first
             ddlEntityField.Items.Add( new ListItem() );
             var rockBlock = filterControl.RockBlock();
+            var entityTypeCache = EntityTypeCache.Read( entityType, true );
 
             this.entityFields = EntityHelper.GetEntityFields( entityType );
-            foreach ( var entityField in this.entityFields )
+            foreach ( var entityField in this.entityFields.OrderBy(a => !a.IsPreviewable).ThenBy(a => a.FieldKind != FieldKind.Property ).ThenBy(a => a.Title) )
             {
                 bool isAuthorized = true;
+                bool includeField = true;
                 if ( entityField.FieldKind == FieldKind.Attribute && entityField.AttributeGuid.HasValue)
                 {
+                    if ( entityType == typeof( Rock.Model.Workflow ) && !string.IsNullOrWhiteSpace(entityField.AttributeEntityTypeQualifierName) )
+                    {
+                        // Workflows can contain tons of Qualified Attributes, so let the WorkflowAttributeFilter take care of those
+                        includeField = false;
+                    }
+                    
                     var attribute = AttributeCache.Read( entityField.AttributeGuid.Value );
-                    if ( attribute != null && rockBlock != null )
+                    if ( includeField && attribute != null && rockBlock != null )
                     {
                         // only show the Attribute field in the drop down if they have VIEW Auth to it
                         isAuthorized = attribute.IsAuthorized( Rock.Security.Authorization.VIEW, rockBlock.CurrentPerson );
                     }
                 }
 
-                if ( isAuthorized )
+                if ( isAuthorized && includeField )
                 {
-                    ddlEntityField.Items.Add( new ListItem( entityField.Title, entityField.Name ) );
+                    var listItem = new ListItem( entityField.Title, entityField.Name );
+
+                    if ( entityField.IsPreviewable )
+                    {
+                        listItem.Attributes["optiongroup"] = "Common";
+                    }
+                    else if (entityField.FieldKind == FieldKind.Attribute)
+                    {
+                        listItem.Attributes["optiongroup"] = string.Format( "{0} Attributes", entityType.Name );
+                    }
+                    else
+                    {
+                        listItem.Attributes["optiongroup"] = string.Format( "{0} Fields", entityType.Name );
+                    }
+
+                    ddlEntityField.Items.Add( listItem  );
                 }
             }
             
@@ -352,10 +375,6 @@ namespace Rock.Reporting.DataFilter
             return null;
         }
 
-        #endregion
-
-        #region Private Methods
-
         /// <summary>
         /// Builds an expression for a property field
         /// </summary>
@@ -364,7 +383,7 @@ namespace Rock.Reporting.DataFilter
         /// <param name="entityField">The property.</param>
         /// <param name="values">The values.</param>
         /// <returns></returns>
-        private Expression GetPropertyExpression( IService serviceInstance, ParameterExpression parameterExpression, EntityField entityField, List<string> values )
+        public Expression GetPropertyExpression( IService serviceInstance, ParameterExpression parameterExpression, EntityField entityField, List<string> values )
         {
             Expression trueValue = Expression.Constant( true );
             MemberExpression propertyExpression = Expression.Property( parameterExpression, entityField.Name );

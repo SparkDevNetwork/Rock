@@ -1,11 +1,11 @@
 ﻿// <copyright>
-// Copyright 2013 by the Spark Development Network
+// Copyright by the Spark Development Network
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
+// Licensed under the Rock Community License (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-// http://www.apache.org/licenses/LICENSE-2.0
+// http://www.rockrms.com/license
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -19,6 +19,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Web.Hosting;
 
 using RestSharp;
 using System.Configuration;
@@ -48,7 +49,7 @@ namespace Rock.Store
         /// <returns></returns>
         public static List<InstalledPackage> GetInstalledPackages()
         {
-            string packageFile = HttpContext.Current.Server.MapPath( "~/App_Data/InstalledStorePackages.json" );
+            string packageFile = HostingEnvironment.MapPath("~/App_Data/InstalledStorePackages.json");
 
             try
             {
@@ -73,7 +74,12 @@ namespace Rock.Store
         {
             var installedPackages = GetInstalledPackages();
 
-            return installedPackages.Where( p => p.PackageId == packageId ).FirstOrDefault();
+            if ( installedPackages != null )
+            {
+                return installedPackages.Where( p => p.PackageId == packageId ).FirstOrDefault();
+            }
+
+            return null;
         }
 
 

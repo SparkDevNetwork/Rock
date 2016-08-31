@@ -1,11 +1,11 @@
 ﻿// <copyright>
-// Copyright 2013 by the Spark Development Network
+// Copyright by the Spark Development Network
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
+// Licensed under the Rock Community License (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-// http://www.apache.org/licenses/LICENSE-2.0
+// http://www.rockrms.com/license
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -47,7 +47,7 @@ namespace Rock.Field.Types
         }
 
         /// <summary>
-        /// Values the type of as field.
+        /// Returns the value using the most appropriate datatype
         /// </summary>
         /// <param name="parentControl">The parent control.</param>
         /// <param name="value">The value.</param>
@@ -56,6 +56,19 @@ namespace Rock.Field.Types
         public override object ValueAsFieldType( System.Web.UI.Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues )
         {
             return value.AsDecimalOrNull();
+        }
+
+        /// <summary>
+        /// Returns the value that should be used for sorting, using the most appropriate datatype
+        /// </summary>
+        /// <param name="parentControl">The parent control.</param>
+        /// <param name="value">The value.</param>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <returns></returns>
+        public override object SortValue( System.Web.UI.Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues )
+        {
+            // return ValueAsFieldType which returns the value as a Decimal
+            return this.ValueAsFieldType( parentControl, value, configurationValues );
         }
 
         /// <summary>
@@ -135,12 +148,11 @@ namespace Rock.Field.Types
             if ( filterValues.Count == 1 )
             {
                 MemberExpression propertyExpression = Expression.Property( parameterExpression, "ValueAsNumeric" );
-                ConstantExpression constantExpression = Expression.Constant( filterValues[0].AsDecimal(), typeof( decimal ) );
                 ComparisonType comparisonType = ComparisonType.EqualTo;
-                return ComparisonHelper.ComparisonExpression( comparisonType, propertyExpression, constantExpression );
+                return ComparisonHelper.ComparisonExpression( comparisonType, propertyExpression, AttributeConstantExpression( filterValues[0] ) );
             }
 
-            return null;
+            return base.AttributeFilterExpression( configurationValues, filterValues, parameterExpression );
         }
 
         /// <summary>
@@ -155,6 +167,16 @@ namespace Rock.Field.Types
             {
                 return "ValueAsNumeric";
             }
+        }
+
+        /// <summary>
+        /// Attributes the constant expression.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
+        public override ConstantExpression AttributeConstantExpression( string value )
+        {
+            return Expression.Constant( value.AsDecimal(), typeof( decimal ) );
         }
 
         /// <summary>

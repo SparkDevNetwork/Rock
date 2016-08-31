@@ -1,11 +1,11 @@
 ﻿// <copyright>
-// Copyright 2013 by the Spark Development Network
+// Copyright by the Spark Development Network
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
+// Licensed under the Rock Community License (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-// http://www.apache.org/licenses/LICENSE-2.0
+// http://www.rockrms.com/license
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -27,6 +27,7 @@ using Rock;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
+using Rock.Security;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
@@ -134,8 +135,15 @@ namespace RockWeb.Blocks.Crm
         /// </summary>
         private void LoadViewDetails()
         {
-            if ( !Page.IsPostBack )
+            if ( Page.IsPostBack )
             {
+                nbMergeRequestSuccess.Visible = false;
+                nbMergeRequestAlreadySubmitted.Visible = false;
+            }
+            else
+            { 
+                nbNotAuthorized.Visible = true;
+
                 int? setId = PageParameter( "Set" ).AsIntegerOrNull();
                 if ( setId.HasValue )
                 {
@@ -149,9 +157,12 @@ namespace RockWeb.Blocks.Crm
                         var definedValuePurpose = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.ENTITY_SET_PURPOSE_PERSON_MERGE_REQUEST.AsGuid() );
                         if ( definedValuePurpose != null )
                         {
+                            nbNotAuthorized.Visible = false;
+                            tbEntitySetNote.Visible = true;
+                            btnSaveRequestNote.Visible = true;
+
                             if ( entitySet.EntitySetPurposeValueId != definedValuePurpose.Id && entitySet.ExpireDateTime != null )
                             {
-                                nbMergeRequestAlreadySubmitted.Visible = false;
                                 nbMergeRequestSuccess.Visible = true;
                                 entitySet.EntitySetPurposeValueId = definedValuePurpose.Id;
                                 entitySet.ExpireDateTime = null;
@@ -160,7 +171,6 @@ namespace RockWeb.Blocks.Crm
                             else
                             {
                                 nbMergeRequestAlreadySubmitted.Visible = true;
-                                nbMergeRequestSuccess.Visible = false;
                             }
                         }
                     }
@@ -190,7 +200,7 @@ namespace RockWeb.Blocks.Crm
                         .ToList();
 
                     // Create the data structure used to build grid
-                    MergeData = new MergeData( people, headingKeys );
+                    MergeData = new MergeData( people, headingKeys, CurrentPerson );
                     MergeData.EntitySetId = setId.Value;
                     BuildColumns();
                     BindGrid();
@@ -247,7 +257,7 @@ namespace RockWeb.Blocks.Crm
                     .ToList();
 
                 // Rebuild mergdata, columns, and grid
-                MergeData = new MergeData( people, headingKeys );
+                MergeData = new MergeData( people, headingKeys, CurrentPerson );
                 BuildColumns();
                 BindGrid();
             }
@@ -276,7 +286,7 @@ namespace RockWeb.Blocks.Crm
                     .ToList();
 
                 // Rebuild mergdata, columns, and grid
-                MergeData = new MergeData( people, headingKeys );
+                MergeData = new MergeData( people, headingKeys, CurrentPerson );
                 BuildColumns();
                 BindGrid();
             }
@@ -333,6 +343,7 @@ namespace RockWeb.Blocks.Crm
                 var groupMemberService = new GroupMemberService( rockContext );
                 var binaryFileService = new BinaryFileService( rockContext );
                 var phoneNumberService = new PhoneNumberService( rockContext );
+                var taggedItemService = new TaggedItemService( rockContext );
 
                 Person primaryPerson = personService.Get( MergeData.PrimaryPersonId ?? 0 );
                 if ( primaryPerson != null )
@@ -386,6 +397,7 @@ namespace RockWeb.Blocks.Crm
 
                         string key = "phone_" + phoneType.Id.ToString();
                         string newValue = GetNewStringValue( key, changes );
+                        bool phoneNumberDeleted = false;
 
                         if ( !oldValue.Equals( newValue, StringComparison.OrdinalIgnoreCase ) )
                         {
@@ -412,7 +424,19 @@ namespace RockWeb.Blocks.Crm
                                     // old value existed.. delete it
                                     primaryPerson.PhoneNumbers.Remove( phoneNumber );
                                     phoneNumberService.Delete( phoneNumber );
+                                    phoneNumberDeleted = true;
                                 }
+                            }
+                        }
+
+                        // check to see if IsMessagingEnabled is true for any of the merged people for this number/numbertype
+                        if ( phoneNumber != null && !phoneNumberDeleted && !phoneNumber.IsMessagingEnabled )
+                        {
+                            var personIds = MergeData.People.Select( a => a.Id ).ToList();
+                            var isMessagingEnabled = phoneNumberService.Queryable().Where( a => personIds.Contains( a.PersonId ) && a.Number == phoneNumber.Number && a.NumberTypeValueId == phoneNumber.NumberTypeValueId ).Any( a => a.IsMessagingEnabled );
+                            if ( isMessagingEnabled )
+                            {
+                                phoneNumber.IsMessagingEnabled = true;
                             }
                         }
                     }
@@ -501,22 +525,27 @@ namespace RockWeb.Blocks.Crm
                             {
                                 // If there are not any other family members, delete the family record.
 
-                                var oldFamilyChanges = new List<string>();
-                                History.EvaluateChange( oldFamilyChanges, "Family", family.Name, string.Empty );
-                                HistoryService.SaveChanges( rockContext, typeof( Person ), Rock.SystemGuid.Category.HISTORY_PERSON_FAMILY_CHANGES.AsGuid(),
-                                    primaryPersonId.Value, oldFamilyChanges, family.Name, typeof( Group ), family.Id );
-
                                 // If theres any people that have this group as a giving group, set it to null (the person being merged should be the only one)
                                 foreach ( Person gp in personService.Queryable().Where( g => g.GivingGroupId == family.Id ) )
                                 {
                                     gp.GivingGroupId = null;
                                 }
 
-                                // Delete the family
-                                groupService.Delete( family );
-
+                                // save to the database prior to doing groupService.Delete since .Delete quietly might not delete if thinks the Family is used for a GivingGroupId
                                 rockContext.SaveChanges();
 
+                                // Delete the family
+                                string errorMessage;
+                                if ( groupService.CanDelete( family, out errorMessage ) )
+                                {
+                                    var oldFamilyChanges = new List<string>();
+                                    History.EvaluateChange( oldFamilyChanges, "Family", family.Name, string.Empty );
+                                    HistoryService.SaveChanges( rockContext, typeof( Person ), Rock.SystemGuid.Category.HISTORY_PERSON_FAMILY_CHANGES.AsGuid(),
+                                        primaryPersonId.Value, oldFamilyChanges, family.Name, typeof( Group ), family.Id );
+
+                                    groupService.Delete( family );
+                                    rockContext.SaveChanges();
+                                }
                             }
                         }
                     }
@@ -870,7 +899,7 @@ namespace RockWeb.Blocks.Crm
         /// Initializes a new instance of the <see cref="MergeData"/> class.
         /// </summary>
         /// <param name="people">The people.</param>
-        public MergeData( List<Person> people, List<string> headingKeys )
+        public MergeData( List<Person> people, List<string> headingKeys, Person currentPerson )
         {
             People = new List<MergePerson>();
             Properties = new List<PersonProperty>();
@@ -906,10 +935,13 @@ namespace RockWeb.Blocks.Crm
                 person.LoadAttributes();
                 foreach ( var attribute in person.Attributes.OrderBy( a => a.Value.Order ) )
                 {
-                    string value = person.GetAttributeValue( attribute.Key );
-                    bool condensed = attribute.Value.FieldType.Class == typeof( Rock.Field.Types.ImageFieldType ).FullName;
-                    string formattedValue = attribute.Value.FieldType.Field.FormatValue( null, value, attribute.Value.QualifierValues, condensed );
-                    AddProperty( "attr_" + attribute.Key, attribute.Value.Name, person.Id, value, formattedValue );
+                    if ( attribute.Value.IsAuthorized( Rock.Security.Authorization.VIEW, currentPerson ) )
+                    {
+                        string value = person.GetAttributeValue( attribute.Key );
+                        bool condensed = attribute.Value.FieldType.Class == typeof( Rock.Field.Types.ImageFieldType ).FullName;
+                        string formattedValue = attribute.Value.FieldType.Field.FormatValue( null, value, attribute.Value.QualifierValues, condensed );
+                        AddProperty( "attr_" + attribute.Key, attribute.Value.Name, person.Id, value, formattedValue );
+                    }
                 }
             }
 
@@ -1068,7 +1100,7 @@ namespace RockWeb.Blocks.Crm
 
             AddProperty( "Photo", "Photo", person.Id,
                 person.PhotoId.HasValue ? person.PhotoId.ToString() : string.Empty,
-                Person.GetPhotoImageTag( person, 65, 65, "merge-photo" ) );
+                Person.GetPersonPhotoImageTag( person, 65, 65, "merge-photo" ) );
             AddProperty( "Title", person.Id, person.TitleValue );
             AddProperty( "FirstName", person.Id, person.FirstName );
             AddProperty( "NickName", person.Id, person.NickName );
@@ -1190,6 +1222,7 @@ namespace RockWeb.Blocks.Crm
         public string ModifiedBy { get; set; }
         public string Email { get; set; }
         public bool HasLogins { get; set; }
+        public Guid Guid { get; set; }
 
         public MergePerson( Person person )
         {
@@ -1198,6 +1231,7 @@ namespace RockWeb.Blocks.Crm
             ModifiedDateTime = person.ModifiedDateTime;
             Email = person.Email;
             HasLogins = person.Users.Any();
+            Guid = person.Guid;
 
             if ( person.ModifiedByPersonAlias != null &&
                 person.ModifiedByPersonAlias.Person != null )

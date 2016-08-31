@@ -1,11 +1,11 @@
 ﻿// <copyright>
-// Copyright 2013 by the Spark Development Network
+// Copyright by the Spark Development Network
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
+// Licensed under the Rock Community License (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-// http://www.apache.org/licenses/LICENSE-2.0
+// http://www.rockrms.com/license
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -53,6 +53,7 @@ namespace RockWeb.Blocks.Groups
 ", "", 8 )]
     [CustomRadioListField( "Auto Fill Form", "If set to FALSE then the form will not load the context of the logged in user (default: 'True'.)", "true^True,false^False", true, "true", "", 9 )]
     [TextField( "Register Button Alt Text", "Alternate text to use for the Register button (default is 'Register').", false, "", "", 10 )]
+    [BooleanField( "Prevent Overcapacity Registrations", "When set to true, user cannot register for groups that are at capacity or whose default GroupTypeRole are at capacity. If only one spot is available, no spouses can be registered.", true, "", 11 )]
     public partial class GroupRegistration : RockBlock
     {
         #region Fields
@@ -312,10 +313,10 @@ namespace RockWeb.Blocks.Groups
                         {
                             spouse = new Person();
 
-                            spouse.FirstName = tbSpouseFirstName.Text;
+                            spouse.FirstName = tbSpouseFirstName.Text.FixCase();
                             History.EvaluateChange( spouseChanges, "First Name", string.Empty, spouse.FirstName );
 
-                            spouse.LastName = tbSpouseLastName.Text;
+                            spouse.LastName = tbSpouseLastName.Text.FixCase();
                             History.EvaluateChange( spouseChanges, "Last Name", string.Empty, spouse.LastName );
 
                             spouse.ConnectionStatusValueId = _dvcConnectionStatus.Id;
@@ -492,6 +493,49 @@ namespace RockWeb.Blocks.Groups
                                 }
                             }
                         }
+                    }
+                }
+               
+                if ( GetAttributeValue( "PreventOvercapacityRegistrations" ).AsBoolean() )
+                {
+                    int openGroupSpots = 2;
+                    int openRoleSpots = 2;
+
+                    // If the group has a GroupCapacity, check how far we are from hitting that.
+                    if ( _group.GroupCapacity.HasValue )
+                    {
+                        openGroupSpots = _group.GroupCapacity.Value - _group.Members.Count();
+                    }
+
+                    // When someone registers for a group on the front-end website, they automatically get added with the group's default
+                    // GroupTypeRole. If that role exists and has a MaxCount, check how far we are from hitting that.
+                    if ( _defaultGroupRole != null && _defaultGroupRole.MaxCount.HasValue )
+                    {
+                        openRoleSpots = _defaultGroupRole.MaxCount.Value - _group.Members.Where( m => m.GroupRoleId == _defaultGroupRole.Id ).Count();
+                    }
+
+                    // Between the group's GroupCapacity and DefaultGroupRole.MaxCount, grab the one we're closest to hitting, and how close we are to
+                    // hitting it.
+                    int openSpots = Math.Min( openGroupSpots, openRoleSpots );
+
+                    // If there's only one spot open, disable the spouse fields and display a warning message.
+                    if ( openSpots == 1 )
+                    {
+                        tbSpouseFirstName.Enabled = false;
+                        tbSpouseLastName.Enabled = false;
+                        pnSpouseCell.Enabled = false;
+                        cbSpouseSms.Enabled = false;
+                        tbSpouseEmail.Enabled = false;
+                        nbWarning.Text = "This group is near its capacity. Only one individual can register.";
+                        nbWarning.Visible = true;
+                    }
+
+                    // If no spots are open, display a message that says so.
+                    if ( openSpots <= 0 )
+                    {
+                        nbNotice.Text = "This group is at or exceeds capacity.";
+                        nbNotice.Visible = true;
+                        pnlView.Visible = false;
                     }
                 }
             }

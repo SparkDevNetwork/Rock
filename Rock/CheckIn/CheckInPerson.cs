@@ -1,11 +1,11 @@
 ﻿// <copyright>
-// Copyright 2013 by the Spark Development Network
+// Copyright by the Spark Development Network
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
+// Licensed under the Rock Community License (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-// http://www.apache.org/licenses/LICENSE-2.0
+// http://www.rockrms.com/license
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -16,6 +16,7 @@
 //
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.Serialization;
 
 using Rock.Attribute;
@@ -56,6 +57,7 @@ namespace Rock.CheckIn
         [DataMember]
         public bool ExcludedByFilter { get; set; }
 
+
         /// <summary>
         /// Gets or sets a value indicating whether this <see cref="CheckInPerson" /> was pre-selected by a check-in action.
         /// </summary>
@@ -73,6 +75,15 @@ namespace Rock.CheckIn
         /// </value>
         [DataMember]
         public bool Selected { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether this <see cref="CheckInPerson"/> is processed.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if processed; otherwise, <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool Processed { get; set; }
 
         /// <summary>
         /// Gets or sets the last time person checked in to any of the GroupTypes
@@ -111,12 +122,57 @@ namespace Rock.CheckIn
         public List<CheckInGroupType> GroupTypes { get; set; }
 
         /// <summary>
+        /// Gets or sets the possible schedules.
+        /// </summary>
+        /// <value>
+        /// The possible schedules.
+        /// </value>
+        [DataMember]
+        public List<CheckInSchedule> PossibleSchedules { get; set; }
+
+        /// <summary>
+        /// Gets or sets state parameters which can be used by workflow actions to track state of current person's check-in
+        /// </summary>
+        /// <value>
+        /// The state parameters.
+        /// </value>
+        [DataMember]
+        public Dictionary<string, string> StateParameters { get; set; }
+
+        /// <summary>
+        /// Gets the selected schedules.
+        /// </summary>
+        /// <value>
+        /// The selected schedules.
+        /// </value>
+        public List<CheckInSchedule> SelectedSchedules
+        {
+            get { return PossibleSchedules.Where( s => s.Selected == true ).ToList(); }
+        }
+
+        /// <summary>
+        /// Gets the current schedule if using family check-in mode.
+        /// </summary>
+        /// <value>
+        /// The current schedule.
+        /// </value>
+        public CheckInSchedule CurrentSchedule
+        {
+            get
+            {
+                return SelectedSchedules.FirstOrDefault( s => !s.Processed );
+            }
+        }
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="CheckInPerson" /> class.
         /// </summary>
         public CheckInPerson()
             : base()
         {
             GroupTypes = new List<CheckInGroupType>();
+            PossibleSchedules = new List<CheckInSchedule>();
+            StateParameters = new Dictionary<string, string>();
         }
 
         /// <summary>
@@ -129,6 +185,55 @@ namespace Rock.CheckIn
             {
                 groupType.ClearFilteredExclusions();
             }
+        }
+
+
+        /// <summary>
+        /// Returns the selected group types.
+        /// </summary>
+        /// <param name="currentSchedule">The current schedule.</param>
+        /// <returns></returns>
+        public List<CheckInGroupType> SelectedGroupTypes( CheckInSchedule currentSchedule )
+        {
+            return ( currentSchedule != null && currentSchedule.Schedule != null ) ?
+                GroupTypes.Where( t => t.SelectedForSchedule.Contains( currentSchedule.Schedule.Id ) ).ToList() :
+                GroupTypes.Where( t => t.Selected ).ToList();
+        }
+
+        /// <summary>
+        /// Gets the group types.
+        /// </summary>
+        /// <param name="selectedOnly">if set to <c>true</c> [selected only].</param>
+        /// <returns></returns>
+        public List<CheckInGroupType> GetGroupTypes( bool selectedOnly )
+        {
+            if ( selectedOnly )
+            {
+                if ( PossibleSchedules.Any() )
+                {
+                    var selectedScheduleIds = SelectedSchedules.Select( s => s.Schedule.Id ).ToList();
+                    return GroupTypes.Where( t => t.SelectedForSchedule.Any( s => selectedScheduleIds.Contains( s ) ) ).ToList();
+                }
+
+                return GroupTypes.Where( t => t.Selected ).ToList();
+            }
+
+            return GroupTypes;
+        }
+
+        /// <summary>
+        /// Gets the available group types.
+        /// </summary>
+        /// <param name="schedule">The schedule.</param>
+        /// <returns></returns>
+        public List<CheckInGroupType> GetAvailableGroupTypes( CheckInSchedule schedule )
+        {
+            var groupTypes = GroupTypes.Where( t => !t.ExcludedByFilter );
+            if ( schedule != null )
+            {
+                groupTypes = groupTypes.Where( t => t.AvailableForSchedule.Contains( schedule.Schedule.Id ) );
+            }
+            return groupTypes.ToList();
         }
 
         /// <summary>
@@ -163,7 +268,7 @@ namespace Rock.CheckIn
         {
             get
             {
-                var availableKeys = new List<string> { "FamilyMember", "LastCheckIn", "FirstTime", "SecurityCode" };
+                var availableKeys = new List<string> { "FamilyMember", "LastCheckIn", "FirstTime", "SecurityCode", "GroupTypes" };
                 if ( this.Person != null )
                 {
                     availableKeys.AddRange( this.Person.AvailableKeys );
@@ -187,11 +292,12 @@ namespace Rock.CheckIn
             {
                switch( key.ToStringSafe() )
                {
-                   case "FamilyMember": return FamilyMember;
-                   case "LastCheckIn": return LastCheckIn;
-                   case "FirstTime": return FirstTime;
-                   case "SecurityCode": return SecurityCode;
-                   default: return Person[key];
+                    case "FamilyMember": return FamilyMember;
+                    case "LastCheckIn": return LastCheckIn;
+                    case "FirstTime": return FirstTime;
+                    case "SecurityCode": return SecurityCode;
+                    case "GroupTypes": return GetGroupTypes( true );
+                    default: return Person[key];
                }
             }
         }
@@ -203,7 +309,7 @@ namespace Rock.CheckIn
         /// <returns></returns>
         public bool ContainsKey( object key )
         {
-            var additionalKeys = new List<string> { "FamilyMember", "LastCheckIn", "FirstTime", "SecurityCode" };
+            var additionalKeys = new List<string> { "FamilyMember", "LastCheckIn", "FirstTime", "SecurityCode", "GroupTypes" };
             if ( additionalKeys.Contains( key.ToStringSafe() ) )
             {
                 return true;

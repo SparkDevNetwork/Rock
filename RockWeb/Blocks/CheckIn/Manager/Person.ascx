@@ -39,7 +39,7 @@
         </Rock:RockControlWrapper>
         
 
-        <Rock:RockControlWrapper ID="rcwCheckinHistory" runat="server" Label="Checkin History">
+        <Rock:RockControlWrapper ID="rcwCheckinHistory" runat="server" Label="Check-in History">
             <Rock:Grid ID="gHistory" runat="server" DisplayType="Light" AllowPaging="false" CssClass="table-condensed">
                 <Columns>
                     <Rock:RockTemplateField HeaderText="When">
@@ -54,9 +54,10 @@
                             <%# Eval("Group") %>
                         </ItemTemplate>
                     </Rock:RockTemplateField>
-                    <Rock:RockTemplateField>
+                    <Rock:RockTemplateField HeaderText="Code">
                         <ItemTemplate>
-                            <asp:Literal id="lActive" runat="server"></asp:Literal>
+                            <asp:Literal id="lActive" runat="server"></asp:Literal><br />
+                            <%# Eval("Code") %>
                         </ItemTemplate>
                     </Rock:RockTemplateField>
                 </Columns>

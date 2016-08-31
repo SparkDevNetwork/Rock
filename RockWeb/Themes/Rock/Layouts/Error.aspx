@@ -10,7 +10,7 @@
     <link rel="stylesheet" href="<%= Page.ResolveUrl("~/Themes/Stark/Styles/bootstrap.css") %>" />
     <link rel="stylesheet" href="<%= Page.ResolveUrl("~/Themes/Stark/Styles/theme.css") %>" />
 
-    <script src="<%# ResolveUrl("~/Scripts/jquery-1.10.2.min.js") %>">
+    <script src="<%# ResolveUrl("~/Scripts/jquery-1.12.4.min.js") %>">
         $(document).ready(function () {
             $(".stack-trace").hide();
             

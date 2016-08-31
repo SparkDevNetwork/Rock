@@ -1,4 +1,5 @@
 ﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="SampleData.ascx.cs" Inherits="RockWeb.Blocks.Examples.SampleData" %>
+<%@ Reference Control="~/Blocks/Event/RegistrationTemplateDetail.ascx" %>
 
 <script src="/SignalR/hubs"></script>
 <script type="text/javascript">
@@ -9,8 +10,10 @@
             $("div[id$='_messageContainer']").fadeIn();
         }
 
-        proxy.client.receiveNotification = function (message) {
-            $("div[id$='_messageContainer']").append(message);
+        proxy.client.receiveNotification = function (name, message) {
+            if (name == "sampleDataImport") {
+                $("div[id$='_messageContainer']").append(message);
+            }
         }
 
         $.connection.hub.start().done(function () {

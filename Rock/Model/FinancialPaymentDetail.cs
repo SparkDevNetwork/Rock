@@ -1,11 +1,11 @@
 ﻿// <copyright>
-// Copyright 2013 by the Spark Development Network
+// Copyright by the Spark Development Network
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
+// Licensed under the Rock Community License (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-// http://www.apache.org/licenses/LICENSE-2.0
+// http://www.rockrms.com/license
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -197,16 +197,36 @@ namespace Rock.Model
         {
             if ( changes != null )
             {
-                History.EvaluateChange( changes, "Account Number", AccountNumberMasked, paymentInfo.MaskedNumber );
-                History.EvaluateChange( changes, "Currency Type", DefinedValueCache.GetName( CurrencyTypeValueId ),
-                    paymentInfo.CurrencyTypeValue != null ? paymentInfo.CurrencyTypeValue.Value : string.Empty );
-                History.EvaluateChange( changes, "Credit Card Type", DefinedValueCache.GetName( CreditCardTypeValueId ),
-                    paymentInfo.CreditCardTypeValue != null ? paymentInfo.CreditCardTypeValue.Value : string.Empty );
+                if ( !string.IsNullOrWhiteSpace( paymentInfo.MaskedNumber ) )
+                {
+                    History.EvaluateChange( changes, "Account Number", AccountNumberMasked, paymentInfo.MaskedNumber );
+                }
+
+                if ( paymentInfo.CurrencyTypeValue != null )
+                {
+                    History.EvaluateChange( changes, "Currency Type", DefinedValueCache.GetName( CurrencyTypeValueId ), paymentInfo.CurrencyTypeValue.Value );
+                }
+
+                if ( paymentInfo.CreditCardTypeValue != null )
+                {
+                    History.EvaluateChange( changes, "Credit Card Type", DefinedValueCache.GetName( CreditCardTypeValueId ), paymentInfo.CreditCardTypeValue.Value );
+                }
             }
 
-            AccountNumberMasked = paymentInfo.MaskedNumber;
-            CurrencyTypeValueId = paymentInfo.CurrencyTypeValue != null ? paymentInfo.CurrencyTypeValue.Id : (int?)null;
-            CreditCardTypeValueId = paymentInfo.CreditCardTypeValue != null ? paymentInfo.CreditCardTypeValue.Id : (int?)null;
+            if ( !string.IsNullOrWhiteSpace( paymentInfo.MaskedNumber ) )
+            {
+                AccountNumberMasked = paymentInfo.MaskedNumber;
+            }
+
+            if ( paymentInfo.CurrencyTypeValue != null )
+            {
+                CurrencyTypeValueId = paymentInfo.CurrencyTypeValue.Id;
+            }
+
+            if ( paymentInfo.CreditCardTypeValue != null )
+            {
+                CreditCardTypeValueId = paymentInfo.CreditCardTypeValue.Id;
+            }
 
             if ( paymentInfo is CreditCardPaymentInfo )
             {

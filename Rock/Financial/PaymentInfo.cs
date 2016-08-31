@@ -1,11 +1,11 @@
 ﻿// <copyright>
-// Copyright 2013 by the Spark Development Network
+// Copyright by the Spark Development Network
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
+// Licensed under the Rock Community License (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-// http://www.apache.org/licenses/LICENSE-2.0
+// http://www.rockrms.com/license
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -27,6 +27,14 @@ namespace Rock.Financial
     /// </summary>
     public class PaymentInfo
     {
+        /// <summary>
+        /// Gets or sets the additional parameters.
+        /// </summary>
+        /// <value>
+        /// The additional parameters.
+        /// </value>
+        public Dictionary<string, string> AdditionalParameters { get; set; }
+
         /// <summary>
         /// Gets or sets the amount.
         /// </summary>
@@ -95,6 +103,14 @@ namespace Rock.Financial
         /// The billing country
         /// </summary>
         public string Country { get; set; }
+
+        /// <summary>
+        /// Gets or sets the ip address.
+        /// </summary>
+        /// <value>
+        /// The ip address.
+        /// </value>
+        public string IPAddress { get; set; }
 
         /// <summary>
         /// Gets the account number.
@@ -168,5 +184,14 @@ namespace Rock.Financial
                 return result;
             }
         }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="PaymentInfo"/> class.
+        /// </summary>
+        public PaymentInfo()
+        {
+            AdditionalParameters = new Dictionary<string, string>();
+        }
+
     }
 }

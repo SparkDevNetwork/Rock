@@ -15,55 +15,14 @@
 @import "../../../Styles/_modal.less";
 @import "../../../Styles/_helpers.less";
 
-//
-// Variables
-// --------------------------------------------------
-
-// Font Variables
-@font-family-base:     'OpenSans', 'Helvetica Neue', Helvetica, Arial, sans-serif;
-@font-weight-light:     300;
-@font-weight-bold:      700;
-@font-weight-semibold:  600;
-
-@bg-color:      #85b11c;
-@text-color:    #fff;
-
-@modal-body-bg: @bg-color;
-@modal-body-text-color: @text-color;
-@modal-header-bg: @bg-color;
-@modal-header-text-color: @text-color;
-@modal-footer-bg: @bg-color;
-@modal-footer-text-color: @text-color;
-
-@header-text-color:     #fff;
-@header-font-weight:    @font-weight-bold;
-
-@subheader-text-color:      #bde2ef;
-@subheader-font-weight:     @font-weight-light;
-
-// Button Styles
-@btn-default-bg: #7f7e7e;
-@btn-default-color:     #fff;
-@btn-default-border:   #9d9c9c;
-@checkin-button-text-weight:    @font-weight-bold;
-@checkin-button-alttext-weight: @font-weight-light;
-
-@btn-primary-color:    #fff;
-@btn-primary-border:   #b00a0e;
-@btn-primary-bg:    #e3151a;
-
-@btn-disabled-color: @btn-primary-border;
-@btn-disabled-bg: darken(@btn-primary-bg, 20%);
-
-// scroll bar
-@scrollbar-bg: #000;
-@scrollbar-border: #adaeaf;
+@import "_variables.less";
+@import "_variable-overrides.less";
 
 
 // Fonts
 // -------------------------
 
-// regular (weight 'normal' aka 400)
+//regular (weight 'normal' aka 400)
 @font-face {
     font-family: 'OpenSans';
     src: url('../../../Assets/Fonts/OpenSans/OpenSans-Regular-webfont.eot');
@@ -116,16 +75,13 @@
 // Mix-ins
 // --------------------------------------------------
 .checkinBackground () {
-  	background: @bg-color url('../Assets/Images/background.jpg') top right no-repeat fixed;
+  background: @bg-color @background-image top right no-repeat fixed;
 }
 
-.checkinBackgroundRetina()
-{
-    background-image: url('../Assets/Images/background@2x.jpg');
-    background-size: 1348px 1024px; // should be 1/2 of the actual
+.checkinBackgroundRetina() {
+  background-image: @bg-color @background-image-retina;
+  background-size: @background-image-retina-size;
 }
-
-
 
 
 //
@@ -134,6 +90,15 @@
 
 .checkin-count h3,
 .checkin-count li {
-	color: #4c4c4b;
+  color: #4c4c4b;
 }
 
+body {
+  display: none;
+  -ms-touch-action: none !important;
+      touch-action: none;   /* Disable any special actions on tap/touch */
+
+  -ms-content-zooming: none; /* Disables zooming */
+}
+
+@import "_css-overrides.less";

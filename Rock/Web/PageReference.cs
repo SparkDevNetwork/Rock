@@ -1,11 +1,11 @@
 ﻿// <copyright>
-// Copyright 2013 by the Spark Development Network
+// Copyright by the Spark Development Network
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
+// Licensed under the Rock Community License (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-// http://www.apache.org/licenses/LICENSE-2.0
+// http://www.rockrms.com/license
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -218,10 +218,36 @@ namespace Rock.Web
                 {
                     PageId = routeInfo.RouteData.Values["PageId"].ToString().AsInteger();
                 }
-                else if ( routeInfo.RouteData.DataTokens["PageId"] != null )
+
+                else if ( routeInfo.RouteData.DataTokens["PageRoutes"] != null )
                 {
-                    PageId = routeInfo.RouteData.DataTokens["PageId"].ToString().AsInteger();
-                    RouteId = routeInfo.RouteData.DataTokens["RouteId"].ToString().AsInteger();
+                    var pages = routeInfo.RouteData.DataTokens["PageRoutes"] as List<PageAndRouteId>;
+                    if ( pages != null && pages.Count > 0 )
+                    {
+                        if ( pages.Count == 1 )
+                        {
+                            var pageAndRouteId = pages.First();
+                            PageId = pageAndRouteId.PageId;
+                            RouteId = pageAndRouteId.RouteId;
+                        }
+                        else
+                        {
+                            SiteCache site = SiteCache.GetSiteByDomain( uri.Host );
+                            if ( site != null )
+                            {
+                                foreach( var pageAndRouteId in pages )
+                                {
+                                    var pageCache = PageCache.Read( pageAndRouteId.PageId );
+                                    if ( pageCache != null && pageCache.Layout != null && pageCache.Layout.SiteId == site.Id )
+                                    {
+                                        PageId = pageAndRouteId.PageId;
+                                        RouteId = pageAndRouteId.RouteId;
+                                        break;
+                                    }
+                                }
+                            }
+                        }
+                    }
 
                     foreach ( var routeParm in routeInfo.RouteData.Values )
                     {
@@ -363,12 +389,16 @@ namespace Rock.Web
         {
             string routeUrl = string.Empty;
 
-            foreach ( Route route in RouteTable.Routes )
+            foreach ( var route in RouteTable.Routes.OfType<Route>() )
             {
-                if ( route.DataTokens != null && route.DataTokens.ContainsKey( "RouteId" ) && route.DataTokens["RouteId"].ToString() == RouteId.ToString() )
+                if ( route != null && route.DataTokens != null && route.DataTokens.ContainsKey( "PageRoutes" ) )
                 {
-                    routeUrl = route.Url;
-                    break;
+                    var pageAndRouteIds = route.DataTokens["PageRoutes"] as List<PageAndRouteId>;
+                    if ( pageAndRouteIds != null && pageAndRouteIds.Any( r => r.RouteId == RouteId ) )
+                    {
+                        routeUrl = route.Url;
+                        break;
+                    }
                 }
             }
 
@@ -376,8 +406,8 @@ namespace Rock.Web
             Dictionary<string, string> routeParms = new Dictionary<string, string>();
             bool allRouteParmsProvided = true;
 
-            var r = new Regex( @"{([A-Za-z0-9\-]+)}" );
-            foreach ( Match match in r.Matches( routeUrl ) )
+            var regEx = new Regex( @"{([A-Za-z0-9\-]+)}" );
+            foreach ( Match match in regEx.Matches( routeUrl ) )
             {
                 // add parm to dictionary
                 routeParms.Add( match.Groups[1].Value, match.Value );
@@ -440,6 +470,34 @@ namespace Rock.Web
             }
 
             return base.ToString();
+        }
+
+        /// <summary>
+        /// If this is reference to a PageRoute, this will return the Route, otherwise it will return the normal URL of the page
+        /// </summary>
+        /// <value>
+        /// The route.
+        /// </value>
+        public string Route
+        {
+            get 
+            {
+                var pageCache = PageCache.Read( this.PageId );
+                if ( pageCache != null )
+                {
+                    var pageRoute = pageCache.PageRoutes.FirstOrDefault( a=> a.Id == this.RouteId);
+                    if (pageRoute != null)
+                    {
+                        return pageRoute.Route;
+                    }
+                    else
+                    {
+                        return this.BuildUrl();
+                    }
+                }
+
+                return null;
+            }
         }
 
         #endregion

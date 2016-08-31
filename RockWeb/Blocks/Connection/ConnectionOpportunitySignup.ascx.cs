@@ -1,11 +1,11 @@
 ﻿// <copyright>
-// Copyright 2013 by the Spark Development Network
+// Copyright by the Spark Development Network
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
+// Licensed under the Rock Community License (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-// http://www.apache.org/licenses/LICENSE-2.0
+// http://www.rockrms.com/license
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -135,9 +135,18 @@ namespace RockWeb.Blocks.Connection
                     string email = tbEmail.Text.Trim();
                     int? campusId = cpCampus.SelectedCampusId;
 
-                    if ( CurrentPerson != null &&
+                    // if a person guid was passed in from the query string use that
+                    if (RockPage.PageParameter("PersonGuid") != null && !string.IsNullOrWhiteSpace( RockPage.PageParameter( "PersonGuid" ) ) )
+                    {
+                        Guid? personGuid = RockPage.PageParameter( "PersonGuid" ).AsGuidOrNull();
+
+                        if ( personGuid.HasValue )
+                        {
+                            person = personService.Get( personGuid.Value );
+                        }
+                    } else if ( CurrentPerson != null &&
                         CurrentPerson.LastName.Equals( lastName, StringComparison.OrdinalIgnoreCase ) &&
-                        CurrentPerson.NickName.Equals( firstName, StringComparison.OrdinalIgnoreCase ) &&
+                        (CurrentPerson.NickName.Equals( firstName, StringComparison.OrdinalIgnoreCase ) || CurrentPerson.FirstName.Equals( firstName, StringComparison.OrdinalIgnoreCase )) &&
                         CurrentPerson.Email.Equals( email, StringComparison.OrdinalIgnoreCase ) )
                     {
                         // If the name and email entered are the same as current person (wasn't changed), use the current person
@@ -215,7 +224,7 @@ namespace RockWeb.Blocks.Connection
                         connectionRequest.ConnectionState = ConnectionState.Active;
                         connectionRequest.ConnectionStatusId = defaultStatusId;
                         connectionRequest.CampusId = campusId;
-                        connectionRequest.ConnectorPersonAliasId = opportunity.GetDefaultConnectorPersonAliasId( campusId.Value );
+                        connectionRequest.ConnectorPersonAliasId = opportunity.GetDefaultConnectorPersonAliasId( campusId );
                         if ( campusId.HasValue &&
                             opportunity != null &&
                             opportunity.ConnectionOpportunityCampuses != null )
@@ -274,17 +283,22 @@ namespace RockWeb.Blocks.Connection
         {
             using ( var rockContext = new RockContext() )
             {
-                // load campus dropdown
-                var campuses = CampusCache.All();
-                cpCampus.Campuses = campuses;
-                cpCampus.Visible = campuses.Count > 1;
-                
                 var opportunity = new ConnectionOpportunityService( rockContext ).Get( opportunityId );
                 if ( opportunity == null )
                 {
                     pnlSignup.Visible = false;
                     ShowError( "Incorrect Opportunity Type", "The requested opportunity does not exist." );
                     return;
+                }
+
+                // load campus dropdown
+                var campuses = CampusCache.All().Where( c => ( c.IsActive ?? false ) && opportunity.ConnectionOpportunityCampuses.Any( o => o.CampusId == c.Id ) ).ToList();
+                cpCampus.Campuses = campuses;
+                cpCampus.Visible = campuses.Any();
+
+                if ( campuses.Any() )
+                {
+                    cpCampus.SetValue( campuses.First().Id );
                 }
 
                 pnlSignup.Visible = true;
@@ -294,20 +308,37 @@ namespace RockWeb.Blocks.Connection
                     lIcon.Text = string.Format( "<i class='{0}' ></i>", opportunity.IconCssClass );
                 }
 
-                lTitle.Text = opportunity.Name.FormatAsHtmlTitle();
+                lTitle.Text = opportunity.Name;
 
                 pnHome.Visible = GetAttributeValue( "DisplayHomePhone" ).AsBoolean();
                 pnMobile.Visible = GetAttributeValue( "DisplayMobilePhone" ).AsBoolean();
 
-                if ( CurrentPerson != null )
+                Person registrant = null;
+
+                if ( RockPage.PageParameter( "PersonGuid" ) != null )
                 {
-                    tbFirstName.Text = CurrentPerson.FirstName.EncodeHtml();
-                    tbLastName.Text = CurrentPerson.LastName.EncodeHtml();
-                    tbEmail.Text = CurrentPerson.Email.EncodeHtml();
+                    Guid? personGuid = RockPage.PageParameter( "PersonGuid" ).AsGuidOrNull();
+
+                    if ( personGuid.HasValue )
+                    {
+                        registrant = new PersonService(rockContext).Get( personGuid.Value );
+                    }
+                }
+
+                if (registrant == null && CurrentPerson != null )
+                {
+                    registrant = CurrentPerson;
+                }
+
+                if ( registrant != null )
+                {
+                    tbFirstName.Text = registrant.FirstName.EncodeHtml();
+                    tbLastName.Text = registrant.LastName.EncodeHtml();
+                    tbEmail.Text = registrant.Email.EncodeHtml();
 
                     if ( pnHome.Visible && _homePhone != null )
                     {
-                        var homePhoneNumber = CurrentPerson.PhoneNumbers.Where( p => p.NumberTypeValueId == _homePhone.Id ).FirstOrDefault();
+                        var homePhoneNumber = registrant.PhoneNumbers.Where( p => p.NumberTypeValueId == _homePhone.Id ).FirstOrDefault();
                         if ( homePhoneNumber != null )
                         {
                             pnHome.Number = homePhoneNumber.NumberFormatted;
@@ -317,7 +348,7 @@ namespace RockWeb.Blocks.Connection
 
                     if ( pnMobile.Visible && _cellPhone != null )
                     {
-                        var cellPhoneNumber = CurrentPerson.PhoneNumbers.Where( p => p.NumberTypeValueId == _cellPhone.Id ).FirstOrDefault();
+                        var cellPhoneNumber = registrant.PhoneNumbers.Where( p => p.NumberTypeValueId == _cellPhone.Id ).FirstOrDefault();
                         if ( cellPhoneNumber != null )
                         {
                             pnMobile.Number = cellPhoneNumber.NumberFormatted;
@@ -325,7 +356,7 @@ namespace RockWeb.Blocks.Connection
                         }
                     }
 
-                    var campus = CurrentPerson.GetCampus();
+                    var campus = registrant.GetCampus();
                     if ( campus != null )
                     {
                         cpCampus.SelectedCampusId = campus.Id;

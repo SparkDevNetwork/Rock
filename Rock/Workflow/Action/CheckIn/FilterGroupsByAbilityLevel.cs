@@ -1,11 +1,11 @@
 ﻿// <copyright>
-// Copyright 2013 by the Spark Development Network
+// Copyright by the Spark Development Network
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
+// Licensed under the Rock Community License (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-// http://www.apache.org/licenses/LICENSE-2.0
+// http://www.rockrms.com/license
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -21,6 +21,7 @@ using System.ComponentModel.Composition;
 using System.Linq;
 
 using Rock.Attribute;
+using Rock.CheckIn;
 using Rock.Data;
 
 namespace Rock.Workflow.Action.CheckIn
@@ -28,6 +29,7 @@ namespace Rock.Workflow.Action.CheckIn
     /// <summary>
     /// Removes (or excludes) the groups for each selected family member if the person's ability level does not match the groups.
     /// </summary>
+    [ActionCategory( "Check-In" )]
     [Description( "Removes (or excludes) the groups for each selected family member if the person's ability level does not match the groups." )]
     [Export( typeof( ActionComponent ) )]
     [ExportMetadata( "ComponentName", "Filter Groups By Ability Level" )]
@@ -50,47 +52,60 @@ namespace Rock.Workflow.Action.CheckIn
             {
                 return false;
             }
-
-            var family = checkInState.CheckIn.Families.FirstOrDefault( f => f.Selected );
+            var family = checkInState.CheckIn.CurrentFamily;
             if ( family != null )
             {
                 var remove = GetAttributeValue( action, "Remove" ).AsBoolean();
 
-                foreach ( var person in family.People )
+                if ( checkInState.CheckInType.TypeOfCheckin == TypeOfCheckin.Family )
                 {
-                    if ( person.Person.Attributes == null )
+                    var currentPerson = checkInState.CheckIn.CurrentPerson;
+                    if ( currentPerson != null )
                     {
-                        person.Person.LoadAttributes( rockContext );
+                        FilterGroups( currentPerson, rockContext, remove );
                     }
-
-                    string personAbilityLevel = person.Person.GetAttributeValue( "AbilityLevel" ).ToUpper();
-                    if ( string.IsNullOrWhiteSpace( personAbilityLevel ) )
+                }
+                else
+                {
+                    foreach ( var person in family.People )
                     {
-                        continue;
-                    }
-
-                    foreach ( var groupType in person.GroupTypes.ToList() )
-                    {
-                        foreach ( var group in groupType.Groups.ToList() )
-                        {
-                            var groupAttributes = group.Group.GetAttributeValues( "AbilityLevel" );
-                            if ( groupAttributes.Any() && !groupAttributes.Contains( personAbilityLevel, StringComparer.OrdinalIgnoreCase ) )
-                            {
-                                if ( remove )
-                                {
-                                    groupType.Groups.Remove( group );
-                                }
-                                else
-                                {
-                                    group.ExcludedByFilter = true;
-                                }
-                            }
-                        }
+                        FilterGroups( person, rockContext, remove );
                     }
                 }
             }
 
             return true;
+        }
+
+        private void FilterGroups( CheckInPerson person, RockContext rockContext, bool remove )
+        {
+            if ( person.Person.Attributes == null )
+            {
+                person.Person.LoadAttributes( rockContext );
+            }
+
+            string personAbilityLevel = person.Person.GetAttributeValue( "AbilityLevel" ).ToUpper();
+            if ( !string.IsNullOrWhiteSpace( personAbilityLevel ) )
+            {
+                foreach ( var groupType in person.GroupTypes.ToList() )
+                {
+                    foreach ( var group in groupType.Groups.ToList() )
+                    {
+                        var groupAttributes = group.Group.GetAttributeValues( "AbilityLevel" );
+                        if ( groupAttributes.Any() && !groupAttributes.Contains( personAbilityLevel, StringComparer.OrdinalIgnoreCase ) )
+                        {
+                            if ( remove )
+                            {
+                                groupType.Groups.Remove( group );
+                            }
+                            else
+                            {
+                                group.ExcludedByFilter = true;
+                            }
+                        }
+                    }
+                }
+            }
         }
     }
 }

@@ -17,7 +17,7 @@
                 var $textBox = $('#' + options.id);
 
                 var $datePickerContainer = $textBox.closest('.js-date-picker-container');
-                var $datePickerInputGroup = $textBox.closest('.date-picker .input-group.js-date-picker');
+                var $datePickerInputGroup = $textBox.closest('.input-group.js-date-picker');
 
                 // uses https://github.com/eternicode/bootstrap-datepicker
                 $datePickerInputGroup.datepicker({

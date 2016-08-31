@@ -85,6 +85,7 @@
             <asp:Literal ID="lGroupMemberEditPreHtml" runat="server" />
             
             <asp:ValidationSummary ID="vsEditGroupMember" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" />
+            <asp:CustomValidator ID="cvEditGroupMember" runat="server" Display="None" />
             <Rock:NotificationBox ID="nbGroupMemberErrorMessage" runat="server" NotificationBoxType="Danger" />
 
             <div class="row">

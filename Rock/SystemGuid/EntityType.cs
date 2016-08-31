@@ -1,11 +1,11 @@
 ﻿// <copyright>
-// Copyright 2013 by the Spark Development Network
+// Copyright by the Spark Development Network
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
+// Licensed under the Rock Community License (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-// http://www.apache.org/licenses/LICENSE-2.0
+// http://www.rockrms.com/license
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -30,6 +30,11 @@ namespace Rock.SystemGuid
         /// The database authentication provider
         /// </summary>
         public const string AUTHENTICATION_DATABASE = "4E9B798F-BB68-4C0E-9707-0928D15AB020";
+
+        /// <summary>
+        /// The benevolenc e_ request
+        /// </summary>
+        public const string BENEVOLENCE_REQUEST = "CF0CE5C1-9286-4310-9B50-10D040F8EBD2";
 
         /// <summary>
         /// The Block entity type
@@ -121,6 +126,11 @@ namespace Rock.SystemGuid
         /// The guid for the Rock.Model.Note entity
         /// </summary>
         public const string NOTE = "53DC1E78-14A5-44DE-903F-6A2CB02164E7";
+
+        /// <summary>
+        /// The guid for the Rock.Model.Page entity
+        /// </summary>
+        public const string PAGE = "E104DCDF-247C-4CED-A119-8CC51632761F";
 
         /// <summary>
         /// The guid for the Rock.Model.Person entity

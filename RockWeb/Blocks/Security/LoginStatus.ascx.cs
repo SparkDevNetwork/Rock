@@ -1,11 +1,11 @@
-﻿// <copyright>
-// Copyright 2013 by the Spark Development Network
+// <copyright>
+// Copyright by the Spark Development Network
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
+// Licensed under the Rock Community License (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-// http://www.apache.org/licenses/LICENSE-2.0
+// http://www.rockrms.com/license
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -33,9 +33,9 @@ namespace RockWeb.Blocks.Security
     [Category( "Security" )]
     [Description( "Displays the currently logged in user's name along with options to Login, Logout, or manage account." )]
 
-    [LinkedPage( "My Account Page", "Page for user to manage their account (if blank will use 'MyAccount' page route)" )]
-    [LinkedPage( "My Profile Page", "Page for user to view their person profile (if blank option will not be displayed)" )]
-    [LinkedPage( "My Settings Page", "Page for user to view their settings (if blank option will not be displayed)" )]
+    [LinkedPage( "My Account Page", "Page for user to manage their account (if blank will use 'MyAccount' page route)", false )]
+    [LinkedPage( "My Profile Page", "Page for user to view their person profile (if blank option will not be displayed)", false )]
+    [LinkedPage( "My Settings Page", "Page for user to view their settings (if blank option will not be displayed)", false )]
     [KeyValueListField( "Logged In Page List", "List of pages to show in the dropdown when the user is logged in. The link field takes Lava with the CurrentPerson merge fields. Place the text 'divider' in the title field to add a divider.", false, "", "Title", "Link" )]
     
     public partial class LoginStatus : Rock.Web.UI.RockBlock
@@ -108,7 +108,7 @@ namespace RockWeb.Blocks.Security
 
                 lbLoginLogout.Text = "Logout";
                 
-                divProfilePhoto.Attributes.Add( "style", String.Format( "background-image: url('{0}'); background-size: cover; background-repeat: no-repeat;", Rock.Model.Person.GetPhotoUrl( currentPerson.PhotoId, currentPerson.Age, currentPerson.Gender )));
+                divProfilePhoto.Attributes.Add( "style", String.Format( "background-image: url('{0}');", Rock.Model.Person.GetPersonPhotoUrl( currentPerson, 200, 200 )));
 
                 var navPagesString = GetAttributeValue( "LoggedInPageList" );
 

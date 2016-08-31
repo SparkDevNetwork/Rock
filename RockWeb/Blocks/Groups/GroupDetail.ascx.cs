@@ -1,11 +1,11 @@
 ﻿// <copyright>
-// Copyright 2013 by the Spark Development Network
+// Copyright by the Spark Development Network
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
+// Licensed under the Rock Community License (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-// http://www.apache.org/licenses/LICENSE-2.0
+// http://www.rockrms.com/license
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -17,10 +17,12 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Data.Entity;
 using System.Linq;
 using System.Text;
 using System.Web.UI;
 using System.Web.UI.WebControls;
+using Humanizer;
 using Newtonsoft.Json;
 
 using Rock;
@@ -369,7 +371,7 @@ namespace RockWeb.Blocks.Groups
                     return;
                 }
 
-                bool isSecurityRoleGroup = group.IsSecurityRole || group.GroupType.Guid.Equals( Rock.SystemGuid.GroupType.GROUPTYPE_SECURITY_ROLE.AsGuid() );
+                bool isSecurityRoleGroup = group.IsActive && ( group.IsSecurityRole || group.GroupType.Guid.Equals( Rock.SystemGuid.GroupType.GROUPTYPE_SECURITY_ROLE.AsGuid() ) );
                 if ( isSecurityRoleGroup )
                 {
                     Rock.Security.Role.Flush( group.Id );
@@ -434,6 +436,9 @@ namespace RockWeb.Blocks.Groups
             AttributeQualifierService attributeQualifierService = new AttributeQualifierService( rockContext );
             CategoryService categoryService = new CategoryService( rockContext );
 
+            var roleGroupType = GroupTypeCache.Read( Rock.SystemGuid.GroupType.GROUPTYPE_SECURITY_ROLE.AsGuid() );
+            int roleGroupTypeId = roleGroupType != null ? roleGroupType.Id : int.MinValue;
+
             if ( CurrentGroupTypeId == 0 )
             {
                 ddlGroupType.ShowErrorMessage( Rock.Constants.WarningMessage.CannotBeBlank( GroupType.FriendlyTypeName ) );
@@ -451,7 +456,7 @@ namespace RockWeb.Blocks.Groups
             else
             {
                 group = groupService.Queryable( "Schedule,GroupLocations.Schedules" ).Where( g => g.Id == groupId ).FirstOrDefault();
-                wasSecurityRole = group.IsSecurityRole;
+                wasSecurityRole = group.IsActive && ( group.IsSecurityRole || group.GroupTypeId == roleGroupTypeId );
 
                 // remove any locations that removed in the UI
                 var selectedLocations = GroupLocationsState.Select( l => l.Guid );
@@ -550,6 +555,8 @@ namespace RockWeb.Blocks.Groups
             group.CampusId = ddlCampus.SelectedValueAsInt();
             group.GroupTypeId = CurrentGroupTypeId;
             group.ParentGroupId = gpParentGroup.SelectedValueAsInt();
+            group.GroupCapacity = nbGroupCapacity.Text.AsIntegerOrNull();
+            group.RequiredSignatureDocumentTemplateId = ddlSignatureDocumentTemplate.SelectedValueAsInt();
             group.IsSecurityRole = cbIsSecurityRole.Checked;
             group.IsActive = cbIsActive.Checked;
             group.IsPublic = cbIsPublic.Checked;
@@ -667,12 +674,16 @@ namespace RockWeb.Blocks.Groups
                 return;
             }
 
-            if ( !group.IsValid )
+            // if the groupMember IsValid is false, and the UI controls didn't report any errors, it is probably because the custom rules of GroupMember didn't pass.
+            // So, make sure a message is displayed in the validation summary
+            cvGroup.IsValid = group.IsValid;
+
+            if ( !cvGroup.IsValid )
             {
-                // Controls will render the error messages                    
+                cvGroup.ErrorMessage = group.ValidationResults.Select( a => a.ErrorMessage ).ToList().AsDelimited( "<br />" );
                 return;
             }
-
+            
             // use WrapTransaction since SaveAttributeValues does it's own RockContext.SaveChanges()
             rockContext.WrapTransaction( () =>
             {
@@ -733,9 +744,11 @@ namespace RockWeb.Blocks.Groups
                 }
             } );
 
+            bool isNowSecurityRole = group.IsActive && ( group.IsSecurityRole || group.GroupTypeId == roleGroupTypeId );
+
             if ( group != null && wasSecurityRole )
             {
-                if ( !group.IsSecurityRole )
+                if ( !isNowSecurityRole )
                 {
                     // if this group was a SecurityRole, but no longer is, flush
                     Rock.Security.Role.Flush( group.Id );
@@ -744,7 +757,7 @@ namespace RockWeb.Blocks.Groups
             }
             else
             {
-                if ( group.IsSecurityRole )
+                if ( isNowSecurityRole )
                 {
                     // new security role, flush
                     Rock.Security.Authorization.Flush();
@@ -992,6 +1005,9 @@ namespace RockWeb.Blocks.Groups
                             if ( group.IsAuthorized( Authorization.EDIT, CurrentPerson ) )
                             {
                                 authorizedGroupTypes.Add( allowedGroupType );
+
+                                // they have EDIT auth to at least one GroupType, so they are allowed to try to add this group
+                                editAllowed = true;
                             }
                         }
 
@@ -1012,7 +1028,7 @@ namespace RockWeb.Blocks.Groups
             }
 
             viewAllowed = editAllowed || group.IsAuthorized( Authorization.VIEW, CurrentPerson );
-            editAllowed = IsUserAuthorized( Authorization.EDIT ) || group.IsAuthorized( Authorization.EDIT, CurrentPerson );
+            editAllowed = editAllowed || group.IsAuthorized( Authorization.EDIT, CurrentPerson );
 
             pnlDetails.Visible = viewAllowed;
 
@@ -1086,8 +1102,21 @@ namespace RockWeb.Blocks.Groups
         /// Sets the highlight label visibility.
         /// </summary>
         /// <param name="group">The group.</param>
-        private void SetHighlightLabelVisibility( Group group )
+        private void SetHighlightLabelVisibility( Group group, bool readOnly )
         {
+            if ( readOnly )
+            {
+                // if we are just showing readonly detail of the group, we don't have to worry about the highlight labels changing while editing on the client
+                hlInactive.Visible = !group.IsActive;
+                hlIsPrivate.Visible = !group.IsPublic;
+            }
+            else
+            {
+                // in edit mode, the labels will have javascript handle if/when they are shown
+                hlInactive.Visible = true;
+                hlIsPrivate.Visible = true;
+            }
+
             if ( group.IsActive )
             {
                 hlInactive.Style[HtmlTextWriterStyle.Display] = "none";
@@ -1108,13 +1137,16 @@ namespace RockWeb.Blocks.Groups
             if ( group.Id == 0 )
             {
                 lReadOnlyTitle.Text = ActionTitle.Add( Group.FriendlyTypeName ).FormatAsHtmlTitle();
+
+                // hide the panel drawer that show created and last modified dates
+                pdAuditDetails.Visible = false;
             }
             else
             {
                 lReadOnlyTitle.Text = group.Name.FormatAsHtmlTitle();
             }
 
-            SetHighlightLabelVisibility( group );
+            SetHighlightLabelVisibility( group, false );
 
             ddlGroupType.Visible = group.Id == 0;
             lGroupType.Visible = group.Id != 0;
@@ -1123,6 +1155,7 @@ namespace RockWeb.Blocks.Groups
 
             tbName.Text = group.Name;
             tbDescription.Text = group.Description;
+            nbGroupCapacity.Text = group.GroupCapacity.ToString();
             cbIsSecurityRole.Checked = group.IsSecurityRole;
             cbIsActive.Checked = group.IsActive;
             cbIsPublic.Checked = group.IsPublic;
@@ -1132,8 +1165,9 @@ namespace RockWeb.Blocks.Groups
             var groupService = new GroupService( rockContext );
             var attributeService = new AttributeService( rockContext );
 
-            LoadDropDowns();
+            LoadDropDowns( rockContext );
 
+            ddlSignatureDocumentTemplate.SetValue( group.RequiredSignatureDocumentTemplateId );
             gpParentGroup.SetValue( group.ParentGroup ?? groupService.Get( group.ParentGroupId ?? 0 ) );
 
             // hide sync and requirements panel if no admin access
@@ -1226,6 +1260,7 @@ namespace RockWeb.Blocks.Groups
             GroupLocationsState = group.GroupLocations.ToList();
 
             var groupTypeCache = CurrentGroupTypeCache;
+            nbGroupCapacity.Visible = groupTypeCache != null && groupTypeCache.GroupCapacityRule != GroupCapacityRule.None;
             SetScheduleControls( groupTypeCache, group );
             ShowGroupTypeEditDetails( groupTypeCache, group, true );
 
@@ -1386,7 +1421,7 @@ namespace RockWeb.Blocks.Groups
         /// <param name="group">The group.</param>
         private void ShowReadonlyDetails( Group group )
         {
-            SetHighlightLabelVisibility( group );
+            SetHighlightLabelVisibility( group, true );
             SetEditMode( false );
             var rockContext = new RockContext();
 
@@ -1402,6 +1437,8 @@ namespace RockWeb.Blocks.Groups
             lGroupIconHtml.Text = groupIconHtml;
             lReadOnlyTitle.Text = group.Name.FormatAsHtmlTitle();
 
+            pdAuditDetails.SetEntity( group, ResolveRockUrl( "~" ) );
+
             if ( !string.IsNullOrWhiteSpace( group.Description ) )
             {
                 lGroupDescription.Text = string.Format( "<p class='description'>{0}</p>", group.Description );
@@ -1412,6 +1449,11 @@ namespace RockWeb.Blocks.Groups
             if ( group.ParentGroup != null )
             {
                 descriptionList.Add( "Parent Group", group.ParentGroup.Name );
+            }
+
+            if ( group.RequiredSignatureDocumentTemplate != null )
+            {
+                descriptionList.Add( "Required Signed Document", group.RequiredSignatureDocumentTemplate.Name );
             }
 
             if ( group.Schedule != null )
@@ -1427,6 +1469,29 @@ namespace RockWeb.Blocks.Groups
             else
             {
                 hlCampus.Visible = false;
+            }
+
+            // configure group capacity
+            nbGroupCapacityMessage.Visible = false;
+            if ( group.GroupType != null && group.GroupType.GroupCapacityRule != GroupCapacityRule.None )
+            {
+                // check if we're over capacity and if so show warning
+                if ( group.GroupCapacity.HasValue )
+                {
+                    int activeGroupMemberCount = group.Members.Where( m => m.GroupMemberStatus == GroupMemberStatus.Active ).Count();
+                    if ( activeGroupMemberCount > group.GroupCapacity )
+                    {
+                        nbGroupCapacityMessage.Text = string.Format( "This group is over capacity by {0}.", "individual".ToQuantity((activeGroupMemberCount - group.GroupCapacity.Value)) );
+                        nbGroupCapacityMessage.Visible = true;
+
+                        if ( group.GroupType != null && group.GroupType.GroupCapacityRule == GroupCapacityRule.Hard )
+                        {
+                            nbGroupCapacityMessage.NotificationBoxType = NotificationBoxType.Danger;
+                        }
+                    }
+
+                    descriptionList.Add( "Capacity", group.GroupCapacity.ToString() );
+                }
             }
 
             lblMainDetails.Text = descriptionList.Html;
@@ -1665,11 +1730,20 @@ namespace RockWeb.Blocks.Groups
         /// <summary>
         /// Loads the drop downs.
         /// </summary>
-        private void LoadDropDowns()
+        private void LoadDropDowns( RockContext rockContext )
         {
             ddlCampus.DataSource = CampusCache.All();
             ddlCampus.DataBind();
             ddlCampus.Items.Insert( 0, new ListItem( None.Text, None.IdValue ) );
+
+            ddlSignatureDocumentTemplate.Items.Clear();
+            ddlSignatureDocumentTemplate.Items.Add( new ListItem() );
+            foreach ( var documentType in new SignatureDocumentTemplateService( rockContext )
+                .Queryable().AsNoTracking()
+                .OrderBy( t => t.Name ) )
+            {
+                ddlSignatureDocumentTemplate.Items.Add( new ListItem( documentType.Name, documentType.Id.ToString() ) );
+            }
         }
 
         /// <summary>
@@ -2227,6 +2301,8 @@ namespace RockWeb.Blocks.Groups
             }
 
             nbDuplicateGroupRequirement.Visible = false;
+
+            hfGroupRequirementGuid.Value = groupRequirementGuid.ToString();
 
             ShowDialog( "GroupRequirements", true );
         }

@@ -1,11 +1,11 @@
 ﻿// <copyright>
-// Copyright 2013 by the Spark Development Network
+// Copyright by the Spark Development Network
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
+// Licensed under the Rock Community License (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-// http://www.apache.org/licenses/LICENSE-2.0
+// http://www.rockrms.com/license
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -37,10 +37,10 @@ namespace RockWeb.Blocks.CheckIn
     [DisplayName( "Administration" )]
     [Category( "Check-in" )]
     [Description( "Check-in Administration block" )]
-    [BooleanField( "Allow Manual Setup", "If enabled, the block will allow the kiosk to be setup manually if it was not set via other means.", true )]
-    [BooleanField( "Enable Location Sharing", "If enabled, the block will attempt to determine the kiosk's location via location sharing geocode.", false, "Geo Location", 0 )]
-    [IntegerField( "Time to Cache Kiosk GeoLocation", "Time in minutes to cache the coordinates of the kiosk. A value of zero (0) means cache forever. Default 20 minutes.", false, 20, "Geo Location", 1 )]
-    [BooleanField( "Enable Kiosk Match By Name", "Enable a kiosk match by computer name by doing reverseIP lookup to get computer name based on IP address", false, "", 2, "EnableReverseLookup" )]
+    [BooleanField( "Allow Manual Setup", "If enabled, the block will allow the kiosk to be setup manually if it was not set via other means.", true, "", 5 )]
+    [BooleanField( "Enable Location Sharing", "If enabled, the block will attempt to determine the kiosk's location via location sharing geocode.", false, "Geo Location", 6 )]
+    [IntegerField( "Time to Cache Kiosk GeoLocation", "Time in minutes to cache the coordinates of the kiosk. A value of zero (0) means cache forever. Default 20 minutes.", false, 20, "Geo Location", 7 )]
+    [BooleanField( "Enable Kiosk Match By Name", "Enable a kiosk match by computer name by doing reverseIP lookup to get computer name based on IP address", false, "", 8, "EnableReverseLookup" )]
     public partial class Admin : CheckInBlock
     {
         protected override void OnLoad( EventArgs e )
@@ -52,16 +52,35 @@ namespace RockWeb.Blocks.CheckIn
             if ( !Page.IsPostBack )
             {
                 // Set the check-in state from values passed on query string
-                CurrentKioskId = PageParameter( "KioskId" ).AsIntegerOrNull();
+                bool themeRedirect = PageParameter( "ThemeRedirect" ).AsBoolean( false );
 
+                CurrentKioskId = PageParameter( "KioskId" ).AsIntegerOrNull();
+                CurrentCheckinTypeId = PageParameter( "CheckinConfigId" ).AsIntegerOrNull();
                 CurrentGroupTypeIds = ( PageParameter( "GroupTypeIds" ) ?? "" )
                     .Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries )
                     .ToList()
                     .Select( s => s.AsInteger() )
                     .ToList();
 
+                // If Kiosk and GroupTypes were passed, but not a checkin type, try to calculate it from the group types.
+                if ( CurrentKioskId.HasValue && CurrentGroupTypeIds.Any() && !CurrentCheckinTypeId.HasValue )
+                {
+                    if ( !CurrentCheckinTypeId.HasValue )
+                    {
+                        foreach ( int groupTypeId in CurrentGroupTypeIds )
+                        {
+                            var checkinType = GetCheckinType( groupTypeId );
+                            if ( checkinType != null )
+                            {
+                                CurrentCheckinTypeId = checkinType.Id;
+                                break;
+                            }
+                        }
+                    }
+                }
+
                 // If valid parameters were used, set state and navigate to welcome page
-                if ( CurrentKioskId.HasValue && CurrentGroupTypeIds.Any() )
+                if ( CurrentKioskId.HasValue && CurrentGroupTypeIds.Any() && CurrentCheckinTypeId.HasValue && !themeRedirect )
                 {
                     // Save the check-in state
                     SaveState();
@@ -86,7 +105,9 @@ namespace RockWeb.Blocks.CheckIn
                         AttemptKioskMatchByIpOrName();
                     }
 
-                    string script = string.Format( @"
+                    if ( !themeRedirect )
+                    {
+                        string script = string.Format( @"
                     <script>
                         $(document).ready(function (e) {{
                             if (localStorage) {{
@@ -94,6 +115,9 @@ namespace RockWeb.Blocks.CheckIn
                                     $('[id$=""hfKiosk""]').val(localStorage.checkInKiosk);
                                     if (localStorage.theme) {{
                                         $('[id$=""hfTheme""]').val(localStorage.theme);
+                                    }}
+                                    if (localStorage.checkInType) {{
+                                        $('[id$=""hfCheckinType""]').val(localStorage.checkInType);
                                     }}
                                     if (localStorage.checkInGroupTypes) {{
                                         $('[id$=""hfGroupTypes""]').val(localStorage.checkInGroupTypes);
@@ -104,7 +128,8 @@ namespace RockWeb.Blocks.CheckIn
                         }});
                     </script>
                 ", this.Page.ClientScript.GetPostBackEventReference( lbRefresh, "" ) );
-                    phScript.Controls.Add( new LiteralControl( script ) );
+                        phScript.Controls.Add( new LiteralControl( script ) );
+                    }
 
                     ddlTheme.Items.Clear();
                     DirectoryInfo di = new DirectoryInfo( this.Page.Request.MapPath( ResolveRockUrl( "~~" ) ) );
@@ -146,6 +171,7 @@ namespace RockWeb.Blocks.CheckIn
                         if ( item != null )
                         {
                             item.Selected = true;
+                            BindCheckinTypes();
                             BindGroupTypes();
                         }
                     }
@@ -167,12 +193,26 @@ namespace RockWeb.Blocks.CheckIn
             using ( var rockContext = new RockContext() )
             {
                 bool enableReverseLookup = GetAttributeValue( "EnableReverseLookup" ).AsBoolean( false );
-                var device = new DeviceService( rockContext ).GetByIPAddress( Request.ServerVariables["REMOTE_ADDR"], checkInDeviceTypeId, !enableReverseLookup );
+                var device = new DeviceService( rockContext ).GetByIPAddress( Rock.Web.UI.RockPage.GetClientIpAddress(), checkInDeviceTypeId, !enableReverseLookup );
                 if ( device != null )
                 {
                     ClearMobileCookie();
                     CurrentKioskId = device.Id;
                     CurrentGroupTypeIds = GetAllKiosksGroupTypes( device, rockContext ); ;
+
+                    if ( !CurrentCheckinTypeId.HasValue )
+                    {
+                        foreach ( int groupTypeId in CurrentGroupTypeIds )
+                        {
+                            var checkinType = GetCheckinType( groupTypeId );
+                            if ( checkinType != null )
+                            {
+                                CurrentCheckinTypeId = checkinType.Id;
+                                break;
+                            }
+                        }
+                    }
+
                     CurrentCheckInState = null;
                     CurrentWorkflow = null;
                     SaveState();
@@ -200,7 +240,7 @@ namespace RockWeb.Blocks.CheckIn
                 else {{
                     $(""div.checkin-header h1"").html( ""We're Sorry!"" );
                     $(""div.checkin-header h1"").after( ""<p>We don't support that kind of device yet. Please Check in using the on-site kiosks.</p>"" );
-                    alert(""We We don't support that kind of device yet. Please Check in using the on-site kiosks."");
+                    alert(""We don't support that kind of device yet. Please Check in using the on-site kiosks."");
                 }}
             }}
 
@@ -242,12 +282,8 @@ namespace RockWeb.Blocks.CheckIn
             }
             else
             {
-                ListItem item = ddlKiosk.Items.FindByValue( hfKiosk.Value );
-                if ( item != null )
-                {
-                    ddlKiosk.SelectedValue = item.Value;
-                }
-
+                ddlKiosk.SetValue( hfKiosk.Value );
+                BindCheckinTypes( hfCheckinType.Value.AsIntegerOrNull() );
                 BindGroupTypes( hfGroupTypes.Value );
             }
         }
@@ -280,6 +316,20 @@ namespace RockWeb.Blocks.CheckIn
                 {
                     CurrentGroupTypeIds = GetAllKiosksGroupTypes( kiosk, rockContext ); ;
                 }
+
+                if ( !CurrentCheckinTypeId.HasValue )
+                {
+                    foreach ( int groupTypeId in CurrentGroupTypeIds )
+                    {
+                        var checkinType = GetCheckinType( groupTypeId );
+                        if ( checkinType != null )
+                        {
+                            CurrentCheckinTypeId = checkinType.Id;
+                            break;
+                        }
+                    }
+                }
+
                 CurrentCheckInState = null;
                 CurrentWorkflow = null;
                 SaveState();
@@ -365,15 +415,21 @@ namespace RockWeb.Blocks.CheckIn
 
         #region Manually Setting Kiosks related
 
-        protected void ddlKiosk_SelectedIndexChanged( object sender, EventArgs e )
-        {
-            BindGroupTypes();
-        }
-
         protected void ddlTheme_SelectedIndexChanged( object sender, EventArgs e )
         {
             CurrentTheme = ddlTheme.SelectedValue;
             RedirectToNewTheme( ddlTheme.SelectedValue );
+        }
+
+        protected void ddlKiosk_SelectedIndexChanged( object sender, EventArgs e )
+        {
+            BindCheckinTypes();
+            BindGroupTypes();
+        }
+
+        protected void ddlCheckinType_SelectedIndexChanged( object sender, EventArgs e )
+        {
+            BindGroupTypes();
         }
 
         protected void lbOk_Click( object sender, EventArgs e )
@@ -385,7 +441,14 @@ namespace RockWeb.Blocks.CheckIn
             }
 
             var groupTypeIds = new List<int>();
-            foreach ( ListItem item in cblGroupTypes.Items )
+            foreach ( ListItem item in cblPrimaryGroupTypes.Items )
+            {
+                if ( item.Selected )
+                {
+                    groupTypeIds.Add( Int32.Parse( item.Value ) );
+                }
+            }
+            foreach ( ListItem item in cblAlternateGroupTypes.Items )
             {
                 if ( item.Selected )
                 {
@@ -395,7 +458,8 @@ namespace RockWeb.Blocks.CheckIn
 
             ClearMobileCookie();
             CurrentTheme = ddlTheme.SelectedValue;
-            CurrentKioskId = Int32.Parse( ddlKiosk.SelectedValue );
+            CurrentKioskId = ddlKiosk.SelectedValueAsInt();
+            CurrentCheckinTypeId = ddlCheckinType.SelectedValueAsInt();
             CurrentGroupTypeIds = groupTypeIds;
             CurrentCheckInState = null;
             CurrentWorkflow = null;
@@ -439,30 +503,183 @@ namespace RockWeb.Blocks.CheckIn
                 .ToList();
         }
 
+        private void BindCheckinTypes()
+        {
+            BindCheckinTypes( ddlCheckinType.SelectedValueAsInt() );
+        }
+
+        private void BindCheckinTypes( int? selectedValue )
+        {
+            ddlCheckinType.Items.Clear();
+
+            if ( ddlKiosk.SelectedValue != None.IdValue )
+            {
+                using ( var rockContext = new RockContext() )
+                {
+                    var kioskCheckinTypes = new List<GroupType>();
+
+                    var kioskGroupTypes = GetDeviceGroupTypes( ddlKiosk.SelectedValueAsInt() ?? 0, rockContext );
+                    var kioskGroupTypeIds = kioskGroupTypes.Select( t => t.Id ).ToList();
+
+                    var groupTypeService = new GroupTypeService( rockContext );
+
+                    Guid templateTypeGuid = Rock.SystemGuid.DefinedValue.GROUPTYPE_PURPOSE_CHECKIN_TEMPLATE.AsGuid();
+                    ddlCheckinType.DataSource = groupTypeService
+                        .Queryable().AsNoTracking()
+                        .Where( t =>
+                            t.GroupTypePurposeValue != null &&
+                            t.GroupTypePurposeValue.Guid == templateTypeGuid )
+                        .OrderBy( t => t.Name )
+                        .Select( t => new
+                        {
+                            t.Name,
+                            t.Id
+                        } )
+                        .ToList();
+                    ddlCheckinType.DataBind();
+                }
+
+                if ( selectedValue.HasValue )
+                {
+                    ddlCheckinType.SetValue( selectedValue );
+                }
+                else
+                {
+                    if ( CurrentCheckinTypeId.HasValue )
+                    {
+                        ddlCheckinType.SetValue( CurrentCheckinTypeId );
+                    }
+                    else
+                    {
+                        var groupType = GroupTypeCache.Read( Rock.SystemGuid.GroupType.GROUPTYPE_WEEKLY_SERVICE_CHECKIN_AREA.AsGuid() );
+                        if ( groupType != null  )
+                        {
+                            ddlCheckinType.SetValue( groupType.Id );
+                        }
+                    }
+                }
+            }
+        }
+
+        private GroupTypeCache GetCheckinType( int? groupTypeId )
+        {
+            Guid templateTypeGuid = Rock.SystemGuid.DefinedValue.GROUPTYPE_PURPOSE_CHECKIN_TEMPLATE.AsGuid();
+            var templateType = DefinedValueCache.Read( templateTypeGuid );
+            if ( templateType != null )
+            {
+                return GetCheckinType( GroupTypeCache.Read( groupTypeId.Value ), templateType.Id );
+            }
+
+            return null;
+        }
+
+        private GroupTypeCache GetCheckinType( GroupTypeCache groupType, int templateTypeId, List<int> recursionControl = null )
+        {
+            if ( groupType != null )
+            {
+                recursionControl = recursionControl ?? new List<int>();
+                if ( !recursionControl.Contains( groupType.Id ) )
+                {
+                    recursionControl.Add( groupType.Id );
+                    if ( groupType.GroupTypePurposeValueId.HasValue && groupType.GroupTypePurposeValueId == templateTypeId )
+                    {
+                        return groupType;
+                    }
+
+                    foreach ( var parentGroupType in groupType.ParentGroupTypes )
+                    {
+                        var checkinType = GetCheckinType( parentGroupType, templateTypeId, recursionControl );
+                        if ( checkinType != null )
+                        {
+                            return checkinType;
+                        }
+                    }
+                }
+            }
+
+            return null;
+        }
+
+
+        private List<GroupTypeCache> GetDescendentGroupTypes( GroupTypeCache groupType, List<int> recursionControl = null )
+        {
+            var results = new List<GroupTypeCache>();
+
+            if ( groupType != null )
+            {
+                recursionControl = recursionControl ?? new List<int>();
+                if ( !recursionControl.Contains( groupType.Id ) )
+                {
+                    recursionControl.Add( groupType.Id );
+                    results.Add( groupType );
+
+                    foreach ( var childGroupType in groupType.ChildGroupTypes )
+                    {
+                        var childResults = GetDescendentGroupTypes( childGroupType, recursionControl );
+                        childResults.ForEach( c => results.Add( c ) );
+                    }
+                }
+            }
+
+            return results;
+        }
+
         private void BindGroupTypes()
         {
-            BindGroupTypes( string.Empty );
+            var groupTypeIds = new List<string>();
+            foreach ( ListItem item in cblPrimaryGroupTypes.Items )
+            {
+                if ( item.Selected )
+                {
+                    groupTypeIds.Add( item.Value );
+                }
+            }
+            foreach ( ListItem item in cblAlternateGroupTypes.Items )
+            {
+                if ( item.Selected )
+                {
+                    groupTypeIds.Add( item.Value );
+                }
+            }
+
+            BindGroupTypes( groupTypeIds.AsDelimited(",") );
         }
 
         private void BindGroupTypes( string selectedValues )
         {
             var selectedItems = selectedValues.Split( ',' );
 
-            cblGroupTypes.Items.Clear();
+            cblPrimaryGroupTypes.Items.Clear();
+            cblAlternateGroupTypes.Items.Clear();
 
-            if ( ddlKiosk.SelectedValue != None.IdValue )
+            if ( ddlKiosk.SelectedValue != None.IdValue ) 
             {
                 using ( var rockContext = new RockContext() )
                 {
-                    cblGroupTypes.DataSource = GetDeviceGroupTypes( ddlKiosk.SelectedValueAsInt() ?? 0, rockContext );
-                    cblGroupTypes.DataBind();
+                    var deviceGroupTypes = GetDeviceGroupTypes( ddlKiosk.SelectedValueAsInt() ?? 0, rockContext );
+
+                    var primaryGroupTypeIds = GetDescendentGroupTypes( GroupTypeCache.Read( ddlCheckinType.SelectedValueAsInt() ?? 0 ) ).Select( t => t.Id ).ToList();
+
+                    cblPrimaryGroupTypes.DataSource = deviceGroupTypes.Where( t => primaryGroupTypeIds.Contains( t.Id ) ).ToList();
+                    cblPrimaryGroupTypes.DataBind();
+                    cblPrimaryGroupTypes.Visible = cblPrimaryGroupTypes.Items.Count > 0;
+
+                    cblAlternateGroupTypes.DataSource = deviceGroupTypes.Where( t => !primaryGroupTypeIds.Contains( t.Id ) ).ToList();
+                    cblAlternateGroupTypes.DataBind();
+                    cblAlternateGroupTypes.Visible = cblPrimaryGroupTypes.Items.Count > 0;
                 }
 
                 if ( selectedValues != string.Empty )
                 {
                     foreach ( string id in selectedValues.Split( ',' ) )
                     {
-                        ListItem item = cblGroupTypes.Items.FindByValue( id );
+                        ListItem item = cblPrimaryGroupTypes.Items.FindByValue( id );
+                        if ( item != null )
+                        {
+                            item.Selected = true;
+                        }
+
+                        item = cblAlternateGroupTypes.Items.FindByValue( id );
                         if ( item != null )
                         {
                             item.Selected = true;
@@ -475,14 +692,26 @@ namespace RockWeb.Blocks.CheckIn
                     {
                         foreach ( int id in CurrentGroupTypeIds )
                         {
-                            ListItem item = cblGroupTypes.Items.FindByValue( id.ToString() );
+                            ListItem item = cblPrimaryGroupTypes.Items.FindByValue( id.ToString() );
                             if ( item != null )
                             {
                                 item.Selected = true;
                             }
+
+                            item = cblAlternateGroupTypes.Items.FindByValue( id.ToString() );
+                            if ( item != null )
+                            {
+                                item.Selected = true;
+                            }
+
                         }
                     }
                 }
+            }
+            else
+            {
+                cblPrimaryGroupTypes.Visible = false;
+                cblAlternateGroupTypes.Visible = false;
             }
         }
 
@@ -512,9 +741,31 @@ namespace RockWeb.Blocks.CheckIn
             pageRef.QueryString = new System.Collections.Specialized.NameValueCollection();
             pageRef.Parameters = new Dictionary<string, string>();
             pageRef.Parameters.Add( "theme", theme );
+            pageRef.Parameters.Add( "KioskId", ddlKiosk.SelectedValue );
+            pageRef.Parameters.Add( "CheckinConfigId", ddlCheckinType.SelectedValue );
+
+            var groupTypeIds = new List<string>();
+            foreach ( ListItem item in cblPrimaryGroupTypes.Items )
+            {
+                if ( item.Selected )
+                {
+                    groupTypeIds.Add( item.Value );
+                }
+            }
+            foreach ( ListItem item in cblAlternateGroupTypes.Items )
+            {
+                if ( item.Selected )
+                {
+                    groupTypeIds.Add( item.Value );
+                }
+            }
+            pageRef.Parameters.Add( "GroupTypeIds", groupTypeIds.AsDelimited( "," ) );
+            pageRef.Parameters.Add( "ThemeRedirect", "True" );
+
             Response.Redirect( pageRef.BuildUrl(), false );
         }
 
         #endregion
+
     }
 }

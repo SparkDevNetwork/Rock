@@ -1,11 +1,11 @@
 ﻿// <copyright>
-// Copyright 2013 by the Spark Development Network
+// Copyright by the Spark Development Network
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
+// Licensed under the Rock Community License (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-// http://www.apache.org/licenses/LICENSE-2.0
+// http://www.rockrms.com/license
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -188,6 +188,16 @@ namespace Rock.Model
         public string PostalCode { get; set; }
 
         /// <summary>
+        /// Gets or sets the barcode.
+        /// </summary>
+        /// <value>
+        /// The barcode.
+        /// </value>
+        [MaxLength( 40 )]
+        [DataMember]
+        public string Barcode { get; set; }
+
+        /// <summary>
         /// Gets or sets the Local Assessor's parcel identification value that is linked to the location.
         /// </summary>
         /// <value>
@@ -226,7 +236,7 @@ namespace Rock.Model
         /// A <see cref="System.String"/> representing the result code that was returned by the address standardization service. If an address standardization has not been attempted for this location, 
         /// this value will be null.
         /// </value>
-        [MaxLength( 50 )]
+        [MaxLength( 200 )]
         [DataMember]
         public string StandardizeAttemptedResult { get; set; }
 
@@ -268,7 +278,7 @@ namespace Rock.Model
         /// A <see cref="System.String"/> representing the result code returned by the geocoding service from the most recent geocoding attempt. If geocoding has not been attempted for this location,
         /// the value will be null.
         /// </value>
-        [MaxLength( 50 )]
+        [MaxLength( 200 )]
         [DataMember]
         public string GeocodeAttemptedResult { get; set; }
 
@@ -308,6 +318,24 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public int? ImageId { get; set; }
+
+        /// <summary>
+        /// Gets or sets a threshold that will prevent checkin unless a manager overrides
+        /// </summary>
+        /// <value>
+        /// The soft room threshold.
+        /// </value>
+        [DataMember]
+        public int? SoftRoomThreshold { get; set; }
+
+        /// <summary>
+        /// Gets or sets threshold that will prevent checkin (no option to override)
+        /// </summary>
+        /// <value>
+        /// The firm room threshold.
+        /// </value>
+        [DataMember]
+        public int? FirmRoomThreshold { get; set; }
 
         #endregion
 
@@ -503,12 +531,15 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Gets the distance.
+        /// Gets the distance (in miles). 
+        /// Note, this just stores whatever value was passed into SetDistance
+        /// Some of the REST apis, such as Groups/ByLocation, will set this for you
         /// </summary>
         /// <value>
         /// The distance.
         /// </value>
         [DataMember]
+        [RockClientInclude( "If returned from an endpoint that calculates distance, this will be the result distance (in miles)" )]
         public virtual double Distance
         {
             get { return _distance; }
@@ -564,9 +595,17 @@ namespace Rock.Model
         /// </summary>
         /// <param name="latitude">A <see cref="System.Double"/> representing the latitude for this location.</param>
         /// <param name="longitude">A <see cref="System.Double"/>representing the longitude for this location.</param>
-        public void SetLocationPointFromLatLong( double latitude, double longitude )
+        public bool SetLocationPointFromLatLong( double latitude, double longitude )
         {
-            this.GeoPoint = DbGeography.FromText( string.Format( "POINT({0} {1})", longitude, latitude ) );
+            try
+            {
+                this.GeoPoint = DbGeography.FromText( string.Format( "POINT({0} {1})", longitude, latitude ) );
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
         }
 
         /// <summary>
@@ -612,11 +651,11 @@ namespace Rock.Model
         /// </returns>
         public override string ToString()
         {
-            string result = this.Name;
+            string result = GetFullStreetAddress();
 
             if ( string.IsNullOrEmpty( result ) )
             {
-                result = GetFullStreetAddress();
+                result = this.Name;
             }
 
             if ( string.IsNullOrWhiteSpace( result ) )
@@ -687,6 +726,7 @@ namespace Rock.Model
 
         /// <summary>
         /// Encodes the polygon for Google maps
+        /// from http://stackoverflow.com/a/3852420
         /// </summary>
         /// <returns></returns>
         public virtual string EncodeGooglePolygon()
@@ -730,7 +770,8 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Sets the distance.
+        /// Sets the distance (in miles)
+        /// Use this if you have calculated the distance from a particular point and want to store the result in the Distance variable (not stored in database)
         /// </summary>
         /// <param name="distance">The distance.</param>
         public void SetDistance( double distance )

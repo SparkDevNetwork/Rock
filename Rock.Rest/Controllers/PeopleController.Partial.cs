@@ -1,11 +1,11 @@
 ﻿// <copyright>
-// Copyright 2013 by the Spark Development Network
+// Copyright by the Spark Development Network
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
+// Licensed under the Rock Community License (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-// http://www.apache.org/licenses/LICENSE-2.0
+// http://www.rockrms.com/license
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -89,6 +89,20 @@ namespace Rock.Rest.Controllers
 
             // NOTE: We want PrimaryAliasId to be populated, so include "Aliases"
             return new PersonService( rockContext ).Queryable( includeDeceased ).Include( a => a.Aliases );
+        }
+
+        /// <summary>
+        /// Gets the currently authenticated person
+        /// </summary>
+        /// <returns>A person</returns>
+        /// <exception cref="System.Web.Http.HttpResponseException"></exception>
+        [Authenticate, Secured]
+        [HttpGet]
+        [System.Web.Http.Route("api/People/GetCurrentPerson")]
+        public Person GetCurrentPerson()
+        {
+            var rockContext = new Rock.Data.RockContext();
+            return new PersonService(rockContext).Get(GetPerson().Id);
         }
 
         /// <summary>
@@ -339,51 +353,6 @@ namespace Rock.Rest.Controllers
         #region Search
 
         /// <summary>
-        /// Searches the specified name.
-        /// </summary>
-        /// <param name="name">The name.</param>
-        /// <returns></returns>
-        [Authenticate, Secured]
-        [HttpGet]
-        [System.Web.Http.Route( "api/People/Search" )]
-        [Obsolete( "use api/People/Search?name=... instead" )]
-        public IQueryable<PersonSearchResult> Search( string name )
-        {
-            return Search( name, false, false );
-        }
-
-        /// <summary>
-        /// Searches the specified name.
-        /// </summary>
-        /// <param name="name">The name.</param>
-        /// <param name="includeHtml">if set to <c>true</c> [include HTML].</param>
-        /// <returns></returns>
-        [Authenticate, Secured]
-        [HttpGet]
-        [System.Web.Http.Route( "api/People/Search/{name}/{includeHtml}" )]
-        [Obsolete( "use api/People/Search?name=... instead" )]
-        public IQueryable<PersonSearchResult> Search( string name, bool includeHtml )
-        {
-            return Search( name, includeHtml, false );
-        }
-
-        /// <summary>
-        /// Searches the specified name.
-        /// </summary>
-        /// <param name="name">The name.</param>
-        /// <param name="includeHtml">if set to <c>true</c> [include HTML].</param>
-        /// <param name="includeBusinesses">if set to <c>true</c> [include businesses].</param>
-        /// <returns></returns>
-        [Authenticate, Secured]
-        [HttpGet]
-        [System.Web.Http.Route( "api/People/Search/{name}/{includeHtml}/{includeBusinesses}" )]
-        [Obsolete( "use api/People/Search?name=... instead" )]
-        public IQueryable<PersonSearchResult> Search( string name, bool includeHtml, bool includeBusinesses )
-        {
-            return this.Search( name, includeHtml, true, includeBusinesses, false );
-        }
-
-        /// <summary>
         /// Returns results to the Person Picker
         /// </summary>
         /// <param name="name">The name.</param>
@@ -449,8 +418,11 @@ namespace Rock.Rest.Controllers
             if ( person != null )
             {
                 GetPersonSearchDetails( personSearchResult, person );
-                string searchDetailsFormat = @"{0}<div class='contents'>{1}</div>";
-                return string.Format( searchDetailsFormat, personSearchResult.PickerItemDetailsImageHtml, personSearchResult.PickerItemDetailsPersonInfoHtml );
+                // Generate the HTML for the ConnectionStatus; "label-success" matches the default config of the
+                // connection status badge on the Bio bar, but I think label-default works better here.
+                string connectionStatusHtml = string.IsNullOrWhiteSpace( personSearchResult.ConnectionStatus ) ? string.Empty : string.Format( "<span class='label label-default pull-right'>{0}</span>", personSearchResult.ConnectionStatus );
+                string searchDetailsFormat = @"{0}{1}<div class='contents'>{2}</div>";
+                return string.Format( searchDetailsFormat, personSearchResult.PickerItemDetailsImageHtml, connectionStatusHtml, personSearchResult.PickerItemDetailsPersonInfoHtml );
             }
             else
             {
@@ -480,7 +452,7 @@ namespace Rock.Rest.Controllers
                 personSearchResult.Name = showFullNameReversed ? person.FullNameReversed : person.FullName;
                 if ( person.RecordStatusValueId.HasValue )
                 {
-                    var recordStatus = DefinedValueCache.Read( person.RecordStatusValueId.Value, rockContext );
+                    var recordStatus = DefinedValueCache.Read( person.RecordStatusValueId.Value );
                     personSearchResult.RecordStatus = recordStatus.Value;
                     personSearchResult.IsActive = recordStatus.Guid.Equals( activeRecord );
                 }
@@ -517,10 +489,10 @@ namespace Rock.Rest.Controllers
 </div>
 ";
 
-            var familyGroupType = GroupTypeCache.Read( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY.AsGuid(), rockContext );
+            var familyGroupType = GroupTypeCache.Read( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY.AsGuid() );
             int adultRoleId = familyGroupType.Roles.First( a => a.Guid == Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_ADULT.AsGuid() ).Id;
 
-            int groupTypeFamilyId = GroupTypeCache.Read( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY.AsGuid(), rockContext ).Id;
+            int groupTypeFamilyId = GroupTypeCache.Read( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY.AsGuid() ).Id;
 
             // figure out Family, Address, Spouse
             GroupMemberService groupMemberService = new GroupMemberService( rockContext );
@@ -528,18 +500,18 @@ namespace Rock.Rest.Controllers
             Guid? recordTypeValueGuid = null;
             if ( person.RecordTypeValueId.HasValue )
             {
-                recordTypeValueGuid = DefinedValueCache.Read( person.RecordTypeValueId.Value, rockContext ).Guid;
+                recordTypeValueGuid = DefinedValueCache.Read( person.RecordTypeValueId.Value ).Guid;
             }
 
-            personSearchResult.ImageHtmlTag = Person.GetPhotoImageTag( person.PhotoId, person.Age, person.Gender, recordTypeValueGuid, 50, 50 );
+            personSearchResult.ImageHtmlTag = Person.GetPersonPhotoImageTag( person, 50, 50 );
             personSearchResult.Age = person.Age.HasValue ? person.Age.Value : -1;
-            personSearchResult.ConnectionStatus = person.ConnectionStatusValueId.HasValue ? DefinedValueCache.Read( person.ConnectionStatusValueId.Value, rockContext ).Value : string.Empty;
+            personSearchResult.ConnectionStatus = person.ConnectionStatusValueId.HasValue ? DefinedValueCache.Read( person.ConnectionStatusValueId.Value ).Value : string.Empty;
             personSearchResult.Gender = person.Gender.ConvertToString();
             personSearchResult.Email = person.Email;
 
             string imageHtml = string.Format(
                 "<div class='person-image' style='background-image:url({0}&width=65);background-size:cover;background-position:50%'></div>",
-                Person.GetPhotoUrl( person.PhotoId, person.Age, person.Gender, recordTypeValueGuid ) );
+                Person.GetPersonPhotoUrl( person, 200, 200 ) );
 
             string personInfoHtml = string.Empty;
             Guid matchLocationGuid;
@@ -628,7 +600,7 @@ namespace Rock.Rest.Controllers
                 string phoneNumberList = string.Empty;
                 foreach ( var phoneNumber in person.PhoneNumbers )
                 {
-                    var phoneType = DefinedValueCache.Read( phoneNumber.NumberTypeValueId ?? 0, rockContext );
+                    var phoneType = DefinedValueCache.Read( phoneNumber.NumberTypeValueId ?? 0 );
                     phoneNumberList += string.Format(
                         "<br>{0} <small>{1}</small>",
                         phoneNumber.IsUnlisted ? "Unlisted" : phoneNumber.NumberFormatted,
@@ -711,7 +683,7 @@ namespace Rock.Rest.Controllers
                 var appPath = System.Web.VirtualPathUtility.ToAbsolute( "~" );
                 html.AppendFormat(
                     "<header>{0} <h3>{1}<small>{2}</small></h3></header>",
-                    Person.GetPhotoImageTag( person.PhotoId, person.Age, person.Gender, recordTypeValueGuid, 65, 65 ),
+                    Person.GetPersonPhotoImageTag( person, 65, 65 ),
                     person.FullName,
                     person.ConnectionStatusValue != null ? person.ConnectionStatusValue.Value : string.Empty );
 

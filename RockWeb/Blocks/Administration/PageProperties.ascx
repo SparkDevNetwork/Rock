@@ -79,6 +79,7 @@
                         <Rock:RockCheckBox ID="cbRequiresEncryption" runat="server" Text="Force SSL"/>
                         <Rock:RockCheckBox ID="cbEnableViewState" runat="server" Text="Enable ViewState"/>
                         <Rock:RockCheckBox ID="cbIncludeAdminFooter" runat="server" Text="Allow Configuration"/>
+                        <Rock:RockCheckBox ID="cbAllowIndexing" runat="server" Text="Allow Indexing"/>
                         <Rock:DataTextBox ID="tbCacheDuration" runat="server" Label="Cache Duration" SourceTypeName="Rock.Model.Page, Rock" PropertyName="OutputCacheDuration"/>
                     </div>
                     <div class="col-md-6">
@@ -101,7 +102,7 @@
                 <div class="row">
                     <div class="col-md-12">
                         <Rock:CodeEditor ID="ceHeaderContent" runat="server" Label="Header Content" EditorMode="Html" EditorTheme="Rock" EditorHeight="400"
-                            Help="Additional HTML content to include in the <head> section of the rendered page." />
+                            Help="Additional HTML content to include in the &amp;lt;head&amp;gt; section of the rendered page." />
                     </div>
                 </div>
 

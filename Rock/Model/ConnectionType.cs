@@ -1,11 +1,11 @@
 ﻿// <copyright>
-// Copyright 2013 by the Spark Development Network
+// Copyright by the Spark Development Network
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
+// Licensed under the Rock Community License (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-// http://www.apache.org/licenses/LICENSE-2.0
+// http://www.rockrms.com/license
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -85,6 +85,17 @@ namespace Rock.Model
         [DataMember]
         public bool EnableFullActivityList { get; set; }
 
+
+        /// <summary>
+        /// Gets or sets a value indicating whether this connection type requires a placement group to connect.
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if connection type requires a placement group to connect; otherwise, <c>false</c>.
+        /// </value>
+        [Required]
+        [DataMember]
+        public bool RequiresPlacementGroupToConnect { get; set; }
+
         /// <summary>
         /// Gets or sets the owner person alias identifier.
         /// </summary>
@@ -93,6 +104,15 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public int? OwnerPersonAliasId {get;set;}
+
+        /// <summary>
+        /// Gets or sets the number of days until the request is considered idle.
+        /// </summary>
+        /// <value>
+        /// This determines how many days can pass before the request is considered idle.
+        /// </value>
+        [DataMember]
+        public int DaysUntilRequestIdle { get; set; }
 
         #endregion
 

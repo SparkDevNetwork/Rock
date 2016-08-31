@@ -1,11 +1,11 @@
 ﻿// <copyright>
-// Copyright 2013 by the Spark Development Network
+// Copyright by the Spark Development Network
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
+// Licensed under the Rock Community License (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-// http://www.apache.org/licenses/LICENSE-2.0
+// http://www.rockrms.com/license
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -150,7 +150,7 @@ namespace RockWeb.Blocks.Finance
             int? accountId = apAccount.SelectedValue.AsIntegerOrNull();
             if ( accountId.HasValue )
             {
-                var dateRange = SlidingDateRangePicker.CalculateDateRangeFromDelimitedValues( drpDateRange.DelimitedValues );
+                var dateRange = SlidingDateRangePicker.CalculateDateRangeFromDelimitedValues( drpSlidingDateRange.DelimitedValues );
                 var start = dateRange.Start;
                 var end = dateRange.End;
 
@@ -207,7 +207,7 @@ namespace RockWeb.Blocks.Finance
 
             this.SetUserPreference(keyPrefix + "apAccount", apAccount.SelectedValue);
 
-            this.SetUserPreference(keyPrefix + "drpDateRange", drpDateRange.DelimitedValues);
+            this.SetUserPreference(keyPrefix + "drpDateRange", drpSlidingDateRange.DelimitedValues );
 
             this.SetUserPreference(keyPrefix + "nrePledgeAmount", nrePledgeAmount.DelimitedValues);
             this.SetUserPreference(keyPrefix + "nrePercentComplete", nrePercentComplete.DelimitedValues);
@@ -229,9 +229,28 @@ namespace RockWeb.Blocks.Finance
             {
                 apAccount.SetValue(Int32.Parse(accountSetting));
             }
-            
-            
-            drpDateRange.DelimitedValues = this.GetUserPreference(keyPrefix + "drpDateRange");
+
+            string slidingDateRangeSettings = this.GetUserPreference( keyPrefix + "drpDateRange" );
+            if ( string.IsNullOrWhiteSpace( slidingDateRangeSettings ) )
+            {
+                // default to current year
+                drpSlidingDateRange.SlidingDateRangeMode = SlidingDateRangePicker.SlidingDateRangeType.Current;
+                drpSlidingDateRange.TimeUnit = SlidingDateRangePicker.TimeUnitType.Year;
+            }
+            else
+            {
+                var dateRange = SlidingDateRangePicker.CalculateDateRangeFromDelimitedValues( slidingDateRangeSettings );
+                if ( !dateRange.Start.HasValue && !dateRange.End.HasValue )
+                {
+                    // default to current year
+                    drpSlidingDateRange.SlidingDateRangeMode = SlidingDateRangePicker.SlidingDateRangeType.Current;
+                    drpSlidingDateRange.TimeUnit = SlidingDateRangePicker.TimeUnitType.Year;
+                }
+                else
+                {
+                    drpSlidingDateRange.DelimitedValues = slidingDateRangeSettings;
+                }
+            }
 
             nrePledgeAmount.DelimitedValues = this.GetUserPreference(keyPrefix + "nrePledgeAmount");
             nrePercentComplete.DelimitedValues = this.GetUserPreference(keyPrefix + "nrePercentComplete");
@@ -242,6 +261,34 @@ namespace RockWeb.Blocks.Finance
             {
                 rblInclude.SetValue(Int32.Parse(includeSetting));
             }
+        }
+
+        /// <summary>
+        /// Formats the name.
+        /// </summary>
+        /// <param name="lastname">The lastname.</param>
+        /// <param name="nickname">The nickname.</param>
+        /// <returns></returns>
+        protected string FormatName( object lastname, object nickname )
+        {
+            string result = string.Empty;
+
+            if ( nickname != null )
+            {
+                result = nickname.ToString();
+            }
+
+            if ( lastname != null )
+            {
+                if ( !string.IsNullOrWhiteSpace( result ) )
+                {
+                    result += " ";
+                }
+
+                result += lastname;
+            }
+
+            return result;
         }
 
         #endregion

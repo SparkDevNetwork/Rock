@@ -1,11 +1,11 @@
 ﻿// <copyright>
-// Copyright 2013 by the Spark Development Network
+// Copyright by the Spark Development Network
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
+// Licensed under the Rock Community License (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-// http://www.apache.org/licenses/LICENSE-2.0
+// http://www.rockrms.com/license
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -16,10 +16,12 @@
 //
 using System;
 using System.Collections.Specialized;
+using System.Configuration;
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Runtime.Caching;
 using System.Threading;
+using StackExchange.Redis;
 
 namespace Rock.Web.Cache
 {
@@ -30,6 +32,8 @@ namespace Rock.Web.Cache
     /// </summary>
     public class RockMemoryCache : MemoryCache
     {
+        const string REDIS_CHANNEL_NAME = "rock-cache-instructions";
+
         // object used for locking
         private static object s_initLock;
 
@@ -48,6 +52,54 @@ namespace Rock.Web.Cache
         // Whether or not the polling interval has been set
         private bool _isPollingIntervalSet = false;
 
+        // Whether caching is being disabled or not
+        private bool _isCachingDisabled = false;
+
+        /// <summary>
+        /// Gets a value indicating whether Redis is connected.
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if this instance is redis connected; otherwise, <c>false</c>.
+        /// </value>
+        public bool IsRedisConnected
+        {
+            get
+            {
+                return _isRedisConnected;
+            }
+        }
+        private bool _isRedisConnected = false;
+
+        /// <summary>
+        /// Gets the redis connection.
+        /// </summary>
+        /// <value>
+        /// The redis connection.
+        /// </value>
+        public ConnectionMultiplexer RedisConnection
+        {
+            get
+            {
+                return _redisConnection;
+            }
+        }
+        private ConnectionMultiplexer _redisConnection;
+
+        /// <summary>
+        /// Gets a value indicating whether the redis cache cluster feature is enabled.
+        /// </summary>
+        /// <value>
+        /// bool <c>true</c> if the redis cache cluster feature is enabled; otherwise, <c>false</c>.
+        /// </value>
+        public bool IsRedisClusterEnabled
+        {
+            get
+            {
+                return _isRedisClusterEnabled;
+            }
+        }
+        private bool _isRedisClusterEnabled = false;
+
         /// <summary>
         /// Initializes the <see cref="RockMemoryCache"/> class.
         /// </summary>
@@ -59,9 +111,10 @@ namespace Rock.Web.Cache
         /// <summary>
         /// Initializes a new instance of the <see cref="RockMemoryCache"/> class.
         /// </summary>
-        public RockMemoryCache()
+        private RockMemoryCache()
             : this( "RockDefault", null )
         {
+            
         }
 
         /// <summary>
@@ -69,7 +122,7 @@ namespace Rock.Web.Cache
         /// </summary>
         /// <param name="name">The name.</param>
         /// <param name="config">The configuration.</param>
-        public RockMemoryCache( string name, NameValueCollection config = null )
+        private RockMemoryCache( string name, NameValueCollection config = null )
             : base( name, config )
         {
             // Use lambda expressions to create a set method for MemoryCache._stats._lastTrimGen2Count to circumvent poor functionality of MemoryCache
@@ -104,6 +157,127 @@ namespace Rock.Web.Cache
 
             // Fire this method initially after a 1000 ms delay
             _setMemoryCacheLastTrimGen2CountTimer = new Timer( SetMemoryCacheLastTrimGen2Count, null, 1000, Timeout.Infinite );
+
+            // Check to see if caching has been disabled
+            _isCachingDisabled = ConfigurationManager.AppSettings["DisableCaching"].AsBoolean();
+
+            // setup redis cache clustering if needed
+            _isRedisClusterEnabled = ConfigurationManager.AppSettings["EnableRedisCacheCluster"].AsBoolean();
+
+            if ( _isRedisClusterEnabled && _isCachingDisabled == false )
+            {
+                string connectionString = ConfigurationManager.AppSettings["RedisConnectionString"];
+
+                if ( !string.IsNullOrWhiteSpace( connectionString ) )
+                {
+                    try
+                    {
+                        _redisConnection = ConnectionMultiplexer.Connect( connectionString );
+                        _redisConnection.PreserveAsyncOrder = false; // enable concurrent processing of pub/sub messages https://github.com/StackExchange/StackExchange.Redis/blob/master/Docs/PubSubOrder.md
+                        _redisConnection.ConnectionRestored += _redisConnection_ConnectionRestored;
+                        _redisConnection.ConnectionFailed += _redisConnection_ConnectionFailed;
+
+                        _isRedisConnected = true;
+                    }
+                    catch ( Exception ex )
+                    {
+                        Model.ExceptionLogService.LogException( ex, null );
+                    }
+
+                    if ( _redisConnection != null )
+                    {
+                        // setup the subscription to listen for published instructions on caching
+                        ISubscriber sub = _redisConnection.GetSubscriber();
+
+                        sub.Subscribe( REDIS_CHANNEL_NAME, ( channel, message ) => {
+                            ProcessRedisCacheInstruction( channel, message );
+                        } );
+                    }
+                    else
+                    {
+                        _isRedisClusterEnabled = false;
+                    }
+                }
+                else
+                {
+                    _isRedisClusterEnabled = false;
+                }
+            }
+        }
+
+        private void _redisConnection_ConnectionFailed( object sender, ConnectionFailedEventArgs e )
+        {
+            if ( e.ConnectionType == ConnectionType.Subscription )
+            {
+                _isRedisConnected = false;
+            }
+        }
+
+        private void _redisConnection_ConnectionRestored( object sender, ConnectionFailedEventArgs e )
+        {
+            // flush the cache when the connection is restored
+            if ( e.ConnectionType == ConnectionType.Subscription && _isRedisConnected == false )
+            {
+                FlushMemoryCache();
+                _isRedisConnected = true;
+            }
+        }
+
+        private void ProcessRedisCacheInstruction(RedisChannel channel, RedisValue message )
+        {
+            string[] messageParts = message.ToString().Split( ',' );
+            if (messageParts.Length > 0 )
+            {
+                var action = messageParts[0];
+                switch ( action )
+                {
+                    case "REMOVE":
+                        {
+                            if (messageParts.Length > 1 )
+                            {
+                                RemoveFromMemoryCache( messageParts[1] );
+                            }
+                            break;
+                        }
+                    case "FLUSH":
+                        {
+                            FlushMemoryCache();
+                            break;
+                        }
+                    case "REFRESH_AUTH_ENTITY":
+                        {
+                            if ( messageParts.Length > 2 )
+                            {
+                                Rock.Security.Authorization.RefreshEntity( messageParts[1].AsInteger(), messageParts[2].AsInteger() );
+                            }
+                            break;
+                        }
+                    case "REFRESH_AUTH_ACTION":
+                        {
+                            if ( messageParts.Length > 3 )
+                            {
+                                Rock.Security.Authorization.RefreshAction( messageParts[1].AsInteger(), messageParts[2].AsInteger(), messageParts[3] );
+                            }
+                            break;
+                        }
+                    case "FLUSH_AUTH":
+                        {
+                            Rock.Security.Authorization.FlushAuth();
+                            break;
+                        }
+                    case "REMOVE_ENTITY_ATTRIBUTES":
+                        {
+                            Rock.Web.Cache.AttributeCache.RemoveEntityAttributes();
+                            break;
+                        }
+                    case "PING":
+                        {
+                            var response = string.Format( "PONG: From {0}: {1}", System.Environment.MachineName, System.AppDomain.CurrentDomain.FriendlyName );
+                            SendRedisCommand( response );
+                            break;
+                        }
+                }
+            }
         }
 
         /// <summary>
@@ -157,6 +331,11 @@ namespace Rock.Web.Cache
         {
             get
             {
+                if ( _isCachingDisabled )
+                {
+                    return null;
+                }
+
                 object obj = base[key];
                 UpdateCacheHitMiss( key, obj != null );
                 return obj;
@@ -179,6 +358,11 @@ namespace Rock.Web.Cache
         /// </returns>
         public override object AddOrGetExisting( string key, object value, CacheItemPolicy policy, string regionName = null )
         {
+            if ( _isCachingDisabled )
+            {
+                return null;
+            }
+
             UpdateCacheHitMiss( key, Contains( key ) );
             return base.AddOrGetExisting( key, value, policy, regionName );
         }
@@ -195,6 +379,11 @@ namespace Rock.Web.Cache
         /// </returns>
         public override object AddOrGetExisting( string key, object value, DateTimeOffset absoluteExpiration, string regionName = null )
         {
+            if ( _isCachingDisabled )
+            {
+                return null;
+            }
+
             UpdateCacheHitMiss( key, Contains( key ) );
             return base.AddOrGetExisting( key, value, absoluteExpiration, regionName );
         }
@@ -209,9 +398,78 @@ namespace Rock.Web.Cache
         /// </returns>
         public override object Get( string key, string regionName = null )
         {
+            if ( _isCachingDisabled )
+            {
+                return null;
+            }
+
             object obj = base.Get( key, regionName );
             UpdateCacheHitMiss( key, obj != null );
             return obj;
+        }
+
+        /// <summary>
+        /// Removes the specified key.
+        /// </summary>
+        /// <param name="key">The key.</param>
+        /// <param name="regionName">Name of the region.</param>
+        /// <returns></returns>
+        public new object Remove( string key, string regionName = null )
+        {
+            if ( _isRedisClusterEnabled && _isRedisConnected  )
+            {
+                // tell all servers listening to redis to remove the cached item (including us)
+                SendRedisCommand( "REMOVE," + key );
+                return new object();
+            }
+            else
+            {
+                return RemoveFromMemoryCache( key, regionName );
+            }
+        }
+
+        /// <summary>
+        /// Sends the redis command.
+        /// </summary>
+        /// <param name="command">The command.</param>
+        public void SendRedisCommand(string command )
+        {
+            if ( _isRedisConnected )
+            {
+                ISubscriber sub = _redisConnection.GetSubscriber();
+                sub.PublishAsync( REDIS_CHANNEL_NAME, command );
+            }
+        }
+
+        /// <summary>
+        /// Removes from memory cache.
+        /// </summary>
+        /// <param name="key">The key.</param>
+        /// <param name="regionName">Name of the region.</param>
+        /// <returns></returns>
+        private object RemoveFromMemoryCache(string key, string regionName = null )
+        {
+            return base.Remove( key, regionName );
+        }
+
+        /// <summary>
+        /// Releases unmanaged and - optionally - managed resources.
+        /// </summary>
+        public new void Dispose()
+        {
+            // unsubscribe from redis commands
+            if ( _isRedisClusterEnabled )
+            {
+                ISubscriber sub = _redisConnection.GetSubscriber();
+                sub.UnsubscribeAll();
+
+                if ( _redisConnection != null )
+                {
+                    _redisConnection.Dispose();
+                }
+            }
+
+            base.Dispose();
         }
 
         /// <summary>
@@ -244,13 +502,30 @@ namespace Rock.Web.Cache
         /// </summary>
         public static void Clear()
         {
+            if ( RockMemoryCache.s_defaultCache != null && RockMemoryCache.s_defaultCache.IsRedisClusterEnabled && RockMemoryCache.s_defaultCache.IsRedisConnected)
+            {
+                // tell all servers listening to redis to flush the cached (including us)
+                RockMemoryCache.s_defaultCache.SendRedisCommand( "FLUSH" );               
+            }
+            else
+            {
+                FlushMemoryCache();
+            }
+        }
+
+        /// <summary>
+        /// Flushes the memory cache.
+        /// </summary>
+        private static void FlushMemoryCache()
+        {
             lock ( RockMemoryCache.s_initLock )
             {
                 if ( RockMemoryCache.s_defaultCache != null )
                 {
                     RockMemoryCache.s_defaultCache.Dispose();
-                    RockMemoryCache.s_defaultCache = null;
                 }
+
+                RockMemoryCache.s_defaultCache = new RockMemoryCache();
             }
         }
     }
