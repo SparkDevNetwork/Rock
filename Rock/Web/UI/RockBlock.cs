@@ -1144,7 +1144,7 @@ namespace Rock.Web.UI
                 {
                     // Move
                     HtmlGenericControl aMoveBlock = new HtmlGenericControl( "a" );
-                    aMoveBlock.Attributes.Add( "class", "block-move block-move" );
+                    aMoveBlock.Attributes.Add( "class", "block-move" );
                     aMoveBlock.Attributes.Add( "href", BlockCache.Id.ToString() );
                     aMoveBlock.Attributes.Add( "data-zone", BlockCache.Zone );
                     aMoveBlock.Attributes.Add( "data-zone-location", BlockCache.BlockLocation.ToString() );

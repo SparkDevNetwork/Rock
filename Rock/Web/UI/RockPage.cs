@@ -1886,6 +1886,7 @@ Sys.Application.add_load(function () {
             modalBlockMove.Title = "Move Block";
             modalBlockMove.OnOkScript = "Rock.admin.pageAdmin.saveBlockMove();";
             this.Form.Controls.Add( modalBlockMove );
+            modalBlockMove.Visible = true;
 
             HtmlGenericControl fsZoneSelect = new HtmlGenericControl( "fieldset" );
             fsZoneSelect.ClientIDMode = ClientIDMode.Static;
