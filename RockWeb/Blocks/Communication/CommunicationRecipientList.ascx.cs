@@ -301,10 +301,10 @@ namespace RockWeb.Blocks.Communication
             if ( _person != null )
             {
                 qryCommunications = qryCommunications
-                    .Where( c => 
-                        c.Recipients.Any( a => 
+                    .Where( c =>
+                        c.Recipients.Any( a =>
                             a.PersonAlias.PersonId == _person.Id &&
-                            a.Status == CommunicationRecipientStatus.Delivered ) );
+                            ( a.Status == CommunicationRecipientStatus.Delivered || a.Status == CommunicationRecipientStatus.Opened ) ) );
             }
 
             if ( drpDates.LowerValue.HasValue )
