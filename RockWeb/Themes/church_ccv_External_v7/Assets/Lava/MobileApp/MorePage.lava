@@ -44,7 +44,16 @@
 
       <h4>Kids</h4>
       <p>We have excellent programs for kids (infants - 6th grade) during all adult services.</p>
-      <p><a href="external:http://ccv.church/kids" class="btn btn-sm btn-default">Learn More</a></p>
+      <p>
+        <a href="external:http://ccv.church/kids" class="btn btn-sm btn-default">Learn More</a>
+        <a href="/parent-kid-resources" class="btn btn-sm btn-default">Kids Weekend Content</a>
+      </p>
+
+      {% comment %}<div class="row">
+        <div class="col-sm-6 margin-b-lg">
+          <a href="/parent-kid-resources" class="btn btn-block btn-default">Kids Weekend Content</a>
+        </div>
+      </div>{% endcomment %}
     </div>
     <div class="col-sm-6">
       <hr>
