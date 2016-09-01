@@ -31,10 +31,10 @@ using Rock.Web.UI.Controls;
 
 namespace RockWeb.Plugins.com_centralaz.CheckIn
 {
-    [DisplayName( "Device Location List" )]
+    [DisplayName( "Associated Devices" )]
     [Category( "com_centralaz > Check-in" )]
     [Description( "Lists all the devices tied to a location." )]
-    public partial class DeviceLocationList : RockBlock, ISecondaryBlock
+    public partial class AssociatedDevices : RockBlock, ISecondaryBlock
     {
         #region Control Methods
 

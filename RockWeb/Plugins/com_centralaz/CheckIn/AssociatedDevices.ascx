@@ -1,4 +1,4 @@
-﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="DeviceLocationList.ascx.cs" Inherits="RockWeb.Plugins.com_centralaz.CheckIn.DeviceLocationList" %>
+﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="AssociatedDevices.ascx.cs" Inherits="RockWeb.Plugins.com_centralaz.CheckIn.AssociatedDevices" %>
 
 <asp:UpdatePanel ID="upDevice" runat="server">
     <ContentTemplate>
