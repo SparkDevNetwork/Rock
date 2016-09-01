@@ -35,12 +35,14 @@ using Rock.Web.UI.Controls;
 namespace RockWeb.Plugins.com_centralaz.CheckIn
 {
     /// <summary>
-    /// A simple, easy to use photo gallery widget that stores photos on the filesystem.
+    /// A simple debugging tool for developers and super-admins that dumps the CheckInState object
+    /// and a few other details to the screen when enabled. Just drop the block on a check-in page
+    /// and enable the debug block setting or pass in debug=true to see the data dump.
     /// </summary>
     [DisplayName( "Check-in State Debugger" )]
     [Category( "com_centralaz > Check-in" )]
-    [Description( "Exposes the CurrentCheckInState object for the current family when 'debug' is passed via the querystring or the debug block setting is enabled." )]
-    [BooleanField( "Enable Debug", "Outputs the CheckInState object for assistanace with developement troubleshooting..", false )]
+    [Description( "Exposes the CurrentCheckInState object and a few other details for assistance with development and troubleshooting for the current family when 'debug' is passed via the querystring or the debug block setting is enabled." )]
+    [BooleanField( "Enable Debug", "When enabled, outputs the debugging information. Alternatively you can pass 'debug=true' into the querystring to enable debugging.", true )]
 
     public partial class CheckInStateDebugger : CheckInBlock
     {
@@ -87,7 +89,7 @@ namespace RockWeb.Plugins.com_centralaz.CheckIn
         #region Events
 
         /// <summary>
-        /// Handles the BlockUpdated event of the HtmlContentDetail control.
+        /// Handles the BlockUpdated event.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
@@ -95,21 +97,34 @@ namespace RockWeb.Plugins.com_centralaz.CheckIn
         {
             DumpCheckInState();
         }
-        
+
         #endregion
 
         #region Methods
-        
+
         private void DumpCheckInState()
         {
-            if ( CurrentCheckInState != null &&
-                CurrentCheckInState.CheckIn != null &&
+            if ( CurrentCheckInState == null )
+            {
+                return;
+            }
+
+            StringBuilder sb = new StringBuilder();
+            StringBuilder sbFull = new StringBuilder();
+
+            sbFull.AppendFormat( "<small>Kiosk: {0} w/GroupTypeIds: {1}</small><br/>", CurrentCheckInState.Kiosk.Device.Name, String.Join( ",", CurrentGroupTypeIds ) );
+            sbFull.Append( "<small>Locations:<ul>" );
+            foreach( var location in CurrentCheckInState.Kiosk.Locations( CurrentGroupTypeIds, new RockContext() ) )
+            {
+                sbFull.AppendFormat( "<li>{0}</li>", location.Name );
+            }
+            sbFull.Append( "</ul></small>" );
+
+            if ( CurrentCheckInState.CheckIn != null &&
                 CurrentCheckInState.CheckIn.CurrentFamily != null )
             {
                 var family = CurrentCheckInState.CheckIn.CurrentFamily;
 
-                StringBuilder sb = new StringBuilder();
-                StringBuilder sbFull = new StringBuilder();
                 foreach ( var person in family.People.ToList() )
                 {
                     foreach ( var gt in person.GroupTypes )
@@ -127,10 +142,10 @@ namespace RockWeb.Plugins.com_centralaz.CheckIn
                         }
                     }
                 }
-
-                lDebugBrief.Text = sb.ToString();
-                lDebugFull.Text = sbFull.ToString();
             }
+
+            lDebugBrief.Text = sb.ToString();
+            lDebugFull.Text = sbFull.ToString();
         }
         #endregion
     }
