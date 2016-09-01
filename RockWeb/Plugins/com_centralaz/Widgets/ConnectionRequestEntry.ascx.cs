@@ -91,7 +91,7 @@ namespace RockWeb.Plugins.com_centralaz.Widgets
             {
                 lConnectionTypeName.Text = String.Format( "<h4 class='block-title'>{0}</h4>", connectionType.Name );
 
-                cblOpportunities.DataSource = connectionType.ConnectionOpportunities.OrderBy( c => c.Name );
+                cblOpportunities.DataSource = connectionType.ConnectionOpportunities.Where( c=> c.IsActive ).OrderBy( c => c.Name );
                 cblOpportunities.DataBind();
             }
         }
