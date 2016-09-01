@@ -1394,7 +1394,9 @@ TransactionAcountDetails: [
                             }
                         }
 
-                        if ( string.IsNullOrWhiteSpace( txtCreditCard.Text ) )
+                        var rgx = new System.Text.RegularExpressions.Regex( @"[^\d]" );
+                        string ccNum = rgx.Replace( txtCreditCard.Text, "" );
+                        if ( string.IsNullOrWhiteSpace( ccNum ) )
                         {
                             errorMessages.Add( "Make sure to enter a valid credit card number" );
                         }
