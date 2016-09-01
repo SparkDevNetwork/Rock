@@ -46,14 +46,6 @@ namespace RockWeb.Plugins.com_centralaz.CheckIn
 
     public partial class CheckInStateDebugger : CheckInBlock
     {
-        #region Fields
-
-        #endregion
-
-        #region Properties
-        
-        #endregion
-
         #region Base Control Methods
 
         /// <summary>
@@ -76,8 +68,8 @@ namespace RockWeb.Plugins.com_centralaz.CheckIn
         {
             base.OnLoad( e );
 
-            if ( ! this.IsPostBack && 
-                ( ! string.IsNullOrEmpty( PageParameter("debug" ) ) || GetAttributeValue("EnableDebug").AsBoolean() ) )
+            if ( !this.IsPostBack &&
+                ( !string.IsNullOrEmpty( PageParameter( "debug" ) ) || GetAttributeValue( "EnableDebug" ).AsBoolean() ) )
             {
                 upnlContent.Visible = true;
                 DumpCheckInState();
@@ -102,6 +94,9 @@ namespace RockWeb.Plugins.com_centralaz.CheckIn
 
         #region Methods
 
+        /// <summary>
+        /// Dumps the state of the check in.
+        /// </summary>
         private void DumpCheckInState()
         {
             if ( CurrentCheckInState == null )
@@ -114,7 +109,7 @@ namespace RockWeb.Plugins.com_centralaz.CheckIn
 
             sbFull.AppendFormat( "<small>Kiosk: {0} w/GroupTypeIds: {1}</small><br/>", CurrentCheckInState.Kiosk.Device.Name, String.Join( ",", CurrentGroupTypeIds ) );
             sbFull.Append( "<small>Locations:<ul>" );
-            foreach( var location in CurrentCheckInState.Kiosk.Locations( CurrentGroupTypeIds, new RockContext() ) )
+            foreach ( var location in CurrentCheckInState.Kiosk.Locations( CurrentGroupTypeIds, new RockContext() ) )
             {
                 sbFull.AppendFormat( "<li>{0}</li>", location.Name );
             }

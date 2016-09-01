@@ -55,12 +55,6 @@ namespace RockWeb.Plugins.com_centralaz.CheckIn
 
         #endregion
 
-        #region Properties
-
-        // used for public / protected properties
-
-        #endregion
-
         #region Base Control Methods
 
         //  overrides of the base RockBlock methods (i.e. OnInit, OnLoad)
@@ -120,8 +114,6 @@ namespace RockWeb.Plugins.com_centralaz.CheckIn
 
         #region Events
 
-        // handlers called by the controls on your block
-
         /// <summary>
         /// Handles the BlockUpdated event of the control.
         /// </summary>
@@ -129,7 +121,6 @@ namespace RockWeb.Plugins.com_centralaz.CheckIn
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void Block_BlockUpdated( object sender, EventArgs e )
         {
-
         }
 
         /// <summary>
@@ -192,16 +183,7 @@ namespace RockWeb.Plugins.com_centralaz.CheckIn
                 mergeObjects.Add( keyValue.Key, keyValue.Value );
             }
 
-
             mergeObjects.Add( "Person", checkinPerson.Person );
-            //mergeObjects.Add( "People", people );
-            //mergeObjects.Add( "GroupType", groupType );
-            //var groupMembers = groupMemberService.Queryable().AsNoTracking()
-            //    .Where( m =>
-            //        m.PersonId == person.Person.Id &&
-            //        m.GroupId == group.Group.Id )
-            //    .ToList();
-            //mergeObjects.Add( "GroupMembers", groupMembers );
             CheckInLabel checkinLabel = new CheckInLabel( labelCache, mergeObjects );
 
             checkinLabel.FileGuid = label.Value.AsGuid();
@@ -228,6 +210,12 @@ namespace RockWeb.Plugins.com_centralaz.CheckIn
             bbtnPrint.DataLoadingText = "";
         }
 
+        /// <summary>
+        /// Saves the user settings.
+        /// </summary>
+        /// <param name="device">The device.</param>
+        /// <param name="label">The label.</param>
+        /// <param name="person">The person.</param>
         private void SaveUserSettings( ListItem device, ListItem label, CheckInPerson person )
         {
             SetUserPreference( USER_SETTING_DEVICEID,  device.Value );
@@ -238,6 +226,9 @@ namespace RockWeb.Plugins.com_centralaz.CheckIn
             }
         }
 
+        /// <summary>
+        /// Uses the user preferences.
+        /// </summary>
         private void UseUserPreferences()
         {
             var deviceId = GetUserPreference( USER_SETTING_DEVICEID );
@@ -415,7 +406,6 @@ namespace RockWeb.Plugins.com_centralaz.CheckIn
         }
 
         #endregion
-
 
         #region Helper Methods
 

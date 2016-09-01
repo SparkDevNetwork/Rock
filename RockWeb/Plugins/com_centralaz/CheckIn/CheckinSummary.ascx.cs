@@ -1,5 +1,5 @@
 ﻿// <copyright>
-// Copyright by the Spark Development Network
+// Copyright by Central Christian Church
 //
 // Licensed under the Rock Community License (the "License");
 // you may not use this file except in compliance with the License.
@@ -36,7 +36,7 @@ namespace RockWeb.Plugins.com_centralaz.CheckIn
     /// </summary>
     [DisplayName( "Check-in Summary" )]
     [Category( "com_centralaz > Check-in" )]
-    [Description( "Helps to view active checkin groups and their locations." )]
+    [Description( "Used to view active checkin groups and their locations." )]
     [AttributeField( Rock.SystemGuid.EntityType.GROUP, "Group Age Range Attribute", "Select the attribute used to define the age range of the group", false, false, "", order: 0 )]
     [AttributeField( Rock.SystemGuid.EntityType.GROUP, "Group Special Needs Attribute", "Select the attribute used to filter special needs groups.", false, false, "", order: 1 )]
     [AttributeField( Rock.SystemGuid.EntityType.GROUP, "Group Last Name Start Letter Attribute", "Select the attribute used to define the last name start letter of the group.", false, false, "", order: 2 )]
@@ -44,6 +44,12 @@ namespace RockWeb.Plugins.com_centralaz.CheckIn
 
     public partial class CheckinSummary : RockBlock
     {
+        /// <summary>
+        /// Gets the age range attribute key.
+        /// </summary>
+        /// <value>
+        /// The age range attribute key.
+        /// </value>
         String AgeRangeAttributeKey
         {
             get
@@ -63,6 +69,12 @@ namespace RockWeb.Plugins.com_centralaz.CheckIn
             }
         }
 
+        /// <summary>
+        /// Gets the special needs attribute key.
+        /// </summary>
+        /// <value>
+        /// The special needs attribute key.
+        /// </value>
         String SpecialNeedsAttributeKey
         {
             get
@@ -82,6 +94,12 @@ namespace RockWeb.Plugins.com_centralaz.CheckIn
             }
         }
 
+        /// <summary>
+        /// Gets the last name start letter attribute key.
+        /// </summary>
+        /// <value>
+        /// The last name start letter attribute key.
+        /// </value>
         String LastNameStartLetterAttributeKey
         {
             get
@@ -101,6 +119,12 @@ namespace RockWeb.Plugins.com_centralaz.CheckIn
             }
         }
 
+        /// <summary>
+        /// Gets the last name end letter attribute key.
+        /// </summary>
+        /// <value>
+        /// The last name end letter attribute key.
+        /// </value>
         String LastNameEndLetterAttributeKey
         {
             get
@@ -160,6 +184,11 @@ namespace RockWeb.Plugins.com_centralaz.CheckIn
             base.OnLoad( e );
         }
 
+        /// <summary>
+        /// Handles the BlockUpdated event of the Block control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void Block_BlockUpdated( object sender, EventArgs e )
         {
             pCategory.SetValue( rFilter.GetUserPreference( "Category" ).AsInteger() );
@@ -219,7 +248,6 @@ namespace RockWeb.Plugins.com_centralaz.CheckIn
             {
                 pCategory.SetValue( null );
             }
-
         }
 
         #endregion
@@ -423,6 +451,9 @@ namespace RockWeb.Plugins.com_centralaz.CheckIn
             BindGrid();
         }
 
+        /// <summary>
+        /// Loads the schedules.
+        /// </summary>
         private void LoadSchedules()
         {
             cblSchedules.Items.Clear();
@@ -443,12 +474,22 @@ namespace RockWeb.Plugins.com_centralaz.CheckIn
             }
         }
 
+        /// <summary>
+        /// Handles the SelectedIndexChanged event of the cblSchedules control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void cblSchedules_SelectedIndexChanged( object sender, EventArgs e )
         {
             rFilter.SaveUserPreference( "Schedules", cblSchedules.SelectedValues.AsDelimited( "," ) );
             BindGrid();
         }
 
+        /// <summary>
+        /// Handles the RowDataBound event of the gGroupLocations control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="GridViewRowEventArgs"/> instance containing the event data.</param>
         protected void gGroupLocations_RowDataBound( object sender, GridViewRowEventArgs e )
         {
             if ( e.Row.DataItem != null )

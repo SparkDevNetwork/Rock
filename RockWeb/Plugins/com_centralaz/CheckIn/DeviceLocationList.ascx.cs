@@ -1,5 +1,5 @@
 ﻿// <copyright>
-// Copyright by the Spark Development Network
+// Copyright by Central Christian Church
 //
 // Licensed under the Rock Community License (the "License");
 // you may not use this file except in compliance with the License.
@@ -228,9 +228,8 @@ namespace RockWeb.Plugins.com_centralaz.CheckIn
 
                     e.Value = ( (PrintFrom)System.Enum.Parse( typeof( PrintFrom ), e.Value ) ).ToString();
                     break;
-
             }
-        }       
+        }
 
         /// <summary>
         /// Handles the GridRebind event of the gDevice control.
@@ -364,9 +363,7 @@ namespace RockWeb.Plugins.com_centralaz.CheckIn
                 gDevice.EntityTypeId = EntityTypeCache.Read<Rock.Model.Device>().Id;
                 gDevice.DataBind();
             }
-
         }
-
         #endregion
     }
 }
