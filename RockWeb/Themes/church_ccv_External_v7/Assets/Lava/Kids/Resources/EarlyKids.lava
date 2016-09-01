@@ -53,6 +53,7 @@
 <p>{{ viewedItem | Attribute:'Summary' }}</p>
 <p>{{ viewedItem.Content }}</p>
 <p> <b>BIG Question:</b> {{ viewedItem | Attribute: 'TheBIGQuestion' }}</p>
+<p> <b>Today's Answer:</b> {{ viewedItem | Attribute: 'TodaysAnswer' }}</p>
 <p> <b>Bible Verses:</b> {{ viewedItem | Attribute: 'BibleVerses' }}</p>
 
 {% assign message = viewedItem | Attribute: 'LinktoMessage' %}
