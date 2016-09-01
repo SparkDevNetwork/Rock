@@ -29,10 +29,10 @@ using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
-namespace RockWeb.Plugins.com_centralaz.Widgets
+namespace RockWeb.Plugins.com_centralaz.CheckIn
 {
     [DisplayName( "Device Location List" )]
-    [Category( "com_centralaz > Widgets" )]
+    [Category( "com_centralaz > Check-in" )]
     [Description( "Lists all the devices tied to a location." )]
     public partial class DeviceLocationList : RockBlock, ISecondaryBlock
     {
@@ -252,7 +252,7 @@ namespace RockWeb.Plugins.com_centralaz.Widgets
         /// <param name="visible">if set to <c>true</c> [visible].</param>
         public void SetVisible( bool visible )
         {
-            upDevice.Visible = visible;
+            pnlContent.Visible = visible;
         }
 
         /// <summary>
