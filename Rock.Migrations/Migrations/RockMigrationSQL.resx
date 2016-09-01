@@ -344,42 +344,42 @@
     <value>version 5.0\version 1.5.0\201605180005401_scheduledtxnsource_getfamilytitle.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
   </data>
   <data name="_201606091237191_GivingAnalyticsRefactor_AccountTotals" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>201606091237191_givinganalyticsrefactor_accounttotals.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
+    <value>version 6.0\version 1.6.0\201606091237191_givinganalyticsrefactor_accounttotals.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
   </data>
   <data name="_201606091237191_GivingAnalyticsRefactor_FirstLastEverDates" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>201606091237191_givinganalyticsrefactor_firstlasteverdates.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
+    <value>version 6.0\version 1.6.0\201606091237191_givinganalyticsrefactor_firstlasteverdates.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
   </data>
   <data name="_201606091237191_GivingAnalyticsRefactor_PersonSummary" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>201606091237191_givinganalyticsrefactor_personsummary.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
+    <value>version 6.0\version 1.6.0\201606091237191_givinganalyticsrefactor_personsummary.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
   </data>
   <data name="_201606091237191_GivingAnalyticsRefactor_TransactionData" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>201606091237191_givinganalyticsrefactor_transactiondata.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
+    <value>version 6.0\version 1.6.0\201606091237191_givinganalyticsrefactor_transactiondata.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
   </data>
   <data name="_201606231511599_RegistrationWorkflow_Indexes" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>201606231511599_registrationworkflow_indexes.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
+    <value>version 6.0\version 1.6.0\201606231511599_registrationworkflow_indexes.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
   </data>
   <data name="_201607102235065_ScheduledTransactionType" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>201607102235065_scheduledtransactiontype.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
+    <value>version 6.0\version 1.6.0\201607102235065_scheduledtransactiontype.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
   </data>
   <data name="_201608101635463_PledgeGroup_SP1" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>201608101635463_pledgegroup_sp1.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
+    <value>version 6.0\version 1.6.0\201608101635463_pledgegroup_sp1.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
   </data>
   <data name="_201608101635463_PledgeGroup_SP2" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>201608101635463_pledgegroup_sp2.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
+    <value>version 6.0\version 1.6.0\201608101635463_pledgegroup_sp2.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
   </data>
   <data name="_201608171937068_GivingAnalyticsAccounts_AccountTotals" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>201608171937068_givinganalyticsaccounts_accounttotals.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
+    <value>version 6.0\version 1.6.0\201608171937068_givinganalyticsaccounts_accounttotals.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
   </data>
   <data name="_201608171937068_GivingAnalyticsAccounts_FirstLastEverDates" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>201608171937068_givinganalyticsaccounts_firstlasteverdates.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
+    <value>version 6.0\version 1.6.0\201608171937068_givinganalyticsaccounts_firstlasteverdates.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
   </data>
   <data name="_201608171937068_GivingAnalyticsAccounts_PersonSummary" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>201608171937068_givinganalyticsaccounts_personsummary.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
+    <value>version 6.0\version 1.6.0\201608171937068_givinganalyticsaccounts_personsummary.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
   </data>
   <data name="_201608171937068_GivingAnalyticsAccounts_TransactionData" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>201608171937068_givinganalyticsaccounts_transactiondata.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
+    <value>version 6.0\version 1.6.0\201608171937068_givinganalyticsaccounts_transactiondata.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
   </data>
   <data name="_201608172242214_Podcasting" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>201608172242214_podcasting.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
+    <value>version 6.0\version 1.6.0\201608172242214_podcasting.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
   </data>
 </root>
