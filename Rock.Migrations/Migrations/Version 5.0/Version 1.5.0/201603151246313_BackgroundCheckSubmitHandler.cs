@@ -138,7 +138,7 @@ namespace Rock.Migrations
     END
 " );
 
-            // TC:�Add Giving Transactions to Business Detail Page
+            // TC: Add Giving Transactions to Business Detail Page
 
             // First delete any existing blocks of these types that might have been manually added to the page.
             Sql( @"
