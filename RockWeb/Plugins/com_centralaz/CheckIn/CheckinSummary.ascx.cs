@@ -34,11 +34,13 @@ namespace RockWeb.Plugins.com_centralaz.CheckIn
     /// <summary>
     /// 
     /// </summary>
-    [DisplayName( "Checkin Summary" )]
+    [DisplayName( "Check-in Summary" )]
     [Category( "com_centralaz > Check-in" )]
     [Description( "Helps to view active checkin groups and their locations." )]
-    [AttributeField( Rock.SystemGuid.EntityType.GROUP, "Group Age Range Attribute", "Select the attribute used to define the age range of the group", true, false, "43511B8F-71D9-423A-85BF-D1CD08C1998E", order: 2 )]
-    [AttributeField( Rock.SystemGuid.EntityType.GROUP, "Group Special Needs Attribute", "Select the attribute used to filter special needs groups.", true, false, "9210EC95-7B85-4D11-A82E-0B677B32704E", order: 2 )]
+    [AttributeField( Rock.SystemGuid.EntityType.GROUP, "Group Age Range Attribute", "Select the attribute used to define the age range of the group", false, false, "", order: 0 )]
+    [AttributeField( Rock.SystemGuid.EntityType.GROUP, "Group Special Needs Attribute", "Select the attribute used to filter special needs groups.", false, false, "", order: 1 )]
+    [AttributeField( Rock.SystemGuid.EntityType.GROUP, "Group Last Name Start Letter Attribute", "Select the attribute used to define the last name start letter of the group.", false, false, "", order: 2 )]
+    [AttributeField( Rock.SystemGuid.EntityType.GROUP, "Group Last Name End Letter Attribute", "Select the attribute used to define the last name end letter of the group.", false, false, "", order: 3 )]
 
     public partial class CheckinSummary : RockBlock
     {
@@ -51,13 +53,17 @@ namespace RockWeb.Plugins.com_centralaz.CheckIn
                 var ageRangeAttributeGuid = GetAttributeValue( "GroupAgeRangeAttribute" ).AsGuid();
                 if ( ageRangeAttributeGuid != Guid.Empty )
                 {
-                    ageRangeAttributeKey = AttributeCache.Read( ageRangeAttributeGuid ).Key;
+                    var groupAgeRange = AttributeCache.Read( ageRangeAttributeGuid );
+                    if ( groupAgeRange != null )
+                    {
+                        ageRangeAttributeKey = groupAgeRange.Key;
+                    }
                 }
                 return ageRangeAttributeKey;
             }
         }
 
-        String SpecialNeedsKey
+        String SpecialNeedsAttributeKey
         {
             get
             {
@@ -69,12 +75,51 @@ namespace RockWeb.Plugins.com_centralaz.CheckIn
                     var groupSpecialNeeds = AttributeCache.Read( groupSpecialNeedsGuid );
                     if ( groupSpecialNeeds != null )
                     {
-                        groupSpecialNeedsKey = AttributeCache.Read( groupSpecialNeedsGuid ).Key;
+                        groupSpecialNeedsKey = groupSpecialNeeds.Key;
                     }
                 }
                 return groupSpecialNeedsKey;
             }
         }
+
+        String LastNameStartLetterAttributeKey
+        {
+            get
+            {
+                // get the admin-selected attribute key instead of using a hardcoded key
+                var groupLastNameStartLetterKey = string.Empty;
+                var groupLastNameStartLetterGuid = GetAttributeValue( "GroupLastNameStartLetterAttribute" ).AsGuid();
+                if ( groupLastNameStartLetterGuid != Guid.Empty )
+                {
+                    var groupLastNameStartLetter = AttributeCache.Read( groupLastNameStartLetterGuid );
+                    if ( groupLastNameStartLetter != null )
+                    {
+                        groupLastNameStartLetterKey = groupLastNameStartLetter.Key;
+                    }
+                }
+                return groupLastNameStartLetterKey;
+            }
+        }
+
+        String LastNameEndLetterAttributeKey
+        {
+            get
+            {
+                // get the admin-selected attribute key instead of using a hardcoded key
+                var groupLastNameEndLetterKey = string.Empty;
+                var groupLastNameEndLetterGuid = GetAttributeValue( "GroupLastNameEndLetterAttribute" ).AsGuid();
+                if ( groupLastNameEndLetterGuid != Guid.Empty )
+                {
+                    var groupLastNameEndLetter = AttributeCache.Read( groupLastNameEndLetterGuid );
+                    if ( groupLastNameEndLetter != null )
+                    {
+                        groupLastNameEndLetterKey = groupLastNameEndLetter.Key;
+                    }
+                }
+                return groupLastNameEndLetterKey;
+            }
+        }
+
         #region Control Methods
 
         /// <summary>
@@ -85,6 +130,7 @@ namespace RockWeb.Plugins.com_centralaz.CheckIn
         {
             base.OnInit( e );
 
+            this.BlockUpdated += Block_BlockUpdated;
             pCategory.EntityTypeId = EntityTypeCache.GetId( typeof( Rock.Model.Schedule ) ) ?? 0;
 
             rFilter.ApplyFilterClick += rFilter_ApplyFilterClick;
@@ -112,6 +158,14 @@ namespace RockWeb.Plugins.com_centralaz.CheckIn
             }
 
             base.OnLoad( e );
+        }
+
+        protected void Block_BlockUpdated( object sender, EventArgs e )
+        {
+            pCategory.SetValue( rFilter.GetUserPreference( "Category" ).AsInteger() );
+            LoadSchedules();
+
+            BindGrid();
         }
 
         #endregion
@@ -274,6 +328,34 @@ namespace RockWeb.Plugins.com_centralaz.CheckIn
             var groupQry = groupService.Queryable();
             int groupTypeId;
 
+            // Set visible columns
+            var specialNeedsField = gGroupLocations.Columns.OfType<RockLiteralField>().FirstOrDefault( s => s.HeaderText == "Special Needs" );
+            if ( specialNeedsField != null )
+            {
+                if ( String.IsNullOrWhiteSpace( SpecialNeedsAttributeKey ) )
+                {
+                    specialNeedsField.Visible = false;
+                }
+            }
+
+            var lastNameField = gGroupLocations.Columns.OfType<RockLiteralField>().FirstOrDefault( s => s.HeaderText == "Last Name" );
+            if ( lastNameField != null )
+            {
+                if ( String.IsNullOrWhiteSpace( LastNameStartLetterAttributeKey ) && String.IsNullOrWhiteSpace( LastNameEndLetterAttributeKey ) )
+                {
+                    lastNameField.Visible = false;
+                }
+            }
+
+            var ageField = gGroupLocations.Columns.OfType<RockLiteralField>().FirstOrDefault( s => s.HeaderText == "Age" );
+            if ( ageField != null )
+            {
+                if ( String.IsNullOrWhiteSpace( AgeRangeAttributeKey ) )
+                {
+                    ageField.Visible = false;
+                }
+            }
+
             // if this page has a PageParam for groupTypeId use that to limit which groupTypeId to see. Otherwise, use the groupTypeId specified in the filter
             int? groupTypeIdPageParam = this.PageParameter( "groupTypeId" ).AsIntegerOrNull();
             if ( groupTypeIdPageParam.HasValue )
@@ -348,7 +430,7 @@ namespace RockWeb.Plugins.com_centralaz.CheckIn
             {
                 var selectedCategory = pCategory.SelectedValueAsId().Value;
                 //cblSchedules.DataSource = new ScheduleService( new RockContext() ).Queryable().Where( s => s.CategoryId == selectedCategory ).ToList();
-                cblSchedules.DataSource = new ScheduleService( new RockContext() ).Queryable().Where( s => s.CategoryId == selectedCategory ).ToList().OrderBy( x => ( x.WeeklyDayOfWeek.HasValue ? ( int ) x.WeeklyDayOfWeek.Value + 1 : 0 ) % 7 ).ThenBy( a => a.StartTimeOfDay ).ThenBy( a => a.ToString() );
+                cblSchedules.DataSource = new ScheduleService( new RockContext() ).Queryable().Where( s => s.CategoryId == selectedCategory ).ToList().OrderBy( x => ( x.WeeklyDayOfWeek.HasValue ? (int)x.WeeklyDayOfWeek.Value + 1 : 0 ) % 7 ).ThenBy( a => a.StartTimeOfDay ).ThenBy( a => a.ToString() );
                 cblSchedules.DataBind();
                 var selectedItems = rFilter.GetUserPreference( "Schedules" ).SplitDelimitedValues();
                 foreach ( ListItem li in cblSchedules.Items )
@@ -388,8 +470,11 @@ namespace RockWeb.Plugins.com_centralaz.CheckIn
                 Literal lAge = e.Row.FindControl( "lAge" ) as Literal;
                 if ( lAge != null )
                 {
-                    lAge.Text = group.GetAttributeValue( AgeRangeAttributeKey ).SplitDelimitedValues().Select( a => a.AsDouble().ToString( "0.##" ) )
+                    if ( !String.IsNullOrWhiteSpace( AgeRangeAttributeKey ) )
+                    {
+                        lAge.Text = group.GetAttributeValue( AgeRangeAttributeKey ).SplitDelimitedValues().Select( a => a.AsDouble().ToString( "0.##" ) )
                         .ToList().AsDelimited( " to " );
+                    }
                 }
 
                 Literal lGrade = e.Row.FindControl( "lGrade" ) as Literal;
@@ -419,19 +504,22 @@ namespace RockWeb.Plugins.com_centralaz.CheckIn
                 Literal lSpecialNeeds = e.Row.FindControl( "lSpecialNeeds" ) as Literal;
                 if ( lSpecialNeeds != null )
                 {
-                    if ( group.GetAttributeValue( SpecialNeedsKey ).AsBoolean() )
+                    if ( !String.IsNullOrWhiteSpace( SpecialNeedsAttributeKey ) )
                     {
-                        lSpecialNeeds.Text = "<i class='fa fa-check'/>";
+                        if ( group.GetAttributeValue( SpecialNeedsAttributeKey ).AsBoolean() )
+                        {
+                            lSpecialNeeds.Text = "<i class='fa fa-check'/>";
+                        }
                     }
                 }
 
                 Literal lLastName = e.Row.FindControl( "lLastName" ) as Literal;
                 if ( lLastName != null )
                 {
-                    string lastNameBeginLetterRange = group.GetAttributeValue( "LastNameBeginLetterRange" ) != null ? group.GetAttributeValue( "LastNameBeginLetterRange" ).Trim() : "";
-                    string lastNameEndLetterRange = group.GetAttributeValue( "LastNameEndLetterRange" ) != null ? group.GetAttributeValue( "LastNameEndLetterRange" ).Trim() : "";
-                    char rangeStart = ( lastNameBeginLetterRange == "" ) ? 'A' : char.Parse( lastNameBeginLetterRange.ToUpper() );
-                    char rangeEnd = ( lastNameEndLetterRange == "" ) ? 'Z' : char.Parse( lastNameEndLetterRange.ToUpper() );
+                    string lastNameBeginLetterRange = group.GetAttributeValue( LastNameStartLetterAttributeKey ) != null ? group.GetAttributeValue( LastNameStartLetterAttributeKey ).Trim() : "";
+                    string lastNameEndLetterRange = group.GetAttributeValue( LastNameEndLetterAttributeKey ) != null ? group.GetAttributeValue( LastNameEndLetterAttributeKey ).Trim() : "";
+                    char rangeStart = ( lastNameBeginLetterRange == "" ) ? 'A' : char.ToUpper( lastNameBeginLetterRange[0] );
+                    char rangeEnd = ( lastNameEndLetterRange == "" ) ? 'Z' : char.ToUpper( lastNameEndLetterRange[0] );
                     lLastName.Text = String.Format( "{0} to {1}", rangeStart, rangeEnd );
                 }
 
