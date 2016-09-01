@@ -182,6 +182,10 @@
     <Compile Include="Migrations\201608302053562_V6Rollup.Designer.cs">
       <DependentUpon>201608302053562_V6Rollup.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201609011236479_V6Installers.cs" />
+    <Compile Include="Migrations\201609011236479_V6Installers.Designer.cs">
+      <DependentUpon>201609011236479_V6Installers.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Migrations\RockCSharpMigrationCodeGenerator.cs" />
     <Compile Include="Migrations\RockMigration.cs" />
@@ -2331,6 +2335,9 @@
     <EmbeddedResource Include="Migrations\201608302053562_V6Rollup.resx">
       <DependentUpon>201608302053562_V6Rollup.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201609011236479_V6Installers.resx">
+      <DependentUpon>201609011236479_V6Installers.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Migrations\RockMigrationSQL.resx">
       <Generator>PublicResXFileCodeGenerator</Generator>
       <LastGenOutput>RockMigrationSQL1.Designer.cs</LastGenOutput>
@@ -3968,6 +3975,9 @@
       <Project>{185a31d7-3037-4dae-8797-0459849a84bd}</Project>
       <Name>Rock</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Migrations\Version 6.0\Version 1.6.0\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
