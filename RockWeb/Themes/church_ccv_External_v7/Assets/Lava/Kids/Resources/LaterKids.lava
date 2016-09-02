@@ -1,10 +1,8 @@
 {% comment %}
   {% include '~~/Assets/Lava/Kids/Resources/LaterKids.lava' %}
 {% endcomment %}
-
-{% assign sortedItems = Items | Sort:'StartDateTime' %}
-
-{% assign viewedItem = sortedItems | Last %}
+{% assign resultList = Items | Where:'Id', PageParameter.ContentId %}
+{% assign viewedItem = resultList | First %}
 
 <svg class="margin-all-md" version="1.2" baseProfile="tiny" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 148.2 639.8 183.6" xml:space="preserve">
   <g id="Standard_Logo">
