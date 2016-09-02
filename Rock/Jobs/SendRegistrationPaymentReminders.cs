@@ -78,7 +78,8 @@ namespace Rock.Jobs
 
                 RegistrationService registrationService = new RegistrationService( rockContext );
 
-                var cutoffDate = RockDateTime.Now.AddDays( dataMap.GetIntFromString( "CutoffDate" ) * -1 );
+                var currentDate = RockDateTime.Today;
+                var cutoffDays = dataMap.GetIntFromString( "CutoffDate" );
 
                 var registrations = registrationService.Queryable( "RegistrationInstance" )
                                                 .Where( r =>
@@ -89,7 +90,7 @@ namespace Rock.Jobs
                                                          && r.RegistrationInstance.RegistrationTemplate.PaymentReminderFromEmail != null && r.RegistrationInstance.RegistrationTemplate.PaymentReminderFromEmail.Length > 0
                                                          && r.RegistrationInstance.RegistrationTemplate.PaymentReminderSubject != null && r.RegistrationInstance.RegistrationTemplate.PaymentReminderSubject.Length > 0
                                                          && (r.RegistrationInstance.RegistrationTemplate.Cost != 0 || (r.RegistrationInstance.Cost != null && r.RegistrationInstance.Cost != 0))
-                                                         && (r.RegistrationInstance.EndDateTime == null || r.RegistrationInstance.EndDateTime <= cutoffDate) )
+                                                         && (r.RegistrationInstance.EndDateTime == null || currentDate <= System.Data.Entity.SqlServer.SqlFunctions.DateAdd("day", cutoffDays,  r.RegistrationInstance.EndDateTime) ) )
                                                  .ToList();
 
                 registrationInstanceCount = registrations.Select( r => r.RegistrationInstance.Id ).Distinct().Count();
