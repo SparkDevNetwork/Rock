@@ -271,7 +271,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                     HtmlAnchor aMap = e.Item.FindControl( "aMap" ) as HtmlAnchor;
                     if ( aMap != null )
                     {
-                        aMap.HRef = loc.GoogleMapLink( Person.FullName );
+                        aMap.HRef = loc.GoogleMapLink();
                     }
 
                     LinkButton lbVerify = e.Item.FindControl( "lbVerify" ) as LinkButton;
