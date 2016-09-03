@@ -83,7 +83,7 @@ MISC
 + Updated the address control to use placeholders instead of labels and moved country to be first field (fixes #1628).
 + Added the ability to customize status bar and opportunity summary tiles using Lava in the My Connection Opportunities block.
 + Updated the database authentication provider to use BCrypt when hashing new passwords, and to convert existing HMACSHA1 hashed passwords to BCrypt next time each user logs in.
-
++ Added new Startup interface that custom plugins can use to run custom code during Rock startup.
 
 Rock McKinley 5.3
 
