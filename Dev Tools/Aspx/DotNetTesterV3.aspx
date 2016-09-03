@@ -13,13 +13,13 @@
 		
 	//
 	// The purpose of this page is check the version of .Net someone is using
-	// to make sure they are running 4.5.1.
+	// to make sure they are running 4.5.2.
 	//
 	
 	//
 	// some constants
 	//
-    protected readonly string dotNetVersionRequired = "4.5.1";
+    protected readonly string dotNetVersionRequired = "4.5.2";
     protected readonly string rockLogoIco = "http://storage.rockrms.com/install/rock-chms.ico";
     protected readonly string rockStyles = "http://storage.rockrms.com/install/install.css";
 
@@ -35,12 +35,12 @@
         if ( ! CheckDotNetVersion( out checkResults ) )
         {
             var errorDetails = "<li><i class='fa fa-exclamation-triangle fail'></i> " + checkResults + " <a href='http://www.rockrms.com/Rock/LetsFixThis#IncorrectDotNETVersion' class='btn btn-info btn-xs'>Let's Fix It Together</a></li>";
-            lTitle.Text = "Not Ready for McKinley 0.5";
+            lTitle.Text = "Not Ready for McKinley 6.0";
             lOutput.Text = "<ul class='list-unstyled'>" + errorDetails + "</ul>";
         }
         else
         {
-            lTitle.Text = "Rock McKinley 0.5 Ready";
+            lTitle.Text = "Rock McKinley 6.0 Ready";
             lOutput.Text = "<ul class='list-unstyled'>" + checkResults + "</ul>";
         }
 
@@ -262,9 +262,9 @@ void GetVersionFromRegistry()
             // greater than 4.5 (i.e., 4.6, 4.7 etc.)
             checksPassed = true;
         }
-        else if ( System.Environment.Version.Major == 4 && System.Environment.Version.Build == 30319 && System.Environment.Version.Revision >= 18408 )
+        else if ( System.Environment.Version.Major == 4 && System.Environment.Version.Build == 30319 && System.Environment.Version.Revision >= 34000 )
         {
-            // greater than 4.5.1
+            // greater than 4.5.2
             checksPassed = true;
         }
 
@@ -274,7 +274,7 @@ void GetVersionFromRegistry()
         }
         else
         {
-            errorDetails = "The server does not have the correct .Net runtime.  You have .Net version " + System.Environment.Version.Major.ToString() + "." + System.Environment.Version.ToString() + " the Rock RMS version requires " + dotNetVersionRequired + ".";
+            errorDetails = "The server does not have the correct .NET Framework runtime.  You have .NET version " + System.Environment.Version.Major.ToString() + "." + System.Environment.Version.ToString() + " the Rock RMS version requires " + dotNetVersionRequired + ".";
         }
 
         return checksPassed;
