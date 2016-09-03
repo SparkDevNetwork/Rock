@@ -1,0 +1,216 @@
+//
+// File Upload / Image Upload - styles for the
+// file / image uploader
+// --------------------------------------------------
+
+.imageupload-group {
+  position: relative;
+  display: table-cell;
+  padding: 2px;
+  margin-bottom: @spacing-md-px;
+  cursor: pointer;
+  border: 1px solid @photo-border;
+  border-radius: @border-radius-base;
+
+  .imageupload-thumbnail {
+    position: relative;
+
+    .imageupload-thumbnail-image {
+      width: 100%;
+      height: 100%;
+      background-position: 50%;
+      background-size: cover;
+    }
+
+    .imageupload-remove {
+      position: absolute;
+      right: 0;
+      bottom: 0;
+
+      a {
+        display: block;
+        padding: 2px 6px;
+        color: @btn-danger-color;
+        cursor: pointer;
+        background-color: @btn-danger-bg;
+        border-top-left-radius: @border-radius-base;
+      }
+    }
+  }
+
+  .imageupload-dropzone {
+    position: relative;
+    width: 100%;
+    height: 30px;
+    padding-top: 8px;
+    margin-top: 2px;
+    line-height: 12px;
+    text-align: center;
+    cursor: pointer;
+    background-color: @input-group-addon-bg;
+    border: 1px solid @input-border;
+    border-radius: 0 0 @border-radius-base @border-radius-base;
+
+    ::-webkit-file-upload-button {
+      cursor: pointer;
+    }
+
+    input {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      cursor: pointer;
+      opacity: 0;
+    }
+
+    span {
+      width: 100%;
+      font-size: 13px;
+      color: @input-color;
+
+      &:before {
+        padding-right: .25em;
+        content: @fa-var-upload;
+
+        .fa-icon();
+      }
+    }
+  }
+
+  .upload-progress {
+    position: absolute;
+    top: 30px;
+    left: 35px;
+    z-index: 2;
+    opacity: .3;
+  }
+}
+
+.fileupload-group {
+  position: relative;
+  display: table-cell;
+  padding: 2px;
+  margin-bottom: @spacing-md-px;
+  cursor: pointer;
+  border: 1px solid @input-border;
+  border-radius: @border-radius-base;
+
+  .fileupload-thumbnail {
+    position: relative;
+
+    .file-link {
+      display: block;
+      width: 100px;
+      height: 50px;
+      padding-top: 2px;
+      overflow: hidden;
+      font-size: 10px;
+      color: @input-color;
+      text-align: center;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      background-color: @input-group-addon-bg;
+      border-radius: (@border-radius-base - 1);
+
+      &:after {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        margin-top: -20px;
+        margin-left: 42px;
+        margin-left: -12px;
+        font-family: FontAwesome;
+        font-size: 28px;
+        color: darken( @input-group-addon-bg, 15%);
+        content: '\f016';
+
+        -webkit-font-smoothing: antialiased;
+      }
+
+      &.file-exists:after {
+        margin-top: -10px;
+        color: darken( @input-group-addon-bg, 15%);
+        content: '\f15c';
+      }
+    }
+  }
+
+  .fileupload-remove {
+    position: absolute;
+    right: 0;
+    bottom: 0;
+
+    a {
+      display: block;
+      padding: 2px 6px;
+      color: @btn-danger-color;
+      cursor: pointer;
+      background-color: @btn-danger-bg;
+      border-top-left-radius: @border-radius-base;
+    }
+  }
+
+  .fileupload-dropzone,
+  .fileupload-button {
+    position: relative;
+    height: 30px;
+    padding-top: 8px;
+    line-height: 12px;
+    text-align: center;
+    background-color: @input-group-addon-bg;
+
+    ::-webkit-file-upload-button {
+      cursor: pointer;
+    }
+
+    input {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      cursor: pointer;
+      opacity: 0;
+    }
+
+    span {
+      width: 100%;
+      padding: 0 .5em;
+      font-size: 13px;
+      color: @input-color;
+
+      &:before {
+        padding-right: .25em;
+        content: @fa-var-upload;
+
+        .fa-icon();
+      }
+    }
+  }
+
+  .fileupload-dropzone {
+    margin-top: 2px;
+    border-radius: 0 0 @border-radius-base @border-radius-base;
+  }
+
+  .fileupload-button {
+    padding: 6px 12px;
+    background-color: @brand-primary;
+    border: 1px solid @btn-primary-border;
+    border-radius: @border-radius-base;
+
+    span {
+      color: #fff;
+    }
+  }
+
+  .upload-progress {
+    position: absolute;
+    top: 8px;
+    left: 35px;
+    z-index: 2;
+    opacity: .3;
+  }
+}
