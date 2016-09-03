@@ -1,0 +1,38 @@
+//
+// Follow button
+// --------------------------------------------------
+
+.panel .panel-heading.panel-follow {
+  position: relative;
+  padding-right: 40px;
+}
+
+.panel-follow-status {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 35px;
+  padding-top: 10px;
+  color: @text-color;
+  text-align: center;
+  cursor: pointer;
+  border-left: 1px solid @header-bg;
+  opacity: .4;
+  transition: 1s;
+
+  &:before {
+    font-family: FontAwesome;
+    content: @fa-var-star-o;
+  }
+
+  &.following {
+    color: #fff;
+    background-color: @panel-following-active-bg;
+    opacity: 1;
+
+    &:before {
+      content: @fa-var-star;
+    }
+  }
+}
