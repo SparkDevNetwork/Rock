@@ -134,7 +134,7 @@ namespace RockWeb.Blocks.Core
                 {
                     try
                     {
-                        if ( CheckSqlServerVersion() )
+                        if ( CheckFrameworkVersion() )
                         {
                             _isOkToProceed = true;
                         }
@@ -266,6 +266,42 @@ namespace RockWeb.Blocks.Core
         #endregion
 
         #region Methods
+
+        /// <summary>
+        /// Checks the .NET Framework version and returns false if not at the needed
+        /// level to proceed.
+        /// </summary>
+        /// <returns>true if ok, false otherwise</returns>
+        private bool CheckFrameworkVersion()
+        {
+            bool isOk = false;
+            try
+            {
+                // check .net
+                // .NET 4.5.2 as 4.0.30319.34000
+
+                if ( System.Environment.Version.Major > 4 )
+                {
+                    isOk = true;
+                }
+                else if ( System.Environment.Version.Major == 4 && System.Environment.Version.Build > 30319 )
+                {
+                    isOk = true;
+                }
+                else if ( System.Environment.Version.Major == 4 && System.Environment.Version.Build == 30319 && System.Environment.Version.Revision >= 34000 )
+                {
+                    // 34000 is the ".2" in 4.5.2
+                    isOk = true;
+                }
+            }
+            catch
+            {
+                // This would be pretty bad, but regardless we'll just
+                // return the isOk (not) and let the caller proceed.
+            }
+
+            return isOk;
+        }
 
         /// <summary>
         /// Checks the SQL server version and returns false if not at the needed
