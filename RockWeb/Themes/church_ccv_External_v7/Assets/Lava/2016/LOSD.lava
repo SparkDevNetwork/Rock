@@ -20,31 +20,27 @@
     <div class="col-sm-6 col-md-7">
       <h2>I Love My School</h2>
       <p>
-        Did you know that Arizona ranks 47th in the nation for education? Right here in Arizona we have several schools performing below average. There are a lot of factors that impact this number, but what if I told you that there are simple things that we can do to help turn that number around? Imagine the impact that would could be made if over ten thousand of our CCV members met up on one day and served the 29 school districts in our community? That's exactly what we intend to do. With your help, we are going to complete over 200 projects at 170 schools around the valley in 2 weekends.
+        Did you know that Arizona ranks 47th in the nation for education? There are a lot of factors that impact this number, but what if we told you that there are simple things that we can do to help turn that number around? Studies show that a clean and encouraging learning environment heightens student involvement in school activities, develops a sense of pride and ownership in the school, and increases students overall learning levels. By performing simple acts like cleaning, landscaping and writing notes of encouragement we can make our schools and neighborhoods a better place.
       </p>
+      <h2>Make A Difference</h2>
       <p>
-        Studies show that a clean and encouraging learning environment heightens student involvement in school activities, develops a sense of pride and ownership in the school, and increases students overall learning levels. By performing simple acts like cleaning, landscaping and writing notes of encouragement we can make our schools and neighborhoods a better place.
+        At CCV, we believe that serving others is one of the most impactful ways to live out your faith and improve your community. Most of the needs and issues facing our society are represented in our local schools; broken homes, hunger, addiction and abuse. By partnering our Neighborhood Groups with serving opportunities in our local schools, we can make a major impact on the education system in Arizona, and in the lives of those in our own neighborhood. Our goal is build long-term, lasting relationships within our schools, so that together we can build a stronger community.
       </p>
-      <h2>How To Get Involved</h2>
+      <h2>Let's Get Started</h2>
       <p>
-        On Saturdays October 1st, (and October 8th in Peoria) we are asking you to engage in service projects across the valley to help schools in 3 specific ways:
+        We are kicking off our serve strategy by participating in LOVE OUR SCHOOLS DAY, a community wide initiative bringing together over 10,000 volunteers from the faith community to complete hundreds of service projects at local schools around the valley in one day.
       </p>
-      <ul>
-        <li>Appreciation</li>
-        <li>Cleanup</li>
-        <li>Landscape</li>
-      </ul>
-      <h2>Why We Chose This Initiative</h2>
+      <h2>Details</h2>
       <p>
-        You and your family are encouraged to choose a school, and then choose one of the three projects to serve on for the day. Each project has a group number limit, so if you want to serve together with your Neighborhood Group or Sports team, which we strongly encourage, be sure to pick your school together and sign up right away. If your first choice of school is filled, please pick another school that has open projects. We want to make sure as many projects get completed in these two weekends as possible.
+        On Saturdays October 1st, (October 8th for the DVSD), we are asking you to gather your family/neighborhood group/team together and join us from 8am-noon as we complete service projects at local schools around the community.
       </p>
-      <h2></h2>
-      <ul>
-        <li>Serving is part of the DNA at CCV.</li>
-        <li>Serving others is one of the most impactful ways to live out your faith and improve your community.</li>
-        <li>Channeling our serving energy in one direction allows us to make a major impact on the education system in Arizona.</li>
-        <li>Most of the needs/issues facing our communities are represented in our local schools (broken homes, hunger, abuse, etc.)</li>
-      </ul>
+      <h2>Sign Up Today</h2>
+      <p>
+        We can’t do this without you! Click the button below and follow the prompts to find a school near you to serve.
+      </p>
+      <p class="visible-xs">
+        <a href="http://app.schoolconnectaz.com/ccv" class="btn btn-primary">Sign Me Up</a>
+      </p>
     </div>
     <div class="col-sm-6 col-md-5">
       <h2>Love Our School Days</h2>
@@ -147,7 +143,7 @@
   <div class="container">
     <div class="cta">
       <p class="lead">Make a lasting difference in your community.</p>
-      <a href="https://app.e2ma.net/app2/audience/signup/1820978/1774747/" class="btn btn-primary">Tell Others</a>
+      <a href="http://app.schoolconnectaz.com/ccv" class="btn btn-primary">Sign Me Up</a>
     </div>
   </div>
 </footer>
