@@ -5,7 +5,6 @@ CALENDAR
 + Added an .ics download button to the event detail page.
 
 CHECK-IN
-+ Fixed issue with check-in not refreshing attendance cache correctly when used to calculate threshold values.
 + Fixed scrolling issues in check-in for windows 10 multi-touch devices (fixes #1660).
 + Added the ability to order GroupLocations (namely for check-in) in the event that a check-in workflow action wants to make decisions based on their order.
 + Added new block for editing label files that allows easily viewing and printing of incremental changes.
@@ -34,7 +33,6 @@ GROUPS
 + Added campus filter option to group finder.
 
 FINANCIAL
-+ Updated giving/registration to strip any non-numeric characters from credit card number before submitting (Fixes #1728).
 + Added the ability to view Lava based contribution report on the person profile page.
 + Fixed Giving Analytics query when using "did not give during date range" pattern filter with no accounts selected.
 + Added a Person filter to Transaction List.
@@ -84,6 +82,14 @@ MISC
 + Added the ability to customize status bar and opportunity summary tiles using Lava in the My Connection Opportunities block.
 + Updated the database authentication provider to use BCrypt when hashing new passwords, and to convert existing HMACSHA1 hashed passwords to BCrypt next time each user logs in.
 + Added new Startup interface that custom plugins can use to run custom code during Rock startup.
+
+
+Rock McKinley 5.4
+
++ Fixed issue with check-in not refreshing attendance cache correctly when used to calculate threshold values.
++ Updated giving/registration to strip any non-numeric characters from credit card number before submitting (Fixes #1728).
++ Updated the Rock Update block to require that Microsoft .NET Framework 4.5.2 or greater be installed before Rock can be updated to next version.
+
 
 Rock McKinley 5.3
 
