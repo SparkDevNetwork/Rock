@@ -1217,6 +1217,7 @@
     <Compile Include="Utility\ExtensionMethods\StringPluralizationExtensions.cs" />
     <Compile Include="Utility\FileUtilities.cs" />
     <Compile Include="Utility\IgnoreUrlEncodedKeyContractResolver.cs" />
+    <Compile Include="Utility\IRockStartup.cs" />
     <Compile Include="Utility\NotNullJsonConverter.cs" />
     <Compile Include="Utility\Reflection.cs" />
     <Compile Include="Utility\RockDateTime.cs" />

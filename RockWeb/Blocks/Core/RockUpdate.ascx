@@ -16,9 +16,10 @@
             </div>
             <div class="panel-body">
                  <Rock:NotificationBox ID="nbVersionIssue" runat="server" NotificationBoxType="Danger" Visible="false">
-                     <h2>Database Update Required</h2>
-                     <p>As of Rock McKinley v4, Rock requires SQL Server 2012 or greater.
-                         You will need to upgrade your database in order to proceed with the next update.</p>
+                     <h2><i class="fa fa-exclamation-triangle"></i> .NET Framework Update Required</h2>
+                     <p>As of Rock McKinley v6, Rock requires Microsoft .NET Framework 4.5.2 or greater on the hosting server.
+                         This framework version was released by Microsoft on May 5th, 2014.
+                         You will need to upgrade hosting server in order to proceed with the next update.</p>
                  </Rock:NotificationBox>
                  <asp:Panel ID="pnlNoUpdates" runat="server">
                     <div class="well well-message">
