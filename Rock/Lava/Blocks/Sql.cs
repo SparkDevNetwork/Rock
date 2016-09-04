@@ -24,6 +24,14 @@ namespace Rock.Lava.Blocks
         string _markup = string.Empty;
 
         /// <summary>
+        /// Method that will be run at Rock startup
+        /// </summary>
+        public override void OnStartup()
+        {
+            Template.RegisterTag<Sql>( "sql" );
+        }
+
+        /// <summary>
         /// Initializes the specified tag name.
         /// </summary>
         /// <param name="tagName">Name of the tag.</param>
