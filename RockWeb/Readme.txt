@@ -1,3 +1,10 @@
+Rock McKinley 5.4
+
++ Fixed issue with check-in not refreshing attendance cache correctly when used to calculate threshold values.
++ Updated giving/registration to strip any non-numeric characters from credit card number before submitting (Fixes #1728).
++ Updated the Rock Update block to require that Microsoft .NET Framework 4.5.2 or greater be installed before Rock can be updated to next version.
+
+
 Rock McKinley 5.3
 
 + Fixed the date filter on pledge analytics block (Fixes #1617).
