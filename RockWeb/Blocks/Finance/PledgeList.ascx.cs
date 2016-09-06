@@ -116,8 +116,15 @@ namespace RockWeb.Blocks.Finance
         {
             if ( !Page.IsPostBack )
             {
-                BindFilter();
-                BindGrid();
+                if ( GetAttributeValue( "LimitPledgesToCurrentPerson" ).AsBoolean() && this.CurrentPerson == null )
+                {
+                    this.Visible = false;
+                }
+                else
+                {
+                    BindFilter();
+                    BindGrid();
+                }
             }
 
             base.OnLoad( e );
