@@ -47,10 +47,23 @@ namespace RockWeb.Blocks.Reporting
     [TextField( "Polygon Colors", "Comma-Delimited list of colors to use when displaying multiple polygons (e.g. #f37833,#446f7a,#afd074,#649dac,#f8eba2,#92d0df,#eaf7fc).", true, "#f37833,#446f7a,#afd074,#649dac,#f8eba2,#92d0df,#eaf7fc", "", 5 )]
     [DecimalField( "Point Grouping", "The number of miles per to use to group points that are close together. For example, enter 0.25 to group points in 1/4 mile blocks. Increase this if the heatmap has lots of points and is slow", required: false, order: 6 )]
     [IntegerField( "Label Font Size", "Select the Font Size for the map labels", defaultValue: 24, order: 7 )]
-    //[BooleanField( "Show Pie Slicer", "Adds a button which will help slice a circle into triangular pie slices. To use, draw or click on a circle, then click the Pie Slicer button.", defaultValue: false, order: 8 )]
+    [BooleanField( "Show Pie Slicer", "Adds a button which will help slice a circle into triangular pie slices. To use, draw or click on a circle, then click the Pie Slicer button.", defaultValue: false, order: 8 )]
     [BooleanField( "Show Save Location", "Adds a button which will save the selected shape as a named location's geofence ", defaultValue: false, order: 9 )]
     public partial class DynamicHeatMap : RockBlockCustomSettings
     {
+        /// <summary>
+        /// Gets the settings tool tip.
+        /// </summary>
+        /// <value>
+        /// The settings tool tip.
+        /// </value>
+        public override string SettingsToolTip
+        {
+            get
+            {
+                return "Configure";
+            }
+        }
 
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
@@ -126,7 +139,7 @@ namespace RockWeb.Blocks.Reporting
                 lMessages.Text = string.Empty;
                 pnlMap.Visible = true;
 
-                //pnlPieSlicer.Visible = this.GetAttributeValue( "ShowPieSlicer" ).AsBoolean();
+                pnlPieSlicer.Visible = this.GetAttributeValue( "ShowPieSlicer" ).AsBoolean();
                 pnlSaveShape.Visible = this.GetAttributeValue( "ShowSaveLocation" ).AsBoolean();
 
                 ShowMap();
@@ -499,31 +512,31 @@ namespace RockWeb.Blocks.Reporting
             try
             {
                 DbGeography geoFence = null;
-                //if ( hfLocationSavePath.Value.StartsWith( "CIRCLE|" ) )
-                //{
-                //    // the javascript will save the circle in the format "CIRCLE|lng lat|radiusMeters"
-                //    var parts = hfLocationSavePath.Value.Split( '|' );
-                //    if ( parts.Length == 3 )
-                //    {
-                //        var lngLat = parts[1].Split( new char[] { ',', ' ' } ).Select( a => a.AsDouble() ).ToList().ToArray();
-                //        var point = Microsoft.SqlServer.Types.SqlGeography.Point( lngLat[1], lngLat[0], DbGeography.DefaultCoordinateSystemId );
+                if ( hfLocationSavePath.Value.StartsWith( "CIRCLE|" ) )
+                {
+                    // the javascript will save the circle in the format "CIRCLE|lng lat|radiusMeters"
+                    var parts = hfLocationSavePath.Value.Split( '|' );
+                    if ( parts.Length == 3 )
+                    {
+                        var lngLat = parts[1].Split( new char[] { ',', ' ' } ).Select( a => a.AsDouble() ).ToList().ToArray();
+                        var point = Microsoft.SqlServer.Types.SqlGeography.Point( lngLat[1], lngLat[0], DbGeography.DefaultCoordinateSystemId );
                         
-                //        var radius = parts[2].AsDoubleOrNull() ?? 1;
+                        var radius = parts[2].AsDoubleOrNull() ?? 1;
 
-                //        // construct a circle using BufferWithCurves (point.Buffer creates a polygon with too many coordinates for large circles)
-                //        var buffer = point.BufferWithCurves( radius );
+                        // construct a circle using BufferWithCurves (point.Buffer creates a polygon with too many coordinates for large circles)
+                        var buffer = point.BufferWithCurves( radius );
                         
-                //        // convert the circle to a polygon (to make it easier to interact with Google MAPs api which has limited support for circles)
-                //        var polyCircle = buffer.STCurveToLine();
+                        // convert the circle to a polygon (to make it easier to interact with Google MAPs api which has limited support for circles)
+                        var polyCircle = buffer.STCurveToLine();
 
-                //        geoFence = DbGeography.FromText( polyCircle.ToString() );
-                //    }
-                //}
-                //else
-                //{
+                        geoFence = DbGeography.FromText( polyCircle.ToString() );
+                    }
+                }
+                else
+                {
                     var polyWKT = GeoPicker.ConvertPolyToWellKnownText( hfLocationSavePath.Value );
                     geoFence = DbGeography.FromText( polyWKT );
-                //}
+                }
 
                 // get the LocationId from hfLocationId instead of dpLocation since the postback is done in javascript
                 var locationId = hfLocationId.Value.AsIntegerOrNull();

@@ -1387,7 +1387,9 @@ namespace RockWeb.Blocks.Event
                     {
                         validationErrors.Add( "Name on Card is required" );
                     }
-                    if ( string.IsNullOrWhiteSpace( txtCreditCard.Text ) )
+                    var rgx = new System.Text.RegularExpressions.Regex( @"[^\d]" );
+                    string ccNum = rgx.Replace( txtCreditCard.Text, "" );
+                    if ( string.IsNullOrWhiteSpace( ccNum ) )
                     {
                         validationErrors.Add( "Credit Card # is required" );
                     }
