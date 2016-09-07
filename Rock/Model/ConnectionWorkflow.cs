@@ -33,7 +33,6 @@ namespace Rock.Model
     [DataContract]
     public partial class ConnectionWorkflow : Model<ConnectionWorkflow>
     {
-
         #region Entity Properties
 
         /// <summary>
@@ -169,7 +168,7 @@ public enum ConnectionWorkflowTriggerType
     ActivityAdded = 4,
 
     /// <summary>
-    /// Activity placed in a group
+    /// Placed in a group
     /// </summary>
     PlacementGroupAssigned = 5,
 
@@ -179,9 +178,15 @@ public enum ConnectionWorkflowTriggerType
     Manual = 6,
 
     /// <summary>
-    /// Manual
+    /// Request Transferred
     /// </summary>
-    RequestTransferred = 7
+    RequestTransferred = 7,
+
+    /// <summary>
+    /// Request Assigned
+    /// </summary>
+    RequestAssigned = 8
+
 }
 
 #endregion
