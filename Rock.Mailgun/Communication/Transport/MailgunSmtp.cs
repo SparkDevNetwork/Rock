@@ -37,6 +37,7 @@ namespace Rock.Communication.Transport
     [TextField( "API Key", "The API Key provided by Mailgun " )]
     [IntegerField( "Port", "", false, 587, "", 3 )]
     [BooleanField( "Use SSL", "", true, "", 4 )]
+    [BooleanField( "Track Clicks", "", true, "", 5 )]
     public class MailgunSmtp : SMTPComponent
     {
         /// <summary>
@@ -49,7 +50,7 @@ namespace Rock.Communication.Transport
         {
             get
             {
-                return true;
+                return GetAttributeValue( "TrackClicks" ).AsBoolean( true );
             }
         }
 
@@ -74,10 +75,12 @@ namespace Rock.Communication.Transport
         /// <param name="headers">The headers.</param>
         public override void AddAdditionalHeaders( MailMessage message, Dictionary<string, string> headers )
         {
+            var trackClicks = GetAttributeValue( "TrackClicks" ).AsBoolean( true ) ? "yes" : "no";
+
             // add headers
-            message.Headers.Add( "X-Mailgun-Track", "yes" );
-            message.Headers.Add( "X-Mailgun-Track-Clicks", "yes" );
-            message.Headers.Add( "X-Mailgun-Track-Opens", "yes" );
+            message.Headers.Add( "X-Mailgun-Track", trackClicks );
+            message.Headers.Add( "X-Mailgun-Track-Clicks", trackClicks );
+            message.Headers.Add( "X-Mailgun-Track-Opens", trackClicks );
 
             if ( headers != null )
             {
