@@ -149,7 +149,9 @@ namespace RockWeb.Blocks.WorkFlow
                 {
                     RockPage.PageIcon = _workflowType.IconCssClass;
                 }
-
+            }
+            if ( _workflowType != null )
+            {
                 lTitle.Text = string.Format( "{0} Entry", _workflowType.WorkTerm );
 
                 if ( ! string.IsNullOrWhiteSpace( _workflowType.IconCssClass ) )
