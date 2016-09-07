@@ -965,6 +965,7 @@
     <Compile Include="Plugin\HotFixes\006_FixCheckinPrevPages.cs" />
     <Compile Include="Plugin\HotFixes\007_FixGroupAndBenevolenceSecurity.cs" />
     <Compile Include="Plugin\Migration.cs" />
+    <Compile Include="Plugin\IStartup.cs" />
     <Compile Include="Plugin\VersionAttribute.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Reporting\ComparisonHelper.cs" />
