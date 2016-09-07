@@ -393,21 +393,29 @@ namespace Rock.Model
             }
             else
             {
-                var qry = GetByFirstLastName( firstNames[0], lastNames[0], includeDeceased, includeBusinesses );
-                for ( var i = 1; i < firstNames.Count; i++ )
+                if ( firstNames.Any() && lastNames.Any() )
                 {
-                    qry = qry.Union( GetByFirstLastName( firstNames[i], lastNames[i], includeDeceased, includeBusinesses ) );
-                }
+                    var qry = GetByFirstLastName( firstNames.Any() ? firstNames[0] : "", lastNames.Any() ? lastNames[0] : "", includeDeceased, includeBusinesses );
+                    for ( var i = 1; i < firstNames.Count; i++ )
+                    {
+                        qry = qry.Union( GetByFirstLastName( firstNames[i], lastNames[i], includeDeceased, includeBusinesses ) );
+                    }
 
-                // always include a search for just last name using the last two parts of name search
-                if ( nameParts.Count >= 2 )
+                    // always include a search for just last name using the last two parts of name search
+                    if ( nameParts.Count >= 2 )
+                    {
+                        var lastName = string.Join( " ", nameParts.TakeLast( 2 ) );
+
+                        qry = qry.Union( GetByLastName( lastName, includeDeceased, includeBusinesses ) );
+                    }
+
+                    return qry;
+                }
+                else
                 {
-                    var lastName = string.Join( " ", nameParts.TakeLast( 2 ) );
-
-                    qry = qry.Union( GetByLastName( lastName, includeDeceased, includeBusinesses ) );
+                    // Blank string was used, return empty list
+                    return new List<Person>().AsQueryable();
                 }
-
-                return qry;
             }
         }
 
