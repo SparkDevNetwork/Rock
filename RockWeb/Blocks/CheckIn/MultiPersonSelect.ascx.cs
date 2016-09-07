@@ -33,9 +33,13 @@ namespace RockWeb.Blocks.CheckIn
     [Description("Lists people who match the selected family and provides option of selecting multiple.")]
     public partial class MultiPersonSelect : CheckInBlock
     {
+        bool _hidePhotos = false;
+
         protected override void OnInit( EventArgs e )
         {
             base.OnInit( e );
+
+            rSelection.ItemDataBound += rSelection_ItemDataBound;
 
             string script = string.Format( @"
         function GetPersonSelection() {{
@@ -62,6 +66,20 @@ namespace RockWeb.Blocks.CheckIn
 
 ", lbSelect.ClientID, hfPeople.ClientID );
             ScriptManager.RegisterStartupScript( Page, Page.GetType(), "SelectPerson", script, true );
+        }
+
+        private void rSelection_ItemDataBound( object sender, RepeaterItemEventArgs e )
+        {
+            if ( e.Item.ItemType == ListItemType.Item || e.Item.ItemType == ListItemType.AlternatingItem )
+            {
+                var phCheck = e.Item.FindControl( "phCheck" ) as PlaceHolder;
+                var pnlCheckAndPhoto = e.Item.FindControl( "pnlCheckAndPhoto" ) as Panel;
+                if ( phCheck != null && pnlCheckAndPhoto != null )
+                {
+                    phCheck.Visible = _hidePhotos;
+                    pnlCheckAndPhoto.Visible = !_hidePhotos;
+                }
+            }
         }
 
         protected override void OnLoad( EventArgs e )
@@ -94,6 +112,8 @@ namespace RockWeb.Blocks.CheckIn
                     }
 
                     lFamilyName.Text = family.ToString();
+
+                    _hidePhotos = CurrentCheckInState.CheckInType.HidePhotos;
 
                     rSelection.DataSource = family.People
                         .OrderByDescending( p => p.FamilyMember )
