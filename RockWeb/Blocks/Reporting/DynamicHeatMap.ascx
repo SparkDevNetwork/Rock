@@ -30,9 +30,9 @@
 
             <div class="margin-all-md">
                 <div class="pull-right js-heatmap-actions">
-<%--                    <asp:Panel ID="pnlPieSlicer" runat="server" CssClass="btn btn-default btn-xs js-createpieshape">
+                    <asp:Panel ID="pnlPieSlicer" runat="server" CssClass="btn btn-default btn-xs js-createpieshape">
                         <i class='fa fa-pie-chart' title="Create pie slices from selected circle"></i>
-                    </asp:Panel>--%>
+                    </asp:Panel>
                     <asp:Panel ID="pnlSaveShape" runat="server" CssClass="btn btn-default btn-xs js-saveshape">
                         <i class='fa fa-floppy-o' title="Save selected shape to a named location"></i>
                     </asp:Panel>
@@ -92,13 +92,13 @@
                     }
                 });
 
-                //// configure/display heatmap
-                //var pieSlicerState = {
-                //    SelectedCenterPt: null,
-                //    SelectedRadius: null,
-                //    SelectedPieCuts: [],
-                //    CurrentPieSlices: []
-                //};
+                // configure/display heatmap
+                var pieSlicerState = {
+                    SelectedCenterPt: null,
+                    SelectedRadius: null,
+                    SelectedPieCuts: [],
+                    CurrentPieSlices: []
+                };
                 
                 var map;
 
@@ -276,8 +276,8 @@
 
                                 drawingManager.polygonOptions.fillColor = color;
                                 drawingManager.polygonOptions.strokeColor = color;
-                                //drawingManager.circleOptions.fillColor = color;
-                                //drawingManager.circleOptions.strokeColor = color;
+                                drawingManager.circleOptions.fillColor = color;
+                                drawingManager.circleOptions.strokeColor = color;
                                 drawingManager.rectangleOptions.fillColor = color;
                                 drawingManager.rectangleOptions.strokeColor = color;
                             }
@@ -319,10 +319,10 @@
                                     if (google.maps.geometry.poly.containsLocation(point, shape)) {
                                         pointCount += pointWeight;
                                     }
-                                //} else if ('circle' == shape.overlayType) {
-                                //    if (google.maps.geometry.spherical.computeDistanceBetween(shapeCenter, point) < shape.radius) {
-                                //        pointCount += pointWeight;
-                                //    }
+                                } else if ('circle' == shape.overlayType) {
+                                    if (google.maps.geometry.spherical.computeDistanceBetween(shapeCenter, point) < shape.radius) {
+                                        pointCount += pointWeight;
+                                    }
                                 } else if ('rectangle' == shape.overlayType) {
                                     pointCount += pointWeight;
                                 }
@@ -365,17 +365,17 @@
                         drawingControlOptions: {
                             position: google.maps.ControlPosition.TOP_CENTER,
                             drawingModes: [
-                                //google.maps.drawing.OverlayType.CIRCLE,
+                                google.maps.drawing.OverlayType.CIRCLE,
                                 google.maps.drawing.OverlayType.POLYGON,
                                 google.maps.drawing.OverlayType.RECTANGLE
                             ]
                         },
-                        //circleOptions: {
-                        //    draggable: true,
-                        //    editable: true,
-                        //    fillColor: initialColor,
-                        //    strokeColor: initialColor
-                        //},
+                        circleOptions: {
+                            draggable: true,
+                            editable: true,
+                            fillColor: initialColor,
+                            strokeColor: initialColor
+                        },
                         polygonOptions: {
                             draggable: true,
                             editable: true,
@@ -432,7 +432,6 @@
 
                 $('.js-saveshape').click(function () {
 
-                    debugger;
                     if (map.SelectedShape) {
                         
                         var geoFencePath;
@@ -459,11 +458,11 @@
                             var sw = map.SelectedShape.getBounds().getSouthWest();
 
                             geoFencePath = ne.toUrlValue() + '|' + sw.lat() + ',' + ne.lng() + '|' + sw.toUrlValue() + '|' + ne.lat() + ',' + sw.lng() + ' | ' + ne.toUrlValue();
-                        //} else if ('circle' == map.SelectedShape.overlayType)
-                        //{
-                        //    var center = map.SelectedShape.getCenter();
-                        //    var radius = map.SelectedShape.radius;
-                        //    geoFencePath = 'CIRCLE|' + center.lng() + ' ' + center.lat() + '|' + radius;
+                        } else if ('circle' == map.SelectedShape.overlayType)
+                        {
+                            var center = map.SelectedShape.getCenter();
+                            var radius = map.SelectedShape.radius;
+                            geoFencePath = 'CIRCLE|' + center.lng() + ' ' + center.lat() + '|' + radius;
                         }
 
                         $('#<%=hfLocationSavePath.ClientID%>').val(geoFencePath);
@@ -472,143 +471,143 @@
                     }
                 });
 
-                //$('.js-createpieshape').click(function () {
+                $('.js-createpieshape').click(function () {
 
-                //    // make sure drawing manager mode is the hand so that 'mousemove' will fire
-                //    drawingManager.setDrawingMode(null);
+                    // make sure drawing manager mode is the hand so that 'mousemove' will fire
+                    drawingManager.setDrawingMode(null);
 
-                //    if ((map.SelectedShape && (typeof(map.SelectedShape.overlayType) != 'undefined') && map.SelectedShape.overlayType == 'circle') || (pieSlicerState.SelectedCenterPt && pieSlicerState.SelectedRadius)) {
+                    if ((map.SelectedShape && (typeof(map.SelectedShape.overlayType) != 'undefined') && map.SelectedShape.overlayType == 'circle') || (pieSlicerState.SelectedCenterPt && pieSlicerState.SelectedRadius)) {
 
-                //        // if we are starting with a new shape (not a pieslice), start over with a new pieslicer
-                //        if (map.SelectedShape && (typeof(map.SelectedShape.overlayType) != 'undefined') && map.SelectedShape.isPieSlice != true) {
-                //            if (map.SelectedShape.overlayType == 'circle') {
-                //                pieSlicerState.SelectedCenterPt = map.SelectedShape.getCenter();
-                //                pieSlicerState.SelectedRadius = map.SelectedShape.radius;
-                //            } else {
-                //                pieSlicerState.SelectedCenterPt = null;
-                //                pieSlicerState.SelectedRadius = null;
-                //            }
-                //            pieSlicerState.SelectedPieCuts = [];
-                //            pieSlicerState.CurrentPieSlices = [];
-                //        }
+                        // if we are starting with a new shape (not a pieslice), start over with a new pieslicer
+                        if (map.SelectedShape && (typeof(map.SelectedShape.overlayType) != 'undefined') && map.SelectedShape.isPieSlice != true) {
+                            if (map.SelectedShape.overlayType == 'circle') {
+                                pieSlicerState.SelectedCenterPt = map.SelectedShape.getCenter();
+                                pieSlicerState.SelectedRadius = map.SelectedShape.radius;
+                            } else {
+                                pieSlicerState.SelectedCenterPt = null;
+                                pieSlicerState.SelectedRadius = null;
+                            }
+                            pieSlicerState.SelectedPieCuts = [];
+                            pieSlicerState.CurrentPieSlices = [];
+                        }
 
-                //        // map to the click event which we'll use to make the pieslice position permanent
-                //        if (!map.pieClickListener) {
-                //            map.pieClickListener = google.maps.event.addListener(map, 'click', function (event) {
-                //                if (map.SelectedShape && map.SelectedShape.isPieDrawing){
-                //                    pieSlicerState.SelectedPieCuts = [];
-                //                    pieSlicerState.CurrentPieSlices.forEach(function(ps){
-                //                        pieSlicerState.SelectedPieCuts.push(ps.startArc);
-                //                    })
+                        // map to the click event which we'll use to make the pieslice position permanent
+                        if (!map.pieClickListener) {
+                            map.pieClickListener = google.maps.event.addListener(map, 'click', function (event) {
+                                if (map.SelectedShape && map.SelectedShape.isPieDrawing){
+                                    pieSlicerState.SelectedPieCuts = [];
+                                    pieSlicerState.CurrentPieSlices.forEach(function(ps){
+                                        pieSlicerState.SelectedPieCuts.push(ps.startArc);
+                                    })
                                     
-                //                    map.SelectedShape.isPieDrawing = false;
-                //                    map.SelectedShape.deleteOnFirstSlice = false;
-                //                    map.pieMouseMoveListener.remove();
-                //                    map.pieMouseMoveListener = null;
-                //                }
-                //            });
-                //        }
+                                    map.SelectedShape.isPieDrawing = false;
+                                    map.SelectedShape.deleteOnFirstSlice = false;
+                                    map.pieMouseMoveListener.remove();
+                                    map.pieMouseMoveListener = null;
+                                }
+                            });
+                        }
                         
-                //        // when the move moves over the map, draw the pie shapes in realtime based on the mouse position relative to the center of the orig circle
-                //        if (!map.pieMouseMoveListener) {
-                //            map.pieMouseMoveListener = google.maps.event.addListener(map, 'mousemove', function (event) {
-                //                if (pieSlicerState.SelectedCenterPt && pieSlicerState.SelectedRadius && map.SelectedShape){
+                        // when the move moves over the map, draw the pie shapes in realtime based on the mouse position relative to the center of the orig circle
+                        if (!map.pieMouseMoveListener) {
+                            map.pieMouseMoveListener = google.maps.event.addListener(map, 'mousemove', function (event) {
+                                if (pieSlicerState.SelectedCenterPt && pieSlicerState.SelectedRadius && map.SelectedShape){
 
-                //                    var heading = google.maps.geometry.spherical.computeHeading(pieSlicerState.SelectedCenterPt, event.latLng);
-                //                    while (heading < 0)
-                //                    {
-                //                        heading += 360;
-                //                    }
+                                    var heading = google.maps.geometry.spherical.computeHeading(pieSlicerState.SelectedCenterPt, event.latLng);
+                                    while (heading < 0)
+                                    {
+                                        heading += 360;
+                                    }
 
-                //                    var currentPieCuts = [];
-                //                    currentPieCuts.push(heading);
-                //                    pieSlicerState.SelectedPieCuts.forEach(function(pc) {
-                //                        currentPieCuts.push(pc);
-                //                    });
+                                    var currentPieCuts = [];
+                                    currentPieCuts.push(heading);
+                                    pieSlicerState.SelectedPieCuts.forEach(function(pc) {
+                                        currentPieCuts.push(pc);
+                                    });
 
-                //                    currentPieCuts.sort(function(a,b){
-                //                        return a - b;
-                //                    });
+                                    currentPieCuts.sort(function(a,b){
+                                        return a - b;
+                                    });
 
-                //                    // if we already have the pieslices, delete them all and we'll redraw them based on the currentPieCuts
-                //                    pieSlicerState.CurrentPieSlices.forEach(function(ps) {
-                //                        map.DeleteShape(ps);
-                //                    });
+                                    // if we already have the pieslices, delete them all and we'll redraw them based on the currentPieCuts
+                                    pieSlicerState.CurrentPieSlices.forEach(function(ps) {
+                                        map.DeleteShape(ps);
+                                    });
 
-                //                    pieSlicerState.CurrentPieSlices = [];
+                                    pieSlicerState.CurrentPieSlices = [];
 
-                //                    // if we are starting with a circle, delete it since we are redrawing it as a big pieslice
-                //                    if (map.SelectedShape && (map.SelectedShape.isPieDrawing || map.SelectedShape.overlayType == 'circle')){
-                //                        map.DeleteShape(map.SelectedShape);
-                //                    }
+                                    // if we are starting with a circle, delete it since we are redrawing it as a big pieslice
+                                    if (map.SelectedShape && (map.SelectedShape.isPieDrawing || map.SelectedShape.overlayType == 'circle')){
+                                        map.DeleteShape(map.SelectedShape);
+                                    }
                                     
-                //                    currentPieCuts.forEach(function(pc, i) {
-                //                        var centerPt = pieSlicerState.SelectedCenterPt;
-                //                        var radiusMeters = pieSlicerState.SelectedRadius;
+                                    currentPieCuts.forEach(function(pc, i) {
+                                        var centerPt = pieSlicerState.SelectedCenterPt;
+                                        var radiusMeters = pieSlicerState.SelectedRadius;
                                         
-                //                        var pieSlicePath = Array();
+                                        var pieSlicePath = Array();
 
-                //                        var nextRadialPoint = pc;
-                //                        lastRadialPoint = pc;
+                                        var nextRadialPoint = pc;
+                                        lastRadialPoint = pc;
 
-                //                        if (i < currentPieCuts.length-1){
-                //                            // find the next arc starting point
-                //                            lastRadialPoint = currentPieCuts[i+1];
-                //                        }
-                //                        else{
-                //                            // use the first arc of our currentPieCuts
-                //                            lastRadialPoint = currentPieCuts[0];
+                                        if (i < currentPieCuts.length-1){
+                                            // find the next arc starting point
+                                            lastRadialPoint = currentPieCuts[i+1];
+                                        }
+                                        else{
+                                            // use the first arc of our currentPieCuts
+                                            lastRadialPoint = currentPieCuts[0];
 
-                //                            // make sure the pieshape colors don't flash to random colors as it is resized
-                //                            polygonColorIndex = 0;
-                //                        }
+                                            // make sure the pieshape colors don't flash to random colors as it is resized
+                                            polygonColorIndex = 0;
+                                        }
 
-                //                        // if the start of the arc is counterclockwise from the current, move it back 360 degrees (because it is probably the last missing piece of the circle)
-                //                        if (nextRadialPoint >= lastRadialPoint){
-                //                            nextRadialPoint -= 360;
-                //                        }
+                                        // if the start of the arc is counterclockwise from the current, move it back 360 degrees (because it is probably the last missing piece of the circle)
+                                        if (nextRadialPoint >= lastRadialPoint){
+                                            nextRadialPoint -= 360;
+                                        }
                                     
-                //                        // create a Google Map Path as an array of all the lines from the center to the outer radius for every full degree to make it look like a pie slice
-                //                        while (nextRadialPoint < lastRadialPoint) {
-                //                            pieSlicePath.push(google.maps.geometry.spherical.computeOffset(centerPt, radiusMeters, nextRadialPoint));
-                //                            nextRadialPoint += 1;
-                //                        }
+                                        // create a Google Map Path as an array of all the lines from the center to the outer radius for every full degree to make it look like a pie slice
+                                        while (nextRadialPoint < lastRadialPoint) {
+                                            pieSlicePath.push(google.maps.geometry.spherical.computeOffset(centerPt, radiusMeters, nextRadialPoint));
+                                            nextRadialPoint += 1;
+                                        }
                             
-                //                        // ensure that the last path of the pieslice is there for the last line of the path
-                //                        var endArc = lastRadialPoint;
-                //                        pieSlicePath.push(google.maps.geometry.spherical.computeOffset(centerPt, radiusMeters, endArc));
+                                        // ensure that the last path of the pieslice is there for the last line of the path
+                                        var endArc = lastRadialPoint;
+                                        pieSlicePath.push(google.maps.geometry.spherical.computeOffset(centerPt, radiusMeters, endArc));
                             
-                //                        // put the center point to the start and end of the pieSlicePath
-                //                        pieSlicePath.unshift(centerPt);
-                //                        pieSlicePath.push(centerPt);
+                                        // put the center point to the start and end of the pieSlicePath
+                                        pieSlicePath.unshift(centerPt);
+                                        pieSlicePath.push(centerPt);
 
-                //                        var pieSlicePoly = new google.maps.Polygon({
-                //                            path: pieSlicePath,
-                //                            map: map,
-                //                            fillColor: map.GetNextColor(),
-                //                            fillOpacity: 0.6,
-                //                            draggable: false,
-                //                            editable: false,
-                //                        });
+                                        var pieSlicePoly = new google.maps.Polygon({
+                                            path: pieSlicePath,
+                                            map: map,
+                                            fillColor: map.GetNextColor(),
+                                            fillOpacity: 0.6,
+                                            draggable: false,
+                                            editable: false,
+                                        });
 
-                //                        pieSlicePoly.isPieDrawing = true;
-                //                        pieSlicePoly.startArc = pc;
-                //                        pieSlicePoly.overlayType = 'polygon';
-                //                        pieSlicePoly.isPieSlice = true;
-                //                        while (pieSlicePoly.startArc < 0){
-                //                            pieSlicePoly.startArc += 360;
-                //                        }
+                                        pieSlicePoly.isPieDrawing = true;
+                                        pieSlicePoly.startArc = pc;
+                                        pieSlicePoly.overlayType = 'polygon';
+                                        pieSlicePoly.isPieSlice = true;
+                                        while (pieSlicePoly.startArc < 0){
+                                            pieSlicePoly.startArc += 360;
+                                        }
 
-                //                        pieSlicerState.CurrentPieSlices.push(pieSlicePoly);
+                                        pieSlicerState.CurrentPieSlices.push(pieSlicePoly);
 
-                //                        map.AddUpdateShape(pieSlicePoly, false );
-                //                    });
-                //                }
+                                        map.AddUpdateShape(pieSlicePoly, false );
+                                    });
+                                }
                             
-                //            });
-                //        }
-                //    }
-                //});
+                            });
+                        }
+                    }
+                });
             });
 
             // extend polygon to getBounds

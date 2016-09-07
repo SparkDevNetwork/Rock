@@ -1,4 +1,4 @@
-﻿using System;
+﻿ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -430,6 +430,14 @@ namespace Rock.Lava.Blocks
         }
 
         #endregion
+
+        /// <summary>
+        /// Method that will be run at Rock startup
+        /// </summary>
+        public override void OnStartup()
+        {
+            RegisterEntityCommands();
+        }
 
         /// <summary>
         /// Helper method to register the entity commands.

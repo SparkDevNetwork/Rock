@@ -62,125 +62,133 @@
     <Compile Include="HotFixMigrations\004_FixBaptismBadge.cs" />
     <Compile Include="HotFixMigrations\005_ValueAsNumeric.cs" />
     <Compile Include="HotFixMigrations\006_StatementProcs.cs" />
-    <Compile Include="Migrations\201606061858434_MetricPartitions.cs" />
-    <Compile Include="Migrations\201606061858434_MetricPartitions.Designer.cs">
+    <Compile Include="Migrations\201609071818034_RegistrationAutoPopulateFamily.cs" />
+    <Compile Include="Migrations\201609071818034_RegistrationAutoPopulateFamily.Designer.cs">
+      <DependentUpon>201609071818034_RegistrationAutoPopulateFamily.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Version 6.0\Version 1.6.0\201606061858434_MetricPartitions.cs" />
+    <Compile Include="Migrations\Version 6.0\Version 1.6.0\201606061858434_MetricPartitions.Designer.cs">
       <DependentUpon>201606061858434_MetricPartitions.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201606091237191_GivingAnalyticsRefactor.cs" />
-    <Compile Include="Migrations\201606091237191_GivingAnalyticsRefactor.Designer.cs">
+    <Compile Include="Migrations\Version 6.0\Version 1.6.0\201606091237191_GivingAnalyticsRefactor.cs" />
+    <Compile Include="Migrations\Version 6.0\Version 1.6.0\201606091237191_GivingAnalyticsRefactor.Designer.cs">
       <DependentUpon>201606091237191_GivingAnalyticsRefactor.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201606180003228_SummerNoteEditor.cs" />
-    <Compile Include="Migrations\201606180003228_SummerNoteEditor.Designer.cs">
+    <Compile Include="Migrations\Version 6.0\Version 1.6.0\201606180003228_SummerNoteEditor.cs" />
+    <Compile Include="Migrations\Version 6.0\Version 1.6.0\201606180003228_SummerNoteEditor.Designer.cs">
       <DependentUpon>201606180003228_SummerNoteEditor.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201606231511599_RegistrationWorkflow.cs" />
-    <Compile Include="Migrations\201606231511599_RegistrationWorkflow.Designer.cs">
+    <Compile Include="Migrations\Version 6.0\Version 1.6.0\201606231511599_RegistrationWorkflow.cs" />
+    <Compile Include="Migrations\Version 6.0\Version 1.6.0\201606231511599_RegistrationWorkflow.Designer.cs">
       <DependentUpon>201606231511599_RegistrationWorkflow.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201606232056332_WorkflowNumber.cs" />
-    <Compile Include="Migrations\201606232056332_WorkflowNumber.Designer.cs">
+    <Compile Include="Migrations\Version 6.0\Version 1.6.0\201606232056332_WorkflowNumber.cs" />
+    <Compile Include="Migrations\Version 6.0\Version 1.6.0\201606232056332_WorkflowNumber.Designer.cs">
       <DependentUpon>201606232056332_WorkflowNumber.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201606241700105_ExceptionUpdates.cs" />
-    <Compile Include="Migrations\201606241700105_ExceptionUpdates.Designer.cs">
+    <Compile Include="Migrations\Version 6.0\Version 1.6.0\201606241700105_ExceptionUpdates.cs" />
+    <Compile Include="Migrations\Version 6.0\Version 1.6.0\201606241700105_ExceptionUpdates.Designer.cs">
       <DependentUpon>201606241700105_ExceptionUpdates.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201606281347449_PersonDirectory.cs" />
-    <Compile Include="Migrations\201606281347449_PersonDirectory.Designer.cs">
+    <Compile Include="Migrations\Version 6.0\Version 1.6.0\201606281347449_PersonDirectory.cs" />
+    <Compile Include="Migrations\Version 6.0\Version 1.6.0\201606281347449_PersonDirectory.Designer.cs">
       <DependentUpon>201606281347449_PersonDirectory.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201606282048283_FamilyAttributes.cs" />
-    <Compile Include="Migrations\201606282048283_FamilyAttributes.Designer.cs">
+    <Compile Include="Migrations\Version 6.0\Version 1.6.0\201606282048283_FamilyAttributes.cs" />
+    <Compile Include="Migrations\Version 6.0\Version 1.6.0\201606282048283_FamilyAttributes.Designer.cs">
       <DependentUpon>201606282048283_FamilyAttributes.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201607102235065_ScheduledTransactionType.cs" />
-    <Compile Include="Migrations\201607102235065_ScheduledTransactionType.Designer.cs">
+    <Compile Include="Migrations\Version 6.0\Version 1.6.0\201607102235065_ScheduledTransactionType.cs" />
+    <Compile Include="Migrations\Version 6.0\Version 1.6.0\201607102235065_ScheduledTransactionType.Designer.cs">
       <DependentUpon>201607102235065_ScheduledTransactionType.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201607111655540_LavaSecurity.cs" />
-    <Compile Include="Migrations\201607111655540_LavaSecurity.Designer.cs">
+    <Compile Include="Migrations\Version 6.0\Version 1.6.0\201607111655540_LavaSecurity.cs" />
+    <Compile Include="Migrations\Version 6.0\Version 1.6.0\201607111655540_LavaSecurity.Designer.cs">
       <DependentUpon>201607111655540_LavaSecurity.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201607131701125_GroupTypeUpdatesForValidationFeatures.cs" />
-    <Compile Include="Migrations\201607131701125_GroupTypeUpdatesForValidationFeatures.Designer.cs">
+    <Compile Include="Migrations\Version 6.0\Version 1.6.0\201607131701125_GroupTypeUpdatesForValidationFeatures.cs" />
+    <Compile Include="Migrations\Version 6.0\Version 1.6.0\201607131701125_GroupTypeUpdatesForValidationFeatures.Designer.cs">
       <DependentUpon>201607131701125_GroupTypeUpdatesForValidationFeatures.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201607211823007_MetricDataType.cs" />
-    <Compile Include="Migrations\201607211823007_MetricDataType.Designer.cs">
+    <Compile Include="Migrations\Version 6.0\Version 1.6.0\201607211823007_MetricDataType.cs" />
+    <Compile Include="Migrations\Version 6.0\Version 1.6.0\201607211823007_MetricDataType.Designer.cs">
       <DependentUpon>201607211823007_MetricDataType.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201607222201418_BenevolenceAdditions.cs" />
-    <Compile Include="Migrations\201607222201418_BenevolenceAdditions.Designer.cs">
+    <Compile Include="Migrations\Version 6.0\Version 1.6.0\201607222201418_BenevolenceAdditions.cs" />
+    <Compile Include="Migrations\Version 6.0\Version 1.6.0\201607222201418_BenevolenceAdditions.Designer.cs">
       <DependentUpon>201607222201418_BenevolenceAdditions.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201607242254385_LabelEditor.cs" />
-    <Compile Include="Migrations\201607242254385_LabelEditor.Designer.cs">
+    <Compile Include="Migrations\Version 6.0\Version 1.6.0\201607242254385_LabelEditor.cs" />
+    <Compile Include="Migrations\Version 6.0\Version 1.6.0\201607242254385_LabelEditor.Designer.cs">
       <DependentUpon>201607242254385_LabelEditor.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201607261727105_RequiresEncryptionOnSite.cs" />
-    <Compile Include="Migrations\201607261727105_RequiresEncryptionOnSite.Designer.cs">
+    <Compile Include="Migrations\Version 6.0\Version 1.6.0\201607261727105_RequiresEncryptionOnSite.cs" />
+    <Compile Include="Migrations\Version 6.0\Version 1.6.0\201607261727105_RequiresEncryptionOnSite.Designer.cs">
       <DependentUpon>201607261727105_RequiresEncryptionOnSite.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201607272008099_ContentItemHierarchy.cs" />
-    <Compile Include="Migrations\201607272008099_ContentItemHierarchy.Designer.cs">
+    <Compile Include="Migrations\Version 6.0\Version 1.6.0\201607272008099_ContentItemHierarchy.cs" />
+    <Compile Include="Migrations\Version 6.0\Version 1.6.0\201607272008099_ContentItemHierarchy.Designer.cs">
       <DependentUpon>201607272008099_ContentItemHierarchy.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201607291424499_AddGroupLocationOrder.cs" />
-    <Compile Include="Migrations\201607291424499_AddGroupLocationOrder.Designer.cs">
+    <Compile Include="Migrations\Version 6.0\Version 1.6.0\201607291424499_AddGroupLocationOrder.cs" />
+    <Compile Include="Migrations\Version 6.0\Version 1.6.0\201607291424499_AddGroupLocationOrder.Designer.cs">
       <DependentUpon>201607291424499_AddGroupLocationOrder.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201607301400275_DigitalSignatures.cs" />
-    <Compile Include="Migrations\201607301400275_DigitalSignatures.Designer.cs">
+    <Compile Include="Migrations\Version 6.0\Version 1.6.0\201607301400275_DigitalSignatures.cs" />
+    <Compile Include="Migrations\Version 6.0\Version 1.6.0\201607301400275_DigitalSignatures.Designer.cs">
       <DependentUpon>201607301400275_DigitalSignatures.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201608011827342_DigitalSignature2.cs" />
-    <Compile Include="Migrations\201608011827342_DigitalSignature2.Designer.cs">
+    <Compile Include="Migrations\Version 6.0\Version 1.6.0\201608011827342_DigitalSignature2.cs" />
+    <Compile Include="Migrations\Version 6.0\Version 1.6.0\201608011827342_DigitalSignature2.Designer.cs">
       <DependentUpon>201608011827342_DigitalSignature2.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201608020435091_DigitalSignature3.cs" />
-    <Compile Include="Migrations\201608020435091_DigitalSignature3.Designer.cs">
+    <Compile Include="Migrations\Version 6.0\Version 1.6.0\201608020435091_DigitalSignature3.cs" />
+    <Compile Include="Migrations\Version 6.0\Version 1.6.0\201608020435091_DigitalSignature3.Designer.cs">
       <DependentUpon>201608020435091_DigitalSignature3.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201608041757099_DigitalSignature4.cs" />
-    <Compile Include="Migrations\201608041757099_DigitalSignature4.Designer.cs">
+    <Compile Include="Migrations\Version 6.0\Version 1.6.0\201608041757099_DigitalSignature4.cs" />
+    <Compile Include="Migrations\Version 6.0\Version 1.6.0\201608041757099_DigitalSignature4.Designer.cs">
       <DependentUpon>201608041757099_DigitalSignature4.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201608081809376_BenevolencePrintSummary.cs" />
-    <Compile Include="Migrations\201608081809376_BenevolencePrintSummary.Designer.cs">
+    <Compile Include="Migrations\Version 6.0\Version 1.6.0\201608081809376_BenevolencePrintSummary.cs" />
+    <Compile Include="Migrations\Version 6.0\Version 1.6.0\201608081809376_BenevolencePrintSummary.Designer.cs">
       <DependentUpon>201608081809376_BenevolencePrintSummary.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201608101635463_PledgeGroup.cs" />
-    <Compile Include="Migrations\201608101635463_PledgeGroup.Designer.cs">
+    <Compile Include="Migrations\Version 6.0\Version 1.6.0\201608101635463_PledgeGroup.cs" />
+    <Compile Include="Migrations\Version 6.0\Version 1.6.0\201608101635463_PledgeGroup.Designer.cs">
       <DependentUpon>201608101635463_PledgeGroup.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201608101923324_PublicProfileEdit.cs" />
-    <Compile Include="Migrations\201608101923324_PublicProfileEdit.Designer.cs">
+    <Compile Include="Migrations\Version 6.0\Version 1.6.0\201608101923324_PublicProfileEdit.cs" />
+    <Compile Include="Migrations\Version 6.0\Version 1.6.0\201608101923324_PublicProfileEdit.Designer.cs">
       <DependentUpon>201608101923324_PublicProfileEdit.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201608101948321_StoreCategoryHeader.cs" />
-    <Compile Include="Migrations\201608101948321_StoreCategoryHeader.Designer.cs">
+    <Compile Include="Migrations\Version 6.0\Version 1.6.0\201608101948321_StoreCategoryHeader.cs" />
+    <Compile Include="Migrations\Version 6.0\Version 1.6.0\201608101948321_StoreCategoryHeader.Designer.cs">
       <DependentUpon>201608101948321_StoreCategoryHeader.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201608171937068_GivingAnalyticsAccounts.cs" />
-    <Compile Include="Migrations\201608171937068_GivingAnalyticsAccounts.Designer.cs">
+    <Compile Include="Migrations\Version 6.0\Version 1.6.0\201608171937068_GivingAnalyticsAccounts.cs" />
+    <Compile Include="Migrations\Version 6.0\Version 1.6.0\201608171937068_GivingAnalyticsAccounts.Designer.cs">
       <DependentUpon>201608171937068_GivingAnalyticsAccounts.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201608172242214_Podcasting.cs" />
-    <Compile Include="Migrations\201608172242214_Podcasting.Designer.cs">
+    <Compile Include="Migrations\Version 6.0\Version 1.6.0\201608172242214_Podcasting.cs" />
+    <Compile Include="Migrations\Version 6.0\Version 1.6.0\201608172242214_Podcasting.Designer.cs">
       <DependentUpon>201608172242214_Podcasting.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201608191216532_Notification.cs" />
-    <Compile Include="Migrations\201608191216532_Notification.Designer.cs">
+    <Compile Include="Migrations\Version 6.0\Version 1.6.0\201608191216532_Notification.cs" />
+    <Compile Include="Migrations\Version 6.0\Version 1.6.0\201608191216532_Notification.Designer.cs">
       <DependentUpon>201608191216532_Notification.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201608301855576_ContributionStmtPersonProfile.cs" />
-    <Compile Include="Migrations\201608301855576_ContributionStmtPersonProfile.Designer.cs">
+    <Compile Include="Migrations\Version 6.0\Version 1.6.0\201608301855576_ContributionStmtPersonProfile.cs" />
+    <Compile Include="Migrations\Version 6.0\Version 1.6.0\201608301855576_ContributionStmtPersonProfile.Designer.cs">
       <DependentUpon>201608301855576_ContributionStmtPersonProfile.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201608302053562_V6Rollup.cs" />
-    <Compile Include="Migrations\201608302053562_V6Rollup.Designer.cs">
+    <Compile Include="Migrations\Version 6.0\Version 1.6.0\201608302053562_V6Rollup.cs" />
+    <Compile Include="Migrations\Version 6.0\Version 1.6.0\201608302053562_V6Rollup.Designer.cs">
       <DependentUpon>201608302053562_V6Rollup.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Version 6.0\Version 1.6.0\201609011236479_V6Installers.cs" />
+    <Compile Include="Migrations\Version 6.0\Version 1.6.0\201609011236479_V6Installers.Designer.cs">
+      <DependentUpon>201609011236479_V6Installers.cs</DependentUpon>
     </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Migrations\RockCSharpMigrationCodeGenerator.cs" />
@@ -2241,99 +2249,106 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Migrations\201606061858434_MetricPartitions.resx">
+    <EmbeddedResource Include="Migrations\201609071818034_RegistrationAutoPopulateFamily.resx">
+      <DependentUpon>201609071818034_RegistrationAutoPopulateFamily.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\Version 6.0\Version 1.6.0\201606061858434_MetricPartitions.resx">
       <DependentUpon>201606061858434_MetricPartitions.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201606091237191_GivingAnalyticsRefactor.resx">
+    <EmbeddedResource Include="Migrations\Version 6.0\Version 1.6.0\201606091237191_GivingAnalyticsRefactor.resx">
       <DependentUpon>201606091237191_GivingAnalyticsRefactor.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201606180003228_SummerNoteEditor.resx">
+    <EmbeddedResource Include="Migrations\Version 6.0\Version 1.6.0\201606180003228_SummerNoteEditor.resx">
       <DependentUpon>201606180003228_SummerNoteEditor.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201606231511599_RegistrationWorkflow.resx">
+    <EmbeddedResource Include="Migrations\Version 6.0\Version 1.6.0\201606231511599_RegistrationWorkflow.resx">
       <DependentUpon>201606231511599_RegistrationWorkflow.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201606232056332_WorkflowNumber.resx">
+    <EmbeddedResource Include="Migrations\Version 6.0\Version 1.6.0\201606232056332_WorkflowNumber.resx">
       <DependentUpon>201606232056332_WorkflowNumber.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201606241700105_ExceptionUpdates.resx">
+    <EmbeddedResource Include="Migrations\Version 6.0\Version 1.6.0\201606241700105_ExceptionUpdates.resx">
       <DependentUpon>201606241700105_ExceptionUpdates.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201606281347449_PersonDirectory.resx">
+    <EmbeddedResource Include="Migrations\Version 6.0\Version 1.6.0\201606281347449_PersonDirectory.resx">
       <DependentUpon>201606281347449_PersonDirectory.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201606282048283_FamilyAttributes.resx">
+    <EmbeddedResource Include="Migrations\Version 6.0\Version 1.6.0\201606282048283_FamilyAttributes.resx">
       <DependentUpon>201606282048283_FamilyAttributes.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201607102235065_ScheduledTransactionType.resx">
+    <EmbeddedResource Include="Migrations\Version 6.0\Version 1.6.0\201607102235065_ScheduledTransactionType.resx">
       <DependentUpon>201607102235065_ScheduledTransactionType.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201607111655540_LavaSecurity.resx">
+    <EmbeddedResource Include="Migrations\Version 6.0\Version 1.6.0\201607111655540_LavaSecurity.resx">
       <DependentUpon>201607111655540_LavaSecurity.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201607131701125_GroupTypeUpdatesForValidationFeatures.resx">
+    <EmbeddedResource Include="Migrations\Version 6.0\Version 1.6.0\201607131701125_GroupTypeUpdatesForValidationFeatures.resx">
       <DependentUpon>201607131701125_GroupTypeUpdatesForValidationFeatures.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201607211823007_MetricDataType.resx">
+    <EmbeddedResource Include="Migrations\Version 6.0\Version 1.6.0\201607211823007_MetricDataType.resx">
       <DependentUpon>201607211823007_MetricDataType.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201607222201418_BenevolenceAdditions.resx">
+    <EmbeddedResource Include="Migrations\Version 6.0\Version 1.6.0\201607222201418_BenevolenceAdditions.resx">
       <DependentUpon>201607222201418_BenevolenceAdditions.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201607242254385_LabelEditor.resx">
+    <EmbeddedResource Include="Migrations\Version 6.0\Version 1.6.0\201607242254385_LabelEditor.resx">
       <DependentUpon>201607242254385_LabelEditor.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201607261727105_RequiresEncryptionOnSite.resx">
+    <EmbeddedResource Include="Migrations\Version 6.0\Version 1.6.0\201607261727105_RequiresEncryptionOnSite.resx">
       <DependentUpon>201607261727105_RequiresEncryptionOnSite.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201607272008099_ContentItemHierarchy.resx">
+    <EmbeddedResource Include="Migrations\Version 6.0\Version 1.6.0\201607272008099_ContentItemHierarchy.resx">
       <DependentUpon>201607272008099_ContentItemHierarchy.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201607291424499_AddGroupLocationOrder.resx">
+    <EmbeddedResource Include="Migrations\Version 6.0\Version 1.6.0\201607291424499_AddGroupLocationOrder.resx">
       <DependentUpon>201607291424499_AddGroupLocationOrder.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201607301400275_DigitalSignatures.resx">
+    <EmbeddedResource Include="Migrations\Version 6.0\Version 1.6.0\201607301400275_DigitalSignatures.resx">
       <DependentUpon>201607301400275_DigitalSignatures.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201608011827342_DigitalSignature2.resx">
+    <EmbeddedResource Include="Migrations\Version 6.0\Version 1.6.0\201608011827342_DigitalSignature2.resx">
       <DependentUpon>201608011827342_DigitalSignature2.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201608020435091_DigitalSignature3.resx">
+    <EmbeddedResource Include="Migrations\Version 6.0\Version 1.6.0\201608020435091_DigitalSignature3.resx">
       <DependentUpon>201608020435091_DigitalSignature3.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201608041757099_DigitalSignature4.resx">
+    <EmbeddedResource Include="Migrations\Version 6.0\Version 1.6.0\201608041757099_DigitalSignature4.resx">
       <DependentUpon>201608041757099_DigitalSignature4.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201608081809376_BenevolencePrintSummary.resx">
+    <EmbeddedResource Include="Migrations\Version 6.0\Version 1.6.0\201608081809376_BenevolencePrintSummary.resx">
       <DependentUpon>201608081809376_BenevolencePrintSummary.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201608101635463_PledgeGroup.resx">
+    <EmbeddedResource Include="Migrations\Version 6.0\Version 1.6.0\201608101635463_PledgeGroup.resx">
       <DependentUpon>201608101635463_PledgeGroup.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201608101923324_PublicProfileEdit.resx">
+    <EmbeddedResource Include="Migrations\Version 6.0\Version 1.6.0\201608101923324_PublicProfileEdit.resx">
       <DependentUpon>201608101923324_PublicProfileEdit.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201608101948321_StoreCategoryHeader.resx">
+    <EmbeddedResource Include="Migrations\Version 6.0\Version 1.6.0\201608101948321_StoreCategoryHeader.resx">
       <DependentUpon>201608101948321_StoreCategoryHeader.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201608171937068_GivingAnalyticsAccounts.resx">
+    <EmbeddedResource Include="Migrations\Version 6.0\Version 1.6.0\201608171937068_GivingAnalyticsAccounts.resx">
       <DependentUpon>201608171937068_GivingAnalyticsAccounts.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201608172242214_Podcasting.resx">
+    <EmbeddedResource Include="Migrations\Version 6.0\Version 1.6.0\201608172242214_Podcasting.resx">
       <DependentUpon>201608172242214_Podcasting.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201608191216532_Notification.resx">
+    <EmbeddedResource Include="Migrations\Version 6.0\Version 1.6.0\201608191216532_Notification.resx">
       <DependentUpon>201608191216532_Notification.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201608301855576_ContributionStmtPersonProfile.resx">
+    <EmbeddedResource Include="Migrations\Version 6.0\Version 1.6.0\201608301855576_ContributionStmtPersonProfile.resx">
       <DependentUpon>201608301855576_ContributionStmtPersonProfile.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201608302053562_V6Rollup.resx">
+    <EmbeddedResource Include="Migrations\Version 6.0\Version 1.6.0\201608302053562_V6Rollup.resx">
       <DependentUpon>201608302053562_V6Rollup.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\Version 6.0\Version 1.6.0\201609011236479_V6Installers.resx">
+      <DependentUpon>201609011236479_V6Installers.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\RockMigrationSQL.resx">
       <Generator>PublicResXFileCodeGenerator</Generator>
       <LastGenOutput>RockMigrationSQL1.Designer.cs</LastGenOutput>
+      <SubType>Designer</SubType>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 0.0 %28Pre Beta%29\Version 0.0.2\201311251734059_CreateDatabase.resx">
       <DependentUpon>201311251734059_CreateDatabase.cs</DependentUpon>
@@ -3870,19 +3885,19 @@
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="Migrations\201608171937068_GivingAnalyticsAccounts_AccountTotals.sql" />
-    <Content Include="Migrations\201608171937068_GivingAnalyticsAccounts_FirstLastEverDates.sql" />
-    <Content Include="Migrations\201608171937068_GivingAnalyticsAccounts_PersonSummary.sql" />
-    <Content Include="Migrations\201608171937068_GivingAnalyticsAccounts_TransactionData.sql" />
-    <Content Include="Migrations\201606091237191_GivingAnalyticsRefactor_AccountTotals.sql" />
-    <Content Include="Migrations\201606091237191_GivingAnalyticsRefactor_FirstLastEverDates.sql" />
-    <Content Include="Migrations\201606091237191_GivingAnalyticsRefactor_PersonSummary.sql" />
-    <Content Include="Migrations\201606091237191_GivingAnalyticsRefactor_TransactionData.sql" />
-    <Content Include="Migrations\201606231511599_RegistrationWorkflow_Indexes.sql" />
-    <Content Include="Migrations\201607102235065_ScheduledTransactionType.sql" />
-    <None Include="Migrations\201608101635463_PledgeGroup_SP1.sql" />
-    <None Include="Migrations\201608101635463_PledgeGroup_SP2.sql" />
-    <Content Include="Migrations\201608172242214_Podcasting.sql" />
+    <Content Include="Migrations\Version 6.0\Version 1.6.0\201608171937068_GivingAnalyticsAccounts_AccountTotals.sql" />
+    <Content Include="Migrations\Version 6.0\Version 1.6.0\201608171937068_GivingAnalyticsAccounts_FirstLastEverDates.sql" />
+    <Content Include="Migrations\Version 6.0\Version 1.6.0\201608171937068_GivingAnalyticsAccounts_PersonSummary.sql" />
+    <Content Include="Migrations\Version 6.0\Version 1.6.0\201608171937068_GivingAnalyticsAccounts_TransactionData.sql" />
+    <Content Include="Migrations\Version 6.0\Version 1.6.0\201606091237191_GivingAnalyticsRefactor_AccountTotals.sql" />
+    <Content Include="Migrations\Version 6.0\Version 1.6.0\201606091237191_GivingAnalyticsRefactor_FirstLastEverDates.sql" />
+    <Content Include="Migrations\Version 6.0\Version 1.6.0\201606091237191_GivingAnalyticsRefactor_PersonSummary.sql" />
+    <Content Include="Migrations\Version 6.0\Version 1.6.0\201606091237191_GivingAnalyticsRefactor_TransactionData.sql" />
+    <Content Include="Migrations\Version 6.0\Version 1.6.0\201606231511599_RegistrationWorkflow_Indexes.sql" />
+    <Content Include="Migrations\Version 6.0\Version 1.6.0\201607102235065_ScheduledTransactionType.sql" />
+    <None Include="Migrations\Version 6.0\Version 1.6.0\201608101635463_PledgeGroup_SP1.sql" />
+    <None Include="Migrations\Version 6.0\Version 1.6.0\201608101635463_PledgeGroup_SP2.sql" />
+    <Content Include="Migrations\Version 6.0\Version 1.6.0\201608172242214_Podcasting.sql" />
     <Content Include="Migrations\Version 0.0 %28Pre Beta%29\Version 0.0.2\201311251734059_CreateDatabase_PopulateData.sql" />
     <Content Include="Migrations\Version 4.0\Version 1.4.0\201506051749054_AddSampleMergeDocs.sql" />
     <Content Include="Migrations\Version 4.0\Version 1.4.0\201506112030400_PersonDaysUntilBirthday.sql" />
@@ -3969,6 +3984,7 @@
       <Name>Rock</Name>
     </ProjectReference>
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
