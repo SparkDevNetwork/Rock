@@ -192,7 +192,7 @@ namespace Rock.Workflow.Action.CheckIn
                                 }
                             }
 
-                            if ( !isMatch.HasValue || !isMatch.Value )
+                            if ( isMatch.HasValue && !isMatch.Value )
                             {
                                 if ( remove )
                                 {
