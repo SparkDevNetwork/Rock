@@ -1591,13 +1591,15 @@ namespace RockWeb.Blocks.Event
                 {
                     readOnly = true;
                     nbEditModeMessage.Heading = "Information";
-                    nbEditModeMessage.Text = EditModeMessage.ReadOnlyEditActionNotAllowed( RegistrationInstance.FriendlyTypeName );
+                    nbEditModeMessage.Text = EditModeMessage.NotAuthorizedToEdit( RegistrationInstance.FriendlyTypeName );
                 }
 
                 if ( readOnly )
                 {
                     btnEdit.Visible = false;
                     btnDelete.Visible = false;
+                    gRegistrations.Actions.ShowAdd = false;
+                    gRegistrations.IsDeleteEnabled = false;
                     ShowReadonlyDetails( registrationInstance );
                 }
                 else
