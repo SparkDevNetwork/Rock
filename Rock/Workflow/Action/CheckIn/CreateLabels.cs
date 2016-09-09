@@ -35,7 +35,7 @@ namespace Rock.Workflow.Action.CheckIn
     [ActionCategory( "Check-In" )]
     [Description( "Creates Check-in Labels" )]
     [Export( typeof( ActionComponent ) )]
-    [ExportMetadata( "ComponentName", "Save Attendance" )]
+    [ExportMetadata( "ComponentName", "Create Labels" )]
     public class CreateLabels : CheckInActionComponent
     {
         /// <summary>
