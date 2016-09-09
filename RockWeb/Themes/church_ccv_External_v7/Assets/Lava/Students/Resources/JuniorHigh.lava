@@ -37,7 +37,7 @@
 
 <div class="label label-default">Junior High</div>
 
-<h2 class="page-header">This Week <small>Weekend of {{ viewedItem.StartDateTime | Date:'M/d/yyyy' }}</small></h2>
+<h2 class="page-header">{{ viewedItem.Title }} <small>Weekend of {{ viewedItem.StartDateTime | Date:'M/d/yyyy' }}</small></h2>
 <p>{{ viewedItem | Attribute:'Summary' }}</p>
 <p>{{ viewedItem.Content }}</p>
 <p> <b>Bible Verses:</b> {{ viewedItem | Attribute: 'Scripture' }}</p>

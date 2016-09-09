@@ -40,7 +40,7 @@
 <p>{{ viewedItem | Attribute:'Summary' }}</p>
 <p>{{ viewedItem.Content }}</p>
 <p><b>Main Point:</b> {{ viewedItem | Attribute: 'MainPoint' }}</p>
-<p><b>Memory Verses:</b> {{ viewedItem | Attribute: 'Scripture' }}</p>
+<p><b>Scripture:</b> {{ viewedItem | Attribute: 'Scripture' }}</p>
 
 {% assign messageVid = viewedItem | Attribute: 'MessageVideo' %}
 
