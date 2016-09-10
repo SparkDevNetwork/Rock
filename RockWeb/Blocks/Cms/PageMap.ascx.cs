@@ -75,8 +75,15 @@ namespace RockWeb.Blocks.Cms
                     int? intPageId = Request.Form["__EVENTARGUMENT"].AsIntegerOrNull();
                     if ( intPageId.HasValue )
                     {
-                        pageService.CopyPage( intPageId.Value, CurrentPersonAliasId );
-                        NavigateToCurrentPage();
+                        Guid? pageGuid = pageService.CopyPage( intPageId.Value, CurrentPersonAliasId );
+                        if ( pageGuid.HasValue )
+                        {
+                            NavigateToPage( pageGuid.Value, null );
+                        }
+                        else
+                        {
+                            NavigateToCurrentPage();
+                        }
                     }
                 }
 
