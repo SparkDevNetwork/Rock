@@ -62,13 +62,16 @@ namespace Rock.Web
                     var pageAndRouteIds = requestContext.RouteData.DataTokens["PageRoutes"] as List<PageAndRouteId>;
                     if ( pageAndRouteIds != null && pageAndRouteIds.Count > 0 )
                     {
-                        if ( pageAndRouteIds.Count == 1 )
+                        // Default to first site/page
+                        if ( pageAndRouteIds.Count >= 1 )
                         {
                             var pageAndRouteId = pageAndRouteIds.First();
                             pageId = pageAndRouteId.PageId.ToJson();
                             routeId = pageAndRouteId.RouteId;
                         }
-                        else
+
+                        // Then check to see if any can be matched by site
+                        if ( pageAndRouteIds.Count > 1 )
                         {
                             SiteCache site = SiteCache.GetSiteByDomain( requestContext.HttpContext.Request.Url.Host );
                             if ( site != null )
