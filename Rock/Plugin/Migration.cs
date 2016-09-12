@@ -168,11 +168,11 @@ namespace Rock.Plugin
         }
 
         /// <summary>
-        ///     Adds an operation to drop an index based on its name.  This is a wrapper for the default DBMigration DropIndex.
+        /// Adds an operation to drop an index based on its name.  This is a wrapper for the default DBMigration DropIndex.
         /// </summary>
-        /// <param name="table"> The name of the table to drop the index from. Schema name is optional, if no schema is specified then dbo is assumed. </param>
-        /// <param name="name"> The name of the index to be dropped. </param>
-        /// <param name="anonymousArguments"> Additional arguments that may be processed by providers. Use anonymous type syntax to specify arguments e.g. 'new { SampleArgument = "MyValue" }'. </param>
+        /// <param name="table">The name of the table to drop the index from. Schema name is optional, if no schema is specified then dbo is assumed.</param>
+        /// <param name="columns">The columns.</param>
+        /// <param name="anonymousArguments">Additional arguments that may be processed by providers. Use anonymous type syntax to specify arguments e.g. 'new { SampleArgument = "MyValue" }'.</param>
         public void DropIndex( string table, string[] columns, object anonymousArguments = null )
         {
             DbMigration dbMigration = new DbMigration();
@@ -181,11 +181,10 @@ namespace Rock.Plugin
         }
 
         /// <summary>
-        ///     Adds an operation to drop an index based on the columns it targets.  This is a wrapper for the default DBMigration DropTable.
+        /// Adds an operation to drop an index based on the columns it targets.  This is a wrapper for the default DBMigration DropTable.
         /// </summary>
-        /// <param name="table"> The name of the table to drop the index from. Schema name is optional, if no schema is specified then dbo is assumed. </param>
-        /// <param name="columns"> The name of the column(s) the index targets. </param>
-        /// <param name="anonymousArguments"> Additional arguments that may be processed by providers. Use anonymous type syntax to specify arguments e.g. 'new { SampleArgument = "MyValue" }'. </param>
+        /// <param name="name">The name.</param>
+        /// <param name="anonymousArguments">Additional arguments that may be processed by providers. Use anonymous type syntax to specify arguments e.g. 'new { SampleArgument = "MyValue" }'.</param>
         public void DropTable( string name, object anonymousArguments = null )
         {
             DbMigration dbMigration = new DbMigration();
