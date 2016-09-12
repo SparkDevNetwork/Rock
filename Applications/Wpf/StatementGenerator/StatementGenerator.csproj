@@ -194,6 +194,10 @@
       <Project>{7794b7f5-b449-46d5-94cc-1c58eb726d3f}</Project>
       <Name>Rock.RestClient</Name>
     </ProjectReference>
+    <ProjectReference Include="..\Rock.Wpf\Rock.Wpf.csproj">
+      <Project>{90440596-fa0a-45e7-8872-3da47786f6a7}</Project>
+      <Name>Rock.Wpf</Name>
+    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <None Include="logo.jpg">
