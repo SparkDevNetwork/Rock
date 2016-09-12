@@ -9,6 +9,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rock", "..\..\..\Rock\Rock.
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rock.Wpf", "..\Rock.Wpf\Rock.Wpf.csproj", "{90440596-FA0A-45E7-8872-3DA47786F6A7}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rock.Client", "..\..\..\Rock.Client\Rock.Client.csproj", "{6EA64BB9-9740-453A-939B-DF43AD9AC164}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rock.RestClient", "..\..\..\Rock.RestClient\Rock.RestClient.csproj", "{7794B7F5-B449-46D5-94CC-1C58EB726D3F}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -27,6 +31,14 @@ Global
 		{90440596-FA0A-45E7-8872-3DA47786F6A7}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{90440596-FA0A-45E7-8872-3DA47786F6A7}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{90440596-FA0A-45E7-8872-3DA47786F6A7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6EA64BB9-9740-453A-939B-DF43AD9AC164}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6EA64BB9-9740-453A-939B-DF43AD9AC164}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6EA64BB9-9740-453A-939B-DF43AD9AC164}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6EA64BB9-9740-453A-939B-DF43AD9AC164}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7794B7F5-B449-46D5-94CC-1C58EB726D3F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7794B7F5-B449-46D5-94CC-1C58EB726D3F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7794B7F5-B449-46D5-94CC-1C58EB726D3F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7794B7F5-B449-46D5-94CC-1C58EB726D3F}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
