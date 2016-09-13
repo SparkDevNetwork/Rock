@@ -634,6 +634,28 @@ namespace Rock.Model
         }
 
         /// <summary>
+        /// Gets the businesses.
+        /// </summary>
+        /// <param name="personId">The person identifier.</param>
+        /// <returns></returns>
+        public IQueryable<Person> GetBusinesses( int personId )
+        {
+            Guid businessGuid = Rock.SystemGuid.GroupRole.GROUPROLE_KNOWN_RELATIONSHIPS_BUSINESS.AsGuid();
+            Guid ownerGuid = Rock.SystemGuid.GroupRole.GROUPROLE_KNOWN_RELATIONSHIPS_OWNER.AsGuid();
+
+            var rockContext = (RockContext)this.Context;
+            return new GroupMemberService( rockContext )
+                .Queryable().AsNoTracking()
+                .Where( m =>
+                        m.GroupRole.Guid.Equals( businessGuid ) &&
+                        m.Group.Members.Any( o =>
+                            o.PersonId == personId &&
+                            o.GroupRole.Guid.Equals( ownerGuid ) ) )
+                .Select( m => m.Person )
+                .OrderBy( b => b.LastName );
+        }
+
+        /// <summary>
         /// Gets the adults.
         /// </summary>
         /// <returns></returns>

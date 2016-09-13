@@ -82,12 +82,8 @@
                                         </asp:PlaceHolder>
                                         <asp:PlaceHolder ID="phGiveAsBusiness" runat="server" Visible="false">
                                             <asp:HiddenField ID="hfBusinessesLoaded" runat="server" />
-                                            <Rock:RockRadioButtonList ID="cblBusinessOption" runat="server" RepeatDirection="Horizontal" AutoPostBack="true" OnSelectedIndexChanged="cblBusinessOption_SelectedIndexChanged">
-                                                <asp:ListItem Value="Existing" Text="Existing Business" />
-                                                <asp:ListItem Value="New" Text="New Business" />
-                                            </Rock:RockRadioButtonList>
-                                            <Rock:RockDropDownList ID="ddlBusiness" runat="server" AutoPostBack="true" OnSelectedIndexChanged="ddlBusiness_SelectedIndexChanged" />
-                                            <Rock:RockTextBox ID="txtBusinessName" runat="server" Label="Business Name" />
+                                            <Rock:RockRadioButtonList ID="cblBusiness" runat="server" Label="Business" RepeatDirection="Horizontal" AutoPostBack="true" OnSelectedIndexChanged="cblBusinessOption_SelectedIndexChanged" />
+                                            <Rock:RockTextBox ID="txtBusinessName" runat="server" Label="Name" />
                                         </asp:PlaceHolder>
                                         <Rock:PhoneNumberBox ID="pnbPhone" runat="server" Label="Phone"></Rock:PhoneNumberBox>
                                         <Rock:RockTextBox ID="txtEmail" runat="server" Label="Email"></Rock:RockTextBox>
