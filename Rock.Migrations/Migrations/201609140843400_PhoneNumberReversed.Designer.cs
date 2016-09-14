@@ -9,7 +9,7 @@ namespace Rock.Migrations
     [GeneratedCode( "EntityFramework.Migrations", "6.1.3-40302" )]
     public sealed partial class PhoneNumberReversed : IMigrationMetadata
     {
-        private readonly ResourceManager Resources = new ResourceManager(typeof(Init));
+        private readonly ResourceManager Resources = new ResourceManager(typeof( PhoneNumberReversed ) );
         
         string IMigrationMetadata.Id
         {

@@ -75,6 +75,9 @@
       <DependentUpon>201609221415156_PreventDupCheckin.cs</DependentUpon>
     </Compile>
     <Compile Include="Migrations\201609140843400_PhoneNumberReversed.cs" />
+	 <Compile Include="Migrations\201609140843400_PhoneNumberReversed.Designer.cs">
+      <DependentUpon>201609140843400_PhoneNumberReversed.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 5.0\Version 1.5.0\201606061308109_ClearPreviousMigrations5.cs" />
     <Compile Include="Migrations\Version 5.0\Version 1.5.0\201606061308109_ClearPreviousMigrations5.Designer.cs">
       <DependentUpon>201606061308109_ClearPreviousMigrations5.cs</DependentUpon>
