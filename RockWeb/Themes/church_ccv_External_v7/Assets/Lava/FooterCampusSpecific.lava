@@ -6,7 +6,8 @@
     </a>
 
     <ul class="dropdown-menu" role="menu" aria-labelledby="dCampusLabel">
-      {% for campus in Campuses %}
+      {% assign activeCampuses = Campuses | Where: 'IsActive', true %}
+      {% for campus in activeCampuses %}
       <li><a class="cursor" onclick="CCV.selectCampus({{ campus.Id }})">{{ campus.Name }} Campus</a></li>
       {% endfor %}
     </ul>
@@ -31,7 +32,7 @@
     <div class="col-sm-6">
       <div class="well well-dark well-borderless">
         <h4>Service Times</h4>
-        
+
         {% assign useLightIcon = true %}
         {% assign times = Context.Campus.ServiceTimes %}
         {% include '~~/Assets/Lava/ServiceTimes/Main.lava' %}
