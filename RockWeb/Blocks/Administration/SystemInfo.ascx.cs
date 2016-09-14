@@ -128,6 +128,9 @@ namespace RockWeb.Blocks.Administration
             Rock.Web.Cache.RockMemoryCache.Clear();
             msgs.Add( "RockMemoryCache has been cleared" );
 
+            // Flush Site Domains
+            Rock.Web.Cache.SiteCache.Flush();
+
             string webAppPath = Server.MapPath( "~" );
 
             // Check for any unregistered entity types, field types, and block types
