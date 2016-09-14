@@ -45,6 +45,8 @@ namespace Rock.Web
 
             try
             {
+                var siteCookie = requestContext.HttpContext.Request.Cookies["last_site"];
+
                 string pageId = "";
                 int routeId = 0;
 
@@ -71,6 +73,15 @@ namespace Rock.Web
                         else
                         {
                             SiteCache site = SiteCache.GetSiteByDomain( requestContext.HttpContext.Request.Url.Host );
+                            if ( site == null )
+                            {
+                                // Use last site
+                                if ( siteCookie != null && siteCookie.Value != null )
+                                {
+                                    site = SiteCache.Read( siteCookie.Value.AsInteger() );
+                                }
+                            }
+
                             if ( site != null )
                             {
                                 foreach ( var pageAndRouteId in pageAndRouteIds )
@@ -97,6 +108,14 @@ namespace Rock.Web
                 if ( string.IsNullOrEmpty( pageId ) )
                 {
                     SiteCache site = SiteCache.GetSiteByDomain( requestContext.HttpContext.Request.Url.Host );
+                    if ( site == null )
+                    {
+                        // Use last site
+                        if ( siteCookie != null && siteCookie.Value != null )
+                        {
+                            site = SiteCache.Read( siteCookie.Value.AsInteger() );
+                        }
+                    }
 
                     // if not found use the default site
                     if ( site == null )
@@ -180,6 +199,15 @@ namespace Rock.Web
                 {
                     // try to get site's 404 page
                     SiteCache site = SiteCache.GetSiteByDomain( requestContext.HttpContext.Request.Url.Host );
+                    if ( site == null )
+                    {
+                        // Use last site
+                        if ( siteCookie != null && siteCookie.Value != null )
+                        {
+                            site = SiteCache.Read( siteCookie.Value.AsInteger() );
+                        }
+                    }
+
                     if ( site != null && site.PageNotFoundPageId != null )
                     {
                         if ( Convert.ToBoolean( GlobalAttributesCache.Read().GetValue( "Log404AsException" ) ) )
@@ -202,6 +230,16 @@ namespace Rock.Web
                 string theme = page.Layout.Site.Theme;
                 string layout = page.Layout.FileName;
                 string layoutPath = PageCache.FormatPath( theme, layout );
+
+                if ( siteCookie == null )
+                {
+                    siteCookie = new System.Web.HttpCookie( "last_site", page.Layout.SiteId.ToString() );
+                }
+                else
+                {
+                    siteCookie.Value = page.Layout.SiteId.ToString();
+                }
+                requestContext.HttpContext.Response.SetCookie( siteCookie );
 
                 try
                 {
