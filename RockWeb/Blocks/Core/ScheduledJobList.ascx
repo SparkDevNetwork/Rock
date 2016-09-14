@@ -19,7 +19,7 @@
                             <Rock:DateTimeField DataField="LastRunDateTime" HeaderText="Last Run Date" SortExpression="LastRunDateTime" />
                             <Rock:RockLiteralField ID="lLastRunDurationSeconds" HeaderText="Last Run Duration" SortExpression="LastRunDurationSeconds" ItemStyle-HorizontalAlign="Center" />
                             <Rock:RockLiteralField ID="lLastStatus" HeaderText="Last Status" SortExpression="LastStatus" ItemStyle-HorizontalAlign="Center" />
-                            <Rock:RockBoundField DataField="LastStatusMessage" HeaderText="Last Status Message" SortExpression="LastStatusMessage" TruncateLength="255" />
+                            <Rock:RockBoundField DataField="LastStatusMessageAsHtml" HeaderText="Last Status Message" HtmlEncode="false" SortExpression="LastStatusMessage" TruncateLength="255" />
                             <Rock:BoolField DataField="IsSystem" HeaderText="System" SortExpression="IsSystem" />
                             <Rock:BoolField DataField="IsActive" HeaderText="Active" SortExpression="IsActive" />
                             <Rock:EditField OnClick="gScheduledJobs_RunNow" IconCssClass="fa fa-play" HeaderText="Run Now" ToolTip="Run Now" />
