@@ -65,10 +65,11 @@
                                 <div class="panel-heading">
                                     <h3 class="panel-title">
                                         <asp:Literal ID="lPersonalInfoTitle" runat="server" />
-                                        <div class="pull-right">
-                                            <asp:Literal ID="lBusinessLoginMsg" runat="server" Text="Login to give as a business" />
+                                        <div class="panel-labels">
+                                            <span class="panel-text"><asp:Literal ID="lBusinessLoginMsg" runat="server" Text="Login to give as a business" /></span>
                                             <asp:PlaceHolder ID="phGiveAsOption" runat="server">
-                                                <Rock:Toggle ID="tglGiveAsOption" runat="server" OnText="Give as Person" OffText="Give as Business" ButtonSizeCssClass="btn-xs" OnCheckedChanged="tglGiveAsOption_CheckedChanged" />
+                                                <span class="panel-text">Give As &nbsp;</span>
+                                                <Rock:Toggle ID="tglGiveAsOption" runat="server" CssClass="pull-right" OnText="Person" OffText="Business" ButtonSizeCssClass="btn-xs" OnCheckedChanged="tglGiveAsOption_CheckedChanged" />
                                             </asp:PlaceHolder>
                                         </div>
                                     </h3>
