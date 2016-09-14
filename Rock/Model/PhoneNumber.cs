@@ -92,6 +92,7 @@ namespace Rock.Model
         /// <value>
         /// A <see cref="System.String"/> representing the phone number without string formatting.
         /// </value>
+        [DatabaseGenerated( DatabaseGeneratedOption.Computed )]
         public string NumberReversed { get; set; }
 
         /// <summary>
