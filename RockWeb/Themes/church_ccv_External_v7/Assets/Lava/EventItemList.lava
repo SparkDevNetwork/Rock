@@ -59,6 +59,10 @@
         {% assign panelCardImg = "" %}
         {% if eventOccurrenceSummary.EventItem.Photo and tierLevel == 4 %}
           {% capture cardClasses %}{{ cardClasses }} panel-card-withimg{% endcapture %}
+          {% assign showTextOverlay = eventCalendarItem | Attribute: 'ShowTextOverlay' %}
+          {% if showTextOverlay == 'No' %}
+            {% capture cardClasses %}{{ cardClasses }} panel-card-hideoverlay{% endcapture %}
+          {% endif %}
           {% capture panelCardImg %}<div class="panel-card-img" style="background-image: url('{{ eventOccurrenceSummary.EventItem.Photo.Url }}');"></div>{% endcapture %}
         {% endif %}
 
