@@ -611,9 +611,9 @@ namespace Rock.Model
         /// <summary>
         /// Returns a Google Maps link to use for this Location
         /// </summary>
-        /// <param name="title">A unused <see cref="System.String"/> containing the location name label. (Kept optional for compatibility)</param>
+        /// <param name="title">A unused <see cref="System.String"/> containing the location name label.</param>
         /// <returns>A <see cref="System.String"/> containing the link to Google Maps for this location.</returns>
-        public virtual string GoogleMapLink( string title = "" )
+        public virtual string GoogleMapLink( string title )
         {
             string qParm = this.GetFullStreetAddress();
 
