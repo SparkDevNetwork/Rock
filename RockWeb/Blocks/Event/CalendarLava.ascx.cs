@@ -351,7 +351,7 @@ namespace RockWeb.Blocks.Event
                 .Select( o => new EventOccurrenceDate
                 {
                     EventItemOccurrence = o,
-                    Dates = o.GetStartTimes( rangeStart, rangeEnd ).ToList()
+                    Dates = o.GetStartTimes( beginDate, endDate ).ToList()
                 } )
                 .Where( d => d.Dates.Any() )
                 .ToList();

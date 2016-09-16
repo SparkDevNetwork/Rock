@@ -1,5 +1,6 @@
 Rock McKinley 5.4
 
++ Fixed issue with CalendarLava block not using correct date range when the Date Range filter is used (Fixes #1771).
 + Fixed issue with a new communication not requiring an approval when recipients are added manually (Fixes #1768).
 + Added better error handling to the Process Workflow job so that one exception does not stop the job from processing additional workflows.
 + Updated check-in label printing so that if person is checking into two or more grouptypes that share the same label configured to be printed once per person, that it will only print once per person (Fixes #1755).
