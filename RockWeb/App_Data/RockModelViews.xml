@@ -1,6 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <views>
-  <mapping-views hash="00743cff06d32b2addf9aa92cf678e5224d0c19a98bd482e5ab2104f3f9d5f08" conceptual-container="RockContext" store-container="CodeFirstDatabase">
+  <mapping-views hash="71780cd5283bad728006125f4ef2e8a8d50de6f8342535ad0680633c0f5fc97c" conceptual-container="RockContext" store-container="CodeFirstDatabase">
     <view extent="CodeFirstDatabase.AttendanceCode"><![CDATA[
     SELECT VALUE -- Constructing AttendanceCode
         [CodeFirstDatabaseSchema.AttendanceCode](T1.AttendanceCode_Id, T1.AttendanceCode_IssueDateTime, T1.AttendanceCode_Code, T1.AttendanceCode_Guid, T1.AttendanceCode_ForeignId, T1.AttendanceCode_ForeignGuid, T1.AttendanceCode_ForeignKey)
@@ -1067,7 +1067,7 @@
     ) AS T1]]></view>
     <view extent="CodeFirstDatabase.ContentChannelType"><![CDATA[
     SELECT VALUE -- Constructing ContentChannelType
-        [CodeFirstDatabaseSchema.ContentChannelType](T1.ContentChannelType_Id, T1.ContentChannelType_IsSystem, T1.ContentChannelType_Name, T1.ContentChannelType_DateRangeType, T1.ContentChannelType_IncludeTime, T1.ContentChannelType_DisablePriority, T1.ContentChannelType_CreatedDateTime, T1.ContentChannelType_ModifiedDateTime, T1.ContentChannelType_CreatedByPersonAliasId, T1.ContentChannelType_ModifiedByPersonAliasId, T1.ContentChannelType_Guid, T1.ContentChannelType_ForeignId, T1.ContentChannelType_ForeignGuid, T1.ContentChannelType_ForeignKey)
+        [CodeFirstDatabaseSchema.ContentChannelType](T1.ContentChannelType_Id, T1.ContentChannelType_IsSystem, T1.ContentChannelType_Name, T1.ContentChannelType_DateRangeType, T1.ContentChannelType_IncludeTime, T1.ContentChannelType_DisablePriority, T1.ContentChannelType_DisableContentField, T1.ContentChannelType_CreatedDateTime, T1.ContentChannelType_ModifiedDateTime, T1.ContentChannelType_CreatedByPersonAliasId, T1.ContentChannelType_ModifiedByPersonAliasId, T1.ContentChannelType_Guid, T1.ContentChannelType_ForeignId, T1.ContentChannelType_ForeignGuid, T1.ContentChannelType_ForeignKey)
     FROM (
         SELECT 
             T.Id AS ContentChannelType_Id, 
@@ -1076,6 +1076,7 @@
             CAST(T.DateRangeType AS [Edm.Int32]) AS ContentChannelType_DateRangeType, 
             T.IncludeTime AS ContentChannelType_IncludeTime, 
             T.DisablePriority AS ContentChannelType_DisablePriority, 
+            T.DisableContentField AS ContentChannelType_DisableContentField, 
             T.CreatedDateTime AS ContentChannelType_CreatedDateTime, 
             T.ModifiedDateTime AS ContentChannelType_ModifiedDateTime, 
             T.CreatedByPersonAliasId AS ContentChannelType_CreatedByPersonAliasId, 
@@ -1901,7 +1902,7 @@
     ) AS T1]]></view>
     <view extent="CodeFirstDatabase.Page"><![CDATA[
     SELECT VALUE -- Constructing Page
-        [CodeFirstDatabaseSchema.Page](T1.Page_Id, T1.Page_InternalName, T1.Page_PageTitle, T1.Page_BrowserTitle, T1.Page_ParentPageId, T1.Page_IsSystem, T1.Page_LayoutId, T1.Page_RequiresEncryption, T1.Page_EnableViewState, T1.Page_PageDisplayTitle, T1.Page_PageDisplayBreadCrumb, T1.Page_PageDisplayIcon, T1.Page_PageDisplayDescription, T1.Page_DisplayInNavWhen, T1.Page_MenuDisplayDescription, T1.Page_MenuDisplayIcon, T1.Page_MenuDisplayChildPages, T1.Page_BreadCrumbDisplayName, T1.Page_BreadCrumbDisplayIcon, T1.Page_Order, T1.Page_OutputCacheDuration, T1.Page_Description, T1.Page_KeyWords, T1.Page_HeaderContent, T1.Page_AllowIndexing, T1.Page_IconCssClass, T1.Page_IncludeAdminFooter, T1.Page_CreatedDateTime, T1.Page_ModifiedDateTime, T1.Page_CreatedByPersonAliasId, T1.Page_ModifiedByPersonAliasId, T1.Page_Guid, T1.Page_ForeignId, T1.Page_ForeignGuid, T1.Page_ForeignKey)
+        [CodeFirstDatabaseSchema.Page](T1.Page_Id, T1.Page_InternalName, T1.Page_PageTitle, T1.Page_BrowserTitle, T1.Page_ParentPageId, T1.Page_IsSystem, T1.Page_LayoutId, T1.Page_RequiresEncryption, T1.Page_EnableViewState, T1.Page_PageDisplayTitle, T1.Page_PageDisplayBreadCrumb, T1.Page_PageDisplayIcon, T1.Page_PageDisplayDescription, T1.Page_DisplayInNavWhen, T1.Page_MenuDisplayDescription, T1.Page_MenuDisplayIcon, T1.Page_MenuDisplayChildPages, T1.Page_BreadCrumbDisplayName, T1.Page_BreadCrumbDisplayIcon, T1.Page_Order, T1.Page_OutputCacheDuration, T1.Page_Description, T1.Page_KeyWords, T1.Page_HeaderContent, T1.Page_AllowIndexing, T1.Page_IconCssClass, T1.Page_IncludeAdminFooter, T1.Page_BodyCssClass, T1.Page_CreatedDateTime, T1.Page_ModifiedDateTime, T1.Page_CreatedByPersonAliasId, T1.Page_ModifiedByPersonAliasId, T1.Page_Guid, T1.Page_ForeignId, T1.Page_ForeignGuid, T1.Page_ForeignKey)
     FROM (
         SELECT 
             T.Id AS Page_Id, 
@@ -1931,6 +1932,7 @@
             T.AllowIndexing AS Page_AllowIndexing, 
             T.IconCssClass AS Page_IconCssClass, 
             T.IncludeAdminFooter AS Page_IncludeAdminFooter, 
+            T.BodyCssClass AS Page_BodyCssClass, 
             T.CreatedDateTime AS Page_CreatedDateTime, 
             T.ModifiedDateTime AS Page_ModifiedDateTime, 
             T.CreatedByPersonAliasId AS Page_CreatedByPersonAliasId, 
@@ -4806,7 +4808,7 @@
     ) AS T1]]></view>
     <view extent="RockContext.ContentChannelTypes"><![CDATA[
     SELECT VALUE -- Constructing ContentChannelTypes
-        [Rock.Data.ContentChannelType](T1.ContentChannelType_Id, T1.ContentChannelType_IsSystem, T1.ContentChannelType_Name, T1.ContentChannelType_DateRangeType, T1.ContentChannelType_IncludeTime, T1.ContentChannelType_DisablePriority, T1.ContentChannelType_CreatedDateTime, T1.ContentChannelType_ModifiedDateTime, T1.ContentChannelType_CreatedByPersonAliasId, T1.ContentChannelType_ModifiedByPersonAliasId, T1.ContentChannelType_Guid, T1.ContentChannelType_ForeignId, T1.ContentChannelType_ForeignGuid, T1.ContentChannelType_ForeignKey)
+        [Rock.Data.ContentChannelType](T1.ContentChannelType_Id, T1.ContentChannelType_IsSystem, T1.ContentChannelType_Name, T1.ContentChannelType_DateRangeType, T1.ContentChannelType_IncludeTime, T1.ContentChannelType_DisablePriority, T1.ContentChannelType_DisableContentField, T1.ContentChannelType_CreatedDateTime, T1.ContentChannelType_ModifiedDateTime, T1.ContentChannelType_CreatedByPersonAliasId, T1.ContentChannelType_ModifiedByPersonAliasId, T1.ContentChannelType_Guid, T1.ContentChannelType_ForeignId, T1.ContentChannelType_ForeignGuid, T1.ContentChannelType_ForeignKey)
     FROM (
         SELECT 
             T.Id AS ContentChannelType_Id, 
@@ -4815,6 +4817,7 @@
             CAST(T.DateRangeType AS [Rock.Data.ContentChannelDateType]) AS ContentChannelType_DateRangeType, 
             T.IncludeTime AS ContentChannelType_IncludeTime, 
             T.DisablePriority AS ContentChannelType_DisablePriority, 
+            T.DisableContentField AS ContentChannelType_DisableContentField, 
             T.CreatedDateTime AS ContentChannelType_CreatedDateTime, 
             T.ModifiedDateTime AS ContentChannelType_ModifiedDateTime, 
             T.CreatedByPersonAliasId AS ContentChannelType_CreatedByPersonAliasId, 
@@ -5640,7 +5643,7 @@
     ) AS T1]]></view>
     <view extent="RockContext.Pages"><![CDATA[
     SELECT VALUE -- Constructing Pages
-        [Rock.Data.Page](T1.Page_Id, T1.Page_InternalName, T1.Page_PageTitle, T1.Page_BrowserTitle, T1.Page_ParentPageId, T1.Page_IsSystem, T1.Page_LayoutId, T1.Page_RequiresEncryption, T1.Page_EnableViewState, T1.Page_PageDisplayTitle, T1.Page_PageDisplayBreadCrumb, T1.Page_PageDisplayIcon, T1.Page_PageDisplayDescription, T1.Page_DisplayInNavWhen, T1.Page_MenuDisplayDescription, T1.Page_MenuDisplayIcon, T1.Page_MenuDisplayChildPages, T1.Page_BreadCrumbDisplayName, T1.Page_BreadCrumbDisplayIcon, T1.Page_Order, T1.Page_OutputCacheDuration, T1.Page_Description, T1.Page_KeyWords, T1.Page_HeaderContent, T1.Page_AllowIndexing, T1.Page_IconCssClass, T1.Page_IncludeAdminFooter, T1.Page_CreatedDateTime, T1.Page_ModifiedDateTime, T1.Page_CreatedByPersonAliasId, T1.Page_ModifiedByPersonAliasId, T1.Page_Guid, T1.Page_ForeignId, T1.Page_ForeignGuid, T1.Page_ForeignKey)
+        [Rock.Data.Page](T1.Page_Id, T1.Page_InternalName, T1.Page_PageTitle, T1.Page_BrowserTitle, T1.Page_ParentPageId, T1.Page_IsSystem, T1.Page_LayoutId, T1.Page_RequiresEncryption, T1.Page_EnableViewState, T1.Page_PageDisplayTitle, T1.Page_PageDisplayBreadCrumb, T1.Page_PageDisplayIcon, T1.Page_PageDisplayDescription, T1.Page_DisplayInNavWhen, T1.Page_MenuDisplayDescription, T1.Page_MenuDisplayIcon, T1.Page_MenuDisplayChildPages, T1.Page_BreadCrumbDisplayName, T1.Page_BreadCrumbDisplayIcon, T1.Page_Order, T1.Page_OutputCacheDuration, T1.Page_Description, T1.Page_KeyWords, T1.Page_HeaderContent, T1.Page_AllowIndexing, T1.Page_IconCssClass, T1.Page_IncludeAdminFooter, T1.Page_BodyCssClass, T1.Page_CreatedDateTime, T1.Page_ModifiedDateTime, T1.Page_CreatedByPersonAliasId, T1.Page_ModifiedByPersonAliasId, T1.Page_Guid, T1.Page_ForeignId, T1.Page_ForeignGuid, T1.Page_ForeignKey)
     FROM (
         SELECT 
             T.Id AS Page_Id, 
@@ -5670,6 +5673,7 @@
             T.AllowIndexing AS Page_AllowIndexing, 
             T.IconCssClass AS Page_IconCssClass, 
             T.IncludeAdminFooter AS Page_IncludeAdminFooter, 
+            T.BodyCssClass AS Page_BodyCssClass, 
             T.CreatedDateTime AS Page_CreatedDateTime, 
             T.ModifiedDateTime AS Page_ModifiedDateTime, 
             T.CreatedByPersonAliasId AS Page_CreatedByPersonAliasId, 

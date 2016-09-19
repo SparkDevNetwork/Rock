@@ -40,7 +40,7 @@
                     <div class="col-md-6">
                         <Rock:RockDropDownList ID="ddlSite" runat="server" Label="Site" Help="The Site that the page should belong to." AutoPostBack="true" OnSelectedIndexChanged="ddlSite_SelectedIndexChanged" />
                         <Rock:DataDropDownList ID="ddlLayout" runat="server" SourceTypeName="Rock.Model.Page, Rock" PropertyName="Layout"/>
-                        <Rock:RockCheckBox ID="cbMenuIcon" runat="server" Text="Show Icon"/>
+                        <Rock:RockCheckBox ID="cbMenuIcon" runat="server" Label="Show Icon" Text="Yes"/>
                         <Rock:DataTextBox ID="tbIconCssClass" runat="server" SourceTypeName="Rock.Model.Page, Rock" PropertyName="IconCssClass" Label="Icon CSS Class"/>
                     </div>
                 </div>
@@ -83,6 +83,8 @@
                         <Rock:DataTextBox ID="tbCacheDuration" runat="server" Label="Cache Duration" SourceTypeName="Rock.Model.Page, Rock" PropertyName="OutputCacheDuration"/>
                     </div>
                     <div class="col-md-6">
+                        <Rock:DataTextBox ID="tbBodyCssClass" runat="server" SourceTypeName="Rock.Model.Page, Rock" PropertyName="BodyCssClass" Label="Body CSS Class"
+                            Help="The CSS class to add to the body tag (if theme support it)."/>
                         <fieldset>  
                             <Rock:NotificationBox ID="nbPageRouteWarning" runat="server" />
                             <Rock:RockTextBox ID="tbPageRoute" runat="server" TextMode="MultiLine" Rows="3" Label="Page Routes" Help="A unique, friendly route name for the page (e.g. 'Login' or 'Community/GetInvolved')" />
