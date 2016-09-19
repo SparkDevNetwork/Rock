@@ -86,6 +86,13 @@ MISC
 
 Rock McKinley 5.4
 
++ Fixed issue with CalendarLava block not using correct date range when the Date Range filter is used (Fixes #1771).
++ Fixed issue with a new communication not requiring an approval when recipients are added manually (Fixes #1768).
++ Added better error handling to the Process Workflow job so that one exception does not stop the job from processing additional workflows.
++ Updated check-in label printing so that if person is checking into two or more grouptypes that share the same label configured to be printed once per person, that it will only print once per person (Fixes #1755).
++ Fixed security on the registration instance detail block to stop people from adding/deleting registrants when they did not have proper security (Fixes #1732).
++ Updated the FilterGroupsByGradeAndAge so that it does not remove/exclude groups that don't have a defined age or grade range.
++ Fixed exception that would occur when renaming a block from the zone block list.
 + Fixed issue with check-in not refreshing attendance cache correctly when used to calculate threshold values.
 + Updated giving/registration to strip any non-numeric characters from credit card number before submitting (Fixes #1728).
 + Updated the Rock Update block to require that Microsoft .NET Framework 4.5.2 or greater be installed before Rock can be updated to next version.

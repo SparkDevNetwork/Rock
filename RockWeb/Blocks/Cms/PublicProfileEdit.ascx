@@ -169,7 +169,10 @@
                             </Rock:RockRadioButtonList>
                         </div>
                         <div class="col-md-6">
-                            <Rock:YearPicker ID="ypGraduation" runat="server" Label="Graduation Year" Help="High School Graduation Year." Visible="false" />
+                            <%-- This YearPicker is needed for the GradePicker to work --%>
+                            <div style="display: none;">
+                                <Rock:YearPicker ID="ypGraduation" runat="server" Label="Graduation Year" Help="High School Graduation Year." />
+                            </div>
                             <Rock:GradePicker ID="ddlGradePicker" runat="server" Label="Grade" UseAbbreviation="true" UseGradeOffsetAsValue="true" Visible="false" />
                         </div>
                     </div>

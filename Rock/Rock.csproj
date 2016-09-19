@@ -1026,6 +1026,7 @@
     <Compile Include="Reporting\DataSelectComponent.cs" />
     <Compile Include="Reporting\DataSelectContainer.cs" />
     <Compile Include="Reporting\DataSelect\FinancialTransaction\TotalAmountSelect.cs" />
+    <Compile Include="Reporting\DataSelect\GroupMember\GroupCampus.cs" />
     <Compile Include="Reporting\DataSelect\GroupMember\GroupLinkSelect.cs" />
     <Compile Include="Reporting\DataSelect\GroupMember\GroupMemberAttributeSelect.cs" />
     <Compile Include="Reporting\DataSelect\GroupMember\GroupRoleSelect.cs" />

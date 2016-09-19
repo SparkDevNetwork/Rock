@@ -58,7 +58,7 @@ namespace RockWeb.Blocks.Event
         private List<FinancialTransactionDetail> RegistrationPayments;
         private List<Registration> PaymentRegistrations;
         private bool _instanceHasCost = false;
-
+        private Dictionary<int, Location>  _homeAddresses = new Dictionary<int, Location>();
         #endregion
 
         #region Properties
@@ -1064,6 +1064,28 @@ namespace RockWeb.Blocks.Event
                                 fee.Cost.FormatAsCurrency() ) );
                         }
                         lFees.Text = feeDesc.AsDelimited( "<br/>" );
+                    }
+                }
+
+                // add addresses if exporting
+                if (_homeAddresses.Count > 0 )
+                {
+                    var lStreet1 = e.Row.FindControl( "lStreet1" ) as Literal;
+                    var lStreet2 = e.Row.FindControl( "lStreet2" ) as Literal;
+                    var lCity = e.Row.FindControl( "lCity" ) as Literal;
+                    var lState = e.Row.FindControl( "lState" ) as Literal;
+                    var lPostalCode = e.Row.FindControl( "lPostalCode" ) as Literal;
+                    var lCountry = e.Row.FindControl( "lCountry" ) as Literal;
+
+                    var location = _homeAddresses[registrant.PersonId.Value];
+                    if (location != null )
+                    {
+                        lStreet1.Text = location.Street1;
+                        lStreet2.Text = location.Street2;
+                        lCity.Text = location.City;
+                        lState.Text = location.State;
+                        lPostalCode.Text = location.PostalCode;
+                        lCountry.Text = location.Country;
                     }
                 }
             }
@@ -2193,6 +2215,13 @@ namespace RockWeb.Blocks.Event
                     var registrantAttributeIds = new List<int>();
                     var personAttributesIds = new List<int>();
                     var groupMemberAttributesIds = new List<int>();
+
+                    if ( isExporting )
+                    {
+                        // get list of home addresses
+                        var personIds = qry.Select( r => r.PersonAlias.PersonId ).ToList();
+                        _homeAddresses = Person.GetHomeLocations( personIds );
+                    }
 
                     if ( RegistrantFields != null )
                     {
