@@ -50,13 +50,12 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
 </pre>
 ", Rock.Web.UI.Controls.CodeEditorMode.Html, Rock.Web.UI.Controls.CodeEditorTheme.Rock, 200, false, "", "", 2, "Actions" )]
     [LinkedPage( "Business Detail Page", "The page to redirect user to if a business is is requested.", false, "", "", 3 )]
-    [BooleanField( "Display Country Code", "When enabled prepends the country code to all phone numbers." )]
-    [BooleanField( "Display Middle Name", "Display the middle name of the person.")]
+    [BooleanField( "Display Country Code", "When enabled prepends the country code to all phone numbers.", false, "", 4 )]
+    [BooleanField( "Display Middle Name", "Display the middle name of the person.", false, "", 5)]
+    [CodeEditorField( "Custom Content", "Custom Content will be rendered after the person's demographic information <span class='tip tip-lava'></span>.",
+        Rock.Web.UI.Controls.CodeEditorMode.Lava, Rock.Web.UI.Controls.CodeEditorTheme.Rock, 200, false, "", "", 6, "CustomContent" )]
     public partial class Bio : PersonBlock
     {
-        
-        
-        
         #region Base Control Methods
 
         /// <summary>
@@ -238,6 +237,15 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
 
                     lActions.Text = sbActions.ToString();
                     ulActions.Visible = !string.IsNullOrWhiteSpace( lActions.Text );
+
+                    string customContent = GetAttributeValue( "CustomContent" );
+                    if ( !string.IsNullOrWhiteSpace( customContent ) )
+                    {
+                        var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( RockPage, CurrentPerson );
+                        string resolvedContent = customContent.ResolveMergeFields( mergeFields );
+                        phCustomContent.Controls.Add( new LiteralControl( resolvedContent ) );
+                    }
+
                 }
                 else
                 {
