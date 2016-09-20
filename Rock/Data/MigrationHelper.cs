@@ -4418,7 +4418,7 @@ END
         /// <param name="isVisible">if set to <c>true</c> [is visible].</param>
         /// <param name="isReadOnly">if set to <c>true</c> [is read only].</param>
         /// <param name="isRequired">if set to <c>true</c> [is required].</param>
-        /// <param name="isRequired">if set to <c>true</c> [hide label].</param>
+        /// <param name="hideLabel">if set to <c>true</c> [hide label].</param>
         /// <param name="preHtml">The pre html text/html.</param>
         /// <param name="postHtml">The post html text/html.</param>
         /// <param name="guid">The unique identifier.</param>
