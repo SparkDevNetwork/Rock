@@ -2517,6 +2517,17 @@ namespace Rock.Model
         }
 
         /// <summary>
+        /// Gets the family for the person. If multiple families the first family is selected with an active family having preference over an inactive one.
+        /// </summary>
+        /// <param name="person">The person.</param>
+        /// <param name="rockContext">The rock context.</param>
+        /// <returns></returns>
+        public static Group GetFamily( this Person person, RockContext rockContext = null )
+        {
+            return person.GetFamilies( rockContext ).OrderByDescending( g => g.IsActive ).FirstOrDefault();
+        }
+
+        /// <summary>
         /// Gets the home location.
         /// </summary>
         /// <param name="person">The person.</param>
