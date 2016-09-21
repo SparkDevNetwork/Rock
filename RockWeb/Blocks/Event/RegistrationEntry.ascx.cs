@@ -868,6 +868,20 @@ namespace RockWeb.Blocks.Event
             if ( RegistrationState != null )
             {
                 RegistrationState.DiscountCode = tbDiscountCode.Text;
+                if ( !string.IsNullOrWhiteSpace( RegistrationState.DiscountCode ) )
+                {
+                    var discount = RegistrationTemplate.Discounts
+                        .Where( d => d.Code.Equals( RegistrationState.DiscountCode, StringComparison.OrdinalIgnoreCase ) )
+                        .FirstOrDefault();
+                    RegistrationState.DiscountPercentage = discount != null ? discount.DiscountPercentage : 0.0m;
+                    RegistrationState.DiscountAmount = discount != null ? discount.DiscountAmount : 0.0m;
+                }
+                else
+                {
+                    RegistrationState.DiscountPercentage = 0.0m;
+                    RegistrationState.DiscountAmount = 0.0m;
+                }
+
                 CreateDynamicControls( true );
             }
         }
@@ -1364,6 +1378,17 @@ namespace RockWeb.Blocks.Event
         private List<string> ValidateSummary()
         {
             var validationErrors = new List<string>();
+
+            if ( (RegistrationState.DiscountCode ?? string.Empty) != tbDiscountCode.Text  )
+            {
+                validationErrors.Add( "A discount code has not been applied! Please click the 'Apply' button to apply (or clear) a discount code." );
+            }
+
+            decimal balanceDue = RegistrationState.DiscountedCost - RegistrationState.PreviousPaymentTotal;
+            if ( RegistrationState.PaymentAmount > balanceDue )
+            {
+                validationErrors.Add( "Amount To Pay is greater than the amount due. Please check the amount you have selected to pay." );
+            }
 
             if ( minimumPayment.HasValue && minimumPayment > 0.0M )
             {
@@ -4435,15 +4460,15 @@ namespace RockWeb.Blocks.Event
 
                 //rblRegistrarFamilyOptions.SetValue( RegistrationState.FamilyGuid.ToString() );
 
-                // Build Discount info
+                // Build Discount info if template has discounts and this is a new registration
                 nbDiscountCode.Visible = false;
-                if ( RegistrationTemplate != null && RegistrationTemplate.Discounts.Any() )
+                if ( RegistrationTemplate != null 
+                    && RegistrationTemplate.Discounts.Any()
+                    && !RegistrationState.RegistrationId.HasValue )
                 {
-                    // Only allow discount code to be entered for a new registration
-                    divDiscountCode.Visible = !RegistrationState.RegistrationId.HasValue;
+                    divDiscountCode.Visible = true; 
 
                     string discountCode = RegistrationState.DiscountCode;
-                    tbDiscountCode.Text = discountCode;
                     if ( !string.IsNullOrWhiteSpace( discountCode ) )
                     {
                         var discount = RegistrationTemplate.Discounts
@@ -4459,6 +4484,7 @@ namespace RockWeb.Blocks.Event
                 }
                 else
                 {
+                    tbDiscountCode.Text = RegistrationState.DiscountCode;
                     divDiscountCode.Visible = false;
                 }
 
@@ -4746,24 +4772,6 @@ namespace RockWeb.Blocks.Event
                 if ( RegistrationState.FamilyGuid.Equals( Guid.Empty ) )
                 {
                     RegistrationState.FamilyGuid = Guid.NewGuid();
-                }
-
-                if ( RegistrationState.DiscountCode != tbDiscountCode.Text.Trim() )
-                {
-                    RegistrationState.DiscountCode = tbDiscountCode.Text.Trim();
-                    if ( !string.IsNullOrWhiteSpace( RegistrationState.DiscountCode ) )
-                    {
-                        var discount = RegistrationTemplate.Discounts
-                            .Where( d => d.Code.Equals( RegistrationState.DiscountCode, StringComparison.OrdinalIgnoreCase ) )
-                            .FirstOrDefault();
-                        RegistrationState.DiscountPercentage = discount != null ? discount.DiscountPercentage : 0.0m;
-                        RegistrationState.DiscountAmount = discount != null ? discount.DiscountAmount : 0.0m;
-                    }
-                    else
-                    {
-                        RegistrationState.DiscountPercentage = 0.0m;
-                        RegistrationState.DiscountAmount = 0.0m;
-                    }
                 }
 
                 RegistrationState.PaymentAmount = nbAmountPaid.Text.AsDecimal();
