@@ -542,7 +542,6 @@ namespace RockWeb.Blocks.WorkFlow
             workflowType.Name = tbName.Text;
             workflowType.Description = tbDescription.Text;
             workflowType.CategoryId = cpCategory.SelectedValueAsInt();
-            workflowType.Order = 0;
             workflowType.WorkTerm = tbWorkTerm.Text;
             workflowType.ModifiedByPersonAliasId = CurrentPersonAliasId;
             workflowType.ModifiedDateTime = RockDateTime.Now;
