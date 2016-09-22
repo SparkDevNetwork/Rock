@@ -5,48 +5,35 @@
     <asp:UpdatePanel ID="pnlContent" runat="server">
         <ContentTemplate>
 
-            <% if ( churchMetricWarning.Visible ) { %>
+            <asp:HiddenField ID="metricTitle" runat="server" />
+            <asp:HiddenField ID="metricBlockId" runat="server" />
+            <asp:HiddenField ID="metricBlockNumber" runat="server" />
+            <asp:HiddenField ID="metricWidth" runat="server" />
+            <asp:HiddenField ID="metricClass" runat="server" />
+            <asp:HiddenField ID="metricValue" runat="server" />
 
-                <Rock:NotificationBox ID="churchMetricWarning" runat="server" NotificationBoxType="Warning" Visible="false"
-                    Text="Please select a metric source or key in the block settings." />
-
-            <% } else { %>
-
-                <asp:HiddenField ID="metricBlockNumber" runat="server" />
-                <asp:HiddenField ID="metricWidth" runat="server" />
-                <asp:HiddenField ID="metricClass" runat="server" />
-                <asp:HiddenField ID="metricComparisonDisplay" runat="server" />
-
-                <asp:HiddenField ID="metricTitle" runat="server" />
-                <asp:HiddenField ID="metricBlockId" runat="server" />
-
-                <asp:HiddenField ID="currentMetricValue" runat="server" />
-                <asp:HiddenField ID="previousMetricValue" runat="server" />
-
-                <div class="panel panel-block">
-                    <div class="panel-heading clearfix">
-                        <h1 class="panel-title pull-left">
-                            <%= metricTitle.Value %>
-                        </h1>
-                    </div>
-                    <div class="panel-body">
-                        <h1 class="text-right">
-                            <%= currentMetricValue.Value %><% if ( metricComparisonDisplay.Value != "" ) { %>%
-                            <% } %>
-
-                            <% if ( metricClass.Value != "" ) { %>
-                                <i class="fa fa-fw <%= metricClass.Value %> pull-right"></i>
-                            <% } %>
-                        </h1>
-
-                        <% if ( previousMetricValue.Value != "" ) { %>
-                            <h4>Last Year</h4>
-                            <h3><%= previousMetricValue.Value %></h3>
-                        <% } %>
-                    </div>
+            <div class="panel panel-block">
+                <div class="panel-heading clearfix">
+                    <h1 class="panel-title pull-left">
+                        <%= metricTitle.Value %>
+                    </h1>
                 </div>
 
-            <% } %>
+                <asp:Panel id="pnlMetricDisplay" runat="server" class="panel-body">
+                    <h1 class="text-right">
+                        <%= metricValue.Value %>
+
+                        <% if ( metricClass.Value != "" )
+                            { %>
+                        <i class="fa fa-fw <%= metricClass.Value %> pull-right"></i>
+                        <% } %>
+                    </h1>
+                </asp:Panel>
+            </div>
+
+            <Rock:NotificationBox ID="nbMetricWarning" runat="server" NotificationBoxType="Warning" Visible="false"
+                Text="Please select a metric source or key in the block settings." />
+
         </ContentTemplate>
     </asp:UpdatePanel>
 </div>
