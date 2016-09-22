@@ -56,11 +56,6 @@ namespace Rock.Migrations
     SET [Value] = 'http://storage.rockrms.com/externalapplications/sparkdevnetwork/windowscheckin/1.6.0/checkinclient.exe'
     WHERE [Guid] = '7ADC1B5B-D374-4B77-9DE1-4D788B572A10'
 " );
-
-            // clear migration table
-            Sql( @"
-    UPDATE [__MigrationHistory] SET [Model] = 0x
-" );
         }
 
         /// <summary>
