@@ -119,7 +119,9 @@
             <asp:Literal ID="lGroupMemberMovePreHtml" runat="server" />
 
             <asp:ValidationSummary ID="vsPlaceElsewhere" runat="server" ValidationGroup="vgPlaceElsewhere" HeaderText="Please Correct the Following" CssClass="alert alert-danger" />
-            <Rock:RockLiteral ID="lWorkflowTriggerName" runat="server" Label="Workflow Trigger" />
+            <asp:CustomValidator ID="cvPlaceElsewhere" runat="server" CssClass="alert alert-danger" ValidationGroup="vgPlaceElsewhere" Display="None" />
+
+            <Rock:RockLiteral ID="lWorkflowTriggerName" runat="server" Label="Action" />
             <Rock:RockControlWrapper ID="rcwSelectMemberTrigger" runat="server" Label="Select Workflow Trigger">
                 <Rock:HiddenFieldWithClass ID="hfPlaceElsewhereTriggerId" CssClass="js-hidden-selected" runat="server" />
                 <div class="controls">
@@ -135,7 +137,6 @@
             <Rock:NotificationBox ID="nbPlaceElsewhereWarning" runat="server" NotificationBoxType="Warning" />
             <asp:HiddenField ID="hfPlaceElsewhereGroupMemberId" runat="server" />
             <Rock:RockLiteral ID="lPlaceElsewhereGroupMemberName" runat="server" Label="Group Member" />
-            <Rock:RockLiteral ID="lWorkflowName" runat="server" Label="Workflow" />
             <Rock:RockTextBox ID="tbPlaceElsewhereNote" runat="server" Label="Note" Rows="4" TextMode="MultiLine" ValidationGroup="vgPlaceElsewhere" />
 
             <div class="actions">

@@ -412,6 +412,15 @@ namespace RockWeb.Plugins.com_centralaz.LifeGroupFinder
 
         protected void btnMoveGroupMember_Click( object sender, EventArgs e )
         {
+
+            cvPlaceElsewhere.IsValid = ( !tbPlaceElsewhereNote.Required || ( tbPlaceElsewhereNote.Required && !string.IsNullOrWhiteSpace( tbPlaceElsewhereNote.Text ) ) );
+
+            if ( !cvPlaceElsewhere.IsValid )
+            {
+                cvPlaceElsewhere.ErrorMessage = "You must enter a note.";
+                return;
+            }
+
             using ( var rockContext = new RockContext() )
             {
                 var groupService = new GroupService( rockContext );
@@ -622,7 +631,6 @@ namespace RockWeb.Plugins.com_centralaz.LifeGroupFinder
                 bool requireNote = qualifierParts.Length > 6 ? qualifierParts[6].AsBoolean() : false;
                 tbPlaceElsewhereNote.Visible = showNote || requireNote;
                 tbPlaceElsewhereNote.Required = requireNote;
-                lWorkflowName.Text = selectedTrigger.WorkflowType.ToString();
             }
         }
 
