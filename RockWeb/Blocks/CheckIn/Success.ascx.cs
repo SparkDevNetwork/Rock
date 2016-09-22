@@ -109,8 +109,11 @@ namespace RockWeb.Blocks.CheckIn
                                         }
                                     }
 
-                                    printFromClient.AddRange( groupType.Labels.Where( l => l.PrintFrom == Rock.Model.PrintFrom.Client ) );
-                                    printFromServer.AddRange( groupType.Labels.Where( l => l.PrintFrom == Rock.Model.PrintFrom.Server ) );
+                                    if ( groupType.Labels != null && groupType.Labels.Any() )
+                                    {
+                                        printFromClient.AddRange( groupType.Labels.Where( l => l.PrintFrom == Rock.Model.PrintFrom.Client ) );
+                                        printFromServer.AddRange( groupType.Labels.Where( l => l.PrintFrom == Rock.Model.PrintFrom.Server ) );
+                                    }
                                 }
                             }
                         }

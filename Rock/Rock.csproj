@@ -321,6 +321,9 @@
     <Compile Include="Chart\ChartGroupBy.cs" />
     <Compile Include="Chart\IChartData.cs" />
     <Compile Include="Chart\SummaryData.cs" />
+    <Compile Include="CheckIn\CheckInBlockMultiPerson.cs">
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
     <Compile Include="CheckIn\CheckInBlock.cs">
       <SubType>ASPXCodeBehind</SubType>
     </Compile>
@@ -1507,6 +1510,7 @@
     <Compile Include="Workflow\Action\CheckIn\FilterGroupsByLastName.cs" />
     <Compile Include="Workflow\Action\CheckIn\FilterGroupsBySpecialNeeds.cs" />
     <Compile Include="Workflow\Action\CheckIn\FilterLocationsBySchedule.cs" />
+    <Compile Include="Workflow\Action\CheckIn\FilterByPreviousCheckin.cs" />
     <Compile Include="Workflow\Action\CheckIn\FilterLocationsByThreshold.cs" />
     <Compile Include="Workflow\Action\CheckIn\FindFamilies.cs" />
     <Compile Include="Workflow\Action\CheckIn\FindFamilyMembers.cs" />
