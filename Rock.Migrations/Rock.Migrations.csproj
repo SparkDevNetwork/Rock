@@ -70,6 +70,10 @@
     <Compile Include="Migrations\201609221415156_PreventDupCheckin.Designer.cs">
       <DependentUpon>201609221415156_PreventDupCheckin.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201609221633157_BodyPageCSS-ContentChannelNoContent.cs" />
+    <Compile Include="Migrations\201609221633157_BodyPageCSS-ContentChannelNoContent.Designer.cs">
+      <DependentUpon>201609221633157_BodyPageCSS-ContentChannelNoContent.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 6.0\Version 1.6.0\201606061858434_MetricPartitions.cs" />
     <Compile Include="Migrations\Version 6.0\Version 1.6.0\201606061858434_MetricPartitions.Designer.cs">
       <DependentUpon>201606061858434_MetricPartitions.cs</DependentUpon>
@@ -2258,6 +2262,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201609221415156_PreventDupCheckin.resx">
       <DependentUpon>201609221415156_PreventDupCheckin.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201609221633157_BodyPageCSS-ContentChannelNoContent.resx">
+      <DependentUpon>201609221633157_BodyPageCSS-ContentChannelNoContent.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 6.0\Version 1.6.0\201606061858434_MetricPartitions.resx">
       <DependentUpon>201606061858434_MetricPartitions.cs</DependentUpon>
