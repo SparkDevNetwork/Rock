@@ -13,7 +13,7 @@ namespace Rock.Migrations
         
         string IMigrationMetadata.Id
         {
-            get { return "201609191859361_BodyPageCSS-ContentChannelNoContent"; }
+            get { return "201609221633157_BodyPageCSS-ContentChannelNoContent"; }
         }
         
         string IMigrationMetadata.Source
