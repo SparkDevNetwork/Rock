@@ -64,6 +64,8 @@
                                         Help="If family member(s) is checking into more than one service, should the same options for additional services be automatically selected that were selected for first service?" />
                                     <Rock:RockCheckBox ID="cbHidePhotos" runat="server" Label="Hide Photos" Text="Yes"
                                         Help="Select this option if person photos should not be displayed when selecting the people from the selected family that are checking in." />
+                                    <Rock:RockCheckBox ID="cbPreventDuplicateCheckin" runat="server" Label="Prevent Duplicate Check-in" Text="Yes" 
+                                        Help="Should people be prevented from checking into a specifice service time (schedule) more than once?" />
                                 </div>
                             </div>
 
