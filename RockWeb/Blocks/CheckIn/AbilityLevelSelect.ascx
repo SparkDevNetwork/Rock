@@ -45,7 +45,15 @@
         <div class="checkin-scroll-panel">
             <div class="scroller">
 
-                <div class="control-group checkin-body-container">
+                <asp:Panel ID="pnlNoOptions" runat="server" Visible="false">
+                    <h1>Sorry</h1>
+                    <h4>There are currently not any available locations that the selected individual(s) can check into.</h4>
+                    <div class="actions">
+                        <asp:LinkButton CssClass="btn btn-primary btn-checkin" ID="btnNoOptionOk" runat="server" OnClick="btnNoOptionOk_Click" Text="Ok" />
+                    </div>
+                </asp:Panel>
+
+                <div id="divAbilityLevel" runat="server" class="control-group checkin-body-container">
                     <label class="control-label">Select Ability Level</label>
                     <div class="controls">
                         <asp:Repeater ID="rSelection" runat="server" OnItemCommand="rSelection_ItemCommand" OnItemDataBound="rSelection_ItemDataBound">
