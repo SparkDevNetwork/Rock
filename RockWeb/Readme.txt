@@ -9,6 +9,10 @@ CHECK-IN
 + Added the ability to order GroupLocations (namely for check-in) in the event that a check-in workflow action wants to make decisions based on their order.
 + Added new block for editing label files that allows easily viewing and printing of incremental changes.
 + Updated check-in to save the value that was entered to search for family, and the family that was selected when saving the attendance record.
++ Added options to check-in for hiding photos and excluding inactive people.
++ Updated the Welcome check-in block to allow changing the 'Check In' button text with a block setting and CSS.
++ Updated label printing so that if person is checking into two or more grouptypes that share the same label configured to be printed once per person, that it will only print once per person. Note if grouptypes have different labels, both types will still be printed. (Fixes #1755).
++ Updated check-in to add option of preventing people from checking into the same service time more than once.
 
 CMS
 + Added ability to have site-specific routes.
@@ -19,6 +23,7 @@ CMS
 + Updated the list of acceptable security protocols for external SSL connections. 
 + Added page copying to the Page Map block.
 + Upgraded Bootstrap to 3.3.7.
++ Fixed issue with Site Domain list not being cleared when cache is cleared.
 
 CONTENT CHANELLS
 + Updated Content Channel Items to support hierarchy so that items can have children and parent items from the same or other configured channels.
@@ -31,6 +36,7 @@ GROUPS
 + Updated GroupFinder and GroupRegistration blocks to honor a group's GroupCapacity and GroupTypeRole MaxCount (Fixes #1275).
 + Added ability to Group Attendance detail block to select/unselect all members at once by clicking 'Member' header.
 + Added campus filter option to group finder.
++ Fixed Lava used for the Group Toolbox. The edit member feature was not working as intended.
 
 FINANCIAL
 + Added the ability to view Lava based contribution report on the person profile page.
@@ -58,14 +64,23 @@ LAVA
 PERSON/FAMILY
 + Added ability to have Family attributes.
 + Added optional 'Birthdate' column to the person search results.
++ Fixed exception that would occur if searching for person with blank string.
++ Grades can now be set when adding new family members to the PublicProfileEdit block.
 
 REGISTRATION
 + Updated Registration Entry block to support signing required digital documents inline during registration.
 + Fixed issue with event registration where discount code and amount paid are not cleared if user navigates backwards and unselects optional fees.
 + Added the ability to specify a workflow to launch when a registration is completed. Can be configured on the registration template or instance.
++ Fixed security on the registration instance detail block to stop people from adding/deleting registrants when they did not have proper security (Fixes #1732).
++ Added additional fields to the event registration registrant Excel export (First Name, Last Name, Datetime Created, and Home Address).
++ Fixed issue that prevented being able to move a registration to a different instance if the target instance did not have a group configured and selected in the move.
++ Fixed security issue with allowing people to edit payments on a registration.
++ Added validation to registration entry block to ensure person applies a discount code they enter and added server-side validation to prevent paying an amount greater than the balance due.
 
 REPORTING
 + Updated Metrics so that a MetricValueDateTime can be specified when using SQL as the Source. (Fixes #1666).
++ Fixed the Giving Amount person data view filter to not include children when combining giving.
++ Added new Group Member Report Select for Group Campus.
 
 WORKFLOW
 + Added Lava capabilities to Pre/Post HTML of workflow entry attributes.
@@ -74,6 +89,8 @@ WORKFLOW
 + Added a Workflow Action to Trigger a New Workflow.
 + Added a Workflow Action to add a Benevolence Request.
 + Added the ability for workflows to have sequential ids based on a prefix associated with the type of workflow ( for example, IT requests could have ids like 'IT00001', 'IT00002' )
++ Added a new workflow action to run Lava in a better UI.
++ Added better error handling to the Process Workflows job so that one exception does not stop the job from processing additional workflows.
 
 MISC
 + Fixed the communication recipient block to include emails that were marked as being opened in addition to those that were just marked delivered.
@@ -82,7 +99,7 @@ MISC
 + Added the ability to customize status bar and opportunity summary tiles using Lava in the My Connection Opportunities block.
 + Updated the database authentication provider to use BCrypt when hashing new passwords, and to convert existing HMACSHA1 hashed passwords to BCrypt next time each user logs in.
 + Added new Startup interface that custom plugins can use to run custom code during Rock startup.
-
++ Fixed the currency field type to return a formatted value that is a currency.
 
 Rock McKinley 5.4
 
