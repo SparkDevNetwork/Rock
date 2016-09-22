@@ -62,12 +62,12 @@
     <Compile Include="HotFixMigrations\004_FixBaptismBadge.cs" />
     <Compile Include="HotFixMigrations\005_ValueAsNumeric.cs" />
     <Compile Include="HotFixMigrations\006_StatementProcs.cs" />
-    <Compile Include="Migrations\201609071818034_RegistrationAutoPopulateFamily.cs" />
-    <Compile Include="Migrations\201609071818034_RegistrationAutoPopulateFamily.Designer.cs">
+    <Compile Include="Migrations\Version 6.0\Version 1.6.0\201609071818034_RegistrationAutoPopulateFamily.cs" />
+    <Compile Include="Migrations\Version 6.0\Version 1.6.0\201609071818034_RegistrationAutoPopulateFamily.Designer.cs">
       <DependentUpon>201609071818034_RegistrationAutoPopulateFamily.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201609221415156_PreventDupCheckin.cs" />
-    <Compile Include="Migrations\201609221415156_PreventDupCheckin.Designer.cs">
+    <Compile Include="Migrations\Version 6.0\Version 1.6.0\201609221415156_PreventDupCheckin.cs" />
+    <Compile Include="Migrations\Version 6.0\Version 1.6.0\201609221415156_PreventDupCheckin.Designer.cs">
       <DependentUpon>201609221415156_PreventDupCheckin.cs</DependentUpon>
     </Compile>
     <Compile Include="Migrations\Version 6.0\Version 1.6.0\201606061858434_MetricPartitions.cs" />
@@ -2253,10 +2253,10 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Migrations\201609071818034_RegistrationAutoPopulateFamily.resx">
+    <EmbeddedResource Include="Migrations\Version 6.0\Version 1.6.0\201609071818034_RegistrationAutoPopulateFamily.resx">
       <DependentUpon>201609071818034_RegistrationAutoPopulateFamily.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201609221415156_PreventDupCheckin.resx">
+    <EmbeddedResource Include="Migrations\Version 6.0\Version 1.6.0\201609221415156_PreventDupCheckin.resx">
       <DependentUpon>201609221415156_PreventDupCheckin.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 6.0\Version 1.6.0\201606061858434_MetricPartitions.resx">
