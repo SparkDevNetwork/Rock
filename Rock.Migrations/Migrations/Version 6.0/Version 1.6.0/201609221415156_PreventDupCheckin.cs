@@ -72,6 +72,11 @@ namespace Rock.Migrations
             RockMigrationHelper.UpdateWorkflowActionType( "5D86DC3F-D56A-49D7-B6CC-5ED2B7E59A93", "Remove Previous Checkins", 5, "5151FB64-35C6-48B3-ACCF-959BAD3A31CA", true, false, "", "66EF6CB1-1A96-2F81-4534-3BCA5C33D4CD", 1, "False", "A05C4258-BFD6-4810-9EBB-BC6EF1C74F11" );
             RockMigrationHelper.AddActionTypeAttributeValue( "A05C4258-BFD6-4810-9EBB-BC6EF1C74F11", "C134C40A-D372-44E2-A359-2268977B87C9", @"" ); // Unattended Check-in:Schedule Select:Filter Locations By Schedule:Order
             RockMigrationHelper.AddActionTypeAttributeValue( "A05C4258-BFD6-4810-9EBB-BC6EF1C74F11", "759890BC-7990-4024-BD82-DF4C3623C3AC", @"False" ); // Unattended Check-in:Schedule Select:Filter Locations By Schedule:Active
+
+            // clear migration table
+            Sql( @"
+    UPDATE [__MigrationHistory] SET [Model] = 0x
+" );
         }
 
         /// <summary>
