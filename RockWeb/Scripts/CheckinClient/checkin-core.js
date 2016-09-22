@@ -9,7 +9,9 @@ $(function () {
 Sys.Application.add_load(function () {
 
     if (bodyScroll) {
-        bodyScroll.destroy();
+        try {
+            bodyScroll.destroy();
+        } catch (e) {}
         bodyScroll = null;
     }
 
@@ -25,6 +27,7 @@ Sys.Application.add_load(function () {
         scrollbars: 'custom'
       });
     }
+
 });
 
 function resizeBody() {
