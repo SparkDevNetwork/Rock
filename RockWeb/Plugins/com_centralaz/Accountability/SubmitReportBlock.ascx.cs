@@ -74,8 +74,7 @@ namespace RockWeb.Plugins.com_centralaz.Accountability
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void lbSubmit_Click( object sender, EventArgs e )
         {
-            int groupId = int.Parse( PageParameter( "GroupId" ) );
-            NavigateToLinkedPage( "DetailPage", "GroupId", groupId );
+            NavigateToLinkedPage( "DetailPage", "GroupId", PageParameter( "GroupId" ).AsInteger() );
         }
 
         /// <summary>
@@ -90,24 +89,30 @@ namespace RockWeb.Plugins.com_centralaz.Accountability
             }
             else
             {
-
-                int groupId = int.Parse( PageParameter( "GroupId" ) );
-                DateTime recentReportDate;
-                Group group = GetGroup( groupId );
-                group.LoadAttributes();
-                DateTime reportStartDate = DateTime.Parse( group.GetAttributeValue( "ReportStartDate" ) );
-                try
+                var groupId = PageParameter( "GroupId" ).AsIntegerOrNull();
+                if ( groupId.HasValue )
                 {
-                    ResponseSet recentReport = new ResponseSetService( new AccountabilityContext() ).GetMostRecentReport( CurrentPersonId, groupId );
-                    recentReportDate = recentReport.SubmitForDate;
-                }
-                catch
-                {
-                    recentReportDate = reportStartDate;
-                }
-                DateTime nextDueDate = NextReportDate( reportStartDate );
+                    Group group = GetGroup( groupId.Value );
+                    group.LoadAttributes();
+                    DateTime reportStartDate = DateTime.Parse( group.GetAttributeValue( "ReportStartDate" ) );
+                    DateTime nextDueDate = NextReportDate( reportStartDate );
+                    var responseSetService = new ResponseSetService( new AccountabilityContext() );
 
-                WriteDueDateMessage( nextDueDate, recentReportDate, group );
+                    bool isThisWeeksReportSubmitted = responseSetService.Queryable().Where( rs =>
+                        rs.SubmitForDate == nextDueDate.Date &&
+                        rs.PersonId == CurrentPersonId &&
+                        rs.GroupId == groupId.Value )
+                        .Any();
+
+                    bool isLastWeeksReportSubmitted = responseSetService.Queryable().Where( rs =>
+                        rs.SubmitForDate == nextDueDate.AddDays(-7).Date &&
+                        rs.PersonId == CurrentPersonId &&
+                        rs.GroupId == groupId.Value )
+                        .Any();
+
+                    WriteDueDateMessage( nextDueDate, isThisWeeksReportSubmitted, isLastWeeksReportSubmitted );
+                }
+
             }
         }
 
@@ -116,20 +121,19 @@ namespace RockWeb.Plugins.com_centralaz.Accountability
         /// </summary>
         /// <param name="nextDueDate">The next due date</param>
         /// <param name="lastReportDate">The last report date</param>
-        protected void WriteDueDateMessage( DateTime nextDueDate, DateTime lastReportDate, Group group )
+        protected void WriteDueDateMessage( DateTime nextDueDate, bool isThisWeeksReportSubmitted, bool isLastWeeksReportSubmitted )
         {
             DateTime lastDueDate = nextDueDate.AddDays( -7 );
-            int daysElapsed = ( nextDueDate - lastReportDate ).Days;
             int daysUntilDueDate = ( nextDueDate - DateTime.Today ).Days;
             ResponseSetService responseSetService = new ResponseSetService( new AccountabilityContext() );
             //All caught up case
-            if ( daysUntilDueDate >= 6 || responseSetService.DoesResponseSetExistWithSubmitDate( nextDueDate, CurrentPersonId, group.Id ) )
+            if ( isThisWeeksReportSubmitted )
             {
                 lStatusMessage.Text = "Report Submitted";
                 lbSubmitReport.Enabled = false;
             }
             //Submit report for this week case
-            if ( daysUntilDueDate < 6 && !responseSetService.DoesResponseSetExistWithSubmitDate( nextDueDate, CurrentPersonId, group.Id ) )
+            if ( daysUntilDueDate < 6 && !isThisWeeksReportSubmitted )
             {
                 if ( daysUntilDueDate == 0 )
                 {
@@ -145,11 +149,11 @@ namespace RockWeb.Plugins.com_centralaz.Accountability
                 }
                 lbSubmitReport.Enabled = true;
             }
+
             //Report overdue case
-            group.LoadAttributes();
-            if ( !responseSetService.DoesResponseSetExistWithSubmitDate( lastDueDate, CurrentPersonId, group.Id ) && lastDueDate > DateTime.Parse( group.GetAttributeValue( "ReportStartDate" ) ) )
+            if ( !isLastWeeksReportSubmitted )
             {
-                lStatusMessage.Text = "Report overdue for week of " + lastDueDate.ToShortDateString();
+                lStatusMessage.Text = "Report overdue for week of " + nextDueDate.AddDays(-7).ToShortDateString();
                 lbSubmitReport.Enabled = true;
             }
         }
@@ -176,7 +180,7 @@ namespace RockWeb.Plugins.com_centralaz.Accountability
             }
             else
             {
-                reportDue = today.AddDays(-(daysElapsed) );
+                reportDue = today.AddDays( -( daysElapsed ) );
             }
             return reportDue;
         }
@@ -187,16 +191,20 @@ namespace RockWeb.Plugins.com_centralaz.Accountability
         /// <returns>A bool of whether the current person is a member or not</returns>
         protected bool IsGroupMember()
         {
-
-            int groupId = int.Parse( PageParameter( "GroupId" ) );
             bool isMember = false;
-            var qry = new GroupMemberService( new RockContext() ).Queryable()
-            .Where( gm => ( gm.PersonId == CurrentPersonId ) && ( gm.GroupId == groupId ) )
-            .FirstOrDefault();
-            if ( qry != null )
+
+            var groupId = PageParameter( "GroupId" ).AsIntegerOrNull();
+            if ( groupId.HasValue )
             {
-                isMember = true;
+                var groupMember = new GroupMemberService( new RockContext() ).Queryable()
+                            .Where( gm => ( gm.PersonId == CurrentPersonId ) && ( gm.GroupId == groupId ) )
+                            .FirstOrDefault();
+                if ( groupMember != null )
+                {
+                    isMember = true;
+                }
             }
+
             return isMember;
         }
 
