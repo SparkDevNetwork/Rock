@@ -86,7 +86,7 @@ namespace Rock.Field.Types
         {
             Dictionary<string, ConfigurationValue> configurationValues = new Dictionary<string, ConfigurationValue>();
             configurationValues.Add( "values", new ConfigurationValue( "Values",
-                "The source of the values to display in a list.  Format is either 'value1,value2,value3,...', 'value1^text1,value2^text2,value3^text3,...', or a SQL Select statement that returns result set with a 'Value' and 'Text' column.", "" ) );
+                "The source of the values to display in a list.  Format is either 'value1,value2,value3,...', 'value1^text1,value2^text2,value3^text3,...', or a SQL Select statement that returns result set with a 'Value' and 'Text' column <span class='tip tip-lava'></span>.", "" ) );
             configurationValues.Add( "fieldtype", new ConfigurationValue( "Control Type", 
                 "The type of control to use for selecting a single value from the list.", "ddl" ) );
 
@@ -120,48 +120,6 @@ namespace Rock.Field.Types
             }
         }
 
-        /// <summary>
-        /// Gets the values.
-        /// </summary>
-        /// <param name="configurationValues">The configuration values.</param>
-        /// <returns></returns>
-        private Dictionary<string, string> GetConfiguredValues( Dictionary<string, ConfigurationValue> configurationValues )
-        {
-            var items = new Dictionary<string, string>();
-
-            if ( configurationValues.ContainsKey( "values" ) )
-            {
-                string listSource = configurationValues["values"].Value;
-
-                if ( listSource.ToUpper().Contains( "SELECT" ) && listSource.ToUpper().Contains( "FROM" ) )
-                {
-                    var tableValues = new List<string>();
-                    DataTable dataTable = Rock.Data.DbService.GetDataTable( listSource, CommandType.Text, null );
-                    if ( dataTable != null && dataTable.Columns.Contains( "Value" ) && dataTable.Columns.Contains( "Text" ) )
-                    {
-                        foreach ( DataRow row in dataTable.Rows )
-                        {
-                            items.AddOrIgnore( row["value"].ToString(), row["text"].ToString() );
-                        }
-                    }
-                }
-
-                else
-                {
-                    foreach ( string keyvalue in listSource.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ) )
-                    {
-                        var keyValueArray = keyvalue.Split( new char[] { '^' }, StringSplitOptions.RemoveEmptyEntries );
-                        if ( keyValueArray.Length > 0 )
-                        {
-                            items.AddOrIgnore( keyValueArray[0].Trim(), keyValueArray.Length > 1 ? keyValueArray[1].Trim() : keyValueArray[0].Trim() );
-                        }
-                    }
-                }
-            }
-
-            return items;
-        }
-
         #endregion
 
         #region Formatting
@@ -178,7 +136,7 @@ namespace Rock.Field.Types
         {
             if ( !string.IsNullOrWhiteSpace( value ) && configurationValues.ContainsKey( "values" ) )
             {
-                var configuredValues = GetConfiguredValues( configurationValues );
+                var configuredValues = Helper.GetConfiguredValues( configurationValues );
                 var selectedValues = value.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ).ToList();
                 return configuredValues
                     .Where( v => selectedValues.Contains( v.Key ) )
@@ -231,7 +189,7 @@ namespace Rock.Field.Types
                     editControl.Items.Add( new ListItem() );
                 }
 
-                foreach( var keyVal in GetConfiguredValues( configurationValues ) )
+                foreach( var keyVal in Helper.GetConfiguredValues( configurationValues ) )
                 {
                     editControl.Items.Add( new ListItem( keyVal.Value, keyVal.Key ) );
                 }
@@ -322,7 +280,7 @@ namespace Rock.Field.Types
                 cbList.AddCssClass( "js-filter-control" );
                 cbList.RepeatDirection = RepeatDirection.Horizontal;
 
-                foreach ( var keyVal in GetConfiguredValues( configurationValues ) )
+                foreach ( var keyVal in Helper.GetConfiguredValues( configurationValues ) )
                 {
                     cbList.Items.Add( new ListItem( keyVal.Value, keyVal.Key ) );
                 }
@@ -352,6 +310,15 @@ namespace Rock.Field.Types
         /// <param name="filterMode">The filter mode.</param>
         /// <returns></returns>
         public override string GetFilterCompareValue( Control control, FilterMode filterMode )
+        {
+            return null;
+        }
+
+        /// <summary>
+        /// Gets the equal to compare value (types that don't support an equalto comparison (i.e. singleselect) should return null
+        /// </summary>
+        /// <returns></returns>
+        public override string GetEqualToCompareValue()
         {
             return null;
         }
@@ -418,7 +385,7 @@ namespace Rock.Field.Types
         /// <returns></returns>
         public override string FormatFilterValueValue( Dictionary<string, ConfigurationValue> configurationValues, string value )
         {
-            var configuredValues = GetConfiguredValues( configurationValues );
+            var configuredValues = Helper.GetConfiguredValues( configurationValues );
             var selectedValues = value.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ).ToList();
             return configuredValues
                 .Where( v => selectedValues.Contains( v.Key ) )

@@ -277,7 +277,7 @@ namespace RockWeb.Blocks.CheckIn
             var groupTypeService = new GroupTypeService( rockContext );
             var groupService = new GroupService( rockContext );
 
-            IEnumerable<GroupTypePath> groupPaths = new List<GroupTypePath>();
+            var groupPaths = new List<GroupTypePath>();
             var groupLocationQry = groupLocationService.Queryable();
             int groupTypeId;
 
@@ -299,7 +299,7 @@ namespace RockWeb.Blocks.CheckIn
                 // filter to groups that either are of the GroupType or are of a GroupType that has the selected GroupType as a parent (ancestor)
                 groupLocationQry = groupLocationQry.Where( a => a.Group.GroupType.Id == groupTypeId || descendantGroupTypeIds.Contains( a.Group.GroupTypeId ) );
 
-                groupPaths = groupTypeService.GetAllAssociatedDescendentsPath( groupTypeId );
+                groupPaths = groupTypeService.GetAllAssociatedDescendentsPath( groupTypeId ).ToList();
             }
             else
             {
@@ -308,6 +308,7 @@ namespace RockWeb.Blocks.CheckIn
                 List<int> descendantGroupTypeIds = new List<int>();
                 foreach ( var templateGroupType in groupTypeService.Queryable().Where( a => a.GroupTypePurposeValueId == groupTypePurposeCheckInTemplateId ) )
                 {
+                    groupPaths.AddRange( groupTypeService.GetAllAssociatedDescendentsPath( templateGroupType.Id ).ToList() );
                     foreach ( var childGroupType in groupTypeService.GetChildGroupTypes( templateGroupType.Id ) )
                     {
                         descendantGroupTypeIds.Add( childGroupType.Id );

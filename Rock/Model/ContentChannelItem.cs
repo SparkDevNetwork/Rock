@@ -30,7 +30,7 @@ namespace Rock.Model
     /// </summary>
     [Table( "ContentChannelItem")]
     [DataContract]
-    public partial class ContentChannelItem : Model<ContentChannelItem>
+    public partial class ContentChannelItem : Model<ContentChannelItem>, IOrdered
     {
 
         #region Entity Properties
@@ -140,6 +140,15 @@ namespace Rock.Model
         [DataMember]
         public string Permalink { get; set; }
 
+        /// <summary>
+        /// Gets or sets the order.
+        /// </summary>
+        /// <value>
+        /// The order.
+        /// </value>
+        [DataMember]
+        public int Order { get; set; }
+
         #endregion
 
         #region Virtual Properties
@@ -171,6 +180,34 @@ namespace Rock.Model
         public virtual PersonAlias ApprovedByPersonAlias { get; set; }
 
         /// <summary>
+        /// Gets or sets the child items.
+        /// </summary>
+        /// <value>
+        /// The child items.
+        /// </value>
+        [LavaInclude]
+        public virtual ICollection<ContentChannelItemAssociation> ChildItems
+        {
+            get { return _childItems ?? ( _childItems = new Collection<ContentChannelItemAssociation>() ); }
+            set { _childItems = value; }
+        }
+        private ICollection<ContentChannelItemAssociation> _childItems;
+
+        /// <summary>
+        /// Gets or sets the parent items.
+        /// </summary>
+        /// <value>
+        /// The parent items.
+        /// </value>
+        [LavaInclude]
+        public virtual ICollection<ContentChannelItemAssociation> ParentItems
+        {
+            get { return _parentItems ?? ( _parentItems = new Collection<ContentChannelItemAssociation>() ); }
+            set { _parentItems = value; }
+        }
+        private ICollection<ContentChannelItemAssociation> _parentItems;
+
+        /// <summary>
         /// Gets or sets the content channel items.
         /// </summary>
         /// <value>
@@ -182,6 +219,23 @@ namespace Rock.Model
             set { _eventItemOccurrences = value; }
         }
         private ICollection<EventItemOccurrenceChannelItem> _eventItemOccurrences;
+
+        /// <summary>
+        /// Gets the supported actions.
+        /// </summary>
+        /// <value>
+        /// The supported actions.
+        /// </value>
+        [NotMapped]
+        public override Dictionary<string, string> SupportedActions
+        {
+            get
+            {
+                var supportedActions = base.SupportedActions;
+                supportedActions.AddOrReplace( Rock.Security.Authorization.INTERACT, "The roles and/or users that have access to intertact with the channel item." );
+                return supportedActions;
+            }
+        }
 
         /// <summary>
         /// Gets the parent authority.
@@ -201,6 +255,20 @@ namespace Rock.Model
         #endregion
 
         #region Methods
+
+        /// <summary>
+        /// Pres the save.
+        /// </summary>
+        /// <param name="dbContext">The database context.</param>
+        /// <param name="state">The state.</param>
+        public override void PreSaveChanges( DbContext dbContext, System.Data.Entity.EntityState state )
+        {
+            if ( state == System.Data.Entity.EntityState.Deleted )
+            {
+                ChildItems.Clear();
+                ParentItems.Clear();
+            }
+        }
 
         #endregion
     }

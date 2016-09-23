@@ -88,6 +88,7 @@
                             <div class="col-md-6">
                                 <Rock:RockLiteral ID="lName" runat="server" Label="Name" />
                                 <Rock:RockLiteral ID="lMaxAttendees" runat="server" Label="Maximum Attendees" />
+                                <Rock:RockLiteral ID="lWorkflowType" runat="server" Label="Registration Workflow" />
                             </div>
                             <div class="col-md-6">
                                 <Rock:RockLiteral ID="lCost" runat="server" Label="Cost" />
@@ -201,6 +202,7 @@
                                 <Rock:RockTextBox ID="tbRegistrantFirstName" runat="server" Label="First Name" />
                                 <Rock:RockTextBox ID="tbRegistrantLastName" runat="server" Label="Last Name" />
                                 <Rock:RockDropDownList ID="ddlInGroup" runat="server" Label="In Group"  />    
+                                <Rock:RockDropDownList ID="ddlSignedDocument" runat="server" Label="Signed Document" />
                                 <asp:PlaceHolder ID="phRegistrantFormFieldFilters" runat="server" />
                             </Rock:GridFilter>
                             <Rock:Grid ID="gRegistrants" runat="server" DisplayType="Full" AllowSorting="true" OnRowSelected="gRegistrants_RowSelected" RowItemText="Registrant" PersonIdField="PersonId" ExportSource="ColumnOutput">

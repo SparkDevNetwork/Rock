@@ -15,6 +15,7 @@
                         <Rock:HighlightLabel ID="hlType" runat="server" LabelType="Type" />
                     </div>
                 </div>
+                <Rock:PanelDrawer ID="pdAuditDetails" runat="server"></Rock:PanelDrawer>
                 <div class="panel-body">
 
                     <Rock:NotificationBox ID="nbEditModeMessage" runat="server" NotificationBoxType="Info" />
@@ -49,7 +50,9 @@
                                     <Rock:RockCheckBox ID="cbEnableManager" runat="server" Label="Enable Manager Option" Text="Yes" 
                                         Help="Should an option be displayed on the check-in welcome screen that allows user to view the management screen (after entering a passcode)?" />
                                     <Rock:RockCheckBox ID="cbEnableOverride" runat="server" Label="Enable Override" Text="Yes" 
-                                        Help="Should an override button be displayed on the check-in Manager screen that allows a manager to check-in a person and ignore any age and/or grade requirments?" />
+                                        Help="Should an override button be displayed on the check-in Manager screen that allows a manager to check-in a person and ignore any age and/or grade requirements?" />
+                                    <Rock:RockCheckBox ID="cbPreventInactivePeople" runat="server" Label="Prevent Inactive People" Text="Yes" 
+                                        Help="Should people who are inactive be excluded from being able to check-in?" />
                                 </div>
                                 <div class="col-md-6">
                                     <Rock:NumberBox ID="nbAutoSelectDaysBack" runat="server" Label="Auto Select Days Back" MinimumValue="0" NumberType="Integer" 
@@ -59,6 +62,8 @@
                                         Help="Should the same security code be used for each person from the same family that is checking in at the same time?" />
                                     <Rock:RockCheckBox ID="cbUseSameOptions" runat="server" Label="Use Same Service Options" Text="Yes"
                                         Help="If family member(s) is checking into more than one service, should the same options for additional services be automatically selected that were selected for first service?" />
+                                    <Rock:RockCheckBox ID="cbHidePhotos" runat="server" Label="Hide Photos" Text="Yes"
+                                        Help="Select this option if person photos should not be displayed when selecting the people from the selected family that are checking in." />
                                 </div>
                             </div>
 
@@ -96,6 +101,8 @@
                                 <div class="col-md-6">
                                     <Rock:RockCheckBox ID="cbAgeRequired" runat="server" Label="Age is Required" Text="Yes" 
                                         Help="If an area and/or group has an age requirement, should people without an age be allowed to check-in to that area/group?" />
+                                    <Rock:RockCheckBox ID="cbGradeRequired" runat="server" Label="Grade is Required" Text="Yes" 
+                                        Help="If an area and/or group has a grade requirement, should people without an grade be allowed to check-in to that area/group?" />
                                     <Rock:RockCheckBox ID="cbDisplayLocCount" runat="server" Label="Display Location Count" Text="Yes" 
                                         Help="Should the room locations options include a count of how many people are currently checked into that location?" />
                                 </div>

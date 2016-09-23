@@ -665,6 +665,10 @@ namespace RockWeb.Blocks.Event
             RegistrationTemplate.GroupTypeId = gtpGroupType.SelectedGroupTypeId;
             RegistrationTemplate.GroupMemberRoleId = rpGroupTypeRole.GroupRoleId;
             RegistrationTemplate.GroupMemberStatus = ddlGroupMemberStatus.SelectedValueAsEnum<GroupMemberStatus>();
+            RegistrationTemplate.RequiredSignatureDocumentTemplateId = ddlSignatureDocumentTemplate.SelectedValueAsInt();
+            RegistrationTemplate.SignatureDocumentAction = cbDisplayInLine.Checked ? SignatureDocumentAction.Embed : SignatureDocumentAction.Email;
+
+            RegistrationTemplate.RegistrationWorkflowTypeId = wtpRegistrationWorkflow.SelectedValueAsInt();
             RegistrationTemplate.Notify = notify;
             RegistrationTemplate.AddPersonNote = cbAddPersonNote.Checked;
             RegistrationTemplate.LoginRequired = cbLoginRequired.Checked;
@@ -1347,6 +1351,7 @@ namespace RockWeb.Blocks.Event
                     case RegistrationFieldSource.GroupMemberAttribute:
                         {
                             attributeId = ddlGroupTypeAttributes.SelectedValueAsInt();
+                            attributeForm.ShowCurrentValue = false;
                             attributeForm.IsGridField = cbShowOnGrid.Checked;
                             attributeForm.IsRequired = cbRequireInInitialEntry.Checked;
                             break;
@@ -1357,6 +1362,7 @@ namespace RockWeb.Blocks.Event
                             edtRegistrationAttribute.GetAttributeProperties( attribute );
                             attributeForm.Attribute = attribute;
                             attributeForm.Id = attribute.Id;
+                            attributeForm.ShowCurrentValue = false;
                             attributeForm.IsGridField = attribute.IsGridColumn;
                             attributeForm.IsRequired = attribute.IsRequired;
                             break;
@@ -1949,6 +1955,9 @@ namespace RockWeb.Blocks.Event
             rpGroupTypeRole.GroupTypeId = RegistrationTemplate.GroupTypeId ?? 0;
             rpGroupTypeRole.GroupRoleId = RegistrationTemplate.GroupMemberRoleId;
             ddlGroupMemberStatus.SetValue( RegistrationTemplate.GroupMemberStatus.ConvertToInt() );
+            ddlSignatureDocumentTemplate.SetValue( RegistrationTemplate.RequiredSignatureDocumentTemplateId );
+            cbDisplayInLine.Checked = RegistrationTemplate.SignatureDocumentAction == SignatureDocumentAction.Embed;
+            wtpRegistrationWorkflow.SetValue( RegistrationTemplate.RegistrationWorkflowTypeId );
 
             foreach( ListItem li in cblNotify.Items )
             {
@@ -2029,6 +2038,12 @@ namespace RockWeb.Blocks.Event
                 RegistrationTemplate.Category.Name : string.Empty;
             lGroupType.Text = RegistrationTemplate.GroupType != null ?
                 RegistrationTemplate.GroupType.Name : string.Empty;
+            lRequiredSignedDocument.Text = RegistrationTemplate.RequiredSignatureDocumentTemplate != null ?
+                RegistrationTemplate.RequiredSignatureDocumentTemplate.Name : string.Empty;
+            lRequiredSignedDocument.Visible = !string.IsNullOrWhiteSpace( lRequiredSignedDocument.Text );
+            lWorkflowType.Text = RegistrationTemplate.RegistrationWorkflowType != null ?
+                RegistrationTemplate.RegistrationWorkflowType.Name : string.Empty;
+            lWorkflowType.Visible = !string.IsNullOrWhiteSpace( lWorkflowType.Text );
 
             rcwForms.Label = string.Format( "<strong>Forms</strong> ({0}) <i class='fa fa-caret-down'></i>", RegistrationTemplate.Forms.Count() );
             if ( RegistrationTemplate.Forms.Any() )
@@ -2115,6 +2130,15 @@ namespace RockWeb.Blocks.Event
             ddlPersonField.Items.RemoveAt( 0 );
 
             rblFeeType.BindToEnum<RegistrationFeeType>();
+
+            ddlSignatureDocumentTemplate.Items.Clear();
+            ddlSignatureDocumentTemplate.Items.Add( new ListItem() );
+            foreach( var documentType in new SignatureDocumentTemplateService( rockContext )
+                .Queryable().AsNoTracking()
+                .OrderBy( t => t.Name ) )
+            {
+                ddlSignatureDocumentTemplate.Items.Add( new ListItem( documentType.Name, documentType.Id.ToString() ) );
+            }
         }
 
         #endregion
@@ -2249,6 +2273,8 @@ namespace RockWeb.Blocks.Event
         {
             if ( FormFieldsState.ContainsKey( formGuid ) )
             {
+                ShowDialog( "Attributes" );
+
                 var fieldList = FormFieldsState[formGuid];
 
                 RegistrationTemplateFormField formField = fieldList.FirstOrDefault( a => a.Guid.Equals( formFieldGuid ) );
@@ -2323,14 +2349,12 @@ namespace RockWeb.Blocks.Event
 
                 hfFormGuid.Value = formGuid.ToString();
                 hfAttributeGuid.Value = formFieldGuid.ToString();
-
+                
                 lPersonField.Visible = formField.FieldSource == RegistrationFieldSource.PersonField && (
                     formField.PersonFieldType == RegistrationPersonFieldType.FirstName ||
                     formField.PersonFieldType == RegistrationPersonFieldType.LastName );
 
                 SetFieldDisplay();
-
-                ShowDialog( "Attributes" );
             }
 
             BuildControls( true );

@@ -112,7 +112,7 @@
                 <div class="checkin-scroll-panel">
                     <div class="scroller">
                         <div class="checkin-search-actions checkin-start">
-                            <asp:LinkButton CssClass="btn btn-primary" ID="lbSearch" runat="server" OnClick="lbSearch_Click" Text="Check in" />
+                            <asp:LinkButton CssClass="btn btn-primary btn-checkin" ID="lbSearch" runat="server" OnClick="lbSearch_Click"><span>Check In</span></asp:LinkButton>
                         </div>
                     </div>
                 </div>

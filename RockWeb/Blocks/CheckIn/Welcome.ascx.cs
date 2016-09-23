@@ -37,6 +37,7 @@ namespace RockWeb.Blocks.CheckIn
 
     [LinkedPage( "Family Select Page", "", false, "", "", 5 )]
     [LinkedPage( "Scheduled Locations Page", "", false, "", "", 6 )]
+    [TextField( "Check-in Button Text", "The text to display on the check-in button.", false, Key = "CheckinButtonText" )]
     public partial class Welcome : CheckInBlock
     {
         protected override void OnInit( EventArgs e )
@@ -56,6 +57,12 @@ namespace RockWeb.Blocks.CheckIn
             RockPage.AddScriptLink( "~/scripts/jquery.countdown.min.js" );
 
             RegisterScript();
+
+            var bodyTag = this.Page.Master.FindControl( "bodyTag" ) as HtmlGenericControl;
+            if ( bodyTag != null )
+            {
+                bodyTag.AddCssClass( "checkin-welcome-bg" );
+            }
         }
 
         protected override void OnLoad( EventArgs e )
@@ -83,7 +90,10 @@ namespace RockWeb.Blocks.CheckIn
                 SaveState();
                 RefreshView();
 
-                
+                if ( !string.IsNullOrWhiteSpace( GetAttributeValue( "CheckinButtonText" ) ) )
+                {
+                    lbSearch.Text = string.Format("<span>{0}</span>", GetAttributeValue( "CheckinButtonText" ));
+                }
             }
         }
 
@@ -124,45 +134,50 @@ namespace RockWeb.Blocks.CheckIn
         /// </summary>
         private void RegisterScript()
         {
-            // Note: the OnExpiry property of the countdown jquery plugin seems to add a new callback
-            // everytime the setting is set which is why the clearCountdown method is used to prevent 
-            // a plethora of partial postbacks occurring when the countdown expires.
-            string script = string.Format( @"
+            if ( !Page.ClientScript.IsStartupScriptRegistered( "RefreshScript" ) )
+            {
+                // Note: the OnExpiry property of the countdown jquery plugin seems to add a new callback
+                // everytime the setting is set which is why the clearCountdown method is used to prevent 
+                // a plethora of partial postbacks occurring when the countdown expires.
+                string script = string.Format( @"
 
-var timeoutSeconds = $('.js-refresh-timer-seconds').val();
-if (timeout) {{
-    window.clearTimeout(timeout);
-}}
-var timeout = window.setTimeout(refreshKiosk, timeoutSeconds * 1000);
+    Sys.Application.add_load(function () {{
+        var timeoutSeconds = $('.js-refresh-timer-seconds').val();
+        if (timeout) {{
+            window.clearTimeout(timeout);
+        }}
+        var timeout = window.setTimeout(refreshKiosk, timeoutSeconds * 1000);
 
-var $ActiveWhen = $('.active-when');
-var $CountdownTimer = $('.countdown-timer');
+        var $ActiveWhen = $('.active-when');
+        var $CountdownTimer = $('.countdown-timer');
 
-function refreshKiosk() {{
-    window.clearTimeout(timeout);
-    {0};
-}}
+        function refreshKiosk() {{
+            window.clearTimeout(timeout);
+            {0};
+        }}
 
-function clearCountdown() {{
-    if ($ActiveWhen.text() != '')
-    {{
-        $ActiveWhen.text('');
-        refreshKiosk();
-    }}
-}}
+        function clearCountdown() {{
+            if ($ActiveWhen.text() != '')
+            {{
+                $ActiveWhen.text('');
+                refreshKiosk();
+            }}
+        }}
 
-if ($ActiveWhen.text() != '')
-{{
-    var timeActive = new Date($ActiveWhen.text());
-    $CountdownTimer.countdown({{
-        until: timeActive, 
-        compact:true, 
-        onExpiry: clearCountdown
+        if ($ActiveWhen.text() != '')
+        {{
+            var timeActive = new Date($ActiveWhen.text());
+            $CountdownTimer.countdown({{
+                until: timeActive, 
+                compact:true, 
+                onExpiry: clearCountdown
+            }});
+        }}
     }});
-}}
 
 ", this.Page.ClientScript.GetPostBackEventReference( lbRefresh, "" ) );
-            ScriptManager.RegisterStartupScript( Page, Page.GetType(), "RefreshScript", script, true );
+                Page.ClientScript.RegisterStartupScript( Page.GetType(), "RefreshScript", script, true );
+            }
         }
 
         // TODO: Add support for scanner

@@ -18,6 +18,7 @@
                 <h1 class="panel-title"><i class="fa fa-desktop"></i>
                     <asp:Literal ID="lReadOnlyTitle" runat="server" /></h1>
             </div>
+            <Rock:PanelDrawer ID="pdAuditDetails" runat="server"></Rock:PanelDrawer>
             <div class="panel-body">
 
                 <asp:ValidationSummary ID="ValidationSummary1" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" />
@@ -55,7 +56,7 @@
                             <Rock:DataTextBox ID="tbSiteDomains" runat="server" SourceTypeName="Rock.Model.Site, Rock" PropertyName="SiteDomains" TextMode="MultiLine" LabelTextFromPropertyName="false" Label="Domain(s)" Help="A comma delimited list of domain values that are associated with this site.  These values are used by Rock to load the correct site whenever a specific page or route is not provided in the url. Rock will determine the site to use by finding the first site with a domain value that is contained by the current request's hostname in the url.  It will then display that site's default page." />
                             <Rock:DataTextBox ID="tbErrorPage" runat="server" SourceTypeName="Rock.Model.Site, Rock" PropertyName="ErrorPage" Help="The url that user will be redirected to if an error occurs on site" />
                             <Rock:DataTextBox ID="tbGoogleAnalytics" runat="server" SourceTypeName="Rock.Model.Site, Rock" PropertyName="GoogleAnalyticsCode" Help="Optional Google Analytics Code.  If specified, the Google Analytics script with this code will be added to every page rendered for this site." />
-                            
+                            <Rock:RockCheckBox ID="cbRequireEncryption" runat="server" Label="Require Encryption" Help="Ensures that the site is loaded over SSL by redirecting to https." />
                         </div>
                     </div>
 
@@ -76,7 +77,7 @@
                         </div>
                         <div class="row">
                             <div class="col-md-12">
-                                <Rock:CodeEditor ID="cePageHeaderContent" runat="server" EditorMode="Html" EditorTheme="Rock" Height="300" />
+                                <Rock:CodeEditor ID="cePageHeaderContent" runat="server" Label="Page Header Content" Help="The content provided here will be added to each page's head section." EditorMode="Html" EditorTheme="Rock" Height="300" />
                             </div>
                         </div>
                     </Rock:PanelWidget>

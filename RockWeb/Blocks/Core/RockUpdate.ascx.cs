@@ -134,7 +134,7 @@ namespace RockWeb.Blocks.Core
                 {
                     try
                     {
-                        if ( CheckSqlServerVersion() )
+                        if ( CheckFrameworkVersion() )
                         {
                             _isOkToProceed = true;
                         }
@@ -268,6 +268,42 @@ namespace RockWeb.Blocks.Core
         #region Methods
 
         /// <summary>
+        /// Checks the .NET Framework version and returns false if not at the needed
+        /// level to proceed.
+        /// </summary>
+        /// <returns>true if ok, false otherwise</returns>
+        private bool CheckFrameworkVersion()
+        {
+            bool isOk = false;
+            try
+            {
+                // check .net
+                // .NET 4.5.2 as 4.0.30319.34000
+
+                if ( System.Environment.Version.Major > 4 )
+                {
+                    isOk = true;
+                }
+                else if ( System.Environment.Version.Major == 4 && System.Environment.Version.Build > 30319 )
+                {
+                    isOk = true;
+                }
+                else if ( System.Environment.Version.Major == 4 && System.Environment.Version.Build == 30319 && System.Environment.Version.Revision >= 34000 )
+                {
+                    // 34000 is the ".2" in 4.5.2
+                    isOk = true;
+                }
+            }
+            catch
+            {
+                // This would be pretty bad, but regardless we'll just
+                // return the isOk (not) and let the caller proceed.
+            }
+
+            return isOk;
+        }
+
+        /// <summary>
         /// Checks the SQL server version and returns false if not at the needed
         /// level to proceed.
         /// </summary>
@@ -323,7 +359,7 @@ namespace RockWeb.Blocks.Core
                 CheckForManualFileMoves( version );
 
                 nbSuccess.Text = ConvertToHtmlLiWrappedUl( update.ReleaseNotes ).ConvertCrLfToHtmlBr();
-                lSuccessVersion.Text = update.Title;
+                lSuccessVersion.Text = GetRockVersion( update.Version );
 
                 // Record the current version to the database
                 Rock.Web.SystemSettings.SetValue( SystemSettingKeys.ROCK_INSTANCE_ID, version );
@@ -380,6 +416,32 @@ namespace RockWeb.Blocks.Core
         {
             lRockVersion.Text = string.Format( "<b>Current Version: </b> {0}", VersionInfo.GetRockProductVersionFullName() );
             lNoUpdateVersion.Text = VersionInfo.GetRockProductVersionFullName();
+        }
+
+        protected string GetRockVersion( object version )
+        {
+            var semanticVersion = version as SemanticVersion;
+            if ( semanticVersion == null )
+            {
+                semanticVersion = new SemanticVersion( version.ToString() );
+            }
+
+            if ( semanticVersion != null )
+            {
+                return "Rock " + RockVersion( semanticVersion );
+            }
+            else
+
+            return string.Empty;
+        }
+
+        protected string RockVersion( SemanticVersion version )
+        {
+            switch ( version.Version.Major )
+            {
+                case 1: return string.Format( "McKinley {0}.{1}", version.Version.Minor, version.Version.Build );
+                default: return string.Format( "{0}.{1}.{2}", version.Version.Major, version.Version.Minor, version.Version.Build );
+            }
         }
 
         /// <summary>
@@ -755,6 +817,7 @@ namespace RockWeb.Blocks.Core
                 nbErrors.Text = string.Format( "...actually, I'm not sure what happened here: {0}", ex.Message );
             }
         }
+
         #endregion
     }
 

@@ -625,8 +625,6 @@ namespace Rock.Web.UI.Controls
                 _btnCancel.Click += btnCancel_Click;
                 Controls.Add( _btnCancel );
 
-                _tbName.Attributes["onblur"] = string.Format( "populateAttributeKey('{0}','{1}')", _tbName.ClientID, _tbKey.ClientID );
-
                 _controlsLoaded = true;
             }
         }
@@ -705,6 +703,8 @@ namespace Rock.Web.UI.Controls
         /// <param name="writer">An <see cref="T:System.Web.UI.HtmlTextWriter" /> that represents the output stream to render HTML content on the client.</param>
         protected override void Render( HtmlTextWriter writer )
         {
+            _tbName.Attributes["onblur"] = string.Format( "populateAttributeKey('{0}','{1}')", _tbName.ClientID, _tbKey.ClientID );
+
             writer.RenderBeginTag( HtmlTextWriterTag.Fieldset );
 
             writer.RenderBeginTag( HtmlTextWriterTag.Legend );
@@ -994,11 +994,13 @@ namespace Rock.Web.UI.Controls
                 }
 
                 // default control id needs to be unique to field type because some field types will transform
-                // field (i.e. ckeditor) and switching field types will not reset that
+                // field (i.e. htmleditor) and switching field types will not reset that
                 var defaultControl = field.EditControl( Qualifiers, string.Format( "defaultValue_{0}", fieldTypeId.Value ) );
                 if ( defaultControl != null )
                 {
-                    if (recreate)
+                    _phDefaultValue.Controls.Add( defaultControl );
+
+                    if ( recreate)
                     {
                         field.SetEditValue( defaultControl, Qualifiers, DefaultValue );
                     }
@@ -1010,7 +1012,6 @@ namespace Rock.Web.UI.Controls
                         rockControl.Label = "Default Value";
                     }
 
-                    _phDefaultValue.Controls.Add( defaultControl );
                 }
             }
         }

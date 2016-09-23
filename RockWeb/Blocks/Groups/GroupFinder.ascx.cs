@@ -57,6 +57,9 @@ namespace RockWeb.Blocks.Groups
     [GroupTypeField( "Group Type", "", true, "", "CustomSetting" )]
     [GroupTypeField( "Geofenced Group Type", "", false, "", "CustomSetting" )]
     [TextField( "ScheduleFilters", "", false, "", "CustomSetting" )]
+    [BooleanField( "Display Campus Filter", "", false, "CustomSetting" )]
+    [BooleanField( "Enable Campus Context", "", false, "CustomSetting" )]
+    [BooleanField( "Hide Overcapacity Groups", "When set to true, groups that are at capacity or whose default GroupTypeRole are at capacity are hidden.", true )]
     [AttributeField( Rock.SystemGuid.EntityType.GROUP, "Attribute Filters", "", false, true, "", "CustomSetting" )]
 
     // Map Settings
@@ -80,11 +83,11 @@ namespace RockWeb.Blocks.Groups
 {% endif %}
 </div>
 
-{% if LinkedPages.GroupDetailPage != '' %}
-    <a class='btn btn-xs btn-action margin-r-sm' href='{{ LinkedPages.GroupDetailPage }}?GroupId={{ Group.Id }}'>View {{ Group.GroupType.GroupTerm }}</a>
+{% if LinkedPages.GroupDetailPage and LinkedPages.GroupDetailPage != '' %}
+    <a class='btn btn-xs btn-action margin-r-sm' href='|{{ LinkedPages.GroupDetailPage }}|?GroupId={{ Group.Id }}'>View {{ Group.GroupType.GroupTerm }}</a>
 {% endif %}
 
-{% if LinkedPages.RegisterPage != '' %}
+{% if LinkedPages.RegisterPage and LinkedPages.RegisterPage != '' %}
     {% if LinkedPages.RegisterPage contains '?' %}
         <a class='btn btn-xs btn-action' href='{{ LinkedPages.RegisterPage }}&GroupId={{ Group.Id }}'>Register</a>
     {% else %}
@@ -211,6 +214,17 @@ namespace RockWeb.Blocks.Groups
                 BindAttributes();
                 BuildDynamicControls();
 
+                if ( GetAttributeValue( "EnableCampusContext" ).AsBoolean() )
+                {
+                    var campusEntityType = EntityTypeCache.Read( "Rock.Model.Campus" );
+                    var contextCampus = RockPage.GetCurrentContext( campusEntityType ) as Campus;
+
+                    if ( contextCampus != null )
+                    {
+                        cblCampus.SetValue( contextCampus.Id.ToString() );
+                    }
+                }
+
                 if ( _targetPersonGuid != Guid.Empty )
                 {
                     ShowViewForPerson( _targetPersonGuid );
@@ -283,6 +297,8 @@ namespace RockWeb.Blocks.Groups
                 SetAttributeValue( "ScheduleFilters", string.Empty );
             }
 
+            SetAttributeValue( "DisplayCampusFilter", cbFilterCampus.Checked.ToString() );
+            SetAttributeValue( "EnableCampusContext", cbCampusContext.Checked.ToString() );
             SetAttributeValue( "AttributeFilters", cblAttributes.Items.Cast<ListItem>().Where( i => i.Selected ).Select( i => i.Value ).ToList().AsDelimited( "," ) );
 
             SetAttributeValue( "ShowMap", cbShowMap.Checked.ToString() );
@@ -428,6 +444,9 @@ namespace RockWeb.Blocks.Groups
                 }
             }
 
+            cbFilterCampus.Checked = GetAttributeValue( "DisplayCampusFilter" ).AsBoolean();
+            cbCampusContext.Checked = GetAttributeValue( "EnableCampusContext" ).AsBoolean();
+
             cbShowMap.Checked = GetAttributeValue( "ShowMap" ).AsBoolean();
             ddlMapStyle.BindToDefinedType( DefinedTypeCache.Read( Rock.SystemGuid.DefinedType.MAP_STYLES.AsGuid() ) );
             ddlMapStyle.SetValue( GetAttributeValue( "MapStyle" ) );
@@ -487,7 +506,10 @@ namespace RockWeb.Blocks.Groups
                     group.LoadAttributes();
                     foreach ( var attribute in group.Attributes )
                     {
-                        cblAttributes.Items.Add( new ListItem( attribute.Value.Name, attribute.Value.Guid.ToString() ) );
+                        if ( attribute.Value.FieldType.Field.HasFilterControl() )
+                        {
+                            cblAttributes.Items.Add( new ListItem( attribute.Value.Name, attribute.Value.Guid.ToString() ) );
+                        }
                         cblGridAttributes.Items.Add( new ListItem( attribute.Value.Name, attribute.Value.Guid.ToString() ) );
                     }
                 }
@@ -596,10 +618,11 @@ namespace RockWeb.Blocks.Groups
                 if ( attributeGuid.HasValue )
                 {
                     var attribute = AttributeCache.Read( attributeGuid.Value );
-                    if ( attribute != null )
+                    if ( attribute != null && attribute.FieldType.Field.HasFilterControl() )
                     {
                         AttributeFilters.Add( attribute );
                     }
+
                 }
             }
 
@@ -641,13 +664,27 @@ namespace RockWeb.Blocks.Groups
                     AddFilterControl( control, "Time of Day", "The time of day that group meets." );
                 }
             }
+            
+            if ( GetAttributeValue( "DisplayCampusFilter" ).AsBoolean() )
+            {
+                cblCampus.Visible = true;
+                cblCampus.DataSource = CampusCache.All().Where( c => c.IsActive == true );
+                cblCampus.DataBind();
+            }
+            else
+            {
+                cblCampus.Visible = false;
+            }
 
             if ( AttributeFilters != null )
             {
                 foreach ( var attribute in AttributeFilters )
                 {
                     var control = attribute.FieldType.Field.FilterControl( attribute.QualifierValues, "filter_" + attribute.Id.ToString(), false, Rock.Reporting.FilterMode.SimpleFilter );
-                    AddFilterControl( control, attribute.Name, attribute.Description );
+                    if ( control != null )
+                    {
+                        AddFilterControl( control, attribute.Name, attribute.Description );
+                    }
                 }
             }
 
@@ -797,6 +834,30 @@ namespace RockWeb.Blocks.Groups
                 var filterValues = field.GetFilterValues( timeFilterControl, null, Rock.Reporting.FilterMode.SimpleFilter );
                 var expression = field.PropertyFilterExpression( null, filterValues, schedulePropertyExpression, "WeeklyTimeOfDay", typeof( TimeSpan? ) );
                 groupQry = groupQry.Where( groupParameterExpression, expression, null );
+            }
+
+            if ( GetAttributeValue( "DisplayCampusFilter" ).AsBoolean() )
+            {
+                var searchCampuses = cblCampus.SelectedValuesAsInt;
+                if ( searchCampuses.Count > 0 )
+                {
+                    groupQry = groupQry.Where( c => searchCampuses.Contains( c.CampusId ?? -1 ) );
+                }
+            }
+
+            // This hides the groups that are at or over capacity by doing two things:
+            // 1) If the group has a GroupCapacity, check that we haven't met or exceeded that.
+            // 2) When someone registers for a group on the front-end website, they automatically get added with the group's default
+            //    GroupTypeRole. If that role exists and has a MaxCount, check that we haven't met or exceeded it yet.
+            if ( GetAttributeValue( "HideOvercapacityGroups" ).AsBoolean() )
+            {
+                groupQry = groupQry.Where( g => g.GroupCapacity == null || g.Members.Count() < g.GroupCapacity );
+
+                groupQry = groupQry.Where( g =>
+                     g.GroupType == null ||
+                     g.GroupType.DefaultGroupRole == null ||
+                     g.GroupType.DefaultGroupRole.MaxCount == null ||
+                     g.Members.Where( m => m.GroupRoleId == g.GroupType.DefaultGroupRole.Id ).Count() < g.GroupType.DefaultGroupRole.MaxCount );
             }
 
             // Filter query by any configured attribute filters
@@ -986,7 +1047,7 @@ namespace RockWeb.Blocks.Groups
                             mergeFields.Add( "Location", gl.Location );
 
                             Dictionary<string, object> linkedPages = new Dictionary<string, object>();
-                            linkedPages.Add( "GroupDetailPage", LinkedPageUrl( "GroupDetailPage", null ) );
+                            linkedPages.Add( "GroupDetailPage", LinkedPageRoute( "GroupDetailPage" ) );
 
                             if ( _targetPersonGuid != Guid.Empty )
                             {
@@ -994,10 +1055,11 @@ namespace RockWeb.Blocks.Groups
                             }
                             else
                             {
-                                linkedPages.Add( "RegisterPage", LinkedPageUrl( "RegisterPage", null ) );
+                                linkedPages.Add( "RegisterPage", LinkedPageRoute( "RegisterPage" ) );
                             }
 
                             mergeFields.Add( "LinkedPages", linkedPages );
+                            mergeFields.Add( "CampusContext", RockPage.GetCurrentContext( EntityTypeCache.Read( "Rock.Model.Campus" ) ) as Campus );
 
                             // add collection of allowed security actions
                             Dictionary<string, object> securityActions = new Dictionary<string, object>();
@@ -1056,7 +1118,7 @@ namespace RockWeb.Blocks.Groups
                 mergeFields.Add( "Groups", groups );
 
                 Dictionary<string, object> linkedPages = new Dictionary<string, object>();
-                linkedPages.Add( "GroupDetailPage", LinkedPageUrl( "GroupDetailPage", null ) );
+                linkedPages.Add( "GroupDetailPage", LinkedPageRoute( "GroupDetailPage" ) );
 
                 if ( _targetPersonGuid != Guid.Empty )
                 {
@@ -1064,10 +1126,11 @@ namespace RockWeb.Blocks.Groups
                 }
                 else
                 {
-                    linkedPages.Add( "RegisterPage", LinkedPageUrl( "RegisterPage", null ) );
+                    linkedPages.Add( "RegisterPage", LinkedPageRoute( "RegisterPage" ) );
                 }
 
                 mergeFields.Add( "LinkedPages", linkedPages );
+                mergeFields.Add( "CampusContext", RockPage.GetCurrentContext( EntityTypeCache.Read( "Rock.Model.Campus" ) ) as Campus );
 
                 lLavaOverview.Text = template.ResolveMergeFields( mergeFields );
 

@@ -795,6 +795,30 @@ Registration By: {0} Total Cost/Fees:{1}
         public Dictionary<int, List<FeeInfo>> FeeValues { get; set; }
 
         /// <summary>
+        /// Gets or sets the signature document Id.
+        /// </summary>
+        /// <value>
+        /// The signature document Id.
+        /// </value>
+        public int? SignatureDocumentId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the signature document key.
+        /// </summary>
+        /// <value>
+        /// The signature document key.
+        /// </value>
+        public string SignatureDocumentKey { get; set; }
+
+        /// <summary>
+        /// Gets or sets the signature document last sent.
+        /// </summary>
+        /// <value>
+        /// The signature document last sent.
+        /// </value>
+        public DateTime? SignatureDocumentLastSent { get; set; }
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="RegistrantInfo"/> class.
         /// </summary>
         public RegistrantInfo()
@@ -949,6 +973,7 @@ Registration By: {0} Total Cost/Fees:{1}
                             }
                         case RegistrationPersonFieldType.Email: return person.Email;
                         case RegistrationPersonFieldType.Birthdate: return person.BirthDate;
+                        case RegistrationPersonFieldType.Grade: return person.GraduationYear;
                         case RegistrationPersonFieldType.Gender: return person.Gender;
                         case RegistrationPersonFieldType.MaritalStatus: return person.MaritalStatusValueId;
                         case RegistrationPersonFieldType.MobilePhone:
@@ -1000,7 +1025,7 @@ Registration By: {0} Total Cost/Fees:{1}
 
                         case RegistrationFieldSource.GroupMemberAttribute:
                             {
-                                if ( registrant.GroupMember != null )
+                                if ( registrant != null && registrant.GroupMember != null )
                                 {
                                     if ( registrant.GroupMember.Attributes == null )
                                     {
@@ -1013,11 +1038,15 @@ Registration By: {0} Total Cost/Fees:{1}
 
                         case RegistrationFieldSource.RegistrationAttribute:
                             {
-                                if ( registrant.Attributes == null )
+                                if ( registrant != null )
                                 {
-                                    registrant.LoadAttributes();
+                                    if ( registrant.Attributes == null )
+                                    {
+                                        registrant.LoadAttributes();
+                                    }
+                                    return registrant.GetAttributeValue( attribute.Key );
                                 }
-                                return registrant.GetAttributeValue( attribute.Key );
+                                break;
                             }
                     }
                 }
@@ -1132,6 +1161,7 @@ Registration By: {0} Total Cost/Fees:{1}
                     {
                         case RegistrationPersonFieldType.Campus:
                         case RegistrationPersonFieldType.MaritalStatus:
+                        case RegistrationPersonFieldType.Grade:
                                 return typeof( int? );
 
                         case RegistrationPersonFieldType.Address:

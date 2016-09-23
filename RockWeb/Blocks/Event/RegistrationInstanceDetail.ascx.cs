@@ -80,6 +80,14 @@ namespace RockWeb.Blocks.Event
         private Dictionary<int, List<int>> PersonCampusIds { get; set; }
 
         /// <summary>
+        /// Gets or sets the signed person ids.
+        /// </summary>
+        /// <value>
+        /// The signed person ids.
+        /// </value>
+        private List<int> Signers { get; set; }
+
+        /// <summary>
         /// Gets or sets the group links.
         /// </summary>
         /// <value>
@@ -133,7 +141,12 @@ namespace RockWeb.Blocks.Event
             ddlInGroup.Items.Add( new ListItem());
             ddlInGroup.Items.Add( new ListItem( "Yes", "Yes" ) );
             ddlInGroup.Items.Add( new ListItem( "No", "No" ) );
-            
+
+            ddlSignedDocument.Items.Clear();
+            ddlSignedDocument.Items.Add( new ListItem() );
+            ddlSignedDocument.Items.Add( new ListItem( "Yes", "Yes" ) );
+            ddlSignedDocument.Items.Add( new ListItem( "No", "No" ) );
+
             fRegistrants.ApplyFilterClick += fRegistrants_ApplyFilterClick;
             gRegistrants.DataKeyNames = new string[] { "Id" };
             gRegistrants.Actions.ShowAdd = true;
@@ -384,6 +397,8 @@ namespace RockWeb.Blocks.Event
         {
             RegistrationInstance instance = null;
 
+            bool newInstance = false;
+
             using ( var rockContext = new RockContext() )
             {
                 var service = new RegistrationInstanceService( rockContext );
@@ -399,6 +414,7 @@ namespace RockWeb.Blocks.Event
                     instance = new RegistrationInstance();
                     instance.RegistrationTemplateId = PageParameter( "RegistrationTemplateId" ).AsInteger();
                     service.Add( instance );
+                    newInstance = true;
                 }
 
                 rieDetails.GetValue( instance );
@@ -411,21 +427,32 @@ namespace RockWeb.Blocks.Event
                 rockContext.SaveChanges();
             }
 
-            // Reload instance and show readonly view
-            using ( var rockContext = new RockContext() )
+            if ( newInstance )
             {
-                instance = new RegistrationInstanceService( rockContext ).Get( instance.Id );
-                ShowReadonlyDetails( instance );
-            }
-
-            // show send payment reminder link
-            if ( !string.IsNullOrWhiteSpace( GetAttributeValue( "PaymentReminderPage" ) ) && ( ( instance.RegistrationTemplate.SetCostOnInstance.HasValue && instance.RegistrationTemplate.SetCostOnInstance == true && instance.Cost.HasValue && instance.Cost.Value > 0 ) || instance.RegistrationTemplate.Cost > 0 ) )
-            {
-                btnSendPaymentReminder.Visible = true;
+                var qryParams = new Dictionary<string, string>();
+                qryParams.Add( "RegistrationTemplateId", PageParameter( "RegistrationTemplateId" ) );
+                qryParams.Add( "RegistrationInstanceId", instance.Id.ToString() );
+                NavigateToCurrentPage( qryParams );
             }
             else
             {
-                btnSendPaymentReminder.Visible = false;
+
+                // Reload instance and show readonly view
+                using ( var rockContext = new RockContext() )
+                {
+                    instance = new RegistrationInstanceService( rockContext ).Get( instance.Id );
+                    ShowReadonlyDetails( instance );
+                }
+
+                // show send payment reminder link
+                if ( !string.IsNullOrWhiteSpace( GetAttributeValue( "PaymentReminderPage" ) ) && ( ( instance.RegistrationTemplate.SetCostOnInstance.HasValue && instance.RegistrationTemplate.SetCostOnInstance == true && instance.Cost.HasValue && instance.Cost.Value > 0 ) || instance.RegistrationTemplate.Cost > 0 ) )
+                {
+                    btnSendPaymentReminder.Visible = true;
+                }
+                else
+                {
+                    btnSendPaymentReminder.Visible = false;
+                }
             }
         }
 
@@ -744,6 +771,7 @@ namespace RockWeb.Blocks.Event
             fRegistrants.SaveUserPreference( "First Name", tbRegistrantFirstName.Text );
             fRegistrants.SaveUserPreference( "Last Name", tbRegistrantLastName.Text );
             fRegistrants.SaveUserPreference( "In Group", ddlInGroup.SelectedValue );
+            fRegistrants.SaveUserPreference( "Signed Document", ddlSignedDocument.SelectedValue );
 
             if ( RegistrantFields != null )
             {
@@ -786,6 +814,17 @@ namespace RockWeb.Blocks.Event
                                     break;
                                 }
 
+                            case RegistrationPersonFieldType.Grade:
+                                {
+                                    var gpGradeFilter = phRegistrantFormFieldFilters.FindControl( "gpGradeFilter" ) as GradePicker;
+                                    if ( gpGradeFilter != null )
+                                    {
+                                        int? gradeOffset = gpGradeFilter.SelectedValueAsInt( false );
+                                        fRegistrants.SaveUserPreference( "Grade", gradeOffset.HasValue ? gradeOffset.Value.ToString() : "" );
+                                    }
+
+                                    break;
+                                }
                             case RegistrationPersonFieldType.Gender:
                                 {
                                     var ddlGenderFilter = phRegistrantFormFieldFilters.FindControl( "ddlGenderFilter" ) as RockDropDownList;
@@ -876,10 +915,16 @@ namespace RockWeb.Blocks.Event
                         e.Value = DateRangePicker.FormatDelimitedValues( e.Value );
                         break;
                     }
+                case "Grade":
+                    {
+                        e.Value = Person.GradeFormattedFromGradeOffset( e.Value.AsIntegerOrNull() );
+                        break;
+                    }
                 case "First Name":
                 case "Last Name":
                 case "Email":
                 case "Phone":
+                case "Signed Document":
                     {
                         break;
                     }
@@ -956,7 +1001,10 @@ namespace RockWeb.Blocks.Event
                 {
                     if ( registrant.PersonAlias != null && registrant.PersonAlias.Person != null )
                     {
-                        lRegistrant.Text = registrant.PersonAlias.Person.FullNameReversed;
+                        lRegistrant.Text = registrant.PersonAlias.Person.FullNameReversed +
+                            ( Signers != null && !Signers.Contains( registrant.PersonAlias.PersonId ) ?
+                                " <i class='fa fa-pencil-square-o text-danger'></i>" :
+                                string.Empty  );
                     }
                     else
                     {
@@ -1561,13 +1609,15 @@ namespace RockWeb.Blocks.Event
                 {
                     readOnly = true;
                     nbEditModeMessage.Heading = "Information";
-                    nbEditModeMessage.Text = EditModeMessage.ReadOnlyEditActionNotAllowed( RegistrationInstance.FriendlyTypeName );
+                    nbEditModeMessage.Text = EditModeMessage.NotAuthorizedToEdit( RegistrationInstance.FriendlyTypeName );
                 }
 
                 if ( readOnly )
                 {
                     btnEdit.Visible = false;
                     btnDelete.Visible = false;
+                    gRegistrations.Actions.ShowAdd = false;
+                    gRegistrations.IsDeleteEnabled = false;
                     ShowReadonlyDetails( registrationInstance );
                 }
                 else
@@ -1597,7 +1647,7 @@ namespace RockWeb.Blocks.Event
 
                 LoadRegistrantFormFields( registrationInstance );
                 BindRegistrationsFilter();
-                BindRegistrantsFilter();
+                BindRegistrantsFilter( registrationInstance );
                 BindLinkagesFilter();
                 AddDynamicControls();
             }
@@ -1678,6 +1728,9 @@ namespace RockWeb.Blocks.Event
 
             lMaxAttendees.Visible = RegistrationInstance.MaxAttendees > 0;
             lMaxAttendees.Text = RegistrationInstance.MaxAttendees.ToString( "N0" );
+            lWorkflowType.Text = RegistrationInstance.RegistrationWorkflowType != null ?
+                RegistrationInstance.RegistrationWorkflowType.Name : string.Empty;
+            lWorkflowType.Visible = !string.IsNullOrWhiteSpace( lWorkflowType.Text );
 
             lDetails.Visible = !string.IsNullOrWhiteSpace( RegistrationInstance.Details );
             lDetails.Text = RegistrationInstance.Details;
@@ -1896,15 +1949,14 @@ namespace RockWeb.Blocks.Event
                     {
                         // Get all the registrant costs
                         var rCosts = new Dictionary<int, decimal>();
-                        qry
+                        qry.ToList()
                             .Select( r => new
                             {
                                 RegistrationId = r.Id,
-                                Costs = r.Registrants.Sum( p => p.Cost ),
-                                Fees = r.Registrants.SelectMany( p => p.Fees ).Sum( f => f.Cost )
+                                DiscountCosts = r.Registrants.Sum( p => (decimal?)( p.DiscountedCost( r.DiscountPercentage, r.DiscountAmount) ) ) ?? 0.0m,
                             } ).ToList()
                             .ForEach( c =>
-                                rCosts.AddOrReplace( c.RegistrationId, c.Costs + c.Fees ) );
+                                rCosts.AddOrReplace( c.RegistrationId, c.DiscountCosts ) );
 
                         var rPayments = new Dictionary<int, decimal>();
                         new FinancialTransactionDetailService( rockContext )
@@ -2034,12 +2086,15 @@ namespace RockWeb.Blocks.Event
         /// <summary>
         /// Binds the registrants filter.
         /// </summary>
-        private void BindRegistrantsFilter()
+        private void BindRegistrantsFilter( RegistrationInstance instance )
         {
             drpRegistrantDateRange.DelimitedValues = fRegistrants.GetUserPreference( "Date Range" );
             tbRegistrantFirstName.Text = fRegistrants.GetUserPreference( "First Name" );
             tbRegistrantLastName.Text = fRegistrants.GetUserPreference( "Last Name" );
             ddlInGroup.SetValue( fRegistrants.GetUserPreference( "In Group" ) );
+
+            ddlSignedDocument.SetValue( fRegistrants.GetUserPreference( "Signed Document" ) );
+            ddlSignedDocument.Visible = instance != null && instance.RegistrationTemplate != null && instance.RegistrationTemplate.RequiredSignatureDocumentTemplateId.HasValue;
         }
 
         /// <summary>
@@ -2052,13 +2107,31 @@ namespace RockWeb.Blocks.Event
             {
                 using ( var rockContext = new RockContext() )
                 {
+                    var registrationInstance = new RegistrationInstanceService( rockContext ).Get( instanceId.Value );
+
+                    if ( registrationInstance != null &&
+                        registrationInstance.RegistrationTemplate != null &&
+                        registrationInstance.RegistrationTemplate.RequiredSignatureDocumentTemplateId.HasValue )
+                    {
+                        Signers = new SignatureDocumentService( rockContext )
+                            .Queryable().AsNoTracking()
+                            .Where( d =>
+                                d.SignatureDocumentTemplateId == registrationInstance.RegistrationTemplate.RequiredSignatureDocumentTemplateId.Value &&
+                                d.Status == SignatureDocumentStatus.Signed &&
+                                d.BinaryFileId.HasValue &&
+                                d.AppliesToPersonAlias != null )
+                            .OrderByDescending( d => d.LastStatusDate )
+                            .Select( d => d.AppliesToPersonAlias.PersonId )
+                            .ToList();
+                    }
+
                     // Start query for registrants
                     var qry = new RegistrationRegistrantService( rockContext )
-                        .Queryable( "PersonAlias.Person.PhoneNumbers.NumberTypeValue,Fees.RegistrationTemplateFee,GroupMember.Group" ).AsNoTracking()
-                        .Where( r =>
-                            r.Registration.RegistrationInstanceId == instanceId.Value &&
-                            r.PersonAlias != null &&
-                            r.PersonAlias.Person != null );
+                    .Queryable( "PersonAlias.Person.PhoneNumbers.NumberTypeValue,Fees.RegistrationTemplateFee,GroupMember.Group" ).AsNoTracking()
+                    .Where( r =>
+                        r.Registration.RegistrationInstanceId == instanceId.Value &&
+                        r.PersonAlias != null &&
+                        r.PersonAlias.Person != null );
 
                     // Filter by daterange
                     if ( drpRegistrantDateRange.LowerValue.HasValue )
@@ -2089,6 +2162,19 @@ namespace RockWeb.Blocks.Event
                         string rlname = tbRegistrantLastName.Text;
                         qry = qry.Where( r =>
                             r.PersonAlias.Person.LastName.StartsWith( rlname ) );
+                    }
+
+                    // Filter by signed documents
+                    if ( Signers != null )
+                    {
+                        if ( ddlSignedDocument.SelectedValue.AsBooleanOrNull() == true )
+                        {
+                            qry = qry.Where( r => Signers.Contains( r.PersonAlias.PersonId ) );
+                        }
+                        else if ( ddlSignedDocument.SelectedValue.AsBooleanOrNull() == false )
+                        {
+                            qry = qry.Where( r => !Signers.Contains( r.PersonAlias.PersonId ) );
+                        }
                     }
 
                     if ( ddlInGroup.SelectedValue.AsBooleanOrNull() == true )
@@ -2170,6 +2256,22 @@ namespace RockWeb.Blocks.Event
                                                 qry = qry.Where( r =>
                                                     r.PersonAlias.Person.BirthDate.HasValue &&
                                                     r.PersonAlias.Person.BirthDate.Value <= drpBirthdateFilter.UpperValue.Value );
+                                            }
+                                        }
+                                        break;
+                                    }
+
+                                case RegistrationPersonFieldType.Grade:
+                                    {
+                                        var gpGradeFilter = phRegistrantFormFieldFilters.FindControl( "gpGradeFilter" ) as GradePicker;
+                                        if ( gpGradeFilter != null )
+                                        {
+                                            int? graduationYear = Person.GraduationYearFromGradeOffset( gpGradeFilter.SelectedValueAsInt( false ) );
+                                            if ( graduationYear.HasValue )
+                                            {
+                                                qry = qry.Where( r =>
+                                                    r.PersonAlias.Person.GraduationYear.HasValue &&
+                                                    r.PersonAlias.Person.GraduationYear == graduationYear.Value );
                                             }
                                         }
                                         break;
@@ -2683,6 +2785,33 @@ namespace RockWeb.Blocks.Event
                                     birthdateField2.HeaderText = "Birthdate";
                                     birthdateField2.SortExpression = dataFieldExpression;
                                     gGroupPlacements.Columns.Add( birthdateField2 );
+
+                                    break;
+                                }
+
+                            case RegistrationPersonFieldType.Grade:
+                                {
+                                    var gpGradeFilter = new GradePicker();
+                                    gpGradeFilter.ID = "gpGradeFilter";
+                                    gpGradeFilter.Label = "Grade";
+                                    gpGradeFilter.UseAbbreviation = true;
+                                    gpGradeFilter.UseGradeOffsetAsValue = true;
+                                    gpGradeFilter.CssClass = "input-width-md";
+                                    gpGradeFilter.SetValue( fRegistrants.GetUserPreference( "Grade" ).AsIntegerOrNull() );
+                                    phRegistrantFormFieldFilters.Controls.Add( gpGradeFilter );
+
+                                    string dataFieldExpression = "PersonAlias.Person.GraduationYear";
+                                    var gradeField = new RockBoundField();
+                                    gradeField.DataField = dataFieldExpression;
+                                    gradeField.HeaderText = "Graduation Year";
+                                    gradeField.SortExpression = dataFieldExpression;
+                                    gRegistrants.Columns.Add( gradeField );
+
+                                    var gradeField2 = new RockBoundField();
+                                    gradeField2.DataField = dataFieldExpression;
+                                    gradeField2.HeaderText = "Graduation Year";
+                                    gradeField2.SortExpression = dataFieldExpression;
+                                    gGroupPlacements.Columns.Add( gradeField2 );
 
                                     break;
                                 }

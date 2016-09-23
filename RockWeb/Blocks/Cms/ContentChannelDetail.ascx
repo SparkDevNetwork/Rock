@@ -23,7 +23,7 @@
                     <Rock:HighlightLabel ID="hlContentChannel" runat="server" LabelType="Type" />
                 </div>
             </div>
-
+            <Rock:PanelDrawer ID="pdAuditDetails" runat="server"></Rock:PanelDrawer>
             <div class="panel-body">
 
                 <Rock:NotificationBox ID="nbWarningMessage" runat="server" NotificationBoxType="Warning" />
@@ -51,9 +51,28 @@
                     <div class="row">
                         <div class="col-md-6">
                             <Rock:RockDropDownList ID="ddlChannelType" runat="server" Label="Type" Required="true" AutoPostBack="true" OnSelectedIndexChanged="ddlChannelType_SelectedIndexChanged" />
-                            <Rock:RockDropDownList ID="ddlContentControlType" runat="server" Label="Content Control" Required="true" AutoPostBack="true" OnSelectedIndexChanged="ddlContentControlType_SelectedIndexChanged" />
+                            <Rock:RockControlWrapper ID="rcContentChannels" runat="server" Label="Child Content Channels"
+                                Help="The types of content channel items that can be added as children to items of this type. This is used to define the item hierarchy. To allow an unlimited hierarchy add this type as an allowed child content channel type.">
+                                <div class="grid">
+                                    <Rock:Grid ID="gChildContentChannels" runat="server" DisplayType="Light" ShowHeader="false" RowItemText="Content Channel">
+                                        <Columns>
+                                            <Rock:RockBoundField DataField="Name" />
+                                            <Rock:DeleteField OnClick="gChildContentChannels_Delete" />
+                                        </Columns>
+                                    </Rock:Grid>
+                                </div>
+                            </Rock:RockControlWrapper>
+                            <Rock:RockDropDownList ID="ddlContentControlType" runat="server" Label="Default Content Control" Required="true" AutoPostBack="true" OnSelectedIndexChanged="ddlContentControlType_SelectedIndexChanged" />
                             <Rock:RockTextBox ID="tbRootImageDirectory" runat="server" Label="Root Image Directory" Help="The path to use for the HTML editor's image folder root (e.g. '~/content/my_channel_images' ) " />
                             <Rock:RockCheckBox ID="cbRequireApproval" runat="server" Label="Items Require Approval" Text="Yes" />
+                            <div class="row">
+                                <div class="col-xs-6">
+                                    <Rock:RockCheckBox ID="cbItemsManuallyOrdered" runat="server" Label="Items Manually Ordered" Text="Yes" Help="Are items of this channel manually ordered? If not they will be ordered by their Start Date/Time." />
+                                </div>
+                                <div class="col-xs-6">
+                                    <Rock:RockCheckBox ID="cbChildItemsManuallyOrdered" runat="server" Label="Child Items Manually Ordered" Text="Yes" Help="If items in this channel have child itesm, should those child items be manually ordered? If not they will be ordered by their Start Date/Time." />
+                                </div>
+                            </div>
                         </div>
                         <div class="col-md-6">
                             <Rock:DataTextBox ID="tbIconCssClass" runat="server" Label="Icon CSS Class" SourceTypeName="Rock.Model.ContentChannel, Rock" PropertyName="IconCssClass" />
@@ -108,7 +127,15 @@
 
         </asp:Panel>
         
+        <Rock:ModalAlert ID="modalAlert" runat="server" />
+
         <asp:HiddenField ID="hfActiveDialog" runat="server" />
+
+        <Rock:ModalDialog ID="dlgChildContentChannel" runat="server" OnSaveClick="dlgChildContentChannel_SaveClick" OnCancelScript="clearActiveDialog();" ValidationGroup="ChildContentChannels">
+            <Content>
+                <Rock:RockDropDownList ID="ddlChildContentChannel" runat="server" DataTextField="Name" DataValueField="Id" Label="Child Group Type" ValidationGroup="ChildContentChannels" />
+            </Content>
+        </Rock:ModalDialog>
 
         <Rock:ModalDialog ID="dlgItemAttributes" runat="server" Title="Content Item Attributes" OnSaveClick="dlgItemAttributes_SaveClick"  OnCancelScript="clearActiveDialog();" ValidationGroup="ItemAttributes">
             <Content>

@@ -1,11 +1,11 @@
 ﻿// <copyright>
 // Copyright by the Spark Development Network
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
+// Licensed under the Rock Community License (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-// http://www.apache.org/licenses/LICENSE-2.0
+// http://www.rockrms.com/license
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -64,16 +64,21 @@ namespace Rock.Workflow.Action.CheckIn
                             {
                                 foreach ( var location in group.Locations.ToList() )
                                 {
-                                    if ( location.Location.SoftRoomThreshold.HasValue &&
-                                        location.Location.SoftRoomThreshold.Value <= KioskLocationAttendance.Read( location.Location.Id ).CurrentCount )
+                                    if ( location.Location.SoftRoomThreshold.HasValue )
                                     {
-                                        if ( remove )
+                                        var locAttendance = KioskLocationAttendance.Read( location.Location.Id );
+                                        if ( locAttendance != null &&
+                                            !locAttendance.DistinctPersonIds.Contains( person.Person.Id ) &&
+                                            location.Location.SoftRoomThreshold.Value <= locAttendance.CurrentCount )
                                         {
-                                            group.Locations.Remove( location );
-                                        }
-                                        else
-                                        {
-                                            location.ExcludedByFilter = true;
+                                            if ( remove )
+                                            {
+                                                group.Locations.Remove( location );
+                                            }
+                                            else
+                                            {
+                                                location.ExcludedByFilter = true;
+                                            }
                                         }
                                     }
                                 }

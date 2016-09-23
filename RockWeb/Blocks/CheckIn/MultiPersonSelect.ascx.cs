@@ -1,11 +1,11 @@
 ﻿// <copyright>
 // Copyright by the Spark Development Network
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
+// Licensed under the Rock Community License (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-// http://www.apache.org/licenses/LICENSE-2.0
+// http://www.rockrms.com/license
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -19,6 +19,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Web.UI;
+using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
 
 using Rock;
@@ -32,9 +33,13 @@ namespace RockWeb.Blocks.CheckIn
     [Description("Lists people who match the selected family and provides option of selecting multiple.")]
     public partial class MultiPersonSelect : CheckInBlock
     {
+        bool _hidePhotos = false;
+
         protected override void OnInit( EventArgs e )
         {
             base.OnInit( e );
+
+            rSelection.ItemDataBound += rSelection_ItemDataBound;
 
             string script = string.Format( @"
         function GetPersonSelection() {{
@@ -56,11 +61,25 @@ namespace RockWeb.Blocks.CheckIn
 
         $('a.btn-checkin-select').click( function() {{
             //$(this).toggleClass('btn-dimmed');
-            $(this).find('i').toggleClass('fa-check-square').toggleClass('fa-square');
+            $(this).find('i').toggleClass('fa-check-square').toggleClass('fa-square-o');
         }});
 
 ", lbSelect.ClientID, hfPeople.ClientID );
             ScriptManager.RegisterStartupScript( Page, Page.GetType(), "SelectPerson", script, true );
+        }
+
+        private void rSelection_ItemDataBound( object sender, RepeaterItemEventArgs e )
+        {
+            if ( e.Item.ItemType == ListItemType.Item || e.Item.ItemType == ListItemType.AlternatingItem )
+            {
+                var phCheck = e.Item.FindControl( "phCheck" ) as PlaceHolder;
+                var pnlCheckAndPhoto = e.Item.FindControl( "pnlCheckAndPhoto" ) as Panel;
+                if ( phCheck != null && pnlCheckAndPhoto != null )
+                {
+                    phCheck.Visible = _hidePhotos;
+                    pnlCheckAndPhoto.Visible = !_hidePhotos;
+                }
+            }
         }
 
         protected override void OnLoad( EventArgs e )
@@ -69,6 +88,12 @@ namespace RockWeb.Blocks.CheckIn
 
             RockPage.AddScriptLink( "~/Scripts/iscroll.js" );
             RockPage.AddScriptLink( "~/Scripts/CheckinClient/checkin-core.js" );
+
+            var bodyTag = this.Page.Master.FindControl( "bodyTag" ) as HtmlGenericControl;
+            if ( bodyTag != null )
+            {
+                bodyTag.AddCssClass( "checkin-multipersonselect-bg" );
+            }
 
             if ( CurrentWorkflow == null || CurrentCheckInState == null )
             {
@@ -87,6 +112,8 @@ namespace RockWeb.Blocks.CheckIn
                     }
 
                     lFamilyName.Text = family.ToString();
+
+                    _hidePhotos = CurrentCheckInState.CheckInType.HidePhotos;
 
                     rSelection.DataSource = family.People
                         .OrderByDescending( p => p.FamilyMember )

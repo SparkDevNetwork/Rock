@@ -240,7 +240,7 @@ namespace RockWeb.Blocks.CheckIn
                 else {{
                     $(""div.checkin-header h1"").html( ""We're Sorry!"" );
                     $(""div.checkin-header h1"").after( ""<p>We don't support that kind of device yet. Please Check in using the on-site kiosks.</p>"" );
-                    alert(""We We don't support that kind of device yet. Please Check in using the on-site kiosks."");
+                    alert(""We don't support that kind of device yet. Please Check in using the on-site kiosks."");
                 }}
             }}
 

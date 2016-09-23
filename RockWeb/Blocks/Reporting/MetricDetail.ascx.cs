@@ -20,6 +20,7 @@ using System.ComponentModel;
 using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
+using Newtonsoft.Json;
 using Rock;
 using Rock.Attribute;
 using Rock.Constants;
@@ -42,10 +43,16 @@ namespace RockWeb.Blocks.Reporting
 
     [BooleanField( "Show Chart", DefaultValue = "true" )]
     [DefinedValueField( Rock.SystemGuid.DefinedType.CHART_STYLES, "Chart Style", DefaultValue = Rock.SystemGuid.DefinedValue.CHART_STYLE_ROCK )]
-    [SlidingDateRangeField( "Chart Date Range", key: "SlidingDateRange", defaultValue: "-1||||", enabledSlidingDateRangeTypes:"Last,Previous,Current,DateRange")]
+    [SlidingDateRangeField( "Chart Date Range", key: "SlidingDateRange", defaultValue: "-1||||", enabledSlidingDateRangeTypes: "Last,Previous,Current,DateRange" )]
     [BooleanField( "Combine Chart Series" )]
     public partial class MetricDetail : RockBlock, IDetailBlock
     {
+        #region Properties
+
+        private List<MetricPartition> MetricPartitionsState { get; set; }
+
+        #endregion
+
         #region Base Control Methods
 
         /// <summary>
@@ -64,10 +71,23 @@ namespace RockWeb.Blocks.Reporting
 
             btnSecurity.EntityTypeId = EntityTypeCache.Read( typeof( Rock.Model.Metric ) ).Id;
 
+            ddlDataView.Help = @"NOTE: When using DataView to populate Metrics, multiple partitions is not supported.
+<br />
+<br />
+When using a DataView as the Source Type, the Metric Values will based on the number of records returned by the DataView when the Calculate Metrics job processes this metric.
+<br />
+<br />
+Example: Let's say you have a DataView called 'Small Group Attendance for Last Week', and schedule this metric for every Monday. When the Calculate Metrics job runs this metric, the Metric Value for that week will be number of records returned by the Dataview.
+";
+
             // Metric supports 0 or more Categories, so the entityType is actually MetricCategory, not Metric
             cpMetricCategories.EntityTypeId = EntityTypeCache.Read( typeof( Rock.Model.MetricCategory ) ).Id;
 
             lcMetricsChart.Options.SetChartStyle( GetAttributeValue( "ChartStyle" ).AsGuidOrNull() );
+
+            gMetricPartitions.Actions.ShowAdd = true;
+            gMetricPartitions.GridReorder += gMetricPartitions_GridReorder;
+            gMetricPartitions.Actions.AddClick += gMetricPartitions_AddClick;
         }
 
         /// <summary>
@@ -123,6 +143,44 @@ namespace RockWeb.Blocks.Reporting
 
         #endregion
 
+        /// <summary>
+        /// Restores the view-state information from a previous user control request that was saved by the <see cref="M:System.Web.UI.UserControl.SaveViewState" /> method.
+        /// </summary>
+        /// <param name="savedState">An <see cref="T:System.Object" /> that represents the user control state to be restored.</param>
+        protected override void LoadViewState( object savedState )
+        {
+            base.LoadViewState( savedState );
+
+            string json = ViewState["MetricPartitionsState"] as string;
+            if ( string.IsNullOrWhiteSpace( json ) )
+            {
+                MetricPartitionsState = new List<MetricPartition>();
+            }
+            else
+            {
+                MetricPartitionsState = JsonConvert.DeserializeObject<List<MetricPartition>>( json );
+            }
+        }
+
+        /// <summary>
+        /// Saves any user control view-state changes that have occurred since the last page postback.
+        /// </summary>
+        /// <returns>
+        /// Returns the user control's current view state. If there is no view state associated with the control, it returns null.
+        /// </returns>
+        protected override object SaveViewState()
+        {
+            var jsonSetting = new JsonSerializerSettings
+            {
+                ReferenceLoopHandling = ReferenceLoopHandling.Ignore,
+                ContractResolver = new Rock.Utility.IgnoreUrlEncodedKeyContractResolver()
+            };
+
+            ViewState["MetricPartitionsState"] = JsonConvert.SerializeObject( MetricPartitionsState, Formatting.None, jsonSetting );
+
+            return base.SaveViewState();
+        }
+
         #region Events
 
         // handlers called by the controls on your block
@@ -150,7 +208,7 @@ namespace RockWeb.Blocks.Reporting
             MetricService metricService = new MetricService( rockContext );
             MetricCategoryService metricCategoryService = new MetricCategoryService( rockContext );
             MetricValueService metricValueService = new MetricValueService( rockContext );
-            bool deleteValuesOnSave = sender == btnDeleteValuesAndSave;
+            MetricPartitionService metricPartitionService = new MetricPartitionService( rockContext );
 
             int metricId = hfMetricId.Value.AsInteger();
 
@@ -161,6 +219,53 @@ namespace RockWeb.Blocks.Reporting
             else
             {
                 metric = metricService.Get( metricId );
+
+                // remove any metricPartitions that were removed in the UI
+                var selectedMetricPartitionGuids = MetricPartitionsState.Select( r => r.Guid );
+                foreach ( var item in metric.MetricPartitions.Where( r => !selectedMetricPartitionGuids.Contains( r.Guid ) ).ToList() )
+                {
+                    metric.MetricPartitions.Remove( item );
+                    metricPartitionService.Delete( item );
+                }
+            }
+
+            metric.MetricPartitions = metric.MetricPartitions ?? new List<MetricPartition>();
+
+            if ( MetricPartitionsState.Count() > 1 && MetricPartitionsState.Any(a => !a.EntityTypeId.HasValue ))
+            {
+                mdMetricPartitionsEntityTypeWarning.Text = "If multiple partitions are defined for a metric, all the partitions must have an EntityType assigned";
+                mdMetricPartitionsEntityTypeWarning.Visible = true;
+                pwMetricPartitions.Expanded = true;
+                return;
+            }
+
+            mdMetricPartitionsEntityTypeWarning.Visible = false;
+
+            foreach ( var metricPartitionState in MetricPartitionsState )
+            {
+                MetricPartition metricPartition = metric.MetricPartitions.Where( r => r.Guid == metricPartitionState.Guid ).FirstOrDefault();
+                if ( metricPartition == null )
+                {
+                    metricPartition = new MetricPartition();
+                    metric.MetricPartitions.Add( metricPartition );
+                }
+                else
+                {
+                    metricPartitionState.Id = metricPartition.Id;
+                    metricPartitionState.Guid = metricPartition.Guid;
+                }
+
+                metricPartition.CopyPropertiesFrom( metricPartitionState );
+            }
+
+            // ensure there is at least one partition
+            if ( !metric.MetricPartitions.Any() )
+            {
+                var metricPartition = new MetricPartition();
+                metricPartition.EntityTypeId = null;
+                metricPartition.IsRequired = true;
+                metricPartition.Order = 0;
+                metric.MetricPartitions.Add( metricPartition );
             }
 
             metric.Title = tbTitle.Text;
@@ -168,33 +273,8 @@ namespace RockWeb.Blocks.Reporting
             metric.Description = tbDescription.Text;
             metric.IconCssClass = tbIconCssClass.Text;
             metric.SourceValueTypeId = ddlSourceType.SelectedValueAsId();
-            metric.XAxisLabel = tbXAxisLabel.Text;
             metric.YAxisLabel = tbYAxisLabel.Text;
             metric.IsCumulative = cbIsCumulative.Checked;
-
-            var origEntityType = metric.EntityTypeId.HasValue ? EntityTypeCache.Read( metric.EntityTypeId.Value ) : null;
-            var newEntityType = etpEntityType.SelectedEntityTypeId.HasValue ? EntityTypeCache.Read( etpEntityType.SelectedEntityTypeId.Value ) : null;
-            if ( origEntityType != null && !deleteValuesOnSave )
-            {
-                if ( newEntityType == null || newEntityType.Id != origEntityType.Id )
-                {
-                    // if the EntityTypeId of this metric has changed to NULL or to another EntityType, warn about the EntityId values being wrong
-                    bool hasEntityValues = metricValueService.Queryable().Any( a => a.MetricId == metric.Id && a.EntityId.HasValue );
-
-                    if ( hasEntityValues )
-                    {
-                        nbEntityTypeChanged.Text = string.Format(
-                            "Warning: You can't change the series partition to {0} when there are values associated with {1}. Do you want to delete existing values?",
-                            newEntityType != null ? newEntityType.FriendlyName : "<none>",
-                            origEntityType.FriendlyName );
-                        mdEntityTypeChanged.Show();
-                        nbEntityTypeChanged.Visible = true;
-                        return;
-                    }
-                }
-            }
-
-            metric.EntityTypeId = etpEntityType.SelectedEntityTypeId;
 
             int sourceTypeDataView = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.METRIC_SOURCE_VALUE_TYPE_DATAVIEW.AsGuid() ).Id;
             int sourceTypeSQL = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.METRIC_SOURCE_VALUE_TYPE_SQL.AsGuid() ).Id;
@@ -328,15 +408,6 @@ namespace RockWeb.Blocks.Reporting
 
                 rockContext.SaveChanges();
 
-                // delete MetricValues associated with the old entityType if they confirmed the EntityType change
-                if ( deleteValuesOnSave )
-                {
-                    metricValueService.DeleteRange( metricValueService.Queryable().Where( a => a.MetricId == metric.Id && a.EntityId.HasValue ) );
-
-                    // since there could be 1000s of values that got deleted, do a SaveChanges that skips PrePostProcessing
-                    rockContext.SaveChanges( true );
-                }
-
                 // delete any orphaned Unnamed metric schedules
                 var metricIdSchedulesQry = metricService.Queryable().Select( a => a.ScheduleId );
                 int? metricScheduleId = schedule != null ? schedule.Id : (int?)null;
@@ -455,16 +526,6 @@ namespace RockWeb.Blocks.Reporting
         }
 
         /// <summary>
-        /// Handles the Click event of the btnCancelForEntityTypeChange control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void btnCancelForEntityTypeChange_Click( object sender, EventArgs e )
-        {
-            mdEntityTypeChanged.Visible = false;
-        }
-
-        /// <summary>
         /// Handles the SelectedIndexChanged event of the ddlSourceType control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
@@ -473,15 +534,17 @@ namespace RockWeb.Blocks.Reporting
         {
             int? sourceValueTypeId = ddlSourceType.SelectedValueAsId();
             var sourceValueType = DefinedValueCache.Read( sourceValueTypeId ?? 0 );
-            ceSourceSql.Visible = false;
-            ddlDataView.Visible = false;
+            pnlSQLSourceType.Visible = false;
+            pnlDataviewSourceType.Visible = false;
             if ( sourceValueType != null )
             {
-                ceSourceSql.Visible = sourceValueType.Guid == Rock.SystemGuid.DefinedValue.METRIC_SOURCE_VALUE_TYPE_SQL.AsGuid();
-                ddlDataView.Visible = sourceValueType.Guid == Rock.SystemGuid.DefinedValue.METRIC_SOURCE_VALUE_TYPE_DATAVIEW.AsGuid();
+                pnlSQLSourceType.Visible = sourceValueType.Guid == Rock.SystemGuid.DefinedValue.METRIC_SOURCE_VALUE_TYPE_SQL.AsGuid();
+                pnlDataviewSourceType.Visible = sourceValueType.Guid == Rock.SystemGuid.DefinedValue.METRIC_SOURCE_VALUE_TYPE_DATAVIEW.AsGuid();
 
                 // only show LastRun label if SourceValueType is not Manual
-                ltLastRunDateTime.Visible = sourceValueType.Guid != Rock.SystemGuid.DefinedValue.METRIC_SOURCE_VALUE_TYPE_MANUAL.AsGuid();
+                bool isManual = sourceValueType.Guid != Rock.SystemGuid.DefinedValue.METRIC_SOURCE_VALUE_TYPE_MANUAL.AsGuid();
+                ltLastRunDateTime.Visible = isManual;
+                rcwSchedule.Visible = isManual;
             }
         }
 
@@ -525,10 +588,13 @@ namespace RockWeb.Blocks.Reporting
             if ( !metricId.Equals( 0 ) )
             {
                 metric = metricService.Get( metricId );
+                pdAuditDetails.SetEntity( metric, ResolveRockUrl( "~" ) );
             }
 
             if ( metric == null )
             {
+                // hide the panel drawer that show created and last modified dates
+                pdAuditDetails.Visible = false;
                 metric = new Metric { Id = 0, IsSystem = false };
                 metric.SourceValueTypeId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.METRIC_SOURCE_VALUE_TYPE_MANUAL.AsGuid() ).Id;
                 metric.MetricCategories = new List<MetricCategory>();
@@ -538,6 +604,8 @@ namespace RockWeb.Blocks.Reporting
                     metricCategory.Category = metricCategory.Category ?? new CategoryService( rockContext ).Get( metricCategory.CategoryId );
                     metric.MetricCategories.Add( metricCategory );
                 }
+
+                metric.MetricPartitions = new List<MetricPartition>();
             }
 
             if ( !metric.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
@@ -558,7 +626,7 @@ namespace RockWeb.Blocks.Reporting
                 nbEditModeMessage.Text = EditModeMessage.ReadOnlySystem( Metric.FriendlyTypeName );
             }
 
-            if ( !UserCanEdit && !metric.IsAuthorized(Authorization.EDIT, CurrentPerson))
+            if ( !UserCanEdit && !metric.IsAuthorized( Authorization.EDIT, CurrentPerson ) )
             {
                 readOnly = true;
                 nbEditModeMessage.Text = EditModeMessage.NotAuthorizedToEdit( Metric.FriendlyTypeName );
@@ -625,16 +693,91 @@ namespace RockWeb.Blocks.Reporting
             int manualSourceType = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.METRIC_SOURCE_VALUE_TYPE_MANUAL.AsGuid() ).Id;
 
             ddlSourceType.SetValue( metric.SourceValueTypeId ?? manualSourceType );
-            tbXAxisLabel.Text = metric.XAxisLabel;
             tbYAxisLabel.Text = metric.YAxisLabel;
             cbIsCumulative.Checked = metric.IsCumulative;
-            etpEntityType.SelectedEntityTypeId = metric.EntityTypeId;
             ppMetricChampionPerson.SetValue( metric.MetricChampionPersonAlias != null ? metric.MetricChampionPersonAlias.Person : null );
             ppAdminPerson.SetValue( metric.AdminPersonAlias != null ? metric.AdminPersonAlias.Person : null );
             ceSourceSql.Text = metric.SourceSql;
-            ceSourceSql.Help = @"Specify the SQL that will return the Y Value for each scheduled Date. Example: <pre>SELECT COUNT(*) FROM [Attendance] </pre> 
-If this is a metric is partitioned, the 2nd column will be the EntityId value. Example: <pre>SELECT COUNT(*), [CampusId] FROM [Attendance] GROUP BY [CampusId] </pre>
+            ceSourceSql.Help = @"There are several ways to design your SQL to populate the Metric Values. If you use the 'SQL' source type option, the results will be stored with the date of the date when the Calculation is scheduled. To specify a specific date of the metric value, include a [MetricValueDate] column in the result set (see Example #4).
+<br />
+<br />
+<h4>Example #1</h4> 
+Simple metric with the default partition
+<ul>
+  <li>The 1st Column will be the YValue </li>
+</ul>
+
+<pre>
+SELECT COUNT(*) 
+FROM [Attendance] 
+WHERE DidAttend = 1
+  AND StartDateTime >= '{{ RunDateTime | Date:'MM/dd/yyyy' }}' 
+  AND StartDateTime < '{{ RunDateTime | DateAdd:1,'d' | Date:'MM/dd/yyyy' }}' 
+</pre>
+
+<br />
+<h4>Example #2</h4> 
+Simple metric with GroupId as the Partition.
+<ul>
+  <li>The 1st Column will be the YValue </li>
+  <li>The 2nd Column will be the EntityId of the Partition </li>
+</ul>
+
+<pre>
+SELECT COUNT(*), [GroupId]
+FROM [Attendance] 
+WHERE DidAttend = 1
+  AND StartDateTime >= '{{ RunDateTime | Date:'MM/dd/yyyy' }}' 
+  AND StartDateTime < '{{ RunDateTime | DateAdd:1,'d' | Date:'MM/dd/yyyy' }}' 
+GROUP BY [GroupId]
+</pre>
+
+<br />
+<h4>Example #3</h4> 
+A metric with multiple partitions.
+<ul>
+    <li>The 1st Column will be the YValue </li>
+    <li>The 2nd Column will be the EntityId of the 1st Partition </li>
+    <li>The 3rd Column will be the EntityId of the 2nd Partition </li>
+    <li>... </li>
+    <li>The Nth Column will be the EntityId of the (N-1)th Partition </li>
+</ul>
+<pre>
+SELECT COUNT(*), [GroupId], [CampusId], [ScheduleId]
+FROM [Attendance] 
+WHERE DidAttend = 1
+  AND StartDateTime >= '{{ RunDateTime | Date:'MM/dd/yyyy' }}' 
+  AND StartDateTime < '{{ RunDateTime | DateAdd:1,'d' | Date:'MM/dd/yyyy' }}' 
+GROUP BY [GroupId], [CampusId], [ScheduleId]
+</pre>
+
+<br />
+<h4>Example #4</h4> 
+A metric with multiple partitions with a specific MetricValueDateTime specified. 
+<ul>
+    <li>The 1st Column will be the YValue </li>
+    <li>If a [MetricValueDateTime] field is specified as the 2nd column, that will be the metric value date. NOTE: This should be a constant value for all rows
+    <li>The 3rd Column will be the EntityId of the 1st Partition </li>
+    <li>The 4th Column will be the EntityId of the 2nd Partition </li>
+    <li>etc.</li>
+</ul>
+<pre>
+-- get totals for the previous week
+{% assign weekEndDate = RunDateTime | SundayDate | DateAdd:-7,'d' %}
+
+SELECT COUNT(*), '{{ weekEndDate }}' [MetricValueDateTime], [GroupId], [CampusId], [ScheduleId]
+FROM [Attendance] 
+WHERE DidAttend = 1
+  AND StartDateTime >= '{{ weekEndDate | DateAdd:-6,'d' | Date:'MM/dd/yyyy' }}' 
+  AND StartDateTime < '{{ weekEndDate | DateAdd:1,'d' | Date:'MM/dd/yyyy' }}'
+GROUP BY [GroupId], [CampusId], [ScheduleId]
+</pre>
+
+NOTE: If a [MetricValueDateTime] is specified and there is already a metric value, the value will get updated. This is handy if you have a weekly metric, but schedule it to calculate every day.
+<hr>
 The SQL can include Lava merge fields:";
+
+
             ceSourceSql.Help += metric.GetMergeObjects( RockDateTime.Now ).lavaDebugInfo();
 
             if ( metric.Schedule != null )
@@ -681,6 +824,58 @@ The SQL can include Lava merge fields:";
 
             // make sure the control visibility is set based on Schedule Selection Type
             rblScheduleSelect_SelectedIndexChanged( null, new EventArgs() );
+
+            MetricPartitionsState = new List<MetricPartition>();
+            foreach ( var item in metric.MetricPartitions )
+            {
+                MetricPartitionsState.Add( item );
+            }
+
+            BindMetricPartitionsGrid();
+        }
+
+        /// <summary>
+        /// Binds the metric partitions grid.
+        /// </summary>
+        private void BindMetricPartitionsGrid()
+        {
+            SetMetricPartitionsListOrder( MetricPartitionsState );
+
+            var partitionList = MetricPartitionsState.OrderBy( a => a.Order ).ThenBy( a => a.Label ).Select( a =>
+            {
+                var entityTypeCache = EntityTypeCache.Read( a.EntityTypeId ?? 0 );
+                string label;
+                if ( a.Order == 0 && !a.EntityTypeId.HasValue )
+                {
+                    label = a.Label ?? "Default";
+                }
+                else
+                {
+                    label = a.Label;
+                }
+
+                string entityTypeQualifierInfo = null;
+                if ( !string.IsNullOrEmpty( a.EntityTypeQualifierColumn ) )
+                {
+                    entityTypeQualifierInfo = string.Format( "({0}: {1})", a.EntityTypeQualifierColumn, a.EntityTypeQualifierValue );
+                }
+
+                return new
+                {
+                    a.Guid,
+                    Label = label,
+                    EntityTypeName = entityTypeCache != null ? entityTypeCache.FriendlyName : string.Empty,
+                    EntityTypeQualifier = entityTypeQualifierInfo,
+                    a.IsRequired
+                };
+            } ).ToList();
+
+            gMetricPartitions.DataSource = partitionList;
+            gMetricPartitions.DataBind();
+
+            int metricId = hfMetricId.Value.AsInteger();
+            nbMetricValuesWarning.Visible = new MetricValueService( new RockContext() ).Queryable().Where( a => a.MetricId == metricId ).Any();
+            nbMetricValuesWarning.Text = "This Metric already has some values.  If you are changing Metric Partitions, you might have to manually update the metric values to reflect the new partition arrangement.";
         }
 
         /// <summary>
@@ -712,6 +907,32 @@ The SQL can include Lava merge fields:";
                 descriptionListMain.Add( "Categories", metric.MetricCategories.Select( s => s.Category.ToString() ).OrderBy( o => o ).ToList().AsDelimited( "," ) );
             }
 
+            if ( metric.MetricPartitions.Count() == 1 )
+            {
+                var singlePartition = metric.MetricPartitions.First();
+                if ( singlePartition.EntityTypeId.HasValue )
+                {
+                    var entityTypeCache = EntityTypeCache.Read( singlePartition.EntityTypeId.Value );
+                    if ( entityTypeCache != null )
+                    {
+                        descriptionListMain.Add( "Partitioned by ", singlePartition.Label ?? entityTypeCache.FriendlyName );
+                    }
+                }
+            }
+            else if ( metric.MetricPartitions.Count() > 1 )
+            {
+                var partitionNameList = metric.MetricPartitions.OrderBy( a => a.Order ).ThenBy( a => a.Label ).Where( a => a.EntityTypeId.HasValue ).ToList().Select( a => {
+                    var entityTypeCache = EntityTypeCache.Read( a.EntityTypeId.Value );
+                    return new
+                    {
+                        Label = a.Label,
+                        EntityTypeFriendlyName = entityTypeCache != null ? entityTypeCache.FriendlyName : string.Empty
+                    };
+                });
+
+                descriptionListMain.Add( "Partitioned by ", partitionNameList.Where( a => a != null ).Select( a => a.Label ?? a.EntityTypeFriendlyName ).ToList().AsDelimited( ", ", " and " ) );
+            }
+
             // only show LastRun and Schedule label if SourceValueType is not Manual
             int manualSourceType = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.METRIC_SOURCE_VALUE_TYPE_MANUAL.AsGuid() ).Id;
             ltLastRunDateTime.Visible = metric.SourceValueTypeId != manualSourceType;
@@ -728,12 +949,12 @@ The SQL can include Lava merge fields:";
                 ltLastRunDateTime.Text = "Never Run";
             }
 
-            if (metric.Schedule != null)
+            if ( metric.Schedule != null )
             {
                 string iconClass;
-                if (metric.Schedule.HasSchedule())
+                if ( metric.Schedule.HasSchedule() )
                 {
-                    if (metric.Schedule.HasScheduleWarning()                        )
+                    if ( metric.Schedule.HasScheduleWarning() )
                     {
                         hlScheduleFriendlyText.LabelType = LabelType.Warning;
                         iconClass = "fa fa-exclamation-triangle";
@@ -757,7 +978,6 @@ The SQL can include Lava merge fields:";
                 hlScheduleFriendlyText.LabelType = LabelType.Danger;
                 hlScheduleFriendlyText.Text = "<i class='fa fa-clock-o'></i> " + "Not Scheduled";
             }
-
 
             lblMainDetails.Text = descriptionListMain.Html;
         }
@@ -815,7 +1035,264 @@ The SQL can include Lava merge fields:";
             }
 
             // limit to EntityTypes that support picking a Value with a picker
-            etpEntityType.EntityTypes = new EntityTypeService( new RockContext() ).GetEntities().OrderBy( t => t.FriendlyName ).Where( a => a.SingleValueFieldTypeId.HasValue ).ToList();
+            etpMetricPartitionEntityType.EntityTypes = new EntityTypeService( new RockContext() ).GetEntities().OrderBy( t => t.FriendlyName ).Where( a => a.SingleValueFieldTypeId.HasValue ).ToList();
+
+            // just in case they select an EntityType that can be qualified by DefinedType...
+            ddlMetricPartitionDefinedTypePicker.Items.Clear();
+            ddlMetricPartitionDefinedTypePicker.Items.Add( new ListItem() );
+            var definedTypesList = new DefinedTypeService( rockContext ).Queryable().OrderBy( a => a.Name )
+                .Select( a => new
+                {
+                    a.Id,
+                    a.Name
+                } ).ToList();
+
+            foreach ( var definedType in definedTypesList )
+            {
+                ddlMetricPartitionDefinedTypePicker.Items.Add( new ListItem( definedType.Name, definedType.Id.ToString() ) );
+            }
+        }
+
+        #endregion
+
+        #region Series Partitions
+
+        /// <summary>
+        /// Handles the GridReorder event of the gMetricPartitions control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="GridReorderEventArgs"/> instance containing the event data.</param>
+        protected void gMetricPartitions_GridReorder( object sender, GridReorderEventArgs e )
+        {
+            ReorderMetricPartitionsList( MetricPartitionsState, e.OldIndex, e.NewIndex );
+            BindMetricPartitionsGrid();
+        }
+
+        /// <summary>
+        /// Sets the metric partitions list order.
+        /// </summary>
+        /// <param name="itemList">The item list.</param>
+        private void SetMetricPartitionsListOrder( List<MetricPartition> itemList )
+        {
+            int order = 0;
+            itemList.OrderBy( a => a.Order ).ToList().ForEach( a => a.Order = order++ );
+        }
+
+        /// <summary>
+        /// Reorders the metric partitions list.
+        /// </summary>
+        /// <param name="itemList">The item list.</param>
+        /// <param name="oldIndex">The old index.</param>
+        /// <param name="newIndex">The new index.</param>
+        private void ReorderMetricPartitionsList( List<MetricPartition> itemList, int oldIndex, int newIndex )
+        {
+            var movedItem = itemList.Where( a => a.Order == oldIndex ).FirstOrDefault();
+            if ( movedItem != null )
+            {
+                if ( newIndex < oldIndex )
+                {
+                    // Moved up
+                    foreach ( var otherItem in itemList.Where( a => a.Order < oldIndex && a.Order >= newIndex ) )
+                    {
+                        otherItem.Order = otherItem.Order + 1;
+                    }
+                }
+                else
+                {
+                    // Moved Down
+                    foreach ( var otherItem in itemList.Where( a => a.Order > oldIndex && a.Order <= newIndex ) )
+                    {
+                        otherItem.Order = otherItem.Order - 1;
+                    }
+                }
+
+                movedItem.Order = newIndex;
+            }
+        }
+
+        /// <summary>
+        /// Handles the Delete event of the gMetricPartitions control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="RowEventArgs"/> instance containing the event data.</param>
+        protected void gMetricPartitions_Delete( object sender, RowEventArgs e )
+        {
+            var rockContext = new RockContext();
+            MetricPartitionService metricPartitionService = new MetricPartitionService( rockContext );
+            MetricPartition metricPartition = metricPartitionService.Get( (Guid)e.RowKeyValue );
+
+            if ( MetricPartitionsState.Count() == 1 )
+            {
+                mdMetricPartitionsGridWarning.Show( "Metric must have at least one partition defined", ModalAlertType.Warning );
+                return;
+            }
+
+            if ( metricPartition != null )
+            {
+                string errorMessage;
+                if ( !metricPartitionService.CanDelete( metricPartition, out errorMessage ) )
+                {
+                    mdMetricPartitionsGridWarning.Show( errorMessage, ModalAlertType.Information );
+                    return;
+                }
+            }
+
+            Guid rowGuid = (Guid)e.RowKeyValue;
+            MetricPartitionsState.RemoveEntity( rowGuid );
+
+            BindMetricPartitionsGrid();
+        }
+
+        /// <summary>
+        /// Handles the AddClick event of the gMetricPartitions control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        public void gMetricPartitions_AddClick( object sender, EventArgs e )
+        {
+            gMetricPartitions_ShowEdit( null );
+        }
+
+        /// <summary>
+        /// Handles the RowSelected event of the gMetricPartitions control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="RowEventArgs"/> instance containing the event data.</param>
+        protected void gMetricPartitions_RowSelected( object sender, RowEventArgs e )
+        {
+            gMetricPartitions_ShowEdit( (Guid)e.RowKeyValue );
+        }
+
+        /// <summary>
+        /// Shows the Metric Partition dialog for add/edit
+        /// </summary>
+        /// <param name="metricPartitionGuid">The metric partition unique identifier.</param>
+        protected void gMetricPartitions_ShowEdit( Guid? metricPartitionGuid )
+        {
+            MetricPartition metricPartition;
+            if ( !metricPartitionGuid.HasValue )
+            {
+                metricPartition = new MetricPartition();
+                mdMetricPartitionDetail.Title = "Add Partition";
+            }
+            else
+            {
+                metricPartition = MetricPartitionsState.FirstOrDefault( a => a.Guid == metricPartitionGuid.Value );
+                mdMetricPartitionDetail.Title = "Edit Partition";
+            }
+
+            var metricValueService = new MetricValueService( new RockContext() );
+
+            hfMetricPartitionGuid.Value = metricPartition.Guid.ToString();
+            tbMetricPartitionLabel.Text = metricPartition.Label;
+            etpMetricPartitionEntityType.SetValue( metricPartition.EntityTypeId );
+            cbMetricPartitionIsRequired.Checked = metricPartition.IsRequired;
+            tbMetricPartitionEntityTypeQualifierColumn.Text = metricPartition.EntityTypeQualifierColumn;
+            tbMetricPartitionEntityTypeQualifierValue.Text = metricPartition.EntityTypeQualifierValue;
+
+            if ( metricPartition.EntityTypeQualifierColumn == "DefinedTypeId" )
+            {
+                ddlMetricPartitionDefinedTypePicker.SetValue( ( metricPartition.EntityTypeQualifierValue ?? string.Empty ).AsIntegerOrNull() );
+            }
+
+            UpdateMetricPartionDetailForEntityType();
+
+            mdMetricPartitionDetail.Show();
+        }
+
+        /// <summary>
+        /// Handles the SaveClick event of the mdMetricPartitionDetail control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void mdMetricPartitionDetail_SaveClick( object sender, EventArgs e )
+        {
+            if ( !tbMetricPartitionLabel.IsValid )
+            {
+                return;
+            }
+
+            var metricPartition = new MetricPartition();
+            var rockContext = new RockContext();
+            MetricValueService metricValueService = new MetricValueService( rockContext );
+            var metricPartitionState = MetricPartitionsState.FirstOrDefault( a => a.Guid == hfMetricPartitionGuid.Value.AsGuid() );
+            if ( metricPartitionState != null )
+            {
+                metricPartition.CopyPropertiesFrom( metricPartitionState );
+            }
+            else
+            {
+                metricPartition.Order = MetricPartitionsState.Any() ? MetricPartitionsState.Max( a => a.Order ) + 1 : 0;
+                metricPartition.MetricId = hfMetricId.Value.AsInteger();
+            }
+
+            metricPartition.Label = tbMetricPartitionLabel.Text;
+
+            metricPartition.EntityTypeId = etpMetricPartitionEntityType.SelectedEntityTypeId;
+            metricPartition.IsRequired = cbMetricPartitionIsRequired.Checked;
+            metricPartition.EntityTypeQualifierColumn = tbMetricPartitionEntityTypeQualifierColumn.Text;
+            if ( ddlMetricPartitionDefinedTypePicker.Visible )
+            {
+                metricPartition.EntityTypeQualifierValue = ddlMetricPartitionDefinedTypePicker.SelectedValue;
+            }
+            else
+            {
+                metricPartition.EntityTypeQualifierValue = tbMetricPartitionEntityTypeQualifierValue.Text;
+            }
+
+            // Controls will show warnings
+            if ( !metricPartition.IsValid )
+            {
+                return;
+            }
+
+            if ( metricPartitionState != null )
+            {
+                MetricPartitionsState.RemoveEntity( metricPartitionState.Guid );
+            }
+
+            MetricPartitionsState.Add( metricPartition );
+
+            BindMetricPartitionsGrid();
+            mdMetricPartitionDetail.Hide();
+        }
+
+        /// <summary>
+        /// Handles the SelectedIndexChanged event of the etpMetricPartitionEntityType control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void etpMetricPartitionEntityType_SelectedIndexChanged( object sender, EventArgs e )
+        {
+            UpdateMetricPartionDetailForEntityType();
+        }
+
+        /// <summary>
+        /// Updates the type of the metric partion detail for entity.
+        /// </summary>
+        private void UpdateMetricPartionDetailForEntityType()
+        {
+            ddlMetricPartitionDefinedTypePicker.Visible = false;
+            tbMetricPartitionEntityTypeQualifierColumn.ReadOnly = false;
+            tbMetricPartitionEntityTypeQualifierValue.Visible = true;
+            pwMetricPartitionAdvanced.Visible = etpMetricPartitionEntityType.SelectedEntityTypeId.HasValue;
+            
+            if ( etpMetricPartitionEntityType.SelectedEntityTypeId.HasValue )
+            {
+                var entityTypeCache = EntityTypeCache.Read( etpMetricPartitionEntityType.SelectedEntityTypeId.Value );
+                if ( entityTypeCache != null )
+                {
+                    if ( entityTypeCache.Id == EntityTypeCache.GetId<Rock.Model.DefinedValue>() )
+                    {
+                        ddlMetricPartitionDefinedTypePicker.Visible = true;
+                        tbMetricPartitionEntityTypeQualifierColumn.Text = "DefinedTypeId";
+                        tbMetricPartitionEntityTypeQualifierColumn.ReadOnly = true;
+                        tbMetricPartitionEntityTypeQualifierValue.Visible = false;
+                    }
+                }
+            }
+
+            pwMetricPartitionAdvanced.Expanded = !string.IsNullOrEmpty( tbMetricPartitionEntityTypeQualifierColumn.Text );
         }
 
         #endregion
@@ -832,6 +1309,5 @@ The SQL can include Lava merge fields:";
         }
 
         #endregion
-
     }
 }

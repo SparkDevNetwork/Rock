@@ -42,7 +42,7 @@ namespace RockWeb.Blocks.Store
     [Description( "Lists Rock Store promotions using a Liquid template." )]
     [CodeEditorField( "Lava Template", "Lava template to use to display the promotions", CodeEditorMode.Lava, CodeEditorTheme.Rock, 400, true, @"{% include '~/Assets/Lava/Store/PromoList.lava' %}", "", 2 )]
     [BooleanField("Enable Debug", "Display a list of merge fields available for lava.", false, "", 3)]
-    [CustomRadioListField("Promo Type", "Display the promos of the specified type", "Top Paid, Top Free, Featured", true, "Normal", "", 0)]
+    [CustomRadioListField("Promo Type", "Display the promos of the specified type", "All, Top Paid, Top Free, Featured", true, "Normal", "", 0)]
     [TextField("Category Id", "Filters promos for a specific category id. If none is provided it will show promos with no category.", false, "","", 1)]
     [LinkedPage( "Detail Page", "Page reference to use for the detail page.", false, "", "", 4 )]
     public partial class PromoListLava : Rock.Web.UI.RockBlock
@@ -154,7 +154,7 @@ namespace RockWeb.Blocks.Store
 
             // add link to detail page
             Dictionary<string, object> linkedPages = new Dictionary<string, object>();
-            linkedPages.Add( "DetailPage", LinkedPageUrl( "DetailPage", null ) );
+            linkedPages.Add( "DetailPage", LinkedPageRoute( "DetailPage" ) );
             mergeFields.Add( "LinkedPages", linkedPages );
 
             lOutput.Text = GetAttributeValue( "LavaTemplate" ).ResolveMergeFields( mergeFields );

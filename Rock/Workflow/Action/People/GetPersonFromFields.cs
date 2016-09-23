@@ -64,7 +64,6 @@ namespace Rock.Workflow.Action
         {
             errorMessages = new List<string>();
 
-            
             string attributeValue = GetAttributeValue( action, "PersonAttribute" );
             Guid? guid = attributeValue.AsGuidOrNull();
             if (guid.HasValue)
@@ -72,9 +71,9 @@ namespace Rock.Workflow.Action
                 var attribute = AttributeCache.Read( guid.Value, rockContext );
                 if ( attribute != null )
                 {
-                    string firstName = GetValue( action, "FirstName", rockContext );
-                    string lastName = GetValue( action, "LastName", rockContext );
-                    string email = GetValue( action, "Email", rockContext );
+                    string firstName = GetAttributeValue( action, "FirstName", true );
+                    string lastName = GetAttributeValue( action, "LastName", true );
+                    string email = GetAttributeValue( action, "Email", true );
 
                     if ( string.IsNullOrWhiteSpace( firstName ) ||
                         string.IsNullOrWhiteSpace( lastName ) ||
@@ -116,7 +115,7 @@ namespace Rock.Workflow.Action
                                 person.RecordStatusValueId = defaultRecordStatus.Id;
                             }
 
-                            var defaultCampus = CampusCache.Read( GetValue( action, "DefaultCampus", rockContext ).AsGuid() );
+                            var defaultCampus = CampusCache.Read( GetAttributeValue( action, "DefaultCampus", true ).AsGuid() );
                             var familyGroup = PersonService.SaveNewPerson( person, rockContext, ( defaultCampus != null ? defaultCampus.Id : (int?)null ), false );
                             if ( familyGroup != null && familyGroup.Members.Any() )
                             {
@@ -156,20 +155,5 @@ namespace Rock.Workflow.Action
             return true;
         }
 
-        private string GetValue( WorkflowAction action, string key, RockContext rockContext )
-        {
-            string value = GetAttributeValue( action, key );
-            Guid? guid = value.AsGuidOrNull();
-            if ( guid.HasValue )
-            {
-                var attribute = AttributeCache.Read( guid.Value, rockContext );
-                if ( attribute != null )
-                {
-                    return action.GetWorklowAttributeValue( guid.Value );
-                }
-            }
-
-            return value;
-        }
     }
 }

@@ -21,6 +21,7 @@ using System.Data.Entity;
 using System.Linq;
 using System.Runtime.Serialization;
 using System.Web.UI;
+using Newtonsoft.Json.Linq;
 using Rock;
 using Rock.Data;
 using Rock.MergeTemplates;
@@ -308,7 +309,7 @@ namespace RockWeb.Blocks.Core
                             primaryGroupPerson.AdditionalLavaFields = primaryGroupPerson.AdditionalLavaFields ?? new Dictionary<string, object>();
                             if ( groupMember != null )
                             {
-                                primaryGroupPerson.AdditionalLavaFields.Add( "GroupMember", groupMember );
+                                primaryGroupPerson.AdditionalLavaFields.AddOrIgnore( "GroupMember", groupMember );
                             }
                         }
 
@@ -408,6 +409,21 @@ namespace RockWeb.Blocks.Core
                         IEntity mergeEntity = ( mergeObject as IEntity );
                         mergeEntity.AdditionalLavaFields = mergeEntity.AdditionalLavaFields ?? new Dictionary<string, object>();
                         object mergeValueObject = additionalMergeValue.Value;
+
+                        // if the mergeValueObject is a JArray (JSON Object), convert it into an ExpandoObject or List<ExpandoObject> so that Lava will work on it
+                        if ( mergeValueObject is JArray)
+                        {
+                            var jsonOfObject = mergeValueObject.ToJson();
+                            try
+                            {
+                                mergeValueObject = Rock.Lava.RockFilters.FromJSON( jsonOfObject );
+                            }
+                            catch ( Exception ex )
+                            {
+                                LogException( new Exception("MergeTemplateEntry couldn't do a FromJSON", ex) );
+                            }
+                        }
+
                         mergeEntity.AdditionalLavaFields.AddOrIgnore( additionalMergeValue.Key, mergeValueObject );
                     }
                     else if ( mergeObject is IDictionary<string, object> )

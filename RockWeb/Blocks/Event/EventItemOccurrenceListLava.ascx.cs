@@ -41,7 +41,7 @@ namespace RockWeb.Blocks.Event
     [Description( "Block that takes a calendar item and displays occurrences for it using Lava." )]
     
     [EventItemField("Event Item", "The event item to use to display occurrences for.", order: 0)]
-    [CampusesField("Campuses", "List of which campuses to show occurrences for. This setting will be ignored in the 'Use Campus Context' is enabled.", order:1)]
+    [CampusesField("Campuses", "List of which campuses to show occurrences for. This setting will be ignored in the 'Use Campus Context' is enabled.", order:1, includeInactive:true)]
     [BooleanField("Use Campus Context", "Determine if the campus should be read from the campus context of the page.", order: 2)]
     [SlidingDateRangeField("Date Range", "Optional date range to filter the occurrences on.", false, enabledSlidingDateRangeTypes: "Next,Upcoming,Current", order:3)]
     [IntegerField("Max Occurrences", "The maximum number of occurrences to show.", false, 100, order: 4)]
@@ -170,7 +170,7 @@ namespace RockWeb.Blocks.Event
 
                 // make lava merge fields
                 var mergeFields = new Dictionary<string, object>();
-                mergeFields.Add( "RegistrationPage", LinkedPageUrl( "RegistrationPage", null ) );
+                mergeFields.Add( "RegistrationPage", LinkedPageRoute( "RegistrationPage" ) );
                 mergeFields.Add( "EventItem", eventItem);
                 mergeFields.Add( "EventItemOccurrences", itemOccurrences );
 

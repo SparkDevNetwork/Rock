@@ -254,6 +254,11 @@ namespace Rock.SystemGuid
         public const string KEY_VALUE_LIST = "73B02051-0D38-4AD9-BF81-A2D477DE4F70";
 
         /// <summary>
+        /// The lava commands field type
+        /// </summary>
+        public const string LAVA_COMMANDS = "4BD9088F-5CC6-89B1-45FC-A2AAFFC7CC0D";
+
+        /// <summary>
         /// Location field type
         /// </summary>
         public const string LOCATION = "B0B9EFE3-F09F-4604-AD1B-76B298A85D83";
@@ -302,6 +307,11 @@ namespace Rock.SystemGuid
         /// Remote Auths field type
         /// </summary>
         public const string REMOTE_AUTHS = "ECA90666-E7A0-4406-8559-0153DCB908FD";
+
+        /// <summary>
+        /// Schedule field type
+        /// </summary>
+        public const string SCHEDULE = "E9C12C59-98EA-4977-8318-647435BE9A9C";
 
         /// <summary>
         /// Schedules field type

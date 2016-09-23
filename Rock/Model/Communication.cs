@@ -168,6 +168,14 @@ namespace Rock.Model
             }
         }
 
+        /// <summary>
+        /// Gets or sets the enabled lava commands.
+        /// </summary>
+        /// <value>
+        /// The enabled lava commands.
+        /// </value>
+        [DataMember]
+        public string EnabledLavaCommands { get; set; }
         #endregion
 
         #region Virtual Properties

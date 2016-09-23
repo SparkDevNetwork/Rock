@@ -187,9 +187,9 @@ namespace RockWeb.Blocks.Finance
 
             // added linked pages to mergefields
             Dictionary<string, object> linkedPages = new Dictionary<string, object>();
-            linkedPages.Add( "ManageScheduledTransactionsPage", LinkedPageUrl( "ManageScheduledTransactionsPage", null ) );
-            linkedPages.Add( "TransactionHistoryPage", LinkedPageUrl( "TransactionHistoryPage", null ) );
-            linkedPages.Add( "TransactionEntryPage", LinkedPageUrl( "TransactionEntryPage", null ) );
+            linkedPages.Add( "ManageScheduledTransactionsPage", LinkedPageRoute( "ManageScheduledTransactionsPage" ) );
+            linkedPages.Add( "TransactionHistoryPage", LinkedPageRoute( "TransactionHistoryPage" ) );
+            linkedPages.Add( "TransactionEntryPage", LinkedPageRoute( "TransactionEntryPage" ) );
 
 
 

@@ -35,8 +35,6 @@
                 </div>
             </div>
 
-            
-
         </asp:Panel>
 
         <Rock:ModalDialog ID="modalDetails" runat="server" Title="Category" ValidationGroup="EntityTypeName">

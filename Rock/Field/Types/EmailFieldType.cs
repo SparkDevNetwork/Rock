@@ -34,6 +34,26 @@ namespace Rock.Field.Types
         #region Formatting
 
         /// <summary>
+        /// Formats the value as HTML.
+        /// </summary>
+        /// <param name="parentControl">The parent control.</param>
+        /// <param name="value">The value.</param>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="condensed">if set to <c>true</c> [condensed].</param>
+        /// <returns></returns>
+        public override string FormatValueAsHtml( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed = false )
+        {
+            if ( string.IsNullOrWhiteSpace( value ) )
+            {
+                return string.Empty;
+            }
+            else
+            {
+                return string.Format( "<a href='mailto:{0}'>{0}</a>", value );
+            }
+        }
+
+        /// <summary>
         /// Returns the field's current value(s)
         /// </summary>
         /// <param name="parentControl">The parent control.</param>
@@ -47,10 +67,7 @@ namespace Rock.Field.Types
             {
                 return string.Empty;
             }
-            else
-            {
-                return string.Format( "<a href='mailto:{0}'>{0}</a>", value );
-            }
+            return value;
         }
 
         /// <summary>
@@ -109,6 +126,38 @@ namespace Rock.Field.Types
         #endregion
 
         #region Filter Control
+
+        /// <summary>
+        /// Gets the filter value control with the specified FilterMode
+        /// </summary>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="id">The identifier.</param>
+        /// <param name="required">if set to <c>true</c> [required].</param>
+        /// <param name="filterMode">The filter mode.</param>
+        /// <returns></returns>
+        public override Control FilterValueControl( Dictionary<string, ConfigurationValue> configurationValues, string id, bool required, FilterMode filterMode )
+        {
+            var control = new RockTextBox { ID = id };
+            control.ID = string.Format( "{0}_ctlCompareValue", id );
+            control.AddCssClass( "js-filter-control" );
+            return control;
+        }
+
+        /// <summary>
+        /// Formats the filter value value.
+        /// </summary>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
+        public override string FormatFilterValueValue( Dictionary<string, ConfigurationValue> configurationValues, string value )
+        {
+            if ( !string.IsNullOrWhiteSpace( value ) )
+            {
+                return string.Format( "'{0}'", value );
+            }
+
+            return string.Empty;
+        }
 
         /// <summary>
         /// Gets the type of the filter comparison.

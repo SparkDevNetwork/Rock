@@ -179,6 +179,7 @@ namespace RockWeb.Blocks.Event
                     string newPerson = ppPerson.PersonName;
                     History.EvaluateChange( registrantChanges, "Person", prevPerson, newPerson );
                 }
+                int? personId = ppPerson.PersonId.Value;
                 registrant.PersonAliasId = ppPerson.PersonAliasId.Value;
 
                 // Get the name of registrant for history
@@ -259,6 +260,64 @@ namespace RockWeb.Blocks.Event
 
                         History.EvaluateChange( registrantChanges, feeName + " Cost", dbFee.Cost, uiFeeOption.Cost );
                         dbFee.Cost = uiFeeOption.Cost;
+                    }
+                }
+
+                if ( TemplateState.RequiredSignatureDocumentTemplate != null )
+                {
+                    var person = new PersonService( rockContext ).Get( personId.Value );
+
+                    var documentService = new SignatureDocumentService( rockContext );
+                    var binaryFileService = new BinaryFileService( rockContext );
+                    SignatureDocument document = null;
+
+                    int? signatureDocumentId = hfSignedDocumentId.Value.AsIntegerOrNull();
+                    int? binaryFileId = fuSignedDocument.BinaryFileId;
+                    if ( signatureDocumentId.HasValue )
+                    {
+                        document = documentService.Get( signatureDocumentId.Value );
+                    }
+
+                    if ( document == null && binaryFileId.HasValue )
+                    {
+                        var instance = new RegistrationInstanceService( rockContext ).Get( RegistrationInstanceId );
+
+                        document = new SignatureDocument();
+                        document.SignatureDocumentTemplateId = TemplateState.RequiredSignatureDocumentTemplate.Id;
+                        document.AppliesToPersonAliasId = registrant.PersonAliasId.Value;
+                        document.AssignedToPersonAliasId = registrant.PersonAliasId.Value;
+                        document.Name = string.Format( "{0}_{1}",
+                            ( instance != null ? instance.Name : TemplateState.Name ),
+                            ( person != null ? person.FullName.RemoveSpecialCharacters() : string.Empty ) );
+                        document.Status = SignatureDocumentStatus.Signed;
+                        document.LastStatusDate = RockDateTime.Now;
+                        documentService.Add( document );
+                    }
+
+                    if ( document != null )
+                    {
+                        int? origBinaryFileId = document.BinaryFileId;
+                        document.BinaryFileId = binaryFileId;
+
+                        if ( origBinaryFileId.HasValue && origBinaryFileId.Value != document.BinaryFileId )
+                        {
+                            // if a new the binaryFile was uploaded, mark the old one as Temporary so that it gets cleaned up
+                            var oldBinaryFile = binaryFileService.Get( origBinaryFileId.Value );
+                            if ( oldBinaryFile != null && !oldBinaryFile.IsTemporary )
+                            {
+                                oldBinaryFile.IsTemporary = true;
+                            }
+                        }
+
+                        // ensure the IsTemporary is set to false on binaryFile associated with this document
+                        if ( document.BinaryFileId.HasValue )
+                        {
+                            var binaryFile = binaryFileService.Get( document.BinaryFileId.Value );
+                            if ( binaryFile != null && binaryFile.IsTemporary )
+                            {
+                                binaryFile.IsTemporary = false;
+                            }
+                        }
                     }
                 }
 
@@ -518,6 +577,38 @@ namespace RockWeb.Blocks.Event
                 if ( registrant != null && registrant.PersonAlias != null && registrant.PersonAlias.Person != null )
                 {
                     ppPerson.SetValue( registrant.PersonAlias.Person );
+                    if ( TemplateState != null && TemplateState.RequiredSignatureDocumentTemplate != null )
+                    {
+                        fuSignedDocument.Label = TemplateState.RequiredSignatureDocumentTemplate.Name;
+                        if ( TemplateState.RequiredSignatureDocumentTemplate.BinaryFileType != null )
+                        {
+                            fuSignedDocument.BinaryFileTypeGuid = TemplateState.RequiredSignatureDocumentTemplate.BinaryFileType.Guid;
+                        }
+
+                        var signatureDocument = new SignatureDocumentService( rockContext )
+                            .Queryable().AsNoTracking()
+                            .Where( d =>
+                                d.SignatureDocumentTemplateId == TemplateState.RequiredSignatureDocumentTemplateId.Value &&
+                                d.AppliesToPersonAlias != null &&
+                                d.AppliesToPersonAlias.PersonId == registrant.PersonAlias.PersonId &&
+                                d.LastStatusDate.HasValue &&
+                                d.Status == SignatureDocumentStatus.Signed &&
+                                d.BinaryFile != null )
+                            .OrderByDescending( d => d.LastStatusDate.Value )
+                            .FirstOrDefault();
+
+                        if ( signatureDocument != null )
+                        {
+                            hfSignedDocumentId.Value = signatureDocument.Id.ToString();
+                            fuSignedDocument.BinaryFileId = signatureDocument.BinaryFileId;
+                        }
+
+                        fuSignedDocument.Visible = true;
+                    }
+                    else
+                    {
+                        fuSignedDocument.Visible = false;
+                    }
                 }
                 else
                 {

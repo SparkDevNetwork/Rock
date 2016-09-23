@@ -191,7 +191,7 @@ namespace Rock.Web.UI.Controls.Communication
 
             htmlMessage = new HtmlEditor();
             htmlMessage.ID = string.Format( "htmlMessage_{0}", this.ID );
-            htmlMessage.AdditionalConfigurations = "autoParagraph: false,";
+            //htmlMessage.AdditionalConfigurations = "autoParagraph: false,";
             htmlMessage.Help = "<span class='tip tip-lava'></span> <span class='tip tip-html'>";
             this.AdditionalMergeFields.ForEach( m => htmlMessage.MergeFields.Add( m ) );
             htmlMessage.Label = "Message";
@@ -241,7 +241,7 @@ namespace Rock.Web.UI.Controls.Communication
         }
 
         /// <summary>
-        /// On new communicaiton, initializes controls from sender values
+        /// On new communication, initializes controls from sender values
         /// </summary>
         /// <param name="sender">The sender.</param>
         /// <exception cref="System.NotImplementedException"></exception>

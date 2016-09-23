@@ -82,7 +82,7 @@ namespace Rock.Communication.Medium
             }
 
             string message = communication.GetMediumDataValue( "Message" );
-            return message.ResolveMergeFields( mergeFields );
+            return message.ResolveMergeFields( mergeFields, communication.EnabledLavaCommands );
         }
 
         /// <summary>

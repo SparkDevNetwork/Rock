@@ -1,2 +1,9 @@
-/LINQPad.config
-*.webinfo
+/bin/*/*.dll
+/bin/*.dll
+/bin/*.pdb
+/bin/*.xml
+
+/*.suo
+/*.user
+/Test.aspx
+/Test.aspx.cs

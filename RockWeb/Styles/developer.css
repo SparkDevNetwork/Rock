@@ -10,42 +10,35 @@
 
 
 /*CSF - right align the "Clear Exceptions" link on the Exceptions List Page*/
-.clearExceptionsLink
-{
-    text-align: right;
-    margin-bottom: 10px;
+.clearExceptionsLink {
+  margin-bottom: 10px;
+  text-align: right;
 }
 
 /*CSF - add margin to the "Return to List" button on the Exceptions List page*/
-.exceptionReturnToListButton
-{
-    margin-bottom: 10px;
+.exceptionReturnToListButton {
+  margin-bottom: 10px;
 }
 
 /*CSF - Exception Detail word wrap exception tables*/
-table.cookies
-{
-
-    word-wrap:break-word;
-    word-break:break-all;
+table.cookies {
+  word-break: break-all;
+  word-wrap: break-word;
 }
 
-table.cookies td
-{
-    min-width:200px;
-    vertical-align:text-top;
+table.cookies td {
+  min-width: 200px;
+  vertical-align: text-top;
 }
 
-table.server-variables
-{
-    word-break:break-all;
-    word-wrap:break-word;
+table.server-variables {
+  word-break: break-all;
+  word-wrap: break-word;
 }
 
-table.server-variables td
-{
-    min-width:200px;
-    vertical-align:text-top;
+table.server-variables td {
+  min-width: 200px;
+  vertical-align: text-top;
 }
 
 
@@ -53,9 +46,9 @@ table.server-variables td
 
 /* text between input elements in dataview filters - DT */
 span.data-view-filter-label {
-    display: inline-block; 
-    height:34px; 
-    margin: 8px 12px 0 0;
+  display: inline-block;
+  height: 34px;
+  margin: 8px 12px 0 0;
 }
 
 
@@ -63,76 +56,75 @@ span.data-view-filter-label {
 
 
 .rss-item-pager .previous > a, .rss-item-pager .previous > span {
-    float: left;
+  float: left;
 }
 
 .rss-item-pager .next > a, .rss-item-pager .next > span {
-    float: right;
+  float: right;
 }
 
 .rss-item-pager li > a, .rss-item-pager li > span {
-    display: inline-block;
-
+  display: inline-block;
 }
 
 .rss-item-pager:after {
-    clear: both;
+  clear: both;
 }
 .rss-item-pager:before, .rss-item-pager:after {
-    content: " ";
-    display: table;
+  display: table;
+  content: " ";
 }
 .rss-item-pager:after {
-    clear: both;
+  clear: both;
 }
 .rss-item-pager:before, .rss-item-pager:after {
-    content: " ";
-    display: table;
+  display: table;
+  content: " ";
 }
 
 .rss-item-pager {
-    list-style: none outside none;
-    margin: 20px 0;
-    padding-left: 0;
-    text-align: center;
+  padding-left: 0;
+  margin: 20px 0;
+  text-align: center;
+  list-style: none outside none;
 }
 
 /* Added by Rich Dubay 02.26.2014 */
 /* For related transaction image delete button stuff */
 .photo-display {
-    position: relative;
+  position: relative;
 }
 
 .image-delete-button {
-    display: none;
-    position: absolute;
-    bottom: 0;
-    z-index: 500;
-    width: 100%;
+  position: absolute;
+  bottom: 0;
+  z-index: 500;
+  display: none;
+  width: 100%;
 }
 
 .photo:hover > a.image-delete-button {
-    display: block;
+  display: block;
 }
 
 .photo > a.fluidbox-opened:hover + a {
-    display: none;
+  display: none;
 }
 
 /* DT Make the header of the merge field columns have a pointer since it can be used to select checkbox */
 .merge-personselect .merge-header-summary {
-    cursor:pointer;
+  cursor: pointer;
 }
 
 
 /* DT If th has a required class, render the required field indicator after the column heading */
 .table thead th.required:after {
-  font-family: FontAwesome;
-  content: '\f111';
   margin-left: 4px;
+  font-family: FontAwesome;
   font-size: 6px;
   color: #eca9a7;
   vertical-align: super;
+  content: '\f111';
 }
 
 /* Website calendar */
@@ -141,5 +133,5 @@ span.data-view-filter-label {
 
 /* DT 2015-07-06 Fee grid on registration */
 table th[align='right'] {
-    text-align: right;
+  text-align: right;
 }

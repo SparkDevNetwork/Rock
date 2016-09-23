@@ -427,6 +427,9 @@ namespace RockWeb.Blocks.Groups
             groupType.ShowConnectionStatus = cbShowConnectionStatus.Checked;
             groupType.IconCssClass = tbIconCssClass.Text;
             groupType.TakesAttendance = cbTakesAttendance.Checked;
+            groupType.GroupsRequireCampus = cbGroupsRequireCampus.Checked;
+            groupType.GroupAttendanceRequiresLocation = cbGroupAttendanceRequiresLocation.Checked;
+            groupType.GroupAttendanceRequiresSchedule = cbGroupAttendanceRequiresSchedule.Checked;
             groupType.AttendanceCountsAsWeekendService = cbWeekendService.Checked;
             groupType.SendAttendanceReminder = cbSendAttendanceReminder.Checked;
             groupType.AttendanceRule = ddlAttendanceRule.SelectedValueAsEnum<AttendanceRule>();
@@ -587,6 +590,7 @@ namespace RockWeb.Blocks.Groups
             if ( !groupTypeId.Equals( 0 ) )
             {
                 groupType = new GroupTypeService( new RockContext() ).Get( groupTypeId );
+                pdAuditDetails.SetEntity( groupType, ResolveRockUrl( "~" ) );
             }
 
             if ( groupType == null )
@@ -602,6 +606,8 @@ namespace RockWeb.Blocks.Groups
 
                 groupType.AllowedScheduleTypes = ScheduleType.None;
                 groupType.LocationSelectionMode = GroupLocationPickerMode.None;
+                // hide the panel drawer that show created and last modified dates
+                pdAuditDetails.Visible = false;
             }
 
             bool editAllowed = groupType.IsAuthorized( Authorization.EDIT, CurrentPerson );
@@ -687,6 +693,8 @@ namespace RockWeb.Blocks.Groups
             groupType.ChildGroupTypes.ToList().ForEach( a => ChildGroupTypesList.Add( a.Id ) );
             BindChildGroupTypesGrid();
 
+            cbGroupsRequireCampus.Checked = groupType.GroupsRequireCampus;
+
             // Display
             cbShowInGroupList.Checked = groupType.ShowInGroupList;
             cbShowInNavigation.Checked = groupType.ShowInNavigation;
@@ -729,6 +737,8 @@ namespace RockWeb.Blocks.Groups
             cbSendAttendanceReminder.Checked = groupType.SendAttendanceReminder;
             ddlAttendanceRule.SetValue( (int)groupType.AttendanceRule );
             ddlPrintTo.SetValue( (int)groupType.AttendancePrintTo );
+            cbGroupAttendanceRequiresSchedule.Checked = groupType.GroupAttendanceRequiresSchedule;
+            cbGroupAttendanceRequiresLocation.Checked = groupType.GroupAttendanceRequiresLocation;
 
             // Attributes
             gtpInheritedGroupType.Enabled = !groupType.IsSystem;

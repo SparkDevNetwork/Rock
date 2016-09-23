@@ -214,6 +214,7 @@ namespace RockWeb.Blocks.Crm
             if ( !layoutId.Equals( 0 ) )
             {
                 layout = new LayoutService( new RockContext() ).Get( layoutId );
+                pdAuditDetails.SetEntity( layout, ResolveRockUrl( "~" ) );
             }
 
             if (layout == null && siteId.HasValue)
@@ -224,6 +225,8 @@ namespace RockWeb.Blocks.Crm
                     layout = new Layout { Id = 0 };
                     layout.SiteId = siteId.Value;
                 }
+                // hide the panel drawer that show created and last modified dates
+                pdAuditDetails.Visible = false;
             }
 
             if (layout == null)

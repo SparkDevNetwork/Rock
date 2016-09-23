@@ -27,15 +27,16 @@ namespace Rock.Plugin.HotFixes
         /// </summary>
         public override void Up()
         {
-            Sql( @"
-    DECLARE @CountryCode nvarchar(3) = ( SELECT TOP 1 [Value] FROM [DefinedValue] WHERE [DefinedTypeId] IN ( SELECT [Id] FROM [DefinedType] WHERE [Guid] = '45E9EF7C-91C7-45AB-92C1-1D6219293847' ) ORDER BY [Order] )
-    IF @CountryCode IS NOT NULL
-    BEGIN
-	    UPDATE [PhoneNumber]
-	    SET [CountryCode] = @CountryCode
-	    WHERE [CountryCode] IS NULL
-    END
-" );
+            // Moved to 201606281347449_PersonDirectory
+//            Sql( @"
+//    DECLARE @CountryCode nvarchar(3) = ( SELECT TOP 1 [Value] FROM [DefinedValue] WHERE [DefinedTypeId] IN ( SELECT [Id] FROM [DefinedType] WHERE [Guid] = '45E9EF7C-91C7-45AB-92C1-1D6219293847' ) ORDER BY [Order] )
+//    IF @CountryCode IS NOT NULL
+//    BEGIN
+//	    UPDATE [PhoneNumber]
+//	    SET [CountryCode] = @CountryCode
+//	    WHERE [CountryCode] IS NULL
+//    END
+//" );
         }
 
         /// <summary>

@@ -15,6 +15,7 @@
 // </copyright>
 //
 using System;
+using System.Net;
 using System.Windows;
 using Rock.Net;
 using Rock.Wpf;
@@ -31,6 +32,7 @@ namespace Rock.Apps.CheckScannerUtility
         /// </summary>
         public App()
         {
+            ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12 | SecurityProtocolType.Tls11;
             this.DispatcherUnhandledException += App_DispatcherUnhandledException;
         }
 

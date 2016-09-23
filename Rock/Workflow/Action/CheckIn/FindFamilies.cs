@@ -56,6 +56,7 @@ namespace Rock.Workflow.Action.CheckIn
                 var memberService = new GroupMemberService( rockContext );
 
                 Guid familyGroupTypeGuid = SystemGuid.GroupType.GROUPTYPE_FAMILY.AsGuid();
+                var dvActive = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_ACTIVE.AsGuid() );
 
                 if ( checkInState.CheckIn.SearchType.Guid.Equals( new Guid( SystemGuid.DefinedValue.CHECKIN_SEARCH_TYPE_PHONE_NUMBER ) ) )
                 {
@@ -69,6 +70,12 @@ namespace Rock.Workflow.Action.CheckIn
                         .Where( m =>
                             m.Group.GroupType.Guid.Equals( familyGroupTypeGuid ) &&
                             m.Person.RecordTypeValueId == personRecordTypeId );
+
+                    if ( checkInState.CheckInType != null && checkInState.CheckInType.PreventInactivePeopele && dvActive != null )
+                    {
+                        familyQry = familyQry.Where( m =>
+                            m.Person.RecordStatusValueId == dvActive.Id );
+                    }
 
                     if ( checkInState.CheckInType == null || checkInState.CheckInType.PhoneSearchType == PhoneSearchType.EndsWith )
                     {
@@ -103,11 +110,19 @@ namespace Rock.Workflow.Action.CheckIn
                     foreach ( int familyId in familyIds )
                     {
                         // Get each of the members for this family
-                        var thisFamilyMembers = familyMembers
+                        var familyMemberQry = familyMembers
                             .Where( m =>
                                 m.GroupId == familyId &&
-                                m.Person.NickName != null )
-                            .ToList();
+                                m.Person.NickName != null );
+
+                        if ( checkInState.CheckInType != null && checkInState.CheckInType.PreventInactivePeopele && dvActive != null )
+                        {
+                            familyMemberQry = familyMemberQry
+                                .Where( m =>
+                                    m.Person.RecordStatusValueId == dvActive.Id );
+                        }
+
+                        var thisFamilyMembers = familyMemberQry.ToList();
 
                         if ( thisFamilyMembers.Any() )
                         {
@@ -134,7 +149,13 @@ namespace Rock.Workflow.Action.CheckIn
                 }
                 else if ( checkInState.CheckIn.SearchType.Guid.Equals( new Guid( SystemGuid.DefinedValue.CHECKIN_SEARCH_TYPE_NAME ) ) )
                 {
-                    foreach ( var person in personService.GetByFullName( checkInState.CheckIn.SearchValue, false ).AsNoTracking() )
+                    var people = personService.GetByFullName( checkInState.CheckIn.SearchValue, false ).AsNoTracking();
+                    if ( checkInState.CheckInType != null && checkInState.CheckInType.PreventInactivePeopele && dvActive != null )
+                    {
+                        people = people.Where( p => p.RecordStatusValueId == dvActive.Id );
+                    }
+
+                    foreach ( var person in people )
                     {
                         foreach ( var group in person.Members.Where( m => m.Group.GroupType.Guid.Equals( familyGroupTypeGuid ) ).Select( m => m.Group ).ToList() )
                         {
@@ -145,7 +166,16 @@ namespace Rock.Workflow.Action.CheckIn
                                 family.Group = group.Clone( false );
                                 family.Group.LoadAttributes( rockContext );
                                 family.Caption = group.ToString();
-                                family.SubCaption = memberService.GetFirstNames( group.Id ).ToList().AsDelimited( ", " );
+
+                                if ( checkInState.CheckInType == null || !checkInState.CheckInType.PreventInactivePeopele )
+                                {
+                                    family.SubCaption = memberService.GetFirstNames( group.Id ).ToList().AsDelimited( ", " );
+                                }
+                                else
+                                {
+                                    family.SubCaption = memberService.GetFirstNames( group.Id, false, false ).ToList().AsDelimited( ", " );
+                                }
+
                                 checkInState.CheckIn.Families.Add( family );
                             }
                         }

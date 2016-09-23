@@ -44,16 +44,17 @@ namespace RockWeb.Blocks.Cms
     [SecurityAction( Authorization.EDIT, "The roles and/or users that can edit the HTML content.")]
     [SecurityAction( Authorization.APPROVE, "The roles and/or users that have access to approve HTML content." )]
 
-    [BooleanField( "Use Code Editor", "Use the code editor instead of the WYSIWYG editor", true, "", 0 )]
-    [TextField("Document Root Folder", "The folder to use as the root when browsing or uploading documents.", false, "~/Content", "", 1 )]
-    [TextField( "Image Root Folder", "The folder to use as the root when browsing or uploading images.", false, "~/Content", "", 2 )]
-    [BooleanField( "User Specific Folders", "Should the root folders be specific to current user?", false, "", 3 )]
-    [IntegerField( "Cache Duration", "Number of seconds to cache the content.", false, 3600, "", 4 )]
-    [TextField( "Context Parameter", "Query string parameter to use for 'personalizing' content based on unique values.", false, "", "", 5 )]
-    [TextField( "Context Name", "Name to use to further 'personalize' content.  Blocks with the same name, and referenced with the same context parameter will share html values.", false, "", "", 6 )]
-    [BooleanField( "Enable Versioning", "If checked, previous versions of the content will be preserved. Versioning is required if you want to require approval.", false, "", 7, "SupportVersions" )]
-    [BooleanField( "Require Approval", "Require that content be approved?", false, "", 8 )]
-    [BooleanField( "Enable Debug", "Show lava merge fields.", false, "", 9 )]
+    [LavaCommandsField("Enabled Lava Commands", "The Lava commands that should be enabled for this HTML block.", false, order: 0)]
+    [BooleanField( "Use Code Editor", "Use the code editor instead of the WYSIWYG editor", true, "", 1 )]
+    [TextField("Document Root Folder", "The folder to use as the root when browsing or uploading documents.", false, "~/Content", "", 2 )]
+    [TextField( "Image Root Folder", "The folder to use as the root when browsing or uploading images.", false, "~/Content", "", 3 )]
+    [BooleanField( "User Specific Folders", "Should the root folders be specific to current user?", false, "", 4 )]
+    [IntegerField( "Cache Duration", "Number of seconds to cache the content.", false, 3600, "", 5 )]
+    [TextField( "Context Parameter", "Query string parameter to use for 'personalizing' content based on unique values.", false, "", "", 6 )]
+    [TextField( "Context Name", "Name to use to further 'personalize' content.  Blocks with the same name, and referenced with the same context parameter will share html values.", false, "", "", 7 )]
+    [BooleanField( "Enable Versioning", "If checked, previous versions of the content will be preserved. Versioning is required if you want to require approval.", false, "", 8, "SupportVersions" )]
+    [BooleanField( "Require Approval", "Require that content be approved?", false, "", 9 )]
+    [BooleanField( "Enable Debug", "Show lava merge fields.", false, "", 10 )]
 
     [ContextAware]
     public partial class HtmlContentDetail : RockBlockCustomSettings
@@ -155,8 +156,7 @@ namespace RockWeb.Blocks.Cms
             int version = hfVersion.ValueAsInt();
             HtmlContent htmlContent = htmlContentService.GetByBlockIdAndEntityValueAndVersion( this.BlockId, entityValue, version );
 
-            // get the content depending on which mode we are in (codeeditor or ckeditor)
-            string newContent = ceHtml.Visible ? ceHtml.Text : htmlEditor.Text;
+            string newContent = htmlEditor.Text;
 
             // check if the new content is valid
             // NOTE: This is a limited check that will only warn of invalid HTML the first 
@@ -164,6 +164,7 @@ namespace RockWeb.Blocks.Cms
             // are assumed to be intentional.
             HtmlDocument doc = new HtmlDocument();
             doc.LoadHtml( newContent );
+
             if ( doc.ParseErrors.Count() > 0 && !nbInvalidHtml.Visible )
             {
                 var reasons = doc.ParseErrors.Select( r => r.Reason ).ToList();
@@ -389,8 +390,7 @@ namespace RockWeb.Blocks.Cms
 
             bool useCodeEditor = GetAttributeValue( "UseCodeEditor" ).AsBoolean();
 
-            ceHtml.Visible = useCodeEditor;
-            htmlEditor.Visible = !useCodeEditor;
+            htmlEditor.StartInCodeEditorMode = useCodeEditor;
 
             htmlEditor.Toolbar = HtmlEditor.ToolbarConfig.Full;
 
@@ -407,7 +407,6 @@ namespace RockWeb.Blocks.Cms
                 string onchangeScript = string.Format( onchangeScriptFormat, lblApprovalStatus.ClientID, hfApprovalStatus.ClientID, hfApprovalStatusPersonId.ClientID, lblApprovalStatusPerson.ClientID );
 
                 htmlEditor.OnChangeScript = onchangeScript;
-                ceHtml.OnChangeScript = onchangeScript;
             }
 
             htmlEditor.MergeFields.Clear();
@@ -420,16 +419,6 @@ namespace RockWeb.Blocks.Cms
             htmlEditor.MergeFields.Add( "Time" );
             htmlEditor.MergeFields.Add( "DayOfWeek" );
 
-            ceHtml.MergeFields.Clear();
-            ceHtml.MergeFields.Add( "GlobalAttribute" );
-            ceHtml.MergeFields.Add( "CurrentPerson^Rock.Model.Person|Current Person" );
-            ceHtml.MergeFields.Add( "Campuses" );
-            ceHtml.MergeFields.Add( "RockVersion" );
-            ceHtml.MergeFields.Add( "PageParameter" );
-            ceHtml.MergeFields.Add( "Date" );
-            ceHtml.MergeFields.Add( "Time" );
-            ceHtml.MergeFields.Add( "DayOfWeek" );
-
             var contextObjects = new Dictionary<string, object>();
             foreach ( var contextEntityType in RockPage.GetContextEntityTypes() )
             {
@@ -441,7 +430,6 @@ namespace RockWeb.Blocks.Cms
                     {
                         string mergeField = string.Format( "Context.{0}^{1}|Current {0} (Context)|Context", type.Name, type.FullName );
                         htmlEditor.MergeFields.Add( mergeField );
-                        ceHtml.MergeFields.Add( mergeField );
                     }
                 }
             }
@@ -471,17 +459,14 @@ namespace RockWeb.Blocks.Cms
             // set Height of editors
             if ( supportsVersioning && requireApproval )
             {
-                ceHtml.EditorHeight = "280";
                 htmlEditor.Height = 280;
             }
             else if ( supportsVersioning )
             {
-                ceHtml.EditorHeight = "350";
                 htmlEditor.Height = 350;
             }
             else
             {
-                ceHtml.EditorHeight = "380";
                 htmlEditor.Height = 380;
             }
 
@@ -516,7 +501,6 @@ namespace RockWeb.Blocks.Cms
             drpDateRange.LowerValue = htmlContent.StartDateTime;
             drpDateRange.UpperValue = htmlContent.ExpireDateTime;
             htmlEditor.Text = htmlContent.Content;
-            ceHtml.Text = htmlContent.Content;
         }
 
         /// <summary>
@@ -613,7 +597,7 @@ namespace RockWeb.Blocks.Cms
                             mergeFields.Add( "CurrentPersonCanEdit", IsUserAuthorized( Authorization.EDIT ) );
                             mergeFields.Add( "CurrentPersonCanAdministrate", IsUserAuthorized( Authorization.ADMINISTRATE ) );
 
-                            html = content.Content.ResolveMergeFields( mergeFields );
+                            html = content.Content.ResolveMergeFields( mergeFields, GetAttributeValue("EnabledLavaCommands") );
 
                             // show merge fields if enable debug true
                             if ( enableDebug && IsUserAuthorized( Authorization.EDIT ) )

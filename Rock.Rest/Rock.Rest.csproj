@@ -1,15 +1,15 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project ToolsVersion="14.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{B89DFD33-CE93-44E1-8616-C31ACDFE89CB}</ProjectGuid>
+    <ProjectGuid>{ADD1EDD0-A4CB-4E82-B6AD-6AD1D556DEAE}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>Rock.Rest</RootNamespace>
     <AssemblyName>Rock.Rest</AssemblyName>
-    <TargetFrameworkVersion>v4.5.1</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <TargetFrameworkProfile />
   </PropertyGroup>
@@ -32,93 +32,111 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="EntityFramework, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\EntityFramework.6.1.3\lib\net45\EntityFramework.dll</HintPath>
+      <Private>True</Private>
     </Reference>
     <Reference Include="EntityFramework.SqlServer, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\EntityFramework.6.1.3\lib\net45\EntityFramework.SqlServer.dll</HintPath>
+      <Private>True</Private>
     </Reference>
-    <Reference Include="ImageResizer, Version=3.4.3.103, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\ImageResizer.3.4.3\lib\ImageResizer.dll</HintPath>
+    <Reference Include="ImageResizer, Version=4.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\ImageResizer.4.0.5\lib\net45\ImageResizer.dll</HintPath>
+      <Private>True</Private>
     </Reference>
-    <Reference Include="Microsoft.Data.Edm, Version=5.6.3.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\Microsoft.Data.Edm.5.6.3\lib\net40\Microsoft.Data.Edm.dll</HintPath>
+    <Reference Include="Microsoft.Data.Edm, Version=5.6.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.Data.Edm.5.6.0\lib\net40\Microsoft.Data.Edm.dll</HintPath>
+      <Private>True</Private>
     </Reference>
-    <Reference Include="Microsoft.Data.OData, Version=5.6.3.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\Microsoft.Data.OData.5.6.3\lib\net40\Microsoft.Data.OData.dll</HintPath>
+    <Reference Include="Microsoft.Data.OData, Version=5.6.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.Data.OData.5.6.0\lib\net40\Microsoft.Data.OData.dll</HintPath>
+      <Private>True</Private>
     </Reference>
-    <Reference Include="Newtonsoft.Json, Version=6.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\Newtonsoft.Json.6.0.7\lib\net45\Newtonsoft.Json.dll</HintPath>
+    <Reference Include="Newtonsoft.Json, Version=9.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <HintPath>..\packages\Newtonsoft.Json.9.0.1\lib\net45\Newtonsoft.Json.dll</HintPath>
+      <Private>True</Private>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.ComponentModel.Composition" />
     <Reference Include="System.ComponentModel.DataAnnotations" />
     <Reference Include="System.Core" />
     <Reference Include="System.Drawing" />
-    <Reference Include="System.Net.Http" />
-    <Reference Include="System.Net.Http.Formatting, Version=5.2.2.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\Microsoft.AspNet.WebApi.Client.5.2.2\lib\net45\System.Net.Http.Formatting.dll</HintPath>
+    <Reference Include="System.Net.Http.Formatting, Version=5.2.3.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.AspNet.WebApi.Client.5.2.3\lib\net45\System.Net.Http.Formatting.dll</HintPath>
+      <Private>True</Private>
     </Reference>
     <Reference Include="System.Runtime.Serialization" />
     <Reference Include="System.ServiceModel" />
-    <Reference Include="System.Spatial, Version=5.6.3.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\System.Spatial.5.6.3\lib\net40\System.Spatial.dll</HintPath>
+    <Reference Include="System.Spatial, Version=5.6.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Spatial.5.6.0\lib\net40\System.Spatial.dll</HintPath>
+      <Private>True</Private>
     </Reference>
     <Reference Include="System.Web" />
-    <Reference Include="System.Web.Cors, Version=5.2.2.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\Microsoft.AspNet.Cors.5.2.2\lib\net45\System.Web.Cors.dll</HintPath>
+    <Reference Include="System.Web.Cors, Version=5.2.3.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.AspNet.Cors.5.2.3\lib\net45\System.Web.Cors.dll</HintPath>
+      <Private>True</Private>
     </Reference>
-    <Reference Include="System.Web.Http, Version=5.2.2.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\Microsoft.AspNet.WebApi.Core.5.2.2\lib\net45\System.Web.Http.dll</HintPath>
+    <Reference Include="System.Web.Http, Version=5.2.3.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.AspNet.WebApi.Core.5.2.3\lib\net45\System.Web.Http.dll</HintPath>
+      <Private>True</Private>
     </Reference>
-    <Reference Include="System.Web.Http.Cors, Version=5.2.2.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\Microsoft.AspNet.WebApi.Cors.5.2.2\lib\net45\System.Web.Http.Cors.dll</HintPath>
+    <Reference Include="System.Web.Http.Cors, Version=5.2.3.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.AspNet.WebApi.Cors.5.2.3\lib\net45\System.Web.Http.Cors.dll</HintPath>
+      <Private>True</Private>
     </Reference>
-    <Reference Include="System.Web.Http.OData, Version=5.3.1.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\Microsoft.AspNet.WebApi.OData.5.3.1\lib\net45\System.Web.Http.OData.dll</HintPath>
+    <Reference Include="System.Web.Http.OData, Version=5.7.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.AspNet.WebApi.OData.5.7.0\lib\net45\System.Web.Http.OData.dll</HintPath>
+      <Private>True</Private>
     </Reference>
-    <Reference Include="System.Web.Http.WebHost, Version=5.2.2.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\Microsoft.AspNet.WebApi.WebHost.5.2.2\lib\net45\System.Web.Http.WebHost.dll</HintPath>
+    <Reference Include="System.Web.Http.WebHost, Version=5.2.3.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.AspNet.WebApi.WebHost.5.2.3\lib\net45\System.Web.Http.WebHost.dll</HintPath>
+      <Private>True</Private>
     </Reference>
-    <Reference Include="System.Web.Routing" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Data" />
+    <Reference Include="System.Net.Http" />
     <Reference Include="System.Xml" />
-    <Reference Include="UAParser, Version=1.2.0.0, Culture=neutral, PublicKeyToken=f7377bf021646069, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\UAParser.1.2.0.0\lib\net35-Client\UAParser.dll</HintPath>
-    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ApiController.cs" />
     <Compile Include="ApiControllerBase.cs" />
     <Compile Include="App_Start\WebApiConfig.cs" />
+    <Compile Include="Binders\NakedBodyAttribute.cs" />
+    <Compile Include="Binders\NakedBodyParameterBinding.cs" />
     <Compile Include="Constraints\ValidControllerNameConstraint.cs" />
     <Compile Include="Controllers\AttendancesController.partial.cs" />
-    <Compile Include="Controllers\CodeGenerated\BackgroundChecksController.cs" />
-    <Compile Include="Controllers\CodeGenerated\PageViewSessionsController.cs" />
-    <Compile Include="Controllers\CodeGenerated\PageViewUserAgentsController.cs" />
+    <Compile Include="Controllers\AttributesController.Partial.cs" />
+    <Compile Include="Controllers\AuthController.cs" />
     <Compile Include="Controllers\BinaryFilesController.Partial.cs" />
-    <Compile Include="Controllers\WorkflowActionTypesController.Partial.cs" />
-    <Compile Include="Controllers\ConnectionRequestsController.Partial.cs" />
+    <Compile Include="Controllers\CodeGenerated\NotificationRecipientsController.cs" />
+    <Compile Include="Controllers\CodeGenerated\NotificationsController.cs" />
+    <Compile Include="Controllers\CodeGenerated\SignatureDocumentsController.cs" />
+    <Compile Include="Controllers\CodeGenerated\SignatureDocumentTemplatesController.cs" />
+    <Compile Include="Controllers\BlocksController.Partial.cs" />
+    <Compile Include="Controllers\CategoriesController.Partial.cs" />
+    <Compile Include="Controllers\CodeGenerated\AttendanceCodesController.cs" />
+    <Compile Include="Controllers\CodeGenerated\AttendancesController.cs" />
+    <Compile Include="Controllers\CodeGenerated\AttributeQualifiersController.cs" />
+    <Compile Include="Controllers\CodeGenerated\AttributesController.cs" />
+    <Compile Include="Controllers\CodeGenerated\AttributeValuesController.cs" />
+    <Compile Include="Controllers\CodeGenerated\AuditDetailsController.cs" />
+    <Compile Include="Controllers\CodeGenerated\AuditsController.cs" />
+    <Compile Include="Controllers\CodeGenerated\AuthsController.cs" />
+    <Compile Include="Controllers\CodeGenerated\BackgroundChecksController.cs" />
+    <Compile Include="Controllers\CodeGenerated\BenevolenceRequestDocumentsController.cs" />
     <Compile Include="Controllers\CodeGenerated\BenevolenceRequestsController.cs" />
     <Compile Include="Controllers\CodeGenerated\BenevolenceResultsController.cs" />
+    <Compile Include="Controllers\CodeGenerated\BinaryFileDatasController.cs" />
+    <Compile Include="Controllers\CodeGenerated\BinaryFilesController.cs" />
+    <Compile Include="Controllers\CodeGenerated\BinaryFileTypesController.cs" />
+    <Compile Include="Controllers\CodeGenerated\BlocksController.cs" />
+    <Compile Include="Controllers\CodeGenerated\BlockTypesController.cs" />
     <Compile Include="Controllers\CodeGenerated\CampusesController.cs" />
+    <Compile Include="Controllers\CodeGenerated\CategoriesController.cs" />
     <Compile Include="Controllers\CodeGenerated\CommunicationRecipientActivitiesController.cs" />
+    <Compile Include="Controllers\CodeGenerated\CommunicationRecipientsController.cs" />
+    <Compile Include="Controllers\CodeGenerated\CommunicationsController.cs" />
     <Compile Include="Controllers\CodeGenerated\CommunicationTemplatesController.cs" />
     <Compile Include="Controllers\CodeGenerated\ConnectionActivityTypesController.cs" />
     <Compile Include="Controllers\CodeGenerated\ConnectionOpportunitiesController.cs" />
@@ -131,11 +149,18 @@
     <Compile Include="Controllers\CodeGenerated\ConnectionStatusController.cs" />
     <Compile Include="Controllers\CodeGenerated\ConnectionTypesController.cs" />
     <Compile Include="Controllers\CodeGenerated\ConnectionWorkflowsController.cs" />
-    <Compile Include="Controllers\CodeGenerated\ContentChannelsController.cs" />
+    <Compile Include="Controllers\CodeGenerated\ContentChannelItemAssociationsController.cs" />
     <Compile Include="Controllers\CodeGenerated\ContentChannelItemsController.cs" />
+    <Compile Include="Controllers\CodeGenerated\ContentChannelsController.cs" />
     <Compile Include="Controllers\CodeGenerated\ContentChannelTypesController.cs" />
+    <Compile Include="Controllers\CodeGenerated\DataViewFiltersController.cs" />
+    <Compile Include="Controllers\CodeGenerated\DataViewsController.cs" />
+    <Compile Include="Controllers\CodeGenerated\DefinedTypesController.cs" />
+    <Compile Include="Controllers\CodeGenerated\DefinedValuesController.cs" />
+    <Compile Include="Controllers\CodeGenerated\DevicesController.cs" />
     <Compile Include="Controllers\CodeGenerated\EntitySetItemsController.cs" />
     <Compile Include="Controllers\CodeGenerated\EntitySetsController.cs" />
+    <Compile Include="Controllers\CodeGenerated\EntityTypesController.cs" />
     <Compile Include="Controllers\CodeGenerated\EventCalendarContentChannelsController.cs" />
     <Compile Include="Controllers\CodeGenerated\EventCalendarItemsController.cs" />
     <Compile Include="Controllers\CodeGenerated\EventCalendarsController.cs" />
@@ -144,25 +169,64 @@
     <Compile Include="Controllers\CodeGenerated\EventItemOccurrenceGroupMapsController.cs" />
     <Compile Include="Controllers\CodeGenerated\EventItemOccurrencesController.cs" />
     <Compile Include="Controllers\CodeGenerated\EventItemsController.cs" />
+    <Compile Include="Controllers\CodeGenerated\ExceptionLogsController.cs" />
+    <Compile Include="Controllers\CodeGenerated\FieldTypesController.cs" />
+    <Compile Include="Controllers\CodeGenerated\FinancialAccountsController.cs" />
+    <Compile Include="Controllers\CodeGenerated\FinancialBatchesController.cs" />
     <Compile Include="Controllers\CodeGenerated\FinancialGatewaysController.cs" />
+    <Compile Include="Controllers\CodeGenerated\FinancialPaymentDetailsController.cs" />
+    <Compile Include="Controllers\CodeGenerated\FinancialPersonBankAccountsController.cs" />
+    <Compile Include="Controllers\CodeGenerated\FinancialPersonSavedAccountsController.cs" />
+    <Compile Include="Controllers\CodeGenerated\FinancialPledgesController.cs" />
+    <Compile Include="Controllers\CodeGenerated\FinancialScheduledTransactionDetailsController.cs" />
+    <Compile Include="Controllers\CodeGenerated\FinancialScheduledTransactionsController.cs" />
+    <Compile Include="Controllers\CodeGenerated\FinancialTransactionDetailsController.cs" />
+    <Compile Include="Controllers\CodeGenerated\FinancialTransactionImagesController.cs" />
+    <Compile Include="Controllers\CodeGenerated\FinancialTransactionRefundsController.cs" />
+    <Compile Include="Controllers\CodeGenerated\FinancialTransactionsController.cs" />
     <Compile Include="Controllers\CodeGenerated\FollowingEventNotificationsController.cs" />
     <Compile Include="Controllers\CodeGenerated\FollowingEventSubscriptionsController.cs" />
     <Compile Include="Controllers\CodeGenerated\FollowingEventTypesController.cs" />
-    <Compile Include="Controllers\CodeGenerated\FinancialPaymentDetailsController.cs" />
     <Compile Include="Controllers\CodeGenerated\FollowingsController.cs" />
     <Compile Include="Controllers\CodeGenerated\FollowingSuggestedsController.cs" />
     <Compile Include="Controllers\CodeGenerated\FollowingSuggestionTypesController.cs" />
+    <Compile Include="Controllers\CodeGenerated\GroupLocationsController.cs" />
     <Compile Include="Controllers\CodeGenerated\GroupMemberRequirementsController.cs" />
+    <Compile Include="Controllers\CodeGenerated\GroupMembersController.cs" />
     <Compile Include="Controllers\CodeGenerated\GroupMemberWorkflowTriggersController.cs" />
     <Compile Include="Controllers\CodeGenerated\GroupRequirementsController.cs" />
     <Compile Include="Controllers\CodeGenerated\GroupRequirementTypesController.cs" />
     <Compile Include="Controllers\CodeGenerated\GroupScheduleExclusionsController.cs" />
+    <Compile Include="Controllers\CodeGenerated\GroupsController.cs" />
+    <Compile Include="Controllers\CodeGenerated\GroupTypeRolesController.cs" />
+    <Compile Include="Controllers\CodeGenerated\GroupTypesController.cs" />
+    <Compile Include="Controllers\CodeGenerated\HistoriesController.cs" />
+    <Compile Include="Controllers\CodeGenerated\HtmlContentsController.cs" />
+    <Compile Include="Controllers\CodeGenerated\LayoutsController.cs" />
+    <Compile Include="Controllers\CodeGenerated\LocationsController.cs" />
     <Compile Include="Controllers\CodeGenerated\MergeTemplatesController.cs" />
     <Compile Include="Controllers\CodeGenerated\MetricCategoriesController.cs" />
+    <Compile Include="Controllers\CodeGenerated\MetricPartitionsController.cs" />
+    <Compile Include="Controllers\CodeGenerated\MetricsController.cs" />
+    <Compile Include="Controllers\CodeGenerated\MetricValuePartitionsController.cs" />
+    <Compile Include="Controllers\CodeGenerated\MetricValuesController.cs" />
+    <Compile Include="Controllers\CodeGenerated\NotesController.cs" />
+    <Compile Include="Controllers\CodeGenerated\NoteTypesController.cs" />
+    <Compile Include="Controllers\CodeGenerated\PageContextsController.cs" />
+    <Compile Include="Controllers\CodeGenerated\PageRoutesController.cs" />
+    <Compile Include="Controllers\CodeGenerated\PagesController.cs" />
     <Compile Include="Controllers\CodeGenerated\PageViewsController.cs" />
+    <Compile Include="Controllers\CodeGenerated\PageViewSessionsController.cs" />
+    <Compile Include="Controllers\CodeGenerated\PageViewUserAgentsController.cs" />
+    <Compile Include="Controllers\CodeGenerated\PeopleController.cs" />
+    <Compile Include="Controllers\CodeGenerated\PersonAliasController.cs" />
+    <Compile Include="Controllers\CodeGenerated\PersonBadgesController.cs" />
     <Compile Include="Controllers\CodeGenerated\PersonDuplicatesController.cs" />
     <Compile Include="Controllers\CodeGenerated\PersonPreviousNamesController.cs" />
+    <Compile Include="Controllers\CodeGenerated\PersonViewedsController.cs" />
+    <Compile Include="Controllers\CodeGenerated\PhoneNumbersController.cs" />
     <Compile Include="Controllers\CodeGenerated\PluginMigrationsController.cs" />
+    <Compile Include="Controllers\CodeGenerated\PrayerRequestsController.cs" />
     <Compile Include="Controllers\CodeGenerated\RegistrationInstancesController.cs" />
     <Compile Include="Controllers\CodeGenerated\RegistrationRegistrantFeesController.cs" />
     <Compile Include="Controllers\CodeGenerated\RegistrationRegistrantsController.cs" />
@@ -172,94 +236,21 @@
     <Compile Include="Controllers\CodeGenerated\RegistrationTemplateFormFieldsController.cs" />
     <Compile Include="Controllers\CodeGenerated\RegistrationTemplateFormsController.cs" />
     <Compile Include="Controllers\CodeGenerated\RegistrationTemplatesController.cs" />
-    <Compile Include="Controllers\ExceptionLogsController.Partial.cs" />
-    <Compile Include="Controllers\FinancialTransactionDetailsController.Partial.cs" />
-    <Compile Include="Controllers\FollowingsController.Partial.cs" />
-    <Compile Include="Controllers\MetricValuesController.Partial.cs" />
-    <Compile Include="Controllers\CodeGenerated\WorkflowActionFormAttributesController.cs" />
-    <Compile Include="Controllers\CodeGenerated\WorkflowActionFormsController.cs" />
-    <Compile Include="Controllers\PhoneNumbersController.Partial.cs" />
-    <Compile Include="Controllers\UtilityController.cs" />
-    <Compile Include="Controllers\WorkflowsController.Partial.cs" />
-    <Compile Include="Controllers\PersonBadgesController.cs" />
-    <Compile Include="Controllers\AuthController.cs" />
-    <Compile Include="Controllers\CategoriesController.Partial.cs" />
-    <Compile Include="Controllers\CodeGenerated\AttendanceCodesController.cs" />
-    <Compile Include="Controllers\CodeGenerated\AuditDetailsController.cs" />
-    <Compile Include="Controllers\CodeGenerated\BinaryFileDatasController.cs" />
-    <Compile Include="Controllers\CodeGenerated\BinaryFileTypesController.cs" />
-    <Compile Include="Controllers\CodeGenerated\CommunicationRecipientsController.cs" />
-    <Compile Include="Controllers\CodeGenerated\CommunicationsController.cs" />
-    <Compile Include="Controllers\CodeGenerated\DataViewFiltersController.cs" />
-    <Compile Include="Controllers\CodeGenerated\DataViewsController.cs" />
-    <Compile Include="Controllers\CodeGenerated\FinancialAccountsController.cs" />
-    <Compile Include="Controllers\CodeGenerated\FinancialPersonBankAccountsController.cs" />
-    <Compile Include="Controllers\CodeGenerated\FinancialPersonSavedAccountsController.cs" />
-    <Compile Include="Controllers\CodeGenerated\FinancialPledgesController.cs" />
-    <Compile Include="Controllers\CodeGenerated\FinancialScheduledTransactionDetailsController.cs" />
-    <Compile Include="Controllers\CodeGenerated\FinancialScheduledTransactionsController.cs" />
-    <Compile Include="Controllers\CodeGenerated\FinancialTransactionImagesController.cs" />
-    <Compile Include="Controllers\CodeGenerated\FinancialTransactionRefundsController.cs" />
-    <Compile Include="Controllers\CodeGenerated\GroupTypeRolesController.cs" />
-    <Compile Include="Controllers\CodeGenerated\HistoriesController.cs" />
-    <Compile Include="Controllers\CodeGenerated\LayoutsController.cs" />
-    <Compile Include="Controllers\CodeGenerated\NotesController.cs" />
-    <Compile Include="Controllers\CodeGenerated\NoteTypesController.cs" />
-    <Compile Include="Controllers\CodeGenerated\PersonAliasController.cs" />
-    <Compile Include="Controllers\CodeGenerated\PersonBadgesController.cs" />
-    <Compile Include="Controllers\CodeGenerated\PrayerRequestsController.cs" />
     <Compile Include="Controllers\CodeGenerated\ReportFieldsController.cs" />
     <Compile Include="Controllers\CodeGenerated\ReportsController.cs" />
     <Compile Include="Controllers\CodeGenerated\RestActionsController.cs" />
     <Compile Include="Controllers\CodeGenerated\RestControllersController.cs" />
-    <Compile Include="Controllers\FileBrowserController.cs" />
-    <Compile Include="Controllers\MergeFieldsController.cs" />
-    <Compile Include="Controllers\FinancialAccountsController.Partial.cs" />
-    <Compile Include="Controllers\GroupsController.Partial.cs" />
-    <Compile Include="Controllers\AttributesController.Partial.cs" />
-    <Compile Include="Controllers\BlocksController.Partial.cs" />
-    <Compile Include="Controllers\CodeGenerated\AttendancesController.cs" />
-    <Compile Include="Controllers\CodeGenerated\DevicesController.cs" />
-    <Compile Include="Controllers\CodeGenerated\GroupLocationsController.cs" />
     <Compile Include="Controllers\CodeGenerated\SchedulesController.cs" />
-    <Compile Include="Controllers\CodeGenerated\AttributeQualifiersController.cs" />
-    <Compile Include="Controllers\CodeGenerated\AttributesController.cs" />
-    <Compile Include="Controllers\CodeGenerated\AttributeValuesController.cs" />
-    <Compile Include="Controllers\CodeGenerated\AuditsController.cs" />
-    <Compile Include="Controllers\CodeGenerated\AuthsController.cs" />
-    <Compile Include="Controllers\CodeGenerated\BinaryFilesController.cs" />
-    <Compile Include="Controllers\CodeGenerated\BlocksController.cs" />
-    <Compile Include="Controllers\CodeGenerated\BlockTypesController.cs" />
-    <Compile Include="Controllers\CodeGenerated\CategoriesController.cs" />
-    <Compile Include="Controllers\CodeGenerated\DefinedTypesController.cs" />
-    <Compile Include="Controllers\CodeGenerated\DefinedValuesController.cs" />
-    <Compile Include="Controllers\CodeGenerated\SystemEmailsController.cs" />
-    <Compile Include="Controllers\CodeGenerated\EntityTypesController.cs" />
-    <Compile Include="Controllers\CodeGenerated\ExceptionLogsController.cs" />
-    <Compile Include="Controllers\CodeGenerated\FieldTypesController.cs" />
-    <Compile Include="Controllers\CodeGenerated\FinancialBatchesController.cs" />
-    <Compile Include="Controllers\CodeGenerated\FinancialTransactionDetailsController.cs" />
-    <Compile Include="Controllers\CodeGenerated\FinancialTransactionsController.cs" />
-    <Compile Include="Controllers\CodeGenerated\GroupMembersController.cs" />
-    <Compile Include="Controllers\CodeGenerated\GroupsController.cs" />
-    <Compile Include="Controllers\CodeGenerated\GroupTypesController.cs" />
-    <Compile Include="Controllers\CodeGenerated\HtmlContentsController.cs" />
-    <Compile Include="Controllers\CodeGenerated\LocationsController.cs" />
-    <Compile Include="Controllers\CodeGenerated\MetricsController.cs" />
-    <Compile Include="Controllers\CodeGenerated\MetricValuesController.cs" />
-    <Compile Include="Controllers\CodeGenerated\PageContextsController.cs" />
-    <Compile Include="Controllers\CodeGenerated\PageRoutesController.cs" />
-    <Compile Include="Controllers\CodeGenerated\PagesController.cs" />
-    <Compile Include="Controllers\CodeGenerated\PeopleController.cs" />
-    <Compile Include="Controllers\CodeGenerated\PersonViewedsController.cs" />
-    <Compile Include="Controllers\CodeGenerated\PhoneNumbersController.cs" />
     <Compile Include="Controllers\CodeGenerated\ServiceJobsController.cs" />
     <Compile Include="Controllers\CodeGenerated\ServiceLogsController.cs" />
     <Compile Include="Controllers\CodeGenerated\SiteDomainsController.cs" />
     <Compile Include="Controllers\CodeGenerated\SitesController.cs" />
+    <Compile Include="Controllers\CodeGenerated\SystemEmailsController.cs" />
     <Compile Include="Controllers\CodeGenerated\TaggedItemsController.cs" />
     <Compile Include="Controllers\CodeGenerated\TagsController.cs" />
     <Compile Include="Controllers\CodeGenerated\UserLoginsController.cs" />
+    <Compile Include="Controllers\CodeGenerated\WorkflowActionFormAttributesController.cs" />
+    <Compile Include="Controllers\CodeGenerated\WorkflowActionFormsController.cs" />
     <Compile Include="Controllers\CodeGenerated\WorkflowActionsController.cs" />
     <Compile Include="Controllers\CodeGenerated\WorkflowActionTypesController.cs" />
     <Compile Include="Controllers\CodeGenerated\WorkflowActivitiesController.cs" />
@@ -268,18 +259,35 @@
     <Compile Include="Controllers\CodeGenerated\WorkflowsController.cs" />
     <Compile Include="Controllers\CodeGenerated\WorkflowTriggersController.cs" />
     <Compile Include="Controllers\CodeGenerated\WorkflowTypesController.cs" />
+    <Compile Include="Controllers\ConnectionRequestsController.Partial.cs" />
+    <Compile Include="Controllers\ExceptionLogsController.Partial.cs" />
+    <Compile Include="Controllers\FileBrowserController.cs" />
+    <Compile Include="Controllers\FinancialAccountsController.Partial.cs" />
+    <Compile Include="Controllers\FinancialTransactionsController.Partial.cs" />
+    <Compile Include="Controllers\FollowingsController.Partial.cs" />
+    <Compile Include="Controllers\GroupMembersController.Partial.cs" />
+    <Compile Include="Controllers\GroupsController.Partial.cs" />
+    <Compile Include="Controllers\LavaController.cs" />
+    <Compile Include="Controllers\LocationsController.Partial.cs" />
+    <Compile Include="Controllers\MergeFieldsController.cs" />
+    <Compile Include="Controllers\MetricsController.partial.cs" />
+    <Compile Include="Controllers\MetricValuesController.Partial.cs" />
     <Compile Include="Controllers\PagesController.Partial.cs" />
     <Compile Include="Controllers\PeopleController.Partial.cs" />
+    <Compile Include="Controllers\PersonBadgesController.cs" />
+    <Compile Include="Controllers\PhoneNumbersController.Partial.cs" />
     <Compile Include="Controllers\PrayerRequestsController.Parial.cs" />
     <Compile Include="Controllers\SearchController.cs" />
     <Compile Include="Controllers\TaggedItemsController.Partial.cs" />
-    <Compile Include="Controllers\LocationsController.Partial.cs" />
     <Compile Include="Controllers\TagsController.Partial.cs" />
     <Compile Include="Controllers\UserLoginsController.Partial.cs" />
+    <Compile Include="Controllers\UtilityController.cs" />
+    <Compile Include="Controllers\WorkflowActionTypesController.Partial.cs" />
+    <Compile Include="Controllers\WorkflowsController.Partial.cs" />
     <Compile Include="EnableCorsFromOriginAttribute.cs" />
     <Compile Include="Filters\AuthenticateAttribute.cs" />
-    <Compile Include="Filters\SecuredAttribute.cs" />
     <Compile Include="Filters\RequireHttpsAttribute.cs" />
+    <Compile Include="Filters\SecuredAttribute.cs" />
     <Compile Include="Filters\ValidateAttribute.cs" />
     <Compile Include="Handler\RockApiExceptionHandler.cs" />
     <Compile Include="Handler\RockApiExceptionLogger.cs" />
@@ -289,20 +297,19 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\DotLiquid\DotLiquid.csproj">
-      <Project>{cb9372cd-9c1d-47ab-92d8-702d4d68324f}</Project>
+      <Project>{00edcb8d-ef33-459c-ad62-02876bd24dff}</Project>
       <Name>DotLiquid</Name>
     </ProjectReference>
     <ProjectReference Include="..\Rock\Rock.csproj">
-      <Project>{8f8c2a79-24f4-4157-8b99-45f75fa85799}</Project>
+      <Project>{185a31d7-3037-4dae-8797-0459849a84bd}</Project>
       <Name>Rock</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <None Include="App.config" />
-    <Compile Include="Controllers\FinancialTransactionsController.Partial.cs" />
-    <Compile Include="Controllers\MetricsController.partial.cs" />
-    <Compile Include="Controllers\GroupMembersController.Partial.cs" />
-    <None Include="packages.config" />
+    <None Include="app.config" />
+    <None Include="packages.config">
+      <SubType>Designer</SubType>
+    </None>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

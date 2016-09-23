@@ -17,6 +17,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Data.Entity;
 using System.Linq;
 using System.Text;
 using System.Web.UI;
@@ -536,6 +537,11 @@ achieve our mission.  We are so grateful for your commitment.
                     int txnId = int.MinValue;
                     if ( int.TryParse( PageParameter( "ScheduledTransactionId" ), out txnId ) )
                     {
+                        var personService = new PersonService( rockContext );
+
+                        var validGivingIds = new List<string> { targetPerson.GivingId };
+                        validGivingIds.AddRange( personService.GetBusinesses( targetPerson.Id ).Select( b => b.GivingId ) );
+
                         var service = new FinancialScheduledTransactionService( rockContext );
                         var scheduledTransaction = service
                             .Queryable( "AuthorizedPersonAlias.Person,ScheduledTransactionDetails,FinancialGateway,FinancialPaymentDetail.CurrencyTypeValue,FinancialPaymentDetail.CreditCardTypeValue" )
@@ -543,7 +549,7 @@ achieve our mission.  We are so grateful for your commitment.
                                 t.Id == txnId && 
                                 t.AuthorizedPersonAlias != null &&
                                 t.AuthorizedPersonAlias.Person != null &&
-                                t.AuthorizedPersonAlias.Person.GivingId == targetPerson.GivingId )
+                                validGivingIds.Contains( t.AuthorizedPersonAlias.Person.GivingId ) )
                             .FirstOrDefault();
 
                         if ( scheduledTransaction != null )

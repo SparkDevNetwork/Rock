@@ -16,6 +16,8 @@
 //
 using System;
 using System.Collections.Generic;
+using System.Data.Entity;
+using System.Data.SqlClient;
 using System.Linq;
 using Quartz;
 using Rock.Data;
@@ -47,113 +49,215 @@ namespace Rock.Jobs
         /// <param name="context">The context.</param>
         public void Execute( IJobExecutionContext context )
         {
-            var rockContext = new RockContext();
-            var metricService = new MetricService( rockContext );
-            var metricValueService = new MetricValueService( rockContext );
 
             var metricSourceValueTypeDataviewGuid = Rock.SystemGuid.DefinedValue.METRIC_SOURCE_VALUE_TYPE_DATAVIEW.AsGuid();
             var metricSourceValueTypeSqlGuid = Rock.SystemGuid.DefinedValue.METRIC_SOURCE_VALUE_TYPE_SQL.AsGuid();
 
-            var metricsQry = metricService.Queryable( "Schedule" ).Where(
+            var metricsQry = new MetricService( new RockContext() ).Queryable().AsNoTracking().Where(
                 a => a.ScheduleId.HasValue
                 && a.SourceValueTypeId.HasValue
                 && ( a.SourceValueType.Guid == metricSourceValueTypeDataviewGuid || a.SourceValueType.Guid == metricSourceValueTypeSqlGuid ) );
 
-            var metricsList = metricsQry.OrderBy( a => a.Title ).ThenBy( a => a.Subtitle ).ToList();
+            var metricIdList = metricsQry.OrderBy( a => a.Title ).ThenBy( a => a.Subtitle ).Select( a => a.Id ).ToList();
 
             var metricExceptions = new List<Exception>();
             int metricsCalculated = 0;
             int metricValuesCalculated = 0;
+            Metric metric = null;
 
-            foreach ( var metric in metricsList )
+            foreach ( var metricId in metricIdList )
             {
                 try
                 {
-                    var lastRunDateTime = metric.LastRunDateTime ?? metric.CreatedDateTime ?? metric.ModifiedDateTime;
-                    if ( lastRunDateTime.HasValue )
+                    using ( var rockContextForMetricEntity = new RockContext() )
                     {
-                        var currentDateTime = RockDateTime.Now;
-                        // get all the schedule times that were supposed to run since that last time it was scheduled to run
-                        var scheduledDateTimesToProcess = metric.Schedule.GetScheduledStartTimes( lastRunDateTime.Value, currentDateTime ).Where( a => a > lastRunDateTime.Value ).ToList();
-                        foreach ( var scheduleDateTime in scheduledDateTimesToProcess )
+                        var metricService = new MetricService( rockContextForMetricEntity );
+
+                        metric = metricService.Get( metricId );
+                        var lastRunDateTime = metric.LastRunDateTime ?? metric.CreatedDateTime ?? metric.ModifiedDateTime;
+                        if ( lastRunDateTime.HasValue )
                         {
-                            Dictionary<int, decimal> resultValues = new Dictionary<int, decimal>();
-                            if ( metric.SourceValueType.Guid == metricSourceValueTypeDataviewGuid )
+                            var currentDateTime = RockDateTime.Now;
+
+                            // get all the schedule times that were supposed to run since that last time it was scheduled to run
+                            var scheduledDateTimesToProcess = metric.Schedule.GetScheduledStartTimes( lastRunDateTime.Value, currentDateTime ).Where( a => a > lastRunDateTime.Value ).ToList();
+                            foreach ( var scheduleDateTime in scheduledDateTimesToProcess )
                             {
-                                // get the metric value from the DataView
-                                if ( metric.DataView != null )
+                                using ( var rockContextForMetricValues = new RockContext() )
                                 {
-                                    var errorMessages = new List<string>();
-                                    var qry = metric.DataView.GetQuery( null, null, out errorMessages );
-                                    if ( metric.EntityTypeId.HasValue )
+                                    var metricPartitions = new MetricPartitionService( rockContextForMetricValues ).Queryable().Where( a => a.MetricId == metric.Id ).ToList();
+                                    var metricValueService = new MetricValueService( rockContextForMetricValues );
+                                    List<ResultValue> resultValues = new List<ResultValue>();
+                                    bool getMetricValueDateTimeFromResultSet = false;
+                                    if ( metric.SourceValueType.Guid == metricSourceValueTypeDataviewGuid )
                                     {
-                                        throw new NotImplementedException( "Partitioned Metrics using DataViews is not supported." );
-                                    }
-                                    else
-                                    {
-                                        resultValues.Add( 0, qry.Count() );
-                                    }
-                                }
-                            }
-                            else if ( metric.SourceValueType.Guid == metricSourceValueTypeSqlGuid )
-                            {
-                                // calculate the metricValue assuming that the SQL returns one row with one numeric field
-                                if ( !string.IsNullOrWhiteSpace( metric.SourceSql ) )
-                                {
-                                    string formattedSql = metric.SourceSql.ResolveMergeFields( metric.GetMergeObjects( scheduleDateTime ) );
-                                    var tableResult = DbService.GetDataTable( formattedSql, System.Data.CommandType.Text, null );
-                                    foreach ( var row in tableResult.Rows.OfType<System.Data.DataRow>() )
-                                    {
-                                        int entityId = 0;
-                                        decimal countValue;
-                                        if ( tableResult.Columns.Count >= 2 )
+                                        // get the metric value from the DataView
+                                        if ( metric.DataView != null )
                                         {
-                                            if ( tableResult.Columns.Contains( "EntityId" ) )
+                                            var errorMessages = new List<string>();
+                                            var qry = metric.DataView.GetQuery( null, null, out errorMessages );
+                                            if ( metricPartitions.Count > 1 || metricPartitions.First().EntityTypeId.HasValue )
                                             {
-                                                entityId = Convert.ToInt32( row["EntityId"] );
+                                                throw new NotImplementedException( "Partitioned Metrics using DataViews is not supported." );
                                             }
                                             else
                                             {
-                                                // assume SQL is in the form "SELECT Count(*), EntityId FROM ..."
-                                                entityId = Convert.ToInt32( row[1] );
+                                                var resultValue = new ResultValue();
+                                                resultValue.Value = Convert.ToDecimal( qry.Count() );
+                                                resultValue.Partitions = new List<ResultValuePartition>();
+                                                resultValues.Add( resultValue );
+                                            }
+                                        }
+                                    }
+                                    else if ( metric.SourceValueType.Guid == metricSourceValueTypeSqlGuid )
+                                    {
+                                        //// calculate the metricValue using the results from the SQL
+                                        //// assume SQL is in one of the following forms:
+                                        //// -- "SELECT Count(*), Partion0EntityId, Partion1EntityId, Partion2EntityId,.. FROM ..."
+                                        //// -- "SELECT Count(*), [MetricValueDateTime], Partion0EntityId, Partion1EntityId, Partion2EntityId,.. FROM ..."
+                                        if ( !string.IsNullOrWhiteSpace( metric.SourceSql ) )
+                                        {
+                                            string formattedSql = metric.SourceSql.ResolveMergeFields( metric.GetMergeObjects( scheduleDateTime ) );
+                                            var tableResult = DbService.GetDataTable( formattedSql, System.Data.CommandType.Text, null );
+                                            
+                                            if ( tableResult.Columns.Count >= 2 && tableResult.Columns[1].ColumnName == "MetricValueDateTime" )
+                                            {
+                                                getMetricValueDateTimeFromResultSet = true;
+                                            }
+
+                                            foreach ( var row in tableResult.Rows.OfType<System.Data.DataRow>() )
+                                            {
+                                                var resultValue = new ResultValue();
+
+                                                resultValue.Value = Convert.ToDecimal( row[0] );
+                                                if ( getMetricValueDateTimeFromResultSet )
+                                                {
+                                                    resultValue.MetricValueDateTime = Convert.ToDateTime( row[1] );
+                                                }
+                                                else
+                                                {
+                                                    resultValue.MetricValueDateTime = scheduleDateTime;
+                                                }
+
+                                                resultValue.Partitions = new List<ResultValuePartition>();
+                                                int partitionPosition = 0;
+                                                int partitionFieldIndex = getMetricValueDateTimeFromResultSet ? 2 : 1;
+                                                int partitionColumnCount = tableResult.Columns.Count - 1;
+                                                while ( partitionFieldIndex <= partitionColumnCount )
+                                                {
+                                                    resultValue.Partitions.Add( new ResultValuePartition
+                                                    {
+                                                        PartitionPosition = partitionPosition,
+                                                        EntityId = row[partitionFieldIndex] as int?
+                                                    } );
+
+                                                    partitionPosition++;
+                                                    partitionFieldIndex++;
+                                                }
+
+                                                resultValues.Add( resultValue );
+                                            }
+                                        }
+                                    }
+
+                                    metric.LastRunDateTime = scheduleDateTime;
+                                    metricsCalculated++;
+                                    metricValuesCalculated += resultValues.Count();
+
+                                    if ( resultValues.Any() )
+                                    {
+                                        List<MetricValue> metricValuesToAdd = new List<MetricValue>();
+                                        foreach ( var resultValue in resultValues )
+                                        {
+                                            var metricValue = new MetricValue();
+                                            metricValue.MetricId = metric.Id;
+                                            metricValue.MetricValueDateTime = resultValue.MetricValueDateTime;
+                                            metricValue.MetricValueType = MetricValueType.Measure;
+                                            metricValue.YValue = resultValue.Value;
+                                            metricValue.MetricValuePartitions = new List<MetricValuePartition>();
+                                            var metricPartitionsByPosition = metricPartitions.OrderBy( a => a.Order ).ToList();
+
+                                            if ( !resultValue.Partitions.Any() && metricPartitionsByPosition.Count() == 1 && !metricPartitionsByPosition[0].EntityTypeId.HasValue )
+                                            {
+                                                // a metric with just the default partition (not partitioned by Entity)
+                                                var metricPartition = metricPartitionsByPosition[0];
+                                                var metricValuePartition = new MetricValuePartition();
+                                                metricValuePartition.MetricPartition = metricPartition;
+                                                metricValuePartition.MetricPartitionId = metricPartition.Id;
+                                                metricValuePartition.MetricValue = metricValue;
+                                                metricValuePartition.EntityId = null;
+                                                metricValue.MetricValuePartitions.Add( metricValuePartition );
+                                            }
+                                            else
+                                            {
+                                                foreach ( var partitionResult in resultValue.Partitions )
+                                                {
+                                                    if ( metricPartitionsByPosition.Count > partitionResult.PartitionPosition )
+                                                    {
+                                                        var metricPartition = metricPartitionsByPosition[partitionResult.PartitionPosition];
+                                                        var metricValuePartition = new MetricValuePartition();
+                                                        metricValuePartition.MetricPartition = metricPartition;
+                                                        metricValuePartition.MetricPartitionId = metricPartition.Id;
+                                                        metricValuePartition.MetricValue = metricValue;
+                                                        metricValuePartition.EntityId = partitionResult.EntityId;
+                                                        metricValue.MetricValuePartitions.Add( metricValuePartition );
+                                                    }
+                                                }
+                                            }
+
+                                            if ( metricValue.MetricValuePartitions == null || !metricValue.MetricValuePartitions.Any() )
+                                            {
+                                                // shouldn't happen, but just in case
+                                                throw new Exception( "MetricValue requires at least one Partition Value" );
+                                            }
+                                            else
+                                            {
+                                                metricValuesToAdd.Add( metricValue );
                                             }
                                         }
 
-                                        if ( tableResult.Columns.Contains( "Value" ) )
+                                        // if a single metricValueDateTime was specified, delete any existing metric values for this date and refresh with the current results
+                                        var dbTransaction = rockContextForMetricValues.Database.BeginTransaction();
+                                        if ( getMetricValueDateTimeFromResultSet )
                                         {
-                                            countValue = Convert.ToDecimal( row["Value"] );
-                                        }
-                                        else
-                                        {
-                                            // assume SQL is in the form "SELECT Count(*), EntityId FROM ..."
-                                            countValue = Convert.ToDecimal( row[0] );
-                                        }
+                                            var metricValueDateTimes = metricValuesToAdd.Select( a => a.MetricValueDateTime ).Distinct().ToList();
+                                            if ( metricValueDateTimes.Count == 1 )
+                                            {
+                                                var metricValueDateTime = metricValueDateTimes.First();
+                                                bool alreadyHasMetricValues = metricValueService.Queryable().Where( a => a.MetricId == metric.Id && a.MetricValueDateTime == metricValueDateTime ).Any();
+                                                if ( alreadyHasMetricValues )
+                                                {
+                                                    // use direct SQL to clean up any existing metric values
+                                                    rockContextForMetricValues.Database.ExecuteSqlCommand( @"
+                                                        DELETE
+                                                        FROM MetricValuePartition
+                                                        WHERE MetricValueId IN (
+                                                                SELECT Id
+                                                                FROM MetricValue
+                                                                WHERE MetricId = @metricId and MetricValueDateTime = @metricValueDateTime
+                                                                )
+                                                        ", new SqlParameter( "@metricId", metric.Id ), new SqlParameter( "@metricValueDateTime", metricValueDateTime ) );
 
-                                        resultValues.Add( entityId, countValue );
+                                                    rockContextForMetricValues.Database.ExecuteSqlCommand( @"
+                                                        DELETE
+                                                        FROM MetricValue
+                                                        WHERE MetricId = @metricId
+                                                            AND MetricValueDateTime = @metricValueDateTime
+                                                        ", new SqlParameter( "@metricId", metric.Id ), new SqlParameter( "@metricValueDateTime", metricValueDateTime ) );
+                                                }
+                                            }
+                                        }
+                                        
+                                        metricValueService.AddRange( metricValuesToAdd );
+
+                                        // disable savechanges PrePostProcessing since there could be hundreds or thousands of metric values getting inserted/updated
+                                        rockContextForMetricValues.SaveChanges( true );
+                                        dbTransaction.Commit();
                                     }
+
+                                    rockContextForMetricEntity.SaveChanges();
                                 }
                             }
-
-                            metric.LastRunDateTime = scheduleDateTime;
-                            metricsCalculated++;
-                            metricValuesCalculated += resultValues.Count();
-
-                            if ( resultValues.Any() )
-                            {
-                                foreach ( var resultValue in resultValues )
-                                {
-                                    var metricValue = new MetricValue();
-                                    metricValue.MetricId = metric.Id;
-                                    metricValue.MetricValueDateTime = scheduleDateTime;
-                                    metricValue.MetricValueType = MetricValueType.Measure;
-                                    metricValue.YValue = resultValue.Value;
-                                    metricValue.EntityId = resultValue.Key > 0 ? resultValue.Key : (int?)null;
-
-                                    metricValueService.Add( metricValue );
-                                }
-                            }
-
-                            rockContext.SaveChanges();
                         }
                     }
                 }
@@ -169,6 +273,26 @@ namespace Rock.Jobs
             {
                 throw new AggregateException( "One or more metric calculations failed ", metricExceptions );
             }
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        private struct ResultValue
+        {
+            public List<ResultValuePartition> Partitions { get; set; }
+
+            public decimal Value { get; set; }
+
+            public DateTime MetricValueDateTime { get; set; }
+        }
+
+        private struct ResultValuePartition
+        {
+            // Zero-based partition position
+            public int PartitionPosition { get; set; }
+
+            public int? EntityId { get; set; }
         }
     }
 }

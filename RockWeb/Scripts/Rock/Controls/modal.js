@@ -124,6 +124,14 @@
             showModalDialog: function ($modalDialog, managerId) {
                 _showModalControl($modalDialog, managerId);
             },
+
+            // gets the IFrame element of the global the Modal Popup (for the IFrame Modal)
+            getModalPopupIFrame: function () {
+                var $modalPopup = $('#modal-popup');
+                var $modalPopupIFrame = $modalPopup.find('iframe');
+
+                return $modalPopupIFrame;
+            }
         };
 
         return exports;

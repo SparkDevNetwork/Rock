@@ -177,11 +177,14 @@ namespace RockWeb.Blocks.Follow
             {
                 followingEvent = new FollowingEventTypeService( new RockContext() ).Get( eventId );
                 editAllowed = editAllowed || followingEvent.IsAuthorized( Authorization.EDIT, CurrentPerson );
+                pdAuditDetails.SetEntity( followingEvent, ResolveRockUrl( "~" ) );
             }
 
             if ( followingEvent == null )
             {
                 followingEvent = new FollowingEventType { Id = 0, IsActive = true };
+                // hide the panel drawer that show created and last modified dates
+                pdAuditDetails.Visible = false;
             }
 
             EventId = followingEvent.Id;

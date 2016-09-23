@@ -17,6 +17,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Data.Entity;
 using System.Linq;
 using System.Web.UI;
 
@@ -145,6 +146,8 @@ namespace RockWeb.Blocks.WorkFlow
         protected override void OnLoad( EventArgs e )
         {
             base.OnLoad( e );
+
+            nbValidationError.Visible = false;
 
             if ( !Page.IsPostBack )
             {
@@ -511,16 +514,61 @@ namespace RockWeb.Blocks.WorkFlow
                 workflowType = new WorkflowType();
             }
 
+            var validationErrors = new List<string>();
+
+            // check for unique prefix
+            string prefix = tbNumberPrefix.UntrimmedText;
+            if ( !string.IsNullOrWhiteSpace( prefix ) &&
+                prefix.ToUpper() != ( workflowType.WorkflowIdPrefix ?? string.Empty ).ToUpper() )
+            {
+                if ( service.Queryable().AsNoTracking()
+                    .Any( w =>
+                        w.Id != workflowType.Id &&
+                        w.WorkflowIdPrefix == prefix ) )
+                {
+                    validationErrors.Add( "Workflow Number Prefix is already being used by another workflow type.  Please use a unique prefix." );
+                }
+                else
+                {
+                    workflowType.WorkflowIdPrefix = prefix;
+                }
+            }
+            else
+            {
+                workflowType.WorkflowIdPrefix = prefix;
+            }
+
             workflowType.IsActive = cbIsActive.Checked;
             workflowType.Name = tbName.Text;
             workflowType.Description = tbDescription.Text;
             workflowType.CategoryId = cpCategory.SelectedValueAsInt();
             workflowType.Order = 0;
             workflowType.WorkTerm = tbWorkTerm.Text;
-            workflowType.ProcessingIntervalSeconds = tbProcessingInterval.Text.AsIntegerOrNull();
+            workflowType.ModifiedByPersonAliasId = CurrentPersonAliasId;
+            workflowType.ModifiedDateTime = RockDateTime.Now;
+
+            int? mins = tbProcessingInterval.Text.AsIntegerOrNull();
+            if ( mins.HasValue )
+            {
+                workflowType.ProcessingIntervalSeconds = mins.Value * 60;
+            }
+            else
+            {
+                workflowType.ProcessingIntervalSeconds = null;
+            }
+
             workflowType.IsPersisted = cbIsPersisted.Checked;
             workflowType.LoggingLevel = ddlLoggingLevel.SelectedValueAsEnum<WorkflowLoggingLevel>();
             workflowType.IconCssClass = tbIconCssClass.Text;
+
+            if ( validationErrors.Any() )
+            {
+                nbValidationError.Text = string.Format( "Please Correct the Following<ul><li>{0}</li></ul>",
+                    validationErrors.AsDelimited( "</li><li>" ) );
+                nbValidationError.Visible = true;
+
+                return;
+            }
 
             if ( !Page.IsValid || !workflowType.IsValid )
             {
@@ -1174,12 +1222,16 @@ namespace RockWeb.Blocks.WorkFlow
                 workflowType.IsSystem = false;
                 workflowType.CategoryId = parentCategoryId;
                 workflowType.IconCssClass = "fa fa-list-ol";
-                workflowType.ActivityTypes.Add( new WorkflowActivityType { Guid = Guid.NewGuid(), IsActive = true, IsActivatedWithWorkflow = true } );
-                workflowType.WorkTerm = "Work";            
+                workflowType.ActivityTypes.Add( new WorkflowActivityType { Name = "Start", Guid = Guid.NewGuid(), IsActive = true, IsActivatedWithWorkflow = true } );
+                workflowType.WorkTerm = "Work";
+                workflowType.ProcessingIntervalSeconds = 28800; // Default to every 8 hours
+                // hide the panel drawer that show created and last modified dates
+                pdAuditDetails.Visible = false;
             }
             else
             {
                 workflowType = new WorkflowTypeService( rockContext ).Get( workflowTypeId.Value );
+                pdAuditDetails.SetEntity( workflowType, ResolveRockUrl( "~" ) );
             }
 
             if ( workflowType == null )
@@ -1315,7 +1367,17 @@ namespace RockWeb.Blocks.WorkFlow
             tbDescription.Text = workflowType.Description;
             cpCategory.SetValue( workflowType.CategoryId );
             tbWorkTerm.Text = workflowType.WorkTerm;
-            tbProcessingInterval.Text = workflowType.ProcessingIntervalSeconds != null ? workflowType.ProcessingIntervalSeconds.ToString() : string.Empty;
+            tbNumberPrefix.Text = workflowType.WorkflowIdPrefix;
+
+            if ( workflowType.ProcessingIntervalSeconds.HasValue )
+            {
+                int mins = workflowType.ProcessingIntervalSeconds.Value / 60;
+                tbProcessingInterval.Text = mins.ToString( "N0" );
+            }
+            else
+            {
+                tbProcessingInterval.Text = string.Empty;
+            }
             cbIsPersisted.Checked = workflowType.IsPersisted;
             ddlLoggingLevel.SetValue( (int)workflowType.LoggingLevel );
             tbIconCssClass.Text = workflowType.IconCssClass;

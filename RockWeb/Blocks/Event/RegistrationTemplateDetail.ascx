@@ -10,7 +10,7 @@
 <asp:UpdatePanel ID="upDetail" runat="server">
     <ContentTemplate>
               
-        <asp:Panel ID="pnlDetails" CssClass="panel panel-block" runat="server" Visible="false">
+        <asp:Panel ID="pnlDetails" CssClass="panel panel-block" runat="server">
             <asp:HiddenField ID="hfRegistrationTemplateId" runat="server" />
 
             <div class="panel-heading">
@@ -46,6 +46,7 @@
                                     Help="The group member role that new registrants should be added to group with." />
                                 <Rock:RockDropDownList ID="ddlGroupMemberStatus" runat="server" Label="Group Member Status" 
                                     Help="The group member status that new registrants should be added to group with."/>
+                                
                                 <div class="row">
                                     <div class="col-xs-6">
                                         <Rock:RockCheckBoxList ID="cblNotify" runat="server" Label="Notify" RepeatDirection="Vertical"
@@ -70,13 +71,25 @@
                                                 adding registrants to specific child groups of a selected parent group." />
                                     </div>
                                 </div>
-                                <div class="row">
-                                    <div class="col-xs-6">
-                                        <Rock:RockCheckBox ID="cbAllowExternalUpdates" runat="server" Label="Allow External Updates to Saved Registrations" Text="Yes"
+
+                                <Rock:RockCheckBox ID="cbAllowExternalUpdates" runat="server" Label="Allow External Updates to Saved Registrations" Text="Yes"
                                             Help="Allow saved registrations to be updated online. If false the individual will be able to make additional payments, but will
                                             not be allow to change any of the registrant information and attributes." />
+
+                                <Rock:WorkflowTypePicker ID="wtpRegistrationWorkflow" runat="server" Label="Registration Workflow"
+                                    Help="An optional workflow type to launch when a new registration is completed." />
+
+                                <div class="row">
+                                    <div class="col-xs-6">
+                                        <Rock:RockDropDownList ID="ddlSignatureDocumentTemplate" runat="server" Label="Required Signature Document" 
+                                            Help="A document that needs to be signed for registrations of this type."/>
+                                    </div>
+                                    <div class="col-xs-6">
+                                        <Rock:RockCheckBox ID="cbDisplayInLine" runat="server" Label="In-Line Signature" Text="Yes"
+                                            Help="When registering for this type of event, should the Required Signature Document be displayed during the registration steps? If not, a request will be sent after the registration is completed." />
                                     </div>
                                 </div>
+
                             </div>
                             <div class="col-md-6">
                                 <div class="row">
@@ -100,7 +113,7 @@
                                     <Rock:CurrencyBox ID="cbMinimumInitialPayment" runat="server" Label="Minimum Initial Payment"
                                         Help="The minimum amount required per registrant. Leave value blank if full amount is required." />
                                     <Rock:FinancialGatewayPicker ID="fgpFinancialGateway" runat="server" Label="Financial Gateway"
-                                        Help="The financial gateway to use for processing registration payments." />
+                                        Help="The financial gateway to use for processing registration payments." ShowAll="false" />
                                     <Rock:RockTextBox ID="txtBatchNamePrefix" runat="server" Label="Batch Prefix" Help="Optional prefix to add the the financial batches. If left blank the prefix from the registration block will be used." />
                                 </div>
                             </div>
@@ -254,6 +267,8 @@
                     <div class="row">
                         <div class="col-md-6">
                             <Rock:RockLiteral ID="lGroupType" runat="server" Label="Group Type" />
+                            <Rock:RockLiteral ID="lWorkflowType" runat="server" Label="Registration Workflow" />
+                            <Rock:RockLiteral ID="lRequiredSignedDocument" runat="server" Label="Required Signed Document" />
                             <Rock:RockControlWrapper ID="rcwForms" runat="server" Label="Forms" CssClass="js-forms-wrapper">
                                 <div class="forms-readonly-list" style="display: none">
                                     <asp:Literal ID="lFormsReadonly" runat="server" />

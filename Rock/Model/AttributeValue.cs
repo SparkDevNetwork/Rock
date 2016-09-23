@@ -66,7 +66,6 @@ namespace Rock.Model
         /// A <see cref="System.Int32"/> that identifies the Id of the entity instance that uses this AttributeValue.
         /// </value>
         [DataMember]
-        [LavaIgnore]
         public int? EntityId { get; set; }
         
         /// <summary>

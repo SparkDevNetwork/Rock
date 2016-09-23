@@ -15,6 +15,7 @@
 // </copyright>
 //
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Web.UI;
@@ -214,6 +215,19 @@ namespace RockWeb.Blocks.Administration
         protected void rGrid_GridAdd( object sender, EventArgs e )
         {
             ShowEdit( 0 );
+        }
+
+        /// <summary>
+        /// Handles the Copy event of the rGrid control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void rGrid_Copy( object sender, RowEventArgs e )
+        {
+            var pageService = new PageService( new RockContext() );
+            pageService.CopyPage( e.RowKeyId, CurrentPersonAliasId );
+
+            BindGrid();
         }
 
         /// <summary>

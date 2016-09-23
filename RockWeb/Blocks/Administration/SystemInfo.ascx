@@ -10,6 +10,12 @@
             });
         });
 
+        $('#show-routes').click(function () {
+            $('#routes').toggle('slow', function () {
+                Rock.controls.modal.updateSize();
+            });
+        });
+
         $('a.show-pill').click(function () {
     	    $('ul.nav-pills > li').attr('class', '');
     	    $(this).parent().attr('class', 'active');
@@ -108,7 +114,15 @@
             <div class="col-md-6">
 
                 <h4>Routes</h4>
-                <asp:Literal ID="lRoutes" runat="server"></asp:Literal>
+
+                <p><a id="show-routes" href="#">Show Routes</a></p>
+                <div id="routes" style="display:none">
+                    <p>
+                    <asp:Literal ID="lRoutes" runat="server"></asp:Literal>
+                    </p>
+                </div>
+
+                
 
             </div>
         </div>

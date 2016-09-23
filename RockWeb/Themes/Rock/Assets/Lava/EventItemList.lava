@@ -2,7 +2,7 @@
   <div class="margin-b-lg">
 
     {% if DetailsPage != empty %}
-      {% capture eventName %}<a href="{{ DetailsPage }}?EventOccurrenceId={{ eventOccurrenceSummary.EventItemOccurrence.EventItemId }}">{{ eventOccurrenceSummary.Name }}</a>{% endcapture %}
+      {% capture eventName %}<a href="{{ DetailsPage }}?EventOccurrenceId={{ eventOccurrenceSummary.EventItemOccurrence.Id }}">{{ eventOccurrenceSummary.Name }}</a>{% endcapture %}
     {% else %}
       {% assign eventName = eventOccurrenceSummary.Name %}
     {% endif %}

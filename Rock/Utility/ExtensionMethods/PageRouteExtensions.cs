@@ -14,9 +14,10 @@
 // limitations under the License.
 // </copyright>
 //
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Linq;
 using System.Web.Routing;
-using Rock.Model;
 
 namespace Rock
 {
@@ -28,46 +29,54 @@ namespace Rock
         #region Route Extensions
 
         /// <summary>
-        /// Returns the page Id of the route or -1 if not found.
+        /// Returns a list of page Ids that match the route.
         /// </summary>
         /// <param name="route">The route.</param>
         /// <returns></returns>
-        public static int PageId( this Route route )
+        public static List<int> PageIds( this Route route )
         {
-            if ( route.DataTokens != null && route.DataTokens["PageId"] != null )
+            if ( route.DataTokens != null && route.DataTokens["PageRoutes"] != null )
             {
-                return ( route.DataTokens["PageId"] as string ).AsIntegerOrNull() ?? -1;
+                var pages = route.DataTokens["PageRoutes"] as List<Rock.Web.PageAndRouteId>;
+                if ( pages != null )
+                {
+                    return pages.Select( p => p.PageId ).ToList();
+                }
             }
 
-            return -1;
+            return new List<int>();
         }
 
         /// <summary>
-        /// Returns the route Id of the route or -1 if not found.
+        /// Returns a list of route Ids that match the route.
         /// </summary>
         /// <param name="route">The route.</param>
         /// <returns></returns>
-        public static int RouteId( this Route route )
+        public static List<int> RouteIds( this Route route )
         {
-            if ( route.DataTokens != null && route.DataTokens["RouteId"] != null )
+            if ( route.DataTokens != null && route.DataTokens["PageRoutes"] != null )
             {
-                return ( route.DataTokens["RouteId"] as string ).AsIntegerOrNull() ?? -1;
+                var pages = route.DataTokens["PageRoutes"] as List<Rock.Web.PageAndRouteId>;
+                if ( pages != null )
+                {
+                    return pages.Select( p => p.RouteId ).ToList();
+                }
             }
 
-            return -1;
+            return new List<int>();
         }
 
         /// <summary>
         /// Adds the page route.
         /// </summary>
         /// <param name="routes">The routes.</param>
-        /// <param name="pageRoute">The page route.</param>
-        public static void AddPageRoute( this Collection<RouteBase> routes, PageRoute pageRoute )
+        /// <param name="routeName">Name of the route.</param>
+        /// <param name="pageAndRouteIds">The page and route ids.</param>
+        public static void AddPageRoute( this Collection<RouteBase> routes, string routeName, List<Rock.Web.PageAndRouteId> pageAndRouteIds)
         {
-            Route route = new Route( pageRoute.Route, new Rock.Web.RockRouteHandler() );
+            Route route = new Route( routeName, new Rock.Web.RockRouteHandler() );
             route.DataTokens = new RouteValueDictionary();
-            route.DataTokens.Add( "PageId", pageRoute.PageId.ToString() );
-            route.DataTokens.Add( "RouteId", pageRoute.Id.ToString() );
+            route.DataTokens.Add( "PageRoutes", pageAndRouteIds );
             routes.Add( route );
         }
 

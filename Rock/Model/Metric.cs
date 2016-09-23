@@ -16,7 +16,6 @@
 //
 using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
@@ -177,24 +176,24 @@ namespace Rock.Model
         [DataMember]
         public DateTime? LastRunDateTime { get; set; }
 
-        /// <summary>
-        /// Gets or sets the entity type identifier.
-        /// </summary>
-        /// <value>
-        /// The entity type identifier.
-        /// </value>
-        [DataMember]
-        public int? EntityTypeId { get; set; }
-
         #endregion
 
         #region Virtual Properties
 
         /// <summary>
-        /// Gets or sets a collection that contains all the <see cref="MetricValue">Metric Values</see> (values) for this Metric.
+        /// Gets or sets the metric partitions.
         /// </summary>
         /// <value>
-        /// A collection of <see cref="Rock.Model.MetricValue">MetricValues</see> that are associated with this Metric.
+        /// The metric partitions.
+        /// </value>
+        [LavaInclude]
+        public virtual ICollection<MetricPartition> MetricPartitions { get; set; }
+
+        /// <summary>
+        /// Gets or sets the metric values.
+        /// </summary>
+        /// <value>
+        /// The metric values.
         /// </value>
         public virtual ICollection<MetricValue> MetricValues { get; set; }
 
@@ -246,21 +245,17 @@ namespace Rock.Model
         /// The metric categories.
         /// </value>
         [DataMember]
-        public virtual ICollection<MetricCategory> MetricCategories
-        {
-            get { return _metricCategories ?? ( _metricCategories = new Collection<MetricCategory>() ); }
-            set { _metricCategories = value; }
-        }
-        private ICollection<MetricCategory> _metricCategories;
+        public virtual ICollection<MetricCategory> MetricCategories { get; set; }
 
         /// <summary>
-        /// Gets or sets the type of the entity.
+        /// Gets or sets the type of the numeric data that the values represent. Although all values
+        /// are stored as a decimal, specifying the type here allows entry screens to use appropriate
+        /// controls/validation when entering values.
         /// </summary>
         /// <value>
-        /// The type of the entity.
+        /// The type of the numeric data.
         /// </value>
-        [DataMember]
-        public virtual Model.EntityType EntityType { get; set; }
+        public MetricNumericDataType NumericDataType { get; set; }
 
         #endregion
 
@@ -312,8 +307,32 @@ namespace Rock.Model
             this.HasOptional( p => p.MetricChampionPersonAlias ).WithMany().HasForeignKey( p => p.MetricChampionPersonAliasId ).WillCascadeOnDelete( false );
             this.HasOptional( p => p.AdminPersonAlias ).WithMany().HasForeignKey( p => p.AdminPersonAliasId ).WillCascadeOnDelete( false );
             this.HasOptional( p => p.Schedule ).WithMany().HasForeignKey( p => p.ScheduleId ).WillCascadeOnDelete( false );
-            this.HasOptional( a => a.EntityType ).WithMany().HasForeignKey( a => a.EntityTypeId ).WillCascadeOnDelete( false );
         }
+    }
+
+    #endregion
+
+    #region Enumerations
+
+    /// <summary>
+    /// The gender of a person
+    /// </summary>
+    public enum MetricNumericDataType
+    {
+        /// <summary>
+        /// Integer
+        /// </summary>
+        Integer = 0,
+
+        /// <summary>
+        /// Decimal
+        /// </summary>
+        Decimal = 1,
+
+        /// <summary>
+        /// Currency
+        /// </summary>
+        Currency = 2
     }
 
     #endregion

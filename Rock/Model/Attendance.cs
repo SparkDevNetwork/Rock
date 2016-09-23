@@ -18,6 +18,7 @@ using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
+using System.Linq;
 using System.Runtime.Serialization;
 using System.Text;
 using Rock.Data;
@@ -99,6 +100,24 @@ namespace Rock.Model
         [DataMember]
         [DefinedValue( SystemGuid.DefinedType.CHECKIN_SEARCH_TYPE )]
         public int? SearchTypeValueId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the value that was entered when searching for family during check-in.
+        /// </summary>
+        /// <value>
+        /// The search value entered.
+        /// </value>
+        [DataMember]
+        public string SearchValue { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Id of the <see cref="Rock.Model.Group"/> (family) that was selected after searching.
+        /// </summary>
+        /// <value>
+        /// A <see cref="System.Int32"/> representing the Id of the <see cref="Rock.Model.Group"/> (family) that was selected.
+        /// </value>
+        [DataMember]
+        public int? SearchResultGroupId { get; set; }
 
         /// <summary>
         /// Gets or sets the Id of the <see cref="Rock.Model.AttendanceCode"/> that is associated with this <see cref="Rock.Model.Attendance"/> entity.
@@ -260,6 +279,15 @@ namespace Rock.Model
         public virtual DefinedValue SearchTypeValue { get; set; }
 
         /// <summary>
+        /// Gets or sets the <see cref="Rock.Model.Group"/> (family) that was selected after searching during check-in.
+        /// </summary>
+        /// <value>
+        /// The <see cref="Rock.Model.Group"/> (family) that was selected during check-in.
+        /// </value>        
+        [LavaInclude]
+        public virtual Group SearchResultGroup { get; set; }
+
+        /// <summary>
         /// Gets or sets the <see cref="Rock.Model.AttendanceCode"/> associated with this Attendance.
         /// </summary>
         /// <value>
@@ -326,6 +354,51 @@ namespace Rock.Model
 
         }
 
+
+        /// <summary>
+        /// Gets a value indicating whether this instance is valid.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if this instance is valid; otherwise, <c>false</c>.
+        /// </value>
+        public override bool IsValid
+        {
+            get
+            {
+                var result = base.IsValid;
+                if ( result )
+                {
+                    using ( var rockContext = new RockContext() )
+                    {
+                        // validate cases where the group type requires that a location/schedule is required
+                        if ( this.GroupId != null )
+                        {
+                            var group = this.Group ?? new GroupService( rockContext ).Queryable("GroupType").Where( g => g.Id == this.GroupId ).FirstOrDefault();
+
+                            if ( group != null )
+                            {
+                                if ( group.GroupType.GroupAttendanceRequiresLocation && this.LocationId == null )
+                                {
+                                    var locationErrorMessage = string.Format( "{0} requires attendance records to have a location.", group.GroupType.Name.Pluralize() );
+                                    ValidationResults.Add( new ValidationResult( locationErrorMessage ) );
+                                    result = false;
+                                }
+
+                                if ( group.GroupType.GroupAttendanceRequiresSchedule && this.ScheduleId == null )
+                                {
+                                    var scheduleErrorMessage = string.Format( "{0} requires attendance records to have a schedule.", group.GroupType.Name.Pluralize() );
+                                    ValidationResults.Add( new ValidationResult( scheduleErrorMessage ) );
+                                    result = false;
+                                }
+                            }
+                        }
+                    }
+                }
+
+                return result;
+            }
+        }
+
         #endregion
 
     }
@@ -349,6 +422,7 @@ namespace Rock.Model
             this.HasOptional( a => a.PersonAlias ).WithMany().HasForeignKey( p => p.PersonAliasId ).WillCascadeOnDelete( true );
             this.HasOptional( a => a.Device ).WithMany().HasForeignKey( d => d.DeviceId ).WillCascadeOnDelete( false );
             this.HasOptional( a => a.SearchTypeValue ).WithMany().HasForeignKey( v => v.SearchTypeValueId ).WillCascadeOnDelete( false );
+            this.HasOptional( a => a.SearchResultGroup ).WithMany().HasForeignKey( p => p.SearchResultGroupId ).WillCascadeOnDelete( false );
             this.HasOptional( a => a.Qualifier ).WithMany().HasForeignKey( p => p.QualifierValueId ).WillCascadeOnDelete( false );
             this.HasOptional( a => a.AttendanceCode ).WithMany( c => c.Attendances ).HasForeignKey( a => a.AttendanceCodeId ).WillCascadeOnDelete( false );
         }

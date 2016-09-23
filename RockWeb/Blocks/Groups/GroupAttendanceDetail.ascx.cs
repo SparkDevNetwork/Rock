@@ -272,6 +272,15 @@ namespace RockWeb.Blocks.Groups
                                 attendance.LocationId = _occurrence.LocationId;
                                 attendance.CampusId = campusId;
                                 attendance.ScheduleId = _occurrence.ScheduleId;
+
+                                // check that the attendance record is valid
+                                cvAttendance.IsValid = attendance.IsValid;
+                                if ( !cvAttendance.IsValid )
+                                {
+                                    cvAttendance.ErrorMessage = attendance.ValidationResults.Select( a => a.ErrorMessage ).ToList().AsDelimited( "<br />" );
+                                    return;
+                                }
+
                                 attendanceService.Add( attendance );
                             }
                         }
@@ -324,7 +333,15 @@ namespace RockWeb.Blocks.Groups
                     }
                 }
 
-                NavigateToParentPage( new Dictionary<string, string> { { "GroupId", _group.Id.ToString() } } );
+                var qryParams = new Dictionary<string, string> { { "GroupId", _group.Id.ToString() } };
+
+                var groupTypeIds = PageParameter( "GroupTypeIds" );
+                if ( !string.IsNullOrWhiteSpace( groupTypeIds ) )
+                {
+                    qryParams.Add( "GroupTypeIds", groupTypeIds );
+                }
+
+                NavigateToParentPage( qryParams );
             }
         }
 
@@ -337,7 +354,15 @@ namespace RockWeb.Blocks.Groups
         {
             if ( _group != null )
             {
-                NavigateToParentPage( new Dictionary<string, string> { { "GroupId", _group.Id.ToString() } } );
+                var qryParams = new Dictionary<string, string> { { "GroupId", _group.Id.ToString() } };
+
+                var groupTypeIds = PageParameter( "GroupTypeIds" );
+                if ( !string.IsNullOrWhiteSpace( groupTypeIds ) )
+                {
+                    qryParams.Add( "GroupTypeIds", groupTypeIds );
+                }
+
+                NavigateToParentPage( qryParams );
             }
         }
 

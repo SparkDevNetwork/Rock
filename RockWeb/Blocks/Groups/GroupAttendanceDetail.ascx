@@ -19,6 +19,8 @@
             <div class="panel-body">
 
                 <Rock:NotificationBox ID="nbNotice" runat="server" />
+                <asp:ValidationSummary ID="ValidationSummary1" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" />
+                <asp:CustomValidator ID="cvAttendance" runat="server" Display="None" />
 
                 <asp:Panel id="pnlDetails" runat="server">
 
@@ -51,7 +53,7 @@
                         <div class="col-md-6">
 
                             <div class="js-roster">
-                                <h4><asp:Literal ID="lMembers" runat="server" /></h4>
+                                <h4 class="js-members-label"><asp:Literal ID="lMembers" runat="server" /></h4>
                                 <asp:ListView ID="lvMembers" runat="server">
                                     <ItemTemplate>
                                         <asp:HiddenField ID="hfMember" runat="server" Value='<%# Eval("PersonId") %>' />
@@ -85,9 +87,9 @@
                     <Rock:NotificationBox ID="nbPrintRosterWarning" runat="server" NotificationBoxType="Warning"/>
 
                     <div class="actions">
-                        <asp:LinkButton ID="lbSave" runat="server" Text="Save Attendance" CssClass="btn btn-primary" OnClick="lbSave_Click" CausesValidation="false" />
+                        <asp:LinkButton ID="lbSave" runat="server" Text="Save" CssClass="btn btn-primary" OnClick="lbSave_Click" CausesValidation="false" />
                         <asp:LinkButton ID="lbCancel" runat="server" AccessKey="c" Text="Cancel" CssClass="btn btn-link" OnClick="lbCancel_Click" CausesValidation="false"></asp:LinkButton>
-                        <asp:LinkButton ID="lbPrintAttendanceRoster" runat="server" Text="Print Attendance Roster" CssClass="btn btn-action pull-right" OnClick="lbPrintAttendanceRoster_Click" CausesValidation="false" />
+                        <asp:LinkButton ID="lbPrintAttendanceRoster" runat="server" ToolTip="Print Attendance Roster" CssClass="btn btn-default btn-sm pull-right" OnClick="lbPrintAttendanceRoster_Click" CausesValidation="false"><i class="fa fa-clipboard"></i></asp:LinkButton>
                     </div>
 
                 </asp:Panel>
@@ -95,6 +97,31 @@
             </div>
 
         </div>
+
+
+        <script>
+            Sys.Application.add_load(function () {
+                // toggle all checkboxes
+                $('.js-members-label').on('click', function (e) {
+                    
+                    var container = $(this).parent();
+                    var isChecked = container.hasClass('all-checked');
+
+                    container.find('input:checkbox').each(function () {
+                        $(this).prop('checked', !isChecked);
+                    });
+
+                    if (isChecked) {
+                        container.removeClass('all-checked');
+                    }
+                    else {
+                        container.addClass('all-checked');
+                    }
+
+                });
+            });
+        </script>
+
 
     </ContentTemplate>
 </asp:UpdatePanel>

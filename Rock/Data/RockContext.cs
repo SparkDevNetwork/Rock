@@ -28,8 +28,28 @@ using Rock.Model;
 using Rock.Utility;
 using Rock.Workflow;
 
+using InteractivePreGeneratedViews;
+
 namespace Rock.Data
 {
+    /// <summary>
+    /// Helper class to set view cache
+    /// </summary>
+    public static class RockInteractiveViews
+    {
+        /// <summary>
+        /// Sets the view factory.
+        /// </summary>
+        /// <param name="path">The path.</param>
+        public static void SetViewFactory( string path )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                InteractiveViews.SetViewCacheFactory( rockContext, new FileViewCacheFactory( path ) );
+            }
+        }
+    }
+
     /// <summary>
     /// Entity Framework Context
     /// </summary>
@@ -1169,6 +1189,12 @@ namespace Rock.Data
                 foreach ( var entityType in entityTypeList )
                 {
                     modelBuilder.RegisterEntityType( entityType );
+                }
+
+                // add configurations that might be in plugin assemblies
+                foreach ( var assembly in entityTypeList.Select( a => a.Assembly ).Distinct() )
+                {
+                    modelBuilder.Configurations.AddFromAssembly( assembly );
                 }
             }
             catch ( Exception ex )

@@ -130,22 +130,16 @@ namespace RockWeb.Blocks.Event
                 eventItemOccurrenceId = Convert.ToInt32( PageParameter( "EventOccurrenceId" ) );
             }
             if ( eventItemOccurrenceId > 0 )
-            {
-                bool enableDebug = GetAttributeValue( "EnableDebug" ).AsBoolean();
-
+            {                                                              
                 var eventItemOccurrenceService = new EventItemOccurrenceService( new RockContext() );
                 var qry = eventItemOccurrenceService
                     .Queryable( "EventItem, EventItem.Photo, Campus, Linkages" )
                     .Where( i => i.Id == eventItemOccurrenceId );
 
-                if ( !enableDebug )
-                {
-                    qry = qry.AsNoTracking();
-                }
                 var eventItemOccurrence = qry.FirstOrDefault();
 
                 var mergeFields = new Dictionary<string, object>();
-                mergeFields.Add( "RegistrationPage", LinkedPageUrl( "RegistrationPage", null ) );
+                mergeFields.Add( "RegistrationPage", LinkedPageRoute( "RegistrationPage" ) );
 
                 var campusEntityType = EntityTypeCache.Read( "Rock.Model.Campus" );
                 var contextCampus = RockPage.GetCurrentContext( campusEntityType ) as Campus;

@@ -251,6 +251,12 @@ namespace RockWeb.Blocks.Groups
                 qryParams.Add( "ScheduleId", scheduleId.Value.ToString() );
             }
 
+            var groupTypeIds = PageParameter( "GroupTypeIds" );
+            if ( !string.IsNullOrWhiteSpace( groupTypeIds ) )
+            {
+                qryParams.Add( "GroupTypeIds", groupTypeIds );
+            }
+
             NavigateToLinkedPage( "DetailPage", qryParams );
         }
 
@@ -278,6 +284,12 @@ namespace RockWeb.Blocks.Groups
                 {
                     qryParams.Add( "LocationId", locId.Value.ToString() );
                 }
+            }
+
+            var groupTypeIds = PageParameter( "GroupTypeIds" );
+            if ( !string.IsNullOrWhiteSpace( groupTypeIds ) )
+            {
+                qryParams.Add( "GroupTypeIds", groupTypeIds );
             }
 
             NavigateToLinkedPage( "DetailPage", qryParams );
@@ -335,6 +347,11 @@ namespace RockWeb.Blocks.Groups
                     }
 
                     rockContext.SaveChanges();
+
+                    if ( locationId.HasValue )
+                    {
+                        Rock.CheckIn.KioskLocationAttendance.Flush( locationId.Value );
+                    }
                 }
             }
 

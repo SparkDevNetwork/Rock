@@ -62,5 +62,20 @@ namespace Rock.SystemGuid
         /// The Merge Template file type guid
         /// </summary>
         public const string MERGE_TEMPLATE = "BD63EC0C-2DF8-4C55-97E3-616870C67C59";
+
+        /// <summary>
+        /// The Signed Document Default File Type
+        /// </summary>
+        public const string SIGNED_DOCUMENT_FILE_TYPE = "8C9C5A97-005A-46E5-AF7B-AC2F359B738A";
+
+        /// <summary>
+        /// The Benevolence Request Document guid
+        /// </summary>
+        public const string BENEVOLENCE_REQUEST_DOCUMENTS = "2599DDBE-40E1-158E-4436-AACA6C00556E";
+
+        /// <summary>
+        /// The Digitally Signed Document guid
+        /// </summary>
+        public const string DIGITALLY_SIGNED_DOCUMENTS = "40871411-4E2D-45C2-9E21-D9FCBA5FC340";
     }
 }

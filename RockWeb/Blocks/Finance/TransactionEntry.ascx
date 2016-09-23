@@ -4,6 +4,9 @@
     <ContentTemplate>
 
         <asp:HiddenField ID="hfCurrentPage" runat="server" Value="1" />
+        
+        <%-- hidden field to store the Transaction.Guid to use for the transaction. This is to help prevent duplicate transactions.   --%>
+        <asp:HiddenField ID="hfTransactionGuid" runat="server" Value="" />
 
         <Rock:NotificationBox ID="nbMessage" runat="server" Visible="false"></Rock:NotificationBox>
 
@@ -59,15 +62,33 @@
                         <% } %>
 
                             <div class="panel panel-default contribution-personal">
-                                <div class="panel-heading"><h3 class="panel-title"><asp:Literal ID="lPersonalInfoTitle" runat="server" /></h3></div>
+                                <div class="panel-heading">
+                                    <h3 class="panel-title">
+                                        <asp:Literal ID="lPersonalInfoTitle" runat="server" />
+                                        <div class="panel-labels">
+                                            <span class="panel-text"><asp:Literal ID="lBusinessLoginMsg" runat="server" Text="Login to give as a business" /></span>
+                                            <asp:PlaceHolder ID="phGiveAsOption" runat="server">
+                                                <span class="panel-text">Give As &nbsp;</span>
+                                                <Rock:Toggle ID="tglGiveAsOption" runat="server" CssClass="pull-right" OnText="Person" OffText="Business" ButtonSizeCssClass="btn-xs" OnCheckedChanged="tglGiveAsOption_CheckedChanged" />
+                                            </asp:PlaceHolder>
+                                        </div>
+                                    </h3>
+                                </div>
                                 <div class="panel-body">
                                     <fieldset>
-                                        <Rock:RockLiteral ID="txtCurrentName" runat="server" Label="Name" Visible="false" />
-                                        <Rock:RockTextBox ID="txtFirstName" runat="server" Label="First Name" />
-                                        <Rock:RockTextBox ID="txtLastName" runat="server" Label="Last Name" />
+                                        <asp:PlaceHolder ID="phGiveAsPerson" runat="server">
+                                            <Rock:RockLiteral ID="txtCurrentName" runat="server" Label="Name" Visible="false" />
+                                            <Rock:RockTextBox ID="txtFirstName" runat="server" Label="First Name" />
+                                            <Rock:RockTextBox ID="txtLastName" runat="server" Label="Last Name" />
+                                        </asp:PlaceHolder>
+                                        <asp:PlaceHolder ID="phGiveAsBusiness" runat="server" Visible="false">
+                                            <asp:HiddenField ID="hfBusinessesLoaded" runat="server" />
+                                            <Rock:RockRadioButtonList ID="cblBusiness" runat="server" Label="Business" RepeatDirection="Horizontal" AutoPostBack="true" OnSelectedIndexChanged="cblBusinessOption_SelectedIndexChanged" />
+                                            <Rock:RockTextBox ID="txtBusinessName" runat="server" Label="Name" />
+                                        </asp:PlaceHolder>
                                         <Rock:PhoneNumberBox ID="pnbPhone" runat="server" Label="Phone"></Rock:PhoneNumberBox>
                                         <Rock:RockTextBox ID="txtEmail" runat="server" Label="Email"></Rock:RockTextBox>
-                                        <Rock:AddressControl ID="acAddress" runat="server" UseStateAbbreviation="true" UseCountryAbbreviation="false" />
+                                        <Rock:AddressControl ID="acAddress" runat="server" UseStateAbbreviation="true" UseCountryAbbreviation="false" Label="Address" />
                                     </fieldset>
                                 </div>
                             </div>
@@ -140,7 +161,7 @@
                                             <asp:ListItem Text="Checking" Value="checking" Selected="true" />
                                             <asp:ListItem Text="Savings" Value="savings" />
                                         </Rock:RockRadioButtonList>
-                                        <asp:Image ID="imgCheck" runat="server" ImageUrl="<%$ Fingerprint:~/Assets/Images/check-image.png %>" />                                    
+                                        <asp:Image ID="imgCheck" CssClass="img-responsive" runat="server" ImageUrl="<%$ Fingerprint:~/Assets/Images/check-image.png %>" />                                    
                                     </div>
 
                                 </div>
@@ -227,7 +248,7 @@
 
             <div class="actions clearfix margin-b-lg">
                 <asp:LinkButton ID="btnConfirmationPrev" runat="server" Text="Previous" CssClass="btn btn-link" OnClick="btnConfirmationPrev_Click" Visible="false" />
-                <asp:LinkButton ID="btnConfirmationNext" runat="server" Text="Finish" CssClass="btn btn-primary pull-right" OnClick="btnConfirmationNext_Click" />
+                <Rock:BootstrapButton ID="btnConfirmationNext" runat="server" Text="Finish" CssClass="btn btn-primary pull-right" OnClick="btnConfirmationNext_Click" />
             </div>
 
         </asp:Panel>

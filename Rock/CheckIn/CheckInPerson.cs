@@ -76,6 +76,12 @@ namespace Rock.CheckIn
         [DataMember]
         public bool Selected { get; set; }
 
+        /// <summary>
+        /// Gets or sets a value indicating whether this <see cref="CheckInPerson"/> is processed.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if processed; otherwise, <c>false</c>.
+        /// </value>
         [DataMember]
         public bool Processed { get; set; }
 
@@ -125,6 +131,15 @@ namespace Rock.CheckIn
         public List<CheckInSchedule> PossibleSchedules { get; set; }
 
         /// <summary>
+        /// Gets or sets state parameters which can be used by workflow actions to track state of current person's check-in
+        /// </summary>
+        /// <value>
+        /// The state parameters.
+        /// </value>
+        [DataMember]
+        public Dictionary<string, string> StateParameters { get; set; }
+
+        /// <summary>
         /// Gets the selected schedules.
         /// </summary>
         /// <value>
@@ -157,6 +172,7 @@ namespace Rock.CheckIn
         {
             GroupTypes = new List<CheckInGroupType>();
             PossibleSchedules = new List<CheckInSchedule>();
+            StateParameters = new Dictionary<string, string>();
         }
 
         /// <summary>
@@ -252,7 +268,7 @@ namespace Rock.CheckIn
         {
             get
             {
-                var availableKeys = new List<string> { "FamilyMember", "LastCheckIn", "FirstTime", "SecurityCode" };
+                var availableKeys = new List<string> { "FamilyMember", "LastCheckIn", "FirstTime", "SecurityCode", "GroupTypes" };
                 if ( this.Person != null )
                 {
                     availableKeys.AddRange( this.Person.AvailableKeys );
@@ -276,11 +292,12 @@ namespace Rock.CheckIn
             {
                switch( key.ToStringSafe() )
                {
-                   case "FamilyMember": return FamilyMember;
-                   case "LastCheckIn": return LastCheckIn;
-                   case "FirstTime": return FirstTime;
-                   case "SecurityCode": return SecurityCode;
-                   default: return Person[key];
+                    case "FamilyMember": return FamilyMember;
+                    case "LastCheckIn": return LastCheckIn;
+                    case "FirstTime": return FirstTime;
+                    case "SecurityCode": return SecurityCode;
+                    case "GroupTypes": return GetGroupTypes( true );
+                    default: return Person[key];
                }
             }
         }
@@ -292,7 +309,7 @@ namespace Rock.CheckIn
         /// <returns></returns>
         public bool ContainsKey( object key )
         {
-            var additionalKeys = new List<string> { "FamilyMember", "LastCheckIn", "FirstTime", "SecurityCode" };
+            var additionalKeys = new List<string> { "FamilyMember", "LastCheckIn", "FirstTime", "SecurityCode", "GroupTypes" };
             if ( additionalKeys.Contains( key.ToStringSafe() ) )
             {
                 return true;

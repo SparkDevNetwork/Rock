@@ -393,21 +393,29 @@ namespace Rock.Model
             }
             else
             {
-                var qry = GetByFirstLastName( firstNames[0], lastNames[0], includeDeceased, includeBusinesses );
-                for ( var i = 1; i < firstNames.Count; i++ )
+                if ( firstNames.Any() && lastNames.Any() )
                 {
-                    qry = qry.Union( GetByFirstLastName( firstNames[i], lastNames[i], includeDeceased, includeBusinesses ) );
-                }
+                    var qry = GetByFirstLastName( firstNames.Any() ? firstNames[0] : "", lastNames.Any() ? lastNames[0] : "", includeDeceased, includeBusinesses );
+                    for ( var i = 1; i < firstNames.Count; i++ )
+                    {
+                        qry = qry.Union( GetByFirstLastName( firstNames[i], lastNames[i], includeDeceased, includeBusinesses ) );
+                    }
 
-                // always include a search for just last name using the last two parts of name search
-                if ( nameParts.Count >= 2 )
+                    // always include a search for just last name using the last two parts of name search
+                    if ( nameParts.Count >= 2 )
+                    {
+                        var lastName = string.Join( " ", nameParts.TakeLast( 2 ) );
+
+                        qry = qry.Union( GetByLastName( lastName, includeDeceased, includeBusinesses ) );
+                    }
+
+                    return qry;
+                }
+                else
                 {
-                    var lastName = string.Join( " ", nameParts.TakeLast( 2 ) );
-
-                    qry = qry.Union( GetByLastName( lastName, includeDeceased, includeBusinesses ) );
+                    // Blank string was used, return empty list
+                    return new List<Person>().AsQueryable();
                 }
-
-                return qry;
             }
         }
 
@@ -489,14 +497,14 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Gets the similiar sounding names.
+        /// Gets the similar sounding names.
         /// </summary>
         /// <param name="fullName">The full name.</param>
         /// <param name="excludeIds">The exclude ids.</param>
         /// <param name="includeDeceased">if set to <c>true</c> [include deceased].</param>
         /// <param name="includeBusinesses">if set to <c>true</c> [include businesses].</param>
         /// <returns></returns>
-        public List<string> GetSimiliarNames( string fullName, List<int> excludeIds, bool includeDeceased = false, bool includeBusinesses = false )
+        public List<string> GetSimilarNames( string fullName, List<int> excludeIds, bool includeDeceased = false, bool includeBusinesses = false )
         {
             var names = fullName.SplitDelimitedValues();
 
@@ -522,6 +530,21 @@ namespace Rock.Model
                 lastName = fullName.Trim();
             }
 
+            return GetSimilarNames( firstName, lastName, reversed, excludeIds, includeDeceased, includeBusinesses );
+        }
+
+        /// <summary>
+        /// Gets the similar names.
+        /// </summary>
+        /// <param name="firstName">The first name.</param>
+        /// <param name="lastName">The last name.</param>
+        /// <param name="reversed">if set to <c>true</c> [reversed].</param>
+        /// <param name="excludeIds">The exclude ids.</param>
+        /// <param name="includeDeceased">if set to <c>true</c> [include deceased].</param>
+        /// <param name="includeBusinesses">if set to <c>true</c> [include businesses].</param>
+        /// <returns></returns>
+        public List<string> GetSimilarNames( string firstName, string lastName, bool reversed, List<int> excludeIds, bool includeDeceased = false, bool includeBusinesses = false )
+        {
             var similarNames = new List<string>();
 
             if ( !string.IsNullOrWhiteSpace( firstName ) && !string.IsNullOrWhiteSpace( lastName ) )
@@ -608,6 +631,28 @@ namespace Rock.Model
                 .Where( m => m.PersonId == personId && m.Group.GroupType.Guid == familyGuid )
                 .Select( m => m.Group )
                 .Distinct();
+        }
+
+        /// <summary>
+        /// Gets the businesses.
+        /// </summary>
+        /// <param name="personId">The person identifier.</param>
+        /// <returns></returns>
+        public IQueryable<Person> GetBusinesses( int personId )
+        {
+            Guid businessGuid = Rock.SystemGuid.GroupRole.GROUPROLE_KNOWN_RELATIONSHIPS_BUSINESS.AsGuid();
+            Guid ownerGuid = Rock.SystemGuid.GroupRole.GROUPROLE_KNOWN_RELATIONSHIPS_OWNER.AsGuid();
+
+            var rockContext = (RockContext)this.Context;
+            return new GroupMemberService( rockContext )
+                .Queryable().AsNoTracking()
+                .Where( m =>
+                        m.GroupRole.Guid.Equals( businessGuid ) &&
+                        m.Group.Members.Any( o =>
+                            o.PersonId == personId &&
+                            o.GroupRole.Guid.Equals( ownerGuid ) ) )
+                .Select( m => m.Person )
+                .OrderBy( b => b.LastName );
         }
 
         /// <summary>

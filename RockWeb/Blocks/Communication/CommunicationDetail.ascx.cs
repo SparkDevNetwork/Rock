@@ -457,6 +457,7 @@ namespace RockWeb.Blocks.Communication
         {
             ShowStatus( communication );
             lTitle.Text = ( communication.Subject ?? "Communication" ).FormatAsHtmlTitle();
+            pdAuditDetails.SetEntity( communication, ResolveRockUrl( "~" ) );
 
             SetPersonDateValue( lCreatedBy, communication.CreatedByPersonAlias, communication.CreatedDateTime, "Created By" );
             SetPersonDateValue( lApprovedBy, communication.ReviewerPersonAlias, communication.ReviewedDateTime, "Approved By" );
@@ -659,7 +660,7 @@ namespace RockWeb.Blocks.Communication
                     case CommunicationStatus.Draft:
                     case CommunicationStatus.Denied:
                         {
-                            // This block isn't used for transient, draft or denied communicaitons
+                            // This block isn't used for transient, draft or denied communications
                             break;
                         }
                     case CommunicationStatus.PendingApproval:

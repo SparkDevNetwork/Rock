@@ -110,7 +110,7 @@ namespace Rock.Financial
         /// <param name="financialGateway">The financial gateway.</param>
         /// <param name="key">The key.</param>
         /// <returns></returns>
-        protected string GetAttributeValue( FinancialGateway financialGateway, string key )
+        public string GetAttributeValue( FinancialGateway financialGateway, string key )
         {
             if ( financialGateway.AttributeValues == null )
             {
@@ -150,6 +150,17 @@ namespace Rock.Financial
         public virtual List<DefinedValueCache> SupportedPaymentSchedules
         {
             get { return new List<DefinedValueCache>(); }
+        }
+
+        /// <summary>
+        /// Gets a value indicating whether this gateway can be used by Rock to create new transactions (vs. just used to download externally created transactions)
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [supports charge]; otherwise, <c>false</c>.
+        /// </value>
+        public virtual bool SupportsRockInitiatedTransactions
+        {
+            get { return true; }
         }
 
         /// <summary>

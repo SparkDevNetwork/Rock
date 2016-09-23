@@ -149,7 +149,9 @@ namespace RockWeb.Blocks.WorkFlow
                 {
                     RockPage.PageIcon = _workflowType.IconCssClass;
                 }
-
+            }
+            if ( _workflowType != null )
+            {
                 lTitle.Text = string.Format( "{0} Entry", _workflowType.WorkTerm );
 
                 if ( ! string.IsNullOrWhiteSpace( _workflowType.IconCssClass ) )
@@ -293,6 +295,8 @@ namespace RockWeb.Blocks.WorkFlow
                 }
                 if ( _workflow != null )
                 {
+                    hlblWorkflowId.Text = _workflow.WorkflowId;
+
                     _workflow.LoadAttributes();
                     foreach ( var activity in _workflow.Activities )
                     {
@@ -478,15 +482,15 @@ namespace RockWeb.Blocks.WorkFlow
 
         private void BuildForm( bool setValues )
         {
+            var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson );
+            mergeFields.Add( "Action", _action );
+            mergeFields.Add( "Activity", _activity );
+            mergeFields.Add( "Workflow", _workflow );
+
             var form = _actionType.WorkflowForm;
 
             if ( setValues )
             {
-                var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson );
-                mergeFields.Add( "Action", _action );
-                mergeFields.Add( "Activity", _activity );
-                mergeFields.Add( "Workflow", _workflow );
-
                 lheadingText.Text = form.Header.ResolveMergeFields( mergeFields );
                 lFootingText.Text = form.Footer.ResolveMergeFields( mergeFields );
             }
@@ -501,6 +505,7 @@ namespace RockWeb.Blocks.WorkFlow
             }
 
             phAttributes.Controls.Clear();
+
             foreach ( var formAttribute in form.FormAttributes.OrderBy( a => a.Order ) )
             {
                 if ( formAttribute.IsVisible )
@@ -515,7 +520,7 @@ namespace RockWeb.Blocks.WorkFlow
 
                     if ( !string.IsNullOrWhiteSpace( formAttribute.PreHtml))
                     {
-                        phAttributes.Controls.Add( new LiteralControl( formAttribute.PreHtml ) );
+                        phAttributes.Controls.Add( new LiteralControl( formAttribute.PreHtml.ResolveMergeFields(mergeFields) ) );
                     }
 
                     if ( formAttribute.IsReadOnly )
@@ -566,7 +571,7 @@ namespace RockWeb.Blocks.WorkFlow
 
                     if ( !string.IsNullOrWhiteSpace( formAttribute.PostHtml ) )
                     {
-                        phAttributes.Controls.Add( new LiteralControl( formAttribute.PostHtml ) );
+                        phAttributes.Controls.Add( new LiteralControl( formAttribute.PostHtml.ResolveMergeFields( mergeFields) ) );
                     }
 
                 }

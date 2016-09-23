@@ -43,6 +43,7 @@ namespace RockWeb.Blocks.Groups
     [LinkedPage( "Person Profile Page", "Page used for viewing a person's profile. If set a view profile button will show for each group member.", false, "", "", 2, "PersonProfilePage" )]
     [LinkedPage( "Registration Page", "Page used for viewing the registration(s) associated with a particular group member", false, "", "", 3 )]
     [BooleanField("Show Campus Filter", "Setting to show/hide campus filter.", true, order: 4)]
+    [BooleanField( "Show First/Last Attendance", "If the group allows attendance, should the first and last attendance date be displayed for each group member?", false, "", 5, "ShowAttendance" )]
     public partial class GroupMemberList : RockBlock, ISecondaryBlock
     {
         #region Private Variables
@@ -63,6 +64,14 @@ namespace RockWeb.Blocks.Groups
         /// The available attributes.
         /// </value>
         public List<AttributeCache> AvailableAttributes { get; set; }
+
+        /// <summary>
+        /// Gets or sets the signed person ids.
+        /// </summary>
+        /// <value>
+        /// The signed person ids.
+        /// </value>
+        private List<int> Signers { get; set; }
 
         #endregion
 
@@ -184,6 +193,9 @@ namespace RockWeb.Blocks.Groups
                     gGroupMembers.IsDeleteEnabled = false;
                     gGroupMembers.Actions.ShowAdd = false;
                     hlSyncStatus.Visible = true;
+                    // link to the DataView
+                    int pageId = Rock.Web.Cache.PageCache.Read( Rock.SystemGuid.Page.DATA_VIEWS.AsGuid() ).Id;
+                    hlSyncSource.NavigateUrl = System.Web.VirtualPathUtility.ToAbsolute( String.Format( "~/page/{0}?DataViewId={1}", pageId, _group.SyncDataViewId.Value ) );
                 }
             }
 
@@ -336,6 +348,7 @@ namespace RockWeb.Blocks.Groups
             rFilter.SaveUserPreference( MakeKeyUniqueToGroup( "Status" ), "Status", cblGroupMemberStatus.SelectedValues.AsDelimited( ";" ) );
             rFilter.SaveUserPreference( MakeKeyUniqueToGroup( "Campus" ), "Campus", cpCampusFilter.SelectedCampusId.ToString() );
             rFilter.SaveUserPreference( MakeKeyUniqueToGroup( "Gender" ), "Gender", cblGenderFilter.SelectedValues.AsDelimited( ";" ) );
+            rFilter.SaveUserPreference( MakeKeyUniqueToGroup( "Signed Document" ), "Signed Document", ddlSignedDocument.SelectedValue );
 
             if ( AvailableAttributes != null )
             {
@@ -417,6 +430,10 @@ namespace RockWeb.Blocks.Groups
                 {
                     e.Value = null;
                 }
+            }
+            else if ( e.Key == MakeKeyUniqueToGroup( "Signed Document") )
+            {
+                return;
             }
             else
             {
@@ -541,6 +558,10 @@ namespace RockWeb.Blocks.Groups
             {
                 cblGroupMemberStatus.SetValues( statusValue.Split( ';' ).ToList() );
             }
+
+            ddlSignedDocument.SetValue( rFilter.GetUserPreference( MakeKeyUniqueToGroup( "Signed Document" ) ) );
+            ddlSignedDocument.Visible = _group.RequiredSignatureDocumentTemplateId.HasValue;
+
         }
 
         /// <summary>
@@ -855,6 +876,21 @@ namespace RockWeb.Blocks.Groups
 
                     var rockContext = new RockContext();
 
+                    if ( _group != null &&
+                        _group.RequiredSignatureDocumentTemplateId.HasValue )
+                    {
+                        Signers = new SignatureDocumentService( rockContext )
+                            .Queryable().AsNoTracking()
+                            .Where( d =>
+                                d.SignatureDocumentTemplateId == _group.RequiredSignatureDocumentTemplateId.Value &&
+                                d.Status == SignatureDocumentStatus.Signed &&
+                                d.BinaryFileId.HasValue &&
+                                d.AppliesToPersonAlias != null )
+                            .OrderByDescending( d => d.LastStatusDate )
+                            .Select( d => d.AppliesToPersonAlias.PersonId )
+                            .ToList();
+                    }
+
                     GroupMemberService groupMemberService = new GroupMemberService( rockContext );
                     var qry = groupMemberService.Queryable( "Person,GroupRole", true ).AsNoTracking()
                         .Where( m => m.GroupId == _group.Id );
@@ -863,7 +899,7 @@ namespace RockWeb.Blocks.Groups
                     string firstName = tbFirstName.Text;
                     if ( !string.IsNullOrWhiteSpace( firstName ) )
                     {
-                        qry = qry.Where( m => 
+                        qry = qry.Where( m =>
                             m.Person.FirstName.StartsWith( firstName ) ||
                             m.Person.NickName.StartsWith( firstName ) );
                     }
@@ -915,7 +951,7 @@ namespace RockWeb.Blocks.Groups
 
                     if ( genders.Any() )
                     {
-                        qry = qry.Where(m => genders.Contains( m.Person.Gender));
+                        qry = qry.Where( m => genders.Contains( m.Person.Gender ) );
                     }
 
                     // Filter by Campus
@@ -925,6 +961,19 @@ namespace RockWeb.Blocks.Groups
                         int campusId = cpCampusFilter.SelectedCampusId.Value;
                         var qryFamilyMembersForCampus = new GroupMemberService( rockContext ).Queryable().Where( a => a.Group.GroupType.Guid == familyGuid && a.Group.CampusId == campusId );
                         qry = qry.Where( a => qryFamilyMembersForCampus.Any( f => f.PersonId == a.PersonId ) );
+                    }
+
+                    // Filter by signed documents
+                    if ( Signers != null )
+                    {
+                        if ( ddlSignedDocument.SelectedValue.AsBooleanOrNull() == true )
+                        {
+                            qry = qry.Where( m => Signers.Contains( m.PersonId ) );
+                        }
+                        else if ( ddlSignedDocument.SelectedValue.AsBooleanOrNull() == false )
+                        {
+                            qry = qry.Where( m => !Signers.Contains( m.PersonId ) );
+                        }
                     }
 
                     // Filter query by any configured attribute filters
@@ -965,14 +1014,21 @@ namespace RockWeb.Blocks.Groups
                     var groupMemberIdsThatLackGroupRequirements = new GroupService( rockContext ).GroupMembersNotMeetingRequirements( _group.Id, includeWarnings ).Select( a => a.Key.Id );
 
                     List<GroupMember> groupMembersList = null;
-
-                    if ( sortProperty != null )
-                    {
+                    if ( sortProperty != null && sortProperty.Property != "FirstAttended" && sortProperty.Property != "LastAttended" )
+                    { 
                         groupMembersList = qry.Sort( sortProperty ).ToList();
                     }
                     else
                     {
                         groupMembersList = qry.OrderBy( a => a.GroupRole.Order ).ThenBy( a => a.Person.LastName ).ThenBy( a => a.Person.FirstName ).ToList();
+                    }
+
+                    // If there is a required signed document that member has not signed, show an icon in the grid
+                    var personIdsThatHaventSigned = new List<int>();
+                    if ( Signers != null )
+                    {
+                        var memberPersonIds = groupMembersList.Select( m => m.PersonId ).ToList();
+                        personIdsThatHaventSigned = memberPersonIds.Where( i => !Signers.Contains( i ) ).ToList();
                     }
 
                     // Since we're not binding to actual group member list, but are using AttributeField columns,
@@ -1008,11 +1064,13 @@ namespace RockWeb.Blocks.Groups
                         .GroupBy( r => r.GroupMemberId.Value )
                         .Select( g => new
                         {
-                            GroupMemberId = g.Key,  
+                            GroupMemberId = g.Key,
                             Registrations = g.ToList()
-                                .Select( r => new {
+                                .Select( r => new
+                                {
                                     Id = r.Registration.Id,
-                                    Name = r.Registration.RegistrationInstance.Name } ).Distinct()
+                                    Name = r.Registration.RegistrationInstance.Name
+                                } ).Distinct()
                                 .ToDictionary( r => r.Id, r => r.Name )
                         } )
                         .ToDictionary( r => r.GroupMemberId, r => r.Registrations );
@@ -1027,11 +1085,35 @@ namespace RockWeb.Blocks.Groups
                     if ( connectionStatusField != null )
                     {
                         connectionStatusField.Visible = _group.GroupType.ShowConnectionStatus;
-                    } 
+                    }
 
                     string photoFormat = "<div class=\"photo-icon photo-round photo-round-xs pull-left margin-r-sm js-person-popover\" personid=\"{0}\" data-original=\"{1}&w=50\" style=\"background-image: url( '{2}' ); background-size: cover; background-repeat: no-repeat;\"></div>";
 
-                    gGroupMembers.DataSource = groupMembersList.Select( m => new
+                    var attendanceFirstLast = new Dictionary<int, DateRange>();
+                    bool showAttendance = GetAttributeValue( "ShowAttendance" ).AsBoolean() && _group.GroupType.TakesAttendance;
+                    gGroupMembers.ColumnsOfType<DateField>().First( a => a.DataField == "FirstAttended" ).Visible = showAttendance;
+                    gGroupMembers.ColumnsOfType<DateField>().First( a => a.DataField == "LastAttended" ).Visible = showAttendance;
+                    if ( showAttendance )
+                    {
+                        foreach ( var attendance in new AttendanceService( rockContext )
+                            .Queryable().AsNoTracking()
+                            .Where( a =>
+                                a.GroupId.HasValue && a.GroupId.Value == _group.Id &&
+                                a.DidAttend.HasValue && a.DidAttend.Value )
+                            .GroupBy( a => a.PersonAlias.PersonId )
+                            .Select( g => new
+                            {
+                                PersonId = g.Key,
+                                FirstAttended = g.Min( a => a.StartDateTime ),
+                                LastAttended = g.Max( a => a.StartDateTime )
+                            } )
+                            .ToList() )
+                        {
+                            attendanceFirstLast.Add( attendance.PersonId, new DateRange( attendance.FirstAttended, attendance.LastAttended ) );
+                        }
+                    }
+
+                    var dataSource = groupMembersList.Select( m => new
                     {
                         m.Id,
                         m.Guid,
@@ -1039,17 +1121,23 @@ namespace RockWeb.Blocks.Groups
                         m.Person.NickName,
                         m.Person.LastName,
                         Name =
-                        ( isExporting ? m.Person.LastName + ", " + m.Person.NickName : string.Format(photoFormat, m.PersonId, m.Person.PhotoUrl, ResolveUrl( "~/Assets/Images/person-no-photo-male.svg" ) )  +
-                        m.Person.NickName + " " + m.Person.LastName
-                            + ( hasGroupRequirements && groupMemberIdsThatLackGroupRequirements.Contains( m.Id )
+                        ( isExporting ? m.Person.LastName + ", " + m.Person.NickName : string.Format( photoFormat, m.PersonId, m.Person.PhotoUrl, ResolveUrl( "~/Assets/Images/person-no-photo-male.svg" ) ) +
+                            m.Person.NickName + " " + m.Person.LastName
+                            + ( ( hasGroupRequirements && groupMemberIdsThatLackGroupRequirements.Contains( m.Id ) ) 
                                 ? " <i class='fa fa-exclamation-triangle text-warning'></i>"
                                 : string.Empty )
                             + ( !string.IsNullOrEmpty( m.Note )
-                            ? " <i class='fa fa-file-text-o text-info'></i>"
-                            : string.Empty ) ),
+                                ? " <i class='fa fa-file-text-o text-info'></i>"
+                                : string.Empty )
+                            + ((personIdsThatHaventSigned.Contains( m.PersonId ))
+                                ? " <i class='fa fa-pencil-square-o text-danger'></i>"
+                                : string.Empty)),
                         m.Person.BirthDate,
                         m.Person.Age,
                         m.Person.ConnectionStatusValueId,
+                        m.DateTimeAdded,
+                        FirstAttended = attendanceFirstLast.Where( a => a.Key == m.PersonId ).Select( a => a.Value.Start ).FirstOrDefault(),
+                        LastAttended = attendanceFirstLast.Where( a => a.Key == m.PersonId ).Select( a => a.Value.End ).FirstOrDefault(),
                         Email = m.Person.Email,
                         HomePhone = isExporting && homePhoneType != null ?
                             m.Person.PhoneNumbers
@@ -1073,6 +1161,34 @@ namespace RockWeb.Blocks.Groups
                         IsDeceased = m.Person.IsDeceased
                     } ).ToList();
 
+                    if ( sortProperty != null )
+                    {
+                        if ( sortProperty.Property == "FirstAttended" )
+                        {
+                            if ( sortProperty.Direction == SortDirection.Descending )
+                            {
+                                dataSource = dataSource.OrderByDescending( a => a.FirstAttended ?? DateTime.MinValue ).ToList();
+                            }
+                            else
+                            {
+                                dataSource = dataSource.OrderBy( a => a.FirstAttended ?? DateTime.MinValue ).ToList();
+                            }
+                        }
+
+                        if ( sortProperty.Property == "LastAttended" )
+                        {
+                            if ( sortProperty.Direction == SortDirection.Descending )
+                            {
+                                dataSource = dataSource.OrderByDescending( a => a.LastAttended ?? DateTime.MinValue ).ToList();
+                            }
+                            else
+                            {
+                                dataSource = dataSource.OrderBy( a => a.LastAttended ?? DateTime.MinValue ).ToList();
+                            }
+                        }
+                    }
+
+                    gGroupMembers.DataSource = dataSource;
                     gGroupMembers.DataBind();
                 }
                 else

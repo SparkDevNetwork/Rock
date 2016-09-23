@@ -1,21 +1,30 @@
 var bodyScroll;
 
+$(function () {
+    $(window).on('resize', function () {
+        resizeBody();
+    });
+});
+
 Sys.Application.add_load(function () {
 
+    if (bodyScroll) {
+        bodyScroll.destroy();
+        bodyScroll = null;
+    }
+
     resizeBody();
-    bodyScroll = new IScroll('.checkin-scroll-panel', {
+
+    if ($('.checkin-scroll-panel').length) {
+      bodyScroll = new IScroll('.checkin-scroll-panel', {
         scrollbars: true,
         mouseWheel: true,
         interactiveScrollbars: true,
         shrinkScrollbars: 'scale',
         fadeScrollbars: false,
         scrollbars: 'custom'
-    });
-
-    $(window).on('resize', function () {
-        resizeBody();
-    });
-
+      });
+    }
 });
 
 function resizeBody() {

@@ -128,10 +128,10 @@
 
                                 <asp:Panel ID="pnlChartAmountGrid" runat="server" Visible="false">
                                     <div class="grid">
-                                        <Rock:Grid ID="gChartAmount" runat="server" AllowSorting="true" DataKeyNames="DateTimeStamp,SeriesId" RowItemText="Amount Summary">
+                                        <Rock:Grid ID="gChartAmount" runat="server" AllowSorting="true" DataKeyNames="DateTimeStamp,SeriesName" RowItemText="Amount Summary">
                                             <Columns>
                                                 <Rock:DateField DataField="DateTime" HeaderText="Date" SortExpression="DateTimeStamp" />
-                                                <Rock:RockBoundField DataField="SeriesId" HeaderText="Series" SortExpression="SeriesId" />
+                                                <Rock:RockBoundField DataField="SeriesName" HeaderText="Series" SortExpression="SeriesId" />
                                                 <Rock:RockBoundField DataField="SeriesAddlInfo" HeaderText="Series Addl Info" SortExpression="SeriesAddlInfo" />
                                                 <Rock:CurrencyField DataField="YValue" HeaderText="Amount" SortExpression="YValue" />
                                             </Columns>
@@ -204,8 +204,10 @@
 
                                 <Rock:NotificationBox ID="nbGiversError" runat="server" NotificationBoxType="Danger" Dismissable="true" Visible="false" />
 
-                                <Rock:Grid ID="gGiversGifts" runat="server" AllowSorting="true" RowItemText="Person" OnRowSelected="gGiversGifts_RowSelected"
-                                    ExportSource="ColumnOutput" ExportFilename="GivingAnalytics" />
+                                <div class="margin-b-md">
+                                    <Rock:Grid ID="gGiversGifts" runat="server" AllowSorting="true" RowItemText="Person" OnRowSelected="gGiversGifts_RowSelected"
+                                        ExportSource="ColumnOutput" ExportFilename="GivingAnalytics" />
+                                </div>
 
                             </asp:Panel>
 

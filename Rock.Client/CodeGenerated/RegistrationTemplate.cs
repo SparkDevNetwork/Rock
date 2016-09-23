@@ -139,6 +139,9 @@ namespace Rock.Client
         public string RegistrationTerm { get; set; }
 
         /// <summary />
+        public int? RegistrationWorkflowTypeId { get; set; }
+
+        /// <summary />
         public string ReminderEmailTemplate { get; set; }
 
         /// <summary />
@@ -154,7 +157,16 @@ namespace Rock.Client
         public string RequestEntryName { get; set; }
 
         /// <summary />
+        public int? RequiredSignatureDocumentTemplateId { get; set; }
+
+        /// <summary />
         public bool? SetCostOnInstance { get; set; }
+
+        /// <summary />
+        public bool ShowCurrentFamilyMembers { get; set; }
+
+        /// <summary />
+        public Rock.Client.Enums.SignatureDocumentAction SignatureDocumentAction { get; set; }
 
         /// <summary />
         public string SuccessText { get; set; }
@@ -229,12 +241,16 @@ namespace Rock.Client
             this.RegistrantsSameFamily = source.RegistrantsSameFamily;
             this.RegistrantTerm = source.RegistrantTerm;
             this.RegistrationTerm = source.RegistrationTerm;
+            this.RegistrationWorkflowTypeId = source.RegistrationWorkflowTypeId;
             this.ReminderEmailTemplate = source.ReminderEmailTemplate;
             this.ReminderFromEmail = source.ReminderFromEmail;
             this.ReminderFromName = source.ReminderFromName;
             this.ReminderSubject = source.ReminderSubject;
             this.RequestEntryName = source.RequestEntryName;
+            this.RequiredSignatureDocumentTemplateId = source.RequiredSignatureDocumentTemplateId;
             this.SetCostOnInstance = source.SetCostOnInstance;
+            this.ShowCurrentFamilyMembers = source.ShowCurrentFamilyMembers;
+            this.SignatureDocumentAction = source.SignatureDocumentAction;
             this.SuccessText = source.SuccessText;
             this.SuccessTitle = source.SuccessTitle;
             this.CreatedDateTime = source.CreatedDateTime;
@@ -263,6 +279,12 @@ namespace Rock.Client
 
         /// <summary />
         public ICollection<RegistrationTemplateForm> Forms { get; set; }
+
+        /// <summary />
+        public WorkflowType RegistrationWorkflowType { get; set; }
+
+        /// <summary />
+        public SignatureDocumentTemplate RequiredSignatureDocumentTemplate { get; set; }
 
         /// <summary>
         /// NOTE: Attributes are only populated when ?loadAttributes is specified. Options for loadAttributes are true, false, 'simple', 'expanded' 

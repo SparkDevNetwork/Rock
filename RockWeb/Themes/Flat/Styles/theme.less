@@ -18,8 +18,8 @@
 @import "_print.less";
 @import "_ad-rotater.less";
 
-@import url(http://fonts.googleapis.com/css?family=Montserrat:700);
-@import url(http://fonts.googleapis.com/css?family=Open+Sans:400,300,700,800,600);
+@import url(https://fonts.googleapis.com/css?family=Montserrat:700);
+@import url(https://fonts.googleapis.com/css?family=Open+Sans:400,300,700,800,600);
 
 
 /*
@@ -42,7 +42,7 @@ html {
 }
 
 main {
-  display:block;
+  display: block;
 }
 
 
@@ -55,20 +55,21 @@ main {
   // using fontawesome nav toggle button instead of the BS default
   .navbar-toggle {
     padding: 6px 10px;
-    i.fa-bars { color: @navbar-inverse-toggle-icon-bar-bg; }
+    i.fa-bars {
+      color: @navbar-inverse-toggle-icon-bar-bg;
+    }
   }
 
   .navbar-brand {
     font-family: @headings-font-family;
     text-transform: uppercase;
     @media (max-width: @screen-xs-max) {
-      font-size: 97%
+      font-size: 97%;
     }
   }
 }
 
-a:hover i.fs
-{
+a:hover i.fs {
   text-decoration: none;
 }
 
@@ -78,47 +79,48 @@ a:hover i.fs
 
 /* hide block panels */
 .panel.panel-block {
-    border: 0;
-    box-shadow: none;
+  border: 0;
+  box-shadow: none;
 
-    & > .panel-heading {
-        display: none;
+  & > .panel-heading ,
+  & > .rock-panel-drawer {
+    display: none;
+  }
+
+  & > .panel-body {
+    padding: 0;
+
+    .grid.grid-panel {
+      margin: 0;
     }
-
-    & > .panel-body {
-        padding: 0;
-
-        .grid.grid-panel {
-            margin: 0;
-        }
-    }
+  }
 }
 
 // 3. Theme Styling
 // -------------------------
 
 .color {
-  padding: 3em;
+  display: inline-block;
   width: 10em;
+  padding: 3em;
   margin: 1em;
   text-align: center;
-  display: inline-block;
 }
 .accent {
-  background: @accent-color;
   color: @accent-text-color;
+  background: @accent-color;
 }
 .accent-light {
-  background: @accent-light-color;
   color: @accent-light-text-color;
+  background: @accent-light-color;
 }
 .accent-semi {
-  background: @accent-semibold-color;
   color: @accent-semibold-text-color;
+  background: @accent-semibold-color;
 }
 .accent-bold {
-  background: @accent-bold-color;
   color: @accent-bold-text-color;
+  background: @accent-bold-color;
 }
 
 header {
@@ -130,8 +132,8 @@ header {
 
 .main-feature {
   @media (min-width: @screen-sm-min) {
-    background: @gray-lighter;
     margin-bottom: @grid-gutter-width;
+    background: @gray-lighter;
   }
 }
 
@@ -145,25 +147,29 @@ header {
 
 .announcements-container {
   max-width: 1440px;
+
   .center-block();
 
   .announcement-list {
     .make-row(-@grid-gutter-width/2);
 
     .announcement {
-      .make-sm-column(4, @grid-gutter-width/2 );
       margin-bottom: @grid-gutter-width/2;
+
+      .make-sm-column(4, @grid-gutter-width/2 );
+      .transition(opacity .3s);
       @media (max-width: @screen-xs-max) {
         max-width: 400px;
+
         .center-block();
       }
-
-      .transition(opacity .3s);
-      &:hover { .opacity(.75); }
+      &:hover {
+        .opacity(.75);
+      }
 
       img {
-        border-radius: 5px;
         width: 100%;
+        border-radius: 5px;
       }
     }
   }
@@ -173,16 +179,17 @@ header {
   li {
     border: 1px solid @gray-lighter;
     border-radius: @border-radius-base;
-
-
   }
 }
 
 footer {
   padding-bottom: 50px;
+
   .opacity(.5);
   .transition(opacity .5s);
-  &:hover { .opacity(1); }
+  &:hover {
+    .opacity(1);
+  }
 
   .footer-message {
     float: left;
@@ -194,28 +201,27 @@ footer {
 }
 
 #splash.error {
-
   background-color: @gray-lighter;
 
   #content {
+    padding: 20px;
     margin-top: 20px;
     background-color: @body-bg;
     border-radius: @border-radius-base;
-    padding: 20px;
   }
 }
 
 .not-found h2 {
   font-size: 200px;
   font-weight: @font-weight-bold;
-  letter-spacing: -5px;
   line-height: 210px;
+  letter-spacing: -5px;
 
   i {
-    color: #F03;
-    font-size: 210px;
     position: relative;
     top: -12px;
+    font-size: 210px;
+    color: #f03;
   }
 }
 
@@ -229,18 +235,16 @@ footer {
   border-width: 0;
 
   &-default {
-
     .badge {
-      background-color: #fff;
       color: @navbar-default-bg;
+      background-color: #fff;
     }
   }
 
   &-inverse {
-
     .badge {
-      background-color: #fff;
       color: @navbar-inverse-bg;
+      background-color: #fff;
     }
   }
 
@@ -290,30 +294,29 @@ footer {
 
 table,
 .table {
-
   a:not(.btn) {
     text-decoration: underline;
   }
 
-  .success,
-  .warning,
-  .danger,
-  .info {
-    color: #fff;
-
-    a {
+    .success,
+    .warning,
+    .danger,
+    .info {
       color: #fff;
-    }
-  }
 
-  > thead > tr > th,
-  > tbody > tr > th,
-  > tfoot > tr > th,
-  > thead > tr > td,
-  > tbody > tr > td,
-  > tfoot > tr > td {
-    border: none;
-  }
+      a {
+        color: #fff;
+      }
+    }
+
+      > thead > tr > th,
+      > tbody > tr > th,
+      > tfoot > tr > th,
+      > thead > tr > td,
+      > tbody > tr > td,
+      > tfoot > tr > td {
+        border: none;
+      }
 
   &-bordered > thead > tr > th,
   &-bordered > tbody > tr > th,
@@ -330,6 +333,7 @@ table,
 .form-control,
 input, {
   border-width: 2px;
+
   .box-shadow(none);
 
   &:focus {
@@ -417,10 +421,10 @@ input, {
   }
 
   .disabled {
-    &>a,
-    &>a:hover,
-    &>a:focus,
-    &>span {
+    & > a,
+    & > a:hover,
+    & > a:focus,
+    & > span {
       background-color: @pagination-disabled-bg;
     }
   }
@@ -442,7 +446,7 @@ input, {
 .close {
   color: #fff;
   text-decoration: none;
-  opacity: 0.4;
+  opacity: .4;
 
   &:hover,
   &:focus {
@@ -452,7 +456,6 @@ input, {
 }
 
 .alert {
-
   .alert-link {
     color: #fff;
     text-decoration: underline;
@@ -463,6 +466,7 @@ input, {
 
 .progress {
   height: 10px;
+
   .box-shadow(none);
   .progress-bar {
     font-size: 10px;
