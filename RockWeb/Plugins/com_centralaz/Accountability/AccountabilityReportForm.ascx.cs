@@ -254,67 +254,80 @@ namespace RockWeb.Plugins.com_centralaz.Accountability
                 return;
             }
 
-            AccountabilityContext dataContext = new AccountabilityContext();
-            ResponseSetService responseSetService = new ResponseSetService( dataContext );
-            ResponseSet myResponseSet = new ResponseSet();
-            myResponseSet.PersonId = (int)CurrentPersonId;
-            myResponseSet.GroupId = int.Parse( PageParameter( "GroupId" ) );
-            myResponseSet.Comment = tbComments.Text;
-            myResponseSet.SubmitForDate = DateTime.Parse( ddlSubmitForDate.SelectedValue );
-            double correct = 0;
-
-            int groupId = int.Parse( PageParameter( "GroupId" ) );
-            int personId = (int)CurrentPersonId;
-            GroupMemberService groupMemberService = new GroupMemberService( new RockContext() );
-            _groupMember = groupMemberService.GetByGroupIdAndPersonId( groupId, personId ).FirstOrDefault();
-
-            dataContext = new AccountabilityContext();
-            ResponseService responseService = new ResponseService( dataContext );
-            List<Question> questions = new QuestionService( new AccountabilityContext() ).GetQuestionsFromGroupTypeID( _groupMember.Group.GroupTypeId );
-            Response myResponse = null;
-            for ( int i = 0; i < questions.Count; i++ )
+            var groupId = PageParameter( "GroupId" ).AsIntegerOrNull();
+            if ( groupId.HasValue )
             {
-                myResponse = new Response();
-                //myResponse.ResponseSetId = myResponseSet.Id;
-                myResponse.QuestionId = questions[i].Id;
-                String answerName = "ddlResponseAnswer" + i.ToString();
-                Control control = this.FindControl( answerName );
-                RockDropDownList questionAnswer = (RockDropDownList)control;
-                if ( questionAnswer.SelectedValue == "yes" )
+                AccountabilityContext accountabilityContext = new AccountabilityContext();
+                ResponseSetService responseSetService = new ResponseSetService( accountabilityContext );
+                ResponseSet responseSet = new ResponseSet();
+                responseSet.PersonId = CurrentPersonId.Value;
+                responseSet.GroupId = groupId.Value;
+                responseSet.Comment = tbComments.Text;
+                responseSet.SubmitForDate = DateTime.Parse( ddlSubmitForDate.SelectedValue );
+                double correct = 0;
+
+                if ( responseSetService.Queryable().Where( rs =>
+                              rs.SubmitForDate == responseSet.SubmitForDate &&
+                              rs.PersonId == CurrentPersonId &&
+                              rs.GroupId == groupId.Value )
+                            .Any() )
                 {
-                    myResponse.IsResponseYes = true;
-                    correct++;
+                    nbErrorMessage.Title = "You have already submitted a report for this week.";
+                    return;
+                }
+
+                int personId = (int)CurrentPersonId;
+                GroupMemberService groupMemberService = new GroupMemberService( new RockContext() );
+                _groupMember = groupMemberService.GetByGroupIdAndPersonId( groupId.Value, personId ).FirstOrDefault();
+
+                accountabilityContext = new AccountabilityContext();
+                ResponseService responseService = new ResponseService( accountabilityContext );
+                List<Question> questions = new QuestionService( new AccountabilityContext() ).GetQuestionsFromGroupTypeID( _groupMember.Group.GroupTypeId );
+                Response myResponse = null;
+                for ( int i = 0; i < questions.Count; i++ )
+                {
+                    myResponse = new Response();
+                    //myResponse.ResponseSetId = responseSet.Id;
+                    myResponse.QuestionId = questions[i].Id;
+                    String answerName = "ddlResponseAnswer" + i.ToString();
+                    Control control = this.FindControl( answerName );
+                    RockDropDownList questionAnswer = (RockDropDownList)control;
+                    if ( questionAnswer.SelectedValue == "yes" )
+                    {
+                        myResponse.IsResponseYes = true;
+                        correct++;
+                    }
+                    else
+                    {
+                        myResponse.IsResponseYes = false;
+                    }
+                    String commentText = ( (RockTextBox)this.FindControl( "txtResponseComment" + i.ToString() ) ).Text;
+                    if ( commentText.Length > 300 )
+                    {
+                        nbErrorMessage.Title = String.Format( "Your comment to '{0}' has exceeded the character limit of 300.", questions[i].ShortForm );
+                    }
+                    myResponse.Comment = commentText;
+                    responseSet.Responses.Add( myResponse );
+
+                }
+                accountabilityContext = new AccountabilityContext();
+                responseSetService = new ResponseSetService( accountabilityContext );
+                double score = correct / questions.Count;
+                responseSet.Score = score;
+                responseSetService.Add( responseSet );
+                if ( !responseSet.IsValid )
+                {
+                    nbErrorMessage.Title = "You have exceeded the 4000 character limit on your comment.";
+                    return;
                 }
                 else
                 {
-                    myResponse.IsResponseYes = false;
+                    accountabilityContext.SaveChanges();
+                    SendEmail();
+                    Dictionary<string, string> qryString = new Dictionary<string, string>();
+                    qryString["GroupId"] = PageParameter( "GroupId" );
+                    NavigateToParentPage( qryString );
                 }
-                String commentText = ( (RockTextBox)this.FindControl( "txtResponseComment" + i.ToString() ) ).Text;
-                if ( commentText.Length > 300 )
-                {
-                    nbErrorMessage.Title = String.Format( "Your comment to '{0}' has exceeded the character limit of 300.", questions[i].ShortForm );
-                }
-                myResponse.Comment = commentText;
-                myResponseSet.Responses.Add( myResponse );
-
-            }
-            dataContext = new AccountabilityContext();
-            responseSetService = new ResponseSetService( dataContext );
-            double score = correct / questions.Count;
-            myResponseSet.Score = score;
-            responseSetService.Add( myResponseSet );
-            if ( !myResponseSet.IsValid )
-            {
-                nbErrorMessage.Title = "You have exceeded the 4000 character limit on your comment.";
-                return;
-            }
-            else
-            {
-                dataContext.SaveChanges();
-                SendEmail();
-                Dictionary<string, string> qryString = new Dictionary<string, string>();
-                qryString["GroupId"] = PageParameter( "GroupId" );
-                NavigateToParentPage( qryString );
             }
         }
 
@@ -416,12 +429,12 @@ namespace RockWeb.Plugins.com_centralaz.Accountability
                 if ( !string.IsNullOrWhiteSpace( substitutionEmail ) && !substitutionEmail.Equals( from, StringComparison.OrdinalIgnoreCase ) )
                 {
                     // Put the original From in the the Reply To: and then replace the From address.
-                    if ( ! metaData.ContainsKey( "Reply-To" ) )
+                    if ( !metaData.ContainsKey( "Reply-To" ) )
                     {
                         metaData.Add( "Reply-To", from );
                     }
 
-                    if ( ! mediumData.ContainsKey( "ReplyTo" ) )
+                    if ( !mediumData.ContainsKey( "ReplyTo" ) )
                     {
                         mediumData.Add( "ReplyTo", from );
                     }
@@ -432,7 +445,7 @@ namespace RockWeb.Plugins.com_centralaz.Accountability
 
             return from;
         }
-        
+
         /// <summary>
         /// Creates the email message body.
         /// </summary>
