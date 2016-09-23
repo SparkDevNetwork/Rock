@@ -89,7 +89,7 @@ namespace Rock.Jobs
                     client = new RestClient( "https://www.rockrms.com/api/Packages/VersionNotifications" );
                     //client = new RestClient( "http://localhost:57822/api/Packages/VersionNotifications" );
                     request = new RestRequest( Method.GET );
-                    request.AddParameter( "application/json", sparkLinkRequestJson, ParameterType.RequestBody );
+                    request.AddParameter( "VersionIds", sparkLinkRequest.VersionIds.AsDelimited( "," ) );
                     response = client.Execute( request );
                     if ( response.StatusCode == HttpStatusCode.OK || response.StatusCode == HttpStatusCode.Accepted )
                     {
