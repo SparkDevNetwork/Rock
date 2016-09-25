@@ -458,6 +458,17 @@ namespace RockWeb.Blocks.Event
             return base.SaveViewState();
         }
 
+        protected override void OnPreRender( EventArgs e )
+        {
+            if ( pnlEditDetails.Visible )
+            {
+                var sameFamily = rblRegistrantsInSameFamily.SelectedValueAsEnum<RegistrantsSameFamily>();
+                divCurrentFamilyMembers.Attributes["style"] = sameFamily == RegistrantsSameFamily.Yes ? "display:block" : "display:none";
+            }
+
+            base.OnPreRender( e );
+        }
+
         #endregion
 
         #region Events
@@ -677,6 +688,7 @@ namespace RockWeb.Blocks.Event
             RegistrationTemplate.AllowMultipleRegistrants = cbMultipleRegistrants.Checked;
             RegistrationTemplate.MaxRegistrants = nbMaxRegistrants.Text.AsInteger();
             RegistrationTemplate.RegistrantsSameFamily = rblRegistrantsInSameFamily.SelectedValueAsEnum<RegistrantsSameFamily>();
+            RegistrationTemplate.ShowCurrentFamilyMembers = cbShowCurrentFamilyMembers.Checked;
             RegistrationTemplate.SetCostOnInstance = !tglSetCostOnTemplate.Checked;
             RegistrationTemplate.Cost = cbCost.Text.AsDecimal();
             RegistrationTemplate.MinimumInitialPayment = cbMinimumInitialPayment.Text.AsDecimalOrNull();
@@ -790,6 +802,11 @@ namespace RockWeb.Blocks.Event
                         f.RegistrationTemplateId == RegistrationTemplate.Id &&
                         !formUiGuids.Contains( f.Guid ) ) )
                 {
+                    foreach( var formField in form.Fields.ToList() )
+                    {
+                        form.Fields.Remove( formField );
+                        registrationTemplateFormFieldService.Delete( formField );
+                    }
                     registrationTemplateFormService.Delete( form );
                 }
 
@@ -1973,6 +1990,7 @@ namespace RockWeb.Blocks.Event
             nbMaxRegistrants.Visible = RegistrationTemplate.AllowMultipleRegistrants;
             nbMaxRegistrants.Text = RegistrationTemplate.MaxRegistrants.ToString();
             rblRegistrantsInSameFamily.SetValue( RegistrationTemplate.RegistrantsSameFamily.ConvertToInt() );
+            cbShowCurrentFamilyMembers.Checked = RegistrationTemplate.ShowCurrentFamilyMembers;
             tglSetCostOnTemplate.Checked = !RegistrationTemplate.SetCostOnInstance.HasValue || !RegistrationTemplate.SetCostOnInstance.Value;
             cbCost.Text = RegistrationTemplate.Cost.ToString();
             cbMinimumInitialPayment.Text = RegistrationTemplate.MinimumInitialPayment.HasValue ? RegistrationTemplate.MinimumInitialPayment.Value.ToString( "N2" ) : "";

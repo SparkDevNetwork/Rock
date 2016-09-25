@@ -76,6 +76,7 @@ REGISTRATION
 + Fixed issue that prevented being able to move a registration to a different instance if the target instance did not have a group configured and selected in the move.
 + Fixed security issue with allowing people to edit payments on a registration.
 + Added validation to registration entry block to ensure person applies a discount code they enter and added server-side validation to prevent paying an amount greater than the balance due.
++ Added option to event registration templates to optionally allow registrants to select existing family members when registering for an event.
 
 REPORTING
 + Updated Metrics so that a MetricValueDateTime can be specified when using SQL as the Source. (Fixes #1666).
