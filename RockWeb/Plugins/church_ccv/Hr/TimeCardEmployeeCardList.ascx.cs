@@ -361,6 +361,30 @@ namespace RockWeb.Plugins.church_ccv.Hr
         }
 
         /// <summary>
+        /// Formats the time card time.
+        /// </summary>
+        /// <param name="dateTime">The date time.</param>
+        /// <returns></returns>
+        public string FormatTimeCardTime( DateTime? dateTime, bool zeroAsDash = false )
+        {
+            if ( dateTime.HasValue )
+            {
+                if ( dateTime.Value.TimeOfDay == TimeSpan.Zero && zeroAsDash )
+                {
+                    return "-";
+                }
+                else
+                {
+                    return dateTime.Value.ToString( "hh:mmtt" );
+                }
+            }
+            else
+            {
+                return string.Empty;
+            }
+        }
+
+        /// <summary>
         /// Handles the Click event of the btnSendToPdf control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
@@ -385,7 +409,8 @@ namespace RockWeb.Plugins.church_ccv.Hr
 
             foreach ( var timeCard in gList.DataSourceAsList.OfType<TimeCard>().ToList() )
             {
-                sbSummaryHtml.AppendFormat( "<h1>{0}</h1>", timeCard.PersonAlias.Person.FullName );
+                var timeCardNotes = noteService.Queryable().Where( a => a.NoteType.EntityTypeId == ( entityTypeIdTimeCard ?? 0 ) && a.EntityId == timeCard.Id ).OrderBy( a => a.CreatedDateTime ).ToList();
+                sbSummaryHtml.AppendFormat( "<h1>{0}{1}</h1>", timeCard.PersonAlias.Person.FullName, timeCardNotes.Any() ? "*" : string.Empty );
                 sbSummaryHtml.AppendFormat( "<h2>Pay Period: {0}</h2>", timeCard.TimeCardPayPeriod.ToString() );
                 if ( timeCard.ApprovedByPersonAlias != null )
                 {
@@ -396,11 +421,24 @@ namespace RockWeb.Plugins.church_ccv.Hr
                 var workedRegularHours = timeCard.GetRegularHours();
                 var workedOvertimeHours = timeCard.GetOvertimeHours();
                 sbSummaryHtml.AppendLine( "<table class='table table-striped'>" );
-                sbSummaryHtml.AppendLine( "<tr><th>Date</th><th>Hrs Worked</th><th>Overtime Hrs</th><th>Other Hours</th><th>Total Hrs</th><th>Note</th></tr>" );
+                sbSummaryHtml.AppendLine( "<tr><th>Date</th><th>Time In</th><th>Lunch Out</th><th>Lunch In</th><th>Time Out</th><th>Hrs Worked</th><th>Overtime Hrs</th><th>Other Hours</th><th>Total Hrs</th><th>Note</th></tr>" );
                 foreach ( var timeCardDay in timeCard.TimeCardDays.OrderBy( a => a.StartDateTime ) )
                 {
                     sbSummaryHtml.Append( "<tr>" );
                     sbSummaryHtml.AppendFormat( "<td>{0}</td>", timeCardDay.StartDateTime.ToString( "ddd MM/dd" ) );
+
+                    // time in
+                    sbSummaryHtml.AppendFormat( "<td>{0}</td>", FormatTimeCardTime( timeCardDay.StartDateTime, !timeCardDay.TotalWorkedDuration.HasValue ) );
+
+                    // lunch out
+                    sbSummaryHtml.AppendFormat( "<td>{0}</td>", FormatTimeCardTime( timeCardDay.LunchStartDateTime ) );
+
+                    // lunch in
+                    sbSummaryHtml.AppendFormat( "<td>{0}</td>", FormatTimeCardTime( timeCardDay.LunchEndDateTime ) );
+
+                    // time out
+                    sbSummaryHtml.AppendFormat( "<td>{0}</td>", FormatTimeCardTime( timeCardDay.EndDateTime ) );
+
 
                     var regularHoursForDay = workedRegularHours.Where( a => a.TimeCardDay == timeCardDay ).FirstOrDefault();
                     sbSummaryHtml.AppendFormat( "<td>{0}</td>", FormatTimeCardHours( regularHoursForDay != null ? regularHoursForDay.Hours : 0 ) );
@@ -408,14 +446,58 @@ namespace RockWeb.Plugins.church_ccv.Hr
                     var workedOvertimeHoursForDay = workedOvertimeHours.Where( a => a.TimeCardDay == timeCardDay ).FirstOrDefault();
                     sbSummaryHtml.AppendFormat( "<td>{0}</td>", FormatTimeCardHours( workedOvertimeHoursForDay != null ? workedOvertimeHoursForDay.Hours : 0 ) );
 
-                    decimal totalOtherHours = ( timeCardDay.PaidVacationHours ?? 0 ) + ( timeCardDay.TotalHolidayHours ?? 0 ) + ( timeCardDay.PaidSickHours ?? 0 );
-                    sbSummaryHtml.AppendFormat( "<td>{0}</td>", FormatTimeCardHours( totalOtherHours ) );
+                    sbSummaryHtml.Append( "<td>" );
+                    if ( !string.IsNullOrWhiteSpace( FormatTimeCardHours( timeCardDay.PaidVacationHours ) ) )
+                    {
+                        sbSummaryHtml.AppendFormat( "{0}(v)", FormatTimeCardHours( timeCardDay.PaidVacationHours ) );
+                    }
 
+                    if ( !string.IsNullOrWhiteSpace( FormatTimeCardHours( timeCardDay.TotalHolidayHours ) ) )
+                    {
+                        sbSummaryHtml.AppendFormat( "{0}(h)", FormatTimeCardHours( timeCardDay.TotalHolidayHours ) );
+                    }
+
+                    if ( !string.IsNullOrWhiteSpace( FormatTimeCardHours( timeCardDay.PaidSickHours ) ) )
+                    {
+                        sbSummaryHtml.AppendFormat( "{0}(s)", FormatTimeCardHours( timeCardDay.PaidSickHours ) );
+                    }
+
+                    sbSummaryHtml.Append( "</td>" );
+
+                    decimal totalOtherHours = ( timeCardDay.PaidVacationHours ?? 0 ) + ( timeCardDay.TotalHolidayHours ?? 0 ) + ( timeCardDay.PaidSickHours ?? 0 );
                     sbSummaryHtml.AppendFormat( "<td>{0}</td>", FormatTimeCardHours( ( timeCardDay.TotalWorkedDuration ?? 0 ) + totalOtherHours ) );
 
                     sbSummaryHtml.AppendFormat( "<td>{0}</td>", timeCardDay.Notes );
 
                     sbSummaryHtml.Append( "</tr>" );
+
+                    bool isEndOfWeek = timeCardDay.StartDateTime.DayOfWeek == DayOfWeek.Sunday;
+                    if (isEndOfWeek)
+                    {
+                        sbSummaryHtml.Append( "<tr>" );
+                        sbSummaryHtml.AppendFormat( "<td><strong>Subtotal:</strong></td>" );
+
+                        var workedRegularSummaryHours = timeCardDay.TimeCard.GetRegularHours()
+                        .Where( a => a.TimeCardDay.StartDateTime.Date <= timeCardDay.StartDateTime.Date
+                            && a.TimeCardDay.StartDateTime.Date >= timeCardDay.StartDateTime.Date.AddDays( -6 ) )
+                            .Sum( a => a.Hours );
+                        var workedOvertimeSummaryHours = timeCardDay.TimeCard.GetOvertimeHours()
+                            .Where( a => a.TimeCardDay.StartDateTime.Date <= timeCardDay.StartDateTime.Date
+                                && a.TimeCardDay.StartDateTime.Date >= timeCardDay.StartDateTime.Date.AddDays( -6 ) )
+                                .Sum( a => a.Hours );
+                        var otherSummaryHours = timeCardDay.TimeCard.TimeCardDays
+                            .Where( a => a.StartDateTime.Date <= timeCardDay.StartDateTime.Date
+                                && a.StartDateTime.Date >= timeCardDay.StartDateTime.Date.AddDays( -6 ) )
+                                .Sum( a => ( a.PaidHolidayHours ?? 0 ) + ( a.PaidSickHours ?? 0 ) + ( a.PaidVacationHours ?? 0 ) + ( a.EarnedHolidayHours ?? 0 ) );
+
+                        sbSummaryHtml.AppendFormat( "<td></td><td></td><td></td><td></td>" );
+                        sbSummaryHtml.AppendFormat( "<td><strong>{0}</strong></td>", FormatTimeCardHours( workedRegularSummaryHours) );
+                        sbSummaryHtml.AppendFormat( "<td><strong>{0}</strong></td>", FormatTimeCardHours( workedOvertimeSummaryHours ) );
+                        sbSummaryHtml.AppendFormat( "<td><strong>{0}</strong></td>", FormatTimeCardHours( otherSummaryHours ) );
+                        sbSummaryHtml.AppendFormat( "<td><strong>{0}</strong></td>", FormatTimeCardHours( workedRegularSummaryHours + workedOvertimeSummaryHours + otherSummaryHours ) );
+                        sbSummaryHtml.AppendFormat( "<td></td>");
+                        sbSummaryHtml.Append( "</tr>" );
+                    }
                 }
 
                 sbSummaryHtml.AppendLine( "</table>" );
@@ -440,10 +522,9 @@ namespace RockWeb.Plugins.church_ccv.Hr
                 sbSummaryHtml.AppendLine( "</div>" );
                 sbSummaryHtml.AppendLine( "</div>" );
 
-                var timeCardNotes = noteService.Queryable().Where( a => a.NoteType.EntityTypeId == ( entityTypeIdTimeCard ?? 0 ) && a.EntityId == timeCard.Id ).OrderBy( a => a.CreatedDateTime ).ToList();
                 if ( timeCardNotes.Any() )
                 {
-                    sbSummaryHtml.AppendLine( "<h3>Notes</h3>" );
+                    sbSummaryHtml.AppendLine( "<h3>*Notes</h3>" );
                     foreach ( var timeCardNote in timeCardNotes )
                     {
                         sbSummaryHtml.AppendFormat(
@@ -456,9 +537,9 @@ namespace RockWeb.Plugins.church_ccv.Hr
 
                     }
                 }
+
                 sbSummaryHtml.AppendLine( "<hr />" );
                 sbSummaryHtml.AppendLine( "<div class='pagebreak'></div>" );
-                
             }
 
             sbSummaryHtml.AppendLine( "</body></html>" );
