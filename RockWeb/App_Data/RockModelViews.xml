@@ -1,6 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <views>
-  <mapping-views hash="c7ad6978aeaaede07a1e3a138214d4e81da9c6512d2b23951865ecf7f43c1b64" conceptual-container="RockContext" store-container="CodeFirstDatabase">
+  <mapping-views hash="8b2f8e2df17d73dba76aa1c225d528fdaf2d7b0e99cd5f679fe771067f211e37" conceptual-container="RockContext" store-container="CodeFirstDatabase">
     <view extent="CodeFirstDatabase.AttendanceCode"><![CDATA[
     SELECT VALUE -- Constructing AttendanceCode
         [CodeFirstDatabaseSchema.AttendanceCode](T1.AttendanceCode_Id, T1.AttendanceCode_IssueDateTime, T1.AttendanceCode_Code, T1.AttendanceCode_Guid, T1.AttendanceCode_ForeignId, T1.AttendanceCode_ForeignGuid, T1.AttendanceCode_ForeignKey)
@@ -3566,6 +3566,44 @@
             T.ForeignKey AS MergeTemplate_ForeignKey, 
             True AS _from0
         FROM RockContext.MergeTemplates AS T
+    ) AS T1]]></view>
+    <view extent="CodeFirstDatabase.ActionsHistory"><![CDATA[
+    SELECT VALUE -- Constructing ActionsHistory
+        [CodeFirstDatabaseSchema.ActionsHistory](T1.ActionsHistory_Id, T1.ActionsHistory_Baptized, T1.ActionsHistory_Giving, T1.ActionsHistory_Worshipping, T1.ActionsHistory_Serving, T1.ActionsHistory_PeerLearning, T1.ActionsHistory_Teaching, T1.ActionsHistory_YAMember, T1.ActionsHistory_YACoach, T1.ActionsHistory_YACoCoach, T1.ActionsHistory_YAHost, T1.ActionsHistory_NHMember, T1.ActionsHistory_NHCoach, T1.ActionsHistory_NHCoCoach, T1.ActionsHistory_NHHost, T1.ActionsHistory_NGMember, T1.ActionsHistory_NGCoach, T1.ActionsHistory_NGCoCoach, T1.ActionsHistory_NGHost, T1.ActionsHistory_NSMember, T1.ActionsHistory_NSCoach, T1.ActionsHistory_NSCoCoach, T1.ActionsHistory_CreatedDateTime, T1.ActionsHistory_ModifiedDateTime, T1.ActionsHistory_CreatedByPersonAliasId, T1.ActionsHistory_ModifiedByPersonAliasId, T1.ActionsHistory_Guid, T1.ActionsHistory_ForeignId, T1.ActionsHistory_ForeignGuid, T1.ActionsHistory_ForeignKey)
+    FROM (
+        SELECT 
+            T.Id AS ActionsHistory_Id, 
+            T.Baptized AS ActionsHistory_Baptized, 
+            T.Giving AS ActionsHistory_Giving, 
+            T.Worshipping AS ActionsHistory_Worshipping, 
+            T.Serving AS ActionsHistory_Serving, 
+            T.PeerLearning AS ActionsHistory_PeerLearning, 
+            T.Teaching AS ActionsHistory_Teaching, 
+            T.YAMember AS ActionsHistory_YAMember, 
+            T.YACoach AS ActionsHistory_YACoach, 
+            T.YACoCoach AS ActionsHistory_YACoCoach, 
+            T.YAHost AS ActionsHistory_YAHost, 
+            T.NHMember AS ActionsHistory_NHMember, 
+            T.NHCoach AS ActionsHistory_NHCoach, 
+            T.NHCoCoach AS ActionsHistory_NHCoCoach, 
+            T.NHHost AS ActionsHistory_NHHost, 
+            T.NGMember AS ActionsHistory_NGMember, 
+            T.NGCoach AS ActionsHistory_NGCoach, 
+            T.NGCoCoach AS ActionsHistory_NGCoCoach, 
+            T.NGHost AS ActionsHistory_NGHost, 
+            T.NSMember AS ActionsHistory_NSMember, 
+            T.NSCoach AS ActionsHistory_NSCoach, 
+            T.NSCoCoach AS ActionsHistory_NSCoCoach, 
+            T.CreatedDateTime AS ActionsHistory_CreatedDateTime, 
+            T.ModifiedDateTime AS ActionsHistory_ModifiedDateTime, 
+            T.CreatedByPersonAliasId AS ActionsHistory_CreatedByPersonAliasId, 
+            T.ModifiedByPersonAliasId AS ActionsHistory_ModifiedByPersonAliasId, 
+            T.Guid AS ActionsHistory_Guid, 
+            T.ForeignId AS ActionsHistory_ForeignId, 
+            T.ForeignGuid AS ActionsHistory_ForeignGuid, 
+            T.ForeignKey AS ActionsHistory_ForeignKey, 
+            True AS _from0
+        FROM RockContext.ActionsHistories AS T
     ) AS T1]]></view>
     <view extent="CodeFirstDatabase.TimeCard"><![CDATA[
     SELECT VALUE -- Constructing TimeCard
@@ -7462,6 +7500,44 @@
             T.ForeignKey AS MergeTemplate_ForeignKey, 
             True AS _from0
         FROM CodeFirstDatabase.MergeTemplate AS T
+    ) AS T1]]></view>
+    <view extent="RockContext.ActionsHistories"><![CDATA[
+    SELECT VALUE -- Constructing ActionsHistories
+        [Rock.Data.ActionsHistory](T1.ActionsHistory_Id, T1.ActionsHistory_Baptized, T1.ActionsHistory_Giving, T1.ActionsHistory_Worshipping, T1.ActionsHistory_Serving, T1.ActionsHistory_PeerLearning, T1.ActionsHistory_Teaching, T1.ActionsHistory_YAMember, T1.ActionsHistory_YACoach, T1.ActionsHistory_YACoCoach, T1.ActionsHistory_YAHost, T1.ActionsHistory_NHMember, T1.ActionsHistory_NHCoach, T1.ActionsHistory_NHCoCoach, T1.ActionsHistory_NHHost, T1.ActionsHistory_NGMember, T1.ActionsHistory_NGCoach, T1.ActionsHistory_NGCoCoach, T1.ActionsHistory_NGHost, T1.ActionsHistory_NSMember, T1.ActionsHistory_NSCoach, T1.ActionsHistory_NSCoCoach, T1.ActionsHistory_CreatedDateTime, T1.ActionsHistory_ModifiedDateTime, T1.ActionsHistory_CreatedByPersonAliasId, T1.ActionsHistory_ModifiedByPersonAliasId, T1.ActionsHistory_Guid, T1.ActionsHistory_ForeignId, T1.ActionsHistory_ForeignGuid, T1.ActionsHistory_ForeignKey)
+    FROM (
+        SELECT 
+            T.Id AS ActionsHistory_Id, 
+            T.Baptized AS ActionsHistory_Baptized, 
+            T.Giving AS ActionsHistory_Giving, 
+            T.Worshipping AS ActionsHistory_Worshipping, 
+            T.Serving AS ActionsHistory_Serving, 
+            T.PeerLearning AS ActionsHistory_PeerLearning, 
+            T.Teaching AS ActionsHistory_Teaching, 
+            T.YAMember AS ActionsHistory_YAMember, 
+            T.YACoach AS ActionsHistory_YACoach, 
+            T.YACoCoach AS ActionsHistory_YACoCoach, 
+            T.YAHost AS ActionsHistory_YAHost, 
+            T.NHMember AS ActionsHistory_NHMember, 
+            T.NHCoach AS ActionsHistory_NHCoach, 
+            T.NHCoCoach AS ActionsHistory_NHCoCoach, 
+            T.NHHost AS ActionsHistory_NHHost, 
+            T.NGMember AS ActionsHistory_NGMember, 
+            T.NGCoach AS ActionsHistory_NGCoach, 
+            T.NGCoCoach AS ActionsHistory_NGCoCoach, 
+            T.NGHost AS ActionsHistory_NGHost, 
+            T.NSMember AS ActionsHistory_NSMember, 
+            T.NSCoach AS ActionsHistory_NSCoach, 
+            T.NSCoCoach AS ActionsHistory_NSCoCoach, 
+            T.CreatedDateTime AS ActionsHistory_CreatedDateTime, 
+            T.ModifiedDateTime AS ActionsHistory_ModifiedDateTime, 
+            T.CreatedByPersonAliasId AS ActionsHistory_CreatedByPersonAliasId, 
+            T.ModifiedByPersonAliasId AS ActionsHistory_ModifiedByPersonAliasId, 
+            T.Guid AS ActionsHistory_Guid, 
+            T.ForeignId AS ActionsHistory_ForeignId, 
+            T.ForeignGuid AS ActionsHistory_ForeignGuid, 
+            T.ForeignKey AS ActionsHistory_ForeignKey, 
+            True AS _from0
+        FROM CodeFirstDatabase.ActionsHistory AS T
     ) AS T1]]></view>
     <view extent="RockContext.TimeCards"><![CDATA[
     SELECT VALUE -- Constructing TimeCards
