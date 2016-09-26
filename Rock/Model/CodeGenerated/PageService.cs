@@ -139,6 +139,7 @@ namespace Rock.Model
         {
             target.Id = source.Id;
             target.AllowIndexing = source.AllowIndexing;
+            target.BodyCssClass = source.BodyCssClass;
             target.BreadCrumbDisplayIcon = source.BreadCrumbDisplayIcon;
             target.BreadCrumbDisplayName = source.BreadCrumbDisplayName;
             target.BrowserTitle = source.BrowserTitle;
