@@ -253,6 +253,68 @@ namespace Rock.Apps.StatementGenerator
             // If we don't have a _organizationAddressLocation, just create an empty location
             _organizationAddressLocation = _organizationAddressLocation ?? new Rock.Client.Location();
 
+            UpdateProgress( "Getting Data..." );
+
+            // get outer query data from Rock database via REST now vs in mainQuery_OpeningRecordSet to make sure we have data
+            DataSet personGroupAddressDataSet = _rockRestClient.PostDataWithResult<object, DataSet>( "api/FinancialTransactions/GetContributionPersonGroupAddress", _contributionStatementOptionsREST );
+            var allStatements = personGroupAddressDataSet.Tables[0];
+
+            RecordCount = allStatements.Rows.Count;
+            
+            if ( RecordCount > 0 )
+            {
+                int chapterSize = RecordCount;
+
+                bool useChapters = this.Options.ChapterSize.HasValue;
+                
+                if ( this.Options.ChapterSize.HasValue )
+                {
+                    chapterSize = this.Options.ChapterSize.Value;
+                } else
+                {
+                    this.Options.ChapterSize = RecordCount;
+                }
+
+                int currentRecordIndex = 0;
+                int chapterIndex = 1;
+
+                while(currentRecordIndex < RecordCount )
+                {
+                    // if its the last run adjust the chapter size so we don't go over
+                    if ((currentRecordIndex + chapterSize) > RecordCount )
+                    {
+                        chapterSize = RecordCount - currentRecordIndex;
+                    }
+
+                    _personGroupAddressDataTable = (DataTable)allStatements.AsEnumerable().Skip( currentRecordIndex ).Take( chapterSize ).CopyToDataTable<DataRow>();
+
+                    var report = GetReportLayout( rockConfig );
+
+                    Document doc = report.Run();
+
+                    var filePath = string.Empty;
+
+                    if ( useChapters )
+                    {
+                        filePath = string.Format( @"{0}\{1}-chapter{2}.pdf", this.Options.SaveDirectory, this.Options.BaseFileName, chapterIndex );
+                    }
+                    else
+                    {
+                        filePath = string.Format( @"{0}\{1}.pdf", this.Options.SaveDirectory, this.Options.BaseFileName );
+                    }
+
+                    File.WriteAllBytes( filePath, doc.Draw() );
+
+                    currentRecordIndex = currentRecordIndex + this.Options.ChapterSize.Value;
+                    chapterIndex++;
+                }
+            }
+
+            return RecordCount;
+        }
+
+        private DocumentLayout GetReportLayout( RockConfig rockConfig )
+        {
             // setup report layout and events
             DocumentLayout report = new DocumentLayout( this.Options.LayoutFile );
 
@@ -309,7 +371,7 @@ namespace Rock.Apps.StatementGenerator
             }
             else
             {
-                _accountSummaryQuery.OpeningRecordSet += delegate( object s, OpeningRecordSetEventArgs ee )
+                _accountSummaryQuery.OpeningRecordSet += delegate ( object s, OpeningRecordSetEventArgs ee )
                 {
                     // create a recordset for the _accountSummaryQuery which is the GroupBy summary of AccountName, Amount
                     /*
@@ -331,7 +393,7 @@ namespace Rock.Apps.StatementGenerator
                     detailsData.Columns.Add( "AccountName" );
                     detailsData.Columns.Add( "Amount", typeof( decimal ) );
 
-                    foreach ( var details in _transactionsDataTable.AsEnumerable().Select( a => ( a["Details"] as DataTable ) ) )
+                    foreach ( var details in _transactionsDataTable.AsEnumerable().Select( a => (a["Details"] as DataTable) ) )
                     {
                         foreach ( var row in details.AsEnumerable() )
                         {
@@ -349,56 +411,7 @@ namespace Rock.Apps.StatementGenerator
                 };
             }
 
-            UpdateProgress( "Getting Data..." );
-
-            // get outer query data from Rock database via REST now vs in mainQuery_OpeningRecordSet to make sure we have data
-            DataSet personGroupAddressDataSet = _rockRestClient.PostDataWithResult<object, DataSet>( "api/FinancialTransactions/GetContributionPersonGroupAddress", _contributionStatementOptionsREST );
-            var allStatements = personGroupAddressDataSet.Tables[0];
-
-            RecordCount = allStatements.Rows.Count;
-            
-            if ( RecordCount > 0 )
-            {
-                int chapterSize = RecordCount;
-
-                if ( this.Options.ChapterSize.HasValue )
-                {
-                    chapterSize = this.Options.ChapterSize.Value;
-                }
-
-                int currentRecordIndex = 0;
-                int chapterIndex = 1;
-
-                while(currentRecordIndex < RecordCount )
-                {
-                    // if its the last run adjust the chapter size so we don't go over
-                    if ((currentRecordIndex + chapterSize) > RecordCount )
-                    {
-                        chapterSize = RecordCount - currentRecordIndex;
-                    }
-
-                    _personGroupAddressDataTable = (DataTable)allStatements.AsEnumerable().Skip( currentRecordIndex ).Take( chapterSize ).CopyToDataTable<DataRow>();
-                    Document doc = report.Run();
-
-                    var filePath = string.Empty;
-
-                    if ( this.Options.ChapterSize.HasValue )
-                    {
-                        filePath = string.Format( @"{0}\{1}-chapter{2}.pdf", this.Options.SaveDirectory, this.Options.BaseFileName, chapterIndex );
-                    }
-                    else
-                    {
-                        filePath = string.Format( @"{0}\{1}.pdf", this.Options.SaveDirectory, this.Options.BaseFileName );
-                    }
-
-                    File.WriteAllBytes( filePath, doc.Draw() );
-
-                    currentRecordIndex = currentRecordIndex + this.Options.ChapterSize.Value;
-                    chapterIndex++;
-                }
-            }
-
-            return RecordCount;
+            return report;
         }
 
         /// <summary>
