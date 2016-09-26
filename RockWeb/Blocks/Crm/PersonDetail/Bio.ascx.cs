@@ -278,11 +278,11 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
             {
                 if (GetAttributeValue( "DisplayMiddleName" ).AsBoolean() && !String.IsNullOrWhiteSpace(Person.MiddleName))
                 {
-                    nameText = string.Format( "<span class='first-word'>{0}</span> {1} {2}", Person.NickName, Person.MiddleName, Person.LastName );
+                    nameText = string.Format( "<span class='first-word'>{0}</span> <span class='middlename'>{1}</span> <span class='lastname'>{2}</span>", Person.NickName, Person.MiddleName, Person.LastName );
                 }
                 else
                 {
-                    nameText = string.Format( "<span class='first-word'>{0}</span> {1}", Person.NickName, Person.LastName );
+                    nameText = string.Format( "<span class='first-word'>{0}</span> <span class='lastname'>{1}</span>", Person.NickName, Person.LastName );
                 }
                 
 
@@ -291,7 +291,7 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
                 {
                     if ( !string.IsNullOrWhiteSpace( Person.FirstName ) )
                     {
-                        nameText += string.Format( " ({0})", Person.FirstName );
+                        nameText += string.Format( " <span class='firstname'>({0})</span>", Person.FirstName );
                     }
                 }
 
