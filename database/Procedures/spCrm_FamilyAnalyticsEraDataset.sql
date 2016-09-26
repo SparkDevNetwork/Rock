@@ -123,6 +123,7 @@ BEGIN
 					INNER JOIN [PersonAlias] pa ON pa.[Id] = a.[PersonAliasId]
 				WHERE 
 					pa.[PersonId] IN (SELECT [PersonId] FROM [GroupMember] WHERE [GroupId] = g.[Id] ) 
+					AND a.DidAttend = 1
 					AND a.[StartDateTime] <= @SundayDateStart AND a.[StartDateTime] >= @SundayExitAttendanceDurationShort) AS [ExitAttendanceCountDurationShort]
 			, (SELECT 
 					COUNT(DISTINCT a.SundayDate )
@@ -133,6 +134,7 @@ BEGIN
 					INNER JOIN [PersonAlias] pa ON pa.[Id] = a.[PersonAliasId]
 				WHERE 
 					pa.[PersonId] IN (SELECT [PersonId] FROM [GroupMember] WHERE [GroupId] = g.[Id] ) 
+					AND a.DidAttend = 1
 					AND a.[StartDateTime] <= @SundayDateStart AND a.[StartDateTime] >= @SundayEntryAttendanceDuration) AS [EntryAttendanceCountDuration]
 			, (SELECT 
 					COUNT(DISTINCT a.SundayDate )
@@ -143,6 +145,7 @@ BEGIN
 					INNER JOIN [PersonAlias] pa ON pa.[Id] = a.[PersonAliasId]
 				WHERE 
 					pa.[PersonId] IN (SELECT [PersonId] FROM [GroupMember] WHERE [GroupId] = g.[Id] ) 
+					AND a.DidAttend = 1
 					AND a.[StartDateTime] <= @SundayDateStart AND a.[StartDateTime] >= @SundayExitAttendanceDurationLong) AS [ExitAttendanceCountDurationLong]	
 		FROM
 			[Person] p
