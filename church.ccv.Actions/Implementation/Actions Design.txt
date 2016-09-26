@@ -1,0 +1,125 @@
+--Group IDs used--
+NEIGHBORHOOD SUBSECTION = 85
+NEIGHBORHOOD GROUP = 49
+
+YOUNG ADULT GROUP SECTION = 99
+YOUNG ADULT GROUP = 98
+
+NEXT STEP SUBSECTION = 82
+NEXT STEP GROUP = 78
+
+NEXT GEN SECTION = 95
+NEXT GEN GROUP = 94
+
+
+BAPTISM
+	Adult:
+		Must have baptism date.
+	
+	Student:
+		Must have baptism date.
+	
+	
+ERA
+	Adult:
+		Must have 'Currently an ERA' Extended Attribute set to "Yes"
+	
+	Student:
+		Must have 'Currently an ERA' Extended Attribute set to "Yes"
+		
+	
+GIVING
+	Adult:
+		Must have given $250 or more in the past 12 months.
+		
+	Student:
+		Must have given $250 or more in the past 12 months.
+	
+
+MEMBER
+	Adult:
+		Must have a Membership Date
+		Connection Status must be "Member"
+
+	Student:
+		Must have a Membership Date
+		Connection Status must be "Member"
+		
+
+MENTORED
+	Adult:
+		Must be in:
+			Neighborhood Group
+			Next Steps Group
+			Young Adult Group
+			
+		Must NOT be the leader
+		Must be active or pending
+		
+	Student:
+		Must be in:
+			Next Gen Group
+			
+		Must NOT be the leader
+		Must be active or pending
+		
+		
+PEER LEARNING
+	Adult:
+		Must be in:
+			Neighborhood Group
+			Young Adult Group
+		
+		Must be active or pending
+	
+	Student:
+		Must be in:
+			Next Gen Group
+			
+		Must be active or pending
+		
+		
+		
+SERVING
+	Adult:
+		Must be in:
+			Serving Group
+			Hosting a Neighborhood Group, Next Gen Group, or Young Adult Group*
+			Coaching a Neighborhood Group, Next Gen Group, or Young Adult Group*
+				*These are updated nightly, not in real time. Therefore, it is one case where
+				the Serving Badge won't instantly turn on/off.
+			
+		Must be active or pending
+		
+	Student:
+		Must be in:
+			Serving Group
+
+		Must be active or pending
+		
+		
+TEACHING
+	Adult:
+		Must be in:
+			Neighborhood SubSection Group
+			Neighborhood Group
+			
+			Young Adult Section
+			Young Adult Group
+			
+			Next Step SubSection Group
+			Next Step Group
+			
+			Next Gen Section Group
+			Next Gen Group
+		
+		Must be the leader
+		Must be active or pending
+		
+	Student:
+		Must be in:
+			Undefined Group
+			
+		Must be the leader
+		Must be active or pending
+			
