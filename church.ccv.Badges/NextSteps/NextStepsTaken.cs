@@ -1,27 +1,16 @@
-﻿using System;
+﻿using Rock;
+using Rock.Web.Cache;
+using System;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
 
-using Rock;
-using Rock.Attribute;
-using Rock.Web.Cache;
-
-namespace church.ccv.Badges.Person
+namespace church.ccv.Badges.NextSteps
 {
-    /// <summary>
-    /// Campus Badge
-    /// </summary>
-    [Description( "Displays the Steps Taken for the specific person." )]
+    [Description( "Displays the NextSteps Taken for the specific person." )]
     [Export( typeof( Rock.PersonProfile.BadgeComponent ) )]
-    [ExportMetadata( "ComponentName", "Steps Taken" )]
-    
-    public class StepsTaken : Rock.PersonProfile.BadgeComponent
+    [ExportMetadata( "ComponentName", "NextSteps Taken" )]
+    public class NextStepsTaken : Rock.PersonProfile.BadgeComponent
     {
-        /// <summary>
-        /// Renders the specified writer.
-        /// </summary>
-        /// <param name="badge">The badge.</param>
-        /// <param name="writer">The writer.</param>
         public override void Render( PersonBadgeCache badge, System.Web.UI.HtmlTextWriter writer )
         {
             writer.Write( string.Format( @"<div class='badge badge-stepstaken badge-icon badge-id-{0}' data-toggle='tooltip' data-original-title='{1} has not taken any steps'>

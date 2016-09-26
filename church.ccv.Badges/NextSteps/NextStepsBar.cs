@@ -1,19 +1,15 @@
-﻿using System;
+﻿using Rock;
+using Rock.Attribute;
+using Rock.Web.Cache;
+using System;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
 
-using Rock;
-using Rock.Attribute;
-using Rock.Web.Cache;
-
-namespace church.ccv.Badges.Person
+namespace church.ccv.Badges.NextSteps
 {
-    /// <summary>
-    /// Campus Badge
-    /// </summary>
-    [Description( "Displays the Steps Bar for the specific person." )]
+    [Description( "Displays the NextSteps Bar for the specific person." )]
     [Export( typeof( Rock.PersonProfile.BadgeComponent ) )]
-    [ExportMetadata( "ComponentName", "Steps Bar" )]
+    [ExportMetadata( "ComponentName", "NextSteps Bar" )]
 
     [LinkedPage("Baptism Registration Page", "The page to link to for registering for baptism.")]
     [IntegerField("Baptism Event Id", "The event id to use for pulling upcoming baptisms.")]
@@ -26,7 +22,7 @@ namespace church.ccv.Badges.Person
     [LinkedPage("Serving Connection Page", "The page to use for creating new serving connections.")]
     [LinkedPage( "Young Adult Group Registration Page", "The page to link to for registering for a young adult group." )]
     [LinkedPage( "Next Gen Group Registration Page", "The page to link to for registering for a next gen group." )]
-    public class StepsBar : Rock.PersonProfile.BadgeComponent
+    public class NextStepsBar : Rock.PersonProfile.BadgeComponent
     {
         /// <summary>
         /// Renders the specified writer.
@@ -48,7 +44,6 @@ namespace church.ccv.Badges.Person
                 <a class='badge badge-baptism badge-icon step-nottaken' data-toggle='tooltip' data-original-title='{1} is not baptized' data-container='body' href='/page/{4}?PersonGuid={2}&EventItemId={3}'>
                     <i class='icon ccv-baptism'></i>
                 </a>
-
                 <div class='badge badge-worship badge-icon step-nottaken' data-toggle='tooltip' data-original-title='{1} is not an eRA' data-container='body'>
                     <i class='icon ccv-worship'></i>
                 </div>
@@ -176,10 +171,15 @@ namespace church.ccv.Badges.Person
                     }}
                 }}
 
-                var popoverContent = popoverContent + ""<p class='margin-b-none'><a href='/page/"" + connectionGroupRegistrationPage + ""?PersonGuid={1}' class='btn btn-primary btn-block btn-xs'>Find NH Group</a></p>"";
-                var popoverContent = popoverContent + ""<p class='margin-b-none margin-t-sm'><a href='/page/"" + nextGenGroupRegistrationPage + ""?PersonGuid={1}' class='btn btn-primary btn-block btn-xs'>Find Students Group</a></p>"";
-                var popoverContent = popoverContent + ""<p class='margin-b-none margin-t-sm'><a href='/page/"" + youngAdultGroupRegistrationPage + ""?PersonGuid={1}' class='btn btn-primary btn-block btn-xs'>Find YA Group</a></p>"";
-                //var popoverContent = popoverContent + ""<p class='margin-b-none margin-t-sm'><a href='/page/"" + nextStepGroupRegistrationPage + ""?PersonGuid={1}' class='btn btn-primary btn-block btn-xs'>Find NS Group</a></p>"";
+                if ( data.IsAdult == true )
+                {{
+                    var popoverContent = popoverContent + ""<p class='margin-b-none'><a href='/page/"" + connectionGroupRegistrationPage + ""?PersonGuid={1}' class='btn btn-primary btn-block btn-xs'>Find NH Group</a></p>"";
+                    var popoverContent = popoverContent + ""<p class='margin-b-none margin-t-sm'><a href='/page/"" + youngAdultGroupRegistrationPage + ""?PersonGuid={1}' class='btn btn-primary btn-block btn-xs'>Find YA Group</a></p>"";
+                }}
+                else
+                {{
+                    var popoverContent = popoverContent + ""<p class='margin-b-none margin-t-sm'><a href='/page/"" + nextGenGroupRegistrationPage + ""?PersonGuid={1}' class='btn btn-primary btn-block btn-xs'>Find Students Group</a></p>"";
+                }}
 
                 if (data.ConnectionResult.ConnectionStatus == 2) {{
                     $badge.find('.badge-connect').addClass('step-partial');

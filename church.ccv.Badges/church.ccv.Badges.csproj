@@ -80,15 +80,22 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Person\CampusWithLeader.cs" />
-    <Compile Include="Person\Coaches.cs" />
-    <Compile Include="Person\StepsTaken.cs" />
-    <Compile Include="Person\StepsBar.cs" />
-    <Compile Include="Person\GeofencedByCampusGroup.cs" />
+    <Compile Include="Info\InfoBadgesController.cs" />
+    <Compile Include="Info\Member.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Rest\Controllers\CCVBadgesController.cs" />
+    <Compile Include="Bio\CampusWithLeader.cs" />
+    <Compile Include="Bio\BioBadgesController.cs" />
+    <Compile Include="Bio\Coaches.cs" />
+    <Compile Include="Bio\GeofencedByCampusGroup.cs" />
+    <Compile Include="NextSteps\NextStepsBar.cs" />
+    <Compile Include="NextSteps\NextStepsBadgesController.cs" />
+    <Compile Include="NextSteps\NextStepsTaken.cs" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\church.ccv.Actions\church.ccv.Actions.csproj">
+      <Project>{AEB3EBF4-253A-4438-A380-ECFF89C6BDDA}</Project>
+      <Name>church.ccv.Actions</Name>
+    </ProjectReference>
     <ProjectReference Include="..\church.ccv.Steps\church.ccv.Steps.csproj">
       <Project>{da1fbd70-3d06-46f7-8aa0-a27f18fdfdcd}</Project>
       <Name>church.ccv.Steps</Name>

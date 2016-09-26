@@ -1,168 +1,22 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Data.Entity;
-using System.Linq;
-using System.Web.Http;
+﻿using church.ccv.Actions;
 using church.ccv.Steps.Model;
 using Rock;
 using Rock.Data;
 using Rock.Model;
 using Rock.Rest.Filters;
 using Rock.Web.Cache;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Web.Http;
 
-namespace church.ccv.Badges.Rest.Controllers
+namespace church.ccv.Badges.NextSteps
 {
-    /// <summary>
-    /// 
-    /// </summary>
-    public partial class CCVBadgesController : Rock.Rest.ApiControllerBase
+    public partial class NextStepsBadgesController : Rock.Rest.ApiControllerBase
     {
         const string ATTRIBUTE_PERSON_DATE_OF_BAPTISM = "BaptismDate";
-        const string ATTRIBUTE_PERSON_ERA = "CurrentlyanERA";
-        const string ATTRIBUTE_PERSON_GIVING_IN_LAST_12_MONTHS = "GivingInLast12Months";
-        const string ATTRIBUTE_PERSON_DATE_OF_MEMBERSHIP = "DateofMembership";
-
-        const string ATTRIBUTE_GLOBAL_TITHE_THRESHOLD = "TitheThreshold";
-        const string ATTRIBUTE_GLOBAL_COACHING_GROUPTYPE_IDS = "CoachingGroupTypeIds";
-        const string ATTRIBUTE_GLOBAL_CONNECTION_GROUPTYPE_IDS = "ConnectionGroupTypeIds";
-        const string ATTRIBUTE_GLOBAL_SERVING_GROUPTYPE_IDS = "ServingGroupTypeIds";
         const string ATTRIBUTE_GLOBAL_BAPTISM_GROUPTYPE_IDS = "BaptismGroupTypeIds";
-        const string ATTRIBUTE_GLOBAL_MEMBERSHIP_VALUE_ID = "MembershipValueId";
-
-        /// <summary>
-        /// Returns campuses with leader of a given person
-        /// </summary>
-        /// <param name="personId">The person id.</param>
-        /// <returns></returns>
-        [Authenticate, Secured]
-        [HttpGet]
-        [System.Web.Http.Route( "api/CCV/Badges/CampusesWithLeader/{personId}" )]
-        public List<CampusAndLeaderInfo> GetCampusesWithLeaders( int personId )
-        {
-            var rockContext = new RockContext();
-            var personService = new PersonService( rockContext );
-
-            var result = new List<CampusAndLeaderInfo>();
-            var info = new CampusAndLeaderInfo();
-
-            var families = personService.GetFamilies( personId );
-
-            if ( families != null )
-            {
-                var campusNames = new List<string>();
-                var campusLeaders = new List<string>();
-
-                foreach ( int campusId in families
-                    .Where( g => g.CampusId.HasValue )
-                    .Select( g => g.CampusId )
-                    .Distinct()
-                    .ToList() )
-                {
-                    var campus = Rock.Web.Cache.CampusCache.Read( campusId );
-
-                    campusNames.Add( campus.Name );
-                    campusLeaders.Add( new PersonAliasService( rockContext ).GetPerson( (int)campus.LeaderPersonAliasId ).FullName );
-                }
-
-                info.CampusNames = campusNames.ToList().AsDelimited( ", " );
-                info.LeaderNames = campusLeaders.ToList().AsDelimited( ", " );
-            }
-
-            result.Add( info );
-
-            return result;
-        }
-
-        /// <summary>
-        /// Returns leaders of specified group types of a given person
-        /// </summary>
-        /// <param name="personId">The person id.</param>
-        /// <returns></returns>
-        [Authenticate, Secured]
-        [HttpGet]
-        [System.Web.Http.Route( "api/CCV/Badges/Coaches/{personId}/{groupTypeIds}" )]
-        public List<LeaderInfo> GetCoaches( int personId, string groupTypeIds )
-        {
-            var rockContext = new RockContext();
-            var groupMemberService = new GroupMemberService( rockContext );
-
-            var groupTypeIdsList = groupTypeIds.Split( ',' ).AsIntegerList();
-
-            var groups = groupMemberService
-                .Queryable()
-                .Where( m => groupTypeIdsList.Contains( m.Group.GroupTypeId )
-                    && m.GroupMemberStatus != GroupMemberStatus.Inactive
-                    && m.Group.IsActive != false
-                    && m.PersonId == personId
-                    && m.GroupRole.IsLeader != true )
-                .Select( m => m.Group.Id )
-                .ToList();
-
-            var result = new List<LeaderInfo>();
-            var info = new LeaderInfo();
-            info.LeaderNames = groupMemberService
-                .Queryable()
-                .Where( m => groups.Contains( m.Group.Id )
-                    && m.GroupMemberStatus != GroupMemberStatus.Inactive
-                    && m.Group.IsActive != false
-                    && m.GroupRole.IsLeader == true )
-                .Select( m => m.Person.NickName + " " + m.Person.LastName )
-                .ToList()
-                .AsDelimited( ", " );
-
-            if( !string.IsNullOrEmpty( info.LeaderNames ) )
-            {
-                result.Add( info );
-            }
-
-            return result;
-        }
-
-        /// <summary>
-        /// Returns groups that are a specified type and geofence a given person for their home campus
-        /// </summary>
-        /// <param name="personId">The person id.</param>
-        /// <returns></returns>
-        [Authenticate, Secured]
-        [HttpGet]
-        [System.Web.Http.Route( "api/CCV/Badges/GeofencingCampusGroups/{personId}/{groupTypeGuid}" )]
-        public List<GroupAndLeaderInfo> GetGeofencingCampusGroups( int personId, Guid groupTypeGuid )
-        {
-            var rockContext = new RockContext();
-            var groupMemberService = new GroupMemberService( rockContext );
-            int? campusId = null;
-            var person = new PersonService( rockContext ).Get( personId );
-            if ( person != null )
-            {
-                var campus = person.GetCampus();
-                if ( campus != null )
-                {
-                    campusId = campus.Id;
-                }
-            }
-
-            var groups = new GroupService( rockContext ).GetGeofencingGroups( personId, groupTypeGuid ).AsNoTracking();
-            var campusGroups = groups.Where( a => a.CampusId == campusId );
-
-            var result = new List<GroupAndLeaderInfo>();
-            foreach ( var group in campusGroups.OrderBy( g => g.Name ) )
-            {
-                var info = new GroupAndLeaderInfo();
-                info.GroupName = group.Name.Trim();
-                info.LeaderNames = groupMemberService
-                    .Queryable().AsNoTracking()
-                    .Where( m =>
-                        m.GroupId == group.Id &&
-                        m.GroupRole.IsLeader )
-                    .Select( m => m.Person.NickName + " " + m.Person.LastName )
-                    .ToList()
-                    .AsDelimited( ", " );
-                result.Add( info );
-            }
-
-            return result;
-        }
-
+        
         [Authenticate, Secured]
         [HttpGet]
         [System.Web.Http.Route( "api/CCV/Badges/StepsTaken/{personGuid}" )]
@@ -198,9 +52,7 @@ namespace church.ccv.Badges.Rest.Controllers
         [System.Web.Http.Route( "api/CCV/Badges/StepsBar/{personGuid}" )]
         public StepsBarResult GetStepsBar( Guid personGuid )
         {
-
             return GetStepsResult( personGuid );
-
         }
 
         [Authenticate, Secured]
@@ -233,39 +85,112 @@ namespace church.ccv.Badges.Rest.Controllers
 
             using ( RockContext rockContext = new RockContext() )
             {
+                
                 var person = new PersonService( rockContext ).Get( personGuid );
+                
                 if ( person != null )
                 {
-                    person.LoadAttributes();
+                    // we need to know if they're an adult or not. It affects which Actions we call, and how the UI renders.
+                    bool isAdult = new PersonService( rockContext ).GetAllAdults( ).Where( p => p.Guid == personGuid ).Count( ) > 0 ? true : false;
+                    stepsBarResult.IsAdult = isAdult;
 
-                    // membership
-                    // JHM - Removing per leadership's request. This now lives in Rock Person Badge
-                    /*int MEMBERSHIP_CONNECTION_VALUE_ID = DefinedValueCache.Read( GlobalAttributesCache.Read().GetValue( ATTRIBUTE_GLOBAL_MEMBERSHIP_VALUE_ID ) ).Id;
-                    stepsBarResult.MembershipResult = new MembershipResult();
-                    if ( person.ConnectionStatusValueId == MEMBERSHIP_CONNECTION_VALUE_ID )
+                    person.LoadAttributes();
+                    
+                    // first, call all the actions for either an adult or student/child and store the results
+                    bool isERA = false;
+                    bool isGiving = false;
+
+                    DateTime? baptismDate = null;
+                    bool isBaptised = false;
+
+                    List<int> peerLearningGroups = null;
+                    bool isPeerLearning = false;
+
+                    List<int> servingGroups = null;
+                    bool isServing = false;
+
+                    List<int> teachingGroups = null;
+                    bool isTeaching = false;
+
+                    // handle adults
+                    if( isAdult == true )
                     {
-                        stepsBarResult.MembershipResult.IsMember = true;
-                        if ( person.AttributeValues.ContainsKey( ATTRIBUTE_PERSON_DATE_OF_MEMBERSHIP ) )
-                        {
-                            stepsBarResult.MembershipResult.MembershipDate = person.GetAttributeValue(ATTRIBUTE_PERSON_DATE_OF_MEMBERSHIP).AsDateTime();
-                        }
+                        isERA = Actions_Adult.ERA.IsERA( person.Id );
+                        isGiving = Actions_Adult.Give.IsGiving( person.Id );
+                        isBaptised = Actions_Adult.Baptised.IsBaptised( person.Id, out baptismDate );
+
+
+                        // Peer Learning
+                        Actions_Adult.PeerLearning.Result peerLearningResult;
+                        Actions_Adult.PeerLearning.IsPeerLearning( person.Id, out peerLearningResult );
+
+                        isPeerLearning = peerLearningResult.IsPeerLearning( );
+                        peerLearningGroups = peerLearningResult.GetPeerLearningGroups( );
+
+                                                
+                        // Serving
+                        Actions_Adult.Serving.Result servingResult;
+                        Actions_Adult.Serving.IsServing( person.Id, out servingResult );
+
+                        isServing = servingResult.IsServing;
+                        servingGroups = servingResult.GroupIds;
+
+
+                        // Teaching
+                        Actions_Adult.Teaching.Result teachingResult;
+                        Actions_Adult.Teaching.IsTeaching( person.Id, out teachingResult );
+
+                        isTeaching = teachingResult.IsTeaching( );
+                        teachingGroups = teachingResult.GetCombinedTeachingGroups( );
                     }
                     else
                     {
-                        stepsBarResult.MembershipResult.IsMember = false;
-                    }*/
+                        isERA = Actions_Student.ERA.IsERA( person.Id );
+                        isGiving = Actions_Student.Give.IsGiving( person.Id );
+                        isBaptised = Actions_Student.Baptised.IsBaptised( person.Id, out baptismDate );
 
-                    // baptism - baptism is driven by the baptism date person attribute
+
+                        // Peer Learning
+                        Actions_Student.PeerLearning.Result peerLearningResult;
+                        Actions_Student.PeerLearning.IsPeerLearning( person.Id, out peerLearningResult );
+
+                        isPeerLearning = peerLearningResult.IsPeerLearning( );
+                        peerLearningGroups = peerLearningResult.GetPeerLearningGroups( );
+
+                                                
+                        // Serving
+                        Actions_Student.Serving.Result servingResult;
+                        Actions_Student.Serving.IsServing( person.Id, out servingResult );
+
+                        isServing = servingResult.IsServing;
+                        servingGroups = servingResult.GroupIds;
+
+
+                        // Teaching
+                        Actions_Student.Teaching.Result teachingResult;
+                        Actions_Student.Teaching.IsTeaching( person.Id, out teachingResult );
+
+                        isTeaching = teachingResult.IsTeaching( );
+                        teachingGroups = teachingResult.GetCombinedTeachingGroups( );
+                    }
+
+                    // Worshipping
+                    stepsBarResult.IsWorshipper = isERA;
+
+                    // Tithing
+                    stepsBarResult.IsTithing = isGiving;
+
+                    // Baptism
+                    // Use the baptismDate's existence to know how to shade the icon
                     stepsBarResult.BaptismResult = new BaptismResult();
-                    stepsBarResult.BaptismResult.BaptismDate = person.GetAttributeValue( ATTRIBUTE_PERSON_DATE_OF_BAPTISM ).AsDateTime();
-
-                    if ( stepsBarResult.BaptismResult.BaptismDate.HasValue )
+                    if( baptismDate != null )
                     {
                         stepsBarResult.BaptismResult.BaptismStatus = BaptismStatus.Baptised;
 
-                        // set the formatted date so there is consistent output in all browsers
-                        stepsBarResult.BaptismResult.BaptismDateFormatted = stepsBarResult.BaptismResult.BaptismDate.Value.ToShortDateString();
-                    } else
+                        stepsBarResult.BaptismResult.BaptismDate = baptismDate;
+                        stepsBarResult.BaptismResult.BaptismDateFormatted = baptismDate.Value.ToShortDateString();
+                    }
+                    else
                     {
                         // check if registered for baptism
                         List<int> GROUPTYPES_BAPTISM_IDS = new List<int>();
@@ -283,8 +208,9 @@ namespace church.ccv.Badges.Rest.Controllers
                                                              && m.GroupMemberStatus == GroupMemberStatus.Active
                                                              && m.PersonId == person.Id )
                                                         .Select( m => m.GroupId ).ToList();
-                        if ( baptismGroups.Count > 0 ) {
 
+                        if ( baptismGroups.Count > 0 )
+                        {
                             // ensure baptisms are in the future
                             var baptismEventItems = new EventItemOccurrenceService( rockContext ).Queryable( "Schedule,Linkages" )
                                                 .Where( e => e.Linkages.Any( l => l.GroupId.HasValue && baptismGroups.Contains( l.GroupId.Value ) ) )
@@ -318,65 +244,55 @@ namespace church.ccv.Badges.Rest.Controllers
                         }
                     }
 
-                    // is worshiper
-                    stepsBarResult.IsWorshipper = person.GetAttributeValue( ATTRIBUTE_PERSON_ERA ).AsBoolean();
 
-                    // connect - in NG group
+                    // Connected
+                    bool connected = isPeerLearning;
+
                     stepsBarResult.ConnectionResult = new ConnectionResult();
                     stepsBarResult.ConnectionResult.Groups = new List<GroupMemberSummary>();
 
-                    // get group list
-                    List<int> GROUPTYPES_CONNECTION_IDS = new List<int>();
-                    try
-                    {
-                        GROUPTYPES_CONNECTION_IDS = GlobalAttributesCache.Read().GetValue( ATTRIBUTE_GLOBAL_CONNECTION_GROUPTYPE_IDS ).Split( ',' ).Select( int.Parse ).ToList();
-                    }
-                    catch
-                    {
-                        // intentionally blank
-                    }
-
-                    var neighborhoodGroups = new GroupMemberService( rockContext ).Queryable()
-                                                .Where( m => GROUPTYPES_CONNECTION_IDS.Contains(m.Group.GroupTypeId)
-                                                     && m.GroupMemberStatus != GroupMemberStatus.Inactive
-                                                     && m.Group.IsActive != false
-                                                     && m.PersonId == person.Id)
-                                                .Select(m => new
-                                                                {
-                                                                    GroupId = m.GroupId,
-                                                                    GroupName = m.Group.Name,
-                                                                    Role = m.GroupRole,
-                                                                    Status = m.GroupMemberStatus,
-                                                                    StartDate = m.CreatedDateTime
-                                                                } ).ToList();
-
-                    if (neighborhoodGroups.Count == 0 )
+                    // use the result to show the badge as either empty, shaded, or filled
+                    if( connected == false )
                     {
                         stepsBarResult.ConnectionResult.ConnectionStatus = ConnectionStatus.NotInGroup;
-                    } else
+                    }
+                    else
                     {
                         stepsBarResult.ConnectionResult.ConnectedSince = DateTime.MaxValue;
 
-                        foreach ( var group in neighborhoodGroups )
+                        // get the groupMember entities for each group the person's in
+                        // create an anonymous class storing the data we'll shove to the badge
+                        var groupMemberList = new GroupMemberService( rockContext ).Queryable()
+                                                    .Where( m => peerLearningGroups.Contains(m.Group.Id) && m.PersonId == person.Id )
+                                                    .Select(m => new
+                                                    {
+                                                        GroupId = m.GroupId,
+                                                        GroupName = m.Group.Name,
+                                                        Role = m.GroupRole,
+                                                        Status = m.GroupMemberStatus,
+                                                        StartDate = m.CreatedDateTime
+                                                    } ).ToList();
+
+                        foreach ( var groupMember in groupMemberList )
                         {
                             GroupMemberSummary groupMemberSummary = new GroupMemberSummary();
-                            groupMemberSummary.GroupId = group.GroupId;
-                            groupMemberSummary.GroupName = group.GroupName;
-                            groupMemberSummary.Role = group.Role.Name;
-                            groupMemberSummary.RoleId = group.Role.Id;
+                            groupMemberSummary.GroupId = groupMember.GroupId;
+                            groupMemberSummary.GroupName = groupMember.GroupName;
+                            groupMemberSummary.Role = groupMember.Role.Name;
+                            groupMemberSummary.RoleId = groupMember.Role.Id;
                             stepsBarResult.ConnectionResult.Groups.Add( groupMemberSummary );
 
-                            if (group.StartDate < stepsBarResult.ConnectionResult.ConnectedSince )
+                            if ( groupMember.StartDate < stepsBarResult.ConnectionResult.ConnectedSince )
                             {
-                                stepsBarResult.ConnectionResult.ConnectedSince = group.StartDate;
+                                stepsBarResult.ConnectionResult.ConnectedSince = groupMember.StartDate;
                             }
                         }
 
-                        if ( neighborhoodGroups.Any( m => m.Status == GroupMemberStatus.Active ))
+                        if ( groupMemberList.Any( m => m.Status == GroupMemberStatus.Active ))
                         {
                             stepsBarResult.ConnectionResult.ConnectionStatus = ConnectionStatus.InGroup;
 
-                            if ( neighborhoodGroups.Any( m => m.Role.IsLeader ) )
+                            if ( groupMemberList.Any( m => m.Role.IsLeader ) )
                             {
                                 stepsBarResult.ConnectionResult.IsLeader = true;
                             }
@@ -386,108 +302,88 @@ namespace church.ccv.Badges.Rest.Controllers
                             stepsBarResult.ConnectionResult.ConnectionStatus = ConnectionStatus.PendingInGroup;
                         }
                     }
+                    
 
-                    // is tithing
-                    decimal givingInLast12Months = person.GetAttributeValue( ATTRIBUTE_PERSON_GIVING_IN_LAST_12_MONTHS ).AsDecimal();
-                    decimal titheThreshold = GlobalAttributesCache.Read().GetValue( ATTRIBUTE_GLOBAL_TITHE_THRESHOLD ).AsDecimal();
+                    // Serving
+                    bool serving = isServing;
 
-                    stepsBarResult.IsTithing = (givingInLast12Months >= titheThreshold);
-
-                    // serving results
-                    List<int> GROUPTYPES_SERVING_IDS = new List<int>();
-                    try
-                    {
-                        GROUPTYPES_SERVING_IDS = GlobalAttributesCache.Read().GetValue( ATTRIBUTE_GLOBAL_SERVING_GROUPTYPE_IDS ).Split( ',' ).Select( int.Parse ).ToList();
-                    }
-                    catch
-                    {
-                        // intentionally blank
-                    }
-
+                    // use the result to show the badge as either empty, shaded, or filled
                     stepsBarResult.ServingResult = new ServingResult();
                     stepsBarResult.ServingResult.Groups = new List<GroupMemberSummary>();
 
-                    var servingGroups = new GroupMemberService( rockContext ).Queryable()
-                                                .Where( m => GROUPTYPES_SERVING_IDS.Contains(m.Group.GroupTypeId)
-                                                     && m.GroupMemberStatus != GroupMemberStatus.Inactive
-                                                     && m.Group.IsActive != false
-                                                     && m.PersonId == person.Id )
-                                                .Select( m => new
-                                                {
-                                                    GroupId = m.GroupId,
-                                                    GroupName = m.Group.Name,
-                                                    Role = m.GroupRole,
-                                                    Status = m.GroupMemberStatus,
-                                                    StartDate = m.CreatedDateTime
-                                                } ).ToList();
-
-                    if (servingGroups.Count == 0 )
+                    if( serving == false )
                     {
                         stepsBarResult.ServingResult.ServingStatus = ServingStatus.NotServing;
-                    } else
+                    }
+                    else
                     {
+                        // get the groupMember entities for each group the person's in
+                        // create an anonymous class storing the data we'll shove to the badge
+                        var groupMemberList = new GroupMemberService( rockContext ).Queryable()
+                                                    .Where( m => servingGroups.Contains(m.Group.Id) && m.PersonId == person.Id )
+                                                    .Select( m => new
+                                                    {
+                                                        GroupId = m.GroupId,
+                                                        GroupName = m.Group.Name,
+                                                        Role = m.GroupRole,
+                                                        Status = m.GroupMemberStatus,
+                                                        StartDate = m.CreatedDateTime
+                                                    } ).ToList();
+
+                        
                         // now see if this person should be set to 'pending' or not.
                         // they should only be pending if they aren't active in ANY of their groups.
-                        int numActiveGroups = servingGroups.Where( sg => sg.Status == GroupMemberStatus.Active ).Count( );
+                        int numActiveGroups = groupMemberList.Where(sg => sg.Status == GroupMemberStatus.Active).Count();
 
                         stepsBarResult.ServingResult.ServingStatus = numActiveGroups > 0 ? ServingStatus.Serving : ServingStatus.PendingServing;
                         stepsBarResult.ServingResult.ServingSince = DateTime.MaxValue;
 
-                        foreach ( var group in servingGroups )
+                        foreach( var group in groupMemberList )
                         {
                             GroupMemberSummary groupMemberSummary = new GroupMemberSummary();
                             groupMemberSummary.GroupId = group.GroupId;
                             groupMemberSummary.GroupName = group.GroupName;
                             groupMemberSummary.Role = group.Role.Name;
                             groupMemberSummary.RoleId = group.Role.Id;
-                            stepsBarResult.ServingResult.Groups.Add( groupMemberSummary );
+                            stepsBarResult.ServingResult.Groups.Add(groupMemberSummary);
 
-                            if ( group.StartDate < stepsBarResult.ServingResult.ServingSince )
+                            if(group.StartDate < stepsBarResult.ServingResult.ServingSince)
                             {
                                 stepsBarResult.ServingResult.ServingSince = group.StartDate;
                             }
                         }
                     }
 
+
                     // coaching
-                    List<int> GROUPTYPES_COACHING_IDS = new List<int>();
-                    try
-                    {
-                        GROUPTYPES_COACHING_IDS = GlobalAttributesCache.Read().GetValue( ATTRIBUTE_GLOBAL_COACHING_GROUPTYPE_IDS ).Split( ',' ).Select( int.Parse ).ToList();
-                    }
-                    catch
-                    {
-                        // intentionally blank
-                    }
+                    bool coaching = isTeaching;
 
                     stepsBarResult.CoachingResult = new CoachingResult();
                     stepsBarResult.CoachingResult.Groups = new List<GroupMemberSummary>();
-
-                    var coachingGroups = new GroupMemberService( rockContext ).Queryable()
-                                                .Where( m => GROUPTYPES_COACHING_IDS.Contains(m.Group.GroupTypeId)
-                                                     && m.GroupMemberStatus != GroupMemberStatus.Inactive
-                                                     && m.Group.IsActive != false
-                                                     && m.PersonId == person.Id 
-                                                     && m.GroupRole.IsLeader == true)
-                                                .Select( m => new
-                                                {
-                                                    GroupId = m.GroupId,
-                                                    GroupName = m.Group.Name,
-                                                    Role = m.GroupRole,
-                                                    Status = m.GroupMemberStatus,
-                                                    StartDate = m.CreatedDateTime
-                                                } ).ToList();
-
-                    if ( coachingGroups.Count == 0 )
+                    
+                    if( coaching == false )
                     {
                         stepsBarResult.CoachingResult.IsCoaching = false;
                     }
                     else
                     {
+                        // get the groupMember entities for each group the person's in
+                        // create an anonymous class storing the data we'll shove to the badge
+                        var groupMemberList = new GroupMemberService( rockContext ).Queryable()
+                                                    .Where( m => teachingGroups.Contains(m.Group.Id) && m.PersonId == person.Id )
+                                                    .Select( m => new
+                                                    {
+                                                        GroupId = m.GroupId,
+                                                        GroupName = m.Group.Name,
+                                                        Role = m.GroupRole,
+                                                        Status = m.GroupMemberStatus,
+                                                        StartDate = m.CreatedDateTime
+                                                    } ).ToList();
+
                         stepsBarResult.CoachingResult.IsCoaching = true;
                         stepsBarResult.CoachingResult.CoachingSince = DateTime.MaxValue;
 
-                        foreach ( var group in coachingGroups )
+                        foreach ( var group in groupMemberList )
                         {
                             GroupMemberSummary groupMemberSummary = new GroupMemberSummary();
                             groupMemberSummary.GroupId = group.GroupId;
@@ -503,71 +399,11 @@ namespace church.ccv.Badges.Rest.Controllers
                         }
                     }
                 }
-
-
             }
 
             return stepsBarResult;
         }
-
-        /// <summary>
-        /// Campus and Leader info
-        /// </summary>
-        public class CampusAndLeaderInfo
-        {
-            /// <summary>
-            /// Gets or sets the name of the campus.
-            /// </summary>
-            /// <value>
-            /// The name of the campus.
-            /// </value>
-            public string CampusNames { get; set; }
-
-            /// <summary>
-            /// Gets or sets the leader names.
-            /// </summary>
-            /// <value>
-            /// The leader names.
-            /// </value>
-            public string LeaderNames { get; set; }
-        }
-
-        /// <summary>
-        /// Group and Leader name info
-        /// </summary>
-        public class GroupAndLeaderInfo
-        {
-            /// <summary>
-            /// Gets or sets the name of the group.
-            /// </summary>
-            /// <value>
-            /// The name of the group.
-            /// </value>
-            public string GroupName { get; set; }
-
-            /// <summary>
-            /// Gets or sets the leader names.
-            /// </summary>
-            /// <value>
-            /// The leader names.
-            /// </value>
-            public string LeaderNames { get; set; }
-        }
-
-        /// <summary>
-        /// Leader name info
-        /// </summary>
-        public class LeaderInfo
-        {
-            /// <summary>
-            /// Gets or sets the leader names.
-            /// </summary>
-            /// <value>
-            /// The leader names.
-            /// </value>
-            public string LeaderNames { get; set; }
-        }
-
+        
         /// <summary>
         /// The number of steps a person has taken.
         /// </summary>
@@ -643,6 +479,8 @@ namespace church.ccv.Badges.Rest.Controllers
             /// The coaching result.
             /// </value>
             public CoachingResult CoachingResult { get; set; }
+
+            public bool IsAdult { get; set; }
         }
 
         /// <summary>

@@ -1,16 +1,12 @@
-﻿using System;
+﻿using Rock;
+using Rock.Attribute;
+using Rock.Web.Cache;
+using System;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
 
-using Rock;
-using Rock.Attribute;
-using Rock.Web.Cache;
-
-namespace church.ccv.Badges.Person
+namespace church.ccv.Badges.Bio
 {
-    /// <summary>
-    /// Campus Badge
-    /// </summary>
     [Description( "Displays the campus group(s) of a particular type that have a geo-fence location around one or more of the the person's map locations for their campus." )]
     [Export( typeof( Rock.PersonProfile.BadgeComponent ) )]
     [ExportMetadata( "ComponentName", "Geofenced By Campus Group" )]

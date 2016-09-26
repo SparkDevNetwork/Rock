@@ -1,15 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using Rock.Model;
+using Rock.PersonProfile;
+using Rock.Web.Cache;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
-using System.Linq;
 using System.Web.UI;
 
-using Rock.Data;
-using Rock.Model;
-using Rock.Web.Cache;
-
-namespace Rock.PersonProfile.Badge
+namespace church.ccv.Badges.Bio
 {
     /// <summary>
     /// Campus with Leader Badge
@@ -19,7 +15,6 @@ namespace Rock.PersonProfile.Badge
     [ExportMetadata( "ComponentName", "Campus with Leader" )]
     public class CampusWithLeader : Rock.PersonProfile.BadgeComponent
     {
-
         /// <summary>
         /// Gets the badge label
         /// </summary>
