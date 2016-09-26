@@ -57,6 +57,45 @@
                     </Rock:Grid>
                 </div>
             </div>
+
+            <div class="row">
+                <div class="col-md-4 col-md-offset-8 margin-t-md">
+                    <asp:Panel ID="pnlSummary" runat="server" CssClass="panel panel-block">
+                        <div class="panel-heading">
+                            <h1 class="panel-title">Totals</h1>
+                            <div class="panel-labels">
+                                <Rock:HighlightLabel ID="lbFiltered" runat="server" LabelType="Default" Visible="false" />
+                            </div>
+                        </div>
+                        <div class="panel-body">
+                            <div class='row'>
+                                <div class='col-xs-8'>Regular Hours</div>
+                                <div class='col-xs-4 text-right'><asp:Literal runat="server" ID="lTotalRegularHours" /></div>
+                            </div>
+                            <div class='row'>
+                                <div class='col-xs-8'>Overtime Hours</div>
+                                <div class='col-xs-4 text-right'><asp:Literal runat="server" ID="lTotalOvertimeHours" /></div>
+                            </div>
+                            <div class='row'>
+                                <div class='col-xs-8'>Vacation Hours</div>
+                                <div class='col-xs-4 text-right'><asp:Literal runat="server" ID="lTotalVacationHours" /></div>
+                            </div>
+                            <div class='row'>
+                                <div class='col-xs-8'>Holiday Hours</div>
+                                <div class='col-xs-4 text-right'><asp:Literal runat="server" ID="lTotalHolidayHours" /></div>
+                            </div>
+                            <div class='row'>
+                                <div class='col-xs-8'>Sick Hours</div>
+                                <div class='col-xs-4 text-right'><asp:Literal runat="server" ID="lTotalSickHours" /></div>
+                            </div>
+                            <div class='row'>
+                                <div class='col-xs-8'><strong>All Hours</strong></div>
+                                <div class='col-xs-4 text-right'><strong><asp:Literal runat="server" ID="lTotalAllHours" /></strong></div>
+                            </div>
+                        </div>
+                    </asp:Panel>
+                </div>
+            </div>
         </asp:Panel>
 
         <script>

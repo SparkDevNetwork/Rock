@@ -425,7 +425,7 @@ namespace RockWeb.Plugins.church_ccv.Hr
                 foreach ( var timeCardDay in timeCard.TimeCardDays.OrderBy( a => a.StartDateTime ) )
                 {
                     sbSummaryHtml.Append( "<tr>" );
-                    sbSummaryHtml.AppendFormat( "<td>{0}</td>", timeCardDay.StartDateTime.ToString( "ddd MM/dd" ) );
+                    sbSummaryHtml.AppendFormat( "<td style='white-space:nowrap'>{0}</td>", timeCardDay.StartDateTime.ToString( "ddd MM/dd" ) );
 
                     // time in
                     sbSummaryHtml.AppendFormat( "<td>{0}</td>", FormatTimeCardTime( timeCardDay.StartDateTime, !timeCardDay.TotalWorkedDuration.HasValue ) );
@@ -472,7 +472,7 @@ namespace RockWeb.Plugins.church_ccv.Hr
                     sbSummaryHtml.Append( "</tr>" );
 
                     bool isEndOfWeek = timeCardDay.StartDateTime.DayOfWeek == DayOfWeek.Sunday;
-                    if (isEndOfWeek)
+                    if ( isEndOfWeek )
                     {
                         sbSummaryHtml.Append( "<tr>" );
                         sbSummaryHtml.AppendFormat( "<td><strong>Subtotal:</strong></td>" );
@@ -491,11 +491,11 @@ namespace RockWeb.Plugins.church_ccv.Hr
                                 .Sum( a => ( a.PaidHolidayHours ?? 0 ) + ( a.PaidSickHours ?? 0 ) + ( a.PaidVacationHours ?? 0 ) + ( a.EarnedHolidayHours ?? 0 ) );
 
                         sbSummaryHtml.AppendFormat( "<td></td><td></td><td></td><td></td>" );
-                        sbSummaryHtml.AppendFormat( "<td><strong>{0}</strong></td>", FormatTimeCardHours( workedRegularSummaryHours) );
+                        sbSummaryHtml.AppendFormat( "<td><strong>{0}</strong></td>", FormatTimeCardHours( workedRegularSummaryHours ) );
                         sbSummaryHtml.AppendFormat( "<td><strong>{0}</strong></td>", FormatTimeCardHours( workedOvertimeSummaryHours ) );
                         sbSummaryHtml.AppendFormat( "<td><strong>{0}</strong></td>", FormatTimeCardHours( otherSummaryHours ) );
                         sbSummaryHtml.AppendFormat( "<td><strong>{0}</strong></td>", FormatTimeCardHours( workedRegularSummaryHours + workedOvertimeSummaryHours + otherSummaryHours ) );
-                        sbSummaryHtml.AppendFormat( "<td></td>");
+                        sbSummaryHtml.AppendFormat( "<td></td>" );
                         sbSummaryHtml.Append( "</tr>" );
                     }
                 }
@@ -699,9 +699,20 @@ namespace RockWeb.Plugins.church_ccv.Hr
 
             // only show TimeCards that have non-zero total hours
             qry = qry.WhereTimeCardsHaveHours();
+            var timeCardList = qry.ToList();
 
-            gList.DataSource = qry.ToList();
+            gList.DataSource = timeCardList;
             gList.DataBind();
+
+            lTotalRegularHours.Text = FormatTimeCardHours( timeCardList.Sum( a => a.GetRegularHours().Sum( x => x.Hours ) ) );
+            lTotalOvertimeHours.Text = FormatTimeCardHours( timeCardList.Sum( a => a.GetOvertimeHours().Sum( x => x.Hours ) ) );
+            lTotalVacationHours.Text = FormatTimeCardHours( timeCardList.Sum( a => a.PaidVacationHours().Sum( x => x.Hours ) ) );
+            lTotalHolidayHours.Text = FormatTimeCardHours( timeCardList.Sum( a => a.PaidHolidayHours().Sum( x => x.Hours ) ) );
+            lTotalSickHours.Text = FormatTimeCardHours( timeCardList.Sum( a => a.PaidSickHours().Sum( x => x.Hours ) ) );
+            lTotalAllHours.Text = FormatTimeCardHours( timeCardList.Sum( a => a.GetTotalWorkedHoursPerDay().Sum( x => x.Hours ) )
+                + timeCardList.Sum( a => a.PaidVacationHours().Sum( x => x.Hours ) )
+                + timeCardList.Sum( a => a.PaidHolidayHours().Sum( x => x.Hours ) )
+                + timeCardList.Sum( a => a.PaidSickHours().Sum( x => x.Hours ) ) );
         }
 
         #endregion
