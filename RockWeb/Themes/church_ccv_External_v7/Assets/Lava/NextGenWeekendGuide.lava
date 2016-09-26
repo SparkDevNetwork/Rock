@@ -22,6 +22,17 @@
       {% for item in Items %}
         <h1 class="page-header margin-t-lg">{{ item.Title }}</h1>
         {{ item.Content | FromMarkdown }}
+        {% assign wistiaId = item | Attribute: 'WistiaId' %}
+        {% if wistiaId != empty %}
+          <hr>
+          <p>
+            &nbsp;
+          </p>
+          <script src="//fast.wistia.com/embed/medias/{{ wistiaId }}.jsonp" async></script><script src="//fast.wistia.com/assets/external/E-v1.js" async></script><div class="wistia_responsive_padding" style="padding:56.25% 0 0 0;position:relative;"><div class="wistia_responsive_wrapper" style="height:100%;left:0;position:absolute;top:0;width:100%;"><div class="wistia_embed wistia_async_{{ wistiaId }} videoFoam=true trackEmail={{ CurrentPerson.PrimaryAliasId }},{{ CurrentPerson.FullName | Replace: ' ', '' }}" style="height:100%;width:100%">&nbsp;</div></div></div>
+          <p>
+            &nbsp;
+          </p>
+        {% endif %}
       {% endfor %}
     </article>
   </div>
