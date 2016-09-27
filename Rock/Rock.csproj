@@ -269,6 +269,7 @@
     <Compile Include="Attribute\DefinedValueFieldAttribute.cs" />
     <Compile Include="Attribute\DefinedValueRangeFieldAttribute.cs" />
     <Compile Include="Attribute\EmailFieldAttribute.cs" />
+    <Compile Include="Attribute\WorkflowFieldAttribute.cs" />
     <Compile Include="Attribute\EncryptedTextFieldAttribute.cs" />
     <Compile Include="Attribute\EntityFieldAttribute.cs" />
     <Compile Include="Attribute\EntityTypeFieldAttribute.cs" />
@@ -456,6 +457,7 @@
     <Compile Include="Field\Types\DefinedValueFieldType.cs" />
     <Compile Include="Field\Types\DefinedValueRangeFieldType.cs" />
     <Compile Include="Field\Types\EmailFieldType.cs" />
+    <Compile Include="Field\Types\WorkflowFieldType.cs" />
     <Compile Include="Field\Types\EncryptedTextFieldType.cs" />
     <Compile Include="Field\Types\EntityFieldType.cs" />
     <Compile Include="Field\Types\EntityTypeFieldType.cs" />
@@ -1413,6 +1415,7 @@
     <Compile Include="Web\UI\Controls\Pickers\GradePicker.cs" />
     <Compile Include="Web\UI\Controls\Pickers\GroupAndRolePicker.cs" />
     <Compile Include="Web\UI\Controls\Pickers\GroupPicker.cs" />
+    <Compile Include="Web\UI\Controls\Pickers\WorkflowPicker.cs" />
     <Compile Include="Web\UI\Controls\Pickers\GroupRolePicker.cs" />
     <Compile Include="Web\UI\Controls\Pickers\GroupTypeGroupPicker.cs" />
     <Compile Include="Web\UI\Controls\Pickers\GroupTypePicker.cs" />
@@ -1569,6 +1572,7 @@
     <Compile Include="Workflow\Action\WorkflowAttributes\SetAttributeToGroupLeader.cs" />
     <Compile Include="Workflow\Action\WorkflowAttributes\SetAttributeToInitiator.cs" />
     <Compile Include="Workflow\Action\WorkflowAttributes\SetAttributeValue.cs" />
+    <Compile Include="Workflow\Action\WorkflowControl\SetStatusInOtherWorkflow.cs" />
     <Compile Include="Workflow\Action\WorkflowControl\ActivateActivityinOtherWorkflow.cs" />
     <Compile Include="Workflow\Action\WorkflowControl\ActivateActivityInOtherWorkflowOnMatch.cs" />
     <Compile Include="Workflow\Action\WorkflowControl\ActivateWorkflow.cs" />
