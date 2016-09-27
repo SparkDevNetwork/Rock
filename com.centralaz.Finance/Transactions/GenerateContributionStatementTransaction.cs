@@ -43,6 +43,30 @@ namespace com.centralaz.Finance.Transactions
         public MergeTemplate MergeTemplate { get; set; }
 
         /// <summary>
+        /// Gets or sets the type of the binary file.
+        /// </summary>
+        /// <value>
+        /// The type of the binary file.
+        /// </value>
+        public BinaryFileType BinaryFileType { get; set; }
+
+        /// <summary>
+        /// Gets or sets the requestor.
+        /// </summary>
+        /// <value>
+        /// The requestor.
+        /// </value>
+        public Person Requestor { get; set; }
+
+        /// <summary>
+        /// Gets or sets the system email unique identifier.
+        /// </summary>
+        /// <value>
+        /// The system email unique identifier.
+        /// </value>
+        public Guid? SystemEmailGuid { get; set; }
+
+        /// <summary>
         /// Gets or sets the size of the chapter.
         /// </summary>
         /// <value>
@@ -50,6 +74,12 @@ namespace com.centralaz.Finance.Transactions
         /// </value>
         public int ChapterSize { get; set; }
 
+        /// <summary>
+        /// Gets or sets the chapter number.
+        /// </summary>
+        /// <value>
+        /// The chapter number.
+        /// </value>
         public int ChapterNumber { get; set; }
 
         /// <summary>
@@ -76,31 +106,83 @@ namespace com.centralaz.Finance.Transactions
         /// </value>
         public DateTime? EndDate { get; set; }
 
+        /// <summary>
+        /// Gets or sets the account1.
+        /// </summary>
+        /// <value>
+        /// The account1.
+        /// </value>
         public FinancialAccount Account1 { get; set; }
 
+        /// <summary>
+        /// Gets or sets the account2.
+        /// </summary>
+        /// <value>
+        /// The account2.
+        /// </value>
         public FinancialAccount Account2 { get; set; }
 
+        /// <summary>
+        /// Gets or sets the account3.
+        /// </summary>
+        /// <value>
+        /// The account3.
+        /// </value>
         public FinancialAccount Account3 { get; set; }
 
+        /// <summary>
+        /// Gets or sets the account4.
+        /// </summary>
+        /// <value>
+        /// The account4.
+        /// </value>
         public FinancialAccount Account4 { get; set; }
 
+        /// <summary>
+        /// Gets or sets the context.
+        /// </summary>
+        /// <value>
+        /// The context.
+        /// </value>
         public HttpContext Context { get; set; }
+
+        /// <summary>
+        /// Gets or sets the response.
+        /// </summary>
+        /// <value>
+        /// The response.
+        /// </value>
         public HttpResponse Response { get; set; }
+
+        /// <summary>
+        /// Gets or sets the database timeout.
+        /// </summary>
+        /// <value>
+        /// The database timeout.
+        /// </value>
         public int? DatabaseTimeout { get; set; }
+
         #endregion
 
         #region Methods
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="GenerateContributionStatementTransaction"/> class.
+        /// </summary>
         public GenerateContributionStatementTransaction()
         {
         }
 
+        /// <summary>
+        /// Executes this instance.
+        /// </summary>
         public void Execute()
         {
             using ( var rockContext = new RockContext() )
             {
-
+                var binaryFileService = new BinaryFileService( rockContext );
                 MergeTemplateType mergeTemplateType = MergeTemplate.GetMergeTemplateType();
+
                 if ( mergeTemplateType != null )
                 {
                     try
@@ -119,12 +201,20 @@ namespace com.centralaz.Finance.Transactions
 
                         for ( ChapterNumber = 1; ( ( ChapterNumber - 1 ) * ChapterSize ) < givingIdCount; ChapterNumber++ )
                         {
+                            var fileName = String.Format( "{0}_ContributionStatements_Chapter_{1}_of_{2}.html", DateTime.Now.ToString( "MMddyyyy" ), ChapterNumber, totalChapters );
                             var mergeFields = GetMergeFields( rockContext );
 
                             BinaryFile outputBinaryFileDoc = null;
+                            var fileList = binaryFileService.Queryable().Where( b => b.FileName == fileName );
+                            binaryFileService.DeleteRange( fileList );
 
                             outputBinaryFileDoc = mergeTemplateType.CreateDocument( MergeTemplate, new List<object>(), mergeFields );
-                            outputBinaryFileDoc.FileName = String.Format( "{0}_ContributionStatements_Chapter_{1}_of_{2}.html", DateTime.Now.ToString( "MMddyyyy" ), ChapterNumber, totalChapters );
+                            outputBinaryFileDoc = binaryFileService.Get( outputBinaryFileDoc.Id );
+
+                            outputBinaryFileDoc.IsTemporary = false;
+                            outputBinaryFileDoc.BinaryFileTypeId = BinaryFileType.Id;
+                            outputBinaryFileDoc.FileName = fileName;
+                            rockContext.SaveChanges();
 
                             if ( mergeTemplateType.Exceptions != null && mergeTemplateType.Exceptions.Any() )
                             {
@@ -141,52 +231,22 @@ namespace com.centralaz.Finance.Transactions
                                     this.LogException( new AggregateException( string.Format( "Exceptions merging template {0}. See InnerExceptions", MergeTemplate.Name ), mergeTemplateType.Exceptions.ToList() ) );
                                 }
                             }
-
-                            // get folderPath and construct filePath
-                            string relativeFolderPath = Context.Request.Form["folderPath"] ?? string.Empty;
-                            string relativeFilePath = Path.Combine( relativeFolderPath, Path.GetFileName( outputBinaryFileDoc.FileName ) );
-                            string rootFolderParam = Context.Request.QueryString["rootFolder"];
-
-                            string rootFolder = string.Empty;
-
-                            if ( !string.IsNullOrWhiteSpace( rootFolderParam ) )
-                            {
-                                // if a rootFolder was specified in the URL, decrypt it (it is encrypted to help prevent direct access to filesystem)
-                                rootFolder = Rock.Security.Encryption.DecryptString( rootFolderParam );
-                            }
-
-                            if ( string.IsNullOrWhiteSpace( rootFolder ) )
-                            {
-                                // set to default rootFolder if not specified in the params
-                                rootFolder = "~/Content/Finance";
-                            }
-
-                            string physicalRootFolder = Context.Request.MapPath( rootFolder );
-                            string physicalContentFolderName = Path.Combine( physicalRootFolder, relativeFolderPath.TrimStart( new char[] { '/', '\\' } ) );
-                            string physicalFilePath = Path.Combine( physicalContentFolderName, outputBinaryFileDoc.FileName );
-                            var fileContent = outputBinaryFileDoc.ContentStream;
-
-                            // store the content file in the specified physical content folder
-                            if ( !Directory.Exists( physicalContentFolderName ) )
-                            {
-                                Directory.CreateDirectory( physicalContentFolderName );
-                            }
-
-                            if ( File.Exists( physicalFilePath ) )
-                            {
-                                File.Delete( physicalFilePath );
-                            }
-
-                            using ( var writeStream = File.OpenWrite( physicalFilePath ) )
-                            {
-                                if ( fileContent.CanSeek )
-                                {
-                                    fileContent.Seek( 0, SeekOrigin.Begin );
-                                }
-
-                                fileContent.CopyTo( writeStream );
-                            }
                         }
+
+                        // Send email
+                        if ( SystemEmailGuid.HasValue )
+                        {
+                            var emailMergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( null );
+                            emailMergeFields.Add( "Person", Requestor );
+
+                            var appRoot = Rock.Web.Cache.GlobalAttributesCache.Read( rockContext ).GetValue( "ExternalApplicationRoot" );
+
+                            var recipients = new List<RecipientData>();
+                            recipients.Add( new RecipientData( Requestor.Email, emailMergeFields ) );
+
+                            Email.Send( SystemEmailGuid.Value, recipients, appRoot );
+                        }
+
                     }
                     catch ( Exception ex )
                     {
@@ -204,6 +264,10 @@ namespace com.centralaz.Finance.Transactions
             }
         }
 
+        /// <summary>
+        /// Gets the giving identifier count.
+        /// </summary>
+        /// <returns></returns>
         private int GetGivingIdCount()
         {
             var count = 0;
@@ -230,6 +294,12 @@ DECLARE @transactionTypeContributionId int = (select top 1 Id from DefinedValue 
             return count;
         }
 
+        /// <summary>
+        /// Gets the merge fields.
+        /// </summary>
+        /// <param name="rockContext">The rock context.</param>
+        /// <param name="fetchCount">The fetch count.</param>
+        /// <returns></returns>
         private Dictionary<string, object> GetMergeFields( RockContext rockContext, int? fetchCount = null )
         {
             if ( DatabaseTimeout.HasValue )
@@ -300,9 +370,15 @@ DECLARE @transactionTypeContributionId int = (select top 1 Id from DefinedValue 
             mergeFields.Add( "Account4", Account4 );
             mergeFields.Add( "StartDate", StartDate.ToString() );
             mergeFields.Add( "EndDate", EndDate.ToString() );
+            mergeFields.Add( "ChapterNumber", ChapterNumber );
+            mergeFields.Add( "ChapterSize", ChapterSize );
             return mergeFields;
         }
 
+        /// <summary>
+        /// Gets the SQL parameters.
+        /// </summary>
+        /// <returns></returns>
         private Dictionary<string, object> GetSqlParameters()
         {
             Dictionary<string, object> parameters = new Dictionary<string, object>();
@@ -335,6 +411,10 @@ DECLARE @transactionTypeContributionId int = (select top 1 Id from DefinedValue 
             return parameters;
         }
 
+        /// <summary>
+        /// Logs the exception.
+        /// </summary>
+        /// <param name="ex">The ex.</param>
         public void LogException( Exception ex )
         {
             ExceptionLogService.LogException( ex, Context );
@@ -343,59 +423,226 @@ DECLARE @transactionTypeContributionId int = (select top 1 Id from DefinedValue 
         #endregion
 
         #region Helper Classes
+
+        /// <summary>
+        /// Grouped Transactions
+        /// </summary>
+        /// <seealso cref="Rock.Data.Entity{com.centralaz.Finance.Transactions.GenerateContributionStatementTransaction.GroupedTransaction}" />
         public class GroupedTransaction : Entity<GroupedTransaction>
         {
+            /// <summary>
+            /// Gets or sets the key.
+            /// </summary>
+            /// <value>
+            /// The key.
+            /// </value>
             [LavaInclude]
             public String Key { get; set; }
 
+            /// <summary>
+            /// Gets or sets the account1 total.
+            /// </summary>
+            /// <value>
+            /// The account1 total.
+            /// </value>
             [LavaInclude]
             public decimal? Account1Total { get; set; }
 
+            /// <summary>
+            /// Gets or sets the account2 total.
+            /// </summary>
+            /// <value>
+            /// The account2 total.
+            /// </value>
             [LavaInclude]
             public decimal? Account2Total { get; set; }
 
+            /// <summary>
+            /// Gets or sets the account3 total.
+            /// </summary>
+            /// <value>
+            /// The account3 total.
+            /// </value>
             [LavaInclude]
             public decimal? Account3Total { get; set; }
 
+            /// <summary>
+            /// Gets or sets the account4 total.
+            /// </summary>
+            /// <value>
+            /// The account4 total.
+            /// </value>
             [LavaInclude]
-            public decimal? Account4Total { get; set; }          
+            public decimal? Account4Total { get; set; }
 
+            /// <summary>
+            /// Gets or sets the other total.
+            /// </summary>
+            /// <value>
+            /// The other total.
+            /// </value>
             [LavaInclude]
             public decimal? OtherTotal { get; set; }
 
+            /// <summary>
+            /// Gets or sets the transaction total.
+            /// </summary>
+            /// <value>
+            /// The transaction total.
+            /// </value>
             [LavaInclude]
             public decimal? TransactionTotal { get; set; }
 
+            /// <summary>
+            /// Gets or sets the transactions.
+            /// </summary>
+            /// <value>
+            /// The transactions.
+            /// </value>
             [LavaInclude]
             public List<TransactionSummary> Transactions { get; set; }
 
         }
 
+        /// <summary>
+        /// The transaction Summary
+        /// </summary>
         [DotLiquid.LiquidType( "GivingId", "TransactionCode", "TransactionDateTime", "Account1Amount", "Account2Amount", "Account3Amount", "Account4Amount", "OtherAmount", "TotalTransactionAmount" )]
         public class TransactionSummary
         {
+            /// <summary>
+            /// Gets or sets the giving identifier.
+            /// </summary>
+            /// <value>
+            /// The giving identifier.
+            /// </value>
             public String GivingId { get; set; }
+
+            /// <summary>
+            /// Gets or sets the transaction code.
+            /// </summary>
+            /// <value>
+            /// The transaction code.
+            /// </value>
             public String TransactionCode { get; set; }
 
+            /// <summary>
+            /// Gets or sets the transaction date time.
+            /// </summary>
+            /// <value>
+            /// The transaction date time.
+            /// </value>
             public DateTime? TransactionDateTime { get; set; }
 
+            /// <summary>
+            /// Gets or sets the account1 amount.
+            /// </summary>
+            /// <value>
+            /// The account1 amount.
+            /// </value>
             public decimal? Account1Amount { get; set; }
+
+            /// <summary>
+            /// Gets or sets the account2 amount.
+            /// </summary>
+            /// <value>
+            /// The account2 amount.
+            /// </value>
             public decimal? Account2Amount { get; set; }
+
+            /// <summary>
+            /// Gets or sets the account3 amount.
+            /// </summary>
+            /// <value>
+            /// The account3 amount.
+            /// </value>
             public decimal? Account3Amount { get; set; }
+
+            /// <summary>
+            /// Gets or sets the account4 amount.
+            /// </summary>
+            /// <value>
+            /// The account4 amount.
+            /// </value>
             public decimal? Account4Amount { get; set; }
+
+            /// <summary>
+            /// Gets or sets the other amount.
+            /// </summary>
+            /// <value>
+            /// The other amount.
+            /// </value>
             public decimal? OtherAmount { get; set; }
+
+            /// <summary>
+            /// Gets or sets the total transaction amount.
+            /// </summary>
+            /// <value>
+            /// The total transaction amount.
+            /// </value>
             public decimal? TotalTransactionAmount { get; set; }
         }
 
+        /// <summary>
+        /// The address summary for lava
+        /// </summary>
         [DotLiquid.LiquidType( "GivingId", "Names", "Street1", "Street2", "City", "State", "PostalCode" )]
         public class AddressSummary
         {
+            /// <summary>
+            /// Gets or sets the giving identifier.
+            /// </summary>
+            /// <value>
+            /// The giving identifier.
+            /// </value>
             public String GivingId { get; set; }
+
+            /// <summary>
+            /// Gets or sets the names.
+            /// </summary>
+            /// <value>
+            /// The names.
+            /// </value>
             public String Names { get; set; }
+
+            /// <summary>
+            /// Gets or sets the street1.
+            /// </summary>
+            /// <value>
+            /// The street1.
+            /// </value>
             public String Street1 { get; set; }
+
+            /// <summary>
+            /// Gets or sets the street2.
+            /// </summary>
+            /// <value>
+            /// The street2.
+            /// </value>
             public String Street2 { get; set; }
+
+            /// <summary>
+            /// Gets or sets the city.
+            /// </summary>
+            /// <value>
+            /// The city.
+            /// </value>
             public String City { get; set; }
+
+            /// <summary>
+            /// Gets or sets the state.
+            /// </summary>
+            /// <value>
+            /// The state.
+            /// </value>
             public String State { get; set; }
+
+            /// <summary>
+            /// Gets or sets the postal code.
+            /// </summary>
+            /// <value>
+            /// The postal code.
+            /// </value>
             public String PostalCode { get; set; }
         }
         #endregion

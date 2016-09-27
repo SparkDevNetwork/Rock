@@ -42,7 +42,8 @@ namespace RockWeb.Plugins.com_centralaz.Finance
     [Category( "com_centralaz > Finance" )]
     [Description( "Used for merging contribution data into output documents, such as Word, Html, using a pre-defined template." )]
     [IntegerField( "Database Timeout", "The number of seconds to wait before reporting a database timeout.", false, 180, "", 0 )]
-
+    [BinaryFileTypeField( "File Type", "The file type used to save the contribution statements.", true, "FC7218EE-EA28-4EA4-8C3D-F30750A2FE59" )]
+    [SystemEmailField( "Notify Requester Email", "The system email used to notify the requester that the statements have been generated" )]
     public partial class ContributionStatementTemplateEntry : RockBlock
     {
         #region Base Control Methods
@@ -83,10 +84,129 @@ namespace RockWeb.Plugins.com_centralaz.Finance
             }
         }
 
+        #endregion
+
+        #region Events
+
+        /// <summary>
+        /// Handles the BlockUpdated event of the control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void Block_BlockUpdated( object sender, EventArgs e )
+        {
+            //
+        }
+
+        /// <summary>
+        /// Handles the Click event of the btnMerge control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void btnMerge_Click( object sender, EventArgs e )
+        {
+            nbNotification.Visible = false;
+
+            var rockContext = new RockContext();
+
+            MergeTemplate mergeTemplate = new MergeTemplateService( rockContext ).Get( mtpMergeTemplate.SelectedValue.AsInteger() );
+            if ( mergeTemplate == null )
+            {
+                nbWarningMessage.Text = "Unable to get merge template";
+                nbWarningMessage.NotificationBoxType = NotificationBoxType.Danger;
+                nbWarningMessage.Visible = true;
+                return;
+            }
+
+            MergeTemplateType mergeTemplateType = this.GetMergeTemplateType( rockContext, mergeTemplate );
+            if ( mergeTemplateType == null )
+            {
+                nbWarningMessage.Text = "Unable to get merge template type";
+                nbWarningMessage.NotificationBoxType = NotificationBoxType.Danger;
+                nbWarningMessage.Visible = true;
+                return;
+            }
+
+            BinaryFileType binaryFileType = new BinaryFileTypeService( rockContext ).Get( GetAttributeValue( "FileType" ).AsGuid() );
+            if ( binaryFileType == null )
+            {
+                nbWarningMessage.Text = "Unable to get file type";
+                nbWarningMessage.NotificationBoxType = NotificationBoxType.Danger;
+                nbWarningMessage.Visible = true;
+                return;
+            }
+
+            // Get the accounts that we want to list independently
+            var accountService = new FinancialAccountService( rockContext );
+
+            FinancialAccount account1 = new FinancialAccount();
+            if ( apAccount1.SelectedValueAsId().HasValue )
+            {
+                account1 = accountService.Get( apAccount1.SelectedValueAsInt().Value );
+            }
+
+            FinancialAccount account2 = new FinancialAccount();
+            if ( apAccount2.SelectedValueAsId().HasValue )
+            {
+                account2 = accountService.Get( apAccount2.SelectedValueAsInt().Value );
+            }
+
+            FinancialAccount account3 = new FinancialAccount();
+            if ( apAccount3.SelectedValueAsId().HasValue )
+            {
+                account3 = accountService.Get( apAccount3.SelectedValueAsInt().Value );
+            }
+
+            FinancialAccount account4 = new FinancialAccount();
+            if ( apAccount4.SelectedValueAsId().HasValue )
+            {
+                account4 = accountService.Get( apAccount4.SelectedValueAsInt().Value );
+            }
+
+            var dateRange = SlidingDateRangePicker.CalculateDateRangeFromDelimitedValues( drpDates.DelimitedValues );
+
+            var transaction = new com.centralaz.Finance.Transactions.GenerateContributionStatementTransaction();
+            transaction.Context = Context;
+            transaction.Response = Response;
+            transaction.DatabaseTimeout = GetAttributeValue( "DatabaseTimeout" ).AsIntegerOrNull();
+            transaction.Account1 = account1;
+            transaction.Account2 = account2;
+            transaction.Account3 = account3;
+            transaction.Account4 = account4;
+            transaction.StartDate = dateRange.Start;
+            transaction.EndDate = dateRange.End;
+            transaction.MergeTemplate = mergeTemplate;
+            transaction.BinaryFileType = binaryFileType;
+            transaction.SystemEmailGuid = GetAttributeValue( "NotifyRequesterEmail" ).AsGuidOrNull();
+            transaction.Requestor = CurrentPerson;
+            transaction.MinimumContributionAmount = nbMinimumAmount.Text.AsInteger();
+            transaction.ChapterSize = nbChapterSize.Text.AsInteger();
+            Rock.Transactions.RockQueue.TransactionQueue.Enqueue( transaction );
+
+            SetBlockUserPreference( "ChapterSize", nbChapterSize.Text );
+            SetBlockUserPreference( "MinimumContribution", nbMinimumAmount.Text );
+            SetBlockUserPreference( "MergeTemplate", mtpMergeTemplate.SelectedValue );
+            SetBlockUserPreference( "Account1", apAccount1.SelectedValue );
+            SetBlockUserPreference( "Account2", apAccount2.SelectedValue );
+            SetBlockUserPreference( "Account3", apAccount3.SelectedValue );
+            SetBlockUserPreference( "Account4", apAccount4.SelectedValue );
+            SetBlockUserPreference( "Date Range", drpDates.DelimitedValues );
+
+            nbNotification.Visible = true;
+        }
+
+        #endregion
+
+        #region Methods
+
+        /// <summary>
+        /// Shows the detail.
+        /// </summary>
         private void ShowDetail()
         {
             nbNotification.Visible = false;
             var delimitedDateValues = GetBlockUserPreference( "Date Range" );
+
             if ( !String.IsNullOrWhiteSpace( delimitedDateValues ) )
             {
                 drpDates.DelimitedValues = delimitedDateValues;
@@ -134,109 +254,6 @@ namespace RockWeb.Plugins.com_centralaz.Finance
             }
         }
 
-        #endregion
-
-        #region Events
-
-        /// <summary>
-        /// Handles the BlockUpdated event of the control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void Block_BlockUpdated( object sender, EventArgs e )
-        {
-            //
-        }
-
-        /// <summary>
-        /// Handles the Click event of the btnMerge control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void btnMerge_Click( object sender, EventArgs e )
-        {
-            nbNotification.Visible = false;
-
-            var rockContext = new RockContext();
-
-            MergeTemplate mergeTemplate = new MergeTemplateService( rockContext ).Get( mtpMergeTemplate.SelectedValue.AsInteger() );
-            if ( mergeTemplate == null )
-            {
-                nbWarningMessage.Text = "Unable to get merge template";
-                nbWarningMessage.NotificationBoxType = NotificationBoxType.Danger;
-                nbWarningMessage.Visible = true;
-                return;
-            }
-
-            MergeTemplateType mergeTemplateType = this.GetMergeTemplateType( rockContext, mergeTemplate );
-            if ( mergeTemplateType == null )
-            {
-                nbWarningMessage.Text = "Unable to get merge template type";
-                nbWarningMessage.NotificationBoxType = NotificationBoxType.Danger;
-                nbWarningMessage.Visible = true;
-                return;
-            }
-
-            // Get the accounts that we want to list independently
-            var accountService = new FinancialAccountService( rockContext );
-
-            FinancialAccount account1 = new FinancialAccount();
-            if ( apAccount1.SelectedValueAsId().HasValue )
-            {
-                account1 = accountService.Get( apAccount1.SelectedValueAsInt().Value );
-            }
-
-            FinancialAccount account2 = new FinancialAccount();
-            if ( apAccount2.SelectedValueAsId().HasValue )
-            {
-                account2 = accountService.Get( apAccount2.SelectedValueAsInt().Value );
-            }
-
-            FinancialAccount account3 = new FinancialAccount();
-            if ( apAccount3.SelectedValueAsId().HasValue )
-            {
-                account3 = accountService.Get( apAccount3.SelectedValueAsInt().Value );
-            }
-
-            FinancialAccount account4 = new FinancialAccount();
-            if ( apAccount4.SelectedValueAsId().HasValue )
-            {
-                account4 = accountService.Get( apAccount4.SelectedValueAsInt().Value );
-            }
-
-            var dateRange = SlidingDateRangePicker.CalculateDateRangeFromDelimitedValues( drpDates.DelimitedValues );
-
-            var transaction = new com.centralaz.Finance.Transactions.GenerateContributionStatementTransaction();
-            transaction.Context = Context;
-            transaction.Response = Response;
-            transaction.DatabaseTimeout = GetAttributeValue( "DatabaseTimeout" ).AsIntegerOrNull();
-            transaction.Account1 = account1;
-            transaction.Account2 = account2;
-            transaction.Account3 = account3;
-            transaction.Account4 = account4;
-            transaction.StartDate = dateRange.Start;
-            transaction.EndDate = dateRange.End;
-            transaction.MergeTemplate = mergeTemplate;
-            transaction.MinimumContributionAmount = nbMinimumAmount.Text.AsInteger();
-            transaction.ChapterSize = nbChapterSize.Text.AsInteger();
-            Rock.Transactions.RockQueue.TransactionQueue.Enqueue( transaction );
-
-            SetBlockUserPreference( "ChapterSize", nbChapterSize.Text );
-            SetBlockUserPreference( "MinimumContribution", nbMinimumAmount.Text );
-            SetBlockUserPreference( "MergeTemplate", mtpMergeTemplate.SelectedValue );
-            SetBlockUserPreference( "Account1", apAccount1.SelectedValue );
-            SetBlockUserPreference( "Account2", apAccount2.SelectedValue );
-            SetBlockUserPreference( "Account3", apAccount3.SelectedValue );
-            SetBlockUserPreference( "Account4", apAccount4.SelectedValue );
-            SetBlockUserPreference( "Date Range", drpDates.DelimitedValues );
-
-            nbNotification.Visible = true;
-        }
-
-        #endregion
-
-        #region Methods       
-
         /// <summary>
         /// Gets the type of the merge template.
         /// </summary>
@@ -253,6 +270,7 @@ namespace RockWeb.Plugins.com_centralaz.Finance
 
             return mergeTemplate.GetMergeTemplateType();
         }
+
         #endregion
     }
 }

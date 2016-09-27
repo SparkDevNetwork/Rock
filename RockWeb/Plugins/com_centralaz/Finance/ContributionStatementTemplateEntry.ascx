@@ -16,7 +16,7 @@
                     <asp:Literal ID="lActionTitle" runat="server" Text="Create Merge Document" /></h1>
             </div>
             <div class="panel-body">
-                <Rock:NotificationBox ID="nbNotification" runat="server" NotificationBoxType="Success" Text="Merge document submitted for processing. You can view your documents at '~/Content/Finance'." Visible="false" />
+                <Rock:NotificationBox ID="nbNotification" runat="server" NotificationBoxType="Success" Text="Merge document submitted for processing. You will receive an email once the statements have been generated." Visible="false" />
                 <asp:ValidationSummary ID="ValidationSummary1" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" />
                 <div class="row">
                     <div class="col-md-6">
