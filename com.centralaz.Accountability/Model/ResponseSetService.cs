@@ -61,20 +61,11 @@ namespace com.centralaz.Accountability.Model
                 return false;
             }
 
-            var qry = Queryable()
+            return Queryable()
                 .Where( r => r.SubmitForDate == dateTime.Date &&
                     r.PersonId == personId &&
                     r.GroupId == groupId )
-                .ToList();
-
-            if ( qry.Count == 1 )
-            {
-                return true;
-            }
-            else
-            {
-                return false;
-            }
+                .Any();
         }
 
         /// <summary>
