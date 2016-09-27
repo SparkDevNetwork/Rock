@@ -1738,8 +1738,8 @@ namespace Rock.Web.UI.Controls
                                     worksheet.Cells[rowCounter, columnCounter].Value = resultHtml;
                                 }
                                 continue;
-                            } 
-                            
+                            }
+
                             var boundField = dataField as BoundField;
                             if ( boundField != null )
                             {
@@ -1747,6 +1747,11 @@ namespace Rock.Web.UI.Controls
                                 if ( prop != null )
                                 {
                                     object propValue = prop.GetValue( item, null );
+
+                                    if ( dataField is CallbackField )
+                                    {
+                                        propValue = ( dataField as CallbackField ).GetFormattedDataValue( propValue );
+                                    }
 
                                     var definedValueAttribute = prop.GetCustomAttributes( typeof( DefinedValueAttribute ), true ).FirstOrDefault();
 
