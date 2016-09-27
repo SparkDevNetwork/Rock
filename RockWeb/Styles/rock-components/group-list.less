@@ -1,0 +1,50 @@
+//
+// Group List - Reusable styles for listing group
+// members (family view/edit in CRM Person Profile)
+// --------------------------------------------------
+
+.groupmembers {
+  padding: 0;
+  margin: 6px 0;
+  list-style: none;
+
+  .member {
+    float: left;
+    min-width: 160px;
+    min-height: 90px;
+    margin-right: @spacing-md-px;
+    margin-bottom: @spacing-md-px;
+    border-radius: @border-radius-base;
+
+    .person-image {
+      display: inline-block;
+      float: left;
+      width: 60px;
+      height: 60px;
+      margin-right: 7.5px;
+      border: 1px solid @photo-border;
+    }
+
+    .member-information {
+      float: left;
+    }
+
+    h4 {
+      margin: 0;
+      overflow: hidden;
+      font-size: 16px;
+      font-weight: @font-weight-semibold;
+      text-overflow: ellipsis;
+    }
+
+    small {
+      display: block;
+      margin: 0;
+      line-height: 16px;
+    }
+
+    .btn {
+      margin-top: 6px;
+    }
+  }
+}
