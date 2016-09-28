@@ -182,7 +182,7 @@ namespace church.ccv.Actions
                 RockContext rockContext = new RockContext( );
                 var sqlResultTable = rockContext.Database.SqlQuery<ResultTable>
                     (
-                        "SELECT TOP 1 * FROM dbo._church_ccv_ufnActions_Adult_IsPeerLearning(@PersonId)",
+                        "SELECT TOP 1 * FROM dbo._church_ccv_ufnActions_Adult_IsPeerLearning(@PersonId, 0)",
                         new SqlParameter( "@PersonId", personId ) { SqlDbType = SqlDbType.Int, IsNullable = false }
                     ).ToList( ).SingleOrDefault( );
 
@@ -259,7 +259,7 @@ namespace church.ccv.Actions
                 RockContext rockContext = new RockContext( );
                 var sqlResultTable = rockContext.Database.SqlQuery<ResultTable>
                     (
-                        "SELECT TOP 1 * FROM dbo._church_ccv_ufnActions_Adult_IsMentored(@PersonId)",
+                        "SELECT TOP 1 * FROM dbo._church_ccv_ufnActions_Adult_IsMentored(@PersonId, 0)",
                         new SqlParameter( "@PersonId", personId ) { SqlDbType = SqlDbType.Int, IsNullable = false }
                     ).ToList( ).SingleOrDefault( );
 
@@ -305,7 +305,7 @@ namespace church.ccv.Actions
                 RockContext rockContext = new RockContext( );
                 var sqlResultTable = rockContext.Database.SqlQuery<ResultTable>
                     (
-                        "SELECT TOP 1 * FROM dbo._church_ccv_ufnActions_Adult_IsServing(@PersonId)",
+                        "SELECT TOP 1 * FROM dbo._church_ccv_ufnActions_Adult_IsServing(@PersonId, 0)",
                         new SqlParameter( "@PersonId", personId ) { SqlDbType = SqlDbType.Int, IsNullable = false }
                     ).ToList( ).SingleOrDefault( );
 
@@ -421,7 +421,7 @@ namespace church.ccv.Actions
                 RockContext rockContext = new RockContext( );
                 var sqlResultTable = rockContext.Database.SqlQuery<ResultTable>
                     (
-                        "SELECT TOP 1 * FROM dbo._church_ccv_ufnActions_Adult_IsTeaching(@PersonId)",
+                        "SELECT TOP 1 * FROM dbo._church_ccv_ufnActions_Adult_IsTeaching(@PersonId, 0)",
                         new SqlParameter( "@PersonId", personId ) { SqlDbType = SqlDbType.Int, IsNullable = false }
                     ).ToList( ).SingleOrDefault( );
 
@@ -618,7 +618,7 @@ namespace church.ccv.Actions
                 RockContext rockContext = new RockContext( );
                 var sqlResultTable = rockContext.Database.SqlQuery<ResultTable>
                     (
-                        "SELECT TOP 1 * FROM dbo._church_ccv_ufnActions_Student_IsPeerLearning(@PersonId)",
+                        "SELECT TOP 1 * FROM dbo._church_ccv_ufnActions_Student_IsPeerLearning(@PersonId, 0)",
                         new SqlParameter( "@PersonId", personId ) { SqlDbType = SqlDbType.Int, IsNullable = false }
                     ).ToList( ).SingleOrDefault( );
 
@@ -676,7 +676,7 @@ namespace church.ccv.Actions
                 RockContext rockContext = new RockContext( );
                 var sqlResultTable = rockContext.Database.SqlQuery<ResultTable>
                     (
-                        "SELECT TOP 1 * FROM dbo._church_ccv_ufnActions_Student_IsMentored(@PersonId)",
+                        "SELECT TOP 1 * FROM dbo._church_ccv_ufnActions_Student_IsMentored(@PersonId, 0)",
                         new SqlParameter( "@PersonId", personId ) { SqlDbType = SqlDbType.Int, IsNullable = false }
                     ).ToList( ).SingleOrDefault( );
 
@@ -716,7 +716,7 @@ namespace church.ccv.Actions
                 RockContext rockContext = new RockContext( );
                 var sqlResultTable = rockContext.Database.SqlQuery<ResultTable>
                     (
-                        "SELECT TOP 1 * FROM dbo._church_ccv_ufnActions_Student_IsServing(@PersonId)",
+                        "SELECT TOP 1 * FROM dbo._church_ccv_ufnActions_Student_IsServing(@PersonId, 0)",
                         new SqlParameter( "@PersonId", personId ) { SqlDbType = SqlDbType.Int, IsNullable = false }
                     ).ToList( ).SingleOrDefault( );
 
@@ -773,7 +773,7 @@ namespace church.ccv.Actions
                 RockContext rockContext = new RockContext( );
                 var sqlResultTable = rockContext.Database.SqlQuery<ResultTable>
                     (
-                        "SELECT TOP 1 * FROM dbo._church_ccv_ufnActions_Student_IsTeaching(@PersonId)",
+                        "SELECT TOP 1 * FROM dbo._church_ccv_ufnActions_Student_IsTeaching(@PersonId, 0)",
                         new SqlParameter( "@PersonId", personId ) { SqlDbType = SqlDbType.Int, IsNullable = false }
                     ).ToList( ).SingleOrDefault( );
 

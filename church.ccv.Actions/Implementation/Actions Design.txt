@@ -54,14 +54,14 @@ MENTORED
 			Young Adult Group
 			
 		Must NOT be the leader
-		Must be active or pending
+		Must not be inactive
 		
 	Student:
 		Must be in:
 			Next Gen Group
 			
 		Must NOT be the leader
-		Must be active or pending
+		Must not be inactive
 		
 		
 PEER LEARNING
@@ -70,13 +70,13 @@ PEER LEARNING
 			Neighborhood Group
 			Young Adult Group
 		
-		Must be active or pending
+		Must not be inactive
 	
 	Student:
 		Must be in:
 			Next Gen Group
 			
-		Must be active or pending
+		Must not be inactive
 		
 		
 		
@@ -89,13 +89,13 @@ SERVING
 				*These are updated nightly, not in real time. Therefore, it is one case where
 				the Serving Badge won't instantly turn on/off.
 			
-		Must be active or pending
+		Must not be inactive
 		
 	Student:
 		Must be in:
 			Serving Group
 
-		Must be active or pending
+		Must not be inactive
 		
 		
 TEACHING
@@ -114,12 +114,12 @@ TEACHING
 			Next Gen Group
 		
 		Must be the leader
-		Must be active or pending
+		Must not be inactive
 		
 	Student:
 		Must be in:
 			Undefined Group
 			
 		Must be the leader
-		Must be active or pending
+		Must not be inactive
 			
