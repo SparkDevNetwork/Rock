@@ -44,6 +44,8 @@ namespace RockWeb.Plugins.church_ccv.Reporting
             // this event gets fired after block settings are updated. it's nice to repaint the screen if these settings would alter it
             this.BlockUpdated += Block_BlockUpdated;
             this.AddConfigurationUpdateTrigger( upnlContent );
+
+            nbMetricsSaved.Visible = false;
         }
 
         /// <summary>
@@ -211,8 +213,6 @@ namespace RockWeb.Plugins.church_ccv.Reporting
             var rockContext = new RockContext();
             var metricCategory = new MetricCategoryService( rockContext ).Get( headcountsMetricCategoryId ?? 0 );
 
-            var notes = new List<string>();
-
             if ( !campusId.HasValue )
             {
                 return;
@@ -228,7 +228,16 @@ namespace RockWeb.Plugins.church_ccv.Reporting
             var metric = metricCategory.Metric;
             var metricCampusPartitionId = metric.MetricPartitions.Where( p => p.EntityTypeId.HasValue && p.EntityTypeId.Value == campusEntityTypeId ).Select( p => p.Id ).FirstOrDefault();
             var metricSchedulePartitionId = metric.MetricPartitions.Where( p => p.EntityTypeId.HasValue && p.EntityTypeId.Value == scheduleEntityTypeId ).Select( p => p.Id ).FirstOrDefault();
-            var metricDefinedValuePartitionId = metric.MetricPartitions.Where( p => p.EntityTypeId.HasValue && p.EntityTypeId.Value == definedValueEntityTypeId ).Select( p => p.Id ).FirstOrDefault();
+            var metricDefinedValuePartition = metric.MetricPartitions.Where( p => p.EntityTypeId.HasValue && p.EntityTypeId.Value == definedValueEntityTypeId )
+                .Select( p => new
+                {
+                    p.Id,
+                    DefinedTypeId = p.EntityTypeQualifierValue
+                } ).FirstOrDefault();
+
+            var definedType = DefinedTypeCache.Read( metricDefinedValuePartition.DefinedTypeId.AsInteger() );
+            var definedValueMain = definedType.DefinedValues.FirstOrDefault( a => a.Value == "Main" );
+            var definedValueOverflow = definedType.DefinedValues.FirstOrDefault( a => a.Value == "Overflow" );
 
             var serviceMetricValuesList = new List<ServiceMetricValues>();
             var campusServiceSchedules = GetServiceTimesForCampus( CampusCache.Read( campusId.Value ) );
@@ -242,22 +251,22 @@ namespace RockWeb.Plugins.church_ccv.Reporting
                                 .Where( v =>
                                     v.MetricId == metric.Id &&
                                     v.MetricValueDateTime.HasValue && v.MetricValueDateTime.Value == weekendSundayDate.Value &&
-                                    v.MetricValuePartitions.Count == 2 &&
+                                    v.MetricValuePartitions.Count == 3 &&
                                     v.MetricValuePartitions.Any( p => p.MetricPartitionId == metricCampusPartitionId && p.EntityId.HasValue && p.EntityId.Value == campusId.Value ) &&
-                                    v.MetricValuePartitions.Any( p => p.MetricPartitionId == metricSchedulePartitionId && p.EntityId.HasValue && p.EntityId.Value == campusSchedule.Id ) );
+                                    v.MetricValuePartitions.Any( p => p.MetricPartitionId == metricSchedulePartitionId && p.EntityId.HasValue && p.EntityId.Value == campusSchedule.Id ) ).ToList();
 
                 foreach ( var campusScheduleMetricValue in campusScheduleMetricValues )
                 {
-                    var definedValue = campusScheduleMetricValue.MetricValuePartitions.Where( p => p.MetricPartitionId == metricDefinedValuePartitionId ).Select( a => DefinedValueCache.Read( a.EntityId ?? 0 ) ).FirstOrDefault();
+                    var definedValue = campusScheduleMetricValue.MetricValuePartitions.Where( p => p.MetricPartitionId == metricDefinedValuePartition.Id ).Select( a => DefinedValueCache.Read( a.EntityId ?? 0 ) ).FirstOrDefault();
                     if ( definedValue != null )
                     {
-                        if ( definedValue.Value == "Overflow" )
+                        if ( definedValue.Id == definedValueOverflow.Id )
                         {
-                            serviceMetricValue.OverflowValue = campusScheduleMetricValue.YValue;
+                            serviceMetricValue.OverflowValue = (int?)campusScheduleMetricValue.YValue;
                         }
                         else
                         {
-                            serviceMetricValue.MainValue = campusScheduleMetricValue.YValue;
+                            serviceMetricValue.MainValue = (int?)campusScheduleMetricValue.YValue;
                             serviceMetricValue.Note = campusScheduleMetricValue.Note;
                         }
                     }
@@ -291,7 +300,124 @@ namespace RockWeb.Plugins.church_ccv.Reporting
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnSave_Click( object sender, EventArgs e )
         {
-            // todo
+            int campusEntityTypeId = EntityTypeCache.Read( typeof( Rock.Model.Campus ) ).Id;
+            int scheduleEntityTypeId = EntityTypeCache.Read( typeof( Rock.Model.Schedule ) ).Id;
+            int definedValueEntityTypeId = EntityTypeCache.Read( typeof( Rock.Model.DefinedValue ) ).Id;
+
+            int? campusId = bddlCampus.SelectedValueAsInt();
+            DateTime? weekendSundayDate = bddlWeekend.SelectedValue.AsDateTime();
+
+            int? headcountsMetricCategoryId = this.GetAttributeValue( "HeadcountsMetricCategoryId" ).AsIntegerOrNull();
+            var rockContext = new RockContext();
+            var metricCategory = new MetricCategoryService( rockContext ).Get( headcountsMetricCategoryId ?? 0 );
+
+            if ( !campusId.HasValue )
+            {
+                return;
+            }
+
+            if ( metricCategory == null )
+            {
+                return;
+            }
+
+            var metricValueService = new MetricValueService( rockContext );
+
+            var metric = metricCategory.Metric;
+            var metricCampusPartitionId = metric.MetricPartitions.Where( p => p.EntityTypeId.HasValue && p.EntityTypeId.Value == campusEntityTypeId ).Select( p => p.Id ).FirstOrDefault();
+            var metricSchedulePartitionId = metric.MetricPartitions.Where( p => p.EntityTypeId.HasValue && p.EntityTypeId.Value == scheduleEntityTypeId ).Select( p => p.Id ).FirstOrDefault();
+            var metricDefinedValuePartition = metric.MetricPartitions.Where( p => p.EntityTypeId.HasValue && p.EntityTypeId.Value == definedValueEntityTypeId )
+                .Select( p => new
+                {
+                    p.Id,
+                    DefinedTypeId = p.EntityTypeQualifierValue
+                } ).FirstOrDefault();
+
+            var definedType = DefinedTypeCache.Read( metricDefinedValuePartition.DefinedTypeId.AsInteger() );
+            var definedValueMain = definedType.DefinedValues.FirstOrDefault( a => a.Value == "Main" );
+            var definedValueOverflow = definedType.DefinedValues.FirstOrDefault( a => a.Value == "Overflow" );
+
+
+            foreach ( RepeaterItem item in rptrMetric.Items )
+            {
+                var hfScheduleId = item.FindControl( "hfScheduleId" ) as HiddenField;
+                var nbMetricMainValue = item.FindControl( "nbMetricMainValue" ) as NumberBox;
+                var nbMetricOverflowValue = item.FindControl( "nbMetricOverflowValue" ) as NumberBox;
+                var tbNote = item.FindControl( "tbNote" ) as RockTextBox;
+
+                int scheduleId = hfScheduleId.Value.AsInteger();
+
+                var campusScheduleMetricValues = metricValueService
+                                    .Queryable()
+                                    .Where( v =>
+                                        v.MetricId == metric.Id &&
+                                        v.MetricValueDateTime.HasValue && v.MetricValueDateTime.Value == weekendSundayDate.Value &&
+                                        v.MetricValuePartitions.Count == 3 &&
+                                        v.MetricValuePartitions.Any( p => p.MetricPartitionId == metricCampusPartitionId && p.EntityId.HasValue && p.EntityId.Value == campusId.Value ) &&
+                                        v.MetricValuePartitions.Any( p => p.MetricPartitionId == metricSchedulePartitionId && p.EntityId.HasValue && p.EntityId.Value == scheduleId ) ).ToList();
+
+                var campusScheduleMetricValueMain = campusScheduleMetricValues.Where( v =>
+                    v.MetricValuePartitions.Any( p => p.MetricPartitionId == metricDefinedValuePartition.Id && p.EntityId.HasValue && p.EntityId == definedValueMain.Id ) ).FirstOrDefault();
+
+                var campusScheduleMetricValueOverflow = campusScheduleMetricValues.Where( v =>
+                    v.MetricValuePartitions.Any( p => p.MetricPartitionId == metricDefinedValuePartition.Id && p.EntityId.HasValue && p.EntityId == definedValueOverflow.Id ) ).FirstOrDefault();
+
+                if ( campusScheduleMetricValueMain == null )
+                {
+                    campusScheduleMetricValueMain = new MetricValue();
+                    campusScheduleMetricValueMain.MetricValueType = MetricValueType.Measure;
+                    campusScheduleMetricValueMain.MetricId = metric.Id;
+                    campusScheduleMetricValueMain.MetricValueDateTime = weekendSundayDate.Value;
+                    metricValueService.Add( campusScheduleMetricValueMain );
+
+                    var campusValuePartition = new MetricValuePartition();
+                    campusValuePartition.MetricPartitionId = metricCampusPartitionId;
+                    campusValuePartition.EntityId = campusId.Value;
+                    campusScheduleMetricValueMain.MetricValuePartitions.Add( campusValuePartition );
+
+                    var scheduleValuePartition = new MetricValuePartition();
+                    scheduleValuePartition.MetricPartitionId = metricSchedulePartitionId;
+                    scheduleValuePartition.EntityId = scheduleId;
+                    campusScheduleMetricValueMain.MetricValuePartitions.Add( scheduleValuePartition );
+
+                    var definedValuePartition = new MetricValuePartition();
+                    definedValuePartition.MetricPartitionId = metricDefinedValuePartition.Id;
+                    definedValuePartition.EntityId = definedValueMain.Id;
+                    campusScheduleMetricValueMain.MetricValuePartitions.Add( definedValuePartition );
+                }
+
+                if ( campusScheduleMetricValueOverflow == null )
+                {
+                    campusScheduleMetricValueOverflow = new MetricValue();
+                    campusScheduleMetricValueOverflow.MetricValueType = MetricValueType.Measure;
+                    campusScheduleMetricValueOverflow.MetricId = metric.Id;
+                    campusScheduleMetricValueOverflow.MetricValueDateTime = weekendSundayDate.Value;
+                    metricValueService.Add( campusScheduleMetricValueOverflow );
+
+                    var campusValuePartition = new MetricValuePartition();
+                    campusValuePartition.MetricPartitionId = metricCampusPartitionId;
+                    campusValuePartition.EntityId = campusId.Value;
+                    campusScheduleMetricValueOverflow.MetricValuePartitions.Add( campusValuePartition );
+
+                    var scheduleValuePartition = new MetricValuePartition();
+                    scheduleValuePartition.MetricPartitionId = metricSchedulePartitionId;
+                    scheduleValuePartition.EntityId = scheduleId;
+                    campusScheduleMetricValueOverflow.MetricValuePartitions.Add( scheduleValuePartition );
+
+                    var definedValuePartition = new MetricValuePartition();
+                    definedValuePartition.MetricPartitionId = metricDefinedValuePartition.Id;
+                    definedValuePartition.EntityId = definedValueOverflow.Id;
+                    campusScheduleMetricValueOverflow.MetricValuePartitions.Add( definedValuePartition );
+                }
+
+                campusScheduleMetricValueMain.YValue = nbMetricMainValue.Text.AsDecimalOrNull();
+                campusScheduleMetricValueMain.Note = tbNote.Text;
+                campusScheduleMetricValueOverflow.YValue = nbMetricOverflowValue.Text.AsDecimalOrNull();
+
+                rockContext.SaveChanges();
+
+                nbMetricsSaved.Visible = true;
+            }
         }
 
         #endregion
@@ -305,16 +431,6 @@ namespace RockWeb.Plugins.church_ccv.Reporting
         {
             SetBlockUserPreference( "CampusId", bddlCampus.SelectedValue );
             BindMetrics();
-        }
-
-        /// <summary>
-        /// Handles the ItemDataBound event of the rptrMetric control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="RepeaterItemEventArgs"/> instance containing the event data.</param>
-        protected void rptrMetric_ItemDataBound( object sender, RepeaterItemEventArgs e )
-        {
-            // todo
         }
 
         /// <summary>
@@ -337,9 +453,9 @@ namespace RockWeb.Plugins.church_ccv.Reporting
 
         public string ServiceName { get; set; }
 
-        public decimal? MainValue { get; set; }
+        public int? MainValue { get; set; }
 
-        public decimal? OverflowValue { get; set; }
+        public int? OverflowValue { get; set; }
 
         public string Note { get; set; }
 

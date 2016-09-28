@@ -17,19 +17,21 @@
                     </div>
                 </div>
 
-                <asp:Repeater ID="rptrMetric" runat="server" OnItemDataBound="rptrMetric_ItemDataBound">
+                <asp:Repeater ID="rptrMetric" runat="server">
                     <ItemTemplate>
                         <h3><%# Eval( "ServiceName") %></h3>
                         <div class="row">
                             <asp:HiddenField ID="hfScheduleId" runat="server" Value='<%# Eval("ScheduleId") %>' />
                             <div class="col-md-2">
-                                <Rock:NumberBox ID="nbMetricMainValue" runat="server" NumberType="Double" Label='Worship' Text='<%# Eval( "MainValue") %>' />
+                                <Rock:NumberBox ID="nbMetricMainValue" runat="server" NumberType="Integer" Label='Worship' Text='<%# Eval( "MainValue") %>' />
                             </div>
                             <div class="col-md-2">
-                                <Rock:NumberBox ID="nbMetricOverflowValue" runat="server" NumberType="Double" Label='Overflow' Text='<%# Eval( "OverflowValue") %>' />
+                                <Rock:NumberBox ID="nbMetricOverflowValue" runat="server" NumberType="Integer" Label='Overflow' Text='<%# Eval( "OverflowValue") %>' />
                             </div>
-                            <div class="col-md-8">
-                                <Rock:RockTextBox ID="tbNote" runat="server" Label="Notes" Text='<%# Eval("Note") %>' />
+                        </div>
+                        <div class="row">
+                            <div class="col-md-4">
+                                <Rock:RockTextBox ID="tbNote" runat="server" Label="Notes" TextMode="MultiLine" Rows="2" Text='<%# Eval("Note") %>' />
                             </div>
                         </div>
                     </ItemTemplate>
@@ -37,7 +39,7 @@
 
                 <asp:ValidationSummary ID="vsDetails" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" />
 
-                <Rock:NotificationBox ID="nbMetricsSaved" runat="server" Text="Metric Values Have Been Updated" NotificationBoxType="Success" Visible="false" />
+                <Rock:NotificationBox ID="nbMetricsSaved" runat="server" Text="Metric Values Have Been Updated" NotificationBoxType="Success" Visible="false" Dismissable="true" />
 
                 <div class="actions">
                     <asp:LinkButton ID="btnSave" runat="server" Text="Save" AccessKey="s" CssClass="btn btn-primary" OnClick="btnSave_Click" />
