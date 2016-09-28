@@ -184,6 +184,7 @@ namespace Rock.Model
             targetPage.ModifiedByPersonAlias = null;
             targetPage.ModifiedByPersonAliasId = currentPersonAliasId;
             targetPage.ModifiedDateTime = RockDateTime.Now;
+            targetPage.BodyCssClass = sourcePage.BodyCssClass;
             targetPage.Id = 0;
             targetPage.Guid = Guid.NewGuid();
             targetPage.PageTitle = sourcePage.PageTitle + " - Copy";

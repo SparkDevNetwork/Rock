@@ -138,6 +138,14 @@ namespace Rock.Web.UI
         }
 
         /// <summary>
+        /// Gets or sets the body CSS class.
+        /// </summary>
+        /// <value>
+        /// The body CSS class.
+        /// </value>
+        public string BodyCssClass { get; set; }
+
+        /// <summary>
         /// Gets the current <see cref="Rock.Model.Page">Page's</see> layout.
         /// </summary>
         /// <value>
@@ -681,11 +689,23 @@ namespace Rock.Web.UI
                 BrowserTitle = _pageCache.BrowserTitle;
                 PageTitle = _pageCache.PageTitle;
                 PageIcon = _pageCache.IconCssClass;
+                BodyCssClass = _pageCache.BodyCssClass;
 
                 // If there's a master page, update its reference to Current Page
                 if ( this.Master is RockMasterPage )
                 {
                     ( (RockMasterPage)this.Master ).SetPage( _pageCache );
+                }
+
+                // Add CSS class to body
+                if ( !string.IsNullOrWhiteSpace( this.BodyCssClass ) )
+                {                   
+                    // attempt to find the body tag
+                    var body = (HtmlGenericControl)this.Master.FindControl( "body" );
+                    if ( body != null )
+                    {
+                        body.Attributes.Add( "class", this.BodyCssClass );
+                    }
                 }
 
                 // check if page should have been loaded via ssl
