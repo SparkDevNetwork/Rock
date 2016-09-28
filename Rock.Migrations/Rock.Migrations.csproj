@@ -62,6 +62,10 @@
     <Compile Include="HotFixMigrations\004_FixBaptismBadge.cs" />
     <Compile Include="HotFixMigrations\005_ValueAsNumeric.cs" />
     <Compile Include="HotFixMigrations\006_StatementProcs.cs" />
+    <Compile Include="Migrations\201609282147388_WaitList.cs" />
+    <Compile Include="Migrations\201609282147388_WaitList.Designer.cs">
+      <DependentUpon>201609282147388_WaitList.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 6.0\Version 1.6.0\201609071818034_RegistrationAutoPopulateFamily.cs" />
     <Compile Include="Migrations\Version 6.0\Version 1.6.0\201609071818034_RegistrationAutoPopulateFamily.Designer.cs">
       <DependentUpon>201609071818034_RegistrationAutoPopulateFamily.cs</DependentUpon>
@@ -2257,6 +2261,9 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
+    <EmbeddedResource Include="Migrations\201609282147388_WaitList.resx">
+      <DependentUpon>201609282147388_WaitList.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 6.0\Version 1.6.0\201609071818034_RegistrationAutoPopulateFamily.resx">
       <DependentUpon>201609071818034_RegistrationAutoPopulateFamily.cs</DependentUpon>
     </EmbeddedResource>
