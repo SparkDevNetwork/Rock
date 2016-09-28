@@ -13,6 +13,7 @@ CHECK-IN
 + Updated the Welcome check-in block to allow changing the 'Check In' button text with a block setting and CSS.
 + Updated label printing so that if person is checking into two or more grouptypes that share the same label configured to be printed once per person, that it will only print once per person. Note if grouptypes have different labels, both types will still be printed. (Fixes #1755).
 + Updated check-in to add option of preventing people from checking into the same service time more than once.
++ Updated attendance model to allow more fields be accessible through Lava.
 
 CMS
 + Added ability to have site-specific routes.
@@ -24,6 +25,7 @@ CMS
 + Added page copying to the Page Map block.
 + Upgraded Bootstrap to 3.3.7.
 + Fixed issue with Site Domain list not being cleared when cache is cleared.
++ Added property to the page to add a CSS class to the body tag. 
 
 CONTENT CHANELLS
 + Updated Content Channel Items to support hierarchy so that items can have children and parent items from the same or other configured channels.
@@ -31,12 +33,6 @@ CONTENT CHANELLS
 + Added block settings to the content channel items list to show/hide various columns.
 + Added content channel feed to ContentChannelItem Detail and List to provide alternative to query parameters.
 + Fixed 'content channel view' block to no longer break when invalid Lava is provided (now it politely tells you that your Lava doesn't make the grade).
-
-GROUPS
-+ Updated GroupFinder and GroupRegistration blocks to honor a group's GroupCapacity and GroupTypeRole MaxCount (Fixes #1275).
-+ Added ability to Group Attendance detail block to select/unselect all members at once by clicking 'Member' header.
-+ Added campus filter option to group finder.
-+ Fixed Lava used for the Group Toolbox. The edit member feature was not working as intended.
 
 FINANCIAL
 + Added the ability to view Lava based contribution report on the person profile page.
@@ -51,6 +47,14 @@ FINANCIAL
 + Added new features to Benevolence including: Reorganizing the screen; Adding the ability to have attributes on benevolence requests; Adding the ability to attach up to 6 documents on a request; Adding a new 'Provided Next Steps' field
 + Updated StatementGenerator and CheckScanner to work with Tls 1.2. (Fixes #1611)
 + Updated Giving Analytics block to improve performance.
+
+GROUPS
++ Updated GroupFinder and GroupRegistration blocks to honor a group's GroupCapacity and GroupTypeRole MaxCount (Fixes #1275).
++ Added ability to Group Attendance detail block to select/unselect all members at once by clicking 'Member' header.
++ Added campus filter option to group finder.
++ Fixed Lava used for the Group Toolbox. The edit member feature was not working as intended.
++ Updated the Member Attended Group workflow trigger type on groups and group types to also optionally set an attendance date attribute.
++ Add option to GroupAttendanceDetail to allow a Lava template to be used for rendering
 
 LAVA
 + Added new Entity, Execute, SQL, and WebRequest Lava Commands.
@@ -92,6 +96,7 @@ WORKFLOW
 + Added the ability for workflows to have sequential ids based on a prefix associated with the type of workflow ( for example, IT requests could have ids like 'IT00001', 'IT00002' )
 + Added a new workflow action to run Lava in a better UI.
 + Added better error handling to the Process Workflows job so that one exception does not stop the job from processing additional workflows.
++ Fixed issue with the Group Member Attendance Add action not doing anything if an attendance date attribute was not selected.
 
 MISC
 + Fixed the communication recipient block to include emails that were marked as being opened in addition to those that were just marked delivered.
