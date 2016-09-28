@@ -33,6 +33,7 @@ namespace Rock.Transactions
         private int? GroupTypeId;
         private int? GroupId;
         private int? PersonAliasId;
+        private DateTime? AttendanceDateTime;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="GroupMemberChangeTransaction"/> class.
@@ -67,6 +68,7 @@ namespace Rock.Transactions
                         // Save the values
                         GroupId = attendance.GroupId;
                         PersonAliasId = attendance.PersonAliasId;
+                        AttendanceDateTime = attendance.StartDateTime;
 
                         if ( attendance.Group != null )
                         {
@@ -213,6 +215,11 @@ namespace Rock.Transactions
                         {
                             workflow.AttributeValues["Person"].Value = personAlias.Guid.ToString();
                         }
+                    }
+
+                    if ( AttendanceDateTime.HasValue && workflow.AttributeValues.ContainsKey( "AttendanceDateTime" ) )
+                    {
+                        workflow.AttributeValues["AttendanceDateTime"].Value = AttendanceDateTime.Value.ToString( "o" );
                     }
                 }
 
