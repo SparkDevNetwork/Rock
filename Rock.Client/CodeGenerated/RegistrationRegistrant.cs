@@ -52,6 +52,9 @@ namespace Rock.Client
         public bool ModifiedAuditValuesAlreadyUpdated { get; set; }
 
         /// <summary />
+        public bool OnWaitList { get; set; }
+
+        /// <summary />
         public int? PersonAliasId { get; set; }
 
         /// <summary />
@@ -95,6 +98,7 @@ namespace Rock.Client
             this.ForeignKey = source.ForeignKey;
             this.GroupMemberId = source.GroupMemberId;
             this.ModifiedAuditValuesAlreadyUpdated = source.ModifiedAuditValuesAlreadyUpdated;
+            this.OnWaitList = source.OnWaitList;
             this.PersonAliasId = source.PersonAliasId;
             this.RegistrationId = source.RegistrationId;
             this.CreatedDateTime = source.CreatedDateTime;

@@ -456,6 +456,15 @@ namespace Rock.Model
         [DataMember]
         public SignatureDocumentAction SignatureDocumentAction { get; set; }
 
+        /// <summary>
+        /// Gets or sets a value indicating whether a wait list is enabled for this event template
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [wait list enabled]; otherwise, <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool WaitListEnabled { get; set; }
+
         #endregion
 
         #region Virtual Properties
