@@ -69,7 +69,7 @@ namespace Rock.Workflow.Action
 
             Guid? groupGuid = null;
             Person person = null;
-            DateTime attendanceDateTime = DateTime.MinValue;
+            DateTime attendanceDateTime = DateTime.Now;
             bool addToGroup = true;
            
             // get the group attribute
@@ -117,11 +117,7 @@ namespace Rock.Workflow.Action
             {
                 string attributeDatetime = action.GetWorklowAttributeValue(dateTimeAttributeGuid);
 
-                if ( string.IsNullOrWhiteSpace(attributeDatetime) )
-                {
-                    attendanceDateTime = RockDateTime.Now;
-                }
-                else
+                if ( !string.IsNullOrWhiteSpace(attributeDatetime) )
                 {
                     if ( !DateTime.TryParse(attributeDatetime, out attendanceDateTime) )
                     {
