@@ -62,8 +62,8 @@
     <Compile Include="HotFixMigrations\004_FixBaptismBadge.cs" />
     <Compile Include="HotFixMigrations\005_ValueAsNumeric.cs" />
     <Compile Include="HotFixMigrations\006_StatementProcs.cs" />
-    <Compile Include="Migrations\201609282147388_WaitList.cs" />
-    <Compile Include="Migrations\201609282147388_WaitList.Designer.cs">
+    <Compile Include="Migrations\Version 6.0\Version 1.6.0\201609282147388_WaitList.cs" />
+    <Compile Include="Migrations\Version 6.0\Version 1.6.0\201609282147388_WaitList.Designer.cs">
       <DependentUpon>201609282147388_WaitList.cs</DependentUpon>
     </Compile>
     <Compile Include="Migrations\Version 6.0\Version 1.6.0\201609071818034_RegistrationAutoPopulateFamily.cs" />
@@ -74,8 +74,8 @@
     <Compile Include="Migrations\Version 6.0\Version 1.6.0\201609221415156_PreventDupCheckin.Designer.cs">
       <DependentUpon>201609221415156_PreventDupCheckin.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201609221633157_BodyPageCSS-ContentChannelNoContent.cs" />
-    <Compile Include="Migrations\201609221633157_BodyPageCSS-ContentChannelNoContent.Designer.cs">
+    <Compile Include="Migrations\Version 6.0\Version 1.6.0\201609221633157_BodyPageCSS-ContentChannelNoContent.cs" />
+    <Compile Include="Migrations\Version 6.0\Version 1.6.0\201609221633157_BodyPageCSS-ContentChannelNoContent.Designer.cs">
       <DependentUpon>201609221633157_BodyPageCSS-ContentChannelNoContent.cs</DependentUpon>
     </Compile>
     <Compile Include="Migrations\Version 6.0\Version 1.6.0\201606061858434_MetricPartitions.cs" />
@@ -2261,7 +2261,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Migrations\201609282147388_WaitList.resx">
+    <EmbeddedResource Include="Migrations\Version 6.0\Version 1.6.0\201609282147388_WaitList.resx">
       <DependentUpon>201609282147388_WaitList.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 6.0\Version 1.6.0\201609071818034_RegistrationAutoPopulateFamily.resx">
@@ -2270,7 +2270,7 @@
     <EmbeddedResource Include="Migrations\Version 6.0\Version 1.6.0\201609221415156_PreventDupCheckin.resx">
       <DependentUpon>201609221415156_PreventDupCheckin.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201609221633157_BodyPageCSS-ContentChannelNoContent.resx">
+    <EmbeddedResource Include="Migrations\Version 6.0\Version 1.6.0\201609221633157_BodyPageCSS-ContentChannelNoContent.resx">
       <DependentUpon>201609221633157_BodyPageCSS-ContentChannelNoContent.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 6.0\Version 1.6.0\201606061858434_MetricPartitions.resx">

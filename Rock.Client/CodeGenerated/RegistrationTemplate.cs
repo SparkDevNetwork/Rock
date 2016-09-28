@@ -174,6 +174,9 @@ namespace Rock.Client
         /// <summary />
         public string SuccessTitle { get; set; }
 
+        /// <summary />
+        public bool WaitListEnabled { get; set; }
+
         /// <summary>
         /// Leave this as NULL to let Rock set this
         /// </summary>
@@ -253,6 +256,7 @@ namespace Rock.Client
             this.SignatureDocumentAction = source.SignatureDocumentAction;
             this.SuccessText = source.SuccessText;
             this.SuccessTitle = source.SuccessTitle;
+            this.WaitListEnabled = source.WaitListEnabled;
             this.CreatedDateTime = source.CreatedDateTime;
             this.ModifiedDateTime = source.ModifiedDateTime;
             this.CreatedByPersonAliasId = source.CreatedByPersonAliasId;
