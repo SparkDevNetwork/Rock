@@ -46,6 +46,21 @@ namespace Rock.Migrations
     WHERE [Key] IN ( 'core_calendar_TwitterPhoto', 'core_calendar_FacebookPhoto' )
 " );
 
+            // Fix any non-unique RockInstanceIds
+            Sql( @"
+    UPDATE [Attribute] SET [Guid] = NEWID()
+    WHERE [Key] = 'RockInstanceId'
+    AND [Guid] IN ( 
+        '5AC1BAF1-3687-40C2-ACFA-FF8591ED51F2', -- 5.1 Install
+        '2F4A4BA9-A62F-4EE7-A34F-660F11D9D6E7', -- 4.1 Install
+        '624AC46B-8EAA-41D1-95BE-831B5200E48B', -- 3.1 Install
+        '4989608F-8479-418B-90EE-3373400344BE'  -- ?
+    )
+" );
+            // clear migration table
+            Sql( @"
+    UPDATE [__MigrationHistory] SET [Model] = 0x
+" );
         }
 
         /// <summary>
