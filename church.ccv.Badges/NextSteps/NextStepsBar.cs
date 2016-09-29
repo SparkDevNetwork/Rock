@@ -193,7 +193,7 @@ namespace church.ccv.Badges.NextSteps
                     var connectSinceDate = new Date(data.ConnectionResult.ConnectedSince);
                     var connectSinceDateFormatted = (connectSinceDate.getMonth() + 1) + '/' + connectSinceDate.getDate() + '/' + connectSinceDate.getFullYear();
 
-                    $badge.find( '.badge-connect' ).attr( 'data-original-title', firstName + ' is in a connection group (eariest active group ' + connectSinceDateFormatted + ') &nbsp;&nbsp;<i class=""fa fa-mouse-pointer""></i>' );
+                    $badge.find( '.badge-connect' ).attr( 'data-original-title', firstName + ' is in a connection group (earliest active group ' + connectSinceDateFormatted + ') &nbsp;&nbsp;<i class=""fa fa-mouse-pointer""></i>' );
                 }}
 
                 var connectPopoverIsOpen = false;
