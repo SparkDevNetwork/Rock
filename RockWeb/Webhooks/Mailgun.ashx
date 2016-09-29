@@ -90,7 +90,7 @@ public class Mailgun : IHttpHandler
                     case "dropped": break;
                     case "bounced": status = SendEmailWithEvents.FAILED_STATUS;
                         int secs = request.Form["timestamp"].AsInteger();
-                        DateTime ts = new DateTime( 1970, 1, 1, 0, 0, 0, DateTimeKind.Utc ).AddSeconds( secs ).ToLocalTime();
+                        DateTime ts = RockDateTime.ConvertLocalDateTimeToRockDateTime( new DateTime(1970,1,1,0,0,0,DateTimeKind.Utc).AddSeconds(secs).ToLocalTime());
                              Rock.Communication.Email.ProcessBounce(
                                     request.Form["recipient"],
                                     Rock.Communication.BounceType.HardBounce,
@@ -118,7 +118,7 @@ public class Mailgun : IHttpHandler
                     {
 
                         int secs = request.Form["timestamp"].AsInteger();
-                        DateTime ts = new DateTime( 1970, 1, 1, 0, 0, 0, DateTimeKind.Utc ).AddSeconds( secs ).ToLocalTime();
+                        DateTime ts = RockDateTime.ConvertLocalDateTimeToRockDateTime( new DateTime(1970,1,1,0,0,0,DateTimeKind.Utc).AddSeconds(secs).ToLocalTime());
 
                         switch ( eventType )
                         {
