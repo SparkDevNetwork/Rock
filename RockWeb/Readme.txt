@@ -97,6 +97,7 @@ WORKFLOW
 + Added a new workflow action to run Lava in a better UI.
 + Added better error handling to the Process Workflows job so that one exception does not stop the job from processing additional workflows.
 + Fixed issue with the Group Member Attendance Add action not doing anything if an attendance date attribute was not selected.
++ Fixed the delay workflow to delay correctly when datetime or day of week values are used for the delay
 
 MISC
 + Fixed the communication recipient block to include emails that were marked as being opened in addition to those that were just marked delivered.
