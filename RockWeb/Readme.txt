@@ -3,6 +3,7 @@ Rock McKinley 6.0
 CALENDAR
 + Updated the Event Item Occurrence List By Audience lava file to use the external url link if it exists.
 + Added an .ics download button to the event detail page.
++ Updated calendar detail block lava to provide well formatted shareable summaries for Facebook and Twitter. 
 
 CHECK-IN
 + Fixed scrolling issues in check-in for windows 10 multi-touch devices (fixes #1660).
