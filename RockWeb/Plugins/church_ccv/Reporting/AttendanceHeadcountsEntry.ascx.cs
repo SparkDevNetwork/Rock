@@ -128,12 +128,18 @@ namespace RockWeb.Plugins.church_ccv.Reporting
             var weeksAhead = GetAttributeValue( "WeeksAhead" ).AsInteger();
             foreach ( var date in GetWeekendDates( weeksBack, weeksAhead ) )
             {
-                bddlWeekend.Items.Add( new ListItem( string.Format( "Weekend of {0} - {1}", date.AddDays( -1 ).ToShortDateString(), date.ToShortDateString() ), date.ToString( "o" ) ) );
+                bddlWeekend.Items.Add( new ListItem( string.Format( "Weekend of {0} - {1}", date.AddDays( -1 ).ToShortDateString(), date.ToShortDateString() ), date.ToString( "yyyyMMdd" ) ) );
             }
 
-            var sundayDate = RockDateTime.Today.SundayDate();
+            var defaultDate = RockDateTime.Today.SundayDate(); ;
 
-            bddlWeekend.SetValue( sundayDate.ToString( "o" ) );
+            // make it default to no later than current weekend
+            while ( defaultDate > RockDateTime.Today.AddDays( 1 ) )
+            {
+                defaultDate = defaultDate.AddDays( -7 );
+            }
+
+            bddlWeekend.SetValue( defaultDate.ToString( "yyyyMMdd" ) );
         }
 
         /// <summary>
