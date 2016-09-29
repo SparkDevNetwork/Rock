@@ -391,6 +391,9 @@ namespace RockWeb.Plugins.church_ccv.Reporting
             var rockContext = new RockContext();
 
             gHeadcountsExport.Columns.Clear();
+
+            gHeadcountsExport.Columns.Add( new RockBoundField { HeaderText = "Area", DataField = "Area" } );
+
             var entityTypeIdCampus = EntityTypeCache.Read<Campus>().Id;
             var entityTypeIdSchedule = EntityTypeCache.Read<Schedule>().Id;
 
@@ -417,7 +420,10 @@ namespace RockWeb.Plugins.church_ccv.Reporting
 
                         var headerText = string.Format( "{0} - {1}", campus.Name, schedule.FriendlyScheduleText );
                         RockBoundField campusScheduleField = new RockBoundField { HeaderText = headerText, DataField = campusScheduleFieldName };
-                        gHeadcountsExport.Columns.Add( campusScheduleField );
+                        if ( cbShowServiceTimeColumns.Checked )
+                        {
+                            gHeadcountsExport.Columns.Add( campusScheduleField );
+                        }
                     }
                 }
 
@@ -437,13 +443,19 @@ namespace RockWeb.Plugins.church_ccv.Reporting
                     {
                         var headerText = string.Format( "{0} - {1}", campus.Name, schedule.FriendlyScheduleText );
                         RockBoundField campusScheduleField = new RockBoundField { HeaderText = headerText, DataField = campusScheduleFieldName };
-                        gHeadcountsExport.Columns.Add( campusScheduleField );
+                        if ( cbShowServiceTimeColumns.Checked )
+                        {
+                            gHeadcountsExport.Columns.Add( campusScheduleField );
+                        }
                     }
                 }
 
                 string campusSummaryFieldName = string.Format( "campusSummaryField_Campus{0}", campus.Id );
                 RockBoundField campusSummaryField = new RockBoundField { HeaderText = campus.Name, DataField = campusSummaryFieldName };
-                gHeadcountsExport.Columns.Add( campusSummaryField );
+                if ( cbShowTotalColumns.Checked )
+                {
+                    gHeadcountsExport.Columns.Add( campusSummaryField );
+                }
             }
 
             gHeadcountsExport.Columns.Add( new RockBoundField { DataField = "GrandTotal", HeaderText = "Grand Total" } );
@@ -460,6 +472,12 @@ namespace RockWeb.Plugins.church_ccv.Reporting
 
             // clear out any existing schedule columns and add the ones that match the current filter setting
             gCheckinAttendanceExport.Columns.Clear();
+            if (cbShowSortKey.Checked)
+            {
+                gCheckinAttendanceExport.Columns.Add( new RockBoundField { DataField = "SortKey", HeaderText = "SortKey" } );
+            }
+
+            gCheckinAttendanceExport.Columns.Add( new RockBoundField { DataField = "GroupType", HeaderText = "Area" } );
             gCheckinAttendanceExport.Columns.Add( new RockBoundField { DataField = "GroupName", HeaderText = "Worship" } );
 
             var groupIds = this.GetSelectedGroupIds();
@@ -492,7 +510,10 @@ namespace RockWeb.Plugins.church_ccv.Reporting
 
                         var headerText = string.Format( "{0} - {1}", campus.Name, schedule.FriendlyScheduleText );
                         RockBoundField campusScheduleField = new RockBoundField { HeaderText = headerText, DataField = campusScheduleFieldName };
-                        gCheckinAttendanceExport.Columns.Add( campusScheduleField );
+                        if ( cbShowServiceTimeColumns.Checked )
+                        {
+                            gCheckinAttendanceExport.Columns.Add( campusScheduleField );
+                        }
                     }
                 }
 
@@ -513,18 +534,27 @@ namespace RockWeb.Plugins.church_ccv.Reporting
                     {
                         var headerText = string.Format( "{0} - {1}", campus.Name, schedule.FriendlyScheduleText );
                         RockBoundField campusScheduleField = new RockBoundField { HeaderText = headerText, DataField = campusScheduleFieldName };
-                        gCheckinAttendanceExport.Columns.Add( campusScheduleField );
+                        if ( cbShowServiceTimeColumns.Checked )
+                        {
+                            gCheckinAttendanceExport.Columns.Add( campusScheduleField );
+                        }
                     }
                 }
 
                 string campusSummaryFieldName = string.Format( "campusSummaryField_Campus{0}", campus.Id );
                 RockBoundField campusSummaryField = new RockBoundField { HeaderText = campus.Name, DataField = campusSummaryFieldName };
-                gCheckinAttendanceExport.Columns.Add( campusSummaryField );
+                if ( cbShowTotalColumns.Checked )
+                {
+                    gCheckinAttendanceExport.Columns.Add( campusSummaryField );
+                }
             }
 
             gCheckinAttendanceExport.Columns.Add( new RockBoundField { DataField = "GrandTotal", HeaderText = "Grand Total" } );
         }
 
+        /// <summary>
+        /// Binds the headcounts grid.
+        /// </summary>
         private void BindHeadcountsGrid()
         {
             RockContext rockContext = new RockContext();
@@ -551,12 +581,13 @@ namespace RockWeb.Plugins.church_ccv.Reporting
                 nbHeadcountsMetricWarning.Visible = false;
             }
 
-            var sundayDate = ddlSundayDate.SelectedValue.AsDateTime();
+            var sundayDate = ddlSundayDate.SelectedValue.AsDateTime().Value;
             lSundayDate.Text = ddlSundayDate.SelectedItem.Text;
-            AddHeadcountsScheduleColumns( headcountsMetric, sundayDate.Value );
+            AddHeadcountsScheduleColumns( headcountsMetric, sundayDate );
 
             var entityTypeIdCampus = EntityTypeCache.Read<Campus>().Id;
             var entityTypeIdSchedule = EntityTypeCache.Read<Schedule>().Id;
+            int entityTypeIdDefinedValue = EntityTypeCache.Read( typeof( Rock.Model.DefinedValue ) ).Id;
             var metricValueService = new MetricValueService( rockContext );
             var headcountsMetricValuesQuery = metricValueService.Queryable()
                 .Where( a => a.MetricId == headcountsMetric.Id && a.MetricValueDateTime == sundayDate )
@@ -570,15 +601,30 @@ namespace RockWeb.Plugins.church_ccv.Reporting
             DataTable dataTable = new DataTable( "HeadcountsExportData" );
             foreach ( var boundField in gHeadcountsExport.Columns.OfType<RockBoundField>() )
             {
-                DataColumn dataColumn = new DataColumn( boundField.DataField, typeof( int ) );
+                DataColumn dataColumn;
+                if (boundField.DataField == "Area")
+                {
+                    dataColumn = new DataColumn( boundField.DataField, typeof( string ) );
+                }
+                else
+                {
+                    dataColumn = new DataColumn( boundField.DataField, typeof( int ) );
+                }
+
                 dataTable.Columns.Add( dataColumn );
             }
 
-            DataRow dataRow = dataTable.NewRow();
+            DataRow dataRowMain = dataTable.NewRow();
+            DataRow dataRowOverflow = dataTable.NewRow();
 
             foreach ( var dataColumn in dataTable.Columns.OfType<DataColumn>() )
             {
-                if ( dataColumn.ColumnName.StartsWith( "campusScheduleField_" ) )
+                if ( dataColumn.ColumnName.Equals( "Area" ) )
+                {
+                    dataRowMain[dataColumn] = "Main";
+                    dataRowOverflow[dataColumn] = "Overflow";
+                }
+                else if ( dataColumn.ColumnName.StartsWith( "campusScheduleField_" ) )
                 {
                     // "campusScheduleField_Campus{0}_Schedule{1}"
                     var idParts = dataColumn.ColumnName.Replace( "campusScheduleField_Campus", string.Empty ).Replace( "_Schedule", "," ).Split( ',' ).ToArray();
@@ -589,7 +635,13 @@ namespace RockWeb.Plugins.church_ccv.Reporting
                         &&
                         a.MetricValuePartitions.FirstOrDefault( x => x.MetricPartition.EntityTypeId == entityTypeIdSchedule ).EntityId == scheduleId ).ToList();
 
-                    dataRow[dataColumn] = (int)campusScheduleValues.Sum( a => a.YValue ?? 0.00M );
+                    dataRowMain[dataColumn] = (int)campusScheduleValues.Where( a =>
+                         DefinedValueCache.Read(a.MetricValuePartitions.FirstOrDefault( x => x.MetricPartition.EntityTypeId == entityTypeIdDefinedValue).EntityId ?? 0).Value == "Main" )
+                         .Sum( a => a.YValue ?? 0.00M );
+
+                    dataRowOverflow[dataColumn] = (int)campusScheduleValues.Where( a =>
+                         DefinedValueCache.Read( a.MetricValuePartitions.FirstOrDefault( x => x.MetricPartition.EntityTypeId == entityTypeIdDefinedValue ).EntityId ?? 0 ).Value == "Overflow" )
+                         .Sum( a => a.YValue ?? 0.00M );
                 }
                 else if ( dataColumn.ColumnName.StartsWith( "campusSummaryField_" ) )
                 {
@@ -600,16 +652,30 @@ namespace RockWeb.Plugins.church_ccv.Reporting
                         &&
                         selectedScheduleIds.Contains( a.MetricValuePartitions.FirstOrDefault( x => x.MetricPartition.EntityTypeId == entityTypeIdSchedule ).EntityId ?? 0 ) ).ToList();
 
-                    dataRow[dataColumn] = (int)campusSummaryValues.Sum( a => a.YValue ?? 0.00M );
+                    dataRowMain[dataColumn] = (int)campusSummaryValues.Where( a =>
+                         DefinedValueCache.Read( a.MetricValuePartitions.FirstOrDefault( x => x.MetricPartition.EntityTypeId == entityTypeIdDefinedValue ).EntityId ?? 0 ).Value == "Main" )
+                         .Sum( a => a.YValue ?? 0.00M );
+
+                    dataRowOverflow[dataColumn] = (int)campusSummaryValues.Where( a =>
+                         DefinedValueCache.Read( a.MetricValuePartitions.FirstOrDefault( x => x.MetricPartition.EntityTypeId == entityTypeIdDefinedValue ).EntityId ?? 0 ).Value == "Overflow" )
+                         .Sum( a => a.YValue ?? 0.00M );
                 }
                 else if ( dataColumn.ColumnName == "GrandTotal" )
                 {
-                    dataRow[dataColumn] = (int)headcountMetricValueList.Where( a => selectedScheduleIds.Contains( a.MetricValuePartitions.FirstOrDefault( x => x.MetricPartition.EntityTypeId == entityTypeIdSchedule ).EntityId ?? 0 ) ).Sum( a => a.YValue ?? 0.00M );
+                    dataRowMain[dataColumn] = (int)headcountMetricValueList.Where( a =>
+                         DefinedValueCache.Read( a.MetricValuePartitions.FirstOrDefault( x => x.MetricPartition.EntityTypeId == entityTypeIdDefinedValue ).EntityId ?? 0 ).Value == "Main" )
+                         .Where( a => selectedScheduleIds.Contains( a.MetricValuePartitions.FirstOrDefault( x => x.MetricPartition.EntityTypeId == entityTypeIdSchedule ).EntityId ?? 0 ) ).Sum( a => a.YValue ?? 0.00M );
+
+                    dataRowOverflow[dataColumn] = (int)headcountMetricValueList.Where( a =>
+                         DefinedValueCache.Read( a.MetricValuePartitions.FirstOrDefault( x => x.MetricPartition.EntityTypeId == entityTypeIdDefinedValue ).EntityId ?? 0 ).Value == "Overflow" )
+                         .Where( a => selectedScheduleIds.Contains( a.MetricValuePartitions.FirstOrDefault( x => x.MetricPartition.EntityTypeId == entityTypeIdSchedule ).EntityId ?? 0 ) ).Sum( a => a.YValue ?? 0.00M );
                 }
             }
 
-            dataTable.Rows.Add( dataRow );
+            dataTable.Rows.Add( dataRowMain );
+            dataTable.Rows.Add( dataRowOverflow );
 
+            gHeadcountsExport.ExportFilename = string.Format( "HeadcountsExport_{0}_{1}", sundayDate.AddDays( -1 ).ToString("yyyyMMdd"), sundayDate.ToString( "yyyyMMdd" ) );
             gHeadcountsExport.DataSource = dataTable;
             gHeadcountsExport.DataBind();
         }
@@ -643,9 +709,9 @@ namespace RockWeb.Plugins.church_ccv.Reporting
                 nbAttendanceMetricWarning.Visible = false;
             }
 
-            var sundayDate = ddlSundayDate.SelectedValue.AsDateTime();
+            var sundayDate = ddlSundayDate.SelectedValue.AsDateTime().Value;
             lSundayDate.Text = ddlSundayDate.SelectedItem.Text;
-            AddAttendanceScheduleColumns( attendanceMetric, sundayDate.Value );
+            AddAttendanceScheduleColumns( attendanceMetric, sundayDate );
 
             var selectedGroupIds = this.GetSelectedGroupIds();
             var selectedScheduleIds = GetSelectedScheduleIds();
@@ -678,7 +744,7 @@ namespace RockWeb.Plugins.church_ccv.Reporting
             foreach ( var boundField in gCheckinAttendanceExport.Columns.OfType<RockBoundField>() )
             {
                 DataColumn dataColumn = new DataColumn( boundField.DataField );
-                if ( boundField.DataField == "GroupName" )
+                if ( boundField.DataField == "GroupName" || boundField.DataField == "GroupType" )
                 {
                     dataColumn.DataType = typeof( string );
                 }
@@ -695,9 +761,17 @@ namespace RockWeb.Plugins.church_ccv.Reporting
                 DataRow dataRow = dataTable.NewRow();
                 foreach ( var dataColumn in dataTable.Columns.OfType<DataColumn>() )
                 {
-                    if ( dataColumn.ColumnName == "GroupName" )
+                    if ( dataColumn.ColumnName == "SortKey" )
+                    {
+                        dataRow[dataColumn] = groupAttendanceMetricsList.IndexOf( groupAttendanceMetrics );
+                    }
+                    else if ( dataColumn.ColumnName == "GroupName" )
                     {
                         dataRow[dataColumn] = groupAttendanceMetrics.Group.Name;
+                    }
+                    else if ( dataColumn.ColumnName == "GroupType" )
+                    {
+                        dataRow[dataColumn] = groupAttendanceMetrics.Group.GroupType.Name;
                     }
                     else if ( dataColumn.ColumnName.StartsWith( "campusScheduleField_" ) )
                     {
@@ -729,9 +803,27 @@ namespace RockWeb.Plugins.church_ccv.Reporting
                     }
                 }
 
-                dataTable.Rows.Add( dataRow );
+                if ( rbHideVolunteerAttendance.Checked )
+                {
+                    if ( !dataRow.Field<string>( "GroupType" ).StartsWith( "Volunteer -" ) )
+                    {
+                        dataTable.Rows.Add( dataRow );
+                    }
+                }
+                else if ( rbShowOnlyVolunteerAttendance.Checked )
+                {
+                    if ( dataRow.Field<string>( "GroupType" ).StartsWith( "Volunteer -" ) )
+                    {
+                        dataTable.Rows.Add( dataRow );
+                    }
+                }
+                else
+                {
+                    dataTable.Rows.Add( dataRow );
+                }
             }
 
+            gHeadcountsExport.ExportFilename = string.Format( "CheckinExport_{0}_{1}", sundayDate.AddDays( -1 ).ToString( "yyyyMMdd" ), sundayDate.ToString( "yyyyMMdd" ) );
             gCheckinAttendanceExport.DataSource = dataTable;
             gCheckinAttendanceExport.DataBind();
         }

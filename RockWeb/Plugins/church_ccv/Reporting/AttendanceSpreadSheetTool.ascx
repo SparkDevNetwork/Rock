@@ -32,18 +32,34 @@
 
                                 </ul>
                             </asp:Panel>
+
                         </asp:Panel>
 
                     </Rock:GridFilter>
+
+
+                    <Rock:RockCheckBox ID="cbShowServiceTimeColumns" runat="server" Text="Show Service Time Columns" Checked="true" />
+                    <Rock:RockCheckBox ID="cbShowTotalColumns" runat="server" Text="Show Totals Columns" Checked="true" />
+                    <Rock:RockControlWrapper ID="rcwCheckinAreaOptions" runat="server" Label="Checkin Area Options">
+                        <Rock:RockRadioButton ID="rbAll" runat="server" GroupName="checkinareaoptions" Text="Show All" Checked="true" />
+                        <Rock:RockRadioButton ID="rbShowOnlyVolunteerAttendance" GroupName="checkinareaoptions" runat="server" Text="Show only 'Volunteer -' groups" Checked="false" />
+                        <Rock:RockRadioButton ID="rbHideVolunteerAttendance" GroupName="checkinareaoptions" runat="server" Text="Hide 'Volunteer -' groups" Checked="false" />
+                    </Rock:RockControlWrapper>
+                    <Rock:RockCheckBox ID="cbShowSortKey" runat="server" Text="Show Sort Key" Checked="false" />
+                    <asp:LinkButton ID="btnUpdate" runat="server" CssClass="btn btn-sm btn-primary" Text="Update" OnClick="btnUpdate_Click" />
+
                     <h2>
                         <asp:Literal ID="lSundayDate" runat="server" /></h2>
                     <h3>Headcounts Export</h3>
-                    <Rock:Grid ID="gHeadcountsExport" runat="server" AllowSorting="false" AllowPaging="false">
+                    <Rock:Grid ID="gHeadcountsExport" runat="server" AllowSorting="false" AllowPaging="false" ExportFilename="HeadcountsExport">
                         <Columns>
                         </Columns>
                     </Rock:Grid>
+
+
                     <h3>Attendance Export (Checkin)</h3>
-                    <Rock:Grid ID="gCheckinAttendanceExport" runat="server" AllowSorting="false" AllowPaging="false">
+
+                    <Rock:Grid ID="gCheckinAttendanceExport" runat="server" AllowSorting="false" AllowPaging="false" ExportFilename="CheckInExport">
                         <Columns>
                         </Columns>
                     </Rock:Grid>
