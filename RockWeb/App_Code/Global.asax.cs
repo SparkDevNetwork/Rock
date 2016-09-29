@@ -242,6 +242,9 @@ namespace RockWeb
                         sched.Start();
                     }
 
+                    // set the encryption protocols that are permissible for external SSL connections
+                    System.Net.ServicePointManager.SecurityProtocol = System.Net.SecurityProtocolType.Tls | System.Net.SecurityProtocolType.Tls11 | System.Net.SecurityProtocolType.Tls12;
+
                     // Force the static Liquid class to get instantiated so that the standard filters are loaded prior 
                     // to the custom RockFilter.  This is to allow the custom 'Date' filter to replace the standard 
                     // Date filter.

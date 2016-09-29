@@ -108,6 +108,7 @@ namespace RockWeb.Blocks.CheckIn.Config
                         if ( nameValue.Count() == 2 )
                         {
                             string eventParam = nameValue[0];
+                            hfAreaGroupClicked.Value = "false";
                             switch ( eventParam )
                             {
                                 case "re-order-area":
@@ -123,12 +124,14 @@ namespace RockWeb.Blocks.CheckIn.Config
 
                                 case "select-area":
                                     {
+                                        hfAreaGroupClicked.Value = "true";
                                         SelectArea( nameValue[1].AsGuid() );
                                         break;
                                     }
 
                                 case "select-group":
                                     {
+                                        hfAreaGroupClicked.Value = "true";
                                         SelectGroup( nameValue[1].AsGuid() );
                                         break;
                                     }
@@ -490,6 +493,8 @@ namespace RockWeb.Blocks.CheckIn.Config
 
         protected void btnSave_Click( object sender, EventArgs e )
         {
+            hfAreaGroupClicked.Value = "true";
+
             using ( var rockContext = new RockContext() )
             {
                 var attributeService = new AttributeService( rockContext );
