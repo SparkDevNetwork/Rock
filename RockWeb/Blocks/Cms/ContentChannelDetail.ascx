@@ -65,6 +65,10 @@
                             <Rock:RockDropDownList ID="ddlContentControlType" runat="server" Label="Default Content Control" Required="true" AutoPostBack="true" OnSelectedIndexChanged="ddlContentControlType_SelectedIndexChanged" />
                             <Rock:RockTextBox ID="tbRootImageDirectory" runat="server" Label="Root Image Directory" Help="The path to use for the HTML editor's image folder root (e.g. '~/content/my_channel_images' ) " />
                             <Rock:RockCheckBox ID="cbRequireApproval" runat="server" Label="Items Require Approval" Text="Yes" />
+
+                            <Rock:RockCheckBox ID="cbIndexChannel" runat="server" Label="Indexing Enabled" Text="Yes" />
+                            <Rock:RockTextBox ID="tbContentChannelItemPublishingPoint" runat="server" Label="Content Channel Item Publishing Point" Help="Lava template to the URL that the content item can be viewed (Keys: 'Id', 'Title', 'ContentChannelId')." />
+
                             <div class="row">
                                 <div class="col-xs-6">
                                     <Rock:RockCheckBox ID="cbItemsManuallyOrdered" runat="server" Label="Items Manually Ordered" Text="Yes" Help="Are items of this channel manually ordered? If not they will be ordered by their Start Date/Time." />
@@ -114,8 +118,15 @@
                         <asp:Literal ID="lGroupDescription" runat="server"></asp:Literal>
                     </p>
 
-                    <asp:Literal ID="lDetails" runat="server" />
-
+                    <div class="row">
+                        <div class="col-md-6">
+                            <asp:Literal ID="lDetailsLeft" runat="server" />
+                        </div>
+                        <div class="col-md-6">
+                            <asp:Literal ID="lDetailsRight" runat="server" />
+                        </div>
+                    </div>
+                    
                     <div class="actions">
                         <asp:LinkButton ID="lbEdit" runat="server" Text="Edit" CssClass="btn btn-primary" CausesValidation="false" OnClick="lbEdit_Click" />
                         <Rock:SecurityButton ID="btnSecurity" runat="server" class="btn btn-sm btn-security pull-right" />

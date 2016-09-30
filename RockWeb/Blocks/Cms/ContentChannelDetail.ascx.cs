@@ -32,6 +32,7 @@ using Rock.Security;
 using Newtonsoft.Json;
 using Rock.Web;
 using System.Web.UI.WebControls;
+using Rock.UniversalSearch;
 
 namespace RockWeb.Blocks.Cms
 {
@@ -293,12 +294,14 @@ namespace RockWeb.Blocks.Cms
                 contentChannel.RootImageDirectory = tbRootImageDirectory.Visible ? tbRootImageDirectory.Text : string.Empty;
                 contentChannel.IconCssClass = tbIconCssClass.Text;
                 contentChannel.RequiresApproval = cbRequireApproval.Checked;
+                contentChannel.IsIndexEnabled = cbIndexChannel.Checked;
                 contentChannel.ItemsManuallyOrdered = cbItemsManuallyOrdered.Checked;
                 contentChannel.ChildItemsManuallyOrdered = cbChildItemsManuallyOrdered.Checked;
                 contentChannel.EnableRss = cbEnableRss.Checked;
                 contentChannel.ChannelUrl = tbChannelUrl.Text;
                 contentChannel.ItemUrl = tbItemUrl.Text;
                 contentChannel.TimeToLive = nbTimetoLive.Text.AsIntegerOrNull();
+                contentChannel.ItemUrl = tbContentChannelItemPublishingPoint.Text;
 
                 contentChannel.ChildContentChannels = new List<ContentChannel>();
                 contentChannel.ChildContentChannels.Clear();
@@ -428,6 +431,8 @@ namespace RockWeb.Blocks.Cms
             edtItemAttributes.ReservedKeyNames = ItemAttributesState.Where( a => !a.Guid.Equals( attributeGuid ) ).Select( a => a.Key ).ToList();
 
             edtItemAttributes.SetAttributeProperties( attribute, typeof( ContentChannelItem ) );
+
+            edtItemAttributes.IsIndexingEnabledVisible = cbIndexChannel.Visible && cbIndexChannel.Checked;
 
             ShowDialog( "ItemAttributes", true );
         }
@@ -563,6 +568,8 @@ namespace RockWeb.Blocks.Cms
         {
             ContentChannel contentChannel = null;
 
+            cbIndexChannel.Visible = IndexContainer.IndexingEnabled;
+
             bool editAllowed = IsUserAuthorized( Authorization.EDIT );
 
             var rockContext = new RockContext();
@@ -648,13 +655,16 @@ namespace RockWeb.Blocks.Cms
 
                 lGroupDescription.Text = contentChannel.Description;
 
-                var descriptionList = new DescriptionList();
+                var descriptionListLeft = new DescriptionList();
+                var descriptionListRight = new DescriptionList();
+
+                descriptionListLeft.Add( "Item's Require Approval", contentChannel.RequiresApproval.ToYesNo() );
+                descriptionListRight.Add( "Is Indexed", contentChannel.IsIndexEnabled.ToYesNo() );
+
                 if ( contentChannel.EnableRss )
                 {
-                    descriptionList
-                    .Add( "Item's Require Approval", contentChannel.RequiresApproval.ToString() )
-                    .Add( "Channel Url", contentChannel.ChannelUrl )
-                    .Add( "Item Url", contentChannel.ItemUrl );
+                    descriptionListLeft.Add( "Channel Url", contentChannel.ChannelUrl );
+                    descriptionListRight.Add( "Item Url", contentChannel.ItemUrl );
                 }
 
                 contentChannel.LoadAttributes();
@@ -667,11 +677,12 @@ namespace RockWeb.Blocks.Cms
                     {
                         string value = attribute.FieldType.Field.FormatValueAsHtml( null,
                             contentChannel.AttributeValues[attribute.Key].Value, attribute.QualifierValues, false );
-                        descriptionList.Add( attribute.Name, value );
+                        descriptionListLeft.Add( attribute.Name, value );
                     }
                 }
 
-                lDetails.Text = descriptionList.Html;
+                lDetailsLeft.Text = descriptionListLeft.Html;
+                lDetailsRight.Text = descriptionListRight.Html;
             }
         }
 
@@ -702,9 +713,11 @@ namespace RockWeb.Blocks.Cms
                 tbRootImageDirectory.Visible = contentChannel.ContentControlType == ContentControlType.HtmlEditor;
                 tbIconCssClass.Text = contentChannel.IconCssClass;
                 cbRequireApproval.Checked = contentChannel.RequiresApproval;
+                cbIndexChannel.Checked = contentChannel.IsIndexEnabled;
                 cbItemsManuallyOrdered.Checked = contentChannel.ItemsManuallyOrdered;
                 cbChildItemsManuallyOrdered.Checked = contentChannel.ChildItemsManuallyOrdered;
                 cbEnableRss.Checked = contentChannel.EnableRss;
+                tbContentChannelItemPublishingPoint.Text = contentChannel.ItemUrl;
 
                 divRss.Attributes["style"] = cbEnableRss.Checked ? "display:block" : "display:none";
                 tbChannelUrl.Text = contentChannel.ChannelUrl;

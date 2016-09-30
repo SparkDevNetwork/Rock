@@ -26,6 +26,8 @@ using System.Linq;
 using System.Runtime.Serialization;
 using Rock.Data;
 using Rock.Security;
+using Rock.UniversalSearch;
+using Rock.UniversalSearch.IndexModels;
 using Rock.Web.Cache;
 
 namespace Rock.Model
@@ -38,7 +40,7 @@ namespace Rock.Model
     /// </remarks>
     [Table( "Group" )]
     [DataContract]
-    public partial class Group : Model<Group>, IOrdered
+    public partial class Group : Model<Group>, IOrdered, IRockIndexable
     {
         #region Entity Properties
 
@@ -432,6 +434,22 @@ namespace Rock.Model
             }
         }
 
+        /// <summary>
+        /// Gets a value indicating whether [allows interactive bulk indexing].
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if [allows interactive bulk indexing]; otherwise, <c>false</c>.
+        /// </value>
+        /// <exception cref="System.NotImplementedException"></exception>
+        [NotMapped]
+        public bool AllowsInteractiveBulkIndexing
+        {
+            get
+            {
+                return true;
+            }
+        }
+
         #endregion
 
         #region Public Methods
@@ -593,7 +611,79 @@ namespace Rock.Model
         {
             return this.Name;
         }
+        #endregion
 
+        #region Indexing Methods
+        public void BulkIndexDocuments()
+        {
+            List<IndexModelBase> indexableItems = new List<IndexModelBase>();
+
+            RockContext rockContext = new RockContext();
+
+            // return people
+            var groups = new GroupService( rockContext ).Queryable().AsNoTracking()
+                                .Where( g =>
+                                     g.IsActive == true 
+                                     && g.GroupType.IsIndexEnabled == true);
+
+            int recordCounter = 0;
+
+            foreach ( var group in groups )
+            {
+                var indexableGroup = GroupIndex.LoadByModel( group );
+                indexableItems.Add( indexableGroup );
+
+                recordCounter++;
+
+                if (recordCounter > 100 )
+                {
+                    IndexContainer.IndexDocuments( indexableItems );
+                    indexableItems = new List<IndexModelBase>();
+                    recordCounter = 0;
+                }
+            }
+
+            IndexContainer.IndexDocuments( indexableItems );
+        }
+
+        /// <summary>
+        /// Indexes the document.
+        /// </summary>
+        /// <param name="id"></param>
+        public void IndexDocument( int id )
+        {
+            var groupEntity = new GroupService( new RockContext() ).Get( id );
+
+            var indexItem = GroupIndex.LoadByModel( groupEntity );
+            IndexContainer.IndexDocument( indexItem );
+        }
+
+        /// <summary>
+        /// Deletes the indexed document.
+        /// </summary>
+        /// <param name="id"></param>
+        public void DeleteIndexedDocument( int id )
+        {
+            Type indexType = Type.GetType( "Rock.UniversalSearch.IndexModels.GroupIndex" );
+            IndexContainer.DeleteDocumentById( indexType, id );
+        }
+
+        /// <summary>
+        /// Deletes the indexed documents.
+        /// </summary>
+        public void DeleteIndexedDocuments()
+        {
+            IndexContainer.DeleteDocumentsByType<GroupIndex>();
+        }
+
+        /// <summary>
+        /// Indexes the name of the model.
+        /// </summary>
+        /// <returns></returns>
+        public Type IndexModelType()
+        {
+            return typeof( GroupIndex );
+        }
         #endregion
     }
 

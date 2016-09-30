@@ -844,7 +844,7 @@ namespace Rock.Security
                     // check if the exact same instance of an entity is already a parent (indicating we are spinning around recursively)
                     if ( parentHistory.Any( a => a.TypeId == parentAuthEntity.TypeId && a.Id == parentAuthEntity.Id && parentAuthEntity.Id > 0 ) )
                     {
-                        // infinite recursion situation, so threat as if no rules were found and return NULL
+                        // infinite recursion situation, so treat as if no rules were found and return NULL
                         return null;
                     }
                     else
