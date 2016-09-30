@@ -2620,7 +2620,10 @@ namespace Rock.Lava
                                 return page.Site.Theme;
                             }
                         }
-
+                    case "Description":
+                        {
+                            return page.MetaDescription;
+                        }
                     case "Layout":
                         {
                             return page.Layout.Name;
