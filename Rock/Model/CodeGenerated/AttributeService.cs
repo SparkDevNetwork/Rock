@@ -117,6 +117,7 @@ namespace Rock.Model
             target.ModifiedByPersonAliasId = source.ModifiedByPersonAliasId;
             target.Guid = source.Guid;
             target.ForeignId = source.ForeignId;
+            target.IsIndexEnabled = source.IsIndexEnabled;
 
         }
     }

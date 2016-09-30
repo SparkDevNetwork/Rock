@@ -72,7 +72,9 @@
                                 <Rock:DataTextBox ID="tbAllowedFrameDomains" runat="server" SourceTypeName="Rock.Model.Site, Rock" PropertyName="AllowedFrameDomains" TextMode="MultiLine" LabelTextFromPropertyName="false" Label="Allowed Frame Domain(s)" Help="A whitespace delimited list of domain values that are allowed to embed this site (such as an IFRAME). If left blank, Rock will inject properties into the HTTP Header which modern web browsers will use to prevent site embedding. Only trusted domains should be listed since it could open the site to Clickjacking attempts (see https://www.owasp.org/index.php/Clickjacking)" />
                             </div>
                             <div class="col-md-6">
-                                <Rock:RockCheckBox ID="cbAllowIndexing" runat="server" Label="Allow Indexing" />
+                                <Rock:RockCheckBox ID="cbAllowIndexing" runat="server" Label="Allow Indexing" Help="This setting will enable or disable the pages of the site from being indexed." />
+                                <Rock:RockCheckBox ID="cbEnableIndexing" runat="server" Label="Is Indexed" Help="Enables the Rock indexer for this site." AutoPostBack="true" OnCheckedChanged="cbEnableIndexing_CheckedChanged" />
+                                <Rock:RockTextBox ID="tbIndexStartingLocation" runat="server" Label="Index Starting Location" Help="The URL for the Rock indexer to use to start crawling the site." />
                             </div>
                         </div>
                         <div class="row">

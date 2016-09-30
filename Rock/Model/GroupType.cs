@@ -308,6 +308,14 @@ namespace Rock.Model
         public bool IgnorePersonInactivated { get; set; }
 
         /// <summary>
+        /// Gets or sets a value indicating whether this instance is index enabled.
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if this instance is index enabled; otherwise, <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool IsIndexEnabled { get; set; }
+
         /// Gets or sets a value indicating whether [groups require campus].
         /// </summary>
         /// <value>
