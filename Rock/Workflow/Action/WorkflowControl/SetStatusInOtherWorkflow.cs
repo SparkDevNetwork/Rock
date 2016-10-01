@@ -36,6 +36,7 @@ namespace Rock.Workflow.Action
     [TextField( "Status", "The status to set workflow to. <span class='tip tip-lava'></span>", true, "", "", 0 )]
     [WorkflowAttribute( "Workflow", "The workflow to set the status of.", true, "", "", 1, null,
         new string[] { "Rock.Field.Types.TextFieldType", "Rock.Field.Types.WorkflowFieldType" } )]
+    [BooleanField("Process Target Workflow", "Should this action process the target workflow after setting the status (if not, workflow may not be processed until next time workflow job runs).", false, "", 2, "ProcessNow" )]
     public class SetStatusInOtherWorkflow : ActionComponent
     {
         /// <summary>
@@ -53,15 +54,31 @@ namespace Rock.Workflow.Action
             Guid? workflowGuid = GetAttributeValue( action, "Workflow", true ).AsGuidOrNull();
             if ( workflowGuid.HasValue )
             {
-                var workflow = new WorkflowService( rockContext ).Get( workflowGuid.Value );
-                if ( workflow != null )
+                using ( var newRockContext = new RockContext() )
                 {
-                    string status = GetAttributeValue( action, "Status" ).ResolveMergeFields( GetMergeFields( action ) );
-                    workflow.Status = status;
+                    var workflowService = new WorkflowService( newRockContext );
+                    var workflow = workflowService.Get( workflowGuid.Value );
+                    if ( workflow != null )
+                    {
+                        string status = GetAttributeValue( action, "Status" ).ResolveMergeFields( GetMergeFields( action ) );
+                        workflow.Status = status;
+                        workflow.AddLogEntry( string.Format( "Status set to '{0}' by another workflow: {1}", status, action.Activity.Workflow ) );
+                        newRockContext.SaveChanges();
 
-                    action.AddLogEntry( string.Format( "Set Status to '{0}' on another workflow: {1}", status, workflow ) );
+                        action.AddLogEntry( string.Format( "Set Status to '{0}' on another workflow: {1}", status, workflow ) );
 
-                    return true;
+                        bool processNow = GetAttributeValue( action, "ProcessNow" ).AsBoolean();
+                        if ( processNow )
+                        {
+                            var processErrors = new List<string>();
+                            if ( !workflowService.Process( workflow, out processErrors ) )
+                            {
+                                action.AddLogEntry( "Error(s) occurred processing target workflow: " + processErrors.AsDelimited( ", " ) );
+                            }
+                        }
+
+                        return true;
+                    }
                 }
 
                 action.AddLogEntry( "Could not find selected workflow." );
