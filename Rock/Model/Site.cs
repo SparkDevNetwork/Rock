@@ -503,6 +503,9 @@ namespace Rock.Model
             return this.Name;
         }
 
+        /// <summary>
+        /// Bulks the index documents.
+        /// </summary>
         public void BulkIndexDocuments()
         {            
             // get list of sites that with indexing enabled
@@ -518,21 +521,36 @@ namespace Rock.Model
             }
         }
 
+        /// <summary>
+        /// Deletes the indexed documents.
+        /// </summary>
         public void DeleteIndexedDocuments()
         {
             IndexContainer.DeleteDocumentsByType<SitePageIndex>();
         }
 
+        /// <summary>
+        /// Indexes the name of the model.
+        /// </summary>
+        /// <returns></returns>
         public Type IndexModelType()
         {
             return typeof( SitePageIndex );
         }
 
+        /// <summary>
+        /// Indexes the document.
+        /// </summary>
+        /// <param name="id"></param>
         public void IndexDocument( int id )
         {
             return;
         }
 
+        /// <summary>
+        /// Deletes the indexed document.
+        /// </summary>
+        /// <param name="id"></param>
         public void DeleteIndexedDocument( int id )
         {
             return;

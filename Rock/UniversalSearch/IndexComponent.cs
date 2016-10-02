@@ -29,30 +29,97 @@ namespace Rock.UniversalSearch
     /// </summary>
     public abstract class IndexComponent : Component
     {
+        /// <summary>
+        /// Gets a value indicating whether this instance is connected.
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if this instance is connected; otherwise, <c>false</c>.
+        /// </value>
         public abstract bool IsConnected { get; }
 
+        /// <summary>
+        /// Gets the index location.
+        /// </summary>
+        /// <value>
+        /// The index location.
+        /// </value>
         public abstract string IndexLocation { get; }
 
+        /// <summary>
+        /// Indexes the document.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="document">The document.</param>
+        /// <param name="indexName">Name of the index.</param>
+        /// <param name="mappingType">Type of the mapping.</param>
         public abstract void IndexDocument<T>( T document, string indexName = null, string mappingType = null ) where T : class, new();
 
+        /// <summary>
+        /// Deletes the type of the documents by.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="indexName">Name of the index.</param>
         public abstract void DeleteDocumentsByType<T>( string indexName = null ) where T : class, new();
 
+        /// <summary>
+        /// Creates the index.
+        /// </summary>
+        /// <param name="documentType">Type of the document.</param>
+        /// <param name="deleteIfExists">if set to <c>true</c> [delete if exists].</param>
         public abstract void CreateIndex( Type documentType, bool deleteIfExists = true );
 
+        /// <summary>
+        /// Deletes the index.
+        /// </summary>
+        /// <param name="documentType">Type of the document.</param>
         public abstract void DeleteIndex( Type documentType );
 
+        /// <summary>
+        /// Deletes the document.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="document">The document.</param>
+        /// <param name="indexName">Name of the index.</param>
         public abstract void DeleteDocument<T>( T document, string indexName = null ) where T : class, new();
 
+        /// <summary>
+        /// Deletes the document by identifier.
+        /// </summary>
+        /// <param name="documentType">Type of the document.</param>
+        /// <param name="id">The identifier.</param>
         public abstract void DeleteDocumentById( Type documentType, int id );
 
+        /// <summary>
+        /// Deletes the document by property.
+        /// </summary>
+        /// <param name="documentType">Type of the document.</param>
+        /// <param name="propertyName">Name of the property.</param>
+        /// <param name="propertyValue">The property value.</param>
         public abstract void DeleteDocumentByProperty( Type documentType, string propertyName, object propertyValue );
 
+        /// <summary>
+        /// Searches the specified query.
+        /// </summary>
+        /// <param name="query">The query.</param>
+        /// <param name="searchType">Type of the search.</param>
+        /// <param name="entities">The entities.</param>
+        /// <returns></returns>
         public abstract IEnumerable<SearchResultModel> Search( string query, SearchType searchType = SearchType.ExactMatch, List<int> entities = null );
     }
 
+    /// <summary>
+    /// Type of Search
+    /// </summary>
     public enum SearchType
     {
+        /// <summary>
+        /// Exact Match
+        /// </summary>
         ExactMatch = 0,
+
+        /// <summary>
+        /// Fuzzy Match
+        /// </summary>
         Fuzzy = 1
     }
 }

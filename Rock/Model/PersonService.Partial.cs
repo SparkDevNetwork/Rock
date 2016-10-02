@@ -171,11 +171,11 @@ namespace Rock.Model
         /// <returns>
         /// An enumerable collection of <see cref="Rock.Model.Person"/> entities that match the search criteria.
         /// </returns>
-        public IEnumerable<Person> GetBusinessByMatch( string businessName, string email, bool includeDeceased = false )
+        public IEnumerable<Person> GetBusinessByMatch( string businessName, string email )
         {
             businessName = businessName ?? string.Empty;
             email = email ?? string.Empty;
-            var query = Queryable( includeDeceased, true );
+            var query = Queryable( false, true );
             var definedValueBusinessType = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_BUSINESS.AsGuid() );
             if ( definedValueBusinessType != null )
             {

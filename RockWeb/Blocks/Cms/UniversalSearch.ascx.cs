@@ -17,25 +17,18 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.IO;
+using System.Data.Entity;
 using System.Linq;
+using System.Text;
 using System.Web.UI;
 using System.Web.UI.WebControls;
+
+using Nest;
 
 using Rock;
 using Rock.Data;
 using Rock.Model;
-using Rock.Web.Cache;
-using Rock.Web.UI.Controls;
-using Rock.Attribute;
 using Rock.UniversalSearch;
-using Rock.UniversalSearch.IndexModels;
-using System.Data.Entity;
-using Nest;
-using Rock.UniversalSearch.IndexComponents;
-using Newtonsoft.Json.Linq;
-using Rock.UniversalSearch.IndexModels;
-using System.Text;
 
 namespace RockWeb.Blocks.Cms
 {

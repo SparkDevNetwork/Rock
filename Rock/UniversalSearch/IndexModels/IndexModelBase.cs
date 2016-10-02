@@ -12,6 +12,10 @@ using Rock.UniversalSearch.IndexModels.Attributes;
 
 namespace Rock.UniversalSearch.IndexModels
 {
+    /// <summary>
+    /// Base Index Model
+    /// </summary>
+    /// <seealso cref="System.Dynamic.DynamicObject" />
     public class IndexModelBase : DynamicObject
     {
         private Dictionary<string, object> _members = new Dictionary<string, object>();
@@ -31,12 +35,30 @@ namespace Rock.UniversalSearch.IndexModels
         }
         PropertyInfo[] _InstancePropertyInfo;
 
+        /// <summary>
+        /// Gets or sets the identifier.
+        /// </summary>
+        /// <value>
+        /// The identifier.
+        /// </value>
         [RockIndexField( Type = IndexFieldType.Number )]
         public Int64 Id { get; set; }
 
+        /// <summary>
+        /// Gets or sets the source index model.
+        /// </summary>
+        /// <value>
+        /// The source index model.
+        /// </value>
         [RockIndexField( Index = IndexType.NotIndexed )]
         public string SourceIndexModel { get; set; }
 
+        /// <summary>
+        /// Gets the type of the index model.
+        /// </summary>
+        /// <value>
+        /// The type of the index model.
+        /// </value>
         [RockIndexField(Index = IndexType.NotIndexed)]
         public string IndexModelType {
             get
@@ -48,7 +70,8 @@ namespace Rock.UniversalSearch.IndexModels
         /// <summary>
         /// Formats the search result.
         /// </summary>
-        /// <param name="url">The URL.</param>
+        /// <param name="person">The person.</param>
+        /// <param name="displayOptions">The display options.</param>
         /// <returns></returns>
         public virtual FormattedSearchResult FormatSearchResult( Person person, Dictionary<string, object> displayOptions = null )
         {
@@ -69,12 +92,21 @@ namespace Rock.UniversalSearch.IndexModels
             return new FormattedSearchResult() { IsViewAllowed = true, FormattedResult = result};
         }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="IndexModelBase"/> class.
+        /// </summary>
         public IndexModelBase()
         {
             Instance = this;
             InstanceType = this.GetType();
         }
 
+        /// <summary>
+        /// Gets or sets the icon CSS class.
+        /// </summary>
+        /// <value>
+        /// The icon CSS class.
+        /// </value>
         [RockIndexField( Index = IndexType.NotIndexed )]
         public virtual string IconCssClass
         {
@@ -89,6 +121,11 @@ namespace Rock.UniversalSearch.IndexModels
         }
         private string iconCssClass = "fa fa-file";
 
+        /// <summary>
+        /// Adds the indexable attributes.
+        /// </summary>
+        /// <param name="indexModel">The index model.</param>
+        /// <param name="sourceModel">The source model.</param>
         protected static void AddIndexableAttributes( IndexModelBase indexModel, IHasAttributes sourceModel )
         {
             sourceModel.LoadAttributes();
@@ -115,7 +152,14 @@ namespace Rock.UniversalSearch.IndexModels
             }
         }
 
-
+        /// <summary>
+        /// Provides the implementation for operations that get member values. Classes derived from the <see cref="T:System.Dynamic.DynamicObject" /> class can override this method to specify dynamic behavior for operations such as getting a value for a property.
+        /// </summary>
+        /// <param name="binder">Provides information about the object that called the dynamic operation. The binder.Name property provides the name of the member on which the dynamic operation is performed. For example, for the Console.WriteLine(sampleObject.SampleProperty) statement, where sampleObject is an instance of the class derived from the <see cref="T:System.Dynamic.DynamicObject" /> class, binder.Name returns "SampleProperty". The binder.IgnoreCase property specifies whether the member name is case-sensitive.</param>
+        /// <param name="result">The result of the get operation. For example, if the method is called for a property, you can assign the property value to <paramref name="result" />.</param>
+        /// <returns>
+        /// true if the operation is successful; otherwise, false. If this method returns false, the run-time binder of the language determines the behavior. (In most cases, a run-time exception is thrown.)
+        /// </returns>
         public override bool TryGetMember( GetMemberBinder binder, out object result )
         {
             result = null;
@@ -141,6 +185,14 @@ namespace Rock.UniversalSearch.IndexModels
             return false;
         }
 
+        /// <summary>
+        /// Provides the implementation for operations that set member values. Classes derived from the <see cref="T:System.Dynamic.DynamicObject" /> class can override this method to specify dynamic behavior for operations such as setting a value for a property.
+        /// </summary>
+        /// <param name="binder">Provides information about the object that called the dynamic operation. The binder.Name property provides the name of the member to which the value is being assigned. For example, for the statement sampleObject.SampleProperty = "Test", where sampleObject is an instance of the class derived from the <see cref="T:System.Dynamic.DynamicObject" /> class, binder.Name returns "SampleProperty". The binder.IgnoreCase property specifies whether the member name is case-sensitive.</param>
+        /// <param name="value">The value to set to the member. For example, for sampleObject.SampleProperty = "Test", where sampleObject is an instance of the class derived from the <see cref="T:System.Dynamic.DynamicObject" /> class, the <paramref name="value" /> is "Test".</param>
+        /// <returns>
+        /// true if the operation is successful; otherwise, false. If this method returns false, the run-time binder of the language determines the behavior. (In most cases, a language-specific run-time exception is thrown.)
+        /// </returns>
         public override bool TrySetMember( SetMemberBinder binder, object value )
         {
 
@@ -161,6 +213,13 @@ namespace Rock.UniversalSearch.IndexModels
             return true;
         }
 
+        /// <summary>
+        /// Gets the property.
+        /// </summary>
+        /// <param name="instance">The instance.</param>
+        /// <param name="name">The name.</param>
+        /// <param name="result">The result.</param>
+        /// <returns></returns>
         protected bool GetProperty( object instance, string name, out object result )
         {
             if ( instance == null )
@@ -181,6 +240,13 @@ namespace Rock.UniversalSearch.IndexModels
             return false;
         }
 
+        /// <summary>
+        /// Sets the property.
+        /// </summary>
+        /// <param name="instance">The instance.</param>
+        /// <param name="name">The name.</param>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
         protected bool SetProperty( object instance, string name, object value )
         {
             if ( instance == null )
@@ -199,6 +265,14 @@ namespace Rock.UniversalSearch.IndexModels
             return false;
         }
 
+        /// <summary>
+        /// Gets or sets the <see cref="System.Object"/> with the specified key.
+        /// </summary>
+        /// <value>
+        /// The <see cref="System.Object"/>.
+        /// </value>
+        /// <param name="key">The key.</param>
+        /// <returns></returns>
         public object this[string key]
         {
             get
@@ -236,6 +310,11 @@ namespace Rock.UniversalSearch.IndexModels
             }
         }
 
+        /// <summary>
+        /// Gets the properties.
+        /// </summary>
+        /// <param name="includeInstanceProperties">if set to <c>true</c> [include instance properties].</param>
+        /// <returns></returns>
         public IEnumerable<KeyValuePair<string, object>> GetProperties( bool includeInstanceProperties = false )
         {
             if ( includeInstanceProperties && Instance != null )
@@ -249,6 +328,12 @@ namespace Rock.UniversalSearch.IndexModels
 
         }
 
+        /// <summary>
+        /// Returns the enumeration of all dynamic member names.
+        /// </summary>
+        /// <returns>
+        /// A sequence that contains dynamic member names.
+        /// </returns>
         public override IEnumerable<string> GetDynamicMemberNames()
         {
             List<string> propertyNames = new List<string>();
@@ -266,6 +351,12 @@ namespace Rock.UniversalSearch.IndexModels
             return propertyNames;
         }
 
+        /// <summary>
+        /// Determines whether [contains] [the specified item].
+        /// </summary>
+        /// <param name="item">The item.</param>
+        /// <param name="includeInstanceProperties">if set to <c>true</c> [include instance properties].</param>
+        /// <returns></returns>
         public bool Contains( KeyValuePair<string, object> item, bool includeInstanceProperties = false )
         {
             bool res = _members.ContainsKey( item.Key );

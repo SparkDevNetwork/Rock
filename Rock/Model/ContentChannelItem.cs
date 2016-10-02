@@ -274,6 +274,10 @@ namespace Rock.Model
         #endregion
 
         #region Index Methods
+
+        /// <summary>
+        /// Bulks the index documents.
+        /// </summary>
         public void BulkIndexDocuments()
         {
             List<ContentChannelItemIndex> indexableChannelItems = new List<ContentChannelItemIndex>();
@@ -305,6 +309,10 @@ namespace Rock.Model
             IndexContainer.IndexDocuments( indexableChannelItems );
         }
 
+        /// <summary>
+        /// Indexes the document.
+        /// </summary>
+        /// <param name="id"></param>
         public void IndexDocument( int id )
         {
             var itemEntity = new ContentChannelItemService( new RockContext() ).Get( id );
@@ -317,20 +325,32 @@ namespace Rock.Model
             }
         }
 
+        /// <summary>
+        /// Deletes the indexed document.
+        /// </summary>
+        /// <param name="id"></param>
         public void DeleteIndexedDocument( int id )
         {
             IndexContainer.DeleteDocumentById( this.IndexModelType(), id );
         }
 
+        /// <summary>
+        /// Deletes the indexed documents.
+        /// </summary>
         public void DeleteIndexedDocuments()
         {
             IndexContainer.DeleteDocumentsByType<ContentChannelItemIndex>();
         }
 
+        /// <summary>
+        /// Indexes the name of the model.
+        /// </summary>
+        /// <returns></returns>
         public Type IndexModelType()
         {
             return typeof( ContentChannelItemIndex );
         }
+
         #endregion
 
         #region Methods

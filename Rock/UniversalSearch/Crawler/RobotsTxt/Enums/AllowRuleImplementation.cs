@@ -6,6 +6,9 @@ using System.Threading.Tasks;
 
 namespace Rock.UniversalSearch.Crawler.RobotsTxt.Enums
 {
+    /// <summary>
+    /// Robots Allow Rule
+    /// </summary>
     public enum AllowRuleImplementation
     {
         /// <summary>

@@ -6,6 +6,9 @@ using HtmlAgilityPack;
 
 namespace Rock.UniversalSearch.Crawler
 {
+    /// <summary>
+    /// Helper class to parse links
+    /// </summary>
     public class LinkParser
     {
         string[] nonLinkStartsWith = new string[] { "#", "javascript:", "mailto:" };
@@ -38,30 +41,60 @@ namespace Rock.UniversalSearch.Crawler
 
         #region Public Properties
 
+        /// <summary>
+        /// Gets or sets the good urls.
+        /// </summary>
+        /// <value>
+        /// The good urls.
+        /// </value>
         public List<string> GoodUrls
         {
             get { return _goodUrls; }
             set { _goodUrls = value; }
         }
 
+        /// <summary>
+        /// Gets or sets the bad urls.
+        /// </summary>
+        /// <value>
+        /// The bad urls.
+        /// </value>
         public List<string> BadUrls
         {
             get { return _badUrls; }
             set { _badUrls = value; }
         }
 
+        /// <summary>
+        /// Gets or sets the other urls.
+        /// </summary>
+        /// <value>
+        /// The other urls.
+        /// </value>
         public List<string> OtherUrls
         {
             get { return _otherUrls; }
             set { _otherUrls = value; }
         }
 
+        /// <summary>
+        /// Gets or sets the external urls.
+        /// </summary>
+        /// <value>
+        /// The external urls.
+        /// </value>
         public List<string> ExternalUrls
         {
             get { return _externalUrls; }
             set { _externalUrls = value; }
         }
 
+        /// <summary>
+        /// Gets or sets the exceptions.
+        /// </summary>
+        /// <value>
+        /// The exceptions.
+        /// </value>
         public List<string> Exceptions
         {
             get { return _exceptions; }
@@ -75,6 +108,7 @@ namespace Rock.UniversalSearch.Crawler
         /// </summary>
         /// <param name="page">The page whose text is to be parsed.</param>
         /// <param name="sourceUrl">The source url of the page.</param>
+        /// <param name="startUrl">The start URL.</param>
         public void ParseLinks( HtmlDocument page, string sourceUrl, string startUrl )
         {
             if ( page.DocumentNode.SelectNodes( "//a[@href]" ) != null )
@@ -229,58 +263,63 @@ namespace Rock.UniversalSearch.Crawler
             return resolvedUrl;
         }
 
-        /// <summary>
-        /// Is the url to an external site?
-        /// </summary>
-        /// <param name="url">The url whose externality of destination is in question.</param>
-        /// <returns>Boolean indicating whether or not the url is to an external destination.</returns>
-        /*private static bool IsExternalUrl( string url, string startUrl )
-        {
-            if ( url.IndexOf( startUrl ) > -1 )
-            {
-                return false;
-            }
-            else if ( url.Length > 7 && ( url.Substring( 0, 7 ) == "http://" || url.Substring( 0, 3 ) == "www" || url.Substring( 0, 7 ) == "https://" ))
-            {
-                return true;
-            }
+        ///// <summary>
+        ///// Is the url to an external site?
+        ///// </summary>
+        ///// <param name="url">The url whose externality of destination is in question.</param>
+        ///// <param name="startUrl">The start URL.</param>
+        ///// <returns>
+        ///// Boolean indicating whether or not the url is to an external destination.
+        ///// </returns>
+        //private static bool IsExternalUrl( string url, string startUrl )
+        //{
+        //    if ( url.IndexOf( startUrl ) > -1 )
+        //    {
+        //        return false;
+        //    }
+        //    else if ( url.Length > 7 && ( url.Substring( 0, 7 ) == "http://" || url.Substring( 0, 3 ) == "www" || url.Substring( 0, 7 ) == "https://" ))
+        //    {
+        //        return true;
+        //    }
 
-            return false;
-        }*/
+        //    return false;
+        //}
 
-        /// <summary>
-        /// Is the value of the href pointing to a web page?
-        /// </summary>
-        /// <param name="foundHref">The value of the href that needs to be interogated.</param>
-        /// <returns>Boolen </returns>
-        /*private static bool IsAWebPage( string foundHref )
-        {
-            if ( foundHref.IndexOf( "javascript:" ) == 0 )
-            {
-                return false;
-            }
+        ///// <summary>
+        ///// Is the value of the href pointing to a web page?
+        ///// </summary>
+        ///// <param name="foundHref">The value of the href that needs to be interogated.</param>
+        ///// <returns>
+        ///// Boolen
+        ///// </returns>
+        //private static bool IsAWebPage( string foundHref )
+        //{
+        //    if ( foundHref.IndexOf( "javascript:" ) == 0 )
+        //    {
+        //        return false;
+        //    }
 
-            if ( foundHref.IndexOf( "mailto:" ) == 0 )
-            {
-                return false;
-            }
+        //    if ( foundHref.IndexOf( "mailto:" ) == 0 )
+        //    {
+        //        return false;
+        //    }
 
-            if ( foundHref.StartsWith( "#" ) )
-            {
-                return false;
-            }
+        //    if ( foundHref.StartsWith( "#" ) )
+        //    {
+        //        return false;
+        //    }
 
-            string extension = foundHref.Substring( foundHref.LastIndexOf( "." ) + 1, foundHref.Length - foundHref.LastIndexOf( "." ) - 1 );
-            switch ( extension )
-            {
-                case "jpg":
-                case "css":
-                    return false;
-                default:
-                    return true;
-            }
+        //    string extension = foundHref.Substring( foundHref.LastIndexOf( "." ) + 1, foundHref.Length - foundHref.LastIndexOf( "." ) - 1 );
+        //    switch ( extension )
+        //    {
+        //        case "jpg":
+        //        case "css":
+        //            return false;
+        //        default:
+        //            return true;
+        //    }
 
-        }*/
+        //}
 
         private enum LinkType { Internal, External, NonLink, File }
     }
