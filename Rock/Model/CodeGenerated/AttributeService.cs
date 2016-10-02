@@ -105,6 +105,7 @@ namespace Rock.Model
             target.ForeignKey = source.ForeignKey;
             target.IconCssClass = source.IconCssClass;
             target.IsGridColumn = source.IsGridColumn;
+            target.IsIndexEnabled = source.IsIndexEnabled;
             target.IsMultiValue = source.IsMultiValue;
             target.IsRequired = source.IsRequired;
             target.IsSystem = source.IsSystem;
@@ -117,7 +118,6 @@ namespace Rock.Model
             target.ModifiedByPersonAliasId = source.ModifiedByPersonAliasId;
             target.Guid = source.Guid;
             target.ForeignId = source.ForeignId;
-            target.IsIndexEnabled = source.IsIndexEnabled;
 
         }
     }
