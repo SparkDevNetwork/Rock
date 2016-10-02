@@ -66,11 +66,50 @@ namespace Rock.UniversalSearch.IndexModels.Attributes
         private IndexFieldType _type = IndexFieldType.String;
     }
 
+    /// <summary>
+    /// Type of Index
+    /// </summary>
     public enum IndexType {
+
+        /// <summary>
+        /// Analyzed
+        /// </summary>
         Analyzed = 0,
+
+        /// <summary>
+        /// Not Analyzed
+        /// </summary>
         NotAnalyzed = 1,
+
+        /// <summary>
+        /// Not Indexed
+        /// </summary>
         NotIndexed = 2
     }
 
-    public enum IndexFieldType { String, Number, Boolean, Date }
+    /// <summary>
+    /// Type of Index Field
+    /// </summary>
+    public enum IndexFieldType
+    {
+        /// <summary>
+        /// String Field
+        /// </summary>
+        String,
+
+        /// <summary>
+        /// Number Field
+        /// </summary>
+        Number,
+
+        /// <summary>
+        /// Boolean Field
+        /// </summary>
+        Boolean,
+
+        /// <summary>
+        /// Date Field
+        /// </summary>
+        Date
+    }
 }

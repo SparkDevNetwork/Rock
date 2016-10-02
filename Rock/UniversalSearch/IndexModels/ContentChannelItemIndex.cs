@@ -9,38 +9,108 @@ using Rock.UniversalSearch.IndexModels.Attributes;
 
 namespace Rock.UniversalSearch.IndexModels
 {
+    /// <summary>
+    /// Content Channel Item Index
+    /// </summary>
+    /// <seealso cref="Rock.UniversalSearch.IndexModels.IndexModelBase" />
     public class ContentChannelItemIndex : IndexModelBase
     {
+        /// <summary>
+        /// Gets or sets the title.
+        /// </summary>
+        /// <value>
+        /// The title.
+        /// </value>
         [RockIndexField]
         public string Title { get; set; }
 
+        /// <summary>
+        /// Gets or sets the content.
+        /// </summary>
+        /// <value>
+        /// The content.
+        /// </value>
         [RockIndexField]
         public string Content { get; set; }
 
+        /// <summary>
+        /// Gets or sets the content channel identifier.
+        /// </summary>
+        /// <value>
+        /// The content channel identifier.
+        /// </value>
         [RockIndexField( Type = IndexFieldType.Number)]
         public int ContentChannelId { get; set; }
 
+        /// <summary>
+        /// Gets or sets the content channel.
+        /// </summary>
+        /// <value>
+        /// The content channel.
+        /// </value>
         [RockIndexField]
         public string ContentChannel { get; set; }
 
+        /// <summary>
+        /// Gets or sets the priority.
+        /// </summary>
+        /// <value>
+        /// The priority.
+        /// </value>
         [RockIndexField( Type = IndexFieldType.Number, Index = IndexType.NotIndexed )]
         public int Priority { get; set; }
 
+        /// <summary>
+        /// Gets or sets the status.
+        /// </summary>
+        /// <value>
+        /// The status.
+        /// </value>
         [RockIndexField( Type = IndexFieldType.String, Index = IndexType.NotIndexed )]
         public string Status { get; set; }
 
+        /// <summary>
+        /// Gets or sets the start date.
+        /// </summary>
+        /// <value>
+        /// The start date.
+        /// </value>
         [RockIndexField( Type = IndexFieldType.Date )]
         public DateTime StartDate { get; set; }
 
+        /// <summary>
+        /// Gets or sets the expire date.
+        /// </summary>
+        /// <value>
+        /// The expire date.
+        /// </value>
         [RockIndexField( Type = IndexFieldType.Date )]
         public DateTime? ExpireDate { get; set; }
 
+        /// <summary>
+        /// Gets or sets the permalink.
+        /// </summary>
+        /// <value>
+        /// The permalink.
+        /// </value>
         [RockIndexField( Type = IndexFieldType.String, Index = IndexType.NotIndexed )]
         public string Permalink { get; set; }
 
+        /// <summary>
+        /// Gets or sets a value indicating whether this instance is approved.
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if this instance is approved; otherwise, <c>false</c>.
+        /// </value>
         [RockIndexField( Type = IndexFieldType.Boolean )]
         public bool IsApproved { get; set; }
 
+        /// <summary>
+        /// Gets or sets the icon CSS class.
+        /// </summary>
+        /// <value>
+        /// The icon CSS class.
+        /// </value>
         [RockIndexField( Type = IndexFieldType.String, Index = IndexType.NotIndexed )]
         public override string IconCssClass
         {
@@ -55,6 +125,11 @@ namespace Rock.UniversalSearch.IndexModels
         }
         private string iconCssClass = "fa fa-bullhorn";
 
+        /// <summary>
+        /// Loads the by model.
+        /// </summary>
+        /// <param name="contentChannelItem">The content channel item.</param>
+        /// <returns></returns>
         public static ContentChannelItemIndex LoadByModel(ContentChannelItem contentChannelItem )
         {
             var contentChannelItemIndex = new ContentChannelItemIndex();
@@ -86,7 +161,8 @@ namespace Rock.UniversalSearch.IndexModels
         /// <summary>
         /// Formats the search result.
         /// </summary>
-        /// <param name="url">The URL.</param>
+        /// <param name="person"></param>
+        /// <param name="displayOptions"></param>
         /// <returns></returns>
         public override FormattedSearchResult FormatSearchResult( Person person, Dictionary<string, object> displayOptions = null )
         {

@@ -13,6 +13,9 @@ using Rock.Web.Cache;
 
 namespace Rock.UniversalSearch.Crawler
 {
+    /// <summary>
+    /// Crawler
+    /// </summary>
     public class Crawler
     {
         #region Private Fields
@@ -32,6 +35,10 @@ namespace Rock.UniversalSearch.Crawler
         /// </summary>
         public Crawler() { }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="Crawler"/> class.
+        /// </summary>
+        /// <param name="site">The site.</param>
         public Crawler( Site site )
         {
             this.CrawlSite( site );

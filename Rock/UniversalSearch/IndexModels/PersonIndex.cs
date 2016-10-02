@@ -8,23 +8,63 @@ using Rock.UniversalSearch.IndexModels.Attributes;
 
 namespace Rock.UniversalSearch.IndexModels
 {
+    /// <summary>
+    /// Person Index
+    /// </summary>
+    /// <seealso cref="Rock.UniversalSearch.IndexModels.IndexModelBase" />
     public class PersonIndex : IndexModelBase
     {
+        /// <summary>
+        /// Gets or sets the record status.
+        /// </summary>
+        /// <value>
+        /// The record status.
+        /// </value>
         [RockIndexField]
         public string RecordStatus { get; set; }
 
+        /// <summary>
+        /// Gets or sets the first name.
+        /// </summary>
+        /// <value>
+        /// The first name.
+        /// </value>
         [RockIndexField( Boost = 2 )]
         public string FirstName { get; set; }
 
+        /// <summary>
+        /// Gets or sets the name of the nick.
+        /// </summary>
+        /// <value>
+        /// The name of the nick.
+        /// </value>
         [RockIndexField( Boost = 2 )]
         public string NickName { get; set; }
 
+        /// <summary>
+        /// Gets or sets the last name.
+        /// </summary>
+        /// <value>
+        /// The last name.
+        /// </value>
         [RockIndexField( Boost = 5 )]
         public string LastName { get; set; }
 
+        /// <summary>
+        /// Gets or sets the suffix.
+        /// </summary>
+        /// <value>
+        /// The suffix.
+        /// </value>
         [RockIndexField]
         public string Suffix { get; set; }
 
+        /// <summary>
+        /// Gets the icon CSS class.
+        /// </summary>
+        /// <value>
+        /// The icon CSS class.
+        /// </value>
         [RockIndexField( Index = IndexType.NotIndexed )]
         public override string IconCssClass
         {
@@ -34,6 +74,11 @@ namespace Rock.UniversalSearch.IndexModels
             }
         }
 
+        /// <summary>
+        /// Loads the by model.
+        /// </summary>
+        /// <param name="person">The person.</param>
+        /// <returns></returns>
         public static PersonIndex LoadByModel(Person person )
         {
             var personIndex = new PersonIndex();
@@ -55,7 +100,8 @@ namespace Rock.UniversalSearch.IndexModels
         /// <summary>
         /// Formats the search result.
         /// </summary>
-        /// <param name="url">The URL.</param>
+        /// <param name="person"></param>
+        /// <param name="displayOptions"></param>
         /// <returns></returns>
         public override FormattedSearchResult FormatSearchResult( Person person, Dictionary<string, object> displayOptions = null )
         {

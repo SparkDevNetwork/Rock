@@ -45,6 +45,12 @@ namespace Rock.UniversalSearch
             get { return instance.Value; }
         }
 
+        /// <summary>
+        /// Gets a value indicating whether [indexing enabled].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [indexing enabled]; otherwise, <c>false</c>.
+        /// </value>
         public static bool IndexingEnabled
         {
             get
@@ -103,7 +109,7 @@ namespace Rock.UniversalSearch
         /// <summary>
         /// Indexes the documents.
         /// </summary>
-        /// <param name="documents">The documents.</param>
+        /// <param name="document">The document.</param>
         public static void IndexDocument( IndexModelBase document )
         {
             foreach ( var indexType in IndexContainer.Instance.Components )
@@ -208,6 +214,7 @@ namespace Rock.UniversalSearch
         /// Creates the index.
         /// </summary>
         /// <param name="documentType">Type of the document.</param>
+        /// <param name="deleteIfExists">if set to <c>true</c> [delete if exists].</param>
         public static void CreateIndex(Type documentType, bool deleteIfExists = true)
         {
             foreach ( var indexType in IndexContainer.Instance.Components )
@@ -223,7 +230,7 @@ namespace Rock.UniversalSearch
         /// <summary>
         /// Deletes the index.
         /// </summary>
-        /// <param name="indexName">Name of the index.</param>
+        /// <param name="documentType">Type of the document.</param>
         public static void DeleteIndex(Type documentType )
         {
             foreach ( var indexType in IndexContainer.Instance.Components )

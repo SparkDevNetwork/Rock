@@ -10,12 +10,34 @@ using Rock.Web.Cache;
 
 namespace Rock.UniversalSearch.IndexModels
 {
+    /// <summary>
+    /// Business Index
+    /// </summary>
+    /// <seealso cref="Rock.UniversalSearch.IndexModels.IndexModelBase" />
     public class BusinessIndex : IndexModelBase
     {
+        /// <summary>
+        /// Gets or sets the name.
+        /// </summary>
+        /// <value>
+        /// The name.
+        /// </value>
         public string Name { get; set; }
-        
+
+        /// <summary>
+        /// Gets or sets the contacts.
+        /// </summary>
+        /// <value>
+        /// The contacts.
+        /// </value>
         public string Contacts { get; set; }
 
+        /// <summary>
+        /// Gets the icon CSS class.
+        /// </summary>
+        /// <value>
+        /// The icon CSS class.
+        /// </value>
         public override string IconCssClass
         {
             get
@@ -24,6 +46,11 @@ namespace Rock.UniversalSearch.IndexModels
             }
         }
 
+        /// <summary>
+        /// Loads by model.
+        /// </summary>
+        /// <param name="business">The business.</param>
+        /// <returns></returns>
         public static BusinessIndex LoadByModel(Person business )
         {
             var businessIndex = new BusinessIndex();
@@ -68,7 +95,8 @@ namespace Rock.UniversalSearch.IndexModels
         /// <summary>
         /// Formats the search result.
         /// </summary>
-        /// <param name="url">The URL.</param>
+        /// <param name="person"></param>
+        /// <param name="displayOptions"></param>
         /// <returns></returns>
         public override FormattedSearchResult FormatSearchResult( Person person, Dictionary<string, object> displayOptions = null )
         {

@@ -316,6 +316,7 @@ namespace Rock.Model
         [DataMember]
         public bool IsIndexEnabled { get; set; }
 
+        /// <summary>
         /// Gets or sets a value indicating whether [groups require campus].
         /// </summary>
         /// <value>

@@ -17,6 +17,10 @@ using Rock.UniversalSearch.IndexModels.Attributes;
 
 namespace Rock.UniversalSearch.IndexComponents
 {
+    /// <summary>
+    /// Elastic Search Index Provider
+    /// </summary>
+    /// <seealso cref="Rock.UniversalSearch.IndexComponent" />
     [Description( "Elasticsearch Universal Search Index" )]
     [Export( typeof( IndexComponent ) )]
     [ExportMetadata( "ComponentName", "Elasticsearch" )]
@@ -107,8 +111,10 @@ namespace Rock.UniversalSearch.IndexComponents
         /// <summary>
         /// Indexes the document.
         /// </summary>
-        /// <param name="typeName">Name of the type.</param>
+        /// <typeparam name="T"></typeparam>
         /// <param name="document">The document.</param>
+        /// <param name="indexName">Name of the index.</param>
+        /// <param name="mappingType">Type of the mapping.</param>
         public override void IndexDocument<T>( T document, string indexName = null, string mappingType = null )
         {
             if (indexName == null )
@@ -159,8 +165,8 @@ namespace Rock.UniversalSearch.IndexComponents
         /// <summary>
         /// Creates the index.
         /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="indexName">Name of the index.</param>
+        /// <param name="documentType">Type of the document.</param>
+        /// <param name="deleteIfExists">if set to <c>true</c> [delete if exists].</param>
         public override void CreateIndex(Type documentType, bool deleteIfExists = true)
         {
             var indexName = documentType.Name.ToLower();
@@ -252,12 +258,19 @@ namespace Rock.UniversalSearch.IndexComponents
         /// <summary>
         /// Deletes the index.
         /// </summary>
-        /// <param name="indexName">Name of the index.</param>
+        /// <param name="documentType">Type of the document.</param>
         public override void DeleteIndex( Type documentType )
         {
             _client.DeleteIndex( documentType.Name.ToLower() );
         }
 
+        /// <summary>
+        /// Searches the specified query.
+        /// </summary>
+        /// <param name="query">The query.</param>
+        /// <param name="searchType">Type of the search.</param>
+        /// <param name="entities">The entities.</param>
+        /// <returns></returns>
         public override IEnumerable<SearchResultModel> Search( string query, SearchType searchType = SearchType.ExactMatch, List<int> entities = null )
         {
             ISearchResponse<dynamic> results = null;
@@ -344,6 +357,12 @@ namespace Rock.UniversalSearch.IndexComponents
             
         }
 
+        /// <summary>
+        /// Deletes the document by property.
+        /// </summary>
+        /// <param name="documentType">Type of the document.</param>
+        /// <param name="propertyName">Name of the property.</param>
+        /// <param name="propertyValue">The property value.</param>
         public override void DeleteDocumentByProperty( Type documentType, string propertyName, object propertyValue ) {
 
             string jsonSearch = string.Format( @"{{
@@ -357,6 +376,11 @@ namespace Rock.UniversalSearch.IndexComponents
             var response = _client.DeleteByQuery<IndexModelBase>( documentType.Name.ToLower(), documentType.Name.ToLower(), qd => qd.Query( q => q.Raw( jsonSearch ) ));
         }
 
+        /// <summary>
+        /// Deletes the document by identifier.
+        /// </summary>
+        /// <param name="documentType">Type of the document.</param>
+        /// <param name="id">The identifier.</param>
         public override void DeleteDocumentById( Type documentType, int id )
         {
             this.DeleteDocumentByProperty( documentType, "id", id );

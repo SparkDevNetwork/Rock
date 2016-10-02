@@ -26,13 +26,13 @@ namespace Rock.UniversalSearch
         /// <summary>
         /// Indexes the document.
         /// </summary>
-        /// <param name="Id">The identifier.</param>
+        /// <param name="id">The identifier.</param>
         void IndexDocument( int id );
 
         /// <summary>
         /// Deletes the indexed document.
         /// </summary>
-        /// <param name="Id">The identifier.</param>
+        /// <param name="id">The identifier.</param>
         void DeleteIndexedDocument( int id );
 
         /// <summary>

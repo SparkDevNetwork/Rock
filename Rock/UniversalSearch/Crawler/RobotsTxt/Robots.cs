@@ -37,7 +37,7 @@ namespace Rock.UniversalSearch.Crawler.RobotsTxt
         public bool IsAnyPathDisallowed { get; private set; }
 
         /// <summary>
-        /// How to support the Allow directive. Defaults to <see cref="RobotsTxt.AllowRuleImplementation.MoreSpecific"/>.
+        /// How to support the Allow directive. Defaults to <see cref="RobotsTxt.Enums.AllowRuleImplementation.MoreSpecific"/>.
         /// </summary>
         public AllowRuleImplementation AllowRuleImplementation { get; set; }
 

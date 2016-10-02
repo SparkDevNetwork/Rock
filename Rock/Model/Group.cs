@@ -614,6 +614,10 @@ namespace Rock.Model
         #endregion
 
         #region Indexing Methods
+
+        /// <summary>
+        /// Bulks the index documents.
+        /// </summary>
         public void BulkIndexDocuments()
         {
             List<IndexModelBase> indexableItems = new List<IndexModelBase>();
