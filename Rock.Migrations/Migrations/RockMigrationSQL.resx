@@ -382,4 +382,10 @@
   <data name="_201608172242214_Podcasting" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>version 6.0\version 1.6.0\201608172242214_podcasting.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
   </data>
+  <data name="_201610031959052_FamilyAnalyticsUpdate_spCrm_FamilyAnalyticsAttendance" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>201610031959052_familyanalyticsupdate_spcrm_familyanalyticsattendance.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
+  </data>
+  <data name="_201610031959052_FamilyAnalyticsUpdate_spCrm_FamilyAnalyticsEraDataset" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>201610031959052_familyanalyticsupdate_spcrm_familyanalyticseradataset.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
+  </data>
 </root>
