@@ -66,6 +66,10 @@
     <Compile Include="Migrations\201609302332378_UniversalSearchModelUpdates.Designer.cs">
       <DependentUpon>201609302332378_UniversalSearchModelUpdates.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201610031959052_FamilyAnalyticsUpdate.cs" />
+    <Compile Include="Migrations\201610031959052_FamilyAnalyticsUpdate.Designer.cs">
+      <DependentUpon>201610031959052_FamilyAnalyticsUpdate.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 6.0\Version 1.6.0\201609282147388_WaitList.cs" />
     <Compile Include="Migrations\Version 6.0\Version 1.6.0\201609282147388_WaitList.Designer.cs">
       <DependentUpon>201609282147388_WaitList.cs</DependentUpon>
@@ -2268,6 +2272,9 @@
     <EmbeddedResource Include="Migrations\201609302332378_UniversalSearchModelUpdates.resx">
       <DependentUpon>201609302332378_UniversalSearchModelUpdates.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201610031959052_FamilyAnalyticsUpdate.resx">
+      <DependentUpon>201610031959052_FamilyAnalyticsUpdate.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 6.0\Version 1.6.0\201609282147388_WaitList.resx">
       <DependentUpon>201609282147388_WaitList.cs</DependentUpon>
     </EmbeddedResource>
@@ -3913,6 +3920,8 @@
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
+    <Content Include="Migrations\201610031959052_FamilyAnalyticsUpdate_spCrm_FamilyAnalyticsAttendance.sql" />
+    <Content Include="Migrations\201610031959052_FamilyAnalyticsUpdate_spCrm_FamilyAnalyticsEraDataset.sql" />
     <Content Include="Migrations\Version 6.0\Version 1.6.0\201608171937068_GivingAnalyticsAccounts_AccountTotals.sql" />
     <Content Include="Migrations\Version 6.0\Version 1.6.0\201608171937068_GivingAnalyticsAccounts_FirstLastEverDates.sql" />
     <Content Include="Migrations\Version 6.0\Version 1.6.0\201608171937068_GivingAnalyticsAccounts_PersonSummary.sql" />
