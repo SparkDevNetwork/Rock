@@ -216,9 +216,12 @@ namespace church.ccv.Podcast
             // now add all the messages
             series.Messages = new List<PodcastMessage>( );
 
-            var orderedContentChannelItems = contentChannel.Items.OrderByDescending( i => i.StartDateTime );
-
             // sort the messages by date
+            var orderedContentChannelItems = contentChannel.Items.OrderByDescending( i => i.StartDateTime );
+            
+            // and then priority (lowest priority goes to top)
+            orderedContentChannelItems = orderedContentChannelItems.OrderBy( i => i.Priority );
+            
             foreach ( ContentChannelItem contentChannelItem in orderedContentChannelItems )
             {
                 // convert each contentChannelItem into a PodcastMessage, and add it to our list
