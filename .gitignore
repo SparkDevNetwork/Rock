@@ -3,3 +3,4 @@ StyleCop.Cache
 *.sln.GhostDoc.xml
 
 Packages/*
+.vs/config/applicationhost.config
