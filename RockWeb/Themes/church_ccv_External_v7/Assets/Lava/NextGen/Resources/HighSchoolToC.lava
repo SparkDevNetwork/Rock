@@ -1,5 +1,5 @@
 {% comment %}
-  {% include '~~/Assets/Lava/NextGen/Resources/JuniorHigh.lava' %}
+  {% include '~~/Assets/Lava/NextGen/Resources/HighSchool.lava' %}
 {% endcomment %}
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 263.93 44.34">
     <defs>
@@ -28,12 +28,12 @@
     </g>
 </svg>
 
+<div class="label label-default">High School</div>
+
 {% assign latestItem = Items | First %}
 
-<div class="label label-default">Junior High</div>
-
 <h2 class="page-header">This Week</h2>
-<a href="/page/1325?ContentId={{ latestItem.Id }}" class="btn btn-block btn-default">Week of<br><span class="no-caps"> {{ latestItem.StartDateTime | Date:'M/d/yyyy' }}</span></a>
+<a href="/page/1329?ContentId={{ latestItem.Id }}" class="btn btn-block btn-default">Week of<br><span class="no-caps"> {{ latestItem.StartDateTime | Date:'M/d/yyyy' }}</span></a>
 
 <p>&nbsp;</p>
 <p>&nbsp;</p>
@@ -41,7 +41,7 @@
 <h3 class="page-header">Prior Weeks</h3>  
   
 {% for item in Items offset:1 %}
-    <a href="/page/1325?ContentId={{ item.Id }}" class="btn btn-block btn-default">Week of<br><span class="no-caps"> {{ item.StartDateTime | Date:'M/d/yyyy' }}</span></a>
+    <a href="/page/1329?ContentId={{ item.Id }}" class="btn btn-block btn-default">Week of<br><span class="no-caps"> {{ item.StartDateTime | Date:'M/d/yyyy' }}</span></a>
 {% endfor %}
   
   
