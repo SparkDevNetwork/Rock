@@ -39,8 +39,6 @@
 <h2 class="page-header">This Week <small>Weekend of {{ viewedItem.StartDateTime | Date:'M/d/yyyy' }}</small></h2>
 <p>{{ viewedItem | Attribute:'Summary' }}</p>
 <p>{{ viewedItem.Content }}</p>
-<p><b>Main Point:</b> {{ viewedItem | Attribute: 'MainPoint' }}</p>
-<p><b>Scripture:</b> {{ viewedItem | Attribute: 'Scripture' }}</p>
 
 {% assign messageVid = viewedItem | Attribute: 'MessageVideo' %}
 
