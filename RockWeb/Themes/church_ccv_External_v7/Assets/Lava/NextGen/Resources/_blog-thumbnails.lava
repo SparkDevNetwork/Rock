@@ -1,5 +1,5 @@
 {% comment %}
-  {% include '~~/Assets/Lava/Kids/Resources/_blog-thumbnails.lava' %}
+  {% include '~~/Assets/Lava/NextGen/Resources/_blog-thumbnails.lava' %}
 {% endcomment %}
 
 {% if linkImages != false %}{% assign linkImages = true %}{% endif %}

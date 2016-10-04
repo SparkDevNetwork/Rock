@@ -1,8 +1,8 @@
 {% comment %}
-  {% include '~~/Assets/Lava/Kids/Resources/PickAge.lava' %}
+  {% include '~~/Assets/Lava/NextGen/Resources/PickAge.lava' %}
 {% endcomment %}
 
-<h2 class="page-header">Parent Resources for Kids</h2>
+<h2 class="page-header">Parent Resources</h2>
 
 <p class="lead">Select an age group to continue</p>
 
@@ -12,5 +12,11 @@
   </div>
   <div class="col-sm-6 margin-b-lg">
     <a href="/page/1338" class="btn btn-block btn-default">Later Kids<br><span class="no-caps">2nd - 6th Grade</span></a>
+  </div>
+    <div class="col-sm-6 margin-b-lg">
+    <a href="/page/1349" class="btn btn-block btn-default">Junior High<br><span class="no-caps">7th - 8th Grade</span></a>
+  </div>
+  <div class="col-sm-6 margin-b-lg">
+    <a href="/page/1350" class="btn btn-block btn-default">High School<br><span class="no-caps">9th - 12th Grade</span></a>
   </div>
 </div>
