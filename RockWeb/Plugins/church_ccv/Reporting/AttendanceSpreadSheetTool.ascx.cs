@@ -35,8 +35,6 @@ namespace RockWeb.Plugins.church_ccv.Reporting
     {
         #region Base Control Methods
 
-        //  overrides of the base RockBlock methods (i.e. OnInit, OnLoad)
-
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
         /// </summary>
@@ -47,13 +45,10 @@ namespace RockWeb.Plugins.church_ccv.Reporting
             gCheckinAttendanceExport.GridRebind += gCheckinAttendanceExport_GridRebind;
             gHeadcountsExport.GridRebind += gHeadcountsExport_GridRebind;
 
-
             // this event gets fired after block settings are updated. it's nice to repaint the screen if these settings would alter it
             this.BlockUpdated += Block_BlockUpdated;
             this.AddConfigurationUpdateTrigger( upnlContent );
         }
-
-
 
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Load" /> event.
@@ -106,8 +101,6 @@ namespace RockWeb.Plugins.church_ccv.Reporting
                     item.Selected = selectAll || groupIdList.Contains( item.Value );
                 }
             }
-
-
 
             BindCheckinAttendanceGrid();
             BindHeadcountsGrid();
@@ -869,7 +862,20 @@ namespace RockWeb.Plugins.church_ccv.Reporting
         /// </summary>
         private class GroupAttendanceMetrics
         {
+            /// <summary>
+            /// Gets or sets the group.
+            /// </summary>
+            /// <value>
+            /// The group.
+            /// </value>
             public Group Group { get; set; }
+            
+            /// <summary>
+            /// Gets or sets the metric values.
+            /// </summary>
+            /// <value>
+            /// The metric values.
+            /// </value>
             public List<MetricValue> MetricValues { get; set; }
         }
     }
