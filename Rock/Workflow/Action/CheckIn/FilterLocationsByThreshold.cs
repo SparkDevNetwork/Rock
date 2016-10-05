@@ -64,16 +64,21 @@ namespace Rock.Workflow.Action.CheckIn
                             {
                                 foreach ( var location in group.Locations.ToList() )
                                 {
-                                    if ( location.Location.SoftRoomThreshold.HasValue &&
-                                        location.Location.SoftRoomThreshold.Value <= KioskLocationAttendance.Read( location.Location.Id ).CurrentCount )
+                                    if ( location.Location.SoftRoomThreshold.HasValue )
                                     {
-                                        if ( remove )
+                                        var locAttendance = KioskLocationAttendance.Read( location.Location.Id );
+                                        if ( locAttendance != null &&
+                                            !locAttendance.DistinctPersonIds.Contains( person.Person.Id ) &&
+                                            location.Location.SoftRoomThreshold.Value <= locAttendance.CurrentCount )
                                         {
-                                            group.Locations.Remove( location );
-                                        }
-                                        else
-                                        {
-                                            location.ExcludedByFilter = true;
+                                            if ( remove )
+                                            {
+                                                group.Locations.Remove( location );
+                                            }
+                                            else
+                                            {
+                                                location.ExcludedByFilter = true;
+                                            }
                                         }
                                     }
                                 }

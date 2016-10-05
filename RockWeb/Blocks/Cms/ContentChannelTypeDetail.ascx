@@ -18,7 +18,7 @@
                     <asp:Literal ID="lTitle" runat="server" />
                 </h1>
             </div>
-
+            <Rock:PanelDrawer ID="pdAuditDetails" runat="server"></Rock:PanelDrawer>
             <div class="panel-body">
 
                 <Rock:NotificationBox ID="nbWarningMessage" runat="server" NotificationBoxType="Warning" />

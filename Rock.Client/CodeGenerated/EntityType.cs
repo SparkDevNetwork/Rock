@@ -53,6 +53,9 @@ namespace Rock.Client
         public bool IsEntity { get; set; }
 
         /// <summary />
+        public bool IsIndexingEnabled { get; set; }
+
+        /// <summary />
         public bool IsSecured { get; set; }
 
         /// <summary />
@@ -83,6 +86,7 @@ namespace Rock.Client
             this.FriendlyName = source.FriendlyName;
             this.IsCommon = source.IsCommon;
             this.IsEntity = source.IsEntity;
+            this.IsIndexingEnabled = source.IsIndexingEnabled;
             this.IsSecured = source.IsSecured;
             this.MultiValueFieldTypeId = source.MultiValueFieldTypeId;
             this.Name = source.Name;

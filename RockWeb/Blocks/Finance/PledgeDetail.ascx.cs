@@ -134,12 +134,15 @@ namespace RockWeb.Blocks.Finance
                 {
                     pledge = new FinancialPledgeService( rockContext ).Get( pledgeId );
                     lActionTitle.Text = ActionTitle.Edit( FinancialPledge.FriendlyTypeName ).FormatAsHtmlTitle();
+                    pdAuditDetails.SetEntity( pledge, ResolveRockUrl( "~" ) );
                 }
 
                 if ( pledge == null )
                 {
                     pledge = new FinancialPledge();
                     lActionTitle.Text = ActionTitle.Add( FinancialPledge.FriendlyTypeName ).FormatAsHtmlTitle();
+                    // hide the panel drawer that show created and last modified dates
+                    pdAuditDetails.Visible = false;
                 }
 
                 var isReadOnly = !IsUserAuthorized( Authorization.EDIT );

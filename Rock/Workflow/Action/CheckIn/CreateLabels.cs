@@ -35,7 +35,7 @@ namespace Rock.Workflow.Action.CheckIn
     [ActionCategory( "Check-In" )]
     [Description( "Creates Check-in Labels" )]
     [Export( typeof( ActionComponent ) )]
-    [ExportMetadata( "ComponentName", "Save Attendance" )]
+    [ExportMetadata( "ComponentName", "Create Labels" )]
     public class CreateLabels : CheckInActionComponent
     {
         /// <summary>
@@ -51,8 +51,6 @@ namespace Rock.Workflow.Action.CheckIn
         {
             var checkInState = GetCheckInState( entity, out errorMessages );
 
-            var labels = new List<CheckInLabel>();
-
             if ( checkInState != null )
             {
                 var family = checkInState.CheckIn.CurrentFamily;
@@ -66,11 +64,20 @@ namespace Rock.Workflow.Action.CheckIn
                     var people = family.GetPeople( true );
                     foreach ( var person in people )
                     {
-                        foreach ( var groupType in person.GetGroupTypes( true ) ) 
+                        var personGroupTypes = person.GetGroupTypes( true );
+                        var groupTypes = new List<CheckInGroupType>();
+
+                        // Get Primary area group types first
+                        personGroupTypes.Where( t => checkInState.ConfiguredGroupTypes.Contains( t.GroupType.Id ) ).ToList().ForEach( t => groupTypes.Add( t ) );
+                        
+                        // Then get additional areas
+                        personGroupTypes.Where( t => !checkInState.ConfiguredGroupTypes.Contains( t.GroupType.Id ) ).ToList().ForEach( t => groupTypes.Add( t ) );
+
+                        var personLabels = new List<Guid>();
+
+                        foreach ( var groupType in groupTypes ) 
                         {
                             groupType.Labels = new List<CheckInLabel>();
-
-                            var personLabels = new List<Guid>();
 
                             var groupTypeLabels = GetGroupTypeLabels( groupType.GroupType );
 
@@ -84,7 +91,8 @@ namespace Rock.Workflow.Action.CheckIn
                                     {
                                         if ( labelCache.LabelType == KioskLabelType.Family )
                                         {
-                                            if ( familyLabels.Contains( labelCache.Guid ) )
+                                            if ( familyLabels.Contains( labelCache.Guid ) ||
+                                                personLabels.Contains( labelCache.Guid ) )
                                             {
                                                 break;
                                             }

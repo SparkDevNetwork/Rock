@@ -175,10 +175,10 @@ namespace Rock.Transactions
 
                 pageView.PageId = this.PageId;
                 pageView.SiteId = this.SiteId;
-                pageView.Url = cleanUrl;
+                pageView.Url = cleanUrl.Left( 500 );
                 pageView.DateTimeViewed = this.DateViewed;
                 pageView.PersonAliasId = this.PersonAliasId;
-                pageView.PageTitle = this.PageTitle;
+                pageView.PageTitle = this.PageTitle.Left( 500 );
 
                 pageView.PageViewSessionId = pageViewSessionId.Value;
 

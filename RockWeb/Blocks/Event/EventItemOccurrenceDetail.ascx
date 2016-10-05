@@ -16,7 +16,7 @@
             <div class="panel-heading clearfix">
                 <h1 class="panel-title"><i class="fa fa-clock-o"></i> <asp:Literal ID="lActionTitle" runat="server" /></h1>
             </div>
-
+            <Rock:PanelDrawer ID="pdAuditDetails" runat="server"></Rock:PanelDrawer>
             <div class="panel-body">
 
                 <asp:ValidationSummary ID="vsSummary" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" />

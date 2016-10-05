@@ -22,8 +22,8 @@
                     <Rock:RockTextBox ID="tbEmail" runat="server" Label="Email" TextMode="Email" Required="true" />
 
                     <Rock:DateRangePicker ID="drpDateRange" runat="server" Label="Date Range" />
-                    <Rock:CurrencyBox ID="tbTotalAmount" runat="server" Label="Total Amount" Required="true" />
-                    <Rock:RockDropDownList ID="ddlFrequency" runat="server" Label="Frequency" />
+                    <Rock:CurrencyBox ID="tbTotalAmount" runat="server" Label="Total Pledge Amount" Required="true" />
+                    <Rock:RockDropDownList ID="ddlFrequency" runat="server" Label="Gift Frequency" />
 
                     <div class="actions">
                         <asp:LinkButton ID="btnSave" AccessKey="s" runat="server" Text="Save" OnClick="btnSave_Click" CssClass="btn btn-primary" />

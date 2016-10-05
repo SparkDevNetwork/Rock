@@ -135,10 +135,11 @@ namespace Rock.Model
         /// </summary>
         /// <param name="pageId">The page identifier.</param>
         /// <param name="currentPersonAliasId">The current person alias identifier.</param>
-        public void CopyPage( int pageId, int? currentPersonAliasId = null )
+        public Guid? CopyPage( int pageId, int? currentPersonAliasId = null )
         {
             var rockContext = new RockContext();
             var pageService = new PageService( rockContext );
+            Guid? newPageGuid = null;
 
             var page = pageService.Get( pageId );
             if ( page != null )
@@ -154,11 +155,14 @@ namespace Rock.Model
                 {
                     PageCache.Flush( newPage.ParentPageId.Value );
                 }
+                newPageGuid= newPage.Guid;
 
                 GenerateBlockAttributeValues( pageGuidDictionary, blockGuidDictionary, rockContext, currentPersonAliasId );
                 GeneratePageBlockAuths( pageGuidDictionary, blockGuidDictionary, rockContext, currentPersonAliasId );
                 CloneHtmlContent( blockGuidDictionary, rockContext, currentPersonAliasId );
             }
+
+            return newPageGuid;
         }
 
         /// <summary>
@@ -180,6 +184,7 @@ namespace Rock.Model
             targetPage.ModifiedByPersonAlias = null;
             targetPage.ModifiedByPersonAliasId = currentPersonAliasId;
             targetPage.ModifiedDateTime = RockDateTime.Now;
+            targetPage.BodyCssClass = sourcePage.BodyCssClass;
             targetPage.Id = 0;
             targetPage.Guid = Guid.NewGuid();
             targetPage.PageTitle = sourcePage.PageTitle + " - Copy";

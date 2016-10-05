@@ -224,6 +224,15 @@ namespace Rock.Web.Cache
         public bool IsRequired { get; set; }
 
         /// <summary>
+        /// Gets or sets a value indicating whether this instance is index enabled.
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if this instance is index enabled; otherwise, <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool IsIndexEnabled { get; set; }
+
+        /// <summary>
         /// Gets the type of the field.
         /// </summary>
         /// <value>
@@ -329,6 +338,7 @@ namespace Rock.Web.Cache
             this.DefaultValue = attribute.DefaultValue;
             this.IsMultiValue = attribute.IsMultiValue;
             this.IsRequired = attribute.IsRequired;
+            this.IsIndexEnabled = attribute.IsIndexEnabled;
 
             this.QualifierValues = new Dictionary<string, ConfigurationValue>();
             foreach ( var qualifier in qualifiers )

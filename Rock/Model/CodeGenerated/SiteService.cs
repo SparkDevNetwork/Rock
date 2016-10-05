@@ -104,6 +104,8 @@ namespace Rock.Model
             target.ForeignGuid = source.ForeignGuid;
             target.ForeignKey = source.ForeignKey;
             target.GoogleAnalyticsCode = source.GoogleAnalyticsCode;
+            target.IndexStartingLocation = source.IndexStartingLocation;
+            target.IsIndexEnabled = source.IsIndexEnabled;
             target.IsSystem = source.IsSystem;
             target.LoginPageId = source.LoginPageId;
             target.LoginPageRouteId = source.LoginPageRouteId;

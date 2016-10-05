@@ -743,11 +743,14 @@ namespace RockWeb.Blocks.Event
             if ( !eventItemOccurrenceId.Equals( 0 ) )
             {
                 eventItemOccurrence = new EventItemOccurrenceService( rockContext ).Get( eventItemOccurrenceId );
+                pdAuditDetails.SetEntity( eventItemOccurrence, ResolveRockUrl( "~" ) );
             }
 
             if ( eventItemOccurrence == null )
             {
                 eventItemOccurrence = new EventItemOccurrence { Id = 0 };
+                // hide the panel drawer that show created and last modified dates
+                pdAuditDetails.Visible = false;
             }
 
             if ( !canEdit )

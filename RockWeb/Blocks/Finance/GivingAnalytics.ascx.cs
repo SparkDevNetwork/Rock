@@ -1430,7 +1430,7 @@ function(item) {
                                 d.Transaction.TransactionDateTime.HasValue &&
                                 d.Transaction.TransactionDateTime.Value >= missedStart.Value &&
                                 d.Transaction.TransactionDateTime.Value < missedEnd.Value &&
-                                accountIds.Contains( d.AccountId ) &&
+                                ( accountIds.Any() && accountIds.Contains( d.AccountId ) || d.Account.IsTaxDeductible ) &&
                                 d.Amount != 0.0M )
                             .Select( d => d.Transaction.AuthorizedPersonAlias.Person.GivingId )
                             .ToList();

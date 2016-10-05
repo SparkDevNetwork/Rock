@@ -43,7 +43,7 @@ namespace Rock.Workflow.Action
     [DefinedValueField( Rock.SystemGuid.DefinedType.GROUP_LOCATION_TYPE, "Location Type", "The type of location to update (if attribute is not specified or is an invalid value).", true, false, Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME, "", 2 )]
     [LocationField("Location", "The location to use for updating person's record.", false, "", "", 3 )]
     [WorkflowAttribute("Location (From Attribute)", "A location attribute to use for updating person's record. This will be used if a value is not entered for the Location field above.", false, "", "", 4, "LocationAttribute",
-        new string[] { "Rock.Field.Types.LocationFieldType" } )]
+        new string[] { "Rock.Field.Types.LocationFieldType", "Rock.Field.Types.AddressFieldType" } )]
     [WorkflowTextOrAttribute( "Is Mailing Location", "Attribute Value", "The value or attribute value to indicate if the location is the mailing address. Only valid values are 'True' or 'False' any other value will be ignored. <span class='tip tip-lava'></span>", false, "", "", 5, "IsMailing" )]
     [WorkflowTextOrAttribute( "Is Mapped Location", "Attribute Value", "The value or attribute value to indicate if the location should be mapped location. Only valid values are 'True' or 'False' any other value will be ignored. <span class='tip tip-lava'></span>", false, "", "", 6, "IsMapped" )]
     public class PersonAddressUpdate : ActionComponent

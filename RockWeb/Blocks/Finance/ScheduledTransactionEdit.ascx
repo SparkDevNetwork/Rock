@@ -94,7 +94,7 @@
                                                     <Rock:MonthYearPicker ID="mypExpiration" runat="server" Label="Expiration Date" />
                                                     <Rock:NumberBox ID="txtCVV" Label="Card Security Code" runat="server" MaxLength="4" />
                                                     <div id="divBillingAddress" runat="server">
-                                                        <Rock:AddressControl ID="acBillingAddress" runat="server" UseStateAbbreviation="true" UseCountryAbbreviation="false" />
+                                                        <Rock:AddressControl ID="acBillingAddress" runat="server" Label="Billing Address" UseStateAbbreviation="true" UseCountryAbbreviation="false" />
                                                     </div>
                                                 </div>
                                             </fieldset>

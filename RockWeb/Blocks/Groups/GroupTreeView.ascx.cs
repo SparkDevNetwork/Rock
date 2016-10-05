@@ -73,7 +73,7 @@ namespace RockWeb.Blocks.Groups
             if ( detailPageReference == null || detailPageReference.PageId == this.RockPage.PageId )
             {
                 hfPageRouteTemplate.Value = ( this.RockPage.RouteData.Route as System.Web.Routing.Route ).Url;
-                hfDetailPageUrl.Value = new Rock.Web.PageReference( this.RockPage.PageId ).BuildUrl().RemoveLeadingForwardslash();
+                hfDetailPageUrl.Value = new Rock.Web.PageReference( this.RockPage.PageId ).BuildUrl();
             }
             else
             {
@@ -88,7 +88,7 @@ namespace RockWeb.Blocks.Groups
                     }
                 }
 
-                hfDetailPageUrl.Value = detailPageReference.BuildUrl().RemoveLeadingForwardslash();
+                hfDetailPageUrl.Value = detailPageReference.BuildUrl();
             }
 
             hfLimitToSecurityRoleGroups.Value = GetAttributeValue( "LimittoSecurityRoleGroups" );

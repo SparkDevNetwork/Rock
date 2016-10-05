@@ -102,6 +102,7 @@ namespace RockWeb.Blocks.Groups
             {
                 groupRequirementType = groupRequirementTypeService.Get( groupRequirementTypeId );
                 lActionTitle.Text = ActionTitle.Edit( GroupRequirementType.FriendlyTypeName ).FormatAsHtmlTitle();
+                pdAuditDetails.SetEntity( groupRequirementType, ResolveRockUrl( "~" ) );
             }
 
             if ( groupRequirementType == null )
@@ -109,6 +110,8 @@ namespace RockWeb.Blocks.Groups
                 groupRequirementType = new GroupRequirementType { Id = 0 };
                 groupRequirementType.RequirementCheckType = RequirementCheckType.Manual;
                 lActionTitle.Text = ActionTitle.Add( GroupRequirementType.FriendlyTypeName ).FormatAsHtmlTitle();
+                // hide the panel drawer that show created and last modified dates
+                pdAuditDetails.Visible = false;
             }
 
             hfGroupRequirementTypeId.Value = groupRequirementType.Id.ToString();

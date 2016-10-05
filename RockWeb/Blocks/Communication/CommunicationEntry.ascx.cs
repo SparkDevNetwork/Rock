@@ -567,6 +567,10 @@ namespace RockWeb.Blocks.Communication
                     {
                         string message = string.Empty;
 
+                        // Save the communication proir to checking recipients.
+                        communication.Status = CommunicationStatus.Draft;
+                        rockContext.SaveChanges();
+
                         if ( CheckApprovalRequired( communication.GetRecipientCount(rockContext) ) && !IsUserAuthorized( "Approve" ) )
                         {
                             communication.Status = CommunicationStatus.PendingApproval;
