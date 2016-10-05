@@ -26,6 +26,7 @@ using Rock.Attribute;
 using Rock.Model;
 using Rock.Security;
 using Rock.Web.Cache;
+using System.Text;
 
 namespace Rock.Data
 {
@@ -139,6 +140,7 @@ namespace Rock.Data
                 return string.Empty;
             }
         }
+
         /// <summary>
         /// Gets the modified by person identifier.
         /// </summary>
@@ -223,6 +225,51 @@ namespace Rock.Data
             PreSaveChanges( dbContext, entry.State );
         }
 
+        /// <summary>
+        /// Gets the created audit HTML.
+        /// </summary>
+        /// <param name="rootUrl">The root URL.</param>
+        /// <returns></returns>
+        public virtual string GetCreatedAuditHtml( string rootUrl )
+        {
+            return GetAuditHtml( CreatedByPersonAlias, CreatedDateTime, rootUrl );
+        }
+
+        /// <summary>
+        /// Gets the modified audit HTML.
+        /// </summary>
+        /// <param name="rootUrl">The root URL.</param>
+        /// <returns></returns>
+        public virtual string GetModifiedAuditHtml( string rootUrl )
+        {
+            return GetAuditHtml( ModifiedByPersonAlias, ModifiedDateTime, rootUrl );
+        }
+
+        /// <summary>
+        /// Gets the audit HTML.
+        /// </summary>
+        /// <param name="personAlias">The person alias.</param>
+        /// <param name="dateTime">The date time.</param>
+        /// <param name="rootUrl">The root URL.</param>
+        /// <returns></returns>
+        private string GetAuditHtml( PersonAlias personAlias, DateTime? dateTime, string rootUrl )
+        {
+            var sb = new StringBuilder();
+
+            if ( personAlias != null &&
+                personAlias.Person != null )
+            {
+                sb.AppendFormat( "<a href={0}/Person/{1}>{2}</a>", rootUrl, personAlias.PersonId, personAlias.Person.FullName );
+
+                if ( dateTime.HasValue )
+                {
+                    sb.AppendFormat( " <small class='js-date-rollover' data-toggle='tooltip' data-placement='top' title='{0}'>({1})</small>", dateTime.Value.ToString(), dateTime.Value.ToRelativeDateString() );
+                }
+            }
+
+            return sb.ToString();
+        }
+        
         #endregion
 
         #region ISecured implementation

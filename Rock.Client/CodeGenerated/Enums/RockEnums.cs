@@ -298,6 +298,15 @@ namespace Rock.Client.Enums
 
     /// <summary>
     /// </summary>
+    public enum MetricNumericDataType
+    {
+        Integer = 0x0,
+        Decimal = 0x1,
+        Currency = 0x2,
+    }
+
+    /// <summary>
+    /// </summary>
     public enum MetricValueType
     {
         Measure = 0x0,
@@ -310,6 +319,16 @@ namespace Rock.Client.Enums
     {
         Success = 0x0,
         Fail = 0x1,
+    }
+
+    /// <summary>
+    /// </summary>
+    public enum NotificationClassification
+    {
+        Success = 0x0,
+        Info = 0x1,
+        Warning = 0x2,
+        Danger = 0x3,
     }
 
     /// <summary>
@@ -443,6 +462,25 @@ namespace Rock.Client.Enums
         Weekly = 0x1,
         Custom = 0x2,
         Named = 0x4,
+    }
+
+    /// <summary>
+    /// </summary>
+    public enum SignatureDocumentAction
+    {
+        Email = 0x0,
+        Embed = 0x1,
+    }
+
+    /// <summary>
+    /// </summary>
+    public enum SignatureDocumentStatus
+    {
+        None = 0x0,
+        Sent = 0x1,
+        Signed = 0x2,
+        Cancelled = 0x3,
+        Expired = 0x4,
     }
 
     /// <summary>

@@ -28,6 +28,14 @@ namespace Rock.Lava.Blocks
         string _markup = string.Empty;
 
         /// <summary>
+        /// Method that will be run at Rock startup
+        /// </summary>
+        public override void OnStartup()
+        {
+            Template.RegisterTag<WebRequest>( "webrequest" );
+        }
+
+        /// <summary>
         /// Initializes the specified tag name.
         /// </summary>
         /// <param name="tagName">Name of the tag.</param>
@@ -95,10 +103,16 @@ namespace Rock.Lava.Blocks
                         }
                     }
 
+                    // add body, this will be ignored if other parameters exist
+                    if ( !string.IsNullOrWhiteSpace( parms["body"] ) )
+                    {
+                        request.AddParameter( parms["requestcontenttype"], parms["body"], ParameterType.RequestBody );
+                    }
+
                     IRestResponse response = client.Execute( request );
                     var content = response.Content;
 
-                    var contentType = parms["contenttype"].ToLower();
+                    var contentType = parms["responsecontenttype"].ToLower();
 
                     if ( contentType == "xml" )
                     {
@@ -152,22 +166,23 @@ namespace Rock.Lava.Blocks
             var internalMergeFields = new Dictionary<string, object>();
 
             // get variables defined in the lava source
-            if ( context.Scopes.Count > 0 )
+            foreach ( var scope in context.Scopes )
             {
-                foreach ( var item in context.Scopes[0] )
+                foreach ( var item in scope )
                 {
                     internalMergeFields.AddOrReplace( item.Key, item.Value );
                 }
             }
 
             // get merge fields loaded by the block or container
-            if ( context.Environments.Count > 0 )
+            foreach( var environment in context.Environments )
             {
-                foreach ( var item in context.Environments[0] )
+                foreach ( var item in environment )
                 {
                     internalMergeFields.AddOrReplace( item.Key, item.Value );
                 }
             }
+
             var resolvedMarkup = markup.ResolveMergeFields( internalMergeFields );
 
             var parms = new Dictionary<string, string>();
@@ -176,7 +191,9 @@ namespace Rock.Lava.Blocks
             parms.Add( "basicauth", "" );
             parms.Add( "parameters", "" );
             parms.Add( "headers", "" );
-            parms.Add( "contenttype", "json" );
+            parms.Add( "responsecontenttype", "json" );
+            parms.Add( "body", "" );
+            parms.Add( "requesttype", "text/plain" );
 
             var markupItems = Regex.Matches( resolvedMarkup, "(.*?:'[^']+')" )
                 .Cast<Match>()

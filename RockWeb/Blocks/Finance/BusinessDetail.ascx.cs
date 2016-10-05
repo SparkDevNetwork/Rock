@@ -527,11 +527,14 @@ namespace RockWeb.Blocks.Finance
             if ( !businessId.Equals( 0 ) )
             {
                 business = new PersonService( rockContext ).Get( businessId );
+                pdAuditDetails.SetEntity( business, ResolveRockUrl( "~" ) );
             }
 
             if ( business == null )
             {
                 business = new Person { Id = 0, Guid = Guid.NewGuid() };
+                // hide the panel drawer that show created and last modified dates
+                pdAuditDetails.Visible = false;
             }
 
             bool editAllowed = business.IsAuthorized( Authorization.EDIT, CurrentPerson );

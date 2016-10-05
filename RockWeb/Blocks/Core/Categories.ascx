@@ -11,12 +11,18 @@
             <div class="panel-body">
 
                 <div class="grid grid-panel">
-                    <Rock:Grid ID="gCategories" runat="server" RowItemText="Category" OnRowSelected="gCategories_Select" TooltipField="Description">
+                    <Rock:GridFilter ID="rFilter" runat="server" OnDisplayFilterValue="rFilter_DisplayFilterValue">
+                        <Rock:EntityTypePicker ID="entityTypeFilter" runat="server" Required="false" Label="Entity Type" IncludeGlobalOption="true" />
+                    </Rock:GridFilter>
+                    <Rock:Grid ID="gCategories" runat="server" RowItemText="Category" TooltipField="Description">
                         <Columns>
                             <Rock:ReorderField />
                             <Rock:RockBoundField DataField="Name" HeaderText="Category" />
                             <Rock:RockBoundField DataField="IconCssClass" HeaderText="Icon Class" />
                             <Rock:RockBoundField DataField="ChildCount" HeaderText="Child Categories" DataFormatString="{0:N0}" ItemStyle-HorizontalAlign="Right" HeaderStyle-HorizontalAlign="Right" />
+                            <Rock:RockBoundField DataField="EntityType" HeaderText="Entity Type" SortExpression="EntityType" />
+                            <Rock:RockBoundField DataField="EntityQualifierField" HeaderText="Entity Qualifier Field" SortExpression="EntityQualifierField" />
+                            <Rock:RockBoundField DataField="EntityQualifierValue" HeaderText="Entity Qualifier Value" SortExpression="EntityQualifierValue" />
                             <Rock:EditField OnClick="gCategories_Edit"/>
                             <Rock:SecurityField />
                             <Rock:DeleteField OnClick="gCategories_Delete" />
@@ -31,6 +37,19 @@
             <Content>
 
                 <asp:HiddenField ID="hfIdValue" runat="server" />
+
+                <asp:Panel ID="pnlEntityInfo" runat="server" CssClass="well">
+                    <Rock:EntityTypePicker ID="entityTypePicker" runat="server" Label="Entity Type" Required="true" />
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <Rock:RockTextBox ID="tbEntityQualifierField" runat="server" Label="Qualifier Field" />
+                        </div>
+                        <div class="col-md-6">
+                            <Rock:RockTextBox ID="tbEntityQualifierValue" runat="server" Label="Qualifier Value" />
+                        </div>
+                    </div>
+                </asp:Panel>
 
                 <div class="row">
                     <div class="col-md-6">

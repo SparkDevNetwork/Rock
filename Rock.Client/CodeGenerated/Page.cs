@@ -38,6 +38,9 @@ namespace Rock.Client
         public bool AllowIndexing { get; set; }
 
         /// <summary />
+        public string BodyCssClass { get; set; }
+
+        /// <summary />
         public bool BreadCrumbDisplayIcon { get; set; }
 
         /// <summary />
@@ -157,6 +160,7 @@ namespace Rock.Client
         {
             this.Id = source.Id;
             this.AllowIndexing = source.AllowIndexing;
+            this.BodyCssClass = source.BodyCssClass;
             this.BreadCrumbDisplayIcon = source.BreadCrumbDisplayIcon;
             this.BreadCrumbDisplayName = source.BreadCrumbDisplayName;
             this.BrowserTitle = source.BrowserTitle;

@@ -144,12 +144,16 @@ namespace RockWeb.Blocks.Core
             {
                 binaryFileType = new BinaryFileTypeService( rockContext ).Get( binaryFileTypeId );
                 lActionTitle.Text = ActionTitle.Edit( BinaryFileType.FriendlyTypeName ).FormatAsHtmlTitle();
+                pdAuditDetails.SetEntity( binaryFileType, ResolveRockUrl( "~" ) );
             }
 
             if ( binaryFileType == null )
             {
                 binaryFileType = new BinaryFileType { Id = 0 };
                 lActionTitle.Text = ActionTitle.Add( BinaryFileType.FriendlyTypeName ).FormatAsHtmlTitle();
+
+                // hide the panel drawer that show created and last modified dates
+                pdAuditDetails.Visible = false;
             }
 
             BinaryFileAttributesState = new List<Attribute>();

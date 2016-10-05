@@ -450,7 +450,7 @@ $('.js-panel-toggle').on('click', function (e) {
 
                     if (variableParts.Length > 2 )
                     {
-                        overrides.Add( variableParts[0].Replace( "@", "" ).ToLower(), variableParts[1].Trim() );
+                        overrides.AddOrReplace( variableParts[0].Replace( "@", "" ).ToLower(), variableParts[1].Trim() );
                     }
                 }
             }

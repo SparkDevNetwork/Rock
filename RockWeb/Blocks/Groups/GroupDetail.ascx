@@ -7,24 +7,6 @@
 
     Sys.Application.add_load( function () {
         $('.js-follow-status').tooltip();
-
-        $(".js-drawerpull").on("click", function () {
-            $(this).closest('.panel-drawer').toggleClass('open');
-            $(this).siblings('.drawer-content').slideToggle();
-
-            var icon = $(this).find('i');
-            var iconOpenClass = icon.attr('data-icon-open') || 'fa fa-chevron-up';
-            var iconCloseClass = icon.attr('data-icon-closed') || 'fa fa-chevron-down';
-
-            console.log('icon: ' + icon);
-
-            if ($(this).closest('.panel-drawer').hasClass('open')) {
-                icon.attr('class', iconOpenClass);
-            }
-            else {
-                icon.attr('class', iconCloseClass);
-            }
-        });
     });
 </script>
 
@@ -53,23 +35,7 @@
                     
                 </div>
 
-                <div id="divPanelDrawer" class="panel-drawer" runat="server">
-                    <div class="drawer-content" style="display: none;">
-                        <div class="row">
-                            <div class="col-md-6">
-                                <dl>
-                                    <dt>Created By</dt>
-                                    <dd><asp:Literal ID="lCreatedBy" runat="server" /></dd>
-                                </dl>
-                            </div>
-                            <div class="col-md-6">
-                                <dt>Last Modified By</dt>
-                                <dd><asp:Literal ID="lLastModifiedBy" runat="server" /></dd>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="drawer-pull js-drawerpull"><i class="fa fa-chevron-down" data-icon-closed="fa fa-chevron-down" data-icon-open="fa fa-chevron-up"></i></div>
-                </div>
+                <Rock:PanelDrawer ID="pdAuditDetails" runat="server"></Rock:PanelDrawer>
                 
                 <div class="panel-body">
                     <Rock:NotificationBox ID="nbEditModeMessage" runat="server" NotificationBoxType="Info" />
@@ -104,14 +70,22 @@
                         <Rock:PanelWidget ID="wpGeneral" runat="server" Title="General">
                             <div class="row">
                                 <div class="col-md-6">
-                                    <Rock:DataDropDownList ID="ddlGroupType" runat="server" DataTextField="Name" DataValueField="Id" SourceTypeName="Rock.Model.GroupType, Rock" PropertyName="Name" Label="Group Type" AutoPostBack="true" OnSelectedIndexChanged="ddlGroupType_SelectedIndexChanged" Required="true" />
-                                    <Rock:RockLiteral ID="lGroupType" runat="server" Label="Group Type" />
+                                    <div class="row">
+                                        <div class="col-sm-6">
+                                            <Rock:DataDropDownList ID="ddlGroupType" runat="server" DataTextField="Name" DataValueField="Id" SourceTypeName="Rock.Model.GroupType, Rock" PropertyName="Name" Label="Group Type" AutoPostBack="true" OnSelectedIndexChanged="ddlGroupType_SelectedIndexChanged" Required="true" />
+                                            <Rock:RockLiteral ID="lGroupType" runat="server" Label="Group Type" />
+                                        </div>
+                                        <div class="col-sm-6">
+                                            <Rock:RockCheckBox ID="cbIsSecurityRole" runat="server" Label="Security Role" Text="Yes" />
+                                        </div>
+                                    </div>
                                     <Rock:GroupPicker ID="gpParentGroup" runat="server" Required="false" Label="Parent Group" OnSelectItem="ddlParentGroup_SelectedIndexChanged" />
                                     <Rock:NumberBox ID="nbGroupCapacity" runat="server" Label="Group Capacity" NumberType="Integer" />
                                 </div>
                                 <div class="col-md-6">
                                     <Rock:DataDropDownList ID="ddlCampus" runat="server" DataTextField="Name" DataValueField="Id" SourceTypeName="Rock.Model.Campus, Rock" PropertyName="Name" Label="Campus" />
-                                    <Rock:RockCheckBox ID="cbIsSecurityRole" runat="server" Label="Security Role" Text="Yes" />
+                                    <Rock:RockDropDownList ID="ddlSignatureDocumentTemplate" runat="server" Label="Require Signed Document" 
+                                        Help="If members of this group need to have signed a document, select that document type here." />
                                 </div>
                             </div>
                         </Rock:PanelWidget>

@@ -330,6 +330,9 @@ namespace Rock.Attribute
 
                 rockContext = rockContext ?? new RockContext();
 
+                // Event item's will load attributes for child calendar items. Use this to store the child values.
+                var altEntityIds = new List<int>();
+
                 // Check for group type attributes
                 var groupTypeIds = new List<int>();
                 if ( entity is GroupMember || entity is Group || entity is GroupType )
@@ -394,6 +397,16 @@ namespace Rock.Attribute
                     }
                 }
 
+                // Get the calendar ids for any event items
+                var calendarIds = new List<int>();
+                if ( entity is EventItem )
+                {
+                    var calendarItems = ( (EventItem)entity ).EventCalendarItems.ToList() ?? new EventCalendarItemService( rockContext )
+                        .Queryable().AsNoTracking().Where( c => c.EventItemId == ( (EventItem)entity ).Id ).ToList();
+                    calendarIds = calendarItems.Select( c => c.EventCalendarId ).ToList();
+                    altEntityIds = calendarItems.Select( c => c.Id ).ToList();
+                }
+
                 foreach ( PropertyInfo propertyInfo in entityType.GetProperties() )
                     properties.Add( propertyInfo.Name.ToLower(), propertyInfo );
 
@@ -405,9 +418,34 @@ namespace Rock.Attribute
                 {
                     groupTypeIds.ForEach( g => inheritedAttributes.Add( g, new List<Rock.Web.Cache.AttributeCache>() ) );
                 }
+                else if ( calendarIds.Any() )
+                {
+                    calendarIds.ForEach( c => inheritedAttributes.Add( c, new List<Rock.Web.Cache.AttributeCache>() ) );
+                }
                 else
                 {
                     inheritedAttributes.Add( 0, new List<Rock.Web.Cache.AttributeCache>() );
+                }
+
+                // Check for any calendar item attributes that event item inherits
+                if ( calendarIds.Any() )
+                {
+                    var calendarItemEntityType = EntityTypeCache.Read( typeof( EventCalendarItem ) );
+                    if ( calendarItemEntityType != null )
+                    {
+                        foreach ( var calendarItemEntityAttributes in AttributeCache
+                            .GetByEntity( calendarItemEntityType.Id )
+                            .Where( a =>
+                                a.EntityTypeQualifierColumn == "EventCalendarId" &&
+                                calendarIds.Contains( a.EntityTypeQualifierValue.AsInteger() ) ) )
+                        {
+                            foreach ( var attributeId in calendarItemEntityAttributes.AttributeIds )
+                            {
+                                inheritedAttributes[calendarItemEntityAttributes.EntityTypeQualifierValue.AsInteger()].Add(
+                                    AttributeCache.Read( attributeId ) );
+                            }
+                        }
+                    }
                 }
 
                 var attributes = new List<Rock.Web.Cache.AttributeCache>();
@@ -488,7 +526,10 @@ namespace Rock.Attribute
                     {
                         List<int> attributeIds = allAttributes.Select( a => a.Id ).ToList();
                         foreach ( var attributeValue in attributeValueService.Queryable().AsNoTracking()
-                            .Where( v => v.EntityId == entity.Id && attributeIds.Contains( v.AttributeId ) ) )
+                            .Where( v => 
+                                v.EntityId.HasValue &&
+                                ( v.EntityId.Value == entity.Id || altEntityIds.Contains( v.EntityId.Value ) )
+                                && attributeIds.Contains( v.AttributeId ) ) )
                         {
                             var attributeKey = AttributeCache.Read( attributeValue.AttributeId ).Key;
                             attributeValues[attributeKey] = new AttributeValueCache( attributeValue );
@@ -924,14 +965,45 @@ namespace Rock.Attribute
         /// <param name="supressOrdering">if set to <c>true</c> supresses reording (LoadAttributes() may perform custom ordering as is the case for group member attributes).</param>
         public static void AddEditControls( IHasAttributes item, Control parentControl, bool setValue, string validationGroup, List<string> exclude, bool supressOrdering = false )
         {
+            AddEditControls( item, parentControl, setValue, validationGroup, exclude, supressOrdering, null );
+        }
+
+        /// <summary>
+        /// Adds the edit controls.
+        /// </summary>
+        /// <param name="item">The item.</param>
+        /// <param name="parentControl">The parent control.</param>
+        /// <param name="setValue">if set to <c>true</c> [set value].</param>
+        /// <param name="validationGroup">The validation group.</param>
+        /// <param name="numberOfColumns">The number of columns.</param>
+        public static void AddEditControls( IHasAttributes item, Control parentControl, bool setValue, string validationGroup, int? numberOfColumns )
+        {
+            AddEditControls( item, parentControl, setValue, validationGroup, new List<string>(), false, numberOfColumns );
+        }
+
+        /// <summary>
+        /// Adds the edit controls.
+        /// </summary>
+        /// <param name="item">The item.</param>
+        /// <param name="parentControl">The parent control.</param>
+        /// <param name="setValue">if set to <c>true</c> [set value].</param>
+        /// <param name="validationGroup">The validation group.</param>
+        /// <param name="numberOfColumns">The number of columns.</param>
+        /// <param name="exclude">The exclude.</param>
+        /// <param name="supressOrdering">if set to <c>true</c> [supress ordering].</param>
+        public static void AddEditControls( IHasAttributes item, Control parentControl, bool setValue, string validationGroup, List<string> exclude, bool supressOrdering, int? numberOfColumns = null )
+        {
             if ( item != null && item.Attributes != null )
             {
                 foreach ( var attributeCategory in GetAttributeCategories( item, false, false, supressOrdering ) )
                 {
-                    AddEditControls(
-                        attributeCategory.Category != null ? attributeCategory.Category.Name : string.Empty,
-                        attributeCategory.Attributes.Select( a => a.Key ).ToList(),
-                        item, parentControl, validationGroup, setValue, exclude );
+                    if ( attributeCategory.Attributes.Where( a => !exclude.Contains( a.Name ) && !exclude.Contains( a.Key ) ).Select( a => a.Key ).Count() > 0 )
+                    {
+                        AddEditControls(
+                            attributeCategory.Category != null ? attributeCategory.Category.Name : string.Empty,
+                            attributeCategory.Attributes.Select( a => a.Key ).ToList(),
+                            item, parentControl, validationGroup, setValue, exclude, numberOfColumns );
+                    }
                 }
             }
         }
@@ -948,6 +1020,28 @@ namespace Rock.Attribute
         /// <param name="exclude">The exclude.</param>
         public static void AddEditControls( string category, List<string> attributeKeys, IHasAttributes item, Control parentControl, string validationGroup, bool setValue, List<string> exclude )
         {
+            AddEditControls( category, attributeKeys, item, parentControl, validationGroup, setValue, exclude, null );
+        }
+
+        /// <summary>
+        /// Adds the edit controls.
+        /// </summary>
+        /// <param name="category">The category.</param>
+        /// <param name="attributeKeys">The attribute keys.</param>
+        /// <param name="item">The item.</param>
+        /// <param name="parentControl">The parent control.</param>
+        /// <param name="validationGroup">The validation group.</param>
+        /// <param name="setValue">if set to <c>true</c> [set value].</param>
+        /// <param name="exclude">The exclude.</param>
+        /// <param name="numberOfColumns">The number of columns.</param>
+        public static void AddEditControls( string category, List<string> attributeKeys, IHasAttributes item, Control parentControl, string validationGroup, bool setValue, List<string> exclude, int? numberOfColumns )
+        {
+            // ensure valid number of columns
+            if ( numberOfColumns.HasValue && numberOfColumns.Value > 12)
+            {
+                numberOfColumns = 12;
+            }
+
             HtmlGenericControl fieldSet;
             if ( parentControl is DynamicControlsPanel )
             {
@@ -964,9 +1058,33 @@ namespace Rock.Attribute
             if ( !string.IsNullOrEmpty( category ) )
             {
                 HtmlGenericControl legend = new HtmlGenericControl( "h4" );
-                fieldSet.Controls.Add( legend );
+
+                if ( numberOfColumns.HasValue )
+                {
+                    HtmlGenericControl row = new HtmlGenericControl( "div" );
+                    row.AddCssClass( "row" );
+                    fieldSet.Controls.Add( row );
+
+                    HtmlGenericControl col = new HtmlGenericControl( "div" );
+                    col.AddCssClass( "col-md-12" );
+                    row.Controls.Add( col );
+
+                    col.Controls.Add( legend );
+                }
+                else
+                {
+                    fieldSet.Controls.Add( legend );
+                }
+                
                 legend.Controls.Clear();
                 legend.InnerText = category.Trim();
+            }
+
+            HtmlGenericControl attributeRow = new HtmlGenericControl( "div" );
+            if ( numberOfColumns.HasValue )
+            {
+                fieldSet.Controls.Add( attributeRow );
+                attributeRow.AddCssClass( "row" );
             }
 
             foreach ( string key in attributeKeys )
@@ -976,7 +1094,20 @@ namespace Rock.Attribute
                 if ( !exclude.Contains( attribute.Name ) && !exclude.Contains( attribute.Key ) )
                 {
                     // Add the control for editing the attribute value
-                    attribute.AddControl( fieldSet.Controls, item.AttributeValues[attribute.Key].Value, validationGroup, setValue, true );
+
+                    if ( numberOfColumns.HasValue )
+                    {
+                        int colSize = (int)Math.Ceiling((double)12 / numberOfColumns.Value);
+
+                        HtmlGenericControl attributeCol = new HtmlGenericControl( "div" );
+                        attributeRow.Controls.Add( attributeCol );
+                        attributeCol.AddCssClass( string.Format( "col-md-{0}", colSize ) );
+                        attribute.AddControl( attributeCol.Controls, item.AttributeValues[attribute.Key].Value, validationGroup, setValue, true );
+                    }
+                    else
+                    {
+                        attribute.AddControl( fieldSet.Controls, item.AttributeValues[attribute.Key].Value, validationGroup, setValue, true );
+                    }
                 }
             }
         }
@@ -988,14 +1119,15 @@ namespace Rock.Attribute
         /// <param name="parentControl">The parent control.</param>
         /// <param name="exclude">The exclude.</param>
         /// <param name="supressOrdering">if set to <c>true</c> supresses reording (LoadAttributes() may perform custom ordering as is the case for group member attributes).</param>
-        public static void AddDisplayControls( IHasAttributes item, Control parentControl, List<string> exclude = null, bool supressOrdering = false )
+        /// <param name="showHeading">if set to <c>true</c> [show heading].</param>
+        public static void AddDisplayControls( IHasAttributes item, Control parentControl, List<string> exclude = null, bool supressOrdering = false, bool showHeading = true )
         {
             exclude = exclude ?? new List<string>();
             string result = string.Empty;
 
             if ( item.Attributes != null )
             {
-                AddDisplayControls(item, GetAttributeCategories(item, false, supressOrdering), parentControl, exclude);
+                AddDisplayControls(item, GetAttributeCategories(item, false, supressOrdering), parentControl, exclude, showHeading);
             }
         }
 
@@ -1011,7 +1143,6 @@ namespace Rock.Attribute
         {
             foreach ( var attributeCategory in attributeCategories )
             {
-
                 if ( showHeading )
                 {
                     HtmlGenericControl header = new HtmlGenericControl( "h4" );

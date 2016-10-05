@@ -164,6 +164,33 @@ namespace Rock.Model
         }
 
         /// <summary>
+        /// Gets an enumerable collection of <see cref="Rock.Model.Person"/> entities that have a matching email address, firstname and lastname.
+        /// </summary>
+        /// <param name="businessName">A <see cref="System.String"/> representing the business name to search by.</param>
+        /// <param name="email">A <see cref="System.String"/> representing the email address to search by.</param>
+        /// <returns>
+        /// An enumerable collection of <see cref="Rock.Model.Person"/> entities that match the search criteria.
+        /// </returns>
+        public IEnumerable<Person> GetBusinessByMatch( string businessName, string email )
+        {
+            businessName = businessName ?? string.Empty;
+            email = email ?? string.Empty;
+            var query = Queryable( false, true );
+            var definedValueBusinessType = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_BUSINESS.AsGuid() );
+            if ( definedValueBusinessType != null )
+            {
+                int recordTypeBusiness = definedValueBusinessType.Id;
+                query = query.Where( p => p.RecordTypeValueId == recordTypeBusiness );
+            }
+
+            return query
+            .Where( p =>
+                email != "" && p.Email == email &&
+                businessName != "" && p.LastName == businessName )
+            .ToList();
+        }
+
+        /// <summary>
         /// Gets an enumerable collection of <see cref="Rock.Model.Person"/> entities by martial status <see cref="Rock.Model.DefinedValue"/>
         /// </summary>
         /// <param name="maritalStatusId">An <see cref="System.Int32"/> representing the Id of the Marital Status <see cref="Rock.Model.DefinedValue"/> to search by.</param>
@@ -393,21 +420,29 @@ namespace Rock.Model
             }
             else
             {
-                var qry = GetByFirstLastName( firstNames[0], lastNames[0], includeDeceased, includeBusinesses );
-                for ( var i = 1; i < firstNames.Count; i++ )
+                if ( firstNames.Any() && lastNames.Any() )
                 {
-                    qry = qry.Union( GetByFirstLastName( firstNames[i], lastNames[i], includeDeceased, includeBusinesses ) );
-                }
+                    var qry = GetByFirstLastName( firstNames.Any() ? firstNames[0] : "", lastNames.Any() ? lastNames[0] : "", includeDeceased, includeBusinesses );
+                    for ( var i = 1; i < firstNames.Count; i++ )
+                    {
+                        qry = qry.Union( GetByFirstLastName( firstNames[i], lastNames[i], includeDeceased, includeBusinesses ) );
+                    }
 
-                // always include a search for just last name using the last two parts of name search
-                if ( nameParts.Count >= 2 )
+                    // always include a search for just last name using the last two parts of name search
+                    if ( nameParts.Count >= 2 )
+                    {
+                        var lastName = string.Join( " ", nameParts.TakeLast( 2 ) );
+
+                        qry = qry.Union( GetByLastName( lastName, includeDeceased, includeBusinesses ) );
+                    }
+
+                    return qry;
+                }
+                else
                 {
-                    var lastName = string.Join( " ", nameParts.TakeLast( 2 ) );
-
-                    qry = qry.Union( GetByLastName( lastName, includeDeceased, includeBusinesses ) );
+                    // Blank string was used, return empty list
+                    return new List<Person>().AsQueryable();
                 }
-
-                return qry;
             }
         }
 
@@ -461,7 +496,7 @@ namespace Rock.Model
             lastName = lastName.Trim();
 
             var lastNameQry = Queryable( includeDeceased, includeBusinesses )
-                                    .Where(p => p.LastName.StartsWith( lastName ));
+                                    .Where( p => p.LastName.StartsWith( lastName ) );
 
             return lastNameQry;
         }
@@ -489,14 +524,14 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Gets the similiar sounding names.
+        /// Gets the similar sounding names.
         /// </summary>
         /// <param name="fullName">The full name.</param>
         /// <param name="excludeIds">The exclude ids.</param>
         /// <param name="includeDeceased">if set to <c>true</c> [include deceased].</param>
         /// <param name="includeBusinesses">if set to <c>true</c> [include businesses].</param>
         /// <returns></returns>
-        public List<string> GetSimiliarNames( string fullName, List<int> excludeIds, bool includeDeceased = false, bool includeBusinesses = false )
+        public List<string> GetSimilarNames( string fullName, List<int> excludeIds, bool includeDeceased = false, bool includeBusinesses = false )
         {
             var names = fullName.SplitDelimitedValues();
 
@@ -522,11 +557,26 @@ namespace Rock.Model
                 lastName = fullName.Trim();
             }
 
+            return GetSimilarNames( firstName, lastName, reversed, excludeIds, includeDeceased, includeBusinesses );
+        }
+
+        /// <summary>
+        /// Gets the similar names.
+        /// </summary>
+        /// <param name="firstName">The first name.</param>
+        /// <param name="lastName">The last name.</param>
+        /// <param name="reversed">if set to <c>true</c> [reversed].</param>
+        /// <param name="excludeIds">The exclude ids.</param>
+        /// <param name="includeDeceased">if set to <c>true</c> [include deceased].</param>
+        /// <param name="includeBusinesses">if set to <c>true</c> [include businesses].</param>
+        /// <returns></returns>
+        public List<string> GetSimilarNames( string firstName, string lastName, bool reversed, List<int> excludeIds, bool includeDeceased = false, bool includeBusinesses = false )
+        {
             var similarNames = new List<string>();
 
             if ( !string.IsNullOrWhiteSpace( firstName ) && !string.IsNullOrWhiteSpace( lastName ) )
             {
-                var metaphones = ( (RockContext)this.Context ).Metaphones;
+                var metaphones = ( ( RockContext ) this.Context ).Metaphones;
 
                 string ln1 = string.Empty;
                 string ln2 = string.Empty;
@@ -577,6 +627,28 @@ namespace Rock.Model
         }
 
         /// <summary>
+        /// Gets the businesses.
+        /// </summary>
+        /// <param name="personId">The person identifier.</param>
+        /// <returns></returns>
+        public IQueryable<Person> GetBusinesses( int personId )
+        {
+            Guid businessGuid = Rock.SystemGuid.GroupRole.GROUPROLE_KNOWN_RELATIONSHIPS_BUSINESS.AsGuid();
+            Guid ownerGuid = Rock.SystemGuid.GroupRole.GROUPROLE_KNOWN_RELATIONSHIPS_OWNER.AsGuid();
+
+            var rockContext = (RockContext)this.Context;
+            return new GroupMemberService( rockContext )
+                .Queryable().AsNoTracking()
+                .Where( m =>
+                        m.GroupRole.Guid.Equals( businessGuid ) &&
+                        m.Group.Members.Any( o =>
+                            o.PersonId == personId &&
+                            o.GroupRole.Guid.Equals( ownerGuid ) ) )
+                .Select( m => m.Person )
+                .OrderBy( b => b.LastName );
+        }
+
+        /// <summary>
         /// Gets an queryable collection of <see cref="Rock.Model.Person"/> entities where their phone number partially matches the provided value.
         /// </summary>
         /// <param name="partialPhoneNumber">A <see cref="System.String"/> containing a partial phone number to match.</param>
@@ -604,7 +676,7 @@ namespace Rock.Model
         {
             Guid familyGuid = new Guid( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY );
 
-            return new GroupMemberService( (RockContext)this.Context ).Queryable( true )
+            return new GroupMemberService( ( RockContext ) this.Context ).Queryable( true )
                 .Where( m => m.PersonId == personId && m.Group.GroupType.Guid == familyGuid )
                 .Select( m => m.Group )
                 .Distinct();
@@ -630,7 +702,7 @@ namespace Rock.Model
                     .FirstOrDefault();
             }
 
-            var groupMemberService = new GroupMemberService( (RockContext)this.Context );
+            var groupMemberService = new GroupMemberService( ( RockContext ) this.Context );
             return groupMemberService
                 .Queryable()
                 .Where( m =>
@@ -690,7 +762,7 @@ namespace Rock.Model
                 familyGroupTypeId = familyGroupType.Id;
             }
 
-            var groupMemberService = new GroupMemberService( (RockContext)this.Context );
+            var groupMemberService = new GroupMemberService( ( RockContext ) this.Context );
             return groupMemberService
                 .Queryable()
                 .Where( m => m.Group.GroupTypeId == familyGroupTypeId )
@@ -723,7 +795,7 @@ namespace Rock.Model
                     .FirstOrDefault();
             }
 
-            var groupMemberService = new GroupMemberService( (RockContext)this.Context );
+            var groupMemberService = new GroupMemberService( ( RockContext ) this.Context );
             return groupMemberService
                 .Queryable()
                 .Where( m =>
@@ -739,7 +811,7 @@ namespace Rock.Model
         public IQueryable<Person> GetAllHeadOfHouseholds()
         {
             int groupTypeFamilyId = GroupTypeCache.Read( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY ).Id;
-            var groupMemberService = new GroupMemberService( (RockContext)this.Context );
+            var groupMemberService = new GroupMemberService( ( RockContext ) this.Context );
             return groupMemberService
                 .Queryable()
                 .Where( m => m.Group.GroupTypeId == groupTypeFamilyId )
@@ -788,7 +860,7 @@ namespace Rock.Model
         /// <returns></returns>
         public IQueryable<GroupMember> GetGroupMembers( int groupTypeId, int personId, bool includeSelf = false )
         {
-            var groupMemberService = new GroupMemberService( (RockContext)this.Context );
+            var groupMemberService = new GroupMemberService( ( RockContext ) this.Context );
 
             var familyGroupIds = groupMemberService.Queryable( true )
                 .Where( m =>
@@ -814,8 +886,8 @@ namespace Rock.Model
         /// </returns>
         public IQueryable<GroupMember> GetFamilyMembers( Group family, int personId, bool includeSelf = false )
         {
-            return new GroupMemberService( (RockContext)this.Context ).Queryable( "GroupRole, Person", true )
-                .Where( m => 
+            return new GroupMemberService( ( RockContext ) this.Context ).Queryable( "GroupRole, Person", true )
+                .Where( m =>
                     m.GroupId == family.Id &&
                     ( includeSelf || ( m.PersonId != personId && !m.Person.IsDeceased ) ) )
                 .OrderBy( m => m.GroupRole.Order )
@@ -876,10 +948,10 @@ namespace Rock.Model
                 k => k.Id,
                 k2 => k2.Child.Id,
                 ( k, f ) => new ChildWithParents
-                    {
-                        Child = f.Child,
-                        Parents = f.Parents
-                    } );
+                {
+                    Child = f.Child,
+                    Parents = f.Parents
+                } );
 
             if ( !includeChildrenWithoutParents )
             {
@@ -1084,7 +1156,7 @@ namespace Rock.Model
         /// <returns></returns>
         public IOrderedQueryable<PersonPreviousName> GetPreviousNames( int personId )
         {
-            return new PersonPreviousNameService( (RockContext)this.Context ).Queryable()
+            return new PersonPreviousNameService( ( RockContext ) this.Context ).Queryable()
                 .Where( m => m.PersonAlias.PersonId == personId ).OrderBy( a => a.LastName );
         }
 
@@ -1131,9 +1203,9 @@ namespace Rock.Model
         public GroupLocation GetFirstLocation( int personId, int locationTypeValueId )
         {
             Guid familyGuid = new Guid( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY );
-            return new GroupMemberService( (RockContext)this.Context ).Queryable( "GroupLocations.Location", true )
-                .Where( m => 
-                    m.PersonId == personId && 
+            return new GroupMemberService( ( RockContext ) this.Context ).Queryable( "GroupLocations.Location", true )
+                .Where( m =>
+                    m.PersonId == personId &&
                     m.Group.GroupType.Guid == familyGuid )
                 .SelectMany( m => m.Group.GroupLocations )
                 .Where( gl => gl.GroupLocationTypeValueId == locationTypeValueId )
@@ -1150,7 +1222,7 @@ namespace Rock.Model
         {
             if ( person != null )
             {
-                return new PhoneNumberService( (RockContext)this.Context ).Queryable()
+                return new PhoneNumberService( ( RockContext ) this.Context ).Queryable()
                     .Where( n => n.PersonId == person.Id && n.NumberTypeValueId == phoneType.Id )
                     .FirstOrDefault();
             }
@@ -1178,7 +1250,7 @@ namespace Rock.Model
 
             if ( followMerges )
             {
-                var personAlias = new PersonAliasService( (RockContext)this.Context ).GetByAliasId( id );
+                var personAlias = new PersonAliasService( ( RockContext ) this.Context ).GetByAliasId( id );
                 if ( personAlias != null )
                 {
                     return personAlias.Person;
@@ -1205,7 +1277,7 @@ namespace Rock.Model
 
             if ( followMerges )
             {
-                var personAlias = new PersonAliasService( (RockContext)this.Context ).GetByAliasGuid( guid );
+                var personAlias = new PersonAliasService( ( RockContext ) this.Context ).GetByAliasGuid( guid );
                 if ( personAlias != null )
                 {
                     return personAlias.Person;
@@ -1243,7 +1315,7 @@ namespace Rock.Model
 
             if ( followMerges )
             {
-                var personAlias = new PersonAliasService( (RockContext)this.Context ).GetByAliasEncryptedKey( encryptedKey );
+                var personAlias = new PersonAliasService( ( RockContext ) this.Context ).GetByAliasEncryptedKey( encryptedKey );
                 if ( personAlias != null )
                 {
                     return personAlias.Person;
@@ -1285,7 +1357,7 @@ namespace Rock.Model
 
             if ( person.MaritalStatusValueId != marriedDefinedValueId )
             {
-                return default(TResult);
+                return default( TResult );
             }
 
             return GetFamilyMembers( person.Id )
@@ -1306,7 +1378,7 @@ namespace Rock.Model
         /// <returns></returns>
         public IQueryable<DbGeography> GetGeopoints( int personId )
         {
-            var rockContext = (RockContext)this.Context;
+            var rockContext = ( RockContext ) this.Context;
             var groupMemberService = new GroupMemberService( rockContext );
 
             Guid familyTypeGuid = Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY.AsGuid();
@@ -1568,7 +1640,7 @@ namespace Rock.Model
             var group = groupService.Get( groupId );
 
             // make sure the group exists, and person belong to the specified group before deleting them from other groups
-            if ( group == null || !group.Members.Any( m => m.PersonId == personId ))
+            if ( group == null || !group.Members.Any( m => m.PersonId == personId ) )
             {
                 throw new Exception( "Group does not exist, or person is not in the specified group" );
             }

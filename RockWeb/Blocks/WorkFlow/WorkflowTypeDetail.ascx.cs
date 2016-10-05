@@ -542,7 +542,6 @@ namespace RockWeb.Blocks.WorkFlow
             workflowType.Name = tbName.Text;
             workflowType.Description = tbDescription.Text;
             workflowType.CategoryId = cpCategory.SelectedValueAsInt();
-            workflowType.Order = 0;
             workflowType.WorkTerm = tbWorkTerm.Text;
             workflowType.ModifiedByPersonAliasId = CurrentPersonAliasId;
             workflowType.ModifiedDateTime = RockDateTime.Now;
@@ -1222,13 +1221,16 @@ namespace RockWeb.Blocks.WorkFlow
                 workflowType.IsSystem = false;
                 workflowType.CategoryId = parentCategoryId;
                 workflowType.IconCssClass = "fa fa-list-ol";
-                workflowType.ActivityTypes.Add( new WorkflowActivityType { Guid = Guid.NewGuid(), IsActive = true, IsActivatedWithWorkflow = true } );
+                workflowType.ActivityTypes.Add( new WorkflowActivityType { Name = "Start", Guid = Guid.NewGuid(), IsActive = true, IsActivatedWithWorkflow = true } );
                 workflowType.WorkTerm = "Work";
                 workflowType.ProcessingIntervalSeconds = 28800; // Default to every 8 hours
+                // hide the panel drawer that show created and last modified dates
+                pdAuditDetails.Visible = false;
             }
             else
             {
                 workflowType = new WorkflowTypeService( rockContext ).Get( workflowTypeId.Value );
+                pdAuditDetails.SetEntity( workflowType, ResolveRockUrl( "~" ) );
             }
 
             if ( workflowType == null )

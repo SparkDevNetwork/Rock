@@ -24,10 +24,10 @@ using Microsoft.AspNet.SignalR.Hubs;
 /// <summary>
 /// This is the hub for sending/receiving messages. Javascript clients need to
 /// implement a receiveNotification handler as shown below and
-/// ensure to add the signalR-2.1.2.min.js before including /SignalR/hubs
+/// ensure to add the signalR-2.2.0.min.js before including /SignalR/hubs
 /// <code>
 ///     // in OnInit
-///     RockPage.AddScriptLink( "~/Scripts/jquery.signalR-2.1.2.min.js", fingerprint: false );
+///     RockPage.AddScriptLink( "~/Scripts/jquery.signalR-2.2.0.min.js", fingerprint: false );
 ///
 ///     /* in the ascx */
 ///     <script src="/SignalR/hubs"></script>

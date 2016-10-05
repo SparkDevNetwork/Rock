@@ -18,6 +18,7 @@
                 <h1 class="panel-title"><i class="fa fa-desktop"></i>
                     <asp:Literal ID="lReadOnlyTitle" runat="server" /></h1>
             </div>
+            <Rock:PanelDrawer ID="pdAuditDetails" runat="server"></Rock:PanelDrawer>
             <div class="panel-body">
 
                 <asp:ValidationSummary ID="ValidationSummary1" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" />
@@ -55,7 +56,7 @@
                             <Rock:DataTextBox ID="tbSiteDomains" runat="server" SourceTypeName="Rock.Model.Site, Rock" PropertyName="SiteDomains" TextMode="MultiLine" LabelTextFromPropertyName="false" Label="Domain(s)" Help="A comma delimited list of domain values that are associated with this site.  These values are used by Rock to load the correct site whenever a specific page or route is not provided in the url. Rock will determine the site to use by finding the first site with a domain value that is contained by the current request's hostname in the url.  It will then display that site's default page." />
                             <Rock:DataTextBox ID="tbErrorPage" runat="server" SourceTypeName="Rock.Model.Site, Rock" PropertyName="ErrorPage" Help="The url that user will be redirected to if an error occurs on site" />
                             <Rock:DataTextBox ID="tbGoogleAnalytics" runat="server" SourceTypeName="Rock.Model.Site, Rock" PropertyName="GoogleAnalyticsCode" Help="Optional Google Analytics Code.  If specified, the Google Analytics script with this code will be added to every page rendered for this site." />
-                            
+                            <Rock:RockCheckBox ID="cbRequireEncryption" runat="server" Label="Require Encryption" Help="Ensures that the site is loaded over SSL by redirecting to https." />
                         </div>
                     </div>
 
@@ -71,7 +72,9 @@
                                 <Rock:DataTextBox ID="tbAllowedFrameDomains" runat="server" SourceTypeName="Rock.Model.Site, Rock" PropertyName="AllowedFrameDomains" TextMode="MultiLine" LabelTextFromPropertyName="false" Label="Allowed Frame Domain(s)" Help="A whitespace delimited list of domain values that are allowed to embed this site (such as an IFRAME). If left blank, Rock will inject properties into the HTTP Header which modern web browsers will use to prevent site embedding. Only trusted domains should be listed since it could open the site to Clickjacking attempts (see https://www.owasp.org/index.php/Clickjacking)" />
                             </div>
                             <div class="col-md-6">
-                                <Rock:RockCheckBox ID="cbAllowIndexing" runat="server" Label="Allow Indexing" />
+                                <Rock:RockCheckBox ID="cbAllowIndexing" runat="server" Label="Allow Indexing" Help="This setting will enable or disable the pages of the site from being indexed." />
+                                <Rock:RockCheckBox ID="cbEnableIndexing" runat="server" Label="Is Indexed" Help="Enables the Rock indexer for this site." AutoPostBack="true" OnCheckedChanged="cbEnableIndexing_CheckedChanged" />
+                                <Rock:RockTextBox ID="tbIndexStartingLocation" runat="server" Label="Index Starting Location" Help="The URL for the Rock indexer to use to start crawling the site." />
                             </div>
                         </div>
                         <div class="row">

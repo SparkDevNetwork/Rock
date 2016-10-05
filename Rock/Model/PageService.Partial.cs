@@ -18,6 +18,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Rock.Data;
+using Rock.Web.Cache;
 
 namespace Rock.Model
 {
@@ -126,5 +127,250 @@ namespace Rock.Model
 
             return null;
         }
+
+        #region Page Copy Methods
+
+        /// <summary>
+        /// Copies the page.
+        /// </summary>
+        /// <param name="pageId">The page identifier.</param>
+        /// <param name="currentPersonAliasId">The current person alias identifier.</param>
+        public Guid? CopyPage( int pageId, int? currentPersonAliasId = null )
+        {
+            var rockContext = new RockContext();
+            var pageService = new PageService( rockContext );
+            Guid? newPageGuid = null;
+
+            var page = pageService.Get( pageId );
+            if ( page != null )
+            {
+                Dictionary<Guid, Guid> pageGuidDictionary = new Dictionary<Guid, Guid>();
+                Dictionary<Guid, Guid> blockGuidDictionary = new Dictionary<Guid, Guid>();
+                var newPage = GeneratePageCopy( page, pageGuidDictionary, blockGuidDictionary, currentPersonAliasId );
+
+                pageService.Add( newPage );
+                rockContext.SaveChanges();
+
+                if ( newPage.ParentPageId.HasValue )
+                {
+                    PageCache.Flush( newPage.ParentPageId.Value );
+                }
+                newPageGuid= newPage.Guid;
+
+                GenerateBlockAttributeValues( pageGuidDictionary, blockGuidDictionary, rockContext, currentPersonAliasId );
+                GeneratePageBlockAuths( pageGuidDictionary, blockGuidDictionary, rockContext, currentPersonAliasId );
+                CloneHtmlContent( blockGuidDictionary, rockContext, currentPersonAliasId );
+            }
+
+            return newPageGuid;
+        }
+
+        /// <summary>
+        /// This method generates a copy of the given page along with any descendant pages, as well as any blocks on
+        /// any of those pages.
+        /// </summary>
+        /// <param name="sourcePage">The source page.</param>
+        /// <param name="pageGuidDictionary">The dictionary containing the original page guids and the corresponding copied page guids.</param>
+        /// <param name="blockGuidDictionary">The dictionary containing the original block guids and the corresponding copied block guids.</param>
+        /// <param name="currentPersonAliasId">The current person alias identifier.</param>
+        /// <returns></returns>
+        private Rock.Model.Page GeneratePageCopy( Rock.Model.Page sourcePage, Dictionary<Guid, Guid> pageGuidDictionary, Dictionary<Guid, Guid> blockGuidDictionary, int? currentPersonAliasId = null )
+        {
+            var targetPage = new Rock.Model.Page();
+            targetPage = sourcePage.Clone( false );
+            targetPage.CreatedByPersonAlias = null;
+            targetPage.CreatedByPersonAliasId = currentPersonAliasId;
+            targetPage.CreatedDateTime = RockDateTime.Now;
+            targetPage.ModifiedByPersonAlias = null;
+            targetPage.ModifiedByPersonAliasId = currentPersonAliasId;
+            targetPage.ModifiedDateTime = RockDateTime.Now;
+            targetPage.BodyCssClass = sourcePage.BodyCssClass;
+            targetPage.Id = 0;
+            targetPage.Guid = Guid.NewGuid();
+            targetPage.PageTitle = sourcePage.PageTitle + " - Copy";
+            targetPage.InternalName = sourcePage.InternalName + " - Copy";
+            targetPage.BrowserTitle = sourcePage.BrowserTitle + " - Copy";
+            pageGuidDictionary.Add( sourcePage.Guid, targetPage.Guid );
+
+            foreach ( var block in sourcePage.Blocks )
+            {
+                var newBlock = block.Clone( false );
+                newBlock.CreatedByPersonAlias = null;
+                newBlock.CreatedByPersonAliasId = currentPersonAliasId;
+                newBlock.CreatedDateTime = RockDateTime.Now;
+                newBlock.ModifiedByPersonAlias = null;
+                newBlock.ModifiedByPersonAliasId = currentPersonAliasId;
+                newBlock.ModifiedDateTime = RockDateTime.Now;
+                newBlock.Id = 0;
+                newBlock.Guid = Guid.NewGuid();
+                newBlock.PageId = 0;
+
+                blockGuidDictionary.Add( block.Guid, newBlock.Guid );
+                targetPage.Blocks.Add( newBlock );
+            }
+
+            foreach ( var oldchildPage in sourcePage.Pages )
+            {
+                targetPage.Pages.Add( GeneratePageCopy( oldchildPage, pageGuidDictionary, blockGuidDictionary ) );
+            }
+
+            return targetPage;
+        }
+
+        /// <summary>
+        /// Copies any auths for the original pages and blocks over to the copied pages and blocks.
+        /// </summary>
+        /// <param name="pageGuidDictionary">The dictionary containing the original page guids and the corresponding copied page guids.</param>
+        /// <param name="blockGuidDictionary">The dictionary containing the original block guids and the corresponding copied block guids.</param>
+        /// <param name="rockContext">The rock context.</param>
+        /// <param name="currentPersonAliasId">The current person alias identifier.</param>
+        private void GeneratePageBlockAuths( Dictionary<Guid, Guid> pageGuidDictionary, Dictionary<Guid, Guid> blockGuidDictionary, RockContext rockContext, int? currentPersonAliasId = null )
+        {
+            var authService = new AuthService( rockContext );
+            var pageService = new PageService( rockContext );
+            var blockService = new BlockService( rockContext );
+            var pageGuid = Rock.SystemGuid.EntityType.PAGE.AsGuid();
+            var blockGuid = Rock.SystemGuid.EntityType.BLOCK.AsGuid();
+
+            Dictionary<Guid, int> pageIntDictionary = pageService.Queryable()
+                .Where( p => pageGuidDictionary.Keys.Contains( p.Guid ) || pageGuidDictionary.Values.Contains( p.Guid ) )
+                .ToDictionary( p => p.Guid, p => p.Id );
+
+            Dictionary<Guid, int> blockIntDictionary = blockService.Queryable()
+                .Where( p => blockGuidDictionary.Keys.Contains( p.Guid ) || blockGuidDictionary.Values.Contains( p.Guid ) )
+                .ToDictionary( p => p.Guid, p => p.Id );
+
+            var pageAuths = authService.Queryable().Where( a =>
+                a.EntityType.Guid == pageGuid && pageIntDictionary.Values.Contains( a.EntityId.Value ) )
+                .ToList();
+
+            var blockAuths = authService.Queryable().Where( a =>
+                a.EntityType.Guid == blockGuid && blockIntDictionary.Values.Contains( a.EntityId.Value ) )
+                .ToList();
+
+            foreach ( var pageAuth in pageAuths )
+            {
+                var newPageAuth = pageAuth.Clone( false );
+                newPageAuth.CreatedByPersonAlias = null;
+                newPageAuth.CreatedByPersonAliasId = currentPersonAliasId;
+                newPageAuth.CreatedDateTime = RockDateTime.Now;
+                newPageAuth.ModifiedByPersonAlias = null;
+                newPageAuth.ModifiedByPersonAliasId = currentPersonAliasId;
+                newPageAuth.ModifiedDateTime = RockDateTime.Now;
+                newPageAuth.Id = 0;
+                newPageAuth.Guid = Guid.NewGuid();
+                newPageAuth.EntityId = pageIntDictionary[pageGuidDictionary[pageIntDictionary.Where( d => d.Value == pageAuth.EntityId.Value ).FirstOrDefault().Key]];
+                authService.Add( newPageAuth );
+            }
+
+            foreach ( var blockAuth in blockAuths )
+            {
+                var newBlockAuth = blockAuth.Clone( false );
+                newBlockAuth.CreatedByPersonAlias = null;
+                newBlockAuth.CreatedByPersonAliasId = currentPersonAliasId;
+                newBlockAuth.CreatedDateTime = RockDateTime.Now;
+                newBlockAuth.ModifiedByPersonAlias = null;
+                newBlockAuth.ModifiedByPersonAliasId = currentPersonAliasId;
+                newBlockAuth.ModifiedDateTime = RockDateTime.Now;
+                newBlockAuth.Id = 0;
+                newBlockAuth.Guid = Guid.NewGuid();
+                newBlockAuth.EntityId = blockIntDictionary[blockGuidDictionary[blockIntDictionary.Where( d => d.Value == blockAuth.EntityId.Value ).FirstOrDefault().Key]];
+                authService.Add( newBlockAuth );
+            }
+
+            rockContext.SaveChanges();
+        }
+
+        /// <summary>
+        /// This method takes the attribute values of the original blocks, and creates copies of them that point to the copied blocks. 
+        /// In addition, any block attribute value pointing to a page in the original page tree is now updated to point to the
+        /// corresponding page in the copied page tree.
+        /// </summary>
+        /// <param name="pageGuidDictionary">The dictionary containing the original page guids and the corresponding copied page guids.</param>
+        /// <param name="blockGuidDictionary">The dictionary containing the original block guids and the corresponding copied block guids.</param>
+        /// <param name="rockContext">The rock context.</param>
+        /// <param name="currentPersonAliasId">The current person alias identifier.</param>
+        private void GenerateBlockAttributeValues( Dictionary<Guid, Guid> pageGuidDictionary, Dictionary<Guid, Guid> blockGuidDictionary, RockContext rockContext, int? currentPersonAliasId = null )
+        {
+            var attributeValueService = new AttributeValueService( rockContext );
+            var pageService = new PageService( rockContext );
+            var blockService = new BlockService( rockContext );
+            var pageGuid = Rock.SystemGuid.EntityType.PAGE.AsGuid();
+            var blockGuid = Rock.SystemGuid.EntityType.BLOCK.AsGuid();
+
+            Dictionary<Guid, int> blockIntDictionary = blockService.Queryable()
+                .Where( p => blockGuidDictionary.Keys.Contains( p.Guid ) || blockGuidDictionary.Values.Contains( p.Guid ) )
+                .ToDictionary( p => p.Guid, p => p.Id );
+
+            var attributeValues = attributeValueService.Queryable().Where( a =>
+                a.Attribute.EntityType.Guid == blockGuid && blockIntDictionary.Values.Contains( a.EntityId.Value ) )
+                .ToList();
+
+            foreach ( var attributeValue in attributeValues )
+            {
+                var newAttributeValue = attributeValue.Clone( false );
+                newAttributeValue.CreatedByPersonAlias = null;
+                newAttributeValue.CreatedByPersonAliasId = currentPersonAliasId;
+                newAttributeValue.CreatedDateTime = RockDateTime.Now;
+                newAttributeValue.ModifiedByPersonAlias = null;
+                newAttributeValue.ModifiedByPersonAliasId = currentPersonAliasId;
+                newAttributeValue.ModifiedDateTime = RockDateTime.Now;
+                newAttributeValue.Id = 0;
+                newAttributeValue.Guid = Guid.NewGuid();
+                newAttributeValue.EntityId = blockIntDictionary[blockGuidDictionary[blockIntDictionary.Where( d => d.Value == attributeValue.EntityId.Value ).FirstOrDefault().Key]];
+
+                if ( attributeValue.Attribute.FieldType.Guid == Rock.SystemGuid.FieldType.PAGE_REFERENCE.AsGuid() )
+                {
+                    if ( pageGuidDictionary.ContainsKey( attributeValue.Value.AsGuid() ) )
+                    {
+                        newAttributeValue.Value = pageGuidDictionary[attributeValue.Value.AsGuid()].ToString();
+                    }
+                }
+
+                attributeValueService.Add( newAttributeValue );
+            }
+
+            rockContext.SaveChanges();
+        }
+
+        /// <summary>
+        /// Copies any HtmlContent in the original page tree over to the corresponding blocks on the copied page tree.
+        /// </summary>
+        /// <param name="blockGuidDictionary">The dictionary containing the original block guids and the corresponding copied block guids.</param>
+        /// <param name="rockContext">The rock context.</param>
+        /// <param name="currentPersonAliasId">The current person alias identifier.</param>
+        private void CloneHtmlContent( Dictionary<Guid, Guid> blockGuidDictionary, RockContext rockContext, int? currentPersonAliasId = null )
+        {
+            var htmlContentService = new HtmlContentService( rockContext );
+            var blockService = new BlockService( rockContext );
+
+            Dictionary<Guid, int> blockIntDictionary = blockService.Queryable()
+                .Where( p => blockGuidDictionary.Keys.Contains( p.Guid ) || blockGuidDictionary.Values.Contains( p.Guid ) )
+                .ToDictionary( p => p.Guid, p => p.Id );
+
+            var htmlContents = htmlContentService.Queryable().Where( a =>
+                blockIntDictionary.Values.Contains( a.BlockId ) )
+                .ToList();
+
+            foreach ( var htmlContent in htmlContents )
+            {
+                var newHtmlContent = htmlContent.Clone( false );
+                newHtmlContent.CreatedByPersonAlias = null;
+                newHtmlContent.CreatedByPersonAliasId = currentPersonAliasId;
+                newHtmlContent.CreatedDateTime = RockDateTime.Now;
+                newHtmlContent.ModifiedByPersonAlias = null;
+                newHtmlContent.ModifiedByPersonAliasId = currentPersonAliasId;
+                newHtmlContent.ModifiedDateTime = RockDateTime.Now;
+                newHtmlContent.Id = 0;
+                newHtmlContent.Guid = Guid.NewGuid();
+                newHtmlContent.BlockId = blockIntDictionary[blockGuidDictionary[blockIntDictionary.Where( d => d.Value == htmlContent.BlockId ).FirstOrDefault().Key]];
+
+                htmlContentService.Add( newHtmlContent );
+            }
+
+            rockContext.SaveChanges();
+        }
+
+        #endregion
     }
 }

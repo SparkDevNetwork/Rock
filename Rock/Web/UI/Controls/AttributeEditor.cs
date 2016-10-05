@@ -56,6 +56,7 @@ namespace Rock.Web.UI.Controls
         private RockCheckBox _cbRequired;
         private RockCheckBox _cbShowInGrid;
         private RockCheckBox _cbAllowSearch;
+        private RockCheckBox _cbIsIndexingEnabled;
 
         private RockDropDownList _ddlFieldType;
         private PlaceHolder _phQualifiers;
@@ -342,6 +343,26 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Gets or sets a value indicating whether [allow indexing visible].
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if [allow indexing visible]; otherwise, <c>false</c>.
+        /// </value>
+        public bool IsIndexingEnabledVisible
+        {
+            get
+            {
+                EnsureChildControls();
+                return _cbIsIndexingEnabled.Visible;
+            }
+            set
+            {
+                EnsureChildControls();
+                _cbIsIndexingEnabled.Visible = value;
+            }
+        }
+
+        /// <summary>
         /// Gets or sets a value indicating whether [allow search].
         /// </summary>
         /// <value>
@@ -358,6 +379,26 @@ namespace Rock.Web.UI.Controls
             {
                 EnsureChildControls();
                 _cbAllowSearch.Checked = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether [allow indexing].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [allow indexing]; otherwise, <c>false</c>.
+        /// </value>
+        public bool IsIndexingEnabled
+        {
+            get
+            {
+                EnsureChildControls();
+                return _cbIsIndexingEnabled.Checked;
+            }
+            set
+            {
+                EnsureChildControls();
+                _cbIsIndexingEnabled.Checked = value;
             }
         }
 
@@ -591,6 +632,14 @@ namespace Rock.Web.UI.Controls
                 _cbAllowSearch.Visible = false;  // Default is to not show this option
                 Controls.Add( _cbAllowSearch );
 
+                _cbIsIndexingEnabled = new RockCheckBox();
+                _cbIsIndexingEnabled.ID = "cbAllowIndexing";
+                _cbIsIndexingEnabled.Label = "Indexing Enabled";
+                _cbIsIndexingEnabled.Text = "Yes";
+                _cbIsIndexingEnabled.Help = "If selected, this attribute can be used when indexing for universal search.";
+                _cbIsIndexingEnabled.Visible = false;  // Default is to not show this option
+                Controls.Add( _cbIsIndexingEnabled );
+
                 _ddlFieldType = new RockDropDownList();
                 _ddlFieldType.ID = "ddlFieldType";
                 _ddlFieldType.Label = "Field Type";
@@ -624,8 +673,6 @@ namespace Rock.Web.UI.Controls
                 _btnCancel.CausesValidation = false;
                 _btnCancel.Click += btnCancel_Click;
                 Controls.Add( _btnCancel );
-
-                _tbName.Attributes["onblur"] = string.Format( "populateAttributeKey('{0}','{1}')", _tbName.ClientID, _tbKey.ClientID );
 
                 _controlsLoaded = true;
             }
@@ -680,6 +727,7 @@ namespace Rock.Web.UI.Controls
             _cbRequired.ValidationGroup = validationGroup;
             _cbShowInGrid.ValidationGroup = validationGroup;
             _cbAllowSearch.ValidationGroup = validationGroup;
+            _cbIsIndexingEnabled.ValidationGroup = validationGroup;
             _ddlFieldType.ValidationGroup = validationGroup;
             foreach ( var control in _phQualifiers.Controls )
             {
@@ -705,6 +753,8 @@ namespace Rock.Web.UI.Controls
         /// <param name="writer">An <see cref="T:System.Web.UI.HtmlTextWriter" /> that represents the output stream to render HTML content on the client.</param>
         protected override void Render( HtmlTextWriter writer )
         {
+            _tbName.Attributes["onblur"] = string.Format( "populateAttributeKey('{0}','{1}')", _tbName.ClientID, _tbKey.ClientID );
+
             writer.RenderBeginTag( HtmlTextWriterTag.Fieldset );
 
             writer.RenderBeginTag( HtmlTextWriterTag.Legend );
@@ -764,6 +814,7 @@ namespace Rock.Web.UI.Controls
             writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-sm-6" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
             _cbRequired.RenderControl( writer );
+            _cbIsIndexingEnabled.RenderControl( writer );
             writer.RenderEndTag();
 
             writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-sm-6" );
@@ -892,6 +943,7 @@ namespace Rock.Web.UI.Controls
                 this.Required = attribute.IsRequired;
                 this.ShowInGrid = attribute.IsGridColumn;
                 this.AllowSearch = attribute.AllowSearch;
+                this.IsIndexingEnabled = attribute.IsIndexEnabled;
 
                 var qualifiers = new Dictionary<string, ConfigurationValue>();
                 if ( attribute.AttributeQualifiers != null )
@@ -938,6 +990,7 @@ namespace Rock.Web.UI.Controls
                 attribute.IsRequired = this.Required;
                 attribute.IsGridColumn = this.ShowInGrid;
                 attribute.AllowSearch = this.AllowSearch;
+                attribute.IsIndexEnabled = this.IsIndexingEnabled;
 
                 attribute.Categories.Clear();
                 new CategoryService( new RockContext() ).Queryable().Where( c => this.CategoryIds.Contains( c.Id ) ).ToList().ForEach( c =>

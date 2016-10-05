@@ -25,6 +25,14 @@ namespace Rock.Lava.Blocks
         string _markup = string.Empty;
 
         /// <summary>
+        /// Method that will be run at Rock startup
+        /// </summary>
+        public override void OnStartup()
+        {
+            Template.RegisterTag<Execute>( "execute" );
+        }
+
+        /// <summary>
         /// Initializes the specified tag name.
         /// </summary>
         /// <param name="tagName">Name of the tag.</param>
@@ -145,7 +153,6 @@ namespace Rock.Lava.Blocks
         /// Parses the markup.
         /// </summary>
         /// <param name="markup">The markup.</param>
-        /// <param name="context">The context.</param>
         /// <returns></returns>
         /// <exception cref="System.Exception">No parameters were found in your command. The syntax for a parameter is parmName:'' (note that you must use single quotes).</exception>
         private Dictionary<string, string> ParseMarkup( string markup )

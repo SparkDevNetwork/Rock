@@ -1,0 +1,139 @@
+//
+// Pagelist - used to list child pages; 
+// currently used in admin screens
+// --------------------------------------------------
+
+.block-title {
+  margin: 0;
+}
+
+.list-as-blocks {
+  h3 {
+    margin: 6px 0;
+    margin-top: 0;
+    font-size: 14px;
+  }
+
+  ul {
+    padding: 0;
+    margin-top: 16px;
+    list-style: none;
+
+    li {
+      position: relative;
+      float: left;
+      width: 47.5%;
+      margin: 0 1.25% @spacing-md-px;
+      overflow: hidden;
+      overflow: visible;
+      text-align: center;
+      border: 1px solid @listasblocks-border-color;
+      border-radius: @border-radius-base;
+
+      a {
+        display: block;
+        height: 90px;
+        padding: @spacing-md-px;
+        color: @listasblocks-color;
+        background-color: @listasblocks-bg;
+        border-radius: @border-radius-base;
+        -webkit-transition: background-color 200ms linear;
+           -moz-transition: background-color 200ms linear;
+            -ms-transition: background-color 200ms linear;
+             -o-transition: background-color 200ms linear;
+                transition: background-color 200ms linear;
+
+        i {
+          margin-top: 6px;
+          font-size: 26px;
+          color: lighten(@listasblocks-color, 10%);
+        }
+
+        &:hover {
+          color: @listasblocks-rollover-text-color;
+          background-color: @listasblocks-rollover-bg;
+          border-color: @listasblocks-rollover-border-color;
+
+          i {
+            color: lighten(@listasblocks-rollover-text-color, 10%);
+          }
+        }
+
+        div.notification {
+          position: absolute;
+          top: -10px;
+          right: -6px;
+
+          .label {
+            padding: 2px 6px;
+            border-radius: 36px;
+          }
+        }
+      }
+
+      &.active {
+        a {
+          color: @listasblocks-active-color;
+          background-color: @listasblocks-active-bg;
+          border-color: @listasblocks-active-border-color;
+
+          i {
+            color: lighten(@listasblocks-active-color, 10%);
+          }
+        }
+      }
+    }
+  }
+
+  .block-status a {
+    height: 105px;
+    padding: 8px 15px;
+
+    .status-list {
+      position: absolute;
+      right: 0;
+      bottom: 5px;
+      left: 0;
+    }
+  }
+}
+
+@media @sm-only {
+  // tablet portrait and larger
+  .list-as-blocks {
+    ul {
+      li {
+        width: 32%;
+        margin: 0 1% @spacing-md-px;
+
+        &:nth-child(3n) {
+          margin-right: 0;
+        }
+
+        &:nth-child(3n+1) {
+          margin-left: 0;
+        }
+      }
+    }
+  }
+}
+
+@media @md {
+  // tablet portrait and larger
+  .list-as-blocks {
+    ul {
+      li {
+        width: 18.4%;
+        margin: 0 1% @spacing-md-px;
+
+        &:nth-child(5n) {
+          margin-right: 0;
+        }
+
+        &:nth-child(5n+1) {
+          margin-left: 0;
+        }
+      }
+    }
+  }
+}

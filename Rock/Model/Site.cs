@@ -20,8 +20,12 @@ using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
+using System.Linq;
 using System.Runtime.Serialization;
 using Rock.Data;
+using Rock.UniversalSearch;
+using Rock.UniversalSearch.Crawler;
+using Rock.UniversalSearch.IndexModels;
 
 namespace Rock.Model
 {
@@ -31,7 +35,7 @@ namespace Rock.Model
     /// </summary>
     [Table( "Site" )]
     [DataContract]
-    public partial class Site : Model<Site>
+    public partial class Site : Model<Site>, IRockIndexable
     {
         #region Entity Properties
 
@@ -318,6 +322,34 @@ namespace Rock.Model
         }
         private bool _allowIndexing = true;
 
+
+        /// <summary>
+        /// Gets or sets a value indicating whether this instance is index enabled.
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if this instance is index enabled; otherwise, <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool IsIndexEnabled { get; set; }
+
+        /// <summary>
+        /// Gets or sets the index starting location.
+        /// </summary>
+        /// <value>
+        /// The index starting location.
+        /// </value>
+        [DataMember]
+        public string IndexStartingLocation { get; set; }
+
+
+        /// <summary>
+        /// Gets or sets a value indicating whether [requires encryption].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [requires encryption]; otherwise, <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool RequiresEncryption { get; set; }
         #endregion
 
         #region Virtual Properties
@@ -472,6 +504,59 @@ namespace Rock.Model
         }
 
         /// <summary>
+        /// Bulks the index documents.
+        /// </summary>
+        public void BulkIndexDocuments()
+        {            
+            // get list of sites that with indexing enabled
+            var sites = new SiteService( new RockContext() ).Queryable().Where( s => s.IsIndexEnabled );
+            
+            foreach(var site in sites )
+            {
+                // delete current items index
+                IndexContainer.DeleteDocumentByProperty(typeof(SitePageIndex), "SiteId", site.Id );
+
+                // clear current documents out
+                var pageCount = new Crawler().CrawlSite( site );
+            }
+        }
+
+        /// <summary>
+        /// Deletes the indexed documents.
+        /// </summary>
+        public void DeleteIndexedDocuments()
+        {
+            IndexContainer.DeleteDocumentsByType<SitePageIndex>();
+        }
+
+        /// <summary>
+        /// Indexes the name of the model.
+        /// </summary>
+        /// <returns></returns>
+        public Type IndexModelType()
+        {
+            return typeof( SitePageIndex );
+        }
+
+        /// <summary>
+        /// Indexes the document.
+        /// </summary>
+        /// <param name="id"></param>
+        public void IndexDocument( int id )
+        {
+            return;
+        }
+
+        /// <summary>
+        /// Deletes the indexed document.
+        /// </summary>
+        /// <param name="id"></param>
+        public void DeleteIndexedDocument( int id )
+        {
+            return;
+        }
+
+        /// <summary>
         /// Gets the supported actions.
         /// </summary>
         /// <value>
@@ -484,6 +569,21 @@ namespace Rock.Model
                 var result = base.SupportedActions;
                 result.AddOrReplace( Rock.Security.Authorization.APPROVE, "The roles and/or users that have access to approve. Used as a base for blocks that use the approve action." );
                 return result;
+            }
+        }
+
+        /// <summary>
+        /// Gets a value indicating whether [allows interactive bulk indexing].
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if [allows interactive bulk indexing]; otherwise, <c>false</c>.
+        /// </value>
+        [NotMapped]
+        public bool AllowsInteractiveBulkIndexing
+        {
+            get
+            {
+                return false;
             }
         }
 

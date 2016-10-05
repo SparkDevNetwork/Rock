@@ -69,6 +69,24 @@ namespace RockWeb.Blocks.Cms
 
             if ( Page.IsPostBack )
             {
+                if ( Request.Form["__EVENTTARGET"] == "CopyPage" )
+                {
+                    // Fire event
+                    int? intPageId = Request.Form["__EVENTARGUMENT"].AsIntegerOrNull();
+                    if ( intPageId.HasValue )
+                    {
+                        Guid? pageGuid = pageService.CopyPage( intPageId.Value, CurrentPersonAliasId );
+                        if ( pageGuid.HasValue )
+                        {
+                            NavigateToPage( pageGuid.Value, null );
+                        }
+                        else
+                        {
+                            NavigateToCurrentPage();
+                        }
+                    }
+                }
+
                 foreach ( string expandedId in hfExpandedIds.Value.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ) )
                 {
                     int id = 0;
@@ -165,9 +183,10 @@ namespace RockWeb.Blocks.Cms
                 Environment.NewLine, // 3
                 isExpanded.ToString().ToLower(), // 4
                 authHtml, // 5
-                CreatePageConfigIcon(page), // 6
-                CreateSecurityIcon( pageEntityTypeId, page.Id, page.InternalName) // 7
-            ); 
+                CreatePageCopyIcon( page ), // 6
+                CreatePageConfigIcon( page ), // 7
+                CreateSecurityIcon( pageEntityTypeId, page.Id, page.InternalName ) // 8
+            );
 
             var childPages = page.GetPages( rockContext );
             if ( childPages.Any() || page.Blocks.Any() )
@@ -205,6 +224,18 @@ namespace RockWeb.Blocks.Cms
             sb.AppendLine( "</li>" );
 
             return sb.ToString();
+        }
+
+        /// <summary>
+        /// Creates the copy icon.
+        /// </summary>
+        /// <param name="block">The block.</param>
+        /// <returns></returns>
+        protected string CreatePageCopyIcon( PageCache page )
+        {
+            return string.Format(
+                "&nbsp;<span class='rollover-item' onclick=\"javascript: __doPostBack('CopyPage', '{0}'); event.stopImmediatePropagation();\" title=\"Clone Page and Descendants\"><i class=\"fa fa-clone\"></i>&nbsp;</span>",
+                page.Id );
         }
 
         /// <summary>

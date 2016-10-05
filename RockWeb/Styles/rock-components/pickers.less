@@ -1,0 +1,188 @@
+//
+// Pickers - used to pick complex data types
+// --------------------------------------------------
+
+.picker {
+  .clearfix();
+  @media @sm {
+    position: relative;
+    width: 250px; // needed when floated right to keep the picker from shifting when the (x) appears to allow delete
+  }
+
+  .picker-mode-options {
+    margin-bottom: 12px;
+  }
+
+  .picker-label {
+    display: inline-block;
+    float: left;
+    width: 225px;
+    padding: @padding-base-vertical @padding-base-horizontal;
+    font-size: @font-size-base;
+    color: @input-color;
+    background-color: @input-group-addon-bg;
+    border: 1px solid @input-group-addon-border-color;
+    border-radius: @border-radius-base;
+
+    i {
+      float: left;
+      margin-top: 2px;
+      margin-right: 6px;
+    }
+
+    span {
+      float: left;
+      width: 140px;
+      margin-right: 6px;
+      overflow: hidden;
+      line-height: 18px;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .fa.fa-caret-down {
+      margin-top: 3px;
+    }
+  }
+
+  .picker-select-none {
+    display: block;
+    float: left;
+    margin: 6px 0 0 6px;
+    cursor: pointer;
+  }
+
+  .scroll-container-picker {
+    width: 355px;
+
+    .viewport {
+      width: 340px;
+      height: 190px;
+    }
+
+    .scrollbar {
+      margin-top: 10px;
+    }
+  }
+
+  h4 {
+    font-size: 14px;
+    font-weight: @font-weight-semibold;
+  }
+
+  .picker-menu {
+    width: 400px;
+    padding: 10px;
+
+    h4:first-child {
+      margin-top: 0;
+    }
+      @media (max-width: @screen-xs-max) {
+        position: static;
+        max-width: 100%;
+      }
+  }
+
+  &.picker-menu-right {
+    .picker-menu {
+      right: 0;
+      left: auto;
+    }
+  }
+
+  .picker-actions {
+    padding: 10px;
+    margin: 10px -10px -10px -10px;
+    background-color: @picker-action-bg;
+    border-top: 1px solid darken(@picker-action-bg, 10%);
+    border-radius: 0 0 @border-radius-base @border-radius-base;
+  }
+  // details used for pickers like person picker to show the details of the selected item
+  .picker-select-item-details {
+    margin-left: 20px;
+
+    .person-image {
+      display: inline-block;
+      float: left;
+      float: left;
+      width: 70px;
+      height: 70px;
+      margin-right: 7.5px;
+      border: 1px solid @photo-border;
+    }
+
+    .contents {
+      float: left;
+      margin-left: 10px;
+
+      h5 {
+        margin-bottom: 2px;
+      }
+    }
+  }
+
+  &.picker-geography {
+    .picker-menu {
+      width: 520px;
+    }
+  }
+
+  &.picker-person {
+    .picker-select {
+      padding: 0;
+      list-style: none;
+    }
+
+    .picker-select-item-details img {
+      width: 65px;
+    }
+  }
+
+  &.picker-novalue {
+    // used for pickers that do not retain values to remove the extra spacing needed for the 'x'
+    .picker-label {
+      width: 100%;
+    }
+  }
+
+  &.picker-mergefield {
+    width: 370px;
+  }
+}
+
+#dialog .scroll-container-picker {
+  width: 360px;
+
+  .viewport {
+    width: 340px;
+    height: 190px;
+  }
+}
+
+// date time picker
+.date-time-picker {
+  margin-bottom: 11px;
+
+  .input-group {
+    margin-bottom: 4px;
+  }
+}
+
+// campuses picker
+
+.campuses-picker {
+  .clearfix();
+
+  .checkbox {
+    float: left;
+    margin-top: 0;
+    margin-right: 24px;
+  }
+}
+
+
+.campuses-picker .campuses-picker-vertical .checkbox {
+  float: none;
+  margin-top: inherit;
+  margin-right: 0;
+}

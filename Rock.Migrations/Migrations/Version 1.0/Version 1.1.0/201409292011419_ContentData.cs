@@ -86,7 +86,7 @@ namespace Rock.Migrations
             <a href=""{{ LinkedPages.DetailPage }}?Item={{ item.Id }}"">{{ item.Image }}</a>
             <h2 class=""announcement-title"">{{ item.Title }}</h2>
             <p class=""announcement-text"">{{ item.SummaryText }}</p>
-            <p><a class=""view-details btn btn-default"" href=""{{ LinkedPages.DetailPage }}?Item={{ item.Id }}"" role=""button"">View details �</a></p>
+            <p><a class=""view-details btn btn-default"" href=""{{ LinkedPages.DetailPage }}?Item={{ item.Id }}"" role=""button"">View details</a></p>
         </div>
         {% capture breakNow %}{{ forloop.index | Modulo:3 }}{% endcapture %}
         {% if breakNow == 0 -%}

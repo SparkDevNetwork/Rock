@@ -1,5 +1,13 @@
 ﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="RegistrationEntry.ascx.cs" Inherits="RockWeb.Blocks.Event.RegistrationEntry" %>
 
+<style>
+    iframe {
+        width: 100%;
+        height: 800px;
+        overflow: hidden;
+        border-style: none;
+    }
+</style>
 <asp:UpdatePanel ID="upnlContent" runat="server">
 <ContentTemplate>
 
@@ -34,18 +42,40 @@
             </div>
         </asp:Panel>
 
-        <div class="js-registration-same-family registrationentry-samefamily">
-            <asp:Panel ID="pnlFamilyOptions" runat="server" CssClass="well">
-                <Rock:RockRadioButtonList ID="rblFamilyOptions" runat="server" Label="Individual is in the same family as" RepeatDirection="Vertical" Required="true" RequiredErrorMessage="Answer to which family is required." DataTextField="Value" DataValueField="Key" />
+        <asp:Panel id="pnlRegistrantFields" runat="server" >
+
+            <div class="js-registration-same-family">
+                <asp:Panel ID="pnlFamilyOptions" runat="server" CssClass="well">
+                    <Rock:RockRadioButtonList ID="rblFamilyOptions" runat="server" Label="Individual is in the same family as" RepeatDirection="Vertical" Required="true" RequiredErrorMessage="Answer to which family is required." DataTextField="Value" DataValueField="Key" />
+                </asp:Panel>
+            </div>
+        
+            <asp:Panel ID="pnlFamilyMembers" runat="server" Visible="false" CssClass="row" >
+                <div class="col-md-6">
+                    <Rock:RockDropDownList ID="ddlFamilyMembers" runat="server" Label="Family Member" AutoPostBack="true" OnSelectedIndexChanged="ddlFamilyMembers_SelectedIndexChanged" />
+                </div>
             </asp:Panel>
-        </div>
+
+            <asp:PlaceHolder ID="phRegistrantControls" runat="server" />
         
-        <asp:PlaceHolder ID="phRegistrantControls" runat="server" />
-        
-        <div id="divFees" runat="server" class="well registration-additional-options">
-            <h4><asp:Literal ID="lRegistrantFeeCaption" runat="server" /></h4>
-            <asp:PlaceHolder ID="phFees" runat="server" />
-        </div>
+            <div id="divFees" runat="server" class="well registration-additional-options">
+                <h4><asp:Literal ID="lRegistrantFeeCaption" runat="server" /></h4>
+                <asp:PlaceHolder ID="phFees" runat="server" />
+            </div>
+
+        </asp:Panel>
+
+        <asp:Panel id="pnlDigitalSignature" runat="server" visible="false">
+            <Rock:NotificationBox ID="nbDigitalSignature" runat="server" NotificationBoxType="Info"></Rock:NotificationBox>
+            <asp:HiddenField ID="hfRequiredDocumentLinkUrl" runat="server" />
+            <asp:HiddenField ID="hfRequiredDocumentQueryString" runat="server" />
+
+            <iframe id="iframeRequiredDocument" frameborder="0" ></iframe>
+            <span style="display:none" >
+                <asp:LinkButton ID="lbRequiredDocumentNext" runat="server" Text="Required Document Return" OnClick="lbRequiredDocumentNext_Click" CausesValidation="false" ></asp:LinkButton>
+            </span>
+
+        </asp:Panel>
 
         <div class="actions">
             <asp:LinkButton ID="lbRegistrantPrev" runat="server" AccessKey="p" Text="Previous" CssClass="btn btn-default" CausesValidation="false" OnClick="lbRegistrantPrev_Click"  />

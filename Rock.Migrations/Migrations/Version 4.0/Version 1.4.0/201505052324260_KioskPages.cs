@@ -335,7 +335,7 @@ namespace Rock.Migrations
             RockMigrationHelper.AddBlockTypeAttribute("61C5C8F2-6F76-4583-AB97-228878A6AB65","C28C7BF3-A552-4D77-9408-DEDCF760CED0","Update Message","UpdateMessage","","Message to show on the profile form. Leaving this blank will hide the message.",9,@"Please provide only the information that needs to be updated.","5847C50F-3333-4927-AE44-608266406380");
 
             // Attrib for BlockType: Person Update - Kiosk:Complete Message Lava
-            RockMigrationHelper.AddBlockTypeAttribute("61C5C8F2-6F76-4583-AB97-228878A6AB65","1D0D3794-C210-48A8-8C68-3FBEC08A6BA5","Complete Message Lava","CompleteMessageLava","","Message to display when complete.",10,@"<div class='alert alert-success'>We have recuived your updated information. Thank you for helping us keep your information current.</div>","DB16EAFA-99BE-423A-96C7-2BCB7F65AF97");
+            RockMigrationHelper.AddBlockTypeAttribute("61C5C8F2-6F76-4583-AB97-228878A6AB65","1D0D3794-C210-48A8-8C68-3FBEC08A6BA5","Complete Message Lava","CompleteMessageLava","","Message to display when complete.",10,@"<div class='alert alert-success'>We have received your updated information. Thank you for helping us keep your information current.</div>","DB16EAFA-99BE-423A-96C7-2BCB7F65AF97");
 
             // Attrib for BlockType: Person Update - Kiosk:Update Email
             RockMigrationHelper.AddBlockTypeAttribute("61C5C8F2-6F76-4583-AB97-228878A6AB65","08F3003B-F3E2-41EC-BDF1-A2B7AC2908CF","Update Email","UpdateEmail","","The system email to use to send the updated information.",11,@"","CE4779C6-C498-4EB5-8F6E-6617B28C2B64");
@@ -475,7 +475,7 @@ namespace Rock.Migrations
             RockMigrationHelper.AddBlockAttributeValue("EAA18327-C4B9-4CC6-8BA1-86D785D48016","5847C50F-3333-4927-AE44-608266406380",@"Please provide only the information that needs to be updated.");
 
             // Attrib Value for Block:Person Update - Kiosk, Attribute:Complete Message Lava Page: Update Info, Site: Self-Service Kiosk (Preview)
-            RockMigrationHelper.AddBlockAttributeValue("EAA18327-C4B9-4CC6-8BA1-86D785D48016","DB16EAFA-99BE-423A-96C7-2BCB7F65AF97",@"<div class='alert alert-success'>We have recuived your updated information. Thank you for helping us keep your information current.</div>");
+            RockMigrationHelper.AddBlockAttributeValue("EAA18327-C4B9-4CC6-8BA1-86D785D48016","DB16EAFA-99BE-423A-96C7-2BCB7F65AF97",@"<div class='alert alert-success'>We have received your updated information. Thank you for helping us keep your information current.</div>");
 
             // Attrib Value for Block:Person Update - Kiosk, Attribute:Update Email Page: Update Info, Site: Self-Service Kiosk (Preview)
             RockMigrationHelper.AddBlockAttributeValue("EAA18327-C4B9-4CC6-8BA1-86D785D48016","CE4779C6-C498-4EB5-8F6E-6617B28C2B64",@"bc490dd4-abbb-7dba-4a9e-74f07f4b5881");

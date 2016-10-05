@@ -70,6 +70,9 @@ namespace Rock.Client
         public bool ModifiedAuditValuesAlreadyUpdated { get; set; }
 
         /// <summary />
+        public Rock.Client.Enums.MetricNumericDataType NumericDataType { get; set; }
+
+        /// <summary />
         public int? ScheduleId { get; set; }
 
         /// <summary />
@@ -134,6 +137,7 @@ namespace Rock.Client
             this.LastRunDateTime = source.LastRunDateTime;
             this.MetricChampionPersonAliasId = source.MetricChampionPersonAliasId;
             this.ModifiedAuditValuesAlreadyUpdated = source.ModifiedAuditValuesAlreadyUpdated;
+            this.NumericDataType = source.NumericDataType;
             this.ScheduleId = source.ScheduleId;
             this.SourceSql = source.SourceSql;
             this.SourceValueTypeId = source.SourceValueTypeId;

@@ -77,21 +77,7 @@ namespace Rock.Workflow.Action
             }
 
             // Get the tranfer note
-            string noteValue = GetAttributeValue( action, "TranferNote" );
-            string note = string.Empty;
-            Guid? noteGuid = noteValue.AsGuidOrNull();
-            if ( noteGuid.HasValue )
-            {
-                var attribute = AttributeCache.Read( noteGuid.Value, rockContext );
-                if ( attribute != null )
-                {
-                    note = action.GetWorklowAttributeValue( noteGuid.Value );
-                }
-            }
-            else
-            {
-                note = noteValue;
-            }
+            string note = GetAttributeValue( action, "TransferNote", true );
 
             if ( request != null && opportunity != null )
             {

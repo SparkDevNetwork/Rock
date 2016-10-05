@@ -287,7 +287,9 @@ namespace Rock.Model
                     formItems.Append( "<table class=\"form-items exception-table\">" );
 
                     foreach ( string formItem in formList )
+                    {
                         formItems.Append( "<tr><td><b>" + formItem + "</b></td><td>" + formList[formItem].EncodeHtml() + "</td></tr>" );
+                    }
 
                     formItems.Append( "</table>" );
                 }

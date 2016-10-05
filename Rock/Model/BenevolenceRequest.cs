@@ -186,6 +186,26 @@ namespace Rock.Model
         [DataMember]
         public int? LocationId { get; set; }
 
+        /// <summary>
+        /// Gets or sets the provided next steps.
+        /// </summary>
+        /// <value>
+        /// The provided next steps.
+        /// </value>
+        [DataMember]
+        public string ProvidedNextSteps { get; set; }
+
+        /// <summary>
+        /// Gets or sets the campus identifier.
+        /// </summary>
+        /// <value>
+        /// The campus identifier.
+        /// </value>
+        [HideFromReporting]
+        [DataMember]
+        [FieldType( Rock.SystemGuid.FieldType.CAMPUS )]
+        public int? CampusId { get; set; }
+
         #endregion
 
         #region Constructors
@@ -197,6 +217,7 @@ namespace Rock.Model
             : base()
         {
             _results = new Collection<BenevolenceResult>();
+            _documents = new Collection<BenevolenceRequestDocument>();
         }
 
         #endregion
@@ -247,6 +268,15 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public virtual Location Location { get; set; }
+
+        /// <summary>
+        /// Gets or sets the <see cref="Rock.Model.Campus"/> that this Group is associated with.
+        /// </summary>
+        /// <value>
+        /// The <see cref="Rock.Model.Campus"/> that this Group is associated with.
+        /// </value>
+        [DataMember]
+        public virtual Rock.Model.Campus Campus { get; set; }
 
         /// <summary>
         /// Gets  full name of the person for who the benevolence request is about.
@@ -310,8 +340,22 @@ namespace Rock.Model
             get { return _results; }
             set { _results = value; }
         }
-
         private ICollection<BenevolenceResult> _results;
+
+
+        /// <summary>
+        /// Gets or sets the documents.
+        /// </summary>
+        /// <value>
+        /// The documents.
+        /// </value>
+        [DataMember]
+        public virtual ICollection<BenevolenceRequestDocument> Documents
+        {
+            get { return _documents ?? (_documents = new Collection<BenevolenceRequestDocument>()); }
+            set { _documents = value; }
+        }
+        private ICollection<BenevolenceRequestDocument> _documents;
 
         #endregion
 
@@ -346,6 +390,7 @@ namespace Rock.Model
             this.HasOptional( p => p.RequestedByPersonAlias ).WithMany().HasForeignKey( p => p.RequestedByPersonAliasId ).WillCascadeOnDelete( false );
             this.HasOptional( p => p.CaseWorkerPersonAlias ).WithMany().HasForeignKey( p => p.CaseWorkerPersonAliasId ).WillCascadeOnDelete( false );
             this.HasOptional( p => p.ConnectionStatusValue ).WithMany().HasForeignKey( p => p.ConnectionStatusValueId ).WillCascadeOnDelete( false );
+            this.HasOptional( p => p.Campus ).WithMany().HasForeignKey( p => p.CampusId ).WillCascadeOnDelete( false );
             this.HasOptional( p => p.Location ).WithMany().HasForeignKey( p => p.LocationId ).WillCascadeOnDelete( false );
             this.HasRequired( p => p.RequestStatusValue ).WithMany().HasForeignKey( p => p.RequestStatusValueId ).WillCascadeOnDelete( false );
         }

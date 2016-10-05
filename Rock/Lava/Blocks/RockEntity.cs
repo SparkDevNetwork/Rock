@@ -1,4 +1,4 @@
-﻿using System;
+﻿ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -78,18 +78,53 @@ namespace Rock.Lava.Blocks
                 model = "Rock.Model." + _entityName;
             }
 
+            // Check first to see if this is a core model
             var entityTypeCache = entityTypes.Where( e => String.Equals( e.Name, model, StringComparison.OrdinalIgnoreCase ) ).FirstOrDefault();
+
+            // If not, look for first plugin model that has same friendly name
+            if ( entityTypeCache == null )
+            {
+                entityTypeCache = entityTypes
+                    .Where( e =>
+                        e.IsEntity &&
+                        !e.Name.StartsWith( "Rock.Model" ) &&
+                        e.FriendlyName != null &&
+                        e.FriendlyName.RemoveSpaces().ToLower() == _entityName )
+                    .OrderBy( e => e.Id )
+                    .FirstOrDefault();
+            }
+
+            // If still null check to see if this was a duplicate class and full class name was used as entity name
+            if ( entityTypeCache == null )
+            {
+                model = _entityName.Replace( '_', '.' );
+                entityTypeCache = entityTypes.Where( e => String.Equals( e.Name, model, StringComparison.OrdinalIgnoreCase ) ).FirstOrDefault();
+            }
 
             if ( entityTypeCache != null )
             {
                 Type entityType = entityTypeCache.GetEntityType();
                 if ( entityType != null )
                 {
+                    // Get the database context
+                    Type contextType = null;
+                    Rock.Data.DbContext dbContext = null;
+                    var contexts = Rock.Reflection.SearchAssembly( entityType.Assembly, typeof( Rock.Data.DbContext ) );
+                    if ( contexts.Any() )
+                    {
+                        contextType = contexts.First().Value;
+                        dbContext = Activator.CreateInstance( contextType ) as Rock.Data.DbContext;
+                    }
+                    if ( dbContext == null )
+                    {
+                        dbContext = _rockContext;
+                    }
+
                     // create an instance of the entity's service
                     Type[] modelType = { entityType };
                     Type genericServiceType = typeof( Rock.Data.Service<> );
                     Type modelServiceType = genericServiceType.MakeGenericType( modelType );
-                    Rock.Data.IService serviceInstance = Activator.CreateInstance( modelServiceType, new object[] { _rockContext } ) as IService;
+                    Rock.Data.IService serviceInstance = Activator.CreateInstance( modelServiceType, new object[] { dbContext } ) as IService;
 
                     ParameterExpression paramExpression = Expression.Parameter( entityType, "x" );
                     Expression queryExpression = null; // the base expression we'll use to build our query from
@@ -146,9 +181,9 @@ namespace Rock.Lava.Blocks
                         }
 
                         // process dynamic filter expressions (from the query string)
-                        if ( parms.Any( p => p.Key == "dynamicfilters" ) )
+                        if ( parms.Any( p => p.Key == "dynamicparameters" ) )
                         {
-                            var dynamicFilters = parms["dynamicfilters"].Split( ',' )
+                            var dynamicFilters = parms["dynamicparameters"].Split( ',' )
                                             .Select( x => x.Trim() )
                                             .Where( x => !string.IsNullOrWhiteSpace( x ) )
                                             .ToList();
@@ -157,15 +192,17 @@ namespace Rock.Lava.Blocks
                             {
                                 var dynamicFilterValue = HttpContext.Current.Request[dynamicFilter];
                                 var dynamicFilterExpression = GetDynamicFilterExpression( dynamicFilter, dynamicFilterValue, entityType, serviceInstance, paramExpression );
-
-                                if ( queryExpression == null )
+                                if ( dynamicFilterExpression != null )
                                 {
-                                    queryExpression = dynamicFilterExpression;
-                                    hasFilter = true;
-                                }
-                                else
-                                {
-                                    queryExpression = Expression.AndAlso( queryExpression, dynamicFilterExpression );
+                                    if ( queryExpression == null )
+                                    {
+                                        queryExpression = dynamicFilterExpression;
+                                        hasFilter = true;
+                                    }
+                                    else
+                                    {
+                                        queryExpression = Expression.AndAlso( queryExpression, dynamicFilterExpression );
+                                    }
                                 }
                             }
                         }
@@ -292,12 +329,12 @@ namespace Rock.Lava.Blocks
                             }
                         }
 
-                        foreach (ISecured item in items )
+                        foreach (IEntity item in items )
                         {
-                                    
-                            if ( item.IsAuthorized(Authorization.VIEW,  person))
+                            ISecured itemSecured = item as ISecured;
+                            if ( itemSecured == null || itemSecured.IsAuthorized(Authorization.VIEW,  person))
                             {
-                                itemsSecured.Add( (IEntity)item );
+                                itemsSecured.Add( item );
                             }
                         }
 
@@ -309,10 +346,14 @@ namespace Rock.Lava.Blocks
                             queryResult = queryResult.Skip( parms["offset"].AsInteger() );
                         }
 
-                        // limit
+                        // limit, default to 1000
                         if ( parms.Any( p => p.Key == "limit" ) )
                         {
                             queryResult = queryResult.Take( parms["limit"].AsInteger() );
+                        }
+                        else
+                        {
+                            queryResult = queryResult.Take( 1000 );
                         }
 
                         // check to ensure we had some form of filter (otherwise we'll return all results in the table)
@@ -391,30 +432,63 @@ namespace Rock.Lava.Blocks
         #endregion
 
         /// <summary>
+        /// Method that will be run at Rock startup
+        /// </summary>
+        public override void OnStartup()
+        {
+            RegisterEntityCommands();
+        }
+
+        /// <summary>
         /// Helper method to register the entity commands.
         /// </summary>
         public static void RegisterEntityCommands()
         {
             var entityTypes = EntityTypeCache.All();
 
-            foreach ( var entityType in entityTypes )
+            // register a business entity
+            Template.RegisterTag<Rock.Lava.Blocks.RockEntity>( "business" );
+
+            // Register the core models first
+            foreach ( var entityType in entityTypes
+                .Where( e =>
+                    e.IsEntity &&
+                    e.Name.StartsWith( "Rock.Model" ) &&
+                    e.FriendlyName != null &&
+                    e.FriendlyName != "" ) )
             {
-                if ( entityType.Name.StartsWith( "Rock.Model" ) )
-                {
-                    string entityName = entityType.Name.ToLower();
-
-                    // if it is a core model use just the friendly name
-                    if ( entityName.StartsWith( "rock.model" ) )
-                    {
-                        entityName = entityName.Replace( "rock.model.", "" );
-                    }
-
-                    Template.RegisterTag<Rock.Lava.Blocks.RockEntity>( entityName );
-                }
+                RegisterEntityCommand( entityType );
             }
 
-            // register a couple of extra entities
-            Template.RegisterTag<Rock.Lava.Blocks.RockEntity>( "business" );
+            // Now register plugin models
+            foreach ( var entityType in entityTypes
+                .Where( e =>
+                    e.IsEntity &&
+                    !e.Name.StartsWith( "Rock.Model" ) &&
+                    e.FriendlyName != null &&
+                    e.FriendlyName != "" )
+                .OrderBy( e => e.Id ) )
+            {
+                RegisterEntityCommand( entityType );
+            }
+
+        }
+
+        private static void RegisterEntityCommand( EntityTypeCache entityType )
+        {
+            if ( entityType != null )
+            {
+                string entityName = entityType.FriendlyName.RemoveSpaces().ToLower();
+
+                // if entity name is already registered, use the full class name with namespace
+                Type tagType = Template.GetTagType( entityName );
+                if ( tagType != null )
+                {
+                    entityName = entityType.Name.Replace( '.', '_' );
+                }
+
+                Template.RegisterTag<Rock.Lava.Blocks.RockEntity>( entityName );
+            }
         }
 
         /// <summary>
@@ -430,9 +504,9 @@ namespace Rock.Lava.Blocks
             var internalMergeFields = new Dictionary<string, object>();
 
             // get variables defined in the lava source
-            if ( context.Scopes.Count > 0 )
+            foreach ( var scope in context.Scopes )
             {
-                foreach ( var item in context.Scopes[0] )
+                foreach ( var item in scope )
                 {
                     internalMergeFields.AddOrReplace( item.Key, item.Value );
                 }
@@ -510,7 +584,7 @@ namespace Rock.Lava.Blocks
                     }
                 }
 
-                parms.Add( "dynamicfilters", string.Join( ",", dynamicFilters ) );
+                parms.AddOrReplace( "dynamicparameters", string.Join( ",", dynamicFilters ) );
             }
 
 
@@ -640,6 +714,7 @@ namespace Rock.Lava.Blocks
                 else
                 {
                     // error in parsing expression
+                    throw new Exception( "Error in Where expression" );
                 }
             }
 
@@ -657,10 +732,32 @@ namespace Rock.Lava.Blocks
         /// <returns></returns>
         private Expression GetDynamicFilterExpression( string dynamicFilter, string dynamicFilterValue, Type type, IService service, ParameterExpression parmExpression )
         {
-            var selectionString = string.Format( @"[ ""{0}"", ""1"", ""{1}"" ]", dynamicFilter, dynamicFilterValue );
-            var expression = new PropertyFilter().GetExpression( type, service, parmExpression, selectionString );
+            if ( !string.IsNullOrWhiteSpace( dynamicFilter ) && !string.IsNullOrWhiteSpace( dynamicFilterValue ) )
+            {
+                var entityFields = EntityHelper.GetEntityFields( type );
+                var entityField = entityFields.FirstOrDefault( f => f.Name.Equals( dynamicFilter, StringComparison.OrdinalIgnoreCase ) );
+                if ( entityField != null )
+                {
+                    var values = new List<string>();
+                    string comparison = entityField.FieldType.Field.GetEqualToCompareValue();
+                    if ( !string.IsNullOrWhiteSpace( comparison ) )
+                    {
+                        values.Add( comparison );
+                    }
+                    values.Add( dynamicFilterValue );
 
-            return expression;
+                    if ( entityField.FieldKind == FieldKind.Property )
+                    {
+                        return new PropertyFilter().GetPropertyExpression( service, parmExpression, entityField, values );
+                    }
+                    else
+                    {
+                        return new PropertyFilter().GetAttributeExpression( service, parmExpression, entityField, values );
+                    }
+                }
+            }
+
+            return null;
         }
 
         /// <summary>

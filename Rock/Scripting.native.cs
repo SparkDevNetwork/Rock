@@ -22,6 +22,8 @@ using System;
 //  - Script caching
 //  - Script unloading
 
+#pragma warning disable
+
 namespace CSScriptNativeApi
 {
     public class HostApp

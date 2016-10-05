@@ -17,6 +17,7 @@
 using System;
 using System.Collections.Generic;
 using System.Data;
+using System.IO;
 using System.Linq;
 using System.Xml;
 using ceTe.DynamicPDF;
@@ -88,6 +89,30 @@ namespace Rock.Apps.StatementGenerator
         /// The layout file.
         /// </value>
         public string LayoutFile { get; set; }
+
+        /// <summary>
+        /// Gets or sets the save directory.
+        /// </summary>
+        /// <value>
+        /// The save directory.
+        /// </value>
+        public string SaveDirectory { get; set; }
+
+        /// <summary>
+        /// Gets or sets the name of the base file.
+        /// </summary>
+        /// <value>
+        /// The name of the base file.
+        /// </value>
+        public string BaseFileName { get; set; }
+
+        /// <summary>
+        /// Gets or sets the size of the chapter.
+        /// </summary>
+        /// <value>
+        /// The size of the chapter.
+        /// </value>
+        public int? ChapterSize { get; set; }
 
         /// <summary>
         /// Gets or sets the current report options
@@ -188,7 +213,7 @@ namespace Rock.Apps.StatementGenerator
         /// </summary>
         /// <param name="financialTransactionQry">The financial transaction qry.</param>
         /// <returns></returns>
-        public Document RunReport()
+        public int RunReport()
         {
             UpdateProgress( "Connecting..." );
 
@@ -228,6 +253,68 @@ namespace Rock.Apps.StatementGenerator
             // If we don't have a _organizationAddressLocation, just create an empty location
             _organizationAddressLocation = _organizationAddressLocation ?? new Rock.Client.Location();
 
+            UpdateProgress( "Getting Data..." );
+
+            // get outer query data from Rock database via REST now vs in mainQuery_OpeningRecordSet to make sure we have data
+            DataSet personGroupAddressDataSet = _rockRestClient.PostDataWithResult<object, DataSet>( "api/FinancialTransactions/GetContributionPersonGroupAddress", _contributionStatementOptionsREST );
+            var allStatements = personGroupAddressDataSet.Tables[0];
+
+            RecordCount = allStatements.Rows.Count;
+            
+            if ( RecordCount > 0 )
+            {
+                int chapterSize = RecordCount;
+
+                bool useChapters = this.Options.ChapterSize.HasValue;
+                
+                if ( this.Options.ChapterSize.HasValue )
+                {
+                    chapterSize = this.Options.ChapterSize.Value;
+                } else
+                {
+                    this.Options.ChapterSize = RecordCount;
+                }
+
+                int currentRecordIndex = 0;
+                int chapterIndex = 1;
+
+                while(currentRecordIndex < RecordCount )
+                {
+                    // if its the last run adjust the chapter size so we don't go over
+                    if ((currentRecordIndex + chapterSize) > RecordCount )
+                    {
+                        chapterSize = RecordCount - currentRecordIndex;
+                    }
+
+                    _personGroupAddressDataTable = (DataTable)allStatements.AsEnumerable().Skip( currentRecordIndex ).Take( chapterSize ).CopyToDataTable<DataRow>();
+
+                    var report = GetReportLayout( rockConfig );
+
+                    Document doc = report.Run();
+
+                    var filePath = string.Empty;
+
+                    if ( useChapters )
+                    {
+                        filePath = string.Format( @"{0}\{1}-chapter{2}.pdf", this.Options.SaveDirectory, this.Options.BaseFileName, chapterIndex );
+                    }
+                    else
+                    {
+                        filePath = string.Format( @"{0}\{1}.pdf", this.Options.SaveDirectory, this.Options.BaseFileName );
+                    }
+
+                    File.WriteAllBytes( filePath, doc.Draw() );
+
+                    currentRecordIndex = currentRecordIndex + this.Options.ChapterSize.Value;
+                    chapterIndex++;
+                }
+            }
+
+            return RecordCount;
+        }
+
+        private DocumentLayout GetReportLayout( RockConfig rockConfig )
+        {
             // setup report layout and events
             DocumentLayout report = new DocumentLayout( this.Options.LayoutFile );
 
@@ -284,7 +371,7 @@ namespace Rock.Apps.StatementGenerator
             }
             else
             {
-                _accountSummaryQuery.OpeningRecordSet += delegate( object s, OpeningRecordSetEventArgs ee )
+                _accountSummaryQuery.OpeningRecordSet += delegate ( object s, OpeningRecordSetEventArgs ee )
                 {
                     // create a recordset for the _accountSummaryQuery which is the GroupBy summary of AccountName, Amount
                     /*
@@ -306,7 +393,7 @@ namespace Rock.Apps.StatementGenerator
                     detailsData.Columns.Add( "AccountName" );
                     detailsData.Columns.Add( "Amount", typeof( decimal ) );
 
-                    foreach ( var details in _transactionsDataTable.AsEnumerable().Select( a => ( a["Details"] as DataTable ) ) )
+                    foreach ( var details in _transactionsDataTable.AsEnumerable().Select( a => (a["Details"] as DataTable) ) )
                     {
                         foreach ( var row in details.AsEnumerable() )
                         {
@@ -324,22 +411,7 @@ namespace Rock.Apps.StatementGenerator
                 };
             }
 
-            UpdateProgress( "Getting Data..." );
-
-            // get outer query data from Rock database via REST now vs in mainQuery_OpeningRecordSet to make sure we have data
-            DataSet personGroupAddressDataSet = _rockRestClient.PostDataWithResult<object, DataSet>( "api/FinancialTransactions/GetContributionPersonGroupAddress", _contributionStatementOptionsREST );
-            _personGroupAddressDataTable = personGroupAddressDataSet.Tables[0];
-            RecordCount = _personGroupAddressDataTable.Rows.Count;
-
-            if ( RecordCount > 0 )
-            {
-                Document doc = report.Run();
-                return doc;
-            }
-            else
-            {
-                return null;
-            }
+            return report;
         }
 
         /// <summary>

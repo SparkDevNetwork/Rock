@@ -65,10 +65,19 @@ namespace Rock.Client
         public string ForeignKey { get; set; }
 
         /// <summary />
+        public bool GroupAttendanceRequiresLocation { get; set; }
+
+        /// <summary />
+        public bool GroupAttendanceRequiresSchedule { get; set; }
+
+        /// <summary />
         public Rock.Client.Enums.GroupCapacityRule GroupCapacityRule { get; set; }
 
         /// <summary />
         public string GroupMemberTerm { get; set; }
+
+        /// <summary />
+        public bool GroupsRequireCampus { get; set; }
 
         /// <summary />
         public string GroupTerm { get; set; }
@@ -84,6 +93,9 @@ namespace Rock.Client
 
         /// <summary />
         public int? InheritedGroupTypeId { get; set; }
+
+        /// <summary />
+        public bool IsIndexEnabled { get; set; }
 
         /// <summary />
         public bool IsSystem { get; set; }
@@ -160,13 +172,17 @@ namespace Rock.Client
             this.EnableLocationSchedules = source.EnableLocationSchedules;
             this.ForeignGuid = source.ForeignGuid;
             this.ForeignKey = source.ForeignKey;
+            this.GroupAttendanceRequiresLocation = source.GroupAttendanceRequiresLocation;
+            this.GroupAttendanceRequiresSchedule = source.GroupAttendanceRequiresSchedule;
             this.GroupCapacityRule = source.GroupCapacityRule;
             this.GroupMemberTerm = source.GroupMemberTerm;
+            this.GroupsRequireCampus = source.GroupsRequireCampus;
             this.GroupTerm = source.GroupTerm;
             this.GroupTypePurposeValueId = source.GroupTypePurposeValueId;
             this.IconCssClass = source.IconCssClass;
             this.IgnorePersonInactivated = source.IgnorePersonInactivated;
             this.InheritedGroupTypeId = source.InheritedGroupTypeId;
+            this.IsIndexEnabled = source.IsIndexEnabled;
             this.IsSystem = source.IsSystem;
             this.LocationSelectionMode = source.LocationSelectionMode;
             this.ModifiedAuditValuesAlreadyUpdated = source.ModifiedAuditValuesAlreadyUpdated;

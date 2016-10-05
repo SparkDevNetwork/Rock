@@ -55,6 +55,16 @@ namespace RockWeb.Blocks.Reporting
             base.OnLoad( e );
 
             gReport.GridRebind += gReport_GridRebind;
+
+            if ( ! Page.IsPostBack )
+            {
+                tbQuery.Text = @"
+SELECT
+    TOP 10 *
+FROM
+    [Person]
+";
+            }
         }
 
         /// <summary>
