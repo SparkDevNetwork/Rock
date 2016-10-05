@@ -28,3 +28,6 @@ RockWeb/App_Data/PackageStaging
 *.sln.GhostDoc.xml
 
 Packages/*
+
+#javascript tooling
+node_modules
