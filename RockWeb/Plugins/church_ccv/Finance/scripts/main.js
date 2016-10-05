@@ -7,7 +7,7 @@ var formMapping = {
 
 function initAutocomplete() {
     autocomplete = new google.maps.places.Autocomplete(
-      document.getElementById('street'),
+      $('.js-street-input')[0],
       {
           types: ['geocode']
       }
@@ -171,7 +171,7 @@ Sys.Application.add_load(function () {
     $('#givingForm .js-phone').inputmask()
 
     var cardType
-           
+
     // cleanup card if is was already initialized (in case we are in an ajax response)
     if ($('form').data('card')) {
         var card = $('form').data('card');
@@ -220,12 +220,12 @@ Sys.Application.add_load(function () {
             }
         }
     }
-    
+
     $('#givingForm .js-repeating-toggle').bootstrapSwitch({
         onColor: 'success',
         onSwitchChange: function (event, state) {
             giveForm.repeating = state
-            
+
             if (state) {
                 $('#givingForm .js-repeating-options').slideDown();
             } else {
@@ -233,7 +233,7 @@ Sys.Application.add_load(function () {
             }
         }
     })
-    
+
     if (giveForm.repeating) {
         $('#givingForm .js-repeating-options').show();
     }
