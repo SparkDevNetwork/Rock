@@ -6,7 +6,7 @@
         <asp:Panel ID="pnlView" runat="server" CssClass="panel panel-block">
 
             <div class="panel-heading">
-                <h1 class="panel-title">Attendance Spreadshoot Tool</h1>
+                <h1 class="panel-title">Attendance Spreadsheet Tool</h1>
             </div>
             <div class="panel-body">
                 <Rock:NotificationBox ID="nbAttendanceMetricWarning" runat="server" NotificationBoxType="Warning" Text="Please select the attendance metric in the block settings." Dismissable="false" />
