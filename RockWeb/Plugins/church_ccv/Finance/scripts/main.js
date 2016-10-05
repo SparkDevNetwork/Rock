@@ -85,8 +85,8 @@ var giveForm = new Vue({
     },
     methods: {
 
-        splitFullName: function (e) {
-            var name = e.target.value.split(' ').map(capitalizeEachWord)
+        splitFullName: function () {
+            var name = $('#givingForm .js-input-fullname').val().split(' ').map(capitalizeEachWord)
             this.firstName = name.splice(0, 1)[0]
             this.lastName = name.join(' ')
             this.refreshNameSplit()
@@ -94,6 +94,7 @@ var giveForm = new Vue({
 
         refreshNameSplit: function () {
             this.showSplitNameField = (this.lastName.length > 0)
+            $('#givingForm .js-input-fullname').toggle(!this.showSplitNameField);
         },
 
         resetData: function () {
@@ -233,6 +234,15 @@ Sys.Application.add_load(function () {
             }
         }
     })
+
+    // manually do .blur on js-lastname and js-input-fullname since some of it uses asp.net runat=server
+    $('#givingForm').on('blur', '.js-input-fullname', function () {
+        giveForm.splitFullName()
+    });
+    
+    $('#givingForm').on('blur', '.js-lastname', function () {
+        giveForm.refreshNameSplit()
+    });
 
     if (giveForm.repeating) {
         $('#givingForm .js-repeating-options').show();

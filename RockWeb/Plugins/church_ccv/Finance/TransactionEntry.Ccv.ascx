@@ -83,7 +83,7 @@
                 <label for="fullName" class="col-sm-3 control-label">Full Name</label>
                 <div class="col-sm-9">
                     <Rock:HiddenFieldWithClass ID="hfHideFullNameInput" CssClass="js-hide-full-input" runat="server" />
-                    <input id="tbFullName" type="text" class="form-control js-input-fullname" placeholder="Full Name" v-on:blur="splitFullName" v-if="showSplitNameField == false" v-model="firstName" style="display:none" />
+                    <input id="tbFullName" type="text" class="form-control js-input-fullname" placeholder="Full Name" v-model="firstName" style="display:none" />
 
                     <asp:Literal runat="server" ID="lFullName" />
                     <div class="row js-splitname-inputs" v-if="showSplitNameField" v-cloak>
@@ -91,7 +91,7 @@
                             <input runat="server" type="text" class="js-firstname js-update-name form-control" id="tbFirstName" placeholder="First Name" v-model="firstName" />
                         </div>
                         <div class="col-xs-6">
-                            <input runat="server" type="text" class="js-lastname js-update-name form-control" id="tbLastName" placeholder="Last Name" v-model="lastName" v-on:blur="refreshNameSplit" />
+                            <input runat="server" type="text" class="js-lastname js-update-name form-control" id="tbLastName" placeholder="Last Name" v-model="lastName" />
                         </div>
                     </div>
                 </div>
