@@ -1,6 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <views>
-  <mapping-views hash="8b2f8e2df17d73dba76aa1c225d528fdaf2d7b0e99cd5f679fe771067f211e37" conceptual-container="RockContext" store-container="CodeFirstDatabase">
+  <mapping-views hash="ab3c2986c30dd25c49e4eed73f7d30132a95c9879ac0eb16420fd0a08c8f256b" conceptual-container="RockContext" store-container="CodeFirstDatabase">
     <view extent="CodeFirstDatabase.AttendanceCode"><![CDATA[
     SELECT VALUE -- Constructing AttendanceCode
         [CodeFirstDatabaseSchema.AttendanceCode](T1.AttendanceCode_Id, T1.AttendanceCode_IssueDateTime, T1.AttendanceCode_Code, T1.AttendanceCode_Guid, T1.AttendanceCode_ForeignId, T1.AttendanceCode_ForeignGuid, T1.AttendanceCode_ForeignKey)
@@ -3567,43 +3567,79 @@
             True AS _from0
         FROM RockContext.MergeTemplates AS T
     ) AS T1]]></view>
-    <view extent="CodeFirstDatabase.ActionsHistory"><![CDATA[
-    SELECT VALUE -- Constructing ActionsHistory
-        [CodeFirstDatabaseSchema.ActionsHistory](T1.ActionsHistory_Id, T1.ActionsHistory_Baptized, T1.ActionsHistory_Giving, T1.ActionsHistory_Worshipping, T1.ActionsHistory_Serving, T1.ActionsHistory_PeerLearning, T1.ActionsHistory_Teaching, T1.ActionsHistory_YAMember, T1.ActionsHistory_YACoach, T1.ActionsHistory_YACoCoach, T1.ActionsHistory_YAHost, T1.ActionsHistory_NHMember, T1.ActionsHistory_NHCoach, T1.ActionsHistory_NHCoCoach, T1.ActionsHistory_NHHost, T1.ActionsHistory_NGMember, T1.ActionsHistory_NGCoach, T1.ActionsHistory_NGCoCoach, T1.ActionsHistory_NGHost, T1.ActionsHistory_NSMember, T1.ActionsHistory_NSCoach, T1.ActionsHistory_NSCoCoach, T1.ActionsHistory_CreatedDateTime, T1.ActionsHistory_ModifiedDateTime, T1.ActionsHistory_CreatedByPersonAliasId, T1.ActionsHistory_ModifiedByPersonAliasId, T1.ActionsHistory_Guid, T1.ActionsHistory_ForeignId, T1.ActionsHistory_ForeignGuid, T1.ActionsHistory_ForeignKey)
+    <view extent="CodeFirstDatabase.ActionsHistory_Adult"><![CDATA[
+    SELECT VALUE -- Constructing ActionsHistory_Adult
+        [CodeFirstDatabaseSchema.ActionsHistory_Adult](T1.[ActionsHistory_Adult.Id], T1.[ActionsHistory_Adult.Date], T1.[ActionsHistory_Adult.CampusId], T1.[ActionsHistory_Adult.RegionId], T1.[ActionsHistory_Adult.TotalPeople], T1.[ActionsHistory_Adult.Baptised], T1.[ActionsHistory_Adult.ERA], T1.[ActionsHistory_Adult.Give], T1.[ActionsHistory_Adult.Member], T1.[ActionsHistory_Adult.Serving], T1.[ActionsHistory_Adult.PeerLearning], T1.[ActionsHistory_Adult.Mentored], T1.[ActionsHistory_Adult.Teaching], T1.[ActionsHistory_Adult.PeerLearning_NH], T1.[ActionsHistory_Adult.PeerLearning_YA], T1.[ActionsHistory_Adult.Mentored_NH], T1.[ActionsHistory_Adult.Mentored_YA], T1.[ActionsHistory_Adult.Mentored_NS], T1.[ActionsHistory_Adult.Teaching_NH_SubSection], T1.[ActionsHistory_Adult.Teaching_NH], T1.[ActionsHistory_Adult.Teaching_YA_Section], T1.[ActionsHistory_Adult.Teaching_YA], T1.[ActionsHistory_Adult.Teaching_NS_SubSection], T1.[ActionsHistory_Adult.Teaching_NS], T1.[ActionsHistory_Adult.Teaching_NG_Section], T1.[ActionsHistory_Adult.Teaching_NG], T1.[ActionsHistory_Adult.CreatedDateTime], T1.[ActionsHistory_Adult.ModifiedDateTime], T1.[ActionsHistory_Adult.CreatedByPersonAliasId], T1.[ActionsHistory_Adult.ModifiedByPersonAliasId], T1.[ActionsHistory_Adult.Guid], T1.[ActionsHistory_Adult.ForeignId], T1.[ActionsHistory_Adult.ForeignGuid], T1.[ActionsHistory_Adult.ForeignKey])
     FROM (
         SELECT 
-            T.Id AS ActionsHistory_Id, 
-            T.Baptized AS ActionsHistory_Baptized, 
-            T.Giving AS ActionsHistory_Giving, 
-            T.Worshipping AS ActionsHistory_Worshipping, 
-            T.Serving AS ActionsHistory_Serving, 
-            T.PeerLearning AS ActionsHistory_PeerLearning, 
-            T.Teaching AS ActionsHistory_Teaching, 
-            T.YAMember AS ActionsHistory_YAMember, 
-            T.YACoach AS ActionsHistory_YACoach, 
-            T.YACoCoach AS ActionsHistory_YACoCoach, 
-            T.YAHost AS ActionsHistory_YAHost, 
-            T.NHMember AS ActionsHistory_NHMember, 
-            T.NHCoach AS ActionsHistory_NHCoach, 
-            T.NHCoCoach AS ActionsHistory_NHCoCoach, 
-            T.NHHost AS ActionsHistory_NHHost, 
-            T.NGMember AS ActionsHistory_NGMember, 
-            T.NGCoach AS ActionsHistory_NGCoach, 
-            T.NGCoCoach AS ActionsHistory_NGCoCoach, 
-            T.NGHost AS ActionsHistory_NGHost, 
-            T.NSMember AS ActionsHistory_NSMember, 
-            T.NSCoach AS ActionsHistory_NSCoach, 
-            T.NSCoCoach AS ActionsHistory_NSCoCoach, 
-            T.CreatedDateTime AS ActionsHistory_CreatedDateTime, 
-            T.ModifiedDateTime AS ActionsHistory_ModifiedDateTime, 
-            T.CreatedByPersonAliasId AS ActionsHistory_CreatedByPersonAliasId, 
-            T.ModifiedByPersonAliasId AS ActionsHistory_ModifiedByPersonAliasId, 
-            T.Guid AS ActionsHistory_Guid, 
-            T.ForeignId AS ActionsHistory_ForeignId, 
-            T.ForeignGuid AS ActionsHistory_ForeignGuid, 
-            T.ForeignKey AS ActionsHistory_ForeignKey, 
+            T.Id AS [ActionsHistory_Adult.Id], 
+            T.Date AS [ActionsHistory_Adult.Date], 
+            T.CampusId AS [ActionsHistory_Adult.CampusId], 
+            T.RegionId AS [ActionsHistory_Adult.RegionId], 
+            T.TotalPeople AS [ActionsHistory_Adult.TotalPeople], 
+            T.Baptised AS [ActionsHistory_Adult.Baptised], 
+            T.ERA AS [ActionsHistory_Adult.ERA], 
+            T.Give AS [ActionsHistory_Adult.Give], 
+            T.Member AS [ActionsHistory_Adult.Member], 
+            T.Serving AS [ActionsHistory_Adult.Serving], 
+            T.PeerLearning AS [ActionsHistory_Adult.PeerLearning], 
+            T.Mentored AS [ActionsHistory_Adult.Mentored], 
+            T.Teaching AS [ActionsHistory_Adult.Teaching], 
+            T.PeerLearning_NH AS [ActionsHistory_Adult.PeerLearning_NH], 
+            T.PeerLearning_YA AS [ActionsHistory_Adult.PeerLearning_YA], 
+            T.Mentored_NH AS [ActionsHistory_Adult.Mentored_NH], 
+            T.Mentored_YA AS [ActionsHistory_Adult.Mentored_YA], 
+            T.Mentored_NS AS [ActionsHistory_Adult.Mentored_NS], 
+            T.Teaching_NH_SubSection AS [ActionsHistory_Adult.Teaching_NH_SubSection], 
+            T.Teaching_NH AS [ActionsHistory_Adult.Teaching_NH], 
+            T.Teaching_YA_Section AS [ActionsHistory_Adult.Teaching_YA_Section], 
+            T.Teaching_YA AS [ActionsHistory_Adult.Teaching_YA], 
+            T.Teaching_NS_SubSection AS [ActionsHistory_Adult.Teaching_NS_SubSection], 
+            T.Teaching_NS AS [ActionsHistory_Adult.Teaching_NS], 
+            T.Teaching_NG_Section AS [ActionsHistory_Adult.Teaching_NG_Section], 
+            T.Teaching_NG AS [ActionsHistory_Adult.Teaching_NG], 
+            T.CreatedDateTime AS [ActionsHistory_Adult.CreatedDateTime], 
+            T.ModifiedDateTime AS [ActionsHistory_Adult.ModifiedDateTime], 
+            T.CreatedByPersonAliasId AS [ActionsHistory_Adult.CreatedByPersonAliasId], 
+            T.ModifiedByPersonAliasId AS [ActionsHistory_Adult.ModifiedByPersonAliasId], 
+            T.Guid AS [ActionsHistory_Adult.Guid], 
+            T.ForeignId AS [ActionsHistory_Adult.ForeignId], 
+            T.ForeignGuid AS [ActionsHistory_Adult.ForeignGuid], 
+            T.ForeignKey AS [ActionsHistory_Adult.ForeignKey], 
             True AS _from0
-        FROM RockContext.ActionsHistories AS T
+        FROM RockContext.ActionsHistory_Adult AS T
+    ) AS T1]]></view>
+    <view extent="CodeFirstDatabase.ActionsHistory_Student"><![CDATA[
+    SELECT VALUE -- Constructing ActionsHistory_Student
+        [CodeFirstDatabaseSchema.ActionsHistory_Student](T1.[ActionsHistory_Student.Id], T1.[ActionsHistory_Student.Date], T1.[ActionsHistory_Student.CampusId], T1.[ActionsHistory_Student.RegionId], T1.[ActionsHistory_Student.TotalPeople], T1.[ActionsHistory_Student.Baptised], T1.[ActionsHistory_Student.ERA], T1.[ActionsHistory_Student.Give], T1.[ActionsHistory_Student.Member], T1.[ActionsHistory_Student.Serving], T1.[ActionsHistory_Student.PeerLearning], T1.[ActionsHistory_Student.Mentored], T1.[ActionsHistory_Student.Teaching], T1.[ActionsHistory_Student.PeerLearning_NG], T1.[ActionsHistory_Student.Mentored_NG], T1.[ActionsHistory_Student.Teaching_Undefined], T1.[ActionsHistory_Student.CreatedDateTime], T1.[ActionsHistory_Student.ModifiedDateTime], T1.[ActionsHistory_Student.CreatedByPersonAliasId], T1.[ActionsHistory_Student.ModifiedByPersonAliasId], T1.[ActionsHistory_Student.Guid], T1.[ActionsHistory_Student.ForeignId], T1.[ActionsHistory_Student.ForeignGuid], T1.[ActionsHistory_Student.ForeignKey])
+    FROM (
+        SELECT 
+            T.Id AS [ActionsHistory_Student.Id], 
+            T.Date AS [ActionsHistory_Student.Date], 
+            T.CampusId AS [ActionsHistory_Student.CampusId], 
+            T.RegionId AS [ActionsHistory_Student.RegionId], 
+            T.TotalPeople AS [ActionsHistory_Student.TotalPeople], 
+            T.Baptised AS [ActionsHistory_Student.Baptised], 
+            T.ERA AS [ActionsHistory_Student.ERA], 
+            T.Give AS [ActionsHistory_Student.Give], 
+            T.Member AS [ActionsHistory_Student.Member], 
+            T.Serving AS [ActionsHistory_Student.Serving], 
+            T.PeerLearning AS [ActionsHistory_Student.PeerLearning], 
+            T.Mentored AS [ActionsHistory_Student.Mentored], 
+            T.Teaching AS [ActionsHistory_Student.Teaching], 
+            T.PeerLearning_NG AS [ActionsHistory_Student.PeerLearning_NG], 
+            T.Mentored_NG AS [ActionsHistory_Student.Mentored_NG], 
+            T.Teaching_Undefined AS [ActionsHistory_Student.Teaching_Undefined], 
+            T.CreatedDateTime AS [ActionsHistory_Student.CreatedDateTime], 
+            T.ModifiedDateTime AS [ActionsHistory_Student.ModifiedDateTime], 
+            T.CreatedByPersonAliasId AS [ActionsHistory_Student.CreatedByPersonAliasId], 
+            T.ModifiedByPersonAliasId AS [ActionsHistory_Student.ModifiedByPersonAliasId], 
+            T.Guid AS [ActionsHistory_Student.Guid], 
+            T.ForeignId AS [ActionsHistory_Student.ForeignId], 
+            T.ForeignGuid AS [ActionsHistory_Student.ForeignGuid], 
+            T.ForeignKey AS [ActionsHistory_Student.ForeignKey], 
+            True AS _from0
+        FROM RockContext.ActionsHistory_Student AS T
     ) AS T1]]></view>
     <view extent="CodeFirstDatabase.TimeCard"><![CDATA[
     SELECT VALUE -- Constructing TimeCard
@@ -7501,43 +7537,79 @@
             True AS _from0
         FROM CodeFirstDatabase.MergeTemplate AS T
     ) AS T1]]></view>
-    <view extent="RockContext.ActionsHistories"><![CDATA[
-    SELECT VALUE -- Constructing ActionsHistories
-        [Rock.Data.ActionsHistory](T1.ActionsHistory_Id, T1.ActionsHistory_Baptized, T1.ActionsHistory_Giving, T1.ActionsHistory_Worshipping, T1.ActionsHistory_Serving, T1.ActionsHistory_PeerLearning, T1.ActionsHistory_Teaching, T1.ActionsHistory_YAMember, T1.ActionsHistory_YACoach, T1.ActionsHistory_YACoCoach, T1.ActionsHistory_YAHost, T1.ActionsHistory_NHMember, T1.ActionsHistory_NHCoach, T1.ActionsHistory_NHCoCoach, T1.ActionsHistory_NHHost, T1.ActionsHistory_NGMember, T1.ActionsHistory_NGCoach, T1.ActionsHistory_NGCoCoach, T1.ActionsHistory_NGHost, T1.ActionsHistory_NSMember, T1.ActionsHistory_NSCoach, T1.ActionsHistory_NSCoCoach, T1.ActionsHistory_CreatedDateTime, T1.ActionsHistory_ModifiedDateTime, T1.ActionsHistory_CreatedByPersonAliasId, T1.ActionsHistory_ModifiedByPersonAliasId, T1.ActionsHistory_Guid, T1.ActionsHistory_ForeignId, T1.ActionsHistory_ForeignGuid, T1.ActionsHistory_ForeignKey)
+    <view extent="RockContext.ActionsHistory_Adult"><![CDATA[
+    SELECT VALUE -- Constructing ActionsHistory_Adult
+        [Rock.Data.ActionsHistory_Adult](T1.[ActionsHistory_Adult.Id], T1.[ActionsHistory_Adult.Date], T1.[ActionsHistory_Adult.CampusId], T1.[ActionsHistory_Adult.RegionId], T1.[ActionsHistory_Adult.TotalPeople], T1.[ActionsHistory_Adult.Baptised], T1.[ActionsHistory_Adult.ERA], T1.[ActionsHistory_Adult.Give], T1.[ActionsHistory_Adult.Member], T1.[ActionsHistory_Adult.Serving], T1.[ActionsHistory_Adult.PeerLearning], T1.[ActionsHistory_Adult.Mentored], T1.[ActionsHistory_Adult.Teaching], T1.[ActionsHistory_Adult.PeerLearning_NH], T1.[ActionsHistory_Adult.PeerLearning_YA], T1.[ActionsHistory_Adult.Mentored_NH], T1.[ActionsHistory_Adult.Mentored_YA], T1.[ActionsHistory_Adult.Mentored_NS], T1.[ActionsHistory_Adult.Teaching_NH_SubSection], T1.[ActionsHistory_Adult.Teaching_NH], T1.[ActionsHistory_Adult.Teaching_YA_Section], T1.[ActionsHistory_Adult.Teaching_YA], T1.[ActionsHistory_Adult.Teaching_NS_SubSection], T1.[ActionsHistory_Adult.Teaching_NS], T1.[ActionsHistory_Adult.Teaching_NG_Section], T1.[ActionsHistory_Adult.Teaching_NG], T1.[ActionsHistory_Adult.CreatedDateTime], T1.[ActionsHistory_Adult.ModifiedDateTime], T1.[ActionsHistory_Adult.CreatedByPersonAliasId], T1.[ActionsHistory_Adult.ModifiedByPersonAliasId], T1.[ActionsHistory_Adult.Guid], T1.[ActionsHistory_Adult.ForeignId], T1.[ActionsHistory_Adult.ForeignGuid], T1.[ActionsHistory_Adult.ForeignKey])
     FROM (
         SELECT 
-            T.Id AS ActionsHistory_Id, 
-            T.Baptized AS ActionsHistory_Baptized, 
-            T.Giving AS ActionsHistory_Giving, 
-            T.Worshipping AS ActionsHistory_Worshipping, 
-            T.Serving AS ActionsHistory_Serving, 
-            T.PeerLearning AS ActionsHistory_PeerLearning, 
-            T.Teaching AS ActionsHistory_Teaching, 
-            T.YAMember AS ActionsHistory_YAMember, 
-            T.YACoach AS ActionsHistory_YACoach, 
-            T.YACoCoach AS ActionsHistory_YACoCoach, 
-            T.YAHost AS ActionsHistory_YAHost, 
-            T.NHMember AS ActionsHistory_NHMember, 
-            T.NHCoach AS ActionsHistory_NHCoach, 
-            T.NHCoCoach AS ActionsHistory_NHCoCoach, 
-            T.NHHost AS ActionsHistory_NHHost, 
-            T.NGMember AS ActionsHistory_NGMember, 
-            T.NGCoach AS ActionsHistory_NGCoach, 
-            T.NGCoCoach AS ActionsHistory_NGCoCoach, 
-            T.NGHost AS ActionsHistory_NGHost, 
-            T.NSMember AS ActionsHistory_NSMember, 
-            T.NSCoach AS ActionsHistory_NSCoach, 
-            T.NSCoCoach AS ActionsHistory_NSCoCoach, 
-            T.CreatedDateTime AS ActionsHistory_CreatedDateTime, 
-            T.ModifiedDateTime AS ActionsHistory_ModifiedDateTime, 
-            T.CreatedByPersonAliasId AS ActionsHistory_CreatedByPersonAliasId, 
-            T.ModifiedByPersonAliasId AS ActionsHistory_ModifiedByPersonAliasId, 
-            T.Guid AS ActionsHistory_Guid, 
-            T.ForeignId AS ActionsHistory_ForeignId, 
-            T.ForeignGuid AS ActionsHistory_ForeignGuid, 
-            T.ForeignKey AS ActionsHistory_ForeignKey, 
+            T.Id AS [ActionsHistory_Adult.Id], 
+            T.Date AS [ActionsHistory_Adult.Date], 
+            T.CampusId AS [ActionsHistory_Adult.CampusId], 
+            T.RegionId AS [ActionsHistory_Adult.RegionId], 
+            T.TotalPeople AS [ActionsHistory_Adult.TotalPeople], 
+            T.Baptised AS [ActionsHistory_Adult.Baptised], 
+            T.ERA AS [ActionsHistory_Adult.ERA], 
+            T.Give AS [ActionsHistory_Adult.Give], 
+            T.Member AS [ActionsHistory_Adult.Member], 
+            T.Serving AS [ActionsHistory_Adult.Serving], 
+            T.PeerLearning AS [ActionsHistory_Adult.PeerLearning], 
+            T.Mentored AS [ActionsHistory_Adult.Mentored], 
+            T.Teaching AS [ActionsHistory_Adult.Teaching], 
+            T.PeerLearning_NH AS [ActionsHistory_Adult.PeerLearning_NH], 
+            T.PeerLearning_YA AS [ActionsHistory_Adult.PeerLearning_YA], 
+            T.Mentored_NH AS [ActionsHistory_Adult.Mentored_NH], 
+            T.Mentored_YA AS [ActionsHistory_Adult.Mentored_YA], 
+            T.Mentored_NS AS [ActionsHistory_Adult.Mentored_NS], 
+            T.Teaching_NH_SubSection AS [ActionsHistory_Adult.Teaching_NH_SubSection], 
+            T.Teaching_NH AS [ActionsHistory_Adult.Teaching_NH], 
+            T.Teaching_YA_Section AS [ActionsHistory_Adult.Teaching_YA_Section], 
+            T.Teaching_YA AS [ActionsHistory_Adult.Teaching_YA], 
+            T.Teaching_NS_SubSection AS [ActionsHistory_Adult.Teaching_NS_SubSection], 
+            T.Teaching_NS AS [ActionsHistory_Adult.Teaching_NS], 
+            T.Teaching_NG_Section AS [ActionsHistory_Adult.Teaching_NG_Section], 
+            T.Teaching_NG AS [ActionsHistory_Adult.Teaching_NG], 
+            T.CreatedDateTime AS [ActionsHistory_Adult.CreatedDateTime], 
+            T.ModifiedDateTime AS [ActionsHistory_Adult.ModifiedDateTime], 
+            T.CreatedByPersonAliasId AS [ActionsHistory_Adult.CreatedByPersonAliasId], 
+            T.ModifiedByPersonAliasId AS [ActionsHistory_Adult.ModifiedByPersonAliasId], 
+            T.Guid AS [ActionsHistory_Adult.Guid], 
+            T.ForeignId AS [ActionsHistory_Adult.ForeignId], 
+            T.ForeignGuid AS [ActionsHistory_Adult.ForeignGuid], 
+            T.ForeignKey AS [ActionsHistory_Adult.ForeignKey], 
             True AS _from0
-        FROM CodeFirstDatabase.ActionsHistory AS T
+        FROM CodeFirstDatabase.ActionsHistory_Adult AS T
+    ) AS T1]]></view>
+    <view extent="RockContext.ActionsHistory_Student"><![CDATA[
+    SELECT VALUE -- Constructing ActionsHistory_Student
+        [Rock.Data.ActionsHistory_Student](T1.[ActionsHistory_Student.Id], T1.[ActionsHistory_Student.Date], T1.[ActionsHistory_Student.CampusId], T1.[ActionsHistory_Student.RegionId], T1.[ActionsHistory_Student.TotalPeople], T1.[ActionsHistory_Student.Baptised], T1.[ActionsHistory_Student.ERA], T1.[ActionsHistory_Student.Give], T1.[ActionsHistory_Student.Member], T1.[ActionsHistory_Student.Serving], T1.[ActionsHistory_Student.PeerLearning], T1.[ActionsHistory_Student.Mentored], T1.[ActionsHistory_Student.Teaching], T1.[ActionsHistory_Student.PeerLearning_NG], T1.[ActionsHistory_Student.Mentored_NG], T1.[ActionsHistory_Student.Teaching_Undefined], T1.[ActionsHistory_Student.CreatedDateTime], T1.[ActionsHistory_Student.ModifiedDateTime], T1.[ActionsHistory_Student.CreatedByPersonAliasId], T1.[ActionsHistory_Student.ModifiedByPersonAliasId], T1.[ActionsHistory_Student.Guid], T1.[ActionsHistory_Student.ForeignId], T1.[ActionsHistory_Student.ForeignGuid], T1.[ActionsHistory_Student.ForeignKey])
+    FROM (
+        SELECT 
+            T.Id AS [ActionsHistory_Student.Id], 
+            T.Date AS [ActionsHistory_Student.Date], 
+            T.CampusId AS [ActionsHistory_Student.CampusId], 
+            T.RegionId AS [ActionsHistory_Student.RegionId], 
+            T.TotalPeople AS [ActionsHistory_Student.TotalPeople], 
+            T.Baptised AS [ActionsHistory_Student.Baptised], 
+            T.ERA AS [ActionsHistory_Student.ERA], 
+            T.Give AS [ActionsHistory_Student.Give], 
+            T.Member AS [ActionsHistory_Student.Member], 
+            T.Serving AS [ActionsHistory_Student.Serving], 
+            T.PeerLearning AS [ActionsHistory_Student.PeerLearning], 
+            T.Mentored AS [ActionsHistory_Student.Mentored], 
+            T.Teaching AS [ActionsHistory_Student.Teaching], 
+            T.PeerLearning_NG AS [ActionsHistory_Student.PeerLearning_NG], 
+            T.Mentored_NG AS [ActionsHistory_Student.Mentored_NG], 
+            T.Teaching_Undefined AS [ActionsHistory_Student.Teaching_Undefined], 
+            T.CreatedDateTime AS [ActionsHistory_Student.CreatedDateTime], 
+            T.ModifiedDateTime AS [ActionsHistory_Student.ModifiedDateTime], 
+            T.CreatedByPersonAliasId AS [ActionsHistory_Student.CreatedByPersonAliasId], 
+            T.ModifiedByPersonAliasId AS [ActionsHistory_Student.ModifiedByPersonAliasId], 
+            T.Guid AS [ActionsHistory_Student.Guid], 
+            T.ForeignId AS [ActionsHistory_Student.ForeignId], 
+            T.ForeignGuid AS [ActionsHistory_Student.ForeignGuid], 
+            T.ForeignKey AS [ActionsHistory_Student.ForeignKey], 
+            True AS _from0
+        FROM CodeFirstDatabase.ActionsHistory_Student AS T
     ) AS T1]]></view>
     <view extent="RockContext.TimeCards"><![CDATA[
     SELECT VALUE -- Constructing TimeCards
