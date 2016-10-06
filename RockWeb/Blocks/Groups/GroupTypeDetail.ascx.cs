@@ -27,6 +27,7 @@ using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
+using Rock.UniversalSearch;
 using Rock.Web;
 using Rock.Web.Cache;
 using Rock.Web.UI;
@@ -441,6 +442,7 @@ namespace RockWeb.Blocks.Groups
             groupType.AllowMultipleLocations = cbAllowMultipleLocations.Checked;
             groupType.InheritedGroupTypeId = gtpInheritedGroupType.SelectedGroupTypeId;
             groupType.IgnorePersonInactivated = cbDontInactivateMembers.Checked;
+            groupType.IsIndexEnabled = cbEnableIndexing.Checked;
             groupType.EnableLocationSchedules = cbEnableLocationSchedules.Checked;
 
             groupType.ChildGroupTypes = new List<GroupType>();
@@ -585,11 +587,16 @@ namespace RockWeb.Blocks.Groups
         {
             pnlDetails.Visible = false;
 
+            // determine if indexing is enabled
+            var groupEntityType = EntityTypeCache.Read( Rock.SystemGuid.EntityType.GROUP.AsGuid() );
+            cbEnableIndexing.Visible = (IndexContainer.IndexingEnabled && groupEntityType.IsIndexingEnabled);
+
             GroupType groupType = null;
 
             if ( !groupTypeId.Equals( 0 ) )
             {
                 groupType = new GroupTypeService( new RockContext() ).Get( groupTypeId );
+                pdAuditDetails.SetEntity( groupType, ResolveRockUrl( "~" ) );
             }
 
             if ( groupType == null )
@@ -605,6 +612,8 @@ namespace RockWeb.Blocks.Groups
 
                 groupType.AllowedScheduleTypes = ScheduleType.None;
                 groupType.LocationSelectionMode = GroupLocationPickerMode.None;
+                // hide the panel drawer that show created and last modified dates
+                pdAuditDetails.Visible = false;
             }
 
             bool editAllowed = groupType.IsAuthorized( Authorization.EDIT, CurrentPerson );
@@ -742,6 +751,7 @@ namespace RockWeb.Blocks.Groups
             gtpInheritedGroupType.SelectedGroupTypeId = groupType.InheritedGroupTypeId;
 
             cbDontInactivateMembers.Checked = groupType.IgnorePersonInactivated;
+            cbEnableIndexing.Checked = groupType.IsIndexEnabled;
 
             GroupTypeRolesState = new List<GroupTypeRole>();
             foreach ( var role in groupType.Roles )
@@ -915,6 +925,14 @@ namespace RockWeb.Blocks.Groups
                     dlgGroupTypeAttribute.Show();
                     break;
                 case "GROUPATTRIBUTES":
+                    if (cbEnableIndexing.Visible && cbEnableIndexing.Checked )
+                    {
+                        edtGroupAttributes.IsIndexingEnabledVisible = true;
+                    }
+                    else
+                    {
+                        edtGroupAttributes.IsIndexingEnabledVisible = false;
+                    }
                     dlgGroupAttribute.Show();
                     break;
                 case "GROUPMEMBERATTRIBUTES":

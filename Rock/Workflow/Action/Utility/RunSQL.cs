@@ -37,6 +37,7 @@ namespace Rock.Workflow.Action
     [ExportMetadata( "ComponentName", "SQL Run" )]
     [CodeEditorField( "SQLQuery", "The SQL query to run. <span class='tip tip-lava'></span>", Web.UI.Controls.CodeEditorMode.Sql, Web.UI.Controls.CodeEditorTheme.Rock, 400, true, "", "", 0 )]
     [WorkflowAttribute( "Result Attribute", "An optional attribute to set to the scaler result of SQL query.", false, "", "", 1 )]
+    [BooleanField( "Continue On Error", "Should processing continue even if SQL Error occurs?", false, "", 2 )]
     public class RunSQL : ActionComponent
     {
         /// <summary>
@@ -89,8 +90,16 @@ namespace Rock.Workflow.Action
             catch (Exception ex)
             {
                 action.AddLogEntry( ex.Message, true );
-                errorMessages.Add( ex.Message );
-                return false;
+
+                if ( !GetAttributeValue( action, "ContinueOnError" ).AsBoolean() )
+                {
+                    errorMessages.Add( ex.Message );
+                    return false;
+                }
+                else
+                {
+                    return true;
+                }
             }
 
         }

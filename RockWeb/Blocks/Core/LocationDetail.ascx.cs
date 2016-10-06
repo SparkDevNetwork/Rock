@@ -437,11 +437,14 @@ namespace RockWeb.Blocks.Core
             if ( !locationId.Equals( 0 ) )
             {
                 location = new LocationService( new RockContext() ).Get( locationId );
+                pdAuditDetails.SetEntity( location, ResolveRockUrl( "~" ) );
             }
 
             if ( location == null )
             {
                 location = new Location { Id = 0, IsActive = true, ParentLocationId = parentLocationId };
+                // hide the panel drawer that show created and last modified dates
+                pdAuditDetails.Visible = false;
             }
 
             editAllowed = location.IsAuthorized( Authorization.EDIT, CurrentPerson );

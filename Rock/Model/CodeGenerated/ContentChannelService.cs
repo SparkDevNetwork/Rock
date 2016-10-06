@@ -107,6 +107,7 @@ namespace Rock.Model
             target.ForeignGuid = source.ForeignGuid;
             target.ForeignKey = source.ForeignKey;
             target.IconCssClass = source.IconCssClass;
+            target.IsIndexEnabled = source.IsIndexEnabled;
             target.ItemsManuallyOrdered = source.ItemsManuallyOrdered;
             target.ItemUrl = source.ItemUrl;
             target.Name = source.Name;

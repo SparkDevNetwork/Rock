@@ -1,0 +1,115 @@
+//
+// Smart Search - search at th top of the page for
+// searching people, groups, etc.
+// --------------------------------------------------
+
+.smartsearch {
+  position: relative;
+  width: 290px;
+  padding: 2px 6px;
+  margin-top: 6px;
+  font-size: 12px;
+  color: @smartsearch-text-color;
+  background-color: @smartsearch-bg;
+  border: 1px solid @smartsearch-border-color;
+  border-radius: @border-radius-base;
+
+  input::-moz-placeholder,
+  input::-webkit-input-placeholder {
+    color: darken(@smartsearch-input-text-color, 25%);
+  }
+
+    .nav > li > a {
+      padding: 4px 15px;
+    }
+
+      input::selection,
+      input::-moz-selection {
+        color: @smartsearch-input-selection-text-color;
+        background: @smartsearch-input-selection-background;
+      }
+
+  &:focus {
+    border-color: #595959;
+  }
+
+  .twitter-typeahead {
+    display: block !important;
+    margin-right: 120px;
+  }
+
+  .smartsearch-type {
+    width: 120px;
+  }
+
+  i {
+    position: absolute;
+    float: left;
+    margin-top: 6px;
+    font-size: 16px;
+    opacity: .6;
+  }
+
+  input {
+    width: 150px;
+    margin: 0;
+    font-size: 14px;
+    color: @smartsearch-input-text-color;
+    background: transparent;
+    border: 0;
+    border-radius: 0;
+
+    &:focus {
+      outline: 0; // get rid of orange box in chrome
+      box-shadow: 0 0 0 0;
+    }
+  }
+
+  .tt-hint {
+    padding: 4px 4px 4px 25px;
+  }
+
+  .tt-dropdown-menu {
+    min-width: 290px;
+    margin-top: 2px;
+    margin-left: -6px;
+    border: 0;
+  }
+
+  input.searchinput {
+    width: 100%;
+    padding: 4px 4px 4px 25px;
+    color: @smartsearch-input-text-color;
+    border: 0 !important;
+    box-shadow: none !important;
+  }
+
+  .dropdown {
+    .navbar-link {
+      color: @smartsearch-text-color;
+      text-align: right;
+
+      span {
+        padding-right: 4px;
+      }
+
+      &:hover,
+      &:focus {
+        background-color: transparent;
+      }
+    }
+
+    &.open {
+      .navbar-link {
+        background-color: transparent;
+      }
+    }
+
+    .dropdown-menu {
+      right: 0;
+      left: auto;
+      // smart search type menu
+      font-size: 12px;
+    }
+  }
+}

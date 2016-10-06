@@ -221,6 +221,9 @@ namespace RockWeb.Blocks.CheckIn.Config
 
                 groupType.SetAttributeValue( "core_checkin_AgeRequired", cbAgeRequired.Checked.ToString() );
                 groupType.SetAttributeValue( "core_checkin_GradeRequired", cbGradeRequired.Checked.ToString() );
+                groupType.SetAttributeValue( "core_checkin_HidePhotos", cbHidePhotos.Checked.ToString() );
+                groupType.SetAttributeValue( "core_checkin_PreventDuplicateCheckin", cbPreventDuplicateCheckin.Checked.ToString() );
+                groupType.SetAttributeValue( "core_checkin_PreventInactivePeople", cbPreventInactivePeople.Checked.ToString() );
                 groupType.SetAttributeValue( "core_checkin_CheckInType", ddlType.SelectedValue );
                 groupType.SetAttributeValue( "core_checkin_DisplayLocationCount", cbDisplayLocCount.Checked.ToString() );
                 groupType.SetAttributeValue( "core_checkin_EnableManagerOption", cbEnableManager.Checked.ToString() );
@@ -317,11 +320,14 @@ namespace RockWeb.Blocks.CheckIn.Config
             if ( !groupTypeId.Equals( 0 ) )
             {
                 groupType = new GroupTypeService( new RockContext() ).Get( groupTypeId );
+                pdAuditDetails.SetEntity( groupType, ResolveRockUrl( "~" ) );
             }
 
             if ( groupType == null )
             {
                 groupType = new GroupType { Id = 0 };
+                // hide the panel drawer that show created and last modified dates
+                pdAuditDetails.Visible = false;
             }
 
             if ( groupType != null )
@@ -392,6 +398,9 @@ namespace RockWeb.Blocks.CheckIn.Config
 
                 cbAgeRequired.Checked = groupType.GetAttributeValue( "core_checkin_AgeRequired" ).AsBoolean( true );
                 cbGradeRequired.Checked = groupType.GetAttributeValue( "core_checkin_GradeRequired" ).AsBoolean( true );
+                cbHidePhotos.Checked = groupType.GetAttributeValue( "core_checkin_HidePhotos" ).AsBoolean( true );
+                cbPreventDuplicateCheckin.Checked = groupType.GetAttributeValue( "core_checkin_PreventDuplicateCheckin" ).AsBoolean( true );
+                cbPreventInactivePeople.Checked = groupType.GetAttributeValue( "core_checkin_PreventInactivePeople" ).AsBoolean( true );
                 ddlType.SetValue( groupType.GetAttributeValue( "core_checkin_CheckInType" ) );
                 cbDisplayLocCount.Checked = groupType.GetAttributeValue( "core_checkin_DisplayLocationCount" ).AsBoolean( true );
                 cbEnableManager.Checked = groupType.GetAttributeValue( "core_checkin_EnableManagerOption" ).AsBoolean( true );
@@ -425,6 +434,9 @@ namespace RockWeb.Blocks.CheckIn.Config
             var excludeList = new List<string>();
             excludeList.Add( "core_checkin_AgeRequired" );
             excludeList.Add( "core_checkin_GradeRequired" );
+            excludeList.Add( "core_checkin_HidePhotos" );
+            excludeList.Add( "core_checkin_PreventDuplicateCheckin" );
+            excludeList.Add( "core_checkin_PreventInactivePeople" );
             excludeList.Add( "core_checkin_CheckInType" );
             excludeList.Add( "core_checkin_DisplayLocationCount" );
             excludeList.Add( "core_checkin_EnableManagerOption" );
@@ -457,7 +469,9 @@ namespace RockWeb.Blocks.CheckIn.Config
             bool familyType = ddlType.SelectedValue == "1";
             nbAutoSelectDaysBack.Visible = familyType;
             cbReuseCode.Visible = familyType;
+            cbHidePhotos.Visible = familyType;
             cbUseSameOptions.Visible = familyType;
+            cbPreventDuplicateCheckin.Visible = familyType;
 
             bool showPhoneFields = true;
             int? searchTypeId = ddlSearchType.SelectedValueAsId();

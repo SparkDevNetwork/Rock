@@ -363,11 +363,14 @@ namespace RockWeb.Blocks.Core
             if ( !definedTypeId.Equals( 0 ) )
             {
                 definedType = new DefinedTypeService( new RockContext() ).Get( definedTypeId );
+                pdAuditDetails.SetEntity( definedType, ResolveRockUrl( "~" ) );
             }
 
             if ( definedType == null )
             {
                 definedType = new DefinedType { Id = 0 };
+                // hide the panel drawer that show created and last modified dates
+                pdAuditDetails.Visible = false;
             }
 
             hfDefinedTypeId.SetValue( definedType.Id );

@@ -49,6 +49,7 @@ namespace RockWeb.Blocks.Core
     [IntegerField( "Entity Id", "The entity id that values apply to", false, 0, "Advanced", 1 )]
     [BooleanField( "Enable Show In Grid", "Should the 'Show In Grid' option be displayed when editing attributes?", false, "Advanced", 2 )]
     [BooleanField( "Enable Ordering", "Should the attributes be allowed to be sorted?", false, "Advanced", 3 )]
+    [TextField( "Category Filter", "A comma separated list of category guids to limit the display of attributes to.", false, "", "Advanced", 4)]
 
     public partial class Attributes : RockBlock
     {
@@ -74,6 +75,12 @@ namespace RockWeb.Blocks.Core
         protected override void OnInit( EventArgs e )
         {
             base.OnInit( e );
+
+            // if limiting by category list hide the filters
+            if ( !string.IsNullOrWhiteSpace( GetAttributeValue( "CategoryFilter" ) ) )
+            {
+                rFilter.Visible = false;
+            }
 
             _configuredType = GetAttributeValue( "ConfigureType" ).AsBooleanOrNull() ?? true;
             edtAttribute.ShowInGridVisible = GetAttributeValue( "EnableShowInGrid" ).AsBooleanOrNull() ?? false;
@@ -587,6 +594,17 @@ namespace RockWeb.Blocks.Core
                 query = attributeService.GetByEntityTypeId( null );
             }
 
+            // if filtering by block setting of categories
+            if (!string.IsNullOrWhiteSpace( GetAttributeValue( "CategoryFilter" ) ) )
+            {
+                try {
+                    var categoryGuids = GetAttributeValue( "CategoryFilter" ).Split( ',' ).Select( Guid.Parse ).ToList();
+
+                    query = query.Where( a => a.Categories.Any( c => categoryGuids.Contains( c.Guid ) ) );
+                }
+                catch { }
+            }
+
             var selectedCategoryIds = new List<int>();
             rFilter.GetUserPreference( "Categories" ).SplitDelimitedValues().ToList().ForEach( s => selectedCategoryIds.Add( int.Parse( s ) ) );
             if ( selectedCategoryIds.Any() )
@@ -683,11 +701,15 @@ namespace RockWeb.Blocks.Core
 
             if ( _configuredType )
             {
-                pnlEntityTypeQualifier.Visible = false;
+                ddlAttrEntityType.Visible = false;
+                tbAttrQualifierField.Visible = false;
+                tbAttrQualifierValue.Visible = false;
             }
             else
             {
-                pnlEntityTypeQualifier.Visible = true;
+                ddlAttrEntityType.Visible = true;
+                tbAttrQualifierField.Visible = true;
+                tbAttrQualifierValue.Visible = true;
 
                 ddlAttrEntityType.SetValue( attributeModel.EntityTypeId.HasValue ? attributeModel.EntityTypeId.Value.ToString() : "0" );
                 tbAttrQualifierField.Text = attributeModel.EntityTypeQualifierColumn;

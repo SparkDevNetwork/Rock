@@ -42,6 +42,10 @@ namespace RockWeb.Blocks.Cms
     [LinkedPage("Detail Page", order:0)]
     [BooleanField("Filter Items For Current User", "Filters the items by those created by the current logged in user.", false, order: 1)]
     [BooleanField("Show Filters", "Allows you to show/hide the grids filters.", true, order: 2)]
+    [BooleanField("Show Event Occurrences Column", "Determines if the column that lists event occurrences should be shown.", true, order: 3)]
+    [BooleanField( "Show Priority Column", "Determines if the column that displays priority should be shown.", true, order: 4 )]
+    [BooleanField( "Show Security Column", "Determines if the security column should be shown.", true, order: 5 )]
+    [BooleanField( "Show Expire Column", "Determines if the expire column should be shown.", true, order: 6 )]
     [ContentChannelField("Content Channel", "If set the block will ignore content channel query parameters", false)]
     public partial class ContentChannelItemList : RockBlock, ISecondaryBlock
     {
@@ -162,12 +166,11 @@ namespace RockWeb.Blocks.Cms
                     statusField.SortExpression = "Status";
                     statusField.HtmlEncode = false;
                 }
-
                 var securityField = new SecurityField();
                 gItems.Columns.Add( securityField );
                 securityField.TitleField = "Title";
                 securityField.EntityTypeId = EntityTypeCache.Read( typeof( Rock.Model.ContentChannelItem ) ).Id;
-
+                
                 var deleteField = new DeleteField();
                 gItems.Columns.Add( deleteField );
                 deleteField.Click += gItems_Delete;
@@ -175,6 +178,17 @@ namespace RockWeb.Blocks.Cms
                 // this event gets fired after block settings are updated. it's nice to repaint the screen if these settings would alter it
                 this.BlockUpdated += Block_BlockUpdated;
                 this.AddConfigurationUpdateTrigger( upnlContent );
+
+                // Show/hide columns based on block settings
+                gItems.Columns[5].Visible = GetAttributeValue( "ShowExpireColumn" ).AsBoolean();
+                gItems.Columns[7].Visible = GetAttributeValue( "ShowEventOccurrencesColumn" ).AsBoolean();
+                gItems.Columns[6].Visible = GetAttributeValue( "ShowPriorityColumn" ).AsBoolean();
+                
+                var securityColumn = gItems.Columns.OfType<SecurityField>().FirstOrDefault();
+                if ( securityColumn != null )
+                {
+                    securityColumn.Visible = GetAttributeValue( "ShowSecurityColumn" ).AsBoolean();
+                }
             }
             else
             {

@@ -266,6 +266,14 @@ namespace Rock.Web.Cache
         public bool AllowIndexing { get; set; }
 
         /// <summary>
+        /// Gets or sets the body CSS class.
+        /// </summary>
+        /// <value>
+        /// The body CSS class.
+        /// </value>
+        public string BodyCssClass { get; set; }
+
+        /// <summary>
         /// Gets the parent page.
         /// </summary>
         /// <value>
@@ -502,6 +510,7 @@ namespace Rock.Web.Cache
                 this.HeaderContent = page.HeaderContent;
                 this.IncludeAdminFooter = page.IncludeAdminFooter;
                 this.AllowIndexing = page.AllowIndexing;
+                this.BodyCssClass = page.BodyCssClass;
 
                 this.PageContexts = new Dictionary<string, string>();
                 if ( page.PageContexts != null )

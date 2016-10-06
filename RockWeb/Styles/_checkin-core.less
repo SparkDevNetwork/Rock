@@ -66,13 +66,14 @@ h1 {
 
 // set page background
 body {
-  overflow-x: hidden;
+  .checkinBackground;
+    
+    overflow-x: hidden;
   -webkit-background-size: cover;
      -moz-background-size: cover;
        -o-background-size: cover;
           background-size: cover;
 
-  .checkinBackground;
   @media all and (-webkit-min-device-pixel-ratio: 1.5) {
     .checkinBackgroundRetina();
   }
@@ -172,7 +173,8 @@ body {
   background-color: @btn-default-bg;
   border-color: @btn-default-border;
 
-  &.active {
+  &.active,
+  &.active:focus {
     color: @btn-primary-color;
     background-color: @btn-primary-bg;
     border-color: @btn-primary-border;
@@ -246,6 +248,7 @@ body {
 .photo-round {
   background-repeat: no-repeat;
   background-size: cover;
+  background-position-x: center;
 
   &.photo-round-md {
     width: 70px;

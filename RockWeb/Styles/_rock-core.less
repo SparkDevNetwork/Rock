@@ -98,6 +98,11 @@ iframe {
   border-radius: @border-radius-base;
 }
 
+.alert-warning .navigation-tip {
+    background-color: lighten(@state-warning-text, 10%);
+    color: @state-warning-bg;
+}
+
 // context help
 a.help {
   margin-left: 6px;
@@ -319,6 +324,13 @@ th[align=center] {
 
     .panel-labels {
       float: right;
+      margin-top: -2px;
+
+      .panel-text {
+          font-size: 12px;
+          float: left;
+          margin-top: 5px;
+      }
     }
 
     .panel-actions {

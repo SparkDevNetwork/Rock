@@ -151,6 +151,30 @@ namespace Rock.CheckIn
         public bool GradeRequired { get { return GetSetting( "core_checkin_GradeRequired" ).AsBoolean( true ); } }
 
         /// <summary>
+        /// Gets a value indicating whether [hide photos].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [hide photos]; otherwise, <c>false</c>.
+        /// </value>
+        public bool HidePhotos { get { return GetSetting( "core_checkin_HidePhotos" ).AsBoolean( false ); } }
+
+        /// <summary>
+        /// Gets a value indicating whether [prevent duplicate checkin].
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if [prevent duplicate checkin]; otherwise, <c>false</c>.
+        /// </value>
+        public bool PreventDuplicateCheckin { get { return GetSetting( "core_checkin_PreventDuplicateCheckin" ).AsBoolean( false ); } }
+        
+        /// <summary>
+        /// Gets a value indicating whether [prevent inactive peopele].
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if [prevent inactive peopele]; otherwise, <c>false</c>.
+        /// </value>
+        public bool PreventInactivePeopele { get { return GetSetting( "core_checkin_PreventInactivePeople" ).AsBoolean( false ); } }
+
+        /// <summary>
         /// Gets a value indicating whether [display location count].
         /// </summary>
         /// <value>

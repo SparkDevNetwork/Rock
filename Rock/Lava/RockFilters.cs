@@ -156,14 +156,18 @@ namespace Rock.Lava
                 return input;
             }
 
-            decimal numericQuantity;
+            decimal numericQuantity = 0.0M;
             if ( quantity is string )
             {
                 numericQuantity = ( quantity as string ).AsDecimal();
             }
             else
             {
-                numericQuantity = Convert.ToDecimal( quantity );
+                try
+                {
+                    numericQuantity = Convert.ToDecimal( quantity );
+                }
+                catch { }
             }
 
             if ( numericQuantity > 1 )
@@ -1514,6 +1518,85 @@ namespace Rock.Lava
         #region Person Filters
 
         /// <summary>
+        /// Sets the person preference.
+        /// </summary>
+        /// <param name="context">The context.</param>
+        /// <param name="input">The input.</param>
+        /// <param name="settingKey">The setting key.</param>
+        /// <param name="settingValue">The setting value.</param>
+        public static void SetUserPreference( DotLiquid.Context context, object input, string settingKey, string settingValue )
+        {
+            Person person = null;
+
+            if (input is int )
+            {
+                person = new PersonService( new RockContext() ).Get( (int)input ); 
+            }
+            else if (input is Person )
+            {
+                person = (Person)input;
+            }
+
+            if (person != null )
+            {
+                PersonService.SaveUserPreference( person, settingKey, settingValue );
+            }
+        }
+
+        /// <summary>
+        /// Gets the person preference.
+        /// </summary>
+        /// <param name="context">The context.</param>
+        /// <param name="input">The input.</param>
+        /// <param name="settingKey">The setting key.</param>
+        /// <returns></returns>
+        public static string GetUserPreference( DotLiquid.Context context, object input, string settingKey )
+        {
+            Person person = null;
+
+            if ( input is int )
+            {
+                person = new PersonService( new RockContext() ).Get( (int)input );
+            }
+            else if ( input is Person )
+            {
+                person = (Person)input;
+            }
+
+            if ( person != null )
+            {
+                return PersonService.GetUserPreference( person, settingKey );
+            }
+
+            return string.Empty;
+        }
+
+        /// <summary>
+        /// Deletes the user preference.
+        /// </summary>
+        /// <param name="context">The context.</param>
+        /// <param name="input">The input.</param>
+        /// <param name="settingKey">The setting key.</param>
+        public static void DeleteUserPreference( DotLiquid.Context context, object input, string settingKey )
+        {
+            Person person = null;
+
+            if ( input is int )
+            {
+                person = new PersonService( new RockContext() ).Get( (int)input );
+            }
+            else if ( input is Person )
+            {
+                person = (Person)input;
+            }
+
+            if ( person != null )
+            {
+                PersonService.DeleteUserPreference( person, settingKey );
+            }
+        }
+
+        /// <summary>
         /// Persons the by identifier.
         /// </summary>
         /// <param name="context">The context.</param>
@@ -2537,7 +2620,10 @@ namespace Rock.Lava
                                 return page.Site.Theme;
                             }
                         }
-
+                    case "Description":
+                        {
+                            return page.MetaDescription;
+                        }
                     case "Layout":
                         {
                             return page.Layout.Name;

@@ -68,6 +68,9 @@ namespace Rock.Client
         public bool IsGridColumn { get; set; }
 
         /// <summary />
+        public bool IsIndexEnabled { get; set; }
+
+        /// <summary />
         public bool IsMultiValue { get; set; }
 
         /// <summary />
@@ -134,6 +137,7 @@ namespace Rock.Client
             this.ForeignKey = source.ForeignKey;
             this.IconCssClass = source.IconCssClass;
             this.IsGridColumn = source.IsGridColumn;
+            this.IsIndexEnabled = source.IsIndexEnabled;
             this.IsMultiValue = source.IsMultiValue;
             this.IsRequired = source.IsRequired;
             this.IsSystem = source.IsSystem;

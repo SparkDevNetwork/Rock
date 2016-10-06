@@ -98,7 +98,10 @@ namespace Rock.Financial
         public CreditCardPaymentInfo( string number, string code, DateTime expirationDate )
             : this()
         {
-            Number = number;
+            Regex rgx = new Regex( @"[^\d]" );
+            string ccNum = rgx.Replace( number, "" );
+
+            Number = ccNum;
             Code = code;
             ExpirationDate = expirationDate;
         }

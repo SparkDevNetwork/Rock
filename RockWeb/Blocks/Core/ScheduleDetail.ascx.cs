@@ -311,11 +311,14 @@ namespace RockWeb.Blocks.Core
             if ( !scheduleId.Equals( 0 ) )
             {
                 schedule = scheduleService.Get( scheduleId );
+                pdAuditDetails.SetEntity( schedule, ResolveRockUrl( "~" ) );
             }
 
             if ( schedule == null )
             {
                 schedule = new Schedule { Id = 0, CategoryId = parentCategoryId };
+                // hide the panel drawer that show created and last modified dates
+                pdAuditDetails.Visible = false;
             }
 
             pnlDetails.Visible = true;

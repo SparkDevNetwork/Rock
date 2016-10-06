@@ -155,11 +155,14 @@ namespace RockWeb.Blocks.Finance
             {
                 gateway = new FinancialGatewayService( new RockContext() ).Get( gatewayId );
                 editAllowed = editAllowed || gateway.IsAuthorized( Authorization.EDIT, CurrentPerson );
+                pdAuditDetails.SetEntity( gateway, ResolveRockUrl( "~" ) );
             }
 
             if ( gateway == null )
             {
                 gateway = new FinancialGateway { Id = 0, IsActive = true };
+                // hide the panel drawer that show created and last modified dates
+                pdAuditDetails.Visible = false;
             }
 
             GatewayId = gateway.Id;

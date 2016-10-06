@@ -16,7 +16,7 @@
                     <Rock:HighlightLabel ID="hlState" runat="server" />
                 </div>
             </div>
-
+            <Rock:PanelDrawer ID="pdAuditDetails" runat="server"></Rock:PanelDrawer>
             <div class="panel-body">
 
                 <asp:HiddenField ID="hfMode" runat="server" />

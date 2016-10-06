@@ -15,6 +15,7 @@
 // </copyright>
 //
 using System.Collections.Generic;
+using Rock;
 using Rock.Reporting;
 using Rock.Web.UI.Controls;
 
@@ -39,18 +40,36 @@ namespace Rock.Field.Types
             }
         }
 
+        /// <summary>
+        /// Formats date display
+        /// </summary>
+        /// <param name="parentControl">The parent control.</param>
+        /// <param name="value">Information about the value</param>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="condensed">Flag indicating if the value should be condensed (i.e. for use in a grid column)</param>
+        /// <returns></returns>
+        public override string FormatValue( System.Web.UI.Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
+        {
+            if ( !string.IsNullOrWhiteSpace( value ) )
+            {
+                return value.AsDecimal().FormatAsCurrency();
+            }
+
+            return base.FormatValue( parentControl, value, null, condensed );
+        }
+
         #endregion
 
-        #region Edit Control
+            #region Edit Control
 
-        /// <summary>
-        /// Creates the control(s) necessary for prompting user for a new value
-        /// </summary>
-        /// <param name="configurationValues">The configuration values.</param>
-        /// <param name="id"></param>
-        /// <returns>
-        /// The control
-        /// </returns>
+            /// <summary>
+            /// Creates the control(s) necessary for prompting user for a new value
+            /// </summary>
+            /// <param name="configurationValues">The configuration values.</param>
+            /// <param name="id"></param>
+            /// <returns>
+            /// The control
+            /// </returns>
         public override System.Web.UI.Control EditControl( System.Collections.Generic.Dictionary<string, ConfigurationValue> configurationValues, string id )
         {
             return new CurrencyBox { ID = id }; 

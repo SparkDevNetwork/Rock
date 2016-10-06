@@ -193,7 +193,7 @@ BEGIN
 						INNER JOIN [PersonAlias] pa ON pa.[Id] = a.[PersonAliasId]
 					WHERE 
 						[GroupId] IN (SELECT [Id] FROM [dbo].[ufnCheckin_WeeklyServiceGroups]())
-						AND a.[StartDateTime] <= @SundayDateStart AND a.[StartDateTime] >= @SundayEntryAttendanceDuration
+						AND CAST( a.[StartDateTime] AS DATE ) <= @SundayDateStart AND a.[StartDateTime] >= @SundayEntryAttendanceDuration
 						AND pa.[PersonId] IN (SELECT [Id] FROM [dbo].[ufnCrm_FamilyMembersOfPersonId](i.[PersonId])))
 				ELSE
 					(SELECT 
@@ -203,7 +203,7 @@ BEGIN
 						INNER JOIN [PersonAlias] pa ON pa.[Id] = a.[PersonAliasId]
 					WHERE 
 						[GroupId] IN (SELECT [Id] FROM [dbo].[ufnCheckin_WeeklyServiceGroups]())
-						AND a.[StartDateTime] <= @SundayDateStart AND a.[StartDateTime] >= @SundayEntryAttendanceDuration
+						AND CAST( a.[StartDateTime] AS DATE ) <= @SundayDateStart AND a.[StartDateTime] >= @SundayEntryAttendanceDuration
 						AND pa.[PersonId] = i.[PersonId])
 			  END AS [CheckinCount]
 			, 0 AS [IsSystem]

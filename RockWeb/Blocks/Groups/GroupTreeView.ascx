@@ -96,7 +96,7 @@
                             else {
                                 var detailPageUrl = $('#<%=hfDetailPageUrl.ClientID%>').val();
                                 if (detailPageUrl) {
-                                    locationUrl = Rock.settings.get('baseUrl') + detailPageUrl + groupSearch;
+                                    locationUrl = detailPageUrl + groupSearch;
                                 }
                                 else {
                                     locationUrl = window.location.href.split('?')[0] + groupSearch;

@@ -37,7 +37,7 @@ namespace Rock.Web.UI.Controls
         public static void SetFollowing( IEntity followEntity, WebControl followControl, Person follower )
         {
             var followingEntityType = EntityTypeCache.Read( followEntity.GetType() );
-            if ( follower.PrimaryAliasId.HasValue )
+            if ( follower != null && follower.PrimaryAliasId.HasValue )
             {
                 using ( var rockContext = new RockContext() )
                 {
