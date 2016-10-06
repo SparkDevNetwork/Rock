@@ -15,6 +15,7 @@
 // </copyright>
 //
 using Quartz;
+using Rock.Data;
 
 namespace church.ccv.Actions
 {
@@ -39,6 +40,26 @@ namespace church.ccv.Actions
         /// <param name="context">The context.</param>
         public void Execute( IJobExecutionContext context )
         {
+            using ( RockContext rockContext = new RockContext() )
+            {
+                // This job typically completes in under 3 minutes, but give it 5 just in case.
+                rockContext.Database.CommandTimeout = 300;
+
+                // Simply run the stored procedure.
+                // This will insert a row per-campus per-region with total numbers for how many people
+                // are performing various CCV Actions.
+
+                // The tables updated are: 
+                // _church_ccv_Actions_History_Adult
+                // _church_ccv_Actions_History_Student
+                rockContext.Database.ExecuteSqlCommand( "_church_ccv_spActions_Build_Full_History" );
+
+                // This is designed to be run once a week. 
+                // The date stamps will be the day this job is run.
+                // Currently, the UpdateStepsMeasure job uses this, but anything needing general totals can.
+
+                context.Result = "CCV Actions History Updated.";
+            }
         }
     }
 }

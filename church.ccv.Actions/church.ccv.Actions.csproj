@@ -107,11 +107,13 @@
     </None>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Data\ActionsService.cs" />
+    <Compile Include="Models\ActionsHistory_Student.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Data\ActionsContext.cs" />
     <Compile Include="Data\ActionsUtil.cs" />
     <Compile Include="Jobs\UpdateActionsHistory.cs" />
-    <Compile Include="Models\ActionsHistory.cs" />
+    <Compile Include="Models\ActionsHistory_Adult.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Implementation\SQL\Adult_Baptised.sql" />

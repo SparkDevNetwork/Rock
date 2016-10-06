@@ -14,6 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
+using church.ccv.Actions.Models;
 using System.Data.Entity;
 using System.Data.Entity.ModelConfiguration.Conventions;
 
@@ -52,7 +53,8 @@ namespace church.ccv.Actions.Data
         }
         
         #region Models
-
+        DbSet<ActionsHistory_Adult> ActionsHistory_Adult { get; set; }
+        DbSet<ActionsHistory_Student> ActionsHistory_Student { get; set; }
         #endregion
     }
 }

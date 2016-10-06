@@ -100,6 +100,10 @@
     <Compile Include="Rest\Controllers\CodeGenerated\StepMeasureValuesController.cs" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\church.ccv.Actions\church.ccv.Actions.csproj">
+      <Project>{aeb3ebf4-253a-4438-a380-ecff89c6bdda}</Project>
+      <Name>church.ccv.Actions</Name>
+    </ProjectReference>
     <ProjectReference Include="..\church.ccv.Datamart\church.ccv.Datamart.csproj">
       <Project>{8280012c-bb74-46ab-baa7-8a4004570829}</Project>
       <Name>church.ccv.Datamart</Name>

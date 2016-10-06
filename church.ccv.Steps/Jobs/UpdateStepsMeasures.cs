@@ -14,12 +14,10 @@
 // limitations under the License.
 // </copyright>
 //
-using System;
-using System.Collections.Generic;
-using System.Data.Entity;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using church.ccv.Actions.Data;
+using church.ccv.Actions.Models;
+using church.ccv.Datamart.Model;
+using church.ccv.Steps.Model;
 using Quartz;
 using Rock;
 using Rock.Attribute;
@@ -27,9 +25,10 @@ using Rock.Communication;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
-
-using church.ccv.Steps.Model;
-using church.ccv.Datamart.Model;
+using System;
+using System.Collections.Generic;
+using System.Data.Entity;
+using System.Linq;
 
 namespace church.ccv.Steps
 {
@@ -56,20 +55,16 @@ namespace church.ccv.Steps
         const int _studentLowerGrade = 7;
         const int _studentUpperGrade = 12;
         
-        const string ATTRIBUTE_GLOBAL_TITHE_THRESHOLD = "TitheThreshold";
-        const string ATTRIBUTE_GLOBAL_COACHING_GROUPTYPE_IDS = "CoachingGroupTypeIds";
-        const string ATTRIBUTE_GLOBAL_CONNECTION_GROUPTYPE_IDS = "ConnectionGroupTypeIds";
-        const string ATTRIBUTE_GLOBAL_SERVING_GROUPTYPE_IDS = "ServingGroupTypeIds";
-        const string ATTRIBUTE_GLOBAL_MEMBERSHIP_VALUE_ID = "MembershipValueId";
-
+        // Note: We only want to take the most recent set of values within the past week. (and we're assuming the table holds one set of values per week.)
+        // this is the max span of days for which to take history from the history table.
+        // With -6 and 0, it will take only "sundayDate" and 6 days prior, which is the full week, but no more.
+        int _minDeltaDays = -6;
+        int _maxDeltaDays = 0;
+        
         List<int> _campusIds = new List<int>();
         int _attendanceMetricId = -1;
         string _warningEmailAddresses = string.Empty;
         Guid _warningEmailTemplate = Guid.Empty;
-
-        int _activeRecordStatusId = -1;
-        int _familyGroupTypeId = -1;
-        int _adultFamilyRoleId = -1;
 
         int _baptismMeasureId = -1;
         int _coachingMeasureId = -1;
@@ -79,14 +74,6 @@ namespace church.ccv.Steps
         int _givingMeasureId = -1;
         int _attendingMeasureId = -1;
         int _sharingMeasureId = -1;
-
-        List<int> _filteredConnectionStatuses = new List<int>();
-
-        int _neighborhoodAreaGroupTypeId = -1;
-
-        List<int> _coachingGroupTypeIds = new List<int>();
-        List<int> _connectionGroupTypeIds = new List<int>();
-        List<int> _servingGroupTypeIds = new List<int>();
 
         /// <summary> 
         /// Empty constructor for job initialization
@@ -99,11 +86,7 @@ namespace church.ccv.Steps
         {
             // determine the last Sunday that was run
         }
-
-        /// <summary>
-        /// Executes the specified context.
-        /// </summary>
-        /// <param name="context">The context.</param>
+        
         public void Execute( IJobExecutionContext context )
         {
             // set a working date here so that we can change it easily for debugging.
@@ -114,8 +97,6 @@ namespace church.ccv.Steps
             JobDataMap dataMap = context.JobDetail.JobDataMap;
 
             var rockContext = new RockContext();
-
-            _filteredConnectionStatuses = new List<int>( new int[] { 146, 65 } ); // Member = 65, Attendee = 146
 
             // load list of active campuses
             _campusIds = new CampusService( rockContext ).Queryable().Where( c => c.IsActive == true ).Select( c => c.Id ).ToList();
@@ -131,23 +112,7 @@ namespace church.ccv.Steps
             _givingMeasureId = dataMap.GetIntFromString( "GivingMeasureId" );
             _attendingMeasureId = dataMap.GetIntFromString( "AttendingMeasureId" );
             _sharingMeasureId = dataMap.GetIntFromString( "SharingMeasureId" );
-
-            _activeRecordStatusId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_ACTIVE ).Id;
-            _familyGroupTypeId = GroupTypeCache.Read(Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY.AsGuid()).Id;
-
-            Guid familyMemberAdultRoleGuid = Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_ADULT.AsGuid();
-            _adultFamilyRoleId = GroupTypeCache.Read( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY ).Roles.Where( r => r.Guid == familyMemberAdultRoleGuid ).Select( r => r.Id ).FirstOrDefault();
-
-            _neighborhoodAreaGroupTypeId = GroupTypeCache.Read( dataMap.GetString( "NeighborhoodAreaGroupType" ).AsGuid() ).Id;
-
-            try
-            {
-                _coachingGroupTypeIds = GlobalAttributesCache.Read().GetValue( ATTRIBUTE_GLOBAL_COACHING_GROUPTYPE_IDS ).Split( ',' ).Select( int.Parse ).ToList();
-                _connectionGroupTypeIds = GlobalAttributesCache.Read().GetValue( ATTRIBUTE_GLOBAL_CONNECTION_GROUPTYPE_IDS ).Split( ',' ).Select( int.Parse ).ToList();
-                _servingGroupTypeIds = GlobalAttributesCache.Read().GetValue( ATTRIBUTE_GLOBAL_SERVING_GROUPTYPE_IDS ).Split( ',' ).Select( int.Parse ).ToList();
-            }
-            catch { }
-
+                        
             // get the last sunday date processed
             StepMeasureValueService stepMeasureValueService = new StepMeasureValueService( rockContext );
 
@@ -171,7 +136,7 @@ namespace church.ccv.Steps
                     string processingMessages = string.Empty;
 
                     sundayProcessed = true;
-
+                    
                     var wasSuccessful = ProcessWeek( lastProcessedSunday.Value, out processingMessages );
 
                     if ( !wasSuccessful )
@@ -209,18 +174,19 @@ namespace church.ccv.Steps
 
             bool wasSuccessful = true;
 
-            using ( RockContext rockContext = new RockContext() ) {
+            using ( RockContext rockContext = new RockContext( ) )
+            {
                 // check if the metrics we need exist, if not send warning email and stop
                 List<MetricValue> metricValues = new MetricValueService( rockContext ).Queryable().Where( m => m.MetricValueDateTime == sundayDate && m.MetricId == _attendanceMetricId ).ToList();
 
                 int entityTypeCampusId = EntityTypeCache.GetId<Campus>() ?? 0;
-                
+
                 // ensure that all campuses have metrics
                 var metricCampusIds = metricValues.SelectMany(m => m.MetricValuePartitions ).Where(a => a.MetricPartition.EntityTypeId == entityTypeCampusId && a.EntityId.HasValue).Select(a => a.EntityId.Value).ToList();
-                if (!ContainsAllItems(_campusIds, metricCampusIds))
+                if ( !ContainsAllItems( _campusIds, metricCampusIds ) )
                 {
                     // send warning email
-                    if ( !string.IsNullOrWhiteSpace( _warningEmailAddresses ) && _warningEmailTemplate != Guid.Empty)
+                    if ( !string.IsNullOrWhiteSpace( _warningEmailAddresses ) && _warningEmailTemplate != Guid.Empty )
                     {
                         List<RecipientData> recipients = new List<RecipientData>();
 
@@ -229,571 +195,533 @@ namespace church.ccv.Steps
                         var mergeObjects = new Dictionary<string, object>();
                         mergeObjects.Add( "SundayDate", sundayDate );
 
-                        foreach (var email in emails )
+                        foreach ( var email in emails )
                         {
                             recipients.Add( new RecipientData( email, mergeObjects ) );
                         }
 
                         Email.Send( _warningEmailTemplate, recipients );
 
-                        message = string.Format( "Could not process {0} due to missing metric values.", sundayDate.ToShortDateString() );
+                        message = string.Format( "Could not process {0} due to missing metric values.", sundayDate.ToShortDateString( ) );
                     }
                     return false;
                 }
 
+                // get the pastor responsible for each region
                 DatamartNeighborhoodService datamartNeighborhoodService = new DatamartNeighborhoodService(rockContext);
-                var neighborhoodAreas = datamartNeighborhoodService.Queryable()
+                var regionList = datamartNeighborhoodService.Queryable()
                                             .Where( n => n.NeighborhoodPastorId != null )
-                                            .Select( n => new NeighborhoodArea
+                                            .Select( n => new Region
                                             {
-                                                AreaId = n.NeighborhoodId.Value,
-                                                //AdultCount = n.AdultCount.Value, -- adult count in the neighborhood datamart isn't currently accurate 2/17/2016
+                                                RegionId = n.NeighborhoodId.Value,
                                                 PastorPersonId = n.NeighborhoodPastorId,
                                             } )
                                             .ToList();
-                
+
                 // fill in missing pieces from the datamart
-                foreach(var area in neighborhoodAreas )
+                foreach ( var region in regionList )
                 {
-                    area.PastorPersonAliasId = new PersonAliasService( rockContext ).Queryable().Where( a => a.PersonId == area.PastorPersonId ).Select( a => a.Id ).FirstOrDefault();
-                    area.CampusId = new GroupService( rockContext ).Queryable().Where( g => g.Id == area.AreaId ).Select( g => g.CampusId ).FirstOrDefault();
-                    area.AdultCount = new DatamartPersonService( rockContext ).Queryable().Where( p => p.NeighborhoodId == area.AreaId && p.FamilyRole == "Adult" && _filteredConnectionStatuses.Contains( p.ConnectionStatusValueId.Value ) ).Count();
-                    area.StudentCount = new DatamartPersonService( rockContext ).Queryable().Where( p => p.NeighborhoodId == area.AreaId && (p.FamilyRole == "Child" && (p.Grade.HasValue && p.Grade.Value >= _studentLowerGrade && p.Grade.Value <= _studentUpperGrade)) && _filteredConnectionStatuses.Contains( p.ConnectionStatusValueId.Value ) ).Count();
+                    region.PastorPersonAliasId = new PersonAliasService( rockContext ).Queryable( ).Where( a => a.PersonId == region.PastorPersonId ).Select( a => a.Id ).FirstOrDefault( );
+                    region.CampusId = new GroupService( rockContext ).Queryable( ).Where( g => g.Id == region.RegionId ).Select( g => g.CampusId ).FirstOrDefault( );
                 }
 
-                // load counts for campuses
-                var campusAdultCounts = new DatamartPersonService( rockContext ).Queryable()
-                                                .Where(p => p.FamilyRole == "Adult" && _filteredConnectionStatuses.Contains( p.ConnectionStatusValueId.Value ) )
-                                                .GroupBy( p => p.CampusId )
-                                                .Select( a => new CampusAdultCount
-                                                {
-                                                    CampusId = a.Key.Value,
-                                                    AdultCount = a.Count()
-                                                } )
-                                                .ToList();
+                // perform our actual metrics analysis
+                using ( ActionsContext actionsContext = new ActionsContext( ) )
+                {
+                    ActionsService<ActionsHistory_Adult> adultActionsService = new ActionsService<ActionsHistory_Adult>( actionsContext );
+                    ActionsService<ActionsHistory_Student> studentActionsService = new ActionsService<ActionsHistory_Student>( actionsContext );
 
-                var campusStudentCounts = new DatamartPersonService( rockContext ).Queryable()
-                                                .Where(p => (p.FamilyRole == "Child" && (p.Grade.HasValue && p.Grade.Value >= _studentLowerGrade && p.Grade.Value <= _studentUpperGrade)) && _filteredConnectionStatuses.Contains( p.ConnectionStatusValueId.Value ) )
-                                                .GroupBy( p => p.CampusId )
-                                                .Select( a => new CampusStudentCount
-                                                {
-                                                    CampusId = a.Key.Value,
-                                                    StudentCount = a.Count()
-                                                } )
-                                                .ToList();
+                    // begin by getting queries that contain only the rows of action history we care about, organized by campus and region, adult and student
+                    
+                    // Adults organized by campus
+                    var actionsHistory_Campus_Adult = adultActionsService.Queryable( ).Where( ah => DbFunctions.DiffDays( sundayDate, ah.Date) <= _maxDeltaDays && 
+                                                                                                    DbFunctions.DiffDays( sundayDate, ah.Date) >= _minDeltaDays )
+                                                                                      .GroupBy( ah => ah.CampusId );
 
-                // process measures
-                ProcessBaptisms(sundayDate, metricValues, campusAdultCounts, campusStudentCounts, neighborhoodAreas );
-                ProcessMembership( sundayDate, metricValues, campusAdultCounts, campusStudentCounts, neighborhoodAreas );
-                ProcessAttending( sundayDate, metricValues, campusAdultCounts, campusStudentCounts, neighborhoodAreas );
-                ProcessGiving( sundayDate, metricValues, campusAdultCounts, campusStudentCounts, neighborhoodAreas );
+                    // Adults organized by region
+                    var actionsHistory_Region_Adult = adultActionsService.Queryable( ).Where( ah => DbFunctions.DiffDays( sundayDate, ah.Date) <= _maxDeltaDays && 
+                                                                                                    DbFunctions.DiffDays( sundayDate, ah.Date) >= _minDeltaDays );
+                
+                    // get the number of active adults per campus
+                    var campusTotals_Adult = actionsHistory_Campus_Adult.Select( wg => new CampusAdultCount
+                                                                         {
+                                                                             CampusId = wg.Key,
+                                                                             AdultCount = wg.Sum( w => w.TotalPeople )
+                                                                         } )
+                                                                        .ToList( );
 
-                ProcessCoaching( sundayDate, metricValues, campusAdultCounts, campusStudentCounts, neighborhoodAreas );
-                ProcessConnection( sundayDate, metricValues, campusAdultCounts, campusStudentCounts, neighborhoodAreas );
-                ProcessServing( sundayDate, metricValues, campusAdultCounts, campusStudentCounts, neighborhoodAreas );
-                ProcessSharing( sundayDate, metricValues, campusAdultCounts, campusStudentCounts, neighborhoodAreas );
+
+                    // Students organized by campus
+                    var actionsHistory_Campus_Student = studentActionsService.Queryable( ).Where( ah => DbFunctions.DiffDays( sundayDate, ah.Date) <= _maxDeltaDays && 
+                                                                                                        DbFunctions.DiffDays( sundayDate, ah.Date) >= _minDeltaDays )
+                                                                                          .GroupBy( ah => ah.CampusId );
+                
+                    // get the number of actlive students per campus
+                    var campusTotals_Student = actionsHistory_Campus_Student.Select( wg => new CampusStudentCount
+                                                                             {
+                                                                                 CampusId = wg.Key,
+                                                                                 StudentCount = wg.Sum( w => w.TotalPeople )
+                                                                             } )
+                                                                            .ToList( );
+
+                    // store values that will be passed thru to SaveMetrics in a wrapper class.
+                    SaveMetrics_Dependencies metricDependencies = new SaveMetrics_Dependencies( )
+                    {
+                        SundayDate = sundayDate,
+                        MetricValues = metricValues,
+                        CampusTotals_Adult = campusTotals_Adult,
+                        CampusTotals_Student = campusTotals_Student
+                    };
+                    
+                    // run the analytics for each action
+                    ProcessBaptisms( metricDependencies, actionsHistory_Campus_Adult, actionsHistory_Region_Adult, actionsHistory_Campus_Student, regionList );
+                    ProcessMembership( metricDependencies, actionsHistory_Campus_Adult, actionsHistory_Region_Adult, actionsHistory_Campus_Student, regionList );
+                    ProcessAttending( metricDependencies, actionsHistory_Campus_Adult, actionsHistory_Region_Adult, actionsHistory_Campus_Student, regionList );
+                    ProcessGiving( metricDependencies, actionsHistory_Campus_Adult, actionsHistory_Region_Adult, actionsHistory_Campus_Student, regionList );
+                    ProcessCoaching( metricDependencies, actionsHistory_Campus_Adult, actionsHistory_Region_Adult, actionsHistory_Campus_Student, regionList );
+                    ProcessConnection( metricDependencies, actionsHistory_Campus_Adult, actionsHistory_Region_Adult, actionsHistory_Campus_Student, regionList );
+                    ProcessServing( metricDependencies, actionsHistory_Campus_Adult, actionsHistory_Region_Adult, actionsHistory_Campus_Student, regionList );
+                    ProcessSharing( metricDependencies, actionsHistory_Campus_Adult, actionsHistory_Region_Adult, actionsHistory_Campus_Student, regionList );
+                }
             }
 
             return wasSuccessful;
         }
 
+        // Simple wrapper class to store variables only SaveMetrics cares about.
+        // saves us from passing around like 9 variables on the stack
+        internal class SaveMetrics_Dependencies
+        {
+            public DateTime SundayDate;
+            public List<MetricValue> MetricValues;
+            public List<CampusAdultCount> CampusTotals_Adult;
+            public List<CampusStudentCount> CampusTotals_Student;
+        }
+        
         // attribute based measures
-        private void ProcessBaptisms( DateTime sundayDate, List<MetricValue> metricValues, List<CampusAdultCount> campusAdultCounts, List<CampusStudentCount> campusStudentCounts, List<NeighborhoodArea> neighborhoodAreas )
+        private void ProcessBaptisms( SaveMetrics_Dependencies metricDependencies, 
+                                      IQueryable<IGrouping<int, ActionsHistory_Adult>> actionsHistory_Campus_Adult, 
+                                      IQueryable<ActionsHistory_Adult> actionsHistory_Region_Adult,
+                                      IQueryable<IGrouping<int, ActionsHistory_Student>> actionsHistory_Campus_Student, 
+                                      List<Region> regionList )
         {
-            using ( RockContext rockContext = new RockContext() )
+            // sum the number of adults baptised per-campus
+            var measureCountsByCampusAdults = actionsHistory_Campus_Adult.Select( ah => new CampusMeasure
+                                                                            {
+                                                                                CampusId = ah.Key,
+                                                                                MeasureValue = ah.Sum( c => c.Baptised )
+                                                                            }).ToList( );
+
+            // Regions require two steps.
+            //1. take the region ID, total people, and total people baptised
+            var adultRegionMeasureCounts = actionsHistory_Region_Adult.Select( ah => new
+                                                                            {
+                                                                                RegionId = ah.RegionId,
+                                                                                AdultCount = ah.TotalPeople,
+                                                                                AdultMeasureCount = ah.Baptised
+                                                                            }).ToList( );
+            
+            // 2. now resolve the PastorPersonAliasId from the RegionId, and store the results in the measure object SaveMetrics wants.
+            var measureCountsByRegionAdult = adultRegionMeasureCounts.Select( am => new RegionMeasure
             {
-                DatamartPersonService datamartPersonService = new DatamartPersonService( rockContext );
+                PastorPersonAliasId = regionList.Where( a => a.RegionId == am.RegionId ).SingleOrDefault( ).PastorPersonAliasId,
+                AdultCount = am.AdultCount,
+                AdultMeasureCount = am.AdultMeasureCount
+            }).ToList( );
 
-                var measureCountsByCampusAll = datamartPersonService.Queryable()
-                                                .Where( p => p.IsBaptized == true && _filteredConnectionStatuses.Contains( p.ConnectionStatusValueId.Value ) )
-                                                .GroupBy( p => p.CampusId)
-                                                .Select( r => new CampusMeasure
-                                                {
-                                                    CampusId = r.Key.Value,
-                                                    MeasureValue = r.Count()
-                                                } )
-                                                .ToList();
 
-                var measureCountsByCampusAdults = datamartPersonService.Queryable()
-                                                .Where( p => p.IsBaptized == true && p.FamilyRole == "Adult" && _filteredConnectionStatuses.Contains( p.ConnectionStatusValueId.Value ) )
-                                                .GroupBy( p => p.CampusId )
-                                                .Select( r => new CampusMeasure
-                                                {
-                                                    CampusId = r.Key.Value,
-                                                    MeasureValue = r.Count()
-                                                } )
-                                                .ToList();
 
-                var measureCountsByCampusStudents = datamartPersonService.Queryable()
-                                                   .Where( p => p.IsBaptized == true && (p.FamilyRole == "Child" && (p.Grade.HasValue && p.Grade.Value >= _studentLowerGrade && p.Grade.Value <= _studentUpperGrade)) && _filteredConnectionStatuses.Contains( p.ConnectionStatusValueId.Value ) )
-                                                   .GroupBy( p => p.CampusId )
-                                                   .Select( r => new CampusMeasure
-                                                   {
-                                                       CampusId = r.Key.Value,
-                                                       MeasureValue = r.Count()
-                                                   } )
-                                                   .ToList();
+            // sum the number of students baptised per-campus
+            var measureCountsByCampusStudents = actionsHistory_Campus_Student.Select( ah => new CampusMeasure
+                                                                                    {
+                                                                                        CampusId = ah.Key,
+                                                                                        MeasureValue = ah.Sum( c => c.Baptised )
+                                                                                    }).ToList( );
+            // NOTE: Even tho students are in Regions, they aren't evaluated by region. They're evaluated according to NG groups and whoever is over that group.
+            // Someday we'll need to add support for that.
+                
+                
+            // TOTAL ADULTS + STUDENTS (Used for Weekend Attendance)
+            // to get this, join the tables on the campus ID, and then create a CampusMeasure object with the sum of the campus totals for adult/student
+            var measureCountsByCampusAll = measureCountsByCampusAdults
+                                            .Join( measureCountsByCampusStudents,
+                                                    adult => adult.CampusId, student => student.CampusId, ( a, s ) =>
+                                                    new CampusMeasure
+                                                    {
+                                                        CampusId = a.CampusId,
+                                                        MeasureValue = a.MeasureValue + s.MeasureValue
+                                                    } )
+                                            .ToList();
 
-                List<AreaMeasure> areaMeasures = new List<AreaMeasure>();
-                foreach(var area in neighborhoodAreas ){
-                    // get baptisms
-                    var areaAdultMeasureCount = datamartPersonService.Queryable()
-                                                    .Where( p => 
-                                                        p.IsBaptized == true 
-                                                        && p.FamilyRole == "Adult"
-                                                        && p.NeighborhoodId == area.AreaId 
-                                                        && _filteredConnectionStatuses.Contains(p.ConnectionStatusValueId.Value))
-                                                    .Count();
-
-                    var areaStudentMeasureCount = datamartPersonService.Queryable()
-                                                    .Where( p => 
-                                                        p.IsBaptized == true 
-                                                        && (p.FamilyRole == "Child" && (p.Grade.HasValue && p.Grade.Value >= _studentLowerGrade && p.Grade.Value <= _studentUpperGrade))
-                                                        && p.NeighborhoodId == area.AreaId 
-                                                        && _filteredConnectionStatuses.Contains(p.ConnectionStatusValueId.Value))
-                                                    .Count();
-
-                    AreaMeasure neighborhoodMeasure = new AreaMeasure();
-                    neighborhoodMeasure.PastorPersonAliasId = area.PastorPersonAliasId;
-                    neighborhoodMeasure.AdultCount = area.AdultCount;
-                    neighborhoodMeasure.StudentCount = area.StudentCount;
-                    neighborhoodMeasure.AdultMeasureCount = areaAdultMeasureCount;
-                    neighborhoodMeasure.StudentMeasureCount = areaStudentMeasureCount;
-
-                    areaMeasures.Add( neighborhoodMeasure );
-                }
-
-                SaveMetrics( _baptismMeasureId, sundayDate, metricValues, campusAdultCounts, campusStudentCounts, measureCountsByCampusAll, measureCountsByCampusAdults, measureCountsByCampusStudents, areaMeasures );
-            }
+            SaveMetrics( _baptismMeasureId, metricDependencies, measureCountsByCampusAll, measureCountsByCampusAdults, measureCountsByCampusStudents, measureCountsByRegionAdult );
         }
-        private void ProcessMembership( DateTime sundayDate, List<MetricValue> metricValues, List<CampusAdultCount> campusAdultCounts, List<CampusStudentCount> campusStudentCounts, List<NeighborhoodArea> neighborhoodAreas )
+
+        private void ProcessMembership( SaveMetrics_Dependencies metricDependencies, 
+                                        IQueryable<IGrouping<int, ActionsHistory_Adult>> actionsHistory_Campus_Adult, 
+                                        IQueryable<ActionsHistory_Adult> actionsHistory_Region_Adult,
+                                        IQueryable<IGrouping<int, ActionsHistory_Student>> actionsHistory_Campus_Student, 
+                                        List<Region> regionList )
         {
-            using ( RockContext rockContext = new RockContext() )
+            // sum the number of adults performing the action per-campus
+            var measureCountsByCampusAdults = actionsHistory_Campus_Adult.Select( ah => new CampusMeasure
+                                                                            {
+                                                                                CampusId = ah.Key,
+                                                                                MeasureValue = ah.Sum( c => c.Member )
+                                                                            }).ToList( );
+
+            // Regions require two steps.
+            //1. take the region ID, total people, and total people performing the action
+            var adultRegionMeasureCounts = actionsHistory_Region_Adult.Select( ah => new
+                                                                            {
+                                                                                RegionId = ah.RegionId,
+                                                                                AdultCount = ah.TotalPeople,
+                                                                                AdultMeasureCount = ah.Member
+                                                                            }).ToList( );
+            
+            // 2. now resolve the PastorPersonAliasId from the RegionId, and store the results in the measure object SaveMetrics wants.
+            var measureCountsByRegionAdult = adultRegionMeasureCounts.Select( am => new RegionMeasure
             {
-                DatamartPersonService datamartPersonService = new DatamartPersonService( rockContext );
+                PastorPersonAliasId = regionList.Where( a => a.RegionId == am.RegionId ).SingleOrDefault( ).PastorPersonAliasId,
+                AdultCount = am.AdultCount,
+                AdultMeasureCount = am.AdultMeasureCount
+            }).ToList( );
 
-                int membershipConnectionId = DefinedValueCache.Read( GlobalAttributesCache.Read().GetValue( ATTRIBUTE_GLOBAL_MEMBERSHIP_VALUE_ID ) ).Id; 
 
-                var measureCountsByCampusAll = datamartPersonService.Queryable().AsNoTracking()
-                                            .Where( m =>
-                                                    m.ConnectionStatusValueId == membershipConnectionId )
-                                            .GroupBy( m => m.CampusId )
-                                            .Select( r => new CampusMeasure
-                                            {
-                                                CampusId = r.Key.Value,
-                                                MeasureValue = r.Count()
-                                            } )
+
+            // sum the number of students performing the action per-campus
+            var measureCountsByCampusStudents = actionsHistory_Campus_Student.Select( ah => new CampusMeasure
+                                                                                    {
+                                                                                        CampusId = ah.Key,
+                                                                                        MeasureValue = ah.Sum( c => c.Member )
+                                                                                    }).ToList( );
+            // NOTE: Even tho students are in Regions, they aren't evaluated by region. They're evaluated according to NG groups and whoever is over that group.
+            // Someday we'll need to add support for that.
+                
+                
+            // TOTAL ADULTS + STUDENTS (Used for Weekend Attendance)
+            // to get this, join the tables on the campus ID, and then create a CampusMeasure object with the sum of the campus totals for adult/student
+            var measureCountsByCampusAll = measureCountsByCampusAdults
+                                            .Join( measureCountsByCampusStudents,
+                                                    adult => adult.CampusId, student => student.CampusId, ( a, s ) =>
+                                                    new CampusMeasure
+                                                    {
+                                                        CampusId = a.CampusId,
+                                                        MeasureValue = a.MeasureValue + s.MeasureValue
+                                                    } )
                                             .ToList();
 
-                var measureCountsByCampusAdults = datamartPersonService.Queryable().AsNoTracking()
-                                            .Where( m =>
-                                                    m.ConnectionStatusValueId == membershipConnectionId && m.FamilyRole == "Adult" )
-                                            .GroupBy( m => m.CampusId )
-                                            .Select( r => new CampusMeasure
-                                            {
-                                                CampusId = r.Key.Value,
-                                                MeasureValue = r.Count()
-                                            } )
-                                            .ToList();
-
-                var measureCountsByCampusStudents = datamartPersonService.Queryable().AsNoTracking()
-                                                .Where( m =>
-                                                        m.ConnectionStatusValueId == membershipConnectionId && (m.FamilyRole == "Child" && (m.Grade.HasValue && m.Grade.Value >= _studentLowerGrade && m.Grade.Value <= _studentUpperGrade)) )
-                                                .GroupBy( m => m.CampusId )
-                                                .Select( r => new CampusMeasure
-                                                {
-                                                    CampusId = r.Key.Value,
-                                                    MeasureValue = r.Count()
-                                                } )
-                                                .ToList();
-
-
-
-                List<AreaMeasure> areaMeasures = new List<AreaMeasure>();
-                foreach ( var area in neighborhoodAreas )
-                {
-                    // get membership
-                    var areaAdultMeasureCount = datamartPersonService.Queryable()
-                                                   .Where( p => p.ConnectionStatusValueId == membershipConnectionId && p.FamilyRole == "Adult" && p.NeighborhoodId == area.AreaId )
-                                                   .Count();
-
-                    var areaStudentMeasureCount = datamartPersonService.Queryable()
-                                                   .Where( p => p.ConnectionStatusValueId == membershipConnectionId && (p.FamilyRole == "Child" && (p.Grade.HasValue && p.Grade.Value >= _studentLowerGrade && p.Grade.Value <= _studentUpperGrade)) && p.NeighborhoodId == area.AreaId )
-                                                   .Count();
-
-                    AreaMeasure neighborhoodMeasure = new AreaMeasure();
-                    neighborhoodMeasure.PastorPersonAliasId = area.PastorPersonAliasId;
-                    neighborhoodMeasure.AdultCount = area.AdultCount;
-                    neighborhoodMeasure.AdultMeasureCount = areaAdultMeasureCount;
-                    neighborhoodMeasure.StudentCount = area.StudentCount;
-                    neighborhoodMeasure.StudentMeasureCount = areaStudentMeasureCount;
-
-                    areaMeasures.Add( neighborhoodMeasure );
-                }
-
-                SaveMetrics(_membershipMeasureId, sundayDate, metricValues, campusAdultCounts, campusStudentCounts, measureCountsByCampusAll, measureCountsByCampusAdults, measureCountsByCampusStudents, areaMeasures );
-            }
+            SaveMetrics( _membershipMeasureId, metricDependencies, measureCountsByCampusAll, measureCountsByCampusAdults, measureCountsByCampusStudents, measureCountsByRegionAdult );
         }
         
-        private void ProcessAttending( DateTime sundayDate, List<MetricValue> metricValues, List<CampusAdultCount> campusAdultCounts, List<CampusStudentCount> campusStudentCounts, List<NeighborhoodArea> neighborhoodAreas )
+        private void ProcessAttending( SaveMetrics_Dependencies metricDependencies, 
+                                       IQueryable<IGrouping<int, ActionsHistory_Adult>> actionsHistory_Campus_Adult, 
+                                       IQueryable<ActionsHistory_Adult> actionsHistory_Region_Adult,
+                                       IQueryable<IGrouping<int, ActionsHistory_Student>> actionsHistory_Campus_Student, 
+                                       List<Region> regionList )
         {
-            using ( RockContext rockContext = new RockContext() )
+            // sum the number of adults performing the action per-campus
+            var measureCountsByCampusAdults = actionsHistory_Campus_Adult.Select( ah => new CampusMeasure
+                                                                            {
+                                                                                CampusId = ah.Key,
+                                                                                MeasureValue = ah.Sum( c => c.ERA )
+                                                                            }).ToList( );
+
+            // Regions require two steps.
+            //1. take the region ID, total people, and total people performing the action
+            var adultRegionMeasureCounts = actionsHistory_Region_Adult.Select( ah => new
+                                                                            {
+                                                                                RegionId = ah.RegionId,
+                                                                                AdultCount = ah.TotalPeople,
+                                                                                AdultMeasureCount = ah.ERA
+                                                                            }).ToList( );
+            
+            // 2. now resolve the PastorPersonAliasId from the RegionId, and store the results in the measure object SaveMetrics wants.
+            var measureCountsByRegionAdult = adultRegionMeasureCounts.Select( am => new RegionMeasure
             {
-                DatamartPersonService datamartPersonService = new DatamartPersonService( rockContext );
+                PastorPersonAliasId = regionList.Where( a => a.RegionId == am.RegionId ).SingleOrDefault( ).PastorPersonAliasId,
+                AdultCount = am.AdultCount,
+                AdultMeasureCount = am.AdultMeasureCount
+            }).ToList( );
 
-                var measureCountsByCampusAll = datamartPersonService.Queryable().AsNoTracking()
-                                            .Where( m =>
-                                                    m.IsEra == true && _filteredConnectionStatuses.Contains( m.ConnectionStatusValueId.Value ) )
-                                            .GroupBy( m => m.CampusId )
-                                            .Select( r => new CampusMeasure
-                                            {
-                                                CampusId = r.Key.Value,
-                                                MeasureValue = r.Count()
-                                            } )
+
+
+            // sum the number of students performing the action per-campus
+            var measureCountsByCampusStudents = actionsHistory_Campus_Student.Select( ah => new CampusMeasure
+                                                                                    {
+                                                                                        CampusId = ah.Key,
+                                                                                        MeasureValue = ah.Sum( c => c.ERA )
+                                                                                    }).ToList( );
+            // NOTE: Even tho students are in Regions, they aren't evaluated by region. They're evaluated according to NG groups and whoever is over that group.
+            // Someday we'll need to add support for that.
+                
+                
+            // TOTAL ADULTS + STUDENTS (Used for Weekend Attendance)
+            // to get this, join the tables on the campus ID, and then create a CampusMeasure object with the sum of the campus totals for adult/student
+            var measureCountsByCampusAll = measureCountsByCampusAdults
+                                            .Join( measureCountsByCampusStudents,
+                                                    adult => adult.CampusId, student => student.CampusId, ( a, s ) =>
+                                                    new CampusMeasure
+                                                    {
+                                                        CampusId = a.CampusId,
+                                                        MeasureValue = a.MeasureValue + s.MeasureValue
+                                                    } )
                                             .ToList();
 
-                var measureCountsByCampusAdults = datamartPersonService.Queryable().AsNoTracking()
-                                            .Where( m =>
-                                                    m.IsEra == true && m.FamilyRole == "Adult" && _filteredConnectionStatuses.Contains( m.ConnectionStatusValueId.Value ) )
-                                            .GroupBy( m => m.CampusId )
-                                            .Select( r => new CampusMeasure
-                                            {
-                                                CampusId = r.Key.Value,
-                                                MeasureValue = r.Count()
-                                            } )
-                                            .ToList();
-
-                var measureCountsByCampusStudents = datamartPersonService.Queryable().AsNoTracking()
-                                            .Where( m =>
-                                                    m.IsEra == true && (m.FamilyRole == "Child" && (m.Grade.HasValue && m.Grade.Value >= _studentLowerGrade && m.Grade.Value <= _studentUpperGrade)) && _filteredConnectionStatuses.Contains( m.ConnectionStatusValueId.Value ) )
-                                            .GroupBy( m => m.CampusId )
-                                            .Select( r => new CampusMeasure
-                                            {
-                                                CampusId = r.Key.Value,
-                                                MeasureValue = r.Count()
-                                            } )
-                                            .ToList();
-
-                List<AreaMeasure> areaMeasures = new List<AreaMeasure>();
-                foreach ( var area in neighborhoodAreas )
-                {
-                    // get attending
-                    var areaAdultMeasureCount = datamartPersonService.Queryable()
-                                                .Where( p => p.IsEra == true && p.FamilyRole == "Adult" && p.NeighborhoodId == area.AreaId && _filteredConnectionStatuses.Contains( p.ConnectionStatusValueId.Value ) )
-                                                .Count();
-
-                    var areaStudentMeasureCount = datamartPersonService.Queryable()
-                                                .Where( p => p.IsEra == true && (p.FamilyRole == "Child" && (p.Grade.HasValue && p.Grade.Value >= _studentLowerGrade && p.Grade.Value <= _studentUpperGrade)) && p.NeighborhoodId == area.AreaId && _filteredConnectionStatuses.Contains( p.ConnectionStatusValueId.Value ) )
-                                                .Count();
-
-                    AreaMeasure neighborhoodMeasure = new AreaMeasure();
-                    neighborhoodMeasure.PastorPersonAliasId = area.PastorPersonAliasId;
-                    neighborhoodMeasure.AdultCount = area.AdultCount;
-                    neighborhoodMeasure.AdultMeasureCount = areaAdultMeasureCount;
-                    neighborhoodMeasure.StudentCount = area.StudentCount;
-                    neighborhoodMeasure.StudentMeasureCount = areaStudentMeasureCount;
-
-                    areaMeasures.Add( neighborhoodMeasure );
-                }
-
-                SaveMetrics( _attendingMeasureId, sundayDate, metricValues, campusAdultCounts, campusStudentCounts, measureCountsByCampusAll, measureCountsByCampusAdults, measureCountsByCampusStudents, areaMeasures );
-            }
+            SaveMetrics( _attendingMeasureId, metricDependencies, measureCountsByCampusAll, measureCountsByCampusAdults, measureCountsByCampusStudents, measureCountsByRegionAdult );
         }
         
-        private void ProcessGiving( DateTime sundayDate, List<MetricValue> metricValues, List<CampusAdultCount> campusAdultCounts, List<CampusStudentCount> campusStudentCounts, List<NeighborhoodArea> neighborhoodAreas )
+        private void ProcessGiving( SaveMetrics_Dependencies metricDependencies, 
+                                    IQueryable<IGrouping<int, ActionsHistory_Adult>> actionsHistory_Campus_Adult, 
+                                    IQueryable<ActionsHistory_Adult> actionsHistory_Region_Adult,
+                                    IQueryable<IGrouping<int, ActionsHistory_Student>> actionsHistory_Campus_Student, 
+                                    List<Region> regionList )
         {
-            using ( RockContext rockContext = new RockContext() )
+            // sum the number of adults performing the action per-campus
+            var measureCountsByCampusAdults = actionsHistory_Campus_Adult.Select( ah => new CampusMeasure
+                                                                            {
+                                                                                CampusId = ah.Key,
+                                                                                MeasureValue = ah.Sum( c => c.Give )
+                                                                            }).ToList( );
+
+            // Regions require two steps.
+            //1. take the region ID, total people, and total people performing the action
+            var adultRegionMeasureCounts = actionsHistory_Region_Adult.Select( ah => new
+                                                                            {
+                                                                                RegionId = ah.RegionId,
+                                                                                AdultCount = ah.TotalPeople,
+                                                                                AdultMeasureCount = ah.Give
+                                                                            }).ToList( );
+            
+            // 2. now resolve the PastorPersonAliasId from the RegionId, and store the results in the measure object SaveMetrics wants.
+            var measureCountsByRegionAdult = adultRegionMeasureCounts.Select( am => new RegionMeasure
             {
-                DatamartPersonService datamartPersonService = new DatamartPersonService( rockContext );
+                PastorPersonAliasId = regionList.Where( a => a.RegionId == am.RegionId ).SingleOrDefault( ).PastorPersonAliasId,
+                AdultCount = am.AdultCount,
+                AdultMeasureCount = am.AdultMeasureCount
+            }).ToList( );
 
-                decimal titheThreshold = GlobalAttributesCache.Read().GetValue( ATTRIBUTE_GLOBAL_TITHE_THRESHOLD ).AsDecimal();
 
-                var measureCountsByCampusAll = datamartPersonService.Queryable().AsNoTracking()
-                                            .Where( m =>
-                                                    m.GivingLast12Months >= titheThreshold )
-                                            .GroupBy( m => m.CampusId )
-                                            .Select( r => new CampusMeasure
-                                            {
-                                                CampusId = r.Key.Value,
-                                                MeasureValue = r.Count()
-                                            } )
+
+            // sum the number of students performing the action per-campus
+            var measureCountsByCampusStudents = actionsHistory_Campus_Student.Select( ah => new CampusMeasure
+                                                                                    {
+                                                                                        CampusId = ah.Key,
+                                                                                        MeasureValue = ah.Sum( c => c.Give )
+                                                                                    }).ToList( );
+            // NOTE: Even tho students are in Regions, they aren't evaluated by region. They're evaluated according to NG groups and whoever is over that group.
+            // Someday we'll need to add support for that.
+                
+                
+            // TOTAL ADULTS + STUDENTS (Used for Weekend Attendance)
+            // to get this, join the tables on the campus ID, and then create a CampusMeasure object with the sum of the campus totals for adult/student
+            var measureCountsByCampusAll = measureCountsByCampusAdults
+                                            .Join( measureCountsByCampusStudents,
+                                                    adult => adult.CampusId, student => student.CampusId, ( a, s ) =>
+                                                    new CampusMeasure
+                                                    {
+                                                        CampusId = a.CampusId,
+                                                        MeasureValue = a.MeasureValue + s.MeasureValue
+                                                    } )
                                             .ToList();
 
-                var measureCountsByCampusAdults = datamartPersonService.Queryable().AsNoTracking()
-                                            .Where( m =>
-                                                    m.GivingLast12Months >= titheThreshold && m.FamilyRole == "Adult" )
-                                            .GroupBy( m => m.CampusId )
-                                            .Select( r => new CampusMeasure
-                                            {
-                                                CampusId = r.Key.Value,
-                                                MeasureValue = r.Count()
-                                            } )
+            SaveMetrics( _givingMeasureId, metricDependencies, measureCountsByCampusAll, measureCountsByCampusAdults, measureCountsByCampusStudents, measureCountsByRegionAdult );
+        }
+        
+        private void ProcessCoaching( SaveMetrics_Dependencies metricDependencies, 
+                                      IQueryable<IGrouping<int, ActionsHistory_Adult>> actionsHistory_Campus_Adult, 
+                                      IQueryable<ActionsHistory_Adult> actionsHistory_Region_Adult,
+                                      IQueryable<IGrouping<int, ActionsHistory_Student>> actionsHistory_Campus_Student, 
+                                      List<Region> regionList )
+        {
+            // sum the number of adults performing the action per-campus
+            var measureCountsByCampusAdults = actionsHistory_Campus_Adult.Select( ah => new CampusMeasure
+                                                                            {
+                                                                                CampusId = ah.Key,
+                                                                                MeasureValue = ah.Sum( c => c.Teaching )
+                                                                            }).ToList( );
+
+            // Regions require two steps.
+            //1. take the region ID, total people, and total people performing the action
+            var adultRegionMeasureCounts = actionsHistory_Region_Adult.Select( ah => new
+                                                                            {
+                                                                                RegionId = ah.RegionId,
+                                                                                AdultCount = ah.TotalPeople,
+                                                                                AdultMeasureCount = ah.Teaching
+                                                                            }).ToList( );
+            
+            // 2. now resolve the PastorPersonAliasId from the RegionId, and store the results in the measure object SaveMetrics wants.
+            var measureCountsByRegionAdult = adultRegionMeasureCounts.Select( am => new RegionMeasure
+            {
+                PastorPersonAliasId = regionList.Where( a => a.RegionId == am.RegionId ).SingleOrDefault( ).PastorPersonAliasId,
+                AdultCount = am.AdultCount,
+                AdultMeasureCount = am.AdultMeasureCount
+            }).ToList( );
+
+
+
+            // sum the number of students performing the action per-campus
+            var measureCountsByCampusStudents = actionsHistory_Campus_Student.Select( ah => new CampusMeasure
+                                                                                    {
+                                                                                        CampusId = ah.Key,
+                                                                                        MeasureValue = ah.Sum( c => c.Teaching )
+                                                                                    }).ToList( );
+            // NOTE: Even tho students are in Regions, they aren't evaluated by region. They're evaluated according to NG groups and whoever is over that group.
+            // Someday we'll need to add support for that.
+                
+                
+            // TOTAL ADULTS + STUDENTS (Used for Weekend Attendance)
+            // to get this, join the tables on the campus ID, and then create a CampusMeasure object with the sum of the campus totals for adult/student
+            var measureCountsByCampusAll = measureCountsByCampusAdults
+                                            .Join( measureCountsByCampusStudents,
+                                                    adult => adult.CampusId, student => student.CampusId, ( a, s ) =>
+                                                    new CampusMeasure
+                                                    {
+                                                        CampusId = a.CampusId,
+                                                        MeasureValue = a.MeasureValue + s.MeasureValue
+                                                    } )
                                             .ToList();
 
-                //JHM Hack 7-12-2016: This temporarily flags Student Giving as TBD. Once they define the criteria, we can
-                // remove this and it'll work gracefully with the rest of the measures.
-                /*var measureCountsByCampusStudents = datamartPersonService.Queryable().AsNoTracking()
-                                            .Where( m =>
-                                                    m.GivingLast12Months >= titheThreshold && (m.FamilyRole == "Child" && (m.Grade.HasValue && m.Grade.Value >= _studentLowerGrade && m.Grade.Value <= _studentUpperGrade)) )
-                                            .GroupBy( m => m.CampusId )
-                                            .Select( r => new CampusMeasure
-                                            {
-                                                CampusId = r.Key.Value,
-                                                MeasureValue = r.Count()
-                                            } )
-                                            .ToList();*/
-
-                // students should not have giving considered yet.
-                var measureCountsByCampusStudents = campusStudentCounts.Select( a => new CampusMeasure { CampusId = a.CampusId, MeasureValue = 0 } ).ToList();
-
-
-
-                List<AreaMeasure> areaMeasures = new List<AreaMeasure>();
-                foreach ( var area in neighborhoodAreas )
-                {
-                    // get attending
-                    var areaAdultMeasureCount = datamartPersonService.Queryable()
-                                                   .Where( p => p.GivingLast12Months >= titheThreshold && p.FamilyRole == "Adult" && p.NeighborhoodId == area.AreaId )
-                                                   .Count();
-
-                    //JHM Hack 7-12-2016: This temporarily flags Student Giving as TBD. Once they define the criteria, we can
-                    // remove this and it'll work gracefully with the rest of the measures.
-                    /*var areaStudentMeasureCount = datamartPersonService.Queryable()
-                                                   .Where( p => p.GivingLast12Months >= titheThreshold && (p.FamilyRole == "Child" && (p.Grade.HasValue && p.Grade.Value >= _studentLowerGrade && p.Grade.Value <= _studentUpperGrade)) && p.NeighborhoodId == area.AreaId )
-                                                   .Count();*/
-                    var areaStudentMeasureCount = 0;
-
-                    AreaMeasure neighborhoodMeasure = new AreaMeasure();
-                    neighborhoodMeasure.PastorPersonAliasId = area.PastorPersonAliasId;
-                    neighborhoodMeasure.AdultCount = area.AdultCount;
-                    neighborhoodMeasure.AdultMeasureCount = areaAdultMeasureCount;
-                    neighborhoodMeasure.StudentCount = area.StudentCount;
-                    neighborhoodMeasure.StudentMeasureCount = areaStudentMeasureCount;
-
-                    areaMeasures.Add( neighborhoodMeasure );
-                }
-
-                SaveMetrics( _givingMeasureId, sundayDate, metricValues, campusAdultCounts, campusStudentCounts, measureCountsByCampusAll, measureCountsByCampusAdults, measureCountsByCampusStudents, areaMeasures );
-            }
+            SaveMetrics( _coachingMeasureId, metricDependencies, measureCountsByCampusAll, measureCountsByCampusAdults, measureCountsByCampusStudents, measureCountsByRegionAdult );
         }
 
-        // group based measures
-        private void ProcessCoaching( DateTime sundayDate, List<MetricValue> metricValues, List<CampusAdultCount> campusAdultCounts, List<CampusStudentCount> campusStudentCounts, List<NeighborhoodArea> neighborhoodAreas )
+        private void ProcessConnection( SaveMetrics_Dependencies metricDependencies, 
+                                        IQueryable<IGrouping<int, ActionsHistory_Adult>> actionsHistory_Campus_Adult, 
+                                        IQueryable<ActionsHistory_Adult> actionsHistory_Region_Adult,
+                                        IQueryable<IGrouping<int, ActionsHistory_Student>> actionsHistory_Campus_Student, 
+                                        List<Region> regionList )
         {
-            using ( RockContext rockContext = new RockContext() )
+            // sum the number of adults performing the action per-campus
+            var measureCountsByCampusAdults = actionsHistory_Campus_Adult.Select( ah => new CampusMeasure
+                                                                            {
+                                                                                CampusId = ah.Key,
+                                                                                MeasureValue = ah.Sum( c => c.PeerLearning )
+                                                                            }).ToList( );
+
+            // Regions require two steps.
+            //1. take the region ID, total people, and total people performing the action
+            var adultRegionMeasureCounts = actionsHistory_Region_Adult.Select( ah => new
+                                                                            {
+                                                                                RegionId = ah.RegionId,
+                                                                                AdultCount = ah.TotalPeople,
+                                                                                AdultMeasureCount = ah.PeerLearning
+                                                                            }).ToList( );
+            
+            // 2. now resolve the PastorPersonAliasId from the RegionId, and store the results in the measure object SaveMetrics wants.
+            var measureCountsByRegionAdult = adultRegionMeasureCounts.Select( am => new RegionMeasure
             {
-                DatamartPersonService datamartPersonService = new DatamartPersonService( rockContext );
+                PastorPersonAliasId = regionList.Where( a => a.RegionId == am.RegionId ).SingleOrDefault( ).PastorPersonAliasId,
+                AdultCount = am.AdultCount,
+                AdultMeasureCount = am.AdultMeasureCount
+            }).ToList( );
 
-                var measureCountsByCampusAll = datamartPersonService.Queryable().AsNoTracking()
-                                            .Where( m =>
-                                                    m.IsCoaching == true && _filteredConnectionStatuses.Contains( m.ConnectionStatusValueId.Value ) )
-                                            .GroupBy( m => m.CampusId )
-                                            .Select( r => new CampusMeasure
-                                            {
-                                                CampusId = r.Key.Value,
-                                                MeasureValue = r.Count()
-                                            } )
+
+
+            // sum the number of students performing the action per-campus
+            var measureCountsByCampusStudents = actionsHistory_Campus_Student.Select( ah => new CampusMeasure
+                                                                                    {
+                                                                                        CampusId = ah.Key,
+                                                                                        MeasureValue = ah.Sum( c => c.PeerLearning )
+                                                                                    }).ToList( );
+            // NOTE: Even tho students are in Regions, they aren't evaluated by region. They're evaluated according to NG groups and whoever is over that group.
+            // Someday we'll need to add support for that.
+                
+                
+            // TOTAL ADULTS + STUDENTS (Used for Weekend Attendance)
+            // to get this, join the tables on the campus ID, and then create a CampusMeasure object with the sum of the campus totals for adult/student
+            var measureCountsByCampusAll = measureCountsByCampusAdults
+                                            .Join( measureCountsByCampusStudents,
+                                                    adult => adult.CampusId, student => student.CampusId, ( a, s ) =>
+                                                    new CampusMeasure
+                                                    {
+                                                        CampusId = a.CampusId,
+                                                        MeasureValue = a.MeasureValue + s.MeasureValue
+                                                    } )
                                             .ToList();
 
-                var measureCountsByCampusAdults = datamartPersonService.Queryable().AsNoTracking()
-                                            .Where( m =>
-                                                    m.IsCoaching == true && m.FamilyRole == "Adult" && _filteredConnectionStatuses.Contains( m.ConnectionStatusValueId.Value ) )
-                                            .GroupBy( m => m.CampusId )
-                                            .Select( r => new CampusMeasure
-                                            {
-                                                CampusId = r.Key.Value,
-                                                MeasureValue = r.Count()
-                                            } )
-                                            .ToList();
-
-                var measureCountsByCampusStudents = datamartPersonService.Queryable().AsNoTracking()
-                                                .Where( m =>
-                                                        m.IsCoaching == true && (m.FamilyRole == "Child" && (m.Grade.HasValue && m.Grade.Value >= _studentLowerGrade && m.Grade.Value <= _studentUpperGrade)) && _filteredConnectionStatuses.Contains( m.ConnectionStatusValueId.Value ) )
-                                                .GroupBy( m => m.CampusId )
-                                                .Select( r => new CampusMeasure
-                                                {
-                                                    CampusId = r.Key.Value,
-                                                    MeasureValue = r.Count()
-                                                } )
-                                                .ToList();
-
-                List<AreaMeasure> areaMeasures = new List<AreaMeasure>();
-                foreach ( var area in neighborhoodAreas )
-                {
-                    // get attending
-                    var areaAdultMeasureCount = datamartPersonService.Queryable()
-                                                   .Where( p => p.IsCoaching == true && p.FamilyRole == "Adult" && p.NeighborhoodId == area.AreaId && _filteredConnectionStatuses.Contains( p.ConnectionStatusValueId.Value ) )
-                                                   .Count();
-
-                    var areaStudentMeasureCount = datamartPersonService.Queryable()
-                                                    .Where( p => p.IsCoaching == true && (p.FamilyRole == "Child" && (p.Grade.HasValue && p.Grade.Value >= _studentLowerGrade && p.Grade.Value <= _studentUpperGrade)) && p.NeighborhoodId == area.AreaId && _filteredConnectionStatuses.Contains( p.ConnectionStatusValueId.Value ) )
-                                                    .Count();
-
-                    AreaMeasure neighborhoodMeasure = new AreaMeasure();
-                    neighborhoodMeasure.PastorPersonAliasId = area.PastorPersonAliasId;
-                    neighborhoodMeasure.AdultCount = area.AdultCount;
-                    neighborhoodMeasure.AdultMeasureCount = areaAdultMeasureCount;
-                    neighborhoodMeasure.StudentCount = area.StudentCount;
-                    neighborhoodMeasure.StudentMeasureCount = areaStudentMeasureCount;
-
-                    areaMeasures.Add( neighborhoodMeasure );
-                }
-
-                SaveMetrics( _coachingMeasureId, sundayDate, metricValues, campusAdultCounts, campusStudentCounts, measureCountsByCampusAll, measureCountsByCampusAdults, measureCountsByCampusStudents, areaMeasures );
-
-            }
+            SaveMetrics( _connectionMeasureId, metricDependencies, measureCountsByCampusAll, measureCountsByCampusAdults, measureCountsByCampusStudents, measureCountsByRegionAdult );
         }
 
-        private void ProcessConnection( DateTime sundayDate, List<MetricValue> metricValues, List<CampusAdultCount> campusAdultCounts, List<CampusStudentCount> campusStudentCounts, List<NeighborhoodArea> neighborhoodAreas )
+        private void ProcessServing( SaveMetrics_Dependencies metricDependencies, 
+                                     IQueryable<IGrouping<int, ActionsHistory_Adult>> actionsHistory_Campus_Adult, 
+                                     IQueryable<ActionsHistory_Adult> actionsHistory_Region_Adult,
+                                     IQueryable<IGrouping<int, ActionsHistory_Student>> actionsHistory_Campus_Student, 
+                                     List<Region> regionList )
         {
-            using ( RockContext rockContext = new RockContext() )
+            // sum the number of adults performing the action per-campus
+            var measureCountsByCampusAdults = actionsHistory_Campus_Adult.Select( ah => new CampusMeasure
+                                                                            {
+                                                                                CampusId = ah.Key,
+                                                                                MeasureValue = ah.Sum( c => c.Serving )
+                                                                            }).ToList( );
+
+            // Regions require two steps.
+            //1. take the region ID, total people, and total people performing the action
+            var adultRegionMeasureCounts = actionsHistory_Region_Adult.Select( ah => new
+                                                                            {
+                                                                                RegionId = ah.RegionId,
+                                                                                AdultCount = ah.TotalPeople,
+                                                                                AdultMeasureCount = ah.Serving
+                                                                            }).ToList( );
+            
+            // 2. now resolve the PastorPersonAliasId from the RegionId, and store the results in the measure object SaveMetrics wants.
+            var measureCountsByRegionAdult = adultRegionMeasureCounts.Select( am => new RegionMeasure
             {
-                DatamartPersonService datamartPersonService = new DatamartPersonService( rockContext );
+                PastorPersonAliasId = regionList.Where( a => a.RegionId == am.RegionId ).SingleOrDefault( ).PastorPersonAliasId,
+                AdultCount = am.AdultCount,
+                AdultMeasureCount = am.AdultMeasureCount
+            }).ToList( );
 
-                var measureCountsByCampusAll = datamartPersonService.Queryable().AsNoTracking()
-                                            .Where( m =>
-                                                    m.InNeighborhoodGroup == true && _filteredConnectionStatuses.Contains( m.ConnectionStatusValueId.Value ) )
-                                            .GroupBy( m => m.CampusId )
-                                            .Select( r => new CampusMeasure
-                                            {
-                                                CampusId = r.Key.Value,
-                                                MeasureValue = r.Count()
-                                            } )
+
+
+            // sum the number of students performing the action per-campus
+            var measureCountsByCampusStudents = actionsHistory_Campus_Student.Select( ah => new CampusMeasure
+                                                                                    {
+                                                                                        CampusId = ah.Key,
+                                                                                        MeasureValue = ah.Sum( c => c.Serving )
+                                                                                    }).ToList( );
+            // NOTE: Even tho students are in Regions, they aren't evaluated by region. They're evaluated according to NG groups and whoever is over that group.
+            // Someday we'll need to add support for that.
+                
+                
+            // TOTAL ADULTS + STUDENTS (Used for Weekend Attendance)
+            // to get this, join the tables on the campus ID, and then create a CampusMeasure object with the sum of the campus totals for adult/student
+            var measureCountsByCampusAll = measureCountsByCampusAdults
+                                            .Join( measureCountsByCampusStudents,
+                                                    adult => adult.CampusId, student => student.CampusId, ( a, s ) =>
+                                                    new CampusMeasure
+                                                    {
+                                                        CampusId = a.CampusId,
+                                                        MeasureValue = a.MeasureValue + s.MeasureValue
+                                                    } )
                                             .ToList();
 
-                var measureCountsByCampusAdults = datamartPersonService.Queryable().AsNoTracking()
-                                            .Where( m =>
-                                                    m.InNeighborhoodGroup == true && m.FamilyRole == "Adult" && _filteredConnectionStatuses.Contains( m.ConnectionStatusValueId.Value ) )
-                                            .GroupBy( m => m.CampusId )
-                                            .Select( r => new CampusMeasure
-                                            {
-                                                CampusId = r.Key.Value,
-                                                MeasureValue = r.Count()
-                                            } )
-                                            .ToList();
-
-                var measureCountsByCampusStudents = datamartPersonService.Queryable().AsNoTracking()
-                                            .Where( m =>
-                                                    m.InNeighborhoodGroup == true && (m.FamilyRole == "Child" && (m.Grade.HasValue && m.Grade.Value >= _studentLowerGrade && m.Grade.Value <= _studentUpperGrade)) && _filteredConnectionStatuses.Contains( m.ConnectionStatusValueId.Value ) )
-                                            .GroupBy( m => m.CampusId )
-                                            .Select( r => new CampusMeasure
-                                            {
-                                                CampusId = r.Key.Value,
-                                                MeasureValue = r.Count()
-                                            } )
-                                            .ToList();
-
-                List<AreaMeasure> areaMeasures = new List<AreaMeasure>();
-                foreach ( var area in neighborhoodAreas )
-                {
-                    // get attending
-                    var areaAdultMeasureCount = datamartPersonService.Queryable()
-                                                    .Where( p => p.InNeighborhoodGroup == true && p.FamilyRole == "Adult" && p.NeighborhoodId == area.AreaId && _filteredConnectionStatuses.Contains( p.ConnectionStatusValueId.Value ) )
-                                                    .Count();
-
-                    var areaStudentMeasureCount = datamartPersonService.Queryable()
-                                                     .Where( p => p.InNeighborhoodGroup == true && (p.FamilyRole == "Child" && (p.Grade.HasValue && p.Grade.Value >= _studentLowerGrade && p.Grade.Value <= _studentUpperGrade)) && p.NeighborhoodId == area.AreaId && _filteredConnectionStatuses.Contains( p.ConnectionStatusValueId.Value ) )
-                                                     .Count();
-
-                    AreaMeasure neighborhoodMeasure = new AreaMeasure();
-                    neighborhoodMeasure.PastorPersonAliasId = area.PastorPersonAliasId;
-                    neighborhoodMeasure.AdultCount = area.AdultCount;
-                    neighborhoodMeasure.AdultMeasureCount = areaAdultMeasureCount;
-                    neighborhoodMeasure.StudentCount = area.StudentCount;
-                    neighborhoodMeasure.StudentMeasureCount = areaStudentMeasureCount;
-
-                    areaMeasures.Add( neighborhoodMeasure );
-                }
-
-                SaveMetrics( _connectionMeasureId, sundayDate, metricValues, campusAdultCounts, campusStudentCounts, measureCountsByCampusAll, measureCountsByCampusAdults, measureCountsByCampusStudents, areaMeasures );
-            }
+            SaveMetrics( _servingMeasureId, metricDependencies, measureCountsByCampusAll, measureCountsByCampusAdults, measureCountsByCampusStudents, measureCountsByRegionAdult );
         }
 
-        private void ProcessServing( DateTime sundayDate, List<MetricValue> metricValues, List<CampusAdultCount> campusAdultCounts, List<CampusStudentCount> campusStudentCounts, List<NeighborhoodArea> neighborhoodAreas )
-        {
-            using ( RockContext rockContext = new RockContext() )
-            {
-                DatamartPersonService datamartPersonService = new DatamartPersonService( rockContext );
-
-                var measureCountsByCampusAll = datamartPersonService.Queryable().AsNoTracking()
-                                            .Where( m =>
-                                                    m.IsServing == true && _filteredConnectionStatuses.Contains( m.ConnectionStatusValueId.Value ) )
-                                            .GroupBy( m => m.CampusId )
-                                            .Select( r => new CampusMeasure
-                                            {
-                                                CampusId = r.Key.Value,
-                                                MeasureValue = r.Count()
-                                            } )
-                                            .ToList();
-
-                var measureCountsByCampusAdults = datamartPersonService.Queryable().AsNoTracking()
-                                            .Where( m =>
-                                                    m.IsServing == true && m.FamilyRole == "Adult" && _filteredConnectionStatuses.Contains( m.ConnectionStatusValueId.Value ) )
-                                            .GroupBy( m => m.CampusId )
-                                            .Select( r => new CampusMeasure
-                                            {
-                                                CampusId = r.Key.Value,
-                                                MeasureValue = r.Count()
-                                            } )
-                                            .ToList();
-
-                var measureCountsByCampusStudents = datamartPersonService.Queryable().AsNoTracking()
-                                                .Where( m =>
-                                                        m.IsServing == true && (m.FamilyRole == "Child" && (m.Grade.HasValue && m.Grade.Value >= _studentLowerGrade && m.Grade.Value <= _studentUpperGrade)) && _filteredConnectionStatuses.Contains( m.ConnectionStatusValueId.Value ) )
-                                                .GroupBy( m => m.CampusId )
-                                                .Select( r => new CampusMeasure
-                                                {
-                                                    CampusId = r.Key.Value,
-                                                    MeasureValue = r.Count()
-                                                } )
-                                                .ToList();
-
-                List<AreaMeasure> areaMeasures = new List<AreaMeasure>();
-                foreach ( var area in neighborhoodAreas )
-                {
-                    // get attending
-                    var areaAdultMeasureCount = datamartPersonService.Queryable()
-                                                   .Where( p => p.IsServing == true && p.FamilyRole == "Adult" && p.NeighborhoodId == area.AreaId && _filteredConnectionStatuses.Contains( p.ConnectionStatusValueId.Value ) )
-                                                   .Count();
-
-
-                    var areaStudentMeasureCount = datamartPersonService.Queryable()
-                                                   .Where( p => p.IsServing == true && (p.FamilyRole == "Child" && (p.Grade.HasValue && p.Grade.Value >= _studentLowerGrade && p.Grade.Value <= _studentUpperGrade)) && p.NeighborhoodId == area.AreaId && _filteredConnectionStatuses.Contains( p.ConnectionStatusValueId.Value ) )
-                                                   .Count();
-
-                    AreaMeasure neighborhoodMeasure = new AreaMeasure();
-                    neighborhoodMeasure.PastorPersonAliasId = area.PastorPersonAliasId;
-                    neighborhoodMeasure.AdultCount = area.AdultCount;
-                    neighborhoodMeasure.AdultMeasureCount = areaAdultMeasureCount;
-                    neighborhoodMeasure.StudentCount = area.StudentCount;
-                    neighborhoodMeasure.StudentMeasureCount = areaStudentMeasureCount;
-
-                    areaMeasures.Add( neighborhoodMeasure );
-                }
-
-                SaveMetrics( _servingMeasureId, sundayDate, metricValues, campusAdultCounts, campusStudentCounts, measureCountsByCampusAll, measureCountsByCampusAdults, measureCountsByCampusStudents, areaMeasures );
-            }
-        }
-
-        private void ProcessSharing( DateTime sundayDate, List<MetricValue> metricValues, List<CampusAdultCount> campusAdultCounts, List<CampusStudentCount> campusStudentCounts, List<NeighborhoodArea> neighborhoodAreas )
+        private void ProcessSharing( SaveMetrics_Dependencies metricDependencies, 
+                                     IQueryable<IGrouping<int, ActionsHistory_Adult>> actionsHistory_Campus_Adult, 
+                                     IQueryable<ActionsHistory_Adult> actionsHistory_Region_Adult,
+                                     IQueryable<IGrouping<int, ActionsHistory_Student>> actionsHistory_Campus_Student, 
+                                     List<Region> regionList )
         {
             using ( RockContext rockContext = new RockContext() )
             {
                 // not implemented sending in values so graphs will work as tbd
+                
+                var measureCountsByCampusAdults = new List<CampusMeasure>( );
+                var measureCountsByRegionAdult = new List<RegionMeasure>( );
 
-                var measureCountsByCampusAll = campusAdultCounts.Select( a => new CampusMeasure { CampusId = a.CampusId, MeasureValue = 0 } ).ToList();
-                var measureCountsByCampusAdults = campusAdultCounts.Select( a => new CampusMeasure { CampusId = a.CampusId, MeasureValue = 0 } ).ToList();
-                var measureCountsByCampusStudents = campusAdultCounts.Select( a => new CampusMeasure { CampusId = a.CampusId, MeasureValue = 0 } ).ToList();
+                var measureCountsByCampusStudents = new List<CampusMeasure>( );
+                
+                var measureCountsByCampusAll = new List<CampusMeasure>( );
 
-                var areaMeasures = neighborhoodAreas.Select( a => new AreaMeasure { PastorPersonAliasId = a.PastorPersonAliasId, AdultCount = a.AdultCount, AdultMeasureCount = 0, StudentCount = a.StudentCount, StudentMeasureCount = 0 } ).ToList();
-
-                SaveMetrics( _sharingMeasureId, sundayDate, metricValues, campusAdultCounts, campusStudentCounts, measureCountsByCampusAll, measureCountsByCampusAdults, measureCountsByCampusStudents, areaMeasures );
+                SaveMetrics( _sharingMeasureId, metricDependencies, measureCountsByCampusAll, measureCountsByCampusAdults, measureCountsByCampusStudents, measureCountsByRegionAdult );
             }
         }
 
         #region Utilities
 
-        private void SaveMetrics( int measureId, DateTime sundayDate, List<MetricValue> metricValues, List<CampusAdultCount> campusAdultCounts,  List<CampusStudentCount> campusStudentCounts, List<CampusMeasure> campusAllMeasures, List<CampusMeasure> campusAdultMeasures, List<CampusMeasure> campusStudentMeasures, List<AreaMeasure> areaMeasures )
+        private void SaveMetrics( int measureId, SaveMetrics_Dependencies metricDependencies, List<CampusMeasure> campusAllMeasures, List<CampusMeasure> campusAdultMeasures, List<CampusMeasure> campusStudentMeasures, List<RegionMeasure> regionAdultMeasures )
         {
             int entityTypeCampusId = EntityTypeCache.GetId<Campus>() ?? 0;
 
@@ -804,10 +732,12 @@ namespace church.ccv.Steps
                 foreach ( int campusId in _campusIds )
                 {
                     // get counts 
-                    int weekendAttendance = metricValues.Where( m => m.MetricValuePartitions.Any( x => x.MetricPartition.EntityTypeId == entityTypeCampusId && x.EntityId == campusId )).Select( m => m.YValue ).FirstOrDefault() != null ? 
-                        Decimal.ToInt16( metricValues.Where( m => m.MetricValuePartitions.Any( x => x.MetricPartition.EntityTypeId == entityTypeCampusId && x.EntityId == campusId )).Select( m => m.YValue ).FirstOrDefault().Value ) : 0;
-                    int activeAdults = campusAdultCounts.Where( c => c.CampusId == campusId ).Select( c => c.AdultCount ).Count() != 0 ? campusAdultCounts.Where( c => c.CampusId == campusId ).Select( c => c.AdultCount ).FirstOrDefault() : 0;
-                    int activeStudents = campusStudentCounts.Where( c => c.CampusId == campusId ).Select( c => c.StudentCount ).Count() != 0 ? campusStudentCounts.Where( c => c.CampusId == campusId ).Select( c => c.StudentCount ).FirstOrDefault() : 0;
+                    int weekendAttendance = metricDependencies.MetricValues.Where( m => m.MetricValuePartitions.Any( x => x.MetricPartition.EntityTypeId == entityTypeCampusId && x.EntityId == campusId )).Select( m => m.YValue ).FirstOrDefault() != null ? 
+                        Decimal.ToInt16( metricDependencies.MetricValues.Where( m => m.MetricValuePartitions.Any( x => x.MetricPartition.EntityTypeId == entityTypeCampusId && x.EntityId == campusId )).Select( m => m.YValue ).FirstOrDefault().Value ) : 0;
+
+                    int activeAdults = metricDependencies.CampusTotals_Adult.Where( c => c.CampusId == campusId ).Select( c => c.AdultCount ).Count() != 0 ? metricDependencies.CampusTotals_Adult.Where( c => c.CampusId == campusId ).Select( c => c.AdultCount ).FirstOrDefault() : 0;
+                    int activeStudents = metricDependencies.CampusTotals_Student.Where( c => c.CampusId == campusId ).Select( c => c.StudentCount ).Count() != 0 ? metricDependencies.CampusTotals_Student.Where( c => c.CampusId == campusId ).Select( c => c.StudentCount ).FirstOrDefault() : 0;
+
                     int measureCountAll = campusAllMeasures.Where( b => b.CampusId == campusId ).Select( b => b.MeasureValue ).Count() != 0 ? campusAllMeasures.Where( b => b.CampusId == campusId ).Select( b => b.MeasureValue ).FirstOrDefault() : 0;
                     int measureCountAdults = campusAdultMeasures.Where( b => b.CampusId == campusId ).Select( b => b.MeasureValue ).Count() != 0 ? campusAdultMeasures.Where( b => b.CampusId == campusId ).Select( b => b.MeasureValue ).FirstOrDefault() : 0;
                     int measureCountStudents = campusStudentMeasures.Where( b => b.CampusId == campusId ).Select( b => b.MeasureValue ).Count() != 0 ? campusStudentMeasures.Where( b => b.CampusId == campusId ).Select( b => b.MeasureValue ).FirstOrDefault() : 0;
@@ -815,7 +745,7 @@ namespace church.ccv.Steps
                     // save metric all count / weekend attendance
                     StepMeasureValue measureValueAll = new StepMeasureValue();
                     measureValueAll.StepMeasureId = measureId;
-                    measureValueAll.SundayDate = sundayDate;
+                    measureValueAll.SundayDate = metricDependencies.SundayDate;
                     measureValueAll.Value = measureCountAll;
                     measureValueAll.CampusId = campusId;
                     measureValueAll.WeekendAttendance = weekendAttendance;
@@ -825,7 +755,7 @@ namespace church.ccv.Steps
                     // save metric adult count / campus adult count
                     StepMeasureValue measureValueAdults = new StepMeasureValue();
                     measureValueAdults.StepMeasureId = measureId;
-                    measureValueAdults.SundayDate = sundayDate;
+                    measureValueAdults.SundayDate = metricDependencies.SundayDate;
                     measureValueAdults.Value = measureCountAdults;
                     measureValueAdults.CampusId = campusId;
                     measureValueAdults.ActiveAdults = activeAdults;
@@ -835,7 +765,7 @@ namespace church.ccv.Steps
                     // save metric student count / campus student count
                     StepMeasureValue measureValueStudents = new StepMeasureValue();
                     measureValueStudents.StepMeasureId = measureId;
-                    measureValueStudents.SundayDate = sundayDate;
+                    measureValueStudents.SundayDate = metricDependencies.SundayDate;
                     measureValueStudents.Value = measureCountStudents;
                     measureValueStudents.CampusId = campusId;
                     measureValueStudents.ActiveStudents = activeStudents;
@@ -845,14 +775,12 @@ namespace church.ccv.Steps
 
                 rockContext.SaveChanges();
 
-                var pastorMeasures = areaMeasures.GroupBy( n => n.PastorPersonAliasId )
+                var pastorMeasures = regionAdultMeasures.GroupBy( n => n.PastorPersonAliasId )
                                         .Select( p => new
                                         {
                                             PastorPersonAliasId = p.Key,
                                             AdultCount = p.Sum( k => k.AdultCount ),
                                             AdultMeasureValue = p.Sum( k => k.AdultMeasureCount ),
-                                            StudentCount = p.Sum( k => k.StudentCount ),
-                                            StudentMeasureValue = p.Sum( k => k.StudentMeasureCount )
                                         } )
                                         .ToList();
 
@@ -861,23 +789,16 @@ namespace church.ccv.Steps
                     // store adults
                     StepMeasureValue measureValueAdults = new StepMeasureValue();
                     measureValueAdults.StepMeasureId = measureId;
-                    measureValueAdults.SundayDate = sundayDate;
+                    measureValueAdults.SundayDate = metricDependencies.SundayDate;
                     measureValueAdults.Value = pastor.AdultMeasureValue.HasValue ? pastor.AdultMeasureValue.Value : 0;
                     measureValueAdults.PastorPersonAliasId = pastor.PastorPersonAliasId;
                     measureValueAdults.ActiveAdults = pastor.AdultCount;
 
                     stepMeasureValueService.Add( measureValueAdults );
-                    
-                    // For now, don't save pastor student values. They want this changed from pastors to ministry leaders.
-                    /*StepMeasureValue measureValueStudents = new StepMeasureValue();
-                    measureValueStudents.StepMeasureId = measureId;
-                    measureValueStudents.SundayDate = sundayDate;
-                    measureValueStudents.Value = pastor.StudentMeasureValue.HasValue ? pastor.StudentMeasureValue.Value : 0;
-                    measureValueStudents.PastorPersonAliasId = pastor.PastorPersonAliasId;
-                    measureValueStudents.ActiveStudents= pastor.StudentCount;
-
-                    stepMeasureValueService.Add( measureValueStudents );*/
                 }
+
+                // note: Student's don't yet have a measureable leader
+
                 rockContext.SaveChanges();
             }
         }
@@ -897,10 +818,7 @@ namespace church.ccv.Steps
         #endregion
 
         #region Utility Classes
-
-        /// <summary>
-        /// Campus Measure
-        /// </summary>
+        
         public class CampusMeasure
         {
             /// <summary>
@@ -919,10 +837,7 @@ namespace church.ccv.Steps
             public int MeasureValue { get; set; }
         }
         
-        /// <summary>
-        /// Area Measuer
-        /// </summary>
-        public class AreaMeasure
+        public class RegionMeasure
         {
             /// <summary>
             /// Gets or sets the pastor person alias identifier.
@@ -941,77 +856,26 @@ namespace church.ccv.Steps
             public int? AdultCount { get; set; }
 
             /// <summary>
-            /// Gets or sets the student count.
-            /// </summary>
-            /// <value>
-            /// The student count.
-            /// </value>
-            public int? StudentCount { get; set; }
-
-            /// <summary>
             /// Gets or sets the adult measure count.
             /// </summary>
             /// <value>
             /// The measure count.
             /// </value>
             public int? AdultMeasureCount { get; set; }
-
-            /// <summary>
-            /// Gets or sets the student measure count.
-            /// </summary>
-            /// <value>
-            /// The measure count.
-            /// </value>
-            public int? StudentMeasureCount { get; set; }
         }
 
         /// <summary>
-        /// Neighborhood Area Summary Class
+        /// Region Summary Class
         /// </summary>
-        public class NeighborhoodArea
+        public class Region
         {
-            /// <summary>
-            /// Gets or sets the area identifier.
-            /// </summary>
-            /// <value>
-            /// The area identifier.
-            /// </value>
-            public int AreaId { get; set; }
-            /// <summary>
-            /// Gets or sets the pastor person alias identifier.
-            /// </summary>
-            /// <value>
-            /// The pastor person alias identifier.
-            /// </value>
+            public int RegionId { get; set; }
+            
             public int? PastorPersonAliasId { get; set; }
-            /// <summary>
-            /// Gets or sets the pastor person alias identifier.
-            /// </summary>
-            /// <value>
-            /// The pastor person alias identifier.
-            /// </value>
+            
             public int? PastorPersonId { get; set; }
-            /// <summary>
-            /// Gets or sets the campus identifier.
-            /// </summary>
-            /// <value>
-            /// The campus identifier.
-            /// </value>
+            
             public int? CampusId { get; set; }
-            /// <summary>
-            /// Gets or sets the adult count.
-            /// </summary>
-            /// <value>
-            /// The adult count.
-            /// </value>
-            public int AdultCount { get; set; }
-            /// <summary>
-            /// Gets or sets the student count.
-            /// </summary>
-            /// <value>
-            /// The student count.
-            /// </value>
-            public int StudentCount { get; set; }
         }
 
         /// <summary>

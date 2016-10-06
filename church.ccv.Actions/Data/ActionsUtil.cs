@@ -738,19 +738,19 @@ namespace church.ccv.Actions
             {
                 public int PersonId { get; set; }
             
-                public bool Unknown_IsTeaching  { get; set; }
-                public string Unknown_GroupIds  { get; set; }
+                public bool Undefined_IsTeaching  { get; set; }
+                public string Undefined_GroupIds  { get; set; }
             }
 
             public class Result
             {
-                public bool Unknown_IsTeaching  { get; set; }
-                public List<int> Unknown_GroupIds  { get; set; }
+                public bool Undefined_IsTeaching  { get; set; }
+                public List<int> Undefined_GroupIds  { get; set; }
 
                 public bool IsTeaching( )
                 {
                     return // if any of the above teaching flags are true, then yes, they're teaching.
-                           (Unknown_IsTeaching == true) 
+                           (Undefined_IsTeaching == true) 
                     
                             ? true : false;
                 }
@@ -761,7 +761,7 @@ namespace church.ccv.Actions
                     // to know the group ids, and doesn't care about which group is which type.
                     List<int> groupIds = new List<int>( );
 
-                    groupIds.AddRange( Unknown_GroupIds );
+                    groupIds.AddRange( Undefined_GroupIds );
 
                     return groupIds;
                 }
@@ -780,8 +780,8 @@ namespace church.ccv.Actions
                 // convert the resultTable into a result for the caller
                 returnResult = new Result( )
                 {
-                    Unknown_IsTeaching = sqlResultTable.Unknown_IsTeaching,
-                    Unknown_GroupIds   = sqlResultTable.Unknown_GroupIds != null ? sqlResultTable.Unknown_GroupIds.Split( ',' ).Select( Int32.Parse ).ToList( ) : new List<int>( )
+                    Undefined_IsTeaching = sqlResultTable.Undefined_IsTeaching,
+                    Undefined_GroupIds   = sqlResultTable.Undefined_GroupIds != null ? sqlResultTable.Undefined_GroupIds.Split( ',' ).Select( Int32.Parse ).ToList( ) : new List<int>( )
                 };
             }
         }
