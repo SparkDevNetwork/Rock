@@ -37,7 +37,6 @@ namespace RockWeb.Plugins.com_centralaz.CheckIn
 
     [LinkedPage( "Family Select Page", "", false, "", "", 5 )]
     [LinkedPage( "Scheduled Locations Page", "", false, "", "", 6 )]
-    [LinkedPage( "Mobile Setup Page (Mobile Admin)", "The page to navigate back when mobile device times out.", false, "", "", 7, "MobileSetupPage" )]
     public partial class Welcome : CheckInBlock
     {
         protected override void OnInit( EventArgs e )
@@ -47,17 +46,9 @@ namespace RockWeb.Plugins.com_centralaz.CheckIn
             RockPage.AddScriptLink( "~/Scripts/iscroll.js" );
             RockPage.AddScriptLink( "~/Scripts/CheckinClient/checkin-core.js" );
 
-            bool isMobileAndExpired = IsMobileAndExpiredDevice();
-            if ( CurrentCheckInState == null || isMobileAndExpired )
+            if ( CurrentCheckInState == null || IsMobileAndExpiredDevice() )
             {
-                if ( isMobileAndExpired )
-                {
-                    NavigateToLinkedPage( "MobileSetupPage" );
-                }
-                else
-                {
-                    NavigateToPreviousPage();
-                }
+                NavigateToPreviousPage();
                 return;
             }
 
@@ -172,6 +163,14 @@ namespace RockWeb.Plugins.com_centralaz.CheckIn
         if ($ActiveWhen.text() != '')
         {{
             var timeActive = new Date($ActiveWhen.text());
+            var twoHoursFromNow = new Date();
+            twoHoursFromNow.setHours(twoHoursFromNow.getHours() + 2 );
+            if ( timeActive >= twoHoursFromNow ) {{
+                $CountdownTimer.parent().hide();
+            }} else {{
+                $CountdownTimer.parent().show();
+            }}
+
             $CountdownTimer.countdown({{
                 until: timeActive, 
                 compact:true, 
@@ -229,17 +228,9 @@ namespace RockWeb.Plugins.com_centralaz.CheckIn
 
             lblActiveWhen.Text = string.Empty;
 
-            bool isMobileAndExpired = IsMobileAndExpiredDevice();
-            if ( CurrentCheckInState == null || isMobileAndExpired )
+            if ( CurrentCheckInState == null || IsMobileAndExpiredDevice() )
             {
-                if ( isMobileAndExpired )
-                {
-                    NavigateToLinkedPage( "MobileSetupPage" );
-                }
-                else
-                { 
-                    NavigateToPreviousPage();
-                }
+                NavigateToPreviousPage();
                 return;
             }
 
