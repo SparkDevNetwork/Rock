@@ -438,6 +438,7 @@ namespace RockWeb.Plugins.church_ccv.Finance
         /// <param name="transactionCode">The transaction code.</param>
         private void ShowSuccess( Person person, PaymentInfo paymentInfo, PaymentSchedule paymentSchedule, FinancialPaymentDetail financialPaymentDetail, string transactionCode, string gatewayScheduleId )
         {
+            upPayment.Update();
             var accountId = ddlAccounts.SelectedValue.AsInteger();
             var rockContext = new RockContext();
             var account = new FinancialAccountService( rockContext ).Get( accountId );
@@ -543,7 +544,7 @@ namespace RockWeb.Plugins.church_ccv.Finance
             var errorMessages = new List<string>();
 
             // Validate that an amount was entered
-            if ( amount == 0 )
+            if ( (amount ?? 0) == 0 )
             {
                 errorMessages.Add( "Make sure you've entered an amount." );
             }
@@ -551,7 +552,7 @@ namespace RockWeb.Plugins.church_ccv.Finance
             // Validate that no negative amounts were entered
             if ( amount < 0 )
             {
-                errorMessages.Add( "Make sure the amount you've entered is a positive amount" );
+                errorMessages.Add( "Make sure the amount you've entered is a positive amount." );
             }
 
             // validate the payment schedule
@@ -561,31 +562,31 @@ namespace RockWeb.Plugins.church_ccv.Finance
 
                 if ( startDate == null )
                 {
-                    errorMessages.Add( "When scheduling a repeating payment, make sure the First Gift date is specified" );
+                    errorMessages.Add( "When scheduling a repeating payment, make sure the First Gift date is specified." );
                 }
 
                 // Make sure a repeating payment starts in the future
                 if ( startDate <= RockDateTime.Today )
                 {
-                    errorMessages.Add( "When scheduling a repeating payment, make sure the First Gift date is in the future (after today)" );
+                    errorMessages.Add( "When scheduling a repeating payment, make sure the First Gift date is in the future (after today)." );
                 }
             }
 
             if ( CurrentPerson == null && ( string.IsNullOrWhiteSpace( tbFirstName.Value ) || string.IsNullOrWhiteSpace( tbLastName.Value ) ) )
             {
-                errorMessages.Add( "Make sure to enter both a first and last name" );
+                errorMessages.Add( "Make sure to enter both a first and last name." );
             }
 
             if ( string.IsNullOrWhiteSpace( tbEmail.Value ) )
             {
-                errorMessages.Add( "Make sure to enter a valid email address.  An email address is required for us to send you a payment confirmation" );
+                errorMessages.Add( "Make sure to enter a valid email address.  An email address is required for us to send you a payment confirmation." );
             }
 
             if ( rblSavedAccount.SelectedValue.AsInteger() == 0 )
             {
                 if ( string.IsNullOrWhiteSpace( tbCardNumber.Value ) )
                 {
-                    errorMessages.Add( "Make sure to enter a valid credit card number" );
+                    errorMessages.Add( "Make sure to enter a valid credit card number." );
                 }
 
                 var currentMonth = RockDateTime.Today;
@@ -594,7 +595,7 @@ namespace RockWeb.Plugins.church_ccv.Finance
                 var cardMMYY = tbCardExpiry.Value.Split( new char[] { '/' } ).Select( a => a.Trim().AsInteger() ).ToArray();
                 if ( cardMMYY.Length != 2 )
                 {
-                    errorMessages.Add( "Make sure to enter a valid credit card expiration date" );
+                    errorMessages.Add( "Make sure to enter a valid credit card expiration date." );
                 }
                 else
                 {
@@ -608,13 +609,13 @@ namespace RockWeb.Plugins.church_ccv.Finance
                     }
                     catch
                     {
-                        errorMessages.Add( "Invalid Expiration Date" );
+                        errorMessages.Add( "Invalid Expiration Date." );
                     }
                 }
 
                 if ( string.IsNullOrWhiteSpace( tbCardCvc.Value ) )
                 {
-                    errorMessages.Add( "Make sure to enter a valid credit card security code" );
+                    errorMessages.Add( "Make sure to enter a valid credit card security code." );
                 }
             }
 
@@ -1030,6 +1031,7 @@ namespace RockWeb.Plugins.church_ccv.Finance
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void lbSaveAccount_Click( object sender, EventArgs e )
         {
+            upPayment.Update();
             var transactionCode = hfSaveAccountTransactionCode.Value;
             var scheduleId = hfSaveAccountScheduleId.Value;
 

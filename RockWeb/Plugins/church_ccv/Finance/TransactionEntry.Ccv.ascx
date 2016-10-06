@@ -1,6 +1,7 @@
 ﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="TransactionEntry.Ccv.ascx.cs" Inherits="RockWeb.Plugins.church_ccv.Finance.TransactionEntryCcv" %>
 
-<asp:UpdatePanel ID="upPayment" runat="server">
+<%-- Set UpdateMode to Conditional and use a child UpdatePanel for btnSubmit so that the vue.js stuff works better --%>
+<asp:UpdatePanel ID="upPayment" runat="server" UpdateMode="Conditional">
     <ContentTemplate>
 
         <%-- hidden field to store the Transaction.Guid to use for the transaction. This is to help prevent duplicate transactions.   --%>
@@ -149,14 +150,21 @@
                 </div>
             </div>
 
-            <Rock:NotificationBox ID="nbMessage" runat="server" Visible="false"></Rock:NotificationBox>
+            <asp:UpdatePanel ID="upSubmit" runat="server">
+                <ContentTemplate>
+                    <Rock:NotificationBox ID="nbMessage" runat="server"></Rock:NotificationBox>
 
-            <div class="form-group">
-                <div class="col-sm-offset-3 col-sm-9">
-                    <button runat="server" id="btnClear" onclick="giveForm.resetData();" class="btn btn-default js-reset-form" type="button" name="clear">Clear</button>
-                    <asp:LinkButton ID="btnSubmit" runat="server" Text="Submit" CssClass="btn btn-primary pull-right js-submit-giving" OnClick="btnSubmit_Click" />
-                </div>
-            </div>
+                    <div class="form-group">
+                        <div class="col-sm-offset-3 col-sm-9">
+                            <button runat="server" id="btnClear" onclick="giveForm.resetData();" class="btn btn-default js-reset-form" type="button" name="clear">Clear</button>
+
+                            <asp:LinkButton ID="btnSubmit" runat="server" Text="Submit" CssClass="btn btn-primary pull-right js-submit-giving" OnClick="btnSubmit_Click" />
+
+
+                        </div>
+                    </div>
+                </ContentTemplate>
+            </asp:UpdatePanel>
         </div>
 
         <asp:Panel ID="pnlSuccess" runat="server" Visible="false">
@@ -236,41 +244,6 @@
                 // show/hide card inputs based on selected saved-payment option
                 $('#givingForm .js-saved-payment-option input').on('click', function () {
                     showCardInputOption();
-                });
-
-                // do the input validation on the client side
-                $('#givingForm .js-submit-giving').on('click', function() {
-
-                    $('#givingForm').find('*').removeClass("has-error");
-                    var isValid = true;
-                    if (!giveForm.amount)
-                    {
-                        isValid = false;
-                        $('#givingForm .js-amount').closest('.form-group').addClass("has-error");
-                    }
-
-                    if (!giveForm.email.trim())
-                    {
-                        isValid = false;
-                        $('#givingForm .js-email').closest('.form-group').addClass("has-error");
-                    }
-
-
-                    if ($('#givingForm .js-input-fullname').is(':visible') && !giveForm.fullName)
-                    {
-                        isValid = false;
-                        $('#givingForm .js-full-name').addClass("has-error");
-                    }
-
-                    var givingWithNewCard = !$('#givingForm .js-saved-payment-option input:checked').length || $('#givingForm .js-saved-payment-option input:checked').val() == "0";
-
-                    if (givingWithNewCard && (!giveForm.card.number || !giveForm.card.cvc || !giveForm.card.exp))
-                    {
-                        isValid = false;
-                        $('#givingForm .js-new-cardinput').addClass("has-error");
-                    }
-
-                    return isValid;
                 });
             });
 
