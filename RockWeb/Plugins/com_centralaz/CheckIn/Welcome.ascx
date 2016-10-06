@@ -81,7 +81,7 @@
                 <div class="checkin-scroll-panel">
                     <div class="scroller">
 
-                        <p>This kiosk is not active yet.  Countdown until active: <span class="countdown-timer"></span></p>
+                        <p>Countdown: <span class="countdown-timer"></span></p>
                         <asp:HiddenField ID="hfActiveTime" runat="server" />
 
                     </div>

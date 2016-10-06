@@ -108,16 +108,44 @@ body {
     background-size: cover;
 }
 
+
 .checkin-start {
-	position: fixed;
-	margin-top: auto;
-	left: 330px;
-	top: 626px;
-	overflow: visible;
+    margin-top: 65%;
+}
+
+/* hide photos per Kevin Marr*/
+.photo-round {
+    display: none !important;
 }
 
 .kioskmanager-activate {
     opacity: .001;
 }
+
+/* This next section is for moving the "not active" messages into the footer area */
+div[id*="pnlNotActive"] {
+    position: absolute;
+    bottom: 45px;
+    width: 900px;
+}
+
+div[id*="pnlNotActive"] .checkin-header {
+    margin-bottom: 0px;
+}
+
+div[id*="pnlNotActive"] .checkin-body {
+    font-size: 20px;
+    margin-top: -10px;
+}
+
+div[id*="pnlNotActive"] .checkin-scroll-panel, div[id$="pnlNotActive"] .scroller {
+    position: inherit;
+}
+
+div[id*="pnlNotActive"] .iScrollVerticalScrollbar, div[id*="pnlNotActive"] input[id$="hfActiveTime"] {
+    display:none;
+}
+
+/* endsection */
 
 @import "_css-overrides.less";
