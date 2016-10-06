@@ -106,7 +106,16 @@ namespace Rock.Lava.Blocks
                     // add body, this will be ignored if other parameters exist
                     if ( !string.IsNullOrWhiteSpace( parms["body"] ) )
                     {
-                        request.AddParameter( parms["requestcontenttype"], parms["body"], ParameterType.RequestBody );
+                        if ( parms.ContainsKey( "requestcontenttype" ) )
+                        {
+                            request.AddParameter( parms["requestcontenttype"], parms["body"], ParameterType.RequestBody );
+                        }
+                        else
+                        {
+                            result.Write( "When using the 'body' parameter you must also provide a 'requestcontenttype' also." );
+                            base.Render( context,  result );
+                            return ;
+                        }
                     }
 
                     IRestResponse response = client.Execute( request );
