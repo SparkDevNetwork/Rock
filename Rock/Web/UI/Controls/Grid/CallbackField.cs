@@ -51,6 +51,16 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Gets the formatted data value.
+        /// </summary>
+        /// <param name="dataValue">The data value.</param>
+        /// <returns></returns>
+        public string GetFormattedDataValue( object dataValue )
+        {
+            return FormatDataValue( dataValue, this.HtmlEncode );
+        }
+
+        /// <summary>
         /// Gets the value that should be exported to Excel
         /// </summary>
         /// <param name="row">The row.</param>
