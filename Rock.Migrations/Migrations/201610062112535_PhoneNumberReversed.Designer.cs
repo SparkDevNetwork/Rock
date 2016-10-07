@@ -7,13 +7,13 @@ namespace Rock.Migrations
     using System.Resources;
     
     [GeneratedCode("EntityFramework.Migrations", "6.1.3-40302")]
-    public sealed partial class BodyPageCSSContentChannelNoContent : IMigrationMetadata
+    public sealed partial class PhoneNumberReversed : IMigrationMetadata
     {
-        private readonly ResourceManager Resources = new ResourceManager(typeof(BodyPageCSSContentChannelNoContent));
+        private readonly ResourceManager Resources = new ResourceManager(typeof(PhoneNumberReversed));
         
         string IMigrationMetadata.Id
         {
-            get { return "201609221633157_BodyPageCSS-ContentChannelNoContent"; }
+            get { return "201610062112535_PhoneNumberReversed"; }
         }
         
         string IMigrationMetadata.Source
