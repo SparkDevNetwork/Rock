@@ -1563,11 +1563,11 @@ namespace Rock.Web.UI.Controls
                     }
 
                     // print data
-                    foreach ( DataRow row in data.Rows )
+                    foreach ( DataRowView rowView in data.DefaultView )
                     {
                         for ( int i = 0; i < data.Columns.Count; i++ )
                         {
-                            SetExcelValue( worksheet.Cells[rowCounter, i + 1], row[i] );
+                            SetExcelValue( worksheet.Cells[rowCounter, i + 1], rowView.Row[i] );
                         }
 
                         rowCounter++;
@@ -2183,8 +2183,9 @@ namespace Rock.Web.UI.Controls
                 {
                     DataTable data = this.DataSourceAsDataTable;
 
-                    foreach ( DataRow row in data.Rows )
+                    foreach ( DataRowView rowView in data.DefaultView )
                     {
+                        DataRow row = rowView.Row;
                         object dataKey = row[dataKeyColumn];
                         if ( !keysSelected.Any() || keysSelected.Contains( dataKey ) )
                         {
@@ -2470,7 +2471,7 @@ namespace Rock.Web.UI.Controls
             entitySet.ExpireDateTime = RockDateTime.Now.AddMinutes( 5 );
 
             int itemOrder = 0;
-            foreach ( var row in this.DataSourceAsDataTable.Rows.OfType<DataRow>() )
+            foreach ( DataRowView row in this.DataSourceAsDataTable.DefaultView )
             {
                 try
                 {
@@ -2479,7 +2480,7 @@ namespace Rock.Web.UI.Controls
                     if ( entitySet.EntityTypeId.HasValue && dataKeyColumn != null )
                     {
                         // we know the EntityTypeId, so set the EntityId to the dataKeyColumn value
-                        item.EntityId = ( row[dataKeyColumn] as int? ) ?? 0;
+                        item.EntityId = ( row[dataKeyColumn.ColumnName] as int? ) ?? 0;
                     }
                     else
                     {
@@ -2491,7 +2492,7 @@ namespace Rock.Web.UI.Controls
                     item.AdditionalMergeValues = new Dictionary<string, object>();
                     foreach ( var col in this.DataSourceAsDataTable.Columns.OfType<DataColumn>() )
                     {
-                        item.AdditionalMergeValues.Add( col.ColumnName, row[col] );
+                        item.AdditionalMergeValues.Add( col.ColumnName, row[col.ColumnName] );
                     }
 
                     entitySet.Items.Add( item );
