@@ -1775,6 +1775,12 @@ namespace RockWeb.Blocks.Event
 
             if ( newRegistrar )
             {
+                // Businesses have no first name.  This resolves null reference issues downstream.
+                if ( CurrentPerson != null && CurrentPerson.FirstName == null )
+                {
+                    CurrentPerson.FirstName = "";
+                }
+
                 if ( CurrentPerson != null && CurrentPerson.NickName == null )
                 {
                     CurrentPerson.NickName = CurrentPerson.FirstName;
