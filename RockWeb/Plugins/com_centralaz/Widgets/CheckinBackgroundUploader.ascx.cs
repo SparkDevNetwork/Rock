@@ -31,11 +31,11 @@ using Rock.Web.UI;
 namespace RockWeb.Plugins.com_centralaz.Widgets
 {
     /// <summary>
-    /// A simple, easy to use photo gallery widget that stores photos on the filesystem.
+    /// Allows a user to upload a background photo for a check-in theme. Users with admin access can select the themes that users with edit access can update.
     /// </summary>
-    [DisplayName( "Checkin Background Uploader" )]
+    [DisplayName( "Background Uploader (for Check-in Themes)" )]
     [Category( "com_centralaz > Widgets" )]
-    [Description( "Allows a user to upload a background photo for a checkin theme. Users with admin access can select the themes that users with edit access can update." )]
+    [Description( "Allows a user to upload a background photo for a check-in theme. Users with admin access can select the themes that users with edit access can update." )]
 
     [CustomCheckboxListField( "Allowed Themes", "The themes that will be available in the dropdown.", "CheckinAdventureKids,CheckinBlueCrystal,CheckinPark", true )]
     [BooleanField( "Set Size", "If set to true, the Height and Width settings will be used in the image tag's style setting. NOTE: Constraining size can cause distortion to responsive images when user resizes browser window.", false, "Sizing", 0 )]
@@ -183,6 +183,9 @@ namespace RockWeb.Plugins.com_centralaz.Widgets
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void fuPhoto_FileUploaded( object sender, EventArgs e )
         {
+            var x = ( Rock.Web.UI.Controls.FileUploader ) sender;
+            var z = x.UploadedContentFilePath;
+            var y = x.UploadUrl;
             SetImage();
         }
 
@@ -232,6 +235,10 @@ namespace RockWeb.Plugins.com_centralaz.Widgets
                 var attributeQualifier = new AttributeQualifierService( rockContext ).GetByAttributeId( attribute.Id ).Where( q => q.Key == "values" ).FirstOrDefault();
                 var attributeValue = new AttributeValueService( rockContext ).GetByAttributeIdAndEntityId( attribute.Id, blockId );
 
+                if ( attributeValue == null )
+                {
+                    return;
+                }
                 // Send the themes in the qualifier and value to a list
                 var attributeQualifierThemes = attributeQualifier.Value.SplitDelimitedValues().ToList();
                 var attributeValueThemes = attributeValue.Value.SplitDelimitedValues().ToList();
