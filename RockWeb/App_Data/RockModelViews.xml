@@ -1,6 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <views>
-  <mapping-views hash="a977cc61e11e705136903dde9e9dc38ec96d2264aa0c1f897b37a7f5f2ffea20" conceptual-container="RockContext" store-container="CodeFirstDatabase">
+  <mapping-views hash="c661197c6890727d9f7f095d2c285181a4a5954344cbc0e20b10e3058ced4843" conceptual-container="RockContext" store-container="CodeFirstDatabase">
     <view extent="CodeFirstDatabase.AttendanceCode"><![CDATA[
     SELECT VALUE -- Constructing AttendanceCode
         [CodeFirstDatabaseSchema.AttendanceCode](T1.AttendanceCode_Id, T1.AttendanceCode_IssueDateTime, T1.AttendanceCode_Code, T1.AttendanceCode_Guid, T1.AttendanceCode_ForeignId, T1.AttendanceCode_ForeignGuid, T1.AttendanceCode_ForeignKey)
@@ -1616,7 +1616,7 @@
     ) AS T1]]></view>
     <view extent="CodeFirstDatabase.PhoneNumber"><![CDATA[
     SELECT VALUE -- Constructing PhoneNumber
-        [CodeFirstDatabaseSchema.PhoneNumber](T1.PhoneNumber_Id, T1.PhoneNumber_IsSystem, T1.PhoneNumber_PersonId, T1.PhoneNumber_CountryCode, T1.PhoneNumber_Number, T1.PhoneNumber_NumberFormatted, T1.PhoneNumber_Extension, T1.PhoneNumber_NumberTypeValueId, T1.PhoneNumber_IsMessagingEnabled, T1.PhoneNumber_IsUnlisted, T1.PhoneNumber_Description, T1.PhoneNumber_CreatedDateTime, T1.PhoneNumber_ModifiedDateTime, T1.PhoneNumber_CreatedByPersonAliasId, T1.PhoneNumber_ModifiedByPersonAliasId, T1.PhoneNumber_Guid, T1.PhoneNumber_ForeignId, T1.PhoneNumber_ForeignGuid, T1.PhoneNumber_ForeignKey)
+        [CodeFirstDatabaseSchema.PhoneNumber](T1.PhoneNumber_Id, T1.PhoneNumber_IsSystem, T1.PhoneNumber_PersonId, T1.PhoneNumber_CountryCode, T1.PhoneNumber_Number, T1.PhoneNumber_NumberFormatted, T1.PhoneNumber_NumberReversed, T1.PhoneNumber_Extension, T1.PhoneNumber_NumberTypeValueId, T1.PhoneNumber_IsMessagingEnabled, T1.PhoneNumber_IsUnlisted, T1.PhoneNumber_Description, T1.PhoneNumber_CreatedDateTime, T1.PhoneNumber_ModifiedDateTime, T1.PhoneNumber_CreatedByPersonAliasId, T1.PhoneNumber_ModifiedByPersonAliasId, T1.PhoneNumber_Guid, T1.PhoneNumber_ForeignId, T1.PhoneNumber_ForeignGuid, T1.PhoneNumber_ForeignKey)
     FROM (
         SELECT 
             T.Id AS PhoneNumber_Id, 
@@ -1625,6 +1625,7 @@
             T.CountryCode AS PhoneNumber_CountryCode, 
             T.Number AS PhoneNumber_Number, 
             T.NumberFormatted AS PhoneNumber_NumberFormatted, 
+            T.NumberReversed AS PhoneNumber_NumberReversed, 
             T.Extension AS PhoneNumber_Extension, 
             T.NumberTypeValueId AS PhoneNumber_NumberTypeValueId, 
             T.IsMessagingEnabled AS PhoneNumber_IsMessagingEnabled, 
@@ -5365,7 +5366,7 @@
     ) AS T1]]></view>
     <view extent="RockContext.PhoneNumbers"><![CDATA[
     SELECT VALUE -- Constructing PhoneNumbers
-        [Rock.Data.PhoneNumber](T1.PhoneNumber_Id, T1.PhoneNumber_IsSystem, T1.PhoneNumber_PersonId, T1.PhoneNumber_CountryCode, T1.PhoneNumber_Number, T1.PhoneNumber_NumberFormatted, T1.PhoneNumber_Extension, T1.PhoneNumber_NumberTypeValueId, T1.PhoneNumber_IsMessagingEnabled, T1.PhoneNumber_IsUnlisted, T1.PhoneNumber_Description, T1.PhoneNumber_CreatedDateTime, T1.PhoneNumber_ModifiedDateTime, T1.PhoneNumber_CreatedByPersonAliasId, T1.PhoneNumber_ModifiedByPersonAliasId, T1.PhoneNumber_Guid, T1.PhoneNumber_ForeignId, T1.PhoneNumber_ForeignGuid, T1.PhoneNumber_ForeignKey)
+        [Rock.Data.PhoneNumber](T1.PhoneNumber_Id, T1.PhoneNumber_IsSystem, T1.PhoneNumber_PersonId, T1.PhoneNumber_CountryCode, T1.PhoneNumber_Number, T1.PhoneNumber_NumberFormatted, T1.PhoneNumber_NumberReversed, T1.PhoneNumber_Extension, T1.PhoneNumber_NumberTypeValueId, T1.PhoneNumber_IsMessagingEnabled, T1.PhoneNumber_IsUnlisted, T1.PhoneNumber_Description, T1.PhoneNumber_CreatedDateTime, T1.PhoneNumber_ModifiedDateTime, T1.PhoneNumber_CreatedByPersonAliasId, T1.PhoneNumber_ModifiedByPersonAliasId, T1.PhoneNumber_Guid, T1.PhoneNumber_ForeignId, T1.PhoneNumber_ForeignGuid, T1.PhoneNumber_ForeignKey)
     FROM (
         SELECT 
             T.Id AS PhoneNumber_Id, 
@@ -5374,6 +5375,7 @@
             T.CountryCode AS PhoneNumber_CountryCode, 
             T.Number AS PhoneNumber_Number, 
             T.NumberFormatted AS PhoneNumber_NumberFormatted, 
+            T.NumberReversed AS PhoneNumber_NumberReversed, 
             T.Extension AS PhoneNumber_Extension, 
             T.NumberTypeValueId AS PhoneNumber_NumberTypeValueId, 
             T.IsMessagingEnabled AS PhoneNumber_IsMessagingEnabled, 

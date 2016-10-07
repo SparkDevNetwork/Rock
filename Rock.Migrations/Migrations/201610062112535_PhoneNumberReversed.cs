@@ -22,24 +22,31 @@ namespace Rock.Migrations
     /// <summary>
     ///
     /// </summary>
-    public partial class BodyPageCSSContentChannelNoContent : Rock.Migrations.RockMigration
+    public partial class PhoneNumberReversed : Rock.Migrations.RockMigration
     {
         /// <summary>
         /// Operations to be performed during the upgrade process.
         /// </summary>
         public override void Up()
         {
-            AddColumn("dbo.ContentChannelType", "DisableContentField", c => c.Boolean(nullable: false));
-            AddColumn("dbo.Page", "BodyCssClass", c => c.String(maxLength: 100));
+            Sql( @"
+    IF COL_LENGTH('PhoneNumber', 'NumberReversed') IS NULL 
+        ALTER TABLE [dbo].[PhoneNumber] ADD [NumberReversed] AS( reverse([Number] ) ) PERSISTED
+" );
+
+            Sql( @"
+    IF NOT EXISTS( SELECT * FROM sys.indexes WHERE name = 'IX_NumberReversed' AND object_id = OBJECT_ID( N'[dbo].[PhoneNumber]' ) ) 
+        CREATE NONCLUSTERED INDEX[IX_NumberReversed] ON[dbo].[PhoneNumber]([NumberReversed]) 
+" );
         }
-        
+
         /// <summary>
         /// Operations to be performed during the downgrade process.
         /// </summary>
         public override void Down()
         {
-            DropColumn("dbo.Page", "BodyCssClass");
-            DropColumn("dbo.ContentChannelType", "DisableContentField");
+            DropIndex( "dbo.PhoneNumber", "IX_NumberReversed" );
+            DropColumn( "dbo.PhoneNumber", "NumberReversed");
         }
     }
 }

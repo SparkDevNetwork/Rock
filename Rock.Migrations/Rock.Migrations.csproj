@@ -70,6 +70,10 @@
     <Compile Include="Migrations\201610031959052_FamilyAnalyticsUpdate.Designer.cs">
       <DependentUpon>201610031959052_FamilyAnalyticsUpdate.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201610062112535_PhoneNumberReversed.cs" />
+    <Compile Include="Migrations\201610062112535_PhoneNumberReversed.Designer.cs">
+      <DependentUpon>201610062112535_PhoneNumberReversed.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 6.0\Version 1.6.0\201609282147388_WaitList.cs" />
     <Compile Include="Migrations\Version 6.0\Version 1.6.0\201609282147388_WaitList.Designer.cs">
       <DependentUpon>201609282147388_WaitList.cs</DependentUpon>
@@ -81,10 +85,6 @@
     <Compile Include="Migrations\Version 6.0\Version 1.6.0\201609221415156_PreventDupCheckin.cs" />
     <Compile Include="Migrations\Version 6.0\Version 1.6.0\201609221415156_PreventDupCheckin.Designer.cs">
       <DependentUpon>201609221415156_PreventDupCheckin.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Migrations\201609140843400_PhoneNumberReversed.cs" />
-	 <Compile Include="Migrations\201609140843400_PhoneNumberReversed.Designer.cs">
-      <DependentUpon>201609140843400_PhoneNumberReversed.cs</DependentUpon>
     </Compile>
     <Compile Include="Migrations\Version 6.0\Version 1.6.0\201609221633157_BodyPageCSS-ContentChannelNoContent.cs" />
     <Compile Include="Migrations\Version 6.0\Version 1.6.0\201609221633157_BodyPageCSS-ContentChannelNoContent.Designer.cs">
@@ -2279,6 +2279,9 @@
     <EmbeddedResource Include="Migrations\201610031959052_FamilyAnalyticsUpdate.resx">
       <DependentUpon>201610031959052_FamilyAnalyticsUpdate.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201610062112535_PhoneNumberReversed.resx">
+      <DependentUpon>201610062112535_PhoneNumberReversed.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 6.0\Version 1.6.0\201609282147388_WaitList.resx">
       <DependentUpon>201609282147388_WaitList.cs</DependentUpon>
     </EmbeddedResource>
@@ -2305,10 +2308,6 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 6.0\Version 1.6.0\201606232056332_WorkflowNumber.resx">
       <DependentUpon>201606232056332_WorkflowNumber.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201609140843400_PhoneNumberReversed.resx">
-      <DependentUpon>201609140843400_PhoneNumberReversed.cs</DependentUpon>
-      <SubType>Designer</SubType>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 6.0\Version 1.6.0\201606241700105_ExceptionUpdates.resx">
       <DependentUpon>201606241700105_ExceptionUpdates.cs</DependentUpon>
