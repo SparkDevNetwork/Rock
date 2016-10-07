@@ -827,9 +827,8 @@ $(document).ready(function() {
                                                 break;
                                             case Rock.SystemGuid.FieldType.MULTI_SELECT:
                                                 {
-                                                    var values = new List<string>();
-                                                    values.Add( value );
-                                                    selection.Add( Newtonsoft.Json.JsonConvert.SerializeObject( values ) );
+                                                    selection.Add( ComparisonType.Contains.ConvertToInt().ToString() );
+                                                    selection.Add( value );
                                                 }
                                                 break;
                                             default:
