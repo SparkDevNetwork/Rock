@@ -102,8 +102,11 @@ namespace RockWeb.Blocks.CheckIn
                                         }
                                     }
 
-                                    printFromClient.AddRange( groupType.Labels.Where( l => l.PrintFrom == Rock.Model.PrintFrom.Client ) );
-                                    printFromServer.AddRange( groupType.Labels.Where( l => l.PrintFrom == Rock.Model.PrintFrom.Server ) );
+                                    if ( groupType.Labels != null && groupType.Labels.Any() )
+                                    {
+                                        printFromClient.AddRange( groupType.Labels.Where( l => l.PrintFrom == Rock.Model.PrintFrom.Client ).OrderBy( l => l.Order ) );
+                                        printFromServer.AddRange( groupType.Labels.Where( l => l.PrintFrom == Rock.Model.PrintFrom.Server ).OrderBy( l => l.Order ) ); 
+                                    }
                                 }
                             }
                         }
@@ -111,7 +114,7 @@ namespace RockWeb.Blocks.CheckIn
                         if ( printFromClient.Any() )
                         {
                             var urlRoot = string.Format( "{0}://{1}", Request.Url.Scheme, Request.Url.Authority );
-                            printFromClient.OrderBy( l => l.Order ).ToList().ForEach( l => l.LabelFile = urlRoot + l.LabelFile );
+                            printFromClient.ToList().ForEach( l => l.LabelFile = urlRoot + l.LabelFile );
                             AddLabelScript( printFromClient.ToJson() );
                         }
 
@@ -120,7 +123,7 @@ namespace RockWeb.Blocks.CheckIn
                             Socket socket = null;
                             string currentIp = string.Empty;
 
-                            foreach ( var label in printFromServer.OrderBy( l => l.Order ) )
+                            foreach ( var label in printFromServer )
                             {
                                 var labelCache = KioskLabel.Read( label.FileGuid );
                                 if ( labelCache != null )
