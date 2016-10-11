@@ -96,6 +96,7 @@ namespace RockWeb.Plugins.com_centralaz.Accountability
                     group.LoadAttributes();
                     DateTime reportStartDate = DateTime.Parse( group.GetAttributeValue( "ReportStartDate" ) );
                     DateTime nextDueDate = NextReportDate( reportStartDate );
+                    DateTime lastDueDate = nextDueDate.AddDays( -7 );
                     var responseSetService = new ResponseSetService( new AccountabilityContext() );
 
                     bool isThisWeeksReportSubmitted = responseSetService.Queryable().Where( rs =>
@@ -105,7 +106,7 @@ namespace RockWeb.Plugins.com_centralaz.Accountability
                         .Any();
 
                     bool isLastWeeksReportSubmitted = responseSetService.Queryable().Where( rs =>
-                        rs.SubmitForDate == nextDueDate.AddDays(-7).Date &&
+                        rs.SubmitForDate == lastDueDate.Date &&
                         rs.PersonId == CurrentPersonId &&
                         rs.GroupId == groupId.Value )
                         .Any();
