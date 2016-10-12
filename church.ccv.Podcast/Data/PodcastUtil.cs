@@ -250,7 +250,9 @@ namespace church.ccv.Podcast
             message.Name = contentChannelItem.Title;
             message.Description = contentChannelItem.Content;
             message.Date = contentChannelItem.StartDateTime;
-            message.Approved = contentChannelItem.Status == ContentChannelItemStatus.Approved ? true : false;
+            
+            //JHM TODO: Remove this once Roku and Apple TV are both updated to use the new "Active" attribute.
+            message.Approved = true;
 
             // add all the attributes
             message.Attributes = new Dictionary<string, string>( );

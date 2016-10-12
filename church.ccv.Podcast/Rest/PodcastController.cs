@@ -491,8 +491,12 @@ namespace chuch.ccv.Podcast.Rest
                             // Now each message of the series
                             foreach( PodcastUtil.PodcastMessage message in series.Messages )
                             {
+                                // (because this is a new attrib, and not all messages have it, check for null. default to TRUE since that's what thye'll want the majority of the time.)
+                                bool messageActive = true;
+                                if( message.Attributes.ContainsKey( "Active" ) ) messageActive = bool.Parse( message.Attributes["Active"] );
+
                                 // only include items whose start date has already begun and that have been approved
-                                if( message.Date <= DateTime.Now && message.Approved == true )
+                                if( message.Date <= DateTime.Now && messageActive == true /*message.Approved == true*/ )
                                 {
                                     // there _must_ be a mediaURL and length in order for us to generate the podcast entry
                                     string mediaUrl = message.Attributes[ mediaKindKey ];
@@ -705,8 +709,12 @@ namespace chuch.ccv.Podcast.Rest
                         bool hasPublicMessage = false;
                         foreach( PodcastUtil.PodcastMessage message in series.Messages )
                         {
+                            // (because this is a new attrib, and not all messages have it, check for null. default to TRUE since that's what thye'll want the majority of the time.)
+                            bool messageActive = true;
+                            if( message.Attributes.ContainsKey( "Active" ) ) messageActive = bool.Parse( message.Attributes["Active"] );
+
                             // if the message already started AND has been approved, then its public.
-                            if ( message.Date <= DateTime.Now && message.Approved == true )
+                            if ( message.Date <= DateTime.Now && messageActive == true/*message.Approved == true*/ )
                             {
                                 hasPublicMessage = true;
                                 break;
@@ -755,9 +763,13 @@ namespace chuch.ccv.Podcast.Rest
                         foreach( PodcastUtil.PodcastMessage message in series.Messages )
                         {
                             writer.WriteStartElement( "Message" );
+                                                        
+                            // (because this is a new attrib, and not all messages have it, check for null. default to TRUE since that's what thye'll want the majority of the time.)
+                            bool messageActive = true;
+                            if( message.Attributes.ContainsKey( "Active" ) ) messageActive = bool.Parse( message.Attributes["Active"] );
 
                             // if the message doesn't start yet, or hasn't been approved, set it to private.
-                            if( message.Date > DateTime.Now || message.Approved == false )
+                            if( message.Date > DateTime.Now || messageActive == false /*message.Approved == false*/ )
                             {
                                 writer.WriteAttributeString( "Private", "true" );
                             }
