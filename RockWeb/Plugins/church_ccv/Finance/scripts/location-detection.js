@@ -28,7 +28,14 @@ function findNearestLocation(current, locations) {
   return nearest
 }
 
-$.getJSON('https://freegeoip.net/json/', function (data) {
+function useNearestLocation(data) {
   var nearest = findNearestLocation(data, campusFundLocations)
-  if (giveForm.fund == '') giveForm.fund = nearest.account.Id
+  if (giveForm.fund == '')
+    giveForm.fund = nearest.account.Id
+}
+
+$.getJSON('https://freegeoip.net/json/', function (data) {
+  // If freegeoip cannot properly geocode, then city will be blank.
+  if (data.city != "")
+    useNearestLocation(data);
 })
