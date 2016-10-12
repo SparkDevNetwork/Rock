@@ -66,6 +66,7 @@ namespace RockWeb.Blocks.Groups
         DefinedValueCache _dvcRecordStatus = null;
         DefinedValueCache _married = null;
         DefinedValueCache _homeAddressType = null;
+        DefinedValueCache _previousAddressType = null;
         GroupTypeCache _familyType = null;
         GroupTypeRoleCache _adultRole = null;
         bool _autoFill = true;
@@ -270,55 +271,49 @@ namespace RockWeb.Blocks.Groups
                 {
                     SetPhoneNumber( rockContext, person, pnHome, null, Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_HOME.AsGuid(), changes );
                     SetPhoneNumber( rockContext, person, pnCell, cbSms, Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE.AsGuid(), changes );
-
-                    string oldLocation = homeLocation != null ? homeLocation.Location.ToString() : string.Empty;
-                    string newLocation = string.Empty;
-
+                    
+                    // if they entered an address, either add a new one or update their existing
                     var location = new LocationService( rockContext ).Get( acAddress.Street1, acAddress.Street2, acAddress.City, acAddress.State, acAddress.PostalCode, acAddress.Country );
                     if ( location != null )
                     {
+                        // if they don't currently have a home location, add one for them.
                         if ( homeLocation == null )
                         {
                             homeLocation = new GroupLocation();
                             homeLocation.GroupLocationTypeValueId = _homeAddressType.Id;
+                            homeLocation.Location = location;
+
                             family.GroupLocations.Add( homeLocation );
-                        }
-                        else
-                        {
-                            oldLocation = homeLocation.Location.ToString();
-                        }
 
-                        homeLocation.Location = location;
-                        newLocation = location.ToString();
-                    }
-                    else
-                    {
-                        if ( homeLocation != null )
+                            History.EvaluateChange( familyChanges, "Home Location", string.Empty, location.ToString() );
+                        }
+                        // otherwise, if the location they entered isn't already their home location
+                        else if( homeLocation.Location.Id != location.Id )
                         {
-                            homeLocation.Location = null;
-                            family.GroupLocations.Remove( homeLocation );
-                            new GroupLocationService( rockContext ).Delete( homeLocation );
+                            // make their current home location a previous location
+                            GroupLocation previousLocation = new GroupLocation();
+                            previousLocation.GroupLocationTypeValueId = _previousAddressType.Id;
+                            previousLocation.Location = homeLocation.Location;
+                            family.GroupLocations.Add( previousLocation );
+
+                            // and update their home location to this new one.
+                            homeLocation.Location = location;
+
+                            History.EvaluateChange( familyChanges, "Home Location", previousLocation.Location.ToString( ), homeLocation.Location.ToString() );
                         }
                     }
-
-                    History.EvaluateChange( familyChanges, "Home Location", oldLocation, newLocation );
 
                     // Check for the spouse
                     if ( IsFullWithSpouse && !string.IsNullOrWhiteSpace(tbSpouseFirstName.Text) && !string.IsNullOrWhiteSpace(tbSpouseLastName.Text) )
                     {
-                        spouse = person.GetSpouse();
-                        if ( spouse == null ||
-                            !tbSpouseFirstName.Text.Trim().Equals( spouse.FirstName.Trim(), StringComparison.OrdinalIgnoreCase ) ||
-                            !tbSpouseLastName.Text.Trim().Equals( spouse.LastName.Trim(), StringComparison.OrdinalIgnoreCase ) )
+                        // try to get their spouse
+                        spouse = person.GetSpouse( rockContext );
+
+                        // if they don't have one, we'll create them
+                        if ( spouse == null )
                         {
                             spouse = new Person();
-
-                            spouse.FirstName = tbSpouseFirstName.Text.FixCase();
-                            History.EvaluateChange( spouseChanges, "First Name", string.Empty, spouse.FirstName );
-
-                            spouse.LastName = tbSpouseLastName.Text.FixCase();
-                            History.EvaluateChange( spouseChanges, "Last Name", string.Empty, spouse.LastName );
-
+                            
                             spouse.ConnectionStatusValueId = _dvcConnectionStatus.Id;
                             spouse.RecordStatusValueId = _dvcRecordStatus.Id;
                             spouse.Gender = Gender.Unknown;
@@ -336,8 +331,18 @@ namespace RockWeb.Blocks.Groups
                             person.MaritalStatusValueId = _married.Id;
                         }
 
-                        History.EvaluateChange( changes, "Email", person.Email, tbEmail.Text );
-                        spouse.Email = tbSpouseEmail.Text;
+                        // now either way, update their name, email and phone
+                        History.EvaluateChange( spouseChanges, "First Name", spouse.FirstName, tbSpouseFirstName.Text.FixCase() );
+                        spouse.FirstName = tbSpouseFirstName.Text.FixCase();
+                        
+                        History.EvaluateChange( spouseChanges, "Last Name", spouse.LastName, tbSpouseLastName.Text.FixCase() );
+                        spouse.LastName = tbSpouseLastName.Text.FixCase();
+
+                        if( string.IsNullOrWhiteSpace( tbSpouseEmail.Text ) == false )
+                        {
+                            History.EvaluateChange( spouseChanges, "Email", spouse.Email, tbSpouseEmail.Text );
+                            spouse.Email = tbSpouseEmail.Text;
+                        }
 
                         SetPhoneNumber( rockContext, spouse, pnHome, null, Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_HOME.AsGuid(), spouseChanges );
                         SetPhoneNumber( rockContext, spouse, pnSpouseCell, cbSpouseSms, Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE.AsGuid(), spouseChanges );
@@ -515,7 +520,7 @@ namespace RockWeb.Blocks.Groups
                             .FirstOrDefault( n => n.NumberTypeValue.Guid.Equals( homePhoneType ) );
                         if ( homePhone != null )
                         {
-                            pnHome.Text = homePhone.Number;
+                            pnHome.Text = homePhone.NumberFormatted;
                         }
 
                         Guid cellPhoneType = Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE.AsGuid();
@@ -523,11 +528,11 @@ namespace RockWeb.Blocks.Groups
                             .FirstOrDefault( n => n.NumberTypeValue.Guid.Equals( cellPhoneType ) );
                         if ( cellPhone != null )
                         {
-                            pnCell.Text = cellPhone.Number;
+                            pnCell.Text = cellPhone.NumberFormatted;
                             cbSms.Checked = cellPhone.IsMessagingEnabled;
                         }
 
-                        var homeAddress = person.GetHomeLocation();
+                        var homeAddress = person.GetHomeLocation( _rockContext );
                         if ( homeAddress != null )
                         {
                             acAddress.SetValues( homeAddress );
@@ -546,7 +551,7 @@ namespace RockWeb.Blocks.Groups
                                     .FirstOrDefault( n => n.NumberTypeValue.Guid.Equals( cellPhoneType ) );
                                 if ( spouseCellPhone != null )
                                 {
-                                    pnSpouseCell.Text = spouseCellPhone.Number;
+                                    pnSpouseCell.Text = spouseCellPhone.NumberFormatted;
                                     cbSpouseSms.Checked = spouseCellPhone.IsMessagingEnabled;
                                 }
                             }
@@ -652,13 +657,14 @@ namespace RockWeb.Blocks.Groups
 
             _married = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_MARITAL_STATUS_MARRIED.AsGuid() );
             _homeAddressType = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME.AsGuid() );
+            _previousAddressType = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_PREVIOUS.AsGuid() );
             _familyType = GroupTypeCache.Read( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY.AsGuid() );
             _adultRole = _familyType.Roles.FirstOrDefault( r => r.Guid.Equals( Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_ADULT.AsGuid() ) );
 
-            if ( _married == null || _homeAddressType == null || _familyType == null || _adultRole == null )
+            if ( _married == null || _homeAddressType == null || _familyType == null || _adultRole == null || _previousAddressType == null )
             {
                 nbNotice.Heading = "Missing System Value";
-                nbNotice.Text = "<p>There is a missing or invalid system value. Check the settings for Marital Status of 'Married', Location Type of 'Home', Group Type of 'Family', and Family Group Role of 'Adult'.</p>";
+                nbNotice.Text = "<p>There is a missing or invalid system value. Check the settings for Marital Status of 'Married', Location Type of 'Home' and 'Previous', Group Type of 'Family', and Family Group Role of 'Adult'.</p>";
                 return false;
             }
 
@@ -690,37 +696,33 @@ namespace RockWeb.Blocks.Groups
                 {
                     oldPhoneNumber = phoneNumber.NumberFormattedWithCountryCode;
                 }
-
-                phoneNumber.CountryCode = PhoneNumber.CleanNumber( pnbNumber.CountryCode );
-                phoneNumber.Number = PhoneNumber.CleanNumber( pnbNumber.Number );
-
-                if ( string.IsNullOrWhiteSpace( phoneNumber.Number ) )
+                
+                // if they put a valid phone number, update / add what they have on record.
+                // If they left it blank, don't do anything. It's possible they have a number in our system and
+                // just didn't bother typing it in again.
+                string cleanNumber = PhoneNumber.CleanNumber( pnbNumber.Number );
+                if ( string.IsNullOrWhiteSpace( cleanNumber ) == false )
                 {
-                    if ( phoneNumber.Id > 0 )
-                    {
-                        new PhoneNumberService( rockContext ).Delete( phoneNumber );
-                        person.PhoneNumbers.Remove( phoneNumber );
-                    }
-                }
-                else
-                {
+                    phoneNumber.CountryCode = PhoneNumber.CleanNumber( pnbNumber.CountryCode );
+                    phoneNumber.Number = cleanNumber;
+
                     if ( phoneNumber.Id <= 0)
                     {
                         person.PhoneNumbers.Add( phoneNumber );
                     }
-                    if ( cbSms != null && cbSms.Checked )
+
+                    // let them toggle their SMS preference
+                    if ( cbSms != null )
                     {
-                        phoneNumber.IsMessagingEnabled = true;
+                        phoneNumber.IsMessagingEnabled = cbSms.Checked;
                         person.PhoneNumbers
                             .Where( n => n.NumberTypeValueId != phoneType.Id )
                             .ToList()
                             .ForEach( n => n.IsMessagingEnabled = false );
                     }
-                }
 
-                History.EvaluateChange( changes,
-                    string.Format( "{0} Phone", phoneType.Value ),
-                    oldPhoneNumber, phoneNumber.NumberFormattedWithCountryCode );
+                    History.EvaluateChange( changes, string.Format( "{0} Phone", phoneType.Value ), oldPhoneNumber, phoneNumber.NumberFormattedWithCountryCode );
+                }
             }
         }
 
