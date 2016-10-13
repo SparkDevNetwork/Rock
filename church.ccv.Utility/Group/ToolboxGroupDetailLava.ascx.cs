@@ -56,10 +56,10 @@ namespace church.ccv.Utility.Groups
         public abstract DayOfWeekPicker DayOfWeekPicker { get; }
         public abstract TimePicker MeetingTime { get; }
 
-        public abstract TextBox GroupName { get; }
-        public abstract TextBox GroupDesc { get; }
+        public abstract Literal GroupName { get; }
+        //public abstract TextBox GroupDesc { get; }
 
-        public abstract CheckBox IsActive { get; }
+        //public abstract CheckBox IsActive { get; }
 
         protected int _groupId { get; set; }
 
@@ -188,9 +188,9 @@ namespace church.ccv.Utility.Groups
 
             if ( group != null && group.IsAuthorized( Authorization.EDIT, CurrentPerson ) )
             {
-                group.Name = GroupName.Text;
-                group.Description = GroupDesc.Text;
-                group.IsActive = IsActive.Checked;
+                //group.Name = GroupName.Text;
+                //group.Description = GroupDesc.Text;
+                //group.IsActive = IsActive.Checked;
 
                 if ( Schedule.Visible )
                 {
@@ -352,9 +352,9 @@ namespace church.ccv.Utility.Groups
 
                 if ( group.IsAuthorized( Authorization.EDIT, CurrentPerson ) )
                 {
-                    GroupName.Text = group.Name;
-                    GroupDesc.Text = group.Description;
-                    IsActive.Checked = group.IsActive;
+                    GroupName.Text = "<h1 class=\"margin-t-sm\">" + group.Name + "</h1>";
+                    //GroupDesc.Text = group.Description;
+                    //IsActive.Checked = group.IsActive;
 
                     if ( ( group.GroupType.AllowedScheduleTypes & ScheduleType.Weekly ) == ScheduleType.Weekly )
                     {

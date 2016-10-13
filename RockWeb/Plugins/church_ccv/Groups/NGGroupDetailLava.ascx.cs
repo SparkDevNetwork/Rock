@@ -136,9 +136,9 @@ namespace RockWeb.Plugins.church_ccv.Groups
         public override DayOfWeekPicker DayOfWeekPicker { get { return dowWeekly; } }
         public override TimePicker MeetingTime { get { return timeWeekly; } }
                
-        public override TextBox GroupName { get { return tbName; } }
-        public override TextBox GroupDesc { get { return tbDescription; } }
-        public override CheckBox IsActive { get { return cbIsActive; } }
+        public override Literal GroupName { get { return tbName; } }
+        //public override TextBox GroupDesc { get { return tbDescription; } }
+        //public override CheckBox IsActive { get { return cbIsActive; } }
 
         const int NG_GroupRole_Member = 132;
     
