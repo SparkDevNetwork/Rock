@@ -14,7 +14,7 @@ function geoDistance(lat1, lng1, lat2, lng2, unit) {
   return dist
 }
 
-function findNearestLocation(current, locations) {
+function findNearestFromQuery(current, locations) {
   var lowest = Number.POSITIVE_INFINITY
   var nearest = {}
   for (var i = 0; i < locations.length; i++) {
@@ -28,14 +28,31 @@ function findNearestLocation(current, locations) {
   return nearest
 }
 
-function useNearestLocation(data) {
-  var nearest = findNearestLocation(data, campusFundLocations)
+function setFundTo(fundId) {
   if (giveForm.fund == '')
-    giveForm.fund = nearest.account.Id
+    giveForm.fund = fundId
 }
 
-$.getJSON('https://freegeoip.net/json/', function (data) {
-  // If freegeoip cannot properly geocode, then city will be blank.
-  if (data.city != "")
-    useNearestLocation(data);
-})
+function useNearestLocation(data) {
+  var nearest = findNearestFromQuery(data, campusFundLocations)
+  setFundTo(nearest.account.Id)
+}
+
+function setFundToNearestLocation() {
+  $.getJSON('https://freegeoip.net/json/', function (data) {
+    // If freegeoip cannot properly geocode, then city will be blank.
+    if (data.city != "")
+      useNearestLocation(data);
+  })
+}
+
+function setFundToCurrentCampus() {
+  var fund = givingFunds.filter(function(fund) { return fund.campus == currentCampusId })[0]
+  setFundTo(fund.value)
+}
+
+if (currentCampusId) {
+  setFundToCurrentCampus()
+} else {
+  setFundToNearestLocation()
+}

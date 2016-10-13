@@ -82,6 +82,8 @@ namespace RockWeb.Plugins.church_ccv.Finance
         /// </value>
         public string CampusFundLocationsJSON { get; set; }
 
+        public string CurrentCampusId { get; set; }
+
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
         /// </summary>
@@ -198,8 +200,12 @@ namespace RockWeb.Plugins.church_ccv.Finance
                 } );
 
             // these are needed for the Location Detector and FundSetter js to work
-            this.GivingFundsJSON = accounts.Select( a => new { value = a.AccountId, text = a.Name } ).ToJson();
+            this.GivingFundsJSON = accounts.Select( a => new { value = a.AccountId, text = a.Name, campus = a.CampusId } ).ToJson();
             this.CampusFundLocationsJSON = campusFundLocations.ToJson();
+            var campusEntityType = EntityTypeCache.Read(typeof(Campus));
+            var currentCampus = RockPage.GetCurrentContext(campusEntityType) as Campus;
+            if (currentCampus != null)
+                this.CurrentCampusId = currentCampus.Id.ToString();
 
             ddlAccounts.Items.Clear();
             foreach ( var account in accounts )

@@ -218,6 +218,8 @@
 
             // based on their location, pick the default fund
             var campusFundLocations = <%= this.CampusFundLocationsJSON %>;
+
+            <%= this.CurrentCampusId != null ? "var currentCampusId = " + this.CurrentCampusId + ";" : "" %>
         </script>
 
         <script src="<%= RockPage.ResolveRockUrl( "~/Plugins/church_ccv/Finance/scripts/vendor.js", true ) %>"></script>
