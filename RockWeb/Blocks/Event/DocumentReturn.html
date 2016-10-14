@@ -2,6 +2,13 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
     <title></title>
+    <script>
+        // This handles the callback when SignNow redirects back to Rock.
+        if (window.opener && window.opener.processIframeReturn) {
+            window.opener.processIframeReturn(window.location.search);
+            window.close();
+        }
+    </script>
 </head>
 <body>
 </body>
