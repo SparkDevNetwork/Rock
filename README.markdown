@@ -28,6 +28,8 @@ A community of developers led by the [Spark Development Network](http://www.spar
 
 ## NewSpring VM
 
+The VMDK file you should've received can be run in VirtualBox, Fusion, or Parallels.
+
 The default Rock install is hosted at http://rock.dev and you can use IIS Manager to control access to it.
 
 If you need to debug some code, open Visual Studio and click the green arrow to compile and attach the web project.
@@ -39,6 +41,10 @@ If you don't need to debug anything, you can develop themes or change code in th
 C:\Rock\RockWeb has a web.connectionstrings.config that defines attachments to multiple servers.  The only one you'll probably need is local, which is `.\SQL` (shorthand for `localhost\SQL`).
 
 You can connect to the local or remote server in SQL Management Studio to write specific queries or adjust SQL settings.
+
+## Maintenance
+
+From time to time you should probably run C:\Code\FreeSpace.bat to clear out old files and keep your Windows install trimmed down.  This will also defrag your unused space, which allows you to shrink the disk from Fusion/VB after you shut the OS down.
 
 ## The New VM Checklist
 
