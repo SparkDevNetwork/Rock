@@ -4,7 +4,7 @@
 
 Rock RMS is an open source Relationship Management System (RMS) and Application 
 Framework. While Rock specializes in serving the unique needs of churches it's
-useful in a wide range of service industries.  Rock is an ASP.NET 4.5 C# web application
+useful in a wide range of service industries.  Rock is an ASP.NET 4.6 C# web application
 that uses Entity Framework 6.0, jQuery, Bootstrap 3, and many other open source libraries.
 
 Our main developer starting point site is [the wiki](https://github.com/SparkDevNetwork/Rock/wiki).
@@ -25,3 +25,25 @@ Rock released under the [Rock Community License](http://www.rockrms.com/license)
 ## Crafted By
 
 A community of developers led by the [Spark Development Network](http://www.sparkdevnetwork.com/).
+
+## NewSpring VM
+
+The default Rock install is hosted at http://rock.dev and you can use IIS Manager to control access to it.
+
+If you need to debug some code, open Visual Studio and click the green arrow to compile and attach the web project.
+
+If you don't need to debug anything, you can develop themes or change code in the running site: C:\code\rock\RockWeb.
+
+## Connections
+
+C:\Rock\RockWeb has a web.connectionstrings.config that defines attachments to multiple servers.  The only one you'll probably need is local, which is `.\SQL` (shorthand for `localhost\SQL`).
+
+You can connect to the local or remote server in SQL Management Studio to write specific queries or adjust SQL settings.
+
+## The New VM Checklist
+
+- [ ] Set minimum CPU processors to 2 
+- [ ] Set minimum RAM at 4GB
+- [ ] Update your [git config](https://git-scm.com/book/en/v2/Getting-Started-First-Time-Git-Setup) using Git Bash
+- [ ] Create your first Pull Request 
+- [ ] 
