@@ -477,7 +477,7 @@ namespace RockWeb.Blocks.Finance
                     }
 
                     var lTransactionImage = e.Row.FindControl( "lTransactionImage" ) as Literal;
-                    if ( lTransactionImage != null )
+                    if ( lTransactionImage != null && lTransactionImage.Visible )
                     {
                         var firstImage = txn.Images.FirstOrDefault();
                         if ( firstImage != null )
