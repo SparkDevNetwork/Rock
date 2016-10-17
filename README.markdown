@@ -26,7 +26,7 @@ Rock released under the [Rock Community License](http://www.rockrms.com/license)
 
 A community of developers led by the [Spark Development Network](http://www.sparkdevnetwork.com/).
 
-## NewSpring VM
+## Running the VM
 
 The VMDK file you should've received can be run in VirtualBox, Fusion, or Parallels.
 
@@ -46,10 +46,14 @@ You can connect to the local or remote server in SQL Management Studio to write 
 
 From time to time you should probably run `C:\Code\FreeSpace.bat` to clear out old files and keep your Windows install trimmed down.  This will also defrag your unused space, which allows you to shrink the disk from Fusion/VB after you shut the OS down.
 
-## The New VM Checklist
+## VM Checklist
 
 - [ ] Set minimum CPU processors to 2 
 - [ ] Set minimum RAM at 4GB
 - [ ] Update your [git config](https://git-scm.com/book/en/v2/Getting-Started-First-Time-Git-Setup) using Git Bash
 - [ ] Create your first Pull Request 
-- [ ] 
+- [ ] Start with some plugins: [CodeMaid](https://visualstudiogallery.msdn.microsoft.com/76293c4d-8c16-4f4a-aee6-21f83a571496), [GhostDoc](https://visualstudiogallery.msdn.microsoft.com/46A20578-F0D5-4B1E-B55D-F001A6345748) and the [Gulp docs](https://webtooling.visualstudio.com/task-runners/gulp/)
+
+## MOAR DOCS
+
+Take a peek at the Rock [Developer 101](http://www.rockrms.com/Rock/Developer/BookContent/16/16) book to get started.
