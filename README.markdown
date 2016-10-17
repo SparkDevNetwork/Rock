@@ -50,12 +50,14 @@ From time to time you should probably run `C:\Code\FreeSpace.bat` to clear out o
 
 ## VM Checklist
 
+- [ ] Create a new Windows 10 x64 machine
+- [ ] Select an existing hard disk (VMDK)
 - [ ] Set minimum CPU processors to 2 
 - [ ] Set minimum RAM at 4GB
 - [ ] Update your [git config](https://git-scm.com/book/en/v2/Getting-Started-First-Time-Git-Setup) using Git Bash
 - [ ] Create your first Pull Request 
 - [ ] Start with some plugins: [CodeMaid](https://visualstudiogallery.msdn.microsoft.com/76293c4d-8c16-4f4a-aee6-21f83a571496), [GhostDoc](https://visualstudiogallery.msdn.microsoft.com/46A20578-F0D5-4B1E-B55D-F001A6345748) and the [Gulp docs](https://webtooling.visualstudio.com/task-runners/gulp/)
 
-## MOAR DOCS
+## MOAR?
 
 Take a peek at the Rock [Developer 101](http://www.rockrms.com/Rock/Developer/BookContent/16/16) book to get started.
