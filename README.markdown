@@ -38,9 +38,11 @@ If you don't need to debug anything, you can develop themes or change code in th
 
 ## Connections
 
-C:\Rock\RockWeb has a `web.connectionstrings.config` that defines attachments to multiple servers.  The only one you'll probably need is local, which is `.\SQL` (shorthand for `localhost\SQL`).
+C:\Rock\RockWeb has a `web.connectionstrings.config` that defines attachments to multiple servers.  The only one you'll probably need is local, which is `.\SQL` (shorthand for `localhost\SQL`).  
 
-You can connect to the local or remote server in SQL Management Studio to write specific queries or adjust SQL settings.
+``` Note: If you get an error running Nuget or starting the project, make sure your website is set as the startup project (Solution Explorer will display it in bold).  ```
+
+Use SQL Management Studio to connect to local or remote servers for queries or adjusting SQL settings.
 
 ## Maintenance
 
