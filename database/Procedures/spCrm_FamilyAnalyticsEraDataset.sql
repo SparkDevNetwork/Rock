@@ -146,7 +146,7 @@ BEGIN
 				WHERE 
 					pa.[PersonId] IN (SELECT [PersonId] FROM [GroupMember] WHERE [GroupId] = g.[Id] ) 
 					AND a.DidAttend = 1
-					AND a.[StartDateTime] <= @SundayDateStart AND a.[StartDateTime] >= @SundayExitAttendanceDurationLong) AS [ExitAttendanceCountDurationLong]
+					AND a.[StartDateTime] <= @SundayDateStart AND a.[StartDateTime] >= @SundayExitAttendanceDurationLong) AS [ExitAttendanceCountDurationLong]	
 		FROM
 			[Person] p
 			INNER JOIN [GroupMember] gm ON gm.[PersonId] = p.[Id] AND gm.[GroupRoleId] = @AdultRoleId
