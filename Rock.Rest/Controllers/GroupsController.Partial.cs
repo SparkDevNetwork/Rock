@@ -820,16 +820,17 @@ namespace Rock.Rest.Controllers
                         .Where( l => l.Location.GeoFence != null )
                         .Select( l => l.Location ) )
                     {
-                        var familyGuid = Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY.AsGuid();
-                        var activeGuid = Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_ACTIVE.AsGuid();
+                        var familyGroupTypeId = GroupTypeCache.GetFamilyGroupType().Id;
+                        var recordStatusActiveId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_ACTIVE.AsGuid() ).Id;
+                        
                         var families = new GroupLocationService( (RockContext)Service.Context ).Queryable()
                             .Where( l =>
                                 l.IsMappedLocation &&
-                                l.Group.GroupType.Guid.Equals( familyGuid ) &&
+                                l.Group.GroupTypeId == familyGroupTypeId &&
                                 l.Location.GeoPoint.Intersects( location.GeoFence ) &&
                                 l.Group.Members.Any( m =>
-                                    m.Person.RecordStatusValue != null &&
-                                    m.Person.RecordStatusValue.Guid.Equals( activeGuid ) &&
+                                    m.Person.RecordStatusValueId.HasValue &&
+                                    m.Person.RecordStatusValueId == recordStatusActiveId &&
                                     m.Person.ConnectionStatusValueId.HasValue &&
                                     m.Person.ConnectionStatusValueId.Value == statusId ) )
                             .Select( l => new
@@ -839,8 +840,8 @@ namespace Rock.Rest.Controllers
                                 l.Group.Name,
                                 MinStatus = l.Group.Members
                                     .Where( m =>
-                                        m.Person.RecordStatusValue != null &&
-                                        m.Person.RecordStatusValue.Guid.Equals( activeGuid ) &&
+                                        m.Person.RecordStatusValueId.HasValue &&
+                                        m.Person.RecordStatusValueId == recordStatusActiveId &&
                                         m.Person.ConnectionStatusValueId.HasValue )
                                     .OrderBy( m => m.Person.ConnectionStatusValue.Order )
                                     .Select( m => m.Person.ConnectionStatusValue.Id )
