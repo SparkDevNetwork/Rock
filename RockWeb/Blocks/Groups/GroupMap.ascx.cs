@@ -304,6 +304,9 @@ namespace RockWeb.Blocks.Groups
 
         initializeMap();
 
+        // the campuses picker only applies to the connection status checkboxes        
+        $('.js-campuses-picker').hide();
+
         function initializeMap() {{
 
             // Set default map options
@@ -485,6 +488,9 @@ namespace RockWeb.Blocks.Groups
 
                 if ( mapItem.EntityId == {0} ) {{
                     $('.js-connection-status').show();
+                    
+                    // the campuses picker only applies to the connection status checkboxes
+                    $('.js-campuses-picker').show();
                 }}
         
             }}
