@@ -66,7 +66,8 @@ namespace Rock.Jobs
                     (
                         ( !c.FutureSendDateTime.HasValue && c.CreatedDateTime.HasValue && c.CreatedDateTime.Value.CompareTo( beginWindow ) >= 0 && c.CreatedDateTime.Value.CompareTo( endWindow ) <= 0 ) ||
                         ( c.FutureSendDateTime.HasValue && c.FutureSendDateTime.Value.CompareTo( beginWindow ) >= 0 && c.FutureSendDateTime.Value.CompareTo( nowDate ) <= 0 )
-                    ) );
+                    ) )
+                    .OrderBy( c => c.Id);
 
             var exceptionMsgs = new List<string>();
             int communicationsSent = 0;
