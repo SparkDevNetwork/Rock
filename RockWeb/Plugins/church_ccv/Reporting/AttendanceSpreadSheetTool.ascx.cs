@@ -816,6 +816,17 @@ namespace RockWeb.Plugins.church_ccv.Reporting
                 }
             }
 
+
+            DataRow totalsDataRow = dataTable.NewRow();
+            totalsDataRow["GroupName"] = "TOTAL";
+
+            foreach ( var col in dataTable.Columns.OfType<DataColumn>().Where(a => a.DataType == typeof(Int32) ))
+            {
+                totalsDataRow[col] = dataTable.Rows.OfType<DataRow>().Select(a => (int)a[col]).Sum();
+            }
+
+            dataTable.Rows.Add( totalsDataRow );
+
             gHeadcountsExport.ExportFilename = string.Format( "CheckinExport_{0}_{1}", sundayDate.AddDays( -1 ).ToString( "yyyyMMdd" ), sundayDate.ToString( "yyyyMMdd" ) );
             gCheckinAttendanceExport.DataSource = dataTable;
             gCheckinAttendanceExport.DataBind();
