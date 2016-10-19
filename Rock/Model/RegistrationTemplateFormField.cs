@@ -146,6 +146,15 @@ namespace Rock.Model
         [DataMember]
         public int Order { get; set; }
 
+        /// <summary>
+        /// Gets or sets a value indicating whether the field should be shown on a waitlist.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if the field should be shown on a waitlist; otherwise, <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool ShowOnWaitlist { get; set; }
+
         #endregion
 
         #region Virtual Properties
