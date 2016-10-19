@@ -465,35 +465,6 @@ namespace Rock.Model
         [DataMember]
         public bool WaitListEnabled { get; set; }
 
-        /// <summary>
-        /// Gets or sets the waitlist confirmation subject.
-        /// </summary>
-        /// <value>
-        /// The waitlist confirmation subject.
-        /// </value>
-        [DataMember]
-        [MaxLength( 200 )]
-        public string WaitlistConfirmationSubject { get; set; }
-
-        /// <summary>
-        /// Gets or sets the waitlist confirmation email template.
-        /// </summary>
-        /// <value>
-        /// The waitlist confirmation email template.
-        /// </value>
-        [DataMember]
-        public string WaitlistConfirmationEmailTemplate { get; set; }
-
-
-        /// <summary>
-        /// Gets or sets the waitlist confirmation message.
-        /// </summary>
-        /// <value>
-        /// The waitlist confirmation message.
-        /// </value>
-        [DataMember]
-        public string WaitlistConfirmationMessage { get; set; }
-
         #endregion
 
         #region Virtual Properties

@@ -74,6 +74,10 @@
     <Compile Include="Migrations\201610062112535_PhoneNumberReversed.Designer.cs">
       <DependentUpon>201610062112535_PhoneNumberReversed.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201610192126047_WaitlistConfirmationFields.cs" />
+    <Compile Include="Migrations\201610192126047_WaitlistConfirmationFields.Designer.cs">
+      <DependentUpon>201610192126047_WaitlistConfirmationFields.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 6.0\Version 1.6.0\201609282147388_WaitList.cs" />
     <Compile Include="Migrations\Version 6.0\Version 1.6.0\201609282147388_WaitList.Designer.cs">
       <DependentUpon>201609282147388_WaitList.cs</DependentUpon>
@@ -2281,6 +2285,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201610062112535_PhoneNumberReversed.resx">
       <DependentUpon>201610062112535_PhoneNumberReversed.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201610192126047_WaitlistConfirmationFields.resx">
+      <DependentUpon>201610192126047_WaitlistConfirmationFields.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 6.0\Version 1.6.0\201609282147388_WaitList.resx">
       <DependentUpon>201609282147388_WaitList.cs</DependentUpon>

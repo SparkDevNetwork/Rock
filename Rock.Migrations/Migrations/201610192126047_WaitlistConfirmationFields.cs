@@ -29,9 +29,6 @@ namespace Rock.Migrations
         /// </summary>
         public override void Up()
         {
-            AddColumn("dbo.RegistrationTemplate", "WaitlistConfirmationSubject", c => c.String(maxLength: 200));
-            AddColumn("dbo.RegistrationTemplate", "WaitlistConfirmationEmailTemplate", c => c.String());
-            AddColumn("dbo.RegistrationTemplate", "WaitlistConfirmationMessage", c => c.String());
             AddColumn("dbo.RegistrationTemplateFormField", "ShowOnWaitlist", c => c.Boolean(nullable: false));
         }
         
@@ -41,9 +38,6 @@ namespace Rock.Migrations
         public override void Down()
         {
             DropColumn("dbo.RegistrationTemplateFormField", "ShowOnWaitlist");
-            DropColumn("dbo.RegistrationTemplate", "WaitlistConfirmationMessage");
-            DropColumn("dbo.RegistrationTemplate", "WaitlistConfirmationEmailTemplate");
-            DropColumn("dbo.RegistrationTemplate", "WaitlistConfirmationSubject");
         }
     }
 }
