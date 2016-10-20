@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Web.UI;
 using System.Web.UI.WebControls;
@@ -136,17 +137,12 @@ namespace RockWeb.Plugins.church_ccv.Finance
             if ( CurrentPerson != null )
             {
                 hfFullName.Value = CurrentPerson.FullName;
-                hfHideFullNameInput.Value = "1";
-                lFullName.Text = string.Format( "<label class='form-control-static js-static-fullname'>{0}</label>", CurrentPerson.FullName );
                 tbFirstName.Value = CurrentPerson.FirstName;
                 tbLastName.Value = CurrentPerson.LastName;
                 tbEmail.Value = CurrentPerson.Email;
             }
-            else
-            {
-                hfHideFullNameInput.Value = "0";
-                lFullName.Visible = false;
-            }
+
+            pnlSplitNameInputs.Style["display"] = CurrentPerson == null ? "none" : "";
 
             LoadDropDowns();
         }
@@ -202,12 +198,15 @@ namespace RockWeb.Plugins.church_ccv.Finance
             // these are needed for the Location Detector and FundSetter js to work
             this.GivingFundsJSON = accounts.Select( a => new { value = a.AccountId, text = a.Name, campus = a.CampusId } ).ToJson();
             this.CampusFundLocationsJSON = campusFundLocations.ToJson();
-            var campusEntityType = EntityTypeCache.Read(typeof(Campus));
-            var currentCampus = RockPage.GetCurrentContext(campusEntityType) as Campus;
-            if (currentCampus != null)
+            var campusEntityType = EntityTypeCache.Read( typeof( Campus ) );
+            var currentCampus = RockPage.GetCurrentContext( campusEntityType ) as Campus;
+            if ( currentCampus != null )
                 this.CurrentCampusId = currentCampus.Id.ToString();
 
             ddlAccounts.Items.Clear();
+
+            // add blank option first
+            ddlAccounts.Items.Add( new ListItem() );
             foreach ( var account in accounts )
             {
                 ddlAccounts.Items.Add( new ListItem( account.Name, account.AccountId.ToString() ) );
@@ -550,7 +549,7 @@ namespace RockWeb.Plugins.church_ccv.Finance
             var errorMessages = new List<string>();
 
             // Validate that an amount was entered
-            if ( (amount ?? 0) == 0 )
+            if ( ( amount ?? 0 ) == 0 )
             {
                 errorMessages.Add( "Make sure you've entered an amount." );
             }
@@ -578,6 +577,32 @@ namespace RockWeb.Plugins.church_ccv.Finance
                 }
             }
 
+            if ( ddlAccounts.SelectedValue.AsIntegerOrNull() == null )
+            {
+                errorMessages.Add( "Make sure to select a fund." );
+            }
+
+            /* check lengths of inputs. the client also limits these, but just in case */
+            if ( !string.IsNullOrEmpty( tbFirstName.Value ) && tbFirstName.Value.Length > 50 )
+            {
+                errorMessages.Add( "The value for First Name is limited to 50 characters" );
+            }
+
+            if ( !string.IsNullOrEmpty( tbLastName.Value ) && tbLastName.Value.Length > 50 )
+            {
+                errorMessages.Add( "The value for Last Name is limited to 50 characters" );
+            }
+            
+            if ( !string.IsNullOrEmpty( tbStreet.Value ) && tbStreet.Value.Length > 100 )
+            {
+                errorMessages.Add( "The value for Street is limited to 100 characters" );
+            }
+
+            if ( !string.IsNullOrEmpty( tbCity.Value ) && tbCity.Value.Length > 50 )
+            {
+                errorMessages.Add( "The value for City is limited to 50 characters" );
+            }
+
             if ( CurrentPerson == null && ( string.IsNullOrWhiteSpace( tbFirstName.Value ) || string.IsNullOrWhiteSpace( tbLastName.Value ) ) )
             {
                 errorMessages.Add( "Make sure to enter both a first and last name." );
@@ -586,6 +611,15 @@ namespace RockWeb.Plugins.church_ccv.Finance
             if ( string.IsNullOrWhiteSpace( tbEmail.Value ) )
             {
                 errorMessages.Add( "Make sure to enter a valid email address.  An email address is required for us to send you a payment confirmation." );
+            }
+
+            var emailRegex = typeof( Rock.Model.Person ).GetProperty( "Email" ).GetCustomAttribute<System.ComponentModel.DataAnnotations.RegularExpressionAttribute>();
+            if ( emailRegex != null && !string.IsNullOrEmpty( emailRegex.Pattern ) )
+            {
+                if ( !System.Text.RegularExpressions.Regex.IsMatch( tbEmail.Value, emailRegex.Pattern ) )
+                {
+                    errorMessages.Add( "Make sure to enter a valid email address." );
+                }
             }
 
             if ( rblSavedAccount.SelectedValue.AsInteger() == 0 )

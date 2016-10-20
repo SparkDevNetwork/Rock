@@ -95,6 +95,7 @@ var giveForm = new Vue({
         refreshNameSplit: function () {
             this.showSplitNameField = (this.lastName.length > 0)
             $('#givingForm .js-input-fullname').toggle(!this.showSplitNameField);
+            $('#givingForm .js-splitname-inputs').toggle(this.showSplitNameField);
         },
 
         resetData: function () {
@@ -117,19 +118,7 @@ var giveForm = new Vue({
 })
 
 Sys.Application.add_load(function () {
-
-    if ($('#givingForm .js-hide-full-input').val() == "1") {
-        $('#givingForm .js-input-fullname').hide();
-        giveForm.lastName = $('#givingForm .js-static-fullname').text()
-    } else {
-        if ($('#givingForm .js-splitname-inputs').length) {
-            $('#givingForm .js-splitname-inputs').show();
-        }
-        else {
-            $('#givingForm .js-input-fullname').show();
-        }
-    }
-
+    giveForm.refreshNameSplit();
     var isMobile = {
         Windows: function () {
             return /IEMobile/i.test(navigator.userAgent);
