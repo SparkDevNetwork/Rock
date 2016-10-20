@@ -62,10 +62,7 @@ namespace RockWeb.Plugins.church_ccv.Steps
             WeekendAttendance
         };
         public DashboardView DashboardViewState { get; set; }
-
-        //JHM Hack 7-12-2016: This temporarily flags Student Giving as TBD. Once they define the criteria, we can
-        // remove this and it'll work gracefully with the rest of the measures.
-        int _givingMeasureId = 6;
+        
         #endregion
 
         #region Properties
@@ -99,9 +96,22 @@ namespace RockWeb.Plugins.church_ccv.Steps
         {
             base.OnLoad( e );
 
+            // on a page load, whether a postback or not, sync the dashboard view state and set the button
+            DashboardView dbViewState = DashboardView.Adults;
+            if ( ViewState["DashboardView"] != null )
+            {
+                dbViewState = (DashboardView) ViewState["DashboardView"];
+            }
+            else if ( Request["DashboardView"] != null )
+            {
+                dbViewState = Request["DashboardView"].ConvertToEnum<DashboardView>( );
+            }
+            SetDashboardView( dbViewState );
+
+            // if NOT a postback, they basically hit refresh, so load the page with default settings
             if ( !Page.IsPostBack )
             {
-                cpCampus.Campuses = CampusCache.All();
+                cpCampus.Campuses = CampusCache.All( false );
 
                 MeasureDate = Request["Date"].AsDateTime();
 
@@ -118,28 +128,20 @@ namespace RockWeb.Plugins.church_ccv.Steps
 
                 if ( !string.IsNullOrWhiteSpace( GetAttributeValue( "ComparisonLabel" ) ) )
                 {
-                    lComparisonLegend.Text = string.Format("<div class='well text-center margin-t-md'><span style='border-right: 1px solid {0}; height: 5px; margin-right: 8px;'></span> <small>{1}</small></div>", _compareColor, GetAttributeValue( "ComparisonLabel" ));
+                    lComparisonLegend.Text = string.Format("<div class='well text-center margin-t-md'><span style='border-right: 1px solid {0}; height: 5px; margin-right: 8px;'></span> {1}</div>", _compareColor, GetAttributeValue( "ComparisonLabel" ));
                 }
 
                 var dateIndex = RockDateTime.Now == RockDateTime.Now.SundayDate() ? RockDateTime.Now.SundayDate() : RockDateTime.Now.SundayDate().AddDays(-7);
 
-                for ( int i= 0; i < 12; i++ ){
+                for ( int i= 0; i < 12; i++ )
+                {
                     ddlSundayDates.Items.Add( dateIndex.ToShortDateString() );
                     dateIndex = dateIndex.AddDays( -7 );
                 }
 
                 ddlSundayDates.Items.Insert( 0, "" );
 
-                // set the correct render state
-                DashboardView dbViewState;
-                if( Enum.TryParse<DashboardView>( Request["Viewing"], out dbViewState ) )
-                {
-                    SetDashboardView( dbViewState );
-                }
-                else
-                {
-                    SetDashboardView( DashboardView.Adults );
-                }
+                UpdatePresentedView( );
             }
         }
 
@@ -166,8 +168,7 @@ namespace RockWeb.Plugins.church_ccv.Steps
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void cpCampus_SelectedIndexChanged( object sender, EventArgs e )
         {
-            MeasureDate = Request["Date"].AsDateTime();
-            LoadCampusItems( MeasureDate );
+            UpdatePresentedView( );
         }
 
         /// <summary>
@@ -177,15 +178,7 @@ namespace RockWeb.Plugins.church_ccv.Steps
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnBackToCampus_Click( object sender, EventArgs e )
         {
-            if ( !string.IsNullOrWhiteSpace( Request["CompareTo"] ) )
-            {
-                Response.Redirect( Request.Url.LocalPath + "?CompareTo=" + Request["CompareTo"].ToString() + "&Viewing=" + DashboardViewState.ToString( ) );
-            }
-            else
-            {
-                Response.Redirect( Request.Url.LocalPath + "?Viewing=" + DashboardViewState.ToString( ) );
-            }
-            
+            HandleRedirect( false );
         }
 
         /// <summary>
@@ -195,29 +188,148 @@ namespace RockWeb.Plugins.church_ccv.Steps
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void lbSetDate_Click( object sender, EventArgs e )
         {
+            HandleRedirect( true );
+        }
+
+        protected void bbtnView_Click( object sender, EventArgs e )
+        {
+            switch( (sender as BootstrapButton).ID )
+            {
+                case "bsAdults":
+                {
+                    SetDashboardView( DashboardView.Adults );
+                    break;
+                }
+
+                case "bsStudents":
+                {
+                    SetDashboardView( DashboardView.Students );
+                    break;
+                }
+
+                case "bsWeekendAttendance":
+                {
+                    SetDashboardView( DashboardView.WeekendAttendance );
+                    break;
+                }
+            }
+
+            UpdatePresentedView( );
+        }
+        #endregion
+
+        #region Methods
+
+        private void HandleRedirect( bool remainOnCurrentView )
+        {
+            // this will call Response.Redirect and preserve our state in query params
+
+            // we'll always want the dashboard view
+            string queryParams = "?DashboardView=" + DashboardViewState.ToString( );
+            
+
+            // add the date
             string date = string.Empty;
 
-            if ( !string.IsNullOrWhiteSpace( ddlSundayDates.SelectedValue ) )
+            // did the drop down have a date?
+            if ( string.IsNullOrWhiteSpace( ddlSundayDates.SelectedValue ) == false )
             {
                 date = ddlSundayDates.SelectedValue;
             }
             else
             {
-                date = dpSundayPicker.Text.AsDateTime().HasValue ? dpSundayPicker.Text.AsDateTime().Value.SundayDate().ToShortDateString() : string.Empty;
+                // no, so either take the manually picked time, or use whatever the last date was
+                date = dpSundayPicker.Text.AsDateTime().HasValue ? dpSundayPicker.Text.AsDateTime().Value.SundayDate().ToShortDateString() : hlDate.Text;
+            }
+            queryParams += "&Date=" + date;
+
+
+            // and see if we should add "CompareTo"
+            if ( string.IsNullOrWhiteSpace( Request["CompareTo"] ) == false )
+            {
+                queryParams += "&CompareTo=" + Request [ "CompareTo" ].ToString( );
             }
 
-            if ( !string.IsNullOrWhiteSpace( date ) )
+
+            // if this is true, we want to preserve MeasureId if it exists, so that we stay on
+            // our current page. If it's false, this will implicitely return us to the "All Steps" page.
+            if( remainOnCurrentView == true )
             {
-                Response.Redirect( Request.Url.LocalPath + "?Date=" + date + "&Viewing=" + DashboardViewState.ToString( ) );
+                // now check for a measure ID
+                if ( string.IsNullOrWhiteSpace( Request [ "MeasureId" ] ) == false )
+                {
+                    queryParams += "&MeasureId=" + Request [ "MeasureId" ];
+                }
+            }
+
+            Response.Redirect( Request.Url.LocalPath + queryParams );
+        }
+
+        private void SetDashboardView( DashboardView viewState )
+        {
+            // sets the state and updates the button
+
+            // set the state that should render
+            DashboardViewState = viewState;
+            ViewState["DashboardView"] = viewState;
+            
+            // default all buttons to off
+            bsAdults.CssClass = ToggleButtonOffCSSClass;
+            bsStudents.CssClass = ToggleButtonOffCSSClass;
+            bsWeekendAttendance.CssClass = ToggleButtonOffCSSClass;
+
+            // set the appropriate button and state
+            switch( viewState )
+            {
+                case DashboardView.Adults:
+                {
+                    bsAdults.CssClass = ToggleButtonOnCSSClass;
+                    break;
+                }
+
+                case DashboardView.Students:
+                {
+                    bsStudents.CssClass = ToggleButtonOnCSSClass;   
+                    break;
+                }
+
+                case DashboardView.WeekendAttendance:
+                {
+                    bsWeekendAttendance.CssClass = ToggleButtonOnCSSClass;
+                    break;
+                }
             }
         }
 
-        #endregion
-
-        #region Methods
-
-        private void LoadCampusItems(DateTime? selectedDate = null)
+        private void UpdatePresentedView( )
         {
+            // renders either the "all steps" view, or the "single step" view, depending on
+            // what's requested.
+
+            // set and render the page
+            MeasureDate = Request["Date"].AsDateTime();
+
+            // If there's no "MeasureId", they want to see the campus overview with all stats
+            if ( string.IsNullOrWhiteSpace( Request["MeasureId"] ))
+            {
+                pnlCampus.Visible = true;
+                pnlMeasure.Visible = false;
+
+                Present_AllSteps_View(MeasureDate);
+            }
+            else
+            {
+                // otherwise, display it for a particular step (Baptisms, Giving, etc.)
+                pnlCampus.Visible = false;
+                pnlMeasure.Visible = true;
+                
+                Present_SingleStep_View(MeasureDate);
+            }
+        }
+
+        private void Present_AllSteps_View(DateTime? selectedDate = null)
+        {
+            // builds the UI for viewing all the steps at once. This can show the steps for "All Campuses" or an individual campus.
             using(RockContext rockContext = new RockContext() )
             {
                 StepMeasureValueService stepMeasureValueService = new StepMeasureValueService( rockContext );
@@ -262,6 +374,7 @@ namespace RockWeb.Plugins.church_ccv.Steps
                                         m.SundayDate == measureDate
                                         && m.StepMeasure.IsActive == true 
                                         && m.PastorPersonAliasId == null
+                                        && m.StepMeasure.IsTbd == false
                                         && m.ActiveAdults != null)
                                 .OrderBy( m => m.StepMeasure.Order )
                                 .Select( m => new MeasureSummary
@@ -283,6 +396,7 @@ namespace RockWeb.Plugins.church_ccv.Steps
                                         m.SundayDate == historicalMeasureDate
                                         && m.StepMeasure.IsActive == true
                                         && m.PastorPersonAliasId == null
+                                        && m.StepMeasure.IsTbd == false
                                         && m.ActiveAdults != null )
                                 .OrderBy( m => m.StepMeasure.Order )
                                 .Select( m => new MeasureSummary
@@ -303,6 +417,7 @@ namespace RockWeb.Plugins.church_ccv.Steps
                                         m.SundayDate == measureDate
                                         && m.StepMeasure.IsActive == true 
                                         && m.PastorPersonAliasId == null
+                                        && m.StepMeasure.IsTbd == false
                                         && m.ActiveStudents != null)
                                 .OrderBy( m => m.StepMeasure.Order )
                                 .Select( m => new MeasureSummary
@@ -324,6 +439,7 @@ namespace RockWeb.Plugins.church_ccv.Steps
                                         m.SundayDate == historicalMeasureDate
                                         && m.StepMeasure.IsActive == true
                                         && m.PastorPersonAliasId == null
+                                        && m.StepMeasure.IsTbd == false
                                         && m.ActiveStudents != null )
                                 .OrderBy( m => m.StepMeasure.Order )
                                 .Select( m => new MeasureSummary
@@ -334,11 +450,6 @@ namespace RockWeb.Plugins.church_ccv.Steps
                                     CampusId = m.CampusId
                                 } )
                                 .ToList();
-
-                                //JHM Hack 7-12-2016: This temporarily flags Student Giving as TBD. Once they define the criteria, we can
-                                // remove this and it'll work gracefully with the rest of the measures.
-                                historicalMeasures.Where( hm => hm.MeasureId == _givingMeasureId ).ToList( ).ForEach( hm => hm.IsTbd = true );
-                                latestMeasures.Where( lm => lm.MeasureId == _givingMeasureId ).ToList( ).ForEach( lm => lm.IsTbd = true );
                             break;
                         }
 
@@ -349,6 +460,7 @@ namespace RockWeb.Plugins.church_ccv.Steps
                                         m.SundayDate == measureDate
                                         && m.StepMeasure.IsActive == true
                                         && m.PastorPersonAliasId == null 
+                                        && m.StepMeasure.IsTbd == false
                                         && m.WeekendAttendance != null)
                                 .OrderBy( m => m.StepMeasure.Order )
                                 .Select( m => new MeasureSummary
@@ -370,6 +482,7 @@ namespace RockWeb.Plugins.church_ccv.Steps
                                         m.SundayDate == historicalMeasureDate
                                         && m.StepMeasure.IsActive == true
                                         && m.PastorPersonAliasId == null
+                                        && m.StepMeasure.IsTbd == false
                                         && m.WeekendAttendance != null )
                                 .OrderBy( m => m.StepMeasure.Order )
                                 .Select( m => new MeasureSummary
@@ -431,103 +544,31 @@ namespace RockWeb.Plugins.church_ccv.Steps
                         combinedValues = combinedValues.Where( m => m.CampusId == cpCampus.SelectedCampusId ).ToList();
                     }
 
+                    // if there aren't any values, warn the user
                     if (combinedValues.Count() == 0 )
                     {
                         nbMessages.Text = "No measures found for selected date.";
                         nbMessages.NotificationBoxType = NotificationBoxType.Info;
                     }
+                    else
+                    {
+                        // since we have values, hide the warning message
+                        nbMessages.Text = string.Empty;
 
+                        // and take the divider (either the number of active people, or total weekend attendance).
+                        // It doesn't matter which of the values we take it from, as they all use the same divider.
+                        lMeasureCompareValueSum.Text = "<b>" + string.Format( "{0:n0}", combinedValues.First( ).MeasureCompareValue ) + "</b>";
+                    }
+                    
                     rptCampusMeasures.DataSource = combinedValues;
                     rptCampusMeasures.DataBind();
                 }
             }
         }
-        
-        protected void bbtnView_Click( object sender, EventArgs e )
+
+        private void Present_SingleStep_View(DateTime? selectedDate = null)
         {
-            switch( (sender as BootstrapButton).ID )
-            {
-                case "bsAdults":
-                {
-                    SetDashboardView( DashboardView.Adults );
-                    break;
-                }
-
-                case "bsStudents":
-                {
-                    SetDashboardView( DashboardView.Students );
-                    break;
-                }
-
-                case "bsWeekendAttendance":
-                {
-                    SetDashboardView( DashboardView.WeekendAttendance );
-                    break;
-                }
-            }
-        }
-
-        private void SetDashboardView( DashboardView viewState )
-        {
-            // set the state that should render
-            DashboardViewState = viewState;
-
-            // update the view button
-            ToggleViewButton( DashboardViewState );
-
-            // set and render the page
-            MeasureDate = Request["Date"].AsDateTime();
-
-            // If there's no "MeasureId", they want to see the campus overview with all stats
-            if ( string.IsNullOrWhiteSpace( Request["MeasureId"] ))
-            {
-                pnlCampus.Visible = true;
-                pnlMeasure.Visible = false;
-
-                LoadCampusItems(MeasureDate);
-            }
-            else
-            {
-                // otherwise, display it for a particular measurement (Baptisms, Giving, etc.)
-                pnlCampus.Visible = false;
-                pnlMeasure.Visible = true;
-                
-                LoadMeasureItems(MeasureDate);
-            }
-        }
-
-        private void ToggleViewButton( DashboardView viewState )
-        {
-            // default all buttons to off
-            bsAdults.CssClass = ToggleButtonOffCSSClass;
-            bsStudents.CssClass = ToggleButtonOffCSSClass;
-            bsWeekendAttendance.CssClass = ToggleButtonOffCSSClass;
-
-            // set the appropriate button and state
-            switch( viewState )
-            {
-                case DashboardView.Adults:
-                {
-                    bsAdults.CssClass = ToggleButtonOnCSSClass;
-                    break;
-                }
-
-                case DashboardView.Students:
-                {
-                    bsStudents.CssClass = ToggleButtonOnCSSClass;   
-                    break;
-                }
-
-                case DashboardView.WeekendAttendance:
-                {
-                    bsWeekendAttendance.CssClass = ToggleButtonOnCSSClass;
-                    break;
-                }
-            }
-        }
-
-        private void LoadMeasureItems(DateTime? selectedDate = null)
-        {
+            // Builds the UI for presenting a SINGLE STEP for all campuses
             using ( RockContext rockContext = new RockContext() )
             {
                 StepMeasureValueService stepMeasureValueService = new StepMeasureValueService( rockContext );
@@ -715,48 +756,32 @@ namespace RockWeb.Plugins.church_ccv.Steps
                     lMeasureTitle.Text = combinedValues.FirstOrDefault().Title;
                     lMeasureDescription.Text = combinedValues.FirstOrDefault().Description;
                     lMeasureIcon.Text = string.Format( "<i class='{0}' style='color: {1};'></i>", combinedValues.FirstOrDefault().IconCssClass, combinedValues.FirstOrDefault().MeasureColor );
-
-                    lMeasureCampusSumValue.Text = string.Format( "<div class='value-tip' data-toggle='tooltip' data-placement='top' title='{0:#,0} individuals have taken this step'>{0:#,0}</div>", combinedValues.Sum( m => m.MeasureValue ));
+                    
+                    lMeasureCampusSumValue.Text = string.Format( "<div class='value-tip' data-toggle='tooltip' data-placement='top' title='{0:#,0} individuals have taken this step'>{0:#,0} / {1:#,0}</div>", combinedValues.Sum( m => m.MeasureValue ), combinedValues.Sum( m => m.MeasureCompareValue ) );
                     lMeasureBackgroundColor.Text = combinedValues.FirstOrDefault().MeasureColorBackground;
 
                     lMeasureColor.Text = combinedValues.FirstOrDefault().MeasureColor;
-
-                    // show a summary of All Campuses at top
-                    if ( DashboardView.WeekendAttendance == DashboardViewState )
-                    {
-                        // if we're looking at weekend attendance, use the campus averages
-
-                        // current
-                        lMeasureBarPercent.Text = combinedValues.Average( m => m.Percentage ).ToString();
-                        int measurePercent = Convert.ToInt16(Math.Round( combinedValues.Average( m => m.Percentage ) ));
-                        lMeasureBarTextPercent.Text = measurePercent.ToString();
-
-
-                        // historical
-                        int historicalPercent = Convert.ToInt16( Math.Round( combinedValues.Average( m => m.HistoricalPercentage ) ) );
-                        lMeasureBarHistoricalPercent.Text = historicalPercent.ToString();
-                    }
-                    else
-                    {
-                        // here we want to show the church-wide percentage of people who have taken this step. So, sum up and then average the steps taken vs against the total eligable people.
-                        int measureValueSum = combinedValues.Sum( m => m.MeasureValue ) * 100;
-                        int measureCompareValueSum = combinedValues.Sum( m => m.MeasureCompareValue.HasValue ? m.MeasureCompareValue.Value : 0 );
-
-                        int measurePercent = measureValueSum / Math.Max( measureCompareValueSum, 1 );
                     
-                        lMeasureBarPercent.Text = measurePercent.ToString( );
-                        lMeasureBarTextPercent.Text = measurePercent.ToString();
+                    // show a summary of All Campuses at top.
+                    // here we want to show the church-wide percentage of people who have taken this step. So, sum up and then average the steps taken vs against the total eligable people.
+                    int measureValueSum = combinedValues.Sum( m => m.MeasureValue ) * 100;
+                    int measureCompareValueSum = combinedValues.Sum( m => m.MeasureCompareValue.HasValue ? m.MeasureCompareValue.Value : 0 );
 
-
-                        // historical
-                        int historicalValueSum = combinedValues.Sum( m => m.HistoricalValue.HasValue ? m.HistoricalValue.Value : 0 ) * 100;
-                        int historicalCompareValueSum = combinedValues.Sum( m => m.HistoricalCompareValue.HasValue ? m.HistoricalCompareValue.Value : 0 );
-
-                        int historicalPercent = historicalValueSum / Math.Max( historicalCompareValueSum, 1 );
+                    int measurePercent = measureValueSum / Math.Max( measureCompareValueSum, 1 );
                     
-                        lMeasureBarHistoricalPercent.Text = historicalPercent.ToString();
-                    }
+                    lMeasureBarPercent.Text = measurePercent.ToString( );
+                    lMeasureBarTextPercent.Text = measurePercent.ToString();
+                    lMeasureCompareValueSum.Text = measureCompareValueSum.ToString( );
+
+                    // historical
+                    int historicalValueSum = combinedValues.Sum( m => m.HistoricalValue.HasValue ? m.HistoricalValue.Value : 0 ) * 100;
+                    int historicalCompareValueSum = combinedValues.Sum( m => m.HistoricalCompareValue.HasValue ? m.HistoricalCompareValue.Value : 0 );
+
+                    int historicalPercent = historicalValueSum / Math.Max( historicalCompareValueSum, 1 );
                     
+                    lMeasureBarHistoricalPercent.Text = historicalPercent.ToString();
+                    
+                    // set the individual campus values
                     rptMeasuresByCampus.DataSource = combinedValues;
                     rptMeasuresByCampus.DataBind();
                 }

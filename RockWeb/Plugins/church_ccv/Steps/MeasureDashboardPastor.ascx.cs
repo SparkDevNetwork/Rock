@@ -84,21 +84,9 @@ namespace RockWeb.Plugins.church_ccv.Steps
             if ( !Page.IsPostBack )
             {
                 MeasureDate = Request["Date"].AsDateTime();
-                LoadPastors();
-                
-                if ( string.IsNullOrWhiteSpace(Request["MeasureId"]) )
-                {
-                    pnlCampus.Visible = true;
-                    pnlMeasure.Visible = false;
-                    LoadPastorItems( MeasureDate );
-                }
-                else
-                {
-                    pnlCampus.Visible = false;
-                    pnlMeasure.Visible = true;
-                    LoadMeasureItems( MeasureDate );
-                }
 
+                LoadPastors( );
+                
                 var dateIndex = RockDateTime.Now == RockDateTime.Now.SundayDate() ? RockDateTime.Now.SundayDate() : RockDateTime.Now.SundayDate().AddDays( -7 );
 
                 for ( int i = 0; i < 12; i++ )
@@ -108,6 +96,8 @@ namespace RockWeb.Plugins.church_ccv.Steps
                 }
 
                 ddlSundayDates.Items.Insert( 0, "" );
+
+                UpdatePresentedView( );
             }
         }
 
@@ -134,8 +124,7 @@ namespace RockWeb.Plugins.church_ccv.Steps
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void ddlPastor_SelectedIndexChanged( object sender, EventArgs e )
         {
-            MeasureDate = Request["Date"].AsDateTime();
-            LoadPastorItems( MeasureDate );
+            UpdatePresentedView( );
         }
 
         /// <summary>
@@ -145,7 +134,7 @@ namespace RockWeb.Plugins.church_ccv.Steps
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnBackToPastor_Click( object sender, EventArgs e )
         {
-            Response.Redirect( Request.Url.LocalPath );
+            HandleRedirect( false );
         }
 
         /// <summary>
@@ -155,31 +144,79 @@ namespace RockWeb.Plugins.church_ccv.Steps
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void lbSetDate_Click( object sender, EventArgs e )
         {
-            string date = string.Empty;
-
-            if ( !string.IsNullOrWhiteSpace( ddlSundayDates.SelectedValue ) )
-            {
-                date = ddlSundayDates.SelectedValue;
-            }
-            else
-            {
-                date = dpSundayPicker.Text.AsDateTime().HasValue ? dpSundayPicker.Text.AsDateTime().Value.SundayDate().ToShortDateString() : string.Empty;
-            }
-
-            if ( !string.IsNullOrWhiteSpace( date ) )
-            {
-                Response.Redirect( Request.Url.LocalPath + "?Date=" + date );
-            }
+            HandleRedirect( true );
         }
 
         #endregion
 
         #region Methods
 
+        private void HandleRedirect( bool remainOnCurrentView )
+        {
+            // this will call Response.Redirect and preserve our state in query params
+            string queryParams = string.Empty;
+            
+
+            // add the date
+            string date = string.Empty;
+
+            // did the drop down have a date?
+            if ( string.IsNullOrWhiteSpace( ddlSundayDates.SelectedValue ) == false )
+            {
+                date = ddlSundayDates.SelectedValue;
+            }
+            else
+            {
+                // no, so either take the manually picked time, or use whatever the last date was
+                date = dpSundayPicker.Text.AsDateTime().HasValue ? dpSundayPicker.Text.AsDateTime().Value.SundayDate().ToShortDateString() : hlDate.Text;
+            }
+            queryParams += "?Date=" + date;
+
+            
+            // if this is true, we want to preserve MeasureId if it exists, so that we stay on
+            // our current page. If it's false, this will implicitely return us to the "All Steps" page.
+            if( remainOnCurrentView == true )
+            {
+                // now check for a measure ID
+                if ( string.IsNullOrWhiteSpace( Request [ "MeasureId" ] ) == false )
+                {
+                    queryParams += "&MeasureId=" + Request [ "MeasureId" ];
+                }
+            }
+
+            Response.Redirect( Request.Url.LocalPath + queryParams );
+        }
+
+        private void UpdatePresentedView( )
+        {
+            // renders either the "all steps" view, or the "single step" view, depending on
+            // what's requested.
+
+            // set and render the page
+            MeasureDate = Request["Date"].AsDateTime();
+
+            // If there's no "MeasureId", they want to see the campus overview with all stats
+            if ( string.IsNullOrWhiteSpace( Request["MeasureId"] ))
+            {
+                pnlCampus.Visible = true;
+                pnlMeasure.Visible = false;
+
+                Present_AllSteps_View(MeasureDate);
+            }
+            else
+            {
+                // otherwise, display it for a particular step (Baptisms, Giving, etc.)
+                pnlCampus.Visible = false;
+                pnlMeasure.Visible = true;
+                
+                Present_SingleStep_View(MeasureDate);
+            }
+        }
+
         /// <summary>
         /// Loads the pastor items.
         /// </summary>
-        private void LoadPastorItems( DateTime? selectedDate = null )
+        private void Present_AllSteps_View( DateTime? selectedDate = null )
         {
             using(RockContext rockContext = new RockContext() )
             {
@@ -207,6 +244,7 @@ namespace RockWeb.Plugins.church_ccv.Steps
                             .Where( m =>
                                     m.SundayDate == measureDate
                                     && m.StepMeasure.IsActive == true 
+                                    && m.StepMeasure.IsTbd == false
                                     && m.CampusId == null
                                     && m.ActiveAdults != null
                                     && m.PastorPersonAliasId == selectedPastorId )
@@ -234,11 +272,20 @@ namespace RockWeb.Plugins.church_ccv.Steps
                         nbMessages.Text = "No measures found for selected date.";
                         nbMessages.NotificationBoxType = NotificationBoxType.Info;
                     }
+                    else
+                    {
+                        // since we have values, hide the warning message
+                        nbMessages.Text = string.Empty;
+
+                        // and take the divider (either the number of active people, or total weekend attendance).
+                        // It doesn't matter which of the values we take it from, as they all use the same divider.
+                        lMeasureCompareValueSum.Text = "<b>" + string.Format( "{0:n0}", latestMeasures.First( ).MeasureCompareValue ) + "</b>";
+                    }
                 }
             }
         }
 
-        private void LoadMeasureItems( DateTime? selectedDate = null )
+        private void Present_SingleStep_View( DateTime? selectedDate = null )
         {
             using ( RockContext rockContext = new RockContext() )
             {
@@ -265,6 +312,7 @@ namespace RockWeb.Plugins.church_ccv.Steps
                             .Where( m =>
                                     m.SundayDate == measureDate
                                     && m.StepMeasure.IsActive == true
+                                    && m.StepMeasure.IsTbd == false
                                     && m.CampusId == null
                                     && m.ActiveAdults != null
                                     && m.StepMeasureId == measureId)
@@ -285,18 +333,22 @@ namespace RockWeb.Plugins.church_ccv.Steps
                             } )
                             .ToList();
                     
-
+                    int measureValueSum = latestMeasures.Sum( m => m.MeasureValue );
+                    int measureCompareValueSum = latestMeasures.Sum( m => m.MeasureCompareValue.HasValue ? m.MeasureCompareValue.Value : 0 );
+                    
                     lMeasureTitle.Text = latestMeasures.FirstOrDefault().Title;
                     lMeasureDescription.Text = latestMeasures.FirstOrDefault().Description;
                     lMeasureIcon.Text = string.Format( "<i class='{0}' style='color: {1};'></i>", latestMeasures.FirstOrDefault().IconCssClass, latestMeasures.FirstOrDefault().MeasureColor );
 
-                    lMeasureSumValue.Text = string.Format( "<div class='value-tip' data-toggle='tooltip' data-placement='top' title='{0:#,0} individuals have taken this step'>{0:#,0}</div>", latestMeasures.Sum( m => m.MeasureValue ) );
+                    lMeasureSumValue.Text = string.Format( "<div class='value-tip' data-toggle='tooltip' data-placement='top' title='{0:#,0} individuals have taken this step'>{0:#,0} / {1:#,0}</div>", measureValueSum, measureCompareValueSum );
                     lMeasureBackgroundColor.Text = latestMeasures.FirstOrDefault().MeasureColorBackground;
 
-                    int measurePercent = Convert.ToInt16( Math.Round( latestMeasures.Average( m => m.Percentage ) ) );
+                    // generate readable percentages for the UI
+                    int measurePercent = (int) (measureValueSum / (float)Math.Max( measureCompareValueSum, 1 ) * 100 );
                     lMeasureBarPercent.Text = measurePercent.ToString();
                     lMeasureBarTextPercent.Text = measurePercent.ToString();
                     lMeasureColor.Text = latestMeasures.FirstOrDefault().MeasureColor;
+                    lMeasureCompareValueSum.Text = measureCompareValueSum.ToString( );
 
                     rptMeasuresByPastor.DataSource = latestMeasures;
                     rptMeasuresByPastor.DataBind();

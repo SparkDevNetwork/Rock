@@ -42,8 +42,8 @@ namespace church.ccv.Actions
         {
             using ( RockContext rockContext = new RockContext() )
             {
-                // This job typically completes in under 3 minutes, but give it 5 just in case.
-                rockContext.Database.CommandTimeout = 300;
+                // This job typically completes in under 3 minutes, but give it an hour since the SQL db is on another server in production
+                rockContext.Database.CommandTimeout = 3600;
 
                 // Simply run the stored procedure.
                 // This will insert a row per-campus per-region with total numbers for how many people

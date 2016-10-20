@@ -110,6 +110,18 @@
                     <div class="row">
                         <div class="col-md-8">
                             <h2><asp:Literal ID="lCampusTitle" runat="server" /></h2>
+                            
+                            <h5>Percentages are of <asp:Literal ID="lMeasureCompareValueSum" runat="server" />
+                            <% if( DashboardViewState == DashboardView.WeekendAttendance ) %>
+                            <% { %>
+                                     Adults and Students
+                            <% } %>
+                            <% else %>
+                            <% { %>
+                                    <%=DashboardViewState == DashboardView.Students ? "Students" : "Adults"%>
+                            <% } %>
+                            (Must be Active and Member or Attendee) 
+                            </h5>
                         </div>
                         <div class="col-md-4">
                             <Rock:CampusPicker ID="cpCampus" runat="server" OnSelectedIndexChanged="cpCampus_SelectedIndexChanged" AutoPostBack="true" />
@@ -121,7 +133,7 @@
                     <div class="row">
                         <asp:Repeater ID="rptCampusMeasures" runat="server">
                             <ItemTemplate>
-                                <a href="?MeasureId=<%# Eval("MeasureId") %>&CompareTo=<%=DashboardViewState != DashboardView.WeekendAttendance%><%# MeasureDate != null ? "&Date=" + MeasureDate.Value.ToShortDateString() : "" %><%# "&Viewing=" + DashboardViewState.ToString( ) %>">
+                                <a href="?MeasureId=<%# Eval("MeasureId") %>&CompareTo=<%=DashboardViewState != DashboardView.WeekendAttendance%><%# MeasureDate != null ? "&Date=" + MeasureDate.Value.ToShortDateString() : "" %><%# "&DashboardView=" + DashboardViewState.ToString( ) %>">
                                     <div class="col-md-6 measure">
                                         <div class="measure-icon hidden-sm hidden-xs">
                                             <i class="fa fa-fw <%# Eval("IconCssClass") %>" style="color: <%# Eval("MeasureColor") %>;"></i>
@@ -130,7 +142,9 @@
                                         <div class="measure-details <%# (bool)Eval("IsTbd") ? "is-tbd" : ""%>">
                                     
                                             <div class="clearfix">
-                                                <h4 class="pull-left"><%# Eval("Title") %></h4>
+                                                <div class="pull-left value-tip" data-toggle="tooltip" data-placement="top" title="<%# Eval("Description") %>">
+                                                    <h4 class="pull-left"><%# Eval("Title") %></h4>
+                                                </div>
                                                 <div class="pull-right measure-value">
                                                     <div class="value-tip" data-toggle="tooltip" data-placement="top" title="<%# Eval("MeasureValue","{0:#,0}") %> individuals have taken this step"><%# Eval("MeasureValue","{0:#,0}") %></div>
                                                 </div>
@@ -162,10 +176,28 @@
                             <div class="measure-details">
                                 <div class="clearfix">
                                     <h4 class="pull-left">All Campuses</h4>
-                                    <div class="pull-right measure-value">
+                                </div>
+
+                                <div class="clearfix">
+                                    <div class="pull-left">
+                                        <p>Viewing 
+                                        <% if( DashboardViewState == DashboardView.WeekendAttendance ) %>
+                                        <% { %>
+                                                    Adults and Students
+                                        <% } %>
+                                        <% else %>
+                                        <% { %>
+                                                <%=DashboardViewState == DashboardView.Students ? "Students" : "Adults"%>
+                                        <% } %>
+                                        (Must be Active and Member or Attendee) 
+                                        </p>
+                                    </div>
+
+                                    <div class="pull-right">
                                         <asp:Literal ID="lMeasureCampusSumValue" runat="server" />
                                     </div>
                                 </div>
+                                
                                 <div class="progress measure-bar <%# (int)Eval("Percentage") > 100 ? "percent-over-100": "" %>" style='background-color: <asp:Literal id="lMeasureBackgroundColor" runat="server" />'>
                                     <div class="progress-compare" style="width: <asp:Literal id="lMeasureBarHistoricalPercent" runat="server" />%" ></div>
                                     <div class="progress-bar" role="progressbar" aria-valuenow="60" aria-valuemin="0" aria-valuemax="100" style='width: <asp:Literal id="lMeasureBarPercent" runat="server" />%; background-color: <asp:Literal id="lMeasureColor" runat="server" />;'>
@@ -185,10 +217,28 @@
                                         <div class="measure-details">
                                             <div class="clearfix">
                                                 <h4 class="pull-left"><%# Eval("Campus") %></h4>
-                                                <div class="pull-right measure-value">
-                                                    <div class="value-tip" data-toggle="tooltip" data-placement="top" title="<%# Eval("MeasureValue","{0:#,0}") %> individuals have taken this step"><%# Eval("MeasureValue","{0:#,0}") %></div>
+                                            </div>
+
+                                            <div class="clearfix">
+                                                <div class="pull-left">
+                                                    <p>Viewing </b>
+                                                    <% if( DashboardViewState == DashboardView.WeekendAttendance ) %>
+                                                    <% { %>
+                                                             Adults and Students
+                                                    <% } %>
+                                                    <% else %>
+                                                    <% { %>
+                                                            <%=DashboardViewState == DashboardView.Students ? "Students" : "Adults"%>
+                                                    <% } %>
+                                                    (Must be Active and Member or Attendee) 
+                                                    </p>
+                                                </div>
+
+                                                <div class="pull-right">
+                                                    <div class="value-tip" data-toggle="tooltip" data-placement="top" title="<%# Eval("MeasureValue","{0:#,0}") %> individuals have taken this step"><%# Eval("MeasureValue","{0:#,0}") %> / <%# Eval("MeasureCompareValue", "{0:#,0}" ) %></div>
                                                 </div>
                                             </div>
+
                                             <div class="progress measure-bar <%# (int)Eval("Percentage") > 100 ? "percent-over-100": "" %>" style="background-color: <%# Eval("MeasureColorBackground") %>; ">
                                                   <div class="progress-compare" style="width: <%# Eval("HistoricalPercentage") %>%; <%# Eval("HistoricalPercentage") %>%; <%# (int)Eval("HistoricalPercentage") == 0 ? "display: none;": "" %>" ></div>
                                                   <div class="progress-bar" role="progressbar" aria-valuenow="60" aria-valuemin="0" aria-valuemax="100" style="width: <%# Eval("Percentage") %>%; background-color: <%# Eval("MeasureColor") %>;">
@@ -205,6 +255,10 @@
                 </asp:Panel>
 
                 <asp:Literal ID="lComparisonLegend" runat="server" />
+
+                <div class="well text-center margin-t-md">
+                    <asp:Literal ID="lOverhaulDate" runat="server">Metric logic significantly updated on 10/9/2016</asp:Literal>
+                </div>
 
             </div>
         

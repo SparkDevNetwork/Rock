@@ -93,6 +93,8 @@
                     <div class="row">
                         <div class="col-md-8">
                             <h2><asp:Literal ID="lPastorName" runat="server" /></h2>
+
+                            <h5>Percentages are of <asp:Literal ID="lMeasureCompareValueSum" runat="server" /> Adults (Must be Active Member or Attendee)</h5>
                         </div>
                         <div class="col-md-4">
                             <Rock:RockDropDownList ID="ddlPastor" runat="server" OnSelectedIndexChanged="ddlPastor_SelectedIndexChanged" AutoPostBack="true" />
@@ -104,7 +106,7 @@
                     <div class="row">
                         <asp:Repeater ID="rptCampusMeasures" runat="server">
                             <ItemTemplate>
-                                <a href="?MeasureId=<%# Eval("MeasureId") %>">
+                                <a href="?MeasureId=<%# Eval("MeasureId") %><%# MeasureDate != null ? "&Date=" + MeasureDate.Value.ToShortDateString() : "" %>">
                                     <div class="col-md-6 measure">
                                         <div class="measure-icon hidden-sm hidden-xs">
                                             <i class="fa fa-fw <%# Eval("IconCssClass") %>" style="color: <%# Eval("MeasureColor") %>;"></i>
@@ -113,7 +115,9 @@
                                         <div class="measure-details <%# (bool)Eval("IsTbd") ? "is-tbd" : ""%>">
                                     
                                             <div class="clearfix">
-                                                <h4 class="pull-left"><%# Eval("Title") %></h4>
+                                                <div class="pull-left value-tip" data-toggle="tooltip" data-placement="top" title="<%# Eval("Description") %>">
+                                                    <h4 class="pull-left"><%# Eval("Title") %></h4>
+                                                </div>
                                                 <div class="pull-right measure-value">
                                                     <div class="value-tip" data-toggle="tooltip" data-placement="top" title="<%# Eval("MeasureValue","{0:#,0}") %> individuals have taken this step"><%# Eval("MeasureValue","{0:#,0}") %></div>
                                                 </div>
@@ -167,7 +171,7 @@
                                             <div class="clearfix">
                                                 <h4 class="pull-left"><%# Eval("PastorFullName") %></h4>
                                                 <div class="pull-right measure-value">
-                                                    <div class="value-tip" data-toggle="tooltip" data-placement="top" title="<%# Eval("MeasureValue","{0:#,0}") %> individuals have taken this step"><%# Eval("MeasureValue","{0:#,0}") %></div>
+                                                    <div class="value-tip" data-toggle="tooltip" data-placement="top" title="<%# Eval("MeasureValue","{0:#,0}") %> individuals have taken this step"><%# Eval("MeasureValue","{0:#,0}") %> / <%# Eval("MeasureCompareValue", "{0:#,0}" ) %></div>
                                                 </div>
                                             </div>
                                             <div class="progress measure-bar <%# (int)Eval("Percentage") > 100 ? "percent-over-100": "" %>" style="background-color: <%# Eval("MeasureColorBackground") %>; ">
@@ -183,6 +187,10 @@
 
                     <asp:LinkButton ID="btnBackToPastor" runat="server" CssClass="btn btn-default" OnClick="btnBackToPastor_Click"><i class="fa fa-chevron-left"></i> Pastor View</asp:LinkButton>
                 </asp:Panel>
+
+                <div class="well text-center margin-t-md">
+                    <asp:Literal ID="lOverhaulDate" runat="server">Metric logic significantly updated on 10/9/2016</asp:Literal>
+                </div>
             </div>
         
         </asp:Panel>
