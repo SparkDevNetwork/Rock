@@ -517,16 +517,22 @@ namespace RockWeb.Blocks.Connection
                     // only show if the oppportunity is active and there are active requests
                     if ( opportunity.IsActive || ( !opportunity.IsActive && activeRequestCount > 0 ) )
                     {
+                        // idle count is: 
+                        //  (the request is active OR future follow-up who's time has come) 
+                        //  AND 
+                        //  (where the activity is more than DaysUntilRequestIdle days old OR no activity but created more than DaysUntilRequestIdle days ago)
                         int idleCount = connectionRequestsQry
                                         .Where( cr =>
                                             (
                                                 cr.ConnectionState == ConnectionState.Active
                                                 || ( cr.ConnectionState == ConnectionState.FutureFollowUp && cr.FollowupDate.HasValue && cr.FollowupDate.Value < _midnightToday )
                                             )
-                                            && (
-                                                ( cr.ConnectionRequestActivities.Any() && cr.ConnectionRequestActivities.Max( ra => ra.CreatedDateTime ) < SqlFunctions.DateAdd( "day", -cr.ConnectionOpportunity.ConnectionType.DaysUntilRequestIdle, currentDateTime ) ) )
+                                            &&
+                                            (
+                                                ( cr.ConnectionRequestActivities.Any() && cr.ConnectionRequestActivities.Max( ra => ra.CreatedDateTime ) < SqlFunctions.DateAdd( "day", -cr.ConnectionOpportunity.ConnectionType.DaysUntilRequestIdle, currentDateTime ) )
                                                 || ( !cr.ConnectionRequestActivities.Any() && cr.CreatedDateTime < SqlFunctions.DateAdd( "day", -cr.ConnectionOpportunity.ConnectionType.DaysUntilRequestIdle, currentDateTime ) )
-                                               )
+                                            )
+                                        )
                                         .Count();
 
                         // Count the number requests that have a status that is considered critical.
@@ -534,10 +540,10 @@ namespace RockWeb.Blocks.Connection
                                                 .Where( r =>
                                                     r.ConnectionStatus.IsCritical
                                                     && (
-                                                        r.ConnectionState == ConnectionState.Active
-                                                        || ( r.ConnectionState == ConnectionState.FutureFollowUp && r.FollowupDate.HasValue && r.FollowupDate.Value < _midnightToday )
-                                                        )
-                                                        )
+                                                            r.ConnectionState == ConnectionState.Active
+                                                            || ( r.ConnectionState == ConnectionState.FutureFollowUp && r.FollowupDate.HasValue && r.FollowupDate.Value < _midnightToday )
+                                                       )
+                                                )
                                                 .Count();
 
                         // Add the opportunity
