@@ -71,6 +71,11 @@ namespace Rock.Utility
                 return value;
             }
 
+            if ( propertyType == typeof( Guid ) )
+            {
+                return value.AsGuid();
+            }
+
             if ( string.IsNullOrWhiteSpace( value ) && isNullableType )
             {
                 return null;
