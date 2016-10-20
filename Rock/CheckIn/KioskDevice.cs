@@ -151,7 +151,7 @@ namespace Rock.CheckIn
             }
 
             // now, narrow it down to only locations that are active group locations for the configured group types
-            foreach ( var groupLocation in new GroupLocationService( rockContext ).GetActiveByLocations( allLocations ) )
+            foreach ( var groupLocation in new GroupLocationService( rockContext ).GetActiveByLocations( allLocations ).OrderBy( l => l.Order ) )
             {
                 if ( configuredGroupTypes.Contains( groupLocation.Group.GroupTypeId ) )
                 {
@@ -317,7 +317,7 @@ namespace Rock.CheckIn
 
             var activeSchedules = new Dictionary<int, KioskSchedule>();
 
-            foreach ( var groupLocation in new GroupLocationService( rockContext ).GetActiveByLocations( allLocations ).AsNoTracking() )
+            foreach ( var groupLocation in new GroupLocationService( rockContext ).GetActiveByLocations( allLocations ).OrderBy( l => l.Order ).AsNoTracking() )
             {
                 var kioskLocation = new KioskLocation( groupLocation.Location );
                 kioskLocation.CampusId = campusId;
