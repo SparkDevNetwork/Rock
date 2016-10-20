@@ -40,7 +40,7 @@ namespace RockWeb.Plugins.com_centralaz.Widgets
 
     [TextField( "Image Subfolder", "The subfolder to use when displaying or uploading images. It will be appended to the base folder ~/Content/ExternalSite/Headers/", false, "", "", 2 )]
     [TextField( "Default Image", "The image that will appear if nothing is in the specified sub-folder", true, "https://www.centralaz.com/Content/ExternalSite/Headers/Mainbanner.jpg" )]
-    [TextField( "Feature Title" )]
+    [TextField( "Feature Title", required: false )]
     [IntegerField( "X Axis", "The background position X axis.", true, 50 )]
     [IntegerField( "Y Axis", "The background position Y axis.", true, 45 )]
 

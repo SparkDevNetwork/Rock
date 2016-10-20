@@ -6,7 +6,7 @@ MinimumVisualStudioVersion = 10.0.40219.1
 Project("{E24C65DC-7377-472B-9ABA-BC803B73C61A}") = "RockWeb", "RockWeb\", "{E43B5D55-BED0-4E74-BF97-9327F9A9D656}"
 	ProjectSection(WebsiteProperties) = preProject
 		TargetFrameworkMoniker = ".NETFramework,Version%3Dv4.5.2"
-		ProjectReferences = "{00edcb8d-ef33-459c-ad62-02876bd24dff}|DotLiquid.dll;{185a31d7-3037-4dae-8797-0459849a84bd}|Rock.dll;{d6b19c0d-da5e-4f75-8001-04ded86b741f}|Rock.Mailgun.dll;{cf8c694a-55a0-434f-bc96-3450b96ec12a}|Rock.Mandrill.dll;{704740d8-b539-4560-9f8c-681670c9d6ad}|Rock.Migrations.dll;{f3692909-952d-4c4a-b2d2-d90d0083cf53}|Rock.NMI.dll;{a005d091-140e-4ec4-bcdf-cf7d42bb702c}|Rock.PayFlowPro.dll;{add1edd0-a4cb-4e82-b6ad-6ad1d556deae}|Rock.Rest.dll;{6fe0930c-6832-4c2f-8a76-d4e4a2d80ddf}|Rock.Version.dll;{8d772b68-6046-4db3-b4dc-2bad6fdc55d7}|com.centralaz.Workflow.dll;{a0d78e86-3dfb-4c3a-b59c-0619331d5bc1}|com.centralaz.Utility.dll;{6879e00d-7ebc-406b-a479-84ef816b10b4}|com.centralaz.SpiritualGifts.dll;{f3cdac54-735e-415d-a875-b10fa6cc6687}|com.centralaz.Prayerbook.dll;{2efa8359-969c-4321-bc7e-48ff5843653b}|com.centralaz.Prayer.dll;{2252252c-25b9-40b3-891e-0e5f0cfb263f}|com.centralaz.CentralGroupFinder.dll;{088218a4-19e5-4431-b5ac-f3a3e6ae624b}|com.centralaz.GeneralJobs.dll;{e3656a25-42dc-4ce8-8c7f-4f6514408735}|com.centralaz.Finance.dll;{8b59417e-689d-4caa-abcc-163f8f907d9b}|com.centralaz.DpsMatch.dll;{8f65d376-d4c0-45ab-b067-49d32735aa28}|com.centralaz.DataTransform.dll;{fffe1207-cb79-42b2-b9af-b75a72140a53}|com.centralaz.CheckInLabels.dll;{732b2f08-1e75-4635-aa47-c490276b2f76}|com.centralaz.Calendar.dll;{c30559e1-5d82-401f-a463-dd6759c2c1e9}|com.centralaz.Baptism.dll;{1d63ac63-bcfa-4026-8715-74acd19d3fbe}|com.centralaz.Accountability.dll;"
+		ProjectReferences = "{00edcb8d-ef33-459c-ad62-02876bd24dff}|DotLiquid.dll;{185a31d7-3037-4dae-8797-0459849a84bd}|Rock.dll;{d6b19c0d-da5e-4f75-8001-04ded86b741f}|Rock.Mailgun.dll;{cf8c694a-55a0-434f-bc96-3450b96ec12a}|Rock.Mandrill.dll;{704740d8-b539-4560-9f8c-681670c9d6ad}|Rock.Migrations.dll;{f3692909-952d-4c4a-b2d2-d90d0083cf53}|Rock.NMI.dll;{a005d091-140e-4ec4-bcdf-cf7d42bb702c}|Rock.PayFlowPro.dll;{add1edd0-a4cb-4e82-b6ad-6ad1d556deae}|Rock.Rest.dll;{6fe0930c-6832-4c2f-8a76-d4e4a2d80ddf}|Rock.Version.dll;{8d772b68-6046-4db3-b4dc-2bad6fdc55d7}|com.centralaz.Workflow.dll;{a0d78e86-3dfb-4c3a-b59c-0619331d5bc1}|com.centralaz.Utility.dll;{6879e00d-7ebc-406b-a479-84ef816b10b4}|com.centralaz.SpiritualGifts.dll;{f3cdac54-735e-415d-a875-b10fa6cc6687}|com.centralaz.Prayerbook.dll;{2efa8359-969c-4321-bc7e-48ff5843653b}|com.centralaz.Prayer.dll;{2252252c-25b9-40b3-891e-0e5f0cfb263f}|com.centralaz.CentralGroupFinder.dll;{088218a4-19e5-4431-b5ac-f3a3e6ae624b}|com.centralaz.GeneralJobs.dll;{e3656a25-42dc-4ce8-8c7f-4f6514408735}|com.centralaz.Finance.dll;{8b59417e-689d-4caa-abcc-163f8f907d9b}|com.centralaz.DpsMatch.dll;{8f65d376-d4c0-45ab-b067-49d32735aa28}|com.centralaz.DataTransform.dll;{fffe1207-cb79-42b2-b9af-b75a72140a53}|com.centralaz.CheckInLabels.dll;{732b2f08-1e75-4635-aa47-c490276b2f76}|com.centralaz.Calendar.dll;{c30559e1-5d82-401f-a463-dd6759c2c1e9}|com.centralaz.Baptism.dll;{1d63ac63-bcfa-4026-8715-74acd19d3fbe}|com.centralaz.Accountability.dll;{25b43e9a-156e-47ac-9697-e92ca7b3f643}|com.centralaz.HumanResources.dll;"
 		Debug.AspNetCompiler.VirtualPath = "/localhost_6229"
 		Debug.AspNetCompiler.PhysicalPath = "RockWeb\"
 		Debug.AspNetCompiler.TargetPath = "PrecompiledWeb\localhost_6229\"
@@ -70,6 +70,8 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "com.centralaz.Workflow", "com.centralaz.Workflow\com.centralaz.Workflow.csproj", "{8D772B68-6046-4DB3-B4DC-2BAD6FDC55D7}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rock.Version", "Rock.Version\Rock.Version.csproj", "{6FE0930C-6832-4C2F-8A76-D4E4A2D80DDF}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "com.centralaz.HumanResources", "com.centralaz.HumanResources\com.centralaz.HumanResources.csproj", "{25B43E9A-156E-47AC-9697-E92CA7B3F643}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -173,6 +175,10 @@ Global
 		{6FE0930C-6832-4C2F-8A76-D4E4A2D80DDF}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{6FE0930C-6832-4C2F-8A76-D4E4A2D80DDF}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{6FE0930C-6832-4C2F-8A76-D4E4A2D80DDF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{25B43E9A-156E-47AC-9697-E92CA7B3F643}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{25B43E9A-156E-47AC-9697-E92CA7B3F643}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{25B43E9A-156E-47AC-9697-E92CA7B3F643}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{25B43E9A-156E-47AC-9697-E92CA7B3F643}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
