@@ -40,7 +40,6 @@
 <h4 class="page-header">{{ viewedItem.Title }} <small>Weekend of {{ viewedItem.StartDateTime | Date:'M/d/yyyy' }}</small></h4>
 <p>{{ viewedItem | Attribute:'Summary' }}</p>
 <p>{{ viewedItem.Content }}</p>
-<p> <b>Bible Verses:</b> {{ viewedItem | Attribute: 'Scripture' }}</p>
 
 {% assign message = viewedItem | Attribute: 'LinktoMessage' %}
 
