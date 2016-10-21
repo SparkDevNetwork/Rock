@@ -44,22 +44,10 @@ namespace RockWeb.Blocks.Finance
         {
             base.OnLoad( e );
 
-            var accountId = PageParameter("accountId").AsInteger();
             if ( !Page.IsPostBack )
             {
-                ShowDetail( accountId );
+                ShowDetail( PageParameter( "accountId" ).AsInteger() );
             }
-
-            // Add any attribute controls. 
-            // This must be done here regardless of whether it is a postback so that the attribute values will get saved.
-            var account = new FinancialAccountService(new RockContext()).Get(accountId);
-            if (account == null)
-            {
-                account = new FinancialAccount();
-            }
-            account.LoadAttributes();
-            phAttributes.Controls.Clear();
-            Helper.AddEditControls(account, phAttributes, true, BlockValidationGroup);
         }
 
         #endregion
@@ -171,15 +159,22 @@ namespace RockWeb.Blocks.Finance
 
             hfAccountId.Value = account.Id.ToString();
 
+            bool readOnly = false;
+
             nbEditModeMessage.Text = string.Empty;
-            if (editAllowed)
+            if ( !editAllowed || !editAllowed )
             {
-                ShowEditDetails(account);
+                readOnly = true;
+                nbEditModeMessage.Text = EditModeMessage.ReadOnlyEditActionNotAllowed( FinancialAccount.FriendlyTypeName );
+            }
+
+            if ( readOnly )
+            {
+                ShowReadonlyDetails( account );
             }
             else
             {
-                nbEditModeMessage.Text = EditModeMessage.ReadOnlyEditActionNotAllowed(FinancialAccount.FriendlyTypeName);
-                ShowReadonlyDetails(account);
+                ShowEditDetails( account );
             }
         }
 
@@ -200,6 +195,10 @@ namespace RockWeb.Blocks.Finance
             {
                 lActionTitle.Text = account.Name.FormatAsHtmlTitle();
             }
+
+            account.LoadAttributes();
+            phAttributes.Controls.Clear();
+            Rock.Attribute.Helper.AddEditControls( account, phAttributes, true, BlockValidationGroup );
 
             hlInactive.Visible = !account.IsActive;
 
