@@ -131,9 +131,17 @@ namespace RockWeb.Plugins.com_centralaz.HumanResources
             if ( contributionElection != null )
             {
                 int contributionElectionId = contributionElection.Id;
+                var changes = new List<string>();
 
                 service.Delete( contributionElection );
+                History.EvaluateChange( changes, "Contribution Election", contributionElection.IsFixedAmount ? contributionElection.Amount.FormatAsCurrency() : contributionElection.Amount.ToString( "P" ), "" );
                 rockContext.SaveChanges();
+
+                if ( changes.Any() )
+                {
+                    HistoryService.SaveChanges( rockContext, typeof( Person ), com.centralaz.HumanResources.SystemGuid.Category.HISTORY_HUMAN_RESOURCES.AsGuid(),
+                        Person.Id, changes );
+                }
             }
 
             BindGrid();
@@ -188,6 +196,7 @@ namespace RockWeb.Plugins.com_centralaz.HumanResources
             var rockContext = new RockContext();
             var service = new ContributionElectionService( rockContext );
             ContributionElection contributionElection = null;
+            var changes = new List<string>();
 
             if ( contributionElectionId != 0 )
             {
@@ -198,30 +207,45 @@ namespace RockWeb.Plugins.com_centralaz.HumanResources
             {
                 contributionElection = new ContributionElection();
                 service.Add( contributionElection );
+                changes.Add( "Added new Contribution Election" );
             }
 
+            History.EvaluateChange( changes, "Contribution Election", contributionElection.PersonAliasId, Person.PrimaryAliasId.Value );
             contributionElection.PersonAliasId = Person.PrimaryAliasId.Value;
+
+            History.EvaluateChange( changes, "Contribution Election", contributionElection.IsFixedAmount.ToTrueFalse(), cbFixedAmount.Checked.ToTrueFalse() );
             contributionElection.IsFixedAmount = cbFixedAmount.Checked;
+
+            History.EvaluateChange( changes, "Contribution Election", contributionElection.Amount.ToString(), nbAmount.Text );
             contributionElection.Amount = nbAmount.Text.AsDouble();
 
             if ( dpActiveDate.SelectedDate.HasValue )
             {
+                History.EvaluateChange( changes, "Contribution Election", contributionElection.ActiveDate, dpActiveDate.SelectedDate.Value );
                 contributionElection.ActiveDate = dpActiveDate.SelectedDate.Value;
             }
 
             if ( dpInactiveDate.SelectedDate.HasValue )
             {
+                History.EvaluateChange( changes, "Contribution Election", contributionElection.InactiveDate, dpInactiveDate.SelectedDate.Value );
                 contributionElection.InactiveDate = dpInactiveDate.SelectedDate.Value;
             }
 
             if ( ddlAccounts.SelectedValueAsId().HasValue )
             {
+                History.EvaluateChange( changes, "Contribution Election", contributionElection.FinancialAccount.Name, ddlAccounts.SelectedItem.Text );
                 contributionElection.FinancialAccountId = ddlAccounts.SelectedValueAsId().Value;
             }
 
             if ( contributionElection.IsValid )
             {
                 rockContext.SaveChanges();
+
+                if ( changes.Any() )
+                {
+                    HistoryService.SaveChanges( rockContext, typeof( Person ), com.centralaz.HumanResources.SystemGuid.Category.HISTORY_HUMAN_RESOURCES.AsGuid(),
+                        Person.Id, changes );
+                }
 
                 hfIdValue.Value = string.Empty;
                 mdDetails.Hide();

@@ -130,9 +130,17 @@ namespace RockWeb.Plugins.com_centralaz.HumanResources
             if ( salary != null )
             {
                 int salaryId = salary.Id;
+                var changes = new List<string>();
 
                 service.Delete( salary );
+                History.EvaluateChange( changes, "Salary", salary.IsSalariedEmployee ? salary.Amount.FormatAsCurrency() + "/yr" : salary.Amount.FormatAsCurrency() + "/hr", "" );
                 rockContext.SaveChanges();
+
+                if ( changes.Any() )
+                {
+                    HistoryService.SaveChanges( rockContext, typeof( Person ), com.centralaz.HumanResources.SystemGuid.Category.HISTORY_HUMAN_RESOURCES.AsGuid(),
+                        Person.Id, changes );
+                }
             }
 
             BindGrid();
@@ -187,6 +195,7 @@ namespace RockWeb.Plugins.com_centralaz.HumanResources
             var rockContext = new RockContext();
             var service = new SalaryService( rockContext );
             Salary salary = null;
+            var changes = new List<string>();
 
             if ( salaryId != 0 )
             {
@@ -197,27 +206,48 @@ namespace RockWeb.Plugins.com_centralaz.HumanResources
             {
                 salary = new Salary();
                 service.Add( salary );
+                changes.Add( "Added new Salary" );
             }
+
+            History.EvaluateChange( changes, "Salary", salary.PersonAliasId, Person.PrimaryAliasId.Value );
             salary.PersonAliasId = Person.PrimaryAliasId.Value;
+
+            History.EvaluateChange( changes, "Salary", salary.IsSalariedEmployee.ToTrueFalse(), cbSalaried.Checked.ToTrueFalse() );
             salary.IsSalariedEmployee = cbSalaried.Checked;
+
+            History.EvaluateChange( changes, "Salary", salary.Amount.ToString(), nbAmount.Text );
             salary.Amount = nbAmount.Text.AsDouble();
+
+            History.EvaluateChange( changes, "Salary", salary.HousingAllowance.ToString(), nbHousing.Text );
             salary.HousingAllowance = nbHousing.Text.AsDouble();
+
+            History.EvaluateChange( changes, "Salary", salary.FuelAllowance.ToString(), nbFuel.Text );
             salary.FuelAllowance = nbFuel.Text.AsDouble();
+
+            History.EvaluateChange( changes, "Salary", salary.PhoneAllowance.ToString(), nbPhone.Text );
             salary.PhoneAllowance = nbPhone.Text.AsDouble();
 
             if ( dpEffectiveDate.SelectedDate.HasValue )
             {
+                History.EvaluateChange( changes, "Salary", salary.EffectiveDate, dpEffectiveDate.SelectedDate.Value );
                 salary.EffectiveDate = dpEffectiveDate.SelectedDate.Value;
             }
 
             if ( dpReviewedDate.SelectedDate.HasValue )
             {
+                History.EvaluateChange( changes, "Salary", salary.ReviewedDate, dpReviewedDate.SelectedDate.Value );
                 salary.ReviewedDate = dpReviewedDate.SelectedDate.Value;
             }
 
             if ( salary.IsValid )
             {
                 rockContext.SaveChanges();
+
+                if ( changes.Any() )
+                {
+                    HistoryService.SaveChanges( rockContext, typeof( Person ), com.centralaz.HumanResources.SystemGuid.Category.HISTORY_HUMAN_RESOURCES.AsGuid(),
+                        Person.Id, changes );
+                }
 
                 hfIdValue.Value = string.Empty;
                 mdDetails.Hide();

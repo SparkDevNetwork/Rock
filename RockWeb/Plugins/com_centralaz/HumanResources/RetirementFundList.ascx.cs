@@ -131,9 +131,18 @@ namespace RockWeb.Plugins.com_centralaz.HumanResources
             if ( retirementFund != null )
             {
                 int retirementFundId = retirementFund.Id;
+                var changes = new List<string>();
 
                 service.Delete( retirementFund );
+                History.EvaluateChange( changes, "Employee Retirement Amount", retirementFund.IsFixedAmount ? retirementFund.EmployeeAmount.FormatAsCurrency() : retirementFund.EmployeeAmount.ToString( "P" ), "" );
+                History.EvaluateChange( changes, "Employer Retirement Amount", retirementFund.IsFixedAmount ? retirementFund.EmployerAmount.FormatAsCurrency() : retirementFund.EmployerAmount.ToString( "P" ), "" );
                 rockContext.SaveChanges();
+
+                if ( changes.Any() )
+                {
+                    HistoryService.SaveChanges( rockContext, typeof( Person ), com.centralaz.HumanResources.SystemGuid.Category.HISTORY_HUMAN_RESOURCES.AsGuid(),
+                        Person.Id, changes );
+                }
             }
 
             BindGrid();
@@ -188,6 +197,7 @@ namespace RockWeb.Plugins.com_centralaz.HumanResources
             var rockContext = new RockContext();
             var service = new RetirementFundService( rockContext );
             RetirementFund retirementFund = null;
+            var changes = new List<string>();
 
             if ( retirementFundId != 0 )
             {
@@ -198,30 +208,48 @@ namespace RockWeb.Plugins.com_centralaz.HumanResources
             {
                 retirementFund = new RetirementFund();
                 service.Add( retirementFund );
+                changes.Add( "Added new Retirement Fund" );
             }
+
+            History.EvaluateChange( changes, "Retirement Fund", retirementFund.PersonAliasId, Person.PrimaryAliasId.Value );
             retirementFund.PersonAliasId = Person.PrimaryAliasId.Value;
+
+            History.EvaluateChange( changes, "Retirement Fund", retirementFund.IsFixedAmount.ToTrueFalse(), cbFixedAmount.Checked.ToTrueFalse() );
             retirementFund.IsFixedAmount = cbFixedAmount.Checked;
+
+            History.EvaluateChange( changes, "Retirement Fund", retirementFund.EmployeeAmount.ToString(), nbEmployeeAmount.Text );
             retirementFund.EmployeeAmount = nbEmployeeAmount.Text.AsDouble();
+
+            History.EvaluateChange( changes, "Retirement Fund", retirementFund.EmployerAmount.ToString(), nbEmployerAmount.Text );
             retirementFund.EmployerAmount = nbEmployerAmount.Text.AsDouble();
 
             if ( dpActiveDate.SelectedDate.HasValue )
             {
+                History.EvaluateChange( changes, "Retirement Fund", retirementFund.ActiveDate, dpActiveDate.SelectedDate.Value );
                 retirementFund.ActiveDate = dpActiveDate.SelectedDate.Value;
             }
 
             if ( dpInactiveDate.SelectedDate.HasValue )
             {
+                History.EvaluateChange( changes, "Retirement Fund", retirementFund.InactiveDate, dpInactiveDate.SelectedDate.Value );
                 retirementFund.InactiveDate = dpInactiveDate.SelectedDate.Value;
             }
 
             if ( dvpFund.SelectedValueAsId().HasValue )
             {
+                History.EvaluateChange( changes, "Retirement Fund", retirementFund.FundValue.Value, dvpFund.SelectedItem.Text );
                 retirementFund.FundValueId = dvpFund.SelectedValueAsId().Value;
             }
 
             if ( retirementFund.IsValid )
             {
                 rockContext.SaveChanges();
+
+                if ( changes.Any() )
+                {
+                    HistoryService.SaveChanges( rockContext, typeof( Person ), com.centralaz.HumanResources.SystemGuid.Category.HISTORY_HUMAN_RESOURCES.AsGuid(),
+                        Person.Id, changes );
+                }
 
                 hfIdValue.Value = string.Empty;
                 mdDetails.Hide();
