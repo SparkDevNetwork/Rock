@@ -38,9 +38,14 @@ namespace RockWeb.Plugins.com_mineCartStudio.ExchangeContactSync
     [Category( "Mine Cart Studio > Exchange Contact Sync" )]
     [Description( "Block that syncs selected people to an exchange server." )]
 
-    [TextField("Admin Email Address", "The exchange admin's email address.", true, "", "", 0)]
+    [TextField("Admin Username", "The exchange admin's username.", true, "", "", 0)]
     [TextField("Admin Password", "The exchange admin's password.", true, "", "", 1, "AdminPassword", true )]
-    [SecurityRoleField( "Eligible People", "The security role that contains individuals who are allowed to sync contacts.", true, order: 2 )]
+    [TextField( "Admin Domain", "The exchange admin's domain.", false, "", "", 2 )]
+    [CustomDropdownListField("Exchange Version", "Exchange Server version", "0^2007 SP1,1^2010,2^2010 SP1,3^2010 SP2,4^2013,5^2013 SP1",true,"3","",3 )]
+    [TextField( "Auto Discover URL", "The Exchange Auto Discover URL (If left blank, plugin will attempt to find it based on admin's username (email address).", false, "", "", 4 )]
+    [SecurityRoleField( "Eligible People", "The security role that contains individuals who are allowed to sync contacts.", true, Rock.SystemGuid.Group.GROUP_STAFF_MEMBERS, "", 5 )]
+    [BooleanField("Enable Trace", "Should tracing be enabled for the Exchange Web Service (helpful to debug connection issues).", false, "", 6)]
+    [BooleanField("Sync Business Phone Number", "Should business phone numbers be synced?", true, "", 7, "SyncBusinessPhone")]
     public partial class SyncContacts : Rock.Web.UI.RockBlock
     {
 
@@ -139,8 +144,7 @@ namespace RockWeb.Plugins.com_mineCartStudio.ExchangeContactSync
             SetUserPreference( _keyPrefix + "IncludeStaff", includeStaff.ToString() );
             SetUserPreference( _keyPrefix + "Groups", groupIds.AsDelimited( "|" ) );
 
-            var transaction = new SyncContactsTransaction(
-                GetAttributeValue( "AdminEmailAddress" ), GetAttributeValue( "AdminPassword" ),
+            var transaction = new SyncContactsTransaction( GetExchangeUserData(),
                 CurrentPersonId ?? 0, includeFollowing, includeStaff, groupIds );
             Rock.Transactions.RockQueue.TransactionQueue.Enqueue( transaction );
 
@@ -167,9 +171,7 @@ namespace RockWeb.Plugins.com_mineCartStudio.ExchangeContactSync
             cbStaff.Checked = false;
             gpGroup.SetValue( null );
 
-            var transaction = new RemoveContactsTransaction (
-                GetAttributeValue( "AdminEmailAddress" ), GetAttributeValue( "AdminPassword" ),
-                CurrentPersonId ?? 0 );
+            var transaction = new RemoveContactsTransaction( GetExchangeUserData(), CurrentPersonId ?? 0 );
             Rock.Transactions.RockQueue.TransactionQueue.Enqueue( transaction );
 
             nbNotice.Heading = "Contacts Removed";
@@ -188,8 +190,7 @@ namespace RockWeb.Plugins.com_mineCartStudio.ExchangeContactSync
             nbNotice.Visible = true;
 
             string message = string.Empty;
-            if ( com.minecartstudio.ExchangeContactSync.ExchangeContact.TestConnection( 
-                GetAttributeValue( "AdminEmailAddress" ), GetAttributeValue( "AdminPassword" ), CurrentPerson, out message ) )
+            if ( com.minecartstudio.ExchangeContactSync.ExchangeContact.TestConnection( GetExchangeUserData(), CurrentPerson, out message ) )
             {
                 nbNotice.Heading = "Successful Connection";
                 nbNotice.Text = "<p>Congratulations, we were able to successfully connect to your Exchange server and we have authority to update your contacts.</p>";
@@ -208,5 +209,22 @@ namespace RockWeb.Plugins.com_mineCartStudio.ExchangeContactSync
 
         #endregion
 
+        #region Methods
+
+        private com.minecartstudio.ExchangeContactSync.UserData GetExchangeUserData()
+        {
+            string adminUsername = GetAttributeValue( "AdminUsername" );
+            string adminPassword = GetAttributeValue( "AdminPassword" );
+            string adminDomain = GetAttributeValue( "AdminDomain" );
+            string exchangeVersion = GetAttributeValue( "ExchangeVersion" );
+            string autoDiscoverUrl = GetAttributeValue( "AutoDiscoverURL" );
+            bool enableTrace = GetAttributeValue( "EnableTrace" ).AsBoolean();
+            bool syncBusinessPhone = GetAttributeValue( "SyncBusinessPhone" ).AsBoolean();
+
+            return new com.minecartstudio.ExchangeContactSync.UserData( adminUsername, adminPassword, adminDomain, exchangeVersion, autoDiscoverUrl, enableTrace, syncBusinessPhone );
+        }
+
+        #endregion
     }
+
 }
