@@ -1,6 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <views>
-  <mapping-views hash="c661197c6890727d9f7f095d2c285181a4a5954344cbc0e20b10e3058ced4843" conceptual-container="RockContext" store-container="CodeFirstDatabase">
+  <mapping-views hash="03fce670f781d95751d858b9f216afacc37114772ed486c803b8db10b151239b" conceptual-container="RockContext" store-container="CodeFirstDatabase">
     <view extent="CodeFirstDatabase.AttendanceCode"><![CDATA[
     SELECT VALUE -- Constructing AttendanceCode
         [CodeFirstDatabaseSchema.AttendanceCode](T1.AttendanceCode_Id, T1.AttendanceCode_IssueDateTime, T1.AttendanceCode_Code, T1.AttendanceCode_Guid, T1.AttendanceCode_ForeignId, T1.AttendanceCode_ForeignGuid, T1.AttendanceCode_ForeignKey)
@@ -1487,7 +1487,7 @@
     ) AS T1]]></view>
     <view extent="CodeFirstDatabase.RegistrationTemplateFormField"><![CDATA[
     SELECT VALUE -- Constructing RegistrationTemplateFormField
-        [CodeFirstDatabaseSchema.RegistrationTemplateFormField](T1.RegistrationTemplateFormField_Id, T1.RegistrationTemplateFormField_RegistrationTemplateFormId, T1.RegistrationTemplateFormField_FieldSource, T1.RegistrationTemplateFormField_PersonFieldType, T1.RegistrationTemplateFormField_AttributeId, T1.RegistrationTemplateFormField_IsSharedValue, T1.RegistrationTemplateFormField_IsInternal, T1.RegistrationTemplateFormField_ShowCurrentValue, T1.RegistrationTemplateFormField_PreText, T1.RegistrationTemplateFormField_PostText, T1.RegistrationTemplateFormField_IsGridField, T1.RegistrationTemplateFormField_IsRequired, T1.RegistrationTemplateFormField_Order, T1.RegistrationTemplateFormField_CreatedDateTime, T1.RegistrationTemplateFormField_ModifiedDateTime, T1.RegistrationTemplateFormField_CreatedByPersonAliasId, T1.RegistrationTemplateFormField_ModifiedByPersonAliasId, T1.RegistrationTemplateFormField_Guid, T1.RegistrationTemplateFormField_ForeignId, T1.RegistrationTemplateFormField_ForeignGuid, T1.RegistrationTemplateFormField_ForeignKey)
+        [CodeFirstDatabaseSchema.RegistrationTemplateFormField](T1.RegistrationTemplateFormField_Id, T1.RegistrationTemplateFormField_RegistrationTemplateFormId, T1.RegistrationTemplateFormField_FieldSource, T1.RegistrationTemplateFormField_PersonFieldType, T1.RegistrationTemplateFormField_AttributeId, T1.RegistrationTemplateFormField_IsSharedValue, T1.RegistrationTemplateFormField_IsInternal, T1.RegistrationTemplateFormField_ShowCurrentValue, T1.RegistrationTemplateFormField_PreText, T1.RegistrationTemplateFormField_PostText, T1.RegistrationTemplateFormField_IsGridField, T1.RegistrationTemplateFormField_IsRequired, T1.RegistrationTemplateFormField_Order, T1.RegistrationTemplateFormField_ShowOnWaitlist, T1.RegistrationTemplateFormField_CreatedDateTime, T1.RegistrationTemplateFormField_ModifiedDateTime, T1.RegistrationTemplateFormField_CreatedByPersonAliasId, T1.RegistrationTemplateFormField_ModifiedByPersonAliasId, T1.RegistrationTemplateFormField_Guid, T1.RegistrationTemplateFormField_ForeignId, T1.RegistrationTemplateFormField_ForeignGuid, T1.RegistrationTemplateFormField_ForeignKey)
     FROM (
         SELECT 
             T.Id AS RegistrationTemplateFormField_Id, 
@@ -1503,6 +1503,7 @@
             T.IsGridField AS RegistrationTemplateFormField_IsGridField, 
             T.IsRequired AS RegistrationTemplateFormField_IsRequired, 
             T.[Order] AS RegistrationTemplateFormField_Order, 
+            T.ShowOnWaitlist AS RegistrationTemplateFormField_ShowOnWaitlist, 
             T.CreatedDateTime AS RegistrationTemplateFormField_CreatedDateTime, 
             T.ModifiedDateTime AS RegistrationTemplateFormField_ModifiedDateTime, 
             T.CreatedByPersonAliasId AS RegistrationTemplateFormField_CreatedByPersonAliasId, 
@@ -5237,7 +5238,7 @@
     ) AS T1]]></view>
     <view extent="RockContext.RegistrationTemplateFormFields"><![CDATA[
     SELECT VALUE -- Constructing RegistrationTemplateFormFields
-        [Rock.Data.RegistrationTemplateFormField](T1.RegistrationTemplateFormField_Id, T1.RegistrationTemplateFormField_RegistrationTemplateFormId, T1.RegistrationTemplateFormField_FieldSource, T1.RegistrationTemplateFormField_PersonFieldType, T1.RegistrationTemplateFormField_AttributeId, T1.RegistrationTemplateFormField_IsSharedValue, T1.RegistrationTemplateFormField_IsInternal, T1.RegistrationTemplateFormField_ShowCurrentValue, T1.RegistrationTemplateFormField_PreText, T1.RegistrationTemplateFormField_PostText, T1.RegistrationTemplateFormField_IsGridField, T1.RegistrationTemplateFormField_IsRequired, T1.RegistrationTemplateFormField_Order, T1.RegistrationTemplateFormField_CreatedDateTime, T1.RegistrationTemplateFormField_ModifiedDateTime, T1.RegistrationTemplateFormField_CreatedByPersonAliasId, T1.RegistrationTemplateFormField_ModifiedByPersonAliasId, T1.RegistrationTemplateFormField_Guid, T1.RegistrationTemplateFormField_ForeignId, T1.RegistrationTemplateFormField_ForeignGuid, T1.RegistrationTemplateFormField_ForeignKey)
+        [Rock.Data.RegistrationTemplateFormField](T1.RegistrationTemplateFormField_Id, T1.RegistrationTemplateFormField_RegistrationTemplateFormId, T1.RegistrationTemplateFormField_FieldSource, T1.RegistrationTemplateFormField_PersonFieldType, T1.RegistrationTemplateFormField_AttributeId, T1.RegistrationTemplateFormField_IsSharedValue, T1.RegistrationTemplateFormField_IsInternal, T1.RegistrationTemplateFormField_ShowCurrentValue, T1.RegistrationTemplateFormField_PreText, T1.RegistrationTemplateFormField_PostText, T1.RegistrationTemplateFormField_IsGridField, T1.RegistrationTemplateFormField_IsRequired, T1.RegistrationTemplateFormField_Order, T1.RegistrationTemplateFormField_ShowOnWaitlist, T1.RegistrationTemplateFormField_CreatedDateTime, T1.RegistrationTemplateFormField_ModifiedDateTime, T1.RegistrationTemplateFormField_CreatedByPersonAliasId, T1.RegistrationTemplateFormField_ModifiedByPersonAliasId, T1.RegistrationTemplateFormField_Guid, T1.RegistrationTemplateFormField_ForeignId, T1.RegistrationTemplateFormField_ForeignGuid, T1.RegistrationTemplateFormField_ForeignKey)
     FROM (
         SELECT 
             T.Id AS RegistrationTemplateFormField_Id, 
@@ -5253,6 +5254,7 @@
             T.IsGridField AS RegistrationTemplateFormField_IsGridField, 
             T.IsRequired AS RegistrationTemplateFormField_IsRequired, 
             T.[Order] AS RegistrationTemplateFormField_Order, 
+            T.ShowOnWaitlist AS RegistrationTemplateFormField_ShowOnWaitlist, 
             T.CreatedDateTime AS RegistrationTemplateFormField_CreatedDateTime, 
             T.ModifiedDateTime AS RegistrationTemplateFormField_ModifiedDateTime, 
             T.CreatedByPersonAliasId AS RegistrationTemplateFormField_CreatedByPersonAliasId, 
