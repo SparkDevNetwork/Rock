@@ -143,6 +143,8 @@ TransactionAcountDetails: [
 ]</pre>", CodeEditorMode.Lava, CodeEditorTheme.Rock, 100, false, "Online Contribution", "", 28 )]
     [BooleanField( "Enable Comment Entry", "Allows the guest to enter the the value that's put into the comment field (will be appended to the 'Payment Comment' setting)", false, "", 29 )]
     [TextField( "Comment Entry Label", "The label to use on the comment edit field (e.g. Trip Name to give to a specific trip).", false, "Comment", "", 30 )]
+    [BooleanField( "Enable Business Giving", "Should the option to give as as a business be displayed", false, "", 31 )]
+
     #endregion
 
     public partial class TransactionEntry : Rock.Web.UI.RockBlock
@@ -1041,17 +1043,25 @@ TransactionAcountDetails: [
             txtFirstName.Visible = person == null;
             txtLastName.Visible = person == null;
 
-            // Set Give As Person/Business display
-            var loginPageRef = RockPage.Site.LoginPageReference;
-            loginPageRef.Parameters.Add( "returnurl", Context.Server.UrlEncode( Context.Request.RawUrl ) );
-            lBusinessLoginMsg.Text = string.Format( "<a href='{0}'>Login</a> to give as a business", loginPageRef.BuildUrl() );
-            lBusinessLoginMsg.Visible = person == null;
+            if ( GetAttributeValue( "EnableBusinessGiving" ).AsBoolean() )
+            {
+                // Set Give As Person/Business display
+                var loginPageRef = RockPage.Site.LoginPageReference;
+                loginPageRef.Parameters.Add( "returnurl", Context.Server.UrlEncode( Context.Request.RawUrl ) );
+                lBusinessLoginMsg.Text = string.Format( "<a href='{0}'>Login</a> to give as a business", loginPageRef.BuildUrl() );
+                lBusinessLoginMsg.Visible = person == null;
 
-            phGiveAsOption.Visible = person != null;
-            tglGiveAsOption.Checked = true;
-            phGiveAsPerson.Visible = true;
-            phGiveAsBusiness.Visible = false;
-            SetGiveAsOptions();
+                phGiveAsOption.Visible = person != null;
+                tglGiveAsOption.Checked = true;
+                phGiveAsPerson.Visible = true;
+                phGiveAsBusiness.Visible = false;
+                SetGiveAsOptions();
+            }
+            else
+            {
+                lBusinessLoginMsg.Visible = false;
+                phGiveAsOption.Visible = false;
+            }
 
             // Evaluate if comment entry box should be displayed
             txtCommentEntry.Label = GetAttributeValue( "CommentEntryLabel" );
