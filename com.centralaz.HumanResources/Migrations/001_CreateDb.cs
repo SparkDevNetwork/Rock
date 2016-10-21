@@ -151,6 +151,7 @@ namespace com.centralaz.HumanResources.Migrations
 " );
             RockMigrationHelper.UpdateEntityType( "com.centralaz.HumanResources.Model.ContributionElection", "4576029F-7E86-457C-A1F0-611E58E3332C", true, true );
 
+            RockMigrationHelper.UpdateCategory( "546D5F43-1184-47C9-8265-2D7BF4E1BCA5", "Human Resource Changes", "", "", com.centralaz.HumanResources.SystemGuid.Category.HISTORY_HUMAN_RESOURCES, 7 );
         }
         public override void Down()
         {

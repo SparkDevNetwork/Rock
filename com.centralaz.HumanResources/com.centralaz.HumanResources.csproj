@@ -58,6 +58,7 @@
     <Compile Include="Model\RetirementFundService.cs" />
     <Compile Include="Model\SalaryService.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="SystemGuid\Category.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\DotLiquid\DotLiquid.csproj">
