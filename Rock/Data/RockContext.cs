@@ -179,20 +179,36 @@ namespace Rock.Data
         public DbSet<Auth> Auths { get; set; }
 
         /// <summary>
-        /// Gets or sets the Benevolence Results.
+        /// Gets or sets the background checks.
         /// </summary>
         /// <value>
-        /// the Benevolence Results.
+        /// The background checks.
         /// </value>
-        public DbSet<Model.BenevolenceResult> BenevolenceResults { get; set; }      
-        
+        public DbSet<BackgroundCheck> BackgroundChecks { get; set; }
+
         /// <summary>
         /// Gets or sets the Benevolence Requests.
         /// </summary>
         /// <value>
         /// The Benevolence Requests.
         /// </value>
-        public DbSet<Model.BenevolenceRequest> BenevolenceRequests { get; set; }     
+        public DbSet<BenevolenceRequest> BenevolenceRequests { get; set; }
+
+        /// <summary>
+        /// Gets or sets the benevolence request documents.
+        /// </summary>
+        /// <value>
+        /// The benevolence request documents.
+        /// </value>
+        public DbSet<BenevolenceRequestDocument> BenevolenceRequestDocuments { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Benevolence Results.
+        /// </summary>
+        /// <value>
+        /// the Benevolence Results.
+        /// </value>
+        public DbSet<BenevolenceResult> BenevolenceResults { get; set; }      
         
         /// <summary>
         /// Gets or sets the Files.
@@ -339,6 +355,14 @@ namespace Rock.Data
         public DbSet<ConnectionRequestActivity> ConnectionRequestActivities { get; set; }
 
         /// <summary>
+        /// Gets or sets the connection request workflows.
+        /// </summary>
+        /// <value>
+        /// The connection request workflows.
+        /// </value>
+        public DbSet<ConnectionRequestWorkflow> ConnectionRequestWorkflows { get; set; }
+
+        /// <summary>
         /// Gets or sets the connection statuses.
         /// </summary>
         /// <value>
@@ -377,6 +401,14 @@ namespace Rock.Data
         /// The content channel items.
         /// </value>
         public DbSet<ContentChannelItem> ContentChannelItems { get; set; }
+
+        /// <summary>
+        /// Gets or sets the content channel item associations.
+        /// </summary>
+        /// <value>
+        /// The content channel item associations.
+        /// </value>
+        public DbSet<ContentChannelItemAssociation> ContentChannelItemAssociations { get; set; }
 
         /// <summary>
         /// Gets or sets the content channel types.
@@ -643,6 +675,46 @@ namespace Rock.Data
         public DbSet<Following> Followings { get; set; }
 
         /// <summary>
+        /// Gets or sets the following event notifications.
+        /// </summary>
+        /// <value>
+        /// The following event notifications.
+        /// </value>
+        public DbSet<FollowingEventNotification> FollowingEventNotifications { get; set; }
+
+        /// <summary>
+        /// Gets or sets the following event subscriptions.
+        /// </summary>
+        /// <value>
+        /// The following event subscriptions.
+        /// </value>
+        public DbSet<FollowingEventSubscription> FollowingEventSubscriptions { get; set; }
+
+        /// <summary>
+        /// Gets or sets the following event types.
+        /// </summary>
+        /// <value>
+        /// The following event types.
+        /// </value>
+        public DbSet<FollowingEventType> FollowingEventTypes { get; set; }
+
+        /// <summary>
+        /// Gets or sets the following suggesteds.
+        /// </summary>
+        /// <value>
+        /// The following suggesteds.
+        /// </value>
+        public DbSet<FollowingSuggested> FollowingSuggesteds { get; set; }
+
+        /// <summary>
+        /// Gets or sets the following suggestion types.
+        /// </summary>
+        /// <value>
+        /// The following suggestion types.
+        /// </value>
+        public DbSet<FollowingSuggestionType> FollowingSuggestionTypes { get; set; }
+        
+        /// <summary>
         /// Gets or sets the Groups.
         /// </summary>
         /// <value>
@@ -755,6 +827,14 @@ namespace Rock.Data
         public DbSet<Location> Locations { get; set; }
 
         /// <summary>
+        /// Gets or sets the merge templates.
+        /// </summary>
+        /// <value>
+        /// The merge templates.
+        /// </value>
+        public DbSet<MergeTemplate> MergeTemplates { get; set; }
+
+        /// <summary>
         /// Gets or sets the metaphones.
         /// </summary>
         /// <value>
@@ -769,6 +849,14 @@ namespace Rock.Data
         /// the Defined Types.
         /// </value>
         public DbSet<Metric> Metrics { get; set; }
+
+        /// <summary>
+        /// Gets or sets the metric partitions.
+        /// </summary>
+        /// <value>
+        /// The metric partitions.
+        /// </value>
+        public DbSet<MetricPartition> MetricPartitions { get; set; }
 
         /// <summary>
         /// Gets or sets the metric categories.
@@ -787,6 +875,14 @@ namespace Rock.Data
         public DbSet<MetricValue> MetricValues { get; set; }
 
         /// <summary>
+        /// Gets or sets the metric value partitions.
+        /// </summary>
+        /// <value>
+        /// The metric value partitions.
+        /// </value>
+        public DbSet<MetricValuePartition> MetricValuePartitions { get; set; }
+
+        /// <summary>
         /// Gets or sets the notes.
         /// </summary>
         /// <value>
@@ -801,6 +897,22 @@ namespace Rock.Data
         /// The note types.
         /// </value>
         public DbSet<NoteType> NoteTypes { get; set; }
+
+        /// <summary>
+        /// Gets or sets the notifications.
+        /// </summary>
+        /// <value>
+        /// The notifications.
+        /// </value>
+        public DbSet<Notification> Notifications { get; set; }
+
+        /// <summary>
+        /// Gets or sets the notification recipients.
+        /// </summary>
+        /// <value>
+        /// The notification recipients.
+        /// </value>
+        public DbSet<NotificationRecipient> NotificationRecipients { get; set; }
 
         /// <summary>
         /// Gets or sets the Pages.
@@ -833,6 +945,22 @@ namespace Rock.Data
         /// The page views.
         /// </value>
         public DbSet<PageView> PageViews { get; set; }
+
+        /// <summary>
+        /// Gets or sets the page view sessions.
+        /// </summary>
+        /// <value>
+        /// The page view sessions.
+        /// </value>
+        public DbSet<PageViewSession> PageViewSessions { get; set; }
+
+        /// <summary>
+        /// Gets or sets the page view user agents.
+        /// </summary>
+        /// <value>
+        /// The page view user agents.
+        /// </value>
+        public DbSet<PageViewUserAgent> PageViewUserAgents { get; set; }
 
         /// <summary>
         /// Gets or sets the People.
@@ -1035,6 +1163,22 @@ namespace Rock.Data
         public DbSet<ServiceLog> ServiceLogs { get; set; }
 
         /// <summary>
+        /// Gets or sets the signature documents.
+        /// </summary>
+        /// <value>
+        /// The signature documents.
+        /// </value>
+        public DbSet<SignatureDocument> SignatureDocuments { get; set; }
+
+        /// <summary>
+        /// Gets or sets the signature document templates.
+        /// </summary>
+        /// <value>
+        /// The signature document templates.
+        /// </value>
+        public DbSet<SignatureDocumentTemplate> SignatureDocumentTemplates { get; set; }
+
+        /// <summary>
         /// Gets or sets the Sites.
         /// </summary>
         /// <value>
@@ -1189,6 +1333,12 @@ namespace Rock.Data
                 foreach ( var entityType in entityTypeList )
                 {
                     modelBuilder.RegisterEntityType( entityType );
+                }
+
+                // add configurations that might be in plugin assemblies
+                foreach ( var assembly in entityTypeList.Select( a => a.Assembly ).Distinct() )
+                {
+                    modelBuilder.Configurations.AddFromAssembly( assembly );
                 }
             }
             catch ( Exception ex )

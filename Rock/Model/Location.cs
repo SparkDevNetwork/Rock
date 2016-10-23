@@ -595,25 +595,29 @@ namespace Rock.Model
         /// </summary>
         /// <param name="latitude">A <see cref="System.Double"/> representing the latitude for this location.</param>
         /// <param name="longitude">A <see cref="System.Double"/>representing the longitude for this location.</param>
-        public void SetLocationPointFromLatLong( double latitude, double longitude )
+        public bool SetLocationPointFromLatLong( double latitude, double longitude )
         {
-            this.GeoPoint = DbGeography.FromText( string.Format( "POINT({0} {1})", longitude, latitude ) );
+            try
+            {
+                this.GeoPoint = DbGeography.FromText( string.Format( "POINT({0} {1})", longitude, latitude ) );
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
         }
 
         /// <summary>
         /// Returns a Google Maps link to use for this Location
         /// </summary>
-        /// <param name="title">A <see cref="System.String"/> containing the parameters needed by Google Maps to display this location.</param>
+        /// <param name="title">A unused <see cref="System.String"/> containing the location name label.</param>
         /// <returns>A <see cref="System.String"/> containing the link to Google Maps for this location.</returns>
         public virtual string GoogleMapLink( string title )
         {
             string qParm = this.GetFullStreetAddress();
-            if ( !string.IsNullOrWhiteSpace( title ) )
-            {
-                qParm += " (" + title + ")";
-            }
 
-            return "http://maps.google.com/maps?q=" +
+            return "https://maps.google.com/maps?q=" +
                 System.Web.HttpUtility.UrlEncode( qParm );
         }
 

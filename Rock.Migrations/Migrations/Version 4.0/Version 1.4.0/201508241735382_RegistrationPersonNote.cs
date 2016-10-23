@@ -188,7 +188,7 @@ namespace Rock.Migrations
     END
 " );
 
-            // JE: Rename 'Pledge List' page to 'Pledges'�
+            // JE: Rename 'Pledge List' page to 'Pledges'
             Sql( @"
   UPDATE [Page]
   SET [InternalName] = 'Pledges', [BrowserTitle] = 'Pledges', [PageTitle] = 'Pledges'

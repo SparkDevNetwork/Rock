@@ -259,6 +259,15 @@ namespace Rock.Model
         public RegistrantsSameFamily RegistrantsSameFamily { get; set; }
 
         /// <summary>
+        /// Gets or sets a value indicating whether [show current family members].
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if [show current family members]; otherwise, <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool ShowCurrentFamilyMembers { get; set; }
+
+        /// <summary>
         /// Gets or sets the name of the request entry.
         /// </summary>
         /// <value>
@@ -446,6 +455,15 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public SignatureDocumentAction SignatureDocumentAction { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether a wait list is enabled for this event template
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [wait list enabled]; otherwise, <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool WaitListEnabled { get; set; }
 
         #endregion
 

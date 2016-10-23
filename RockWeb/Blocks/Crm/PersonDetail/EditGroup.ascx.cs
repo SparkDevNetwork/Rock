@@ -337,6 +337,75 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             }
         }
 
+        /// <summary>
+        /// Raises the <see cref="E:System.Web.UI.Control.PreRender" /> event.
+        /// </summary>
+        /// <param name="e">An <see cref="T:System.EventArgs" /> object that contains the event data.</param>
+        protected override void OnPreRender( EventArgs e )
+        {
+            base.OnPreRender( e );
+
+            if ( modalAddPerson.Visible )
+            {
+                string script = string.Format( @"
+
+    $('#{0}').on('click', function () {{
+
+        // if Save was clicked, set the fields that should be validated based on what tab they are on
+        if ($('#{9}').val() == 'Existing') {{
+            enableRequiredField( '{1}', true )
+            enableRequiredField( '{2}_rfv', false );
+            enableRequiredField( '{3}_rfv', false );
+            enableRequiredField( '{4}', false );
+            enableRequiredField( '{5}', false );
+            enableRequiredField( '{6}_rfv', false );
+        }} else {{
+            enableRequiredField('{1}', false)
+            enableRequiredField('{2}_rfv', true);
+            enableRequiredField('{3}_rfv', true);
+            enableRequiredField('{4}', true);
+            enableRequiredField('{5}', true);
+            enableRequiredField('{6}_rfv', true);
+        }}
+
+        // update the scrollbar since our validation box could show
+        setTimeout( function ()
+        {{
+            Rock.dialogs.updateModalScrollBar( '{7}' );
+        }});
+
+    }})
+
+    $('a[data-toggle=""pill""]').on('shown.bs.tab', function (e) {{
+
+        var tabHref = $( e.target ).attr( 'href' );
+        if ( tabHref == '#{8}' )
+        {{
+            $( '#{9}' ).val( 'Existing' );
+        }} else {{
+            $( '#{9}' ).val( 'New' );
+        }}
+
+        // if the validation error summary is shown, hide it when they switch tabs
+        $( '#{7}' ).hide();
+    }});
+",
+                    modalAddPerson.ServerSaveLink.ClientID,                         // {0}
+                    ppPerson.RequiredFieldValidator.ClientID,                       // {1}
+                    tbNewPersonFirstName.ClientID,                                  // {2}
+                    tbNewPersonLastName.ClientID,                                   // {3}
+                    rblNewPersonRole.RequiredFieldValidator.ClientID,               // {4}
+                    rblNewPersonGender.RequiredFieldValidator.ClientID,             // {5}
+                    ddlNewPersonConnectionStatus.ClientID,                          // {6}
+                    valSummaryAddPerson.ClientID,                                   // {7}
+                    divExistingPerson.ClientID,                                     // {8}
+                    hfActiveTab.ClientID                                            // {9}
+                );
+
+                ScriptManager.RegisterStartupScript( modalAddPerson, modalAddPerson.GetType(), "modaldialog-validation", script, true );
+            }
+        }
+
         #region Events
 
         /// <summary>

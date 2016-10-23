@@ -39,6 +39,7 @@
                             <Rock:RockDropDownList ID="ddlCreditCardType" runat="server" Label="Credit Card Type" />
                             <Rock:RockDropDownList ID="ddlSourceType" runat="server" Label="Source Type" />
                             <Rock:CampusPicker ID="campCampus" runat="server" Label="Campus (of Batch)" />
+                            <Rock:PersonPicker ID="ppPerson" runat="server" Label="Person" />
                         </Rock:GridFilter>
 
                         <Rock:ModalAlert ID="mdGridWarning" runat="server" />

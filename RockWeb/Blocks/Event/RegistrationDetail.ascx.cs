@@ -1652,9 +1652,20 @@ namespace RockWeb.Blocks.Event
 
                 var batchService = new FinancialBatchService( rockContext );
 
+                // determine batch prefix
+                string batchPrefix = string.Empty;
+                if ( !string.IsNullOrWhiteSpace( RegistrationTemplateState.BatchNamePrefix ) )
+                {
+                    batchPrefix = RegistrationTemplateState.BatchNamePrefix;
+                }
+                else
+                {
+                    batchPrefix = GetAttributeValue( "BatchNamePrefix" );
+                }
+
                 // Get the batch
                 var batch = batchService.Get(
-                    GetAttributeValue( "BatchNamePrefix" ),
+                    batchPrefix,
                     dvCurrencyType,
                     dvCredCardType,
                     transaction.TransactionDateTime.Value,
@@ -1957,7 +1968,8 @@ namespace RockWeb.Blocks.Event
                     registration.RegistrationInstance != null &&
                     registration.RegistrationInstance.AccountId.HasValue &&
                     registration.PersonAliasId.HasValue &&
-                    RegistrationTemplateState != null )
+                    RegistrationTemplateState != null &&
+                    EditAllowed )
                 {
                     lbAddPayment.Visible = true;
                     lbProcessPayment.Visible = RegistrationTemplateState.FinancialGateway != null;

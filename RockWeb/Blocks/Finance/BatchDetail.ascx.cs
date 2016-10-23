@@ -241,6 +241,7 @@ namespace RockWeb.Blocks.Finance
                     {
                         if ( changes.Any() )
                         {
+                            pdAuditDetails.SetEntity( batch, ResolveRockUrl( "~" ) );
                             HistoryService.SaveChanges(
                                 rockContext,
                                 typeof( FinancialBatch ),
@@ -348,12 +349,16 @@ namespace RockWeb.Blocks.Finance
                 if ( batch != null )
                 {
                     editAllowed = batch.IsAuthorized( Authorization.EDIT, CurrentPerson );
+                    pdAuditDetails.SetEntity( batch, ResolveRockUrl( "~" ) );
                 }
             }
 
             if ( batch == null )
             {
                 batch = new FinancialBatch { Id = 0 };
+
+                // hide the panel drawer that show created and last modified dates
+                pdAuditDetails.Visible = false;
             }
 
             hfBatchId.Value = batch.Id.ToString();

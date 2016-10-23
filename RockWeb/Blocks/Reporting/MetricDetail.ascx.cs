@@ -588,10 +588,13 @@ Example: Let's say you have a DataView called 'Small Group Attendance for Last W
             if ( !metricId.Equals( 0 ) )
             {
                 metric = metricService.Get( metricId );
+                pdAuditDetails.SetEntity( metric, ResolveRockUrl( "~" ) );
             }
 
             if ( metric == null )
             {
+                // hide the panel drawer that show created and last modified dates
+                pdAuditDetails.Visible = false;
                 metric = new Metric { Id = 0, IsSystem = false };
                 metric.SourceValueTypeId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.METRIC_SOURCE_VALUE_TYPE_MANUAL.AsGuid() ).Id;
                 metric.MetricCategories = new List<MetricCategory>();

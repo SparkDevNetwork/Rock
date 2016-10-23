@@ -64,11 +64,11 @@ namespace Rock.Workflow.Action.CheckIn
                     {
                         foreach ( var group in groupType.Groups.ToList() )
                         {
-                            string lastNameBeginLetterRange = group.Group.GetAttributeValue( "LastNameBeginLetterRange" ).Trim();
-                            string lastNameEndLetterRange = group.Group.GetAttributeValue( "LastNameEndLetterRange" ).Trim();
+                            string lastNameBeginLetterRange = group.Group.GetAttributeValue( "LastNameBeginLetterRange" );
+                            string lastNameEndLetterRange = group.Group.GetAttributeValue( "LastNameEndLetterRange" );
 
-                            char rangeStart = ( lastNameBeginLetterRange == "" ) ? 'A' : char.Parse( lastNameBeginLetterRange.ToUpper() );
-                            char rangeEnd = ( lastNameEndLetterRange == "" ) ? 'Z' : char.Parse( lastNameEndLetterRange.ToUpper() );
+                            char rangeStart = ( string.IsNullOrWhiteSpace( lastNameBeginLetterRange ) ) ? 'A' : char.Parse( lastNameBeginLetterRange.Trim().ToUpper() );
+                            char rangeEnd = ( string.IsNullOrWhiteSpace( lastNameEndLetterRange ) ) ? 'Z' : char.Parse( lastNameEndLetterRange.Trim().ToUpper() );
 
                             // If the last name is not in range, remove the group
                             if ( !( lastInitial >= rangeStart && lastInitial <= rangeEnd ) )

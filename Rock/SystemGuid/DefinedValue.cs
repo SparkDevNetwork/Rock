@@ -102,6 +102,11 @@ namespace Rock.SystemGuid
         /// </summary>
         public const string CURRENCY_TYPE_ACH = "DABEE8FD-AEDF-43E1-8547-4C97FA14D9B6";
 
+        /// <summary>
+        /// ACH
+        /// </summary>
+        public const string CURRENCY_TYPE_NONCASH = "7950FF66-80EE-E8AB-4A77-4A13EDEB7513";
+
         #endregion
 
         #region Financial Transaction Type

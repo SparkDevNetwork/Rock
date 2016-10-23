@@ -1,8 +1,5 @@
 ﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="DynamicHeatMap.ascx.cs" Inherits="RockWeb.Blocks.Reporting.DynamicHeatMap" %>
 
-<script type="text/javascript" src="https://google-maps-utility-library-v3.googlecode.com/svn/trunk/maplabel/src/maplabel-compiled.js"></script>
-
-
 <asp:UpdatePanel ID="upnlContent" runat="server" UpdateMode="Conditional">
     <ContentTemplate>
 
@@ -434,6 +431,7 @@
                 });
 
                 $('.js-saveshape').click(function () {
+
                     if (map.SelectedShape) {
                         
                         var geoFencePath;
@@ -666,7 +664,7 @@
         </script>
 
         <%-- Save Shape to Location --%>
-        <Rock:ModalDialog ID="mdSaveLocation" runat="server" CssClass="js-savelocation-modal" ValidationGroup="vgSaveLocation" OnOkScript="saveLocationGeofence();">
+        <Rock:ModalDialog ID="mdSaveLocation" runat="server" CssClass="js-savelocation-modal" ValidationGroup="vgSaveLocation" OnOkScript="saveLocationGeofence();" Visible="true">
             <Content>
                 <Rock:LocationItemPicker ID="lpLocation" runat="server" AllowMultiSelect="false" />
             </Content>

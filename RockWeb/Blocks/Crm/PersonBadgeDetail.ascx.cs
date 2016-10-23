@@ -78,7 +78,13 @@ namespace RockWeb.Blocks.Crm
                         }
 
                         BuildEditControls( personBadge, true );
+                        pdAuditDetails.SetEntity( personBadge, ResolveRockUrl( "~" ) );
                     }
+                }
+                else
+                {
+                    // hide the panel drawer that show created and last modified dates
+                    pdAuditDetails.Visible = false;
                 }
             }
             else

@@ -1025,7 +1025,7 @@ Registration By: {0} Total Cost/Fees:{1}
 
                         case RegistrationFieldSource.GroupMemberAttribute:
                             {
-                                if ( registrant.GroupMember != null )
+                                if ( registrant != null && registrant.GroupMember != null )
                                 {
                                     if ( registrant.GroupMember.Attributes == null )
                                     {
@@ -1038,11 +1038,15 @@ Registration By: {0} Total Cost/Fees:{1}
 
                         case RegistrationFieldSource.RegistrationAttribute:
                             {
-                                if ( registrant.Attributes == null )
+                                if ( registrant != null )
                                 {
-                                    registrant.LoadAttributes();
+                                    if ( registrant.Attributes == null )
+                                    {
+                                        registrant.LoadAttributes();
+                                    }
+                                    return registrant.GetAttributeValue( attribute.Key );
                                 }
-                                return registrant.GetAttributeValue( attribute.Key );
+                                break;
                             }
                     }
                 }

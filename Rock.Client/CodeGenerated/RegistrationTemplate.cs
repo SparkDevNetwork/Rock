@@ -163,6 +163,9 @@ namespace Rock.Client
         public bool? SetCostOnInstance { get; set; }
 
         /// <summary />
+        public bool ShowCurrentFamilyMembers { get; set; }
+
+        /// <summary />
         public Rock.Client.Enums.SignatureDocumentAction SignatureDocumentAction { get; set; }
 
         /// <summary />
@@ -170,6 +173,9 @@ namespace Rock.Client
 
         /// <summary />
         public string SuccessTitle { get; set; }
+
+        /// <summary />
+        public bool WaitListEnabled { get; set; }
 
         /// <summary>
         /// Leave this as NULL to let Rock set this
@@ -246,9 +252,11 @@ namespace Rock.Client
             this.RequestEntryName = source.RequestEntryName;
             this.RequiredSignatureDocumentTemplateId = source.RequiredSignatureDocumentTemplateId;
             this.SetCostOnInstance = source.SetCostOnInstance;
+            this.ShowCurrentFamilyMembers = source.ShowCurrentFamilyMembers;
             this.SignatureDocumentAction = source.SignatureDocumentAction;
             this.SuccessText = source.SuccessText;
             this.SuccessTitle = source.SuccessTitle;
+            this.WaitListEnabled = source.WaitListEnabled;
             this.CreatedDateTime = source.CreatedDateTime;
             this.ModifiedDateTime = source.ModifiedDateTime;
             this.CreatedByPersonAliasId = source.CreatedByPersonAliasId;

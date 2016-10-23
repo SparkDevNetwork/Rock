@@ -129,9 +129,11 @@ namespace Rock.Model
             target.RequestEntryName = source.RequestEntryName;
             target.RequiredSignatureDocumentTemplateId = source.RequiredSignatureDocumentTemplateId;
             target.SetCostOnInstance = source.SetCostOnInstance;
+            target.ShowCurrentFamilyMembers = source.ShowCurrentFamilyMembers;
             target.SignatureDocumentAction = source.SignatureDocumentAction;
             target.SuccessText = source.SuccessText;
             target.SuccessTitle = source.SuccessTitle;
+            target.WaitListEnabled = source.WaitListEnabled;
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;
             target.CreatedByPersonAliasId = source.CreatedByPersonAliasId;

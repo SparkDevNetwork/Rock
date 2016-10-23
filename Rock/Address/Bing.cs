@@ -114,8 +114,10 @@ namespace Rock.Address
 
                         if ( bingLocation.Confidence == "High" && matchCodes.Contains( "Good" ) )
                         {
-                            location.SetLocationPointFromLatLong( bingLocation.Point.Coordinates[0], bingLocation.Point.Coordinates[1] );
-                            result = VerificationResult.Geocoded;
+                            if ( location.SetLocationPointFromLatLong( bingLocation.Point.Coordinates[0], bingLocation.Point.Coordinates[1] ) )
+                            {
+                                result = VerificationResult.Geocoded;
+                            }
 
                             var address = bingLocation.Address;
                             if ( address != null )

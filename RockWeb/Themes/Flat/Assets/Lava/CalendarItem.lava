@@ -7,7 +7,24 @@
     {% endif %}
 
     <h1>{{Event.Name}}</h1>
-    {{Event.Description}}
+    {{ Event.Description }}
+
+    {{ 'summary_large_image' | AddMetaTagToHead:'property','twitter:card' }}
+    {{ Event.Name | AddMetaTagToHead:'property','twitter:title' }}
+    {{ Event.Description | AddMetaTagToHead:'property','twitter:description' }}
+
+    {{ Event.Name | AddMetaTagToHead:'property','og:title' }}
+    {{ Event.Description | AddMetaTagToHead:'property','og:description' }}
+
+    {% assign facebookPhoto = Event | Attribute:'core_calendar_FacebookPhoto','Object' %}
+    {% if facebookPhoto %}
+    {{ facebookPhoto.Url | AddMetaTagToHead:'property','og:image' }}
+    {% endif %}
+
+    {% assign twitterPhoto = Event | Attribute:'core_calendar_TwitterPhoto','Object' %}
+    {% if twitterPhoto != '' %}
+    {{ twitterPhoto.Url | AddMetaTagToHead:'property','twitter:image' }}
+    {% endif %}
   </div>
   <div class="col-md-4 col-md-pull-8">
     <div class="well">
@@ -58,7 +75,7 @@
       {% assign daysTillStartDate = 'Now' | DateDiff:linkage.RegistrationInstance.StartDateTime,'m' %}
       {% assign daysTillEndDate = 'Now' | DateDiff:linkage.RegistrationInstance.EndDateTime,'m' %}
       {% assign showRegistration = true %}
-      {% assign registrationMessgae = '' %}
+      {% assign registrationMessage = '' %}
 
 
 

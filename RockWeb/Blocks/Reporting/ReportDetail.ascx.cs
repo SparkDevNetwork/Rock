@@ -883,11 +883,14 @@ namespace RockWeb.Blocks.Reporting
             if ( !reportId.Equals( 0 ) )
             {
                 report = reportService.Get( reportId );
+                pdAuditDetails.SetEntity( report, ResolveRockUrl( "~" ) );
             }
 
             if ( report == null )
             {
                 report = new Report { Id = 0, IsSystem = false, CategoryId = parentCategoryId };
+                // hide the panel drawer that show created and last modified dates
+                pdAuditDetails.Visible = false;
             }
 
             pnlDetails.Visible = true;

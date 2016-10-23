@@ -38,6 +38,9 @@ namespace Rock.Client
         public Rock.Client.Enums.ContentChannelDateType DateRangeType { get; set; }
 
         /// <summary />
+        public bool DisableContentField { get; set; }
+
+        /// <summary />
         public bool DisablePriority { get; set; }
 
         /// <summary />
@@ -94,6 +97,7 @@ namespace Rock.Client
         {
             this.Id = source.Id;
             this.DateRangeType = source.DateRangeType;
+            this.DisableContentField = source.DisableContentField;
             this.DisablePriority = source.DisablePriority;
             this.ForeignGuid = source.ForeignGuid;
             this.ForeignKey = source.ForeignKey;

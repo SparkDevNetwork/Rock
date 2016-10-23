@@ -10,7 +10,9 @@
 
             <div class="emailform-messages"></div>
 
-            <asp:Button ID="btnSubmit" CssClass="btn btn-primary" runat="server" Text="Submit" OnClientClick="return validateForm();" OnClick="btnSubmit_Click" />
+            <div class="actions">
+                <asp:Button ID="btnSubmit" CssClass="btn btn-primary" runat="server" Text="Submit" OnClientClick="return validateForm();" OnClick="btnSubmit_Click" />
+            </div>
         </asp:Panel>
 
         <asp:Literal ID="lDebug" runat="server" />

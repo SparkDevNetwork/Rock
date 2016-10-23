@@ -47,6 +47,7 @@ namespace Rock.Model
         /// The metric value identifier.
         /// </value>
         [DataMember]
+        [IgnoreCanDelete]
         public int? MetricValueId { get; set; }
 
         /// <summary>

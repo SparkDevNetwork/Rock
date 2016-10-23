@@ -457,6 +457,7 @@ namespace RockWeb.Blocks.Communication
         {
             ShowStatus( communication );
             lTitle.Text = ( communication.Subject ?? "Communication" ).FormatAsHtmlTitle();
+            pdAuditDetails.SetEntity( communication, ResolveRockUrl( "~" ) );
 
             SetPersonDateValue( lCreatedBy, communication.CreatedByPersonAlias, communication.CreatedDateTime, "Created By" );
             SetPersonDateValue( lApprovedBy, communication.ReviewerPersonAlias, communication.ReviewedDateTime, "Approved By" );

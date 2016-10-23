@@ -507,12 +507,15 @@ $(document).ready(function() {
             if ( !dataViewId.Equals( 0 ) )
             {
                 dataView = dataViewService.Get( dataViewId );
+                pdAuditDetails.SetEntity( dataView, ResolveRockUrl( "~" ) );
             }
 
             if ( dataView == null )
             {
                 dataView = new DataView { Id = 0, IsSystem = false, CategoryId = parentCategoryId };
                 dataView.Name = string.Empty;
+                // hide the panel drawer that show created and last modified dates
+                pdAuditDetails.Visible = false;
             }
 
             if ( !dataView.IsAuthorized( Authorization.VIEW, CurrentPerson ) )

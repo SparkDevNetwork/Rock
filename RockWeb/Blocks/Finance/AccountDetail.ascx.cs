@@ -18,6 +18,7 @@ using System;
 using System.ComponentModel;
 using System.Linq;
 using Rock;
+using Rock.Attribute;
 using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
@@ -71,6 +72,8 @@ namespace RockWeb.Blocks.Finance
             {
                 account = new Rock.Model.FinancialAccount();
                 accountService.Add( account );
+                account.CreatedByPersonAliasId = CurrentPersonAliasId;
+                account.CreatedDateTime = RockDateTime.Now;
             }
             else
             {
@@ -94,6 +97,12 @@ namespace RockWeb.Blocks.Finance
             account.EndDate = dtpEndDate.SelectedDate;
             account.IsTaxDeductible = cbIsTaxDeductible.Checked;
 
+            account.ModifiedDateTime = RockDateTime.Now;
+            account.ModifiedByPersonAliasId = CurrentPersonAliasId;
+
+            account.LoadAttributes( rockContext );
+            Rock.Attribute.Helper.GetEditValues( phAttributes, account );
+
             // if the account IsValid is false, and the UI controls didn't report any errors, it is probably because the custom rules of account didn't pass.
             // So, make sure a message is displayed in the validation summary
             cvAccount.IsValid = account.IsValid;
@@ -105,6 +114,7 @@ namespace RockWeb.Blocks.Finance
             }
 
             rockContext.SaveChanges();
+            account.SaveAttributeValues( rockContext );
 
             NavigateToParentPage();
         }
@@ -137,11 +147,14 @@ namespace RockWeb.Blocks.Finance
             {
                 account = new FinancialAccountService( new RockContext() ).Get( accountId );
                 editAllowed = editAllowed || account.IsAuthorized( Authorization.EDIT, CurrentPerson );
+                pdAuditDetails.SetEntity( account, ResolveRockUrl( "~" ) );
             }
 
             if ( account == null )
             {
                 account = new FinancialAccount { Id = 0, IsActive = true };
+                // hide the panel drawer that show created and last modified dates
+                pdAuditDetails.Visible = false;
             }
 
             hfAccountId.Value = account.Id.ToString();
@@ -174,11 +187,18 @@ namespace RockWeb.Blocks.Finance
             if ( account.Id == 0 )
             {
                 lActionTitle.Text = ActionTitle.Add( FinancialAccount.FriendlyTypeName ).FormatAsHtmlTitle();
+
+                // hide the panel drawer that show created and last modified dates
+                pdAuditDetails.Visible = false;
             }
             else
             {
                 lActionTitle.Text = account.Name.FormatAsHtmlTitle();
             }
+
+            account.LoadAttributes();
+            phAttributes.Controls.Clear();
+            Rock.Attribute.Helper.AddEditControls( account, phAttributes, true, BlockValidationGroup );
 
             hlInactive.Visible = !account.IsActive;
 

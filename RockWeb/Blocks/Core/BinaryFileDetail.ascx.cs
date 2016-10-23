@@ -173,10 +173,14 @@ namespace RockWeb.Blocks.Core
             if ( !binaryFileId.Equals( 0 ) )
             {
                 binaryFile = binaryFileService.Get( binaryFileId );
+                pdAuditDetails.SetEntity( binaryFile, ResolveRockUrl( "~" ) );
             }
 
             if ( binaryFile == null )
             {
+                // hide the panel drawer that show created and last modified dates
+                pdAuditDetails.Visible = false;
+
                 BinaryFileType binaryFileType = null;
                 if ( binaryFileTypeId.HasValue )
                 {

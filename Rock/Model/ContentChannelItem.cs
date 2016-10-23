@@ -20,8 +20,11 @@ using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
+using System.Linq;
 using System.Runtime.Serialization;
 using Rock.Data;
+using Rock.UniversalSearch;
+using Rock.UniversalSearch.IndexModels;
 
 namespace Rock.Model
 {
@@ -30,7 +33,7 @@ namespace Rock.Model
     /// </summary>
     [Table( "ContentChannelItem")]
     [DataContract]
-    public partial class ContentChannelItem : Model<ContentChannelItem>, IOrdered
+    public partial class ContentChannelItem : Model<ContentChannelItem>, IOrdered, IRockIndexable
     {
 
         #region Entity Properties
@@ -221,6 +224,23 @@ namespace Rock.Model
         private ICollection<EventItemOccurrenceChannelItem> _eventItemOccurrences;
 
         /// <summary>
+        /// Gets the supported actions.
+        /// </summary>
+        /// <value>
+        /// The supported actions.
+        /// </value>
+        [NotMapped]
+        public override Dictionary<string, string> SupportedActions
+        {
+            get
+            {
+                var supportedActions = base.SupportedActions;
+                supportedActions.AddOrReplace( Rock.Security.Authorization.INTERACT, "The roles and/or users that have access to intertact with the channel item." );
+                return supportedActions;
+            }
+        }
+
+        /// <summary>
         /// Gets the parent authority.
         /// </summary>
         /// <value>
@@ -235,10 +255,105 @@ namespace Rock.Model
             }
         }
 
+        /// <summary>
+        /// Gets a value indicating whether [allows interactive bulk indexing].
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if [allows interactive bulk indexing]; otherwise, <c>false</c>.
+        /// </value>
+        /// <exception cref="System.NotImplementedException"></exception>
+        [NotMapped]
+        public bool AllowsInteractiveBulkIndexing
+        {
+            get
+            {
+                return true;
+            }
+        }
+
+        #endregion
+
+        #region Index Methods
+
+        /// <summary>
+        /// Bulks the index documents.
+        /// </summary>
+        public void BulkIndexDocuments()
+        {
+            List<ContentChannelItemIndex> indexableChannelItems = new List<ContentChannelItemIndex>();
+
+            // return all approved content channel items that are in content channels that should be indexed
+            RockContext rockContext = new RockContext();
+            var contentChannelItems = new ContentChannelItemService( rockContext ).Queryable()
+                                            .Where( i =>
+                                                i.ContentChannel.IsIndexEnabled
+                                                && (i.ContentChannel.RequiresApproval == false || i.Status == ContentChannelItemStatus.Approved) );
+
+            int recordCounter = 0;
+
+            foreach ( var item in contentChannelItems )
+            {
+                var indexableChannelItem = ContentChannelItemIndex.LoadByModel( item );
+                indexableChannelItems.Add( indexableChannelItem );
+
+                recordCounter++;
+
+                if ( recordCounter > 100 )
+                {
+                    IndexContainer.IndexDocuments( indexableChannelItems );
+                    indexableChannelItems = new List<ContentChannelItemIndex>();
+                    recordCounter = 0;
+                }
+            }
+
+            IndexContainer.IndexDocuments( indexableChannelItems );
+        }
+
+        /// <summary>
+        /// Indexes the document.
+        /// </summary>
+        /// <param name="id"></param>
+        public void IndexDocument( int id )
+        {
+            var itemEntity = new ContentChannelItemService( new RockContext() ).Get( id );
+
+            // ensure it's meant to be indexed
+            if (itemEntity.ContentChannel.IsIndexEnabled && (itemEntity.ContentChannel.RequiresApproval == false || itemEntity.Status == ContentChannelItemStatus.Approved) )
+            {
+                var indexItem = ContentChannelItemIndex.LoadByModel( itemEntity );
+                IndexContainer.IndexDocument( indexItem );
+            }
+        }
+
+        /// <summary>
+        /// Deletes the indexed document.
+        /// </summary>
+        /// <param name="id"></param>
+        public void DeleteIndexedDocument( int id )
+        {
+            IndexContainer.DeleteDocumentById( this.IndexModelType(), id );
+        }
+
+        /// <summary>
+        /// Deletes the indexed documents.
+        /// </summary>
+        public void DeleteIndexedDocuments()
+        {
+            IndexContainer.DeleteDocumentsByType<ContentChannelItemIndex>();
+        }
+
+        /// <summary>
+        /// Indexes the name of the model.
+        /// </summary>
+        /// <returns></returns>
+        public Type IndexModelType()
+        {
+            return typeof( ContentChannelItemIndex );
+        }
+
         #endregion
 
         #region Methods
-
         /// <summary>
         /// Pres the save.
         /// </summary>
@@ -252,7 +367,6 @@ namespace Rock.Model
                 ParentItems.Clear();
             }
         }
-
         #endregion
     }
 

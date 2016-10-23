@@ -378,8 +378,7 @@ $('.template-form > .panel-body').on('validation-error', function() {
             writer.AddAttribute( HtmlTextWriterAttribute.Class, "filter-toggle pull-left" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
-            writer.AddAttribute("class", "panel-title");
-            writer.RenderBeginTag( HtmlTextWriterTag.H3 );
+            writer.RenderBeginTag( HtmlTextWriterTag.Div );
             _lblFormName.Text = _tbFormName.Text;
             _lblFormName.RenderControl( writer );
 

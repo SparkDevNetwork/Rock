@@ -1,34 +1,26 @@
-# Context
-_How did you encounter this problem?_
+### Prerequisites
 
-# Expected Behaviour
-_What did you expect to occur?_
+* [ ] Can you reproduce the problem on a fresh install or the [demo site](http://rock.rocksolidchurchdemo.com/)?
+* [ ] Did you include your Rock version number and client culture setting?
+* [ ] Have you attached your [environment and diagnostics information](https://github.com/SparkDevNetwork/Rock/wiki/Environment-and-Diagnostics-Information) to this issue?
+* [ ] Did you [perform a cursory search](https://github.com/issues?q=is%3Aissue+user%3ASparkDevNetwork+-repo%3ASparkDevNetwork%2FSlack) to see if your bug or enhancement is already reported?
 
-# Actual Behaviour
-_What occurs instead?_
+### Description
 
-# Steps to Reproduce
-_Please provide a set of **complete** steps that allow us to reproduce the problem. Double check this occurs on the demo server too._
-1. Step 1
-2. Step 2
-3. Step 3
+[Description of the bug or feature. Include screenshots if applicable.]
 
-# Environment and Diagnostics Information
-_Please provide us with environment diagnostics information_
+### Steps to Reproduce
 
-Steps to find your environment and diagnostics information:
+1. [First Step]
+2. [Second Step]
+3. [and so on...]
 
-1. Hover your cursor at the bottom of a window in Rock, the admin bar will show
-2. Press the (i) icon to display the _Rock Information_ window.
-3. Note down your **Rock Version** and **Client Culture Setting**.
-4. Switch to the _Diagnostics_ tab
-5. Scroll to the bottom of the diagnostics window and download the diagnostics file
-6. Attach your diagnostics file to this issue request.
+**Expected behavior:** [What you expected to happen]
 
+**Actual behavior:** [What actually happened]
 
-* **Rock Version**: _Replace with your Rock Version_
-* **Client Culture Settinng**: _Replace with your  Client Culture Setting_
+### Versions
 
-
-# Screenshots
-_Provide us some screenshots of the problem (if appropiate) to help us identify what's occurring. Arrows and labels are helpful._
+* **Rock Version:** [Enter Rock version here]  
+* **Client Culture Setting** [Enter Client Culture here]  
+[Included from your Rock installation](https://github.com/SparkDevNetwork/Rock/wiki/Environment-and-Diagnostics-Information)

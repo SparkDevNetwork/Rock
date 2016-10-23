@@ -43,7 +43,7 @@
                                 <asp:Repeater ID="rptConnectionOpportunities" runat="server" OnItemCommand="rptConnectionOpportunities_ItemCommand">
                                     <ItemTemplate>
                                         <li class='<%# SelectedOpportunityId.HasValue && (int)Eval("Id") == SelectedOpportunityId.Value ? "active" : "" %> block-status'>
-                                            <asp:LinkButton ID="lbConnectionOpportunity" runat="server" CommandArgument='<%# Eval("Id") %>' CommandName="Display">
+                                            <asp:LinkButton ID="lbConnectionOpportunity" runat="server" CommandArgument='<%# Eval("Id") %>' CommandName="Display" CssClass='<%# (bool)Eval("IsActive") ? "" : "inactive-item"  %>'>
                                                 <%# this.GetOpportunitySummaryHtml( Container.DataItem as OpportunitySummary ) %>
                                             </asp:LinkButton>
                                         </li>
