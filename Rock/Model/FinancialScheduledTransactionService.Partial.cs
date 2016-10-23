@@ -100,7 +100,7 @@ namespace Rock.Model
 
             return base.Delete( item );
         }
-        
+
         /// <summary>
         /// Sets the status.
         /// </summary>
@@ -109,8 +109,8 @@ namespace Rock.Model
         /// <returns></returns>
         public bool GetStatus( FinancialScheduledTransaction scheduledTransaction, out string errorMessages )
         {
-            if ( scheduledTransaction != null && 
-                scheduledTransaction.FinancialGateway != null && 
+            if ( scheduledTransaction != null &&
+                scheduledTransaction.FinancialGateway != null &&
                 scheduledTransaction.FinancialGateway.IsActive )
             {
                 if ( scheduledTransaction.FinancialGateway.Attributes == null )
@@ -137,8 +137,8 @@ namespace Rock.Model
         /// <returns></returns>
         public bool Reactivate( FinancialScheduledTransaction scheduledTransaction, out string errorMessages )
         {
-            if ( scheduledTransaction != null && 
-                scheduledTransaction.FinancialGateway != null && 
+            if ( scheduledTransaction != null &&
+                scheduledTransaction.FinancialGateway != null &&
                 scheduledTransaction.FinancialGateway.IsActive )
             {
                 if ( scheduledTransaction.FinancialGateway.Attributes == null )
@@ -184,8 +184,8 @@ namespace Rock.Model
         /// <returns></returns>
         public bool Cancel( FinancialScheduledTransaction scheduledTransaction, out string errorMessages )
         {
-            if ( scheduledTransaction != null && 
-                scheduledTransaction.FinancialGateway != null && 
+            if ( scheduledTransaction != null &&
+                scheduledTransaction.FinancialGateway != null &&
                 scheduledTransaction.FinancialGateway.IsActive )
             {
                 if ( scheduledTransaction.FinancialGateway.Attributes == null )
@@ -292,7 +292,10 @@ namespace Rock.Model
                         if ( txnAmount != 0.0M )
                         {
                             scheduledTransactionIds.Add( scheduledTransaction.Id );
-                            scheduledTransaction.IsActive = payment.ScheduleActive;
+                            if ( payment.ScheduleActive.HasValue )
+                            {
+                                scheduledTransaction.IsActive = payment.ScheduleActive.Value;
+                            }
 
                             var transaction = new FinancialTransaction();
                             transaction.FinancialPaymentDetail = new FinancialPaymentDetail();
@@ -408,7 +411,7 @@ namespace Rock.Model
                                 }
                             }
 
-                            // Get the batch 
+                            // Get the batch
                             var batch = batchService.Get(
                                 batchNamePrefix,
                                 currencyTypeValue,
@@ -481,7 +484,7 @@ namespace Rock.Model
             }
 
             StringBuilder sb = new StringBuilder();
-            sb.AppendFormat( "<li>{0} {1} downloaded.</li>", totalPayments.ToString( "N0" ), 
+            sb.AppendFormat( "<li>{0} {1} downloaded.</li>", totalPayments.ToString( "N0" ),
                 ( totalPayments == 1 ? "payment" : "payments" ) );
 
             if ( totalAlreadyDownloaded > 0 )
@@ -521,20 +524,19 @@ namespace Rock.Model
             foreach ( var batchItem in batchSummary )
             {
                 int items = batchItem.Value.Count;
-                if (items > 0)
+                if ( items > 0 )
                 {
                     var batch = batches
                         .Where( b => b.Guid.Equals( batchItem.Key ) )
                         .FirstOrDefault();
 
-                    string batchName = string.Format("'{0} ({1})'", batch.Name, batch.BatchStartDateTime.Value.ToString("d"));
+                    string batchName = string.Format( "'{0} ({1})'", batch.Name, batch.BatchStartDateTime.Value.ToString( "d" ) );
                     if ( !string.IsNullOrWhiteSpace( batchUrlFormat ) )
                     {
                         batchName = string.Format( "<a href='{0}'>{1}</a>", string.Format( batchUrlFormat, batch.Id ), batchName );
                     }
 
                     decimal sum = batchItem.Value.Sum();
-
 
                     string summaryformat = items == 1 ?
                         "<li>{0} transaction of {1} was added to the {2} batch.</li>" :
@@ -587,5 +589,4 @@ namespace Rock.Model
             }
         }
     }
-
 }

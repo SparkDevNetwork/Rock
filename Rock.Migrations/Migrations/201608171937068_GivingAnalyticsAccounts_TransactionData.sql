@@ -1,3 +1,7 @@
+﻿IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[spFinance_GivingAnalyticsQuery_TransactionData]') AND type in (N'P', N'PC'))
+DROP PROCEDURE [dbo].[spFinance_GivingAnalyticsQuery_TransactionData]
+GO
+
 /*
 <doc>
 	<summary>
@@ -5,7 +9,7 @@
 	</summary>
 </doc>
 */
-ALTER PROCEDURE [dbo].[spFinance_GivingAnalyticsQuery_TransactionData]
+CREATE PROCEDURE [dbo].[spFinance_GivingAnalyticsQuery_TransactionData]
 	  @StartDate datetime = NULL
 	, @EndDate datetime = NULL
 	, @AccountIds varchar(max) = NULL

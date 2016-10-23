@@ -42,8 +42,6 @@ namespace RockWeb.Plugins.cc_newspring.Blocks.Metrics
     [BooleanField( "Respect Group Context", "Respect the group context even if the GroupType context selector isn't included on the page.", true, Order = 5 )]
     [BooleanField( "Respect Date Context", "Respect the date context even if the DateRange context selector isn't included on the page.", true, Order = 6 )]
     [BooleanField( "Respect Schedule Context", "Respect the schedule context even if the Schedule context selector isn't included on the page.", true, Order = 7 )]
-    [BooleanField( "Require Attendance", "Only count the actual attendances rather than everyone on the roster.", true, Order = 8 )]
-    [CustomRadioListField( "Attendance Type", "Use values for each service or unique people for the whole day", "All Values,Unique", true, "All Values", order: 9 )]
     [MetricCategoriesField( "Comparison Metric Source", "Select the metric(s) to calculate against the Primary Source/Key.", false, Order = 10 )]
     [CustomRadioListField( "Comparison Aggregation", "Which calculation method should be used", "Sum,Avg,Min,Max,Median,Latest", true, "Sum", order: 11 )]
     [CustomRadioListField( "Display Comparison As", "Choose to display the comparison result as an integer or percentage", "Integer,Percentage", true, "Integer", order: 12 )]
@@ -51,12 +49,6 @@ namespace RockWeb.Plugins.cc_newspring.Blocks.Metrics
     [BooleanField( "Comparison Respect Group Context", "Respect the group context even if the GroupType context selector isn't included on the page.", true, Order = 14 )]
     [BooleanField( "Comparison Respect Date Context", "Respect the date context even if the DateRange context selector isn't included on the page.", true, Order = 15 )]
     [BooleanField( "Comparison Respect Schedule Context", "Respect the schedule context even if the Schedule context selector isn't included on the page.", true, Order = 16 )]
-    [BooleanField( "Comparison Require Attendance", "Only count the actual attendances rather than everyone on the roster.", true, Order = 17 )]
-    [CustomRadioListField( "Comparison Attendance Type", "Use values for each service or unique people for the whole day", "All Values,Unique", true, "All Values", order: 18 )]
-
-    //[SlidingDateRangeField( "Date Range", Key = "SlidingDateRange", Order = 9 )]
-    //[CustomRadioListField( "Custom Dates", "If not using date range, please select a custom date from here", "This Week Last Year", Order = 9 )]
-    //[CustomCheckboxListField( "Compare Against Last Year", "", "Yes", Order = 10 )]
     public partial class Metrics : RockBlock
     {
         #region Fields
@@ -64,33 +56,11 @@ namespace RockWeb.Plugins.cc_newspring.Blocks.Metrics
         private List<Guid> MetricSourceGuids = null;
         private List<Guid> ComparisonMetricSourceGuids = null;
 
-        private static int? dtBooleanTrueId = null;
-        private static int? dtBooleanFalseId = null;
-
         /// <summary>
         /// The string used for setting a Date Range Context
         /// Set via RockWeb.Blocks.Core.DateRangeContextSetter
         /// </summary>
         protected static string ContextPreferenceName = "context-date-range";
-
-        /// <summary>
-        /// Gets or sets the metric block values.
-        /// </summary>
-        /// <value>
-        /// The metric block values.
-        /// </value>
-        protected string MetricBlockValues
-        {
-            get
-            {
-                var viewStateValues = ViewState["MetricBlockValues"] as string;
-                return viewStateValues ?? string.Empty;
-            }
-            set
-            {
-                ViewState["MetricBlockValues"] = value;
-            }
-        }
 
         #endregion
 
@@ -111,18 +81,6 @@ namespace RockWeb.Plugins.cc_newspring.Blocks.Metrics
 
             var rockContext = new RockContext();
             var dvService = new DefinedValueService( rockContext );
-            var booleanTrueDt = dvService.Queryable().FirstOrDefault( dv => dv.DefinedType.Name == "Boolean" && dv.Value == "True" );
-            var booleanFalseDt = dvService.Queryable().FirstOrDefault( dv => dv.DefinedType.Name == "Boolean" && dv.Value == "False" );
-
-            if ( booleanTrueDt != null )
-            {
-                dtBooleanTrueId = booleanTrueDt.Id;
-            }
-
-            if ( booleanFalseDt != null )
-            {
-                dtBooleanFalseId = booleanFalseDt.Id;
-            }
 
             LoadSourceGuids();
 
@@ -188,7 +146,7 @@ namespace RockWeb.Plugins.cc_newspring.Blocks.Metrics
         /// <returns></returns>
         protected decimal GetValueAggregate( List<MetricValue> values, bool isPrimary )
         {
-            if(!values.Any())
+            if( values == null || !values.Any() )
             {
                 return 0;
             }
@@ -259,13 +217,11 @@ namespace RockWeb.Plugins.cc_newspring.Blocks.Metrics
             {
                 metricValues = metricService.GetByGuids( sourceGuids ).SelectMany( m => m.MetricValues );
             }
-            else if ( GetAttributeValue( preKey + "AttendanceType" ).Equals( "Unique" ) )
-            {
-                metricValues = metricService.Queryable().Where( m => m.Title.EndsWith( "Unique Volunteer" ) ).SelectMany( m => m.MetricValues );
-            }
             else
             {
-                metricValues = metricService.Queryable().Where( m => m.Title.EndsWith( "Attendance" ) ).SelectMany( m => m.MetricValues );
+                nbMetricWarning.Visible = true;
+                pnlMetricDisplay.Visible = false;
+                return null;
             }
 
             if ( GetAttributeValue( preKey + "RespectCampusContext" ).AsBoolean() )
@@ -316,50 +272,7 @@ namespace RockWeb.Plugins.cc_newspring.Blocks.Metrics
                 }
             }
 
-            int? didAttendFilterId = null;
-            if ( metricValues.Any( m => m.MetricValuePartitions.Any( mvp => mvp.MetricPartition.Label == "Did Attend" ) ) )
-            {
-                didAttendFilterId = dtBooleanTrueId;
-            }
-
-            var didAttendTrue = FilterMetricValuesByPartition( metricValues, "Did Attend", didAttendFilterId );
-
-            // TODO: clean up this pattern, the did/did not attend should be simplified
-            if ( GetAttributeValue( preKey + "RequireAttendance" ).AsBoolean() )
-            {
-                return didAttendTrue.ToList();
-            }
-            else
-            {
-                var didAttendFalse = FilterMetricValuesByPartition( metricValues, "Did Attend", dtBooleanFalseId );
-                var valueList = didAttendTrue.ToList();
-
-                foreach ( var trueValue in valueList )
-                {
-                    var possibleMatches = didAttendFalse.AsQueryable();
-
-                    var schedulePartition = trueValue.MetricValuePartitions.FirstOrDefault( mvp => mvp.MetricPartition.Label == "Schedule" );
-                    var scheduleId = schedulePartition == null ? null : schedulePartition.EntityId;
-                    possibleMatches = FilterMetricValuesByPartition( possibleMatches, "Schedule", scheduleId, true );
-
-                    var campusPartition = trueValue.MetricValuePartitions.FirstOrDefault( mvp => mvp.MetricPartition.Label == "Campus" );
-                    var campusId = campusPartition == null ? null : campusPartition.EntityId;
-                    possibleMatches = FilterMetricValuesByPartition( possibleMatches, "Campus", campusId, true );
-
-                    var groupPartition = trueValue.MetricValuePartitions.FirstOrDefault( mvp => mvp.MetricPartition.Label == "Group" );
-                    var groupId = groupPartition == null ? null : groupPartition.EntityId;
-                    possibleMatches = FilterMetricValuesByPartition( possibleMatches, "Group", groupId, true );
-
-                    var falseValue = possibleMatches.SingleOrDefault( v => v.MetricValueDateTime == trueValue.MetricValueDateTime );
-
-                    if ( falseValue != null )
-                    {
-                        trueValue.YValue += falseValue.YValue;
-                    }
-                }
-
-                return valueList;
-            }
+            return metricValues.ToList();
         }
 
         /// <summary>
@@ -396,17 +309,18 @@ namespace RockWeb.Plugins.cc_newspring.Blocks.Metrics
             decimal currentMetricValues = FormatValues();
             if ( currentMetricValues > 0 )
             {
-                currentMetricValue.Value = string.Format( "{0:n0}", currentMetricValues );
-
+                var metricComparisonSymbol = string.Empty;
                 var comparisonMetricGuids = GetAttributeValue( "ComparisonMetricSource" ).SplitDelimitedValues().AsGuidOrNullList();
                 if ( comparisonMetricGuids.Any() && GetAttributeValue( "DisplayComparisonAs" ).Equals( "Percentage" ) )
                 {
-                    metricComparisonDisplay.Value = "%";
+                    metricComparisonSymbol = "%";
                 }
+
+                metricValue.Value = string.Format( "{0:n0}{1}", currentMetricValues, metricComparisonSymbol );
             }
             else
             {
-                currentMetricValue.Value = "—";
+                metricValue.Value = "—";
             }
         }
 

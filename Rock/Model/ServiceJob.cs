@@ -197,6 +197,24 @@ namespace Rock.Model
 
         #endregion
 
+        #region Virtual Properties
+
+        /// <summary>
+        /// Gets the last status message as HTML.
+        /// </summary>
+        /// <value>
+        /// The last status message as HTML.
+        /// </value>
+        public string LastStatusMessageAsHtml
+        {
+            get
+            {
+                return LastStatusMessage.ConvertCrLfToHtmlBr();
+            }
+        }
+
+        #endregion
+
         #region Methods
 
         /// <summary>

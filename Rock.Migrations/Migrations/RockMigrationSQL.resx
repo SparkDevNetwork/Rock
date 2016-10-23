@@ -367,4 +367,16 @@
   <data name="_201608101635463_PledgeGroup_SP2" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>201608101635463_pledgegroup_sp2.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
   </data>
+  <data name="_201608171937068_GivingAnalyticsAccounts_AccountTotals" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>201608171937068_givinganalyticsaccounts_accounttotals.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
+  </data>
+  <data name="_201608171937068_GivingAnalyticsAccounts_FirstLastEverDates" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>201608171937068_givinganalyticsaccounts_firstlasteverdates.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
+  </data>
+  <data name="_201608171937068_GivingAnalyticsAccounts_PersonSummary" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>201608171937068_givinganalyticsaccounts_personsummary.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
+  </data>
+  <data name="_201608171937068_GivingAnalyticsAccounts_TransactionData" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>201608171937068_givinganalyticsaccounts_transactiondata.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
+  </data>
 </root>

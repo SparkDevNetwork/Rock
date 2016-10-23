@@ -631,6 +631,10 @@ namespace RockWeb.Blocks.Event
                         }
                     }
                 }
+                else
+                {
+                    rockContext.SaveChanges();
+                }
 
                 // Reload registration
                 Registration = GetRegistration( Registration.Id );

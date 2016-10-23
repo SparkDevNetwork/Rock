@@ -82,8 +82,9 @@ from (
 	on gl.LocationId = l.id
 ) g
 
+
 /* ====================================================== */
--- create the group member matchup
+-- create the group matchup
 /* ====================================================== */
 IF object_id('tempdb..#matchup') IS NOT NULL
 BEGIN
@@ -93,7 +94,7 @@ END
 select * 
 into #matchup
 from (
-	select gm.Id GroupMemberId, g.GroupTypeId OldGroupTypeId, gm.GroupId OldGroupId, gm.personid, ng.GroupTypeId, ng.GroupId, ng.GroupName, ng.DefaultGroupRoleId, row_number() over 
+	select gm.Id GroupMemberId, g.GroupTypeId OldGroupTypeId, gm.GroupId OldGroupId, gm.GroupRoleId, gtr.Name GroupRoleName, gm.personid, ng.GroupTypeId, ng.GroupId, ng.GroupName, ng.DefaultGroupRoleId, row_number() over 
 		( partition by g.GroupTypeId, gm.GroupId, gm.personid, ng.GroupTypeId, ng.GroupId, ng.DefaultGroupRoleId order by gm.Id ) as membershipRole
 	from [group] g
 	inner join grouptype gt
@@ -105,16 +106,19 @@ from (
 	and g.isactive = 1
 	inner join [groupmember] gm
 		on gm.groupid = g.id
+	inner join grouptyperole gtr
+		on gm.grouproleid = gtr.id
+		and gt.id = gtr.grouptypeid
 	inner join attribute a
 		on a.EntityTypeQualifierColumn = 'GroupTypeId'
 		and a.EntityTypeQualifierValue = g.grouptypeid
 		and a.Name = 'Campus'
 	inner join attributevalue av
 		on av.attributeid = a.id
-		and gm.id = av.entityid
+		and av.entityid = gm.id
 		and av.value <> ''
 	inner join campus c
-		on convert(uniqueidentifier, av.value) = c.guid
+		on convert(uniqueidentifier, av.value) = c.[guid]
 	inner join grouplocation gl
 		on g.id = gl.groupid
 	inner join #allLocations al
@@ -129,11 +133,26 @@ where membershipRole = 1
 
 
 /* ====================================================== */
+-- create the group members
+/* ====================================================== */
+begin transaction
+insert groupmember (issystem, groupid, personid, grouproleid, groupmemberstatus, guid, CreatedDateTime, ModifiedDateTime, CreatedByPersonAliasId, ModifiedByPersonAliasId, ForeignKey, DateTimeAdded, note)
+select 0, m.GroupId, gm.personid, ISNULL(gtr.id, m.DefaultGroupRoleId), gm.GroupMemberStatus, newid(), gm.CreatedDateTime, gm.ModifiedDateTime, gm.CreatedByPersonAliasId, gm.ModifiedByPersonAliasId, 'GroupMember16', gm.DateTimeAdded, gm.note
+from #matchup m
+inner join groupmember gm
+on m.GroupMemberId = gm.id
+left join grouptyperole gtr
+on m.grouptypeid = gtr.id
+and m.GroupRoleName = gtr.name
+
+--commit transaction
+
+/* ====================================================== */
 -- insert schedule attributes
 /* ====================================================== */
 --begin transaction
 insert attributevalue (issystem, attributeid, entityid, value, [guid], CreatedDateTime, ModifiedDateTime, CreatedByPersonAliasId, ModifiedByPersonAliasId, ForeignKey)
-select 0, a.id, gm.id, av.value, newid(), av.CreatedDateTime, av.ModifiedDateTime, av.CreatedByPersonAliasId, av.ModifiedByPersonAliasId, '07/16 Grestructure'
+select 0, a.id, gm.id, av.value, newid(), av.CreatedDateTime, av.ModifiedDateTime, av.CreatedByPersonAliasId, av.ModifiedByPersonAliasId, 'GroupMemberAttribute16'
 --select m.*, oa.id, oa.name, a.id, a.name
 from #matchup m
 inner join groupmember gm
