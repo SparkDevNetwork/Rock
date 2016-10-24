@@ -1,3 +1,9 @@
+### PLEASE READ
+
+If the nature of your issue relates to the security of Rock please do not post your
+issue here in the public issues. Instead please send it directly to nick<at>sparkdevnetwork.org .
+No use giving bad people bad ideas.
+
 ### Prerequisites
 
 * [ ] Can you reproduce the problem on a fresh install or the [demo site](http://rock.rocksolidchurchdemo.com/)?
