@@ -71,6 +71,7 @@
                                         <Rock:RockCheckBox ID="cbAddPersonNote" runat="server" Label="Add Person Note" Help="Should a note be added to a person's record whenever they register?" Text="Yes" />
                                     </div>
                                 </div>
+
                                 <div class="row">
                                     <div class="col-xs-6">
                                         <Rock:RockCheckBox ID="cbLoginRequired" runat="server" Label="Login Required" Text="Yes"
@@ -131,6 +132,8 @@
                                         Help="The financial gateway to use for processing registration payments." ShowAll="false" />
                                     <Rock:RockTextBox ID="txtBatchNamePrefix" runat="server" Label="Batch Prefix" Help="Optional prefix to add the the financial batches. If left blank the prefix from the registration block will be used." />
                                 </div>
+
+                                <Rock:RockCheckBox id="cbWaitListEnabled" runat="server" Label="Enable Wait List" Text="Yes" Help="Should a wait list be enabled when the maximum number of registrats is reached." />
                             </div>
                         </div>
                     </Rock:PanelWidget>
@@ -148,6 +151,7 @@
                                     <Rock:BoolField DataField="ShowCurrentValue" HeaderText="Use Current Value" />
                                     <Rock:BoolField DataField="IsRequired" HeaderText="Required" />
                                     <Rock:BoolField DataField="IsGridField" HeaderText="Show on Grid" />
+                                    <Rock:BoolField DataField="ShowOnWaitlist" HeaderText="Show on Wait List" />
                                     <Rock:EditField OnClick="gFields_Edit" />
                                     <Rock:DeleteField OnClick="gFields_Delete" />
                                 </Columns>
@@ -262,7 +266,7 @@
                             <div class="col-md-12">
                                 <Rock:RockTextBox ID="tbSuccessTitle" runat="server" Label="Success Title" Placeholder="Congratulations"
                                     Help="The heading to display to user after successfully completing a registration of this type." />
-                                <Rock:CodeEditor ID="ceSuccessText" runat="server" Label="Success Text" EditorMode="Lava" EditorTheme="Rock" EditorHeight="300" 
+                                <Rock:CodeEditor ID="ceSuccessText" runat="server" Label="Registration Confirmation Text" EditorMode="Lava" EditorTheme="Rock" EditorHeight="300" 
                                     Help="The text to display to user after successfully completing a registration of this type. If there are costs or fees for this registration, a summary of those will be displayed after this text." />
                             </div>
                         </div>
@@ -354,6 +358,8 @@
                     <div class="col-md-3">
                         <Rock:RockCheckBox ID="cbUsePersonCurrentValue" runat="server" Label="Use Current Value" Text="Yes" Visible="false" ValidationGroup="Field"
                             Help="Should the person's current value for this field be displayed when they register?" />
+                        <Rock:RockCheckBox ID="cbShowOnWaitList" runat="server" Label="Show On Wait List" Text="Yes" Visible="true" ValidationGroup="Field"
+                            Help="Should this field be show for a person registering on the waitlist?" />
                     </div>
                 </div>
                 <Rock:AttributeEditor ID="edtRegistrationAttribute" runat="server" ShowActions="false" ValidationGroup="Field" Visible="false" />

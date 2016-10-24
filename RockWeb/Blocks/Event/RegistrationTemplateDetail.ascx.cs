@@ -678,6 +678,7 @@ namespace RockWeb.Blocks.Event
             RegistrationTemplate.GroupMemberStatus = ddlGroupMemberStatus.SelectedValueAsEnum<GroupMemberStatus>();
             RegistrationTemplate.RequiredSignatureDocumentTemplateId = ddlSignatureDocumentTemplate.SelectedValueAsInt();
             RegistrationTemplate.SignatureDocumentAction = cbDisplayInLine.Checked ? SignatureDocumentAction.Embed : SignatureDocumentAction.Email;
+            RegistrationTemplate.WaitListEnabled = cbWaitListEnabled.Checked;
 
             RegistrationTemplate.RegistrationWorkflowTypeId = wtpRegistrationWorkflow.SelectedValueAsInt();
             RegistrationTemplate.Notify = notify;
@@ -769,6 +770,11 @@ namespace RockWeb.Blocks.Event
             if ( ( ( RegistrationTemplate.SetCostOnInstance ?? false ) || RegistrationTemplate.Cost > 0 || FeeState.Any() ) && !RegistrationTemplate.FinancialGatewayId.HasValue )
             {
                 validationErrors.Add( "A Financial Gateway is required when the registration has a cost or additional fees or is configured to allow instances to set a cost." );
+            }
+
+            if ( RegistrationTemplate.WaitListEnabled && RegistrationTemplate.MaxRegistrants == 0 )
+            {
+                validationErrors.Add( "To enable a wait list you must provide a maximum number of registrants." );
             }
 
             if ( validationErrors.Any() )
@@ -932,6 +938,7 @@ namespace RockWeb.Blocks.Event
                             formField.IsGridField = formFieldUI.IsGridField;
                             formField.IsRequired = formFieldUI.IsRequired;
                             formField.Order = formFieldUI.Order;
+                            formField.ShowOnWaitlist = formFieldUI.ShowOnWaitlist;
                         }
                     }
                 }
@@ -1385,6 +1392,8 @@ namespace RockWeb.Blocks.Event
                             break;
                         }
                 }
+
+                attributeForm.ShowOnWaitlist = cbShowOnWaitList.Checked;
 
                 if ( attributeId.HasValue )
                 {
@@ -1982,6 +1991,7 @@ namespace RockWeb.Blocks.Event
                 li.Selected = ( RegistrationTemplate.Notify & notify ) == notify;
             }
 
+            cbWaitListEnabled.Checked = RegistrationTemplate.WaitListEnabled;
             cbAddPersonNote.Checked = RegistrationTemplate.AddPersonNote;
             cbLoginRequired.Checked = RegistrationTemplate.LoginRequired;
             cbAllowExternalUpdates.Checked = RegistrationTemplate.AllowExternalRegistrationUpdates;
@@ -2275,7 +2285,8 @@ namespace RockWeb.Blocks.Event
                         a.IsSharedValue,
                         a.ShowCurrentValue,
                         a.IsRequired,
-                        a.IsGridField
+                        a.IsGridField,
+                        a.ShowOnWaitlist
                     } )
                     .ToList();
                 gFields.DataBind();
@@ -2360,6 +2371,7 @@ namespace RockWeb.Blocks.Event
                 edtRegistrationAttribute.SetAttributeProperties( attribute, typeof( RegistrationTemplate ) );
 
                 cbInternalField.Checked = formField.IsInternal;
+                cbShowOnWaitList.Checked = formField.ShowOnWaitlist;
                 cbShowOnGrid.Checked = formField.IsGridField;
                 cbRequireInInitialEntry.Checked = formField.IsRequired;
                 cbUsePersonCurrentValue.Checked = formField.ShowCurrentValue;
@@ -2412,6 +2424,8 @@ namespace RockWeb.Blocks.Event
             cbRequireInInitialEntry.Visible = fieldSource != RegistrationFieldSource.RegistrationAttribute;
 
             edtRegistrationAttribute.Visible = fieldSource == RegistrationFieldSource.RegistrationAttribute;
+
+            cbShowOnWaitList.Visible = cbWaitListEnabled.Visible && cbWaitListEnabled.Checked;
         }
 
         /// <summary>
