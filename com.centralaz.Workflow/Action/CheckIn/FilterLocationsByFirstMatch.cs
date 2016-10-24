@@ -102,7 +102,7 @@ namespace com.centralaz.Workflow.Action.CheckIn
                     var groupList = useAscendingOrder ? groupType.Groups.OrderBy( g => g.Group.Order ).ToList() : groupType.Groups.OrderByDescending( g => g.Group.Order ).ToList();
                     foreach ( var group in groupList )
                     {
-                        foreach ( var location in group.Locations.ToList() )
+                        foreach ( var location in group.Locations.OrderBy( l => l.Order ).ToList() )
                         {
                             if ( foundFirstMatch )
                             {
