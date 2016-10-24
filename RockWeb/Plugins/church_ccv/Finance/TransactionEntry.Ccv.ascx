@@ -84,7 +84,6 @@
                 <label for="fullName" class="col-sm-3 control-label">Full Name</label>
                 <div class="col-sm-9">
                     <input id="tbFullName" type="text" class="form-control js-input-fullname" placeholder="Full Name" v-model="firstName" style="display:none" />
-                    
                     <div runat="server" id="pnlSplitNameInputs" class="row js-splitname-inputs">
                         <div class="col-xs-6">
                             <input runat="server" type="text" class="js-firstname js-update-name form-control" id="tbFirstName" placeholder="First Name" v-model="firstName" />
@@ -186,9 +185,7 @@
                             <div class="control-group">
                                 <div class="controls">
                                     <div class="alert alert-info">
-                                        <b>Note:</b> For security purposes you will need to login to use your saved account information.  To create
-                                                a login account please provide a user name and password below. You will be sent an email with the account
-                                                information above as a reminder.
+                                        <b>Note:</b> For security purposes you will need to login to use your saved account information. To create a login account please provide a user name and password below. You will be sent an email with the account information above as a reminder.
                                     </div>
                                 </div>
                             </div>
@@ -210,7 +207,6 @@
         </asp:Panel>
 
         <script type="text/javascript">
-
             // list of funds that can be selected in the account picker.  Also used to select fund based on geo location
             var givingFunds = <%= this.GivingFundsJSON %>;
 
@@ -246,7 +242,6 @@
                     showCardInputOption();
                 });
             });
-
         </script>
 
     </ContentTemplate>
