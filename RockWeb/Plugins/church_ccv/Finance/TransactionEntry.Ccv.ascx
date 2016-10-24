@@ -14,7 +14,7 @@
                 <div class="col-sm-9">
                     <div class="input-group input-group-lg">
                         <span class="input-group-addon">$</span>
-                        <asp:TextBox ID="tbAmount" runat="server" class="form-control js-amount" placeholder="0.00" v-model="amount" />
+                        <asp:TextBox ID="tbAmount" runat="server" class="form-control js-amount" placeholder="0.00" v-model="amount" maxlength="20" />
                     </div>
                 </div>
             </div>
