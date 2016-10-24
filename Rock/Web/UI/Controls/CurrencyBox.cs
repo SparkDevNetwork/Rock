@@ -26,8 +26,17 @@ namespace Rock.Web.UI.Controls
     /// A <see cref="T:System.Web.UI.WebControls.CurrencyBox"/> control with an associated label.
     /// </summary>
     [ToolboxData( "<{0}:CurrencyBox runat=server></{0}:CurrencyBox>" )]
-    public class CurrencyBox : RockTextBox
+    public class CurrencyBox : NumberBox
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="CurrencyBox" /> class.
+        /// </summary>
+        public CurrencyBox()
+            : base()
+        {
+            this.NumberType = ValidationDataType.Currency;
+        }
+
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
         /// </summary>
