@@ -6,12 +6,14 @@ CCV.findCampusById = function (campusId) {
   return CCV.locations.filter(function (campus) { return campus.id == campusId })[0]
 }
 
+
 CCV.locations = [
 
 
   {
     id: '8',
     name: 'Anthem',
+    shortcode: 'ATH',
     geo: {
       lat: 33.84683,
       lng: -112.13706,
@@ -34,6 +36,7 @@ CCV.locations = [
   {
     id: '9',
     name: 'Avondale',
+    shortcode: 'AVD',
     geo: {
       lat: 33.4636054,
       lng: -112.301477,
@@ -56,6 +59,7 @@ CCV.locations = [
   {
     id: '7',
     name: 'East Valley',
+    shortcode: 'EAV',
     geo: {
       lat: 33.3912,
       lng: -111.61549,
@@ -70,7 +74,7 @@ CCV.locations = [
     vimeoid: '76072274',
     facebook: 'ccveastvalley',
     serviceTimes: {
-      saturday: ['5:00 pm',],sunday: ['9:30 am','11:00 am',]
+      saturday: ['4:30 pm','6:00 pm',],sunday: ['9:30 am','11:00 am',]
     },
   },
 
@@ -78,6 +82,7 @@ CCV.locations = [
   {
     id: '1',
     name: 'Peoria',
+    shortcode: 'PEO',
     geo: {
       lat: 33.7110943,
       lng: -112.2088517,
@@ -92,7 +97,7 @@ CCV.locations = [
     vimeoid: '64237448',
     facebook: 'ccvpeoria',
     serviceTimes: {
-      saturday: ['4:30 pm','6:00 pm',],sunday: ['9:00 am','10:30 am','12:00 pm',]
+      saturday: ['4:30 pm','6:00 pm *',],sunday: ['9:00 am','10:30 am','12:00 pm',]
     },
   },
 
@@ -100,6 +105,7 @@ CCV.locations = [
   {
     id: '6',
     name: 'Scottsdale',
+    shortcode: 'SCO',
     geo: {
       lat: 33.65789,
       lng: -111.88851,
@@ -122,6 +128,7 @@ CCV.locations = [
   {
     id: '5',
     name: 'Surprise',
+    shortcode: 'SUR',
     geo: {
       lat: 33.5875394,
       lng: -112.3785948,
@@ -136,7 +143,7 @@ CCV.locations = [
     vimeoid: '64237450',
     facebook: 'ccvsurprise',
     serviceTimes: {
-      saturday: ['4:30 pm','6:00 pm',],sunday: ['9:00 am','10:30 am','12:00 pm',]
+      saturday: ['4:30 pm','6:00 pm',],sunday: ['9:00 am','10:30 am *','12:00 pm',]
     },
   }
 
