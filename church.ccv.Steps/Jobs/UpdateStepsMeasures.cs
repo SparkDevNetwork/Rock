@@ -55,12 +55,6 @@ namespace church.ccv.Steps
         const int _studentLowerGrade = 7;
         const int _studentUpperGrade = 12;
         
-        // Note: We only want to take the most recent set of values within the past week. (and we're assuming the table holds one set of values per week.)
-        // this is the max span of days for which to take history from the history table.
-        // With -6 and 0, it will take only "sundayDate" and 6 days prior, which is the full week, but no more.
-        int _minDeltaDays = -6;
-        int _maxDeltaDays = 0;
-        
         List<int> _campusIds = new List<int>();
         int _attendanceMetricId = -1;
         string _warningEmailAddresses = string.Empty;
@@ -230,58 +224,80 @@ namespace church.ccv.Steps
                 {
                     ActionsService<ActionsHistory_Adult> adultActionsService = new ActionsService<ActionsHistory_Adult>( actionsContext );
                     ActionsService<ActionsHistory_Student> studentActionsService = new ActionsService<ActionsHistory_Student>( actionsContext );
-
-                    // begin by getting queries that contain only the rows of action history we care about, organized by campus and region, adult and student
                     
-                    // Adults organized by campus
-                    var actionsHistory_Campus_Adult = adultActionsService.Queryable( ).Where( ah => DbFunctions.DiffDays( sundayDate, ah.Date) <= _maxDeltaDays && 
-                                                                                                    DbFunctions.DiffDays( sundayDate, ah.Date) >= _minDeltaDays )
-                                                                                      .GroupBy( ah => ah.CampusId );
+                    // Given the sunday date, take the most recent available date that's on or before sundayDate and not older than a week.
+                    // This ensures we use the most recent data available, but don't keep using it week after week.
+                    DateTime? latestDate = null;
+                    try
+                    {
+                        // grab the most recent history date available
+                        DateTime newestHistoryDate = adultActionsService.Queryable( ).Where( ah => ah.Date <= sundayDate ).Max( ah => ah.Date );
+                        if( (sundayDate - newestHistoryDate).TotalDays <= 6 )
+                        {
+                            latestDate = newestHistoryDate;
+                        }
+                    }
+                    catch
+                    {
+                        // don't worry about catching, we'll just fail below
+                    }
 
-                    // Adults organized by region
-                    var actionsHistory_Region_Adult = adultActionsService.Queryable( ).Where( ah => DbFunctions.DiffDays( sundayDate, ah.Date) <= _maxDeltaDays && 
-                                                                                                    DbFunctions.DiffDays( sundayDate, ah.Date) >= _minDeltaDays );
-                
-                    // get the number of active adults per campus
-                    var campusTotals_Adult = actionsHistory_Campus_Adult.Select( wg => new CampusAdultCount
-                                                                         {
-                                                                             CampusId = wg.Key,
-                                                                             AdultCount = wg.Sum( w => w.TotalPeople )
-                                                                         } )
-                                                                        .ToList( );
-
-
-                    // Students organized by campus
-                    var actionsHistory_Campus_Student = studentActionsService.Queryable( ).Where( ah => DbFunctions.DiffDays( sundayDate, ah.Date) <= _maxDeltaDays && 
-                                                                                                        DbFunctions.DiffDays( sundayDate, ah.Date) >= _minDeltaDays )
+                    if( latestDate.HasValue )
+                    {
+                        // begin by getting queries that contain only the rows of action history we care about, organized by campus and region, adult and student
+                    
+                        // Adults organized by campus
+                        var actionsHistory_Campus_Adult = adultActionsService.Queryable( ).Where( ah => ah.Date == latestDate )
                                                                                           .GroupBy( ah => ah.CampusId );
+
+                        // Adults organized by region
+                        var actionsHistory_Region_Adult = adultActionsService.Queryable( ).Where( ah => ah.Date == latestDate );
                 
-                    // get the number of actlive students per campus
-                    var campusTotals_Student = actionsHistory_Campus_Student.Select( wg => new CampusStudentCount
+                        // get the number of active adults per campus
+                        var campusTotals_Adult = actionsHistory_Campus_Adult.Select( wg => new CampusAdultCount
                                                                              {
                                                                                  CampusId = wg.Key,
-                                                                                 StudentCount = wg.Sum( w => w.TotalPeople )
+                                                                                 AdultCount = wg.Sum( w => w.TotalPeople )
                                                                              } )
                                                                             .ToList( );
 
-                    // store values that will be passed thru to SaveMetrics in a wrapper class.
-                    SaveMetrics_Dependencies metricDependencies = new SaveMetrics_Dependencies( )
-                    {
-                        SundayDate = sundayDate,
-                        MetricValues = metricValues,
-                        CampusTotals_Adult = campusTotals_Adult,
-                        CampusTotals_Student = campusTotals_Student
-                    };
+
+                        // Students organized by campus
+                        var actionsHistory_Campus_Student = studentActionsService.Queryable( ).Where( ah => ah.Date == latestDate )
+                                                                                              .GroupBy( ah => ah.CampusId );
+                
+                        // get the number of actlive students per campus
+                        var campusTotals_Student = actionsHistory_Campus_Student.Select( wg => new CampusStudentCount
+                                                                                 {
+                                                                                     CampusId = wg.Key,
+                                                                                     StudentCount = wg.Sum( w => w.TotalPeople )
+                                                                                 } )
+                                                                                .ToList( );
+
+                        // store values that will be passed thru to SaveMetrics in a wrapper class.
+                        SaveMetrics_Dependencies metricDependencies = new SaveMetrics_Dependencies( )
+                        {
+                            SundayDate = sundayDate,
+                            MetricValues = metricValues,
+                            CampusTotals_Adult = campusTotals_Adult,
+                            CampusTotals_Student = campusTotals_Student
+                        };
                     
-                    // run the analytics for each action
-                    ProcessBaptisms( metricDependencies, actionsHistory_Campus_Adult, actionsHistory_Region_Adult, actionsHistory_Campus_Student, regionList );
-                    ProcessMembership( metricDependencies, actionsHistory_Campus_Adult, actionsHistory_Region_Adult, actionsHistory_Campus_Student, regionList );
-                    ProcessAttending( metricDependencies, actionsHistory_Campus_Adult, actionsHistory_Region_Adult, actionsHistory_Campus_Student, regionList );
-                    ProcessGiving( metricDependencies, actionsHistory_Campus_Adult, actionsHistory_Region_Adult, actionsHistory_Campus_Student, regionList );
-                    ProcessCoaching( metricDependencies, actionsHistory_Campus_Adult, actionsHistory_Region_Adult, actionsHistory_Campus_Student, regionList );
-                    ProcessConnection( metricDependencies, actionsHistory_Campus_Adult, actionsHistory_Region_Adult, actionsHistory_Campus_Student, regionList );
-                    ProcessServing( metricDependencies, actionsHistory_Campus_Adult, actionsHistory_Region_Adult, actionsHistory_Campus_Student, regionList );
-                    ProcessSharing( metricDependencies, actionsHistory_Campus_Adult, actionsHistory_Region_Adult, actionsHistory_Campus_Student, regionList );
+                        // run the analytics for each action
+                        ProcessBaptisms( metricDependencies, actionsHistory_Campus_Adult, actionsHistory_Region_Adult, actionsHistory_Campus_Student, regionList );
+                        ProcessMembership( metricDependencies, actionsHistory_Campus_Adult, actionsHistory_Region_Adult, actionsHistory_Campus_Student, regionList );
+                        ProcessAttending( metricDependencies, actionsHistory_Campus_Adult, actionsHistory_Region_Adult, actionsHistory_Campus_Student, regionList );
+                        ProcessGiving( metricDependencies, actionsHistory_Campus_Adult, actionsHistory_Region_Adult, actionsHistory_Campus_Student, regionList );
+                        ProcessCoaching( metricDependencies, actionsHistory_Campus_Adult, actionsHistory_Region_Adult, actionsHistory_Campus_Student, regionList );
+                        ProcessConnection( metricDependencies, actionsHistory_Campus_Adult, actionsHistory_Region_Adult, actionsHistory_Campus_Student, regionList );
+                        ProcessServing( metricDependencies, actionsHistory_Campus_Adult, actionsHistory_Region_Adult, actionsHistory_Campus_Student, regionList );
+                        ProcessSharing( metricDependencies, actionsHistory_Campus_Adult, actionsHistory_Region_Adult, actionsHistory_Campus_Student, regionList );
+                    }
+                    else
+                    {
+                        wasSuccessful = false;
+                        message = string.Format( "Could not process {0} due to missing Actions History.", sundayDate.ToShortDateString( ) );
+                    }
                 }
             }
 
