@@ -193,11 +193,37 @@ namespace RockWeb.Blocks.Finance
 
                 if ( pnlEditDetails.Visible )
                 {
-                    var txn = new FinancialTransaction();
+                    // Add Transaction and Payment Detail attribute controls
+
+                    FinancialTransaction txn;
+                    var txnId = hfTransactionId.Value.AsIntegerOrNull();
+                    if (txnId == 0) txnId = null;
+
+                    // Get the current transaction if there is one
+                    if (txnId.HasValue)
+                    {
+                        using (var rockContext = new RockContext())
+                        {
+                            txn = GetTransaction(hfTransactionId.Value.AsInteger(), rockContext);
+                        }
+                    }
+                    else
+                    {
+                        txn = new FinancialTransaction();
+                        txn.FinancialPaymentDetail = new FinancialPaymentDetail();
+                    }
+
+                    // Update the transaction's properties to match what is currently selected on the screen
+                    // This allows the shown attributes to change during AutoPostBack events, based on any Qualifiers specified in the attributes
+                    txn.FinancialPaymentDetail.CurrencyTypeValueId = ddlCurrencyType.SelectedValueAsInt();
+
                     txn.LoadAttributes();
+                    txn.FinancialPaymentDetail.LoadAttributes();
 
                     phAttributeEdits.Controls.Clear();
-                    Rock.Attribute.Helper.AddEditControls( txn, phAttributeEdits, false, BlockValidationGroup );
+                    Helper.AddEditControls(txn, phAttributeEdits, false);
+                    phPaymentAttributeEdits.Controls.Clear();
+                    Helper.AddEditControls(txn.FinancialPaymentDetail, phPaymentAttributeEdits, false);
                 }
             }
         }
@@ -254,6 +280,7 @@ namespace RockWeb.Blocks.Finance
             if ( txn != null )
             {
                 txn.LoadAttributes( rockContext );
+                txn.FinancialPaymentDetail.LoadAttributes(rockContext);
                 ShowEditDetails( txn, rockContext );
             }
         }
@@ -493,7 +520,9 @@ namespace RockWeb.Blocks.Finance
 
                     // Update any attributes
                     txn.LoadAttributes(rockContext);
-                    Rock.Attribute.Helper.GetEditValues(phAttributeEdits, txn);
+                    txn.FinancialPaymentDetail.LoadAttributes(rockContext);
+                    Helper.GetEditValues(phAttributeEdits, txn);
+                    Helper.GetEditValues(phPaymentAttributeEdits, txn.FinancialPaymentDetail);
 
                     // If the transaction is associated with a batch, update that batch's history
                     if ( batchId.HasValue )
@@ -512,7 +541,7 @@ namespace RockWeb.Blocks.Finance
 
                     rockContext.SaveChanges();
                     txn.SaveAttributeValues(rockContext);
-
+                    txn.FinancialPaymentDetail.SaveAttributeValues(rockContext);
                 } );
 
                 // Save selected options to session state in order to prefill values for next added txn
@@ -536,6 +565,7 @@ namespace RockWeb.Blocks.Finance
                 if ( savedTxn != null )
                 {
                     savedTxn.LoadAttributes();
+                    savedTxn.FinancialPaymentDetail.LoadAttributes();
                     ShowReadOnlyDetails( savedTxn );
                 }
             }
@@ -555,6 +585,7 @@ namespace RockWeb.Blocks.Finance
                 if ( txn != null )
                 {
                     txn.LoadAttributes();
+                    txn.FinancialPaymentDetail.LoadAttributes();
                     ShowReadOnlyDetails( txn );
                 }
             }
@@ -914,6 +945,7 @@ namespace RockWeb.Blocks.Finance
                             if ( updatedTxn != null )
                             {
                                 updatedTxn.LoadAttributes( rockContext );
+                                updatedTxn.FinancialPaymentDetail.LoadAttributes(rockContext);
                                 ShowReadOnlyDetails( updatedTxn );
                             }
                         }
@@ -1152,6 +1184,7 @@ namespace RockWeb.Blocks.Finance
             }
 
             txn.LoadAttributes( rockContext );
+            txn.FinancialPaymentDetail.LoadAttributes(rockContext);
 
             if ( readOnly )
             {
@@ -1411,7 +1444,7 @@ namespace RockWeb.Blocks.Finance
                 }
 
                 Helper.AddDisplayControls(txn, Helper.GetAttributeCategories(txn, false, false), phAttributes, null, false);
-
+                Helper.AddDisplayControls(txn.FinancialPaymentDetail, Helper.GetAttributeCategories(txn.FinancialPaymentDetail, false, false), phAttributes, null, false);
             }
             else
             {
@@ -1496,7 +1529,9 @@ namespace RockWeb.Blocks.Finance
                 BindImages();
 
                 phAttributeEdits.Controls.Clear();
-                Rock.Attribute.Helper.AddEditControls( txn, phAttributeEdits, true, BlockValidationGroup );
+                Helper.AddEditControls(txn, phAttributeEdits, true);
+                phPaymentAttributeEdits.Controls.Clear();
+                Helper.AddEditControls(txn.FinancialPaymentDetail, phPaymentAttributeEdits, true);
             }
         }
 
