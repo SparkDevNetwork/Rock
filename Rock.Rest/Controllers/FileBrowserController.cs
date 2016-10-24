@@ -134,7 +134,8 @@ namespace Rock.Rest.Controllers
 
                         return result;
                     }
-                } catch(Exception ex )
+                }
+                catch 
                 {
                     
                     // there was a problem with the image so send the default corrupt image warning back
