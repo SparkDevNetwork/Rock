@@ -82,12 +82,12 @@ public class Mailgun : IHttpHandler
                 string status = string.Empty;
                 switch ( eventType )
                 {
-                    case "complained": break;
-                    case "unsubscribed": break;
+                    case "complained":
+                    case "unsubscribed":
                     case "delivered": status = SendEmailWithEvents.SENT_STATUS; break;
                     case "clicked": status = SendEmailWithEvents.CLICKED_STATUS; break;
                     case "opened": status = SendEmailWithEvents.OPENED_STATUS; break;
-                    case "dropped": break;
+                    case "dropped":
                     case "bounced": status = SendEmailWithEvents.FAILED_STATUS;
                         int secs = request.Form["timestamp"].AsInteger();
                         DateTime ts = RockDateTime.ConvertLocalDateTimeToRockDateTime( new DateTime(1970,1,1,0,0,0,DateTimeKind.Utc).AddSeconds(secs).ToLocalTime());
