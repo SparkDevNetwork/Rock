@@ -139,8 +139,8 @@
                 <label class="control-label col-sm-3">Address <small class="text-muted">(optional)</small></label>
                 <div class="col-sm-9">
                     <div class="addressinput">
-                        <input runat="server" v-model="address.street" type="text" id="tbStreet" class="form-control addressinput-street js-street-input" placeholder="Street">
-                        <input runat="server" v-model="address.city" type="text" id="tbCity" class="form-control addressinput-city" placeholder="City">
+                        <input runat="server" v-model="address.street" type="text" id="tbStreet" class="form-control addressinput-street js-street-input" placeholder="Street"  maxlength="100">
+                        <input runat="server" v-model="address.city" type="text" id="tbCity" class="form-control addressinput-city" placeholder="City" maxlength="50">
                         <input runat="server" v-model="address.state" type="text" id="tbState" class="form-control addressinput-state" placeholder="State">
                         <input runat="server" v-model="address.zip" type="text" id="tbZip" class="form-control addressinput-zip" placeholder="Zip">
                     </div>
