@@ -30,6 +30,7 @@ using Rock.Security;
 using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
+using com.centralaz.HumanResources.Model;
 using Rock.Lava;
 
 namespace RockWeb.Plugins.com_centralaz.HumanResources
@@ -103,6 +104,15 @@ namespace RockWeb.Plugins.com_centralaz.HumanResources
                             var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson );
                             mergeFields.Add( "Person", person );
                             mergeFields.Add( "Year", year );
+
+                            var salaries = new SalaryService( rockContext ).Queryable().Where( s => s.PersonAlias.PersonId == person.Id ).OrderBy( s => s.EffectiveDate ).ToList();
+                            mergeFields.Add( "Salaries", salaries );
+
+                            var contributions = new ContributionElectionService( rockContext ).Queryable().Where( c => c.PersonAlias.PersonId == person.Id ).OrderBy( c => c.ActiveDate ).ToList();
+                            mergeFields.Add( "Contributions", contributions );
+
+                            var retirementFunds = new RetirementFundService( rockContext ).Queryable().Where( r => r.PersonAlias.PersonId == person.Id ).OrderBy( r => r.ActiveDate ).ToList();
+                            mergeFields.Add( "RetirementFunds", retirementFunds );
 
                             lContent.Text = string.Empty;
                             if ( GetAttributeValue( "EnableDebug" ).AsBooleanOrNull().GetValueOrDefault( false ) )
