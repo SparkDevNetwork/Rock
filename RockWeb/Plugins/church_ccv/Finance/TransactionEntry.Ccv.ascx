@@ -83,13 +83,13 @@
             <div class="form-group js-full-name">
                 <label for="fullName" class="col-sm-3 control-label">Full Name</label>
                 <div class="col-sm-9">
-                    <input id="tbFullName" type="text" class="form-control js-input-fullname" placeholder="Full Name" v-model="firstName" style="display:none" />
+                    <input id="tbFullName" type="text" class="form-control js-input-fullname" placeholder="Full Name" v-model="firstName" style="display:none" maxlength="101" />
                     <div runat="server" id="pnlSplitNameInputs" class="row js-splitname-inputs">
                         <div class="col-xs-6">
-                            <input runat="server" type="text" class="js-firstname js-update-name form-control" id="tbFirstName" placeholder="First Name" v-model="firstName" />
+                            <input runat="server" type="text" class="js-firstname js-update-name form-control" id="tbFirstName" placeholder="First Name" v-model="firstName" maxlength="50" />
                         </div>
                         <div class="col-xs-6">
-                            <input runat="server" type="text" class="js-lastname js-update-name form-control" id="tbLastName" placeholder="Last Name" v-model="lastName" />
+                            <input runat="server" type="text" class="js-lastname js-update-name form-control" id="tbLastName" placeholder="Last Name" v-model="lastName" maxlength="50" />
                         </div>
                     </div>
                 </div>
