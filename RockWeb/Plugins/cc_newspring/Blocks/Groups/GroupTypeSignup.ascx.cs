@@ -155,7 +155,13 @@ namespace RockWeb.Plugins.cc_newspring.Blocks.Groups
                     ddlGroups.Attributes.Add( "schedule-date", scheduleResult.Value.ToShortDateString() );
                     ddlGroups.DataBind();
 
-                    ddlGroups.Items.Insert( 0, "" );
+                    if ( ddlGroups.Items.Count == 0 )
+                    {
+                        ddlGroups.Visible = false;
+                    }
+                    else {
+                        ddlGroups.Items.Insert( 0, "" );
+                    }
 
                     // see if the person is marked as RSVP if so select this value
                     var attendingGroupId = _personalSchedules.Where( p =>
