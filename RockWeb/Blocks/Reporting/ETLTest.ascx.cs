@@ -112,10 +112,16 @@ namespace RockWeb.Blocks.Reporting
             List<string> populateTableSelect = new List<string>();
             populateTableSelect.Add( "\n  p.Id as [PersonId]" );
             const string blankString = "<blank>";
+            List<string> hashColumns = new List<string>();
 
             foreach ( var personProperty in personEntityFields.Where( a => a.FieldKind == FieldKind.Property ).OrderBy( a => !a.IsPreviewable ).ThenBy( a => a.Title ) )
             {
                 populateTableSelect.Add( string.Format( "  p.{0}", personProperty.Name ) );
+
+                // TODO: If this column should be included as a hash column
+                hashColumns.Add( string.Format( "p.{0}", personProperty.Name ) );
+
+
                 if ( personProperty.FieldType.Guid == Rock.SystemGuid.FieldType.DEFINED_VALUE.AsGuid())
                 {
                     var definedType = DefinedTypeCache.Read( personProperty.FieldConfig["definedtype"].Value.AsInteger() );
@@ -124,6 +130,9 @@ namespace RockWeb.Blocks.Reporting
                     // isnull(dvConnectionStatusValue.Value, '<blank>') [ConnectionStatusValueValue],
                     populateTableSelect.Add( string.Format( "  isnull(dv{0}.Value, '{1}') [{2}]", definedTypePropertyWithoutSuffix, blankString, definedType.Name ) );
 
+                    // TODO: If this column should be included as a hash column
+                    hashColumns.Add( string.Format( "dv{0}.Value", definedTypePropertyWithoutSuffix ) );
+                    
                     // LEFT OUTER JOIN DefinedValue dvConnectionStatusValue ON dvConnectionStatusValue.Id = p.ConnectionStatusValueId
                     populateTableFrom.Add( string.Format("  LEFT OUTER JOIN DefinedValue dv{0} ON dv{0}.Id = p.{1}", definedTypePropertyWithoutSuffix, personProperty.Name) );
                 }
@@ -170,11 +179,11 @@ namespace RockWeb.Blocks.Reporting
                         if ( personAttribute.FieldType.Guid == Rock.SystemGuid.FieldType.DEFINED_VALUE.AsGuid() )
                         {
                             var definedType = DefinedTypeCache.Read( personAttribute.FieldConfig["definedtype"].Value.AsInteger() );
-                            //var definedTypeAliasField = string.Format( "dv_attribute_{0}", attributeCache.Id );
-
-                            // isnull(dvConnectionStatusValue.Value, '<blank>') [ConnectionStatusValueValue],
-                            //populateTableSelect.Add( string.Format( "isnull({0}.Value, '{1}') [{2}] ", definedTypeAliasField, blankString, definedType.Name ) );
                             populateTableSelect.Add( string.Format( attributeSelectFormatDefinedValue, attributeCache.Id, blankString, attributeCache.Key ) );
+                            
+                            // TODO: If this column should be included as a hash column
+                            hashColumns.Add( string.Format( "attribute_{0}.[Attribute.Value]", attributeCache.Id ) );
+                            hashColumns.Add( string.Format( "attribute_{0}.[DefinedValue.Value]", attributeCache.Id ) );
 
                             populateTableFrom.Add( string.Format( attributeFromFormatDefinedValue, attributeCache.FieldType.Field.AttributeValueFieldName, attributeCache.Id ) );
                         }
@@ -182,12 +191,16 @@ namespace RockWeb.Blocks.Reporting
                         {
                             populateTableSelect.Add( string.Format( attributeSelectFormatRegular, attributeCache.Id, attributeCache.FieldType.Field.AttributeValueFieldName, attributeCache.Key ) );
                             populateTableFrom.Add( string.Format( attributeFromFormatRegular, attributeCache.FieldType.Field.AttributeValueFieldName, attributeCache.Id ) );
+
+                            // TODO: If this column should be included as a hash column
+                            hashColumns.Add( string.Format( "attribute_{0}.{1}", attributeCache.Id, attributeCache.FieldType.Field.AttributeValueFieldName ) );
                         }
                     }
                 }
             }
 
-            var flattenedPersonSQL = "SELECT " + populateTableSelect.AsDelimited( "," + Environment.NewLine );
+            var historyHash = "CONVERT(varchar(max), HASHBYTES('SHA2_512', (select CONCAT(" + hashColumns.AsDelimited( "," ) + ") [Hash] for xml raw)), 2)";
+            var flattenedPersonSQL = "SELECT " + historyHash + " [HistoryHash],\n" + populateTableSelect.AsDelimited( "," + Environment.NewLine );
             flattenedPersonSQL += Environment.NewLine;
             flattenedPersonSQL += "FROM " + populateTableFrom.AsDelimited( Environment.NewLine );
 
