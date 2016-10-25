@@ -189,7 +189,6 @@ namespace Rock.Workflow.Action
                         else
                         {
                             action.AddLogEntry(string.Format("{0} was not a member of the group {1} and the action was not configured to add them.", person.FullName, group.Name));
-                            return true;
                         }
                     }
 
@@ -199,6 +198,7 @@ namespace Rock.Workflow.Action
                     attendance.GroupId = group.Id;
                     attendance.PersonAliasId = person.PrimaryAliasId;
                     attendance.StartDateTime = attendanceDateTime;
+                    attendance.CampusId = group.CampusId;
                     attendance.DidAttend = true;
 
                     if ( locationGuid != Guid.Empty )
