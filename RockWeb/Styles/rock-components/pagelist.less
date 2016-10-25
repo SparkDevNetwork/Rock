@@ -71,7 +71,8 @@
         }
       }
 
-      &.active {
+      &.active,
+      &.selected {
         a {
           color: @listasblocks-active-color;
           background-color: @listasblocks-active-bg;
@@ -81,6 +82,10 @@
             color: lighten(@listasblocks-active-color, 10%);
           }
         }
+      }
+
+      &.inactive-item {
+          opacity: .5;
       }
     }
   }
