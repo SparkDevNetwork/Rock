@@ -1,0 +1,27 @@
+<html>
+  <head>
+    <title>{{ 'Now' | Date:'MMddyyyy' }}_ContributionStatements_Chapter_{{ ChapterNumber }}_of_{{ ChapterSize }}.html</title>
+    <link rel="stylesheet" type="text/css" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
+      <link rel="stylesheet" type="text/css" media="print" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
+</head>
+  <body>
+    <style>
+      th {
+      border-bottom: 1pt solid black;
+      }
+
+      #printOnly {
+      display: none;
+      }
+
+      @media print {
+      #printOnly {
+      display: block;
+      }
+      }
+    </style>
+    <div class="container">
+
+    </div>
+  </body>
+</html>
