@@ -100,6 +100,7 @@ var giveForm = new Vue({
 
     resetData: function () {
       this.$data = getInitialData()
+      this.refreshNameSplit()
       this.$nextTick(function () {
         // Trigger card graphic update manually
         $('.js-card-group input').each(function () {
