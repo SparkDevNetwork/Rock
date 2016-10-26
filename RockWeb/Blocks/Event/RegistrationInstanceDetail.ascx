@@ -342,7 +342,7 @@
                                 <Rock:RockTextBox ID="tbWaitListLastName" runat="server" Label="Last Name" />
                                 <asp:PlaceHolder ID="phWaitListFormFieldFilters" runat="server" />
                             </Rock:GridFilter>
-                            <Rock:Grid ID="gWaitList" runat="server" DisplayType="Full" AllowSorting="true" RowItemText="Wait List Individual" PersonIdField="PersonId" ExportSource="ColumnOutput">
+                            <Rock:Grid ID="gWaitList" runat="server" DisplayType="Full" AllowSorting="true" OnRowSelected="gWaitList_RowSelected" RowItemText="Wait List Individual" PersonIdField="PersonId" ExportSource="ColumnOutput">
                                 <Columns>
                                     <Rock:SelectField ItemStyle-Width="48px" />
                                     <Rock:RockTemplateField HeaderText="Wait List Individual" SortExpression="PersonAlias.Person.LastName, PersonAlias.Person.NickName" ExcelExportBehavior="NeverInclude">

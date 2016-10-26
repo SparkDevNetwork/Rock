@@ -749,6 +749,14 @@ Registration By: {0} Total Cost/Fees:{1}
         public string PersonName { get; set; }
 
         /// <summary>
+        /// Gets or sets a value indicating whether [on wait list].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [on wait list]; otherwise, <c>false</c>.
+        /// </value>
+        public bool OnWaitList { get; set; }
+
+        /// <summary>
         /// Gets or sets the cost.
         /// </summary>
         /// <value>
@@ -831,6 +839,7 @@ Registration By: {0} Total Cost/Fees:{1}
             FamilyGuid = Guid.Empty;
             FieldValues = new Dictionary<int, FieldValueObject>();
             FeeValues = new Dictionary<int, List<FeeInfo>>();
+            OnWaitList = false;
         }
 
         /// <summary>
@@ -887,6 +896,7 @@ Registration By: {0} Total Cost/Fees:{1}
                     registrant.GroupMember.Group.Name : string.Empty;
                 RegistrationId = registrant.RegistrationId;
                 Cost = registrant.Cost;
+                OnWaitList = registrant.OnWaitList;
 
                 Person person = null;
                 Group family = null;
