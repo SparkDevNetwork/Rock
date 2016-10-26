@@ -477,7 +477,7 @@ namespace RockWeb.Blocks.Finance
                     }
 
                     var lTransactionImage = e.Row.FindControl( "lTransactionImage" ) as Literal;
-                    if ( lTransactionImage != null )
+                    if ( lTransactionImage != null && lTransactionImage.Visible )
                     {
                         var firstImage = txn.Images.FirstOrDefault();
                         if ( firstImage != null )
@@ -970,8 +970,11 @@ namespace RockWeb.Blocks.Finance
                 // otherwise set the selection based on filter settings
                 if ( _person != null )
                 {
+                    // fetch all the possible PersonAliasIds that have this GivingID to help optimize the SQL
+                    var personAliasIds = new PersonAliasService( rockContext ).Queryable().Where( a => a.Person.GivingId == _person.GivingId ).Select( a => a.Id ).ToList();
+
                     // get the transactions for the person or all the members in the person's giving group (Family)
-                    qry = qry.Where( t => t.AuthorizedPersonAlias.Person.GivingId == _person.GivingId );
+                    qry = qry.Where( t => t.AuthorizedPersonAliasId.HasValue && personAliasIds.Contains(t.AuthorizedPersonAliasId.Value) );
                 }
 
                 // Date Range
@@ -1064,7 +1067,11 @@ namespace RockWeb.Blocks.Finance
                         var filterPerson = new PersonService( rockContext ).Get( filterPersonId.Value );
                         if ( filterPerson != null )
                         {
-                            qry = qry.Where( t => t.AuthorizedPersonAlias.Person.GivingId == filterPerson.GivingId );
+                            // fetch all the possible PersonAliasIds that have this GivingID to help optimize the SQL
+                            var personAliasIds = new PersonAliasService( rockContext ).Queryable().Where( a => a.Person.GivingId == filterPerson.GivingId ).Select( a => a.Id ).ToList();
+
+                            // get the transactions for the person or all the members in the person's giving group (Family)
+                            qry = qry.Where( t => t.AuthorizedPersonAliasId.HasValue && personAliasIds.Contains( t.AuthorizedPersonAliasId.Value ) );
                         }
                     }
                 }
