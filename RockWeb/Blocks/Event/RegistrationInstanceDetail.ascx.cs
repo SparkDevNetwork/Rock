@@ -50,7 +50,8 @@ namespace RockWeb.Blocks.Event
     [LinkedPage( "Content Item Page", "The page for viewing details about a content channel item", true, "", "", 5 )]
     [LinkedPage( "Transaction Detail Page", "The page for viewing details about a payment", true, "", "", 6 )]
     [LinkedPage( "Payment Reminder Page", "The page for manually sending payment reminders.", false, "", "", 7 )]
-    [BooleanField( "Display Discount Codes", "Display the discount code used with a payment", false, "", 8 )]
+    [LinkedPage( "Wait List Process Page", "The page for moving a person from the wait list to a full registrant.", true, "", "", 8 )]
+    [BooleanField( "Display Discount Codes", "Display the discount code used with a payment", false, "", 9 )]
     public partial class RegistrationInstanceDetail : Rock.Web.UI.RockBlock, IDetailBlock
     {
         #region Fields
@@ -164,7 +165,7 @@ namespace RockWeb.Blocks.Event
             // add button to the wait list action grid
             Button btnProcessWaitlist = new Button();
             btnProcessWaitlist.CssClass = "pull-left margin-l-none btn btn-sm btn-default";
-            btnProcessWaitlist.Text = "Move To Registrant";
+            btnProcessWaitlist.Text = "Move From Wait List";
             btnProcessWaitlist.Click += btnProcessWaitlist_Click;
             gWaitList.Actions.AddCustomActionControl( btnProcessWaitlist );
 
@@ -1434,9 +1435,70 @@ namespace RockWeb.Blocks.Event
 
         #region WaitList Tab Events
 
+        /// <summary>
+        /// Handles the RowSelected event of the gWaitList control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="RowEventArgs"/> instance containing the event data.</param>
+        protected void gWaitList_RowSelected( object sender, RowEventArgs e )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                var registrantService = new RegistrationRegistrantService( rockContext );
+                var registrant = registrantService.Get( e.RowKeyId );
+                if ( registrant != null )
+                {
+                    var qryParams = new Dictionary<string, string>();
+                    qryParams.Add( "RegistrationId", registrant.RegistrationId.ToString() );
+                    string url = LinkedPageUrl( "RegistrationPage", qryParams );
+                    url += "#" + e.RowKeyValue;
+                    Response.Redirect( url, false );
+                }
+            }
+        }
+
+        /// <summary>
+        /// Handles the Click event of the btnProcessWaitlist control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         private void btnProcessWaitlist_Click( object sender, EventArgs e )
         {
-            throw new NotImplementedException();
+            // create entity set with selected individuals
+            var keys = gWaitList.SelectedKeys.ToList();
+            if ( keys.Any() )
+            {
+                var entitySet = new Rock.Model.EntitySet();
+                entitySet.EntityTypeId = Rock.Web.Cache.EntityTypeCache.Read<Rock.Model.RegistrationRegistrant>().Id;
+                entitySet.ExpireDateTime = RockDateTime.Now.AddMinutes( 20 );
+
+                foreach ( var key in keys )
+                {
+                    try
+                    {
+                        var item = new Rock.Model.EntitySetItem();
+                        item.EntityId = (int)key;
+                        entitySet.Items.Add( item );
+                    }
+                    catch
+                    {
+                        // ignore
+                    }
+                }
+
+                if ( entitySet.Items.Any() )
+                {
+                    var rockContext = new RockContext();
+                    var service = new Rock.Model.EntitySetService( rockContext );
+                    service.Add( entitySet );
+                    rockContext.SaveChanges();
+
+                    // redirect to the waitlist page
+                    Dictionary<string, string> queryParms = new Dictionary<string, string>();
+                    queryParms.Add( "WaitListSetId", entitySet.Id.ToString() );
+                    NavigateToLinkedPage( "WaitListProcessPage", queryParms );
+                }
+            }
         }
 
         /// <summary>
