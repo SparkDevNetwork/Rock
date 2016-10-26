@@ -69,10 +69,6 @@ namespace RockWeb.Blocks.Reporting
 
             if ( !Page.IsPostBack )
             {
-                // added for your convenience
-
-                // to show the created/modified by date time details in the PanelDrawer do something like this:
-                // pdAuditDetails.SetEntity( <YOUROBJECT>, ResolveRockUrl( "~" ) );
             }
         }
 
@@ -100,7 +96,7 @@ namespace RockWeb.Blocks.Reporting
 
         #endregion
 
-        protected void btnGo_Click( object sender, EventArgs e )
+        protected void btnCreateDimPersonSQL_Click( object sender, EventArgs e )
         {
             var rockContext = new RockContext();
             var personEntityTypeId = EntityTypeCache.GetId<Rock.Model.Person>();
@@ -110,9 +106,13 @@ namespace RockWeb.Blocks.Reporting
             List<string> populateTableFrom = new List<string>();
             populateTableFrom.Add( "dbo.Person p" );
             List<string> populateTableSelect = new List<string>();
-            populateTableSelect.Add( "\n  p.Id as [PersonId]" );
-            const string blankString = "<blank>";
+            populateTableSelect.Add( "  p.Id as [PersonId]" );
+
+            //const string blankString = "<blank>";
+            const int blankDefinedValueId = 0;
             List<string> hashColumns = new List<string>();
+            List<string> lastModifiedDateTimeColumns = new List<string>();
+            lastModifiedDateTimeColumns.Add( "p.ModifiedDateTime" );
 
             foreach ( var personProperty in personEntityFields.Where( a => a.FieldKind == FieldKind.Property ).OrderBy( a => !a.IsPreviewable ).ThenBy( a => a.Title ) )
             {
@@ -121,53 +121,39 @@ namespace RockWeb.Blocks.Reporting
                 // TODO: If this column should be included as a hash column
                 hashColumns.Add( string.Format( "p.{0}", personProperty.Name ) );
 
-
-                if ( personProperty.FieldType.Guid == Rock.SystemGuid.FieldType.DEFINED_VALUE.AsGuid())
+                if ( personProperty.FieldType.Guid == Rock.SystemGuid.FieldType.DEFINED_VALUE.AsGuid() )
                 {
                     var definedType = DefinedTypeCache.Read( personProperty.FieldConfig["definedtype"].Value.AsInteger() );
                     var definedTypePropertyWithoutSuffix = personProperty.Name.Replace( "ValueId", string.Empty );
 
-                    // isnull(dvConnectionStatusValue.Value, '<blank>') [ConnectionStatusValueValue],
-                    populateTableSelect.Add( string.Format( "  isnull(dv{0}.Value, '{1}') [{2}]", definedTypePropertyWithoutSuffix, blankString, definedType.Name ) );
+                    populateTableSelect.Add( string.Format( "  isnull(dv{0}.Id, {1}) [{2}]", definedTypePropertyWithoutSuffix, blankDefinedValueId, definedType.Name ) );
 
                     // TODO: If this column should be included as a hash column
-                    hashColumns.Add( string.Format( "dv{0}.Value", definedTypePropertyWithoutSuffix ) );
-                    
+                    hashColumns.Add( string.Format( "dv{0}.Id", definedTypePropertyWithoutSuffix ) );
+
                     // LEFT OUTER JOIN DefinedValue dvConnectionStatusValue ON dvConnectionStatusValue.Id = p.ConnectionStatusValueId
-                    populateTableFrom.Add( string.Format("  LEFT OUTER JOIN DefinedValue dv{0} ON dv{0}.Id = p.{1}", definedTypePropertyWithoutSuffix, personProperty.Name) );
+                    populateTableFrom.Add( string.Format( "  LEFT OUTER JOIN DefinedValue dv{0} ON dv{0}.Id = p.{1}", definedTypePropertyWithoutSuffix, personProperty.Name ) );
                 }
             }
 
-            // OUTER APPLY ( SELECT TOP 1 av.ValueAsDateTime FROM dbo.AttributeValue av WHERE av.EntityId = p.Id and AttributeId = 1167) attribute_1167
-            var attributeFromFormatRegular = "  OUTER APPLY( SELECT TOP 1 av.{0} FROM dbo.AttributeValue av WHERE av.EntityId = p.Id and AttributeId = {1} ) attribute_{1}";
+            var attributeFromFormatRegular = "  OUTER APPLY( SELECT TOP 1 av.{0}, av.ModifiedDateTime FROM dbo.AttributeValue av WHERE av.EntityId = p.Id and AttributeId = {1} ) attribute_{1}";
 
-            // ,attribute_174.ValueAsDateTime AS [attribute_BaptismDate]
             var attributeSelectFormatRegular = "  attribute_{0}.{1} as [attribute_{2}]";
 
-            /*  OUTER APPLY (
-                SELECT TOP 1 av.Value [Attribute.Value], dv.Value [DefinedValue.Value]
-                FROM dbo.AttributeValue av
-                left JOIN DefinedValue dv on TRY_CONVERT(uniqueidentifier, av.Value) = dv.[Guid]
-                WHERE av.EntityId = p.Id 
-                    AND AttributeId = 719
-                ) attribute_719
-            */
             var attributeFromFormatDefinedValue =
                 @"  OUTER APPLY( 
     SELECT TOP 1 
         av.Value [Attribute.Value],
-        dv.Value [DefinedValue.Value]
+        av.ModifiedDateTime,
+        dv.ID [DefinedValue.Id]
     FROM dbo.AttributeValue av 
     JOIN DefinedValue dv on TRY_CONVERT(UNIQUEIDENTIFIER, av.Value) = dv.[Guid]
     WHERE av.EntityId = p.Id and AttributeId = {1} 
     ) attribute_{1}";
 
-
-            // ,attribute_719.[Attribute.Value] AS [attribute_SourceofVisit]
-            //  ,attribute_719.[DefinedValue.Value] AS[attribute_SourceofVisitDV]
             var attributeSelectFormatDefinedValue =
                 @"  attribute_{0}.[Attribute.Value] AS [attribute_{2}],
-  isnull(attribute_{0}.[DefinedValue.Value], '{1}') AS [attribute_{2}DV]";
+  isnull(attribute_{0}.[DefinedValue.Id], {1}) AS [attribute_{2}ValueId]";
 
             foreach ( var personAttribute in personEntityFields.Where( a => a.FieldKind == FieldKind.Attribute ).OrderBy( a => !a.IsPreviewable ).ThenBy( a => a.Title ) )
             {
@@ -176,14 +162,15 @@ namespace RockWeb.Blocks.Reporting
                     var attributeCache = AttributeCache.Read( personAttribute.AttributeGuid.Value );
                     if ( attributeCache != null )
                     {
+                        lastModifiedDateTimeColumns.Add( string.Format( "attribute_{0}.ModifiedDateTime", attributeCache.Id ) );
                         if ( personAttribute.FieldType.Guid == Rock.SystemGuid.FieldType.DEFINED_VALUE.AsGuid() )
                         {
                             var definedType = DefinedTypeCache.Read( personAttribute.FieldConfig["definedtype"].Value.AsInteger() );
-                            populateTableSelect.Add( string.Format( attributeSelectFormatDefinedValue, attributeCache.Id, blankString, attributeCache.Key ) );
-                            
+                            populateTableSelect.Add( string.Format( attributeSelectFormatDefinedValue, attributeCache.Id, blankDefinedValueId, attributeCache.Key ) );
+
                             // TODO: If this column should be included as a hash column
                             hashColumns.Add( string.Format( "attribute_{0}.[Attribute.Value]", attributeCache.Id ) );
-                            hashColumns.Add( string.Format( "attribute_{0}.[DefinedValue.Value]", attributeCache.Id ) );
+                            hashColumns.Add( string.Format( "attribute_{0}.[DefinedValue.Id]", attributeCache.Id ) );
 
                             populateTableFrom.Add( string.Format( attributeFromFormatDefinedValue, attributeCache.FieldType.Field.AttributeValueFieldName, attributeCache.Id ) );
                         }
@@ -200,17 +187,30 @@ namespace RockWeb.Blocks.Reporting
             }
 
             var historyHash = "CONVERT(varchar(max), HASHBYTES('SHA2_512', (select CONCAT(" + hashColumns.AsDelimited( "," ) + ") [Hash] for xml raw)), 2)";
-            var flattenedPersonSQL = "SELECT " + historyHash + " [HistoryHash],\n" + populateTableSelect.AsDelimited( "," + Environment.NewLine );
+            var lastModifiedMax = string.Format(
+                "(SELECT MAX(ModifiedDateTime) FROM (VALUES {0} ) AS AllModifiedDateTime(ModifiedDateTime))",
+                lastModifiedDateTimeColumns.Select( a => "(" + a + ")" ).ToList().AsDelimited( "," )
+                );
+
+            var flattenedPersonSQL = "SELECT \n  "
+                + historyHash + " [HistoryHash],\n  "
+                + lastModifiedMax + " [MostRecentModifiedDateTime],\n"
+                + populateTableSelect.AsDelimited( "," + Environment.NewLine );
             flattenedPersonSQL += Environment.NewLine;
             flattenedPersonSQL += "FROM " + populateTableFrom.AsDelimited( Environment.NewLine );
 
-            lSql.Text = flattenedPersonSQL;
+            tbSQL.Text = flattenedPersonSQL;
 
             /*var dataTable = DbService.GetDataTable( flattenedPersonSQL, CommandType.Text, new Dictionary<string, object>() );
             foreach (var row in dataTable.Rows )
             {
-
+                
             }*/
+
+        }
+
+        protected void btnCreateDimDefinedTypeViews_Click( object sender, EventArgs e )
+        {
 
         }
     }

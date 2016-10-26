@@ -5,12 +5,10 @@
 
         <asp:Panel ID="pnlView" runat="server">
             <h1>ETL Test</h1>
-            <asp:LinkButton ID="btnGo" runat="server" CssClass="btn btn-primary" Text="GO" OnClick="btnGo_Click" />
+            <asp:LinkButton ID="btnCreateDimPersonSQL" runat="server" CssClass="btn btn-primary" Text="CreateDimPersonSQL" OnClick="btnCreateDimPersonSQL_Click" />
+            <Rock:RockTextBox ID="tbSQL" runat="server" TextMode="MultiLine" Rows="10" />
 
-            
-            <div class="code">
-                <pre><asp:Literal ID="lSql" runat="server" /></pre>
-            </div>
+            <asp:LinkButton ID="btnCreateDimDefinedTypeViews" runat="server" CssClass="btn btn-primary" Text="CreateDimDefinedTypeViews" OnClick="btnCreateDimDefinedTypeViews_Click" />
             
         </asp:Panel>
 
