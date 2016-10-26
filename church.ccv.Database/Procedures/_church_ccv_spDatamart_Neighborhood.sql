@@ -14,7 +14,8 @@
 ALTER PROCEDURE [dbo].[_church_ccv_spDatamart_Neighborhood]
 AS
 BEGIN
-    DECLARE @NeighborhoodGroupTypeGuid UNIQUEIDENTIFIER = 'C3A3EB51-53CA-4EC1-B9B4-BB62E0C61445'
+    DECLARE @NeighborhoodGroupTypeId INT = 49
+	DECLARE @NeighborhoodAreaGroupTypeGuid UNIQUEIDENTIFIER = 'C3A3EB51-53CA-4EC1-B9B4-BB62E0C61445'
     DECLARE @NeighborhoodPastorRoleId INT = 45
     DECLARE @NeighborhoodLeaderRoleId INT = 46
 
@@ -50,11 +51,11 @@ BEGIN
         ,g.[Guid]
         ,(
             SELECT COUNT(*)
-            FROM [Group] gc
-            WHERE gc.[ParentGroupId] = g.[Id]
+			FROM dbo.[_church_ccv_ufnGroup_GetAllDescendents](g.Id) gd 
+			WHERE gd.GroupTypeId = @NeighborhoodGroupTypeId
             ) AS [GroupCount]
         ,(
-            SELECT TOP 1 p.[NickName] + ' ' + p.[LastName]
+            SELECT max(p.[NickName] + ' ' + p.[LastName])
             FROM [Person] p
             INNER JOIN [GroupMember] gm ON gm.[PersonId] = p.[Id]
             INNER JOIN [Group] lg ON lg.[Id] = gm.[GroupId]
@@ -62,7 +63,7 @@ BEGIN
                 AND gm.[GroupRoleId] = @NeighborhoodLeaderRoleId
             ) AS [NeighborhoodLeaderName]
         ,(
-            SELECT TOP 1 p.[Id]
+            SELECT max(p.[Id])
             FROM [Person] p
             INNER JOIN [GroupMember] gm ON gm.[PersonId] = p.[Id]
             INNER JOIN [Group] lg ON lg.[Id] = gm.[GroupId]
@@ -70,7 +71,7 @@ BEGIN
                 AND gm.[GroupRoleId] = @NeighborhoodLeaderRoleId
             ) AS [NeighborhoodLeaderId]
         ,(
-            SELECT TOP 1 p.[NickName] + ' ' + p.[LastName]
+            SELECT max(p.[NickName] + ' ' + p.[LastName])
             FROM [Person] p
             INNER JOIN [GroupMember] gm ON gm.[PersonId] = p.[Id]
             INNER JOIN [Group] lg ON lg.[Id] = gm.[GroupId]
@@ -78,7 +79,7 @@ BEGIN
                 AND gm.[GroupRoleId] = @NeighborhoodPastorRoleId
             ) AS [NeighborhoodPastorName]
         ,(
-            SELECT TOP 1 p.[Id]
+            SELECT max(p.[Id])
             FROM [Person] p
             INNER JOIN [GroupMember] gm ON gm.[PersonId] = p.[Id]
             INNER JOIN [Group] lg ON lg.[Id] = gm.[GroupId]
@@ -108,9 +109,9 @@ BEGIN
                 FROM [_church_ccv_Datamart_Person] dp
                 WHERE dp.[NeighborhoodId] = g.[Id]
                     AND [FamilyRole] = 'Adult'
-                    AND [IsBaptized] = 1
+          AND [IsBaptized] = 1
                 ), 0) AS [AdultsBaptized]
- ,COALESCE((
+        ,COALESCE((
                 SELECT COUNT(*)
                 FROM [_church_ccv_Datamart_Person] dp
                 WHERE dp.[NeighborhoodId] = g.[Id]
@@ -176,7 +177,7 @@ BEGIN
                 ), 0) AS [ChildrenCount]
     FROM [Group] g
     INNER JOIN [GroupType] gt ON g.GroupTypeId = gt.[Id]
-    WHERE gt.[Guid] = @NeighborhoodGroupTypeGuid
+    WHERE gt.[Guid] = @NeighborhoodAreaGroupTypeGuid
         AND g.[Id] <> 1201281 -- top-level parent group of neigborhood areas
 		AND g.[Id] NOT IN (1201583,1201584) -- ZZ Out of range, ZZ Unknown
 END

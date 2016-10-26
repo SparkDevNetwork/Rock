@@ -161,6 +161,8 @@ BEGIN
         ,[LastPublicNote]
 		,[GivingLast12Months]
 		,[IsCoaching]
+		,[NeighborhoodPastor]
+		,[NeighborhoodPastorId]
         )
     SELECT P.[Id] AS [PersonId]
         ,F.[FamilyId] AS [FamilyId]
@@ -370,6 +372,18 @@ BEGIN
                 THEN 1
             ELSE 0
             END AS [IsCoaching]
+		,(
+			SELECT TOP 1 AP.LastName + ', ' + AP.NickName
+			FROM Person AP
+			INNER JOIN GroupMember AGM ON AGM.PersonId = AP.Id
+			WHERE AGM.GroupId = gfg.Id
+			) AS [NeighborhoodPastor]
+		,(
+			SELECT TOP 1 AP.Id
+			FROM Person AP
+			INNER JOIN GroupMember AGM ON AGM.PersonId = AP.Id
+			WHERE AGM.GroupId = gfg.Id
+			) AS [NeighborhoodPastorId]
     FROM Person P
     LEFT OUTER JOIN DefinedValue MS ON MS.Id = P.MaritalStatusValueId
     INNER JOIN DefinedValue CS ON CS.Id = P.ConnectionStatusValueId
@@ -450,4 +464,22 @@ BEGIN
 	INNER JOIN Gifts G
 		ON G.PersonId = DP.PersonId
 
+	-- Calculate total count of unique gifts
+	;WITH TotalGifts AS (
+		SELECT
+			PA.PersonId,
+			COUNT(*) AS [totalgifts]
+		FROM FinancialTransactionDetail FTD
+		INNER JOIN FinancialTransaction FT ON FT.Id = FTD.TransactionId
+		INNER JOIN FinancialAccount FA ON FA.Id = FTD.AccountId
+		INNER JOIN PersonAlias PA on PA.Id = FT.AuthorizedPersonAliasId
+		WHERE FA.Id IN (SELECT * FROM dbo._church_ccv_ufnUtility_GetGeneralFinanceAccountIds())
+		GROUP BY PA.PersonId
+	)
+
+	UPDATE DP
+	SET
+		DP.TotalGifts = TG.[totalgifts]
+	FROM _church_ccv_Datamart_Person DP
+	INNER JOIN TotalGifts TG ON TG.PersonId = DP.PersonId
 END

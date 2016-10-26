@@ -24,12 +24,12 @@ BEGIN
 		SELECT 
 			[topic_id] AS [SeriesId]
 			, [title] AS [Title]
-			, [description] AS [Description]
-			, [extra_details] AS [ExtraDetails]
-			,(SELECT [guid] FROM [Arena].[dbo].[util_blob] WHERE [blob_id] = t.image_blob_id) AS [MessageImageBlobId1]
-			,(SELECT [guid] FROM [Arena].[dbo].[util_blob] WHERE [blob_id] = t.image2_blob_id) AS [MessageImageBlobId2]
-			,(SELECT [guid] FROM [Arena].[dbo].[util_blob] WHERE [blob_id] = t.image3_blob_id) AS [MessageImageBlobId3]
-			,(SELECT [guid] FROM [Arena].[dbo].[util_blob] WHERE [blob_id] = t.image4_blob_id) AS [MessageImageBlobId4]
+			, ISNULL([description], '') AS [Description]
+			, ISNULL([extra_details], '') AS [ExtraDetails]
+			,ISNULL(CAST((SELECT [guid] FROM [Arena].[dbo].[util_blob] WHERE [blob_id] = t.image_blob_id) AS VARCHAR(100)), '') AS [MessageImageBlobId1]
+			,ISNULL(CAST((SELECT [guid] FROM [Arena].[dbo].[util_blob] WHERE [blob_id] = t.image2_blob_id) AS VARCHAR(100)), '') AS [MessageImageBlobId2]
+			,ISNULL(CAST((SELECT [guid] FROM [Arena].[dbo].[util_blob] WHERE [blob_id] = t.image3_blob_id) AS VARCHAR(100)), '') AS [MessageImageBlobId3]
+			,ISNULL(CAST((SELECT [guid] FROM [Arena].[dbo].[util_blob] WHERE [blob_id] = t.image4_blob_id) AS VARCHAR(100)), '') AS [MessageImageBlobId4]
 		FROM 
 			[Arena].[dbo].[feed_topic] t
 		WHERE

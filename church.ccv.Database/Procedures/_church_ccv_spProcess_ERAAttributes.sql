@@ -41,16 +41,22 @@ INSERT INTO AttributeValue (
 SELECT FM.PersonId
     ,2533
     ,CASE MAX(CAST(CW.RegularAttendee AS INT))
-		WHEN 1 THEN 'True'
-		ELSE 'False'
-	 END
+        WHEN 1
+            THEN CASE max(cast(p.IsDeceased AS INT))
+                    WHEN 1
+                        THEN 'False'
+                    ELSE 'True'
+                    END
+        ELSE 'False'
+        END
     ,0
     ,NEWID()
-	,GETDATE()
+    ,GETDATE()
 FROM _church_ccv_Datamart_ERA CW
 INNER JOIN GroupMember FM ON FM.GroupId = CW.FamilyId
+INNER JOIN Person p ON p.Id = fm.PersonId
 WHERE CW.WeekendDate = @CurrentWeekend
-	AND CW.RegularAttendee IS NOT NULL 
+    AND CW.RegularAttendee IS NOT NULL
 GROUP BY FM.PersonId
 
 -- Date family became 'lost'

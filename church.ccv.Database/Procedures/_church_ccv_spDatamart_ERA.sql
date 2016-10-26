@@ -125,7 +125,7 @@ BEGIN
         WHERE FTD.Amount > 0
 			AND FTD.AccountId IN (SELECT * FROM dbo._church_ccv_ufnUtility_GetGeneralFinanceAccountIds())
         )	
-    INSERT INTO @FamilyContributionCount
+ INSERT INTO @FamilyContributionCount
     SELECT GroupId
         ,COUNT(*)
         ,SUM(last_year)
