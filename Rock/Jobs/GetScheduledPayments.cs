@@ -60,17 +60,19 @@ namespace Rock.Jobs
         /// </summary>
         public virtual void Execute( IJobExecutionContext context )
         {
-            try
-            {
-                // get the job map
-                JobDataMap dataMap = context.JobDetail.JobDataMap;
-                int scheduledPaymentsProcessed = 0;
+            var exceptionMsgs = new List<string>();
 
-                using ( var rockContext = new RockContext() )
+            // get the job map
+            JobDataMap dataMap = context.JobDetail.JobDataMap;
+            int scheduledPaymentsProcessed = 0;
+
+            using ( var rockContext = new RockContext() )
+            {
+                foreach ( var financialGateway in new FinancialGatewayService( rockContext )
+                    .Queryable()
+                    .Where( g => g.IsActive ) )
                 {
-                    foreach ( var financialGateway in new FinancialGatewayService( rockContext )
-                        .Queryable()
-                        .Where( g => g.IsActive ) )
+                    try
                     {
                         financialGateway.LoadAttributes( rockContext );
 
@@ -104,15 +106,21 @@ namespace Rock.Jobs
                             }
                         }
                     }
+                    catch ( Exception ex )
+                    {
+                        ExceptionLogService.LogException( ex, null );
+                        exceptionMsgs.Add( ex.Message );
+                    }
+
                 }
-
-                context.Result = string.Format( "{0} payments processed", scheduledPaymentsProcessed );
             }
 
-            catch ( Exception ex )
+            if ( exceptionMsgs.Any() )
             {
-                ExceptionLogService.LogException( ex, null );
+                throw new Exception( "One or more exceptions occurred while downloading transactions..." + Environment.NewLine + exceptionMsgs.AsDelimited( Environment.NewLine ) );
             }
+
+            context.Result = string.Format( "{0} payments processed", scheduledPaymentsProcessed );
         }
 
     }
