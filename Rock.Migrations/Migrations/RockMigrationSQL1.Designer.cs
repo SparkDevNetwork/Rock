@@ -2083,5 +2083,19 @@ namespace Rock.Migrations.Migrations {
                 return ResourceManager.GetString("_201610031959052_FamilyAnalyticsUpdate_spCrm_FamilyAnalyticsEraDataset", resourceCulture);
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to /****** Object:  StoredProcedure [dbo].[spCheckin_AttendanceAnalyticsQuery_AttendeeLastAttendance]    Script Date: 10/27/2016 9:07:30 AM ******/
+        ///IF EXISTS ( SELECT * FROM [sysobjects] WHERE [id] = OBJECT_ID(N&apos;[dbo].[spCheckin_AttendanceAnalyticsQuery_AttendeeLastAttendance]&apos;) AND OBJECTPROPERTY([id], N&apos;IsProcedure&apos;) = 1 )
+        ///DROP PROCEDURE [dbo].[spCheckin_AttendanceAnalyticsQuery_AttendeeLastAttendance]
+        ///GO
+        ///
+        ////****** Object:  StoredProcedure [dbo].[spCheckin_AttendanceAnalyticsQuery_AttendeeLastAttendance] [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _201610271014123_AttendeeLastAttendance {
+            get {
+                return ResourceManager.GetString("_201610271014123_AttendeeLastAttendance", resourceCulture);
+            }
+        }
     }
 }

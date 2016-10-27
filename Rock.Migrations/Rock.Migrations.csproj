@@ -86,6 +86,10 @@
     <Compile Include="Migrations\201610261808353_WaitListNotificationFields.Designer.cs">
       <DependentUpon>201610261808353_WaitListNotificationFields.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201610271014123_AttendeeLastAttendance.cs" />
+    <Compile Include="Migrations\201610271014123_AttendeeLastAttendance.Designer.cs">
+      <DependentUpon>201610271014123_AttendeeLastAttendance.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 6.0\Version 1.6.0\201609282147388_WaitList.cs" />
     <Compile Include="Migrations\Version 6.0\Version 1.6.0\201609282147388_WaitList.Designer.cs">
       <DependentUpon>201609282147388_WaitList.cs</DependentUpon>
@@ -2303,6 +2307,9 @@
     <EmbeddedResource Include="Migrations\201610261808353_WaitListNotificationFields.resx">
       <DependentUpon>201610261808353_WaitListNotificationFields.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201610271014123_AttendeeLastAttendance.resx">
+      <DependentUpon>201610271014123_AttendeeLastAttendance.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 6.0\Version 1.6.0\201609282147388_WaitList.resx">
       <DependentUpon>201609282147388_WaitList.cs</DependentUpon>
     </EmbeddedResource>
@@ -3950,6 +3957,7 @@
   <ItemGroup>
     <Content Include="Migrations\201610031959052_FamilyAnalyticsUpdate_spCrm_FamilyAnalyticsAttendance.sql" />
     <Content Include="Migrations\201610031959052_FamilyAnalyticsUpdate_spCrm_FamilyAnalyticsEraDataset.sql" />
+    <Content Include="Migrations\201610271014123_AttendeeLastAttendance.sql" />
     <Content Include="Migrations\Version 6.0\Version 1.6.0\201608171937068_GivingAnalyticsAccounts_AccountTotals.sql" />
     <Content Include="Migrations\Version 6.0\Version 1.6.0\201608171937068_GivingAnalyticsAccounts_FirstLastEverDates.sql" />
     <Content Include="Migrations\Version 6.0\Version 1.6.0\201608171937068_GivingAnalyticsAccounts_PersonSummary.sql" />
