@@ -131,7 +131,7 @@
             <div class="form-group">
                 <label for="phone" class="control-label col-sm-3">Phone <small class="text-muted">(optional)</small></label>
                 <div class="col-sm-9">
-                    <input runat="server" v-model="phone" type="tel" id="tbPhone" placeholder="(000) 000-0000" class="form-control js-phone" data-inputmask="'mask': '(999) 999-9999', 'greedy': false">
+                    <input runat="server" v-model="phone" type="tel" id="tbPhone" placeholder="(000) 000-0000" class="form-control js-phone">
                 </div>
             </div>
 

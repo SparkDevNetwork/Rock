@@ -159,7 +159,10 @@ Sys.Application.add_load(function () {
     })
   }
 
-  $('#givingForm .js-phone').inputmask()
+  $('.js-phone').inputmask({
+    mask: ['(999) 999-9999', '+1 (999) 999-9999'],
+    greedy: false
+  })
 
   var cardType
 
