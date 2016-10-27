@@ -926,8 +926,22 @@ namespace RockWeb.Blocks.Event
                 var attributesDB = attributeService.Get( entityTypeId, qualifierColumn, qualifierValue );
                 foreach ( var attr in attributesDB.Where( a => !selectedAttributeGuids.Contains( a.Guid ) ).ToList() )
                 {
-                    attributeService.Delete( attr );
-                    Rock.Web.Cache.AttributeCache.Flush( attr.Id );
+                    var canDeleteAttribute = true;
+                    foreach ( var form in RegistrationTemplate.Forms )
+                    {
+                        // make sure other RegistrationTemplates aren't using this AttributeId (which could happen due to an old bug)
+                        var formFieldsFromOtherRegistrationTemplatesUsingAttribute = registrationTemplateFormFieldService.Queryable().Where( a => a.AttributeId.Value == attr.Id && a.RegistrationTemplateForm.RegistrationTemplateId != RegistrationTemplate.Id ).Any();
+                        if ( formFieldsFromOtherRegistrationTemplatesUsingAttribute )
+                        {
+                            canDeleteAttribute = false;
+                        }
+                    }
+
+                    if ( canDeleteAttribute )
+                    {
+                        attributeService.Delete( attr );
+                        Rock.Web.Cache.AttributeCache.Flush( attr.Id );
+                    }
                 }
 
                 rockContext.SaveChanges();
