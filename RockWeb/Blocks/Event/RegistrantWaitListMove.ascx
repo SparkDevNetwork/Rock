@@ -17,6 +17,19 @@
                     
                     <asp:Panel ID="pnlEmail" runat="server" Visible="false" CssClass="margin-t-md">
                         <div class="well">
+
+                            <strong>Recipients</strong> <br />
+                            <div class="row margin-b-md">
+                                
+                                <asp:Repeater ID="rptRecipients" runat="server" OnItemDataBound="rptRecipients_ItemDataBound">
+                                    <ItemTemplate>
+                                        <div class="col-md-4">
+                                            <asp:CheckBox ID="cbEmailRecipient" runat="server" Checked="true" CssClass="pull-left" />
+                                        </div>
+                                    </ItemTemplate>
+                                </asp:Repeater>
+                            </div>
+
                             <div class="row">
                                 <div class="col-md-6">
                                     <Rock:RockTextBox ID="tbFromName" runat="server" Label="From Name" Required="true" />
@@ -31,7 +44,7 @@
                                 </div>
                             </div>
                     
-                            <asp:LinkButton ID="btnSendEmail" runat="server" Text="Send" CssClass="btn btn-primary margin-t-md" />
+                            <asp:LinkButton ID="btnSendEmail" runat="server" Text="Send" CssClass="btn btn-primary margin-t-md" OnClick="btnSendEmail_Click" />
                         </div>
                     </asp:Panel>
                 </asp:Panel>
@@ -43,5 +56,12 @@
             <Rock:NotificationBox ID="nbResult" NotificationBoxType="Success" runat="server" />
         </asp:Panel>
 
+        <script type="text/javascript">
+              Sys.WebForms.PageRequestManager.getInstance().add_endRequest(pageLoaded);
+
+              function pageLoaded(sender, args) {
+                 window.scrollTo(0,0);
+              }
+        </script>
     </ContentTemplate>
 </asp:UpdatePanel>

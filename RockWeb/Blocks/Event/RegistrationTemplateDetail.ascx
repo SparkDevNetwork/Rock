@@ -251,6 +251,26 @@
                         </div>
                     </Rock:PanelWidget>
 
+                    <Rock:PanelWidget ID="wpWaitListTransition" runat="server" Title="Wait List Transition Email">
+                        <div class="alert alert-info">
+                            This email template will be used when email the individual that they are no longer on the wait list and have been transtioned to a full registrant.
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <Rock:RockTextBox ID="tbWaitListTransitionFromName" runat="server" Label="From Name" />
+                                <Rock:RockTextBox ID="tbWaitListTransitionFromEmail" runat="server" Label="From Email" />
+                            </div>
+                            <div class="col-md-6">
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-12">
+                                <Rock:RockTextBox ID="tbWaitListTransitionSubject" runat="server" Label="Subject" />
+                                <Rock:CodeEditor ID="ceWaitListTransitionEmailTemplate" runat="server" Label="Confirmation Email Template" EditorMode="Lava" EditorTheme="Rock" EditorHeight="300" />
+                            </div>
+                        </div>
+                    </Rock:PanelWidget>
+
                     <Rock:PanelWidget ID="wpTerms" runat="server" Title="Terms/Text">
                         <div class="row">
                             <div class="col-md-6">

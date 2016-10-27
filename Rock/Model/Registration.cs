@@ -249,7 +249,7 @@ namespace Rock.Model
                 var discountedCost = 0.0m;
                 if ( Registrants != null )
                 {
-                    foreach ( var registrant in Registrants )
+                    foreach ( var registrant in Registrants.Where( r => r.OnWaitList == false ) )
                     {
                         discountedCost += registrant.DiscountedCost( DiscountPercentage, DiscountAmount );
                     }

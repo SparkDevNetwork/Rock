@@ -345,6 +345,11 @@
                             <Rock:Grid ID="gWaitList" runat="server" DisplayType="Full" AllowSorting="true" OnRowSelected="gWaitList_RowSelected" RowItemText="Wait List Individual" PersonIdField="PersonId" ExportSource="ColumnOutput">
                                 <Columns>
                                     <Rock:SelectField ItemStyle-Width="48px" />
+                                    <Rock:RockTemplateField HeaderText="Wait List Order" >
+                                        <ItemTemplate>
+                                            <asp:Literal ID="lWaitListOrder" runat="server"></asp:Literal>
+                                        </ItemTemplate>
+                                    </Rock:RockTemplateField>
                                     <Rock:RockTemplateField HeaderText="Wait List Individual" SortExpression="PersonAlias.Person.LastName, PersonAlias.Person.NickName" ExcelExportBehavior="NeverInclude">
                                         <ItemTemplate>
                                             <asp:Literal ID="lWaitListIndividual" runat="server"></asp:Literal>
@@ -352,7 +357,7 @@
                                     </Rock:RockTemplateField>
                                     <Rock:RockBoundField HeaderText="First Name" DataField="Person.NickName" ExcelExportBehavior="AlwaysInclude" Visible="false" />
                                     <Rock:RockBoundField HeaderText="Last Name" DataField="Person.LastName" ExcelExportBehavior="AlwaysInclude" Visible="false" />
-                                    <Rock:RockBoundField HeaderText="Added Datetime" DataField="CreatedDateTime" ExcelExportBehavior="AlwaysInclude" Visible="true" />
+                                    <Rock:RockBoundField HeaderText="Added Datetime" DataField="CreatedDateTime" SortExpression="CreatedDateTime" ExcelExportBehavior="AlwaysInclude" Visible="true" />
                                 </Columns>
                             </Rock:Grid>
                         </div>

@@ -242,6 +242,48 @@ namespace RockWeb.Blocks.Event
 
 {{ 'Global' | Attribute:'EmailFooter' }}
 ", "", 3 )]
+
+    [CodeEditorField( "Default Wait List Transition Email", "The default Wait List Transition Email Template value to use for a new template", CodeEditorMode.Lava, CodeEditorTheme.Rock, 300, false, @"{{ 'Global' | Attribute:'EmailHeader' }}
+{% capture currencySymbol %}{{ 'Global' | Attribute:'CurrencySymbol' }}{% endcapture %}
+{% capture externalSite %}{{ 'Global' | Attribute:'PublicApplicationRoot' }}{% endcapture %}
+{% assign registrantCount = Registration.Registrants | Size %}
+
+<h1>{{ RegistrationInstance.Name }} Wait List Update</h1>
+
+<p>
+    {{ Registration.FirstName }}, the following individuals have been moved from the {{ RegistrationInstance.Name }} wait list to a full 
+    {{ RegistrationInstance.RegistrationTemplate.RegistrantTerm | Downcase }}. 
+</p>
+
+<ul>
+    {% for registrant in TransitionedRegistrants %}
+        <li>{{ registrant.PersonAlias.Person.FullName }}</li>
+    {% endfor %}
+</ul>
+
+{% if AdditionalFieldsNeeded %}
+    <p>
+        <strong>Addition information is needed in order to process this registration. Please visit the 
+        <a href='{{ externalSite }}/Registration?RegistrationId={{ Registration.Id }}&rckipid={{ Registration.PersonAlias.Person.UrlEncodedKey }}&Location=Start'>
+        online registration page</a> to complete the registration.</strong>
+    </p>
+{% endif %}
+
+
+{% if Registration.BalanceDue > 0 %}
+    <p>
+        A balance of {{ currencySymbol }}{{ Registration.BalanceDue | Format:'#,##0.00' }} remains on this regsitration. You can complete the payment for this {{ RegistrationInstance.RegistrationTemplate.RegistrationTerm | Downcase }}
+        using our <a href='{{ externalSite }}/Registration?RegistrationId={{ Registration.Id }}&rckipid={{ Registration.PersonAlias.Person.UrlEncodedKey }}'>
+        online registration page</a>.
+    </p>
+{% endif %}
+
+<p>
+    If you have any questions please contact {{ RegistrationInstance.ContactName }} at {{ RegistrationInstance.ContactEmail }}.
+</p>
+
+
+{{ 'Global' | Attribute:'EmailFooter' }}", "", 3 )]
     public partial class RegistrationTemplateDetail : RockBlock
     {
 
@@ -711,6 +753,11 @@ namespace RockWeb.Blocks.Event
             RegistrationTemplate.PaymentReminderSubject = tbPaymentReminderSubject.Text;
             RegistrationTemplate.PaymentReminderEmailTemplate = cePaymentReminderEmailTemplate.Text;
             RegistrationTemplate.PaymentReminderTimeSpan = nbPaymentReminderTimeSpan.Text.AsInteger();
+
+            RegistrationTemplate.WaitListTransitionFromName = tbWaitListTransitionFromName.Text;
+            RegistrationTemplate.WaitListTransitionFromEmail = tbWaitListTransitionFromEmail.Text;
+            RegistrationTemplate.WaitListTransitionSubject = tbWaitListTransitionSubject.Text;
+            RegistrationTemplate.WaitListTransitionEmailTemplate = ceWaitListTransitionEmailTemplate.Text;
 
             RegistrationTemplate.RegistrationTerm = string.IsNullOrWhiteSpace( tbRegistrationTerm.Text ) ? "Registration" : tbRegistrationTerm.Text;
             RegistrationTemplate.RegistrantTerm = string.IsNullOrWhiteSpace( tbRegistrantTerm.Text ) ? "Registrant" : tbRegistrantTerm.Text;
@@ -1805,6 +1852,10 @@ namespace RockWeb.Blocks.Event
                 registrationTemplate.PaymentReminderFromEmail = "{{ RegistrationInstance.ContactEmail }}";
                 registrationTemplate.PaymentReminderFromName = "{{ RegistrationInstance.ContactPersonAlias.Person.FullName }}";
                 registrationTemplate.PaymentReminderSubject = "{{ RegistrationInstance.Name }} Payment Reminder";
+                registrationTemplate.WaitListTransitionEmailTemplate = GetAttributeValue( "DefaultWaitListTransitionEmail" );
+                registrationTemplate.WaitListTransitionFromEmail = "{{ RegistrationInstance.ContactEmail }}";
+                registrationTemplate.WaitListTransitionFromName = "{{ RegistrationInstance.ContactPersonAlias.Person.FullName }}";
+                registrationTemplate.WaitListTransitionSubject = "{{ RegistrationInstance.Name }} Payment Reminder";
                 registrationTemplate.AllowMultipleRegistrants = true;
                 registrationTemplate.MaxRegistrants = 10;
                 registrationTemplate.GroupMemberStatus = GroupMemberStatus.Active;
@@ -1890,6 +1941,7 @@ namespace RockWeb.Blocks.Event
                     formField.PersonFieldType = RegistrationPersonFieldType.FirstName;
                     formField.IsGridField = true;
                     formField.IsRequired = true;
+                    formField.ShowOnWaitlist = true;
                     formField.PreText = @"<div class='row'>
     <div class='col-md-6'>
 ";
@@ -1909,6 +1961,7 @@ namespace RockWeb.Blocks.Event
                     formField.PersonFieldType = RegistrationPersonFieldType.LastName;
                     formField.IsGridField = true;
                     formField.IsRequired = true;
+                    formField.ShowOnWaitlist = true;
                     formField.PreText = "    <div class='col-md-6'>";
                     formField.PostText = @"    </div>
 </div>";
@@ -2024,6 +2077,11 @@ namespace RockWeb.Blocks.Event
             cePaymentReminderEmailTemplate.Text = RegistrationTemplate.PaymentReminderEmailTemplate;
             nbPaymentReminderTimeSpan.Text = RegistrationTemplate.PaymentReminderTimeSpan.ToString();
 
+            tbWaitListTransitionFromName.Text = RegistrationTemplate.WaitListTransitionFromName;
+            tbWaitListTransitionFromEmail.Text = RegistrationTemplate.WaitListTransitionFromEmail;
+            tbWaitListTransitionSubject.Text = RegistrationTemplate.WaitListTransitionSubject;
+            ceWaitListTransitionEmailTemplate.Text = RegistrationTemplate.WaitListTransitionEmailTemplate;
+            
             tbRegistrationTerm.Text = RegistrationTemplate.RegistrationTerm;
             tbRegistrantTerm.Text = RegistrationTemplate.RegistrantTerm;
             tbFeeTerm.Text = RegistrationTemplate.FeeTerm;

@@ -60,6 +60,8 @@ namespace RockWeb.Blocks.Event
         private List<Registration> PaymentRegistrations;
         private bool _instanceHasCost = false;
         private Dictionary<int, Location>  _homeAddresses = new Dictionary<int, Location>();
+        private List<int> _waitListOrder = null;
+
         #endregion
 
         #region Properties
@@ -1768,6 +1770,13 @@ namespace RockWeb.Blocks.Event
                     }
                 }
 
+                var lWaitListOrder = e.Row.FindControl( "lWaitListOrder" ) as Literal;
+                if ( lWaitListOrder != null )
+                {
+                    lWaitListOrder.Text = ( _waitListOrder.IndexOf( registrant.Id ) + 1 ).ToString();
+                }
+
+                
                 // Set the campus
                 var lCampus = e.Row.FindControl( "lCampus" ) as Literal;
                 if ( lCampus != null && PersonCampusIds != null )
@@ -3637,6 +3646,14 @@ namespace RockWeb.Blocks.Event
                 {
                     var registrationInstance = new RegistrationInstanceService( rockContext ).Get( instanceId.Value );
 
+                    _waitListOrder = new RegistrationRegistrantService( rockContext ).Queryable().Where( r =>
+                                            r.Registration.RegistrationInstanceId == instanceId.Value &&
+                                            r.PersonAlias != null &&
+                                            r.PersonAlias.Person != null &&
+                                            r.OnWaitList )
+                                        .OrderBy( r => r.CreatedDateTime )
+                                        .Select( r => r.Id ).ToList();
+
                     // Start query for registrants
                     var qry = new RegistrationRegistrantService( rockContext )
                     .Queryable( "PersonAlias.Person.PhoneNumbers.NumberTypeValue,Fees.RegistrationTemplateFee" ).AsNoTracking()
@@ -3931,8 +3948,7 @@ namespace RockWeb.Blocks.Event
                     else
                     {
                         orderedQry = qry
-                            .OrderBy( r => r.PersonAlias.Person.LastName )
-                            .ThenBy( r => r.PersonAlias.Person.NickName );
+                            .OrderBy( r => r.Id );
                     }
 
                     // increase the timeout just in case. A complex filter on the grid might slow things down

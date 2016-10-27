@@ -31,6 +31,7 @@ using Rock.Attribute;
 using System.Data.Entity;
 using Humanizer;
 using Rock.Communication;
+using System.Text;
 
 namespace RockWeb.Blocks.Event
 {
@@ -45,8 +46,9 @@ namespace RockWeb.Blocks.Event
         #region Fields
 
         // used for private variables
-        private RegistrationInstance _registrationInstance = null;
-
+        private List<RegistrationRegistrant> _registrants = null;
+        private List<EntitySetItem> _entitySetItems = null;
+        private RockContext _rockContext = new RockContext();
         #endregion
 
         #region Properties
@@ -70,6 +72,25 @@ namespace RockWeb.Blocks.Event
             // this event gets fired after block settings are updated. it's nice to repaint the screen if these settings would alter it
             this.BlockUpdated += Block_BlockUpdated;
             this.AddConfigurationUpdateTrigger( upnlContent );
+
+            var entitySetId = PageParameter( "WaitListSetId" ).AsIntegerOrNull();
+
+            if ( entitySetId.HasValue )
+            {
+                // get entity set
+                _entitySetItems = new EntitySetItemService( _rockContext ).Queryable().Where( s => s.EntitySetId == entitySetId ).ToList();
+
+                // update wait list status
+                var registrantService = new RegistrationRegistrantService( _rockContext );
+
+                var registrantIds = _entitySetItems.Select( s => s.EntityId ).ToList();
+                _registrants = registrantService.Queryable( "Registration" ).Where( r => registrantIds.Contains( r.Id ) ).ToList();
+
+                rptRecipients.DataSource = _registrants
+                                                    .GroupBy( r => r.Registration )
+                                                    .Select( r => new RegistrationSummary { Registration = r.Key, Registrants = r.Key.Registrants.Where( g => registrantIds.Contains( g.Id )).ToList() } );
+                rptRecipients.DataBind();
+            }
         }
 
         /// <summary>
@@ -82,35 +103,34 @@ namespace RockWeb.Blocks.Event
 
             if ( !Page.IsPostBack )
             {
-                RockContext rockContext = new RockContext();
+                if (_registrants != null) { 
 
-                var entitySetId = PageParameter( "WaitListSetId" ).AsIntegerOrNull();
+                    foreach ( var registrant in _registrants )
+                    {
+                        registrant.OnWaitList = false;
+                    }
 
-                if ( entitySetId.HasValue )
-                {
-                    // get entity set
-                    var entitySetItems = new EntitySetItemService( rockContext ).Queryable().Where( s => s.EntitySetId == entitySetId ).ToList();
+                    _rockContext.SaveChanges();
 
-                    MoveFromWaitList( entitySetItems );
+                    nbUpdate.Text = string.Format( "<strong>Wait List Updated</strong> {0} {1} moved from the wait list.", "individuals".ToQuantity( _entitySetItems.Count ), _entitySetItems.Count == 1 ? "was" : "were" );
 
                     // get first item from entity set to get registration information
-                    var firstRegistrantId = entitySetItems.First().EntityId;
+                    var firstRegistrantId = _entitySetItems.First().EntityId;
 
-                    var registrationInstance = new RegistrationRegistrantService( new RockContext() ).Queryable()
+                    var registration = new RegistrationRegistrantService( new RockContext() ).Queryable("RegistrationInstance")
                                             .Where( r => r.Id == firstRegistrantId )
-                                            .Select( r => r.Registration.RegistrationInstance )
+                                            .Select( r => r.Registration )
                                             .FirstOrDefault();
 
-                    if ( registrationInstance != null )
+                    if ( registration != null )
                     {
-                        tbFromEmail.Text = registrationInstance.ContactEmail;
-
-                        if ( registrationInstance.ContactPersonAlias != null )
-                        {
-                            tbFromName.Text = registrationInstance.ContactPersonAlias.Person.FullName;
-                        }
-
-                        tbFromSubject.Text = string.Format( "Wait List Update for {0}", registrationInstance.Name );
+                        Dictionary<string, object> mergeObjects = GetMergeObjects( registration );
+                        
+                        tbFromSubject.Text = registration.RegistrationInstance.RegistrationTemplate.WaitListTransitionSubject.ResolveMergeFields( mergeObjects );
+                        tbFromName.Text = registration.RegistrationInstance.RegistrationTemplate.WaitListTransitionFromName.ResolveMergeFields( mergeObjects );
+                        tbFromEmail.Text = registration.RegistrationInstance.RegistrationTemplate.WaitListTransitionFromEmail.ResolveMergeFields( mergeObjects );
+                        ceEmailMessage.Text = registration.RegistrationInstance.RegistrationTemplate.WaitListTransitionEmailTemplate;
+                        ifEmailPreview.Attributes["srcdoc"] = ceEmailMessage.Text.ResolveMergeFields( mergeObjects );
                     }
                 }
                 else
@@ -150,28 +170,21 @@ namespace RockWeb.Blocks.Event
                 ceEmailMessage.Visible = false;
                 ifEmailPreview.Visible = true;
 
-                // reload preview
-                int? registrationInstanceId = PageParameter( "RegistrationInstanceId" ).AsIntegerOrNull();
-
-                if ( registrationInstanceId.HasValue )
+                if ( _registrants != null )
                 {
-                    using ( RockContext rockContext = new RockContext() )
+                    // get first item from entity set to get registration information
+                    var firstRegistrantId = _entitySetItems.First().EntityId;
+
+                    var registration = new RegistrationRegistrantService( new RockContext() ).Queryable( "RegistrationInstance" )
+                                            .Where( r => r.Id == firstRegistrantId )
+                                            .Select( r => r.Registration )
+                                            .FirstOrDefault();
+
+                    if ( registration != null )
                     {
-                        RegistrationInstanceService registrationInstanceService = new RegistrationInstanceService( rockContext );
-                        _registrationInstance = registrationInstanceService.Queryable( "RegistrationTemplate" ).AsNoTracking()
-                                                    .Where( r => r.Id == registrationInstanceId ).FirstOrDefault();
+                        Dictionary<string, object> mergeObjects = GetMergeObjects( registration );
 
-
-                        var registrationSample = _registrationInstance.Registrations.Where( r => r.BalanceDue > 0 ).FirstOrDefault();
-
-                        if ( registrationSample != null )
-                        {
-                            Dictionary<string, object> mergeObjects = new Dictionary<string, object>();
-                            mergeObjects.Add( "Registration", registrationSample );
-                            mergeObjects.Add( "RegistrationInstance", _registrationInstance );
-
-                            ifEmailPreview.Attributes["srcdoc"] = ceEmailMessage.Text.ResolveMergeFields( mergeObjects );
-                        }
+                        ifEmailPreview.Attributes["srcdoc"] = ceEmailMessage.Text.ResolveMergeFields( mergeObjects );
                     }
                 }
             }
@@ -182,32 +195,138 @@ namespace RockWeb.Blocks.Event
             }
         }
 
-        protected void cbShowEmail_CheckedChanged( object sender, EventArgs e )
+        protected void cbShowEmail_CheckedChanged( object sender, EventArgs e ) 
         {
             pnlEmail.Visible = cbShowEmail.Checked;
+        }
+
+        /// <summary>
+        /// Handles the ItemDataBound event of the rptRecipients control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="RepeaterItemEventArgs"/> instance containing the event data.</param>
+        protected void rptRecipients_ItemDataBound( object sender, RepeaterItemEventArgs e )
+        {
+            if ( e.Item.ItemType == ListItemType.Item || e.Item.ItemType == ListItemType.AlternatingItem )
+            {
+                var registrationSummary = (RegistrationSummary)e.Item.DataItem;
+
+                StringBuilder recipientText = new StringBuilder();
+                recipientText.Append( string.Format( "{0} {1} <small>({2})</small><br />"
+                                        , registrationSummary.Registration.FirstName
+                                        , registrationSummary.Registration.LastName
+                                        , registrationSummary.Registration.ConfirmationEmail ) );
+
+                recipientText.Append( string.Format( "<small>Registrants: {0}</small>"
+                                        , string.Join( ", ", registrationSummary.Registrants.Select( r => r.Person.FullName ) ) ) );
+
+                CheckBox cbEmailRecipient = (CheckBox)e.Item.FindControl( "cbEmailRecipient" );
+
+                if ( cbEmailRecipient != null )
+                {
+                    cbEmailRecipient.Text = recipientText.ToString();
+                    cbEmailRecipient.ClientIDMode = ClientIDMode.Static;
+                    cbEmailRecipient.Attributes.Add( "Id", registrationSummary.Registration.Id.ToString() );
+                }
+            }
+        }
+
+        /// <summary>
+        /// Handles the Click event of the btnSendEmail control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void btnSendEmail_Click( object sender, EventArgs e )
+        {
+            var appRoot = Rock.Web.Cache.GlobalAttributesCache.Read().GetValue( "ExternalApplicationRoot" );
+            int sendCount = 0;
+
+            foreach ( RepeaterItem repeaterItem in rptRecipients.Items )
+            {
+                CheckBox cbEmailRecipient = (CheckBox)repeaterItem.FindControl( "cbEmailRecipient" );
+
+                if ( cbEmailRecipient  != null )
+                {
+                    if ( cbEmailRecipient.Checked )
+                    {
+                        int? registrationId = cbEmailRecipient.Attributes["Id"].AsIntegerOrNull();
+
+                        if ( registrationId.HasValue )
+                        {
+                            var registration = _registrants.Where( r => r.RegistrationId == registrationId ).Select( r => r.Registration ).FirstOrDefault();
+
+                            var mergeObjects = GetMergeObjects( registration );
+
+                            var recipients = new List<string>();
+                            recipients.Add( registration.ConfirmationEmail );
+
+                            string message = ceEmailMessage.Text.ResolveMergeFields( mergeObjects );
+
+                            Email.Send( tbFromEmail.Text, tbFromName.Text, tbFromSubject.Text, recipients, message, appRoot );
+
+                            sendCount++;
+                        }
+                    }
+                }
+            }
+
+            pnlSend.Visible = false;
+            pnlComplete.Visible = true;
+            nbResult.Text = string.Format( "Wait List Transition emails have been sent to {0}.", "individuals".ToQuantity( sendCount ) );
         }
         #endregion
 
         #region Methods
 
-        private void MoveFromWaitList(List<EntitySetItem> entitySetItems)
+        private Dictionary<string, object> GetMergeObjects(Registration registration )
         {
-            RockContext rockContext = new RockContext();
-            var registrantService = new RegistrationRegistrantService( rockContext );
+            Dictionary<string, object> mergeObjects = new Dictionary<string, object>();
+            mergeObjects.Add( "RegistrationInstance", registration.RegistrationInstance );
+            mergeObjects.Add( "Registration", registration );
+            mergeObjects.Add( "TransitionedRegistrants", _registrants.Where( r => r.RegistrationId == registration.Id ).ToList() );
 
-            foreach ( var item in entitySetItems )
+            bool additionalFieldsNeeded = false;
+
+            foreach ( var forms in registration.RegistrationInstance.RegistrationTemplate.Forms )
             {
-                var registrant = registrantService.Get( item.Id );
-
-                // registrant.OnWaitList = false;
-
-                rockContext.SaveChanges();
+                foreach ( var field in forms.Fields )
+                {
+                    if ( !field.ShowOnWaitlist )
+                    {
+                        additionalFieldsNeeded = true;
+                        break;
+                    }
+                }
             }
 
-            nbUpdate.Text = string.Format( "<strong>Wait List Updated</strong> {0} {1} moved from the wait list to registrants.", "individuals".ToQuantity( entitySetItems.Count ), entitySetItems.Count == 1 ? "was" : "were" );
-            
-        }
+            mergeObjects.Add( "AdditionalFieldsNeeded", additionalFieldsNeeded );
 
-        #endregion        
+            return mergeObjects;
+        }
+        
+        #endregion
+
+
+        /// <summary>
+        /// Summary Class for Registrants
+        /// </summary>
+        public class RegistrationSummary
+        {
+            /// <summary>
+            /// Gets or sets the registration.
+            /// </summary>
+            /// <value>
+            /// The registration.
+            /// </value>
+            public Registration Registration { get; set; }
+
+            /// <summary>
+            /// Gets or sets the registrants.
+            /// </summary>
+            /// <value>
+            /// The registrants.
+            /// </value>
+            public List<RegistrationRegistrant> Registrants { get; set; }
+        }
     }
 }
