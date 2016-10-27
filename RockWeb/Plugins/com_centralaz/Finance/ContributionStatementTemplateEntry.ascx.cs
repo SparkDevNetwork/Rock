@@ -179,7 +179,7 @@ namespace RockWeb.Plugins.com_centralaz.Finance
             transaction.BinaryFileType = binaryFileType;
             transaction.SystemEmailGuid = GetAttributeValue( "NotifyRequesterEmail" ).AsGuidOrNull();
             transaction.Requestor = CurrentPerson;
-            transaction.MinimumContributionAmount = nbMinimumAmount.Text.AsInteger();
+            transaction.MinimumContributionAmount = nbMinimumAmount.Text.AsDecimal();
             transaction.ChapterSize = nbChapterSize.Text.AsInteger();
             Rock.Transactions.RockQueue.TransactionQueue.Enqueue( transaction );
 
