@@ -1,8 +1,7 @@
 ### PLEASE READ
 
 If the nature of your issue relates to the security of Rock please do not post your
-issue here in the public issues. Instead please send it directly to nick<at>sparkdevnetwork.org .
-No use giving bad people bad ideas.
+issue here in the public issues.
 
 ### Prerequisites
 
