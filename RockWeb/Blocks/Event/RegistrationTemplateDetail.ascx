@@ -57,51 +57,6 @@
                                     Help="The group member role that new registrants should be added to group with." />
                                 <Rock:RockDropDownList ID="ddlGroupMemberStatus" runat="server" Label="Group Member Status" 
                                     Help="The group member status that new registrants should be added to group with."/>
-                                
-                                <div class="row">
-                                    <div class="col-xs-6">
-                                        <Rock:RockCheckBoxList ID="cblNotify" runat="server" Label="Notify" RepeatDirection="Vertical"
-                                            Help="Who should be notified when new people are registered?">
-                                            <asp:ListItem Value="1" Text="Registration Contact" />
-                                            <asp:ListItem Value="2" Text="Group Followers" />
-                                            <asp:ListItem Value="4" Text="Group Leaders" />
-                                        </Rock:RockCheckBoxList>
-                                    </div>
-                                    <div class="col-xs-6">
-                                        <Rock:RockCheckBox ID="cbAddPersonNote" runat="server" Label="Add Person Note" Help="Should a note be added to a person's record whenever they register?" Text="Yes" />
-                                    </div>
-                                </div>
-
-                                <div class="row">
-                                    <div class="col-xs-6">
-                                        <Rock:RockCheckBox ID="cbLoginRequired" runat="server" Label="Login Required" Text="Yes"
-                                            Help="Is user required to be logged in when registering?" />
-                                    </div>
-                                    <div class="col-xs-6">
-                                        <Rock:RockCheckBox ID="cbAllowGroupPlacement" runat="server" Label="Allow Group Placement" Text="Yes"
-                                            Help="If enabled, the registration instance will include a Group Placement option for 
-                                                adding registrants to specific child groups of a selected parent group." />
-                                    </div>
-                                </div>
-
-                                <Rock:RockCheckBox ID="cbAllowExternalUpdates" runat="server" Label="Allow External Updates to Saved Registrations" Text="Yes"
-                                            Help="Allow saved registrations to be updated online. If false the individual will be able to make additional payments, but will
-                                            not be allow to change any of the registrant information and attributes." />
-
-                                <Rock:WorkflowTypePicker ID="wtpRegistrationWorkflow" runat="server" Label="Registration Workflow"
-                                    Help="An optional workflow type to launch when a new registration is completed." />
-
-                                <div class="row">
-                                    <div class="col-xs-6">
-                                        <Rock:RockDropDownList ID="ddlSignatureDocumentTemplate" runat="server" Label="Required Signature Document" 
-                                            Help="A document that needs to be signed for registrations of this type."/>
-                                    </div>
-                                    <div class="col-xs-6">
-                                        <Rock:RockCheckBox ID="cbDisplayInLine" runat="server" Label="In-Line Signature" Text="Yes"
-                                            Help="When registering for this type of event, should the Required Signature Document be displayed during the registration steps? If not, a request will be sent after the registration is completed." />
-                                    </div>
-                                </div>
-
                             </div>
                             <div class="col-md-6">
                                 <div class="row">
@@ -121,19 +76,90 @@
                                     <Rock:RockCheckBox ID="cbShowCurrentFamilyMembers" runat="server" Label="Show Family Members" Text="Yes"
                                         Help="If Registrans in Same Family option is set to 'Yes', should the person registering be able to select people from their family when registering (vs. having to enter the family member's information manually)?" />
                                 </div>
-                                <div class="well">
+                                
+
+                                <Rock:RockCheckBox id="cbWaitListEnabled" runat="server" Label="Enable Wait List" Text="Yes" Help="Should a wait list be enabled when the maximum number of registrats is reached." />
+                            </div>
+                        </div>
+
+                        <hr />
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="row">
+                                    <div class="col-xs-6">
+                                        <Rock:RockCheckBoxList ID="cblNotify" runat="server" Label="Notify" RepeatDirection="Vertical"
+                                            Help="Who should be notified when new people are registered?">
+                                            <asp:ListItem Value="1" Text="Registration Contact" />
+                                            <asp:ListItem Value="2" Text="Group Followers" />
+                                            <asp:ListItem Value="4" Text="Group Leaders" />
+                                        </Rock:RockCheckBoxList>
+                                    </div>
+                                    <div class="col-xs-6">
+                                        <Rock:RockCheckBox ID="cbAddPersonNote" runat="server" Label="Add Person Note" Help="Should a note be added to a person's record whenever they register?" Text="Yes" />
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="row">
+                                    <div class="col-xs-6">
+                                        <Rock:RockCheckBox ID="cbLoginRequired" runat="server" Label="Login Required" Text="Yes"
+                                            Help="Is user required to be logged in when registering?" />
+                                    </div>
+                                    <div class="col-xs-6">
+                                        <Rock:RockCheckBox ID="cbAllowGroupPlacement" runat="server" Label="Allow Group Placement" Text="Yes"
+                                            Help="If enabled, the registration instance will include a Group Placement option for 
+                                                adding registrants to specific child groups of a selected parent group." />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <hr />
+
+                        <div class="well">
+                            <div class="row">
+                                <div class="col-md-12">
                                     <Rock:Toggle ID="tglSetCostOnTemplate" runat="server" Label="Set Cost On" OnText="Template" OffText="Instance" 
                                         ActiveButtonCssClass="btn-info" OnCheckedChanged="tglSetCost_CheckedChanged" ButtonSizeCssClass="btn-xs" />
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6">                                                       
                                     <Rock:CurrencyBox ID="cbCost" runat="server" Label="Cost"
                                         Help="The cost per registrant." />
                                     <Rock:CurrencyBox ID="cbMinimumInitialPayment" runat="server" Label="Minimum Initial Payment"
                                         Help="The minimum amount required per registrant. Leave value blank if full amount is required." />
+                                </div>
+                                <div class="col-md-6">
                                     <Rock:FinancialGatewayPicker ID="fgpFinancialGateway" runat="server" Label="Financial Gateway"
                                         Help="The financial gateway to use for processing registration payments." ShowAll="false" />
                                     <Rock:RockTextBox ID="txtBatchNamePrefix" runat="server" Label="Batch Prefix" Help="Optional prefix to add the the financial batches. If left blank the prefix from the registration block will be used." />
                                 </div>
+                            </div>
+                        </div>
 
-                                <Rock:RockCheckBox id="cbWaitListEnabled" runat="server" Label="Enable Wait List" Text="Yes" Help="Should a wait list be enabled when the maximum number of registrats is reached." />
+                        <hr />
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <Rock:WorkflowTypePicker ID="wtpRegistrationWorkflow" runat="server" Label="Registration Workflow"
+                                    Help="An optional workflow type to launch when a new registration is completed." />
+                                <Rock:RockCheckBox ID="cbAllowExternalUpdates" runat="server" Label="Allow External Updates to Saved Registrations" Text="Yes"
+                                            Help="Allow saved registrations to be updated online. If false the individual will be able to make additional payments, but will
+                                            not be allow to change any of the registrant information and attributes." />
+                            </div>
+                            <div class="col-md-6">
+                                <div class="row">
+                                    <div class="col-xs-6">
+                                        <Rock:RockDropDownList ID="ddlSignatureDocumentTemplate" runat="server" Label="Required Signature Document" 
+                                            Help="A document that needs to be signed for registrations of this type."/>
+                                    </div>
+                                    <div class="col-xs-6">
+                                        <Rock:RockCheckBox ID="cbDisplayInLine" runat="server" Label="In-Line Signature" Text="Yes"
+                                            Help="When registering for this type of event, should the Required Signature Document be displayed during the registration steps? If not, a request will be sent after the registration is completed." />
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </Rock:PanelWidget>
@@ -193,84 +219,6 @@
                         </Rock:Grid>
                     </Rock:PanelWidget>
 
-                    <Rock:PanelWidget ID="wpConfirmation" runat="server" Title="Confirmation Email">
-                        <div class="row">
-                            <div class="col-md-6">
-                                <Rock:RockTextBox ID="tbConfirmationFromName" runat="server" Label="From Name" />
-                                <Rock:RockTextBox ID="tbConfirmationFromEmail" runat="server" Label="From Email" />
-                            </div>
-                            <div class="col-md-6">
-                            </div>
-                        </div>
-                        <div class="row">
-                            <div class="col-md-12">
-                                <Rock:RockTextBox ID="tbConfirmationSubject" runat="server" Label="Subject" />
-                                <Rock:CodeEditor ID="ceConfirmationEmailTemplate" runat="server" Label="Confirmation Email Template" EditorMode="Lava" EditorTheme="Rock" EditorHeight="300" />
-                            </div>
-                        </div>
-                    </Rock:PanelWidget>
-
-                    <Rock:PanelWidget ID="wpReminder" runat="server" Title="Reminder Email">
-                        <div class="row">
-                            <div class="col-md-6">
-                                <Rock:RockTextBox ID="tbReminderFromName" runat="server" Label="From Name" />
-                                <Rock:RockTextBox ID="tbReminderFromEmail" runat="server" Label="From Email" />
-                            </div>
-                            <div class="col-md-6">
-                            </div>
-                        </div>
-                        <div class="row">
-                            <div class="col-md-12">
-                                <Rock:RockTextBox ID="tbReminderSubject" runat="server" Label="Subject" />
-                                <Rock:CodeEditor ID="ceReminderEmailTemplate" runat="server" Label="Reminder Email Template" EditorMode="Lava" EditorTheme="Rock" EditorHeight="300" />
-                            </div>
-                        </div>
-                    </Rock:PanelWidget>
-
-                    <Rock:PanelWidget ID="wpPaymentReminder" runat="server" Title="Payment Reminder Email">
-                        <div class="row">
-                            <div class="col-md-6">
-                                <Rock:RockTextBox ID="tbPaymentReminderFromName" runat="server" Label="From Name" />
-                                <Rock:RockTextBox ID="tbPaymentReminderFromEmail" runat="server" Label="From Email" />
-                            </div>
-                            <div class="col-md-6">
-                            </div>
-                        </div>
-                        <div class="row">
-                            <div class="col-md-12">
-                                <Rock:RockTextBox ID="tbPaymentReminderSubject" runat="server" Label="Subject" />
-                                <Rock:CodeEditor ID="cePaymentReminderEmailTemplate" runat="server" Label="Confirmation Email Template" EditorMode="Lava" EditorTheme="Rock" EditorHeight="300" />
-                            </div>
-                        </div>
-                        <div class="row">
-                            <div class="col-md-6">
-                                <Rock:NumberBox ID="nbPaymentReminderTimeSpan" runat="server" Help="The number of days in between automatic payment reminders." CssClass="input-width-xs" Label="Payment Reminder Time Span" />
-                            </div>
-                            <div class="col-md-6">
-                            </div>
-                        </div>
-                    </Rock:PanelWidget>
-
-                    <Rock:PanelWidget ID="wpWaitListTransition" runat="server" Title="Wait List Transition Email">
-                        <div class="alert alert-info">
-                            This email template will be used when email the individual that they are no longer on the wait list and have been transtioned to a full registrant.
-                        </div>
-                        <div class="row">
-                            <div class="col-md-6">
-                                <Rock:RockTextBox ID="tbWaitListTransitionFromName" runat="server" Label="From Name" />
-                                <Rock:RockTextBox ID="tbWaitListTransitionFromEmail" runat="server" Label="From Email" />
-                            </div>
-                            <div class="col-md-6">
-                            </div>
-                        </div>
-                        <div class="row">
-                            <div class="col-md-12">
-                                <Rock:RockTextBox ID="tbWaitListTransitionSubject" runat="server" Label="Subject" />
-                                <Rock:CodeEditor ID="ceWaitListTransitionEmailTemplate" runat="server" Label="Confirmation Email Template" EditorMode="Lava" EditorTheme="Rock" EditorHeight="300" />
-                            </div>
-                        </div>
-                    </Rock:PanelWidget>
-
                     <Rock:PanelWidget ID="wpTerms" runat="server" Title="Terms/Text">
                         <div class="row">
                             <div class="col-md-6">
@@ -291,6 +239,92 @@
                             </div>
                         </div>
                     </Rock:PanelWidget>
+
+                    <div class="clearfix" id="registration-detailscheckbox">
+                        <div class="pull-right">
+                            <input id="cb-showdetails" type="checkbox" /> Show Communication Settings
+                        </div>
+                    </div>
+
+                    <div id="registration-details" style="display: none;">
+                        <Rock:PanelWidget ID="wpConfirmation" runat="server" Title="Confirmation Email">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <Rock:RockTextBox ID="tbConfirmationFromName" runat="server" Label="From Name" />
+                                    <Rock:RockTextBox ID="tbConfirmationFromEmail" runat="server" Label="From Email" />
+                                </div>
+                                <div class="col-md-6">
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <Rock:RockTextBox ID="tbConfirmationSubject" runat="server" Label="Subject" />
+                                    <Rock:CodeEditor ID="ceConfirmationEmailTemplate" runat="server" Label="Confirmation Email Template" EditorMode="Lava" EditorTheme="Rock" EditorHeight="300" />
+                                </div>
+                            </div>
+                        </Rock:PanelWidget>
+
+                        <Rock:PanelWidget ID="wpReminder" runat="server" Title="Reminder Email">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <Rock:RockTextBox ID="tbReminderFromName" runat="server" Label="From Name" />
+                                    <Rock:RockTextBox ID="tbReminderFromEmail" runat="server" Label="From Email" />
+                                </div>
+                                <div class="col-md-6">
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <Rock:RockTextBox ID="tbReminderSubject" runat="server" Label="Subject" />
+                                    <Rock:CodeEditor ID="ceReminderEmailTemplate" runat="server" Label="Reminder Email Template" EditorMode="Lava" EditorTheme="Rock" EditorHeight="300" />
+                                </div>
+                            </div>
+                        </Rock:PanelWidget>
+
+                        <Rock:PanelWidget ID="wpPaymentReminder" runat="server" Title="Payment Reminder Email">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <Rock:RockTextBox ID="tbPaymentReminderFromName" runat="server" Label="From Name" />
+                                    <Rock:RockTextBox ID="tbPaymentReminderFromEmail" runat="server" Label="From Email" />
+                                </div>
+                                <div class="col-md-6">
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <Rock:RockTextBox ID="tbPaymentReminderSubject" runat="server" Label="Subject" />
+                                    <Rock:CodeEditor ID="cePaymentReminderEmailTemplate" runat="server" Label="Confirmation Email Template" EditorMode="Lava" EditorTheme="Rock" EditorHeight="300" />
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <Rock:NumberBox ID="nbPaymentReminderTimeSpan" runat="server" Help="The number of days in between automatic payment reminders." CssClass="input-width-xs" Label="Payment Reminder Time Span" />
+                                </div>
+                                <div class="col-md-6">
+                                </div>
+                            </div>
+                        </Rock:PanelWidget>
+
+                        <Rock:PanelWidget ID="wpWaitListTransition" runat="server" Title="Wait List Transition Email">
+                            <div class="alert alert-info">
+                                This email template will be used when email the individual that they are no longer on the wait list and have been transtioned to a full registrant.
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <Rock:RockTextBox ID="tbWaitListTransitionFromName" runat="server" Label="From Name" />
+                                    <Rock:RockTextBox ID="tbWaitListTransitionFromEmail" runat="server" Label="From Email" />
+                                </div>
+                                <div class="col-md-6">
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <Rock:RockTextBox ID="tbWaitListTransitionSubject" runat="server" Label="Subject" />
+                                    <Rock:CodeEditor ID="ceWaitListTransitionEmailTemplate" runat="server" Label="Confirmation Email Template" EditorMode="Lava" EditorTheme="Rock" EditorHeight="300" />
+                                </div>
+                            </div>
+                        </Rock:PanelWidget>
+                    </div>
 
                     <div class="actions">
                         <asp:LinkButton ID="btnSave" runat="server" AccessKey="s" Text="Save" CssClass="btn btn-primary" OnClick="btnSave_Click" />
@@ -427,6 +461,11 @@
                     });
                     return ui;
                 };
+
+                $('#cb-showdetails').change(function () {
+                    $('#registration-details').slideDown();
+                    $('#registration-detailscheckbox').slideUp();
+                });
 
                 $('.js-forms-wrapper > label.control-label').click( function(){
                     $('.forms-readonly-list').toggle(500);
