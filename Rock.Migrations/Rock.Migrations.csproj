@@ -86,6 +86,10 @@
     <Compile Include="Migrations\201610261808353_WaitListNotificationFields.Designer.cs">
       <DependentUpon>201610261808353_WaitListNotificationFields.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201610271509530_WaitlistPages.cs" />
+    <Compile Include="Migrations\201610271509530_WaitlistPages.Designer.cs">
+      <DependentUpon>201610271509530_WaitlistPages.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 6.0\Version 1.6.0\201609282147388_WaitList.cs" />
     <Compile Include="Migrations\Version 6.0\Version 1.6.0\201609282147388_WaitList.Designer.cs">
       <DependentUpon>201609282147388_WaitList.cs</DependentUpon>
@@ -2302,6 +2306,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201610261808353_WaitListNotificationFields.resx">
       <DependentUpon>201610261808353_WaitListNotificationFields.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201610271509530_WaitlistPages.resx">
+      <DependentUpon>201610271509530_WaitlistPages.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 6.0\Version 1.6.0\201609282147388_WaitList.resx">
       <DependentUpon>201609282147388_WaitList.cs</DependentUpon>
