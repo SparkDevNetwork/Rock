@@ -51,7 +51,7 @@ function setFundToCurrentCampus() {
   setFundTo(fund.value)
 }
 
-if (currentCampusId) {
+if (typeof currentCampusId !== 'undefined' && currentCampusId !== null) {
   setFundToCurrentCampus()
 } else {
   setFundToNearestLocation()
