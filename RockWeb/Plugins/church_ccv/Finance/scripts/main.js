@@ -249,5 +249,6 @@ Sys.Application.add_load(function () {
       todayBtn: 'linked',
       autoclose: true
     })
+    $('#givingForm .js-firstgift').addClass('using-datepicker')
   }
 })
