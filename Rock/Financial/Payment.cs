@@ -77,5 +77,10 @@ namespace Rock.Financial
         /// Gets or sets a value indicating whether this instance is failure.
         /// </summary>
         public bool IsFailure { get; set; }
+
+        /// <summary>
+        /// Additional payment attributes
+        /// </summary>
+        public Dictionary<string, string> Attributes { get; set; }
     }
 }
