@@ -96,6 +96,10 @@
         <div class="row">
             <div class="col-md-6">
 
+                <h4>Transaction Queue</h4>
+                <asp:Literal ID="lTransactionQueue" runat="server"></asp:Literal>
+                
+                
                 <h4>Cache</h4>
                 <div id="cache-details">
                     <asp:Literal ID="lCacheOverview" runat="server"></asp:Literal>
