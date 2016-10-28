@@ -19,6 +19,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
@@ -29,6 +30,7 @@ using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 using Rock.Attribute;
 using System.Data.SqlClient;
+using System.Data.Entity;
 using Rock.Reporting;
 using System.Data;
 
@@ -209,8 +211,63 @@ namespace RockWeb.Blocks.Reporting
 
         }
 
-        protected void btnCreateDimDefinedTypeViews_Click( object sender, EventArgs e )
+        protected void btnCreateDimDefinedTypeViews1_Click( object sender, EventArgs e )
         {
+            const string dropViewIfExistsFormat = @"
+IF EXISTS (
+        SELECT *
+        FROM sys.VIEWS
+        WHERE NAME = '{0}'
+        )
+BEGIN
+    DROP VIEW {0}
+END
+";
+
+            const string createViewFormat = @"
+CREATE VIEW {0}
+AS
+SELECT dv.Id [{1}Id]
+    ,dv.Value [Name]
+    ,dv.[Description]
+    ,dv.[Order] [SortOrder]
+FROM DefinedValue dv
+WHERE dv.DefinedTypeId = {2}
+";
+
+            var rockContext = new RockContext();
+            var definedTypeService = new DefinedTypeService( rockContext );
+            foreach ( var definedType in definedTypeService.Queryable().Include( a => a.DefinedValues ).AsNoTracking().ToList() )
+            {
+                var definedTypeDatabaseName = definedType.Name.RemoveSpecialCharacters();
+                string viewName = string.Format( "vAnalytics_Dim_DefinedType_{0}", definedTypeDatabaseName );
+
+                string dropViewIfExistsSQL = string.Format(
+                    dropViewIfExistsFormat,
+                    viewName
+                    );
+
+                string createViewSQL = string.Format(
+                    createViewFormat,
+                    viewName,
+                    definedTypeDatabaseName,
+                    definedType.Id
+                    );
+
+                rockContext.Database.ExecuteSqlCommand( dropViewIfExistsSQL );
+                rockContext.Database.ExecuteSqlCommand( createViewSQL );
+            }
+        }
+
+        protected void btnCreateDimDefinedTypeViews2_Click( object sender, EventArgs e )
+        {
+            var definedValuesProperties = typeof( Rock.Model.FinancialTransaction ).GetProperties()
+                .Where( a => a.GetCustomAttribute<DefinedValueAttribute>() != null )
+                .Select( a => new
+                {
+                    a.Name,
+                    DefinedValueAttribute = a.GetCustomAttribute<DefinedValueAttribute>()
+                } ).ToList();
 
         }
     }
