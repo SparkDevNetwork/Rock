@@ -855,6 +855,14 @@ namespace RockWeb.Blocks.Connection
                             .ThenBy( r => r.PersonAlias.Person.NickName );
                     }
 
+                    var requestList = requests.ToList();
+                    var roleIds = requestList.Where( r => r.AssignedGroupMemberRoleId.HasValue).Select( r => r.AssignedGroupMemberRoleId.Value ).ToList();
+
+                    var roles = new GroupTypeRoleService( rockContext )
+                        .Queryable().AsNoTracking()
+                        .Where( r => roleIds.Contains( r.Id ) )
+                        .ToDictionary( k => k.Id, v => v.Name );
+
                     gRequests.DataSource = requests.ToList()
                     .Select( r => new
                     {
@@ -864,6 +872,8 @@ namespace RockWeb.Blocks.Connection
                         Name = r.PersonAlias.Person.FullNameReversed,
                         Campus = r.Campus,
                         Group = r.AssignedGroup != null ? r.AssignedGroup.Name : "",
+                        GroupStatus = r.AssignedGroupMemberStatus != null ? r.AssignedGroupMemberStatus.ConvertToString() : "",
+                        GroupRole = r.AssignedGroupMemberRoleId.HasValue ? roles[r.AssignedGroupMemberRoleId.Value] : "",
                         Connector = r.ConnectorPersonAlias != null ? r.ConnectorPersonAlias.Person.FullName : "",
                         LastActivity = FormatActivity( r.ConnectionRequestActivities.OrderByDescending( a => a.CreatedDateTime ).FirstOrDefault() ),
                         LastActivityNote = gRequests.Columns[6].Visible ? r.ConnectionRequestActivities.OrderByDescending(
@@ -884,6 +894,30 @@ namespace RockWeb.Blocks.Connection
             {
                 pnlGrid.Visible = false;
             }
+        }
+
+        protected string FormatGroupName( object group, object groupRole, object groupStatus )
+        {
+            string groupName = group != null ? group.ToString() : string.Empty;
+            string roleName = groupRole != null ? groupRole.ToString() : string.Empty;
+            string statusName = groupStatus != null ? groupStatus.ToString() : string.Empty;
+
+            if ( !string.IsNullOrWhiteSpace( groupName ) )
+            {
+                var result = new StringBuilder();
+                result.Append( group.ToString() );
+                if ( !string.IsNullOrWhiteSpace( roleName ) || !string.IsNullOrWhiteSpace( statusName ) )
+                {
+                    result.AppendFormat( " ({0}{1}{2})",
+                        statusName,
+                        !string.IsNullOrWhiteSpace( roleName ) && !string.IsNullOrWhiteSpace( statusName ) ? " " : "",
+                        roleName );
+                }
+
+                return result.ToString();
+            }
+
+            return string.Empty;
         }
 
         /// <summary>
