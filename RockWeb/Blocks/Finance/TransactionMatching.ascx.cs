@@ -541,6 +541,28 @@ namespace RockWeb.Blocks.Finance
 
             mdAccountsPersonalFilter.Hide();
             LoadDropDowns();
+
+            // Reload the transaction amounts after changing the displayed accounts.
+            int? transactionId = hfTransactionId.Value.AsIntegerOrNull();
+            if (transactionId.HasValue)
+            {
+                using (var rockContext = new RockContext())
+                {
+                    var financialTransactionService = new FinancialTransactionService(rockContext);
+                    var txn = financialTransactionService.Queryable().Where(t => t.Id == transactionId).SingleOrDefault();
+
+                    foreach (var detail in txn.TransactionDetails)
+                    {
+                        var accountBox = rptAccounts.ControlsOfTypeRecursive<CurrencyBox>().Where(a => a.Attributes["data-account-id"].AsInteger() == detail.AccountId).FirstOrDefault();
+                        if (accountBox != null)
+                        {
+                            accountBox.Text = detail.Amount.ToString();
+                        }
+                    }
+                }
+            }
+
+
         }
 
         /// <summary>
