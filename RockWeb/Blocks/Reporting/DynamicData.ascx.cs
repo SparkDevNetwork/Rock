@@ -309,8 +309,9 @@ namespace RockWeb.Blocks.Reporting
         /// Gets the data.
         /// </summary>
         /// <param name="errorMessage">The error message.</param>
+        /// <param name="schemaOnly">if set to <c>true</c> [schema only].</param>
         /// <returns></returns>
-        private DataSet GetData( out string errorMessage )
+        private DataSet GetData( out string errorMessage, bool schemaOnly = false  )
         {
             errorMessage = string.Empty;
 
@@ -332,7 +333,22 @@ namespace RockWeb.Blocks.Reporting
                     var parameters = GetParameters();
                     int timeout = GetAttributeValue( "Timeout" ).AsInteger();
 
-                    return DbService.GetDataSet( query, GetAttributeValue( "StoredProcedure" ).AsBoolean( false ) ? CommandType.StoredProcedure : CommandType.Text, parameters, timeout );
+                    if ( schemaOnly )
+                    {
+                        try
+                        {
+                            // GetDataSetSchema won't work in some cases, for example, if the SQL references a TEMP table.  So, fall back to use the regular GetDataSet if there is an exception
+                            return DbService.GetDataSetSchema( query, GetAttributeValue( "StoredProcedure" ).AsBoolean( false ) ? CommandType.StoredProcedure : CommandType.Text, parameters, timeout );
+                        }
+                        catch
+                        {
+                            return DbService.GetDataSet( query, GetAttributeValue( "StoredProcedure" ).AsBoolean( false ) ? CommandType.StoredProcedure : CommandType.Text, parameters, timeout );
+                        }
+                    }
+                    else
+                    {
+                        return DbService.GetDataSet( query, GetAttributeValue( "StoredProcedure" ).AsBoolean( false ) ? CommandType.StoredProcedure : CommandType.Text, parameters, timeout);
+                    }
                 }
                 catch ( System.Exception ex )
                 {
@@ -410,7 +426,9 @@ namespace RockWeb.Blocks.Reporting
         {
             var showGridFilterControls = GetAttributeValue( "ShowGridFilter" ).AsBoolean();
             string errorMessage = string.Empty;
-            var dataSet = GetData( out errorMessage );
+
+            // get just the schema of the data until we actually need the data
+            var dataSetSchema = GetData( out errorMessage, true );
 
             if ( !string.IsNullOrWhiteSpace( errorMessage ) )
             {
@@ -425,7 +443,7 @@ namespace RockWeb.Blocks.Reporting
 
                 var mergeFields = GetDynamicDataMergeFields();
 
-                if ( dataSet != null )
+                if ( dataSetSchema != null )
                 {
                     string formattedOutput = GetAttributeValue( "FormattedOutput" );
 
@@ -433,6 +451,9 @@ namespace RockWeb.Blocks.Reporting
                     if ( !string.IsNullOrWhiteSpace( GetAttributeValue( "PageTitleLava" ) ) || !string.IsNullOrWhiteSpace( formattedOutput ) )
                     {
                         int i = 1;
+                        
+                        // Formatted output needs all the rows, so get the data regardless of the setData parameter
+                        var dataSet = GetData( out errorMessage);
                         foreach ( DataTable dataTable in dataSet.Tables )
                         {
                             var dropRows = new List<DataRowDrop>();
@@ -470,6 +491,16 @@ namespace RockWeb.Blocks.Reporting
                         bool personReport = GetAttributeValue( "PersonReport" ).AsBoolean();
 
                         int tableId = 0;
+                        DataSet dataSet;
+                        if ( setData == false )
+                        {
+                            dataSet = dataSetSchema;
+                        }
+                        else
+                        {
+                            dataSet = GetData( out errorMessage );
+                        }
+                         
                         foreach ( DataTable dataTable in dataSet.Tables )
                         {
                             var div = new HtmlGenericControl( "div" );
@@ -484,14 +515,14 @@ namespace RockWeb.Blocks.Reporting
 
                             GridFilter = new GridFilter()
                             {
-                                ID = "gfFilter"
+                                ID = string.Format("gfFilter{0}", tableId )
                             };
 
                             div.Controls.Add( GridFilter );
                             GridFilter.ApplyFilterClick += ApplyFilterClick;
                             GridFilter.DisplayFilterValue += DisplayFilterValue;
-                            GridFilter.Visible = showGridFilterControls;
-
+                            GridFilter.Visible = showGridFilterControls && (dataSet.Tables.Count == 1);
+               
                             var grid = new Grid();
                             div.Controls.Add( grid );
                             grid.ID = string.Format( "dynamic_data_{0}", tableId++ );
@@ -800,7 +831,7 @@ namespace RockWeb.Blocks.Reporting
                 dataView.RowFilter = null;
                 return;
             }
-
+            
             var query = new List<string>();
 
             foreach ( var control in GridFilter.Controls.OfType<Control>() )
