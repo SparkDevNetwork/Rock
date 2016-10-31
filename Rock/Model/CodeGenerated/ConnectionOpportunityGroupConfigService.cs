@@ -28,15 +28,15 @@ using Rock.Data;
 namespace Rock.Model
 {
     /// <summary>
-    /// ConnectionRequest Service class
+    /// ConnectionOpportunityGroupConfig Service class
     /// </summary>
-    public partial class ConnectionRequestService : Service<ConnectionRequest>
+    public partial class ConnectionOpportunityGroupConfigService : Service<ConnectionOpportunityGroupConfig>
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="ConnectionRequestService"/> class
+        /// Initializes a new instance of the <see cref="ConnectionOpportunityGroupConfigService"/> class
         /// </summary>
         /// <param name="context">The context.</param>
-        public ConnectionRequestService(RockContext context) : base(context)
+        public ConnectionOpportunityGroupConfigService(RockContext context) : base(context)
         {
         }
 
@@ -48,11 +48,9 @@ namespace Rock.Model
         /// <returns>
         ///   <c>true</c> if this instance can delete the specified item; otherwise, <c>false</c>.
         /// </returns>
-        public bool CanDelete( ConnectionRequest item, out string errorMessage )
+        public bool CanDelete( ConnectionOpportunityGroupConfig item, out string errorMessage )
         {
             errorMessage = string.Empty;
-            
-            // ignoring ConnectionRequestActivity,ConnectionRequestId 
             return true;
         }
     }
@@ -60,50 +58,43 @@ namespace Rock.Model
     /// <summary>
     /// Generated Extension Methods
     /// </summary>
-    public static partial class ConnectionRequestExtensionMethods
+    public static partial class ConnectionOpportunityGroupConfigExtensionMethods
     {
         /// <summary>
-        /// Clones this ConnectionRequest object to a new ConnectionRequest object
+        /// Clones this ConnectionOpportunityGroupConfig object to a new ConnectionOpportunityGroupConfig object
         /// </summary>
         /// <param name="source">The source.</param>
         /// <param name="deepCopy">if set to <c>true</c> a deep copy is made. If false, only the basic entity properties are copied.</param>
         /// <returns></returns>
-        public static ConnectionRequest Clone( this ConnectionRequest source, bool deepCopy )
+        public static ConnectionOpportunityGroupConfig Clone( this ConnectionOpportunityGroupConfig source, bool deepCopy )
         {
             if (deepCopy)
             {
-                return source.Clone() as ConnectionRequest;
+                return source.Clone() as ConnectionOpportunityGroupConfig;
             }
             else
             {
-                var target = new ConnectionRequest();
+                var target = new ConnectionOpportunityGroupConfig();
                 target.CopyPropertiesFrom( source );
                 return target;
             }
         }
 
         /// <summary>
-        /// Copies the properties from another ConnectionRequest object to this ConnectionRequest object
+        /// Copies the properties from another ConnectionOpportunityGroupConfig object to this ConnectionOpportunityGroupConfig object
         /// </summary>
         /// <param name="target">The target.</param>
         /// <param name="source">The source.</param>
-        public static void CopyPropertiesFrom( this ConnectionRequest target, ConnectionRequest source )
+        public static void CopyPropertiesFrom( this ConnectionOpportunityGroupConfig target, ConnectionOpportunityGroupConfig source )
         {
             target.Id = source.Id;
-            target.AssignedGroupId = source.AssignedGroupId;
-            target.AssignedGroupMemberAttributeValues = source.AssignedGroupMemberAttributeValues;
-            target.AssignedGroupMemberRoleId = source.AssignedGroupMemberRoleId;
-            target.AssignedGroupMemberStatus = source.AssignedGroupMemberStatus;
-            target.CampusId = source.CampusId;
-            target.Comments = source.Comments;
             target.ConnectionOpportunityId = source.ConnectionOpportunityId;
-            target.ConnectionState = source.ConnectionState;
-            target.ConnectionStatusId = source.ConnectionStatusId;
-            target.ConnectorPersonAliasId = source.ConnectorPersonAliasId;
-            target.FollowupDate = source.FollowupDate;
             target.ForeignGuid = source.ForeignGuid;
             target.ForeignKey = source.ForeignKey;
-            target.PersonAliasId = source.PersonAliasId;
+            target.GroupMemberRoleId = source.GroupMemberRoleId;
+            target.GroupMemberStatus = source.GroupMemberStatus;
+            target.GroupTypeId = source.GroupTypeId;
+            target.UseAllGroupsOfType = source.UseAllGroupsOfType;
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;
             target.CreatedByPersonAliasId = source.CreatedByPersonAliasId;

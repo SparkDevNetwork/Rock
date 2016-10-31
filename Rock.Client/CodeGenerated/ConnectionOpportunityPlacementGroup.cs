@@ -27,18 +27,15 @@ using System.Collections.Generic;
 namespace Rock.Client
 {
     /// <summary>
-    /// Base client model for ConnectionOpportunity that only includes the non-virtual fields. Use this for PUT/POSTs
+    /// Base client model for ConnectionOpportunityPlacementGroup that only includes the non-virtual fields. Use this for PUT/POSTs
     /// </summary>
-    public partial class ConnectionOpportunityEntity
+    public partial class ConnectionOpportunityPlacementGroupEntity
     {
         /// <summary />
         public int Id { get; set; }
 
         /// <summary />
-        public int ConnectionTypeId { get; set; }
-
-        /// <summary />
-        public string Description { get; set; }
+        public int ConnectionOpportunityId { get; set; }
 
         /// <summary />
         public Guid? ForeignGuid { get; set; }
@@ -47,10 +44,13 @@ namespace Rock.Client
         public string ForeignKey { get; set; }
 
         /// <summary />
-        public string IconCssClass { get; set; }
+        public int? GroupMemberRoleId { get; set; }
 
         /// <summary />
-        public bool IsActive { get; set; }
+        public Rock.Client.Enums.GroupMemberStatus GroupMemberStatus { get; set; }
+
+        /// <summary />
+        public int GroupTypeId { get; set; }
 
         /// <summary>
         /// If the ModifiedByPersonAliasId is being set manually and should not be overwritten with current user when saved, set this value to true
@@ -58,16 +58,7 @@ namespace Rock.Client
         public bool ModifiedAuditValuesAlreadyUpdated { get; set; }
 
         /// <summary />
-        public string Name { get; set; }
-
-        /// <summary />
-        public int? PhotoId { get; set; }
-
-        /// <summary />
-        public string PublicName { get; set; }
-
-        /// <summary />
-        public string Summary { get; set; }
+        public bool UseAllGroupsOfType { get; set; }
 
         /// <summary>
         /// Leave this as NULL to let Rock set this
@@ -96,23 +87,20 @@ namespace Rock.Client
         public int? ForeignId { get; set; }
 
         /// <summary>
-        /// Copies the base properties from a source ConnectionOpportunity object
+        /// Copies the base properties from a source ConnectionOpportunityPlacementGroup object
         /// </summary>
         /// <param name="source">The source.</param>
-        public void CopyPropertiesFrom( ConnectionOpportunity source )
+        public void CopyPropertiesFrom( ConnectionOpportunityPlacementGroup source )
         {
             this.Id = source.Id;
-            this.ConnectionTypeId = source.ConnectionTypeId;
-            this.Description = source.Description;
+            this.ConnectionOpportunityId = source.ConnectionOpportunityId;
             this.ForeignGuid = source.ForeignGuid;
             this.ForeignKey = source.ForeignKey;
-            this.IconCssClass = source.IconCssClass;
-            this.IsActive = source.IsActive;
+            this.GroupMemberRoleId = source.GroupMemberRoleId;
+            this.GroupMemberStatus = source.GroupMemberStatus;
+            this.GroupTypeId = source.GroupTypeId;
             this.ModifiedAuditValuesAlreadyUpdated = source.ModifiedAuditValuesAlreadyUpdated;
-            this.Name = source.Name;
-            this.PhotoId = source.PhotoId;
-            this.PublicName = source.PublicName;
-            this.Summary = source.Summary;
+            this.UseAllGroupsOfType = source.UseAllGroupsOfType;
             this.CreatedDateTime = source.CreatedDateTime;
             this.ModifiedDateTime = source.ModifiedDateTime;
             this.CreatedByPersonAliasId = source.CreatedByPersonAliasId;
@@ -124,9 +112,9 @@ namespace Rock.Client
     }
 
     /// <summary>
-    /// Client model for ConnectionOpportunity that includes all the fields that are available for GETs. Use this for GETs (use ConnectionOpportunityEntity for POST/PUTs)
+    /// Client model for ConnectionOpportunityPlacementGroup that includes all the fields that are available for GETs. Use this for GETs (use ConnectionOpportunityPlacementGroupEntity for POST/PUTs)
     /// </summary>
-    public partial class ConnectionOpportunity : ConnectionOpportunityEntity
+    public partial class ConnectionOpportunityPlacementGroup : ConnectionOpportunityPlacementGroupEntity
     {
         /// <summary>
         /// NOTE: Attributes are only populated when ?loadAttributes is specified. Options for loadAttributes are true, false, 'simple', 'expanded' 

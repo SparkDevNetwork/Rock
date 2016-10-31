@@ -74,8 +74,8 @@
                         <div class="col-md-6">
                             <asp:Panel ID="pnlRequirements" runat="server">
                                 <Rock:RockControlWrapper ID="rcwRequirements" runat="server" Label="Group Requirements">
-                                    <Rock:NotificationBox ID="nbRequirementsErrors" runat="server" Dismissable="true" NotificationBoxType="Warning" />
                                     <Rock:RockCheckBoxList ID="cblManualRequirements" RepeatDirection="Vertical" runat="server" Label="" />
+                                    <Rock:NotificationBox ID="nbRequirementsErrors" runat="server" Dismissable="true" NotificationBoxType="Danger" />
                                     <div class="labels">
                                         <asp:Literal ID="lRequirementsLabels" runat="server" />
                                     </div>
@@ -124,12 +124,19 @@
 
                     <div class="row">
                         <div class="col-md-6">
-                            <Rock:RockDropDownList ID="ddlPlacementGroup" runat="server" Label="Placement Group" />
+                            <Rock:RockDropDownList ID="ddlPlacementGroup" runat="server" Label="Placement Group" AutoPostBack="true" OnSelectedIndexChanged="ddlPlacementGroup_SelectedIndexChanged" />
+                            <Rock:RockDropDownList ID="ddlPlacementGroupRole" runat="server" Label="Group Member Role" Visible="false" AutoPostBack="true" OnSelectedIndexChanged="ddlPlacementGroupRole_SelectedIndexChanged" />
+                            <Rock:RockDropDownList ID="ddlPlacementGroupStatus" runat="server" Label="Group Member Status" Visible="false" />
                         </div>
                         <div class="col-md-6">
                             <Rock:RockDropDownList ID="ddlCampus" runat="server" Label="Campus" AutoPostBack="true" OnSelectedIndexChanged="ddlCampus_SelectedIndexChanged" />
                         </div>
                     </div>
+
+                    <asp:HiddenField ID="hfGroupMemberAttributeValues" runat="server" />
+                    <asp:PlaceHolder ID="phGroupMemberAttributes" runat="server" EnableViewState="false"></asp:PlaceHolder>
+
+                    <Rock:NotificationBox ID="nbRequirementsWarning" runat="server" NotificationBoxType="Warning" Visible="false" Dismissable="true" />
 
                     <div class="actions">
                         <asp:LinkButton ID="btnSave" runat="server" AccessKey="s" Text="Save" CssClass="btn btn-primary" OnClick="btnSave_Click"></asp:LinkButton>
