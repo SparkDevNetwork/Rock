@@ -275,7 +275,10 @@ Requests/sec: {7:0.0}
             var chartArea = chart1.ChartAreas[0];
             chartArea.AxisX.IntervalType = System.Windows.Forms.DataVisualization.Charting.DateTimeIntervalType.Milliseconds;
             chartArea.AxisX.Minimum = 0;
-            chartArea.AxisX.Maximum = chartResults.Max( a => a.XValue.TimeOfDay.TotalMilliseconds );
+            if ( chartResults.Any())
+            { 
+                chartArea.AxisX.Maximum = chartResults.Max( a => a.XValue.TimeOfDay.TotalMilliseconds );
+            }
             chartArea.AxisX.CustomLabels.Clear();
             double labelPosition = 0;
             var labelInterval = ( chartArea.AxisX.Maximum / 10 );
