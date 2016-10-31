@@ -201,7 +201,7 @@ namespace com.centralaz.Finance.Transactions
 
                         for ( ChapterNumber = 1; ( ( ChapterNumber - 1 ) * ChapterSize ) < givingIdCount; ChapterNumber++ )
                         {
-                            var fileName = String.Format( "{0}_ContributionStatements_Chapter_{1}_of_{2}.html", DateTime.Now.ToString( "MMddyyyy" ), ChapterNumber, totalChapters );
+                            var fileName = String.Format( "{0}_ContributionStatements_Chapter_{1:000}_of_{2:000}.html", DateTime.Now.ToString( "MMddyyyy" ), ChapterNumber, totalChapters );
                             var mergeFields = GetMergeFields( rockContext );
 
                             BinaryFile outputBinaryFileDoc = null;
