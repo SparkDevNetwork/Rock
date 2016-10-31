@@ -134,7 +134,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 
                             listHtml += string.Format(
                                 "<li {0}>{1} - <small>{2}</small></li>",
-                                connectionRequest.ConnectionState == ConnectionState.Connected ? "class='is-inactive'" : string.Empty,
+                                ( connectionRequest.ConnectionState == ConnectionState.Connected || connectionRequest.ConnectionState == ConnectionState.Inactive ) ? "class='is-inactive'" : string.Empty,
                                 connectionNameHtml,
                                 connectionRequest.ConnectionState == ConnectionState.Connected ? "Connected" : connectionRequest.ConnectionStatus.ToString() );
                         }
