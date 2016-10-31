@@ -479,6 +479,9 @@ namespace RockWeb.Blocks.Cms
 
             edtItemAttributes.SetAttributeProperties( attribute, typeof( ContentChannelItem ) );
 
+            // always enable the display of the indexing option as the channel decides whether or not to index not the type
+            edtItemAttributes.IsIndexingEnabledVisible = true;
+
             ShowDialog( "ItemAttributes", true );
         }
 

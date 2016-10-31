@@ -41,7 +41,7 @@ namespace Rock.UniversalSearch.IndexModels
         /// <value>
         /// The identifier.
         /// </value>
-        [RockIndexField( Type = IndexFieldType.Number )]
+        [RockIndexField( Index = IndexType.NotIndexed )]
         public Int64 Id { get; set; }
 
         /// <summary>

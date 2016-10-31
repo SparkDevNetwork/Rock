@@ -110,7 +110,16 @@ namespace Rock.UniversalSearch.IndexModels
                 }
             }
 
-            return new FormattedSearchResult() { IsViewAllowed = true, FormattedResult = string.Format( "<a href='{0}{1}'>{2} <small>(Business)</small></a>", url, this.Id, this.Name ) };
+            return new FormattedSearchResult() { IsViewAllowed = true, FormattedResult = $@"
+                         <div class='row model-cannavigate' data-href='{url}{this.Id}'>
+                            <div class='col-sm-1 text-center'>
+                                <i class='{this.IconCssClass} fa-2x'></i>
+                            </div>
+                            <div class='col-sm-11'>
+                                {this.Name}
+                            </div>
+                        </div>
+                    " };
         }
     }
 }
