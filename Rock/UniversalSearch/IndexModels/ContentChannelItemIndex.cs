@@ -222,7 +222,18 @@ namespace Rock.UniversalSearch.IndexModels
                 result += "<br />" + this["Summary"];
             }
 
-            return new FormattedSearchResult() { IsViewAllowed = true, FormattedResult = result };
+            return new FormattedSearchResult() { IsViewAllowed = true, FormattedResult = $@"
+                            <div class='row model-cannavigate' data-href='{url.ResolveMergeFields( mergeFields )}'>
+                                <div class='col-sm-1'>
+                                    <i class='{this.IconCssClass} fa-2x'></i>
+                                </div>
+                                <div class='col-sm-4'>
+                                    {this.Title} <small>({this.ContentChannel})</small>
+                                </div>
+                                <div class='col-sm-7'>
+                                    {this["Summary"] ?? ""}
+                                </div>
+                            </div>" };
         }
     }
 }
