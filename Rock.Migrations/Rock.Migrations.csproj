@@ -90,6 +90,10 @@
     <Compile Include="Migrations\201610271509530_WaitlistPages.Designer.cs">
       <DependentUpon>201610271509530_WaitlistPages.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201610312310571_ConnectionGroupConfig.cs" />
+    <Compile Include="Migrations\201610312310571_ConnectionGroupConfig.Designer.cs">
+      <DependentUpon>201610312310571_ConnectionGroupConfig.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 6.0\Version 1.6.0\201609282147388_WaitList.cs" />
     <Compile Include="Migrations\Version 6.0\Version 1.6.0\201609282147388_WaitList.Designer.cs">
       <DependentUpon>201609282147388_WaitList.cs</DependentUpon>
@@ -2310,6 +2314,9 @@
     <EmbeddedResource Include="Migrations\201610271509530_WaitlistPages.resx">
       <DependentUpon>201610271509530_WaitlistPages.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201610312310571_ConnectionGroupConfig.resx">
+      <DependentUpon>201610312310571_ConnectionGroupConfig.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 6.0\Version 1.6.0\201609282147388_WaitList.resx">
       <DependentUpon>201609282147388_WaitList.cs</DependentUpon>
     </EmbeddedResource>
@@ -3956,6 +3963,14 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="Migrations\201610031959052_FamilyAnalyticsUpdate_spCrm_FamilyAnalyticsAttendance.sql" />
+    <Content Include="Migrations\201610312310571_ConnectionGroupConfig_spCheckin_AttendanceAnalyticsQuery_AttendeeLastAttendance.sql" />
+    <Content Include="Migrations\201610312310571_ConnectionGroupConfig_DropIndexes.sql" />
+    <Content Include="Migrations\201610312310571_ConnectionGroupConfig_ufnCrm_GetParentPhones.sql" />
+    <Content Include="Migrations\201610312310571_ConnectionGroupConfig_ufnCrm_GetParentEmails.sql" />
+    <Content Include="Migrations\201610312310571_ConnectionGroupConfig_ufnCrm_GetParentNames.sql" />
+    <Content Include="Migrations\201610312310571_ConnectionGroupConfig_ufnUtility_CsvToTable.sql" />
+    <Content Include="Migrations\201610312310571_ConnectionGroupConfig_ufnCrm_GetGradeOffset.sql" />
+    <Content Include="Migrations\201610312310571_ConnectionGroupConfig_ufnCrm_GetAge.sql" />
     <Content Include="Migrations\201610031959052_FamilyAnalyticsUpdate_spCrm_FamilyAnalyticsEraDataset.sql" />
     <Content Include="Migrations\Version 6.0\Version 1.6.0\201608171937068_GivingAnalyticsAccounts_AccountTotals.sql" />
     <Content Include="Migrations\Version 6.0\Version 1.6.0\201608171937068_GivingAnalyticsAccounts_FirstLastEverDates.sql" />

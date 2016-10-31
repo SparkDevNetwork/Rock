@@ -13,7 +13,7 @@ namespace Rock.Migrations
         
         string IMigrationMetadata.Id
         {
-            get { return "201610281156144_ConnectionGroupConfig"; }
+            get { return "201610312310571_ConnectionGroupConfig"; }
         }
         
         string IMigrationMetadata.Source

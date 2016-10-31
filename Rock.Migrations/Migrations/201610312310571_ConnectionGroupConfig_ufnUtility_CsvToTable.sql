@@ -1,3 +1,15 @@
+﻿IF object_id('[dbo].[ufnUtility_CsvToTable]') IS NOT NULL
+BEGIN
+  DROP FUNCTION [dbo].[ufnUtility_CsvToTable]
+END
+GO
+
+SET ANSI_NULLS ON
+GO
+
+SET QUOTED_IDENTIFIER ON
+GO
+
 /*
 <doc>
 	<summary>
@@ -15,7 +27,7 @@
 	</code>
 </doc>
 */
-ALTER FUNCTION [dbo].[ufnUtility_CsvToTable]
+CREATE FUNCTION [dbo].[ufnUtility_CsvToTable]
 (
 	@pString VARCHAR(8000)
 )
@@ -54,3 +66,4 @@ cteLen(N1,L1) AS(--==== Return start and length (for use in substring)
 --===== Do the actual split. The ISNULL/NULLIF combo handles the length for the final element when no delimiter is found.
 SELECT Item = SUBSTRING(@pString, l.N1, l.L1)
 FROM cteLen l
+GO
