@@ -49,12 +49,6 @@ namespace RockWeb.Plugins.church_ccv.Steps
 
     public partial class StepsTaken : Rock.Web.UI.RockBlock
     {
-        #region Fields
-
-        const string ATTRIBUTE_GLOBAL_TITHE_THRESHOLD = "TitheThreshold";
-
-        #endregion
-
         #region Properties
         
         /// <summary>
@@ -232,74 +226,68 @@ namespace RockWeb.Plugins.church_ccv.Steps
                 LineChart lcChart = (LineChart)e.Item.FindControl( "lcMeasure" );
                 Literal lChartValue = (Literal)e.Item.FindControl( "lChartValue" );
 
-                if ( !item.IsTbd )
+                var campusId = cpCampusCampus.SelectedValue.AsIntegerOrNull();
+
+                var chartData = GetChartData( GetDateRange(), measureId: item.Id, campusId: campusId ).ToList();
+
+                // ensure there is at least one last year date to ensure 2 series
+                if ( !chartData.Any( d => d.SeriesName == "Previous Year" ) && chartData.Count > 0 )
                 {
-                    var campusId = cpCampusCampus.SelectedValue.AsIntegerOrNull();
+                    SummaryData blankItem = new SummaryData();
+                    blankItem.SeriesName = "Previous Year";
+                    blankItem.YValue = 0;
+                    blankItem.DateTimeStamp = chartData.OrderBy( d => d.DateTimeStamp ).FirstOrDefault().DateTimeStamp;
 
-                    var chartData = GetChartData( GetDateRange(), measureId: item.Id, campusId: campusId ).ToList();
+                    chartData.Add( blankItem );
+                }
 
-                    // ensure there is at least one last year date to ensure 2 series
-                    if ( !chartData.Any( d => d.SeriesName == "Previous Year" ) && chartData.Count > 0 )
+                // sort data
+                chartData = chartData.OrderByDescending( c => c.SeriesName ).ThenBy( c => c.DateTimeStamp ).ToList();
+
+                if ( chartData.Count() > 0 )
+                {
+                    var jsonSetting = new JsonSerializerSettings
                     {
-                        SummaryData blankItem = new SummaryData();
-                        blankItem.SeriesName = "Previous Year";
-                        blankItem.YValue = 0;
-                        blankItem.DateTimeStamp = chartData.OrderBy( d => d.DateTimeStamp ).FirstOrDefault().DateTimeStamp;
+                        ReferenceLoopHandling = ReferenceLoopHandling.Ignore,
+                        ContractResolver = new Rock.Utility.IgnoreUrlEncodedKeyContractResolver()
+                    };
+                    string chartDataJson = JsonConvert.SerializeObject( chartData, Formatting.None, jsonSetting );
 
-                        chartData.Add( blankItem );
+                    lcChart.Options.SetChartStyle( new Guid( "2ABB2EA0-B551-476C-8F6B-478CD08C2227" ) ); // default rock style that we'll then heavily tweak
+                    lcChart.Visible = true;
+                    lcChart.ChartData = chartDataJson;
+                    lcChart.Options.legend.show = false;
+                    lcChart.Options.series.lines.lineWidth = 4;
+                    lcChart.Options.xaxis.show = false;
+                    lcChart.Options.yaxis.show = false;
+
+                    Color measureColor = ColorTranslator.FromHtml( item.Color );
+                    Color measureColorLight = measureColor.ChangeColorBrightness( 0.8f );
+
+                    lcChart.Options.colors = new string[] { measureColorLight.ToHtml(), measureColor.ToHtml() };
+                    lcChart.Options.series.lines.fill = 0;
+                    lcChart.Options.grid.show = false;
+                    lcChart.Options.series.shadowSize = 0;
+
+                    // to ensure that all of the charts share the same date range scale add the start and end dates as zero values
+                    // when new campuses/pastors are show they will have fewer data points and the charts won't align
+                    if ( GetDateRange().Start.HasValue )
+                    {
+                        lcChart.Options.xaxis.min = GetDateRange().Start.Value.ToJavascriptMilliseconds();
                     }
 
-                    // sort data
-                    chartData = chartData.OrderByDescending( c => c.SeriesName ).ThenBy( c => c.DateTimeStamp ).ToList();
-
-                    if ( chartData.Count() > 0 )
+                    if ( GetDateRange().End.HasValue )
                     {
-                        var jsonSetting = new JsonSerializerSettings
-                        {
-                            ReferenceLoopHandling = ReferenceLoopHandling.Ignore,
-                            ContractResolver = new Rock.Utility.IgnoreUrlEncodedKeyContractResolver()
-                        };
-                        string chartDataJson = JsonConvert.SerializeObject( chartData, Formatting.None, jsonSetting );
-
-                        lcChart.Options.SetChartStyle( new Guid( "2ABB2EA0-B551-476C-8F6B-478CD08C2227" ) ); // default rock style that we'll then heavily tweak
-                        lcChart.Visible = true;
-                        lcChart.ChartData = chartDataJson;
-                        lcChart.Options.legend.show = false;
-                        lcChart.Options.series.lines.lineWidth = 4;
-                        lcChart.Options.xaxis.show = false;
-                        lcChart.Options.yaxis.show = false;
-
-                        Color measureColor = ColorTranslator.FromHtml( item.Color );
-                        Color measureColorLight = measureColor.ChangeColorBrightness( 0.8f );
-
-                        lcChart.Options.colors = new string[] { measureColorLight.ToHtml(), measureColor.ToHtml() };
-                        lcChart.Options.series.lines.fill = 0;
-                        lcChart.Options.grid.show = false;
-                        lcChart.Options.series.shadowSize = 0;
-
-                        // to ensure that all of the charts share the same date range scale add the start and end dates as zero values
-                        // when new campuses/pastors are show they will have fewer data points and the charts won't align
-                        if ( GetDateRange().Start.HasValue )
-                        {
-                            lcChart.Options.xaxis.min = GetDateRange().Start.Value.ToJavascriptMilliseconds();
-                        }
-
-                        if ( GetDateRange().End.HasValue )
-                        {
-                            lcChart.Options.xaxis.max = GetDateRange().End.Value.ToJavascriptMilliseconds();
-                        }
+                        lcChart.Options.xaxis.max = GetDateRange().End.Value.ToJavascriptMilliseconds();
                     }
-                    else
-                    {
-                        lcChart.Visible = false;
-                    }
-
-                    lChartValue.Text = string.Format( "{0:n0}", chartData.Where( d => d.SeriesName == "Current Year" ).Sum( d => d.YValue ) );
-                } else
+                }
+                else
                 {
                     lcChart.Visible = false;
-                    lChartValue.Text = "TBD";
                 }
+
+                lChartValue.Visible = true;
+                lChartValue.Text = string.Format( "{0:n0}", chartData.Where( d => d.SeriesName == "Current Year" ).Sum( d => d.YValue ) );
             }
         }
 
@@ -326,76 +314,69 @@ namespace RockWeb.Plugins.church_ccv.Steps
 
                 LineChart lcChart = (LineChart)e.Item.FindControl( "lcMeasure" );
                 Literal lChartValue = (Literal)e.Item.FindControl( "lChartValue" );
+                
+                var pastorId = ddlPastor.SelectedValue.AsIntegerOrNull();
 
-                if ( !item.IsTbd )
+                var chartData = GetChartData( GetDateRange(), measureId: item.Id, pastorId: pastorId ).ToList();
+
+                // ensure there is at least one last year date to ensure 2 series
+                if ( !chartData.Any( d => d.SeriesName == "Previous Year" ) && chartData.Count > 0 )
                 {
-                    var pastorId = ddlPastor.SelectedValue.AsIntegerOrNull();
+                    SummaryData blankItem = new SummaryData();
+                    blankItem.SeriesName = "Previous Year";
+                    blankItem.YValue = 0;
+                    blankItem.DateTimeStamp = chartData.OrderBy( d => d.DateTimeStamp ).FirstOrDefault().DateTimeStamp;
 
-                    var chartData = GetChartData( GetDateRange(), measureId: item.Id, pastorId: pastorId ).ToList();
+                    chartData.Add( blankItem );
+                }
 
-                    // ensure there is at least one last year date to ensure 2 series
-                    if ( !chartData.Any( d => d.SeriesName == "Previous Year" ) && chartData.Count > 0 )
+                // sort data
+                chartData = chartData.OrderByDescending( c => c.SeriesName ).ThenBy( c => c.DateTimeStamp ).ToList();
+
+                if ( chartData.Count() > 0 )
+                {
+                    var jsonSetting = new JsonSerializerSettings
                     {
-                        SummaryData blankItem = new SummaryData();
-                        blankItem.SeriesName = "Previous Year";
-                        blankItem.YValue = 0;
-                        blankItem.DateTimeStamp = chartData.OrderBy( d => d.DateTimeStamp ).FirstOrDefault().DateTimeStamp;
+                        ReferenceLoopHandling = ReferenceLoopHandling.Ignore,
+                        ContractResolver = new Rock.Utility.IgnoreUrlEncodedKeyContractResolver()
+                    };
+                    string chartDataJson = JsonConvert.SerializeObject( chartData, Formatting.None, jsonSetting );
 
-                        chartData.Add( blankItem );
+                    lcChart.Options.SetChartStyle( new Guid( "2ABB2EA0-B551-476C-8F6B-478CD08C2227" ) ); // default rock style that we'll then heavily tweak
+                    lcChart.Visible = true;
+                    lcChart.ChartData = chartDataJson;
+                    lcChart.Options.legend.show = false;
+                    lcChart.Options.series.lines.lineWidth = 4;
+                    lcChart.Options.xaxis.show = false;
+                    lcChart.Options.yaxis.show = false;
+
+                    Color measureColor = ColorTranslator.FromHtml( item.Color );
+                    Color measureColorLight = measureColor.ChangeColorBrightness( 0.8f );
+
+                    lcChart.Options.colors = new string[] { measureColorLight.ToHtml(), measureColor.ToHtml() };
+                    lcChart.Options.series.lines.fill = 0;
+                    lcChart.Options.grid.show = false;
+                    lcChart.Options.series.shadowSize = 0;
+
+                    // to ensure that all of the charts share the same date range scale add the start and end dates as zero values
+                    // when new campuses/pastors are show they will have fewer data points and the charts won't align
+                    if ( GetDateRange().Start.HasValue )
+                    {
+                        lcChart.Options.xaxis.min = GetDateRange().Start.Value.ToJavascriptMilliseconds();
                     }
 
-                    // sort data
-                    chartData = chartData.OrderByDescending( c => c.SeriesName ).ThenBy( c => c.DateTimeStamp ).ToList();
-
-                    if ( chartData.Count() > 0 )
+                    if ( GetDateRange().End.HasValue )
                     {
-                        var jsonSetting = new JsonSerializerSettings
-                        {
-                            ReferenceLoopHandling = ReferenceLoopHandling.Ignore,
-                            ContractResolver = new Rock.Utility.IgnoreUrlEncodedKeyContractResolver()
-                        };
-                        string chartDataJson = JsonConvert.SerializeObject( chartData, Formatting.None, jsonSetting );
-
-                        lcChart.Options.SetChartStyle( new Guid( "2ABB2EA0-B551-476C-8F6B-478CD08C2227" ) ); // default rock style that we'll then heavily tweak
-                        lcChart.Visible = true;
-                        lcChart.ChartData = chartDataJson;
-                        lcChart.Options.legend.show = false;
-                        lcChart.Options.series.lines.lineWidth = 4;
-                        lcChart.Options.xaxis.show = false;
-                        lcChart.Options.yaxis.show = false;
-
-                        Color measureColor = ColorTranslator.FromHtml( item.Color );
-                        Color measureColorLight = measureColor.ChangeColorBrightness( 0.8f );
-
-                        lcChart.Options.colors = new string[] { measureColorLight.ToHtml(), measureColor.ToHtml() };
-                        lcChart.Options.series.lines.fill = 0;
-                        lcChart.Options.grid.show = false;
-                        lcChart.Options.series.shadowSize = 0;
-
-                        // to ensure that all of the charts share the same date range scale add the start and end dates as zero values
-                        // when new campuses/pastors are show they will have fewer data points and the charts won't align
-                        if ( GetDateRange().Start.HasValue )
-                        {
-                            lcChart.Options.xaxis.min = GetDateRange().Start.Value.ToJavascriptMilliseconds();
-                        }
-
-                        if ( GetDateRange().End.HasValue )
-                        {
-                            lcChart.Options.xaxis.max = GetDateRange().End.Value.ToJavascriptMilliseconds();
-                        }
+                        lcChart.Options.xaxis.max = GetDateRange().End.Value.ToJavascriptMilliseconds();
                     }
-                    else
-                    {
-                        lcChart.Visible = false;
-                    }
-
-                    lChartValue.Text = string.Format( "{0:n0}", chartData.Where( d => d.SeriesName == "Current Year" ).Sum( d => d.YValue ) );
                 }
                 else
                 {
                     lcChart.Visible = false;
-                    lChartValue.Text = "TBD";
                 }
+
+                lChartValue.Visible = true;
+                lChartValue.Text = string.Format( "{0:n0}", chartData.Where( d => d.SeriesName == "Current Year" ).Sum( d => d.YValue ) );
             }
         }
 
@@ -689,9 +670,9 @@ namespace RockWeb.Plugins.church_ccv.Steps
         /// </summary>
         private void LoadCampuses()
         {
-            cpDetailCampus.Campuses = CampusCache.All();
-            cpCampusCampus.Campuses = CampusCache.All();
-            cpAdultsCampus.Campuses = CampusCache.All();
+            cpDetailCampus.Campuses = CampusCache.All( false );
+            cpCampusCampus.Campuses = CampusCache.All( false );
+            cpAdultsCampus.Campuses = CampusCache.All( false );
 
             cpDetailCampus.SelectedItem.Text = "All Campuses";
             cpCampusCampus.SelectedItem.Text = "All Campuses";
@@ -787,7 +768,7 @@ namespace RockWeb.Plugins.church_ccv.Steps
                         </div>
                     </div>";
 
-            var campuses = CampusCache.All();
+            var campuses = CampusCache.All( false );
 
             string rowBackgroundColor = "#f2eee9";
 
@@ -833,7 +814,9 @@ namespace RockWeb.Plugins.church_ccv.Steps
                 pastorId = ddlPastor.SelectedItem.Value.AsInteger();
                 lPastorPastor.Text = ddlPastor.SelectedItem.Text;
 
-                var measures = new StepMeasureService( rockContext ).Queryable().AsNoTracking().Where( m => m.IsActive ).ToList();
+                var measures = new StepMeasureService( rockContext ).Queryable().AsNoTracking().Where( m => m.IsActive && 
+                                                                                                            m.IsTbd == false )
+                                                                                               .ToList();
                 rptPastorMeasures.DataSource = measures;
                 rptPastorMeasures.DataBind();
             }
@@ -845,7 +828,9 @@ namespace RockWeb.Plugins.church_ccv.Steps
                 int measureId = Request["MeasureId"].AsInteger();
 
                 // wire up data for the campus charts
-                CurrentMeasure = new StepMeasureService( rockContext ).Queryable().AsNoTracking().Where( m => m.Id == measureId ).FirstOrDefault();
+                CurrentMeasure = new StepMeasureService( rockContext ).Queryable().AsNoTracking().Where( m => m.Id == measureId && 
+                                                                                                              m.IsTbd == false )
+                                                                                                 .FirstOrDefault();
 
                 divPastorSingleMeasureWrap.Style.Add( "border", "3px solid " + CurrentMeasure.Color );
                 divPastorSingleMeasureWrap.Style.Add( "color", CurrentMeasure.Color );
@@ -936,7 +921,9 @@ namespace RockWeb.Plugins.church_ccv.Steps
                     lCampusCampus.Text = string.Format( "{0} Campus", cpCampusCampus.SelectedItem.Text );
                 }
 
-                var measures = new StepMeasureService( rockContext ).Queryable().AsNoTracking().Where( m => m.IsActive ).ToList();
+                var measures = new StepMeasureService( rockContext ).Queryable().AsNoTracking().Where( m => m.IsActive && 
+                                                                                                            m.IsTbd == false )
+                                                                                               .ToList();
                 rptAdultMeasures.DataSource = measures;
                 rptAdultMeasures.DataBind();
             }
@@ -948,13 +935,15 @@ namespace RockWeb.Plugins.church_ccv.Steps
                 int measureId = Request["MeasureId"].AsInteger();
 
                 // wire up data for the campus charts
-                CurrentMeasure = new StepMeasureService( rockContext ).Queryable().AsNoTracking().Where( m => m.Id == measureId ).FirstOrDefault();
+                CurrentMeasure = new StepMeasureService( rockContext ).Queryable().AsNoTracking().Where( m => m.Id == measureId && 
+                                                                                                              m.IsTbd == false )
+                                                                                                 .FirstOrDefault();
 
                 divAdultSingleMeasureWrap.Style.Add( "border", "3px solid " + CurrentMeasure.Color );
                 divAdultSingleMeasureWrap.Style.Add( "color", CurrentMeasure.Color );
                 iAdultSingleMeasureIcon.AddCssClass( CurrentMeasure.IconCssClass );
 
-                var campuses = CampusCache.All();
+                var campuses = CampusCache.All( false );
                 rptAdultSingleMeasure.DataSource = campuses;
                 rptAdultSingleMeasure.DataBind();
 
@@ -1054,61 +1043,29 @@ namespace RockWeb.Plugins.church_ccv.Steps
                     int? measureId = ddlMeasureType.SelectedValue.AsInteger();
                     query = query.Where( s => s.StepMeasureId == measureId );
                 }
+                
+                var datamartQry = new DatamartPersonService( rockContext ).Queryable().AsNoTracking();
 
-                // join to datamart
-                decimal titheThreshold = GlobalAttributesCache.Read().GetValue( ATTRIBUTE_GLOBAL_TITHE_THRESHOLD ).AsDecimal();
+                var joinedQuery = query.GroupJoin( datamartQry, 
+                                              s => s.PersonAlias.PersonId, 
+                                              dp => dp.PersonId, 
+                                              ( s, dp ) => new { Step = s, DatamartPerson = dp } )
+                                        .SelectMany( x => x.DatamartPerson.DefaultIfEmpty(), ( g, u ) => new { Step = g.Step, Address = u.Address } );
+                
 
-                // let the unholiness begin as we join to the datamart person and datamart neighborhood tables to find the pastor
-                var datamartNeighborhoodQry = new DatamartNeighborhoodService( rockContext ).Queryable();
-                var datamartQry = new DatamartPersonService( rockContext ).Queryable().AsNoTracking()
-                                            .GroupJoin( datamartNeighborhoodQry,
-                                                    x => x.NeighborhoodId,
-                                                    y => y.NeighborhoodId,
-                                                    ( x, y ) => new { Person = x, Neighborhood = y } )
-                                            .SelectMany(x => x.Neighborhood.DefaultIfEmpty(), (g,u) => new { Person = g.Person, Neighborhood = u });
-
-                var joinedQuery = query.GroupJoin(
-                        datamartQry,
-                        s => s.PersonAlias.PersonId,
-                        d => d.Person.PersonId,
-                        ( s, d ) => new { s, d }
-                    )
-                    .SelectMany( x => x.d.DefaultIfEmpty(), ( g, u ) => new { Step = g.s, Datamart = u } );
-
-                var results = joinedQuery.Where(s => s.Datamart.Person.FamilyRole == "Adult")
-                                .Select( s =>
+                var results = joinedQuery.Select( s =>
                                     new {
                                         Id = s.Step.Id,
                                         DateTaken = s.Step.DateTaken,
                                         StepMeasureTitle = s.Step.StepMeasure.Title,
                                         StepMeasureId = s.Step.StepMeasureId,
-                                        SundayDate = s.Step.SundayDate,
                                         PersonId = s.Step.PersonAlias.PersonId,
-                                        FirstName = s.Step.PersonAlias.Person.FirstName,
-                                        NickName = s.Step.PersonAlias.Person.NickName,
-                                        LastName = s.Step.PersonAlias.Person.LastName,
                                         FullName = s.Step.PersonAlias.Person.LastName + ", " + s.Step.PersonAlias.Person.NickName,
                                         Campus = s.Step.Campus.Name,
-                                        Address = s.Datamart.Person.Address,
-                                        State = s.Datamart.Person.State, 
-                                        City = s.Datamart.Person.City,
-                                        PostalCode = s.Datamart.Person.PostalCode,
-                                        Email = s.Datamart.Person.Email,
-                                        ConnectionStatus = s.Datamart.Person.ConnectionStatusName,
-                                        FamilyRole = s.Datamart.Person.FamilyRole,
-                                        FirstVisitDate = s.Datamart.Person.FirstVisitDate, 
-                                        BaptismDate = s.Datamart.Person.BaptismDate, 
-                                        StartingPointDate = s.Datamart.Person.StartingPointDate, 
-                                        InNeighborhoodGroup = s.Datamart.Person.InNeighborhoodGroup, 
-                                        IsServing = s.Datamart.Person.IsServing,
-                                        IsEra = s.Datamart.Person.IsEra,
-                                        IsCoaching = s.Datamart.Person.IsCoaching,
-                                        IsGiving = (s.Datamart.Person.GivingLast12Months != null) ? (s.Datamart.Person.GivingLast12Months.Value > titheThreshold) : false,
-                                        Neighborhood = s.Datamart.Neighborhood.NeighborhoodName,
-                                        AssociatePastor = s.Datamart.Neighborhood.NeighborhoodPastorName
+                                        Address = s.Address
                                     }
                 );
-
+                
                 gStepDetails.SetLinqDataSource( results.OrderBy(s => s.DateTaken) );
                 gStepDetails.DataBind();
             }
