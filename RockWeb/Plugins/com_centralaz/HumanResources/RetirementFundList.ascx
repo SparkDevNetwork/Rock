@@ -11,7 +11,7 @@
             <div class="panel-body">
 
                 <div class="grid grid-panel">
-                    <Rock:Grid ID="gRetirementFunds" runat="server" RowItemText="Retirement Fund" TooltipField="Description">
+                    <Rock:Grid ID="gRetirementFunds" runat="server" RowItemText="Retirement Fund" TooltipField="Description" OnRowDataBound="gRetirementFunds_RowDataBound">
                         <Columns>
                             <Rock:RockBoundField DataField="Name" HeaderText="Name" />
                             <Rock:RockBoundField DataField="EmployeeAmount" HeaderText="Employee Amount" ItemStyle-HorizontalAlign="Right" />

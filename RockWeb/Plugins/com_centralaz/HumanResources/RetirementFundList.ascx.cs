@@ -118,6 +118,27 @@ namespace RockWeb.Plugins.com_centralaz.HumanResources
         }
 
         /// <summary>
+        /// Handles the RowDataBound event of the gRetirementFunds control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="GridViewRowEventArgs"/> instance containing the event data.</param>
+        protected void gRetirementFunds_RowDataBound( object sender, GridViewRowEventArgs e )
+        {
+            if ( e.Row.RowType == DataControlRowType.DataRow )
+            {
+                dynamic retirementFund = e.Row.DataItem;
+
+                if ( retirementFund != null )
+                {
+                    if ( !retirementFund.IsActive )
+                    {
+                        e.Row.AddCssClass( "is-inactive" );
+                    }
+                }
+            }
+        }
+
+        /// <summary>
         /// Handles the Delete event of the gRetirementFunds control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
@@ -233,11 +254,16 @@ namespace RockWeb.Plugins.com_centralaz.HumanResources
             {
                 History.EvaluateChange( changes, "Retirement Fund", retirementFund.InactiveDate, dpInactiveDate.SelectedDate.Value );
                 retirementFund.InactiveDate = dpInactiveDate.SelectedDate.Value;
+                retirementFund.IsActive = false;
+            }
+            else
+            {
+                retirementFund.IsActive = true;
             }
 
             if ( dvpFund.SelectedValueAsId().HasValue )
             {
-                History.EvaluateChange( changes, "Retirement Fund", retirementFund.FundValue.Value, dvpFund.SelectedItem.Text );
+                History.EvaluateChange( changes, "Retirement Fund", retirementFund.FundValue != null ? retirementFund.FundValue.Value : "", dvpFund.SelectedItem.Text );
                 retirementFund.FundValueId = dvpFund.SelectedValueAsId().Value;
             }
 
@@ -287,11 +313,12 @@ namespace RockWeb.Plugins.com_centralaz.HumanResources
                 .Select( c => new
                 {
                     Id = c.Id,
+                    IsActive = c.IsActive,
                     Name = c.FundValue.Value,
-                    EmployeeAmount = c.IsFixedAmount ? c.EmployeeAmount.FormatAsCurrency() : c.EmployeeAmount.ToString( "P" ),
-                    EmployerAmount = c.IsFixedAmount ? c.EmployerAmount.FormatAsCurrency() : c.EmployerAmount.ToString( "P" ),
-                    ActiveDate = c.ActiveDate,
-                    InactiveDate = c.InactiveDate,
+                    EmployeeAmount = c.IsFixedAmount ? c.EmployeeAmount.FormatAsCurrency() : c.EmployeeAmount.ToString( "#.00\\%" ),
+                    EmployerAmount = c.IsFixedAmount ? c.EmployerAmount.FormatAsCurrency() : c.EmployerAmount.ToString( "#.00\\%" ),
+                    ActiveDate = c.ActiveDate.ToShortDateString(),
+                    InactiveDate = c.InactiveDate.HasValue ? c.InactiveDate.Value.ToShortDateString() : "",
                 } ).ToList();
 
             gRetirementFunds.EntityTypeId = EntityTypeCache.Read<com.centralaz.HumanResources.Model.RetirementFund>().Id;
@@ -352,6 +379,5 @@ namespace RockWeb.Plugins.com_centralaz.HumanResources
         }
 
         #endregion
-
     }
 }

@@ -101,6 +101,27 @@ namespace RockWeb.Plugins.com_centralaz.HumanResources
         #region Events
 
         /// <summary>
+        /// Handles the RowDataBound event of the gSalaries control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="GridViewRowEventArgs"/> instance containing the event data.</param>
+        protected void gSalaries_RowDataBound( object sender, GridViewRowEventArgs e )
+        {
+            if ( e.Row.RowType == DataControlRowType.DataRow )
+            {
+                dynamic salary = e.Row.DataItem;
+
+                if ( salary != null )
+                {                  
+                    if ( !salary.IsActive )
+                    {
+                        e.Row.AddCssClass( "is-inactive" );
+                    }
+                }
+            }
+        }
+
+        /// <summary>
         /// Handles the BlockUpdated event of the control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
@@ -215,6 +236,9 @@ namespace RockWeb.Plugins.com_centralaz.HumanResources
             History.EvaluateChange( changes, "Salary", salary.IsSalariedEmployee.ToTrueFalse(), cbSalaried.Checked.ToTrueFalse() );
             salary.IsSalariedEmployee = cbSalaried.Checked;
 
+            History.EvaluateChange( changes, "Salary", salary.IsActive.ToTrueFalse(), cbIsActive.Checked.ToTrueFalse() );
+            salary.IsActive = cbIsActive.Checked;
+
             History.EvaluateChange( changes, "Salary", salary.Amount.ToString(), nbAmount.Text );
             salary.Amount = nbAmount.Text.AsDouble();
 
@@ -285,12 +309,13 @@ namespace RockWeb.Plugins.com_centralaz.HumanResources
                 .Select( c => new
                 {
                     Id = c.Id,
+                    IsActive = c.IsActive,
                     Amount = c.IsSalariedEmployee ? c.Amount.FormatAsCurrency() + "/yr" : c.Amount.FormatAsCurrency() + "/hr",
                     HousingAllowance = c.HousingAllowance,
                     FuelAllowance = c.FuelAllowance,
                     PhoneAllowance = c.PhoneAllowance,
-                    EffectiveDate = c.EffectiveDate,
-                    ReviewedDate = c.ReviewedDate,
+                    EffectiveDate = c.EffectiveDate.ToShortDateString(),
+                    ReviewedDate = c.ReviewedDate.HasValue ? c.ReviewedDate.Value.ToShortDateString() : "",
                 } ).ToList();
 
             gSalaries.EntityTypeId = EntityTypeCache.Read<com.centralaz.HumanResources.Model.Salary>().Id;
@@ -336,6 +361,7 @@ namespace RockWeb.Plugins.com_centralaz.HumanResources
             }
 
             cbSalaried.Checked = salary.IsSalariedEmployee;
+            cbIsActive.Checked = salary.IsActive;
             dpEffectiveDate.SelectedDate = salary.EffectiveDate;
             dpReviewedDate.SelectedDate = salary.ReviewedDate;
             nbAmount.Text = salary.Amount.ToString();
@@ -348,6 +374,5 @@ namespace RockWeb.Plugins.com_centralaz.HumanResources
         }
 
         #endregion
-
     }
 }

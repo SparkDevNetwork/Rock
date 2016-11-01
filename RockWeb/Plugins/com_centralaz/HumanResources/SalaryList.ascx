@@ -11,7 +11,7 @@
             <div class="panel-body">
 
                 <div class="grid grid-panel">
-                    <Rock:Grid ID="gSalaries" runat="server" RowItemText="Salary" TooltipField="Description">
+                    <Rock:Grid ID="gSalaries" runat="server" RowItemText="Salary" TooltipField="Description" OnRowDataBound="gSalaries_RowDataBound">
                         <Columns>
                             <Rock:RockBoundField DataField="Amount" HeaderText="Amount" DataFormatString="{0:N0}" ItemStyle-HorizontalAlign="Right" />
                             <Rock:RockBoundField DataField="HousingAllowance" HeaderText="Housing Allowance" DataFormatString="{0:N0}" ItemStyle-HorizontalAlign="Right" />
@@ -35,9 +35,10 @@
 
                 <div class="row">
                     <div class="col-md-6">
-                        <Rock:RockCheckBox ID="cbSalaried" Label="Salaried Employee" runat="server" Required="true" />
                         <Rock:DatePicker ID="dpEffectiveDate" Label="Effective Date" runat="server" Required="true" />
                         <Rock:DatePicker ID="dpReviewedDate" Label="Reviewed Date" runat="server" />
+                        <Rock:RockCheckBox ID="cbSalaried" Label="Salaried Employee" runat="server" Required="true" />
+                        <Rock:RockCheckBox ID="cbIsActive" Label="Is Active" runat="server" Required="true" />
                     </div>
                     <div class="col-md-6">
                         <Rock:CurrencyBox ID="nbAmount" runat="server" NumberType="Currency" MinimumValue="0" SourceTypeName="com.centralaz.HumanResources.Salary, com.centralaz.HumanResources" PropertyName="Amount" Required="true" Label="Amount" />

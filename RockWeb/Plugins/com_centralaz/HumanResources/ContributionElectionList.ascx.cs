@@ -181,6 +181,27 @@ namespace RockWeb.Plugins.com_centralaz.HumanResources
         }
 
         /// <summary>
+        /// Handles the RowDataBound event of the gContributionElections control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="GridViewRowEventArgs"/> instance containing the event data.</param>
+        protected void gContributionElections_RowDataBound( object sender, GridViewRowEventArgs e )
+        {
+            if ( e.Row.RowType == DataControlRowType.DataRow )
+            {
+                dynamic contributionElection = e.Row.DataItem;
+
+                if ( contributionElection != null )
+                {
+                    if ( !contributionElection.IsActive )
+                    {
+                        e.Row.AddCssClass( "is-inactive" );
+                    }
+                }
+            }
+        }
+
+        /// <summary>
         /// Handles the SaveClick event of the modalDetails control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
@@ -229,11 +250,16 @@ namespace RockWeb.Plugins.com_centralaz.HumanResources
             {
                 History.EvaluateChange( changes, "Contribution Election", contributionElection.InactiveDate, dpInactiveDate.SelectedDate.Value );
                 contributionElection.InactiveDate = dpInactiveDate.SelectedDate.Value;
+                contributionElection.IsActive = false;
+            }
+            else
+            {
+                contributionElection.IsActive = true;
             }
 
             if ( ddlAccounts.SelectedValueAsId().HasValue )
             {
-                History.EvaluateChange( changes, "Contribution Election", contributionElection.FinancialAccount.Name, ddlAccounts.SelectedItem.Text );
+                History.EvaluateChange( changes, "Contribution Election", contributionElection.FinancialAccount != null ? contributionElection.FinancialAccount.Name : "", ddlAccounts.SelectedItem.Text );
                 contributionElection.FinancialAccountId = ddlAccounts.SelectedValueAsId().Value;
             }
 
@@ -283,10 +309,11 @@ namespace RockWeb.Plugins.com_centralaz.HumanResources
                 .Select( c => new
                 {
                     Id = c.Id,
+                    IsActive = c.IsActive,
                     Name = c.FinancialAccount.Name,
-                    Amount = c.IsFixedAmount ? c.Amount.FormatAsCurrency() : c.Amount.ToString( "P" ),
-                    ActiveDate = c.ActiveDate,
-                    InactiveDate = c.InactiveDate,
+                    Amount = c.IsFixedAmount ? c.Amount.FormatAsCurrency() : c.Amount.ToString( "#.00\\%" ),
+                    ActiveDate = c.ActiveDate.ToShortDateString(),
+                    InactiveDate = c.InactiveDate.HasValue ? c.InactiveDate.Value.ToShortDateString() : "",
                 } ).ToList();
 
             gContributionElections.EntityTypeId = EntityTypeCache.Read<com.centralaz.HumanResources.Model.ContributionElection>().Id;
@@ -341,6 +368,7 @@ namespace RockWeb.Plugins.com_centralaz.HumanResources
             hfIdValue.Value = contributionElectionId.ToString();
             mdDetails.Show();
         }
+
         private void LoadAccounts()
         {
             var rockContext = new RockContext();
@@ -372,6 +400,5 @@ namespace RockWeb.Plugins.com_centralaz.HumanResources
             }
         }
         #endregion
-
     }
 }
