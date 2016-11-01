@@ -55,6 +55,9 @@ namespace church.ccv.Actions.Data
         #region Models
         DbSet<ActionsHistory_Adult> ActionsHistory_Adult { get; set; }
         DbSet<ActionsHistory_Student> ActionsHistory_Student { get; set; }
+
+        DbSet<ActionsHistory_Adult_Person> ActionsHistory_Adult_Person { get; set; }
+        DbSet<ActionsHistory_Student_Person> ActionsHistory_Student_Person { get; set; }
         #endregion
     }
 }

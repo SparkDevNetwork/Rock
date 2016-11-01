@@ -14,11 +14,9 @@ namespace church.ccv.Badges.NextSteps
     [LinkedPage("Baptism Registration Page", "The page to link to for registering for baptism.")]
     [IntegerField("Baptism Event Id", "The event id to use for pulling upcoming baptisms.")]
     [LinkedPage( "Connection Group Registration Page", "The page to link to for registering for connection group." )]
-    [IntegerField( "Connection GroupType Id", "The id of the group type to be used for determine the connection badge." )]
     [LinkedPage( "Next Step Group Registration Page", "The page to link to for registering for a next step group." )]
     [LinkedPage("Group List Page", "The page to list all of the groups of a certain type")]
     [LinkedPage("Group Details Page", "The group details page.")]
-    [IntegerField( "Serving GroupType Id", "The id of the group type to be used for determine the serve badge." )]
     [LinkedPage("Serving Connection Page", "The page to use for creating new serving connections.")]
     [LinkedPage( "Young Adult Group Registration Page", "The page to link to for registering for a young adult group." )]
     [LinkedPage( "Next Gen Group Registration Page", "The page to link to for registering for a next gen group." )]
@@ -77,17 +75,15 @@ namespace church.ccv.Badges.NextSteps
 
     var firstName = '{0}';
 
-    var servingConnectionPageId = {4};
-    var servingTeamGroupTypeId = {5};
+    var servingConnectionPageId = '{4}';
 
-    var connectGroupTypeId = {6};
-    var connectionGroupRegistrationPage = '{7}';
+    var connectionGroupRegistrationPage = '{5}';
 
-    var groupDetailPageId = '{8}';
-    var groupListPageId = '{9}';
-    var nextStepGroupRegistrationPage = '{10}';
-    var youngAdultGroupRegistrationPage = '{11}';
-    var nextGenGroupRegistrationPage = '{12}';
+    var groupDetailPageId = '{6}';
+    var groupListPageId = '{7}';
+    var nextStepGroupRegistrationPage = '{8}';
+    var youngAdultGroupRegistrationPage = '{9}';
+    var nextGenGroupRegistrationPage = '{10}';
 
     $.ajax({{
         type: 'GET',
@@ -111,16 +107,6 @@ namespace church.ccv.Badges.NextSteps
                     $badge.find('.badge-baptism').removeClass('step-nottaken');
                     $badge.find('.badge-baptism').attr('data-original-title', firstName + ' was baptized on ' + baptismDateFormatted + '');
                 }}
-
-                // member
-                // JHM - Removing per leadership's request. This now lives in a Rock Person Lava Badge
-                // if (data.MembershipResult.IsMember) {{
-                    //var membershipDate = new Date(data.MembershipResult.MembershipDate);
-                    //var membershipDateFormatted = (membershipDate.getMonth() + 1) + '/' + membershipDate.getDate() + '/' + membershipDate.getFullYear();
-
-                    //$badge.find('.badge-membership').removeClass('step-nottaken');
-                    //$badge.find('.badge-membership').attr('data-original-title', firstName + ' became a member on ' + membershipDateFormatted + '');
-                //}}
 
                 // worship
                 if (data.IsWorshipper) {{
@@ -164,10 +150,10 @@ namespace church.ccv.Badges.NextSteps
 
                     if ( moreCount == 1 )
                     {{
-                        popoverContent = popoverContent + ""<p>and <a href='/page/"" + groupListPageId + ""?PersonId="" + '{2}' + ""&GroupTypeId="" + connectGroupTypeId + ""'> "" + moreCount + "" other</a></p>"";
+                        popoverContent = popoverContent + ""<p>and <a href='/page/"" + groupListPageId + ""?PersonId="" + ""{2}'> "" + moreCount + "" other</a></p>"";
                     }}
                     else {{
-                        popoverContent = popoverContent + ""<p>and <a href='/page/"" + groupListPageId + ""?PersonId="" + '{2}' + ""&GroupTypeId="" + connectGroupTypeId + ""'> "" + moreCount + "" others</a></p>"";
+                        popoverContent = popoverContent + ""<p>and <a href='/page/"" + groupListPageId + ""?PersonId="" + ""{2}'> "" + moreCount + "" others</a></p>"";
                     }}
                 }}
 
@@ -272,10 +258,10 @@ namespace church.ccv.Badges.NextSteps
                         var moreCount = data.ServingResult.Groups.length - 2;
 
                         if (moreCount == 1) {{
-                            popoverContent = popoverContent + ""<p>and <a href='/page/"" + groupListPageId + ""?PersonId="" + '{2}' + ""&GroupTypeId="" + servingTeamGroupTypeId + ""'> "" + moreCount + "" other</a></p>"";
+                            popoverContent = popoverContent + ""<p>and <a href='/page/"" + groupListPageId + ""?PersonId="" + ""{2}'> "" + moreCount + "" other</a></p>"";
                         }}
                         else {{
-                            popoverContent = popoverContent + ""<p>and <a href='/page/"" + groupListPageId + ""?PersonId="" + '{2}' + ""&GroupTypeId="" + servingTeamGroupTypeId + ""'> "" + moreCount + "" others</a></p>"";
+                            popoverContent = popoverContent + ""<p>and <a href='/page/"" + groupListPageId + ""?PersonId="" + ""{2}'> "" + moreCount + "" others</a></p>"";
                         }}
                     }}
 
@@ -407,14 +393,12 @@ namespace church.ccv.Badges.NextSteps
                  Person.Id, // 2
                  badge.Id, // 3  
                  servingConnectionPageId, // 4
-                 GetAttributeValue( badge, "ServingGroupTypeId" ).AsInteger(), // 5
-                 GetAttributeValue( badge, "ConnectionGroupTypeId").AsInteger(), // 6
-                 connectionGroupRegistrationPageId, // 7
-                 groupDetailsPageId, // 8
-                 groupListPageId, // 9
-                 nextStepGroupRegistrationPageId, // 10
-                 youngAdultGroupRegistrationPageId, // 11
-                 nextGenGroupRegistrationPageId //12
+                 connectionGroupRegistrationPageId, // 5
+                 groupDetailsPageId, // 6
+                 groupListPageId, // 7
+                 nextStepGroupRegistrationPageId, // 8
+                 youngAdultGroupRegistrationPageId, // 9
+                 nextGenGroupRegistrationPageId //10
             ));
         }
 

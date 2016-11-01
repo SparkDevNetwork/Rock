@@ -108,7 +108,9 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Data\ActionsService.cs" />
+    <Compile Include="Models\ActionsHistory_Adult_Person.cs" />
     <Compile Include="Models\ActionsHistory_Student.cs" />
+    <Compile Include="Models\ActionsHistory_Student_Person.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Data\ActionsContext.cs" />
     <Compile Include="Data\ActionsUtil.cs" />
@@ -116,25 +118,32 @@
     <Compile Include="Models\ActionsHistory_Adult.cs" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Implementation\SQL\Adult_Baptised.sql" />
-    <None Include="Implementation\SQL\Adult_ERA.sql" />
-    <None Include="Implementation\SQL\Adult_Giving.sql" />
-    <None Include="Implementation\SQL\Adult_Member.sql" />
-    <None Include="Implementation\SQL\Adult_Mentored.sql" />
-    <None Include="Implementation\SQL\Adult_PeerLearning.sql" />
-    <None Include="Implementation\SQL\Adult_Serving.sql" />
-    <None Include="Implementation\SQL\Adult_Teching.sql" />
-    <None Include="Implementation\SQL\Student_Baptised.sql" />
-    <None Include="Implementation\SQL\Student_ERA.sql" />
-    <None Include="Implementation\SQL\Student_Giving.sql" />
-    <None Include="Implementation\SQL\Student_Member.sql" />
-    <None Include="Implementation\SQL\Student_Mentored.sql" />
-    <None Include="Implementation\SQL\Student_PeerLearning.sql" />
-    <None Include="Implementation\SQL\Student_Serving.sql" />
-    <None Include="Implementation\SQL\Student_Teaching.sql" />
-  </ItemGroup>
-  <ItemGroup>
     <None Include="Implementation\Actions Design.txt" />
+  </ItemGroup>
+  <ItemGroup />
+  <ItemGroup>
+    <Content Include="Implementation\SQL\Create_Action_Tables.sql" />
+    <Content Include="Implementation\SQL\Functions\Adult_Baptised.sql" />
+    <Content Include="Implementation\SQL\Functions\Adult_ERA.sql" />
+    <Content Include="Implementation\SQL\Functions\Adult_Giving.sql" />
+    <Content Include="Implementation\SQL\Functions\Adult_Member.sql" />
+    <Content Include="Implementation\SQL\Functions\Adult_Mentored.sql" />
+    <Content Include="Implementation\SQL\Functions\Adult_PeerLearning.sql" />
+    <Content Include="Implementation\SQL\Functions\Adult_Serving.sql" />
+    <Content Include="Implementation\SQL\Functions\Adult_Teching.sql" />
+    <Content Include="Implementation\SQL\Functions\Student_Baptised.sql" />
+    <Content Include="Implementation\SQL\Functions\Student_ERA.sql" />
+    <Content Include="Implementation\SQL\Functions\Student_Giving.sql" />
+    <Content Include="Implementation\SQL\Functions\Student_Member.sql" />
+    <Content Include="Implementation\SQL\Functions\Student_Mentored.sql" />
+    <Content Include="Implementation\SQL\Functions\Student_PeerLearning.sql" />
+    <Content Include="Implementation\SQL\Functions\Student_Serving.sql" />
+    <Content Include="Implementation\SQL\Functions\Student_Teaching.sql" />
+    <Content Include="Implementation\SQL\Stored Procedures\Build_Full_History.sql" />
+    <Content Include="Implementation\SQL\Stored Procedures\Calc_History_Adult.sql" />
+    <Content Include="Implementation\SQL\Stored Procedures\Calc_History_Adult_Person.sql" />
+    <Content Include="Implementation\SQL\Stored Procedures\Calc_History_Student.sql" />
+    <Content Include="Implementation\SQL\Stored Procedures\Calc_History_Student_Person.sql" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
