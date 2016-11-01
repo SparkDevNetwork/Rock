@@ -307,7 +307,7 @@
 
                         <Rock:PanelWidget ID="wpWaitListTransition" runat="server" Title="Wait List Transition Email">
                             <div class="alert alert-info">
-                                This email template will be used when email the individual that they are no longer on the wait list and have been transtioned to a full registrant.
+                                This email template will be used when the individual needs to be notified that they are no longer on the wait list and have been transtioned to a full registrant.
                             </div>
                             <div class="row">
                                 <div class="col-md-6">
@@ -413,7 +413,7 @@
                         <Rock:RockCheckBox ID="cbUsePersonCurrentValue" runat="server" Label="Use Current Value" Text="Yes" Visible="false" ValidationGroup="Field"
                             Help="Should the person's current value for this field be displayed when they register?" />
                         <Rock:RockCheckBox ID="cbShowOnWaitList" runat="server" Label="Show On Wait List" Text="Yes" Visible="true" ValidationGroup="Field"
-                            Help="Should this field be show for a person registering on the waitlist?" />
+                            Help="Should this field be shown for a person registering on the waitlist?" />
                     </div>
                 </div>
                 <Rock:AttributeEditor ID="edtRegistrationAttribute" runat="server" ShowActions="false" ValidationGroup="Field" Visible="false" />
