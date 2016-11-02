@@ -32,7 +32,7 @@ namespace Rock.Model
     /// </summary>
     [Table( "FinancialTransaction" )]
     [DataContract]
-    public partial class FinancialTransaction : Model<FinancialTransaction>
+    public partial class FinancialTransaction : Model<FinancialTransaction>, IAnalytic
     {
         #region Entity Properties
 
