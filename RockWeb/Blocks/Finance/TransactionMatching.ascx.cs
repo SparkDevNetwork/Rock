@@ -95,6 +95,30 @@ namespace RockWeb.Blocks.Finance
                 LoadDropDowns();
                 ShowDetail( PageParameter( "BatchId" ).AsInteger() );
             }
+
+            // Display Payment Detail Attributes
+            int? transactionId = hfTransactionId.Value.AsIntegerOrNull();
+            if (transactionId.HasValue)
+            {
+                using (var rockContext = new RockContext())
+                {
+                    var financialTransactionService = new FinancialTransactionService(rockContext);
+                    var txn = financialTransactionService.Queryable().Where(t => t.Id == transactionId).SingleOrDefault();
+
+                    DisplayPaymentDetailAttributeControls(txn);
+                }
+            }
+        }
+
+        /// <summary>
+        /// If there are any Payment Detail attributes, display their edit controls and populate any existing values
+        /// </summary>
+        /// <param name="txn">The <see cref="FinancialTransaction"/> to load attributes from </param>
+        protected void DisplayPaymentDetailAttributeControls(FinancialTransaction txn)
+        {
+            txn.FinancialPaymentDetail.LoadAttributes();
+            phPaymentAttributeEdits.Controls.Clear();
+            Helper.AddEditControls(txn.FinancialPaymentDetail, phPaymentAttributeEdits, true, BlockValidationGroup);
         }
 
         /// <summary>
@@ -459,6 +483,8 @@ namespace RockWeb.Blocks.Finance
                         rptrImages.DataBind();
                         nbNoTransactionImageWarning.Visible = true;
                     }
+
+                    DisplayPaymentDetailAttributeControls(transactionToMatch);
                 }
                 else
                 {
@@ -515,6 +541,28 @@ namespace RockWeb.Blocks.Finance
 
             mdAccountsPersonalFilter.Hide();
             LoadDropDowns();
+
+            // Reload the transaction amounts after changing the displayed accounts.
+            int? transactionId = hfTransactionId.Value.AsIntegerOrNull();
+            if (transactionId.HasValue)
+            {
+                using (var rockContext = new RockContext())
+                {
+                    var financialTransactionService = new FinancialTransactionService(rockContext);
+                    var txn = financialTransactionService.Queryable().Where(t => t.Id == transactionId).SingleOrDefault();
+
+                    foreach (var detail in txn.TransactionDetails)
+                    {
+                        var accountBox = rptAccounts.ControlsOfTypeRecursive<CurrencyBox>().Where(a => a.Attributes["data-account-id"].AsInteger() == detail.AccountId).FirstOrDefault();
+                        if (accountBox != null)
+                        {
+                            accountBox.Text = detail.Amount.ToString();
+                        }
+                    }
+                }
+            }
+
+
         }
 
         /// <summary>
@@ -712,6 +760,10 @@ namespace RockWeb.Blocks.Finance
                 financialTransaction.ProcessedByPersonAliasId = this.CurrentPersonAlias.Id;
                 financialTransaction.ProcessedDateTime = RockDateTime.Now;
 
+                // Payment Detail Attributes
+                financialTransaction.FinancialPaymentDetail.LoadAttributes(rockContext);
+                Helper.GetEditValues(phPaymentAttributeEdits, financialTransaction.FinancialPaymentDetail);
+
                 changes.Add( "Matched transaction" );
 
                 HistoryService.SaveChanges(
@@ -726,6 +778,7 @@ namespace RockWeb.Blocks.Finance
                     false );
 
                 rockContext.SaveChanges();
+                financialTransaction.FinancialPaymentDetail.SaveAttributeValues(rockContext);
             }
             else
             {

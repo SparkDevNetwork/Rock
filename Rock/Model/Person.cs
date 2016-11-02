@@ -2820,6 +2820,22 @@ namespace Rock.Model
         }
 
         /// <summary>
+        /// Gets the family role (adult or child).
+        /// </summary>
+        /// <param name="person">The person.</param>
+        /// <param name="rockContext">The rock context.</param>
+        /// <returns></returns>
+        public static GroupTypeRole GetFamilyRole(this Person person, RockContext rockContext = null )
+        {
+            if (rockContext == null )
+            {
+                rockContext = new RockContext();
+            }
+
+            return new PersonService( rockContext ).GetFamilyRole(person, rockContext);
+        }
+
+        /// <summary>
         /// Gets a Person's spouse with a selector that lets you only fetch the properties that you need
         /// </summary>
         /// <typeparam name="TResult">The type of the result.</typeparam>

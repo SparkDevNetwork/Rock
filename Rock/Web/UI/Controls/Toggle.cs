@@ -478,9 +478,9 @@ namespace Rock.Web.UI.Controls
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
             _btnOn.Attributes["class"] = "btn btn-default js-toggle-on " + this.ButtonSizeCssClass;
-            _btnOn.InnerText = this.OnText;
+            _btnOn.InnerHtml = this.OnText;
             _btnOff.Attributes["class"] = "btn btn-default js-toggle-off " + this.ButtonSizeCssClass;
-            _btnOff.InnerText = this.OffText;
+            _btnOff.InnerHtml = this.OffText;
             
             if ( this.Checked )
             {

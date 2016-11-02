@@ -589,13 +589,16 @@ namespace Rock
 
         /// <summary>
         /// Compiled RegEx for detecting if a string has Lava merge fields
+        /// regex from some ideas in 
+        ///  http://stackoverflow.com/a/16538131/1755417 
+        ///  http://stackoverflow.com/a/25776530/1755417 
         /// </summary>
-        private static Regex hasLavaMergeFields = new Regex( @".*\{.+\}.*", RegexOptions.Compiled );
+        private static Regex hasLavaMergeFields = new Regex( @"(?<=\{).+(?<=\})", RegexOptions.Compiled );
 
         /// <summary>
         /// Compiled RegEx for detecting if a string uses the Legacy "GlobalAttribute." syntax
         /// </summary>
-        private static Regex hasLegacyGlobalAttributeLavaMergeFields = new Regex( @".*\{.+GlobalAttribute.+\}.*", RegexOptions.Compiled );
+        private static Regex hasLegacyGlobalAttributeLavaMergeFields = new Regex( @"(?<=\{).+GlobalAttribute.+(?<=\})", RegexOptions.Compiled );
 
         /// <summary>
         /// Determines whether the string potentially has merge fields in it.
