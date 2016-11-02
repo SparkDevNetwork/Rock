@@ -25,94 +25,77 @@ namespace Rock.Model
 {
     /// <summary>
     /// Represents the fact record for an Analytic Fact Financial Transaction in Rock.
-    /// Note: that this respresents a combination of the FinancialTransaction and the FinancialTransactionDetail, 
-    /// so if a person contributed to multiple accounts in a transaction, there will be multiple AnalyticFactFinancialRecords. 
+    /// NOTE: AnalyticsFactFinancialTransaction is simply a de-normalized sql VIEW based on AnalyticsSourceFinancialTransaction
     /// </summary>
     [Table( "AnalyticsFactFinancialTransaction" )]
     [DataContract]
-    public class AnalyticsFactFinancialTransaction : Rock.Data.Entity<AnalyticsFactFinancialTransaction>
+    public class AnalyticsFactFinancialTransaction : AnalyticsSourceFinancialTransaction
     {
         #region Entity Properties
 
         /// <summary>
-        /// Gets or sets the transaction key.
+        /// Gets or sets the type of the transaction.
         /// </summary>
         /// <value>
-        /// The transaction key.
+        /// The type of the transaction.
         /// </value>
-        [DataMember]
-        [Index( "IX_TransactionKey", IsUnique = true )]
-        public string TransactionKey { get; set; }
-
-        /// <summary>
-        /// Gets or sets the transaction date key.
-        /// </summary>
-        /// <value>
-        /// The transaction date key.
-        /// </value>
-        [DataMember]
-        public string TransactionDateKey { get; set; }
-
-        /// <summary>
-        /// For Credit Card transactions, this is the response code that the gateway returns 
-        /// For Scanned Checks, this is the check number
-        /// </summary>
-        /// <value>
-        /// A <see cref="System.String"/> representing the transaction code of the transaction.
-        /// </value>
-        [MaxLength( 50 )]
-        [DataMember]
-        public string TransactionCode { get; set; }
-
-        /// <summary>
-        /// Gets or sets a summary of the transaction.
-        /// </summary>
-        /// <value>
-        /// A <see cref="System.String"/> representing a summary of the transaction.
-        /// </value>
-        [DataMember]
-        public string Summary { get; set; }
-
         [DataMember]
         [DefinedValue]
         public string TransactionType { get; set; }
 
+        /// <summary>
+        /// Gets or sets the transaction source.
+        /// </summary>
+        /// <value>
+        /// The transaction source.
+        /// </value>
         [DataMember]
         public string TransactionSource { get; set; }
 
+        /// <summary>
+        /// Gets or sets the type of the schedule.
+        /// </summary>
+        /// <value>
+        /// The type of the schedule.
+        /// </value>
         [DataMember]
         public string ScheduleType { get; set; }
 
+        /// <summary>
+        /// Gets or sets the authorized person key.
+        /// </summary>
+        /// <value>
+        /// The authorized person key.
+        /// </value>
         [DataMember]
         public string AuthorizedPersonKey { get; set; }
 
+        /// <summary>
+        /// Gets or sets the authorized current person identifier.
+        /// </summary>
+        /// <value>
+        /// The authorized current person identifier.
+        /// </value>
         [DataMember]
         public int AuthorizedCurrentPersonId { get; set; }
 
+        /// <summary>
+        /// Gets or sets the processed by person key.
+        /// </summary>
+        /// <value>
+        /// The processed by person key.
+        /// </value>
         [DataMember]
         public string ProcessedByPersonKey { get; set; }
 
         /// <summary>
-        /// Gets or sets the processed date time.
+        /// Gets or sets the giving unit key.
         /// </summary>
         /// <value>
-        /// The processed date time.
+        /// The giving unit key.
         /// </value>
-        [DataMember]
-        public DateTime? ProcessedDateTime { get; set; }
-
         [DataMember]
         public string GivingUnitKey { get; set; }
-
-        /// <summary>
-        /// Gets or sets BatchId of the <see cref="Rock.Model.FinancialBatch"/> that contains this transaction.
-        /// </summary>
-        /// <value>
-        /// A <see cref="System.Int32"/> representing the BatchId of the <see cref="Rock.Model.FinancialBatch"/> that contains the transaction.
-        /// </value>
-        [DataMember]
-        [IgnoreCanDelete]
-        public int? BatchId { get; set; }
 
         /// <summary>
         /// Gets or sets the gateway identifier.
@@ -133,113 +116,36 @@ namespace Rock.Model
         public string EntityTypeName { get; set; }
 
         /// <summary>
-        /// Gets or sets the entity identifier.
+        /// Gets or sets the type of the currency.
         /// </summary>
         /// <value>
-        /// The entity identifier.
+        /// The type of the currency.
         /// </value>
-        [DataMember]
-        public int? EntityId { get; set; }
-
-        /// <summary>
-        /// Gets or sets the transaction identifier.
-        /// </summary>
-        /// <value>
-        /// The transaction identifier.
-        /// </value>
-        [DataMember]
-        public int TransactionId { get; set; }
-
-        /// <summary>
-        /// Gets or sets the transaction detail identifier.
-        /// </summary>
-        /// <value>
-        /// The transaction detail identifier.
-        /// </value>
-        [DataMember]
-        public int TransactionDetailId { get; set; }
-
-        /// <summary>
-        /// Gets or sets the account identifier.
-        /// </summary>
-        /// <value>
-        /// The account identifier.
-        /// </value>
-        [DataMember]
-        public int? AccountId { get; set; }
-        
         [DataMember]
         public string CurrencyType { get; set; }
 
+        /// <summary>
+        /// Gets or sets the type of the credit card.
+        /// </summary>
+        /// <value>
+        /// The type of the credit card.
+        /// </value>
         [DataMember]
         public string CreditCardType { get; set; }
 
-        /// <summary>
-        /// Number of Days since the last time this giving unit did a TransactionType that is the same as this TransactionType
-        /// If IsFirstTransactionOfType is TRUE, DaysSinceLastTransactionOfType will be null 
-        /// </summary>
-        /// <value>
-        /// The type of the days since last transaction of.
-        /// </value>
-        [DataMember]
-        public int? DaysSinceLastTransactionOfType { get; set; }
-
-        /// <summary>
-        /// This is true if this is the first time this giving unit did a transaction with this TransactionType 
-        /// </summary>
-        /// <value>
-        /// <c>true</c> if this instance is first transaction of type; otherwise, <c>false</c>.
-        /// </value>
-        [DataMember]
-        public bool IsFirstTransactionOfType { get; set; }
-
-        /// <summary>
-        /// This is the GroupId of the family of the Authorized Person that did this transaction
-        /// Note that this is the current family that the person is in. 
-        /// </summary>
-        /// <value>
-        /// The authorized family identifier.
-        /// </value>
-        [DataMember]
-        public int? AuthorizedFamilyId { get; set; }
-
-        /// <summary>
-        /// Gets or sets the amount.
-        /// </summary>
-        /// <value>
-        /// The amount.
-        /// </value>
-        [DataMember]
-        [BoundFieldTypeAttribute( typeof( Rock.Web.UI.Controls.CurrencyField ) )]
-        public decimal Amount { get; set; }
-
-        /// <summary>
-        /// Gets or sets the modified date time.
-        /// </summary>
-        /// <value>
-        /// The modified date time.
-        /// </value>
-        [DataMember]
-        public DateTime? ModifiedDateTime { get; set; }
-
         #endregion
-
-        #region Virtual Properties
-        // TODO
-        #endregion
-
     }
 
     #region Entity Configuration
 
     /// <summary>
-    /// Person Configuration class.
+    /// 
     /// </summary>
     public partial class AnalyticsFactFinancialTransactionConfiguration : EntityTypeConfiguration<AnalyticsFactFinancialTransaction>
     {
         public AnalyticsFactFinancialTransactionConfiguration()
         {
-  
+            this.Map( m => m.MapInheritedProperties() );
         }
     }
 
