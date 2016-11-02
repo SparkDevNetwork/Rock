@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright 2013 by the Spark Development Network
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -126,14 +126,7 @@ namespace RockWeb.Plugins.cc_newspring.Blocks.Groups
         {
             if ( e.Item.ItemType == ListItemType.Header )
             {
-                var placeholder = e.Item.FindControl( "phHeader" );
-
-                foreach(var schedule in _schedules.Select( s => s.Schedule ).Distinct() )
-                {
-                    var scheduleLiteral = new LiteralControl();
-                    scheduleLiteral.Text = string.Format("<div class='schedule-item header'>{0}</div>", schedule.Name);
-                    placeholder.Controls.Add( scheduleLiteral );
-                }
+                
             }
             else { 
                 var scheduleResult = e.Item.DataItem as DateTime?;
@@ -284,32 +277,16 @@ namespace RockWeb.Plugins.cc_newspring.Blocks.Groups
 
                             if ( originalGroupId != 0 && groupId == 0 )
                             {
-                                // delete the RSVP
-                                var attendanceRecord = attendanceService.Queryable()
-                                                        .Where( a =>
-                                                             a.PersonAlias.PersonId == CurrentPersonId
-                                                             && a.GroupId == originalGroupId
-                                                             && a.ScheduleId == scheduleId
-                                                             && DbFunctions.TruncateTime( a.StartDateTime ) == DbFunctions.TruncateTime( scheduleDate.Value ) )
-                                                        .FirstOrDefault();
-
-                                if ( attendanceRecord != null )
-                                {
-                                    attendanceService.Delete( attendanceRecord );
-                                }
-
-                                // remove them from the group
-                                var groupMember = groupMemberService.Queryable().Where( m => m.PersonId == CurrentPersonId && m.GroupId == originalGroupId ).FirstOrDefault();
-
-                                if ( groupMember != null )
-                                {
-                                    groupMemberService.Delete( groupMember );
-                                }
-
-                                rockContext.SaveChanges();
+                                RemovePersonRsvp( CurrentPerson, originalGroupId, scheduleId, scheduleDate );
                             }
                             else if (!attending && groupId != 0 )
                             {
+                                // remove existing record
+                                if ( originalGroupId != 0 )
+                                {
+                                    RemovePersonRsvp( CurrentPerson, originalGroupId, scheduleId, scheduleDate );
+                                }
+                                
                                 // mark them as coming
                                 var attendanceRecord = new Attendance();
                                 attendanceRecord.PersonAliasId = CurrentPersonAliasId;
@@ -347,13 +324,54 @@ namespace RockWeb.Plugins.cc_newspring.Blocks.Groups
                                     groupMember.SetAttributeValue( GetAttributeValue( "DescriptionAttribute" ), string.Format( "{0} {1}", scheduleDate.Value.ToShortDateString(), scheduleName ) );
                                     groupMember.SaveAttributeValues();
                                 }
-                                
                             }
                             
                         }
                     }
                 }
             }
+
+            nbMessages.NotificationBoxType = NotificationBoxType.Success;
+            nbMessages.Text = "Your changes have been saved.";
+        }
+
+        /// <summary>
+        /// Removes the person RSVP.
+        /// </summary>
+        /// <param name="person">The person.</param>
+        /// <param name="groupId">The group identifier.</param>
+        /// <param name="scheduleId">The schedule identifier.</param>
+        /// <param name="scheduleDate">The schedule date.</param>
+        private void RemovePersonRsvp(Person person, int groupId, int scheduleId, DateTime? scheduleDate )
+        {
+            RockContext rockContext = new RockContext();
+            var attendanceService = new AttendanceService( rockContext );
+            var groupMemberService = new GroupMemberService( rockContext );
+
+            // delete the RSVP
+            var attendanceRecord = attendanceService.Queryable()
+                                    .Where( a =>
+                                         a.PersonAlias.PersonId == CurrentPersonId
+                                         && a.GroupId == groupId
+                                         && a.ScheduleId == scheduleId
+                                         && a.RSVP == RSVP.Yes
+                                         && DbFunctions.TruncateTime( a.StartDateTime ) == DbFunctions.TruncateTime( scheduleDate.Value ) )
+                                    .FirstOrDefault();
+
+            if ( attendanceRecord != null )
+            {
+                attendanceService.Delete( attendanceRecord );
+            }
+
+            // remove them from the group
+            var groupMember = groupMemberService.Queryable().Where( m => m.PersonId == CurrentPersonId && m.GroupId == groupId ).FirstOrDefault();
+
+            if ( groupMember != null )
+            {
+                groupMemberService.Delete( groupMember );
+            }
+
+            rockContext.SaveChanges();
         }
 
         #endregion

@@ -1,14 +1,8 @@
-# Context
-_What is the problem you encountered that lead to you creating this pull request?_
-
 # Goal
-_What will this pull request achieve and how will this fix the problem?_
+_What will this pull request achieve?_
 
-# Strategy
-_How have you implemented your solution?_
+# Environment
+_What server or branch is this code designed for?_
 
-# Possible Implications
-_What could this change potentially impact? Are there any security considerations? Where could this potentially affect backwards compatibility?_
-
-# Screenshots
-_Provide us some screenshots if your pull request either alters existing UI or provides new UI. Arrows and labels are helpful._
+# Migrations
+_Does this pull request involve migrations?_
