@@ -138,6 +138,24 @@ namespace RockWeb.Plugins.church_ccv.Hr
         {
             ddlTimeCardStatusFilter.BindToEnum<TimeCardStatus>( true );
 
+            cblPayrollWageType.Items.Clear();
+            var payrollWageType = DefinedTypeCache.Read( "FCE2B549-7232-4864-A5BE-A30073AD92ED".AsGuid() );
+            var selectedWageTypeValues = gfSettings.GetUserPreference( "PayrollWageTypes" ).SplitDelimitedValues().AsGuidList();
+            if ( !selectedWageTypeValues.Any() )
+            {
+                selectedWageTypeValues = "31572E90-522C-4BCB-B858-9C7C2F8DF817,C06B81AD-A812-4204-B172-36056A745147".SplitDelimitedValues().AsGuidList();
+            }
+
+            if ( payrollWageType != null )
+            {
+                foreach ( var item in payrollWageType.DefinedValues )
+                {
+                    var listItem = new ListItem( item.Value, item.Guid.ToString() );
+                    listItem.Selected = selectedWageTypeValues.Contains( item.Guid );
+                    cblPayrollWageType.Items.Add( listItem );
+                }
+            }
+
             // Set the Active Status
             var itemActiveStatus = ddlTimeCardStatusFilter.Items.FindByValue( gfSettings.GetUserPreference( "TimeCardStatus" ) );
             if ( itemActiveStatus != null )
@@ -158,6 +176,7 @@ namespace RockWeb.Plugins.church_ccv.Hr
         protected void gfSettings_ApplyFilterClick( object sender, EventArgs e )
         {
             gfSettings.SaveUserPreference( "TimeCardStatus", "Time Card Status", ddlTimeCardStatusFilter.SelectedValue );
+            gfSettings.SaveUserPreference( "PayrollWageTypes", "Payroll Wage Types", cblPayrollWageType.SelectedValues.AsDelimited(",") );
             BindGrid();
         }
 
@@ -174,6 +193,12 @@ namespace RockWeb.Plugins.church_ccv.Hr
                     var timeCardStatus = e.Value.ConvertToEnumOrNull<TimeCardStatus>();
                     e.Value = timeCardStatus.HasValue ? timeCardStatus.Value.ConvertToString( true ) : string.Empty;
                     break;
+                case "PayrollWageTypes":
+                    var payrollWageTypes = e.Value.SplitDelimitedValues().AsGuidList();
+
+                    e.Value = payrollWageTypes.Select( a => DefinedValueCache.Read( a ) ).Where( a => a != null ).Select( a => a.Value ).ToList().AsDelimited( ",", " and " );
+                    break;
+
             }
         }
 
@@ -700,6 +725,10 @@ namespace RockWeb.Plugins.church_ccv.Hr
             // only show TimeCards that have non-zero total hours
             qry = qry.WhereTimeCardsHaveHours();
             var timeCardList = qry.ToList();
+
+            var selectedWageTypeValues = gfSettings.GetUserPreference( "PayrollWageTypes" ).SplitDelimitedValues().AsGuidList();
+            timeCardList.ForEach( a => a.PersonAlias.Person.LoadAttributes( hrContext ) );
+            timeCardList = timeCardList.Where( a => selectedWageTypeValues.Contains( a.PersonAlias.Person.GetAttributeValue( "PayrollWageType" ).AsGuid() ) ).ToList();
 
             gList.DataSource = timeCardList;
             gList.DataBind();

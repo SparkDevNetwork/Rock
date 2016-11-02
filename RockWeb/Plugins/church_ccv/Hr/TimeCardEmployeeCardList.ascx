@@ -20,6 +20,9 @@
                     <Rock:GridFilter ID="gfSettings" runat="server" OnDisplayFilterValue="gfSettings_DisplayFilterValue" OnApplyFilterClick="gfSettings_ApplyFilterClick">
                         <Rock:RockDropDownList ID="ddlTimeCardStatusFilter" runat="server" Label="Status">
                         </Rock:RockDropDownList>
+
+                        <Rock:RockCheckBoxList ID="cblPayrollWageType" runat="server" Label="Payroll Wage Type">
+                        </Rock:RockCheckBoxList>
                     </Rock:GridFilter>
                     <Rock:NotificationBox runat="server" ID="nbApproveSuccess" NotificationBoxType="Success" Dismissable="true" Text="The selected time cards were successfully approved." Visible="false" />
                     <Rock:Grid ID="gList" runat="server" AllowSorting="true" OnRowSelected="gList_RowSelected" OnRowDataBound="gList_RowDataBound">
