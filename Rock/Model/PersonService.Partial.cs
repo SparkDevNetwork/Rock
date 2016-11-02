@@ -1326,6 +1326,23 @@ namespace Rock.Model
         }
 
         /// <summary>
+        /// Gets the family role (adult or child).
+        /// </summary>
+        /// <param name="person">The person.</param>
+        /// <param name="rockContext">The rock context.</param>
+        /// <returns></returns>
+        public GroupTypeRole GetFamilyRole(Person person, RockContext rockContext = null )
+        {
+            int groupTypeFamilyId = GroupTypeCache.Read( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY ).Id;
+
+            return new GroupMemberService( rockContext == null ? new RockContext() : rockContext ).Queryable()
+                                    .Where( gm => gm.PersonId == person.Id && gm.Group.GroupTypeId == groupTypeFamilyId )
+                                    .OrderBy( gm => gm.GroupRole.Order )
+                                    .Select( gm => gm.GroupRole )
+                                    .FirstOrDefault();
+        }
+
+        /// <summary>
         /// Gets the <see cref="Rock.Model.Person"/> entity of the provided Person's spouse.
         /// </summary>
         /// <param name="person">The <see cref="Rock.Model.Person"/> entity of the Person to retrieve the spouse of.</param>

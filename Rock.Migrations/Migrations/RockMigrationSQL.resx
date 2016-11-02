@@ -388,4 +388,28 @@
   <data name="_201610031959052_FamilyAnalyticsUpdate_spCrm_FamilyAnalyticsEraDataset" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>201610031959052_familyanalyticsupdate_spcrm_familyanalyticseradataset.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
   </data>
+  <data name="_201610312310571_ConnectionGroupConfig_DropIndexes" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>201610312310571_connectiongroupconfig_dropindexes.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
+  </data>
+  <data name="_201610312310571_ConnectionGroupConfig_spCheckin_AttendanceAnalyticsQuery_AttendeeLastAttendance" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>201610312310571_connectiongroupconfig_spcheckin_attendanceanalyticsquery_attendeelastattendance.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
+  </data>
+  <data name="_201610312310571_ConnectionGroupConfig_ufnCrm_GetAge" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>201610312310571_connectiongroupconfig_ufncrm_getage.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
+  </data>
+  <data name="_201610312310571_ConnectionGroupConfig_ufnCrm_GetGradeOffset" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>201610312310571_connectiongroupconfig_ufncrm_getgradeoffset.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
+  </data>
+  <data name="_201610312310571_ConnectionGroupConfig_ufnCrm_GetParentEmails" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>201610312310571_connectiongroupconfig_ufncrm_getparentemails.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
+  </data>
+  <data name="_201610312310571_ConnectionGroupConfig_ufnCrm_GetParentNames" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>201610312310571_connectiongroupconfig_ufncrm_getparentnames.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
+  </data>
+  <data name="_201610312310571_ConnectionGroupConfig_ufnCrm_GetParentPhones" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>201610312310571_connectiongroupconfig_ufncrm_getparentphones.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
+  </data>
+  <data name="_201610312310571_ConnectionGroupConfig_ufnUtility_CsvToTable" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>201610312310571_connectiongroupconfig_ufnutility_csvtotable.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
+  </data>
 </root>

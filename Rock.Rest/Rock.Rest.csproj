@@ -109,6 +109,7 @@
     <Compile Include="Controllers\AttributesController.Partial.cs" />
     <Compile Include="Controllers\AuthController.cs" />
     <Compile Include="Controllers\BinaryFilesController.Partial.cs" />
+    <Compile Include="Controllers\CodeGenerated\ConnectionOpportunityGroupConfigsController.cs" />
     <Compile Include="Controllers\CodeGenerated\NotificationRecipientsController.cs" />
     <Compile Include="Controllers\CodeGenerated\NotificationsController.cs" />
     <Compile Include="Controllers\CodeGenerated\SignatureDocumentsController.cs" />

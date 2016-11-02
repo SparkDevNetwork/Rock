@@ -29,7 +29,7 @@ namespace Rock.UniversalSearch.IndexModels
         /// <value>
         /// The name of the group type.
         /// </value>
-        [RockIndexField( )]
+        [RockIndexField]
         public string GroupTypeName { get; set; }
 
         /// <summary>
@@ -139,7 +139,18 @@ namespace Rock.UniversalSearch.IndexModels
         /// <returns></returns>
         public override FormattedSearchResult FormatSearchResult( Person person, Dictionary<string, object> displayOptions = null )
         {
-            return new FormattedSearchResult() { IsViewAllowed = true, FormattedResult = string.Format( "<a href='/Group/{0}'>{1} <small>({2})</small></a>", this.Id, this.Name, this.GroupTypeName ) };
+            return new FormattedSearchResult() {
+                IsViewAllowed = true,
+                FormattedResult = $@"
+                        <div class='row model-cannavigate' data-href='/Group/{this.Id}'>
+                            <div class='col-sm-1 text-center'>
+                                <i class='{this.IconCssClass} fa-2x'></i>
+                            </div>
+                            <div class='col-sm-11'>
+                                {this.Name} <small>({this.GroupTypeName})</small>
+                                {(this.Description != "" ? "<br />" + this.Description : "")}
+                            </div>
+                        </div>" };
         }
     }
 }

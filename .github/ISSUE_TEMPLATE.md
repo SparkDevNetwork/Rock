@@ -1,3 +1,8 @@
+### PLEASE READ
+
+If the nature of your issue relates to the security of Rock please do not post your
+issue here in the public issues.
+
 ### Prerequisites
 
 * [ ] Can you reproduce the problem on a fresh install or the [demo site](http://rock.rocksolidchurchdemo.com/)?

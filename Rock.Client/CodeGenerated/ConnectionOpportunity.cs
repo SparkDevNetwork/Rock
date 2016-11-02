@@ -47,15 +47,6 @@ namespace Rock.Client
         public string ForeignKey { get; set; }
 
         /// <summary />
-        public int? GroupMemberRoleId { get; set; }
-
-        /// <summary />
-        public Rock.Client.Enums.GroupMemberStatus GroupMemberStatus { get; set; }
-
-        /// <summary />
-        public int GroupTypeId { get; set; }
-
-        /// <summary />
         public string IconCssClass { get; set; }
 
         /// <summary />
@@ -77,9 +68,6 @@ namespace Rock.Client
 
         /// <summary />
         public string Summary { get; set; }
-
-        /// <summary />
-        public bool UseAllGroupsOfType { get; set; }
 
         /// <summary>
         /// Leave this as NULL to let Rock set this
@@ -118,9 +106,6 @@ namespace Rock.Client
             this.Description = source.Description;
             this.ForeignGuid = source.ForeignGuid;
             this.ForeignKey = source.ForeignKey;
-            this.GroupMemberRoleId = source.GroupMemberRoleId;
-            this.GroupMemberStatus = source.GroupMemberStatus;
-            this.GroupTypeId = source.GroupTypeId;
             this.IconCssClass = source.IconCssClass;
             this.IsActive = source.IsActive;
             this.ModifiedAuditValuesAlreadyUpdated = source.ModifiedAuditValuesAlreadyUpdated;
@@ -128,7 +113,6 @@ namespace Rock.Client
             this.PhotoId = source.PhotoId;
             this.PublicName = source.PublicName;
             this.Summary = source.Summary;
-            this.UseAllGroupsOfType = source.UseAllGroupsOfType;
             this.CreatedDateTime = source.CreatedDateTime;
             this.ModifiedDateTime = source.ModifiedDateTime;
             this.CreatedByPersonAliasId = source.CreatedByPersonAliasId;

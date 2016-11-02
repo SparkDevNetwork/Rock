@@ -42,7 +42,16 @@ namespace Rock.UniversalSearch
         /// </value>
         public static IndexContainer Instance
         {
-            get { return instance.Value; }
+            get {
+                if ( instance != null )
+                {
+                    return instance.Value;
+                }
+                else
+                {
+                    return null;
+                }
+            }
         }
 
         /// <summary>

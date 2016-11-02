@@ -26,9 +26,12 @@ using System.Web.UI.WebControls;
 using Nest;
 
 using Rock;
+using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 using Rock.UniversalSearch;
+using Rock.Web.UI;
+using Rock.Web.Cache;
 
 namespace RockWeb.Blocks.Cms
 {
@@ -38,8 +41,9 @@ namespace RockWeb.Blocks.Cms
     [DisplayName( "Universal Search" )]
     [Category( "CMS" )]
     [Description( "A block to search for all indexable entity types in Rock." )]
-    
-    public partial class UniversalSearch : Rock.Web.UI.RockBlock
+
+    [BooleanField( "Show Model Filter", "Toggles the display of the model filter which allows the user to select which models to search on.", true, "CustomSetting" )]
+    public partial class UniversalSearch : RockBlockCustomSettings
     {
         #region Fields
 
@@ -83,14 +87,56 @@ namespace RockWeb.Blocks.Cms
 
             if ( !Page.IsPostBack )
             {
-                var entities = new EntityTypeService( new RockContext() ).Queryable().AsNoTracking().ToList();
+                // load indexable entity list
+                var entities = EntityTypeCache.All();
 
                 var indexableEntities = entities.Where( i => i.IsIndexingSupported == true ).ToList();
 
-                cblEntities.DataTextField = "FriendlyName";
-                cblEntities.DataValueField = "Id";
-                cblEntities.DataSource = indexableEntities;
-                cblEntities.DataBind();
+                cblModelFilter.DataTextField = "FriendlyName";
+                cblModelFilter.DataValueField = "Id";
+                cblModelFilter.DataSource = indexableEntities;
+                cblModelFilter.DataBind();
+
+                // load indexable group types
+                if (entities.Any( t => t.Guid == Rock.SystemGuid.EntityType.GROUP.AsGuid() ) )
+                {
+                    var indexableGroupTypes = GroupTypeCache.All().AsQueryable().Where( g => g.IsIndexEnabled == true ).ToList();
+
+                    if (indexableGroupTypes.Count != 0 )
+                    {
+                        cblGroupTypes.DataTextField = "Name";
+                        cblGroupTypes.DataValueField = "Name";
+                        cblGroupTypes.DataSource = indexableGroupTypes;
+                        cblGroupTypes.DataBind();
+                    }
+                    else
+                    {
+                        cblGroupTypes.Visible = false;
+                    }
+                }
+                else
+                {
+                    cblGroupTypes.Visible = false;
+                }
+
+                // load content channels
+                if ( entities.Any( t => t.Guid == Rock.SystemGuid.EntityType.CONTENT_CHANNEL_ITEM.AsGuid()) )
+                {
+                    var indexableChannels = new ContentChannelService( new RockContext() ).Queryable().Where( c => c.IsIndexEnabled == true ).ToList();
+
+                    if (indexableChannels.Count != 0 )
+                    {
+                        cblContentChannelTypes.DataTextField = "Name";
+                        cblContentChannelTypes.DataValueField = "Name";
+                        cblContentChannelTypes.DataSource = indexableChannels;
+                        cblContentChannelTypes.DataBind();
+                    }
+
+                }
+                else
+                {
+                    cblContentChannelTypes.Visible = false;
+                }
             }
         }
 
@@ -105,8 +151,6 @@ namespace RockWeb.Blocks.Cms
 
         #region Events
 
-        // handlers called by the controls on your block
-
         /// <summary>
         /// Handles the BlockUpdated event of the control.
         /// </summary>
@@ -114,7 +158,23 @@ namespace RockWeb.Blocks.Cms
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void Block_BlockUpdated( object sender, EventArgs e )
         {
+            ShowView();
+        }
 
+        private void btnTrigger_Click( object sender, EventArgs e )
+        {
+            throw new NotImplementedException();
+        }
+        protected void lbSave_Click( object sender, EventArgs e )
+        {
+            SetAttributeValue( "ShowModelFilter", cbShowModelFilter.Checked.ToString() );
+            SaveAttributeValues();
+
+            ShowView();
+
+            mdEdit.Hide();
+            pnlEditModal.Visible = false;
+            upnlContent.Update();
         }
 
         protected void btnSearch_Click( object sender, EventArgs e )
@@ -133,9 +193,9 @@ namespace RockWeb.Blocks.Cms
             ElasticClient _client = search.Client;
 
             //ISearchResponse<dynamic> results = null;
-            List<int> entities = cblEntities.SelectedValuesAsInt;
+            List<int> entities = cblModelFilter.SelectedValuesAsInt;
 
-            var results = client.Search( term, SearchType.ExactMatch, cblEntities.SelectedValuesAsInt );
+            var results = client.Search( term, SearchType.ExactMatch, cblModelFilter.SelectedValuesAsInt );
 
             StringBuilder formattedResults = new StringBuilder();
             formattedResults.Append( "<ul class='list-unstyled'>" );
@@ -146,13 +206,29 @@ namespace RockWeb.Blocks.Cms
 
                 if ( formattedResult.IsViewAllowed )
                 {
-                    formattedResults.Append( string.Format( "<li class='margin-b-md'><i class='{2}'></i> {1} <br />Score {0}</li>", result.Score, formattedResult.FormattedResult, result.Document.IconCssClass ));
+                    formattedResults.Append( string.Format( "{0} <hr />", formattedResult.FormattedResult ));
                 }
             }
 
             formattedResults.Append( "</ul>" );
 
             lResults.Text = formattedResults.ToString();
+        }
+
+        private void ShowView()
+        {
+            cblModelFilter.Visible = GetAttributeValue( "ShowModelFilter" ).AsBoolean();
+        }
+
+        protected override void ShowSettings()
+        {
+            pnlEditModal.Visible = true;
+            upnlContent.Update();
+            mdEdit.Show();
+
+            cbShowModelFilter.Checked = GetAttributeValue( "ShowModelFilter" ).AsBoolean();
+
+            upnlContent.Update();
         }
 
         #endregion

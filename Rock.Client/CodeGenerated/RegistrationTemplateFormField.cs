@@ -81,6 +81,9 @@ namespace Rock.Client
         /// <summary />
         public bool ShowCurrentValue { get; set; }
 
+        /// <summary />
+        public bool ShowOnWaitlist { get; set; }
+
         /// <summary>
         /// Leave this as NULL to let Rock set this
         /// </summary>
@@ -129,6 +132,7 @@ namespace Rock.Client
             this.PreText = source.PreText;
             this.RegistrationTemplateFormId = source.RegistrationTemplateFormId;
             this.ShowCurrentValue = source.ShowCurrentValue;
+            this.ShowOnWaitlist = source.ShowOnWaitlist;
             this.CreatedDateTime = source.CreatedDateTime;
             this.ModifiedDateTime = source.ModifiedDateTime;
             this.CreatedByPersonAliasId = source.CreatedByPersonAliasId;
