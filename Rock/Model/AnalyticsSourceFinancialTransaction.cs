@@ -25,7 +25,7 @@ namespace Rock.Model
 {
     /// <summary>
     /// Represents the source record for an Analytic Fact Financial Transaction in Rock.
-    /// Note that this respresents a combination of the FinancialTransaction and the FinancialTransactionDetail, 
+    /// Note that this represents a combination of the FinancialTransaction and the FinancialTransactionDetail, 
     /// so if a person contributed to multiple accounts in a transaction, there will be multiple AnalyticSourceFinancialRecords. 
     /// </summary>
     [Table( "AnalyticsSourceFinancialTransaction" )]
@@ -45,13 +45,13 @@ namespace Rock.Model
         public string TransactionKey { get; set; }
 
         /// <summary>
-        /// Gets or sets the transaction date key.
+        /// Gets or sets the transaction date key which is the form YYYYMMDD
         /// </summary>
         /// <value>
         /// The transaction date key.
         /// </value>
         [DataMember]
-        public string TransactionDateKey { get; set; }
+        public int TransactionDateKey { get; set; }
 
         /// <summary>
         /// For Credit Card transactions, this is the response code that the gateway returns 
@@ -202,7 +202,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public int? AccountId { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the currency type value identifier.
         /// </summary>
@@ -276,25 +276,99 @@ namespace Rock.Model
         #endregion
 
         #region Virtual Properties
-        // TODO
+
+        /// <summary>
+        /// Gets or sets the transaction date.
+        /// </summary>
+        /// <value>
+        /// The transaction date.
+        /// </value>
+        [DataMember]
+        public virtual AnalyticsDimDate TransactionDate { get; set; }
+
+        /// <summary>
+        /// Gets or sets the batch.
+        /// </summary>
+        /// <value>
+        /// The batch.
+        /// </value>
+        [DataMember]
+        public virtual AnalyticsDimFinancialBatch Batch { get; set; }
+
+        /// <summary>
+        /// Gets or sets the source type value.
+        /// </summary>
+        /// <value>
+        /// The source type value.
+        /// </value>
+        [DataMember]
+        public virtual AnalyticsDimFinancialTransactionSource SourceTypeValue { get; set; }
+
+        /// <summary>
+        /// Gets or sets the transaction type value.
+        /// </summary>
+        /// <value>
+        /// The transaction type value.
+        /// </value>
+        [DataMember]
+        public virtual AnalyticsDimFinancialTransactionType TransactionTypeValue { get; set; }
+
+        /// <summary>
+        /// Gets or sets the currency type <see cref="Rock.Model.DefinedValue"/> indicating the type of currency that was used for this
+        /// transaction.
+        /// </summary>
+        /// <value>
+        /// A <see cref="Rock.Model.DefinedValue"/> indicating the type of currency that was used for the transaction.
+        /// </value>
+        [DataMember]
+        public virtual AnalyticsDimFinancialTransactionCurrencyType CurrencyTypeValue { get; set; }
+
+        /// <summary>
+        /// Gets or sets the credit card type <see cref="Rock.Model.DefinedValue"/> indicating the type of credit card that was used for this transaction.
+        /// If this was not a credit card based transaction, this value will be null.
+        /// </summary>
+        /// <value>
+        /// A <see cref="Rock.Model.DefinedValue" /> indicating the type of credit card that was used for this transaction. This value is null
+        /// for transactions that were not made by credit card.
+        /// </value>
+        [DataMember]
+        public virtual AnalyticsDimFinancialTransactionCreditCardType CreditCardTypeValue { get; set; }
+
+        /// <summary>
+        /// Gets or sets the account.
+        /// </summary>
+        /// <value>
+        /// The account.
+        /// </value>
+        [DataMember]
+        public virtual AnalyticsDimFinancialAccount Account { get; set; }
+
         #endregion
-
     }
-
 
     #region Entity Configuration
 
     /// <summary>
-    /// Person Configuration class.
+    /// 
     /// </summary>
     public partial class AnalyticsSourceFinancialTransactionConfiguration : EntityTypeConfiguration<AnalyticsSourceFinancialTransaction>
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="AnalyticsSourceFinancialTransactionConfiguration"/> class.
+        /// </summary>
         public AnalyticsSourceFinancialTransactionConfiguration()
         {
-  
+            this.HasRequired( t => t.TransactionDate ).WithMany().HasForeignKey( t => t.TransactionDateKey ).WillCascadeOnDelete( false );
+            this.HasRequired( t => t.Batch ).WithMany().HasForeignKey( t => t.BatchId ).WillCascadeOnDelete( false );
+            this.HasRequired( t => t.SourceTypeValue ).WithMany().HasForeignKey( t => t.SourceTypeValueId ).WillCascadeOnDelete( false );
+            this.HasRequired( t => t.TransactionTypeValue ).WithMany().HasForeignKey( t => t.TransactionTypeValueId ).WillCascadeOnDelete( false );
+            this.HasRequired( t => t.CurrencyTypeValue ).WithMany().HasForeignKey( t => t.CurrencyTypeValueId ).WillCascadeOnDelete( false );
+            this.HasRequired( t => t.CreditCardTypeValue ).WithMany().HasForeignKey( t => t.CreditCardTypeValueId ).WillCascadeOnDelete( false );
+            this.HasRequired( t => t.Account ).WithMany().HasForeignKey( t => t.AccountId ).WillCascadeOnDelete( false );
         }
+
+       
     }
 
     #endregion
 }
-
