@@ -94,6 +94,10 @@
     <Compile Include="Migrations\201610312310571_ConnectionGroupConfig.Designer.cs">
       <DependentUpon>201610312310571_ConnectionGroupConfig.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201611022323122_RemoveForeignColumnIndexes.cs" />
+    <Compile Include="Migrations\201611022323122_RemoveForeignColumnIndexes.Designer.cs">
+      <DependentUpon>201611022323122_RemoveForeignColumnIndexes.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 6.0\Version 1.6.0\201609282147388_WaitList.cs" />
     <Compile Include="Migrations\Version 6.0\Version 1.6.0\201609282147388_WaitList.Designer.cs">
       <DependentUpon>201609282147388_WaitList.cs</DependentUpon>
@@ -2316,6 +2320,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201610312310571_ConnectionGroupConfig.resx">
       <DependentUpon>201610312310571_ConnectionGroupConfig.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201611022323122_RemoveForeignColumnIndexes.resx">
+      <DependentUpon>201611022323122_RemoveForeignColumnIndexes.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 6.0\Version 1.6.0\201609282147388_WaitList.resx">
       <DependentUpon>201609282147388_WaitList.cs</DependentUpon>
