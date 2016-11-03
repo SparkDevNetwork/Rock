@@ -18,6 +18,7 @@ using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Runtime.Serialization;
+using Rock.Data;
 
 namespace Rock.Model
 {
@@ -26,6 +27,7 @@ namespace Rock.Model
     /// </summary>
     [Table( "AnalyticsDimFinancialBatch" )]
     [DataContract]
+    [HideFromReporting]
     public class AnalyticsDimFinancialBatch : Rock.Data.Entity<AnalyticsDimFinancialBatch>
     {
         #region Entity Properties

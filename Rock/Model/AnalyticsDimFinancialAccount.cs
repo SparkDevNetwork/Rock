@@ -18,6 +18,7 @@ using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Runtime.Serialization;
+using Rock.Data;
 
 namespace Rock.Model
 {
@@ -26,6 +27,7 @@ namespace Rock.Model
     /// </summary>
     [Table( "AnalyticsDimFinancialAccount" )]
     [DataContract]
+    [HideFromReporting]
     public class AnalyticsDimFinancialAccount : Rock.Data.Entity<AnalyticsDimFinancialAccount>
     {
         #region Entity Properties
@@ -182,13 +184,13 @@ namespace Rock.Model
         public string Campus { get; set; }
 
         /// <summary>
-        /// Gets or sets the name of the parent account.
+        /// Gets or sets the parent account identifier.
         /// </summary>
         /// <value>
-        /// The name of the parent account.
+        /// The parent account identifier.
         /// </value>
         [DataMember]
-        public string ParentAccountName { get; set; }
+        public int? ParentAccountId { get; set; }
 
         #endregion
     }

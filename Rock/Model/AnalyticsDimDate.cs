@@ -17,6 +17,7 @@
 using System;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Runtime.Serialization;
+using Rock.Data;
 
 namespace Rock.Model
 {
@@ -26,6 +27,7 @@ namespace Rock.Model
     /// <seealso cref="Rock.Data.Entity{Rock.Model.AnalyticsDimDate}" />
     [Table( "AnalyticsDimDate" )]
     [DataContract]
+    [HideFromReporting]
     public class AnalyticsDimDate : Rock.Data.Entity<AnalyticsDimDate>
     {
         #region Entity Properties
@@ -37,6 +39,7 @@ namespace Rock.Model
         /// The date key.
         /// </value>
         [DataMember]
+        [Index( IsUnique = true )]
         public int DateKey { get; set; }
 
         /// <summary>
@@ -47,6 +50,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         [Column( TypeName = "Date" )]
+        [Index(IsUnique = true)]
         public DateTime Date { get; set; }
 
         /// <summary>
@@ -147,7 +151,7 @@ namespace Rock.Model
         /// The giving month.
         /// </value>
         [DataMember]
-        public int GivingMonth { get; set; }
+        public string GivingMonth { get; set; }
 
         /// <summary>
         /// Gets or sets the calendar week number in year.
@@ -267,13 +271,13 @@ namespace Rock.Model
         public int FiscalMonthNumberInYear { get; set; }
 
         /// <summary>
-        /// Gets or sets the fiscal month year.
+        /// Gets or sets the name of the fiscal month year 
         /// </summary>
         /// <value>
         /// The fiscal month year.
         /// </value>
         [DataMember]
-        public int FiscalMonthYear { get; set; }
+        public string FiscalMonthYear { get; set; }
 
         /// <summary>
         /// Gets or sets the fiscal quarter.

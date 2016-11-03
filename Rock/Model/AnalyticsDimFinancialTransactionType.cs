@@ -17,11 +17,13 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Runtime.Serialization;
+using Rock.Data;
 
 namespace Rock.Model
 {
     [Table( "AnalyticsDimFinancialTransactionType" )]
     [DataContract]
+    [HideFromReporting]
     public class AnalyticsDimFinancialTransactionType : Rock.Data.Entity<AnalyticsDimFinancialTransactionType>
     {
         #region Entity Properties

@@ -29,7 +29,7 @@ namespace Rock.Model
     /// </summary>
     [Table( "AnalyticsFactFinancialTransaction" )]
     [DataContract]
-    public class AnalyticsFactFinancialTransaction : AnalyticsSourceFinancialTransaction
+    public class AnalyticsFactFinancialTransaction : AnalyticsBaseFinancialTransaction<AnalyticsFactFinancialTransaction>
     {
         #region Entity Properties
 
@@ -143,12 +143,20 @@ namespace Rock.Model
     /// </summary>
     public partial class AnalyticsFactFinancialTransactionConfiguration : EntityTypeConfiguration<AnalyticsFactFinancialTransaction>
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="AnalyticsFactFinancialTransactionConfiguration"/> class.
+        /// </summary>
         public AnalyticsFactFinancialTransactionConfiguration()
         {
-            this.Map( m => m.MapInheritedProperties() );
+            this.HasRequired( t => t.TransactionDate ).WithMany().HasForeignKey( t => t.TransactionDateKey ).WillCascadeOnDelete( false );
+            this.HasRequired( t => t.Batch ).WithMany().HasForeignKey( t => t.BatchId ).WillCascadeOnDelete( false );
+            this.HasRequired( t => t.SourceTypeValue ).WithMany().HasForeignKey( t => t.SourceTypeValueId ).WillCascadeOnDelete( false );
+            this.HasRequired( t => t.TransactionTypeValue ).WithMany().HasForeignKey( t => t.TransactionTypeValueId ).WillCascadeOnDelete( false );
+            this.HasRequired( t => t.CurrencyTypeValue ).WithMany().HasForeignKey( t => t.CurrencyTypeValueId ).WillCascadeOnDelete( false );
+            this.HasRequired( t => t.CreditCardTypeValue ).WithMany().HasForeignKey( t => t.CreditCardTypeValueId ).WillCascadeOnDelete( false );
+            this.HasRequired( t => t.Account ).WithMany().HasForeignKey( t => t.AccountId ).WillCascadeOnDelete( false );
         }
     }
 
     #endregion
 }
-
