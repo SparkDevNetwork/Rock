@@ -23,7 +23,7 @@ namespace Rock.Web.UI.Controls
     /// <summary>
     /// Helper class to intialize and render rock controls with Bootstrap html elements
     /// </summary>
-    internal static class RockControlHelper
+    public static class RockControlHelper
     {
         /// <summary>
         /// Inits the specified rock control.
