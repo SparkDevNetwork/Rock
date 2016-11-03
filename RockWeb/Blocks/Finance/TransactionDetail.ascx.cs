@@ -953,6 +953,7 @@ namespace RockWeb.Blocks.Finance
                         {
                             nbRefundError.Title = "Transaction Error";
                             nbRefundError.Text = "<p>Existing transaction does not hava a valid batch.</p>";
+                            nbRefundError.Visible = true;
                             return;
                         }
 
