@@ -17,24 +17,23 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Runtime.Serialization;
+using Rock.Data;
 
 namespace Rock.Model
 {
     [Table( "AnalyticsDimFinancialTransactionCurrencyType" )]
     [DataContract]
+    [HideFromReporting]
     public class AnalyticsDimFinancialTransactionCurrencyType : Rock.Data.Entity<AnalyticsDimFinancialTransactionCurrencyType>
     {
         #region Entity Properties
-
-        [DataMember( IsRequired = true )]
-        public int Order { get; set; }
 
         [MaxLength( 250 )]
         [DataMember( IsRequired = true )]
         public string Name { get; set; }
 
-        [DataMember]
-        public string Description { get; set; }
+        [DataMember( IsRequired = true )]
+        public int Order { get; set; }
 
         #endregion
     }

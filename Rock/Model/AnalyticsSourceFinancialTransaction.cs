@@ -19,7 +19,9 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
+using Rock.Attribute;
 using Rock.Data;
+using Rock.Security;
 
 namespace Rock.Model
 {
@@ -30,17 +32,31 @@ namespace Rock.Model
     /// </summary>
     [Table( "AnalyticsSourceFinancialTransaction" )]
     [DataContract]
-    public class AnalyticsSourceFinancialTransaction : Rock.Data.Entity<AnalyticsSourceFinancialTransaction>
+    [HideFromReporting]
+    public class AnalyticsSourceFinancialTransaction : AnalyticsBaseFinancialTransaction<AnalyticsSourceFinancialTransaction>
+    {
+        // intentionally blank
+    }
+
+    /// <summary>
+    /// AnalyticSourceFinancialTransaction is a real table, and AnalyticsFactFinancialTransation is a VIEW off of AnalyticSourceFinancialTransaction, so they share lots of columns
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
+    /// <seealso cref="Rock.Data.Entity{T}" />
+    public abstract class AnalyticsBaseFinancialTransaction<T> : Entity<T> 
+        where T : AnalyticsBaseFinancialTransaction<T>, new()
     {
         #region Entity Properties
 
         /// <summary>
-        /// Gets or sets the transaction key.
+        /// Gets or sets the transaction key in the form of "{Transaction.Id}_{TransactionDetail.Id}"
+        /// NOTE: Length of 40 is big enough for each to have int64.MaxValue "9223372036854775807_9223372036854775807"
         /// </summary>
         /// <value>
         /// The transaction key.
         /// </value>
-        [DataMember]
+        [DataMember( IsRequired = true )]
+        [MaxLength( 40 )]
         [Index( "IX_TransactionKey", IsUnique = true )]
         public string TransactionKey { get; set; }
 
@@ -52,6 +68,15 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public int TransactionDateKey { get; set; }
+
+        /// <summary>
+        /// Gets or sets date and time that the transaction occurred. This is the local server time.
+        /// </summary>
+        /// <value>
+        /// A <see cref="System.DateTime"/> representing the time that the transaction occurred. This is the local server time.
+        /// </value>
+        [DataMember]
+        public DateTime TransactionDateTime { get; set; }
 
         /// <summary>
         /// For Credit Card transactions, this is the response code that the gateway returns 
@@ -131,13 +156,24 @@ namespace Rock.Model
         public DateTime? ProcessedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the giving group identifier for this Person at the time of the transaction
+        /// Gets or sets the giving group id of the person at the time of the transaction.  If an individual would like their giving to be grouped with the rest of their family,
+        /// this will be the id of their family group.  If they elect to contribute on their own, this value will be null.
         /// </summary>
         /// <value>
-        /// The giving group identifier.
+        /// The giving group id.
         /// </value>
         [DataMember]
         public int? GivingGroupId { get; set; }
+
+        /// <summary>
+        /// The computed giver identifier in the format G{GivingGroupId} if they are part of a GivingGroup, or P{Personid} if they give individually
+        /// NOTE: this is the Person's GivingId at the time of the transaction
+        /// </summary>
+        /// <value>
+        /// The giving identifier.
+        /// </value>
+        [DataMember]
+        public string GivingId { get; set; }
 
         /// <summary>
         /// Gets or sets BatchId of the <see cref="Rock.Model.FinancialBatch"/> that contains this transaction.
@@ -247,12 +283,23 @@ namespace Rock.Model
         /// <summary>
         /// This is the GroupId of the family of the Authorized Person that did this transaction
         /// Note that this is the current family that the person is in. 
+        /// To see what GivingGroup they were part of when the Transaction occured, see GivingUnitId
         /// </summary>
         /// <value>
         /// The authorized family identifier.
         /// </value>
         [DataMember]
         public int? AuthorizedFamilyId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the count.
+        /// NOTE: this always has hardcode value of 1. It is stored in the table because it is supposed to help do certain types of things in analytics
+        /// </summary>
+        /// <value>
+        /// The count.
+        /// </value>
+        [DataMember]
+        public int Count { get; set; }
 
         /// <summary>
         /// Gets or sets the amount.
@@ -358,16 +405,15 @@ namespace Rock.Model
         /// </summary>
         public AnalyticsSourceFinancialTransactionConfiguration()
         {
-            this.HasRequired( t => t.TransactionDate ).WithMany().HasForeignKey( t => t.TransactionDateKey ).WillCascadeOnDelete( false );
+            //// the migration has to manually create FK since it references an AlternateKey
+            // this.HasRequired( t => t.TransactionDate ).WithMany().HasForeignKey( t => t.TransactionDateKey ).WillCascadeOnDelete( false );
             this.HasRequired( t => t.Batch ).WithMany().HasForeignKey( t => t.BatchId ).WillCascadeOnDelete( false );
-            this.HasRequired( t => t.SourceTypeValue ).WithMany().HasForeignKey( t => t.SourceTypeValueId ).WillCascadeOnDelete( false );
+            this.HasOptional( t => t.SourceTypeValue ).WithMany().HasForeignKey( t => t.SourceTypeValueId ).WillCascadeOnDelete( false );
             this.HasRequired( t => t.TransactionTypeValue ).WithMany().HasForeignKey( t => t.TransactionTypeValueId ).WillCascadeOnDelete( false );
-            this.HasRequired( t => t.CurrencyTypeValue ).WithMany().HasForeignKey( t => t.CurrencyTypeValueId ).WillCascadeOnDelete( false );
-            this.HasRequired( t => t.CreditCardTypeValue ).WithMany().HasForeignKey( t => t.CreditCardTypeValueId ).WillCascadeOnDelete( false );
+            this.HasOptional( t => t.CurrencyTypeValue ).WithMany().HasForeignKey( t => t.CurrencyTypeValueId ).WillCascadeOnDelete( false );
+            this.HasOptional( t => t.CreditCardTypeValue ).WithMany().HasForeignKey( t => t.CreditCardTypeValueId ).WillCascadeOnDelete( false );
             this.HasRequired( t => t.Account ).WithMany().HasForeignKey( t => t.AccountId ).WillCascadeOnDelete( false );
         }
-
-       
     }
 
     #endregion
