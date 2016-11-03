@@ -73,6 +73,8 @@ namespace Rock.MergeTemplates
             BinaryFile outputBinaryFile = null;
 
             var rockContext = new RockContext();
+            rockContext.Database.CommandTimeout = 600;
+
             var binaryFileService = new BinaryFileService( rockContext );
 
             var templateBinaryFile = binaryFileService.Get( mergeTemplate.TemplateBinaryFileId );

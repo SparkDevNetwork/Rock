@@ -53,6 +53,13 @@ namespace RockWeb.Blocks.Core
             // this event gets fired after block settings are updated. it's nice to repaint the screen if these settings would alter it
             this.BlockUpdated += Block_BlockUpdated;
             this.AddConfigurationUpdateTrigger( upnlContent );
+
+            var sm = ScriptManager.GetCurrent( this.Page );
+            if ( sm.AsyncPostBackTimeout < 605 )
+            {
+                sm.AsyncPostBackTimeout = 605;
+                Server.ScriptTimeout = 605;
+            }
         }
 
         /// <summary>
@@ -140,6 +147,7 @@ namespace RockWeb.Blocks.Core
             // NOTE: This is a full postback (not a partial like most other blocks)
 
             var rockContext = new RockContext();
+            rockContext.Database.CommandTimeout = 600;
 
             List<object> mergeObjectsList = GetMergeObjectList( rockContext );
 
