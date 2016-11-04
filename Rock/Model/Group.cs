@@ -658,8 +658,12 @@ namespace Rock.Model
         {
             var groupEntity = new GroupService( new RockContext() ).Get( id );
 
-            var indexItem = GroupIndex.LoadByModel( groupEntity );
-            IndexContainer.IndexDocument( indexItem );
+            // check that this group type is set to be indexed.
+            if ( groupEntity.GroupType.IsIndexEnabled )
+            {
+                var indexItem = GroupIndex.LoadByModel( groupEntity );
+                IndexContainer.IndexDocument( indexItem );
+            }
         }
 
         /// <summary>

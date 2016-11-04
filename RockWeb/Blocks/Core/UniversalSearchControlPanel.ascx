@@ -35,6 +35,47 @@
         <div class="panel panel-block">
         
             <div class="panel-heading">
+                <h1 class="panel-title"><i class="fa fa-search"></i> Smart Search Settings</h1>
+            </div>
+            <div class="panel-body">
+                <asp:Panel ID="pnlSmartSearchView" runat="server">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <Rock:RockLiteral ID="lSmartSearchEntities" runat="server" Label="Entities" />
+                        </div>
+                        <div class="col-md-6">
+                            <Rock:RockLiteral ID="lSmartSearchFilterCriteria" runat="server" Label="Filter Critieria" />
+                        </div>
+                    </div>
+
+                    <div class="actions">
+                        <asp:LinkButton ID="lbSmartSearchEdit" runat="server" CssClass="btn btn-primary" OnClick="lbSmartSearchEdit_Click">Edit</asp:LinkButton>
+                    </div>
+                
+                </asp:Panel>
+
+                <asp:Panel ID="pnlSmartSearchEdit" runat="server" Visible="false">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <Rock:RockCheckBoxList ID="cblSmartSearchEntities" runat="server" Label="Search Entities" Help="Select the entities you would like to be search via the Smart Search feature. If no value is selected all entities will be searched." />
+                        </div>
+                        <div class="col-md-6">
+                            <Rock:RockTextBox ID="tbSmartSearchFieldCrieria" runat="server" Label="Field Critieria" Help="The field criteria to apply to Smart Search search. This field used the same syntax as the 'search' Lava command (field^value|field^value1,value2)." />
+                        </div>
+                    </div>
+
+                    <div class="actions">
+                        <asp:LinkButton ID="lbSmartSearchSave" runat="server" CssClass="btn btn-primary" OnClick="lbSmartSearchSave_Click">Save</asp:LinkButton>
+                        <asp:LinkButton ID="lbSmartSearchCancel" runat="server" CssClass="btn btn-link" OnClick="lbSmartSearchCancel_Click">Cancel</asp:LinkButton>
+                    </div>
+                
+                </asp:Panel>
+            </div>
+        </div>
+
+        <div class="panel panel-block">
+        
+            <div class="panel-heading">
                 <h1 class="panel-title"><i class="fa fa-square"></i> Indexable Entities</h1>
             </div>
             <div class="panel-body">
