@@ -1,4 +1,20 @@
-﻿using System;
+﻿// <copyright>
+// Copyright by the Spark Development Network
+//
+// Licensed under the Rock Community License (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.rockrms.com/license
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+// </copyright>
+//
+using System;
 using System.Collections.Generic;
 using System.Dynamic;
 using System.Linq;
@@ -9,6 +25,7 @@ using Rock.Attribute;
 using Rock.Model;
 using Rock.Web.Cache;
 using Rock.UniversalSearch.IndexModels.Attributes;
+using Rock.Data;
 
 namespace Rock.UniversalSearch.IndexModels
 {
@@ -16,7 +33,7 @@ namespace Rock.UniversalSearch.IndexModels
     /// Base Index Model
     /// </summary>
     /// <seealso cref="System.Dynamic.DynamicObject" />
-    public class IndexModelBase : DynamicObject
+    public class IndexModelBase : DynamicObject, Lava.ILiquidizable
     {
         private Dictionary<string, object> _members = new Dictionary<string, object>();
         object Instance;
@@ -102,24 +119,22 @@ namespace Rock.UniversalSearch.IndexModels
         }
 
         /// <summary>
+        /// Gets or sets the name.
+        /// </summary>
+        /// <value>
+        /// The name.
+        /// </value>
+        [RockIndexField( Index = IndexType.NotIndexed )]
+        public string DocumentName { get; set; }
+
+        /// <summary>
         /// Gets or sets the icon CSS class.
         /// </summary>
         /// <value>
         /// The icon CSS class.
         /// </value>
         [RockIndexField( Index = IndexType.NotIndexed )]
-        public virtual string IconCssClass
-        {
-            get
-            {
-                return iconCssClass;
-            }
-            set
-            {
-                iconCssClass = value;
-            }
-        }
-        private string iconCssClass = "fa fa-file";
+        public virtual string IconCssClass { get; set; } = "fa fa-file";
 
         /// <summary>
         /// Adds the indexable attributes.
@@ -351,6 +366,34 @@ namespace Rock.UniversalSearch.IndexModels
             return propertyNames;
         }
 
+
+        #region ILiquid Implementation
+        [LavaIgnore]
+        public List<string> AvailableKeys
+        {
+            get
+            {
+                return GetDynamicMemberNames().ToList();
+            }
+        }
+
+        /// <summary>
+        /// Gets the <see cref="System.Object"/> with the specified key.
+        /// </summary>
+        /// <value>
+        /// The <see cref="System.Object"/>.
+        /// </value>
+        /// <param name="key">The key.</param>
+        /// <returns></returns>
+        public object this[object key]
+        {
+            get
+            {
+                var propertyKey = key.ToStringSafe();
+                return this[propertyKey];
+            }
+        }
+
         /// <summary>
         /// Determines whether [contains] [the specified item].
         /// </summary>
@@ -375,6 +418,17 @@ namespace Rock.UniversalSearch.IndexModels
             return false;
         }
 
+        public object ToLiquid()
+        {
+            return this;
+        }
+
+        public bool ContainsKey( object key )
+        {
+            return this.GetDynamicMemberNames().Contains(key.ToString());
+        }
+        #endregion
+        
         #region Static Methods
 
         #endregion

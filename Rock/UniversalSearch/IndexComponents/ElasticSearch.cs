@@ -271,7 +271,7 @@ namespace Rock.UniversalSearch.IndexComponents
         /// <param name="searchType">Type of the search.</param>
         /// <param name="entities">The entities.</param>
         /// <returns></returns>
-        public override IEnumerable<SearchResultModel> Search( string query, SearchType searchType = SearchType.ExactMatch, List<int> entities = null )
+        public override List<IndexModelBase> Search( string query, SearchType searchType = SearchType.ExactMatch, List<int> entities = null, SearchFieldCriteria fieldCriteria = null )
         {
             ISearchResponse<dynamic> results = null;
             List<SearchResultModel> searchResults = new List<SearchResultModel>();
@@ -297,9 +297,46 @@ namespace Rock.UniversalSearch.IndexComponents
                     searchDescriptor = searchDescriptor.Type( string.Join( ",", entityTypes ) ); // todo: considter adding indexmodeltype to the entity cache
                 }
 
-                searchDescriptor = searchDescriptor.Query( q => q.QueryString( s => s.Query( query ) ) );
+                QueryContainer queryContainer = new QueryContainer();
+
+                if (!string.IsNullOrWhiteSpace( query ) )
+                {
+                    queryContainer &= new QueryStringQuery { Query = query };
+                }
+                
+                if ( fieldCriteria != null && fieldCriteria.FieldValues?.Count > 0 )
+                {
+                    QueryContainer matchQuery = null;
+                    foreach ( var match in fieldCriteria.FieldValues )
+                    {
+                        if ( fieldCriteria.SearchType == CriteriaSearchType.Or )
+                        {
+                            matchQuery |= new MatchQuery { Field = match.Field, Query = match.Value };
+                        }
+                        else
+                        {
+                            matchQuery &= new MatchQuery { Field = match.Field, Query = match.Value };
+                        }
+                    }
+
+                    queryContainer &= matchQuery;
+                }
+
+                /*foreach(var term in terms )
+                {
+                    queryContainer &= new MatchQuery { Field = term.Field, Query = term.Value };
+                }*/
+                //new TermQuery {  Field = "city", Name = "city", Value = "Phoenix" };
+
+                //searchDescriptor = searchDescriptor.Query( q => q.QueryString( s => s.Query( query ) ) );
+                //searchDescriptor = searchDescriptor.Query( q => q.Bool(bq => bq.Must( m => m.MatchAll() && q.Term( t => t.Name( "city" ).Value( "Phoenix" ) ) ) ) );
+
+                //searchDescriptor.Query( q => q.Bool( bq => bq.Must(m => m.MatchAll() && queryContainer )))
+                searchDescriptor.Query( q => queryContainer );
 
                 results = _client.Search<dynamic>( searchDescriptor );
+
+                
             }
             else
             {
@@ -308,22 +345,17 @@ namespace Rock.UniversalSearch.IndexComponents
                                     .Query( q => 
                                         q.Fuzzy( f => f.Value( query ) ) 
                                     )
-                                    .Explain( true ) // todo remove before flight 
                                 );
             }
 
-            //var presults = _client.Search<PersonIndex>( s => s.AllIndices().Query( q => q.QueryString( qs => qs.Query( query ) ) ) );
+            List<IndexModelBase> documents = new List<IndexModelBase>();
 
             // normallize the results to rock search results
             if (results != null )
             {
-                foreach(var hit in results.Hits )
+                foreach (var hit in results.Hits )
                 {
-                    var searchResult = new SearchResultModel();
-                    searchResult.Score = hit.Score;
-                    searchResult.Type = hit.Type;
-                    searchResult.Index = hit.Index;
-                    searchResult.EntityId = hit.Id.AsInteger();
+                    IndexModelBase document = new IndexModelBase();
 
                     try {
                         if ( hit.Source != null )
@@ -333,28 +365,28 @@ namespace Rock.UniversalSearch.IndexComponents
 
                             if ( indexModelType != null )
                             {
-                                searchResult.Document = (IndexModelBase)((JObject)hit.Source).ToObject( indexModelType ); // return the source document as the derived type
+                                document = (IndexModelBase)((JObject)hit.Source).ToObject( indexModelType ); // return the source document as the derived type
                             }
                             else
                             {
-                                searchResult.Document = ((JObject)hit.Source).ToObject<IndexModelBase>(); // return the source document as the base type
+                                document = ((JObject)hit.Source).ToObject<IndexModelBase>(); // return the source document as the base type
                             }
                         }
 
                         if ( hit.Explanation != null )
                         {
-                            searchResult.Explain = hit.Explanation.ToJson();
+                            document["Explain"] = hit.Explanation.ToJson();
                         }
 
-                        searchResults.Add( searchResult );
+                        document["Score"] = hit.Score;
+
+                        documents.Add( document );
                     }
                     catch { } // ignore if the result if an exception resulted (most likely cause is getting a result from a non-rock index)
                 }
             }
 
-            return searchResults;
-
-            
+            return documents;
         }
 
         /// <summary>

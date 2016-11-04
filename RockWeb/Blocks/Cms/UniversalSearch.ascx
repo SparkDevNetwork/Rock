@@ -25,24 +25,22 @@
                     </span>
                 </div>
 
-                <div class="row row-eq-height-md margin-t-md">
-                    <div class="col-md-3 filter-options">
-                        <Rock:RockCheckBoxList ID="cblModelFilter" runat="server" RepeatDirection="Vertical" Label="Types" />
+                <div class="clearfix margin-t-sm">
+                    <asp:LinkButton ID="lbRefineSearch" runat="server" Text="Refine Search" OnClick="lbRefineSearch_Click" CssClass="pull-right" />
+                </div>
 
-                        <Rock:RockCheckBoxList ID="cblGroupTypes" runat="server" Label="Group Types" />
+                <asp:Panel ID="pnlRefineSearch" runat="server" Visible="false">
+                    <div class="well margin-t-md">
+                        <Rock:RockCheckBoxList ID="cblModelFilter" runat="server" RepeatDirection="Horizontal" Label="Types" />
 
-                        <Rock:RockCheckBoxList ID="cblContentChannelTypes" runat="server" Label="Content Channels" />
+                        <Rock:RockCheckBoxList ID="cblGroupTypes" runat="server" RepeatDirection="Horizontal" Label="Group Types" />
+
+                        <Rock:RockCheckBoxList ID="cblContentChannelTypes" runat="server" RepeatDirection="Horizontal" Label="Content Channels" />
                     </div>
-                    <div class="col-md-9">
-                        
-                        <div class="margin-t-md">
-                        
-                        </div>
-                                
-                        <div class="margin-t-md">
-                            <asp:Literal ID="lResults" runat="server" />
-                        </div>
-                    </div>
+                </asp:Panel>
+
+                <div class="margin-t-lg">
+                    <asp:Literal ID="lResults" runat="server" />
                 </div>
             </div>
                 
@@ -54,7 +52,9 @@
 
                     <asp:UpdatePanel ID="upnlEdit" runat="server">
                         <ContentTemplate>
-                            <Rock:RockCheckBox ID="cbShowModelFilter" runat="server" Label="Show Model Filter" />
+                            <Rock:RockCheckBoxList ID="cblEnabledModels" runat="server" Label="Enabled Models" />
+                            
+                            <Rock:RockCheckBox ID="cbShowFilter" runat="server" Label="Show Model Filter" />
                             
 
                         </ContentTemplate>

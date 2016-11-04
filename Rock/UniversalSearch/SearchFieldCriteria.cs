@@ -14,52 +14,67 @@
 // limitations under the License.
 // </copyright>
 //
-using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Rock.UniversalSearch.IndexModels;
 
 namespace Rock.UniversalSearch
 {
-    interface IRockIndexable
+    /// <summary>
+    /// Search Term Object
+    /// </summary>
+    public class SearchFieldCriteria
     {
-
         /// <summary>
-        /// Gets a value indicating whether [allows interactive bulk indexing].
+        /// Gets or sets the type of the search.
         /// </summary>
         /// <value>
-        /// <c>true</c> if [allows interactive bulk indexing]; otherwise, <c>false</c>.
+        /// The type of the search.
         /// </value>
-        bool AllowsInteractiveBulkIndexing { get; }
+        public CriteriaSearchType SearchType { get; set; } = CriteriaSearchType.Or;
 
         /// <summary>
-        /// Bulks the index documents.
+        /// The field values
         /// </summary>
-        void BulkIndexDocuments();
+        public List<FieldValue> FieldValues { get; set; } = new List<FieldValue>();
+
+    }
+
+    /// <summary>
+    /// Enum for determining the search type and / or
+    /// </summary>
+    public enum CriteriaSearchType
+    {
+        /// <summary>
+        /// And search
+        /// </summary>
+        And = 0,
 
         /// <summary>
-        /// Indexes the document.
+        /// Or Search
         /// </summary>
-        /// <param name="id">The identifier.</param>
-        void IndexDocument( int id );
+        Or = 1
+    }
+
+    /// <summary>
+    /// Field Value
+    /// </summary>
+    public class FieldValue
+    {
+        /// <summary>
+        /// Gets or sets the field.
+        /// </summary>
+        /// <value>
+        /// The field.
+        /// </value>
+        public string Field { get; set; }
+
 
         /// <summary>
-        /// Deletes the indexed document.
+        /// Gets or sets the value.
         /// </summary>
-        /// <param name="id">The identifier.</param>
-        void DeleteIndexedDocument( int id );
-
-        /// <summary>
-        /// Deletes the indexed documents.
-        /// </summary>
-        void DeleteIndexedDocuments();
-
-        /// <summary>
-        /// Indexes the name of the model.
-        /// </summary>
-        /// <returns></returns>
-        Type IndexModelType();
+        /// <value>
+        /// The value.
+        /// </value>
+        public string Value { get; set; }
     }
 }
