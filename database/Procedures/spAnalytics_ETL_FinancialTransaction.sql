@@ -38,6 +38,7 @@ BEGIN
         ,[DaysSinceLastTransactionOfType]
         ,[IsFirstTransactionOfType]
         ,[AuthorizedFamilyId]
+		,[Count]
         ,[Amount]
         ,[ModifiedDateTime]
         ,[Guid]
@@ -77,7 +78,7 @@ BEGIN
             ,NULL [DaysSinceLastTransactionOfType] -- come back and fill this in later
             ,0 [IsFirstTransactionOfType] -- come back and fill this in later
             ,NULL [AuthorizedFamilyId] -- fill this in later
-            --TODO: ,1 [Count]
+            ,1 [Count]
             ,ftd.Amount [Amount]
             ,ftd.ModifiedDateTime
             ,NEWID() [Guid]

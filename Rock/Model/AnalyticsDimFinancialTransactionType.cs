@@ -21,26 +21,62 @@ using Rock.Data;
 
 namespace Rock.Model
 {
+    /// <summary>
+    /// 
+    /// </summary>
     [Table( "AnalyticsDimFinancialTransactionType" )]
     [DataContract]
     [HideFromReporting]
-    public class AnalyticsDimFinancialTransactionType : Rock.Data.Entity<AnalyticsDimFinancialTransactionType>
+    public class AnalyticsDimFinancialTransactionType
     {
         #region Entity Properties
 
-        [DataMember( IsRequired = true )]
-        public int Order { get; set; }
+        /// <summary>
+        /// Gets or sets the transaction type identifier.
+        /// </summary>
+        /// <value>
+        /// The transaction type identifier.
+        /// </value>
+        [Key]
+        public int TransactionTypeId { get; set; }
 
+        /// <summary>
+        /// Gets or sets the name.
+        /// </summary>
+        /// <value>
+        /// The name.
+        /// </value>
         [MaxLength( 250 )]
         [DataMember( IsRequired = true )]
         public string Name { get; set; }
 
+        /// <summary>
+        /// Gets or sets the abbreviation.
+        /// </summary>
+        /// <value>
+        /// The abbreviation.
+        /// </value>
         [MaxLength( 50 )]
         [DataMember]
         public string Abbreviation { get; set; }
 
+        /// <summary>
+        /// Gets or sets the description.
+        /// </summary>
+        /// <value>
+        /// The description.
+        /// </value>
         [DataMember]
         public string Description { get; set; }
+
+        /// <summary>
+        /// Gets or sets the order.
+        /// </summary>
+        /// <value>
+        /// The order.
+        /// </value>
+        [DataMember( IsRequired = true )]
+        public int Order { get; set; }
 
         #endregion
     }

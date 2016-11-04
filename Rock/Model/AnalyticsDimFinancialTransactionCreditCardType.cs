@@ -24,9 +24,12 @@ namespace Rock.Model
     [Table( "AnalyticsDimFinancialTransactionCreditCardType" )]
     [DataContract]
     [HideFromReporting]
-    public class AnalyticsDimFinancialTransactionCreditCardType : Rock.Data.Entity<AnalyticsDimFinancialTransactionCreditCardType>
+    public class AnalyticsDimFinancialTransactionCreditCardType
     {
         #region Entity Properties
+        
+        [Key]
+        public int CreditCardTypeId { get; set; }
 
         [MaxLength( 250 )]
         [DataMember( IsRequired = true )]

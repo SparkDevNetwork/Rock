@@ -24,14 +24,35 @@ namespace Rock.Model
     [Table( "AnalyticsDimFinancialTransactionCurrencyType" )]
     [DataContract]
     [HideFromReporting]
-    public class AnalyticsDimFinancialTransactionCurrencyType : Rock.Data.Entity<AnalyticsDimFinancialTransactionCurrencyType>
+    public class AnalyticsDimFinancialTransactionCurrencyType
     {
         #region Entity Properties
 
+        /// <summary>
+        /// Gets or sets the currency type identifier.
+        /// </summary>
+        /// <value>
+        /// The currency type identifier.
+        /// </value>
+        [Key]
+        public int CurrencyTypeId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the name.
+        /// </summary>
+        /// <value>
+        /// The name.
+        /// </value>
         [MaxLength( 250 )]
         [DataMember( IsRequired = true )]
         public string Name { get; set; }
 
+        /// <summary>
+        /// Gets or sets the order.
+        /// </summary>
+        /// <value>
+        /// The order.
+        /// </value>
         [DataMember( IsRequired = true )]
         public int Order { get; set; }
 

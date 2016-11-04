@@ -21,17 +21,41 @@ using Rock.Data;
 
 namespace Rock.Model
 {
+    /// <summary>
+    /// 
+    /// </summary>
     [Table( "AnalyticsDimFinancialTransactionSource" )]
     [DataContract]
     [HideFromReporting]
-    public class AnalyticsDimFinancialTransactionSource : Rock.Data.Entity<AnalyticsDimFinancialTransactionSource>
+    public class AnalyticsDimFinancialTransactionSource
     {
         #region Entity Properties
 
+        /// <summary>
+        /// Gets or sets the source identifier.
+        /// </summary>
+        /// <value>
+        /// The source identifier.
+        /// </value>
+        [Key]
+        public int SourceId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the name.
+        /// </summary>
+        /// <value>
+        /// The name.
+        /// </value>
         [MaxLength( 250 )]
         [DataMember( IsRequired = true )]
         public string Name { get; set; }
 
+        /// <summary>
+        /// Gets or sets the order.
+        /// </summary>
+        /// <value>
+        /// The order.
+        /// </value>
         [DataMember( IsRequired = true )]
         public int Order { get; set; }
 

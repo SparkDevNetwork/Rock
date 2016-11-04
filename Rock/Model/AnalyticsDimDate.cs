@@ -15,6 +15,7 @@
 // </copyright>
 //
 using System;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Runtime.Serialization;
 using Rock.Data;
@@ -28,7 +29,7 @@ namespace Rock.Model
     [Table( "AnalyticsDimDate" )]
     [DataContract]
     [HideFromReporting]
-    public class AnalyticsDimDate : Rock.Data.Entity<AnalyticsDimDate>
+    public class AnalyticsDimDate
     {
         #region Entity Properties
 
@@ -39,7 +40,7 @@ namespace Rock.Model
         /// The date key.
         /// </value>
         [DataMember]
-        [Index( IsUnique = true )]
+        [Key, DatabaseGenerated( DatabaseGeneratedOption.None )]
         public int DateKey { get; set; }
 
         /// <summary>

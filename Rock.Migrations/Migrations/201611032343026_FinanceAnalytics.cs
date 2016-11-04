@@ -22,7 +22,7 @@ namespace Rock.Migrations
     /// <summary>
     ///
     /// </summary>
-    public partial class Analytics1 : Rock.Migrations.RockMigration
+    public partial class FinanceAnalytics : Rock.Migrations.RockMigration
     {
         /// <summary>
         /// Operations to be performed during the upgrade process.
@@ -30,59 +30,9 @@ namespace Rock.Migrations
         public override void Up()
         {
             CreateTable(
-                "dbo.AnalyticsSourceFinancialTransaction",
-                c => new
-                    {
-                        Id = c.Int(nullable: false),
-                        TransactionKey = c.String(),
-                        TransactionDateKey = c.Int(nullable: false),
-                        TransactionCode = c.String(maxLength: 50),
-                        Summary = c.String(),
-                        TransactionTypeValueId = c.Int(nullable: false),
-                        SourceTypeValueId = c.Int(nullable: false),
-                        IsScheduled = c.Boolean(nullable: false),
-                        AuthorizedPersonAliasId = c.Int(),
-                        ProcessedByPersonAliasId = c.Int(),
-                        ProcessedDateTime = c.DateTime(),
-                        GivingGroupId = c.Int(),
-                        BatchId = c.Int(nullable: false),
-                        FinancialGatewayId = c.Int(),
-                        EntityTypeId = c.Int(),
-                        EntityId = c.Int(),
-                        TransactionId = c.Int(nullable: false),
-                        TransactionDetailId = c.Int(nullable: false),
-                        AccountId = c.Int(nullable: false),
-                        CurrencyTypeValueId = c.Int(nullable: false),
-                        CreditCardTypeValueId = c.Int(nullable: false),
-                        DaysSinceLastTransactionOfType = c.Int(),
-                        IsFirstTransactionOfType = c.Boolean(nullable: false),
-                        AuthorizedFamilyId = c.Int(),
-                        Amount = c.Decimal(nullable: false, precision: 18, scale: 2),
-                        ModifiedDateTime = c.DateTime(),
-                        Guid = c.Guid(nullable: false),
-                        ForeignId = c.Int(),
-                        ForeignGuid = c.Guid(),
-                        ForeignKey = c.String(maxLength: 100),
-                    })
-                .PrimaryKey(t => t.Id)
-                .Index(t => t.TransactionKey, unique: true)
-                .Index(t => t.TransactionDateKey)
-                .Index(t => t.TransactionTypeValueId)
-                .Index(t => t.SourceTypeValueId)
-                .Index(t => t.BatchId)
-                .Index(t => t.AccountId)
-                .Index(t => t.CurrencyTypeValueId)
-                .Index(t => t.CreditCardTypeValueId)
-                .Index(t => t.Guid, unique: true)
-                .Index(t => t.ForeignId)
-                .Index(t => t.ForeignGuid)
-                .Index(t => t.ForeignKey);
-            
-            CreateTable(
                 "dbo.AnalyticsDimDate",
                 c => new
                     {
-                        Id = c.Int(nullable: false, identity: true),
                         DateKey = c.Int(nullable: false),
                         Date = c.DateTime(nullable: false, storeType: "date"),
                         FullDateDescription = c.String(),
@@ -95,7 +45,7 @@ namespace Rock.Migrations
                         LastDayInMonthIndictor = c.Boolean(nullable: false),
                         WeekNumberInMonth = c.Int(nullable: false),
                         SundayDate = c.DateTime(nullable: false, storeType: "date"),
-                        GivingMonth = c.Int(nullable: false),
+                        GivingMonth = c.String(),
                         CalendarWeekNumberInYear = c.Int(nullable: false),
                         CalendarInMonthName = c.String(),
                         CalendarInMonthNameAbbrevated = c.String(),
@@ -109,7 +59,7 @@ namespace Rock.Migrations
                         FiscalMonth = c.String(),
                         FiscalMonthAbbrevated = c.String(),
                         FiscalMonthNumberInYear = c.Int(nullable: false),
-                        FiscalMonthYear = c.Int(nullable: false),
+                        FiscalMonthYear = c.String(),
                         FiscalQuarter = c.String(),
                         FiscalYearQuarter = c.String(),
                         FiscalHalfYear = c.String(),
@@ -120,16 +70,59 @@ namespace Rock.Migrations
                         EasterWeekIndicator = c.Boolean(nullable: false),
                         ChristmasIndicator = c.Boolean(nullable: false),
                         ChristmasWeekIndicator = c.Boolean(nullable: false),
+                    })
+                .PrimaryKey(t => t.DateKey)
+                .Index(t => t.Date, unique: true);
+            
+            CreateTable(
+                "dbo.AnalyticsSourceFinancialTransaction",
+                c => new
+                    {
+                        Id = c.Int(nullable: false, identity: true),
+                        TransactionKey = c.String(maxLength: 40),
+                        TransactionDateKey = c.Int(nullable: false),
+                        TransactionDateTime = c.DateTime(nullable: false),
+                        TransactionCode = c.String(maxLength: 50),
+                        Summary = c.String(),
+                        TransactionTypeValueId = c.Int(nullable: false),
+                        SourceTypeValueId = c.Int(),
+                        IsScheduled = c.Boolean(nullable: false),
+                        AuthorizedPersonAliasId = c.Int(),
+                        ProcessedByPersonAliasId = c.Int(),
+                        ProcessedDateTime = c.DateTime(),
+                        GivingGroupId = c.Int(),
+                        GivingId = c.String(),
+                        BatchId = c.Int(nullable: false),
+                        FinancialGatewayId = c.Int(),
+                        EntityTypeId = c.Int(),
+                        EntityId = c.Int(),
+                        TransactionId = c.Int(nullable: false),
+                        TransactionDetailId = c.Int(nullable: false),
+                        AccountId = c.Int(nullable: false),
+                        CurrencyTypeValueId = c.Int(),
+                        CreditCardTypeValueId = c.Int(),
+                        DaysSinceLastTransactionOfType = c.Int(),
+                        IsFirstTransactionOfType = c.Boolean(nullable: false),
+                        AuthorizedFamilyId = c.Int(),
+                        Count = c.Int(nullable: false),
+                        Amount = c.Decimal(nullable: false, precision: 18, scale: 2),
+                        ModifiedDateTime = c.DateTime(),
                         Guid = c.Guid(nullable: false),
                         ForeignId = c.Int(),
                         ForeignGuid = c.Guid(),
                         ForeignKey = c.String(maxLength: 100),
                     })
                 .PrimaryKey(t => t.Id)
-                .Index(t => t.Guid, unique: true)
-                .Index(t => t.ForeignId)
-                .Index(t => t.ForeignGuid)
-                .Index(t => t.ForeignKey);
+                .ForeignKey("dbo.AnalyticsDimDate", t => t.TransactionDateKey)
+                .Index(t => t.TransactionKey, unique: true)
+                .Index(t => t.TransactionDateKey)
+                .Index(t => t.TransactionTypeValueId)
+                .Index(t => t.SourceTypeValueId)
+                .Index(t => t.BatchId)
+                .Index(t => t.AccountId)
+                .Index(t => t.CurrencyTypeValueId)
+                .Index(t => t.CreditCardTypeValueId)
+                .Index(t => t.Guid, unique: true);
         }
         
         /// <summary>
@@ -137,21 +130,7 @@ namespace Rock.Migrations
         /// </summary>
         public override void Down()
         {
-           
-            DropForeignKey("dbo.AnalyticsSourceFinancialTransaction", "TransactionTypeValueId", "dbo.AnalyticsDimFinancialTransactionType");
             DropForeignKey("dbo.AnalyticsSourceFinancialTransaction", "TransactionDateKey", "dbo.AnalyticsDimDate");
-            DropForeignKey("dbo.AnalyticsSourceFinancialTransaction", "SourceTypeValueId", "dbo.AnalyticsDimFinancialTransactionSource");
-            DropForeignKey("dbo.AnalyticsSourceFinancialTransaction", "CurrencyTypeValueId", "dbo.AnalyticsDimFinancialTransactionCurrencyType");
-            DropForeignKey("dbo.AnalyticsSourceFinancialTransaction", "CreditCardTypeValueId", "dbo.AnalyticsDimFinancialTransactionCreditCardType");
-            DropForeignKey("dbo.AnalyticsSourceFinancialTransaction", "BatchId", "dbo.AnalyticsDimFinancialBatch");
-            DropForeignKey("dbo.AnalyticsSourceFinancialTransaction", "AccountId", "dbo.AnalyticsDimFinancialAccount");
-            DropIndex("dbo.AnalyticsDimDate", new[] { "ForeignKey" });
-            DropIndex("dbo.AnalyticsDimDate", new[] { "ForeignGuid" });
-            DropIndex("dbo.AnalyticsDimDate", new[] { "ForeignId" });
-            DropIndex("dbo.AnalyticsDimDate", new[] { "Guid" });
-            DropIndex("dbo.AnalyticsSourceFinancialTransaction", new[] { "ForeignKey" });
-            DropIndex("dbo.AnalyticsSourceFinancialTransaction", new[] { "ForeignGuid" });
-            DropIndex("dbo.AnalyticsSourceFinancialTransaction", new[] { "ForeignId" });
             DropIndex("dbo.AnalyticsSourceFinancialTransaction", new[] { "Guid" });
             DropIndex("dbo.AnalyticsSourceFinancialTransaction", new[] { "CreditCardTypeValueId" });
             DropIndex("dbo.AnalyticsSourceFinancialTransaction", new[] { "CurrencyTypeValueId" });
@@ -161,9 +140,10 @@ namespace Rock.Migrations
             DropIndex("dbo.AnalyticsSourceFinancialTransaction", new[] { "TransactionTypeValueId" });
             DropIndex("dbo.AnalyticsSourceFinancialTransaction", new[] { "TransactionDateKey" });
             DropIndex("dbo.AnalyticsSourceFinancialTransaction", new[] { "TransactionKey" });
+            DropIndex("dbo.AnalyticsDimDate", new[] { "Date" });
 
-            DropTable("dbo.AnalyticsDimDate");
             DropTable("dbo.AnalyticsSourceFinancialTransaction");
+            DropTable("dbo.AnalyticsDimDate");
         }
     }
 }
