@@ -70,6 +70,7 @@ namespace Rock.Model
         /// The day of week.
         /// </value>
         [DataMember]
+        [MaxLength(450)]
         public string DayOfWeek { get; set; }
 
         /// <summary>
@@ -79,6 +80,7 @@ namespace Rock.Model
         /// The day of week abbreviated.
         /// </value>
         [DataMember]
+        [MaxLength( 450 )]
         public string DayOfWeekAbbreviated { get; set; }
 
         /// <summary>
@@ -152,6 +154,7 @@ namespace Rock.Model
         /// The giving month.
         /// </value>
         [DataMember]
+        [MaxLength( 450 )]
         public string GivingMonth { get; set; }
 
         /// <summary>
@@ -170,6 +173,7 @@ namespace Rock.Model
         /// The name of the calendar in month.
         /// </value>
         [DataMember]
+        [MaxLength( 450 )]
         public string CalendarInMonthName { get; set; }
 
         /// <summary>
@@ -179,6 +183,7 @@ namespace Rock.Model
         /// The calendar in month name abbrevated.
         /// </value>
         [DataMember]
+        [MaxLength( 450 )]
         public string CalendarInMonthNameAbbrevated { get; set; }
 
         /// <summary>
@@ -197,6 +202,7 @@ namespace Rock.Model
         /// The calendar year month.
         /// </value>
         [DataMember]
+        [MaxLength( 450 )]
         public string CalendarYearMonth { get; set; }
 
         /// <summary>
@@ -206,6 +212,7 @@ namespace Rock.Model
         /// The calendar quarter.
         /// </value>
         [DataMember]
+        [MaxLength( 450 )]
         public string CalendarQuarter { get; set; }
 
         /// <summary>
@@ -215,6 +222,7 @@ namespace Rock.Model
         /// The calendar year quarter.
         /// </value>
         [DataMember]
+        [MaxLength( 450 )]
         public string CalendarYearQuarter { get; set; }
 
         /// <summary>
@@ -251,6 +259,7 @@ namespace Rock.Model
         /// The fiscal month.
         /// </value>
         [DataMember]
+        [MaxLength( 450 )]
         public string FiscalMonth { get; set; }
 
         /// <summary>
@@ -260,6 +269,7 @@ namespace Rock.Model
         /// The fiscal month abbrevated.
         /// </value>
         [DataMember]
+        [MaxLength( 450 )]
         public string FiscalMonthAbbrevated { get; set; }
 
         /// <summary>
@@ -278,6 +288,7 @@ namespace Rock.Model
         /// The fiscal month year.
         /// </value>
         [DataMember]
+        [MaxLength( 450 )]
         public string FiscalMonthYear { get; set; }
 
         /// <summary>
@@ -287,6 +298,7 @@ namespace Rock.Model
         /// The fiscal quarter.
         /// </value>
         [DataMember]
+        [MaxLength( 450 )]
         public string FiscalQuarter { get; set; }
 
         /// <summary>
@@ -296,6 +308,7 @@ namespace Rock.Model
         /// The fiscal year quarter.
         /// </value>
         [DataMember]
+        [MaxLength( 450 )]
         public string FiscalYearQuarter { get; set; }
 
         /// <summary>
@@ -305,6 +318,7 @@ namespace Rock.Model
         /// The fiscal half year.
         /// </value>
         [DataMember]
+        [MaxLength( 450 )]
         public string FiscalHalfYear { get; set; }
 
         /// <summary>

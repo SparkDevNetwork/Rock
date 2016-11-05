@@ -1,4 +1,4 @@
-DECLARE @BeginDate DATE = DateFromParts(1900, 1, 1)
+DECLARE @BeginDate DATE = DateFromParts(1850, 1, 1)
     ,@InsertDate DATE
     ,@EndDate DATE = DateFromParts(2100, 1, 1)
 
