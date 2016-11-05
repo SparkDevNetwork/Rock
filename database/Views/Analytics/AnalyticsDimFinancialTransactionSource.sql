@@ -4,7 +4,7 @@ GO
 
 CREATE VIEW AnalyticsDimFinancialTransactionSource
 AS
-SELECT dv.Id [CurrencyTypeId]
+SELECT dv.Id [SourceId]
     ,dv.Value [Name]
     ,dv.[Order]
 FROM DefinedValue dv

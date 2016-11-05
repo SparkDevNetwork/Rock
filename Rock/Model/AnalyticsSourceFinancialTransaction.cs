@@ -173,6 +173,7 @@ namespace Rock.Model
         /// The giving identifier.
         /// </value>
         [DataMember]
+        [MaxLength( 450 )]
         public string GivingId { get; set; }
 
         /// <summary>
@@ -406,7 +407,7 @@ namespace Rock.Model
         public AnalyticsSourceFinancialTransactionConfiguration()
         {
             this.HasRequired( t => t.TransactionDate ).WithMany().HasForeignKey( t => t.TransactionDateKey ).WillCascadeOnDelete( false );
-            this.HasRequired( t => t.Batch ).WithMany().HasForeignKey( t => t.BatchId ).WillCascadeOnDelete( false );
+            this.HasOptional( t => t.Batch ).WithMany().HasForeignKey( t => t.BatchId ).WillCascadeOnDelete( false );
             this.HasOptional( t => t.SourceTypeValue ).WithMany().HasForeignKey( t => t.SourceTypeValueId ).WillCascadeOnDelete( false );
             this.HasRequired( t => t.TransactionTypeValue ).WithMany().HasForeignKey( t => t.TransactionTypeValueId ).WillCascadeOnDelete( false );
             this.HasOptional( t => t.CurrencyTypeValue ).WithMany().HasForeignKey( t => t.CurrencyTypeValueId ).WillCascadeOnDelete( false );
