@@ -368,6 +368,12 @@ namespace Rock.UniversalSearch.IndexModels
 
 
         #region ILiquid Implementation
+        /// <summary>
+        /// Gets the available keys (for debuging info).
+        /// </summary>
+        /// <value>
+        /// The available keys.
+        /// </value>
         [LavaIgnore]
         public List<string> AvailableKeys
         {
@@ -418,15 +424,25 @@ namespace Rock.UniversalSearch.IndexModels
             return false;
         }
 
+        /// <summary>
+        /// To the liquid.
+        /// </summary>
+        /// <returns></returns>
         public object ToLiquid()
         {
             return this;
         }
 
+        /// <summary>
+        /// Determines whether the specified key contains key.
+        /// </summary>
+        /// <param name="key">The key.</param>
+        /// <returns></returns>
         public bool ContainsKey( object key )
         {
             return this.GetDynamicMemberNames().Contains(key.ToString());
         }
+
         #endregion
         
         #region Static Methods
