@@ -8,6 +8,12 @@
 {% if campus != Empty %}
   {% assign campusLeader = campus.LeaderPersonAliasId | PersonByAliasId %}
 
+  {% assign comingSoonUntil = campus | Attribute: 'ComingSoonUntil' | Date: 'yyyyMMdd' %}
+  {% assign today = 'Now' | Date: 'yyyyMMdd' %}
+  {% if today < comingSoonUntil %}
+    {% assign isComingSoon = true %}
+  {% endif %}
+
   <div class="jumbotron bigblock-inverse bigblock-pflexbg bigblock-shade bigblock-rheight">
     <div class="bigblock-pflexbgholder">
       <div class="delayed-image-load" data-src="{{ campus | Attribute: 'CoverPhoto', 'Url' }}&width={width}" data-alt="Campus Photo"></div>
@@ -30,6 +36,9 @@
       <div class="col-md-5">
         <div class="well">
           <h3>Service Times</h3>
+          {% if isComingSoon %}
+            <p class="text-muted small">Coming Soon</p>
+          {% endif %}
           <div class="commalist">
             {% include '~~/Assets/Lava/ServiceTimes/CommaList.lava' %}
           </div>
@@ -56,6 +65,7 @@
 
     <hr class="margin-v-lg">
 
+    {% if isComingSoon != true %}
     <div class="row">
 
       {% if campusLeader %}
@@ -105,6 +115,7 @@
 
       </div>
     </div>
+    {% endif %}
 
   </div>
 

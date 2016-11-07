@@ -33,6 +33,12 @@
       <div class="well well-dark well-borderless">
         <h4>Service Times</h4>
 
+        {% assign comingSoonUntil = Context.Campus | Attribute: 'ComingSoonUntil' | Date: 'yyyyMMdd' %}
+        {% assign today = 'Now' | Date: 'yyyyMMdd' %}
+        {% if today < comingSoonUntil %}
+          {% assign isComingSoon = true %}
+        {% endif %}
+
         {% assign useLightIcon = true %}
         {% assign times = Context.Campus.ServiceTimes %}
         {% include '~~/Assets/Lava/ServiceTimes/Main.lava' %}

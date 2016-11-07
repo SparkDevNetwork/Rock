@@ -21,11 +21,18 @@
   <div class="row">
   {% for campus in Campuses %}
     {% if campus.IsActive %}
+    {% assign isComingSoon = false %}
+    {% assign comingSoonUntil = campus | Attribute: 'ComingSoonUntil' | Date: 'yyyyMMdd' %}
+    {% assign today = 'Now' | Date: 'yyyyMMdd' %}
+    {% if today < comingSoonUntil %}
+      {% assign isComingSoon = true %}
+    {% endif %}
+
       <div class="col-sm-6 col-md-4">
         <div class="panel panel-default margin-b-lg">
           <div class="panel-body">
             <h4 class="margin-t-none">{{ campus.Name }} Campus</h4>
-            <h5 class="margin-t-md margin-b-sm text-muted">Service Times</h5>
+            <h5 class="margin-t-md margin-b-sm text-muted">Service Times{% if isComingSoon %} <small>Coming Soon</small>{% endif %}</h5>
             <p class="text-muted commalist">
               {% include '~~/Assets/Lava/ServiceTimes/CommaList.lava' %}
 
