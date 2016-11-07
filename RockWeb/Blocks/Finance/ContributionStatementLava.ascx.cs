@@ -301,6 +301,14 @@ namespace RockWeb.Blocks.Finance
                                     .OrderBy(p => p.FamilyRoleOrder).ThenBy(p => p.Gender)
                                     .ToList();
 
+            // make a list of person ids in the giving group
+            List<int> givingGroupIdsOnly = new List<int>();
+            foreach (var x in givingGroup)
+            {
+                givingGroupIdsOnly.Add(x.PersonId);
+            }
+
+
             string salutation = string.Empty;
 
             if (givingGroup.GroupBy(g => g.LastName).Count() == 1 )
@@ -367,6 +375,7 @@ namespace RockWeb.Blocks.Finance
                 pledge.AmountGiven = new FinancialTransactionDetailService( rockContext ).Queryable()
                                             .Where( t =>
                                                  t.AccountId == pledge.AccountId
+                                                 && givingGroupIdsOnly.Contains(t.Transaction.AuthorizedPersonAlias.PersonId)
                                                  && t.Transaction.TransactionDateTime >= pledge.PledgeStartDate
                                                  && t.Transaction.TransactionDateTime <= adjustedPedgeEndDate )
                                             .Sum( t => t.Amount );
