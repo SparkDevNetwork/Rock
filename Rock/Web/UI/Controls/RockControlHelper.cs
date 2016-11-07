@@ -195,6 +195,12 @@ namespace Rock.Web.UI.Controls
             }
         }
 
+        /// <summary>
+        /// Renders the control.
+        /// </summary>
+        /// <param name="label">The label.</param>
+        /// <param name="control">The control.</param>
+        /// <param name="writer">The writer.</param>
         public static void RenderControl( string label, Control control, HtmlTextWriter writer )
         {
             bool renderLabel = ( !string.IsNullOrEmpty( label ) );

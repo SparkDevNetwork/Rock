@@ -270,6 +270,7 @@ namespace Rock.UniversalSearch.IndexComponents
         /// <param name="query">The query.</param>
         /// <param name="searchType">Type of the search.</param>
         /// <param name="entities">The entities.</param>
+        /// <param name="fieldCriteria">The field criteria.</param>
         /// <returns></returns>
         public override List<IndexModelBase> Search( string query, SearchType searchType = SearchType.ExactMatch, List<int> entities = null, SearchFieldCriteria fieldCriteria = null )
         {
