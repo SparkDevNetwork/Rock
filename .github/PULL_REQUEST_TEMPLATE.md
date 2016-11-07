@@ -15,3 +15,6 @@ _What could this change potentially impact? Are there any security consideration
 
 # Screenshots
 _Provide us some screenshots if your pull request either alters existing UI or provides new UI. Arrows and labels are helpful._
+
+# Documentation
+_If your change effects the UI or needs to be documented in one of the existing [user guides](http://www.rockrms.com/Learn/Documentation), please provide the brief write-up here:_
