@@ -701,15 +701,11 @@ namespace RockWeb.Blocks.Core
 
             if ( _configuredType )
             {
-                ddlAttrEntityType.Visible = false;
-                tbAttrQualifierField.Visible = false;
-                tbAttrQualifierValue.Visible = false;
+                pnlEntityTypeQualifier.Visible = false;
             }
             else
             {
-                ddlAttrEntityType.Visible = true;
-                tbAttrQualifierField.Visible = true;
-                tbAttrQualifierValue.Visible = true;
+                pnlEntityTypeQualifier.Visible = true;
 
                 ddlAttrEntityType.SetValue( attributeModel.EntityTypeId.HasValue ? attributeModel.EntityTypeId.Value.ToString() : "0" );
                 tbAttrQualifierField.Text = attributeModel.EntityTypeQualifierColumn;
