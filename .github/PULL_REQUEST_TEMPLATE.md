@@ -1,3 +1,6 @@
+# Contributor Agreement
+_Have you filled out and sent your [Spark Contributor Agreement](http://www.rockrms.com/Content/RockExternal/Misc/Contributor%20Agreement.pdf) to secretary [at] sparkdevnetwork.org?_
+
 # Context
 _What is the problem you encountered that lead to you creating this pull request?_
 
