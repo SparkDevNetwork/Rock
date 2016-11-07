@@ -65,7 +65,7 @@ namespace RockWeb.Blocks.Finance
 <h4>
 {{ Salutation }} <br />
 {{ StreetAddress1 }} <br />
-{% if StreetAddress2 != '' %}
+{% if StreetAddress2 and StreetAddress2 != '' %}
     {{ StreetAddress2 }} <br />
 {% endif %}
 {{ City }}, {{ State }} {{ PostalCode }}
