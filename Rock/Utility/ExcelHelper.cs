@@ -10,6 +10,9 @@ using System.Linq;
 
 namespace Rock.Utility
 {
+    /// <summary>
+    /// Methods that facilitate generating Excel files
+    /// </summary>
     public static class ExcelHelper
     {
         public const string GeneralFormat = "General";
@@ -44,6 +47,11 @@ namespace Rock.Utility
             return excel;
         }
 
+        /// <summary>
+        /// Adds a worksheet from a DataTable
+        /// </summary>
+        /// <param name="excel">The ExcelPackage object to add a worksheet to</param>
+        /// <param name="data">The DataTable to populate the worksheet with. The TableName of the DataTable will be the header and Tab name of the worksheet.</param>
         public static void AddWorksheet( this ExcelPackage excel, DataTable data )
         {
             var worksheet = excel.Workbook.Worksheets.Add( data.TableName );
@@ -82,6 +90,14 @@ namespace Rock.Utility
             worksheet.FormatWorksheet( data.TableName, headerRows, rowCounter, columnCounter );
         }
 
+        /// <summary>
+        /// Apply the default Rock worksheet formatting
+        /// </summary>
+        /// <param name="worksheet">The worksheet to be formatted</param>
+        /// <param name="title">The title to display in the worksheet header</param>
+        /// <param name="headerRows">The number of rows to use for the header</param>
+        /// <param name="rows">The number of rows populated in the worksheet</param>
+        /// <param name="columns">The number of columns populated in the worksheet</param>
         public static void FormatWorksheet( this ExcelWorksheet worksheet, string title, int headerRows, int rows, int columns )
         {
             var range = worksheet.Cells[headerRows, 1, rows, columns];
@@ -161,7 +177,7 @@ namespace Rock.Utility
         /// <summary>
         /// Sets the default formatting for an excel column based on the data type
         /// </summary>
-        /// <param name="type"></param>
+        /// <param name="type">The data type of the column</param>
         /// <returns></returns>
         public static string DefaultColumnFormat( Type type )
         {
@@ -188,8 +204,8 @@ namespace Rock.Utility
         /// <summary>
         /// Sets the default formatting for an excel column based on the field type and data type
         /// </summary>
-        /// <param name="field"></param>
-        /// <param name="exportValue"></param>
+        /// <param name="field">The grid field</param>
+        /// <param name="exportValue">An example value for this column; you can use the data from the first row</param>
         /// <returns></returns>
         public static string DefaultColumnFormat( IRockGridField field, object exportValue )
         {
@@ -204,8 +220,8 @@ namespace Rock.Utility
         /// <summary>
         /// Updates the excel column format based on the level of detail in the data
         /// </summary>
-        /// <param name="exportValue"></param>
-        /// <param name="defaultFormat"></param>
+        /// <param name="exportValue">The cell value to use for formatting</param>
+        /// <param name="defaultFormat">The existing column format to use if no changes are to be made</param>
         /// <returns></returns>
         public static string FinalColumnFormat( object exportValue, string defaultFormat )
         {
@@ -253,6 +269,14 @@ namespace Rock.Utility
             }
         }
 
+        /// <summary>
+        /// Saves an ExcelPackage as a BinaryFile and stores it in the database
+        /// </summary>
+        /// <param name="excel">The ExcelPackage object to save</param>
+        /// <param name="fileName">The filename to save the workbook as</param>
+        /// <param name="rockContext">The RockContext to use</param>
+        /// <param name="binaryFileType">Optionally specifies the BinaryFileType to apply to this file for security purposes</param>
+        /// <returns></returns>
         public static BinaryFile Save( ExcelPackage excel, string fileName, RockContext rockContext, BinaryFileType binaryFileType = null )
         {
             if ( binaryFileType == null )
@@ -278,6 +302,11 @@ namespace Rock.Utility
             return binaryFile;
         }
 
+        /// <summary>
+        /// Convert an ExcelPackage to a MemoryStream
+        /// </summary>
+        /// <param name="excel">The ExcelPackage</param>
+        /// <returns></returns>
         public static MemoryStream ToMemoryStream( this ExcelPackage excel )
         {
             MemoryStream ms = new MemoryStream();
@@ -285,11 +314,22 @@ namespace Rock.Utility
             return ms;
         }
 
+        /// <summary>
+        /// Convert an ExcelPackage to a ByteArray
+        /// </summary>
+        /// <param name="excel">The ExcelPackage</param>
+        /// <returns></returns>
         public static byte[] ToByteArray( this ExcelPackage excel )
         {
             return excel.ToMemoryStream().ToArray();
         }
 
+        /// <summary>
+        /// Sends an Excel workbook to the user
+        /// </summary>
+        /// <param name="excel">The ExcelPackage to send</param>
+        /// <param name="page">The current Page object</param>
+        /// <param name="filename">The filename to send the file as</param>
         public static void SendToBrowser( this ExcelPackage excel, System.Web.UI.Page page, string filename )
         {
             page.EnableViewState = false;
