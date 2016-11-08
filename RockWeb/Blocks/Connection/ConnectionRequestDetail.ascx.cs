@@ -1801,11 +1801,11 @@ namespace RockWeb.Blocks.Connection
                             var person = new PersonService( rockContext ).Get( personId.Value );
                             if ( person != null )
                             {
-                                nbRequirementsWarning.Text = string.Format( "{0} does not currently meet the requirements for the selected group/role and will not be able to be placed!", person.NickName );
+                                nbRequirementsWarning.Text = string.Format( "{0} does not currently meet the requirements for the selected group/role and will not be able to be placed.", person.NickName );
                             }
                             else
                             {
-                                nbRequirementsWarning.Text = "This person does not currently meet the requirements for this group and will not be able to be placed!";
+                                nbRequirementsWarning.Text = "This person does not currently meet the requirements for this group and will not be able to be placed.";
                             }
                             nbRequirementsWarning.Visible = true;
                         }
