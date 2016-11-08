@@ -30,6 +30,8 @@ using Rock.Data;
 using Rock;
 using System.Linq;
 using Rock.Rest.Controllers;
+using System.Collections.Generic;
+using Rock.Web.Cache;
 
 namespace chuch.ccv.FamilyManager.Rest
 {
@@ -55,54 +57,49 @@ namespace chuch.ccv.FamilyManager.Rest
         [Authenticate, Secured]
         public HttpResponseMessage Login( [FromBody]LoginParameters loginParameters )
         {
-            RockContext rockContext = new RockContext( );
+            // default to an internal error
+            HttpStatusCode statusCode = HttpStatusCode.InternalServerError;
+            HttpContent httpContent = null;
 
-            bool valid = false;
-
-            var userLoginService = new UserLoginService( new Rock.Data.RockContext() );
-            var userLogin = userLoginService.GetByUserName( loginParameters.Username );
-            if ( userLogin != null && userLogin.EntityType != null) 
+            do
             {
+                RockContext rockContext = new RockContext( );
+
+                // verify their user login
+                var userLoginService = new UserLoginService( new Rock.Data.RockContext() );
+                var userLogin = userLoginService.GetByUserName( loginParameters.Username );
+
+                if ( userLogin == null || userLogin.EntityType == null ) { statusCode = HttpStatusCode.Unauthorized; break; }
+
+
+                // verify their password
                 var component = AuthenticationContainer.GetComponent(userLogin.EntityType.Name);
-                if ( component != null && component.IsActive)
-                {
-                    if ( component.Authenticate( userLogin, loginParameters.Password ) )
-                    {
-                        // ensure there's a person associated with this login.
-                        if( userLogin.PersonId.HasValue )
-                        {
-                            // so we know they have a valid login / password. Now check their family manager status
-                            GroupService groupService = new GroupService( rockContext );
-                            var familyManagerGroup = groupService.GetByGuid( Guids.FAMILY_MANAGER_AUTHORIZED_GROUP.AsGuid( ) );
-
-                            // if they're a member of the "Family Manager" group, they're good.
-                            var groupMember = familyManagerGroup.Members.Where( m => m.PersonId == userLogin.PersonId ).SingleOrDefault( );
-                            if ( groupMember != null )
-                            {
-                                valid = true;
-                            }
-                        }
-                    }
-                }
-            }
-
-            HttpResponseMessage response;
-            if ( !valid )
-            {
-                response = new HttpResponseMessage( HttpStatusCode.Unauthorized );
-            }
-            else
-            {
-                // return that their login was created, and give them the person ID they need to use.
-                StringContent restContent = new StringContent( JsonConvert.SerializeObject( new {  PersonId = userLogin.PersonId.Value } ), Encoding.UTF8, "application/json" );
+                if ( component == null || component.IsActive == false ) { statusCode = HttpStatusCode.Unauthorized; break; }
                 
-                response = new HttpResponseMessage( )
-                {
-                    StatusCode = HttpStatusCode.Created,
-                    Content = restContent
-                };
-            }
+                if ( component.Authenticate( userLogin, loginParameters.Password ) == false ) { statusCode = HttpStatusCode.Unauthorized; break; }
+                
+                
+                // ensure there's a person associated with this login.
+                if ( userLogin.PersonId.HasValue == false ) { statusCode = HttpStatusCode.Unauthorized; break; }
+                
 
+                // verify they can use family manager
+                GroupService groupService = new GroupService( rockContext );
+                var familyManagerGroup = groupService.GetByGuid( Guids.FAMILY_MANAGER_AUTHORIZED_GROUP.AsGuid( ) );
+
+                // if they're a member of the "Family Manager" group, they're good.
+                var groupMember = familyManagerGroup.Members.Where( m => m.PersonId == userLogin.PersonId ).SingleOrDefault( );
+                if ( groupMember == null ) { statusCode = HttpStatusCode.Unauthorized; break; }
+                
+
+                // all good! build and return the response
+                httpContent = new StringContent( JsonConvert.SerializeObject( new {  PersonId = userLogin.PersonId.Value } ), Encoding.UTF8, "application/json" );
+                statusCode = HttpStatusCode.Created;
+            }
+            while( false );
+            
+            // build and return the response
+            HttpResponseMessage response = new HttpResponseMessage( ) { StatusCode = statusCode, Content = httpContent };
             return response;
         }
 
@@ -111,38 +108,94 @@ namespace chuch.ccv.FamilyManager.Rest
         [Authenticate, Secured]
         public HttpResponseMessage GetFamily( int familyId )
         {
-            HttpResponseMessage response = new HttpResponseMessage( ) { StatusCode = HttpStatusCode.NotFound };
-
-            // first, get the family's metadata
-            GroupsController groupController = new GroupsController( );
-            GroupsController.FamilySearchResult familyResult = groupController.GetFamily( familyId );
-            if( familyResult != null && familyResult.Id == familyId )
+            HttpStatusCode statusCode;
+            HttpContent httpContent = null;
+            
+            Core.FamilyReturnObject familyReturnObj = Core.GetFamily( familyId, out statusCode );
+            if( familyReturnObj != null )
             {
-                // next, get the family group
-                Rock.Model.Group familyGroup = groupController.GetById( familyId );
-
-                if ( familyGroup != null && familyGroup.Id == familyId )
-                {
-                    // now get the guests for this family
-                    IQueryable<GroupsController.GuestFamily> guestFamilies = groupController.GetGuestsForFamily( familyId );
-
-                    // and finally package it all up into something FamilyManager can use.
-                    var familyReturnObj = new
-                    {
-                        Family = familyResult,
-                        GuestFamilies = guestFamilies,
-                        FamilyGroupObject = familyGroup
-                    };
-
-                    StringContent restContent = new StringContent( JsonConvert.SerializeObject( familyReturnObj ), Encoding.UTF8, "application/json" );
-                    response = new HttpResponseMessage( )
-                    {
-                        StatusCode = HttpStatusCode.OK,
-                        Content = restContent
-                    };
-                }
+                // package it up and we're done
+                httpContent = new StringContent( JsonConvert.SerializeObject( familyReturnObj ), Encoding.UTF8, "application/json" );
             }
             
+            // build and return the response
+            HttpResponseMessage response = new HttpResponseMessage( ) { StatusCode = statusCode, Content = httpContent };
+            return response;
+        }
+
+        [HttpGet]
+        [System.Web.Http.Route( "api/FamilyManager/GetPersonForEdit" )]
+        [Authenticate, Secured]
+        public HttpResponseMessage GetPersonForEdit( int personId )
+        {
+            // default to an internal error
+            HttpStatusCode statusCode = HttpStatusCode.InternalServerError;
+            HttpContent httpContent = null;
+            
+            Core.PersonReturnObject personReturnObj = Core.GetPersonForEdit( personId, out statusCode );
+            if( personReturnObj != null )
+            {
+                // package it up and we're done
+                httpContent = new StringContent( JsonConvert.SerializeObject( personReturnObj ), Encoding.UTF8, "application/json" );
+            }
+
+            // build and return the response
+            HttpResponseMessage response = new HttpResponseMessage( ) { StatusCode = statusCode, Content = httpContent };
+            return response;
+        }
+
+        /// <summary>
+        /// Supports: 
+        /// Editing Existing Person in Existing Family
+        /// Adding New Person to Existing Family
+        /// Adding New Person to New Family
+        /// Will return a Family Manager friendly representation of the family this person is being edited within.
+        /// </summary>
+        [HttpPost]
+        [System.Web.Http.Route( "api/FamilyManager/UpdateOrAddPerson" )]
+        [Authenticate, Secured]
+        public HttpResponseMessage UpdateOrAddPerson( [FromBody]UpdatePersonBody updatePersonBody )
+        {
+            // default to an internal error
+            HttpStatusCode statusCode = HttpStatusCode.InternalServerError;
+            HttpContent httpContent = null;
+
+            do
+            {
+                int personId = Core.UpdateOrAddPerson( updatePersonBody, out statusCode );
+                if( statusCode != HttpStatusCode.NoContent ) break;
+                
+                // if noContent was returned, we know it worked. Now get the family so we can provide an updated
+                // family (with this updated person) to Family Manager
+                Core.FamilyReturnObject familyReturnObj = null;
+
+                // if they were sent to us already IN a family, get that one.
+                if ( updatePersonBody.FamilyId > 0 )
+                {
+                    familyReturnObj = Core.GetFamily( updatePersonBody.FamilyId, out statusCode );
+                    if( statusCode != HttpStatusCode.OK ) break;
+                }
+                else
+                {
+                    // the only way familyId would be 0 is if this was a new person in a new family.
+                    // And that means they're only in one family, so get it.
+
+                    // the person resulted in a new family being created, so get that one.
+                    PersonService personService = new PersonService( new RockContext( ) );
+                    IQueryable<Group> families = personService.GetFamilies( personId );
+                    if( families.Count( ) != 1 ) { statusCode = HttpStatusCode.NotFound; break; }
+
+                    // now get the Family Manager friendly model
+                    familyReturnObj = Core.GetFamily( families.ToList( )[ 0 ].Id, out statusCode );
+                    if( statusCode != HttpStatusCode.OK ) break;
+                }
+                
+                httpContent = httpContent = new StringContent( JsonConvert.SerializeObject( familyReturnObj ), Encoding.UTF8, "application/json" );
+            }
+            while( false );
+            
+            // build and return the response
+            HttpResponseMessage response = new HttpResponseMessage( ) { StatusCode = statusCode, Content = httpContent };
             return response;
         }
     }

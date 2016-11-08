@@ -24,6 +24,7 @@ using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
 using System.Data.Entity;
+using System.IO;
 
 namespace church.ccv.FamilyManager.Models
 {
@@ -52,13 +53,31 @@ namespace church.ccv.FamilyManager.Models
         public List<DefinedValue> MaritalStatus;
         public List<DefinedValue> SchoolGrades;
         public List<DefinedValue> SourceOfVisit;
-
-        public Rock.Model.Attribute FirstTimeVisit;
+        
         public List<PersonAttribute> PersonAttributes;
 
         public GroupTypeRole FamilyMember_Child_GroupRole;
         public GroupTypeRole FamilyMember_Adult_GroupRole;
         public GroupTypeRole CanCheckIn_GroupRole;
         public GroupTypeRole AllowedCheckInBy_GroupRole;
+    }
+
+    [Serializable]
+    public class UpdatePersonBody
+    {
+        public int FamilyId;
+
+        public int GroupRoleId;
+
+        public int? GradeOffset;
+
+        public Person Person;
+        
+        public PhoneNumber CellPhoneNumber;
+
+        public List<KeyValuePair<string, string>> Attributes;
+
+        MemoryStream PersonImage;
+
     }
 }
