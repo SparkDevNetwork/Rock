@@ -1401,6 +1401,9 @@ namespace RockWeb.Blocks.Connection
                 lPlacementGroup.Text = !string.IsNullOrWhiteSpace( url ) ?
                     string.Format( "<a href='{0}'>{1}</a>{2}", url, connectionRequest.AssignedGroup.Name, roleStatus ) :
                     connectionRequest.AssignedGroup.Name;
+
+                hfGroupMemberAttributeValues.Value = connectionRequest.AssignedGroupMemberAttributeValues;
+                BuildGroupMemberAttributes( connectionRequest.AssignedGroupId, connectionRequest.AssignedGroupMemberRoleId, connectionRequest.AssignedGroupMemberStatus, true );
             }
             else
             {
@@ -1820,6 +1823,7 @@ namespace RockWeb.Blocks.Connection
         private void BuildGroupMemberAttributes( int? groupId, int? groupMemberRoleId, GroupMemberStatus? groupMemberStatus, bool setValues )
         {
             phGroupMemberAttributes.Controls.Clear();
+            phGroupMemberAttributesView.Controls.Clear();
 
             if ( groupId.HasValue && groupMemberRoleId.HasValue && groupMemberStatus != null )
             {
@@ -1851,6 +1855,7 @@ namespace RockWeb.Blocks.Connection
                         }
 
                         Rock.Attribute.Helper.AddEditControls( groupMember, phGroupMemberAttributes, setValues, BlockValidationGroup, 2 );
+                        Rock.Attribute.Helper.AddDisplayControls( groupMember, phGroupMemberAttributesView, null, false, false );
                     }
                 }
             }
