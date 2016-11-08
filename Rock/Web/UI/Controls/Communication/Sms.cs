@@ -141,6 +141,19 @@ namespace Rock.Web.UI.Controls.Communication
         /// <exception cref="System.NotImplementedException"></exception>
         public override void InitializeFromSender( Person sender )
         {
+            var numbers = DefinedTypeCache.Read( Rock.SystemGuid.DefinedType.COMMUNICATION_SMS_FROM.AsGuid() );
+            if( numbers != null )
+            {
+                foreach ( var number in numbers.DefinedValues )
+                {
+                    var personAliasGuid = number.GetAttributeValue( "ResponseRecipient" ).AsGuidOrNull(); 
+                    if ( personAliasGuid.HasValue && sender.Aliases.Any( a => a.Guid == personAliasGuid.Value ) )
+                    {
+                        ddlFrom.SetValue( number.Id );
+                        break;
+                    }
+                }
+            }
         }
 
         /// <summary>
