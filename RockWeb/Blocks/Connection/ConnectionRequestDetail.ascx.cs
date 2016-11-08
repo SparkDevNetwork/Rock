@@ -1580,7 +1580,7 @@ namespace RockWeb.Blocks.Connection
                         .Where( g =>
                             g.Group != null &&
                             g.Group.IsActive &&
-                            ( !g.Group.CampusId.HasValue || ( campusId.HasValue && campusId.Value == g.Group.CampusId.Value ) ) )
+                            ( !campusId.HasValue || !g.Group.CampusId.HasValue || campusId.Value == g.Group.CampusId.Value ) )
                         .Select( g => g.Group )
                         .ToList();
                 }
@@ -1590,12 +1590,15 @@ namespace RockWeb.Blocks.Connection
                 {
                     if ( groupConfig.UseAllGroupsOfType )
                     {
+                        var existingGroupIds = groups.Select( g => g.Id ).ToList();
+
                         groups.AddRange( new GroupService( new RockContext() )
                             .Queryable().AsNoTracking()
                             .Where( g =>
+                                !existingGroupIds.Contains( g.Id ) &&
                                 g.IsActive &&
                                 g.GroupTypeId == groupConfig.GroupTypeId &&
-                                ( !g.CampusId.HasValue || ( campusId.HasValue && campusId.Value == g.CampusId.Value ) ) )
+                                ( !campusId.HasValue || !g.CampusId.HasValue || campusId.Value == g.CampusId.Value ) )
                             .ToList() );
                     }
                 }
@@ -1627,7 +1630,7 @@ namespace RockWeb.Blocks.Connection
                     {
                         connectionRequest.ConnectionOpportunity.ConnectionOpportunityConnectorGroups
                             .Where( g =>
-                                ( !g.CampusId.HasValue || !campusId.HasValue || g.CampusId.Value == campusId.Value ) )
+                                ( !campusId.HasValue || !g.CampusId.HasValue || g.CampusId.Value == campusId.Value ) )
                             .SelectMany( g => g.ConnectorGroup.Members )
                             .Where( m => m.GroupMemberStatus == GroupMemberStatus.Active )
                             .Select( m => m.Person )
