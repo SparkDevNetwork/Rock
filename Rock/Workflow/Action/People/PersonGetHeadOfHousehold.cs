@@ -33,13 +33,13 @@ namespace Rock.Workflow.Action
     /// Sets an attribute's value to the selected person 
     /// </summary>
     [ActionCategory( "People" )]
-    [Description( "Get's the Head of houseold of the selected person." )]
+    [Description( "Get's the Head of household of the selected person." )]
     [Export( typeof( ActionComponent ) )]
-    [ExportMetadata( "ComponentName", "Person Get head of houseold" )]
+    [ExportMetadata( "ComponentName", "Person Get head of household" )]
 
     [WorkflowAttribute( "Person", "Workflow attribute that contains the person to get the head of the house for.", true, "", "", 0, null, new string[] { "Rock.Field.Types.PersonFieldType" } )]
-    [WorkflowAttribute( "HeadOfHouseold Attribute", "The workflow attribute to assign the head of houseold to.  head of houseold is deemed to be the other group memmber on the first family.", true, "", "", 1, null, new string[] { "Rock.Field.Types.PersonFieldType" } )]
-    public class PersonGetHeadOfHouseold : ActionComponent
+    [WorkflowAttribute( "HeadOfHousehold Attribute", "The workflow attribute to assign the head of household to.  head of household is deemed to be the other group memmber on the first family.", true, "", "", 1, null, new string[] { "Rock.Field.Types.PersonFieldType" } )]
+    public class PersonGetHeadOfHousehold : ActionComponent
     {
         /// <summary>
         /// Executes the specified workflow.
@@ -58,23 +58,23 @@ namespace Rock.Workflow.Action
             var person = GetPersonAliasFromActionAttribute( "Person", rockContext, action, errorMessages );
             if ( person != null )
             {
-                string HeadOfHouseoldAttributeValue = GetAttributeValue( action, "HeadOfHouseoldAttribute" );
-                Guid? headOfHouseoldGuid = HeadOfHouseoldAttributeValue.AsGuidOrNull();
-                if ( headOfHouseoldGuid.HasValue )
+                string HeadOfHouseholdAttributeValue = GetAttributeValue( action, "HeadOfHouseholdAttribute" );
+                Guid? headOfHouseholdGuid = HeadOfHouseholdAttributeValue.AsGuidOrNull();
+                if ( headOfHouseholdGuid.HasValue )
                 {
-                    var headofHouseoldAttribute = AttributeCache.Read( headOfHouseoldGuid.Value, rockContext );
-                    if ( headofHouseoldAttribute != null )
+                    var headofHouseholdAttribute = AttributeCache.Read( headOfHouseholdGuid.Value, rockContext );
+                    if ( headofHouseholdAttribute != null )
                     {
-                        var headOfHouse = person.GetHeadOfHouseold( rockContext );
-                        if ( headOfHouse != null )
+                        var headOfHousehold = person.GetHeadOfHousehold( rockContext );
+                        if ( headOfHousehold != null )
                         {
-                            action.Activity.Workflow.SetAttributeValue( headofHouseoldAttribute.Key, headOfHouse.PrimaryAlias.Guid.ToString() );
-                            action.AddLogEntry( string.Format( "Set Head Of Houseold attribute '{0}' attribute to '{1}'.", headofHouseoldAttribute.Name, headOfHouse.FullName ) );
+                            action.Activity.Workflow.SetAttributeValue( headofHouseholdAttribute.Key, headOfHousehold.PrimaryAlias.Guid.ToString() );
+                            action.AddLogEntry( string.Format( "Set Head Of Household attribute '{0}' attribute to '{1}'.", headofHouseholdAttribute.Name, headOfHousehold.FullName ) );
                             return true;
                         }
                         else
                         {
-                            action.AddLogEntry( string.Format( "No head of houseold found for {0}.", person.FullName ) );
+                            action.AddLogEntry( string.Format( "No head of Household found for {0}.", person.FullName ) );
                         }
                     }
                 }
