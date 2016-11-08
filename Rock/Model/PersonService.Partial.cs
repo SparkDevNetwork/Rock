@@ -1385,6 +1385,26 @@ namespace Rock.Model
                 .FirstOrDefault();
         }
 
+        /// <summary>
+        /// Gets the <see cref="Rock.Model.Person"/> entity of the provided Person's spouse.
+        /// </summary>
+        /// <param name="person">The <see cref="Rock.Model.Person"/> entity of the Person to retrieve the head of houseold of.</param>
+        /// <returns>The <see cref="Rock.Model.Person"/> entity containing the provided Person's head of houseold. If the provided Person's family head of houseold is not found, this value will be null.</returns>
+        public Person GetHeadOfHouseold( Person person )
+        {
+            var family = GetFamilies( person.Id ).FirstOrDefault();
+            if ( family == null )
+            {
+                return null;
+            }
+            return GetFamilyMembers( family, person.Id )
+                .OrderBy( m => m.GroupRole.Order )
+                .ThenBy( m => m.Person.Gender )
+                .Select( a => a.Person )
+                .FirstOrDefault();
+        }
+
+
         #endregion
 
         /// <summary>
