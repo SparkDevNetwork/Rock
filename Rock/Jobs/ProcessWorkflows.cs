@@ -93,13 +93,13 @@ namespace Rock.Jobs
                                 else
                                 {
                                     workflowErrors++;
-                                    ProcessingErrors.Add( string.Format( "{0} [{1}] - {2} [3]: {4}", workflow.WorkflowType.Name, workflow.WorkflowTypeId, workflow.Name, workflow.Id, errorMessages.AsDelimited( ", " ) ) );
+                                    ProcessingErrors.Add( string.Format( "{0} [{1}] - {2} [{3}]: {4}", workflow.WorkflowType.Name, workflow.WorkflowTypeId, workflow.Name, workflow.Id, errorMessages.AsDelimited( ", " ) ) );
                                 }
                             }
                         }
                         catch ( Exception ex )
                         {
-                            string workflowDetails = string.Format( "{0} [{1}] - {2} [3]", workflow.WorkflowType.Name, workflow.WorkflowTypeId, workflow.Name, workflow.Id );
+                            string workflowDetails = string.Format( "{0} [{1}] - {2} [{3}]", workflow.WorkflowType.Name, workflow.WorkflowTypeId, workflow.Name, workflow.Id );
                             exceptionMsgs.Add( workflowDetails + ": " + ex.Message );
                             throw new Exception( "Exception occurred processing workflow: " + workflowDetails, ex );
                         }
