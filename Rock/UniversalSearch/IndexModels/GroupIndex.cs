@@ -149,6 +149,26 @@ namespace Rock.UniversalSearch.IndexModels
         }
 
         /// <summary>
+        /// Gets the document URL.
+        /// </summary>
+        /// <param name="displayOptions"></param>
+        /// <returns></returns>
+        public override string GetDocumentUrl( Dictionary<string, object> displayOptions = null )
+        {
+            string url = "/Group/";
+
+            if ( displayOptions != null )
+            {
+                if ( displayOptions.ContainsKey( "Group.Url" ) )
+                {
+                    url = displayOptions["Group.Url"].ToString();
+                }
+            }
+
+            return url + this.Id;
+        }
+
+        /// <summary>
         /// Formats the search result.
         /// </summary>
         /// <param name="person">The person.</param>

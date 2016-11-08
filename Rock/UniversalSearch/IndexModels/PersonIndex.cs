@@ -281,6 +281,25 @@ namespace Rock.UniversalSearch.IndexModels
         }
 
         /// <summary>
+        /// Gets the document URL.
+        /// </summary>
+        /// <returns></returns>
+        public override string GetDocumentUrl( Dictionary<string, object> displayOptions = null )
+        {
+            string url = "/Person/";
+
+            if ( displayOptions != null )
+            {
+                if ( displayOptions.ContainsKey( "Person.Url" ) )
+                {
+                    url = displayOptions["Person.Url"].ToString();
+                }
+            }
+
+            return url + this.Id;
+        }
+
+        /// <summary>
         /// Formats the search result.
         /// </summary>
         /// <param name="currentPerson"></param>

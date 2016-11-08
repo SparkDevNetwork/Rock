@@ -110,6 +110,15 @@ namespace Rock.UniversalSearch.IndexModels
         }
 
         /// <summary>
+        /// Gets the document URL.
+        /// </summary>
+        /// <returns></returns>
+        public virtual string GetDocumentUrl( Dictionary<string, object> displayOptions = null )
+        {
+            return null;
+        }
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="IndexModelBase"/> class.
         /// </summary>
         public IndexModelBase()
@@ -425,7 +434,7 @@ namespace Rock.UniversalSearch.IndexModels
         }
 
         /// <summary>
-        /// To the liquid.
+        /// Returns liquid for the object
         /// </summary>
         /// <returns></returns>
         public object ToLiquid()
@@ -440,11 +449,11 @@ namespace Rock.UniversalSearch.IndexModels
         /// <returns></returns>
         public bool ContainsKey( object key )
         {
-            return this.GetDynamicMemberNames().Contains(key.ToString());
+            return this.GetDynamicMemberNames().Contains( key.ToString() );
         }
 
         #endregion
-        
+
         #region Static Methods
 
         #endregion
