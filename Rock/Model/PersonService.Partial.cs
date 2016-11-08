@@ -1386,11 +1386,11 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Gets the <see cref="Rock.Model.Person"/> entity of the provided Person's spouse.
+        /// Gets the <see cref="Rock.Model.Person"/> entity of the provided Person's head of household.
         /// </summary>
-        /// <param name="person">The <see cref="Rock.Model.Person"/> entity of the Person to retrieve the head of houseold of.</param>
-        /// <returns>The <see cref="Rock.Model.Person"/> entity containing the provided Person's head of houseold. If the provided Person's family head of houseold is not found, this value will be null.</returns>
-        public Person GetHeadOfHouseold( Person person )
+        /// <param name="person">The <see cref="Rock.Model.Person"/> entity of the Person to retrieve the head of household of.</param>
+        /// <returns>The <see cref="Rock.Model.Person"/> entity containing the provided Person's head of household. If the provided Person's family head of household is not found, this value will be null.</returns>
+        public Person GetHeadOfHousehold( Person person )
         {
             var family = GetFamilies( person.Id ).FirstOrDefault();
             if ( family == null )
