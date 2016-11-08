@@ -4140,6 +4140,10 @@ END
         /// <param name="guid">The unique identifier.</param>
         public void UpdateWorkflowTypeAttribute( string workflowTypeGuid, string fieldTypeGuid, string name, string key, string description, int order, string defaultValue, string guid )
         {
+            UpdateWorkflowTypeAttribute( workflowTypeGuid, fieldTypeGuid, name, key, description, order, defaultValue, guid, false );
+        }
+        public void UpdateWorkflowTypeAttribute( string workflowTypeGuid, string fieldTypeGuid, string name, string key, string description, int order, string defaultValue, string guid, bool isGridColumn )
+        {
             Migration.Sql( string.Format( @"
 
                 DECLARE @WorkflowTypeId int = (SELECT [Id] FROM [WorkflowType] WHERE [Guid] = '{0}')
@@ -4162,6 +4166,7 @@ END
                             [Name] = '{3}',
                             [Description] = '{4}',
                             [Order] = {5},
+                            [IsGridColumn] = {8},
                             [DefaultValue] = '{6}',
                             [Guid] = '{7}'
                         WHERE [EntityTypeId] = @EntityTypeId
@@ -4179,7 +4184,7 @@ END
                         VALUES(
                             1,@FieldTypeId, @EntityTypeId,'WorkflowTypeId',CAST(@WorkflowTypeId as varchar),
                             '{2}','{3}','{4}',
-                            {5},0,'{6}',0,0,
+                            {5},{8},'{6}',0,0,
                             '{7}')
                     END
 
@@ -4192,7 +4197,8 @@ END
                     description.Replace( "'", "''" ),
                     order,
                     defaultValue.Replace( "'", "''" ),
-                    guid )
+                    guid,
+                    ( isGridColumn ? "1" : "0" ) )
             );
         }
 
