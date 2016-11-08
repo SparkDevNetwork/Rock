@@ -98,6 +98,14 @@ namespace Rock.UniversalSearch
         public abstract void DeleteDocumentByProperty( Type documentType, string propertyName, object propertyValue );
 
         /// <summary>
+        /// Gets the document by identifier.
+        /// </summary>
+        /// <param name="documentType">Type of the document.</param>
+        /// <param name="id">The identifier.</param>
+        /// <returns></returns>
+        public abstract IndexModelBase GetDocumentById( Type documentType, int id );
+
+        /// <summary>
         /// Searches the specified query.
         /// </summary>
         /// <param name="query">The query.</param>

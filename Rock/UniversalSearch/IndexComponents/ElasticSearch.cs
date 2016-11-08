@@ -40,7 +40,7 @@ namespace Rock.UniversalSearch.IndexComponents
         {
             get
             {
-                if (_client == null )
+                if ( _client == null )
                 {
                     ConnectToServer();
                 }
@@ -49,7 +49,7 @@ namespace Rock.UniversalSearch.IndexComponents
                 {
                     var results = _client.ClusterState();
 
-                    if (results != null )
+                    if ( results != null )
                     {
                         return results.IsValid;
                     }
@@ -117,12 +117,12 @@ namespace Rock.UniversalSearch.IndexComponents
         /// <param name="mappingType">Type of the mapping.</param>
         public override void IndexDocument<T>( T document, string indexName = null, string mappingType = null )
         {
-            if (indexName == null )
+            if ( indexName == null )
             {
                 indexName = document.GetType().Name.ToLower();
             }
 
-            if (mappingType == null )
+            if ( mappingType == null )
             {
                 mappingType = document.GetType().Name.ToLower();
             }
@@ -143,7 +143,7 @@ namespace Rock.UniversalSearch.IndexComponents
                 indexName = typeof( T ).Name.ToLower();
             }
 
-            _client.DeleteByQueryAsync<T>(indexName, typeof( T ).Name.ToLower(), d => d.MatchAll() );
+            _client.DeleteByQueryAsync<T>( indexName, typeof( T ).Name.ToLower(), d => d.MatchAll() );
         }
 
         /// <summary>
@@ -167,7 +167,7 @@ namespace Rock.UniversalSearch.IndexComponents
         /// </summary>
         /// <param name="documentType">Type of the document.</param>
         /// <param name="deleteIfExists">if set to <c>true</c> [delete if exists].</param>
-        public override void CreateIndex(Type documentType, bool deleteIfExists = true)
+        public override void CreateIndex( Type documentType, bool deleteIfExists = true )
         {
             var indexName = documentType.Name.ToLower();
 
@@ -189,7 +189,7 @@ namespace Rock.UniversalSearch.IndexComponents
             }
 
             // make sure this is an index document
-            if (instance is IndexModelBase )
+            if ( instance is IndexModelBase )
             {
                 // create a new index request
                 var createIndexRequest = new CreateIndexRequest( indexName );
@@ -205,19 +205,19 @@ namespace Rock.UniversalSearch.IndexComponents
                 // get properties from the model and add them to the index (hint: attributes will be added dynamically as the documents are loaded)
                 var modelProperties = documentType.GetProperties();
 
-                foreach(var property in modelProperties )
+                foreach ( var property in modelProperties )
                 {
-                    var indexAttributes = property.GetCustomAttributes(false);
+                    var indexAttributes = property.GetCustomAttributes( false );
                     var indexAttribute = property.GetCustomAttributes( typeof( RockIndexField ), false );
-                    if(indexAttribute.Length > 0 )
+                    if ( indexAttribute.Length > 0 )
                     {
                         var attribute = (RockIndexField)indexAttribute[0];
-                        
+
                         var propertyName = Char.ToLowerInvariant( property.Name[0] ) + property.Name.Substring( 1 );
 
                         // rewrite non-string index option (would be nice if they made the enums match up...)
                         NonStringIndexOption nsIndexOption = NonStringIndexOption.NotAnalyzed;
-                        if (attribute.Type != IndexFieldType.String )
+                        if ( attribute.Type != IndexFieldType.String )
                         {
                             if ( attribute.Index == IndexType.NotIndexed )
                             {
@@ -277,11 +277,11 @@ namespace Rock.UniversalSearch.IndexComponents
             ISearchResponse<dynamic> results = null;
             List<SearchResultModel> searchResults = new List<SearchResultModel>();
 
-            if (searchType == SearchType.ExactMatch )
+            if ( searchType == SearchType.ExactMatch )
             {
                 var searchDescriptor = new SearchDescriptor<dynamic>().AllIndices();
 
-                if (entities == null || entities.Count == 0 )
+                if ( entities == null || entities.Count == 0 )
                 {
                     searchDescriptor = searchDescriptor.AllTypes();
                 }
@@ -300,11 +300,11 @@ namespace Rock.UniversalSearch.IndexComponents
 
                 QueryContainer queryContainer = new QueryContainer();
 
-                if (!string.IsNullOrWhiteSpace( query ) )
+                if ( !string.IsNullOrWhiteSpace( query ) )
                 {
                     queryContainer &= new QueryStringQuery { Query = query };
                 }
-                
+
                 if ( fieldCriteria != null && fieldCriteria.FieldValues?.Count > 0 )
                 {
                     QueryContainer matchQuery = null;
@@ -323,28 +323,18 @@ namespace Rock.UniversalSearch.IndexComponents
                     queryContainer &= matchQuery;
                 }
 
-                /*foreach(var term in terms )
-                {
-                    queryContainer &= new MatchQuery { Field = term.Field, Query = term.Value };
-                }*/
-                //new TermQuery {  Field = "city", Name = "city", Value = "Phoenix" };
-
-                //searchDescriptor = searchDescriptor.Query( q => q.QueryString( s => s.Query( query ) ) );
-                //searchDescriptor = searchDescriptor.Query( q => q.Bool(bq => bq.Must( m => m.MatchAll() && q.Term( t => t.Name( "city" ).Value( "Phoenix" ) ) ) ) );
-
-                //searchDescriptor.Query( q => q.Bool( bq => bq.Must(m => m.MatchAll() && queryContainer )))
                 searchDescriptor.Query( q => queryContainer );
 
                 results = _client.Search<dynamic>( searchDescriptor );
 
-                
+
             }
             else
             {
-                results = _client.Search<dynamic>( d => 
+                results = _client.Search<dynamic>( d =>
                                     d.AllIndices().AllTypes()
-                                    .Query( q => 
-                                        q.Fuzzy( f => f.Value( query ) ) 
+                                    .Query( q =>
+                                        q.Fuzzy( f => f.Value( query ) )
                                     )
                                 );
             }
@@ -352,13 +342,14 @@ namespace Rock.UniversalSearch.IndexComponents
             List<IndexModelBase> documents = new List<IndexModelBase>();
 
             // normallize the results to rock search results
-            if (results != null )
+            if ( results != null )
             {
-                foreach (var hit in results.Hits )
+                foreach ( var hit in results.Hits )
                 {
                     IndexModelBase document = new IndexModelBase();
 
-                    try {
+                    try
+                    {
                         if ( hit.Source != null )
                         {
 
@@ -396,7 +387,8 @@ namespace Rock.UniversalSearch.IndexComponents
         /// <param name="documentType">Type of the document.</param>
         /// <param name="propertyName">Name of the property.</param>
         /// <param name="propertyValue">The property value.</param>
-        public override void DeleteDocumentByProperty( Type documentType, string propertyName, object propertyValue ) {
+        public override void DeleteDocumentByProperty( Type documentType, string propertyName, object propertyValue )
+        {
 
             string jsonSearch = string.Format( @"{{
 ""term"": {{
@@ -406,7 +398,7 @@ namespace Rock.UniversalSearch.IndexComponents
         }}
 }}", Char.ToLowerInvariant( propertyName[0] ) + propertyName.Substring( 1 ), propertyValue );
 
-            var response = _client.DeleteByQuery<IndexModelBase>( documentType.Name.ToLower(), documentType.Name.ToLower(), qd => qd.Query( q => q.Raw( jsonSearch ) ));
+            var response = _client.DeleteByQuery<IndexModelBase>( documentType.Name.ToLower(), documentType.Name.ToLower(), qd => qd.Query( q => q.Raw( jsonSearch ) ) );
         }
 
         /// <summary>
@@ -417,6 +409,13 @@ namespace Rock.UniversalSearch.IndexComponents
         public override void DeleteDocumentById( Type documentType, int id )
         {
             this.DeleteDocumentByProperty( documentType, "id", id );
+        }
+
+
+        public override IndexModelBase GetDocumentById( Type documentType, int id )
+        {
+            var result = _client.Get<IndexModelBase>( id, index => index.Index( documentType.Name ) );
+            return new IndexModelBase();
         }
     }
 }
