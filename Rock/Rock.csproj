@@ -1603,7 +1603,7 @@
     <Compile Include="Workflow\Action\Groups\UpdateGroupMemberStatus.cs" />
     <Compile Include="Workflow\Action\People\GetPersonFromFields.cs" />
     <Compile Include="Workflow\Action\People\PersonAddressUpdate.cs" />
-    <Compile Include="Workflow\Action\People\PersonGetHeadOfHouseold.cs" />
+    <Compile Include="Workflow\Action\People\PersonGetHeadOfHousehold.cs" />
     <Compile Include="Workflow\Action\People\PersonGetSpouse.cs" />
     <Compile Include="Workflow\Action\People\PersonNoteAdd.cs" />
     <Compile Include="Workflow\Action\People\PersonPhoneUpdate.cs" />
