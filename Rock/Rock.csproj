@@ -545,6 +545,7 @@
     <Compile Include="Follow\Suggestion\InGroupTogether.cs" />
     <Compile Include="Jobs\CalculateFamilyAnalytics.cs" />
     <Compile Include="Jobs\IndexRockSite.cs" />
+    <Compile Include="Jobs\ProcessAnalyticsDimPerson.cs" />
     <Compile Include="Jobs\UniversalSearchBulkIndex.cs" />
     <Compile Include="Jobs\CalculateGroupRequirements.cs" />
     <Compile Include="Jobs\CalculateMetrics.cs" />
@@ -592,9 +593,19 @@
     <Compile Include="Model\AnalyticsDimFinancialBatch.cs" />
     <Compile Include="Model\AnalyticsDimFinancialTransactionCreditCardType.cs" />
     <Compile Include="Model\AnalyticsDimFinancialTransactionCurrencyType.cs" />
+    <Compile Include="Model\AnalyticsDimPersonCurrent.cs" />
+    <Compile Include="Model\AnalyticsDimPersonSuffix.cs" />
+    <Compile Include="Model\AnalyticsDimPersonMaritalStatus.cs" />
+    <Compile Include="Model\AnalyticsDimPersonTitle.cs" />
+    <Compile Include="Model\AnalyticsDimPersonReviewReason.cs" />
+    <Compile Include="Model\AnalyticsDimPersonConnectionStatus.cs" />
+    <Compile Include="Model\AnalyticsDimPersonRecordStatusReason.cs" />
+    <Compile Include="Model\AnalyticsDimPersonRecordType.cs" />
+    <Compile Include="Model\AnalyticsDimPersonRecordStatus.cs" />
     <Compile Include="Model\AnalyticsDimFinancialTransactionSource.cs" />
     <Compile Include="Model\AnalyticsDimDate.cs" />
     <Compile Include="Model\AnalyticsDimFinancialTransactionType.cs" />
+    <Compile Include="Model\AnalyticsDimPersonHistorical.cs" />
     <Compile Include="Model\AnalyticsFactFinancialTransaction.cs" />
     <Compile Include="Model\AnalyticsSourceFinancialTransaction.cs" />
     <Compile Include="Model\Attendance.cs" />
