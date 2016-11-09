@@ -359,8 +359,9 @@ namespace church.ccv.FamilyManager
                 }
 
                 // attempt to set their graduation year (if this is an adult and null is passed, it won't cause an existing grade to be erased)
-                person.GraduationYear = Person.GraduationYearFromGradeOffset( updatePersonBody.GradeOffset );
-                History.EvaluateChange( changes, "Graduation Year", person.GraduationYear, updatePersonBody.Person.GraduationYear );
+                int? newGradYear = Person.GraduationYearFromGradeOffset( updatePersonBody.GradeOffset );
+                History.EvaluateChange( changes, "Graduation Year", person.GraduationYear, newGradYear );
+                person.GraduationYear = newGradYear;
 
 
                 // now set the attributes
