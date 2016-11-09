@@ -90,10 +90,16 @@ namespace chuch.ccv.FamilyManager.Rest
                 // if they're a member of the "Family Manager" group, they're good.
                 var groupMember = familyManagerGroup.Members.Where( m => m.PersonId == userLogin.PersonId ).SingleOrDefault( );
                 if ( groupMember == null ) { statusCode = HttpStatusCode.Unauthorized; break; }
-                
 
+                // get their alias ID, as that's needed
+                var personAliasService = new PersonAliasService( rockContext );
+                if( personAliasService == null ) break;
+                
+                int? personAliasId = personAliasService.GetPrimaryAliasId( userLogin.PersonId.Value );
+                if( personAliasId.HasValue == false ) break;
+                
                 // all good! build and return the response
-                httpContent = new StringContent( JsonConvert.SerializeObject( new {  PersonId = userLogin.PersonId.Value } ), Encoding.UTF8, "application/json" );
+                httpContent = new StringContent( JsonConvert.SerializeObject( new {  PersonAliasId = personAliasId } ), Encoding.UTF8, "application/json" );
                 statusCode = HttpStatusCode.Created;
             }
             while( false );
@@ -162,6 +168,8 @@ namespace chuch.ccv.FamilyManager.Rest
 
             do
             {
+                System.Web.HttpContext.Current.Items.Add( "CurrentPerson", GetPerson() );
+
                 int personId = Core.UpdateOrAddPerson( updatePersonBody, out statusCode );
                 if( statusCode != HttpStatusCode.NoContent ) break;
                 

@@ -65,7 +65,10 @@ namespace church.ccv.FamilyManager.Models
     [Serializable]
     public class UpdatePersonBody
     {
+        public int CurrentPersonAliasId;
+
         public int FamilyId;
+        public int CampusId;
 
         public int GroupRoleId;
 

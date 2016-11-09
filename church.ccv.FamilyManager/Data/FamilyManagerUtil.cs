@@ -267,12 +267,19 @@ namespace church.ccv.FamilyManager
                 
                 if( cellPhoneType == null || connectionStatusVisitor == null || recordStatusPending == null || recordTypePerson == null || groupController == null ) break;
                 
+                // store history changes
+                var changes = new List<string>();
                 
                 // if the person ID passed up is 0, we're creating a new person
                 Person person = null;
                 if( updatePersonBody.Person.Id == 0 )
                 {
                     person = new Person( );
+
+                    // record who made these changes
+                    person.ModifiedAuditValuesAlreadyUpdated = true;
+                    person.CreatedByPersonAliasId = updatePersonBody.CurrentPersonAliasId;
+                    person.ModifiedByPersonAliasId = updatePersonBody.CurrentPersonAliasId;
 
                     // for new people, copy the stuff sent by Family Manager
                     person.FirstName = updatePersonBody.Person.NickName.Trim(); //(Per Rock design, always set FirstName to be NickName)
@@ -298,7 +305,7 @@ namespace church.ccv.FamilyManager
                     person.RecordTypeValueId = recordTypePerson.Id;
 
                     // lastly, save the person so that all the extra stuff (known relationship groups) gets created.
-                    Group newFamily = PersonService.SaveNewPerson( person, rockContext );
+                    Group newFamily = PersonService.SaveNewPerson( person, rockContext, updatePersonBody.CampusId );
 
                     // if there's an existing family to place them in, put them in it and remove them from the existing, newly created family.
                     if ( updatePersonBody.FamilyId > 0 )
@@ -315,7 +322,25 @@ namespace church.ccv.FamilyManager
                     person = personService.Get( updatePersonBody.Person.Id );
                     if( person == null ) { statusCode = HttpStatusCode.NotFound; break; }
 
+
+                    // store history
+                    History.EvaluateChange( changes, "First Name", person.FirstName, updatePersonBody.Person.FirstName );
+                    History.EvaluateChange( changes, "Nick Name", person.NickName, updatePersonBody.Person.NickName );
+                    History.EvaluateChange( changes, "Middle Name", person.MiddleName, updatePersonBody.Person.MiddleName );
+                    History.EvaluateChange( changes, "Last Name", person.LastName, updatePersonBody.Person.LastName );
+                    History.EvaluateChange( changes, "Birth Month", person.BirthMonth, updatePersonBody.Person.BirthMonth );
+                    History.EvaluateChange( changes, "Birth Day", person.BirthDay, updatePersonBody.Person.BirthDay );
+                    History.EvaluateChange( changes, "Birth Year", person.BirthYear, updatePersonBody.Person.BirthYear );
+                    History.EvaluateChange( changes, "Gender", person.Gender, updatePersonBody.Person.Gender );
+                    History.EvaluateChange( changes, "Marital Status", DefinedValueCache.GetName( person.MaritalStatusValueId ), DefinedValueCache.GetName( updatePersonBody.Person.MaritalStatusValueId ) );
+                    History.EvaluateChange( changes, "Email", person.Email, updatePersonBody.Person.Email );
+                    
                     personService.SetValues( updatePersonBody.Person, person );
+
+                    // record the person making these changes
+                    person.ModifiedAuditValuesAlreadyUpdated = true;
+                    person.CreatedByPersonAliasId = updatePersonBody.CurrentPersonAliasId;
+                    person.ModifiedByPersonAliasId = updatePersonBody.CurrentPersonAliasId;
 
                     // if there's no family, stop and we'll return the default internal error.
                     // It's not possible to edit an existing person in a NEW family.
@@ -335,7 +360,9 @@ namespace church.ccv.FamilyManager
 
                 // attempt to set their graduation year (if this is an adult and null is passed, it won't cause an existing grade to be erased)
                 person.GraduationYear = Person.GraduationYearFromGradeOffset( updatePersonBody.GradeOffset );
-                                
+                History.EvaluateChange( changes, "Graduation Year", person.GraduationYear, updatePersonBody.Person.GraduationYear );
+
+
                 // now set the attributes
                 person.LoadAttributes( );
                 foreach( KeyValuePair<string, string> attributeKV in updatePersonBody.Attributes )
@@ -349,6 +376,15 @@ namespace church.ccv.FamilyManager
                 // save all changes
                 person.SaveAttributeValues( rockContext );
                 rockContext.SaveChanges( );
+                
+                HistoryService.SaveChanges(
+                    rockContext,
+                    typeof( Person ),
+                    Rock.SystemGuid.Category.HISTORY_PERSON_DEMOGRAPHIC_CHANGES.AsGuid(),
+                    person.Id,
+                    changes,
+                    true,
+                    updatePersonBody.CurrentPersonAliasId );
                 
                 // report noContent, implying we updated or created.
                 statusCode = HttpStatusCode.NoContent;
