@@ -1,3 +1,8 @@
+Rock McKinley 5.5
+
++ Updated the RockUpdate block to deal with servers that are reporting the .Net framework incorrectly.
+
+
 Rock McKinley 5.4
 
 + Fixed issue with CalendarLava block not using correct date range when the Date Range filter is used (Fixes #1771).
