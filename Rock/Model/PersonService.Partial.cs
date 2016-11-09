@@ -1397,7 +1397,7 @@ namespace Rock.Model
             {
                 return null;
             }
-            return GetFamilyMembers( family, person.Id )
+            return GetFamilyMembers( family, person.Id, true)
                 .OrderBy( m => m.GroupRole.Order )
                 .ThenBy( m => m.Person.Gender )
                 .Select( a => a.Person )
