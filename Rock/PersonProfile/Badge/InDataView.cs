@@ -36,11 +36,11 @@ namespace Rock.PersonProfile.Badge
     /// <summary>
     /// 
     /// </summary>
-    [Description( "Displays if the person has an alert note." )]
+    [Description( "Displays a badge if person is in a chosen DataView." )]
     [Export( typeof( BadgeComponent ) )]
     [ExportMetadata( "ComponentName", "In Data View" )]
 
-    [DataViewField( "Data View", "The dataview to look at.", order: 0 )]
+    [DataViewField( "Data View", "The dataview to use as the source for the query. Only those people in the DataView will be given the badge.", true, entityTypeName: "Rock.Model.Person", order: 0 )]
     [CodeEditorField( "Badge Content", "The text or HTML of the badge to display. <span class='tip tip-lava'></span>", CodeEditorMode.Lava, CodeEditorTheme.Rock, 200, true, "<div class='badge badge-icon'><i class='fa fa-smile-o'></i></div>", order: 1 )]
     public class InDataView : BadgeComponent
     {
