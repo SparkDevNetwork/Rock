@@ -2821,6 +2821,19 @@ namespace Rock.Model
         }
 
         /// <summary>
+        /// Gets the <see cref="Rock.Model.Person" /> entity of the provided Person's head of household.
+        /// </summary>
+        /// <param name="person">The <see cref="Rock.Model.Person" /> entity of the Person to retrieve the head of household of.</param>
+        /// <param name="rockContext">The rock context.</param>
+        /// <returns>
+        /// The <see cref="Rock.Model.  1Person" /> entity containing the provided Person's head of household. If the provided Person's head of houseold is not found, this value will be null.
+        /// </returns>
+        public static Person GetHeadOfHousehold( this Person person, RockContext rockContext = null )
+        {
+            return new PersonService( rockContext ?? new RockContext() ).GetHeadOfHousehold( person );
+        }
+
+        /// <summary>
         /// Gets the family role (adult or child).
         /// </summary>
         /// <param name="person">The person.</param>
