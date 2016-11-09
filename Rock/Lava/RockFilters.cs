@@ -1874,21 +1874,13 @@ namespace Rock.Lava
         /// <returns></returns>
         public static Person Spouse( DotLiquid.Context context, object input )
         {
-            if ( input == null )
+            var person = GetPerson( input );
+
+            if ( person == null )
             {
                 return null;
             }
-
-            int personAliasId = -1;
-
-            if ( !Int32.TryParse( input.ToString(), out personAliasId ) )
-            {
-                return null;
-            }
-
-            var rockContext = new RockContext();
-
-            return new PersonAliasService( rockContext ).GetPerson( personAliasId ).GetSpouse();
+            return person.GetSpouse();
         }
 
         /// <summary>
@@ -1899,21 +1891,13 @@ namespace Rock.Lava
         /// <returns></returns>
         public static Person HeadOfHousehold( DotLiquid.Context context, object input )
         {
-            if ( input == null )
+            var person = GetPerson( input );
+
+            if ( person == null )
             {
                 return null;
             }
-
-            int personAliasId = -1;
-
-            if ( !Int32.TryParse( input.ToString(), out personAliasId ) )
-            {
-                return null;
-            }
-
-            var rockContext = new RockContext();
-
-            return new PersonAliasService( rockContext ).GetPerson( personAliasId ).GetHeadOfHousehold();
+            return person.GetHeadOfHousehold();
         }
 
         /// <summary>
