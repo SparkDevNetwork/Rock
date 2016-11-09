@@ -1867,6 +1867,40 @@ namespace Rock.Lava
         }
 
         /// <summary>
+        /// Gets the Spouse of the selected person 
+        /// </summary>
+        /// <param name="context">The context.</param>
+        /// <param name="input">The input.</param>
+        /// <returns></returns>
+        public static Person Spouse( DotLiquid.Context context, object input )
+        {
+            var person = GetPerson( input );
+
+            if ( person == null )
+            {
+                return null;
+            }
+            return person.GetSpouse();
+        }
+
+        /// <summary>
+        /// Gets the Head of Household of the selected person 
+        /// </summary>
+        /// <param name="context">The context.</param>
+        /// <param name="input">The input.</param>
+        /// <returns></returns>
+        public static Person HeadOfHousehold( DotLiquid.Context context, object input )
+        {
+            var person = GetPerson( input );
+
+            if ( person == null )
+            {
+                return null;
+            }
+            return person.GetHeadOfHousehold();
+        }
+
+        /// <summary>
         /// Gets an number for a person object
         /// </summary>
         /// <param name="context">The context.</param>
