@@ -167,13 +167,14 @@ namespace Rock.Model
 
         /// <summary>
         /// The computed giver identifier in the format G{GivingGroupId} if they are part of a GivingGroup, or P{Personid} if they give individually
+        /// Length of 20 is big enough for each to have G/P prefix + int64.MaxValue "G9223372036854775807"
         /// NOTE: this is the Person's GivingId at the time of the transaction
         /// </summary>
         /// <value>
         /// The giving identifier.
         /// </value>
         [DataMember]
-        [MaxLength( 450 )]
+        [MaxLength( 20 )]
         public string GivingId { get; set; }
 
         /// <summary>
