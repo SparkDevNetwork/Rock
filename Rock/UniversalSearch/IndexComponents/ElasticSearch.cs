@@ -272,71 +272,109 @@ namespace Rock.UniversalSearch.IndexComponents
         /// <param name="entities">The entities.</param>
         /// <param name="fieldCriteria">The field criteria.</param>
         /// <returns></returns>
-        public override List<IndexModelBase> Search( string query, SearchType searchType = SearchType.ExactMatch, List<int> entities = null, SearchFieldCriteria fieldCriteria = null )
+        public override List<IndexModelBase> Search( string query, SearchType searchType = SearchType.Wildcard, List<int> entities = null, SearchFieldCriteria fieldCriteria = null )
         {
             ISearchResponse<dynamic> results = null;
             List<SearchResultModel> searchResults = new List<SearchResultModel>();
 
-            if ( searchType == SearchType.ExactMatch )
+            QueryContainer queryContainer = new QueryContainer();
+
+            // add and field constraints
+            var searchDescriptor = new SearchDescriptor<dynamic>().AllIndices();
+
+            if ( entities == null || entities.Count == 0 )
             {
-                var searchDescriptor = new SearchDescriptor<dynamic>().AllIndices();
-
-                if ( entities == null || entities.Count == 0 )
-                {
-                    searchDescriptor = searchDescriptor.AllTypes();
-                }
-                else
-                {
-                    var entityTypes = new List<string>();
-                    foreach ( var entityId in entities )
-                    {
-                        // get entities search model name
-                        var entityType = new EntityTypeService( new RockContext() ).Get( entityId );
-                        entityTypes.Add( entityType.IndexModelType.Name.ToLower() );
-                    }
-
-                    searchDescriptor = searchDescriptor.Type( string.Join( ",", entityTypes ) ); // todo: considter adding indexmodeltype to the entity cache
-                }
-
-                QueryContainer queryContainer = new QueryContainer();
-
-                if ( !string.IsNullOrWhiteSpace( query ) )
-                {
-                    queryContainer &= new QueryStringQuery { Query = query };
-                }
-
-                if ( fieldCriteria != null && fieldCriteria.FieldValues?.Count > 0 )
-                {
-                    QueryContainer matchQuery = null;
-                    foreach ( var match in fieldCriteria.FieldValues )
-                    {
-                        if ( fieldCriteria.SearchType == CriteriaSearchType.Or )
-                        {
-                            matchQuery |= new MatchQuery { Field = match.Field, Query = match.Value };
-                        }
-                        else
-                        {
-                            matchQuery &= new MatchQuery { Field = match.Field, Query = match.Value };
-                        }
-                    }
-
-                    queryContainer &= matchQuery;
-                }
-
-                searchDescriptor.Query( q => queryContainer );
-
-                results = _client.Search<dynamic>( searchDescriptor );
-
-
+                searchDescriptor = searchDescriptor.AllTypes();
             }
             else
             {
-                results = _client.Search<dynamic>( d =>
+                var entityTypes = new List<string>();
+                foreach ( var entityId in entities )
+                {
+                    // get entities search model name
+                    var entityType = new EntityTypeService( new RockContext() ).Get( entityId );
+                    entityTypes.Add( entityType.IndexModelType.Name.ToLower() );
+                }
+
+                searchDescriptor = searchDescriptor.Type( string.Join( ",", entityTypes ) ); // todo: considter adding indexmodeltype to the entity cache
+            }
+
+            QueryContainer matchQuery = null;
+            if ( fieldCriteria != null && fieldCriteria.FieldValues?.Count > 0 )
+            {
+                foreach ( var match in fieldCriteria.FieldValues )
+                {
+                    if ( fieldCriteria.SearchType == CriteriaSearchType.Or )
+                    {
+                        matchQuery |= new MatchQuery { Field = match.Field, Query = match.Value };
+                    }
+                    else
+                    {
+                        matchQuery &= new MatchQuery { Field = match.Field, Query = match.Value };
+                    }
+                }
+            }
+
+
+            switch ( searchType )
+            {
+                case SearchType.ExactMatch:
+                    { 
+                        if ( !string.IsNullOrWhiteSpace( query ) )
+                        {
+                            queryContainer &= new QueryStringQuery { Query = query };
+                        }
+
+                        if (matchQuery != null )
+                        {
+                            queryContainer &= matchQuery;
+                        }
+
+                        searchDescriptor.Query( q => queryContainer );
+
+                        results = _client.Search<dynamic>( searchDescriptor );
+                        break;
+                    }
+                case SearchType.Fuzzy:
+                    {
+                        results = _client.Search<dynamic>( d =>
                                     d.AllIndices().AllTypes()
                                     .Query( q =>
                                         q.Fuzzy( f => f.Value( query ) )
                                     )
                                 );
+                        break;
+                    }
+                case SearchType.Wildcard:
+                    {
+                        if ( !string.IsNullOrWhiteSpace( query ) )
+                        {
+                            QueryContainer wildcardQuery = null;
+
+                            // break each search term into a separate query and add the * to the end of each
+                            var queryTerms = query.Split( ' ' ).Select( p => p.Trim() ).ToList();
+
+                            foreach( var queryTerm in queryTerms )
+                            {
+                                if (!string.IsNullOrWhiteSpace( queryTerm ) )
+                                {
+                                    wildcardQuery &= new QueryStringQuery { Query = queryTerm + "*", Rewrite = RewriteMultiTerm.TopTermsN };
+                                }
+                            }
+
+                            queryContainer &= wildcardQuery;
+                        }
+
+                        if ( matchQuery != null )
+                        {
+                            queryContainer &= matchQuery;
+                        }
+
+                        searchDescriptor.Query( q => queryContainer );
+
+                        results = _client.Search<dynamic>( searchDescriptor );
+                        break;
+                    }
             }
 
             List<IndexModelBase> documents = new List<IndexModelBase>();
@@ -412,10 +450,38 @@ namespace Rock.UniversalSearch.IndexComponents
         }
 
 
+        /// <summary>
+        /// Gets the document by identifier.
+        /// </summary>
+        /// <param name="documentType">Type of the document.</param>
+        /// <param name="id">The identifier.</param>
+        /// <returns></returns>
         public override IndexModelBase GetDocumentById( Type documentType, int id )
         {
-            var result = _client.Get<IndexModelBase>( id, index => index.Index( documentType.Name ) );
-            return new IndexModelBase();
+            var indexName = documentType.Name.ToLower();
+
+            var request = new GetRequest( indexName, indexName, id.ToString() ) { };
+
+            var result = _client.Get<dynamic>( request );
+
+            IndexModelBase document = new IndexModelBase();
+
+            if ( result.Source != null )
+            {
+                Type indexModelType = Type.GetType( (string)((JObject)result.Source)["indexModelType"] );
+
+                if ( indexModelType != null )
+                {
+                    document = (IndexModelBase)((JObject)result.Source).ToObject( indexModelType ); // return the source document as the derived type
+                }
+                else
+                {
+                    document = ((JObject)result.Source).ToObject<IndexModelBase>(); // return the source document as the base type
+                }
+            }
+
+            return document;
+
         }
     }
 }

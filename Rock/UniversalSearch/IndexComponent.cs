@@ -129,6 +129,11 @@ namespace Rock.UniversalSearch
         /// <summary>
         /// Fuzzy Match
         /// </summary>
-        Fuzzy = 1
+        Fuzzy = 1,
+
+        /// <summary>
+        /// Wildcard match
+        /// </summary>
+        Wildcard = 2
     }
 }

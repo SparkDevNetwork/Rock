@@ -89,7 +89,7 @@ namespace Rock.Search.Other
             }
 
             var client = IndexContainer.GetActiveComponent();
-            var results = client.Search( searchterm, SearchType.ExactMatch, entityIds, fieldCriteria );
+            var results = client.Search( searchterm, SearchType.Wildcard, entityIds, fieldCriteria );
 
             return results.Select( r => $"<data return-type='{r.IndexModelType}' return-id={r.Id}></data><i class='{ r.IconCssClass}'></i> {r.DocumentName}" ).ToList().AsQueryable();
         }
