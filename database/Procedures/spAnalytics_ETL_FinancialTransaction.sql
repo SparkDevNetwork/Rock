@@ -136,7 +136,24 @@ BEGIN
                 ) asft
             )
         AND IsFirstTransactionOfType = 0
-        -- TODO update [DaysSinceLastTransactionOfType]
-        -- TODO update [AuthorizedFamilyId]
-        -- TODO what about modified records
+
+    -- Update [DaysSinceLastTransactionOfType]
+    -- get the number of days since the last transaction of this giving group of the same TransactionType
+    -- but don't count it as a previous transaction if it was on the same date
+    -- To optimize, add a WHERE DaysSinceLastTransactionOfType is NULL, but at the risk of the number being wrong due to a new transaction with an earlier date getting added 
+    UPDATE asft
+    SET DaysSinceLastTransactionOfType = x.[CalcDaysSinceLastTransactionOfType]
+    FROM AnalyticsSourceFinancialTransaction asft
+    CROSS APPLY (
+        SELECT TOP 1 DATEDIFF(day, previousTran.TransactionDateTime, asft.TransactionDateTime) [CalcDaysSinceLastTransactionOfType]
+        FROM AnalyticsSourceFinancialTransaction previousTran
+        WHERE previousTran.GivingId = asft.GivingId
+            AND previousTran.TransactionTypeValueId = asft.TransactionTypeValueId
+            AND convert(DATE, previousTran.TransactionDateTime) < convert(DATE, asft.TransactionDateTime)
+        ORDER BY previousTran.TransactionDateTime DESC
+        ) x
+        
+		
+	-- TODO update [AuthorizedFamilyId]
+    -- TODO what about modified records
 END
