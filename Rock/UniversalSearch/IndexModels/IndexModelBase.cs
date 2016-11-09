@@ -384,6 +384,7 @@ namespace Rock.UniversalSearch.IndexModels
         /// The available keys.
         /// </value>
         [LavaIgnore]
+        [RockIndexField( Index = IndexType.NotAnalyzed )]
         public List<string> AvailableKeys
         {
             get
@@ -451,10 +452,6 @@ namespace Rock.UniversalSearch.IndexModels
         {
             return this.GetDynamicMemberNames().Contains( key.ToString() );
         }
-
-        #endregion
-
-        #region Static Methods
 
         #endregion
     }

@@ -241,7 +241,7 @@ namespace RockWeb.Blocks.Cms
                 entities = GetAttributeValue( "EnabledModels" ).Split( ',' ).Select( int.Parse ).ToList();
             }
 
-            var results = client.Search( term, SearchType.ExactMatch, entities, fieldCriteria );
+            var results = client.Search( term, SearchType.Wildcard, entities, fieldCriteria );
 
             StringBuilder formattedResults = new StringBuilder();
             formattedResults.Append( "<ul class='list-unstyled'>" );
