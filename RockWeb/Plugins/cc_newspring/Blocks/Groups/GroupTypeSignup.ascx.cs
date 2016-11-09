@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright 2013 by the Spark Development Network
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -132,8 +132,20 @@ namespace RockWeb.Plugins.cc_newspring.Blocks.Groups
                 var scheduleResult = e.Item.DataItem as DateTime?;
 
                 var placeholder = e.Item.FindControl( "phGroups" ) as PlaceHolder;
-                
-                foreach ( var schedule in _schedules.Select( s => s.Schedule ).Distinct() )
+
+                var schedules = _schedules.Select( s => s.Schedule ).Distinct();
+
+                var scheduleSort = new Dictionary<Schedule, DateTime>();
+
+                var startOfDay = scheduleResult.Value.Date;
+                var endOfDay = scheduleResult.Value.Date.AddDays( 1 ).AddTicks( -1 );
+
+                foreach ( var schedule in schedules )
+                {
+                    scheduleSort.Add( schedule, schedule.GetScheduledStartTimes( startOfDay, endOfDay ).FirstOrDefault() );
+                }
+
+                foreach ( var schedule in scheduleSort.OrderBy(s => s.Value).Select( s => s.Key) )
                 {
                     // get groups that have this schedule
                     var groups = _schedules.Where( s => s.Schedule.Id == schedule.Id && s.Date.Date == scheduleResult.Value )
