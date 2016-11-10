@@ -38,8 +38,13 @@ namespace church.ccv.Podcast
 
         const int ContentChannelTypeId_PodcastSeries = 8;
 
-        public static PodcastCategory GetPodcastsByCategory( int categoryId, bool keepCategoryHierarchy = true, int maxSeries = int.MaxValue )
+        public static PodcastCategory GetPodcastsByCategory( int categoryId, bool keepCategoryHierarchy = true, int maxSeries = int.MaxValue, int numMessages = int.MaxValue )
         {
+            if( maxSeries != int.MaxValue && numMessages != int.MaxValue )
+            {
+                throw new Exception( "Cannot provide both a maxSeries and maxMessage. They conflict. Use one or the other." );
+            }
+
             // if they pass in 0, accept that as the Root
             if ( categoryId == 0 )
             {
@@ -64,12 +69,12 @@ namespace church.ccv.Podcast
             PodcastCategory rootPodcast = new PodcastCategory( category.Name, category.Id );
                         
             // see if this category has any podcasts to add.
-            Internal_GetPodcastsByCategory( category, rootPodcast, categoryContentChannelItems, maxSeries, keepCategoryHierarchy );
+            Internal_GetPodcastsByCategory( category, rootPodcast, categoryContentChannelItems, ref maxSeries, ref numMessages, keepCategoryHierarchy );
     
             return rootPodcast;
         }
 
-        static int Internal_GetPodcastsByCategory( CategoryCache category, PodcastCategory rootPodcast, IQueryable<ContentChannelWithAttrib> categoryContentChannelItems, int numSeriesToAdd, bool keepCategoryHierarchy )
+        static void Internal_GetPodcastsByCategory( CategoryCache category, PodcastCategory rootPodcast, IQueryable<ContentChannelWithAttrib> categoryContentChannelItems, ref int numSeriesToAdd, ref int numMessagesToAdd, bool keepCategoryHierarchy )
         {
             // Get all Content Channels that are immediate children of the provided category. Sort them by date, and then take 'numPodcastsToAdd', since 
             // this is recursive and we might not need anymore.
@@ -85,12 +90,16 @@ namespace church.ccv.Podcast
             foreach( ContentChannel contentChannel in podcastsForCategory )
             {
                 // convert the series, which may return null if it doesn't match the requested viewState
-                PodcastSeries podcastSeries = ContentChannelToPodcastSeries( contentChannel );
+                PodcastSeries podcastSeries = ContentChannelToPodcastSeries( contentChannel, numMessagesToAdd );
                 rootPodcast.Children.Add( podcastSeries );
+
+                // now see if we've hit our max messages.
+                numMessagesToAdd -= podcastSeries.Messages.Count;
+                if( numMessagesToAdd <= 0 ) break;
             }
 
-            // store the number of podcasts added
-            int seriesAdded = podcastsForCategory.Count( );
+            // subtract the number of podcasts added
+            numSeriesToAdd -= podcastsForCategory.Count( );
             
             // now recursively handle all child categories
             foreach ( CategoryCache childCategory in category.Categories )
@@ -118,14 +127,12 @@ namespace church.ccv.Podcast
 
 
                 // if there are more podcasts to add
-                if( seriesAdded < numSeriesToAdd )
+                if( numSeriesToAdd > 0 && numMessagesToAdd > 0 )
                 {
                     // recursively call this so it can add its children
-                    seriesAdded += Internal_GetPodcastsByCategory( childCategory, podcastCategory, categoryContentChannelItems, numSeriesToAdd - seriesAdded, keepCategoryHierarchy );
+                    Internal_GetPodcastsByCategory( childCategory, podcastCategory, categoryContentChannelItems, ref numSeriesToAdd, ref numMessagesToAdd, keepCategoryHierarchy );
                 }
             }
-
-            return seriesAdded;
         }
 
         public static DateTime? LatestModifiedDateTime( )
@@ -185,7 +192,7 @@ namespace church.ccv.Podcast
             return latestDate;
         }
 
-        static PodcastSeries ContentChannelToPodcastSeries( ContentChannel contentChannel )
+        static PodcastSeries ContentChannelToPodcastSeries( ContentChannel contentChannel, int numMessages )
         {
             // Given a content channel in the database, this will convert it into our Podcast model.
             RockContext rockContext = new RockContext( );
@@ -217,13 +224,19 @@ namespace church.ccv.Podcast
             series.Messages = new List<PodcastMessage>( );
 
             // sort the messages by date
-            var orderedContentChannelItems = contentChannel.Items.OrderByDescending( i => i.StartDateTime );
+            var orderedContentChannelItems = contentChannel.Items.OrderByDescending( it => it.StartDateTime );
             
             // and then priority (lowest priority goes to top)
-            orderedContentChannelItems = orderedContentChannelItems.OrderBy( i => i.Priority );
+            orderedContentChannelItems = orderedContentChannelItems.OrderBy( it => it.Priority );
+
+            // now take whatever's less. the number of messages in the series, or numMessages requested.
+            var orderedContentChannelItemList = orderedContentChannelItems.ToList( );
             
-            foreach ( ContentChannelItem contentChannelItem in orderedContentChannelItems )
+            int i;
+            for( i = 0; i < Math.Min( numMessages, orderedContentChannelItems.Count( ) ); i++ )
             {
+                ContentChannelItem contentChannelItem = orderedContentChannelItemList[ i ];
+
                 // convert each contentChannelItem into a PodcastMessage, and add it to our list
                 PodcastMessage message = ContentChannelItemToPodcastMessage( contentChannelItem );
                 series.Messages.Add( message );
@@ -278,7 +291,7 @@ namespace church.ccv.Podcast
             if( seriesContentChannel != null )
             {
                 // convert it to a PodcastSeries and return it
-                PodcastSeries series = ContentChannelToPodcastSeries( seriesContentChannel );
+                PodcastSeries series = ContentChannelToPodcastSeries( seriesContentChannel, int.MaxValue );
                 return series;
             }
             

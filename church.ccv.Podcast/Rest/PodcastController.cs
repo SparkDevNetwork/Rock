@@ -45,7 +45,7 @@ namespace chuch.ccv.Podcast.Rest
         [HttpGet]
         [HttpHead]
         [System.Web.Http.Route( "api/Podcast/Category/{categoryId}/{platform}/{version}" )]
-        public HttpResponseMessage Category( int categoryId, string platform, int version, int numSeries = int.MaxValue )
+        public HttpResponseMessage Category( int categoryId, string platform, int version, int numSeries = int.MaxValue, int numMessages = int.MaxValue )
         {
             // first, what platform are we handling?
             StringContent restContent = null;
@@ -59,13 +59,19 @@ namespace chuch.ccv.Podcast.Rest
 
                 case "apple_tv":
                 {
-                    restContent = Retrieve_StreamingBox( version, categoryId, numSeries );
+                    restContent = Retrieve_StreamingBox( version, categoryId, numSeries, numMessages );
                     break;
                 }
 
                 case "roku":
                 {
-                    restContent = Retrieve_StreamingBox( version, categoryId, numSeries );
+                    restContent = Retrieve_StreamingBox( version, categoryId, numSeries, numMessages );
+                    break;
+                }
+
+                case "web":
+                {
+                    restContent = Retrieve_Web( version, categoryId, numSeries, numMessages );
                     break;
                 }
 
@@ -91,7 +97,7 @@ namespace chuch.ccv.Podcast.Rest
         [HttpGet]
         [HttpHead]
         [System.Web.Http.Route( "api/Podcast/Category/LatestModifiedDateTime" )]
-        public HttpResponseMessage Series( )
+        public HttpResponseMessage LatestModifiedDateTime( )
         {
             // serialize it into json
             StringContent restContent = new StringContent( PodcastUtil.LatestModifiedDateTime( ).ToString( ), Encoding.UTF8, "application/json" );
@@ -270,7 +276,22 @@ namespace chuch.ccv.Podcast.Rest
             return null;
         }
 
-        StringContent Retrieve_StreamingBox( int version, int categoryId, int numSeries )
+        StringContent Retrieve_Web( int version, int categoryId, int numSeries, int numMessages )
+        {
+            string response = "CategoryID must be specified";
+
+            // only allow the web to get a single category at a time, not all of them.
+            if( categoryId != 0 )
+            {
+                PodcastUtil.PodcastCategory rootCategory = PodcastUtil.GetPodcastsByCategory( categoryId, false, numSeries, numMessages );
+
+                response = JsonConvert.SerializeObject( rootCategory );
+            }
+
+            return new StringContent( response, Encoding.UTF8, "application/json" );
+        }
+
+        StringContent Retrieve_StreamingBox( int version, int categoryId, int numSeries, int numMessages )
         {
             string response = string.Empty;
 
@@ -288,22 +309,32 @@ namespace chuch.ccv.Podcast.Rest
                 //--------Walk Thru John (S) [Note, this might actually be in a child category of Neighborhood Videos, but we flatten those.
             
                 // First, get the root category, fully, and with its child categories.
-                PodcastUtil.PodcastCategory fullRootCategory = PodcastUtil.GetPodcastsByCategory( 0, true, numSeries );
+                PodcastUtil.PodcastCategory fullRootCategory = PodcastUtil.GetPodcastsByCategory( 0, true, numSeries, numMessages );
 
                 // now, we want to create a new root with only any immediate series as its children
                 PodcastUtil.PodcastCategory rootCategory = new PodcastUtil.PodcastCategory( fullRootCategory.Name, fullRootCategory.Id );
                 foreach( PodcastUtil.IPodcastNode node in fullRootCategory.Children )
                 {
-                    if ( ( node as PodcastUtil.PodcastSeries ) != null )
+                    PodcastUtil.PodcastSeries series = node as PodcastUtil.PodcastSeries;
+                    if ( series != null )
                     {
-                        rootCategory.Children.Add( node );
+                        rootCategory.Children.Add( series );
 
-                        // track the series we're adding
-                        numSeries--;
+                        // track the series we're adding (if a real value was provided)
+                        if( numSeries != int.MaxValue )
+                        {
+                            numSeries--;
+                        }
+
+                        // track the messages we're adding
+                        if( numMessages != int.MaxValue )
+                        {
+                            numMessages -= series.Messages.Count;
+                        }
                     }
                 }
             
-                if( numSeries > 0 )
+                if( numSeries > 0 && numMessages > 0 )
                 {
                     // now load the category they care about, so we can get its children
                     RockContext rockContext = new RockContext( );
@@ -312,17 +343,30 @@ namespace chuch.ccv.Podcast.Rest
                     // finally, recursively load all child categories, but flatten it all into one list per child category
                     foreach ( Category childCategory in category.ChildCategories )
                     {
-                        // make sure we haven't hit our series limit
-                        if ( numSeries > 0 )
+                        // make sure we haven't hit our series / messages limit
+                        if ( numSeries > 0 && numMessages > 0 )
                         {
                             // get as many series as numSeries is set to
-                            PodcastUtil.PodcastCategory podcasts = PodcastUtil.GetPodcastsByCategory( childCategory.Id, false, numSeries );
+                            PodcastUtil.PodcastCategory podcasts = PodcastUtil.GetPodcastsByCategory( childCategory.Id, false, numSeries, numMessages );
 
                             rootCategory.Children.Add( podcasts );
 
+                            // subtract the total messages added (if provided)
+                            if( numMessages != int.MaxValue )
+                            {
+                                foreach ( PodcastUtil.IPodcastNode node in podcasts.Children )
+                                {
+                                    PodcastUtil.PodcastSeries series = node as PodcastUtil.PodcastSeries;
+                                    numMessages -= series.Messages.Count( );
+                                }
+                            }
+
                             // subtract the number of series we just took (we know the Children are all series because we passed 'false'
                             // to keep hierarchy above)
-                            numSeries -= podcasts.Children.Count( );
+                            if( numSeries != int.MaxValue )
+                            {
+                                numSeries -= podcasts.Children.Count( );
+                            }
                         }
                         else
                         {
@@ -345,9 +389,9 @@ namespace chuch.ccv.Podcast.Rest
                 // Get the root category, with all its child series, and pass false so we take all child category series without
                 // the categories.
                 // Pass numSeries so we limit the amount requested.
-                PodcastUtil.PodcastCategory rootCategory = PodcastUtil.GetPodcastsByCategory( categoryId, false, numSeries );
+                PodcastUtil.PodcastCategory rootCategory = PodcastUtil.GetPodcastsByCategory( categoryId, false, numSeries, numMessages );
 
-                response = JsonConvert.SerializeObject( rootCategory );;
+                response = JsonConvert.SerializeObject( rootCategory );
             }
             return new StringContent( response, Encoding.UTF8, "application/json" );
         }
