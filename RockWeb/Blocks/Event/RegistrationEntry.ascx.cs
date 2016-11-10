@@ -375,6 +375,22 @@ namespace RockWeb.Blocks.Event
         {
             base.OnLoad( e );
 
+            if ( !string.IsNullOrEmpty( PageParameter( "document_id" ) ) && !string.IsNullOrEmpty( PageParameter( "registration_key" ) ) )
+            {
+                Session[PageParameter( "registration_key" )] = "?document_id=" + PageParameter( "document_id" );
+
+                string returnUrl = GlobalAttributesCache.Read().GetValue( "PublicApplicationRoot" ).EnsureTrailingForwardslash() +
+                    ResolveRockUrl( "~/Blocks/Event/DocumentReturn.html" ).TrimStart( '/' );
+                Response.Redirect( returnUrl );
+                Response.Flush();
+                Response.End();
+            }
+            else if ( !string.IsNullOrEmpty( PageParameter( "registration_key" ) ) )
+            {
+                Response.Flush();
+                Response.Write( Session[PageParameter( "registration_key" )] );
+                Response.End();
+            }
             // Reset warning/error messages
             nbMain.Visible = false;
 
@@ -3182,8 +3198,10 @@ namespace RockWeb.Blocks.Event
                     if ( !string.IsNullOrWhiteSpace( inviteLink ) )
                     {
                         string returnUrl = GlobalAttributesCache.Read().GetValue( "PublicApplicationRoot" ).EnsureTrailingForwardslash() +
-                            ResolveRockUrl( "~/Blocks/Event/DocumentReturn.html" ).TrimStart('/');
+                            ResolveRockUrl( Request.RawUrl + "?registration_key=" + RegistrationState.Registrants[CurrentRegistrantIndex].Guid ).TrimStart( '/' );
+
                         hfRequiredDocumentLinkUrl.Value = string.Format( "{0}?redirect_uri={1}", inviteLink, returnUrl );
+                        hfRegistrantGuid.Value = RegistrationState.Registrants[CurrentRegistrantIndex].Guid.ToString();
                     }
                     else
                     {
@@ -3580,29 +3598,33 @@ namespace RockWeb.Blocks.Event
         }}
     }});
 
-    // Evaluates the current url whenever the iframe is loaded and if it includes a qrystring parameter
-    $('#iframeRequiredDocument').on('load', function(e) {{
-        var location = this.contentWindow.location;
-        if (location) {{
-            var qryString = this.contentWindow.location.search;
-            window.processIframeReturn(qryString);
-        }}
-    }});
-
-    // The qry parameter value is saved to a hidden field and a post back is performed
-    window.processIframeReturn = function(qryString) {{
-        if ( qryString && qryString != '' && qryString.startsWith('?document_id') ) {{ 
-            window.focus();
-            debugger;
-            $('#{19}').val(qryString);
-            {20};
-        }}
-    }};
+    poll = function() {{
+       setTimeout(function(){{
+          $.ajax({{ 
+            url: '{22}?registration_key='+$('#hfRegistrantGuid').val(), 
+            success: function(data){{
+                //
+                if (data != ''&& data.startsWith('?document_id') ) {{
+                    $('#{19}').val(data);
+                    {20};
+                }}
+                else 
+                {{
+                    //Setup the next poll 
+                    poll();
+                }}
+            }}
+        }});
+      }}, 5000);
+    }}
 
     if ($('#{21}').val() != '' ) {{
         $('#iframeRequiredDocument').attr('src', $('#{21}').val() );
     }}
-
+    if ($('#hfRegistrantGuid').length > 0 && $('#hfRegistrantGuid').val() != '' ) {{
+        $.ajaxSetup({{ cache: false }});
+        poll();
+    }}
 ", nbAmountPaid.ClientID                 // {0}
             ,hfTotalCost.ClientID                   // {1}
             ,hfMinimumDue.ClientID                  // {2}
@@ -3625,6 +3647,7 @@ namespace RockWeb.Blocks.Event
             ,hfRequiredDocumentQueryString.ClientID // {19}
             ,this.Page.ClientScript.GetPostBackEventReference( lbRequiredDocumentNext, "" ) // {20}
             ,hfRequiredDocumentLinkUrl.ClientID     // {21}
+            , this.Request.RawUrl // {22}
 );
 
             ScriptManager.RegisterStartupScript( Page, Page.GetType(), "registrationEntry", script, true );
