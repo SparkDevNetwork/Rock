@@ -3198,9 +3198,9 @@ namespace RockWeb.Blocks.Event
                     if ( !string.IsNullOrWhiteSpace( inviteLink ) )
                     {
                         string returnUrl = GlobalAttributesCache.Read().GetValue( "PublicApplicationRoot" ).EnsureTrailingForwardslash() +
-                            ResolveRockUrl( Request.RawUrl + "?registration_key=" + RegistrationState.Registrants[CurrentRegistrantIndex].Guid ).TrimStart( '/' );
+                            ResolveRockUrl( Request.RawUrl + (Request.QueryString.Count == 0 ? "?" : "&") + "registration_key=" + RegistrationState.Registrants[CurrentRegistrantIndex].Guid ).TrimStart( '/' );
 
-                        hfRequiredDocumentLinkUrl.Value = string.Format( "{0}?redirect_uri={1}", inviteLink, returnUrl );
+                        hfRequiredDocumentLinkUrl.Value = string.Format( "{0}?redirect_uri={1}", inviteLink, returnUrl.UrlEncode() );
                         hfRegistrantGuid.Value = RegistrationState.Registrants[CurrentRegistrantIndex].Guid.ToString();
                     }
                     else
@@ -3601,7 +3601,7 @@ namespace RockWeb.Blocks.Event
     poll = function() {{
        setTimeout(function(){{
           $.ajax({{ 
-            url: '{22}?registration_key='+$('#hfRegistrantGuid').val(), 
+            url: '{22}registration_key='+$('#hfRegistrantGuid').val(), 
             success: function(data){{
                 //
                 if (data != ''&& data.startsWith('?document_id') ) {{
@@ -3647,7 +3647,7 @@ namespace RockWeb.Blocks.Event
             ,hfRequiredDocumentQueryString.ClientID // {19}
             ,this.Page.ClientScript.GetPostBackEventReference( lbRequiredDocumentNext, "" ) // {20}
             ,hfRequiredDocumentLinkUrl.ClientID     // {21}
-            , this.Request.RawUrl // {22}
+            , this.Request.RawUrl + ( Request.QueryString.Count == 0 ? "?" : "&" ) // {22}
 );
 
             ScriptManager.RegisterStartupScript( Page, Page.GetType(), "registrationEntry", script, true );
