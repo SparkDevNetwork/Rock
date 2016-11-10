@@ -30,7 +30,7 @@ using Rock.Model;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
-namespace com.centralaz.GeneralJobs.Jobs
+namespace com.centralaz.ChurchMetrics.Jobs
 {
     /// <summary>
     /// For any people that share an email, this job sets everyone's preference to the most restrictive setting that one of them has.
@@ -45,13 +45,13 @@ namespace com.centralaz.GeneralJobs.Jobs
     [CategoryField( "Queen Creek Service Times", "The category for Queen Creek service times", false, "Rock.Model.Schedule", required: false, order: 7 )]
     [CategoryField( "Event Schedules", "The category for event schedules", false, "Rock.Model.Schedule", required: false, order: 8 )]
     [DisallowConcurrentExecution]
-    public class MatchEmailPreference : IJob
+    public class ImportMetricValues : IJob
     {
 
         /// <summary>
         /// Initializes a new instance of the <see cref="MatchEmailPreference"/> class.
         /// </summary>
-        public MatchEmailPreference()
+        public ImportMetricValues()
         {
         }
 
