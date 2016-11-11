@@ -49,6 +49,16 @@ namespace Rock
         }
 
         /// <summary>
+        /// Determines whether the string is not null or whitespace.
+        /// </summary>
+        /// <param name="str">The string.</param>
+        /// <returns></returns>
+        public static bool IsNotNullOrWhitespace( this string str )
+        {
+            return !string.IsNullOrWhiteSpace( str );
+        }
+
+        /// <summary>
         /// Determines whether the string is made up of only digits
         /// </summary>
         /// <param name="str">The string.</param>
