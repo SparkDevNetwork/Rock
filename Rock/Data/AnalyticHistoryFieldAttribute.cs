@@ -15,23 +15,15 @@
 // </copyright>
 //
 using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations.Schema;
-using System.Linq;
-using System.Runtime.Serialization;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace Rock.Model
+namespace Rock.Data
 {
     /// <summary>
-    /// Represents the current record from AnalyticsDimPersonHistorical
-    /// NOTE: AnalyticsDimPersonCurrent is simply a de-normalized sql VIEW based on AnalyticsDimPersonHistorical
+    /// Custom attribute used to decorate model properties of an IAnalyticHistorical model that indicates 
+    /// that changes to the value of the property should count as "Analytic History"
     /// </summary>
-    [Table( "AnalyticsDimPersonCurrent" )]
-    [DataContract]
-    public class AnalyticsDimPersonCurrent : AnalyticsDimPersonBase<AnalyticsDimPersonCurrent>
+    [AttributeUsage(AttributeTargets.Property)]
+    public class AnalyticHistoryFieldAttribute : System.Attribute
     {
-        // intentionally blank. See AnalyticsDimPersonBase, etc for the fields
     }
 }

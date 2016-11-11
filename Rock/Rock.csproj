@@ -376,6 +376,7 @@
     <Compile Include="Data\DefinedValueAttribute.cs" />
     <Compile Include="Data\Entity.cs" />
     <Compile Include="Data\FieldTypeAttribute.cs" />
+    <Compile Include="Data\AnalyticHistoryFieldAttribute.cs" />
     <Compile Include="Data\HideFromReportingAttribute.cs" />
     <Compile Include="Data\IAnalyticHistorical.cs" />
     <Compile Include="Data\IAnalytic.cs" />
@@ -594,6 +595,7 @@
     <Compile Include="Model\AnalyticsDimFinancialBatch.cs" />
     <Compile Include="Model\AnalyticsDimFinancialTransactionCreditCardType.cs" />
     <Compile Include="Model\AnalyticsDimFinancialTransactionCurrencyType.cs" />
+    <Compile Include="Model\AnalyticsDimPersonHistorical.cs" />
     <Compile Include="Model\AnalyticsDimPersonCurrent.cs" />
     <Compile Include="Model\AnalyticsDimPersonSuffix.cs" />
     <Compile Include="Model\AnalyticsDimPersonMaritalStatus.cs" />
@@ -606,7 +608,7 @@
     <Compile Include="Model\AnalyticsDimFinancialTransactionSource.cs" />
     <Compile Include="Model\AnalyticsDimDate.cs" />
     <Compile Include="Model\AnalyticsDimFinancialTransactionType.cs" />
-    <Compile Include="Model\AnalyticsDimPersonHistorical.cs" />
+    <Compile Include="Model\AnalyticsSourcePersonHistorical.cs" />
     <Compile Include="Model\AnalyticsFactFinancialTransaction.cs" />
     <Compile Include="Model\AnalyticsSourceFinancialTransaction.cs" />
     <Compile Include="Model\Attendance.cs" />
