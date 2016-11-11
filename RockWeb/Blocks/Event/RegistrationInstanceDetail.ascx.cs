@@ -2826,7 +2826,13 @@ namespace RockWeb.Blocks.Event
                                     gpGradeFilter.UseAbbreviation = true;
                                     gpGradeFilter.UseGradeOffsetAsValue = true;
                                     gpGradeFilter.CssClass = "input-width-md";
-                                    gpGradeFilter.SetValue( fRegistrants.GetUserPreference( "Grade" ).AsIntegerOrNull() );
+                                    // Since 12th grade is the 0 Value, we need to handle the "no user preference" differently
+                                    // by not calling SetValue otherwise it will select 12th grade.
+                                    var gradeUserPreference = fRegistrants.GetUserPreference( "Grade" ).AsIntegerOrNull();
+                                    if ( gradeUserPreference != null )
+                                    {
+                                        gpGradeFilter.SetValue( gradeUserPreference );
+                                    }
                                     phRegistrantFormFieldFilters.Controls.Add( gpGradeFilter );
 
                                     string dataFieldExpression = "PersonAlias.Person.GraduationYear";
