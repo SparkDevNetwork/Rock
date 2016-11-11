@@ -98,9 +98,9 @@
     <Compile Include="Migrations\201611022323122_RemoveForeignColumnIndexes.Designer.cs">
       <DependentUpon>201611022323122_RemoveForeignColumnIndexes.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201611091727542_FinanceAnalytics.cs" />
-    <Compile Include="Migrations\201611091727542_FinanceAnalytics.Designer.cs">
-      <DependentUpon>201611091727542_FinanceAnalytics.cs</DependentUpon>
+    <Compile Include="Migrations\201611100027104_FinanceAnalytics.cs" />
+    <Compile Include="Migrations\201611100027104_FinanceAnalytics.Designer.cs">
+      <DependentUpon>201611100027104_FinanceAnalytics.cs</DependentUpon>
     </Compile>
     <Compile Include="Migrations\Version 6.0\Version 1.6.0\201609282147388_WaitList.cs" />
     <Compile Include="Migrations\Version 6.0\Version 1.6.0\201609282147388_WaitList.Designer.cs">
@@ -2328,8 +2328,8 @@
     <EmbeddedResource Include="Migrations\201611022323122_RemoveForeignColumnIndexes.resx">
       <DependentUpon>201611022323122_RemoveForeignColumnIndexes.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201611091727542_FinanceAnalytics.resx">
-      <DependentUpon>201611091727542_FinanceAnalytics.cs</DependentUpon>
+    <EmbeddedResource Include="Migrations\201611100027104_FinanceAnalytics.resx">
+      <DependentUpon>201611100027104_FinanceAnalytics.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 6.0\Version 1.6.0\201609282147388_WaitList.resx">
       <DependentUpon>201609282147388_WaitList.cs</DependentUpon>

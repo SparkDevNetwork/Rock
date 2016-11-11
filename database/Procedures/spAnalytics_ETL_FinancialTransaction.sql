@@ -79,7 +79,7 @@ BEGIN
         ,fpd.CreditCardTypeValueId
         ,NULL [DaysSinceLastTransactionOfType] -- come back and fill this in later
         ,0 [IsFirstTransactionOfType] -- come back and fill this in later
-        ,NULL [AuthorizedFamilyId] -- fill this in later
+        ,NULL [AuthorizedFamilyId] -- TODo: fill this in later
         ,1 [Count]
         ,ftd.Amount [Amount]
         ,@EtlDateTime [ModifiedDateTime]
