@@ -561,19 +561,25 @@ namespace Rock.Model
         /// Gets the index filter values.
         /// </summary>
         /// <returns></returns>
-        public List<string> GetIndexFilterValues()
+        public ModelFieldFilterConfig GetIndexFilterConfig()
         {
-            return new SiteService( new RockContext() ).Queryable().AsNoTracking().Where( s => s.IsIndexEnabled ).Select( s => s.Name ).ToList();
+            ModelFieldFilterConfig filterConfig = new ModelFieldFilterConfig();
+            filterConfig.FilterValues = new SiteService( new RockContext() ).Queryable().AsNoTracking().Where( s => s.IsIndexEnabled ).Select( s => s.Name ).ToList();
+            filterConfig.FilterLabel = "Sites";
+            filterConfig.FilterField = "siteName";
+
+            return filterConfig;
         }
 
         /// <summary>
         /// Gets the index filter field.
         /// </summary>
         /// <returns></returns>
-        public string GetIndexFilterField()
+        public bool SupportsIndexFieldFiltering()
         {
-            return "siteName";
+            return true;
         }
+
         /// <summary>
         /// Gets the supported actions.
         /// </summary>

@@ -360,18 +360,23 @@ namespace Rock.Model
         /// Gets the index filter values.
         /// </summary>
         /// <returns></returns>
-        public List<string> GetIndexFilterValues()
+        public ModelFieldFilterConfig GetIndexFilterConfig()
         {
-            return new ContentChannelService( new RockContext() ).Queryable().AsNoTracking().Where( c => c.IsIndexEnabled).Select(c => c.Name).ToList();
+            ModelFieldFilterConfig filterConfig = new ModelFieldFilterConfig();
+            filterConfig.FilterValues = new ContentChannelService( new RockContext() ).Queryable().AsNoTracking().Where( c => c.IsIndexEnabled ).Select( c => c.Name ).ToList();
+            filterConfig.FilterLabel = "Content Channels";
+            filterConfig.FilterField = "contentChannel";
+
+            return filterConfig;
         }
 
         /// <summary>
         /// Gets the index filter field.
         /// </summary>
         /// <returns></returns>
-        public string GetIndexFilterField()
+        public bool SupportsIndexFieldFiltering()
         {
-            return "contentChannel";
+            return true;
         }
         #endregion
 

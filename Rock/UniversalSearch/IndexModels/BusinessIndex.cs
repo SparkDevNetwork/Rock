@@ -71,6 +71,7 @@ namespace Rock.UniversalSearch.IndexModels
         {
             var businessIndex = new BusinessIndex();
             businessIndex.SourceIndexModel = "Rock.Model.Person";
+            businessIndex.ModelConfiguration = "nofilters";
 
             businessIndex.ModelOrder = 6;
 

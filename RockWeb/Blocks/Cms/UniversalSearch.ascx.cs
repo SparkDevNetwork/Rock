@@ -34,6 +34,9 @@ using Rock.Web.UI;
 using Rock.Web.Cache;
 using Newtonsoft.Json.Linq;
 using Rock.UniversalSearch.IndexModels;
+using System.Reflection;
+using Rock.Web.UI.Controls;
+using Rock.Web;
 
 namespace RockWeb.Blocks.Cms
 {
@@ -48,6 +51,9 @@ namespace RockWeb.Blocks.Cms
     [TextField( "Enabled Models", "The models that should be enabled for searching.", true,  category: "CustomSetting" )]
     [IntegerField("Results Per Page", "The number of results to show per page.", true, 20, category: "CustomSetting" )]
     [EnumField("Search Type", "The type of search to perform.", typeof(SearchType), true, "2", category: "CustomSetting" )]
+    [TextField("Base Field Filters", "These field filters will always be enabled and will not be changeable by the individual. Uses tha same syntax as the lava command.", false, category: "CustomSetting" )]
+    [BooleanField("Show Refined Search", "Determines whether the refinded search should be shown.", true, category: "CustomSetting" )]
+    [BooleanField("Show Scores", "Enables the display of scores for help with debugging.", category: "CustomSetting" )]
     public partial class UniversalSearch : RockBlockCustomSettings
     {
         #region Fields
@@ -92,58 +98,19 @@ namespace RockWeb.Blocks.Cms
 
             if ( !Page.IsPostBack )
             {
-                // load indexable entity list
-                var entities = EntityTypeCache.All();
-
-                var indexableEntities = entities.Where( i => i.IsIndexingSupported == true ).ToList();
-
-                cblEnabledModels.DataTextField = "FriendlyName";
-                cblEnabledModels.DataValueField = "Id";
-                cblEnabledModels.DataSource = indexableEntities;
-                cblEnabledModels.DataBind();
-
-                // load indexable group types
-                if (entities.Any( t => t.Guid == Rock.SystemGuid.EntityType.GROUP.AsGuid() ) )
+                // check if this is a redirect from the smart search of a document
+                if(PageParameter( "DocumentType" ).IsNotNullOrWhitespace() && PageParameter( "DocumentId" ).IsNotNullOrWhitespace() )
                 {
-                    var indexableGroupTypes = GroupTypeCache.All().AsQueryable().Where( g => g.IsIndexEnabled == true ).ToList();
-
-                    if (indexableGroupTypes.Count != 0 )
-                    {
-                        cblGroupTypes.DataTextField = "Name";
-                        cblGroupTypes.DataValueField = "Name";
-                        cblGroupTypes.DataSource = indexableGroupTypes;
-                        cblGroupTypes.DataBind();
-                    }
-                    else
-                    {
-                        cblGroupTypes.Visible = false;
-                    }
-                }
-                else
-                {
-                    cblGroupTypes.Visible = false;
-                }
-
-                // load content channels
-                if ( entities.Any( t => t.Guid == Rock.SystemGuid.EntityType.CONTENT_CHANNEL_ITEM.AsGuid()) )
-                {
-                    var indexableChannels = new ContentChannelService( new RockContext() ).Queryable().Where( c => c.IsIndexEnabled == true ).ToList();
-
-                    if (indexableChannels.Count != 0 )
-                    {
-                        cblContentChannelTypes.DataTextField = "Name";
-                        cblContentChannelTypes.DataValueField = "Name";
-                        cblContentChannelTypes.DataSource = indexableChannels;
-                        cblContentChannelTypes.DataBind();
-                    }
-
-                }
-                else
-                {
-                    cblContentChannelTypes.Visible = false;
+                    RedirectToDocument( PageParameter( "DocumentType" ), PageParameter( "DocumentId" ) );
                 }
 
                 ConfigureSettings();
+
+                // if this is from the smart search apply some additional configuration
+                if ( !string.IsNullOrWhiteSpace( PageParameter( "SmartSearch" ) ) )
+                {
+                    ConfigureSmartSearchSettings();
+                }
 
                 if ( !string.IsNullOrWhiteSpace(PageParameter( "Q" ) ) )
                 {
@@ -182,6 +149,12 @@ namespace RockWeb.Blocks.Cms
 
             SetAttributeValue( "ResultsPerPage", tbResultsPerPage.Text );
 
+            SetAttributeValue( "BaseFieldFilters", tbBaseFieldFilters.Text );
+
+            SetAttributeValue( "ShowRefinedSearch", cbShowRefinedSearch.Checked.ToString() );
+
+            SetAttributeValue( "ShowScores", cbShowScores.Checked.ToString() );
+
             SaveAttributeValues();
 
             ConfigureSettings();
@@ -216,10 +189,35 @@ namespace RockWeb.Blocks.Cms
             else
             {
                 pnlRefineSearch.Visible = true;
-                lbRefineSearch.Text = "Hide Advanced Options";
+                lbRefineSearch.Text = "Hide Refined Search";
             }
         }
 
+        /// <summary>
+        /// Redirects to document.
+        /// </summary>
+        /// <param name="documentType">Type of the document.</param>
+        /// <param name="documentId">The document identifier.</param>
+        private void RedirectToDocument( string documentType, string documentId )
+        {
+            var indexDocumentEntityType = EntityTypeCache.Read( documentType );
+
+            var indexDocumentType = indexDocumentEntityType.GetEntityType();
+
+            var client = IndexContainer.GetActiveComponent();
+            var document = client.GetDocumentById( indexDocumentType, documentId.AsInteger() );
+
+            var documentUrl = document.GetDocumentUrl();
+
+            if ( !string.IsNullOrWhiteSpace( documentUrl ) )
+            {
+                Response.Redirect( documentUrl );
+            }
+            else
+            {
+                lResults.Text = "<div class='alert alert-warning'>No url is available for the provided index document.</div>";
+            }
+        }
 
         /// <summary>
         /// Performs the search
@@ -232,49 +230,20 @@ namespace RockWeb.Blocks.Cms
 
             var searchType = GetAttributeValue( "SearchType" ).ConvertToEnum<SearchType>();
 
-            // configure models/entities
-            List<int> entities = new List<int>();
+            // get listing of selected entities to search on
+            List<int> selectedEntities = GetSearchEntities();
 
-            if ( entities.Count == 0 )
-            {
-                entities = cblModelFilter.SelectedValuesAsInt;
-            }
-
-            List<FieldValue> fieldValues = new List<FieldValue>();
-
-            if ( cblGroupTypes.SelectedValues.Count > 0 )
-            {
-                foreach(string groupType in cblGroupTypes.SelectedValues )
-                {
-                    fieldValues.Add( new FieldValue {  Field = "groupTypeName", Value = groupType } );
-                }
-            }
-
-            if ( cblContentChannelTypes.SelectedValues.Count > 0 )
-            {
-                foreach ( string channel in cblContentChannelTypes.SelectedValues )
-                {
-                    fieldValues.Add( new FieldValue { Field = "contentChannel", Value = channel } );
-                }
-            }
-
-            // if person model is selected add a filter criteria to prevent blocking by other filters
-            if ( entities.Contains( 15 ) )
-            {
-                fieldValues.Add( new FieldValue { Field = "indexModelType", Value = "Rock.UniversalSearch.IndexModels.PersonIndex" } );
-            }
+            // get listing of filters to apply
+            List<FieldValue> fieldValues = GetFieldFilters( selectedEntities );
 
             SearchFieldCriteria fieldCriteria = new SearchFieldCriteria();
             fieldCriteria.FieldValues = fieldValues;
-
-
-            var client = IndexContainer.GetActiveComponent();
-
             
+            var client = IndexContainer.GetActiveComponent();
 
             long totalResultsAvailable = 0;
 
-            var results = client.Search( term, searchType, entities, fieldCriteria, _itemsPerPage, _currentPageNum * _itemsPerPage, out totalResultsAvailable );
+            var results = client.Search( term, searchType, selectedEntities, fieldCriteria, _itemsPerPage, _currentPageNum * _itemsPerPage, out totalResultsAvailable );
 
             StringBuilder formattedResults = new StringBuilder();
             formattedResults.Append( "<ul class='list-unstyled'>" );
@@ -285,7 +254,14 @@ namespace RockWeb.Blocks.Cms
 
                 if ( formattedResult.IsViewAllowed )
                 {
-                    formattedResults.Append( string.Format( "{0} <div class='pull-right'><small>{1}</small></div><hr />", formattedResult.FormattedResult, result.Score ));
+                    formattedResults.Append( string.Format( "{0}", formattedResult.FormattedResult ));
+
+                    if ( GetAttributeValue( "ShowScores" ).AsBoolean() )
+                    {
+                        formattedResults.Append( string.Format( "<div class='pull-right'><small>{0}</small></div>", result.Score ) );
+                    }
+
+                    formattedResults.Append( "<hr />" );
                 }
             }
 
@@ -294,6 +270,179 @@ namespace RockWeb.Blocks.Cms
             tbSearch.Text = term;
 
             lResults.Text = formattedResults.ToString();
+
+            // pageination
+            StringBuilder pagination = new StringBuilder();
+
+            // previous button
+            if (_currentPageNum == 0 )
+            {
+                pagination.Append("<li class='disabled'><span><span aria-hidden='true'>&laquo;</span></span></li>");
+            }
+            else
+            {
+                pagination.Append( String.Format("<li><a href='{0}'><span><span aria-hidden='true'>&laquo;</span></span></a></li>", BuildUrl(-1)) );
+            }
+
+            var paginationOffset = 5;
+            var startPage = 1;
+            var endPage = paginationOffset * 2;
+
+            if (_currentPageNum >= paginationOffset )
+            {
+                startPage = _currentPageNum - paginationOffset;
+                endPage = _currentPageNum + paginationOffset;
+            }
+
+            if ((endPage * _itemsPerPage) > totalResultsAvailable )
+            {
+                endPage = (int)Math.Ceiling((double)totalResultsAvailable / _itemsPerPage);
+            }
+
+            if ( endPage == 1 ) {
+                pnlPagination.Visible = false;
+                return;
+            }
+
+            for ( int i = startPage; i <= endPage; i++ )
+            {
+                if (_currentPageNum == i )
+                {
+                    pagination.Append( string.Format( "<li class='active'><span>{0} </span></li>", i ) );
+                }
+                else
+                {
+                    pagination.Append( string.Format( "<li><a href='{1}'><span>{0} </span></a></li>", i, BuildUrl((i - _currentPageNum) - 1) ) );
+                }
+            }
+            
+            // next button
+            if ( _currentPageNum == endPage )
+            {
+                pagination.Append( "<li class='disabled'><span><span aria-hidden='true'>&raquo;</span></span></li>" );
+            }
+            else
+            {
+                pagination.Append( String.Format( "<li><a href='{0}'><span><span aria-hidden='true'>&raquo;</span></span></a></li>", BuildUrl( 1 ) ) );
+            }
+
+            lPagination.Text = pagination.ToString();
+        }
+
+        /// <summary>
+        /// Gets the search entities.
+        /// </summary>
+        /// <returns></returns>
+        private List<int> GetSearchEntities()
+        {
+            List<int> selectedEntities = new List<int>();
+
+            if ( PageParameter( "SmartSearch" ).IsNotNullOrWhitespace() )
+            {
+                // get entities from smart search config
+                var searchEntitiesSetting = Rock.Web.SystemSettings.GetValue( "core_SmartSearchUniversalSearchEntities" );
+
+                if ( !string.IsNullOrWhiteSpace( searchEntitiesSetting ) )
+                {
+                    selectedEntities = searchEntitiesSetting.Split( ',' ).Select( int.Parse ).ToList();
+                }
+            }
+            else
+            {
+                // get entities from block config
+                if ( selectedEntities.Count == 0 )
+                {
+                    selectedEntities = cblModelFilter.SelectedValuesAsInt;
+                }
+            }
+
+            return selectedEntities;
+        }
+
+        /// <summary>
+        /// Gets the field filters.
+        /// </summary>
+        /// <returns></returns>
+        private List<FieldValue> GetFieldFilters(List<int> selectedEntities)
+        {
+            List<FieldValue> fieldValues = new List<FieldValue>();
+
+            if ( PageParameter( "SmartSearch" ).IsNotNullOrWhitespace() )
+            {
+                // get the field critiera
+                var fieldCriteriaSetting = Rock.Web.SystemSettings.GetValue( "core_SmartSearchUniversalSearchFieldCriteria" );
+                
+                if ( !string.IsNullOrWhiteSpace( fieldCriteriaSetting ) )
+                {
+                    foreach ( var queryString in fieldCriteriaSetting.ToKeyValuePairList() )
+                    {
+                        // check that multiple values were not passed
+                        var values = queryString.Value.ToString().Split( ',' );
+
+                        foreach ( var value in values )
+                        {
+                            fieldValues.Add( new FieldValue { Field = queryString.Key, Value = value } );
+                        }
+                    }
+                }
+            }
+            else
+            {
+                // get filters from the block config
+                
+                // add any base field filters
+                if ( !string.IsNullOrWhiteSpace( GetAttributeValue( "BaseFieldFilters" ) ) )
+                {
+                    foreach ( var filterField in GetAttributeValue( "BaseFieldFilters" ).ToKeyValuePairList() )
+                    {
+                        // check that multiple values were not passed as a comma separated string
+                        var values = filterField.Value.ToString().Split( ',' );
+
+                        foreach ( var value in values )
+                        {
+
+                            fieldValues.Add( new FieldValue { Field = filterField.Key, Value = value } );
+                        }
+                    }
+                }
+
+                // get dynamic filters
+                foreach ( var control in phFilters.Controls )
+                {
+                    if ( control is HtmlGenericContainer )
+                    {
+                        var htmlContainer = (HtmlGenericContainer)control;
+                        var childControls = htmlContainer.Controls;
+
+                        foreach ( var childControl in childControls )
+                        {
+                            if ( childControl is RockCheckBoxList )
+                            {
+                                var filterControl = (RockCheckBoxList)childControl;
+                                var entityId = filterControl.Attributes["entity-id"].AsInteger();
+                                var fieldName = filterControl.Attributes["entity-filter-field"];
+
+                                if ( selectedEntities.Contains( entityId ) )
+                                {
+                                    foreach ( var selectedItem in filterControl.SelectedValues )
+                                    {
+                                        fieldValues.Add( new FieldValue { Field = fieldName, Value = selectedItem } );
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            // check for the existence of field criteria. if any exist check the entity list for models that do not support field criteria and
+            // add a filter for modelconfig with 'nofilters'. This keeps them from being excluded
+            if ( fieldValues.Count > 0 )
+            {
+                fieldValues.Add( new FieldValue() { Field = "modelConfiguration", Value = "nofilters", Boost = 3 } );
+            }
+
+            return fieldValues;
         }
 
         /// <summary>
@@ -302,61 +451,112 @@ namespace RockWeb.Blocks.Cms
         /// <returns></returns>
         private string BuildUrl(int pageOffset = 0)
         {
-            StringBuilder url = new StringBuilder();
-
-            var appendChar = string.Empty;
-
-            url.Append( Request.Path + "?" );
+            var pageReference = new PageReference();
+            pageReference.PageId = CurrentPageReference.PageId;
+            pageReference.RouteId = CurrentPageReference.RouteId;
 
             if (!string.IsNullOrWhiteSpace(tbSearch.Text) )
             {
-                url.Append( string.Format("Q={0}", tbSearch.Text) );
-                appendChar = "&";
+                pageReference.Parameters.AddOrReplace("Q", tbSearch.Text);
+            }
+
+            if ( PageParameter("SmartSearch").IsNotNullOrWhitespace() )
+            {
+                pageReference.Parameters.AddOrReplace( "SmartSearch", "true" );
             }
 
             if (cblModelFilter.SelectedValues.Count > 0 )
             {
-                url.Append( string.Format( "{0}Models={1}", appendChar, string.Join(",", cblModelFilter.SelectedValues ) ) );
-                appendChar = "&";
+                pageReference.Parameters.AddOrReplace( "Models", string.Join( ",", cblModelFilter.SelectedValues ) );
             }
 
-            if ( cblGroupTypes.SelectedValues.Count > 0 )
+            // add dynamic filters
+            var selectedEntities = cblModelFilter.SelectedValuesAsInt;
+            if ( selectedEntities.Count > 0 )
             {
-                url.Append( string.Format( "{0}GroupTypes={1}", appendChar, string.Join( ",", cblGroupTypes.SelectedValues ) ) );
-                appendChar = "&";
+                foreach ( var control in phFilters.Controls )
+                {
+                    if (control is HtmlGenericContainer )
+                    {
+                        var htmlContainer = (HtmlGenericContainer)control;
+                        var childControls = htmlContainer.Controls;
+
+                        foreach(var childControl in childControls )
+                        {
+                            if ( childControl is RockCheckBoxList )
+                            {
+                                var filterControl = (RockCheckBoxList)childControl;
+                                var entityId = filterControl.Attributes["entity-id"].AsInteger();
+                                var fieldName = filterControl.Attributes["entity-filter-field"];
+
+                                if ( selectedEntities.Contains( entityId ) )
+                                {
+                                    pageReference.Parameters.AddOrReplace( fieldName, string.Join( ",", filterControl.SelectedValues ) );
+                                }
+                            }
+                        }
+                    }
+                }
             }
 
-            if ( cblContentChannelTypes.SelectedValues.Count > 0 )
+            if (_currentPageNum != 0 || pageOffset != 0 )
             {
-                url.Append( string.Format( "{0}ContentChannels={1}", appendChar, string.Join( ",", cblContentChannelTypes.SelectedValues ) ) );
-                appendChar = "&";
-            }
-
-            if (_itemsPerPage != _defaultItemsPerPage )
-            {
-                url.Append( string.Format( "{0}ItemsPerPage={1}", appendChar, _itemsPerPage ) );
-                appendChar = "&";
-            }
-
-            if (_currentPageNum != 0 )
-            {
-                url.Append( string.Format( "{0}CurrentPage={1}", appendChar, _currentPageNum + pageOffset ) );
-                appendChar = "&";
+                pageReference.Parameters.AddOrReplace( "CurrentPage", (_currentPageNum + pageOffset).ToString() );
             }
 
             if( !string.IsNullOrWhiteSpace( PageParameter( "SearchType" ) ) )
             {
-                url.Append( string.Format( "{0}SearchType={1}", appendChar, PageParameter( "SearchType" ) ) );
-                appendChar = "&";
+                pageReference.Parameters.AddOrReplace( "SearchType", PageParameter( "SearchType" ) );
             }
 
             if ( pnlRefineSearch.Visible )
             {
-                url.Append( string.Format( "{0}RefinedSearch={1}", appendChar, "True" ) );
-                appendChar = "&";
+                pageReference.Parameters.AddOrReplace( "RefinedSearch", "True" );
             }
 
-            return url.ToString().TrimEnd('&');
+            return pageReference.BuildUrl();
+        }
+
+        /// <summary>
+        /// Gets the index filter configuration.
+        /// </summary>
+        /// <param name="entityType">Type of the entity.</param>
+        /// <returns></returns>
+        private ModelFieldFilterConfig GetIndexFilterConfig(Type entityType )
+        {
+            if ( entityType != null )
+            {
+                object classInstance = Activator.CreateInstance( entityType, null );
+                MethodInfo bulkItemsMethod = entityType.GetMethod( "GetIndexFilterConfig" );
+
+                if ( classInstance != null && bulkItemsMethod != null )
+                {
+                    return (ModelFieldFilterConfig)bulkItemsMethod.Invoke( classInstance, null );
+                }
+            }
+
+            return new ModelFieldFilterConfig();
+        }
+
+        /// <summary>
+        /// Supportses the index field filtering.
+        /// </summary>
+        /// <param name="entityType">Type of the entity.</param>
+        /// <returns></returns>
+        private bool SupportsIndexFieldFiltering( Type entityType )
+        {
+            if ( entityType != null )
+            {
+                object classInstance = Activator.CreateInstance( entityType, null );
+                MethodInfo bulkItemsMethod = entityType.GetMethod( "SupportsIndexFieldFiltering" );
+
+                if ( classInstance != null && bulkItemsMethod != null )
+                {
+                    return (bool)bulkItemsMethod.Invoke( classInstance, null );
+                }
+            }
+
+            return false;
         }
 
         /// <summary>
@@ -364,6 +564,9 @@ namespace RockWeb.Blocks.Cms
         /// </summary>
         private void ConfigureSettings()
         {
+            // toggle refine search view toggle button
+            lbRefineSearch.Visible = GetAttributeValue( "ShowRefinedSearch" ).AsBoolean();
+
             // model selector
             var enabledModelIds = GetAttributeValue( "EnabledModels" ).Split( ',' ).Select( int.Parse ).ToList();
 
@@ -377,11 +580,49 @@ namespace RockWeb.Blocks.Cms
 
             cblModelFilter.Visible = GetAttributeValue( "ShowFilters" ).AsBoolean();
 
-            // hide content channel selector if content channel items not enabled
-            cblContentChannelTypes.Visible = indexableEntities.Any( e => e.Guid == Rock.SystemGuid.EntityType.CONTENT_CHANNEL_ITEM.AsGuid() );
+            // add dynamic filters
+            if ( GetAttributeValue( "ShowRefinedSearch" ).AsBoolean() )
+            {
+                foreach ( var entity in indexableEntities )
+                {
+                    var entityType = entity.GetEntityType();
 
-            // hide group type selector if groups not enabled
-            cblGroupTypes.Visible = indexableEntities.Any( e => e.Guid == Rock.SystemGuid.EntityType.GROUP.AsGuid() );
+                    if ( SupportsIndexFieldFiltering( entityType ) )
+                    {
+                        var filterOptions = GetIndexFilterConfig( entityType );
+
+                        RockCheckBoxList filterConfig = new RockCheckBoxList();
+                        filterConfig.Label = filterOptions.FilterLabel;
+                        filterConfig.CssClass = "js-entity-id-" + entity.Id.ToString();
+                        filterConfig.RepeatDirection = RepeatDirection.Horizontal;
+                        filterConfig.Attributes.Add( "entity-id", entity.Id.ToString() );
+                        filterConfig.Attributes.Add( "entity-filter-field", filterOptions.FilterField );
+                        filterConfig.DataSource = filterOptions.FilterValues;
+                        filterConfig.DataBind();
+
+                        // set any selected values from the query string
+                        if(!string.IsNullOrWhiteSpace(PageParameter( filterOptions.FilterField ) ) )
+                        {
+                            List<string> selectedValues = PageParameter( filterOptions.FilterField ).Split( ',' ).ToList();
+
+                            foreach(ListItem item in filterConfig.Items )
+                            {
+                                if ( selectedValues.Contains( item.Value ) )
+                                {
+                                    item.Selected = true;
+                                }
+                            }
+                        }
+
+                        if ( filterOptions.FilterValues.Count > 0 )
+                        {
+                            HtmlGenericContainer filterWrapper = new HtmlGenericContainer( "div", "col-md-6" );
+                            filterWrapper.Controls.Add( filterConfig );
+                            phFilters.Controls.Add( filterWrapper );
+                        }
+                    }
+                }
+            }
 
             // if only one model is selected then hide the type checkbox
             if (cblModelFilter.Items.Count == 1 )
@@ -416,40 +657,6 @@ namespace RockWeb.Blocks.Cms
                 }
             }
 
-            if ( !string.IsNullOrWhiteSpace( PageParameter( "GroupTypes" ) ) )
-            {
-                var queryStringGroupTypes = PageParameter( "GroupTypes" ).Split( ',' ).Select( s => s.Trim() ).ToList();
-
-                foreach ( ListItem item in cblGroupTypes.Items )
-                {
-                    if ( queryStringGroupTypes.Contains( item.Value ) )
-                    {
-                        item.Selected = true;
-                    }
-                    else
-                    {
-                        item.Selected = false;
-                    }
-                }
-            }
-
-            if ( !string.IsNullOrWhiteSpace( PageParameter( "ContentChannels" ) ) )
-            {
-                var queryStringContentChannel = PageParameter( "ContentChannels" ).Split( ',' ).Select( s => s.Trim() ).ToList();
-
-                foreach ( ListItem item in cblContentChannelTypes.Items )
-                {
-                    if ( queryStringContentChannel.Contains( item.Value ) )
-                    {
-                        item.Selected = true;
-                    }
-                    else
-                    {
-                        item.Selected = false;
-                    }
-                }
-            }
-
             if ( !string.IsNullOrWhiteSpace( PageParameter( "ItemsPerPage" ) ) )
             {
                 _itemsPerPage = PageParameter( "ItemsPerPage" ).AsInteger();
@@ -463,7 +670,22 @@ namespace RockWeb.Blocks.Cms
             if ( !string.IsNullOrWhiteSpace( PageParameter( "RefinedSearch" ) ) )
             {
                 pnlRefineSearch.Visible = PageParameter( "RefinedSearch" ).AsBoolean();
+
+                if ( pnlRefineSearch.Visible )
+                {
+                    lbRefineSearch.Text = "Hide Refined Search";
+                }
             }
+
+            _itemsPerPage = GetAttributeValue( "ResultsPerPage" ).AsInteger();
+        }
+
+        /// <summary>
+        /// Configures the smart search settings.
+        /// </summary>
+        private void ConfigureSmartSearchSettings()
+        {
+            lbRefineSearch.Visible = false;
         }
 
         /// <summary>
@@ -478,8 +700,23 @@ namespace RockWeb.Blocks.Cms
             cbShowFilter.Checked = GetAttributeValue( "ShowFilters" ).AsBoolean();
 
             var enabledModelIds = GetAttributeValue( "EnabledModels" ).Split( ',' ).Select( int.Parse ).ToList();
-            
+
+            var entities = EntityTypeCache.All();
+            var indexableEntities = entities.Where( i => i.IsIndexingSupported == true && enabledModelIds.Contains( i.Id ) ).ToList();
+            cblEnabledModels.DataValueField = "Id";
+            cblEnabledModels.DataTextField = "FriendlyName";
+            cblEnabledModels.DataSource = entities.Where( i => i.IsIndexingSupported == true && i.IsIndexingEnabled == true ).ToList();
+            cblEnabledModels.DataBind();
+
             cblEnabledModels.SetValues( enabledModelIds );
+
+            cbShowRefinedSearch.Checked = GetAttributeValue( "ShowRefinedSearch" ).AsBoolean();
+
+            cbShowScores.Checked = GetAttributeValue( "ShowScores" ).AsBoolean();
+
+            tbBaseFieldFilters.Text = GetAttributeValue( "BaseFieldFilters" );
+
+            tbResultsPerPage.Text = GetAttributeValue( "ResultsPerPage" );
 
             upnlContent.Update();
         }
@@ -487,3 +724,4 @@ namespace RockWeb.Blocks.Cms
         #endregion
     }
 }
+ 

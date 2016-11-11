@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using Elasticsearch.Net;
@@ -14,6 +15,7 @@ using Rock.Data;
 using Rock.Model;
 using Rock.UniversalSearch.IndexModels;
 using Rock.UniversalSearch.IndexModels.Attributes;
+using Rock.Web.Cache;
 
 namespace Rock.UniversalSearch.IndexComponents
 {
@@ -291,7 +293,28 @@ namespace Rock.UniversalSearch.IndexComponents
             long totalResultsAvailable = 0;
             return Search( query, searchType, entities, fieldCriteria, size, from, out totalResultsAvailable );
         }
-        
+
+        /// <summary>
+        /// Supportses the index field filtering.
+        /// </summary>
+        /// <param name="entityType">Type of the entity.</param>
+        /// <returns></returns>
+        private bool SupportsIndexFieldFiltering( Type entityType )
+        {
+            if ( entityType != null )
+            {
+                object classInstance = Activator.CreateInstance( entityType, null );
+                MethodInfo bulkItemsMethod = entityType.GetMethod( "SupportsIndexFieldFiltering" );
+
+                if ( classInstance != null && bulkItemsMethod != null )
+                {
+                    return (bool)bulkItemsMethod.Invoke( classInstance, null );
+                }
+            }
+
+            return false;
+        }
+
         /// <summary>
         /// Searches the specified query.
         /// </summary>
@@ -339,11 +362,11 @@ namespace Rock.UniversalSearch.IndexComponents
                 {
                     if ( fieldCriteria.SearchType == CriteriaSearchType.Or )
                     {
-                        matchQuery |= new MatchQuery { Field = match.Field, Query = match.Value };
+                        matchQuery |= new MatchQuery { Field = match.Field, Query = match.Value, Boost = match.Boost };
                     }
                     else
                     {
-                        matchQuery &= new MatchQuery { Field = match.Field, Query = match.Value };
+                        matchQuery &= new MatchQuery { Field = match.Field, Query = match.Value, Boost = match.Boost };
                     }
                 }
             }
@@ -413,7 +436,7 @@ namespace Rock.UniversalSearch.IndexComponents
                             {
                                 if ( !string.IsNullOrWhiteSpace( queryTerm ) )
                                 {
-                                    wildcardQuery &= new QueryStringQuery { Query = queryTerm + "*", Analyzer = "whitespace" };
+                                    wildcardQuery &= new QueryStringQuery { Query = queryTerm + "*", Analyzer = "whitespace", Rewrite = RewriteMultiTerm.ScoringBoolean  }; // without the rewrite all results come back with the score of 1; analyzer of whitespaces says don't fancy parse things like check-in to 'check' and 'in'
                                 }
                             }
 
@@ -495,7 +518,7 @@ namespace Rock.UniversalSearch.IndexComponents
                 }
             }
 
-            return documents.OrderByDescending( d => d.Score ).ThenByDescending( d => d.ModelOrder ).ToList();
+            return documents;
         }
 
         /// <summary>

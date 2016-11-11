@@ -697,18 +697,23 @@ namespace Rock.Model
         /// Gets the index filter values.
         /// </summary>
         /// <returns></returns>
-        public List<string> GetIndexFilterValues()
+        public ModelFieldFilterConfig GetIndexFilterConfig()
         {
-            return new GroupTypeService( new RockContext() ).Queryable().AsNoTracking().Where( t => t.IsIndexEnabled ).Select( t => t.Name ).ToList();
+            ModelFieldFilterConfig filterConfig = new ModelFieldFilterConfig();
+            filterConfig.FilterValues = new GroupTypeService( new RockContext() ).Queryable().AsNoTracking().Where( t => t.IsIndexEnabled ).Select( t => t.Name ).ToList();
+            filterConfig.FilterLabel = "Group Types";
+            filterConfig.FilterField = "groupTypeName";
+
+            return filterConfig;
         }
 
         /// <summary>
         /// Gets the index filter field.
         /// </summary>
         /// <returns></returns>
-        public string GetIndexFilterField()
+        public bool SupportsIndexFieldFiltering()
         {
-            return "groupTypeName";
+            return true;
         }
         #endregion
     }

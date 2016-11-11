@@ -2568,18 +2568,18 @@ namespace Rock.Model
         /// Gets the index filter values.
         /// </summary>
         /// <returns></returns>
-        public List<string> GetIndexFilterValues()
+        public ModelFieldFilterConfig GetIndexFilterConfig()
         {
-            return new List<string>();
+            return new ModelFieldFilterConfig() { FilterLabel = "", FilterField = "" };
         }
 
         /// <summary>
         /// Gets the index filter field.
         /// </summary>
         /// <returns></returns>
-        public string GetIndexFilterField()
+        public bool SupportsIndexFieldFiltering()
         {
-            return string.Empty;
+            return false;
         }
         #endregion
     }
