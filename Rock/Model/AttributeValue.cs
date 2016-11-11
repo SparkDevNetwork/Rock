@@ -101,29 +101,26 @@ namespace Rock.Model
         public decimal? ValueAsNumeric { get; set; }
 
         /// <summary>
-        /// Gets the Value as a DateTime (Computed Column)
+        /// Gets the Value as a DateTime (maintained by SQL Trigger on AttributeValue)
         /// </summary>
         /// <remarks>
-        /// Computed Column Spec:
-        /// CASE 
-        /// -- make sure it isn't a big value or a date range, etc
-        /// WHEN LEN([value]) &lt;= 33
-        ///    THEN CASE 
-        ///            -- is it an ISO-8601
-        ///            WHEN VALUE LIKE '____-__-__T__:__:__%'
-        ///                THEN CONVERT(DATETIME, CONVERT(DATETIMEOFFSET, [value]))
-        ///            -- is it some other value SQL Date
-        ///            WHEN ISDATE([VALUE]) = 1
-        ///                THEN CONVERT(DATETIME, [VALUE])
-        ///            ELSE NULL
-        ///            END
-        /// ELSE NULL    
-        /// END
+        /// see tgrAttributeValue_InsertUpdate                                                                                    
         /// </remarks>
         [DataMember]
         [DatabaseGenerated( DatabaseGeneratedOption.Computed )]
         [LavaIgnore]
         public DateTime? ValueAsDateTime { get; private set; }
+
+        /// <summary>
+        /// Gets the value as boolean (computed column)
+        /// </summary>
+        /// <value>
+        /// The value as boolean.
+        /// </value>
+        [DataMember]
+        [DatabaseGenerated( DatabaseGeneratedOption.Computed )]
+        [LavaIgnore]
+        public bool? ValueAsBoolean { get; private set; }
 
         /// <summary>
         /// Gets a person alias guid value as a PersonId (ComputedColumn).
