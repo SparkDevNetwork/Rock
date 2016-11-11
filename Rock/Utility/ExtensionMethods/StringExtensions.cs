@@ -49,6 +49,22 @@ namespace Rock
         }
 
         /// <summary>
+        /// Determines whether the string is made up of only digits
+        /// </summary>
+        /// <param name="str">The string.</param>
+        /// <returns></returns>
+        public static bool IsDigitsOnly( this string str )
+        {
+            foreach ( char c in str )
+            {
+                if ( c < '0' || c > '9' )
+                    return false;
+            }
+
+            return true;
+        }
+
+        /// <summary>
         /// Makes the Int64 hash code from the provided string.
         /// </summary>
         /// <param name="str">The string.</param>

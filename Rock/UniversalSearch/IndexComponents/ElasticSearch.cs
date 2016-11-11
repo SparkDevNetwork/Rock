@@ -213,6 +213,8 @@ namespace Rock.UniversalSearch.IndexComponents
                     {
                         var attribute = (RockIndexField)indexAttribute[0];
 
+                        
+
                         var propertyName = Char.ToLowerInvariant( property.Name[0] ) + property.Name.Substring( 1 );
 
                         // rewrite non-string index option (would be nice if they made the enums match up...)
@@ -244,7 +246,17 @@ namespace Rock.UniversalSearch.IndexComponents
                                 }
                             default:
                                 {
-                                    typeMapping.Properties.Add( propertyName, new StringProperty() { Name = propertyName, Boost = attribute.Boost, Index = (FieldIndexOption)attribute.Index } );
+                                    var stringProperty = new StringProperty();
+                                    stringProperty.Name = propertyName;
+                                    stringProperty.Boost = attribute.Boost;
+                                    stringProperty.Index = (FieldIndexOption)attribute.Index;
+
+                                    if ( !string.IsNullOrWhiteSpace(attribute.Analyzer) )
+                                    {
+                                        stringProperty.Analyzer = attribute.Analyzer;
+                                    }
+
+                                    typeMapping.Properties.Add( propertyName, stringProperty );
                                     break;
                                 }
                         }
@@ -271,9 +283,30 @@ namespace Rock.UniversalSearch.IndexComponents
         /// <param name="searchType">Type of the search.</param>
         /// <param name="entities">The entities.</param>
         /// <param name="fieldCriteria">The field criteria.</param>
+        /// <param name="size">The size.</param>
+        /// <param name="from">From.</param>
         /// <returns></returns>
-        public override List<IndexModelBase> Search( string query, SearchType searchType = SearchType.Wildcard, List<int> entities = null, SearchFieldCriteria fieldCriteria = null )
+        public override List<IndexModelBase> Search( string query, SearchType searchType = SearchType.Wildcard, List<int> entities = null, SearchFieldCriteria fieldCriteria = null, int? size = null, int? from = null )
         {
+            long totalResultsAvailable = 0;
+            return Search( query, searchType, entities, fieldCriteria, size, from, out totalResultsAvailable );
+        }
+        
+        /// <summary>
+        /// Searches the specified query.
+        /// </summary>
+        /// <param name="query">The query.</param>
+        /// <param name="searchType">Type of the search.</param>
+        /// <param name="entities">The entities.</param>
+        /// <param name="criteria">The criteria.</param>
+        /// <param name="size">The size.</param>
+        /// <param name="from">From.</param>
+        /// <param name="totalResultsAvailable">The total results available.</param>
+        /// <returns></returns>
+        public override List<IndexModelBase> Search( string query, SearchType searchType, List<int> entities, SearchFieldCriteria fieldCriteria, int? size, int? from, out long totalResultsAvailable )
+        {
+            totalResultsAvailable = 0;
+
             ISearchResponse<dynamic> results = null;
             List<SearchResultModel> searchResults = new List<SearchResultModel>();
 
@@ -296,7 +329,7 @@ namespace Rock.UniversalSearch.IndexComponents
                     entityTypes.Add( entityType.IndexModelType.Name.ToLower() );
                 }
 
-                searchDescriptor = searchDescriptor.Type( string.Join( ",", entityTypes ) ); // todo: considter adding indexmodeltype to the entity cache
+                searchDescriptor = searchDescriptor.Type( string.Join( ",", entityTypes ) ); // todo: consider adding indexmodeltype to the entity cache
             }
 
             QueryContainer matchQuery = null;
@@ -315,19 +348,40 @@ namespace Rock.UniversalSearch.IndexComponents
                 }
             }
 
-
             switch ( searchType )
             {
                 case SearchType.ExactMatch:
-                    { 
+                    {
                         if ( !string.IsNullOrWhiteSpace( query ) )
                         {
-                            queryContainer &= new QueryStringQuery { Query = query };
+                            queryContainer &= new QueryStringQuery { Query = query, AnalyzeWildcard = true };
                         }
 
-                        if (matchQuery != null )
+                        // special logic to support emails
+                        if ( query.Contains( "@" ) )
+                        {
+                            queryContainer |= new QueryStringQuery { Query = "email:" + query, Analyzer = "whitespace" }; // analyzer = whitespace to keep the email from being parsed into 3 variables because the @ will act as a delimitor by default
+                        }
+
+                        // special logic to support phone search
+                        if ( query.IsDigitsOnly() )
+                        {
+                            queryContainer |= new QueryStringQuery { Query = "phoneNumbers:*" + query + "*", AnalyzeWildcard = true };
+                        }
+
+                        if ( matchQuery != null )
                         {
                             queryContainer &= matchQuery;
+                        }
+
+                        if ( size.HasValue )
+                        {
+                            searchDescriptor.Size( size.Value );
+                        }
+
+                        if ( from.HasValue )
+                        {
+                            searchDescriptor.From( from.Value );
                         }
 
                         searchDescriptor.Query( q => queryContainer );
@@ -340,7 +394,8 @@ namespace Rock.UniversalSearch.IndexComponents
                         results = _client.Search<dynamic>( d =>
                                     d.AllIndices().AllTypes()
                                     .Query( q =>
-                                        q.Fuzzy( f => f.Value( query ) )
+                                        q.Fuzzy( f => f.Value( query )
+                                        .Rewrite( RewriteMultiTerm.TopTermsN ) )
                                     )
                                 );
                         break;
@@ -354,12 +409,24 @@ namespace Rock.UniversalSearch.IndexComponents
                             // break each search term into a separate query and add the * to the end of each
                             var queryTerms = query.Split( ' ' ).Select( p => p.Trim() ).ToList();
 
-                            foreach( var queryTerm in queryTerms )
+                            foreach ( var queryTerm in queryTerms )
                             {
-                                if (!string.IsNullOrWhiteSpace( queryTerm ) )
+                                if ( !string.IsNullOrWhiteSpace( queryTerm ) )
                                 {
-                                    wildcardQuery &= new QueryStringQuery { Query = queryTerm + "*", Rewrite = RewriteMultiTerm.TopTermsN };
+                                    wildcardQuery &= new QueryStringQuery { Query = queryTerm + "*", Analyzer = "whitespace" };
                                 }
+                            }
+
+                            // special logic to support emails
+                            if ( queryTerms.Count == 1 && query.Contains( "@" ) )
+                            {
+                                wildcardQuery |= new QueryStringQuery { Query = "email:*" + query + "*", Analyzer = "whitespace" };
+                            }
+
+                            // special logic to support phone search
+                            if ( query.IsDigitsOnly() )
+                            {
+                                wildcardQuery |= new QueryStringQuery { Query = "phoneNumbers:*" + query, Analyzer = "whitespace" };
                             }
 
                             queryContainer &= wildcardQuery;
@@ -370,12 +437,24 @@ namespace Rock.UniversalSearch.IndexComponents
                             queryContainer &= matchQuery;
                         }
 
+                        if ( size.HasValue )
+                        {
+                            searchDescriptor.Size( size.Value );
+                        }
+
+                        if ( from.HasValue )
+                        {
+                            searchDescriptor.From( from.Value );
+                        }
+
                         searchDescriptor.Query( q => queryContainer );
 
                         results = _client.Search<dynamic>( searchDescriptor );
                         break;
                     }
             }
+
+            totalResultsAvailable = results.Total;
 
             List<IndexModelBase> documents = new List<IndexModelBase>();
 
@@ -408,7 +487,7 @@ namespace Rock.UniversalSearch.IndexComponents
                             document["Explain"] = hit.Explanation.ToJson();
                         }
 
-                        document["Score"] = hit.Score;
+                        document.Score = hit.Score;
 
                         documents.Add( document );
                     }
@@ -416,7 +495,7 @@ namespace Rock.UniversalSearch.IndexComponents
                 }
             }
 
-            return documents;
+            return documents.OrderByDescending( d => d.Score ).ThenByDescending( d => d.ModelOrder ).ToList();
         }
 
         /// <summary>

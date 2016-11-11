@@ -113,7 +113,9 @@ namespace Rock.UniversalSearch
         /// <param name="entities">The entities.</param>
         /// <param name="criteria">The criteria.</param>
         /// <returns></returns>
-        public abstract List<IndexModelBase> Search( string query, SearchType searchType = SearchType.ExactMatch, List<int> entities = null, SearchFieldCriteria criteria = null );
+        public abstract List<IndexModelBase> Search( string query, SearchType searchType = SearchType.ExactMatch, List<int> entities = null, SearchFieldCriteria criteria = null, int? size = null, int? from = null  );
+
+        public abstract List<IndexModelBase> Search( string query, SearchType searchType, List<int> entities, SearchFieldCriteria criteria, int? size, int? from, out long totalResultsAvailable );
     }
 
     /// <summary>

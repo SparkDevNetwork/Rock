@@ -94,7 +94,7 @@ namespace Rock.UniversalSearch.IndexModels
         /// <value>
         /// The description.
         /// </value>
-        [RockIndexField( Boost = 3 )]
+        [RockIndexField( Boost = 2 )]
         public string Description { get; set; }
 
         /// <summary>
@@ -112,7 +112,7 @@ namespace Rock.UniversalSearch.IndexModels
         /// <value>
         /// The leader list.
         /// </value>
-        [RockIndexField( Boost = 2 )]
+        [RockIndexField( Boost = 3 )]
         public string LeaderList { get; set; }
 
         /// <summary>
@@ -130,6 +130,8 @@ namespace Rock.UniversalSearch.IndexModels
             groupIndex.Description = group.Description;
             groupIndex.GroupTypeId = group.GroupTypeId;
             groupIndex.DocumentName = group.Name;
+
+            groupIndex.ModelOrder = 5;
 
             if ( group.GroupType != null )
             {

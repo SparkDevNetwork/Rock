@@ -72,6 +72,8 @@ namespace Rock.UniversalSearch.IndexModels
             var businessIndex = new BusinessIndex();
             businessIndex.SourceIndexModel = "Rock.Model.Person";
 
+            businessIndex.ModelOrder = 6;
+
             businessIndex.Id = business.Id;
             businessIndex.Name = business.LastName;
             

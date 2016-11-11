@@ -692,6 +692,24 @@ namespace Rock.Model
         {
             return typeof( GroupIndex );
         }
+
+        /// <summary>
+        /// Gets the index filter values.
+        /// </summary>
+        /// <returns></returns>
+        public List<string> GetIndexFilterValues()
+        {
+            return new GroupTypeService( new RockContext() ).Queryable().AsNoTracking().Where( t => t.IsIndexEnabled ).Select( t => t.Name ).ToList();
+        }
+
+        /// <summary>
+        /// Gets the index filter field.
+        /// </summary>
+        /// <returns></returns>
+        public string GetIndexFilterField()
+        {
+            return "groupTypeName";
+        }
         #endregion
     }
 

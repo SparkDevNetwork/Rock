@@ -14,6 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
@@ -73,6 +74,14 @@ namespace Rock.Search.Other
             var fieldCriteriaSetting = Rock.Web.SystemSettings.GetValue( "core_SmartSearchUniversalSearchFieldCriteria" );
             SearchFieldCriteria fieldCriteria = new SearchFieldCriteria();
 
+            // get the search type
+            var searchType = SearchType.Wildcard;
+
+            if ( !string.IsNullOrWhiteSpace( Rock.Web.SystemSettings.GetValue( "core_SmartSearchUniversalSearchFieldCriteria" ) ) )
+            {
+                searchType = (SearchType)Enum.Parse( typeof( SearchType ), Rock.Web.SystemSettings.GetValue( "core_SmartSearchUniversalSearchFieldCriteria" ) );
+            }
+
             if ( !string.IsNullOrWhiteSpace( fieldCriteriaSetting ) )
             {
                 foreach ( var queryString in fieldCriteriaSetting.ToKeyValuePairList() )
@@ -91,7 +100,7 @@ namespace Rock.Search.Other
             var client = IndexContainer.GetActiveComponent();
             var results = client.Search( searchterm, SearchType.Wildcard, entityIds, fieldCriteria );
 
-            return results.Select( r => $"<data return-type='{r.IndexModelType}' return-id={r.Id}></data><i class='{ r.IconCssClass}'></i> {r.DocumentName}" ).ToList().AsQueryable();
+            return results.Select( r => $"<data return-type='{r.IndexModelType}' return-id={r.Id}></data><i class='{ r.IconCssClass}'></i> {r.DocumentName}                                                                               " ).ToList().AsQueryable();
         }
     }
 }

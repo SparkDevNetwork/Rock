@@ -46,11 +46,16 @@ namespace RockWeb.Blocks.Cms
 
     [BooleanField( "Show Filters", "Toggles the display of the model filter which allows the user to select which models to search on.", true, "CustomSetting" )]
     [TextField( "Enabled Models", "The models that should be enabled for searching.", true,  category: "CustomSetting" )]
+    [IntegerField("Results Per Page", "The number of results to show per page.", true, 20, category: "CustomSetting" )]
+    [EnumField("Search Type", "The type of search to perform.", typeof(SearchType), true, "2", category: "CustomSetting" )]
     public partial class UniversalSearch : RockBlockCustomSettings
     {
         #region Fields
 
-        // used for private variables
+        private const int _defaultItemsPerPage = 20;
+
+        private int _currentPageNum = 0;
+        private int _itemsPerPage = _defaultItemsPerPage;
 
         #endregion
 
@@ -84,9 +89,6 @@ namespace RockWeb.Blocks.Cms
         protected override void OnLoad( EventArgs e )
         {
             base.OnLoad( e );
-
-            var sm = ScriptManager.GetCurrent( Page );
-            sm.Navigate += sm_Navigate;
 
             if ( !Page.IsPostBack )
             {
@@ -141,15 +143,14 @@ namespace RockWeb.Blocks.Cms
                     cblContentChannelTypes.Visible = false;
                 }
 
-                ShowView();
-            }
-        }
+                ConfigureSettings();
 
-        private void sm_Navigate( object sender, HistoryEventArgs e )
-        {
-            var state = e.State["search"];
-            Search( state );
-            tbSearch.Text = state;
+                if ( !string.IsNullOrWhiteSpace(PageParameter( "Q" ) ) )
+                {
+                    Search();
+                    tbSearch.Text = PageParameter( "Q" );
+                }
+            }
         }
 
         #endregion
@@ -163,34 +164,48 @@ namespace RockWeb.Blocks.Cms
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void Block_BlockUpdated( object sender, EventArgs e )
         {
-            ShowView();
+            ConfigureSettings();
         }
 
-        private void btnTrigger_Click( object sender, EventArgs e )
-        {
-            throw new NotImplementedException();
-        }
+        /// <summary>
+        /// Handles the Click event of the lbSave control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void lbSave_Click( object sender, EventArgs e )
         {
             SetAttributeValue( "ShowFilters", cbShowFilter.Checked.ToString() );
 
             SetAttributeValue( "EnabledModels", string.Join(",", cblEnabledModels.SelectedValues ) );
 
+            SetAttributeValue( "SearchType", ddlSearchType.SelectedValue );
+
+            SetAttributeValue( "ResultsPerPage", tbResultsPerPage.Text );
+
             SaveAttributeValues();
 
-            ShowView();
+            ConfigureSettings();
 
             mdEdit.Hide();
             pnlEditModal.Visible = false;
             upnlContent.Update();
         }
 
+        /// <summary>
+        /// Handles the Click event of the btnSearch control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnSearch_Click( object sender, EventArgs e )
         {
-            this.AddHistory( "search", tbSearch.Text );
-            Search( tbSearch.Text );
+            Response.Redirect( BuildUrl() );
         }
 
+        /// <summary>
+        /// Handles the Click event of the lbRefineSearch control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void lbRefineSearch_Click( object sender, EventArgs e )
         {
             if ( pnlRefineSearch.Visible )
@@ -206,9 +221,24 @@ namespace RockWeb.Blocks.Cms
         }
 
 
-        private void Search(string term )
+        /// <summary>
+        /// Performs the search
+        /// </summary>
+        private void Search( )
         {
+            var term = PageParameter( "Q" );
+
             lResults.Text = string.Empty;
+
+            var searchType = GetAttributeValue( "SearchType" ).ConvertToEnum<SearchType>();
+
+            // configure models/entities
+            List<int> entities = new List<int>();
+
+            if ( entities.Count == 0 )
+            {
+                entities = cblModelFilter.SelectedValuesAsInt;
+            }
 
             List<FieldValue> fieldValues = new List<FieldValue>();
 
@@ -228,20 +258,23 @@ namespace RockWeb.Blocks.Cms
                 }
             }
 
+            // if person model is selected add a filter criteria to prevent blocking by other filters
+            if ( entities.Contains( 15 ) )
+            {
+                fieldValues.Add( new FieldValue { Field = "indexModelType", Value = "Rock.UniversalSearch.IndexModels.PersonIndex" } );
+            }
+
             SearchFieldCriteria fieldCriteria = new SearchFieldCriteria();
             fieldCriteria.FieldValues = fieldValues;
 
 
             var client = IndexContainer.GetActiveComponent();
 
-            List<int> entities = cblModelFilter.SelectedValuesAsInt;
+            
 
-            if (entities.Count == 0 )
-            {
-                entities = GetAttributeValue( "EnabledModels" ).Split( ',' ).Select( int.Parse ).ToList();
-            }
+            long totalResultsAvailable = 0;
 
-            var results = client.Search( term, SearchType.Wildcard, entities, fieldCriteria );
+            var results = client.Search( term, searchType, entities, fieldCriteria, _itemsPerPage, _currentPageNum * _itemsPerPage, out totalResultsAvailable );
 
             StringBuilder formattedResults = new StringBuilder();
             formattedResults.Append( "<ul class='list-unstyled'>" );
@@ -252,7 +285,7 @@ namespace RockWeb.Blocks.Cms
 
                 if ( formattedResult.IsViewAllowed )
                 {
-                    formattedResults.Append( string.Format( "{0} <hr />", formattedResult.FormattedResult ));
+                    formattedResults.Append( string.Format( "{0} <div class='pull-right'><small>{1}</small></div><hr />", formattedResult.FormattedResult, result.Score ));
                 }
             }
 
@@ -263,8 +296,75 @@ namespace RockWeb.Blocks.Cms
             lResults.Text = formattedResults.ToString();
         }
 
-        private void ShowView()
+        /// <summary>
+        /// Builds the URL.
+        /// </summary>
+        /// <returns></returns>
+        private string BuildUrl(int pageOffset = 0)
         {
+            StringBuilder url = new StringBuilder();
+
+            var appendChar = string.Empty;
+
+            url.Append( Request.Path + "?" );
+
+            if (!string.IsNullOrWhiteSpace(tbSearch.Text) )
+            {
+                url.Append( string.Format("Q={0}", tbSearch.Text) );
+                appendChar = "&";
+            }
+
+            if (cblModelFilter.SelectedValues.Count > 0 )
+            {
+                url.Append( string.Format( "{0}Models={1}", appendChar, string.Join(",", cblModelFilter.SelectedValues ) ) );
+                appendChar = "&";
+            }
+
+            if ( cblGroupTypes.SelectedValues.Count > 0 )
+            {
+                url.Append( string.Format( "{0}GroupTypes={1}", appendChar, string.Join( ",", cblGroupTypes.SelectedValues ) ) );
+                appendChar = "&";
+            }
+
+            if ( cblContentChannelTypes.SelectedValues.Count > 0 )
+            {
+                url.Append( string.Format( "{0}ContentChannels={1}", appendChar, string.Join( ",", cblContentChannelTypes.SelectedValues ) ) );
+                appendChar = "&";
+            }
+
+            if (_itemsPerPage != _defaultItemsPerPage )
+            {
+                url.Append( string.Format( "{0}ItemsPerPage={1}", appendChar, _itemsPerPage ) );
+                appendChar = "&";
+            }
+
+            if (_currentPageNum != 0 )
+            {
+                url.Append( string.Format( "{0}CurrentPage={1}", appendChar, _currentPageNum + pageOffset ) );
+                appendChar = "&";
+            }
+
+            if( !string.IsNullOrWhiteSpace( PageParameter( "SearchType" ) ) )
+            {
+                url.Append( string.Format( "{0}SearchType={1}", appendChar, PageParameter( "SearchType" ) ) );
+                appendChar = "&";
+            }
+
+            if ( pnlRefineSearch.Visible )
+            {
+                url.Append( string.Format( "{0}RefinedSearch={1}", appendChar, "True" ) );
+                appendChar = "&";
+            }
+
+            return url.ToString().TrimEnd('&');
+        }
+
+        /// <summary>
+        /// Configures the settings.
+        /// </summary>
+        private void ConfigureSettings()
+        {
+            // model selector
             var enabledModelIds = GetAttributeValue( "EnabledModels" ).Split( ',' ).Select( int.Parse ).ToList();
 
             var entities = EntityTypeCache.All();
@@ -288,8 +388,87 @@ namespace RockWeb.Blocks.Cms
             {
                 cblModelFilter.Visible = false;
             }
+
+            ddlSearchType.BindToEnum<SearchType>();
+            ddlSearchType.SelectedValue = GetAttributeValue( "SearchType" );
+
+            // override the block setting if passed in the query string
+            if ( !string.IsNullOrWhiteSpace( PageParameter( "SearchType" ) ) )
+            {
+                ddlSearchType.SelectedValue = PageParameter( "SearchType" );
+            }
+
+            // set setting values from query string
+            if ( !string.IsNullOrWhiteSpace( PageParameter( "Models" ) ) )
+            {
+                var queryStringModels = PageParameter( "Models" ).Split( ',' ).Select( s => s.Trim() ).ToList();
+
+                foreach ( ListItem item in cblModelFilter.Items )
+                {
+                    if ( queryStringModels.Contains( item.Value ) )
+                    {
+                        item.Selected = true;
+                    }
+                    else
+                    {
+                        item.Selected = false;
+                    }
+                }
+            }
+
+            if ( !string.IsNullOrWhiteSpace( PageParameter( "GroupTypes" ) ) )
+            {
+                var queryStringGroupTypes = PageParameter( "GroupTypes" ).Split( ',' ).Select( s => s.Trim() ).ToList();
+
+                foreach ( ListItem item in cblGroupTypes.Items )
+                {
+                    if ( queryStringGroupTypes.Contains( item.Value ) )
+                    {
+                        item.Selected = true;
+                    }
+                    else
+                    {
+                        item.Selected = false;
+                    }
+                }
+            }
+
+            if ( !string.IsNullOrWhiteSpace( PageParameter( "ContentChannels" ) ) )
+            {
+                var queryStringContentChannel = PageParameter( "ContentChannels" ).Split( ',' ).Select( s => s.Trim() ).ToList();
+
+                foreach ( ListItem item in cblContentChannelTypes.Items )
+                {
+                    if ( queryStringContentChannel.Contains( item.Value ) )
+                    {
+                        item.Selected = true;
+                    }
+                    else
+                    {
+                        item.Selected = false;
+                    }
+                }
+            }
+
+            if ( !string.IsNullOrWhiteSpace( PageParameter( "ItemsPerPage" ) ) )
+            {
+                _itemsPerPage = PageParameter( "ItemsPerPage" ).AsInteger();
+            }
+
+            if ( !string.IsNullOrWhiteSpace( PageParameter( "CurrentPage" ) ) )
+            {
+                _currentPageNum = PageParameter( "CurrentPage" ).AsInteger();
+            }
+
+            if ( !string.IsNullOrWhiteSpace( PageParameter( "RefinedSearch" ) ) )
+            {
+                pnlRefineSearch.Visible = PageParameter( "RefinedSearch" ).AsBoolean();
+            }
         }
 
+        /// <summary>
+        /// Shows the settings.
+        /// </summary>
         protected override void ShowSettings()
         {
             pnlEditModal.Visible = true;
