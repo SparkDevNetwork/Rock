@@ -181,7 +181,7 @@ namespace RockWeb.Blocks.Cms
             }
 
             var client = IndexContainer.GetActiveComponent();
-            var results = client.Search( term, SearchType.ExactMatch, entityIds, fieldCriteria );
+            var results = client.Search( term, SearchType.Wildcard, entityIds, fieldCriteria );
 
             
             foreach ( var result in results)

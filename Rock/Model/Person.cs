@@ -2459,9 +2459,7 @@ namespace Rock.Model
 
             // return people
             var people = new PersonService( rockContext ).Queryable().AsNoTracking()
-                                .Where( p =>
-                                     p.IsSystem == false
-                                     && p.RecordTypeValueId == recordTypePersonId );
+                                .Where( p => p.RecordTypeValueId == recordTypePersonId );
 
             int recordCounter = 0;
 
@@ -2564,6 +2562,24 @@ namespace Rock.Model
                     IndexContainer.DeleteDocumentById( indexType, id );
                 }
             }
+        }
+
+        /// <summary>
+        /// Gets the index filter values.
+        /// </summary>
+        /// <returns></returns>
+        public List<string> GetIndexFilterValues()
+        {
+            return new List<string>();
+        }
+
+        /// <summary>
+        /// Gets the index filter field.
+        /// </summary>
+        /// <returns></returns>
+        public string GetIndexFilterField()
+        {
+            return string.Empty;
         }
         #endregion
     }

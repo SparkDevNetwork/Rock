@@ -652,10 +652,15 @@ namespace RockWeb.Blocks.Core
             var attributeService = new AttributeService( rockContext );
             var attributeModel = attributeService.Get( attributeId );
 
+            if ( attributeModel.EntityType.IsIndexingSupported == true && attributeModel.EntityType.IsIndexingEnabled )
+            {
+                edtAttribute.IsIndexingEnabledVisible = true;
+            }
+
             if ( attributeModel == null )
             {
                 mdAttribute.Title = "Add Attribute".FormatAsHtmlTitle();
-
+                
                 attributeModel = new Rock.Model.Attribute();
                 attributeModel.FieldTypeId = FieldTypeCache.Read( Rock.SystemGuid.FieldType.TEXT ).Id;
 
@@ -683,6 +688,8 @@ namespace RockWeb.Blocks.Core
             {
                 edtAttribute.ActionTitle = Rock.Constants.ActionTitle.Edit( Rock.Model.Attribute.FriendlyTypeName );
                 mdAttribute.Title = ( "Edit " + attributeModel.Name ).FormatAsHtmlTitle();
+
+                edtAttribute.IsIndexingEnabled = attributeModel.IsIndexEnabled;
             }
 
             Type type = null;

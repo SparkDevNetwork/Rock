@@ -61,5 +61,17 @@ namespace Rock.UniversalSearch
         /// </summary>
         /// <returns></returns>
         Type IndexModelType();
+
+        /// <summary>
+        /// Gets the index filter values.
+        /// </summary>
+        /// <returns></returns>
+        List<string> GetIndexFilterValues();
+
+        /// <summary>
+        /// Gets the index filter field.
+        /// </summary>
+        /// <returns></returns>
+        string GetIndexFilterField();
     }
 }

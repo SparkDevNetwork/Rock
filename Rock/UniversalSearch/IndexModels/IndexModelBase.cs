@@ -26,6 +26,7 @@ using Rock.Model;
 using Rock.Web.Cache;
 using Rock.UniversalSearch.IndexModels.Attributes;
 using Rock.Data;
+using Newtonsoft.Json;
 
 namespace Rock.UniversalSearch.IndexModels
 {
@@ -38,6 +39,7 @@ namespace Rock.UniversalSearch.IndexModels
         private Dictionary<string, object> _members = new Dictionary<string, object>();
         object Instance;
         Type InstanceType;
+        private int modelBoost = 1;
 
         PropertyInfo[] InstancePropertyInfo
         {
@@ -144,6 +146,24 @@ namespace Rock.UniversalSearch.IndexModels
         /// </value>
         [RockIndexField( Index = IndexType.NotIndexed )]
         public virtual string IconCssClass { get; set; } = "fa fa-file";
+
+        /// <summary>
+        /// Gets or sets the score.
+        /// </summary>
+        /// <value>
+        /// The score.
+        /// </value>
+        [RockIndexField( Index = IndexType.NotIndexed )]
+        public double Score { get; set; }
+
+        /// <summary>
+        /// Gets or sets the model order.
+        /// </summary>
+        /// <value>
+        /// Used to give preference to certain model types when scores match.
+        /// </value>
+        [RockIndexField( Index = IndexType.NotIndexed )]
+        public int ModelOrder { get; set; } = 1;
 
         /// <summary>
         /// Adds the indexable attributes.
@@ -372,6 +392,9 @@ namespace Rock.UniversalSearch.IndexModels
                 propertyNames.Add( key );
             }
 
+            propertyNames.Remove( "AvailableKeys" );
+            propertyNames.Remove( "availableKeys" );
+
             return propertyNames;
         }
 
@@ -384,7 +407,6 @@ namespace Rock.UniversalSearch.IndexModels
         /// The available keys.
         /// </value>
         [LavaIgnore]
-        [RockIndexField( Index = IndexType.NotAnalyzed )]
         public List<string> AvailableKeys
         {
             get

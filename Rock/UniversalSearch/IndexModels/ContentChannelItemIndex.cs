@@ -268,7 +268,7 @@ namespace Rock.UniversalSearch.IndexModels
 
             return new FormattedSearchResult() { IsViewAllowed = true, FormattedResult = $@"
                             <div class='row model-cannavigate' data-href='{url.ResolveMergeFields( mergeFields )}'>
-                                <div class='col-sm-1'>
+                                <div class='col-sm-1 text-center'>
                                     <i class='{this.IconCssClass} fa-2x'></i>
                                 </div>
                                 <div class='col-sm-4'>

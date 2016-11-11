@@ -31,11 +31,18 @@
 
                 <asp:Panel ID="pnlRefineSearch" runat="server" Visible="false">
                     <div class="well margin-t-md">
-                        <Rock:RockCheckBoxList ID="cblModelFilter" runat="server" RepeatDirection="Horizontal" Label="Types" />
+                        <Rock:RockCheckBoxList ID="cblModelFilter" runat="server" RepeatDirection="Horizontal" Label="Information Types" />
 
-                        <Rock:RockCheckBoxList ID="cblGroupTypes" runat="server" RepeatDirection="Horizontal" Label="Group Types" />
+                        <hr />
 
-                        <Rock:RockCheckBoxList ID="cblContentChannelTypes" runat="server" RepeatDirection="Horizontal" Label="Content Channels" />
+                        <div class="row">
+                            <div class="col-md-6">
+                                <Rock:RockCheckBoxList ID="cblGroupTypes" runat="server" RepeatDirection="Horizontal" Label="Group Types" />
+                            </div>
+                            <div class="col-md-6">
+                                <Rock:RockCheckBoxList ID="cblContentChannelTypes" runat="server" RepeatDirection="Horizontal" Label="Content Channels" />
+                            </div>
+                        </div>
                     </div>
                 </asp:Panel>
 
@@ -52,11 +59,16 @@
 
                     <asp:UpdatePanel ID="upnlEdit" runat="server">
                         <ContentTemplate>
-                            <Rock:RockCheckBoxList ID="cblEnabledModels" runat="server" Label="Enabled Models" />
-                            
-                            <Rock:RockCheckBox ID="cbShowFilter" runat="server" Label="Show Model Filter" />
-                            
-
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <Rock:RockDropDownList ID="ddlSearchType" runat="server" Label="Search Type" />
+                                    <Rock:RockTextBox ID="tbResultsPerPage" runat="server" Label="Results Per Page" CssClass="input-width-sm" />
+                                </div>
+                                <div class="col-md-6">
+                                    <Rock:RockCheckBoxList ID="cblEnabledModels" runat="server" Label="Enabled Models" />
+                                    <Rock:RockCheckBox ID="cbShowFilter" runat="server" Label="Show Model Filter" />
+                                </div>
+                            </div>
                         </ContentTemplate>
                     </asp:UpdatePanel>
                 </Content>

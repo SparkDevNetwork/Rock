@@ -91,7 +91,7 @@ namespace Rock.UniversalSearch.IndexModels
         /// <value>
         /// The spouse.
         /// </value>
-        [RockIndexField]
+        [RockIndexField( Index = IndexType.NotIndexed )]
         public string Spouse { get; set; }
 
         /// <summary>
@@ -199,8 +199,17 @@ namespace Rock.UniversalSearch.IndexModels
         /// <value>
         /// The email.
         /// </value>
-        [RockIndexField]
+        [RockIndexField ( Index = IndexType.NotAnalyzed, Analyzer = "whitespace")]
         public string Email { get; set; }
+
+        /// <summary>
+        /// Gets or sets the phone numbers.
+        /// </summary>
+        /// <value>
+        /// The phone numbers.
+        /// </value>
+        [RockIndexField]
+        public string PhoneNumbers { get; set; }
 
         /// <summary>
         /// Gets the icon CSS class.
@@ -232,6 +241,8 @@ namespace Rock.UniversalSearch.IndexModels
             personIndex.NickName = person.NickName;
             personIndex.LastName = person.LastName;
 
+            personIndex.ModelOrder = 10;
+
             if ( person.SuffixValue != null )
             {
                 personIndex.Suffix = person.SuffixValue.Value;
@@ -246,6 +257,11 @@ namespace Rock.UniversalSearch.IndexModels
             personIndex.PhotoUrl = person.PhotoUrl;
             personIndex.Email = person.Email;
             personIndex.DocumentName = person.FullName;
+
+            if ( person.PhoneNumbers != null )
+            {
+                personIndex.PhoneNumbers = string.Join( "|", person.PhoneNumbers.Select( p => p.NumberTypeValue.Value + "^" + p.Number ) );
+            }
 
             // get family role
             var familyRole = person.GetFamilyRole();
