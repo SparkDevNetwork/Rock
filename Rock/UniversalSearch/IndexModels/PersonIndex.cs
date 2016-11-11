@@ -235,6 +235,7 @@ namespace Rock.UniversalSearch.IndexModels
         {
             var personIndex = new PersonIndex();
             personIndex.SourceIndexModel = "Rock.Model.Person";
+            personIndex.ModelConfiguration = "nofilters";
 
             personIndex.Id = person.Id;
             personIndex.FirstName = person.FirstName;

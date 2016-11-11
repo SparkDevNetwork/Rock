@@ -1135,6 +1135,7 @@
     <Compile Include="UniversalSearch\IndexModels\StringAttribute.cs" />
     <Compile Include="UniversalSearch\IRockIndexable.cs" />
     <Compile Include="UniversalSearch\SearchFieldCriteria.cs" />
+    <Compile Include="UniversalSearch\ModelFieldFilterConfig.cs" />
     <Compile Include="UniversalSearch\SearchResultModel.cs" />
     <Compile Include="Utility\DebugHelper.cs" />
     <Compile Include="Utility\FileUtilities.cs" />

@@ -73,6 +73,15 @@ namespace Rock.UniversalSearch.IndexModels
         public string SourceIndexModel { get; set; }
 
         /// <summary>
+        /// Gets or sets the model configuration. This is used to set various configuration options for the model that can be queried for in searches.
+        /// For instance models that do not have filters will use this field to report that fact ('nofilters') to help when searching with field filters.
+        /// </summary>
+        /// <value>
+        /// The model configuration.
+        /// </value>
+        public string ModelConfiguration { get; set; }
+
+        /// <summary>
         /// Gets the type of the index model.
         /// </summary>
         /// <value>

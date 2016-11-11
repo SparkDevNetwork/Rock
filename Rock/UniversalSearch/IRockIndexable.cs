@@ -66,12 +66,12 @@ namespace Rock.UniversalSearch
         /// Gets the index filter values.
         /// </summary>
         /// <returns></returns>
-        List<string> GetIndexFilterValues();
+        ModelFieldFilterConfig GetIndexFilterConfig();
 
         /// <summary>
         /// Gets the index filter field.
         /// </summary>
         /// <returns></returns>
-        string GetIndexFilterField();
+        bool SupportsIndexFieldFiltering();
     }
 }
