@@ -40,20 +40,21 @@ namespace RockWeb.Blocks.Groups
     [Category( "Groups" )]
     [Description( "Allows a person to register for a group." )]
 
-    [CustomRadioListField("Mode", "The mode to use when displaying registration details.", "Simple^Simple,Full^Full,FullSpouse^Full With Spouse", true, "Simple", "", 0)]
-    [CustomRadioListField( "Group Member Status", "The group member status to use when adding person to group (default: 'Pending'.)", "2^Pending,1^Active,0^Inactive", true, "2", "", 1 )]
-    [DefinedValueField( "2E6540EA-63F0-40FE-BE50-F2A84735E600", "Connection Status", "The connection status to use for new individuals (default: 'Web Prospect'.)", true, false, "368DD475-242C-49C4-A42C-7278BE690CC2", "", 2 )]
-    [DefinedValueField( "8522BADD-2871-45A5-81DD-C76DA07E2E7E", "Record Status", "The record status to use for new individuals (default: 'Pending'.)", true, false, "283999EC-7346-42E3-B807-BCE9B2BABB49", "", 3 )]
-    [WorkflowTypeField( "Workflow", "An optional workflow to start when registration is created. The GroupMember will set as the workflow 'Entity' when processing is started.", false, false, "", "", 4 )]
-    [BooleanField( "Enable Debug", "Shows the fields available to merge in lava.", false, "", 5 )]
+    [GroupField("Group", "Optional group to add person to. If omitted, the group should be passed in the Query string.", false, "", "", 0)]
+    [CustomRadioListField("Mode", "The mode to use when displaying registration details.", "Simple^Simple,Full^Full,FullSpouse^Full With Spouse", true, "Simple", "", 1)]
+    [CustomRadioListField( "Group Member Status", "The group member status to use when adding person to group (default: 'Pending'.)", "2^Pending,1^Active,0^Inactive", true, "2", "", 2 )]
+    [DefinedValueField( "2E6540EA-63F0-40FE-BE50-F2A84735E600", "Connection Status", "The connection status to use for new individuals (default: 'Web Prospect'.)", true, false, "368DD475-242C-49C4-A42C-7278BE690CC2", "", 3 )]
+    [DefinedValueField( "8522BADD-2871-45A5-81DD-C76DA07E2E7E", "Record Status", "The record status to use for new individuals (default: 'Pending'.)", true, false, "283999EC-7346-42E3-B807-BCE9B2BABB49", "", 4 )]
+    [WorkflowTypeField( "Workflow", "An optional workflow to start when registration is created. The GroupMember will set as the workflow 'Entity' when processing is started.", false, false, "", "", 5 )]
+    [BooleanField( "Enable Debug", "Shows the fields available to merge in lava.", false, "", 6 )]
     [CodeEditorField( "Lava Template", "The lava template to use to format the group details.", CodeEditorMode.Lava, CodeEditorTheme.Rock, 400, true, @"
-", "", 6  )]
-    [LinkedPage("Result Page", "An optional page to redirect user to after they have been registered for the group.", false, "", "", 7)]
+", "", 7 )]
+    [LinkedPage("Result Page", "An optional page to redirect user to after they have been registered for the group.", false, "", "", 8)]
     [CodeEditorField( "Result Lava Template", "The lava template to use to format result message after user has been registered. Will only display if user is not redirected to a Result Page ( previous setting ).", CodeEditorMode.Lava, CodeEditorTheme.Rock, 400, true, @"
-", "", 8 )]
-    [CustomRadioListField( "Auto Fill Form", "If set to FALSE then the form will not load the context of the logged in user (default: 'True'.)", "true^True,false^False", true, "true", "", 9 )]
-    [TextField( "Register Button Alt Text", "Alternate text to use for the Register button (default is 'Register').", false, "", "", 10 )]
-    [BooleanField( "Prevent Overcapacity Registrations", "When set to true, user cannot register for groups that are at capacity or whose default GroupTypeRole are at capacity. If only one spot is available, no spouses can be registered.", true, "", 11 )]
+", "", 9 )]
+    [CustomRadioListField( "Auto Fill Form", "If set to FALSE then the form will not load the context of the logged in user (default: 'True'.)", "true^True,false^False", true, "true", "", 10 )]
+    [TextField( "Register Button Alt Text", "Alternate text to use for the Register button (default is 'Register').", false, "", "", 11 )]
+    [BooleanField( "Prevent Overcapacity Registrations", "When set to true, user cannot register for groups that are at capacity or whose default GroupTypeRole are at capacity. If only one spot is available, no spouses can be registered.", true, "", 12 )]
     public partial class GroupRegistration : RockBlock
     {
         #region Fields
@@ -604,10 +605,34 @@ namespace RockWeb.Blocks.Groups
             }
             btnRegister.Text = registerButtonText;
 
-            int groupId = PageParameter( "GroupId" ).AsInteger();
-            _group = new GroupService( _rockContext )
-                .Queryable( "GroupType.DefaultGroupRole" ).AsNoTracking()
-                .FirstOrDefault( g => g.Id == groupId );
+            var groupService = new GroupService( _rockContext );
+            bool groupIsFromQryString = true;
+
+            Guid? groupGuid = GetAttributeValue( "Group" ).AsGuidOrNull();
+            if ( groupGuid.HasValue )
+            {
+                _group = groupService.Get( groupGuid.Value );
+                groupIsFromQryString = false;
+            }
+
+            if ( _group == null )
+            {
+                groupGuid = PageParameter( "GroupGuid" ).AsGuidOrNull();
+                if ( groupGuid.HasValue )
+                {
+                    _group = groupService.Get( groupGuid.Value );
+                }
+            }
+
+            if ( _group == null )
+            {
+                int? groupId = PageParameter( "GroupId" ).AsIntegerOrNull();
+                if ( groupId.HasValue )
+                {
+                    _group = groupService.Get( groupId.Value );
+                }
+            }
+
             if ( _group == null )
             {
                 nbNotice.Heading = "Unknown Group";
@@ -616,7 +641,16 @@ namespace RockWeb.Blocks.Groups
             }
             else
             {
-                _defaultGroupRole = _group.GroupType.DefaultGroupRole;
+                if ( groupIsFromQryString && ( _group.IsSecurityRole || _group.GroupType.Guid == Rock.SystemGuid.GroupType.GROUPTYPE_SECURITY_ROLE.AsGuid() ) )
+                {
+                    nbNotice.Heading = "Invalid Group";
+                    nbNotice.Text = "<p>The selected group is a security group and this block cannot be used to add people to a security group (unless configured for that specific group).</p>";
+                    return false;
+                }
+                else
+                {
+                    _defaultGroupRole = _group.GroupType.DefaultGroupRole;
+                }
             }
 
             _dvcConnectionStatus = DefinedValueCache.Read( GetAttributeValue( "ConnectionStatus" ).AsGuid() );

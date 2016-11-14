@@ -26,9 +26,14 @@ using System.Web.UI.WebControls;
 using Nest;
 
 using Rock;
+using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 using Rock.UniversalSearch;
+using Rock.Web.UI;
+using Rock.Web.Cache;
+using Newtonsoft.Json.Linq;
+using Rock.UniversalSearch.IndexModels;
 
 namespace RockWeb.Blocks.Cms
 {
@@ -38,8 +43,10 @@ namespace RockWeb.Blocks.Cms
     [DisplayName( "Universal Search" )]
     [Category( "CMS" )]
     [Description( "A block to search for all indexable entity types in Rock." )]
-    
-    public partial class UniversalSearch : Rock.Web.UI.RockBlock
+
+    [BooleanField( "Show Filters", "Toggles the display of the model filter which allows the user to select which models to search on.", true, "CustomSetting" )]
+    [TextField( "Enabled Models", "The models that should be enabled for searching.", true,  category: "CustomSetting" )]
+    public partial class UniversalSearch : RockBlockCustomSettings
     {
         #region Fields
 
@@ -83,14 +90,58 @@ namespace RockWeb.Blocks.Cms
 
             if ( !Page.IsPostBack )
             {
-                var entities = new EntityTypeService( new RockContext() ).Queryable().AsNoTracking().ToList();
+                // load indexable entity list
+                var entities = EntityTypeCache.All();
 
                 var indexableEntities = entities.Where( i => i.IsIndexingSupported == true ).ToList();
 
-                cblEntities.DataTextField = "FriendlyName";
-                cblEntities.DataValueField = "Id";
-                cblEntities.DataSource = indexableEntities;
-                cblEntities.DataBind();
+                cblEnabledModels.DataTextField = "FriendlyName";
+                cblEnabledModels.DataValueField = "Id";
+                cblEnabledModels.DataSource = indexableEntities;
+                cblEnabledModels.DataBind();
+
+                // load indexable group types
+                if (entities.Any( t => t.Guid == Rock.SystemGuid.EntityType.GROUP.AsGuid() ) )
+                {
+                    var indexableGroupTypes = GroupTypeCache.All().AsQueryable().Where( g => g.IsIndexEnabled == true ).ToList();
+
+                    if (indexableGroupTypes.Count != 0 )
+                    {
+                        cblGroupTypes.DataTextField = "Name";
+                        cblGroupTypes.DataValueField = "Name";
+                        cblGroupTypes.DataSource = indexableGroupTypes;
+                        cblGroupTypes.DataBind();
+                    }
+                    else
+                    {
+                        cblGroupTypes.Visible = false;
+                    }
+                }
+                else
+                {
+                    cblGroupTypes.Visible = false;
+                }
+
+                // load content channels
+                if ( entities.Any( t => t.Guid == Rock.SystemGuid.EntityType.CONTENT_CHANNEL_ITEM.AsGuid()) )
+                {
+                    var indexableChannels = new ContentChannelService( new RockContext() ).Queryable().Where( c => c.IsIndexEnabled == true ).ToList();
+
+                    if (indexableChannels.Count != 0 )
+                    {
+                        cblContentChannelTypes.DataTextField = "Name";
+                        cblContentChannelTypes.DataValueField = "Name";
+                        cblContentChannelTypes.DataSource = indexableChannels;
+                        cblContentChannelTypes.DataBind();
+                    }
+
+                }
+                else
+                {
+                    cblContentChannelTypes.Visible = false;
+                }
+
+                ShowView();
             }
         }
 
@@ -105,8 +156,6 @@ namespace RockWeb.Blocks.Cms
 
         #region Events
 
-        // handlers called by the controls on your block
-
         /// <summary>
         /// Handles the BlockUpdated event of the control.
         /// </summary>
@@ -114,7 +163,26 @@ namespace RockWeb.Blocks.Cms
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void Block_BlockUpdated( object sender, EventArgs e )
         {
+            ShowView();
+        }
 
+        private void btnTrigger_Click( object sender, EventArgs e )
+        {
+            throw new NotImplementedException();
+        }
+        protected void lbSave_Click( object sender, EventArgs e )
+        {
+            SetAttributeValue( "ShowFilters", cbShowFilter.Checked.ToString() );
+
+            SetAttributeValue( "EnabledModels", string.Join(",", cblEnabledModels.SelectedValues ) );
+
+            SaveAttributeValues();
+
+            ShowView();
+
+            mdEdit.Hide();
+            pnlEditModal.Visible = false;
+            upnlContent.Update();
         }
 
         protected void btnSearch_Click( object sender, EventArgs e )
@@ -123,36 +191,118 @@ namespace RockWeb.Blocks.Cms
             Search( tbSearch.Text );
         }
 
+        protected void lbRefineSearch_Click( object sender, EventArgs e )
+        {
+            if ( pnlRefineSearch.Visible )
+            {
+                pnlRefineSearch.Visible = false;
+                lbRefineSearch.Text = "Refine Search";
+            }
+            else
+            {
+                pnlRefineSearch.Visible = true;
+                lbRefineSearch.Text = "Hide Advanced Options";
+            }
+        }
+
+
         private void Search(string term )
         {
             lResults.Text = string.Empty;
 
+            List<FieldValue> fieldValues = new List<FieldValue>();
+
+            if ( cblGroupTypes.SelectedValues.Count > 0 )
+            {
+                foreach(string groupType in cblGroupTypes.SelectedValues )
+                {
+                    fieldValues.Add( new FieldValue {  Field = "groupTypeName", Value = groupType } );
+                }
+            }
+
+            if ( cblContentChannelTypes.SelectedValues.Count > 0 )
+            {
+                foreach ( string channel in cblContentChannelTypes.SelectedValues )
+                {
+                    fieldValues.Add( new FieldValue { Field = "contentChannel", Value = channel } );
+                }
+            }
+
+            SearchFieldCriteria fieldCriteria = new SearchFieldCriteria();
+            fieldCriteria.FieldValues = fieldValues;
+
+
             var client = IndexContainer.GetActiveComponent();
 
-            Rock.UniversalSearch.IndexComponents.Elasticsearch search = new Rock.UniversalSearch.IndexComponents.Elasticsearch();
-            ElasticClient _client = search.Client;
+            List<int> entities = cblModelFilter.SelectedValuesAsInt;
 
-            //ISearchResponse<dynamic> results = null;
-            List<int> entities = cblEntities.SelectedValuesAsInt;
+            if (entities.Count == 0 )
+            {
+                entities = GetAttributeValue( "EnabledModels" ).Split( ',' ).Select( int.Parse ).ToList();
+            }
 
-            var results = client.Search( term, SearchType.ExactMatch, cblEntities.SelectedValuesAsInt );
+            var results = client.Search( term, SearchType.ExactMatch, entities, fieldCriteria );
 
             StringBuilder formattedResults = new StringBuilder();
             formattedResults.Append( "<ul class='list-unstyled'>" );
 
-            foreach ( var result in results as IEnumerable<SearchResultModel> )
+            foreach ( var result in results)
             {
-                var formattedResult = result.Document.FormatSearchResult( CurrentPerson );
+                var formattedResult = result.FormatSearchResult( CurrentPerson );
 
                 if ( formattedResult.IsViewAllowed )
                 {
-                    formattedResults.Append( string.Format( "<li class='margin-b-md'><i class='{2}'></i> {1} <br />Score {0}</li>", result.Score, formattedResult.FormattedResult, result.Document.IconCssClass ));
+                    formattedResults.Append( string.Format( "{0} <hr />", formattedResult.FormattedResult ));
                 }
             }
 
             formattedResults.Append( "</ul>" );
 
+            tbSearch.Text = term;
+
             lResults.Text = formattedResults.ToString();
+        }
+
+        private void ShowView()
+        {
+            var enabledModelIds = GetAttributeValue( "EnabledModels" ).Split( ',' ).Select( int.Parse ).ToList();
+
+            var entities = EntityTypeCache.All();
+            var indexableEntities = entities.Where( i => i.IsIndexingSupported == true &&  enabledModelIds.Contains( i.Id )).ToList();
+
+            cblModelFilter.DataTextField = "FriendlyName";
+            cblModelFilter.DataValueField = "Id";
+            cblModelFilter.DataSource = indexableEntities;
+            cblModelFilter.DataBind();
+
+            cblModelFilter.Visible = GetAttributeValue( "ShowFilters" ).AsBoolean();
+
+            // hide content channel selector if content channel items not enabled
+            cblContentChannelTypes.Visible = indexableEntities.Any( e => e.Guid == Rock.SystemGuid.EntityType.CONTENT_CHANNEL_ITEM.AsGuid() );
+
+            // hide group type selector if groups not enabled
+            cblGroupTypes.Visible = indexableEntities.Any( e => e.Guid == Rock.SystemGuid.EntityType.GROUP.AsGuid() );
+
+            // if only one model is selected then hide the type checkbox
+            if (cblModelFilter.Items.Count == 1 )
+            {
+                cblModelFilter.Visible = false;
+            }
+        }
+
+        protected override void ShowSettings()
+        {
+            pnlEditModal.Visible = true;
+            upnlContent.Update();
+            mdEdit.Show();
+
+            cbShowFilter.Checked = GetAttributeValue( "ShowFilters" ).AsBoolean();
+
+            var enabledModelIds = GetAttributeValue( "EnabledModels" ).Split( ',' ).Select( int.Parse ).ToList();
+            
+            cblEnabledModels.SetValues( enabledModelIds );
+
+            upnlContent.Update();
         }
 
         #endregion

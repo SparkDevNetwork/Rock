@@ -342,9 +342,17 @@ namespace RockWeb.Blocks.Finance
             }
 
             mergeFields.Add( "TransactionDetails", qry.ToList() );
-                        
-            mergeFields.Add( "AccountSummary", qry.GroupBy( t => t.Account.Name ).Select( s => new AccountSummary { AccountName = s.Key, Total = s.Sum( a => a.Amount ), Order = s.Max(a => a.Account.Order) } ).OrderBy(s => s.Order ));
 
+            mergeFields.Add("AccountSummary", qry.GroupBy(t => new { t.Account.Name, t.Account.PublicName, t.Account.Description })
+                                                .Select(s => new AccountSummary
+                                                {
+                                                    AccountName = s.Key.Name,
+                                                    PublicName = s.Key.PublicName,
+                                                    Description = s.Key.Description,
+                                                    Total = s.Sum(a => a.Amount),
+                                                    Order = s.Max(a => a.Account.Order)
+                                                })
+                                                .OrderBy(s => s.Order));
             // pledge information
             var pledges = new FinancialPledgeService( rockContext ).Queryable().AsNoTracking()
                                 .Where( p =>
@@ -480,6 +488,22 @@ namespace RockWeb.Blocks.Finance
             /// The name of the account.
             /// </value>
             public string AccountName { get; set; }
+
+            /// <summary>
+            /// Gets or sets the public name of the account.
+            /// </summary>
+            /// <value>
+            /// The public name of the account.
+            /// </value>
+            public string PublicName { get; set; }
+
+            /// <summary>
+            /// Gets or sets the description of the account.
+            /// </summary>
+            /// <value>
+            /// The description of the account.
+            /// </value>
+            public string Description { get; set; }
 
             /// <summary>
             /// Gets or sets the total.

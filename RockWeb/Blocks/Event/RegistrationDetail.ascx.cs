@@ -2024,6 +2024,16 @@ namespace RockWeb.Blocks.Event
             divLabels.AddCssClass( "panel-labels" );
             divHeading.Controls.Add( divLabels );
 
+            if ( registrant.OnWaitList )
+            {
+                var hlOnWaitList = new HighlightLabel();
+                hlOnWaitList.ID = string.Format( "hlWaitList_{0}", registrant.Id );
+                hlOnWaitList.LabelType = LabelType.Warning;
+                hlOnWaitList.Text = "Wait List";
+                hlOnWaitList.CssClass = "margin-r-sm";
+                divLabels.Controls.Add( hlOnWaitList );
+            }
+
             decimal registrantCost = registrant.TotalCost;
             if ( registrantCost != 0.0m )
             {

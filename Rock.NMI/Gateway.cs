@@ -684,66 +684,88 @@ namespace Rock.NMI
 
             var txns = new List<Payment>();
 
-            var queryParams = new Dictionary<string, string>();
-            queryParams.Add( "username", GetAttributeValue( financialGateway, "AdminUsername" ) );
-            queryParams.Add( "password", GetAttributeValue( financialGateway, "AdminPassword" ) );
-            queryParams.Add( "start_date", startDate.ToString( "yyyyMMddHHmmss" ) );
-            queryParams.Add( "end_date", endDate.ToString( "yyyyMMddHHmmss" ) );
-
-            string url = GetAttributeValue( financialGateway, "QueryUrl" );
-            string queryString = queryParams.ToList().Select( p => string.Format( "{0}={1}", p.Key, p.Value ) ).ToList().AsDelimited( "&" );
-
-            var restClient = new RestClient( url + "?" + queryString );
+            var restClient = new RestClient( GetAttributeValue( financialGateway, "QueryUrl" ) );
             var restRequest = new RestRequest( Method.GET );
+
+            restRequest.AddParameter( "username", GetAttributeValue( financialGateway, "AdminUsername" ) );
+            restRequest.AddParameter( "password", GetAttributeValue( financialGateway, "AdminPassword" ) );
+            restRequest.AddParameter( "start_date", startDate.ToString( "yyyyMMddHHmmss" ) );
+            restRequest.AddParameter( "end_date", endDate.ToString( "yyyyMMddHHmmss" ) );
 
             try
             {
                 var response = restClient.Execute( restRequest );
-                var xdocResult = GetXmlResponse( response );
-                if ( xdocResult != null )
+                if ( response != null )
                 {
-                    foreach ( var xTxn in xdocResult.Root.Elements( "transaction" ) )
+                    if ( response.StatusCode == HttpStatusCode.OK )
                     {
-                        string subscriptionId = GetXElementValue( xTxn, "original_transaction_id" ).Trim();
-                        if ( !string.IsNullOrWhiteSpace( subscriptionId ) )
+                        var xdocResult = GetXmlResponse( response );
+                        if ( xdocResult != null )
                         {
-                            Payment payment = null;
-                            var statusMessage = new StringBuilder();
-                            foreach ( var xAction in xTxn.Elements( "action" ) )
+                            var errorResponse = xdocResult.Root.Element( "error_response" );
+                            if ( errorResponse != null )
                             {
-                                DateTime? actionDate = ParseDateValue( GetXElementValue( xAction, "date" ) );
-                                string actionType = GetXElementValue( xAction, "action_type" );
-                                string responseText = GetXElementValue( xAction, "response_text" );
-                                if ( actionDate.HasValue )
+                                errorMessage = errorResponse.Value;
+                            }
+                            else
+                            {
+                                foreach ( var xTxn in xdocResult.Root.Elements( "transaction" ) )
                                 {
-                                    statusMessage.AppendFormat( "{0} {1}: {2}; Status: {3}",
-                                        actionDate.Value.ToShortDateString(), actionDate.Value.ToShortTimeString(),
-                                        actionType.FixCase(), responseText );
-                                    statusMessage.AppendLine();
-                                }
-                                if ( payment == null && actionType == "sale" && GetXElementValue( xAction, "source" ) == "recurring" )
-                                {
-                                    decimal? txnAmount = GetXElementValue( xAction, "amount" ).AsDecimalOrNull();
-                                    if ( txnAmount.HasValue && actionDate.HasValue )
+                                    string subscriptionId = GetXElementValue( xTxn, "original_transaction_id" ).Trim();
+                                    if ( !string.IsNullOrWhiteSpace( subscriptionId ) )
                                     {
-                                        payment = new Payment();
-                                        payment.Status = GetXElementValue( xTxn, "condition" ).FixCase();
-                                        payment.IsFailure = payment.Status == "Failed";
-                                        payment.StatusMessage = GetXElementValue( xTxn, "response_text" );
-                                        payment.Amount = txnAmount.Value;
-                                        payment.TransactionDateTime = actionDate.Value;
-                                        payment.TransactionCode = GetXElementValue( xTxn, "transaction_id" );
-                                        payment.GatewayScheduleId = subscriptionId;
+                                        Payment payment = null;
+                                        var statusMessage = new StringBuilder();
+                                        foreach ( var xAction in xTxn.Elements( "action" ) )
+                                        {
+                                            DateTime? actionDate = ParseDateValue( GetXElementValue( xAction, "date" ) );
+                                            string actionType = GetXElementValue( xAction, "action_type" );
+                                            string responseText = GetXElementValue( xAction, "response_text" );
+                                            if ( actionDate.HasValue )
+                                            {
+                                                statusMessage.AppendFormat( "{0} {1}: {2}; Status: {3}",
+                                                    actionDate.Value.ToShortDateString(), actionDate.Value.ToShortTimeString(),
+                                                    actionType.FixCase(), responseText );
+                                                statusMessage.AppendLine();
+                                            }
+                                            if ( payment == null && actionType == "sale" && GetXElementValue( xAction, "source" ) == "recurring" )
+                                            {
+                                                decimal? txnAmount = GetXElementValue( xAction, "amount" ).AsDecimalOrNull();
+                                                if ( txnAmount.HasValue && actionDate.HasValue )
+                                                {
+                                                    payment = new Payment();
+                                                    payment.Status = GetXElementValue( xTxn, "condition" ).FixCase();
+                                                    payment.IsFailure = payment.Status == "Failed";
+                                                    payment.StatusMessage = GetXElementValue( xTxn, "response_text" );
+                                                    payment.Amount = txnAmount.Value;
+                                                    payment.TransactionDateTime = actionDate.Value;
+                                                    payment.TransactionCode = GetXElementValue( xTxn, "transaction_id" );
+                                                    payment.GatewayScheduleId = subscriptionId;
+                                                }
+                                            }
+                                        }
+                                        if ( payment != null )
+                                        {
+                                            payment.StatusMessage = statusMessage.ToString();
+                                            txns.Add( payment );
+                                        }
                                     }
                                 }
                             }
-                            if ( payment != null )
-                            {
-                                payment.StatusMessage = statusMessage.ToString();
-                                txns.Add( payment );
-                            }
+                        }
+                        else
+                        {
+                            errorMessage = "Invalid XML Document Returned From Gateway!";
                         }
                     }
+                    else
+                    {
+                        errorMessage = string.Format( "Invalid Response from Gateway: [{0}] {1}", response.StatusCode.ConvertToString(), response.ErrorMessage );
+                    }
+                }
+                else
+                {
+                    errorMessage = "Null Response From Gateway!";
                 }
             }
             catch ( WebException webException )

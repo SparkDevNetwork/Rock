@@ -355,7 +355,7 @@ namespace RockWeb.Blocks.Finance
 
             if ( batch == null )
             {
-                batch = new FinancialBatch { Id = 0 };
+                batch = new FinancialBatch { Id = 0, Status = BatchStatus.Open };
 
                 // hide the panel drawer that show created and last modified dates
                 pdAuditDetails.Visible = false;

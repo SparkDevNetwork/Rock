@@ -24,7 +24,7 @@ namespace Rock.Field.Types
     /// <summary>
     /// Field used to save and display a currency amount
     /// </summary>
-    public class CurrencyFieldType : FieldType
+    public class CurrencyFieldType : DecimalFieldType
     {
 
         #region Formatting
@@ -41,12 +41,12 @@ namespace Rock.Field.Types
         }
 
         /// <summary>
-        /// Formats date display
+        /// Formats the value.
         /// </summary>
         /// <param name="parentControl">The parent control.</param>
-        /// <param name="value">Information about the value</param>
+        /// <param name="value">The value.</param>
         /// <param name="configurationValues">The configuration values.</param>
-        /// <param name="condensed">Flag indicating if the value should be condensed (i.e. for use in a grid column)</param>
+        /// <param name="condensed">if set to <c>true</c> [condensed].</param>
         /// <returns></returns>
         public override string FormatValue( System.Web.UI.Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
         {
@@ -60,19 +60,19 @@ namespace Rock.Field.Types
 
         #endregion
 
-            #region Edit Control
+        #region Edit Control
 
-            /// <summary>
-            /// Creates the control(s) necessary for prompting user for a new value
-            /// </summary>
-            /// <param name="configurationValues">The configuration values.</param>
-            /// <param name="id"></param>
-            /// <returns>
-            /// The control
-            /// </returns>
-        public override System.Web.UI.Control EditControl( System.Collections.Generic.Dictionary<string, ConfigurationValue> configurationValues, string id )
+        /// <summary>
+        /// Creates the control(s) necessary for prompting user for a new value
+        /// </summary>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="id"></param>
+        /// <returns>
+        /// The control
+        /// </returns>
+        public override System.Web.UI.Control EditControl(System.Collections.Generic.Dictionary<string, ConfigurationValue> configurationValues, string id)
         {
-            return new CurrencyBox { ID = id }; 
+            return new CurrencyBox { ID = id };
         }
 
         /// <summary>

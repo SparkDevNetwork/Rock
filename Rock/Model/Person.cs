@@ -2795,6 +2795,7 @@ namespace Rock.Model
         {
             return new PersonService( rockContext ?? new RockContext() ).GetGroupMembers( groupTypeId, person != null ? person.Id : 0, includeSelf );
         }
+        
         /// <summary>
         /// Gets any previous last names for this person sorted alphabetically by LastName
         /// </summary>
@@ -2817,6 +2818,22 @@ namespace Rock.Model
         public static Person GetSpouse( this Person person, RockContext rockContext = null )
         {
             return new PersonService( rockContext ?? new RockContext() ).GetSpouse( person );
+        }
+
+        /// <summary>
+        /// Gets the family role (adult or child).
+        /// </summary>
+        /// <param name="person">The person.</param>
+        /// <param name="rockContext">The rock context.</param>
+        /// <returns></returns>
+        public static GroupTypeRole GetFamilyRole(this Person person, RockContext rockContext = null )
+        {
+            if (rockContext == null )
+            {
+                rockContext = new RockContext();
+            }
+
+            return new PersonService( rockContext ).GetFamilyRole(person, rockContext);
         }
 
         /// <summary>

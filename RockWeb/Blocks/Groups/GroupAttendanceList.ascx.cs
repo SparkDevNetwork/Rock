@@ -212,7 +212,7 @@ namespace RockWeb.Blocks.Groups
             if ( e.Row.RowType == System.Web.UI.WebControls.DataControlRowType.DataRow )
             {
                 var occurrence = e.Row.DataItem as ScheduleOccurrence;
-                if ( occurrence == null || occurrence.ScheduleId.HasValue )
+                if ( occurrence == null )
                 {
                     var deleteField = gOccurrences.Columns.OfType<DeleteField>().First();
                     var cell = e.Row.Cells[gOccurrences.Columns.IndexOf( deleteField )];

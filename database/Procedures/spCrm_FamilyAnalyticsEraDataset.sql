@@ -118,7 +118,7 @@ BEGIN
 					COUNT(DISTINCT a.SundayDate )
 				FROM
 					[Attendance] a
-					INNER JOIN [Group] ag ON g.[Id] = a.[GroupId]
+					INNER JOIN [Group] ag ON ag.[Id] = a.[GroupId]
 					INNER JOIN [GroupType] agt ON agt.[Id] = ag.[GroupTypeId] AND agt.[AttendanceCountsAsWeekendService] = 1
 					INNER JOIN [PersonAlias] pa ON pa.[Id] = a.[PersonAliasId]
 				WHERE 
@@ -129,7 +129,7 @@ BEGIN
 					COUNT(DISTINCT a.SundayDate )
 				FROM
 					[Attendance] a
-					INNER JOIN [Group] ag ON g.[Id] = a.[GroupId]
+					INNER JOIN [Group] ag ON ag.[Id] = a.[GroupId]
 					INNER JOIN [GroupType] agt ON agt.[Id] = ag.[GroupTypeId] AND agt.[AttendanceCountsAsWeekendService] = 1
 					INNER JOIN [PersonAlias] pa ON pa.[Id] = a.[PersonAliasId]
 				WHERE 
@@ -140,7 +140,7 @@ BEGIN
 					COUNT(DISTINCT a.SundayDate )
 				FROM
 					[Attendance] a
-					INNER JOIN [Group] ag ON g.[Id] = a.[GroupId]
+					INNER JOIN [Group] ag ON ag.[Id] = a.[GroupId]
 					INNER JOIN [GroupType] agt ON agt.[Id] = ag.[GroupTypeId] AND agt.[AttendanceCountsAsWeekendService] = 1
 					INNER JOIN [PersonAlias] pa ON pa.[Id] = a.[PersonAliasId]
 				WHERE 

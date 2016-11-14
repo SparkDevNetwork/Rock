@@ -177,6 +177,18 @@ namespace Rock.Client
         /// <summary />
         public bool WaitListEnabled { get; set; }
 
+        /// <summary />
+        public string WaitListTransitionEmailTemplate { get; set; }
+
+        /// <summary />
+        public string WaitListTransitionFromEmail { get; set; }
+
+        /// <summary />
+        public string WaitListTransitionFromName { get; set; }
+
+        /// <summary />
+        public string WaitListTransitionSubject { get; set; }
+
         /// <summary>
         /// Leave this as NULL to let Rock set this
         /// </summary>
@@ -257,6 +269,10 @@ namespace Rock.Client
             this.SuccessText = source.SuccessText;
             this.SuccessTitle = source.SuccessTitle;
             this.WaitListEnabled = source.WaitListEnabled;
+            this.WaitListTransitionEmailTemplate = source.WaitListTransitionEmailTemplate;
+            this.WaitListTransitionFromEmail = source.WaitListTransitionFromEmail;
+            this.WaitListTransitionFromName = source.WaitListTransitionFromName;
+            this.WaitListTransitionSubject = source.WaitListTransitionSubject;
             this.CreatedDateTime = source.CreatedDateTime;
             this.ModifiedDateTime = source.ModifiedDateTime;
             this.CreatedByPersonAliasId = source.CreatedByPersonAliasId;

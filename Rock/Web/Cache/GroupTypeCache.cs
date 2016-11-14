@@ -217,6 +217,15 @@ namespace Rock.Web.Cache
         public int? InheritedGroupTypeId { get; set; }
 
         /// <summary>
+        /// Gets or sets a value indicating whether this instance is indexable.
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if this instance is indexable; otherwise, <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool IsIndexEnabled { get; set; }
+
+        /// <summary>
         /// Gets the type of the inherited group.
         /// </summary>
         /// <value>
@@ -469,6 +478,7 @@ namespace Rock.Web.Cache
                 this.EnableLocationSchedules = groupType.EnableLocationSchedules;
                 this.GroupTypePurposeValueId = groupType.GroupTypePurposeValueId;
                 this.IgnorePersonInactivated = groupType.IgnorePersonInactivated;
+                this.IsIndexEnabled = groupType.IsIndexEnabled;
 
                 this.locationTypeValueIDs = groupType.LocationTypes.Select( l => l.LocationTypeValueId ).ToList();
 
@@ -612,12 +622,45 @@ namespace Rock.Web.Cache
         }
 
         /// <summary>
+        /// Alls this instance.
+        /// </summary>
+        /// <returns></returns>
+        public static List<GroupTypeCache> All()
+        {
+            List<GroupTypeCache> groupTypes = new List<GroupTypeCache>();
+            var groupTypeIds = GetOrAddExisting( "Rock:GroupType:All", () => LoadAll() );
+            if ( groupTypeIds != null )
+            {
+                foreach ( int groupTypeId in groupTypeIds )
+                {
+                    var groupTypeCache = GroupTypeCache.Read( groupTypeId );
+                    groupTypes.Add( groupTypeCache );
+                }
+            }
+            return groupTypes;
+        }
+
+        private static List<int> LoadAll()
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                return new GroupTypeService( rockContext )
+                    .Queryable().AsNoTracking()
+                    .OrderBy( c => c.Name )
+                    .Select( c => c.Id )
+                    .ToList();
+            }
+        }
+
+        /// <summary>
         /// Removes groupType from cache
         /// </summary>
         /// <param name="id"></param>
         public static void Flush( int id )
         {
             FlushCache( GroupTypeCache.CacheKey( id ) );
+
+            FlushCache( "Rock:GroupType:All" );
         }
 
         /// <summary>

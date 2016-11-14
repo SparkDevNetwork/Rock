@@ -317,11 +317,15 @@ namespace Rock.Model
         {
             var itemEntity = new ContentChannelItemService( new RockContext() ).Get( id );
 
-            // ensure it's meant to be indexed
-            if (itemEntity.ContentChannel.IsIndexEnabled && (itemEntity.ContentChannel.RequiresApproval == false || itemEntity.Status == ContentChannelItemStatus.Approved) )
+            // only index if the content channel is set to be indexed
+            if ( itemEntity.ContentChannel.IsIndexEnabled )
             {
-                var indexItem = ContentChannelItemIndex.LoadByModel( itemEntity );
-                IndexContainer.IndexDocument( indexItem );
+                // ensure it's meant to be indexed
+                if ( itemEntity.ContentChannel.IsIndexEnabled && (itemEntity.ContentChannel.RequiresApproval == false || itemEntity.Status == ContentChannelItemStatus.Approved) )
+                {
+                    var indexItem = ContentChannelItemIndex.LoadByModel( itemEntity );
+                    IndexContainer.IndexDocument( indexItem );
+                }
             }
         }
 

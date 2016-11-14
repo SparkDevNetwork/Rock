@@ -22,15 +22,17 @@ namespace Rock.Migrations
     /// <summary>
     ///
     /// </summary>
-    public partial class BodyPageCSSContentChannelNoContent : Rock.Migrations.RockMigration
+    public partial class WaitlistConfirmationFields : Rock.Migrations.RockMigration
     {
         /// <summary>
         /// Operations to be performed during the upgrade process.
         /// </summary>
         public override void Up()
         {
-            AddColumn("dbo.ContentChannelType", "DisableContentField", c => c.Boolean(nullable: false));
-            AddColumn("dbo.Page", "BodyCssClass", c => c.String(maxLength: 100));
+            AddColumn( "dbo.RegistrationTemplate", "WaitlistConfirmationSubject", c => c.String( maxLength: 200 ) );
+            AddColumn( "dbo.RegistrationTemplate", "WaitlistConfirmationEmailTemplate", c => c.String() );
+            AddColumn( "dbo.RegistrationTemplate", "WaitlistConfirmationMessage", c => c.String() );
+            AddColumn("dbo.RegistrationTemplateFormField", "ShowOnWaitlist", c => c.Boolean(nullable: false));
         }
         
         /// <summary>
@@ -38,8 +40,10 @@ namespace Rock.Migrations
         /// </summary>
         public override void Down()
         {
-            DropColumn("dbo.Page", "BodyCssClass");
-            DropColumn("dbo.ContentChannelType", "DisableContentField");
+            DropColumn("dbo.RegistrationTemplateFormField", "ShowOnWaitlist");
+            DropColumn( "dbo.RegistrationTemplate", "WaitlistConfirmationMessage" );
+            DropColumn( "dbo.RegistrationTemplate", "WaitlistConfirmationEmailTemplate" );
+            DropColumn( "dbo.RegistrationTemplate", "WaitlistConfirmationSubject" );
         }
     }
 }

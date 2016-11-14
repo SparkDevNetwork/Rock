@@ -578,6 +578,7 @@
     <Compile Include="Lava\Blocks\Execute.cs" />
     <Compile Include="Lava\Blocks\RockEntity.cs" />
     <Compile Include="Lava\Blocks\RockLavaBlockBase.cs" />
+    <Compile Include="Lava\Blocks\Search.cs" />
     <Compile Include="Lava\Blocks\WebRequest.cs" />
     <Compile Include="Lava\Blocks\Sql.cs" />
     <Compile Include="Lava\CommonMergeFieldsOptions.cs" />
@@ -646,6 +647,7 @@
     <Compile Include="Model\CodeGenerated\ConnectionActivityTypeService.cs" />
     <Compile Include="Model\CodeGenerated\ConnectionOpportunityCampusService.cs" />
     <Compile Include="Model\CodeGenerated\ConnectionOpportunityConnectorGroupService.cs" />
+    <Compile Include="Model\CodeGenerated\ConnectionOpportunityGroupConfigService.cs" />
     <Compile Include="Model\CodeGenerated\ConnectionOpportunityGroupService.cs" />
     <Compile Include="Model\CodeGenerated\ConnectionOpportunityService.cs" />
     <Compile Include="Model\CodeGenerated\ConnectionRequestActivityService.cs" />
@@ -775,9 +777,10 @@
     <Compile Include="Model\CommunicationService.Partial.cs" />
     <Compile Include="Model\CommunicationTemplate.cs" />
     <Compile Include="Model\ConnectionActivityType.cs" />
+    <Compile Include="Model\ConnectionOpportunityGroupConfig.cs" />
     <Compile Include="Model\ConnectionOpportunity.cs" />
     <Compile Include="Model\ConnectionOpportunityCampus.cs" />
-    <Compile Include="Model\ConnectionOpportunityConnectorGroups.cs" />
+    <Compile Include="Model\ConnectionOpportunityConnectorGroup.cs" />
     <Compile Include="Model\ConnectionOpportunityGroup.cs" />
     <Compile Include="Model\ConnectionRequest.cs" />
     <Compile Include="Model\ConnectionRequestActivity.cs" />
@@ -931,6 +934,7 @@
     <Compile Include="Model\Schedule.cs" />
     <Compile Include="Model\ScheduleService.Partial.cs" />
     <Compile Include="Model\WorkflowActionService.Partial.cs" />
+    <Compile Include="Search\Other\Universal.cs" />
     <Compile Include="Transactions\DeleteIndexEntityTransaction.cs" />
     <Compile Include="Transactions\IndexEntityTransaction.cs" />
     <Compile Include="Transactions\BulkIndexEntityTypeTransaction.cs" />
@@ -1003,6 +1007,7 @@
     <Compile Include="Plugin\HotFixes\004_FixGradeRequiredAttribute.cs" />
     <Compile Include="Plugin\HotFixes\005_FixCheckinAdminRoute.cs" />
     <Compile Include="Plugin\HotFixes\006_FixCheckinPrevPages.cs" />
+    <Compile Include="Plugin\HotFixes\008_FamilyAnalyticsUpdate.cs" />
     <Compile Include="Plugin\HotFixes\007_FixGroupAndBenevolenceSecurity.cs" />
     <Compile Include="Plugin\Migration.cs" />
     <Compile Include="Plugin\VersionAttribute.cs" />
@@ -1131,6 +1136,7 @@
     <Compile Include="UniversalSearch\IndexModels\GroupIndex.cs" />
     <Compile Include="UniversalSearch\IndexModels\SitePageIndex.cs" />
     <Compile Include="UniversalSearch\IRockIndexable.cs" />
+    <Compile Include="UniversalSearch\SearchFieldCriteria.cs" />
     <Compile Include="UniversalSearch\SearchResultModel.cs" />
     <Compile Include="Utility\DebugHelper.cs" />
     <Compile Include="Utility\FileUtilities.cs" />
