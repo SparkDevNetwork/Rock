@@ -35,7 +35,7 @@ using System.Data.Entity;
 namespace Rock.Jobs
 {
     /// <summary>
-    /// This job will send a specified email template to all active group members of the specified group, with the option to also send it to members of descendant groups. If a person is a member of multiple groups in the tree they will recieve an email for each group.
+    /// The job will send a Lava email template to a list of people returned from the dataview. 
     /// </summary>
     [SystemEmailField( "System Email", "The email template that will be sent.", true, "" )]
     [DataViewField( "DataView", "The dataview the email will be sent to.", true, "", "Rock.Model.Person" )]
