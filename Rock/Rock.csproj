@@ -570,6 +570,7 @@
     <Compile Include="Jobs\SendCommunications.cs" />
     <Compile Include="Jobs\SendFollowingEvents.cs" />
     <Compile Include="Jobs\SendFollowingSuggestions.cs" />
+    <Compile Include="Jobs\SendDataViewEmail.cs" />
     <Compile Include="Jobs\SendGroupEmail.cs" />
     <Compile Include="Jobs\SendGroupRequirementsNotification.cs" />
     <Compile Include="Jobs\SendRegistrationPaymentReminders.cs" />
