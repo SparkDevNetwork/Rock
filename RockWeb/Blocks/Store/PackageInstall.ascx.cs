@@ -211,7 +211,7 @@ namespace RockWeb.Blocks.Store
                         using ( ZipArchive packageZip = ZipFile.OpenRead( destinationFile ) )
                         {
                             // unzip content folder and process xdts
-                            foreach ( ZipArchiveEntry entry in packageZip.Entries.Where(e => e.FullName.StartsWith("content/")) )
+                            foreach ( ZipArchiveEntry entry in packageZip.Entries.Where(e => e.FullName.StartsWith("content/", StringComparison.OrdinalIgnoreCase)) )
                             {
                                if ( entry.FullName.EndsWith( _xdtExtension, StringComparison.OrdinalIgnoreCase ) )
                                 {
