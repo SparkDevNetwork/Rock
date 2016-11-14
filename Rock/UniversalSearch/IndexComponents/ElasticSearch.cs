@@ -321,7 +321,7 @@ namespace Rock.UniversalSearch.IndexComponents
         /// <param name="query">The query.</param>
         /// <param name="searchType">Type of the search.</param>
         /// <param name="entities">The entities.</param>
-        /// <param name="criteria">The criteria.</param>
+        /// <param name="fieldCriteria">The field criteria.</param>
         /// <param name="size">The size.</param>
         /// <param name="from">From.</param>
         /// <param name="totalResultsAvailable">The total results available.</param>
