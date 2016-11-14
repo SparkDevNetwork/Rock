@@ -72,7 +72,7 @@ namespace Rock.Workflow.Action
                         {
                             if (workflow.Attributes.ContainsKey(keyPair.Value))
                             {
-                                var value = action.Activity.Workflow.AttributeValues[keyPair.Key].ValueFormatted;
+                                var value = action.Activity.Workflow.AttributeValues[keyPair.Key].Value;
                                 workflow.SetAttributeValue(keyPair.Value, value);
                             }
                             else
