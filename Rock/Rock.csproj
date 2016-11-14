@@ -544,6 +544,7 @@
     <Compile Include="Jobs\CalculateFamilyAnalytics.cs" />
     <Compile Include="Jobs\IndexRockSite.cs" />
     <Compile Include="Jobs\SendCreditCardExpirationNotices.cs" />
+    <Compile Include="Jobs\IndexEntities.cs" />
     <Compile Include="Jobs\UniversalSearchBulkIndex.cs" />
     <Compile Include="Jobs\CalculateGroupRequirements.cs" />
     <Compile Include="Jobs\CalculateMetrics.cs" />
