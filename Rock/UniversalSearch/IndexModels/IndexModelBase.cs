@@ -39,7 +39,7 @@ namespace Rock.UniversalSearch.IndexModels
         private Dictionary<string, object> _members = new Dictionary<string, object>();
         object Instance;
         Type InstanceType;
-        private int modelBoost = 1;
+        //private int modelBoost = 1;
 
         PropertyInfo[] InstancePropertyInfo
         {

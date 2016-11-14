@@ -4142,6 +4142,20 @@ END
         {
             UpdateWorkflowTypeAttribute( workflowTypeGuid, fieldTypeGuid, name, key, description, order, defaultValue, guid, false );
         }
+
+
+        /// <summary>
+        /// Updates the workflow type attribute.
+        /// </summary>
+        /// <param name="workflowTypeGuid">The workflow type unique identifier.</param>
+        /// <param name="fieldTypeGuid">The field type unique identifier.</param>
+        /// <param name="name">The name.</param>
+        /// <param name="key">The key.</param>
+        /// <param name="description">The description.</param>
+        /// <param name="order">The order.</param>
+        /// <param name="defaultValue">The default value.</param>
+        /// <param name="guid">The unique identifier.</param>
+        /// <param name="isGridColumn">if set to <c>true</c> [is grid column].</param>
         public void UpdateWorkflowTypeAttribute( string workflowTypeGuid, string fieldTypeGuid, string name, string key, string description, int order, string defaultValue, string guid, bool isGridColumn )
         {
             Migration.Sql( string.Format( @"
