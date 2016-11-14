@@ -69,7 +69,7 @@ order by YValue desc
 </pre>
 </code>",
               CodeEditorMode.Sql )]
-
+    [TextField( "SQL Params", "Parameters to pass to query", false, "" )]
     [IntegerField( "Chart Height", "", false, 200 )]
     [DefinedValueField( Rock.SystemGuid.DefinedType.CHART_STYLES, "Chart Style", order: 3 )]
 
@@ -251,7 +251,8 @@ function labelFormatter(label, series) {
                     var mergeFields = GetDynamicDataMergeFields();
                     sql = sql.ResolveMergeFields( mergeFields );
 
-                    DataSet dataSet = DbService.GetDataSet( sql, System.Data.CommandType.Text, null );
+                    var parameters = GetParameters();
+                    DataSet dataSet = DbService.GetDataSet( sql, System.Data.CommandType.Text, parameters );
                     List<DynamicChartData> chartDataList = new List<DynamicChartData>();
                     foreach ( var row in dataSet.Tables[0].Rows.OfType<DataRow>() )
                     {
@@ -325,6 +326,52 @@ function labelFormatter(label, series) {
         {
             // reload the full page since controls are dynamically created based on block settings
             NavigateToPage( this.CurrentPageReference );
+        }
+
+        /// <summary>
+        /// Gets the parameters.
+        /// </summary>
+        /// <returns></returns>
+        private Dictionary<string, object> GetParameters()
+        {
+            string[] queryParams = GetAttributeValue( "SQLParams" ).SplitDelimitedValues();
+            if ( queryParams.Length > 0 )
+            {
+                var parameters = new Dictionary<string, object>();
+                foreach ( string queryParam in queryParams )
+                {
+                    string[] paramParts = queryParam.Split( '=' );
+                    if ( paramParts.Length == 2 )
+                    {
+                        string queryParamName = paramParts[0];
+                        string queryParamValue = paramParts[1];
+
+                        // Remove leading '@' character if was included
+                        if ( queryParamName.StartsWith( "@" ) )
+                        {
+                            queryParamName = queryParamName.Substring( 1 );
+                        }
+
+                        // If a page parameter (query or form) value matches, use it's value instead
+                        string pageValue = PageParameter( queryParamName );
+                        if ( !string.IsNullOrWhiteSpace( pageValue ) )
+                        {
+                            queryParamValue = pageValue;
+                        }
+                        else if ( queryParamName.ToLower() == "currentpersonid" && CurrentPerson != null )
+                        {
+                            // If current person id, use the value of the current person id
+                            queryParamValue = CurrentPerson.Id.ToString();
+                        }
+
+                        parameters.Add( queryParamName, queryParamValue );
+                    }
+                }
+
+                return parameters;
+            }
+
+            return null;
         }
 
         /// <summary>
