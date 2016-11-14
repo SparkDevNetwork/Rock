@@ -374,7 +374,7 @@ namespace RockWeb.Blocks.Core
                         string entityTypeName = EntityTypeCache.Read( attribute.EntityTypeId.Value ).FriendlyName;
                         if ( !string.IsNullOrWhiteSpace( attribute.EntityTypeQualifierColumn ) )
                         {
-                            lEntityQualifier.Text = string.Format( "Where [{0}] = '{1}'", attribute.EntityTypeQualifierColumn, attribute.EntityTypeQualifierValue );
+                            lEntityQualifier.Text = string.Format( "{0} where [{1}] = '{2}'", entityTypeName, attribute.EntityTypeQualifierColumn, attribute.EntityTypeQualifierValue );
                         }
                         else
                         {
@@ -579,19 +579,28 @@ namespace RockWeb.Blocks.Core
             }
             else
             {
-                int entityTypeId = int.MinValue;
-                if ( int.TryParse( rFilter.GetUserPreference( "Entity Type" ), out entityTypeId ) )
+                int? entityTypeId = rFilter.GetUserPreference( "Entity Type" ).AsIntegerOrNull();
+                if ( entityTypeId.HasValue )
                 {
-                    if ( entityTypeId > 0 )
+                    if ( entityTypeId.Value == 0 )
                     {
+                        // Global Attributes
+                        query = attributeService.GetByEntityTypeId( null );
+                    }
+                    else
+                    { 
                         query = attributeService.GetByEntityTypeId( entityTypeId );
                     }
                 }
-            }
-
-            if ( query == null )
-            {
-                query = attributeService.GetByEntityTypeId( null );
+                else
+                {
+                    // All entity attribute
+                    query = attributeService.Queryable()
+                        .Where( a =>
+                            ( a.EntityType != null && a.EntityType.IsEntity ) ||    // Entity Attributes
+                            ( a.EntityType == null && a.EntityTypeQualifierColumn == "" && a.EntityTypeQualifierValue == "" ) // Global Attributes
+                        );
+                }
             }
 
             // if filtering by block setting of categories
@@ -652,11 +661,6 @@ namespace RockWeb.Blocks.Core
             var attributeService = new AttributeService( rockContext );
             var attributeModel = attributeService.Get( attributeId );
 
-            if ( attributeModel.EntityType.IsIndexingSupported == true && attributeModel.EntityType.IsIndexingEnabled )
-            {
-                edtAttribute.IsIndexingEnabledVisible = true;
-            }
-
             if ( attributeModel == null )
             {
                 mdAttribute.Title = "Add Attribute".FormatAsHtmlTitle();
@@ -686,6 +690,11 @@ namespace RockWeb.Blocks.Core
             }
             else
             {
+                if ( attributeModel.EntityType != null && attributeModel.EntityType.IsIndexingSupported == true && attributeModel.EntityType.IsIndexingEnabled )
+                {
+                    edtAttribute.IsIndexingEnabledVisible = true;
+                }
+
                 edtAttribute.ActionTitle = Rock.Constants.ActionTitle.Edit( Rock.Model.Attribute.FriendlyTypeName );
                 mdAttribute.Title = ( "Edit " + attributeModel.Name ).FormatAsHtmlTitle();
 
@@ -708,15 +717,11 @@ namespace RockWeb.Blocks.Core
 
             if ( _configuredType )
             {
-                ddlAttrEntityType.Visible = false;
-                tbAttrQualifierField.Visible = false;
-                tbAttrQualifierValue.Visible = false;
+                pnlEntityTypeQualifier.Visible = false;
             }
             else
             {
-                ddlAttrEntityType.Visible = true;
-                tbAttrQualifierField.Visible = true;
-                tbAttrQualifierValue.Visible = true;
+                pnlEntityTypeQualifier.Visible = true;
 
                 ddlAttrEntityType.SetValue( attributeModel.EntityTypeId.HasValue ? attributeModel.EntityTypeId.Value.ToString() : "0" );
                 tbAttrQualifierField.Text = attributeModel.EntityTypeQualifierColumn;
