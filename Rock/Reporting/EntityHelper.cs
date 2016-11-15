@@ -50,7 +50,7 @@ namespace Rock.Reporting
 
             if ( HttpContext.Current != null )
             {
-                entityFields = HttpContext.Current.Items[string.Format( "EntityHelper:GetEntityFields:{0}", entityType.FullName )] as List<EntityField>;
+                entityFields = HttpContext.Current.Items[string.Format( "EntityHelper:GetEntityFields:{0}_{1}_{2}", entityType.FullName, includeOnlyReportingFields, limitToFilterableFields )] as List<EntityField>;
                 if ( entityFields != null )
                 {
                     return entityFields;
@@ -228,7 +228,7 @@ namespace Rock.Reporting
 
             if ( HttpContext.Current != null )
             {
-                HttpContext.Current.Items[string.Format( "EntityHelper:GetEntityFields:{0}", entityType.FullName )] = sortedFields;
+                HttpContext.Current.Items[string.Format( "EntityHelper:GetEntityFields:{0}_{1}_{2}", entityType.FullName, includeOnlyReportingFields, limitToFilterableFields )] = sortedFields;
             }
 
             return sortedFields;
