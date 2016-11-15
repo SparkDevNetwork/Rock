@@ -59,6 +59,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
     [AttributeCategoryField( "Attribute Categories", "The Person Attribute Categories to display attributes from", true, "Rock.Model.Person", false, "", "", 10 )]
     [BooleanField( "Show Inactive Campuses", "Determines if inactive campuses should be shown.", true, order: 9 )]
     [BooleanField( "Enable Common Last Name", "Autofills the last name field when adding a new group member with the last name of the first group member.", true, order: 11 )]
+    [BooleanField( "Show Middle Name", "Show an edit box for Middle Name.", false, order: 12 )]
     public partial class AddGroup : Rock.Web.UI.RockBlock
     {
         #region Fields
@@ -496,6 +497,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                 groupMemberRow.RoleId = groupMember.GroupRoleId;
                 groupMemberRow.ShowGradeColumn = _isFamilyGroupType;
                 groupMemberRow.ShowGradePicker = groupMember.GroupRoleId == _childRoleId;
+                groupMemberRow.ShowMiddleName = this.GetAttributeValue( "ShowMiddleName" ).AsBoolean();
                 groupMemberRow.ValidationGroup = BlockValidationGroup;
 
                 var contactInfoRow = new NewGroupContactInfoRow();
@@ -543,6 +545,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                     {
                         groupMemberRow.TitleValueId = groupMember.Person.TitleValueId;
                         groupMemberRow.FirstName = groupMember.Person.FirstName;
+                        groupMemberRow.MiddleName = groupMember.Person.MiddleName;
                         groupMemberRow.LastName = groupMember.Person.LastName;
                         groupMemberRow.SuffixValueId = groupMember.Person.SuffixValueId;
                         groupMemberRow.Gender = groupMember.Person.Gender;
@@ -809,6 +812,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 
                 groupMember.Person.TitleValueId = row.TitleValueId;
                 groupMember.Person.FirstName = row.FirstName;
+                groupMember.Person.MiddleName = row.MiddleName;
                 groupMember.Person.NickName = groupMember.Person.FirstName;
                 groupMember.Person.LastName = row.LastName;
                 groupMember.Person.SuffixValueId = row.SuffixValueId;
