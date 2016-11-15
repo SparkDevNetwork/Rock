@@ -1,4 +1,4 @@
-<%@ Control Language="C#" AutoEventWireup="true" CodeFile="GroupTypeSignup.ascx.cs" Inherits="RockWeb.Plugins.cc_newspring.Blocks.Groups.GroupTypeSignup" %>
+﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="GroupTypeSignup.ascx.cs" Inherits="RockWeb.Plugins.cc_newspring.Blocks.Groups.GroupTypeSignup" %>
 
 <style>
     .schedule-item {
@@ -29,13 +29,7 @@
                 <Rock:NotificationBox ID="nbMessages" runat="server" />
 
                 <asp:Repeater ID="rptScheduleDates" runat="server">
-                    <HeaderTemplate>
-                        <div class="row">
-                            <div class="col-md-offset-2 col-md-10">
-                                <asp:Placeholder ID="phHeader" runat="server" />
-                            </div>
-                        </div>
-                    </HeaderTemplate>
+                    
                     <ItemTemplate>
                         <div class="row margin-b-md">
                             <div class="col-md-2">

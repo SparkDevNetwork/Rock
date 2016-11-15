@@ -1687,6 +1687,7 @@ namespace Rock.Web.UI.Controls
                             if ( !selectedKeys.Contains( dataKeyValue ) )
                             {
                                 // if there are specific rows selected, skip over rows that aren't selected
+                                dataIndex++;
                                 continue;
                             }
                         }
