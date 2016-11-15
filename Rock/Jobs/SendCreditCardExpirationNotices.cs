@@ -35,8 +35,8 @@ namespace Rock.Jobs
     /// <summary>
     /// Determines if a credit card is going to expire and notifies the person.
     /// </summary>
-    [SystemEmailField( "Expiring Credit Card Email", "The system email template to use for the credit card expiration notice. The attributes 'Person', 'Card' (the last four digits of the credit card), and 'Expiring' (the MM/YYYY of expiration) will be passed to the email.", required: true, order: 0 )]
-    [WorkflowTypeField( "Workflow", "The Workflow to launch for person who's credit card is expiring. The attributes 'Person', 'Card' (the last four digits of the credit card), and 'Expiring' (the MM/YYYY of expiration) will be passed to the workflow.", false, required: false, order: 1 )]
+    [SystemEmailField( "Expiring Credit Card Email", "The system email template to use for the credit card expiration notice. The merge fields 'Person', 'Card' (the last four digits of the credit card), and 'Expiring' (the MM/YYYY of expiration) will be available to the email template.", required: true, order: 0 )]
+    [WorkflowTypeField( "Workflow", "The Workflow to launch for person whose credit card is expiring. The attributes 'Person', 'Card' (the last four digits of the credit card), and 'Expiring' (the MM/YYYY of expiration) will be passed to the workflow as attributes.", false, required: false, order: 1 )]
     [DisallowConcurrentExecution]
     public class SendCreditCardExpirationNotices : IJob
     {
@@ -51,6 +51,10 @@ namespace Rock.Jobs
         {
         }
 
+        /// <summary>
+        /// Executes the specified context.
+        /// </summary>
+        /// <param name="context">The context.</param>
         public void Execute( IJobExecutionContext context )
         {
             var rockContext = new RockContext();
@@ -81,7 +85,7 @@ namespace Rock.Jobs
                 .Queryable( "ScheduledTransactionDetails,FinancialPaymentDetail.CurrencyTypeValue,FinancialPaymentDetail.CreditCardTypeValue" )
                 .Where( t => t.IsActive && t.FinancialPaymentDetail.ExpirationMonthEncrypted != null
                 && ( t.EndDate == null || t.EndDate > DateTime.Now ) )
-                .AsNoTracking();              
+                .AsNoTracking();
 
             var appRoot = Rock.Web.Cache.GlobalAttributesCache.Read( rockContext ).GetValue( "ExternalApplicationRoot" );
 
