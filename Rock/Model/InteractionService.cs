@@ -16,6 +16,7 @@
 //
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
@@ -33,6 +34,7 @@ namespace Rock.Model
     [DataContract]
     public partial class InteractionService : Model<InteractionService>
     {
+
         #region Entity Properties
 
         /// <summary>
@@ -45,24 +47,43 @@ namespace Rock.Model
         public string ServiceData { get; set; }
 
         /// <summary>
-        /// Gets or sets the EntityTypeId for the <see cref="Rock.Model.EntityType"/> of entity that was modified. This property is required.
+        /// Gets or sets the EntityTypeId for the <see cref="Rock.Model.EntityType"/> of entity that was modified.
         /// </summary>
         /// <value>
         /// A <see cref="System.Int32"/> representing the EntityTypeId for the <see cref="Rock.Model.EntityType"/> of the entity that was modified.
         /// </value>
-        [Required]
-        [DataMember( IsRequired = true )]
-        public int ComponentEntityTypeId { get; set; }
+        [DataMember]
+        public int? ComponentEntityTypeId { get; set; }
 
         /// <summary>
-        /// Gets or sets the EntityTypeId for the <see cref="Rock.Model.EntityType"/> of entity that was modified. This property is required.
+        /// Gets or sets the EntityTypeId for the <see cref="Rock.Model.EntityType"/> of entity that was modified.
         /// </summary>
         /// <value>
         /// A <see cref="System.Int32"/> representing the EntityTypeId for the <see cref="Rock.Model.EntityType"/> of the entity that was modified.
         /// </value>
-        [Required]
-        [DataMember( IsRequired = true )]
-        public int InteractionEntityTypeId { get; set; }
+        [DataMember]
+        public int? InteractionEntityTypeId { get; set; }
+
+
+        /// <summary>
+        /// Gets or sets the Id of the Service Type <see cref="Rock.Model.DefinedValue" /> representing what type of Interaction Service this is.
+        /// </summary>
+        /// <value>
+        /// A <see cref="System.Int32"/> representing the Id of the <see cref="Rock.Model.DefinedValue"/> identifying the interaction service type. If no value is selected this can be null.
+        /// </value>
+        [DataMember]
+        [DefinedValue( SystemGuid.DefinedType.INTERACTION_SERVICE_TYPE )]
+        public int? ServiceTypeValueId { get; set; }
+
+
+        /// <summary>
+        /// Gets or sets the retention days.
+        /// </summary>
+        /// <value>
+        /// The retention days.
+        /// </value>
+        [DataMember]
+        public int? RetentionDuration { get; set; }
 
         #endregion
 
@@ -87,23 +108,13 @@ namespace Rock.Model
         public virtual Model.EntityType InteractionEntityType { get; set; }
 
         /// <summary>
-        /// Gets or sets the Id of the Service Type <see cref="Rock.Model.DefinedValue" /> representing what type of Interaction Service this is.
+        /// Gets or sets the <see cref="Rock.Model.DefinedValue"/> representing the ServiceType.
         /// </summary>
         /// <value>
-        /// A <see cref="System.Int32"/> representing the Id of the <see cref="Rock.Model.DefinedValue"/> identifying the interaction service type. If no value is selected this can be null.
+        /// A <see cref="Rock.Model.DefinedValue"/> representing the service type.
         /// </value>
         [DataMember]
-        [DefinedValue( SystemGuid.DefinedType.INTERACTION_SERVICE_TYPE )]
-        public int? ServiceTypeValueId { get; set; }
-
-        /// <summary>
-        /// Gets or sets the retention days.
-        /// </summary>
-        /// <value>
-        /// The retention days.
-        /// </value>
-        [DataMember]
-        public int? RetentionDuration { get; set; }
+        public virtual DefinedValue ServiceTypeValue { get; set; }
 
         #endregion
 
@@ -125,7 +136,9 @@ namespace Rock.Model
         /// </summary>
         public InteractionServiceConfiguration()
         {
-           
+            this.HasOptional( r => r.ComponentEntityType ).WithMany( ).HasForeignKey( r => r.ComponentEntityTypeId ).WillCascadeOnDelete( false );
+            this.HasOptional( r => r.InteractionEntityType ).WithMany().HasForeignKey( r => r.InteractionEntityTypeId ).WillCascadeOnDelete( false );
+            this.HasOptional( r => r.ServiceTypeValue ).WithMany().HasForeignKey( r => r.ServiceTypeValueId ).WillCascadeOnDelete( false );
         }
     }
 

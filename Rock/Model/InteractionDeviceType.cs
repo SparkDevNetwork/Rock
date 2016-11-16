@@ -22,56 +22,59 @@ using Rock.Data;
 
 namespace Rock.Model
 {
+
     /// <summary>
-    /// Represents Component for <see cref="Rock.Model.Interaction">Interaction</see>
+    /// Represents Device Type for <see cref="Rock.Model.Interaction">Interaction</see>
     /// </summary>
-    [Table( "InteractionComponent" )]
+    [Table( "InteractionDeviceType" )]
     [DataContract]
-    public partial class InteractionComponent : Model<InteractionComponent>
+    public partial class InteractionDeviceType : Model<InteractionDeviceType>
     {
 
         #region Entity Properties
 
         /// <summary>
-        /// Gets or sets the interaction component data.
+        /// Gets or sets the device type data.
         /// </summary>
         /// <value>
-        /// The interaction component data.
+        /// The device type data.
         /// </value>
         [DataMember]
-        public string ComponentData { get; set; }
+        public string DeviceTypeData { get; set; }
 
         /// <summary>
-        /// Gets or sets the Id of the entity that this interaction component is related to.
+        /// Gets or sets the type of client.
         /// </summary>
         /// <value>
-        /// A <see cref="System.Int32"/> representing the Id of the entity (object) that this interaction component is related to.
+        /// A <see cref="System.String"/> client type.
         /// </value>
         [DataMember]
-        public int? EntityId { get; set; }
+        [MaxLength( 25 )]
+        public string ClientType { get; set; }
 
         /// <summary>
-        /// Gets or sets the Id of the <see cref="Rock.Model.InteractionService"/> service that that is associated with this Component.
+        /// Gets or sets the operating system.
         /// </summary>
         /// <value>
-        /// An <see cref="System.Int32"/> representing the Id of the <see cref="Rock.Model.InteractionService"/> service that this Component is associated with.
+        /// The operating system.
         /// </value>
-        [DataMember( IsRequired = true )]
-        [Required]
-        public int ServiceId { get; set; }
+        [DataMember]
+        [MaxLength( 100 )]
+        public string OperatingSystem { get; set; }
+
+        /// <summary>
+        /// Gets or sets the operating system.
+        /// </summary>
+        /// <value>
+        /// The operating system.
+        /// </value>
+        [DataMember]
+        [MaxLength( 100 )]
+        public string Application { get; set; }
 
         #endregion
 
         #region Virtual Properties
-
-        /// <summary>
-        /// Gets or sets the interaction service.
-        /// </summary>
-        /// <value>
-        /// The interaction service.
-        /// </value>
-        [DataMember]
-        public virtual InteractionService Service { get; set; }
 
         #endregion
 
@@ -86,14 +89,14 @@ namespace Rock.Model
     /// <summary>
     /// Configuration class.
     /// </summary>
-    public partial class InteractionComponentConfiguration : EntityTypeConfiguration<InteractionComponent>
+    public partial class InteractionDeviceTypeConfiguration : EntityTypeConfiguration<InteractionDeviceType>
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="InteractionComponentConfiguration"/> class.
+        /// Initializes a new instance of the <see cref="InteractionDeviceTypeConfiguration"/> class.
         /// </summary>
-        public InteractionComponentConfiguration()
+        public InteractionDeviceTypeConfiguration()
         {
-            this.HasRequired( r => r.Service ).WithMany().HasForeignKey( r => r.ServiceId ).WillCascadeOnDelete( false );
+          
         }
     }
 
