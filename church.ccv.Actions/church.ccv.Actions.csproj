@@ -130,6 +130,7 @@
     <Content Include="Implementation\SQL\Functions\Adult_Mentored.sql" />
     <Content Include="Implementation\SQL\Functions\Adult_PeerLearning.sql" />
     <Content Include="Implementation\SQL\Functions\Adult_Serving.sql" />
+    <Content Include="Implementation\SQL\Functions\Adult_StartingPoint.sql" />
     <Content Include="Implementation\SQL\Functions\Adult_Teching.sql" />
     <Content Include="Implementation\SQL\Functions\Student_Baptised.sql" />
     <Content Include="Implementation\SQL\Functions\Student_ERA.sql" />
@@ -138,6 +139,7 @@
     <Content Include="Implementation\SQL\Functions\Student_Mentored.sql" />
     <Content Include="Implementation\SQL\Functions\Student_PeerLearning.sql" />
     <Content Include="Implementation\SQL\Functions\Student_Serving.sql" />
+    <Content Include="Implementation\SQL\Functions\Student_StartingPoint.sql" />
     <Content Include="Implementation\SQL\Functions\Student_Teaching.sql" />
     <Content Include="Implementation\SQL\Stored Procedures\Build_Full_History.sql" />
     <Content Include="Implementation\SQL\Stored Procedures\Calc_History_Adult.sql" />
