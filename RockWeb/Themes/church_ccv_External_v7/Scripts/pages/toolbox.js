@@ -74,6 +74,26 @@ CCV.renderBadges = function(data) {
   this.bindUIAfterLoad()
 }
 
+CCV.renderStartingPoint = function(data) {
+	for (var key in data) {
+    if (data.hasOwnProperty(key)) {
+      var spResult = data[key]
+      var $badgeHolder = $('.js-startingpoint-holder[data-id='+key+']')
+	  
+	  var statusValue;
+	  switch( spResult.Status )
+	  {
+		  case 0: statusValue = 'Has not taken Starting Point'; break;
+		  case 1: statusValue = 'Took Starting Point on: ' + spResult.DateFormatted; break;
+		  case 2: statusValue = 'Registered to take Starting Point on: ' + spResult.DateFormatted; break;
+	  }
+	  
+      $badgeHolder.text(statusValue)
+    }
+  }
+  this.bindUIAfterLoad()
+}
+
 CCV.bindUIAfterLoad = function() {
   $('[data-toggle="tooltip"]').tooltip()
   $('.js-toggle-badge-vis-wrapper').addClass('in')
@@ -91,4 +111,12 @@ Sys.Application.add_load(function(){
   $.getJSON('/api/CCV/Badges/StepsBarGroup/'+CURRENT_GROUP_GUID, function(data){
     CCV.renderBadges(data)
   })
+  
+  $.getJSON('/api/CCV/Badges/TakenStartingPointGroup/'+CURRENT_GROUP_GUID, function(data){
+    CCV.renderStartingPoint(data)
+  })
 })
+
+
+
+

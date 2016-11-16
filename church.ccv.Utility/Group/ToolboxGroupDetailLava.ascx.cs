@@ -29,6 +29,9 @@ using Rock.Model;
 using Rock.Security;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
+using Newtonsoft.Json;
+using Rock.Rest.Controllers;
+using static Rock.Model.PersonService;
 
 namespace church.ccv.Utility.Groups
 {
@@ -38,8 +41,9 @@ namespace church.ccv.Utility.Groups
     [DisplayName( "Toolbox Group Detail Lava" )]
     [Category( "CCV > Groups" )]
     [Description( "Presents the details of a group using Lava" )]
-    [LinkedPage( "Roster Page", "The page to link to to view the roster.", true, "", "", 2 )]
-    [LinkedPage( "Communication Page", "The communication page to use for sending emails to the group members.", true, "", "", 4 )]
+    [LinkedPage( "Person Detail Page", "Page to link to for more information on a group member.", false, "", "", 0 )]
+    [LinkedPage( "Roster Page", "The page to link to to view the roster.", false, "", "", 2 )]
+    [LinkedPage( "Communication Page", "The communication page to use for sending emails to the group members.", false, "", "", 4 )]
     [CodeEditorField( "Lava Template", "The lava template to use to format the group details.", CodeEditorMode.Lava, CodeEditorTheme.Rock, 400, true, "{% include '~~/Assets/Lava/GroupDetail.lava' %}", "", 8 )]
     [BooleanField( "Enable Debug", "Shows the fields available to merge in lava.", false, "", 10 )]
     public abstract class ToolboxGroupDetailLava : Rock.Web.UI.RockBlock
@@ -62,6 +66,71 @@ namespace church.ccv.Utility.Groups
         //public abstract CheckBox IsActive { get; }
 
         protected int _groupId { get; set; }
+
+        #region Models
+        public class GroupMemberWithFamily : Rock.Lava.ILiquidizable
+        {
+            public GroupMember Member { get; set; }
+            public string SpouseName { get; set; }
+            public List<string> ChildrenInfo { get; set; }
+            
+            public GroupMemberWithFamily( GroupMember groupMember )
+            {
+                Member = groupMember;
+                ChildrenInfo = new List<string>( );
+            }
+            
+            // Liquid Methods
+            [JsonIgnore]
+            [Rock.Data.LavaIgnore]
+            public List<string> AvailableKeys
+            {
+                get
+                {
+                    var availableKeys = new List<string> { "Member", "SpouseName", "ChildrenInfo" };
+                    availableKeys.AddRange( Member.AvailableKeys );
+                    
+                    return availableKeys;
+                }
+            }
+            
+            public object ToLiquid()
+            {
+                return this;
+            }
+
+            [JsonIgnore]
+            [Rock.Data.LavaIgnore]
+            public object this[object key]
+            {
+               get
+                {
+                   switch( key.ToStringSafe() )
+                   {
+                       case "Member": return Member;
+                       case "SpouseName": return SpouseName;
+                       case "ChildrenInfo": return ChildrenInfo;
+                   }
+
+                    return null;
+                }
+            }
+            
+            public bool ContainsKey( object key )
+            {
+                var additionalKeys = new List<string> { "Member", "SpouseName", "ChildrenInfo" };
+                if ( additionalKeys.Contains( key.ToStringSafe() ) )
+                {
+                    return true;
+                }
+                else
+                {
+                    return false;
+                }
+            }
+            //
+        }
+        #endregion
 
         #region Properties
 
@@ -295,18 +364,53 @@ namespace church.ccv.Utility.Groups
                     group.Members = group.Members.OrderBy( m => m.Person.LastName ).ThenBy( m => m.Person.FirstName ).ToList();
                 }
                 mergeFields.Add( "Group", group );
+                
+
+                // first, for performance, get all the IDs for group members. Use those to select all their person objects (with children when applicable)
+                PersonService personService = new PersonService( rockContext );
+                List<int> memberPersonIds = group.Members.Select( m => m.PersonId ).ToList( );
+                List<ParentWithChildren> parentList = personService.GetParentWithChildren( true ).Where( p => memberPersonIds.Contains( p.Parent.Id ) ).ToList( );
+                
+
+                // now build a list of all members with their spouse / children
+                List<GroupMemberWithFamily> groupMembersWithFamily = new List<GroupMemberWithFamily>( );
+                foreach( GroupMember member in group.Members )
+                {
+                    GroupMemberWithFamily memberWithFamily = new GroupMemberWithFamily( member );
+                    
+                    // spouse?
+                    Person spouse = member.Person.GetSpouse( );
+                    if( spouse != null )
+                    {
+                        memberWithFamily.SpouseName = spouse.FullName;
+                    }
+                    
+                    // add all kids
+                    ParentWithChildren parent = parentList.Where( p => p.Parent.Id == member.PersonId ).SingleOrDefault( );
+                    if ( parent != null )
+                    {
+                        foreach( Person child in parent.Children )
+                        {
+                            memberWithFamily.ChildrenInfo.Add( child.FullName + ", Age: " + child.Age );
+                        }
+                    }
+
+                    groupMembersWithFamily.Add( memberWithFamily );
+                }
 
                 // add lists of group members by active, inactive, and pending to make it easier / faster to organize them in lava
-                List<GroupMember> activeGroupMembers = group.Members.Where( gm => gm.GroupMemberStatus == GroupMemberStatus.Active ).ToList( );
-                List<GroupMember> inactiveGroupMembers = group.Members.Where( gm => gm.GroupMemberStatus == GroupMemberStatus.Inactive ).ToList( );
-                List<GroupMember> pendingGroupMembers = group.Members.Where( gm => gm.GroupMemberStatus == GroupMemberStatus.Pending ).ToList( );
-
+                List<GroupMemberWithFamily> activeGroupMembers = groupMembersWithFamily.Where( gm => gm.Member.GroupMemberStatus == GroupMemberStatus.Active ).ToList( );
+                List<GroupMemberWithFamily> inactiveGroupMembers = groupMembersWithFamily.Where( gm => gm.Member.GroupMemberStatus == GroupMemberStatus.Inactive ).ToList( );
+                List<GroupMemberWithFamily> pendingGroupMembers = groupMembersWithFamily.Where( gm => gm.Member.GroupMemberStatus == GroupMemberStatus.Pending ).ToList( );
+                
                 mergeFields.Add( "ActiveGroupMembers", activeGroupMembers );
                 mergeFields.Add( "InactiveGroupMembers", inactiveGroupMembers );
                 mergeFields.Add( "PendingGroupMembers", pendingGroupMembers );
 
+
                 // add linked pages
                 Dictionary<string, object> linkedPages = new Dictionary<string, object>();
+                linkedPages.Add( "PersonDetailPage", LinkedPageRoute( "PersonDetailPage" ) );
                 linkedPages.Add( "RosterPage", LinkedPageUrl( "RosterPage", null ) );
                 linkedPages.Add( "CommunicationPage", LinkedPageUrl( "CommunicationPage", null ) );
                 mergeFields.Add( "LinkedPages", linkedPages );

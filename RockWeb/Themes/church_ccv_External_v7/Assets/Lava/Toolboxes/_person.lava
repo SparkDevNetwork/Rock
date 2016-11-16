@@ -1,5 +1,5 @@
-{% if member.Person %}
-  {% assign person = member.Person %}
+{% if member.Member.Person %}
+  {% assign person = member.Member.Person %}
 {% else %}
   {% assign person = member %}
 {% endif %}
@@ -33,14 +33,14 @@
   <div class="pull-left">
 
     {% if linkToDetailPage %}
-      <a href="{{ memberDetailPage }}?GroupMemberId={{ member.Id }}&AdminPersonId={{ CurrentPerson.Id }}">
+      <a href="{{ memberDetailPage }}?GroupMemberId={{ member.Member.Id }}&AdminPersonId={{ CurrentPerson.Id }}">
         <strong>{{ person.FullName }}</strong>
       </a>
     {% else %}
       <strong>{{ person.FullName }}</strong>
     {% endif %}
 
-    {% if member.GroupMemberStatus == 'Pending' and showTUpVideoButton %}
+    {% if member.Member.GroupMemberStatus == 'Pending' and showTUpVideoButton %}
       <a class="btn btn-link btn-xs" href="{{ videoPage }}?person={{ person.Id }}" title="Send T-Up Video"><i class="fa fa-video-camera"></i></a>
     {% endif %}
 

@@ -48,36 +48,34 @@
   </style>
 
   {% assign countActive = -1 %}
+  {% assign tempActive = ActiveGroupMembers | Size %}
+  {% if tempActive > 0 %}
+	{% assign countActive = tempActive | Minus: 1 %}
+  {% endif %}
+  
   {% assign countInactive = -1 %}
+  {% assign tempInactive = InactiveGroupMembers | Size %}
+  {% if tempInactive > 0 %}
+	{% assign countInactive = tempInactive | Minus: 1 %}
+  {% endif %}
+  
   {% assign countPending = -1 %}
-  {% for member in Group.Members %}
-    {% case member.GroupMemberStatus %}
-      {% when 'Active' %}
-        {% assign countActive = countActive | Plus: 1 %}
-      {% when 'Inactive' %}
-        {% assign countInactive = countInactive | Plus: 1 %}
-      {% when 'Pending' %}
-        {% assign countPending = countPending | Plus: 1 %}
-      {% else %}
-    {% endcase %}
-  {% endfor %}
-
+  {% assign tempPending = PendingGroupMembers | Size %}
+  {% if tempPending > 0 %}
+	{% assign countPending = tempPending | Minus: 1 %}
+  {% endif %}
+  
 
   <div class="container">
 
     <h1 class="page-header">{{ Group.Name }}</h1>
-
 
     {% if countPending > -1 %}
 
         <h4>Pending Members</h4>
       {% assign icountPending = 0 %}
 
-
-
-      {% for member in Group.Members %}
-
-        {% if member.GroupMemberStatus == 'Pending' %}
+      {% for member in PendingGroupMembers %}
 
           {% assign loopcycle = icountPending | Modulo:2 %}
 
@@ -93,10 +91,7 @@
 
           {% assign icountPending = icountPending | Plus: 1 %}
 
-        {% endif %}
-
       {% endfor %}
-
 
     {% endif %}
 
@@ -107,25 +102,21 @@
 
       <h4>Active Members</h4>
 
-      {% for member in Group.Members %}
+      {% for member in ActiveGroupMembers %}
+		
+        {% assign loopcycle = icountActive | Modulo:2 %}
 
-        {% if member.GroupMemberStatus == 'Active' %}
-
-          {% assign loopcycle = icountActive | Modulo:2 %}
-
-          {% if loopcycle == 0 %}
-          <div class="row">
-          {% endif %}
-
-          {% include '~~/Assets/Lava/GroupFullRoster-person.lava' %}
-
-          {% if loopcycle != 0 or icountActive == countActive %}
-            </div>
-          {% endif %}
-
-          {% assign icountActive = icountActive | Plus: 1 %}
-
+        {% if loopcycle == 0 %}
+        <div class="row">
         {% endif %}
+				
+        {% include '~~/Assets/Lava/GroupFullRoster-person.lava' %}
+
+        {% if loopcycle != 0 or icountActive == countActive %}
+        </div>
+        {% endif %}
+
+        {% assign icountActive = icountActive | Plus: 1 %}
 
       {% endfor %}
 
@@ -138,25 +129,21 @@
 
       <h4>Inactive Members</h4>
 
-      {% for member in Group.Members %}
+      {% for member in InactiveGroupMembers %}
 
-        {% if member.GroupMemberStatus == 'Inactive' %}
+        {% assign loopcycle = icountInactive | Modulo:2 %}
 
-          {% assign loopcycle = icountInactive | Modulo:2 %}
-
-          {% if loopcycle == 0 %}
-          <div class="row">
-          {% endif %}
-
-          {% include '~~/Assets/Lava/GroupFullRoster-person.lava' %}
-
-          {% if loopcycle != 0 or icountInactive == countInactive %}
-            </div>
-          {% endif %}
-
-          {% assign icountInactive = icountInactive | Plus: 1 %}
-
+        {% if loopcycle == 0 %}
+        <div class="row">
         {% endif %}
+
+        {% include '~~/Assets/Lava/GroupFullRoster-person.lava' %}
+
+        {% if loopcycle != 0 or icountInactive == countInactive %}
+          </div>
+        {% endif %}
+
+        {% assign icountInactive = icountInactive | Plus: 1 %}
 
       {% endfor %}
 
