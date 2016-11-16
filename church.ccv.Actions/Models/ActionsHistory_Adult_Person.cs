@@ -29,6 +29,9 @@ namespace church.ccv.Actions.Models
             public DateTime? Member { get; set; }
 
             [DataMember]
+            public DateTime? StartingPoint { get; set; }
+
+            [DataMember]
             public bool Serving { get; set; }
 
             // CCV Considers this "Connected". But if / when they change it,

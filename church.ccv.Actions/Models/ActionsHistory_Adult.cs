@@ -36,6 +36,9 @@ namespace church.ccv.Actions.Models
             public int Member { get; set; }
 
             [DataMember]
+            public int StartingPoint { get; set; }
+
+            [DataMember]
             public int Serving { get; set; }
 
             // CCV Considers this "Connected". But if / when they change it,

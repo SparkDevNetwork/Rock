@@ -130,6 +130,39 @@ namespace church.ccv.Actions
         }
 
         /// <summary>
+        /// Starting Point
+        /// </summary>
+        public static class StartingPoint
+        {
+            class ResultTable
+            {
+                public int PersonId { get; set; }
+                public bool TakenStartingPoint { get; set; }
+                public DateTime? StartingPointDate { get; set; }
+            }
+
+            public static bool TakenStartingPoint( int personId, out DateTime? startingPointDate )
+            {
+                // assume null
+                startingPointDate = null;
+
+                RockContext rockContext = new RockContext( );
+                var result = rockContext.Database.SqlQuery<ResultTable>
+                    (
+                        "SELECT TOP 1 * FROM dbo._church_ccv_ufnActions_Adult_TakenStartingPoint(@PersonId)",
+                        new SqlParameter( "@PersonId", personId ) { SqlDbType = SqlDbType.Int, IsNullable = false }
+                    ).ToList( ).SingleOrDefault( );
+
+                if ( result.TakenStartingPoint == true )
+                {
+                    startingPointDate = result.StartingPointDate;
+                }
+                        
+                return result.TakenStartingPoint;
+            }
+        }
+
+        /// <summary>
         /// Peer Learning
         /// </summary>
         public static class PeerLearning
@@ -570,6 +603,39 @@ namespace church.ccv.Actions
                 }
 
                 return result.IsMember;
+            }
+        }
+
+        /// <summary>
+        /// Starting Point
+        /// </summary>
+        public static class StartingPoint
+        {
+            class ResultTable
+            {
+                public int PersonId { get; set; }
+                public bool TakenStartingPoint { get; set; }
+                public DateTime? StartingPointDate { get; set; }
+            }
+
+            public static bool TakenStartingPoint( int personId, out DateTime? startingPointDate )
+            {
+                // assume null
+                startingPointDate = null;
+
+                RockContext rockContext = new RockContext( );
+                var result = rockContext.Database.SqlQuery<ResultTable>
+                    (
+                        "SELECT TOP 1 * FROM dbo._church_ccv_ufnActions_Student_TakenStartingPoint(@PersonId)",
+                        new SqlParameter( "@PersonId", personId ) { SqlDbType = SqlDbType.Int, IsNullable = false }
+                    ).ToList( ).SingleOrDefault( );
+
+                if ( result.TakenStartingPoint == true )
+                {
+                    startingPointDate = result.StartingPointDate;
+                }
+                        
+                return result.TakenStartingPoint;
             }
         }
 
