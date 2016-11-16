@@ -11,6 +11,8 @@ NEXT STEP GROUP = 78
 NEXT GEN SECTION = 95
 NEXT GEN GROUP = 94
 
+STARTING POINT GROUP = 57
+
 
 BAPTISM
 	Adult:
@@ -44,6 +46,16 @@ MEMBER
 	Student:
 		Must have a Membership Date
 		Connection Status must be "Member"
+
+
+STARTING POINT
+    Adult:
+        Must be in Group Type STARTING POINT
+        Must have Attended be "True"
+
+    Student:
+        Must be in Group Type STARTING POINT
+        Must have Attended be "True"
 		
 
 MENTORED
@@ -77,8 +89,6 @@ PEER LEARNING
 			Next Gen Group
 			
 		Must not be inactive
-		
-		
 		
 SERVING
 	Adult:
