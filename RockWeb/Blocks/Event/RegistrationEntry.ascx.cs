@@ -2674,9 +2674,10 @@ namespace RockWeb.Blocks.Event
                                 {
                                     groupMember.GroupRoleId = group.GroupType.Roles.Select( r => r.Id ).FirstOrDefault();
                                 }
-                                groupMember.GroupMemberStatus = GroupMemberStatus.Active;
                             }
                         }
+
+                        groupMember.GroupMemberStatus = GroupMemberStatus.Active;
 
                         rockContext.SaveChanges();
 
@@ -4681,12 +4682,20 @@ namespace RockWeb.Blocks.Event
                 var familyOptions = RegistrationState.GetFamilyOptions( RegistrationTemplate, RegistrationState.RegistrantCount );
                 if ( familyOptions.Any() )
                 {
+                    Guid? selectedGuid = rblRegistrarFamilyOptions.SelectedValueAsGuid();
+
                     familyOptions.Add( familyOptions.ContainsKey( RegistrationState.FamilyGuid ) ?
                         Guid.NewGuid() :
                         RegistrationState.FamilyGuid.Equals( Guid.Empty ) ? Guid.NewGuid() : RegistrationState.FamilyGuid,
                         "None" );
                     rblRegistrarFamilyOptions.DataSource = familyOptions;
                     rblRegistrarFamilyOptions.DataBind();
+
+                    if ( selectedGuid.HasValue )
+                    {
+                        rblRegistrarFamilyOptions.SetValue( selectedGuid );
+                    }
+
                     pnlRegistrarFamilyOptions.Visible = true;
                 }
                 else

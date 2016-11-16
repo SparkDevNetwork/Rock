@@ -310,11 +310,12 @@ namespace RockWeb.Blocks.Event
                         {
                             groupMember.GroupRoleId = group.GroupType.Roles.Select( r => r.Id ).FirstOrDefault();
                         }
-                        groupMember.GroupMemberStatus = GroupMemberStatus.Active;
                     }
-
-                    _rockContext.SaveChanges();
                 }
+
+                groupMember.GroupMemberStatus = GroupMemberStatus.Active;
+
+                _rockContext.SaveChanges();
 
                 return groupMember.Id;
             }
