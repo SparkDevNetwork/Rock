@@ -14,8 +14,8 @@ namespace church.ccv.Badges.NextSteps
 {
     public partial class NextStepsBadgesController : Rock.Rest.ApiControllerBase
     {
-        const string ATTRIBUTE_PERSON_DATE_OF_BAPTISM = "BaptismDate";
-        const string ATTRIBUTE_GLOBAL_BAPTISM_GROUPTYPE_IDS = "BaptismGroupTypeIds";
+        // The ID for the Baptism group type. This will never change within CCV.
+        const int Baptism_GroupType_Id = 58;
         
         [Authenticate, Secured]
         [HttpGet]
@@ -193,18 +193,8 @@ namespace church.ccv.Badges.NextSteps
                     else
                     {
                         // check if registered for baptism
-                        List<int> GROUPTYPES_BAPTISM_IDS = new List<int>();
-                        try
-                        {
-                            GROUPTYPES_BAPTISM_IDS = GlobalAttributesCache.Read().GetValue( ATTRIBUTE_GLOBAL_BAPTISM_GROUPTYPE_IDS ).Split( ',' ).Select( int.Parse ).ToList();
-                        }
-                        catch
-                        { 
-                            // intentionally blank
-                        }
-
                         var baptismGroups = new GroupMemberService( rockContext ).Queryable()
-                                                        .Where( m => GROUPTYPES_BAPTISM_IDS.Contains(m.Group.GroupTypeId)
+                                                        .Where( m => Baptism_GroupType_Id == m.Group.GroupTypeId
                                                              && m.GroupMemberStatus == GroupMemberStatus.Active
                                                              && m.PersonId == person.Id )
                                                         .Select( m => m.GroupId ).ToList();

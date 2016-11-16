@@ -82,6 +82,7 @@
   <ItemGroup>
     <Compile Include="Info\InfoBadgesController.cs" />
     <Compile Include="Info\Member.cs" />
+    <Compile Include="Info\StartingPoint.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Bio\CampusWithLeader.cs" />
     <Compile Include="Bio\BioBadgesController.cs" />
