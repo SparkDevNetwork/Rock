@@ -76,5 +76,13 @@ namespace Rock.UniversalSearch
         /// The value.
         /// </value>
         public string Value { get; set; }
+
+        /// <summary>
+        /// Gets or sets the boost.
+        /// </summary>
+        /// <value>
+        /// The boost.
+        /// </value>
+        public int Boost { get; set; } = 1;
     }
 }

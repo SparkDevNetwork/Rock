@@ -2459,9 +2459,7 @@ namespace Rock.Model
 
             // return people
             var people = new PersonService( rockContext ).Queryable().AsNoTracking()
-                                .Where( p =>
-                                     p.IsSystem == false
-                                     && p.RecordTypeValueId == recordTypePersonId );
+                                .Where( p => p.RecordTypeValueId == recordTypePersonId );
 
             int recordCounter = 0;
 
@@ -2564,6 +2562,24 @@ namespace Rock.Model
                     IndexContainer.DeleteDocumentById( indexType, id );
                 }
             }
+        }
+
+        /// <summary>
+        /// Gets the index filter values.
+        /// </summary>
+        /// <returns></returns>
+        public ModelFieldFilterConfig GetIndexFilterConfig()
+        {
+            return new ModelFieldFilterConfig() { FilterLabel = "", FilterField = "" };
+        }
+
+        /// <summary>
+        /// Gets the index filter field.
+        /// </summary>
+        /// <returns></returns>
+        public bool SupportsIndexFieldFiltering()
+        {
+            return false;
         }
         #endregion
     }
@@ -2826,7 +2842,7 @@ namespace Rock.Model
         /// <param name="person">The <see cref="Rock.Model.Person" /> entity of the Person to retrieve the head of household of.</param>
         /// <param name="rockContext">The rock context.</param>
         /// <returns>
-        /// The <see cref="Rock.Model.  1Person" /> entity containing the provided Person's head of household. If the provided Person's head of houseold is not found, this value will be null.
+        /// The <see cref="Rock.Model.Person" /> entity containing the provided Person's head of household. If the provided Person's head of houseold is not found, this value will be null.
         /// </returns>
         public static Person GetHeadOfHousehold( this Person person, RockContext rockContext = null )
         {
