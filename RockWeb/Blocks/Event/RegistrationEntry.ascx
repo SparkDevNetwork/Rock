@@ -18,11 +18,12 @@
     <Rock:NotificationBox ID="nbPaymentValidation" runat="server" NotificationBoxType="Danger" Visible="false" />
 
     <Rock:NotificationBox ID="nbMain" runat="server" Visible="false"></Rock:NotificationBox>
+    <Rock:NotificationBox ID="nbWaitingList" runat="server" Visible="false" NotificationBoxType="Warning" />
 
     <asp:Panel ID="pnlHowMany" runat="server" Visible="false" CssClass="registrationentry-intro">
 
         <h1>How many <asp:Literal ID="lRegistrantTerm" runat="server" /> will you be registering?</h1>
-        <Rock:NumberUpDown ID="numHowMany"  runat="server" CssClass="input-lg" />
+        <Rock:NumberUpDown ID="numHowMany"  runat="server" CssClass="input-lg" OnNumberUpdated="numHowMany_NumberUpdated"  />
 
         <div class="actions">
             <Rock:BootstrapButton ID="lbHowManyNext" runat="server" AccessKey="n" Text="Next" DataLoadingText="Next" CssClass="btn btn-primary pull-right" CausesValidation="true" OnClick="lbHowManyNext_Click" />
@@ -32,9 +33,12 @@
 
     <asp:Panel ID="pnlRegistrant" runat="server" Visible="false" CssClass="registrationentry-registrant">
 
-        <h1><asp:Literal ID="lRegistrantTitle" runat="server" /></h1>
-        
-        <asp:Panel ID="pnlRegistrantProgressBar" runat="server">
+        <Rock:HighlightLabel ID="hlType" runat="server" CssClass="pull-right"  />
+        <h1>
+            <asp:Literal ID="lRegistrantTitle" runat="server" />
+        </h1>        
+
+        <asp:Panel ID="pnlRegistrantProgressBar" runat="server" CssClass="clearfix">
             <div class="progress">
                 <div class="progress-bar" role="progressbar" aria-valuenow="<%=this.PercentComplete%>" aria-valuemin="0" aria-valuemax="100" style="width: <%=this.PercentComplete%>%;">
                     <span class="sr-only"><%=this.PercentComplete%>% Complete</span>
@@ -44,11 +48,9 @@
 
         <asp:Panel id="pnlRegistrantFields" runat="server" >
 
-            <div class="js-registration-same-family">
-                <asp:Panel ID="pnlFamilyOptions" runat="server" CssClass="well">
-                    <Rock:RockRadioButtonList ID="rblFamilyOptions" runat="server" Label="Individual is in the same family as" RepeatDirection="Vertical" Required="true" RequiredErrorMessage="Answer to which family is required." DataTextField="Value" DataValueField="Key" />
-                </asp:Panel>
-            </div>
+            <asp:Panel ID="pnlFamilyOptions" runat="server" CssClass="well js-registration-same-family">
+                <Rock:RockRadioButtonList ID="rblFamilyOptions" runat="server" Label="Individual is in the same family as" RepeatDirection="Vertical" Required="true" RequiredErrorMessage="Answer to which family is required." DataTextField="Value" DataValueField="Key" />
+            </asp:Panel>
         
             <asp:Panel ID="pnlFamilyMembers" runat="server" Visible="false" CssClass="row" >
                 <div class="col-md-6">
@@ -124,7 +126,17 @@
         <asp:Panel ID="pnlRegistrantsReview" CssClass="margin-b-md" runat="server" Visible="false">
             <asp:Literal ID="lRegistrantsReview" runat="server" />
             <ul>
-                <asp:Repeater ID="rptrRegistrantReview" runat="server">
+                <asp:Repeater ID="rptrRegistrantsReview" runat="server">
+                    <ItemTemplate>
+                        <li><strong> <%# Eval("RegistrantName")  %></strong></li>
+                    </ItemTemplate>
+                </asp:Repeater>
+            </ul>
+        </asp:Panel>
+        <asp:Panel ID="pnlWaitingListReview" CssClass="margin-b-md" runat="server" Visible="false">
+            <asp:Literal ID="lWaitingListReview" runat="server" />
+            <ul>
+                <asp:Repeater ID="rptrWaitingListReview" runat="server">
                     <ItemTemplate>
                         <li><strong> <%# Eval("RegistrantName")  %></strong></li>
                     </ItemTemplate>
