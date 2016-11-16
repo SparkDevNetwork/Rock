@@ -106,6 +106,10 @@
     <Compile Include="Migrations\201611142131319_ExpiringCreditCards.Designer.cs">
       <DependentUpon>201611142131319_ExpiringCreditCards.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201611162052022_UpdateRegistrationText.cs" />
+    <Compile Include="Migrations\201611162052022_UpdateRegistrationText.Designer.cs">
+      <DependentUpon>201611162052022_UpdateRegistrationText.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 6.0\Version 1.6.0\201609282147388_WaitList.cs" />
     <Compile Include="Migrations\Version 6.0\Version 1.6.0\201609282147388_WaitList.Designer.cs">
       <DependentUpon>201609282147388_WaitList.cs</DependentUpon>
@@ -2337,6 +2341,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201611142131319_ExpiringCreditCards.resx">
       <DependentUpon>201611142131319_ExpiringCreditCards.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201611162052022_UpdateRegistrationText.resx">
+      <DependentUpon>201611162052022_UpdateRegistrationText.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 6.0\Version 1.6.0\201609282147388_WaitList.resx">
       <DependentUpon>201609282147388_WaitList.cs</DependentUpon>

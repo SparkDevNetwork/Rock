@@ -235,6 +235,11 @@ namespace Rock.Model
         {
             get
             {
+                if ( OnWaitList )
+                {
+                    return 0.0M;
+                }
+
                 var cost = Cost;
                 if ( Fees != null )
                 {
@@ -276,6 +281,11 @@ namespace Rock.Model
         /// <returns></returns>
         public virtual decimal DiscountedCost( decimal discountPercent, decimal discountAmount )
         {
+            if ( OnWaitList )
+            {
+                return 0.0M;
+            }
+
             var discountedCost = Cost - ( Cost * discountPercent );
 
             if ( Fees != null )
