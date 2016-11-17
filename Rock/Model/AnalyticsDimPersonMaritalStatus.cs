@@ -22,7 +22,7 @@ using Rock.Data;
 namespace Rock.Model
 {
     /// <summary>
-    /// 
+    /// AnalyticsDimPersonMaritalStatus is a SQL View off of the DefinedValue table
     /// </summary>
     [Table( "AnalyticsDimPersonMaritalStatus" )]
     [DataContract]

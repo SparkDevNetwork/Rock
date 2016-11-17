@@ -25,7 +25,6 @@ namespace Rock.Model
     /// <summary>
     /// see https://www.mssqltips.com/sqlservertip/4054/creating-a-date-dimension-or-calendar-table-in-sql-server/ for some background
     /// </summary>
-    /// <seealso cref="Rock.Data.Entity{Rock.Model.AnalyticsDimDate}" />
     [Table( "AnalyticsDimDate" )]
     [DataContract]
     [HideFromReporting]

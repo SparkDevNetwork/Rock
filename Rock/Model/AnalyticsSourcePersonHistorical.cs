@@ -15,16 +15,10 @@
 // </copyright>
 //
 using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
-using System.Dynamic;
-using System.Linq;
-using System.Linq.Expressions;
 using System.Runtime.Serialization;
-using System.Text;
-using System.Threading.Tasks;
 using Rock.Data;
 
 namespace Rock.Model
@@ -59,18 +53,7 @@ namespace Rock.Model
         [MaxLength( 30 )]
         [Index( IsUnique = true )]
         public string PersonKey { get; set; }
-
-        /// <summary>
-        /// Gets or sets the history hash.
-        /// The HistoryHash is a SHA hash of the field values that helps determine if a record has changed ( and should become a Historic record vs a CurrentRecord )
-        /// </summary>
-        /// <value>
-        /// The history hash.
-        /// </value>
-        [DataMember]
-        [MaxLength( 128 )]
-        public string HistoryHash { get; set; }
-
+       
         /// <summary>
         /// Gets or sets the person identifier.
         /// </summary>
@@ -524,6 +507,12 @@ namespace Rock.Model
         [DataMember]
         public virtual AnalyticsDimPersonTitle TitleValue { get; set; }
 
+        /// <summary>
+        /// Gets or sets the birth date dim.
+        /// </summary>
+        /// <value>
+        /// The birth date dim.
+        /// </value>
         [DataMember]
         public virtual AnalyticsDimDate BirthDateDim { get; set; }
 
@@ -551,6 +540,7 @@ namespace Rock.Model
         /// </summary>
         public AnalyticsDimPersonHistoricalConfiguration()
         {
+            // NOTE: When creating a migration for this, don't create the actual FK's in the database for any of these since they are views
             this.HasOptional( t => t.MaritalStatusValue ).WithMany().HasForeignKey( t => t.MaritalStatusValueId ).WillCascadeOnDelete( false );
             this.HasOptional( t => t.ConnectionStatusValue ).WithMany().HasForeignKey( t => t.ConnectionStatusValueId ).WillCascadeOnDelete( false );
             this.HasOptional( t => t.ReviewReasonValue ).WithMany().HasForeignKey( t => t.ReviewReasonValueId ).WillCascadeOnDelete( false );
@@ -559,6 +549,9 @@ namespace Rock.Model
             this.HasOptional( t => t.RecordTypeValue ).WithMany().HasForeignKey( t => t.RecordTypeValueId ).WillCascadeOnDelete( false );
             this.HasOptional( t => t.SuffixValue ).WithMany().HasForeignKey( t => t.SuffixValueId ).WillCascadeOnDelete( false );
             this.HasOptional( t => t.TitleValue ).WithMany().HasForeignKey( t => t.TitleValueId ).WillCascadeOnDelete( false );
+
+            // NOTE: When creating a migration for this, don't create the actual FK's in the database for this just in case there are outlier birthdates 
+            // and so that the AnalyticsDimDate can be rebuilt from scratch as needed
             this.HasOptional( t => t.BirthDateDim ).WithMany().HasForeignKey( t => t.BirthDateKey ).WillCascadeOnDelete( false );
         }
     }

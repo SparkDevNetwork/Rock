@@ -23,7 +23,7 @@ using Rock.Data;
 namespace Rock.Model
 {
     /// <summary>
-    /// 
+    /// AnalyticsDimFinancialAccount is a SQL View off of the FinancialAccount table
     /// </summary>
     [Table( "AnalyticsDimFinancialAccount" )]
     [DataContract]

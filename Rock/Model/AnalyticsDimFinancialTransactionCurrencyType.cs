@@ -21,6 +21,9 @@ using Rock.Data;
 
 namespace Rock.Model
 {
+    /// <summary>
+    /// AnalyticsDimFinancialTransactionCurrencyType is a SQL View off of the DefinedValue table
+    /// </summary>
     [Table( "AnalyticsDimFinancialTransactionCurrencyType" )]
     [DataContract]
     [HideFromReporting]
