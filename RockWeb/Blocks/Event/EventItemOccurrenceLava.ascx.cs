@@ -123,6 +123,7 @@ namespace RockWeb.Blocks.Event
         private void DisplayDetails()
         {
             int eventItemOccurrenceId = 0;
+            RockContext rockContext = new RockContext();
 
             // get the calendarItem id
             if ( !string.IsNullOrWhiteSpace( PageParameter( "EventOccurrenceId" ) ) )
@@ -131,7 +132,7 @@ namespace RockWeb.Blocks.Event
             }
             if ( eventItemOccurrenceId > 0 )
             {                                                              
-                var eventItemOccurrenceService = new EventItemOccurrenceService( new RockContext() );
+                var eventItemOccurrenceService = new EventItemOccurrenceService( rockContext );
                 var qry = eventItemOccurrenceService
                     .Queryable( "EventItem, EventItem.Photo, Campus, Linkages" )
                     .Where( i => i.Id == eventItemOccurrenceId );
@@ -149,6 +150,38 @@ namespace RockWeb.Blocks.Event
                     mergeFields.Add( "CampusContext", contextCampus );
                 }
 
+                // determine if the registration is full
+                var maxRegistrantCount = 0;
+                var currentRegistrationCount = 0;
+                var linkage = eventItemOccurrence.Linkages.FirstOrDefault();
+                if (linkage != null )
+                {
+                    if (linkage.RegistrationInstance != null )
+                    {
+                        if ( linkage.RegistrationInstance.MaxAttendees != 0 )
+                        {
+                            maxRegistrantCount = linkage.RegistrationInstance.MaxAttendees;
+                        }
+                        else
+                        {
+                            if ( linkage.RegistrationInstance.RegistrationTemplate.MaxRegistrants != 0 )
+                            {
+                                maxRegistrantCount = linkage.RegistrationInstance.RegistrationTemplate.MaxRegistrants;
+                            }
+                        }
+                    }
+
+                    if ( maxRegistrantCount != 0 )
+                    {
+                        currentRegistrationCount = new RegistrationRegistrantService( rockContext ).Queryable().AsNoTracking()
+                                                        .Where( r =>
+                                                            r.Registration.RegistrationInstanceId == linkage.RegistrationInstanceId
+                                                            && r.OnWaitList == false )
+                                                        .Count();
+                    }
+                }
+
+                mergeFields.Add( "RegistrationStatusLabel", (maxRegistrantCount - currentRegistrationCount > 0) ? "Register" :  "Join Wait List");
                 mergeFields.Add( "EventItemOccurrence", eventItemOccurrence );
                 mergeFields.Add( "Event", eventItemOccurrence != null ? eventItemOccurrence.EventItem : null );
                 mergeFields.Add( "CurrentPerson", CurrentPerson );
