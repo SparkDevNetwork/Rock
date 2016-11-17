@@ -75,15 +75,16 @@
         
             <div class="panel-heading">
                 <h1 class="panel-title"><i class="fa fa-bar-chart"></i> Measure Dashboard</h1>
+                <div class="btn-group btn-toggle margin-h-sm">
+                    <Rock:BootstrapButton ID="bsAdults" runat="server" CssClass="btn btn-default btn-xs" AccessKey="s" OnClick="bbtnView_Click" Text="Adults" />
+                    <Rock:BootstrapButton ID="bsStudents" runat="server" CssClass="btn btn-default btn-xs" AccessKey="s" OnClick="bbtnView_Click" Text="Students" />
+                    <Rock:BootstrapButton ID="bsTotal" runat="server" CssClass="btn btn-default btn-xs" AccessKey="s" OnClick="bbtnView_Click" Text="Total" />
+                </div>
                 <div class="pull-right">
 
                     <asp:Panel ID="pnlStatus" runat="server">
                         <div class="toggle-container">
-                            <div class="btn-group btn-toggle margin-r-sm">
-                                <Rock:BootstrapButton ID="bsAdults" runat="server" CssClass="btn btn-default btn-xs" AccessKey="s" OnClick="bbtnView_Click" Text="Adults" />
-                                <Rock:BootstrapButton ID="bsStudents" runat="server" CssClass="btn btn-default btn-xs" AccessKey="s" OnClick="bbtnView_Click" Text="Students" />
-                                <Rock:BootstrapButton ID="bsWeekendAttendance" runat="server" CssClass="btn btn-default btn-xs" AccessKey="s" OnClick="bbtnView_Click" Text="Weekend Attendance" />
-                            </div>
+                            <Rock:BootstrapButton ID="bsWeekendAttendance" runat="server" CssClass="btn btn-default btn-xs" AccessKey="s" OnClick="bbtnView_Click" Text="Weekend Attendance" />                           
                             <Rock:HighlightLabel ID="hlDate" CssClass="js-settings-toggle cursor-pointer" runat="server" />
                         </div>
                     </asp:Panel>
@@ -112,7 +113,7 @@
                             <h2><asp:Literal ID="lCampusTitle" runat="server" /></h2>
                             
                             <h5>Percentages are of <asp:Literal ID="lMeasureCompareValueSum" runat="server" />
-                            <% if( DashboardViewState == DashboardView.WeekendAttendance ) %>
+                            <% if( DashboardViewState == DashboardView.WeekendAttendance || DashboardViewState == DashboardView.Total ) %>
                             <% { %>
                                      Adults and Students
                             <% } %>
@@ -181,7 +182,7 @@
                                 <div class="clearfix">
                                     <div class="pull-left">
                                         <p>Viewing 
-                                        <% if( DashboardViewState == DashboardView.WeekendAttendance ) %>
+                                        <% if( DashboardViewState == DashboardView.WeekendAttendance || DashboardViewState == DashboardView.Total ) %>
                                         <% { %>
                                                     Adults and Students
                                         <% } %>
@@ -222,7 +223,7 @@
                                             <div class="clearfix">
                                                 <div class="pull-left">
                                                     <p>Viewing </b>
-                                                    <% if( DashboardViewState == DashboardView.WeekendAttendance ) %>
+                                                    <% if( DashboardViewState == DashboardView.WeekendAttendance || DashboardViewState == DashboardView.Total ) %>
                                                     <% { %>
                                                              Adults and Students
                                                     <% } %>

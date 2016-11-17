@@ -57,6 +57,7 @@ namespace RockWeb.Plugins.church_ccv.Steps
 
         public enum DashboardView
         {
+            Total,
             Adults,
             Students,
             WeekendAttendance
@@ -195,6 +196,11 @@ namespace RockWeb.Plugins.church_ccv.Steps
         {
             switch( (sender as BootstrapButton).ID )
             {
+                case "bsTotal":
+                {
+                    SetDashboardView( DashboardView.Total );
+                    break;
+                }
                 case "bsAdults":
                 {
                     SetDashboardView( DashboardView.Adults );
@@ -272,8 +278,9 @@ namespace RockWeb.Plugins.church_ccv.Steps
             // set the state that should render
             DashboardViewState = viewState;
             ViewState["DashboardView"] = viewState;
-            
+
             // default all buttons to off
+            bsTotal.CssClass = ToggleButtonOffCSSClass;
             bsAdults.CssClass = ToggleButtonOffCSSClass;
             bsStudents.CssClass = ToggleButtonOffCSSClass;
             bsWeekendAttendance.CssClass = ToggleButtonOffCSSClass;
@@ -281,6 +288,11 @@ namespace RockWeb.Plugins.church_ccv.Steps
             // set the appropriate button and state
             switch( viewState )
             {
+                case DashboardView.Total:
+                {
+                    bsTotal.CssClass = ToggleButtonOnCSSClass;
+                    break;
+                }
                 case DashboardView.Adults:
                 {
                     bsAdults.CssClass = ToggleButtonOnCSSClass;
@@ -367,6 +379,51 @@ namespace RockWeb.Plugins.church_ccv.Steps
 
                     switch( DashboardViewState )
                     {
+                        case DashboardView.Total:
+                        {
+                            latestMeasures = stepMeasureValueService.Queryable( "StepMeasure" )
+                                .Where( m =>
+                                        m.SundayDate == measureDate
+                                        && m.StepMeasure.IsActive == true
+                                        && m.PastorPersonAliasId == null
+                                        && m.StepMeasure.IsTbd == false
+                                        && ( m.ActiveAdults != null || m.ActiveStudents != null ) )
+                                .OrderBy( m => m.StepMeasure.Order )
+                                .GroupBy( m => new { m.StepMeasure, m.CampusId } )
+                                .Select( m => new MeasureSummary
+                                {
+                                    MeasureId = m.FirstOrDefault().StepMeasureId,
+                                    Title = m.FirstOrDefault().StepMeasure.Title,
+                                    Description = m.FirstOrDefault().StepMeasure.Description,
+                                    IconCssClass = m.FirstOrDefault().StepMeasure.IconCssClass,
+                                    IsTbd = m.FirstOrDefault().StepMeasure.IsTbd,
+                                    MeasureValue = m.Sum( g => g.Value ),
+                                    MeasureCompareValue = m.Sum( g => g.ActiveAdults ?? 0 + g.ActiveStudents ?? 0 ),
+                                    CampusId = m.FirstOrDefault().CampusId,
+                                    MeasureColor = m.FirstOrDefault().StepMeasure.Color
+                                } )
+                                .ToList();
+
+                            historicalMeasures = stepMeasureValueService.Queryable( "StepMeasure" )
+                                .Where( m =>
+                                        m.SundayDate == historicalMeasureDate
+                                        && m.StepMeasure.IsActive == true
+                                        && m.PastorPersonAliasId == null
+                                        && m.StepMeasure.IsTbd == false
+                                        && ( m.ActiveAdults != null || m.ActiveStudents != null ) )
+                                .OrderBy( m => m.StepMeasure.Order )
+                                .GroupBy( m => new { m.StepMeasure, m.CampusId } )
+                                .Select( m => new MeasureSummary
+                                {
+                                    MeasureId = m.FirstOrDefault().StepMeasureId,
+                                    HistoricalValue = m.Sum( g => g.Value ),
+                                    HistoricalCompareValue = m.Sum( g => g.ActiveAdults ?? 0 + g.ActiveStudents ?? 0 ),
+                                    CampusId = m.FirstOrDefault().CampusId
+                                } )
+                                .ToList();
+                            break;
+                        }
+
                         case DashboardView.Adults:
                         {
                             latestMeasures = stepMeasureValueService.Queryable( "StepMeasure" )
@@ -598,6 +655,52 @@ namespace RockWeb.Plugins.church_ccv.Steps
 
                     switch( DashboardViewState )
                     {
+                        case DashboardView.Total:
+                        {
+                            latestMeasures = stepMeasureValueService.Queryable( "StepMeasure" )
+                                .Where( m =>
+                                        m.SundayDate == measureDate
+                                        && m.StepMeasure.IsActive == true
+                                        && m.PastorPersonAliasId == null
+                                        && m.StepMeasureId == measureId 
+                                        && ( m.ActiveAdults != null || m.ActiveStudents != null ) )
+                                .OrderBy( m => m.StepMeasure.Order )
+                                .GroupBy( m => new { m.StepMeasure, m.CampusId } )
+                                .Select( m => new MeasureSummary
+                                {
+                                    MeasureId = m.FirstOrDefault().StepMeasureId,
+                                    Title = m.FirstOrDefault().StepMeasure.Title,
+                                    Description = m.FirstOrDefault().StepMeasure.Description,
+                                    IconCssClass = m.FirstOrDefault().StepMeasure.IconCssClass,
+                                    IsTbd = m.FirstOrDefault().StepMeasure.IsTbd,
+                                    MeasureValue = m.Sum( g => g.Value ),
+                                    MeasureCompareValue = m.Sum( g => g.ActiveAdults ?? 0 + g.ActiveStudents ?? 0 ),
+                                    CampusId = m.FirstOrDefault().CampusId,
+                                    MeasureColor = m.FirstOrDefault().StepMeasure.Color,
+                                    Campus = m.FirstOrDefault().Campus.Name
+                                } )
+                                .ToList();
+
+                            historicalMeasures = stepMeasureValueService.Queryable( "StepMeasure" )
+                                .Where( m =>
+                                        m.SundayDate == historicalMeasureDate
+                                        && m.StepMeasure.IsActive == true
+                                        && m.PastorPersonAliasId == null
+                                        && m.StepMeasureId == measureId
+                                        && ( m.ActiveAdults != null || m.ActiveStudents != null ) )
+                                .OrderBy( m => m.StepMeasure.Order )
+                                .GroupBy( m => new { m.StepMeasure, m.CampusId } )
+                                .Select( m => new MeasureSummary
+                                {
+                                    MeasureId = m.FirstOrDefault().StepMeasureId,
+                                    HistoricalValue = m.Sum( g => g.Value ),
+                                    HistoricalCompareValue = m.Sum( g => g.ActiveAdults ?? 0 + g.ActiveStudents ?? 0 ),
+                                    CampusId = m.FirstOrDefault().CampusId,
+                                } )
+                                .ToList();
+                            break;
+                        }
+
                         case DashboardView.Adults:
                         {
                             latestMeasures = stepMeasureValueService.Queryable( "StepMeasure" )
