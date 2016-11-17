@@ -3259,9 +3259,9 @@ namespace RockWeb.Blocks.Event
                     }
                     lRegistrantTitle.Text = title;
 
-                    hlType.Visible = RegistrationState.RegistrantCount > RegistrationState.SlotsAvailable;
-                    hlType.Text = registrant.OnWaitList ? "Waiting List" : "Registrant";
-                    hlType.LabelType = registrant.OnWaitList ? LabelType.Warning : LabelType.Success;
+                    nbType.Visible = RegistrationState.RegistrantCount > RegistrationState.SlotsAvailable;
+                    nbType.Text = registrant.OnWaitList ? string.Format("This {0} will be on the waiting list", RegistrantTerm.ToLower() ) : string.Format("This {0} will be fully registered.", RegistrantTerm.ToLower() ) ;
+                    nbType.NotificationBoxType = registrant.OnWaitList ? NotificationBoxType.Warning : NotificationBoxType.Success;
 
                     decimal currentStep = ( FormCount * CurrentRegistrantIndex ) + CurrentFormIndex + 1;
                     PercentComplete = ( currentStep / ProgressBarSteps ) * 100.0m;

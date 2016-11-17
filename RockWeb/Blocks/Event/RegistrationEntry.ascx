@@ -33,10 +33,12 @@
 
     <asp:Panel ID="pnlRegistrant" runat="server" Visible="false" CssClass="registrationentry-registrant">
 
-        <Rock:HighlightLabel ID="hlType" runat="server" CssClass="pull-right"  />
+        
         <h1>
             <asp:Literal ID="lRegistrantTitle" runat="server" />
         </h1>        
+
+        <Rock:NotificationBox ID="nbType" runat="server" NotificationBoxType="Warning"  />
 
         <asp:Panel ID="pnlRegistrantProgressBar" runat="server" CssClass="clearfix">
             <div class="progress">
