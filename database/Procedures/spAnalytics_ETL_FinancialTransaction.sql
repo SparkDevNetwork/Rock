@@ -7,7 +7,7 @@ IF EXISTS (
     DROP PROCEDURE [dbo].spAnalytics_ETL_FinancialTransaction
 GO
 
---
+-- EXECUTE [dbo].[spAnalytics_ETL_FinancialTransaction] 
 CREATE PROCEDURE [dbo].[spAnalytics_ETL_FinancialTransaction]
 AS
 BEGIN

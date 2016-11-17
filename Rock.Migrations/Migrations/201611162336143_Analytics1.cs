@@ -22,7 +22,7 @@ namespace Rock.Migrations
     /// <summary>
     ///
     /// </summary>
-    public partial class FinanceAnalytics : Rock.Migrations.RockMigration
+    public partial class Analytics1 : Rock.Migrations.RockMigration
     {
         /// <summary>
         /// Operations to be performed during the upgrade process.
@@ -30,12 +30,11 @@ namespace Rock.Migrations
         public override void Up()
         {
             CreateTable(
-                "dbo.AnalyticsDimPersonHistorical",
+                "dbo.AnalyticsSourcePersonHistorical",
                 c => new
                     {
                         Id = c.Int(nullable: false, identity: true),
                         PersonKey = c.String(maxLength: 30),
-                        HistoryHash = c.String(maxLength: 128),
                         PersonId = c.Int(nullable: false),
                         CurrentRowIndicator = c.Boolean(nullable: false),
                         EffectiveDate = c.DateTime(nullable: false, storeType: "date"),
@@ -58,6 +57,7 @@ namespace Rock.Migrations
                         BirthDay = c.Int(),
                         BirthMonth = c.Int(),
                         BirthYear = c.Int(),
+                        BirthDateKey = c.Int(),
                         Gender = c.Int(nullable: false),
                         MaritalStatusValueId = c.Int(),
                         AnniversaryDate = c.DateTime(storeType: "date"),
@@ -66,8 +66,6 @@ namespace Rock.Migrations
                         GivingId = c.String(),
                         GivingLeaderId = c.Int(),
                         Email = c.String(maxLength: 75),
-                        IsEmailActive = c.Boolean(nullable: false),
-                        EmailNote = c.String(maxLength: 250),
                         EmailPreference = c.Int(nullable: false),
                         ReviewReasonNote = c.String(maxLength: 1000),
                         InactiveReasonNote = c.String(maxLength: 1000),
@@ -87,6 +85,7 @@ namespace Rock.Migrations
                 .Index(t => t.ReviewReasonValueId)
                 .Index(t => t.TitleValueId)
                 .Index(t => t.SuffixValueId)
+                .Index(t => t.BirthDateKey)
                 .Index(t => t.MaritalStatusValueId)
                 .Index(t => t.Guid, unique: true);
             
@@ -174,7 +173,6 @@ namespace Rock.Migrations
                         ForeignKey = c.String(maxLength: 100),
                     })
                 .PrimaryKey(t => t.Id)
-                .ForeignKey("dbo.AnalyticsDimDate", t => t.TransactionDateKey)
                 .Index(t => t.TransactionKey, unique: true)
                 .Index(t => t.TransactionDateKey)
                 .Index(t => t.TransactionTypeValueId)
@@ -184,6 +182,33 @@ namespace Rock.Migrations
                 .Index(t => t.CurrencyTypeValueId)
                 .Index(t => t.CreditCardTypeValueId)
                 .Index(t => t.Guid, unique: true);
+            
+            AddColumn("dbo.Attribute", "IsAnalytic", c => c.Boolean(nullable: false));
+            AddColumn("dbo.Attribute", "IsAnalyticHistory", c => c.Boolean(nullable: false));
+
+            Sql( @"
+    ALTER TABLE AttributeValue ADD [ValueAsBoolean] AS (
+    CASE 
+        WHEN (Value IS NULL)
+            OR (Value = '')
+            OR (len(Value) > len('false'))
+            THEN NULL
+        WHEN lower(Value) IN (
+                'true'
+                ,'yes'
+                ,'t'
+                ,'y'
+                ,'1'
+                )
+            THEN convert(BIT, 1)
+        ELSE convert(BIT, 0)
+        END
+    ) PERSISTED" );
+
+            Sql( @"CREATE NONCLUSTERED INDEX [IX_ValueAsBoolean] ON [dbo].[AttributeValue]
+(
+	[ValueAsBoolean] ASC
+)" );
 
             // index to help speed up ETL operations
             Sql( @"
@@ -193,6 +218,16 @@ CREATE NONCLUSTERED INDEX [IX_GivingID_TransactionDateTime_TransactionTypeValueI
 	[TransactionTypeValueId] ASC,
 	[TransactionDateTime] ASC
 )" );
+
+            // Enforce that there isn't more than one CurrentRow per person
+            // Notice the cool 'where CurrentRowIndicator = 1' filter, Woohooo!
+            Sql( @"
+CREATE UNIQUE NONCLUSTERED  INDEX [IX_PersonIdCurrentRow] ON [dbo].[AnalyticsSourcePersonHistorical]
+(
+	[PersonId] ASC,
+	[CurrentRowIndicator]
+) where CurrentRowIndicator = 1 
+" );
         }
         
         /// <summary>
@@ -200,34 +235,36 @@ CREATE NONCLUSTERED INDEX [IX_GivingID_TransactionDateTime_TransactionTypeValueI
         /// </summary>
         public override void Down()
         {
-            DropForeignKey("dbo.AnalyticsSourceFinancialTransaction", "TransactionDateKey", "dbo.AnalyticsDimDate");
-            
-            DropIndex("dbo.AnalyticsSourceFinancialTransaction", new[] { "Guid" });
-            DropIndex("dbo.AnalyticsSourceFinancialTransaction", new[] { "CreditCardTypeValueId" });
-            DropIndex("dbo.AnalyticsSourceFinancialTransaction", new[] { "CurrencyTypeValueId" });
-            DropIndex("dbo.AnalyticsSourceFinancialTransaction", new[] { "AccountId" });
-            DropIndex("dbo.AnalyticsSourceFinancialTransaction", new[] { "BatchId" });
-            DropIndex("dbo.AnalyticsSourceFinancialTransaction", new[] { "SourceTypeValueId" });
-            DropIndex("dbo.AnalyticsSourceFinancialTransaction", new[] { "TransactionTypeValueId" });
-            DropIndex("dbo.AnalyticsSourceFinancialTransaction", new[] { "TransactionDateKey" });
-            DropIndex("dbo.AnalyticsSourceFinancialTransaction", new[] { "TransactionKey" });
-            DropIndex("dbo.AnalyticsDimDate", new[] { "Date" });
-            
-            DropIndex("dbo.AnalyticsDimPersonHistorical", new[] { "Guid" });
-            DropIndex("dbo.AnalyticsDimPersonHistorical", new[] { "MaritalStatusValueId" });
-            DropIndex("dbo.AnalyticsDimPersonHistorical", new[] { "SuffixValueId" });
-            DropIndex("dbo.AnalyticsDimPersonHistorical", new[] { "TitleValueId" });
-            DropIndex("dbo.AnalyticsDimPersonHistorical", new[] { "ReviewReasonValueId" });
-            DropIndex("dbo.AnalyticsDimPersonHistorical", new[] { "ConnectionStatusValueId" });
-            DropIndex("dbo.AnalyticsDimPersonHistorical", new[] { "RecordStatusReasonValueId" });
-            DropIndex("dbo.AnalyticsDimPersonHistorical", new[] { "RecordStatusValueId" });
-            DropIndex("dbo.AnalyticsDimPersonHistorical", new[] { "RecordTypeValueId" });
-            DropIndex("dbo.AnalyticsDimPersonHistorical", new[] { "PersonKey" });
-            DropTable("dbo.AnalyticsSourceFinancialTransaction");
-            
-            DropTable("dbo.AnalyticsDimDate");
-            
-            DropTable("dbo.AnalyticsDimPersonHistorical");
+            DropIndex( "dbo.AnalyticsSourceFinancialTransaction", new[] { "Guid" } );
+            DropIndex( "dbo.AnalyticsSourceFinancialTransaction", new[] { "CreditCardTypeValueId" } );
+            DropIndex( "dbo.AnalyticsSourceFinancialTransaction", new[] { "CurrencyTypeValueId" } );
+            DropIndex( "dbo.AnalyticsSourceFinancialTransaction", new[] { "AccountId" } );
+            DropIndex( "dbo.AnalyticsSourceFinancialTransaction", new[] { "BatchId" } );
+            DropIndex( "dbo.AnalyticsSourceFinancialTransaction", new[] { "SourceTypeValueId" } );
+            DropIndex( "dbo.AnalyticsSourceFinancialTransaction", new[] { "TransactionTypeValueId" } );
+            DropIndex( "dbo.AnalyticsSourceFinancialTransaction", new[] { "TransactionDateKey" } );
+            DropIndex( "dbo.AnalyticsSourceFinancialTransaction", new[] { "TransactionKey" } );
+            DropIndex( "dbo.AnalyticsDimDate", new[] { "Date" } );
+
+            DropIndex( "dbo.AnalyticsSourcePersonHistorical", new[] { "Guid" } );
+            DropIndex( "dbo.AnalyticsSourcePersonHistorical", new[] { "MaritalStatusValueId" } );
+            DropIndex( "dbo.AnalyticsSourcePersonHistorical", new[] { "BirthDateKey" } );
+            DropIndex( "dbo.AnalyticsSourcePersonHistorical", new[] { "SuffixValueId" } );
+            DropIndex( "dbo.AnalyticsSourcePersonHistorical", new[] { "TitleValueId" } );
+            DropIndex( "dbo.AnalyticsSourcePersonHistorical", new[] { "ReviewReasonValueId" } );
+            DropIndex( "dbo.AnalyticsSourcePersonHistorical", new[] { "ConnectionStatusValueId" } );
+            DropIndex( "dbo.AnalyticsSourcePersonHistorical", new[] { "RecordStatusReasonValueId" } );
+            DropIndex( "dbo.AnalyticsSourcePersonHistorical", new[] { "RecordStatusValueId" } );
+            DropIndex( "dbo.AnalyticsSourcePersonHistorical", new[] { "RecordTypeValueId" } );
+            DropIndex( "dbo.AnalyticsSourcePersonHistorical", new[] { "PersonKey" } );
+
+            DropColumn("dbo.AttributeValue", "ValueAsBoolean");
+            DropColumn("dbo.Attribute", "IsAnalyticHistory");
+            DropColumn("dbo.Attribute", "IsAnalytic");
+
+            DropTable( "dbo.AnalyticsSourceFinancialTransaction" );
+            DropTable( "dbo.AnalyticsDimDate" );
+            DropTable( "dbo.AnalyticsSourcePersonHistorical" );
         }
     }
 }
