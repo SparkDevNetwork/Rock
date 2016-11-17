@@ -1364,23 +1364,24 @@ namespace Rock.Model
         public TResult GetSpouse<TResult>( Person person, System.Linq.Expressions.Expression<Func<GroupMember, TResult>> selector )
         {
             //// Spouse is determined if all these conditions are met
-            //// 1) Adult in the same family as Person (GroupType = Family, GroupRole = Adult, and in same Group)
-            //// 2) Opposite Gender as Person
+            //// 1) Both Persons are adults in the same family (GroupType = Family, GroupRole = Adult, and in same Group)
+            //// 2) Opposite Gender as Person, if Gender of both Persons is known
             //// 3) Both Persons are Married
 
             Guid adultGuid = new Guid( Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_ADULT );
             int adultRoleId = GroupTypeCache.Read( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY ).Roles.First( a => a.Guid == adultGuid ).Id;
             int marriedDefinedValueId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_MARITAL_STATUS_MARRIED.AsGuid() ).Id;
 
-            if ( person.MaritalStatusValueId != marriedDefinedValueId )
+            if ( person.MaritalStatusValueId != marriedDefinedValueId || GetFamilyRole( person ).Id != adultRoleId )
             {
                 return default( TResult );
             }
 
             return GetFamilyMembers( person.Id )
                 .Where( m => m.GroupRoleId == adultRoleId )
-                .Where( m => m.Person.Gender != person.Gender )
+                .Where( m => m.Person.Gender != person.Gender || m.Person.Gender == Gender.Unknown || person.Gender == Gender.Unknown )
                 .Where( m => m.Person.MaritalStatusValueId == marriedDefinedValueId )
+                .OrderBy( m => DbFunctions.DiffDays(m.Person.BirthDate ?? new DateTime(1, 1, 1), person.BirthDate ?? new DateTime( 1, 1, 1 ) ) )
                 .Select( selector )
                 .FirstOrDefault();
         }
