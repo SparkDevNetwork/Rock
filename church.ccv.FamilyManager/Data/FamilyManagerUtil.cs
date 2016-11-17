@@ -27,6 +27,7 @@ using System.Data.Entity;
 using church.ccv.FamilyManager.Models;
 using Rock.Rest.Controllers;
 using System.Net;
+using System.IO;
 
 namespace church.ccv.FamilyManager
 {
@@ -372,8 +373,37 @@ namespace church.ccv.FamilyManager
                 }
 
                 // set the phone number (we only support Cell Phone for Family Manager)
-                person.UpdatePhoneNumber( cellPhoneType.Id, updatePersonBody.CellPhoneNumber.CountryCode, updatePersonBody.CellPhoneNumber.Number, null, null, rockContext ); 
-                
+                person.UpdatePhoneNumber( cellPhoneType.Id, updatePersonBody.CellPhoneNumber.CountryCode, updatePersonBody.CellPhoneNumber.Number, null, null, rockContext );
+
+
+                // jhm todo: consider finishing this so that we can update the profile pic in the same call.
+                // The headache is on the client side, updating the RockAPI layer to let us add the file as
+                // a file, and not part of the POST body.
+                // last but not least, is there a profile image to set?
+                /*if ( updatePersonBody.ProfileImage != null )
+                {
+                    // get BinaryFileType info
+                    Guid fileTypeGuid = "03BD8476-8A9F-4078-B628-5B538F967AFC".AsGuid();
+
+                    BinaryFileType binaryFileType = new BinaryFileTypeService( rockContext ).Get( fileTypeGuid );
+                    var binaryFileService = new BinaryFileService( rockContext );
+                    var binaryFile = new BinaryFile();
+                    if ( binaryFileType == null || binaryFileService == null || binaryFile == null ) break;
+
+                    binaryFileService.Add( binaryFile );
+
+                    binaryFile.IsTemporary = false;
+                    binaryFile.BinaryFileTypeId = binaryFileType.Id;
+                    binaryFile.MimeType = "image/jpeg";
+                    binaryFile.FileName = Path.GetFileName( "image.jpg" );
+                    binaryFile.ContentStream = updatePersonBody.ProfileImage;
+
+                    person.PhotoId = binaryFile.Id;
+
+                    //todo: put them in the review photo group
+                }*/
+
+
                 // save all changes
                 person.SaveAttributeValues( rockContext );
                 rockContext.SaveChanges( );

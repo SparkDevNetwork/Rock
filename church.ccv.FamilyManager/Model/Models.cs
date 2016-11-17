@@ -80,7 +80,6 @@ namespace church.ccv.FamilyManager.Models
 
         public List<KeyValuePair<string, string>> Attributes;
 
-        MemoryStream PersonImage;
-
+        //public MemoryStream ProfileImage;
     }
 }
