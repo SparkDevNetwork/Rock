@@ -28,15 +28,15 @@ using Rock.Data;
 namespace Rock.Model
 {
     /// <summary>
-    /// AnalyticsDimPersonHistorical Service class
+    /// AnalyticsDimPersonCurrent Service class
     /// </summary>
-    public partial class AnalyticsDimPersonHistoricalService : Service<AnalyticsDimPersonHistorical>
+    public partial class AnalyticsDimPersonCurrentService : Service<AnalyticsDimPersonCurrent>
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="AnalyticsDimPersonHistoricalService"/> class
+        /// Initializes a new instance of the <see cref="AnalyticsDimPersonCurrentService"/> class
         /// </summary>
         /// <param name="context">The context.</param>
-        public AnalyticsDimPersonHistoricalService(RockContext context) : base(context)
+        public AnalyticsDimPersonCurrentService(RockContext context) : base(context)
         {
         }
 
@@ -48,7 +48,7 @@ namespace Rock.Model
         /// <returns>
         ///   <c>true</c> if this instance can delete the specified item; otherwise, <c>false</c>.
         /// </returns>
-        public bool CanDelete( AnalyticsDimPersonHistorical item, out string errorMessage )
+        public bool CanDelete( AnalyticsDimPersonCurrent item, out string errorMessage )
         {
             errorMessage = string.Empty;
             return true;
@@ -58,34 +58,34 @@ namespace Rock.Model
     /// <summary>
     /// Generated Extension Methods
     /// </summary>
-    public static partial class AnalyticsDimPersonHistoricalExtensionMethods
+    public static partial class AnalyticsDimPersonCurrentExtensionMethods
     {
         /// <summary>
-        /// Clones this AnalyticsDimPersonHistorical object to a new AnalyticsDimPersonHistorical object
+        /// Clones this AnalyticsDimPersonCurrent object to a new AnalyticsDimPersonCurrent object
         /// </summary>
         /// <param name="source">The source.</param>
         /// <param name="deepCopy">if set to <c>true</c> a deep copy is made. If false, only the basic entity properties are copied.</param>
         /// <returns></returns>
-        public static AnalyticsDimPersonHistorical Clone( this AnalyticsDimPersonHistorical source, bool deepCopy )
+        public static AnalyticsDimPersonCurrent Clone( this AnalyticsDimPersonCurrent source, bool deepCopy )
         {
             if (deepCopy)
             {
-                return source.Clone() as AnalyticsDimPersonHistorical;
+                return source.Clone() as AnalyticsDimPersonCurrent;
             }
             else
             {
-                var target = new AnalyticsDimPersonHistorical();
+                var target = new AnalyticsDimPersonCurrent();
                 target.CopyPropertiesFrom( source );
                 return target;
             }
         }
 
         /// <summary>
-        /// Copies the properties from another AnalyticsDimPersonHistorical object to this AnalyticsDimPersonHistorical object
+        /// Copies the properties from another AnalyticsDimPersonCurrent object to this AnalyticsDimPersonCurrent object
         /// </summary>
         /// <param name="target">The target.</param>
         /// <param name="source">The source.</param>
-        public static void CopyPropertiesFrom( this AnalyticsDimPersonHistorical target, AnalyticsDimPersonHistorical source )
+        public static void CopyPropertiesFrom( this AnalyticsDimPersonCurrent target, AnalyticsDimPersonCurrent source )
         {
             target.Id = source.Id;
             target.AnniversaryDate = source.AnniversaryDate;
