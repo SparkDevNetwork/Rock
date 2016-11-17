@@ -838,8 +838,9 @@ namespace RockWeb.Blocks.Finance
             pnlPreview.Visible = person != null;
             if ( person != null )
             {
-                lPersonName.Text = person.FullName;
-                
+                // force the link to open a new scrollable,resizable browser window (and make it work in FF, Chrome and IE) http://stackoverflow.com/a/2315916/1755417
+                lPersonName.Text = string.Format( "<a href onclick=\"javascript: window.open('/person/{0}', '_blank', 'scrollbars=1,resizable=1,toolbar=1'); return false;\">{1}</a>", person.Id, person.FullName );
+
                 var spouse = person.GetSpouse( rockContext );
                 lSpouseName.Text = spouse != null ? string.Format( "<p><strong>Spouse: </strong>{0}</p>", spouse.FullName ) : string.Empty;
 
