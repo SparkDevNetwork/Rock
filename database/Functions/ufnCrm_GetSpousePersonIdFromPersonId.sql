@@ -1,11 +1,11 @@
 /*
 <doc>
 	<summary>
- 		This function returns the head of house for the giving id provided
+ 		This function returns the spouse for the person id provided
 	</summary>
 
 	<returns>
-		Person Id of the head of household. 
+		Person Id of the spouse. 
 	</returns>
 	<remarks>
 		
@@ -36,11 +36,11 @@ BEGIN
 					AND g.[Id] IN (SELECT g2.[Id] 
 									FROM [GroupMember] gm2
 										INNER JOIN [GroupTypeRole] gtr2 ON gtr2.[Id] = gm2.[GroupRoleId]
-										INNER JOIN [Group] g2 ON g.[Id] = gm2.[GroupId]
+										INNER JOIN [Group] g2 ON g2.[Id] = gm2.[GroupId]
 										INNER JOIN [GroupType] gt2 ON gt2.[Id] = g2.[GroupTypeId]
 									WHERE gm2.[PersonId] = @PersonId
-										AND gtr.[Guid] = '2639F9A5-2AAE-4E48-A8C3-4FFE86681E42' -- adult
-										AND gt.[Guid] = '790E3215-3B10-442B-AF69-616C0DCB998E' -- family
+										AND gtr2.[Guid] = '2639F9A5-2AAE-4E48-A8C3-4FFE86681E42' -- adult
+										AND gt2.[Guid] = '790E3215-3B10-442B-AF69-616C0DCB998E' -- family
 									)
 		
 					AND gm.[PersonId] != @PersonId
