@@ -18,32 +18,26 @@
 </doc>
 */
 
-ALTER FUNCTION [dbo].[ufnCrm_GetSpousePersonIdFromPersonId](@PersonId int ) 
+ALTER FUNCTION [dbo].[ufnCrm_GetSpousePersonIdFromPersonId]( @PersonId int ) 
 
 RETURNS int AS
 BEGIN
 	
-	RETURN (SELECT TOP 1 p.[Id] 
-				FROM 
-					[Person] p
-					INNER JOIN [GroupMember] gm ON gm.[PersonId] = p.[Id]
-					INNER JOIN [GroupTypeRole] gtr ON gtr.[Id] = gm.[GroupRoleId]
-					INNER JOIN [Group] g ON g.[Id] = gm.[GroupId]
-					INNER JOIN [GroupType] gt ON gt.[Id] = g.[GroupTypeId]
-				WHERE 
-					gtr.[Guid] = '2639F9A5-2AAE-4E48-A8C3-4FFE86681E42' -- adult
-					AND gt.[Guid] = '790E3215-3B10-442B-AF69-616C0DCB998E' -- family
-					AND g.[Id] IN (SELECT g2.[Id] 
-									FROM [GroupMember] gm2
-										INNER JOIN [GroupTypeRole] gtr2 ON gtr2.[Id] = gm2.[GroupRoleId]
-										INNER JOIN [Group] g2 ON g2.[Id] = gm2.[GroupId]
-										INNER JOIN [GroupType] gt2 ON gt2.[Id] = g2.[GroupTypeId]
-									WHERE gm2.[PersonId] = @PersonId
-										AND gtr2.[Guid] = '2639F9A5-2AAE-4E48-A8C3-4FFE86681E42' -- adult
-										AND gt2.[Guid] = '790E3215-3B10-442B-AF69-616C0DCB998E' -- family
-									)
-		
-					AND gm.[PersonId] != @PersonId
-				ORDER BY p.[Gender])
+	RETURN (SELECT TOP 1 S.ID
+		from [Group] F
+		join GroupType GT on F.GroupTypeId = GT.ID
+		join GroupMember FM on FM.GroupId = F.ID
+		join Person P on P.ID = FM.PersonId
+		join GroupMember FM2 on FM2.GroupID = F.ID
+		join Person S on S.ID = FM2.PersonID
+		join GroupTypeRole R2 on R2.ID = FM2.GroupRoleId
+		where GT.Guid = '790E3215-3B10-442B-AF69-616C0DCB998E' -- Family
+		and P.Id = @PersonID
+		and R2.Guid = '2639F9A5-2AAE-4E48-A8C3-4FFE86681E42' -- Potential spouse must be an Adult
+		and P.MaritalStatusValueId = 143 -- Person must be Married
+		and S.MaritalStatusValueId = 143 -- Potential spouse must be Married
+		and FM.PersonID != FM2.PersonID -- Cannot be married to yourself
+		and P.Gender != S.Gender -- Opposite genders
+	)
 
 END
