@@ -1,6 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <views>
-  <mapping-views hash="3a23f707dd295640fbb1b2b8b550c3b54a3c536bb2e5708d7dba2ac9ac395c97" conceptual-container="RockContext" store-container="CodeFirstDatabase">
+  <mapping-views hash="210b3484315f0b8b2a7956ee1cd482211423890c00b8be278351889f5b2cd5c5" conceptual-container="RockContext" store-container="CodeFirstDatabase">
     <view extent="CodeFirstDatabase.AttendanceCode"><![CDATA[
     SELECT VALUE -- Constructing AttendanceCode
         [CodeFirstDatabaseSchema.AttendanceCode](T1.AttendanceCode_Id, T1.AttendanceCode_IssueDateTime, T1.AttendanceCode_Code, T1.AttendanceCode_Guid, T1.AttendanceCode_ForeignId, T1.AttendanceCode_ForeignGuid, T1.AttendanceCode_ForeignKey)
@@ -3068,6 +3068,115 @@
             T.ForeignKey AS HtmlContent_ForeignKey, 
             True AS _from0
         FROM RockContext.HtmlContents AS T
+    ) AS T1]]></view>
+    <view extent="CodeFirstDatabase.InteractionComponent"><![CDATA[
+    SELECT VALUE -- Constructing InteractionComponent
+        [CodeFirstDatabaseSchema.InteractionComponent](T1.InteractionComponent_Id, T1.InteractionComponent_ComponentData, T1.InteractionComponent_EntityId, T1.InteractionComponent_ChannelId, T1.InteractionComponent_CreatedDateTime, T1.InteractionComponent_ModifiedDateTime, T1.InteractionComponent_CreatedByPersonAliasId, T1.InteractionComponent_ModifiedByPersonAliasId, T1.InteractionComponent_Guid, T1.InteractionComponent_ForeignId, T1.InteractionComponent_ForeignGuid, T1.InteractionComponent_ForeignKey)
+    FROM (
+        SELECT 
+            T.Id AS InteractionComponent_Id, 
+            T.ComponentData AS InteractionComponent_ComponentData, 
+            T.EntityId AS InteractionComponent_EntityId, 
+            T.ChannelId AS InteractionComponent_ChannelId, 
+            T.CreatedDateTime AS InteractionComponent_CreatedDateTime, 
+            T.ModifiedDateTime AS InteractionComponent_ModifiedDateTime, 
+            T.CreatedByPersonAliasId AS InteractionComponent_CreatedByPersonAliasId, 
+            T.ModifiedByPersonAliasId AS InteractionComponent_ModifiedByPersonAliasId, 
+            T.Guid AS InteractionComponent_Guid, 
+            T.ForeignId AS InteractionComponent_ForeignId, 
+            T.ForeignGuid AS InteractionComponent_ForeignGuid, 
+            T.ForeignKey AS InteractionComponent_ForeignKey, 
+            True AS _from0
+        FROM RockContext.InteractionComponents AS T
+    ) AS T1]]></view>
+    <view extent="CodeFirstDatabase.InteractionChannel"><![CDATA[
+    SELECT VALUE -- Constructing InteractionChannel
+        [CodeFirstDatabaseSchema.InteractionChannel](T1.InteractionChannel_Id, T1.InteractionChannel_ChannelData, T1.InteractionChannel_ComponentEntityTypeId, T1.InteractionChannel_InteractionEntityTypeId, T1.InteractionChannel_ChannelMediumValueId, T1.InteractionChannel_RetentionDuration, T1.InteractionChannel_CreatedDateTime, T1.InteractionChannel_ModifiedDateTime, T1.InteractionChannel_CreatedByPersonAliasId, T1.InteractionChannel_ModifiedByPersonAliasId, T1.InteractionChannel_Guid, T1.InteractionChannel_ForeignId, T1.InteractionChannel_ForeignGuid, T1.InteractionChannel_ForeignKey)
+    FROM (
+        SELECT 
+            T.Id AS InteractionChannel_Id, 
+            T.ChannelData AS InteractionChannel_ChannelData, 
+            T.ComponentEntityTypeId AS InteractionChannel_ComponentEntityTypeId, 
+            T.InteractionEntityTypeId AS InteractionChannel_InteractionEntityTypeId, 
+            T.ChannelMediumValueId AS InteractionChannel_ChannelMediumValueId, 
+            T.RetentionDuration AS InteractionChannel_RetentionDuration, 
+            T.CreatedDateTime AS InteractionChannel_CreatedDateTime, 
+            T.ModifiedDateTime AS InteractionChannel_ModifiedDateTime, 
+            T.CreatedByPersonAliasId AS InteractionChannel_CreatedByPersonAliasId, 
+            T.ModifiedByPersonAliasId AS InteractionChannel_ModifiedByPersonAliasId, 
+            T.Guid AS InteractionChannel_Guid, 
+            T.ForeignId AS InteractionChannel_ForeignId, 
+            T.ForeignGuid AS InteractionChannel_ForeignGuid, 
+            T.ForeignKey AS InteractionChannel_ForeignKey, 
+            True AS _from0
+        FROM RockContext.InteractionServices AS T
+    ) AS T1]]></view>
+    <view extent="CodeFirstDatabase.InteractionDeviceType"><![CDATA[
+    SELECT VALUE -- Constructing InteractionDeviceType
+        [CodeFirstDatabaseSchema.InteractionDeviceType](T1.InteractionDeviceType_Id, T1.InteractionDeviceType_DeviceTypeData, T1.InteractionDeviceType_ClientType, T1.InteractionDeviceType_OperatingSystem, T1.InteractionDeviceType_Application, T1.InteractionDeviceType_CreatedDateTime, T1.InteractionDeviceType_ModifiedDateTime, T1.InteractionDeviceType_CreatedByPersonAliasId, T1.InteractionDeviceType_ModifiedByPersonAliasId, T1.InteractionDeviceType_Guid, T1.InteractionDeviceType_ForeignId, T1.InteractionDeviceType_ForeignGuid, T1.InteractionDeviceType_ForeignKey)
+    FROM (
+        SELECT 
+            T.Id AS InteractionDeviceType_Id, 
+            T.DeviceTypeData AS InteractionDeviceType_DeviceTypeData, 
+            T.ClientType AS InteractionDeviceType_ClientType, 
+            T.OperatingSystem AS InteractionDeviceType_OperatingSystem, 
+            T.Application AS InteractionDeviceType_Application, 
+            T.CreatedDateTime AS InteractionDeviceType_CreatedDateTime, 
+            T.ModifiedDateTime AS InteractionDeviceType_ModifiedDateTime, 
+            T.CreatedByPersonAliasId AS InteractionDeviceType_CreatedByPersonAliasId, 
+            T.ModifiedByPersonAliasId AS InteractionDeviceType_ModifiedByPersonAliasId, 
+            T.Guid AS InteractionDeviceType_Guid, 
+            T.ForeignId AS InteractionDeviceType_ForeignId, 
+            T.ForeignGuid AS InteractionDeviceType_ForeignGuid, 
+            T.ForeignKey AS InteractionDeviceType_ForeignKey, 
+            True AS _from0
+        FROM RockContext.InteractionDeviceTypes AS T
+    ) AS T1]]></view>
+    <view extent="CodeFirstDatabase.Interaction"><![CDATA[
+    SELECT VALUE -- Constructing Interaction
+        [CodeFirstDatabaseSchema.Interaction](T1.Interaction_Id, T1.Interaction_InteractionDateTime, T1.Interaction_Operation, T1.Interaction_InteractionComponentId, T1.Interaction_EntityId, T1.Interaction_PersonAliasId, T1.Interaction_InteractionSessionId, T1.Interaction_InteractionSummary, T1.Interaction_InteractionData, T1.Interaction_CreatedDateTime, T1.Interaction_ModifiedDateTime, T1.Interaction_CreatedByPersonAliasId, T1.Interaction_ModifiedByPersonAliasId, T1.Interaction_Guid, T1.Interaction_ForeignId, T1.Interaction_ForeignGuid, T1.Interaction_ForeignKey)
+    FROM (
+        SELECT 
+            T.Id AS Interaction_Id, 
+            T.InteractionDateTime AS Interaction_InteractionDateTime, 
+            T.Operation AS Interaction_Operation, 
+            T.InteractionComponentId AS Interaction_InteractionComponentId, 
+            T.EntityId AS Interaction_EntityId, 
+            T.PersonAliasId AS Interaction_PersonAliasId, 
+            T.InteractionSessionId AS Interaction_InteractionSessionId, 
+            T.InteractionSummary AS Interaction_InteractionSummary, 
+            T.InteractionData AS Interaction_InteractionData, 
+            T.CreatedDateTime AS Interaction_CreatedDateTime, 
+            T.ModifiedDateTime AS Interaction_ModifiedDateTime, 
+            T.CreatedByPersonAliasId AS Interaction_CreatedByPersonAliasId, 
+            T.ModifiedByPersonAliasId AS Interaction_ModifiedByPersonAliasId, 
+            T.Guid AS Interaction_Guid, 
+            T.ForeignId AS Interaction_ForeignId, 
+            T.ForeignGuid AS Interaction_ForeignGuid, 
+            T.ForeignKey AS Interaction_ForeignKey, 
+            True AS _from0
+        FROM RockContext.Interactions AS T
+    ) AS T1]]></view>
+    <view extent="CodeFirstDatabase.InteractionSession"><![CDATA[
+    SELECT VALUE -- Constructing InteractionSession
+        [CodeFirstDatabaseSchema.InteractionSession](T1.InteractionSession_Id, T1.InteractionSession_InteractionMode, T1.InteractionSession_SessionData, T1.InteractionSession_DeviceTypeId, T1.InteractionSession_IpAddress, T1.InteractionSession_CreatedDateTime, T1.InteractionSession_ModifiedDateTime, T1.InteractionSession_CreatedByPersonAliasId, T1.InteractionSession_ModifiedByPersonAliasId, T1.InteractionSession_Guid, T1.InteractionSession_ForeignId, T1.InteractionSession_ForeignGuid, T1.InteractionSession_ForeignKey)
+    FROM (
+        SELECT 
+            T.Id AS InteractionSession_Id, 
+            T.InteractionMode AS InteractionSession_InteractionMode, 
+            T.SessionData AS InteractionSession_SessionData, 
+            T.DeviceTypeId AS InteractionSession_DeviceTypeId, 
+            T.IpAddress AS InteractionSession_IpAddress, 
+            T.CreatedDateTime AS InteractionSession_CreatedDateTime, 
+            T.ModifiedDateTime AS InteractionSession_ModifiedDateTime, 
+            T.CreatedByPersonAliasId AS InteractionSession_CreatedByPersonAliasId, 
+            T.ModifiedByPersonAliasId AS InteractionSession_ModifiedByPersonAliasId, 
+            T.Guid AS InteractionSession_Guid, 
+            T.ForeignId AS InteractionSession_ForeignId, 
+            T.ForeignGuid AS InteractionSession_ForeignGuid, 
+            T.ForeignKey AS InteractionSession_ForeignKey, 
+            True AS _from0
+        FROM RockContext.InteractionSessions AS T
     ) AS T1]]></view>
     <view extent="CodeFirstDatabase.MergeTemplate"><![CDATA[
     SELECT VALUE -- Constructing MergeTemplate
@@ -6844,6 +6953,115 @@
             T.ForeignKey AS HtmlContent_ForeignKey, 
             True AS _from0
         FROM CodeFirstDatabase.HtmlContent AS T
+    ) AS T1]]></view>
+    <view extent="RockContext.InteractionComponents"><![CDATA[
+    SELECT VALUE -- Constructing InteractionComponents
+        [Rock.Data.InteractionComponent](T1.InteractionComponent_Id, T1.InteractionComponent_ComponentData, T1.InteractionComponent_EntityId, T1.InteractionComponent_ChannelId, T1.InteractionComponent_CreatedDateTime, T1.InteractionComponent_ModifiedDateTime, T1.InteractionComponent_CreatedByPersonAliasId, T1.InteractionComponent_ModifiedByPersonAliasId, T1.InteractionComponent_Guid, T1.InteractionComponent_ForeignId, T1.InteractionComponent_ForeignGuid, T1.InteractionComponent_ForeignKey)
+    FROM (
+        SELECT 
+            T.Id AS InteractionComponent_Id, 
+            T.ComponentData AS InteractionComponent_ComponentData, 
+            T.EntityId AS InteractionComponent_EntityId, 
+            T.ChannelId AS InteractionComponent_ChannelId, 
+            T.CreatedDateTime AS InteractionComponent_CreatedDateTime, 
+            T.ModifiedDateTime AS InteractionComponent_ModifiedDateTime, 
+            T.CreatedByPersonAliasId AS InteractionComponent_CreatedByPersonAliasId, 
+            T.ModifiedByPersonAliasId AS InteractionComponent_ModifiedByPersonAliasId, 
+            T.Guid AS InteractionComponent_Guid, 
+            T.ForeignId AS InteractionComponent_ForeignId, 
+            T.ForeignGuid AS InteractionComponent_ForeignGuid, 
+            T.ForeignKey AS InteractionComponent_ForeignKey, 
+            True AS _from0
+        FROM CodeFirstDatabase.InteractionComponent AS T
+    ) AS T1]]></view>
+    <view extent="RockContext.InteractionServices"><![CDATA[
+    SELECT VALUE -- Constructing InteractionServices
+        [Rock.Data.InteractionChannel](T1.InteractionChannel_Id, T1.InteractionChannel_ChannelData, T1.InteractionChannel_ComponentEntityTypeId, T1.InteractionChannel_InteractionEntityTypeId, T1.InteractionChannel_ChannelMediumValueId, T1.InteractionChannel_RetentionDuration, T1.InteractionChannel_CreatedDateTime, T1.InteractionChannel_ModifiedDateTime, T1.InteractionChannel_CreatedByPersonAliasId, T1.InteractionChannel_ModifiedByPersonAliasId, T1.InteractionChannel_Guid, T1.InteractionChannel_ForeignId, T1.InteractionChannel_ForeignGuid, T1.InteractionChannel_ForeignKey)
+    FROM (
+        SELECT 
+            T.Id AS InteractionChannel_Id, 
+            T.ChannelData AS InteractionChannel_ChannelData, 
+            T.ComponentEntityTypeId AS InteractionChannel_ComponentEntityTypeId, 
+            T.InteractionEntityTypeId AS InteractionChannel_InteractionEntityTypeId, 
+            T.ChannelMediumValueId AS InteractionChannel_ChannelMediumValueId, 
+            T.RetentionDuration AS InteractionChannel_RetentionDuration, 
+            T.CreatedDateTime AS InteractionChannel_CreatedDateTime, 
+            T.ModifiedDateTime AS InteractionChannel_ModifiedDateTime, 
+            T.CreatedByPersonAliasId AS InteractionChannel_CreatedByPersonAliasId, 
+            T.ModifiedByPersonAliasId AS InteractionChannel_ModifiedByPersonAliasId, 
+            T.Guid AS InteractionChannel_Guid, 
+            T.ForeignId AS InteractionChannel_ForeignId, 
+            T.ForeignGuid AS InteractionChannel_ForeignGuid, 
+            T.ForeignKey AS InteractionChannel_ForeignKey, 
+            True AS _from0
+        FROM CodeFirstDatabase.InteractionChannel AS T
+    ) AS T1]]></view>
+    <view extent="RockContext.InteractionDeviceTypes"><![CDATA[
+    SELECT VALUE -- Constructing InteractionDeviceTypes
+        [Rock.Data.InteractionDeviceType](T1.InteractionDeviceType_Id, T1.InteractionDeviceType_DeviceTypeData, T1.InteractionDeviceType_ClientType, T1.InteractionDeviceType_OperatingSystem, T1.InteractionDeviceType_Application, T1.InteractionDeviceType_CreatedDateTime, T1.InteractionDeviceType_ModifiedDateTime, T1.InteractionDeviceType_CreatedByPersonAliasId, T1.InteractionDeviceType_ModifiedByPersonAliasId, T1.InteractionDeviceType_Guid, T1.InteractionDeviceType_ForeignId, T1.InteractionDeviceType_ForeignGuid, T1.InteractionDeviceType_ForeignKey)
+    FROM (
+        SELECT 
+            T.Id AS InteractionDeviceType_Id, 
+            T.DeviceTypeData AS InteractionDeviceType_DeviceTypeData, 
+            T.ClientType AS InteractionDeviceType_ClientType, 
+            T.OperatingSystem AS InteractionDeviceType_OperatingSystem, 
+            T.Application AS InteractionDeviceType_Application, 
+            T.CreatedDateTime AS InteractionDeviceType_CreatedDateTime, 
+            T.ModifiedDateTime AS InteractionDeviceType_ModifiedDateTime, 
+            T.CreatedByPersonAliasId AS InteractionDeviceType_CreatedByPersonAliasId, 
+            T.ModifiedByPersonAliasId AS InteractionDeviceType_ModifiedByPersonAliasId, 
+            T.Guid AS InteractionDeviceType_Guid, 
+            T.ForeignId AS InteractionDeviceType_ForeignId, 
+            T.ForeignGuid AS InteractionDeviceType_ForeignGuid, 
+            T.ForeignKey AS InteractionDeviceType_ForeignKey, 
+            True AS _from0
+        FROM CodeFirstDatabase.InteractionDeviceType AS T
+    ) AS T1]]></view>
+    <view extent="RockContext.Interactions"><![CDATA[
+    SELECT VALUE -- Constructing Interactions
+        [Rock.Data.Interaction](T1.Interaction_Id, T1.Interaction_InteractionDateTime, T1.Interaction_Operation, T1.Interaction_InteractionComponentId, T1.Interaction_EntityId, T1.Interaction_PersonAliasId, T1.Interaction_InteractionSessionId, T1.Interaction_InteractionSummary, T1.Interaction_InteractionData, T1.Interaction_CreatedDateTime, T1.Interaction_ModifiedDateTime, T1.Interaction_CreatedByPersonAliasId, T1.Interaction_ModifiedByPersonAliasId, T1.Interaction_Guid, T1.Interaction_ForeignId, T1.Interaction_ForeignGuid, T1.Interaction_ForeignKey)
+    FROM (
+        SELECT 
+            T.Id AS Interaction_Id, 
+            T.InteractionDateTime AS Interaction_InteractionDateTime, 
+            T.Operation AS Interaction_Operation, 
+            T.InteractionComponentId AS Interaction_InteractionComponentId, 
+            T.EntityId AS Interaction_EntityId, 
+            T.PersonAliasId AS Interaction_PersonAliasId, 
+            T.InteractionSessionId AS Interaction_InteractionSessionId, 
+            T.InteractionSummary AS Interaction_InteractionSummary, 
+            T.InteractionData AS Interaction_InteractionData, 
+            T.CreatedDateTime AS Interaction_CreatedDateTime, 
+            T.ModifiedDateTime AS Interaction_ModifiedDateTime, 
+            T.CreatedByPersonAliasId AS Interaction_CreatedByPersonAliasId, 
+            T.ModifiedByPersonAliasId AS Interaction_ModifiedByPersonAliasId, 
+            T.Guid AS Interaction_Guid, 
+            T.ForeignId AS Interaction_ForeignId, 
+            T.ForeignGuid AS Interaction_ForeignGuid, 
+            T.ForeignKey AS Interaction_ForeignKey, 
+            True AS _from0
+        FROM CodeFirstDatabase.Interaction AS T
+    ) AS T1]]></view>
+    <view extent="RockContext.InteractionSessions"><![CDATA[
+    SELECT VALUE -- Constructing InteractionSessions
+        [Rock.Data.InteractionSession](T1.InteractionSession_Id, T1.InteractionSession_InteractionMode, T1.InteractionSession_SessionData, T1.InteractionSession_DeviceTypeId, T1.InteractionSession_IpAddress, T1.InteractionSession_CreatedDateTime, T1.InteractionSession_ModifiedDateTime, T1.InteractionSession_CreatedByPersonAliasId, T1.InteractionSession_ModifiedByPersonAliasId, T1.InteractionSession_Guid, T1.InteractionSession_ForeignId, T1.InteractionSession_ForeignGuid, T1.InteractionSession_ForeignKey)
+    FROM (
+        SELECT 
+            T.Id AS InteractionSession_Id, 
+            T.InteractionMode AS InteractionSession_InteractionMode, 
+            T.SessionData AS InteractionSession_SessionData, 
+            T.DeviceTypeId AS InteractionSession_DeviceTypeId, 
+            T.IpAddress AS InteractionSession_IpAddress, 
+            T.CreatedDateTime AS InteractionSession_CreatedDateTime, 
+            T.ModifiedDateTime AS InteractionSession_ModifiedDateTime, 
+            T.CreatedByPersonAliasId AS InteractionSession_CreatedByPersonAliasId, 
+            T.ModifiedByPersonAliasId AS InteractionSession_ModifiedByPersonAliasId, 
+            T.Guid AS InteractionSession_Guid, 
+            T.ForeignId AS InteractionSession_ForeignId, 
+            T.ForeignGuid AS InteractionSession_ForeignGuid, 
+            T.ForeignKey AS InteractionSession_ForeignKey, 
+            True AS _from0
+        FROM CodeFirstDatabase.InteractionSession AS T
     ) AS T1]]></view>
     <view extent="RockContext.MergeTemplates"><![CDATA[
     SELECT VALUE -- Constructing MergeTemplates
