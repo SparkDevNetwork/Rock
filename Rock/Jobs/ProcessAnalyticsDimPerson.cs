@@ -246,7 +246,7 @@ UPDATE [AnalyticsSourcePersonHistorical]
             List<string> populateAttributeValueSELECTClauses = new List<string>();
             List<string> populateAttributeValueFROMClauses = new List<string>();
 
-            var analyticSpecificColumns = new string[] { "Id", "HistoryHash", "PersonKey", "PersonId", "CurrentRowIndicator", "EffectiveDate", "ExpireDate", "PrimaryFamilyId", "BirthDateKey", "Guid" };
+            var analyticSpecificColumns = new string[] { "Id", "PersonKey", "PersonId", "CurrentRowIndicator", "EffectiveDate", "ExpireDate", "PrimaryFamilyId", "BirthDateKey", "Guid" };
 
             List<string> populatePersonValueSELECTClauses = analyticsSourcePersonHistoricalFields
                 .Select( a => a.Name )

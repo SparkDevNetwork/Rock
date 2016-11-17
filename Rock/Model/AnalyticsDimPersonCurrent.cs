@@ -14,19 +14,14 @@
 // limitations under the License.
 // </copyright>
 //
-using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Linq;
 using System.Runtime.Serialization;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Rock.Model
 {
     /// <summary>
-    /// Represents the current record from AnalyticsDimPersonHistorical
-    /// NOTE: AnalyticsDimPersonCurrent is simply a de-normalized sql VIEW based on AnalyticsDimPersonHistorical
+    /// AnalyticsDimPersonCurrent is SQL View off of AnalyticsDimPersonHistorical
+    /// and represents the CurrentRow record from AnalyticsDimPersonHistorical
     /// </summary>
     [Table( "AnalyticsDimPersonCurrent" )]
     [DataContract]

@@ -14,8 +14,6 @@
 // limitations under the License.
 // </copyright>
 //
-using System;
-using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
@@ -24,8 +22,8 @@ using Rock.Data;
 namespace Rock.Model
 {
     /// <summary>
-    /// Represents the fact record for an Analytic Fact Financial Transaction in Rock.
-    /// NOTE: AnalyticsFactFinancialTransaction is simply a de-normalized sql VIEW based on AnalyticsSourceFinancialTransaction
+    /// AnalyticsFactFinancialTransaction is SQL View based on AnalyticsSourceFinancialTransaction
+    /// and represents the fact record for an Analytic Fact Financial Transaction in Rock.
     /// </summary>
     [Table( "AnalyticsFactFinancialTransaction" )]
     [DataContract]

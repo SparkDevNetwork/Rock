@@ -19,16 +19,14 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
-using Rock.Attribute;
 using Rock.Data;
-using Rock.Security;
 
 namespace Rock.Model
 {
     /// <summary>
     /// Represents the source record for an Analytic Fact Financial Transaction in Rock.
     /// Note that this represents a combination of the FinancialTransaction and the FinancialTransactionDetail, 
-    /// so if a person contributed to multiple accounts in a transaction, there will be multiple AnalyticSourceFinancialRecords. 
+    /// so if a person contributed to multiple accounts in a transaction, there will be multiple AnalyticSourceFinancialRecords.
     /// </summary>
     [Table( "AnalyticsSourceFinancialTransaction" )]
     [DataContract]
@@ -407,7 +405,11 @@ namespace Rock.Model
         /// </summary>
         public AnalyticsSourceFinancialTransactionConfiguration()
         {
+            // NOTE: When creating a migration for this, don't create the actual FK's in the database for this just in case there are outlier TransactionDates that aren't in the AnalyticsDimDate table
+            // and so that the AnalyticsDimDate can be rebuilt from scratch as needed
             this.HasRequired( t => t.TransactionDate ).WithMany().HasForeignKey( t => t.TransactionDateKey ).WillCascadeOnDelete( false );
+
+            // NOTE: When creating a migration for this, don't create the actual FK's in the database for any of these since they are views
             this.HasOptional( t => t.Batch ).WithMany().HasForeignKey( t => t.BatchId ).WillCascadeOnDelete( false );
             this.HasOptional( t => t.SourceTypeValue ).WithMany().HasForeignKey( t => t.SourceTypeValueId ).WillCascadeOnDelete( false );
             this.HasRequired( t => t.TransactionTypeValue ).WithMany().HasForeignKey( t => t.TransactionTypeValueId ).WillCascadeOnDelete( false );
