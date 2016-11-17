@@ -36,6 +36,16 @@ namespace Rock.Model
         #region Entity Properties
 
         /// <summary>
+        /// Gets or sets the interaction mode.
+        /// </summary>
+        /// <value>
+        /// The interaction mode.
+        /// </value>
+        [DataMember]
+        [MaxLength(25)]
+        public string InteractionMode { get; set; }
+
+        /// <summary>
         /// Gets or sets the interaction session data.
         /// </summary>
         /// <value>
