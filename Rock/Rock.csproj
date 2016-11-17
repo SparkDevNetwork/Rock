@@ -707,6 +707,11 @@
     <Compile Include="Model\CodeGenerated\GroupTypeService.cs" />
     <Compile Include="Model\CodeGenerated\HistoryService.cs" />
     <Compile Include="Model\CodeGenerated\HtmlContentService.cs" />
+    <Compile Include="Model\CodeGenerated\InteractionChannelService.cs" />
+    <Compile Include="Model\CodeGenerated\InteractionComponentService.cs" />
+    <Compile Include="Model\CodeGenerated\InteractionDeviceTypeService.cs" />
+    <Compile Include="Model\CodeGenerated\InteractionService.cs" />
+    <Compile Include="Model\CodeGenerated\InteractionSessionService.cs" />
     <Compile Include="Model\CodeGenerated\LayoutService.cs" />
     <Compile Include="Model\CodeGenerated\LocationService.cs" />
     <Compile Include="Model\CodeGenerated\MergeTemplateService.cs" />
@@ -869,6 +874,11 @@
     <Compile Include="Model\HistoryService.Partial.cs" />
     <Compile Include="Model\HtmlContent.cs" />
     <Compile Include="Model\HtmlContentService.Partial.cs" />
+    <Compile Include="Model\Interaction.cs" />
+    <Compile Include="Model\InteractionComponent.cs" />
+    <Compile Include="Model\InteractionDeviceType.cs" />
+    <Compile Include="Model\InteractionChannel.cs" />
+    <Compile Include="Model\InteractionSession.cs" />
     <Compile Include="Model\Layout.cs" />
     <Compile Include="Model\LayoutService.Partial.cs" />
     <Compile Include="Model\Location.cs" />
