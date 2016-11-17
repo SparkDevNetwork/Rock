@@ -162,13 +162,6 @@ namespace RockWeb.Blocks.Event
                         {
                             maxRegistrantCount = linkage.RegistrationInstance.MaxAttendees;
                         }
-                        else
-                        {
-                            if ( linkage.RegistrationInstance.RegistrationTemplate.MaxRegistrants != 0 )
-                            {
-                                maxRegistrantCount = linkage.RegistrationInstance.RegistrationTemplate.MaxRegistrants;
-                            }
-                        }
                     }
 
                     if ( maxRegistrantCount != 0 )
