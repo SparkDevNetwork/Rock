@@ -41,6 +41,7 @@ BEGIN
 		and FM.PersonID != FM2.PersonID -- Cannot be married to yourself
 		and (P.Gender != S.Gender OR P.Gender = 0 OR S.Gender = 0) -- Genders cannot match if both are known
 		order by ABS(DATEDIFF(day, ISNULL(P.BirthDate, '1/1/0001'), ISNULL(S.BirthDate, '1/1/0001'))) -- If multiple results, choose nearest in age
+			, S.Id -- Sort by ID so that the same result is always returned
 	)
 
 END
