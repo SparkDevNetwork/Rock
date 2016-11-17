@@ -14,6 +14,12 @@ NEXT GEN GROUP = 94
 STARTING POINT GROUP = 57
 
 
+Note: 
+Any "Group Based" action will filter out any groups returned by the following function:
+[_church_ccv_ufnActions_GetTrainingGroupIds]
+So if the only group a person is in, is in one of those, False will be returned for whether they're performing that action.
+
+
 BAPTISM
 	Adult:
 		Must have baptism date.

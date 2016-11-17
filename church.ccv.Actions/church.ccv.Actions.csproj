@@ -132,6 +132,7 @@
     <Content Include="Implementation\SQL\Functions\Adult_Serving.sql" />
     <Content Include="Implementation\SQL\Functions\Adult_StartingPoint.sql" />
     <Content Include="Implementation\SQL\Functions\Adult_Teching.sql" />
+    <Content Include="Implementation\SQL\Functions\Get_TrainingGroupIds.sql" />
     <Content Include="Implementation\SQL\Functions\Student_Baptised.sql" />
     <Content Include="Implementation\SQL\Functions\Student_ERA.sql" />
     <Content Include="Implementation\SQL\Functions\Student_Giving.sql" />
