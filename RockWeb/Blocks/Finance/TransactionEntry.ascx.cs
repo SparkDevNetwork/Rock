@@ -338,6 +338,16 @@ TransactionAcountDetails: [
 
                 SetControlOptions();
 
+                if ( _scheduledTransactionToBeTransferred != null )
+                {
+                    // Was this NOT a personal gift? If so, we need to set the correct business in the Give As section.
+                    if ( _scheduledTransactionToBeTransferred.AuthorizedPersonAlias.Person.GivingId != _targetPerson.GivingId )
+                    {
+                        tglGiveAsOption.Checked = false;
+                        SetGiveAsOptions();
+                        ShowBusiness();
+                    }
+                }
                 SetPage( 1 );
 
                 // Get the list of accounts that can be used
@@ -1222,7 +1232,19 @@ TransactionAcountDetails: [
                             cblBusiness.Items.Add( new ListItem( "New Business", "" ) );
 
                             cblBusiness.Visible = true;
-                            cblBusiness.SelectedIndex = 0;
+
+                            if ( _scheduledTransactionToBeTransferred != null )
+                            {
+                                var matchBusiness = businesses.Where( b => b.Id == _scheduledTransactionToBeTransferred.AuthorizedPersonAlias.PersonId ).FirstOrDefault();
+                                if ( matchBusiness != null )
+                                {
+                                    cblBusiness.SetValue( matchBusiness.Id.ToString() );
+                                }
+                            }
+                            else
+                            {
+                                cblBusiness.SelectedIndex = 0;
+                            }
                         }
                         else
                         {
@@ -1659,9 +1681,16 @@ TransactionAcountDetails: [
 
             RockContext rockContext = new RockContext();
             var scheduledTransaction = new FinancialScheduledTransactionService( rockContext ).Get( scheduledTransactionId.Value );
-            
+            var personService = new PersonService( rockContext );
+
+            // get business giving id
+            var givingIds = personService.GetBusinesses( _targetPerson.Id ).Select( g => g.GivingId ).ToList();
+
+            // add the person's regular giving id
+            givingIds.Add( _targetPerson.GivingId );
+
             // Make sure the current person is the authorized person, otherwise return
-            if ( scheduledTransaction == null || _targetPerson.PrimaryAliasId != scheduledTransaction.AuthorizedPersonAliasId )
+            if ( scheduledTransaction == null || ! givingIds.Contains( scheduledTransaction.AuthorizedPersonAlias.Person.GivingId ) )
             {
                 return;
             }
