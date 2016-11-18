@@ -43,18 +43,6 @@ namespace Rock.Model
         #region Entity Properties specific to Analytics
 
         /// <summary>
-        /// Gets or sets the person key in the format: {{ EffectiveDate in YYYYMMDD }} + '_' + {{ PersonId }}
-        /// NOTE: Length of 30 is big enough for each to have int64.MaxValue "YYYYMMDD_9223372036854775807"
-        /// </summary>
-        /// <value>
-        /// The person key.
-        /// </value>
-        [DataMember]
-        [MaxLength( 30 )]
-        [Index( IsUnique = true )]
-        public string PersonKey { get; set; }
-       
-        /// <summary>
         /// Gets or sets the person identifier.
         /// </summary>
         /// <value>

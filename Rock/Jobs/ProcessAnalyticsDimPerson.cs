@@ -246,7 +246,7 @@ UPDATE [AnalyticsSourcePersonHistorical]
             List<string> populateAttributeValueSELECTClauses = new List<string>();
             List<string> populateAttributeValueFROMClauses = new List<string>();
 
-            var analyticSpecificColumns = new string[] { "Id", "PersonKey", "PersonId", "CurrentRowIndicator", "EffectiveDate", "ExpireDate", "PrimaryFamilyId", "BirthDateKey", "Guid" };
+            var analyticSpecificColumns = new string[] { "Id", "PersonId", "CurrentRowIndicator", "EffectiveDate", "ExpireDate", "PrimaryFamilyId", "BirthDateKey", "Guid" };
 
             List<string> populatePersonValueSELECTClauses = analyticsSourcePersonHistoricalFields
                 .Select( a => a.Name )
@@ -323,7 +323,6 @@ DECLARE
         {
             string processINSERTScript = @"
 INSERT INTO [dbo].[AnalyticsSourcePersonHistorical] (
-        [PersonKey],
         [PersonId],
         [CurrentRowIndicator],
         [EffectiveDate],
@@ -370,14 +369,9 @@ WHERE p.Id NOT IN (
         {
             // the date that the ETL ran
             DateTime etlDate = RockDateTime.Today;
-            string currentEffectiveDatePrefix = etlDate.ToString( "yyyyMMdd_" );
 
             string selectSQL = @"
     SELECT 
-        CONCAT (
-            '" + currentEffectiveDatePrefix + @"'
-            ,p.Id
-            ) [PersonKey],
         p.Id [PersonId],
         1 [CurrentRowIndicator],
         @EtlDate [EffectiveDate],
@@ -534,9 +528,7 @@ WHERE asph.CurrentRowIndicator = 1 AND (";
 
                     string addColumnSQL = $"ALTER TABLE [AnalyticsSourcePersonHistorical] ADD [{columnName}] {sqlFieldType} null";
 
-
                     string dropColumnSql = $"ALTER TABLE [AnalyticsSourcePersonHistorical] DROP COLUMN [{columnName}]";
-                             
 
                     if ( databaseColumn == null )
                     {
@@ -585,6 +577,10 @@ WHERE asph.CurrentRowIndicator = 1 AND (";
                         rockContext.Database.ExecuteSqlCommand( dropColumnSql );
                     }
                 }
+
+                // refresh the view definitions just in case the schema changed
+                rockContext.Database.ExecuteSqlCommand( "exec sp_refreshview [AnalyticsDimPersonHistorical]" );
+                rockContext.Database.ExecuteSqlCommand( "exec sp_refreshview [AnalyticsDimPersonCurrent]" );
             }
         }
     }

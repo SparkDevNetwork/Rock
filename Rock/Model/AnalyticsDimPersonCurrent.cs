@@ -14,7 +14,10 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Dynamic;
+using System.Linq.Expressions;
 using System.Runtime.Serialization;
 
 namespace Rock.Model

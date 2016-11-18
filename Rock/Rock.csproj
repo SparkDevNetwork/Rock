@@ -641,6 +641,13 @@
     <Compile Include="Model\CampusService.partial.cs" />
     <Compile Include="Model\Category.cs" />
     <Compile Include="Model\CategoryService.Partial.cs" />
+    <Compile Include="Model\CodeGenerated\AnalyticsDimFinancialAccountService.cs" />
+    <Compile Include="Model\CodeGenerated\AnalyticsDimFinancialBatchService.cs" />
+    <Compile Include="Model\CodeGenerated\AnalyticsDimPersonCurrentService.cs" />
+    <Compile Include="Model\CodeGenerated\AnalyticsDimPersonHistoricalService.cs" />
+    <Compile Include="Model\CodeGenerated\AnalyticsFactFinancialTransactionService.cs" />
+    <Compile Include="Model\CodeGenerated\AnalyticsSourceFinancialTransactionService.cs" />
+    <Compile Include="Model\CodeGenerated\AnalyticsSourcePersonHistoricalService.cs" />
     <Compile Include="Model\CodeGenerated\AttendanceCodeService.cs" />
     <Compile Include="Model\CodeGenerated\AttendanceService.cs" />
     <Compile Include="Model\CodeGenerated\AttributeQualifierService.cs" />

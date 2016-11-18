@@ -1,3 +1,4 @@
+-- see https://www.mssqltips.com/sqlservertip/4054/creating-a-date-dimension-or-calendar-table-in-sql-server/ for some background
 DECLARE @BeginDate DATE = DateFromParts(1850, 1, 1)
     ,@InsertDate DATE
     ,@EndDate DATE = DateFromParts(2100, 1, 1)
@@ -54,14 +55,14 @@ BEGIN
                 )
             SELECT convert(INT, (convert(CHAR(8), @InsertDate, 112)))
                 ,@InsertDate
-                ,NULL
-                ,'' --<DayOfWeek, nvarchar(max),>
+                ,NULL -- FullDateDescription
+                ,DATENAME(WEEKDAY, @InsertDate) --<DayOfWeek, nvarchar(max),>
                 ,'' --<DayOfWeekAbbreviated, nvarchar(max),>
-                ,0 --<DayNumberInCalendarMonth, int,>
-                ,0 --<DayNumberInCalendarYear, int,>
+                ,DATENAME(DAY, @InsertDate) --<DayNumberInCalendarMonth, int,>
+                ,DATENAME(DAYOFYEAR, @InsertDate) --<DayNumberInCalendarYear, int,>
                 ,0 --<DayNumberInFiscalMonth, int,>
                 ,0 --<DayNumberInFiscalYear, int,>
-                ,0 --<LastDayInMonthIndictor, bit,>
+                ,case when EOMONTH(@InsertDate) = @InsertDate then 1 else 0 end  --<LastDayInMonthIndictor, bit,>
                 ,0 --<WeekNumberInMonth, int,>
                 ,dbo.ufnUtility_GetSundayDate(@InsertDate) -- <SundayDate, date,>
                 ,0 --<GivingMonth, nvarchar(max),>

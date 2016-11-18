@@ -4,7 +4,7 @@ GO
 
 CREATE VIEW AnalyticsDimPersonSuffix
 AS
-SELECT dv.Id [PersonSuffixId]
+SELECT dv.Id [SuffixId]
     ,dv.Value [Name]
     ,dv.[Description]
     ,dv.[Order]
