@@ -94,6 +94,7 @@ order by YValue desc
 
             var pageReference = new Rock.Web.PageReference( this.PageCache.Id );
             pageReference.QueryString = new System.Collections.Specialized.NameValueCollection();
+            pageReference.QueryString.Add( this.Request.QueryString );
             pageReference.QueryString.Add( "GetChartData", "true" );
             pageReference.QueryString.Add( "GetChartDataBlockId", this.BlockId.ToString() );
             pageReference.QueryString.Add( "TimeStamp", RockDateTime.Now.ToJavascriptMilliseconds().ToString() );
