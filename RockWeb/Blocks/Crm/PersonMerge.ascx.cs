@@ -194,6 +194,11 @@ namespace RockWeb.Blocks.Crm
                         .Distinct()
                         .ToList();
 
+                    if ( selectedPersonIds.Count == 0 )
+                    {
+                        ScriptManager.RegisterStartupScript( this, this.GetType(), "goBack", "history.go(-1);", true );
+                    }
+
                     // Get the people selected
                     var people = new PersonService( new RockContext() ).Queryable( "CreatedByPersonAlias.Person,Users", true )
                         .Where( p => selectedPersonIds.Contains( p.Id ) )
