@@ -16,6 +16,7 @@
 //
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Runtime.Serialization;
+using Rock.Data;
 
 namespace Rock.Model
 {
@@ -47,6 +48,8 @@ namespace Rock.Model
         /// The marital status.
         /// </value>
         [DataMember]
+        // Hide from Reporting because Reporting will already have a Marital Status from MaritalStatusValueId
+        [HideFromReporting]
         public string MaritalStatus { get; set; }
 
         /// <summary>
@@ -56,6 +59,8 @@ namespace Rock.Model
         /// The connection status.
         /// </value>
         [DataMember]
+        // Hide from Reporting because Reporting will already have a Connection Status from ConnectionStatusValueId
+        [HideFromReporting]
         public string ConnectionStatus { get; set; }
 
         /// <summary>
@@ -65,6 +70,8 @@ namespace Rock.Model
         /// The review reason.
         /// </value>
         [DataMember]
+        // Hide from Reporting because Reporting will already have a ReviewReason from ReviewReasonValueId
+        [HideFromReporting]
         public string ReviewReason { get; set; }
 
         /// <summary>
@@ -74,6 +81,8 @@ namespace Rock.Model
         /// The record status.
         /// </value>
         [DataMember]
+        // Hide from Reporting because Reporting will already have a RecordStatus from RecordStatusValueId
+        [HideFromReporting]
         public string RecordStatus { get; set; }
 
         /// <summary>
@@ -83,6 +92,8 @@ namespace Rock.Model
         /// The record status reason.
         /// </value>
         [DataMember]
+        // Hide from Reporting because Reporting will already have a RecordStatusReason from RecordStatusReasonValueId
+        [HideFromReporting]
         public string RecordStatusReason { get; set; }
 
         /// <summary>
@@ -92,6 +103,8 @@ namespace Rock.Model
         /// The record type value.
         /// </value>
         [DataMember]
+        // Hide from Reporting because Reporting will already have a RecordType from RecordTypeValueId
+        [HideFromReporting]
         public string RecordType { get; set; }
 
         /// <summary>
@@ -101,6 +114,8 @@ namespace Rock.Model
         /// The suffix value.
         /// </value>
         [DataMember]
+        // Hide from Reporting because Reporting will already have a Suffix from SuffixValueId
+        [HideFromReporting]
         public string Suffix { get; set; }
 
         /// <summary>
@@ -110,6 +125,8 @@ namespace Rock.Model
         /// The title value.
         /// </value>
         [DataMember]
+        // Hide from Reporting because Reporting will already have a Title from TitleValueId
+        [HideFromReporting]
         public string Title { get; set; }
 
         #endregion
@@ -123,6 +140,8 @@ namespace Rock.Model
         /// The gender text.
         /// </value>
         [DataMember]
+        // Hide from Reporting because Reporting will already show Text value of the Gender enum
+        [HideFromReporting]
         public string GenderText { get; set; }
 
         /// <summary>
@@ -132,6 +151,8 @@ namespace Rock.Model
         /// The email preference text.
         /// </value>
         [DataMember]
+        // Hide from Reporting because Reporting will already show the Text value of EmailPreferenceEnum
+        [HideFromReporting]
         public string EmailPreferenceText { get; set; }
 
         #endregion

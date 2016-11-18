@@ -107,7 +107,6 @@ namespace Rock.Model
             target.GivingId = source.GivingId;
             target.GivingLeaderId = source.GivingLeaderId;
             target.GraduationYear = source.GraduationYear;
-            target.HistoryHash = source.HistoryHash;
             target.InactiveReasonNote = source.InactiveReasonNote;
             target.IsDeceased = source.IsDeceased;
             target.LastName = source.LastName;
@@ -115,7 +114,6 @@ namespace Rock.Model
             target.MiddleName = source.MiddleName;
             target.NickName = source.NickName;
             target.PersonId = source.PersonId;
-            target.PersonKey = source.PersonKey;
             target.PhotoId = source.PhotoId;
             target.PrimaryFamilyId = source.PrimaryFamilyId;
             target.RecordStatusLastModifiedDateTime = source.RecordStatusLastModifiedDateTime;

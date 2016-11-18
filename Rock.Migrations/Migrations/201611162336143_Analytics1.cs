@@ -34,7 +34,6 @@ namespace Rock.Migrations
                 c => new
                     {
                         Id = c.Int(nullable: false, identity: true),
-                        PersonKey = c.String(maxLength: 30),
                         PersonId = c.Int(nullable: false),
                         CurrentRowIndicator = c.Boolean(nullable: false),
                         EffectiveDate = c.DateTime(nullable: false, storeType: "date"),
@@ -77,7 +76,6 @@ namespace Rock.Migrations
                         ForeignKey = c.String(maxLength: 100),
                     })
                 .PrimaryKey(t => t.Id)
-                .Index(t => t.PersonKey, unique: true)
                 .Index(t => t.RecordTypeValueId)
                 .Index(t => t.RecordStatusValueId)
                 .Index(t => t.RecordStatusReasonValueId)
@@ -256,7 +254,6 @@ CREATE UNIQUE NONCLUSTERED  INDEX [IX_PersonIdCurrentRow] ON [dbo].[AnalyticsSou
             DropIndex( "dbo.AnalyticsSourcePersonHistorical", new[] { "RecordStatusReasonValueId" } );
             DropIndex( "dbo.AnalyticsSourcePersonHistorical", new[] { "RecordStatusValueId" } );
             DropIndex( "dbo.AnalyticsSourcePersonHistorical", new[] { "RecordTypeValueId" } );
-            DropIndex( "dbo.AnalyticsSourcePersonHistorical", new[] { "PersonKey" } );
 
             DropColumn("dbo.AttributeValue", "ValueAsBoolean");
             DropColumn("dbo.Attribute", "IsAnalyticHistory");
