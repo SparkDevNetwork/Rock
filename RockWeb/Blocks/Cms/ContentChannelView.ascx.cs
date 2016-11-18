@@ -974,7 +974,7 @@ $(document).ready(function() {
         }
 
         /// <summary>
-        /// The PropertyFilter checks for it's property/attribute list in a cached items object before recreating 
+        /// **The PropertyFilter checks for it's property/attribute list in a cached items object before recreating 
         /// them using reflection and loading of generic attributes. Because of this, we're going to load them here
         /// and exclude some properties and add additional attributes specific to the channel type, and then save
         /// list to same cached object so that property filter lists our collection of properties/attributes
@@ -989,7 +989,9 @@ $(document).ready(function() {
                 {
                     var entityType = entityTypeCache.GetEntityType();
 
-                    HttpContext.Current.Items.Remove( string.Format( "EntityHelper:GetEntityFields:{0}", entityType.FullName ) );
+                    /// See above comments on HackEntityFields** to see why we are doing this
+                    HttpContext.Current.Items.Remove( Rock.Reporting.EntityHelper.GetCacheKey( entityType ) );
+
                     var entityFields = Rock.Reporting.EntityHelper.GetEntityFields( entityType );
                     foreach( var entityField in entityFields
                         .Where( f => 
@@ -1045,7 +1047,7 @@ $(document).ready(function() {
                         }
 
                         // Save new fields to cache ( which report field will use instead of reading them again )
-                        HttpContext.Current.Items[string.Format( "EntityHelper:GetEntityFields:{0}", entityType.FullName )] = sortedFields;
+                        HttpContext.Current.Items[Rock.Reporting.EntityHelper.GetCacheKey( entityType )] = sortedFields;
                     }
 
                     return entityFields;

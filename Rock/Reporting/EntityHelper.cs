@@ -35,7 +35,19 @@ namespace Rock.Reporting
     public static class EntityHelper
     {
         private static Dictionary<int, string> _workflowTypeNameLookup = null;
-        
+
+        /// <summary>
+        /// Gets the cache key for the EntityFields 
+        /// </summary>
+        /// <param name="entityType">Type of the entity.</param>
+        /// <param name="includeOnlyReportingFields">if set to <c>true</c> [include only reporting fields].</param>
+        /// <param name="limitToFilterableFields">if set to <c>true</c> [limit to filterable fields].</param>
+        /// <returns></returns>
+        public static string GetCacheKey( Type entityType, bool includeOnlyReportingFields = true, bool limitToFilterableFields = true )
+        {
+            return string.Format( "EntityHelper:GetEntityFields:{0}_{1}_{2}", entityType.FullName, includeOnlyReportingFields, limitToFilterableFields );
+        }
+
         /// <summary>
         /// Gets the entity fields.
         /// </summary>
@@ -50,7 +62,7 @@ namespace Rock.Reporting
 
             if ( HttpContext.Current != null )
             {
-                entityFields = HttpContext.Current.Items[string.Format( "EntityHelper:GetEntityFields:{0}_{1}_{2}", entityType.FullName, includeOnlyReportingFields, limitToFilterableFields )] as List<EntityField>;
+                entityFields = HttpContext.Current.Items[EntityHelper.GetCacheKey(entityType, includeOnlyReportingFields, limitToFilterableFields)] as List<EntityField>;
                 if ( entityFields != null )
                 {
                     return entityFields;
@@ -228,7 +240,7 @@ namespace Rock.Reporting
 
             if ( HttpContext.Current != null )
             {
-                HttpContext.Current.Items[string.Format( "EntityHelper:GetEntityFields:{0}_{1}_{2}", entityType.FullName, includeOnlyReportingFields, limitToFilterableFields )] = sortedFields;
+                HttpContext.Current.Items[EntityHelper.GetCacheKey( entityType, includeOnlyReportingFields, limitToFilterableFields )] = sortedFields;
             }
 
             return sortedFields;
