@@ -116,6 +116,7 @@
     <Compile Include="Data\ActionsUtil.cs" />
     <Compile Include="Jobs\UpdateActionsHistory.cs" />
     <Compile Include="Models\ActionsHistory_Adult.cs" />
+    <Compile Include="Reporting\DataSelect\Person\ActionsPersonFieldSelect.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Implementation\Actions Design.txt" />
