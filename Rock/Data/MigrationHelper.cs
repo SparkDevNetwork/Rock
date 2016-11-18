@@ -91,9 +91,9 @@ namespace Rock.Data
         {
             Migration.Sql( string.Format( @"
 
-                DECLARE @Id int
-                SET @Id = (SELECT [Id] FROM [EntityType] WHERE [Name] = '{0}')
-                IF @Id IS NULL
+                DECLARE @Guid uniqueidentifier
+                SET @Guid = (SELECT [Guid] FROM [EntityType] WHERE [Name] = '{0}')
+                IF @Guid IS NULL
                 BEGIN
                     INSERT INTO [EntityType] (
                         [Name],[FriendlyName],[AssemblyName],[IsEntity],[IsSecured],[IsCommon],[Guid])
@@ -102,6 +102,7 @@ namespace Rock.Data
                 END
                 ELSE
                 BEGIN
+
                     UPDATE [EntityType] SET
                         [FriendlyName] = '{1}',
                         [AssemblyName] = '{2}',
@@ -109,6 +110,17 @@ namespace Rock.Data
                         [IsSecured] = {4},
                         [Guid] = '{5}'
                     WHERE [Name] = '{0}'
+
+                    -- Update any attribute values that might have been using entity's old guid value
+	                DECLARE @EntityTypeFieldTypeId int = ( SELECT TOP 1 [Id] FROM [FieldType] WHERE [Class] = 'Rock.Field.Types.EntityTypeFieldType' )
+	                DECLARE @ComponentFieldTypeId int = ( SELECT TOP 1 [Id] FROM [FieldType] WHERE [Class] = 'Rock.Field.Types.ComponentFieldType' )
+	                DECLARE @ComponentsFieldTypeId int = ( SELECT TOP 1 [Id] FROM [FieldType] WHERE [Class] = 'Rock.Field.Types.ComponentsFieldType' )
+
+                    UPDATE V SET [Value] = REPLACE( LOWER([Value]), LOWER(CAST(@Guid AS varchar(50))), LOWER('{5}') )
+	                FROM [AttributeValue] V
+	                INNER JOIN [Attribute] A ON A.[Id] = V.[AttributeId]
+	                WHERE ( A.[FieldTypeId] = @EntityTypeFieldTypeId OR A.[FieldTypeId] = @ComponentFieldTypeId	OR A.[FieldTypeId] = @ComponentsFieldTypeId )
+
                 END
 ",
                     name.Replace( "'", "''" ),

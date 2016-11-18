@@ -84,6 +84,8 @@
     <Compile Include="CodeGenerated\ConnectionOpportunityCampus.cs" />
     <Compile Include="CodeGenerated\ConnectionOpportunityConnectorGroup.cs" />
     <Compile Include="CodeGenerated\ConnectionOpportunityGroup.cs" />
+    <Compile Include="CodeGenerated\ConnectionOpportunityGroupConfig.cs" />
+    <Compile Include="CodeGenerated\ConnectionOpportunityPlacementGroup.cs" />
     <Compile Include="CodeGenerated\ConnectionRequest.cs" />
     <Compile Include="CodeGenerated\ConnectionRequestActivity.cs" />
     <Compile Include="CodeGenerated\ConnectionRequestWorkflow.cs" />
@@ -146,6 +148,11 @@
     <Compile Include="CodeGenerated\GroupTypeRole.cs" />
     <Compile Include="CodeGenerated\History.cs" />
     <Compile Include="CodeGenerated\HtmlContent.cs" />
+    <Compile Include="CodeGenerated\Interaction.cs" />
+    <Compile Include="CodeGenerated\InteractionChannel.cs" />
+    <Compile Include="CodeGenerated\InteractionComponent.cs" />
+    <Compile Include="CodeGenerated\InteractionDeviceType.cs" />
+    <Compile Include="CodeGenerated\InteractionSession.cs" />
     <Compile Include="CodeGenerated\Layout.cs" />
     <Compile Include="CodeGenerated\Location.cs" />
     <Compile Include="CodeGenerated\LoginParameters.cs" />

@@ -811,6 +811,46 @@ namespace Rock.Data
         public DbSet<HtmlContent> HtmlContents { get; set; }
 
         /// <summary>
+        /// Gets or sets the Interactions.
+        /// </summary>
+        /// <value>
+        /// the Interactions.
+        /// </value>
+        public DbSet<Interaction> Interactions { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Interaction Components.
+        /// </summary>
+        /// <value>
+        /// the Interaction Components.
+        /// </value>
+        public DbSet<InteractionComponent> InteractionComponents { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Interaction Device Types.
+        /// </summary>
+        /// <value>
+        /// the Interaction Device Types.
+        /// </value>
+        public DbSet<InteractionDeviceType> InteractionDeviceTypes { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Interaction Services.
+        /// </summary>
+        /// <value>
+        /// the Interaction Services.
+        /// </value>
+        public DbSet<InteractionChannel> InteractionServices { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Interaction Sessions.
+        /// </summary>
+        /// <value>
+        /// the Interaction Sessions.
+        /// </value>
+        public DbSet<InteractionSession> InteractionSessions { get; set; }
+
+        /// <summary>
         /// Gets or sets the layouts.
         /// </summary>
         /// <value>

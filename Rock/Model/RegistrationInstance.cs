@@ -124,7 +124,6 @@ namespace Rock.Model
         [DataMember]
         public int? AccountId { get; set; }
 
-
         /// <summary>
         /// Gets or sets the cost (if template is configured to allow cost on instance).
         /// </summary>

@@ -160,8 +160,13 @@ TransactionAcountDetails: [
         private bool _gatewaysIncompatible = false;
         private string _ccSavedAccountFreqSupported = "both";
         private string _achSavedAccountFreqSupported = "both";
-
         protected bool FluidLayout = false;
+
+        /// <summary>
+        /// The scheduled transaction to be transferred.  This will get set if the
+        /// page parameter "transfer" and the "ScheduledTransactionId" are passed in.
+        /// </summary>
+        private FinancialScheduledTransaction _scheduledTransactionToBeTransferred = null;
 
         #endregion
 
@@ -321,12 +326,28 @@ TransactionAcountDetails: [
                 return;
             }
 
+            // Check if this is a transfer and that the person is the authorized person on the transaction
+            if ( PageParameter( "transfer" ) != null && PageParameter( "ScheduledTransactionId" ) != null )
+            {
+                InitializeTransfer( PageParameter( "ScheduledTransactionId" ).AsIntegerOrNull() );
+            }
+
             if ( !Page.IsPostBack )
             {
                 hfTransactionGuid.Value = Guid.NewGuid().ToString();
 
                 SetControlOptions();
 
+                if ( _scheduledTransactionToBeTransferred != null )
+                {
+                    // Was this NOT a personal gift? If so, we need to set the correct business in the Give As section.
+                    if ( _scheduledTransactionToBeTransferred.AuthorizedPersonAlias.Person.GivingId != _targetPerson.GivingId )
+                    {
+                        tglGiveAsOption.Checked = false;
+                        SetGiveAsOptions();
+                        ShowBusiness();
+                    }
+                }
                 SetPage( 1 );
 
                 // Get the list of accounts that can be used
@@ -335,7 +356,6 @@ TransactionAcountDetails: [
             }
             else
             {
-
                 // Save amounts from controls to the viewstate list
                 foreach ( RepeaterItem item in rptAccountList.Items )
                 {
@@ -422,7 +442,6 @@ TransactionAcountDetails: [
             BindAccounts();
         }
 
-
         protected void btnFrequency_SelectionChanged( object sender, EventArgs e )
         {
             int oneTimeFrequencyId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_ONE_TIME ).Id;
@@ -441,7 +460,6 @@ TransactionAcountDetails: [
             }
 
             SetPage( 1 );
-
         }
 
         /// <summary>
@@ -504,7 +522,6 @@ TransactionAcountDetails: [
                     this.AddHistory( "GivingDetail", "1", null );
                     SetPage( 3 );
                 }
-
             }
             else
             {
@@ -871,7 +888,6 @@ TransactionAcountDetails: [
                     dtpStartDate.SelectedDate = RockDateTime.Today;
                 }
             }
-
         }
 
         private string GetSavedAcccountFreqSupported( GatewayComponent component )
@@ -1001,11 +1017,8 @@ TransactionAcountDetails: [
                         rblSavedAccount.Items[0].Selected = true;
                     }
                 }
-
             }
-
         }
-
 
         private void SetControlOptions()
         {
@@ -1096,7 +1109,6 @@ TransactionAcountDetails: [
             // Determine if billing address should be displayed
             cbBillingAddress.Visible = _ccGatewayComponent.PromptForBillingAddress( _ccGateway );
             divBillingAddress.Visible = _ccGatewayComponent.PromptForBillingAddress( _ccGateway );
-
         }
 
         #endregion
@@ -1128,6 +1140,7 @@ TransactionAcountDetails: [
                 .OrderBy( f => f.Order ) )
             {
                 var accountItem = new AccountItem( account.Id, account.Order, account.Name, account.CampusId, account.PublicName );
+
                 if ( showAll )
                 {
                     SelectedAccounts.Add( accountItem );
@@ -1145,6 +1158,35 @@ TransactionAcountDetails: [
                             AvailableAccounts.Add( accountItem );
                         }
                     }
+                }
+            }
+
+            // Set account item *amounts* using the existing transaction
+            if ( _scheduledTransactionToBeTransferred != null )
+            {
+                foreach ( var item in _scheduledTransactionToBeTransferred.ScheduledTransactionDetails )
+                {
+                    // Find a matching account
+                    var account = SelectedAccounts.Where( a => a.Id == item.AccountId ).FirstOrDefault();
+                    
+                    // if not in the selected list, try the available list
+                    if ( account == null )
+                    {
+                        account = AvailableAccounts.Where( a => a.Id == item.AccountId ).FirstOrDefault();
+                        if ( account != null )
+                        {
+                            AvailableAccounts = AvailableAccounts.Except( new List<AccountItem>() { account } ).ToList();
+                            SelectedAccounts.AddRange( new List<AccountItem>() { account } );
+                        }
+                    }
+
+                    // if still not found, just use the first account
+                    if ( account == null )
+                    {
+                        account = SelectedAccounts.First();
+                    }
+
+                    account.Amount += item.Amount;
                 }
             }
         }
@@ -1190,7 +1232,19 @@ TransactionAcountDetails: [
                             cblBusiness.Items.Add( new ListItem( "New Business", "" ) );
 
                             cblBusiness.Visible = true;
-                            cblBusiness.SelectedIndex = 0;
+
+                            if ( _scheduledTransactionToBeTransferred != null )
+                            {
+                                var matchBusiness = businesses.Where( b => b.Id == _scheduledTransactionToBeTransferred.AuthorizedPersonAlias.PersonId ).FirstOrDefault();
+                                if ( matchBusiness != null )
+                                {
+                                    cblBusiness.SetValue( matchBusiness.Id.ToString() );
+                                }
+                            }
+                            else
+                            {
+                                cblBusiness.SelectedIndex = 0;
+                            }
                         }
                         else
                         {
@@ -1608,6 +1662,47 @@ TransactionAcountDetails: [
             }
 
             return person;
+        }
+
+        /// <summary>
+        /// Fetches the old (to be transferred) scheduled transaction and verifies
+        /// that the target person is the same on the scheduled transaction.  Then
+        /// it puts it into the _scheduledTransactionToBeTransferred private field 
+        /// for use throughout the entry process so that its values can be used on
+        /// the form for the new transaction.
+        /// </summary>
+        /// <param name="scheduledTransactionId">The scheduled transaction identifier.</param>
+        private void InitializeTransfer( int? scheduledTransactionId )
+        {
+            if ( scheduledTransactionId == null )
+            {
+                return;
+            }
+
+            RockContext rockContext = new RockContext();
+            var scheduledTransaction = new FinancialScheduledTransactionService( rockContext ).Get( scheduledTransactionId.Value );
+            var personService = new PersonService( rockContext );
+
+            // get business giving id
+            var givingIds = personService.GetBusinesses( _targetPerson.Id ).Select( g => g.GivingId ).ToList();
+
+            // add the person's regular giving id
+            givingIds.Add( _targetPerson.GivingId );
+
+            // Make sure the current person is the authorized person, otherwise return
+            if ( scheduledTransaction == null || ! givingIds.Contains( scheduledTransaction.AuthorizedPersonAlias.Person.GivingId ) )
+            {
+                return;
+            }
+
+            _scheduledTransactionToBeTransferred = scheduledTransaction;
+
+            // Set the frequency to be the same on the initial page build
+            if ( !IsPostBack )
+            {
+                btnFrequency.SelectedValue = scheduledTransaction.TransactionFrequencyValueId.ToString();
+                dtpStartDate.SelectedDate = RockDateTime.Today.AddDays( 1 );
+            }
         }
 
         /// <summary>
@@ -2298,6 +2393,12 @@ TransactionAcountDetails: [
             transactionService.Add( scheduledTransaction );
             rockContext.SaveChanges();
 
+            // If this is a transfer, now we can delete the old transaction
+            if ( _scheduledTransactionToBeTransferred != null )
+            {
+                DeleteOldTransaction( _scheduledTransactionToBeTransferred.Id );
+            }
+
             // Add a note about the change
             var noteType = NoteTypeCache.Read( Rock.SystemGuid.NoteType.SCHEDULED_TRANSACTION_NOTE.AsGuid() );
             if ( noteType != null )
@@ -2314,6 +2415,34 @@ TransactionAcountDetails: [
 
             ScheduleId = scheduledTransaction.GatewayScheduleId;
             TransactionCode = scheduledTransaction.TransactionCode;
+        }
+
+        private void DeleteOldTransaction( int scheduledTransactionId )
+        {
+            using ( var rockContext = new Rock.Data.RockContext() )
+            {
+                FinancialScheduledTransactionService fstService = new FinancialScheduledTransactionService( rockContext );
+                var currentTransaction = fstService.Get( scheduledTransactionId );
+                if ( currentTransaction != null && currentTransaction.FinancialGateway != null )
+                {
+                    currentTransaction.FinancialGateway.LoadAttributes( rockContext );
+                }
+                string errorMessage = string.Empty;
+                if ( fstService.Cancel( currentTransaction, out errorMessage ) )
+                {
+                    try
+                    {
+                        fstService.GetStatus( currentTransaction, out errorMessage );
+                    }
+                    catch { }
+                    rockContext.SaveChanges();
+                    //content.Text = String.Format( "<div class='alert alert-success'>Your recurring {0} has been deleted.</div>", GetAttributeValue( "TransactionLabel" ).ToLower() );
+                }
+                else
+                {
+                    //content.Text = String.Format( "<div class='alert alert-danger'>An error occured while deleting your scheduled transation. Message: {0}</div>", errorMessage );
+                }
+            }
         }
 
         private void SaveTransaction( FinancialGateway financialGateway, GatewayComponent gateway, Person person, PaymentInfo paymentInfo, FinancialTransaction transaction, RockContext rockContext )
@@ -2783,6 +2912,5 @@ TransactionAcountDetails: [
         #endregion
 
         #endregion
-
     }
 }
