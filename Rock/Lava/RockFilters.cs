@@ -2884,6 +2884,7 @@ namespace Rock.Lava
         /// <param name="context">The context.</param>
         /// <param name="input">The input.</param>
         /// <param name="noteType">The noteType.</param>
+        /// <param name="sortOrder">The sort order.</param>
         /// <param name="count">The count.</param>
         /// <returns></returns>
         public static List<Note> Notes( DotLiquid.Context context, object input, object noteType, string sortOrder = "desc", int? count = null )

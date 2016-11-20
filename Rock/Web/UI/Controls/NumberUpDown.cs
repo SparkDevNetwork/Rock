@@ -414,8 +414,15 @@ namespace Rock.Web.UI.Controls
 
         #region Events
 
+        /// <summary>
+        /// Occurs when [number updated].
+        /// </summary>
         public event EventHandler<EventArgs> NumberUpdated;
 
+        /// <summary>
+        /// When implemented by a class, enables a server control to process an event raised when a form is posted to the server.
+        /// </summary>
+        /// <param name="eventArgument">A <see cref="T:System.String" /> that represents an optional event argument to be passed to the event handler.</param>
         public void RaisePostBackEvent( string eventArgument )
         {
             if ( eventArgument == "NumberUpdated" && NumberUpdated != null )

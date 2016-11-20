@@ -157,6 +157,14 @@ namespace Rock.Field.Types
 
         #region Edit Control
 
+        /// <summary>
+        /// Creates the control(s) necessary for prompting user for a new value
+        /// </summary>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="id">The id.</param>
+        /// <returns>
+        /// The control
+        /// </returns>
         public override Control EditControl( Dictionary<string, ConfigurationValue> configurationValues, string id )
         {
             var tb = base.EditControl( configurationValues, id ) as RockTextBox;
