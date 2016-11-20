@@ -326,12 +326,15 @@ namespace RockWeb.Blocks.Core
             {
                 Device = new DeviceService( rockContext ).Get( DeviceId );
                 lActionTitle.Text = ActionTitle.Edit( Device.FriendlyTypeName ).FormatAsHtmlTitle();
+                pdAuditDetails.SetEntity( Device, ResolveRockUrl( "~" ) );
             }
 
             if ( Device == null )
             {
                 Device = new Device { Id = 0 };
                 lActionTitle.Text = ActionTitle.Add( Device.FriendlyTypeName ).FormatAsHtmlTitle();
+                // hide the panel drawer that show created and last modified dates
+                pdAuditDetails.Visible = false;
             }
 
             LoadDropDowns();

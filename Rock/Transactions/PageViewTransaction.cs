@@ -102,6 +102,11 @@ namespace Rock.Transactions
         public string PageTitle { get; set; }
 
         /// <summary>
+        /// The ua parser
+        /// </summary>
+        private static Parser uaParser = Parser.GetDefault();
+
+        /// <summary>
         /// Execute method to write transaction to the database.
         /// </summary>
         public void Execute()
@@ -120,8 +125,6 @@ namespace Rock.Transactions
 
                 // get user agent info
                 var clientType = PageViewUserAgent.GetClientType( userAgent );
-
-                Parser uaParser = Parser.GetDefault();
                 ClientInfo client = uaParser.Parse( userAgent );
                 var clientOs = client.OS.ToString();
                 var clientBrowser = client.UserAgent.ToString();

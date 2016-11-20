@@ -9,6 +9,7 @@
             <div class="panel-heading">
                 <h1 class="panel-title"><i class="fa fa-list"></i> <asp:Literal ID="lActionTitle" runat="server"/></h1>
             </div>
+            <Rock:PanelDrawer ID="pdAuditDetails" runat="server"></Rock:PanelDrawer>
             <div class="panel-body">
 
                 <asp:ValidationSummary ID="valSummaryTop" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" />

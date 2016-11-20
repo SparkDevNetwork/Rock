@@ -11,52 +11,53 @@
         <h1 class="panel-title"><i class="fa fa-user"></i> My Account</h1>
     </div>
     <div class="panel-body">
+        <Rock:NotificationBox ID="nbNotAuthorized" runat="server" Text="You must be logged in to view your account." NotificationBoxType="Danger" Visible="false" />
+        <asp:Panel ID="pnlView" runat="server">
+            <div class="row">
 
-        <div class="row">
-
-            <div class="col-sm-3">
-                <div class="photo">
-                    <asp:PlaceHolder ID="phImage" runat="server" />
+                <div class="col-sm-3">
+                    <div class="photo">
+                        <asp:PlaceHolder ID="phImage" runat="server" />
+                    </div>
                 </div>
-            </div>
 
-            <div class="col-sm-9">
+                <div class="col-sm-9">
 
-                <h1 class="title name">
-                    <asp:Literal ID="lName" runat="server" /></h1>
+                    <h1 class="title name">
+                        <asp:Literal ID="lName" runat="server" /></h1>
 
-                <div class="row">
+                    <div class="row">
 
-                    <div class="col-sm-6">
-                        <ul class="person-demographics list-unstyled">
+                        <div class="col-sm-6">
+                            <ul class="person-demographics list-unstyled">
                             <li><asp:Literal ID="lEmail" runat="server" /></li>
                             <li><asp:Literal ID="lGender" runat="server" /></li>
                             <li><asp:Literal ID="lAge" runat="server" /></li>
-                        </ul>
-                    </div>
+                            </ul>
+                        </div>
 
-                    <div class="col-sm-6">
+                        <div class="col-sm-6">
 
-                        <ul class="phone-list list-unstyled">
-                        <asp:Repeater ID="rptPhones" runat="server">
-                            <ItemTemplate>
-                                <li><%# (bool)Eval("IsUnlisted") ? "Unlisted" : FormatPhoneNumber( Eval("CountryCode"), Eval("Number") ) %> <small><%# Eval("NumberTypeValue.Value") %></small></li>
-                            </ItemTemplate>
-                        </asp:Repeater>
-                        </ul>
+                            <ul class="phone-list list-unstyled">
+                                <asp:Repeater ID="rptPhones" runat="server">
+                                    <ItemTemplate>
+                                        <li><%# (bool)Eval("IsUnlisted") ? "Unlisted" : FormatPhoneNumber( Eval("CountryCode"), Eval("Number") ) %> <small><%# Eval("NumberTypeValue.Value") %></small></li>
+                                    </ItemTemplate>
+                                </asp:Repeater>
+                            </ul>
 
-                        <asp:Literal ID="lAddress" runat="server" />
+                            <asp:Literal ID="lAddress" runat="server" />
 
-                        <asp:LinkButton ID="lbEditPerson" runat="server" CssClass="btn btn-primary btn-xs" OnClick="lbEditPerson_Click"><i class="fa fa-pencil"></i> Edit</asp:LinkButton>
+                            <asp:LinkButton ID="lbEditPerson" runat="server" CssClass="btn btn-primary btn-xs" OnClick="lbEditPerson_Click"><i class="fa fa-pencil"></i> Edit</asp:LinkButton>
         
+                        </div>
+
                     </div>
 
                 </div>
 
             </div>
-
-        </div>
-
+        </asp:Panel>
     </div>
 </div>
 

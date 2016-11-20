@@ -210,12 +210,15 @@ namespace RockWeb.Blocks.Cms
             {
                 pageRoute = new PageRouteService( new RockContext() ).Get( routeId );
                 lActionTitle.Text = ActionTitle.Edit( PageRoute.FriendlyTypeName ).FormatAsHtmlTitle();
+                pdAuditDetails.SetEntity( pageRoute, ResolveRockUrl( "~" ) );
             }
 
             if (pageRoute == null)
             {
                 pageRoute = new PageRoute { Id = 0 };
                 lActionTitle.Text = ActionTitle.Add(PageRoute.FriendlyTypeName).FormatAsHtmlTitle();
+                // hide the panel drawer that show created and last modified dates
+                pdAuditDetails.Visible = false;
             }
 
             hfPageRouteId.Value = pageRoute.Id.ToString();

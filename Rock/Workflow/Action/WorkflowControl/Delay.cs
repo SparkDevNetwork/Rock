@@ -50,18 +50,28 @@ namespace Rock.Workflow.Action
         public override bool Execute( RockContext rockContext, WorkflowAction action, object entity, out List<string> errorMessages )
         {
             errorMessages = new List<string>();
-            int delayInMinutes = 0;
 
-            // get weekday
-            int? dayOfTheWeek = GetAttributeValue( action, "NextWeekday" ).AsIntegerOrNull();
-            if ( dayOfTheWeek.HasValue )
+            var now = RockDateTime.Now;
+
+            // Save/Get the datetime this action was first activated
+            var activatedDateTime = GetDateTimeActivated( action );
+
+            // First check if number of minutes to delay
+            int? minutes = GetAttributeValue( action, "MinutesToDelay" ).AsIntegerOrNull();
+            if ( minutes.HasValue )
             {
-                int daysUntilWeekday = (dayOfTheWeek.Value - (int)RockDateTime.Now.DayOfWeek + 7) % 7;
-                DateTime nextWeekday = RockDateTime.Today.AddDays( daysUntilWeekday );
-                delayInMinutes = (int)(nextWeekday - RockDateTime.Now).TotalMinutes;
+                if ( activatedDateTime.AddMinutes( minutes.Value ).CompareTo( now ) <= 0 )
+                {
+                    action.AddLogEntry( string.Format( "{0:N0} Minute Delay Completed.", minutes.Value ), true );
+                    return true;
+                }
+                else
+                {
+                    return false;
+                }
             }
 
-            // get the date attribute
+            // Then check for specific date/time
             Guid dateAttributeGuid = GetAttributeValue( action, "DateInAttribute" ).AsGuid();
             if ( !dateAttributeGuid.IsEmpty() )
             {
@@ -69,24 +79,43 @@ namespace Rock.Workflow.Action
                 if ( attribute != null )
                 {
                     DateTime? attributeDate = action.GetWorklowAttributeValue( dateAttributeGuid ).AsDateTime();
-                    if ( attributeDate != null )
+                    if ( attributeDate.HasValue )
                     {
-                        delayInMinutes = (int)(attributeDate.Value - RockDateTime.Now).TotalMinutes;
+                        if ( attributeDate.Value.CompareTo( now ) <= 0 )
+                        {
+                            action.AddLogEntry( string.Format( "Delay until {0} Completed.", attributeDate.Value ), true );
+                            return true;
+                        }
+                        else
+                        {
+                            return false;
+                        }
                     }
                 }
             }
 
-            // get the number of minutes to delay
-            int? minutes = GetAttributeValue( action, "MinutesToDelay" ).AsIntegerOrNull();
-            if ( minutes.HasValue && minutes.Value > 0 )
+            // Finally check weekday
+            int? dayOfTheWeek = GetAttributeValue( action, "NextWeekday" ).AsIntegerOrNull();
+            if ( dayOfTheWeek.HasValue )
             {
-                delayInMinutes = minutes.Value;
+                if ( (int)now.DayOfWeek == dayOfTheWeek.Value )
+                { 
+                    action.AddLogEntry( string.Format( "Delay until {0} Completed.", now.DayOfWeek.ConvertToString() ), true );
+                    return true;
+                }
+                else
+                {
+                    return false;
+                }
             }
 
-            if (delayInMinutes == 0 )
-            {
-                return true;
-            }
+            // If delay has not elapsed, return false so that processing of activity stops
+            return false;
+        }
+
+        private DateTime GetDateTimeActivated( WorkflowAction action )
+        {
+            var dateActivated = RockDateTime.Now;
 
             // Use the current action type' guid as the key for a 'Delay Activated' attribute 
             string AttrKey = action.ActionType.Guid.ToString();
@@ -114,38 +143,28 @@ namespace Rock.Workflow.Action
                 action.Activity.Attributes.Add( AttrKey, AttributeCache.Read( attribute ) );
                 var attributeValue = new AttributeValueCache();
                 attributeValue.AttributeId = attribute.Id;
-                attributeValue.Value = RockDateTime.Now.ToString( "o" );
+                attributeValue.Value = dateActivated.ToString( "o" );
                 action.Activity.AttributeValues.Add( AttrKey, attributeValue );
 
-                action.AddLogEntry( string.Format( "{0:N0} Minute Delay Activated.", delayInMinutes ), true );
+                action.AddLogEntry( string.Format( "Delay Activated at {0}", dateActivated), true );
             }
             else
             {
                 // Check to see if this action instance has a value for the 'Delay Activated' attrbute
                 DateTime? activated = action.Activity.GetAttributeValue( AttrKey ).AsDateTime();
-                if ( !activated.HasValue )
+                if ( activated.HasValue )
                 {
-                    // If no value exists, set the value to the current time
-                    action.Activity.SetAttributeValue( AttrKey, RockDateTime.Now.ToString( "o" ) );
-                    action.AddLogEntry( string.Format( "{0:N0} Minute Delay Activated.", delayInMinutes ), true );
+                    return activated.Value;
                 }
                 else
-                {
-                    // If a value does exist, check to see if the number of minutes to delay has passed
-                    // since the value was saved
-                    if ( activated.Value.AddMinutes( delayInMinutes ).CompareTo( RockDateTime.Now ) < 0 )
-                    {
-
-                        // If delay has elapsed, return True ( so that processing of activity will continue )
-                        action.AddLogEntry( string.Format( "{0:N0} Minute Delay Completed.", delayInMinutes ), true );
-                        return true;
-                    }
+                { 
+                    // If no value exists, set the value to the current time
+                    action.Activity.SetAttributeValue( AttrKey, dateActivated.ToString( "o" ) );
+                    action.AddLogEntry( string.Format( "Delay Activated at {0}", dateActivated ), true );
                 }
             }
 
-            // If delay has not elapsed, return false so that processing of activity stops
-            return false;
-
+            return dateActivated;
         }
     }
 }

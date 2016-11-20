@@ -114,8 +114,9 @@ namespace RockWeb.Blocks.Cms
 </div>", "", 6 )]
     [LinkedPage( "Response Page", "The page the use will be taken to after submitting the form. Use the 'Response Message' field if you just need a simple message.", false, "", "", 7 )]
     [TextField( "Submit Button Text", "The text to display for the submit button.", true, "Submit", "", 8 )]
-    [BooleanField( "Enable Debug", "Shows the fields available to merge in lava.", false, "", 9 )]
-    [BooleanField( "Save Communication History", "Should a record of this communication be saved to the recipient's profile", false, "", 10 )]
+    [TextField("Submit Button CSS Class", "The CSS class string to place on the submit button. Leave blank for a default button.", false, "", "", 9, "ButtonCssClass")]
+    [BooleanField( "Enable Debug", "Shows the fields available to merge in lava.", false, "", 10 )]
+    [BooleanField( "Save Communication History", "Should a record of this communication be saved to the recipient's profile", false, "", 11 )]
     public partial class EmailForm : Rock.Web.UI.RockBlock
     {
         #region Fields
@@ -181,6 +182,11 @@ namespace RockWeb.Blocks.Cms
                 if ( !string.IsNullOrWhiteSpace( GetAttributeValue( "SubmitButtonText" ) ) )
                 {
                     btnSubmit.Text = GetAttributeValue( "SubmitButtonText" );
+                }
+
+                if ( !string.IsNullOrWhiteSpace( GetAttributeValue( "ButtonCssClass" ) ) )
+                {
+                    btnSubmit.CssClass = GetAttributeValue( "ButtonCssClass" );
                 }
 
                 if ( string.IsNullOrWhiteSpace( GetAttributeValue( "RecipientEmail" ) ) )

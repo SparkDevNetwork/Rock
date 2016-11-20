@@ -472,6 +472,7 @@ namespace RockWeb.Blocks.Groups
             if ( !groupMemberId.Equals( 0 ) )
             {
                 groupMember = new GroupMemberService( rockContext ).Get( groupMemberId );
+                pdAuditDetails.SetEntity( groupMember, ResolveRockUrl( "~" ) );
             }
             else
             {
@@ -484,6 +485,8 @@ namespace RockWeb.Blocks.Groups
                     groupMember.GroupRoleId = groupMember.Group.GroupType.DefaultGroupRoleId ?? 0;
                     groupMember.GroupMemberStatus = GroupMemberStatus.Active;
                     groupMember.DateTimeAdded = RockDateTime.Now;
+                    // hide the panel drawer that show created and last modified dates
+                    pdAuditDetails.Visible = false;
                 }
             }
 

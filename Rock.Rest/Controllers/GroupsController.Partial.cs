@@ -795,11 +795,26 @@ namespace Rock.Rest.Controllers
         /// <param name="groupId">The group identifier.</param>
         /// <param name="statusId">The status identifier.</param>
         /// <returns></returns>
-        /// <exception cref="System.Web.Http.HttpResponseException">
-        /// </exception>
         [Authenticate, Secured]
         [System.Web.Http.Route( "api/Groups/GetMapInfo/{groupId}/Families/{statusId}" )]
         public IQueryable<MapItem> GetFamiliesMapInfo( int groupId, int statusId )
+        {
+            return GetFamiliesMapInfo( groupId, statusId, null );
+        }
+
+        /// <summary>
+        /// Gets the families map information.
+        /// </summary>
+        /// <param name="groupId">The group identifier.</param>
+        /// <param name="statusId">The status identifier.</param>
+        /// <param name="campusIds">If specified, only show families that are associated with any of the campus ids.</param>
+        /// <returns></returns>
+        /// <exception cref="HttpResponseException">
+        /// </exception>
+        /// <exception cref="System.Web.Http.HttpResponseException"></exception>
+        [Authenticate, Secured]
+        [System.Web.Http.Route( "api/Groups/GetMapInfo/{groupId}/Families/{statusId}" )]
+        public IQueryable<MapItem> GetFamiliesMapInfo( int groupId, int statusId, string campusIds)
         {
             // Enable proxy creation since security is being checked and need to navigate parent authorities
             SetProxyCreation( true );
@@ -820,16 +835,17 @@ namespace Rock.Rest.Controllers
                         .Where( l => l.Location.GeoFence != null )
                         .Select( l => l.Location ) )
                     {
-                        var familyGuid = Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY.AsGuid();
-                        var activeGuid = Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_ACTIVE.AsGuid();
+                        var familyGroupTypeId = GroupTypeCache.GetFamilyGroupType().Id;
+                        var recordStatusActiveId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_ACTIVE.AsGuid() ).Id;
+                        
                         var families = new GroupLocationService( (RockContext)Service.Context ).Queryable()
                             .Where( l =>
                                 l.IsMappedLocation &&
-                                l.Group.GroupType.Guid.Equals( familyGuid ) &&
+                                l.Group.GroupTypeId == familyGroupTypeId &&
                                 l.Location.GeoPoint.Intersects( location.GeoFence ) &&
                                 l.Group.Members.Any( m =>
-                                    m.Person.RecordStatusValue != null &&
-                                    m.Person.RecordStatusValue.Guid.Equals( activeGuid ) &&
+                                    m.Person.RecordStatusValueId.HasValue &&
+                                    m.Person.RecordStatusValueId == recordStatusActiveId &&
                                     m.Person.ConnectionStatusValueId.HasValue &&
                                     m.Person.ConnectionStatusValueId.Value == statusId ) )
                             .Select( l => new
@@ -837,15 +853,22 @@ namespace Rock.Rest.Controllers
                                 l.Location,
                                 l.Group.Id,
                                 l.Group.Name,
+                                l.Group.CampusId,
                                 MinStatus = l.Group.Members
                                     .Where( m =>
-                                        m.Person.RecordStatusValue != null &&
-                                        m.Person.RecordStatusValue.Guid.Equals( activeGuid ) &&
+                                        m.Person.RecordStatusValueId.HasValue &&
+                                        m.Person.RecordStatusValueId == recordStatusActiveId &&
                                         m.Person.ConnectionStatusValueId.HasValue )
                                     .OrderBy( m => m.Person.ConnectionStatusValue.Order )
                                     .Select( m => m.Person.ConnectionStatusValue.Id )
                                     .FirstOrDefault()
                             } );
+
+                        var campusIdList = ( campusIds ?? string.Empty ).SplitDelimitedValues().AsIntegerList();
+                        if ( campusIdList.Any() )
+                        {
+                            families = families.Where( a => a.CampusId.HasValue && campusIdList.Contains( a.CampusId.Value ) );
+                        }
 
                         foreach ( var family in families.Where( f => f.MinStatus == statusId ) )
                         {

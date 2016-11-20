@@ -139,7 +139,7 @@ namespace RockWeb.Blocks.Event
                 var eventItemOccurrence = qry.FirstOrDefault();
 
                 var mergeFields = new Dictionary<string, object>();
-                mergeFields.Add( "RegistrationPage", LinkedPageUrl( "RegistrationPage", null ) );
+                mergeFields.Add( "RegistrationPage", LinkedPageRoute( "RegistrationPage" ) );
 
                 var campusEntityType = EntityTypeCache.Read( "Rock.Model.Campus" );
                 var contextCampus = RockPage.GetCurrentContext( campusEntityType ) as Campus;

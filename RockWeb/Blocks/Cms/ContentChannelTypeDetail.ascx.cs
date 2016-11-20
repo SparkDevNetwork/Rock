@@ -209,10 +209,14 @@ namespace RockWeb.Blocks.Cms
             {
                 contentType = new ContentChannelType();
                 contentTypeService.Add( contentType );
+                contentType.CreatedByPersonAliasId = CurrentPersonAliasId;
+                contentType.CreatedDateTime = RockDateTime.Now;
             }
             else
             {
                 contentType = contentTypeService.Get( contentTypeId );
+                contentType.ModifiedByPersonAliasId = CurrentPersonAliasId;
+                contentType.ModifiedDateTime = RockDateTime.Now;
             }
 
             if ( contentType != null )
@@ -475,6 +479,9 @@ namespace RockWeb.Blocks.Cms
 
             edtItemAttributes.SetAttributeProperties( attribute, typeof( ContentChannelItem ) );
 
+            // always enable the display of the indexing option as the channel decides whether or not to index not the type
+            edtItemAttributes.IsIndexingEnabledVisible = true;
+
             ShowDialog( "ItemAttributes", true );
         }
 
@@ -613,10 +620,13 @@ namespace RockWeb.Blocks.Cms
             if ( !contentTypeId.Equals( 0 ) )
             {
                 contentType = GetContentChannelType( contentTypeId );
+                pdAuditDetails.SetEntity( contentType, ResolveRockUrl( "~" ) );
             }
             if ( contentType == null )
             {
                 contentType = new ContentChannelType { Id = 0 };
+                // hide the panel drawer that show created and last modified dates
+                pdAuditDetails.Visible = false;
             }
 
             string title = contentType.Id > 0 ?

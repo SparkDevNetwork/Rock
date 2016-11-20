@@ -328,8 +328,10 @@ namespace RockWeb.Blocks.Reporting
         protected void gMetricValues_Delete( object sender, RowEventArgs e )
         {
             var rockContext = new RockContext();
-            MetricValueService metricValueService = new MetricValueService( rockContext );
-            MetricValue metricValue = metricValueService.Get( e.RowKeyId );
+            var metricValueService = new MetricValueService( rockContext );
+            var metricValuePartitionService = new MetricValuePartitionService( rockContext );
+
+            var metricValue = metricValueService.Get( e.RowKeyId );
             if ( metricValue != null )
             {
                 string errorMessage;
@@ -339,8 +341,14 @@ namespace RockWeb.Blocks.Reporting
                     return;
                 }
 
-                metricValueService.Delete( metricValue );
-                rockContext.SaveChanges();
+                rockContext.WrapTransaction( () =>
+                {
+                    metricValuePartitionService.DeleteRange( metricValue.MetricValuePartitions );
+                    metricValueService.Delete( metricValue );
+                    rockContext.SaveChanges();
+
+                } );
+
             }
 
             BindGrid();

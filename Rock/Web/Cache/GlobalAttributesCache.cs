@@ -296,8 +296,6 @@ namespace Rock.Web.Cache
 
         #region Static Methods
 
-        private static RockMemoryCache _cache = RockMemoryCache.Default;
-
         private static string CacheKey()
         {
             return "Rock:GlobalAttributes";
@@ -311,7 +309,8 @@ namespace Rock.Web.Cache
         /// <returns></returns>
         public static GlobalAttributesCache GetOrAddExisting( string key, Func<GlobalAttributesCache> valueFactory )
         {
-            var value = _cache.Get( key ) as GlobalAttributesCache;
+            var cache = RockMemoryCache.Default;
+            var value = cache.Get( key ) as GlobalAttributesCache;
             if ( value != null )
             {
                 return value;
@@ -320,7 +319,7 @@ namespace Rock.Web.Cache
             value = valueFactory();
             if ( value != null )
             {
-                _cache.Set( key, value, new CacheItemPolicy() );
+                cache.Set( key, value, new CacheItemPolicy() );
             }
             return value;
         }
@@ -384,7 +383,8 @@ namespace Rock.Web.Cache
         /// </summary>
         public static void Flush()
         {
-            _cache.Remove( GlobalAttributesCache.CacheKey() );
+            RockMemoryCache cache = RockMemoryCache.Default;
+            cache.Remove( GlobalAttributesCache.CacheKey() );
 
             if ( HttpContext.Current != null )
             {

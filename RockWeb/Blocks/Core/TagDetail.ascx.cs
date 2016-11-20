@@ -289,6 +289,7 @@ namespace RockWeb.Blocks.Core
             if ( !tagId.Equals( 0 ) )
             {
                 tag = new TagService( new RockContext() ).Get( tagId );
+                pdAuditDetails.SetEntity( tag, ResolveRockUrl( "~" ) );
             }
             
             if ( tag == null )
@@ -298,6 +299,8 @@ namespace RockWeb.Blocks.Core
                 {
                     tag.EntityTypeId = entityTypeId.Value;
                 }
+                // hide the panel drawer that show created and last modified dates
+                pdAuditDetails.Visible = false;
             }
 
             pnlDetails.Visible = true;

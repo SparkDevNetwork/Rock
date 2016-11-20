@@ -62,6 +62,9 @@ namespace Rock.Client
         public string IconCssClass { get; set; }
 
         /// <summary />
+        public bool IsIndexEnabled { get; set; }
+
+        /// <summary />
         public bool ItemsManuallyOrdered { get; set; }
 
         /// <summary />
@@ -126,6 +129,7 @@ namespace Rock.Client
             this.ForeignGuid = source.ForeignGuid;
             this.ForeignKey = source.ForeignKey;
             this.IconCssClass = source.IconCssClass;
+            this.IsIndexEnabled = source.IsIndexEnabled;
             this.ItemsManuallyOrdered = source.ItemsManuallyOrdered;
             this.ItemUrl = source.ItemUrl;
             this.ModifiedAuditValuesAlreadyUpdated = source.ModifiedAuditValuesAlreadyUpdated;

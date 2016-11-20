@@ -59,7 +59,7 @@ namespace RockWeb.Blocks.Core
         {% endfor %}
 
         {% if HasMore %}
-            <li><i class='fa icon-fw''></i> <small>(showing top {{ Quantity }})</small></li>
+            <li><i class='fa fa-fw''></i> <small>(showing top {{ Quantity }})</small></li>
         {% endif %}
 
         </ul>

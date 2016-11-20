@@ -298,6 +298,7 @@ namespace Rock.Model
         /// <value>
         /// The total amount.
         /// </value>
+        [LavaInclude]
         public decimal TotalAmount 
         {
             get { return ScheduledTransactionDetails.Sum( d => d.Amount ); }

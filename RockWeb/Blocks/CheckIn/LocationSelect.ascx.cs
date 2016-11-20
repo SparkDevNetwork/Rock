@@ -31,11 +31,9 @@ namespace RockWeb.Blocks.CheckIn
 {
     [DisplayName("Location Select")]
     [Category("Check-in")]
-    [Description("Displays a list of locations a person is able to checkin to.")]
+    [Description("Displays a list of locations a person is able to check into.")]
 
-    [LinkedPage( "Repeat Page (Family Check-in)", "The page to navigate to if there are still more people or schedules to process.", false, "", "", 5, "FamilyRepeatPage" )]
-    [LinkedPage( "Next Page (Family Check-in)", "The page to navigate to if all people and schedules have been processed.", false, "", "", 6, "FamilyNextPage" )]
-    public partial class LocationSelect : CheckInBlock
+    public partial class LocationSelect : CheckInBlockMultiPerson
     {
         /// <summary>
         /// Determines if the block requires that a selection be made. This is used to determine if user should
@@ -78,7 +76,36 @@ namespace RockWeb.Blocks.CheckIn
                 }
 
                 var availLocations = group.GetAvailableLocations( schedule );
-                if ( availLocations.Count == 1 )
+                if ( availLocations.Any() )
+                {
+                    if ( availLocations.Count == 1 )
+                    {
+                        if ( backingUp )
+                        {
+                            GoBack( true );
+                            return false;
+                        }
+                        else
+                        {
+                            var location = availLocations.First();
+                            if ( schedule == null )
+                            {
+                                location.Selected = true;
+                            }
+                            else
+                            {
+                                location.SelectedForSchedule.Add( schedule.Schedule.Id );
+                            }
+
+                            return !ProcessSelection( person, schedule );
+                        }
+                    }
+                    else
+                    {
+                        return true;
+                    }
+                }
+                else
                 {
                     if ( backingUp )
                     {
@@ -87,22 +114,8 @@ namespace RockWeb.Blocks.CheckIn
                     }
                     else
                     {
-                        var location = availLocations.First();
-                        if ( schedule == null )
-                        {
-                            location.Selected = true;
-                        }
-                        else
-                        {
-                            location.SelectedForSchedule.Add( schedule.Schedule.Id );
-                        }
-
-                        return !ProcessSelection( person, schedule );
+                        return true;
                     }
-                }
-                else
-                {
-                    return true;
                 }
             }
 
@@ -159,7 +172,39 @@ namespace RockWeb.Blocks.CheckIn
                     lSubTitle.Text = group.ToString();
 
                     var availLocations = group.GetAvailableLocations( schedule );
-                    if ( availLocations.Count == 1 )
+                    if ( availLocations.Any() )
+                    {
+                        if ( availLocations.Count == 1 )
+                        {
+                            if ( UserBackedUp )
+                            {
+                                GoBack();
+                            }
+                            else
+                            {
+                                var location = availLocations.First();
+                                if ( schedule == null )
+                                {
+                                    location.Selected = true;
+                                }
+                                else
+                                {
+                                    location.SelectedForSchedule.Add( schedule.Schedule.Id );
+                                }
+
+                                ProcessSelection( person, schedule );
+                            }
+                        }
+                        else
+                        {
+                            rSelection.DataSource = availLocations
+                                .OrderBy( l => l.Location.Name )
+                                .ToList();
+
+                            rSelection.DataBind();
+                        }
+                    }
+                    else
                     {
                         if ( UserBackedUp )
                         {
@@ -167,26 +212,11 @@ namespace RockWeb.Blocks.CheckIn
                         }
                         else
                         {
-                            var location = availLocations.First();
-                            if ( schedule == null )
-                            {
-                                location.Selected = true;
-                            }
-                            else
-                            {
-                                location.SelectedForSchedule.Add( schedule.Schedule.Id );
-                            }
-
-                            ProcessSelection( person, schedule );
+                            pnlNoOptions.Visible = true;
+                            rSelection.Visible = false;
+                            lNoOptionName.Text = person.Person.NickName;
+                            lNoOptionSchedule.Text = person.CurrentSchedule != null ? person.CurrentSchedule.ToString() : "this time";
                         }
-                    }
-                    else
-                    {
-                        rSelection.DataSource = availLocations
-                            .OrderBy( l => l.Location.Name )
-                            .ToList();
-
-                        rSelection.DataBind();
                     }
                 }
             }
@@ -268,6 +298,16 @@ namespace RockWeb.Blocks.CheckIn
         }
 
         /// <summary>
+        /// Handles the Click event of the btnNoOptionOk control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void btnNoOptionOk_Click( object sender, EventArgs e )
+        {
+            ProcessNoOption();
+        }
+
+        /// <summary>
         /// Handles the Click event of the lbBack control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
@@ -319,7 +359,7 @@ namespace RockWeb.Blocks.CheckIn
                             .SelectMany( g => g.SelectedLocations( schedule )
                                 .SelectMany( l => l.ValidSchedules( schedule ) ) ) )
                         .Count() <= 0,
-                    "<p>Sorry, based on your selection, there are currently not any available times that can be checked into.</p>",
+                    string.Format( "<p>Sorry, based on your selection, there are currently not any available times that {0} can check into.</p>", person.Person.FullName ),
                     CurrentCheckInState.CheckInType.TypeOfCheckin == TypeOfCheckin.Family ) )
                 {
                     ClearSelection();
@@ -392,24 +432,24 @@ namespace RockWeb.Blocks.CheckIn
 
                 var queryParams = CheckForOverride();
 
-                if ( nextPerson != null && !string.IsNullOrWhiteSpace( GetAttributeValue( "FamilyRepeatPage" ) ) )
+                if ( nextPerson != null && !string.IsNullOrWhiteSpace( GetAttributeValue( "MultiPersonFirstPage" ) ) )
                 {
                     if ( validateSelectionRequired )
                     {
-                        var nextBlock = GetCheckInBlock( "FamilyRepeatPage" );
+                        var nextBlock = GetCheckInBlock( "MultiPersonFirstPage" );
                         if ( nextBlock != null && nextBlock.RequiresSelection( false ) )
                         {
-                            NavigateToLinkedPage( "FamilyRepeatPage", queryParams );
+                            NavigateToLinkedPage( "MultiPersonFirstPage", queryParams );
                         }
                     }
                     else
                     {
-                        NavigateToLinkedPage( "FamilyRepeatPage", queryParams );
+                        NavigateToLinkedPage( "MultiPersonFirstPage", queryParams );
                     }
                 }
                 else
                 {
-                    NavigateToLinkedPage( "FamilyNextPage", queryParams );
+                    NavigateToLinkedPage( "MultiPersonDonePage", queryParams );
                 }
             }
             else

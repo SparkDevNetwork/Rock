@@ -147,6 +147,22 @@ namespace Rock.Web.Cache
             }
         }
 
+        /// <summary>
+        /// Gets or sets a value indicating whether this instance is indexing enabled.
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if this instance is indexing enabled; otherwise, <c>false</c>.
+        /// </value>
+        public bool IsIndexingEnabled { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether this instance is indexing supported.
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if this instance is indexing supported; otherwise, <c>false</c>.
+        /// </value>
+        public bool IsIndexingSupported { get; set; }
+
         #endregion
 
         #region Methods
@@ -183,6 +199,8 @@ namespace Rock.Web.Cache
                 this.IsSecured = entityType.IsSecured;
                 this.SingleValueFieldTypeId = entityType.SingleValueFieldTypeId;
                 this.MultiValueFieldTypeId = entityType.MultiValueFieldTypeId;
+                this.IsIndexingEnabled = entityType.IsIndexingEnabled;
+                this.IsIndexingSupported = entityType.IsIndexingSupported;
 
                 _entityTypes.AddOrUpdate( entityType.Name, entityType.Id, ( k, v ) => entityType.Id );
             }

@@ -73,6 +73,8 @@ namespace RockWeb.Blocks.Reporting
         {
             base.OnInit( e );
 
+            RockPage.AddScriptLink( "~/Scripts/maplabel-compiled.js" );
+
             // this event gets fired after block settings are updated. it's nice to repaint the screen if these settings would alter it
             this.BlockUpdated += Block_BlockUpdated;
             this.AddConfigurationUpdateTrigger( upnlContent );

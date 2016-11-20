@@ -141,7 +141,7 @@ namespace RockWeb.Blocks.Cms
             }
 
             var mergeFields = new Dictionary<string, object>();
-            mergeFields.Add( "DetailPage", LinkedPageUrl( "DetailPage", null ) );
+            mergeFields.Add( "DetailPage", LinkedPageRoute( "DetailPage" ) );
             mergeFields.Add( "ContentChannel", contentChannel );    
             mergeFields.Add( "CurrentPerson", CurrentPerson );
             mergeFields.Add( "Items", items.Take(GetAttributeValue( "MaxItems" ).AsInteger()).ToList() );

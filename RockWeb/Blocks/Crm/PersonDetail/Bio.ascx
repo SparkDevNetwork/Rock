@@ -77,7 +77,7 @@
                     </div>
                 </div>
 
-               
+                <asp:PlaceHolder ID="phCustomContent" runat="server" />
 
             </div>
         </div>

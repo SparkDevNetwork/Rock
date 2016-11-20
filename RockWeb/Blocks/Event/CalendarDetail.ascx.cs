@@ -565,11 +565,14 @@ namespace RockWeb.Blocks.Event
             if ( !eventCalendarId.Equals( 0 ) )
             {
                 eventCalendar = GetEventCalendar( eventCalendarId, rockContext );
+                pdAuditDetails.SetEntity( eventCalendar, ResolveRockUrl( "~" ) );
             }
 
             if ( eventCalendar == null )
             {
                 eventCalendar = new EventCalendar { Id = 0 };
+                // hide the panel drawer that show created and last modified dates
+                pdAuditDetails.Visible = false;
             }
 
             // Admin rights are needed to edit a calendar ( Edit rights only allow adding/removing items )

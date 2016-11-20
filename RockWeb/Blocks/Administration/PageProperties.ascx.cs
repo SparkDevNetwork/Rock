@@ -187,6 +187,7 @@ namespace RockWeb.Blocks.Administration
                 tbPageName.Text = page.InternalName;
                 tbPageTitle.Text = page.PageTitle;
                 tbBrowserTitle.Text = page.BrowserTitle;
+                tbBodyCssClass.Text = page.BodyCssClass;
                 ppParentPage.SetValue( pageService.Get( page.ParentPageId ?? 0 ) );
                 tbIconCssClass.Text = page.IconCssClass;
 
@@ -385,6 +386,8 @@ namespace RockWeb.Blocks.Administration
                 page.InternalName = tbPageName.Text;
                 page.PageTitle = tbPageTitle.Text;
                 page.BrowserTitle = tbBrowserTitle.Text;
+                page.BodyCssClass = tbBodyCssClass.Text;
+
                 if ( parentPageId != 0 )
                 {
                     page.ParentPageId = parentPageId;

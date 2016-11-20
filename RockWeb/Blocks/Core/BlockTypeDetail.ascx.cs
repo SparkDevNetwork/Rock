@@ -142,14 +142,17 @@ namespace RockWeb.Blocks.Core
                 lActionTitle.Text = ActionTitle.Edit( BlockType.FriendlyTypeName ).FormatAsHtmlTitle();
                 lPages.Visible = true;
                 lblStatus.Visible = true;
+                pdAuditDetails.SetEntity( blockType, ResolveRockUrl( "~" ) );
             }
-            
+
             if (blockType == null)
             {
                 blockType = new BlockType { Id = 0 };
                 lActionTitle.Text = ActionTitle.Add( BlockType.FriendlyTypeName ).FormatAsHtmlTitle();
                 lPages.Visible = false;
                 lblStatus.Visible = false;
+                // hide the panel drawer that show created and last modified dates
+                pdAuditDetails.Visible = false;
             }
 
             hfBlockTypeId.Value = blockType.Id.ToString();

@@ -188,12 +188,15 @@ namespace RockWeb.Blocks.Core
             {
                 campus = new CampusService( new RockContext() ).Get( campusId );
                 lActionTitle.Text = ActionTitle.Edit(Campus.FriendlyTypeName).FormatAsHtmlTitle();
+                pdAuditDetails.SetEntity( campus, ResolveRockUrl( "~" ) );
             }
 
             if ( campus == null )
             {
                 campus = new Campus { Id = 0 };
                 lActionTitle.Text = ActionTitle.Add( Campus.FriendlyTypeName ).FormatAsHtmlTitle();
+                // hide the panel drawer that show created and last modified dates
+                pdAuditDetails.Visible = false;
             }
 
             hfCampusId.Value = campus.Id.ToString();

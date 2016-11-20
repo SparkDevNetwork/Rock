@@ -686,7 +686,6 @@ namespace RockWeb.Blocks.Cms
 
             ContentChannelItem contentItem = GetContentItem();
 
-            string rootUrl = ResolveRockUrl( "~" );
             pdAuditDetails.SetEntity( contentItem, ResolveRockUrl( "~" ) );
 
             if ( contentItem != null &&

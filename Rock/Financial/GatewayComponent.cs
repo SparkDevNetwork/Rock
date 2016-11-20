@@ -110,7 +110,7 @@ namespace Rock.Financial
         /// <param name="financialGateway">The financial gateway.</param>
         /// <param name="key">The key.</param>
         /// <returns></returns>
-        protected string GetAttributeValue( FinancialGateway financialGateway, string key )
+        public string GetAttributeValue( FinancialGateway financialGateway, string key )
         {
             if ( financialGateway.AttributeValues == null )
             {
