@@ -1150,6 +1150,7 @@
     <Compile Include="UniversalSearch\ModelFieldFilterConfig.cs" />
     <Compile Include="UniversalSearch\SearchResultModel.cs" />
     <Compile Include="Utility\DebugHelper.cs" />
+    <Compile Include="Utility\ExcelHelper.cs" />
     <Compile Include="Utility\FileUtilities.cs" />
     <Compile Include="Web\UI\RockTheme.cs" />
     <Compile Include="Web\Cache\AttributeValueCache.cs" />
