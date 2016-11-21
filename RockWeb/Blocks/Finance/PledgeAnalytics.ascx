@@ -20,7 +20,7 @@
                         <div class="col-md-3 filter-options">
                             <Rock:AccountPicker ID="apAccount" runat="server" Label="Account" />
 
-                            <Rock:DateRangePicker ID="drpDateRange" runat="server" Label="Date Range" />
+                            <Rock:SlidingDateRangePicker ID="drpSlidingDateRange" runat="server" Label="Date Range" EnabledSlidingDateRangeTypes="Previous, Last, Current, DateRange"/>
 
                             <Rock:NumberRangeEditor ID="nrePledgeAmount" runat="server" Label="Pledge Amount" />
 
@@ -52,24 +52,22 @@
 
                             <asp:Panel ID="pnlResults" runat="server" Visible="false">
 
-                                <div class="grid grid-panel">
-                                    <Rock:Grid ID="gList" runat="server" AllowSorting="true" PersonIdField="Id" OnRowSelected="gList_RowSelected"
-                                        ExportSource="ColumnOutput" ExportFilename="PledgeAnalytics">
-                                        <Columns>
-                                            <Rock:SelectField />
-                                            <Rock:RockTemplateField HeaderText="Person" SortExpression="LastName,NickName">
-                                                <ItemTemplate>
-                                                    <%# FormatName( Eval("LastName"), Eval("NickName") ) %>
-                                                </ItemTemplate>
-                                            </Rock:RockTemplateField>
-                                            <Rock:RockBoundField DataField="Email" HeaderText="Email" SortExpression="Email" Visible="false" ExcelExportBehavior="AlwaysInclude" />
-                                            <Rock:CurrencyField DataField="PledgeAmount" HeaderText="Pledge Total" SortExpression="PledgeAmount" />
-                                            <Rock:CurrencyField DataField="GiftAmount" HeaderText="Total Giving Amount" SortExpression="GiftAmount" />
-                                            <Rock:RockBoundField DataField="PercentComplete" HeaderText="Percent Complete" SortExpression="PercentComplete" DataFormatString="{0:P0}" ItemStyle-HorizontalAlign="Right" />
-                                            <Rock:RockBoundField DataField="GiftCount" HeaderText="Giving Count" SortExpression="GiftCount" DataFormatString="{0:N0}" ItemStyle-HorizontalAlign="Right" />
-                                        </Columns>
-                                    </Rock:Grid>
-                                </div>
+                                <Rock:Grid ID="gList" runat="server" AllowSorting="true" PersonIdField="Id" OnRowSelected="gList_RowSelected"
+                                    ExportSource="ColumnOutput" ExportFilename="PledgeAnalytics">
+                                    <Columns>
+                                        <Rock:SelectField />
+                                        <Rock:RockTemplateField HeaderText="Person" SortExpression="LastName,NickName">
+                                            <ItemTemplate>
+                                                <%# FormatName( Eval("LastName"), Eval("NickName") ) %>
+                                            </ItemTemplate>
+                                        </Rock:RockTemplateField>
+                                        <Rock:RockBoundField DataField="Email" HeaderText="Email" SortExpression="Email" Visible="false" ExcelExportBehavior="AlwaysInclude" />
+                                        <Rock:CurrencyField DataField="PledgeAmount" HeaderText="Pledge Total" SortExpression="PledgeAmount" />
+                                        <Rock:CurrencyField DataField="GiftAmount" HeaderText="Total Giving Amount" SortExpression="GiftAmount" />
+                                        <Rock:RockBoundField DataField="PercentComplete" HeaderText="Percent Complete" SortExpression="PercentComplete" DataFormatString="{0:P0}" ItemStyle-HorizontalAlign="Right" />
+                                        <Rock:RockBoundField DataField="GiftCount" HeaderText="Giving Count" SortExpression="GiftCount" DataFormatString="{0:N0}" ItemStyle-HorizontalAlign="Right" />
+                                    </Columns>
+                                </Rock:Grid>
 
                             </asp:Panel>
 

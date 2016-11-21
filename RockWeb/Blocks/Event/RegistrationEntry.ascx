@@ -43,18 +43,26 @@
         </asp:Panel>
 
         <asp:Panel id="pnlRegistrantFields" runat="server" >
-            <div class="js-registration-same-family registrationentry-samefamily">
+
+            <div class="js-registration-same-family">
                 <asp:Panel ID="pnlFamilyOptions" runat="server" CssClass="well">
                     <Rock:RockRadioButtonList ID="rblFamilyOptions" runat="server" Label="Individual is in the same family as" RepeatDirection="Vertical" Required="true" RequiredErrorMessage="Answer to which family is required." DataTextField="Value" DataValueField="Key" />
                 </asp:Panel>
             </div>
         
+            <asp:Panel ID="pnlFamilyMembers" runat="server" Visible="false" CssClass="row" >
+                <div class="col-md-6">
+                    <Rock:RockDropDownList ID="ddlFamilyMembers" runat="server" Label="Family Member" AutoPostBack="true" OnSelectedIndexChanged="ddlFamilyMembers_SelectedIndexChanged" />
+                </div>
+            </asp:Panel>
+
             <asp:PlaceHolder ID="phRegistrantControls" runat="server" />
         
             <div id="divFees" runat="server" class="well registration-additional-options">
                 <h4><asp:Literal ID="lRegistrantFeeCaption" runat="server" /></h4>
                 <asp:PlaceHolder ID="phFees" runat="server" />
             </div>
+
         </asp:Panel>
 
         <asp:Panel id="pnlDigitalSignature" runat="server" visible="false">
@@ -230,7 +238,7 @@
                         <Rock:RockTextBox ID="txtCVV" Label="Card Security Code" CssClass="input-width-xs" runat="server" MaxLength="4" />
                     </div>
                 </div>
-		<Rock:AddressControl ID="acBillingAddress" runat="server" Label="Billing Address" UseStateAbbreviation="true" UseCountryAbbreviation="false" ShowAddressLine2="false" />
+				<Rock:AddressControl ID="acBillingAddress" runat="server" Label="Billing Address" UseStateAbbreviation="true" UseCountryAbbreviation="false" ShowAddressLine2="false" />
             </div>
 
         </asp:Panel>

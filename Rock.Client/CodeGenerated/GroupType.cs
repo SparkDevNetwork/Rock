@@ -95,6 +95,9 @@ namespace Rock.Client
         public int? InheritedGroupTypeId { get; set; }
 
         /// <summary />
+        public bool IsIndexEnabled { get; set; }
+
+        /// <summary />
         public bool IsSystem { get; set; }
 
         /// <summary />
@@ -179,6 +182,7 @@ namespace Rock.Client
             this.IconCssClass = source.IconCssClass;
             this.IgnorePersonInactivated = source.IgnorePersonInactivated;
             this.InheritedGroupTypeId = source.InheritedGroupTypeId;
+            this.IsIndexEnabled = source.IsIndexEnabled;
             this.IsSystem = source.IsSystem;
             this.LocationSelectionMode = source.LocationSelectionMode;
             this.ModifiedAuditValuesAlreadyUpdated = source.ModifiedAuditValuesAlreadyUpdated;

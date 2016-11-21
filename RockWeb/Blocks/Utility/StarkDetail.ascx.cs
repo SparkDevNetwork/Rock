@@ -80,6 +80,9 @@ namespace RockWeb.Blocks.Utility
             if ( !Page.IsPostBack )
             {
                 // added for your convenience
+
+                // to show the created/modified by date time details in the PanelDrawer do something like this:
+                // pdAuditDetails.SetEntity( <YOUROBJECT>, ResolveRockUrl( "~" ) );
             }
         }
 

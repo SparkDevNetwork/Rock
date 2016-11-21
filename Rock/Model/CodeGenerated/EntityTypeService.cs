@@ -262,6 +262,7 @@ namespace Rock.Model
             target.FriendlyName = source.FriendlyName;
             target.IsCommon = source.IsCommon;
             target.IsEntity = source.IsEntity;
+            target.IsIndexingEnabled = source.IsIndexingEnabled;
             target.IsSecured = source.IsSecured;
             target.MultiValueFieldTypeId = source.MultiValueFieldTypeId;
             target.Name = source.Name;

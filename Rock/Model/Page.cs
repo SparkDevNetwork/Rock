@@ -335,6 +335,16 @@ namespace Rock.Model
         }
         private bool _includeAdminFooter = true;
 
+        /// <summary>
+        /// Gets or sets the body CSS class.
+        /// </summary>
+        /// <value>
+        /// The body CSS class.
+        /// </value>
+        [DataMember]
+        [MaxLength( 100 )]
+        public string BodyCssClass { get; set; }
+
         #endregion
 
         #region Virtual Properties

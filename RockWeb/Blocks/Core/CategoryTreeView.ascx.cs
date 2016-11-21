@@ -125,7 +125,7 @@ namespace RockWeb.Blocks.Core
             if ( detailPageReference == null || detailPageReference.PageId == this.RockPage.PageId )
             {
                 hfPageRouteTemplate.Value = ( this.RockPage.RouteData.Route as System.Web.Routing.Route ).Url;
-                hfDetailPageUrl.Value = new Rock.Web.PageReference( this.RockPage.PageId ).BuildUrl().RemoveLeadingForwardslash();
+                hfDetailPageUrl.Value = new Rock.Web.PageReference( this.RockPage.PageId ).BuildUrl();
             }
             else
             {
@@ -140,7 +140,7 @@ namespace RockWeb.Blocks.Core
                     }
                 }
 
-                hfDetailPageUrl.Value = detailPageReference.BuildUrl().RemoveLeadingForwardslash();
+                hfDetailPageUrl.Value = detailPageReference.BuildUrl();
             }
 
             // Get EntityTypeName

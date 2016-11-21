@@ -48,7 +48,7 @@
     <link rel="apple-touch-icon-precomposed" href="<%# ResolveRockUrl("~/Content/ExternalSite/Icons/touch-icon-iphone.png", true) %>"/>
     
 </head>
-<body>
+<body runat="server" id="body">
 
     <form id="form1" runat="server">
 

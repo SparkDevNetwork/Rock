@@ -1,0 +1,70 @@
+//
+// Image Cropper - styles for image crop component
+// --------------------------------------------------
+
+.image-editor-photo {
+  position: relative;
+  width: 150px;
+
+  .image-container {
+    width: 150px;
+    height: 150px;
+    border: 3px solid @photo-border;
+  }
+
+  .options {
+    position: absolute;
+    top: 110px;
+    right: 0;
+    padding: 6px 12px;
+    color: @imageeditor-color;
+    background-color: @imageeditor-bg;
+    border-radius: @border-radius-base 0 0 @border-radius-base;
+    opacity: 0;
+    -webkit-transition: opacity .25s ease-in-out;
+       -moz-transition: opacity .25s ease-in-out;
+            transition: opacity .25s ease-in-out;
+
+    a {
+      margin-left: 12px;
+      color: #fff;
+      text-decoration: none;
+      cursor: pointer;
+
+      &:hover {
+        opacity: .5;
+      }
+    }
+  }
+
+  .js-upload-progress {
+    position: absolute;
+    top: 55px;
+    left: 55px;
+    color: @input-color;
+    opacity: .5;
+  }
+}
+
+.image-editor-fileinput {
+  height: 0;
+  visibility: hidden;
+}
+
+.image-editor-group.imageupload-group {
+  border: 0;
+}
+
+.image-editor-crop-container {
+  width: 480px;
+  height: 480px;
+}
+
+
+.image-editor-photo:hover .options {
+  opacity: 1;
+}
+
+.image-editor-photo .options a:first-child {
+  margin-left: 0;
+}

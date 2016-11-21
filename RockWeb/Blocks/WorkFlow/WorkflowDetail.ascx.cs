@@ -660,8 +660,12 @@ namespace RockWeb.Blocks.WorkFlow
             if ( Workflow == null )
             {
                 pnlContent.Visible = false;
+                // hide the panel drawer that show created and last modified dates
+                pdAuditDetails.Visible = false;
                 return;
             }
+
+            pdAuditDetails.SetEntity( Workflow, ResolveRockUrl( "~" ) );
 
             _canEdit = UserCanEdit || Workflow.IsAuthorized( Rock.Security.Authorization.EDIT, CurrentPerson );
 

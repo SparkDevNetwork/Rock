@@ -118,7 +118,7 @@
 					{% endif %}
 
 					<div class="col-sm-6 margin-b-md rollover-container" style="overflow: hidden;">
-						{% if LinkedPages.PersonDetailPage != '' %}
+						{% if LinkedPages.PersonDetailPage %}
 							<a href="{{ LinkedPages.PersonDetailPage }}?PersonId={{ member.PersonId }}">
 						{% endif %}
 						<img src="{{ member.Person.PhotoUrl }}&height=60&width=60&mode=crop&scale=both" height="60" class="pull-left margin-r-sm" />
@@ -150,7 +150,7 @@
 						</div>
 						{% endif %}
 
-						{% if LinkedPages.PersonDetailPage != '' %}
+						{% if LinkedPages.PersonDetailPage  %}
 							</a>
 						{% endif %}
 					</div>
@@ -186,7 +186,7 @@
 					{% endif %}
 
 					<div class="col-sm-6 margin-b-md rollover-container" style="overflow: hidden;">
-						{% if LinkedPages.PersonDetailPage != '' %}
+						{% if LinkedPages.PersonDetailPage %}
 							<a href="{{ LinkedPages.PersonDetailPage }}?PersonId={{ member.PersonId }}">
 						{% endif %}
 						<img src="{{ member.Person.PhotoUrl }}&height=60&width=60&mode=crop&scale=both" height="60" class="pull-left margin-r-sm" />
@@ -218,7 +218,7 @@
 						</div>
 						{% endif %}
 
-						{% if LinkedPages.PersonDetailPage != '' %}
+						{% if LinkedPages.PersonDetailPage %}
 							</a>
 						{% endif %}
 					</div>
@@ -253,7 +253,7 @@
 					{% endif %}
 
 					<div class="col-sm-6 margin-b-md rollover-container" style="overflow: hidden;">
-						{% if LinkedPages.PersonDetailPage != '' %}
+						{% if LinkedPages.PersonDetailPage %}
 							<a href="{{ LinkedPages.PersonDetailPage }}?PersonId={{ member.PersonId }}">
 						{% endif %}
 						<img src="{{ member.Person.PhotoUrl }}&height=60&width=60&mode=crop&scale=both" height="60" class="pull-left margin-r-sm" />
@@ -285,7 +285,7 @@
 						</div>
 						{% endif %}
 
-						{% if LinkedPages.PersonDetailPage != '' %}
+						{% if LinkedPages.PersonDetailPage %}
 							</a>
 						{% endif %}
 					</div>

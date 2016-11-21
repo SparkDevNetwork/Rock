@@ -11,6 +11,7 @@
                     <Rock:HighlightLabel ID="hlStatus" runat="server" />
                 </div>
             </div>
+            <Rock:PanelDrawer ID="pdAuditDetails" runat="server"></Rock:PanelDrawer>
             <div class="panel-body">
 
                  <asp:Panel ID="pnlDetails" runat="server">

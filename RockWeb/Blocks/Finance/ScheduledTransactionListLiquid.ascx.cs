@@ -46,21 +46,8 @@ namespace RockWeb.Blocks.Finance
     [TextField( "Transaction Label", "The label to use to describe the transaction (e.g. 'Gift', 'Donation', etc.)", true, "Gift", "", 5 )]
     public partial class ScheduledTransactionListLiquid : Rock.Web.UI.RockBlock
     {
-        #region Fields
-
-        // used for private variables
-
-        #endregion
-
-        #region Properties
-
-        // used for public / protected properties
-
-        #endregion
 
         #region Base Control Methods
-
-        //  overrides of the base RockBlock methods (i.e. OnInit, OnLoad)
 
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
@@ -151,7 +138,7 @@ namespace RockWeb.Blocks.Finance
                 {
                     scheduleSummary.Add( "DaysSinceLastPayment", null );
                 }
-
+                scheduleSummary.Add( "PersonName", transactionSchedule.AuthorizedPersonAlias != null && transactionSchedule.AuthorizedPersonAlias.Person != null ? transactionSchedule.AuthorizedPersonAlias.Person.FullName : "" );
                 scheduleSummary.Add( "CurrencyType", ( transactionSchedule.FinancialPaymentDetail != null && transactionSchedule.FinancialPaymentDetail.CurrencyTypeValue != null ) ? transactionSchedule.FinancialPaymentDetail.CurrencyTypeValue.Value : ""  );
                 scheduleSummary.Add( "CreditCardType", ( transactionSchedule.FinancialPaymentDetail != null && transactionSchedule.FinancialPaymentDetail.CreditCardTypeValue != null) ? transactionSchedule.FinancialPaymentDetail.CreditCardTypeValue.Value : "" );
                 scheduleSummary.Add( "UrlEncryptedKey", transactionSchedule.UrlEncodedKey );
@@ -264,14 +251,23 @@ namespace RockWeb.Blocks.Finance
             if ( CurrentPerson != null )
             {
                 var rockContext = new RockContext();
-                FinancialScheduledTransactionService transactionService = new FinancialScheduledTransactionService( rockContext );
+                var transactionService = new FinancialScheduledTransactionService( rockContext );
+                var personService = new PersonService( rockContext );
 
                 var schedules = transactionService.Queryable( "ScheduledTransactionDetails.Account" )
-                                .Where( s => s.AuthorizedPersonAlias.Person.GivingId == CurrentPerson.GivingId && s.IsActive == true );
+                    .Where( s => s.AuthorizedPersonAlias.Person.GivingId == CurrentPerson.GivingId && s.IsActive == true ).ToList();
 
-                rptScheduledTransactions.DataSource = schedules.ToList();
+                var businesses = personService.GetBusinesses( CurrentPerson.Id ).ToList();
+                foreach( var business in businesses )
+                {
+                    var businessSchedules = transactionService.Queryable( "ScheduledTransactionDetails.Account" )
+                        .Where( s => s.AuthorizedPersonAlias.Person.GivingId == business.GivingId && s.IsActive == true ).ToList();
+                    schedules.AddRange( businessSchedules );
+                }
+
+                rptScheduledTransactions.DataSource = schedules;
                 rptScheduledTransactions.DataBind();
-
+                 
                 if ( schedules.Count() == 0 )
                 {
                     pnlNoScheduledTransactions.Visible = true;
@@ -283,6 +279,6 @@ namespace RockWeb.Blocks.Finance
 
 
         #endregion
-}
+    }
     
 }

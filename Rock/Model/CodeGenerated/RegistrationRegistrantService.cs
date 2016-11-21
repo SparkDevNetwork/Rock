@@ -92,6 +92,7 @@ namespace Rock.Model
             target.ForeignGuid = source.ForeignGuid;
             target.ForeignKey = source.ForeignKey;
             target.GroupMemberId = source.GroupMemberId;
+            target.OnWaitList = source.OnWaitList;
             target.PersonAliasId = source.PersonAliasId;
             target.RegistrationId = source.RegistrationId;
             target.CreatedDateTime = source.CreatedDateTime;

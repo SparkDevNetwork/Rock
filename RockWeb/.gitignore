@@ -1,15 +1,3 @@
-/LINQPad.config
-/Bin
-*.webinfo
-/Themes/Fuse
-/Themes/KidSpring
-/Themes/Junction
-/Themes/NewSpring
-/Themes/Workflows
-/Plugins/com_centralaz/*
-/Plugins/cc_newspring/*
-
-
 /bin/*/*.dll
 /bin/*.dll
 /bin/*.pdb
@@ -17,4 +5,5 @@
 
 /*.suo
 /*.user
-
+/Test.aspx
+/Test.aspx.cs

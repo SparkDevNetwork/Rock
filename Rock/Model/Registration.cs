@@ -249,7 +249,7 @@ namespace Rock.Model
                 var discountedCost = 0.0m;
                 if ( Registrants != null )
                 {
-                    foreach ( var registrant in Registrants )
+                    foreach ( var registrant in Registrants.Where( r => r.OnWaitList == false ) )
                     {
                         discountedCost += registrant.DiscountedCost( DiscountPercentage, DiscountAmount );
                     }
@@ -749,6 +749,14 @@ Registration By: {0} Total Cost/Fees:{1}
         public string PersonName { get; set; }
 
         /// <summary>
+        /// Gets or sets a value indicating whether [on wait list].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [on wait list]; otherwise, <c>false</c>.
+        /// </value>
+        public bool OnWaitList { get; set; }
+
+        /// <summary>
         /// Gets or sets the cost.
         /// </summary>
         /// <value>
@@ -831,6 +839,7 @@ Registration By: {0} Total Cost/Fees:{1}
             FamilyGuid = Guid.Empty;
             FieldValues = new Dictionary<int, FieldValueObject>();
             FeeValues = new Dictionary<int, List<FeeInfo>>();
+            OnWaitList = false;
         }
 
         /// <summary>
@@ -887,6 +896,7 @@ Registration By: {0} Total Cost/Fees:{1}
                     registrant.GroupMember.Group.Name : string.Empty;
                 RegistrationId = registrant.RegistrationId;
                 Cost = registrant.Cost;
+                OnWaitList = registrant.OnWaitList;
 
                 Person person = null;
                 Group family = null;
@@ -1025,7 +1035,7 @@ Registration By: {0} Total Cost/Fees:{1}
 
                         case RegistrationFieldSource.GroupMemberAttribute:
                             {
-                                if ( registrant.GroupMember != null )
+                                if ( registrant != null && registrant.GroupMember != null )
                                 {
                                     if ( registrant.GroupMember.Attributes == null )
                                     {
@@ -1038,11 +1048,15 @@ Registration By: {0} Total Cost/Fees:{1}
 
                         case RegistrationFieldSource.RegistrationAttribute:
                             {
-                                if ( registrant.Attributes == null )
+                                if ( registrant != null )
                                 {
-                                    registrant.LoadAttributes();
+                                    if ( registrant.Attributes == null )
+                                    {
+                                        registrant.LoadAttributes();
+                                    }
+                                    return registrant.GetAttributeValue( attribute.Key );
                                 }
-                                return registrant.GetAttributeValue( attribute.Key );
+                                break;
                             }
                     }
                 }

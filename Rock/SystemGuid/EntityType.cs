@@ -42,6 +42,16 @@ namespace Rock.SystemGuid
         public const string BLOCK = "D89555CA-9AE4-4D62-8AF1-E5E463C1EF65";
 
         /// <summary>
+        /// The content channel type
+        /// </summary>
+        public const string CONTENT_CHANNEL = "44484685-477E-4668-89A6-84F29739EB68";
+
+        /// <summary>
+        /// The content channel item type
+        /// </summary>
+        public const string CONTENT_CHANNEL_ITEM = "BF12AE64-21FB-433B-A8A4-E40E8C426DDA";
+
+        /// <summary>
         /// The guid for the email communication medium
         /// </summary>
         public const string COMMUNICATION_MEDIUM_EMAIL = "5A653EBE-6803-44B4-85D2-FB7B8146D55D";

@@ -44,6 +44,7 @@ using Rock.Jobs;
 using Rock.Model;
 using Rock.Plugin;
 using Rock.Transactions;
+using Rock.Utility;
 using Rock.Web.Cache;
 using Rock.Web.UI;
 
@@ -261,32 +262,8 @@ namespace RockWeb
                     Template.RegisterSafeType( typeof( DBNull ), o => null );
                     Template.RegisterFilter( typeof( Rock.Lava.RockFilters ) );
 
-                    // register lava entity blocks
-                    var assemblies = AppDomain.CurrentDomain.GetAssemblies();
-
-                    foreach ( var assembly in assemblies )
-                    {
-                        try
-                        {
-                            var customCommands = assembly.GetTypes().Where( x => x.BaseType == typeof( Rock.Lava.Blocks.RockLavaBlockBase ) );
-
-                            foreach ( var command in customCommands )
-                            {
-                                if (command.Name == "RockEntity" )
-                                {
-                                    Rock.Lava.Blocks.RockEntity.RegisterEntityCommands();
-                                }
-                                else
-                                {
-                                    MethodInfo method = typeof( Template ).GetMethod( "RegisterTag" );
-                                    MethodInfo genericMethod = method.MakeGenericMethod( command );
-                                    object[] parametersArray = new object[] { command.Name.ToLower() };
-                                    genericMethod.Invoke( this, parametersArray );
-                                }
-                            }
-                        }
-                        catch { }
-                    }
+                    // Perform any Rock startups
+                    RunStartups();
 
                     // add call back to keep IIS process awake at night and to provide a timer for the queued transactions
                     AddCallBack();
@@ -560,6 +537,35 @@ namespace RockWeb
             }
 
             return result;
+        }
+
+        /// <summary>
+        /// Run any custom startup methods
+        /// </summary>
+        public void RunStartups()
+        {
+            try
+            {
+                var startups = new Dictionary<int, List<IRockStartup>>();
+                foreach ( var startupType in Rock.Reflection.FindTypes( typeof( IRockStartup ) ).Select( a => a.Value ).ToList() )
+                {
+                    var startup = Activator.CreateInstance( startupType ) as IRockStartup;
+                    startups.AddOrIgnore( startup.StartupOrder, new List<IRockStartup>() );
+                    startups[startup.StartupOrder].Add( startup );
+                }
+
+                foreach ( var startupList in startups.OrderBy( s => s.Key ).Select( s => s.Value ) )
+                {
+                    foreach ( var startup in startupList )
+                    {
+                        startup.OnStartup();
+                    }
+                }
+            }
+            catch ( Exception ex )
+            {
+                ExceptionLogService.LogException( ex, null );
+            }
         }
 
         /// <summary>

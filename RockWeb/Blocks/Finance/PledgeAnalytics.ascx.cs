@@ -150,7 +150,7 @@ namespace RockWeb.Blocks.Finance
             int? accountId = apAccount.SelectedValue.AsIntegerOrNull();
             if ( accountId.HasValue )
             {
-                var dateRange = SlidingDateRangePicker.CalculateDateRangeFromDelimitedValues( drpDateRange.DelimitedValues );
+                var dateRange = SlidingDateRangePicker.CalculateDateRangeFromDelimitedValues( drpSlidingDateRange.DelimitedValues );
                 var start = dateRange.Start;
                 var end = dateRange.End;
 
@@ -207,7 +207,7 @@ namespace RockWeb.Blocks.Finance
 
             this.SetUserPreference(keyPrefix + "apAccount", apAccount.SelectedValue);
 
-            this.SetUserPreference(keyPrefix + "drpDateRange", drpDateRange.DelimitedValues);
+            this.SetUserPreference(keyPrefix + "drpDateRange", drpSlidingDateRange.DelimitedValues );
 
             this.SetUserPreference(keyPrefix + "nrePledgeAmount", nrePledgeAmount.DelimitedValues);
             this.SetUserPreference(keyPrefix + "nrePercentComplete", nrePercentComplete.DelimitedValues);
@@ -229,9 +229,28 @@ namespace RockWeb.Blocks.Finance
             {
                 apAccount.SetValue(Int32.Parse(accountSetting));
             }
-            
-            
-            drpDateRange.DelimitedValues = this.GetUserPreference(keyPrefix + "drpDateRange");
+
+            string slidingDateRangeSettings = this.GetUserPreference( keyPrefix + "drpDateRange" );
+            if ( string.IsNullOrWhiteSpace( slidingDateRangeSettings ) )
+            {
+                // default to current year
+                drpSlidingDateRange.SlidingDateRangeMode = SlidingDateRangePicker.SlidingDateRangeType.Current;
+                drpSlidingDateRange.TimeUnit = SlidingDateRangePicker.TimeUnitType.Year;
+            }
+            else
+            {
+                var dateRange = SlidingDateRangePicker.CalculateDateRangeFromDelimitedValues( slidingDateRangeSettings );
+                if ( !dateRange.Start.HasValue && !dateRange.End.HasValue )
+                {
+                    // default to current year
+                    drpSlidingDateRange.SlidingDateRangeMode = SlidingDateRangePicker.SlidingDateRangeType.Current;
+                    drpSlidingDateRange.TimeUnit = SlidingDateRangePicker.TimeUnitType.Year;
+                }
+                else
+                {
+                    drpSlidingDateRange.DelimitedValues = slidingDateRangeSettings;
+                }
+            }
 
             nrePledgeAmount.DelimitedValues = this.GetUserPreference(keyPrefix + "nrePledgeAmount");
             nrePercentComplete.DelimitedValues = this.GetUserPreference(keyPrefix + "nrePercentComplete");

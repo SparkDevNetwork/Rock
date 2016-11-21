@@ -81,9 +81,7 @@ namespace Rock.Data
         /// <value>
         /// The foreign identifier.
         /// </value>
-        [Index]
         [DataMember]
-        [LavaIgnore]
         [HideFromReporting]
         public int? ForeignId { get; set; }
 
@@ -93,9 +91,7 @@ namespace Rock.Data
         /// <value>
         /// The foreign identifier.
         /// </value>
-        [Index]
         [DataMember]
-        [LavaIgnore]
         [HideFromReporting]
         public Guid? ForeignGuid { get; set; }
 
@@ -106,9 +102,7 @@ namespace Rock.Data
         /// The foreign identifier.
         /// </value>
         [MaxLength( 100 )]
-        [Index]
         [DataMember]
-        [LavaIgnore]
         [HideFromReporting]
         public string ForeignKey { get; set; }
 

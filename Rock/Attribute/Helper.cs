@@ -330,6 +330,9 @@ namespace Rock.Attribute
 
                 rockContext = rockContext ?? new RockContext();
 
+                // Event item's will load attributes for child calendar items. Use this to store the child values.
+                var altEntityIds = new List<int>();
+
                 // Check for group type attributes
                 var groupTypeIds = new List<int>();
                 if ( entity is GroupMember || entity is Group || entity is GroupType )
@@ -394,6 +397,16 @@ namespace Rock.Attribute
                     }
                 }
 
+                // Get the calendar ids for any event items
+                var calendarIds = new List<int>();
+                if ( entity is EventItem )
+                {
+                    var calendarItems = ( (EventItem)entity ).EventCalendarItems.ToList() ?? new EventCalendarItemService( rockContext )
+                        .Queryable().AsNoTracking().Where( c => c.EventItemId == ( (EventItem)entity ).Id ).ToList();
+                    calendarIds = calendarItems.Select( c => c.EventCalendarId ).ToList();
+                    altEntityIds = calendarItems.Select( c => c.Id ).ToList();
+                }
+
                 foreach ( PropertyInfo propertyInfo in entityType.GetProperties() )
                     properties.Add( propertyInfo.Name.ToLower(), propertyInfo );
 
@@ -405,9 +418,34 @@ namespace Rock.Attribute
                 {
                     groupTypeIds.ForEach( g => inheritedAttributes.Add( g, new List<Rock.Web.Cache.AttributeCache>() ) );
                 }
+                else if ( calendarIds.Any() )
+                {
+                    calendarIds.ForEach( c => inheritedAttributes.Add( c, new List<Rock.Web.Cache.AttributeCache>() ) );
+                }
                 else
                 {
                     inheritedAttributes.Add( 0, new List<Rock.Web.Cache.AttributeCache>() );
+                }
+
+                // Check for any calendar item attributes that event item inherits
+                if ( calendarIds.Any() )
+                {
+                    var calendarItemEntityType = EntityTypeCache.Read( typeof( EventCalendarItem ) );
+                    if ( calendarItemEntityType != null )
+                    {
+                        foreach ( var calendarItemEntityAttributes in AttributeCache
+                            .GetByEntity( calendarItemEntityType.Id )
+                            .Where( a =>
+                                a.EntityTypeQualifierColumn == "EventCalendarId" &&
+                                calendarIds.Contains( a.EntityTypeQualifierValue.AsInteger() ) ) )
+                        {
+                            foreach ( var attributeId in calendarItemEntityAttributes.AttributeIds )
+                            {
+                                inheritedAttributes[calendarItemEntityAttributes.EntityTypeQualifierValue.AsInteger()].Add(
+                                    AttributeCache.Read( attributeId ) );
+                            }
+                        }
+                    }
                 }
 
                 var attributes = new List<Rock.Web.Cache.AttributeCache>();
@@ -488,7 +526,10 @@ namespace Rock.Attribute
                     {
                         List<int> attributeIds = allAttributes.Select( a => a.Id ).ToList();
                         foreach ( var attributeValue in attributeValueService.Queryable().AsNoTracking()
-                            .Where( v => v.EntityId == entity.Id && attributeIds.Contains( v.AttributeId ) ) )
+                            .Where( v => 
+                                v.EntityId.HasValue &&
+                                ( v.EntityId.Value == entity.Id || altEntityIds.Contains( v.EntityId.Value ) )
+                                && attributeIds.Contains( v.AttributeId ) ) )
                         {
                             var attributeKey = AttributeCache.Read( attributeValue.AttributeId ).Key;
                             attributeValues[attributeKey] = new AttributeValueCache( attributeValue );

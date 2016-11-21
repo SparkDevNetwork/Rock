@@ -183,21 +183,15 @@ namespace Rock.Lava
         {
             var lavaCommands = new List<string>();
 
-            var assemblies = AppDomain.CurrentDomain.GetAssemblies();
-
-            foreach ( var assembly in assemblies )
+            try
             {
-                try
+                foreach ( var blockType in Rock.Reflection.FindTypes( typeof( Rock.Lava.Blocks.RockLavaBlockBase ) ).Select( a => a.Value ).ToList() )
                 {
-                    var customCommands = assembly.GetTypes().Where( x => x.BaseType == typeof( Rock.Lava.Blocks.RockLavaBlockBase ) );
-
-                    foreach ( var command in customCommands )
-                    {
-                        lavaCommands.Add( command.Name );
-                    }
+                    lavaCommands.Add( blockType.Name );
+                    var assemblies = AppDomain.CurrentDomain.GetAssemblies();
                 }
-                catch { }
             }
+            catch { }
 
             return lavaCommands;
         }

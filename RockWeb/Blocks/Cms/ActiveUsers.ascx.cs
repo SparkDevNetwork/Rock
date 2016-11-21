@@ -93,7 +93,7 @@ namespace RockWeb.Blocks.Cms
         private void ShowActiveUsers()
         {
             int? siteId = GetAttributeValue( "Site" ).AsIntegerOrNull();
-            if ( !siteId.HasValue )
+            if ( !siteId.HasValue || SiteCache.Read(siteId.Value) == null )
             {
                 lMessages.Text = "<div class='alert alert-warning'>No site is currently configured.</div>";
                 return;

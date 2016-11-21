@@ -4410,6 +4410,65 @@ END
         }
 
         /// <summary>
+        /// Updates the workflow action form attribute.
+        /// </summary>
+        /// <param name="actionFormGuid">The action form unique identifier.</param>
+        /// <param name="attributeGuid">The attribute unique identifier.</param>
+        /// <param name="order">The order.</param>
+        /// <param name="isVisible">if set to <c>true</c> [is visible].</param>
+        /// <param name="isReadOnly">if set to <c>true</c> [is read only].</param>
+        /// <param name="isRequired">if set to <c>true</c> [is required].</param>
+        /// <param name="hideLabel">if set to <c>true</c> [hide label].</param>
+        /// <param name="preHtml">The pre html text/html.</param>
+        /// <param name="postHtml">The post html text/html.</param>
+        /// <param name="guid">The unique identifier.</param>
+        public void UpdateWorkflowActionFormAttribute( string actionFormGuid, string attributeGuid, int order,
+            bool isVisible, bool isReadOnly, bool isRequired, bool hideLabel, string preHtml, string postHtml, string guid )
+        {
+            Migration.Sql( string.Format( @"
+
+                DECLARE @ActionFormId int = (SELECT [Id] FROM [WorkflowActionForm] WHERE [Guid] = '{0}')
+                DECLARE @AttributeId int = (SELECT [Id] FROM [Attribute] WHERE [Guid] = '{1}')
+
+                IF @ActionFormId IS NOT NULL AND @AttributeId IS NOT NULL
+                BEGIN
+
+                    IF EXISTS ( SELECT [Id] FROM [WorkflowActionFormAttribute] WHERE [Guid] =  '{9}' )
+                    BEGIN
+                        UPDATE [WorkflowActionFormAttribute] SET
+                            [WorkflowActionFormId] = @ActionFormId,
+                            [AttributeId] = @AttributeId,
+                            [Order] = {2},
+                            [IsVisible] = {3},
+                            [IsReadOnly] = {4},
+                            [IsRequired] = {5},
+                            [HideLabel] = {6},
+                            [PreHtml] = '{7}',
+                            [PostHtml] = '{8}'
+                        WHERE [Guid] = '{9}'
+                    END
+                    ELSE
+                    BEGIN
+                        INSERT INTO [WorkflowActionFormAttribute] (
+                            [WorkflowActionFormId], [AttributeId], [Order], [IsVisible], [IsReadOnly], [IsRequired],[HideLabel],[PreHtml],[PostHtml],[Guid] )
+                        VALUES( @ActionFormId, @AttributeId, {2}, {3}, {4}, {5}, {6}, '{7}', '{8}', '{9}' )
+                    END
+
+                END
+",
+                    actionFormGuid,
+                    attributeGuid,
+                    order,
+                    ( isVisible ? "1" : "0" ),
+                    ( isReadOnly ? "1" : "0" ),
+                    ( isRequired ? "1" : "0" ),
+                    ( hideLabel ? "1" : "0" ),
+                    preHtml.Replace("'", "''"),
+                    postHtml.Replace( "'", "''" ),
+                    guid )
+            );
+        }
+        /// <summary>
         /// Updates the type of the workflow action.
         /// </summary>
         /// <param name="activityTypeGuid">The activity type unique identifier.</param>

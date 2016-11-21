@@ -91,6 +91,9 @@ namespace Rock.Model
         {
             target.Id = source.Id;
             target.AssignedGroupId = source.AssignedGroupId;
+            target.AssignedGroupMemberAttributeValues = source.AssignedGroupMemberAttributeValues;
+            target.AssignedGroupMemberRoleId = source.AssignedGroupMemberRoleId;
+            target.AssignedGroupMemberStatus = source.AssignedGroupMemberStatus;
             target.CampusId = source.CampusId;
             target.Comments = source.Comments;
             target.ConnectionOpportunityId = source.ConnectionOpportunityId;

@@ -257,6 +257,9 @@ namespace RockWeb.Blocks.Cms
                 site.PageViewRetentionPeriodDays = nbPageViewRetentionPeriodDays.Text.AsIntegerOrNull();
 
                 site.AllowIndexing = cbAllowIndexing.Checked;
+                site.IsIndexEnabled = cbEnableIndexing.Checked;
+                site.IndexStartingLocation = tbIndexStartingLocation.Text;
+
                 site.PageHeaderContent = cePageHeaderContent.Text;
 
                 var currentDomains = tbSiteDomains.Text.SplitDelimitedValues().ToList<string>();
@@ -379,6 +382,16 @@ namespace RockWeb.Blocks.Cms
         }
 
         /// <summary>
+        /// Handles the CheckedChanged event of the cbEnableIndexing control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void cbEnableIndexing_CheckedChanged( object sender, EventArgs e )
+        {
+            SetControlsVisiblity();
+        }
+
+        /// <summary>
         /// Handles the CheckedChanged event of the cbEnableMobileRedirect control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
@@ -428,6 +441,7 @@ namespace RockWeb.Blocks.Cms
             if ( !siteId.Equals( 0 ) )
             {
                 site = new SiteService( new RockContext() ).Get( siteId );
+                pdAuditDetails.SetEntity( site, ResolveRockUrl( "~" ) );
             }
 
             if ( site == null )
@@ -435,6 +449,8 @@ namespace RockWeb.Blocks.Cms
                 site = new Site { Id = 0 };
                 site.SiteDomains = new List<SiteDomain>();
                 site.Theme = RockPage.Layout.Site.Theme;
+                // hide the panel drawer that show created and last modified dates
+                pdAuditDetails.Visible = false;
             }
 
             // set theme compile button
@@ -582,6 +598,18 @@ namespace RockWeb.Blocks.Cms
             cbRedirectTablets.Checked = site.RedirectTablets;
             cbEnablePageViews.Checked = site.EnablePageViews;
             nbPageViewRetentionPeriodDays.Text = site.PageViewRetentionPeriodDays.ToString();
+
+            cbEnableIndexing.Checked = site.IsIndexEnabled;
+            tbIndexStartingLocation.Text = site.IndexStartingLocation;
+
+            // disable the indexing features if indexing on site is disabled
+            var siteEntityType = EntityTypeCache.Read( "Rock.Model.Site" );
+            if (siteEntityType != null && !siteEntityType.IsIndexingEnabled )
+            {
+                cbEnableIndexing.Visible = false;
+                tbIndexStartingLocation.Visible = false;
+            }
+
             SetControlsVisiblity();
         }
 
@@ -628,10 +656,10 @@ namespace RockWeb.Blocks.Cms
             cbRedirectTablets.Visible = mobileRedirectVisible;
 
             nbPageViewRetentionPeriodDays.Visible = cbEnablePageViews.Checked;
+
+            tbIndexStartingLocation.Visible = cbEnableIndexing.Checked;
         }
 
         #endregion
-
-        
     }
 }

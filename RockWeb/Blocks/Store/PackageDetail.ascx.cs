@@ -158,7 +158,7 @@ namespace RockWeb.Blocks.Store
             lPackageDescription.Text = package.Description;
             lVendorName.Text = package.Vendor.Name;
             imgPackageImage.ImageUrl = package.PackageIconBinaryFile.ImageUrl;
-            lbPackageLink.PostBackUrl = package.SupportUrl;
+            hlPackageLink.NavigateUrl = package.SupportUrl;
             lRatingSummary.Text = string.Format( "<div class='rating rating-{0} pull-left margin-r-sm'><small></small></div>", package.Rating.ToString().Replace( ".", "" ) );
 
             lAuthorInfo.Text = string.Format( "<a href='{0}'>{1}</a>", package.Vendor.Url, package.Vendor.Name );
