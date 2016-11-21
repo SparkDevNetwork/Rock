@@ -5,7 +5,7 @@
 	</summary>
 
 	<returns>
-		Person [Id] of the most likely spouse. 
+		Person [Id] of the most likely spouse; otherwise returns NULL
 	</returns>
 	<remarks>
 		
@@ -45,6 +45,7 @@ BEGIN
 			AND P.[MaritalStatusValueId] = 143 -- Person must be Married
 			AND S.[MaritalStatusValueId] = 143 -- Potential spouse must be Married
 			AND FM.[PersonId] != FM2.[PersonId] -- Cannot be married to yourself
+			-- In the future, we may need to implement and check a GLOBAL Attribute "BibleStrict" with this logic: 
 			AND (P.[Gender] != S.[Gender] OR P.[Gender] = 0 OR S.[Gender] = 0) -- Genders cannot match if both are known
 		ORDER BY 
 			ABS(DATEDIFF(DAY, ISNULL(P.[BirthDate], '1/1/0001'), ISNULL(S.[BirthDate], '1/1/0001'))) -- If multiple results, choose nearest in age

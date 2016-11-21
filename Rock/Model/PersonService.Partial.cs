@@ -1379,6 +1379,7 @@ namespace Rock.Model
 
             return GetFamilyMembers( person.Id )
                 .Where( m => m.GroupRoleId == adultRoleId )
+                // In the future, we may need to implement and check a GLOBAL Attribute "BibleStrict" with this logic: 
                 .Where( m => m.Person.Gender != person.Gender || m.Person.Gender == Gender.Unknown || person.Gender == Gender.Unknown )
                 .Where( m => m.Person.MaritalStatusValueId == marriedDefinedValueId )
                 .OrderBy( m => DbFunctions.DiffDays(m.Person.BirthDate ?? new DateTime(1, 1, 1), person.BirthDate ?? new DateTime( 1, 1, 1 ) ) )
