@@ -33,6 +33,27 @@
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Net" />
+    <Reference Include="System.Net.Http">
+      <HintPath>..\Applications\Wpf\StatementGenerator\packages\System.Net.Http.2.0.20126.16343\lib\net40\System.Net.Http.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System.Net.Http.Extensions, Version=2.2.29.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\Applications\Wpf\StatementGenerator\packages\System.Net.Http.Formatting.Extension.5.2.3.0\lib\System.Net.Http.Extensions.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System.Net.Http.Formatting, Version=5.2.3.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\Applications\Wpf\StatementGenerator\packages\System.Net.Http.Formatting.Extension.5.2.3.0\lib\System.Net.Http.Formatting.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System.Net.Http.Primitives, Version=4.2.29.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\Applications\Wpf\StatementGenerator\packages\System.Net.Http.Formatting.Extension.5.2.3.0\lib\System.Net.Http.Primitives.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System.Net.Http.WebRequest">
+      <HintPath>..\Applications\Wpf\StatementGenerator\packages\System.Net.Http.2.0.20126.16343\lib\net40\System.Net.Http.WebRequest.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="CodeGenerated\Attendance.cs" />
@@ -45,6 +66,7 @@
     <Compile Include="CodeGenerated\Auth.cs" />
     <Compile Include="CodeGenerated\BackgroundCheck.cs" />
     <Compile Include="CodeGenerated\BenevolenceRequest.cs" />
+    <Compile Include="CodeGenerated\BenevolenceRequestDocument.cs" />
     <Compile Include="CodeGenerated\BenevolenceResult.cs" />
     <Compile Include="CodeGenerated\BinaryFile.cs" />
     <Compile Include="CodeGenerated\BinaryFileData.cs" />
@@ -70,6 +92,7 @@
     <Compile Include="CodeGenerated\ConnectionWorkflow.cs" />
     <Compile Include="CodeGenerated\ContentChannel.cs" />
     <Compile Include="CodeGenerated\ContentChannelItem.cs" />
+    <Compile Include="CodeGenerated\ContentChannelItemAssociation.cs" />
     <Compile Include="CodeGenerated\ContentChannelType.cs" />
     <Compile Include="CodeGenerated\DataView.cs" />
     <Compile Include="CodeGenerated\DataViewFilter.cs" />
@@ -135,6 +158,8 @@
     <Compile Include="CodeGenerated\MetricValuePartition.cs" />
     <Compile Include="CodeGenerated\Note.cs" />
     <Compile Include="CodeGenerated\NoteType.cs" />
+    <Compile Include="CodeGenerated\Notification.cs" />
+    <Compile Include="CodeGenerated\NotificationRecipient.cs" />
     <Compile Include="CodeGenerated\Page.cs" />
     <Compile Include="CodeGenerated\PageContext.cs" />
     <Compile Include="CodeGenerated\PageRoute.cs" />
@@ -166,6 +191,9 @@
     <Compile Include="CodeGenerated\Schedule.cs" />
     <Compile Include="CodeGenerated\ServiceJob.cs" />
     <Compile Include="CodeGenerated\ServiceLog.cs" />
+    <Compile Include="CodeGenerated\SignatureDocument.cs" />
+    <Compile Include="CodeGenerated\SignatureDocumentTemplate.cs" />
+    <Compile Include="CodeGenerated\SignatureDocumentType.cs" />
     <Compile Include="CodeGenerated\Site.cs" />
     <Compile Include="CodeGenerated\SiteDomain.cs" />
     <Compile Include="CodeGenerated\SystemEmail.cs" />
@@ -185,6 +213,9 @@
     <Compile Include="CodeGenerated\WorkflowTrigger.cs" />
     <Compile Include="CodeGenerated\WorkflowType.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

@@ -98,16 +98,12 @@ namespace Rock.Model
             target.Description = source.Description;
             target.ForeignGuid = source.ForeignGuid;
             target.ForeignKey = source.ForeignKey;
-            target.GroupMemberRoleId = source.GroupMemberRoleId;
-            target.GroupMemberStatus = source.GroupMemberStatus;
-            target.GroupTypeId = source.GroupTypeId;
             target.IconCssClass = source.IconCssClass;
             target.IsActive = source.IsActive;
             target.Name = source.Name;
             target.PhotoId = source.PhotoId;
             target.PublicName = source.PublicName;
             target.Summary = source.Summary;
-            target.UseAllGroupsOfType = source.UseAllGroupsOfType;
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;
             target.CreatedByPersonAliasId = source.CreatedByPersonAliasId;

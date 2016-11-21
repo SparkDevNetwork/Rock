@@ -193,6 +193,9 @@ namespace RockWeb.Blocks.Event
                     }
                 }
 
+                // set their status (wait list / registrant)
+                registrant.OnWaitList = !tglWaitList.Checked;
+
                 History.EvaluateChange( registrantChanges, "Cost", registrant.Cost, cbCost.Text.AsDecimal() );
                 registrant.Cost = cbCost.Text.AsDecimal();
 
@@ -531,6 +534,9 @@ namespace RockWeb.Blocks.Event
                         lWizardInstanceName.Text = registrant.Registration.RegistrationInstance.Name;
                         lWizardRegistrationName.Text = registrant.Registration.ToString();
                         lWizardRegistrantName.Text = registrant.ToString();
+
+                        tglWaitList.Checked = !registrant.OnWaitList;
+                        tglWaitList.Visible = registrant.Registration.RegistrationInstance.RegistrationTemplate.WaitListEnabled;
                     }
                 }
 

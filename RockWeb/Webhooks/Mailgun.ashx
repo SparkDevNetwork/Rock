@@ -78,7 +78,7 @@ public class Mailgun : IHttpHandler
             
             if ( !string.IsNullOrWhiteSpace( request.Form["workflow_action_guid"]))
             {
-                Guid? actionGuid = request.Form["workflow_action_guid"].AsGuidOrNull();
+                Guid? actionGuid = request.Form["workflow_action_guid"].Split( ',' )[0].AsGuidOrNull();
                 string status = string.Empty;
                 switch ( eventType )
                 {
@@ -87,10 +87,17 @@ public class Mailgun : IHttpHandler
                     case "delivered": status = SendEmailWithEvents.SENT_STATUS; break;
                     case "clicked": status = SendEmailWithEvents.CLICKED_STATUS; break;
                     case "opened": status = SendEmailWithEvents.OPENED_STATUS; break;
-                    case "dropped": 
-                    case "bounced": 
-                        status = SendEmailWithEvents.FAILED_STATUS; break;
-                }                
+                    case "dropped":
+                    case "bounced": status = SendEmailWithEvents.FAILED_STATUS;
+                        int secs = request.Form["timestamp"].AsInteger();
+                        DateTime ts = RockDateTime.ConvertLocalDateTimeToRockDateTime( new DateTime(1970,1,1,0,0,0,DateTimeKind.Utc).AddSeconds(secs).ToLocalTime());
+                             Rock.Communication.Email.ProcessBounce(
+                                    request.Form["recipient"],
+                                    Rock.Communication.BounceType.HardBounce,
+                                    request.Form["notification"],
+                                    ts );
+                        break;
+                }
                 if ( actionGuid != null && !string.IsNullOrWhiteSpace( status ) )
                 {
                     SendEmailWithEvents.UpdateEmailStatus( actionGuid.Value, status, eventType, rockContext, true );
@@ -111,7 +118,7 @@ public class Mailgun : IHttpHandler
                     {
 
                         int secs = request.Form["timestamp"].AsInteger();
-                        DateTime ts = new DateTime( 1970, 1, 1, 0, 0, 0, DateTimeKind.Utc ).AddSeconds( secs ).ToLocalTime();
+                        DateTime ts = RockDateTime.ConvertLocalDateTimeToRockDateTime( new DateTime(1970,1,1,0,0,0,DateTimeKind.Utc).AddSeconds(secs).ToLocalTime());
 
                         switch ( eventType )
                         {

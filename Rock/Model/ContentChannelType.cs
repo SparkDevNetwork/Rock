@@ -87,6 +87,15 @@ namespace Rock.Model
         [DataMember]
         public bool DisablePriority { get; set; }
 
+        /// <summary>
+        /// Gets or sets a value indicating whether [disable content field].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [disable content field]; otherwise, <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool DisableContentField { get; set; }
+
         #endregion
 
         #region Virtual Properties
@@ -112,6 +121,7 @@ namespace Rock.Model
             {
                 var supportedActions = base.SupportedActions;
                 supportedActions.AddOrReplace( Rock.Security.Authorization.APPROVE, "The roles and/or users that have access to approve." );
+                supportedActions.AddOrReplace( Rock.Security.Authorization.INTERACT, "The roles and/or users that have access to intertact with the channel item." );
                 return supportedActions;
             }
         }

@@ -88,6 +88,12 @@ namespace Rock.Client
         public string GoogleAnalyticsCode { get; set; }
 
         /// <summary />
+        public string IndexStartingLocation { get; set; }
+
+        /// <summary />
+        public bool IsIndexEnabled { get; set; }
+
+        /// <summary />
         public bool IsSystem { get; set; }
 
         /// <summary />
@@ -183,6 +189,8 @@ namespace Rock.Client
             this.ForeignGuid = source.ForeignGuid;
             this.ForeignKey = source.ForeignKey;
             this.GoogleAnalyticsCode = source.GoogleAnalyticsCode;
+            this.IndexStartingLocation = source.IndexStartingLocation;
+            this.IsIndexEnabled = source.IsIndexEnabled;
             this.IsSystem = source.IsSystem;
             this.LoginPageId = source.LoginPageId;
             this.LoginPageRouteId = source.LoginPageRouteId;

@@ -79,6 +79,7 @@ namespace Rock.Workflow.Action.CheckIn
                                                 checkInLocation.Location = kioskLocation.Location.Clone( false );
                                                 checkInLocation.Location.CopyAttributesFrom( kioskLocation.Location );
                                                 checkInLocation.CampusId = kioskLocation.CampusId;
+                                                checkInLocation.Order = kioskLocation.Order;
                                                 group.Locations.Add( checkInLocation );
                                             }
                                         }

@@ -259,7 +259,7 @@ namespace Rock.Data
             if ( personAlias != null &&
                 personAlias.Person != null )
             {
-                sb.AppendFormat( "<a href={0}/Person/{1}>{2}</a>", rootUrl, personAlias.PersonId, personAlias.Person.FullName );
+                sb.AppendFormat( "<a href={0}Person/{1}>{2}</a>", rootUrl, personAlias.PersonId, personAlias.Person.FullName );
 
                 if ( dateTime.HasValue )
                 {

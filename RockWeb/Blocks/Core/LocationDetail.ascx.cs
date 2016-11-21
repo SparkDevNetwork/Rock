@@ -74,6 +74,7 @@ namespace RockWeb.Blocks.Core
             ddlPrinter.Items.Clear();
             ddlPrinter.DataSource = new DeviceService( new RockContext() )
                 .GetByDeviceTypeGuid( new Guid( Rock.SystemGuid.DefinedValue.DEVICE_TYPE_PRINTER ) )
+                .OrderBy( d => d.Name )
                 .ToList();
             ddlPrinter.DataBind();
             ddlPrinter.Items.Insert( 0, new ListItem( None.Text, None.IdValue ) );
@@ -437,11 +438,14 @@ namespace RockWeb.Blocks.Core
             if ( !locationId.Equals( 0 ) )
             {
                 location = new LocationService( new RockContext() ).Get( locationId );
+                pdAuditDetails.SetEntity( location, ResolveRockUrl( "~" ) );
             }
 
             if ( location == null )
             {
                 location = new Location { Id = 0, IsActive = true, ParentLocationId = parentLocationId };
+                // hide the panel drawer that show created and last modified dates
+                pdAuditDetails.Visible = false;
             }
 
             editAllowed = location.IsAuthorized( Authorization.EDIT, CurrentPerson );

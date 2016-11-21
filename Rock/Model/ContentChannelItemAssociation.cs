@@ -38,6 +38,7 @@ namespace Rock.Model
         /// The content channel item identifier.
         /// </value>
         [DataMember]
+        [IgnoreCanDelete]
         public int ContentChannelItemId { get; set; }
 
         /// <summary>
@@ -47,6 +48,7 @@ namespace Rock.Model
         /// The child content channel item identifier.
         /// </value>
         [DataMember]
+        [IgnoreCanDelete]
         public int ChildContentChannelItemId { get; set; }
 
         /// <summary>

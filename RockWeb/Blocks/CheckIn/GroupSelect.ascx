@@ -25,6 +25,12 @@
                 <div class="control-group checkin-body-container">
                     <label class="control-label">Select Group</label>
                     <div class="controls">
+                        <asp:Panel ID="pnlNoOptions" runat="server" Visible="false">
+                            <h4>Sorry, there are currently not any available groups that <asp:Literal ID="lNoOptionName" runat="server" /> can check into at <asp:Literal ID="lNoOptionSchedule" runat="server" />.</h4>
+                            <div class="actions">
+                                <asp:LinkButton CssClass="btn btn-primary btn-checkin" ID="btnNoOptionOk" runat="server" OnClick="btnNoOptionOk_Click" Text="Ok" />
+                            </div>
+                        </asp:Panel>
                         <asp:Repeater ID="rSelection" runat="server" OnItemCommand="rSelection_ItemCommand">
                             <ItemTemplate>
                                 <Rock:BootstrapButton ID="lbSelect" runat="server" Text='<%# Container.DataItem.ToString() %>' CommandArgument='<%# Eval("Group.Id") %>' CssClass="btn btn-primary btn-large btn-block btn-checkin-select" DataLoadingText="Loading..." />

@@ -124,7 +124,7 @@ namespace Rock.Workflow.Action
                 try
                 {
                     var groupMemberService = new GroupMemberService( rockContext );
-                    var groupMembers = groupMemberService.Queryable().Where( m => m.PersonId == person.Id );
+                    var groupMembers = groupMemberService.Queryable().Where( m => m.PersonId == person.Id && m.GroupId == group.Id );
 
                     foreach ( var groupMember in groupMembers )
                     {

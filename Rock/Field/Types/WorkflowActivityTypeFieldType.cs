@@ -37,6 +37,83 @@ namespace Rock.Field.Types
 
         private const string WORKFLOW_TYPE_KEY = "WorkflowType";
 
+        /// <summary>
+        /// Returns a list of the configuration keys
+        /// </summary>
+        /// <returns></returns>
+        public override List<string> ConfigurationKeys()
+        {
+            var configKeys = base.ConfigurationKeys();
+            configKeys.Add( WORKFLOW_TYPE_KEY );
+            return configKeys;
+        }
+
+        /// <summary>
+        /// Creates the HTML controls required to configure this type of field
+        /// </summary>
+        /// <returns></returns>
+        public override List<Control> ConfigurationControls()
+        {
+            var controls = base.ConfigurationControls();
+
+            // build a drop down list of workflow types (the one that gets selected is
+            // used to build a list of workflow activity types) 
+            var ddl = new RockDropDownList();
+            controls.Add( ddl );
+            ddl.AutoPostBack = true;
+            ddl.SelectedIndexChanged += OnQualifierUpdated;
+            ddl.Label = "Workflow Type";
+            ddl.Help = "The Workflow Type to select activities from.";
+            var originalValue = ddl.SelectedValue;
+
+            Rock.Model.WorkflowTypeService workflowTypeService = new Model.WorkflowTypeService( new RockContext() );
+            foreach ( var workflowType in workflowTypeService.Queryable().OrderBy( w => w.Name ) )
+            {
+                ddl.Items.Add( new ListItem( workflowType.Name, workflowType.Guid.ToString() ) );
+            }
+
+            var httpContext = System.Web.HttpContext.Current;
+            if ( string.IsNullOrEmpty(originalValue) && httpContext != null && httpContext.Request != null && httpContext.Request.Params["workflowTypeId"] != null && httpContext.Request.Params["workflowTypeId"].AsIntegerOrNull() == 0 )
+            {
+
+                var workflowType = GetContextWorkflowType();
+                ddl.Items.Add( new ListItem( ( string.IsNullOrWhiteSpace( workflowType.Name ) ? "Current Workflow" : workflowType.Name ), "" ) );
+                ddl.SelectedIndex = ddl.Items.Count - 1;
+            }
+            return controls;
+        }
+
+        /// <summary>
+        /// Gets the configuration value.
+        /// </summary>
+        /// <param name="controls">The controls.</param>
+        /// <returns></returns>
+        public override Dictionary<string, ConfigurationValue> ConfigurationValues( List<Control> controls )
+        {
+            Dictionary<string, ConfigurationValue> configurationValues = new Dictionary<string, ConfigurationValue>();
+            configurationValues.Add( WORKFLOW_TYPE_KEY, new ConfigurationValue( "Workflow Type", "The Workflow Type to select activities from", string.Empty ) );
+
+            if ( controls != null && controls.Count > 0 && controls[0] != null && controls[0] is DropDownList )
+            {
+                configurationValues[WORKFLOW_TYPE_KEY].Value = ( ( DropDownList ) controls[0] ).SelectedValue;
+            }
+
+            return configurationValues;
+        }
+
+        /// <summary>
+        /// Sets the configuration value.
+        /// </summary>
+        /// <param name="controls"></param>
+        /// <param name="configurationValues"></param>
+        public override void SetConfigurationValues( List<Control> controls, Dictionary<string, ConfigurationValue> configurationValues )
+        {
+            if ( controls != null && configurationValues != null && controls.Count > 0 && controls[0] != null && controls[0] is DropDownList && configurationValues.ContainsKey( WORKFLOW_TYPE_KEY ) )
+            {
+                ( ( DropDownList ) controls[0] ).SelectedValue = configurationValues[WORKFLOW_TYPE_KEY].Value;
+            }
+        }
+
         #endregion
 
         #region Formatting
@@ -99,32 +176,39 @@ namespace Rock.Field.Types
 
             IEnumerable<WorkflowActivityType> activityTypes = null;
 
-            var workflowType = GetContextWorkflowType();
+            Guid? workflowTypeGuid = configurationValues != null && configurationValues.ContainsKey( WORKFLOW_TYPE_KEY ) ? configurationValues[WORKFLOW_TYPE_KEY].Value.AsGuidOrNull() : null;
+
+            WorkflowType workflowType = null;
+
+            if ( workflowTypeGuid.HasValue )
+            {
+                var workflowTypeService = new WorkflowTypeService( new RockContext() );
+                workflowType = workflowTypeService.Get( workflowTypeGuid.Value );
+            }
+
+            if ( workflowType == null )
+            {
+                workflowType = GetContextWorkflowType();
+            }
+
             if ( workflowType != null )
             {
                 activityTypes = workflowType.ActivityTypes;
-            }
 
-            if (activityTypes == null && configurationValues != null && configurationValues.ContainsKey( WORKFLOW_TYPE_KEY ) )
-            {
-                Guid workflowTypeGuid = configurationValues[WORKFLOW_TYPE_KEY].Value.AsGuid();
-                if ( !workflowTypeGuid.IsEmpty() )
+                if ( activityTypes != null && activityTypes.Any() )
                 {
-                    activityTypes = new WorkflowActivityTypeService( new RockContext() )
-                        .Queryable()
-                        .Where( t => t.WorkflowType.Guid.Equals( workflowTypeGuid ) );
+                    foreach ( var activityType in activityTypes.OrderBy( a => a.Order ) )
+                    {
+                        editControl.Items.Add( new ListItem( activityType.Name ?? "[New Activity]", activityType.Guid.ToString().ToUpper() ) );
+                    }
                 }
+
+                return editControl;
             }
 
-            if (activityTypes != null && activityTypes.Any() )
-            {
-                foreach ( var activityType in activityTypes.OrderBy( a => a.Order ) )
-                {
-                    editControl.Items.Add( new ListItem( activityType.Name ?? "[New Activity]", activityType.Guid.ToString().ToUpper() ) );
-                }
-            }
+            return null;
 
-            return editControl;
+
         }
 
         /// <summary>
@@ -137,7 +221,7 @@ namespace Rock.Field.Types
         {
             if ( control != null && control is RockDropDownList )
             {
-                return ( (RockDropDownList)control ).SelectedValue;
+                return ( ( RockDropDownList ) control ).SelectedValue;
             }
 
             return string.Empty;
@@ -155,7 +239,7 @@ namespace Rock.Field.Types
             {
                 if ( control != null && control is RockDropDownList )
                 {
-                    ( (RockDropDownList)control ).SetValue( value.ToUpper() );
+                    ( ( RockDropDownList ) control ).SetValue( value.ToUpper() );
                 }
             }
         }
@@ -199,6 +283,6 @@ namespace Rock.Field.Types
         }
 
         #endregion
-      
+
     }
 }

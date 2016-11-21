@@ -48,7 +48,7 @@ namespace Rock.Migrations
 	</code>
 </doc>
 */
-CREATE PROCEDURE spCore_PageViewNullPageId 
+CREATE PROCEDURE [dbo].[spCore_PageViewNullPageId] 
 	@PageId int 
 AS
 BEGIN

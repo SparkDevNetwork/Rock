@@ -200,8 +200,8 @@ namespace RockWeb.Blocks.Event
                 }
 
                 mergeFields.Add( "ListTitle", GetAttributeValue("ListTitle") );
-                mergeFields.Add( "EventDetailPage", LinkedPageUrl( "EventDetailPage", null ) );
-                mergeFields.Add( "RegistrationPage", LinkedPageUrl( "RegistrationPage", null ) );
+                mergeFields.Add( "EventDetailPage", LinkedPageRoute( "EventDetailPage" ) );
+                mergeFields.Add( "RegistrationPage", LinkedPageRoute( "RegistrationPage" ) );
                 mergeFields.Add( "EventItemOccurrences", itemOccurrences );
                
                 lContent.Text = GetAttributeValue( "LavaTemplate" ).ResolveMergeFields( mergeFields );

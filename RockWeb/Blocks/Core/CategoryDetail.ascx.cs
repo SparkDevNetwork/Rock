@@ -320,6 +320,7 @@ namespace RockWeb.Blocks.Core
             if ( !categoryId.Equals( 0 ) )
             {
                 category = categoryService.Get( categoryId );
+                pdAuditDetails.SetEntity( category, ResolveRockUrl( "~" ) );
             }
 
             if ( category == null )
@@ -331,6 +332,8 @@ namespace RockWeb.Blocks.Core
                 category.EntityTypeId = entityTypeId;
                 category.EntityTypeQualifierColumn = entityTypeQualifierProperty;
                 category.EntityTypeQualifierValue = entityTypeQualifierValue;
+                // hide the panel drawer that show created and last modified dates
+                pdAuditDetails.Visible = false;
             }
 
             if (category.EntityTypeId != entityTypeId || !category.IsAuthorized( Authorization.VIEW, CurrentPerson ) )

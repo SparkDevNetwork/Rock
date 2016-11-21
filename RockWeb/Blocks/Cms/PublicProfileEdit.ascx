@@ -8,10 +8,11 @@
 
 <div class="panel panel-block">
     <div class="panel-heading">
-        <h1 class="panel-title"><i class="fa fa-user"></i>My Account</h1>
+        <h1 class="panel-title"><i class="fa fa-user"></i> My Account</h1>
     </div>
     <div class="panel-body">
         <asp:HiddenField ID="hfPersonId" runat="server" />
+        <Rock:NotificationBox ID="nbNotAuthorized" runat="server" Text="You must be logged in to view your account." NotificationBoxType="Danger" Visible="false" />
         <asp:Panel ID="pnlView" runat="server">
             <div class="row">
 
@@ -168,7 +169,10 @@
                             </Rock:RockRadioButtonList>
                         </div>
                         <div class="col-md-6">
-                            <Rock:YearPicker ID="ypGraduation" runat="server" Label="Graduation Year" Help="High School Graduation Year." Visible="false" />
+                            <%-- This YearPicker is needed for the GradePicker to work --%>
+                            <div style="display: none;">
+                                <Rock:YearPicker ID="ypGraduation" runat="server" Label="Graduation Year" Help="High School Graduation Year." />
+                            </div>
                             <Rock:GradePicker ID="ddlGradePicker" runat="server" Label="Grade" UseAbbreviation="true" UseGradeOffsetAsValue="true" Visible="false" />
                         </div>
                     </div>

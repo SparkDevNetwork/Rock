@@ -347,7 +347,7 @@ namespace Rock.Web.UI.Controls
 
             _lblNumber = new Label();
             _lblNumber.ID = string.Format( "{0}_lblNumber", this.ID );
-            Controls.Add( _hfMin );
+            Controls.Add( _lblNumber );
 
             RequiredFieldValidator.InitialValue = string.Empty;
             RequiredFieldValidator.ControlToValidate = _hfNumber.ID;

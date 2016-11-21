@@ -225,6 +225,7 @@ namespace Rock.Model
         /// <value>
         /// The <see cref="Rock.Model.Location"/> where the <see cref="Rock.Model.Person"/> attended.
         /// </value>
+        [LavaInclude]
         public virtual Location Location { get; set; }
 
         /// <summary>
@@ -233,6 +234,7 @@ namespace Rock.Model
         /// <value>
         /// The <see cref="Rock.Model.Campus"/> where the <see cref="Rock.Model.Person"/> attended.
         /// </value>
+        [LavaInclude]
         public virtual Campus Campus { get; set; }
 
         /// <summary>
@@ -241,6 +243,7 @@ namespace Rock.Model
         /// <value>
         /// The schedule.
         /// </value>
+        [LavaInclude]
         public virtual Schedule Schedule { get; set; }
 
         /// <summary>
@@ -258,6 +261,7 @@ namespace Rock.Model
         /// <value>
         /// The person alias.
         /// </value>
+        [LavaInclude]
         public virtual PersonAlias PersonAlias { get; set; }
 
         /// <summary>

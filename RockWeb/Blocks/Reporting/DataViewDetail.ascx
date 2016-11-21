@@ -53,6 +53,7 @@
                          <Rock:HighlightLabel ID="hlblDataViewId" runat="server" />
                     </div>
                 </div>
+                <Rock:PanelDrawer ID="pdAuditDetails" runat="server"></Rock:PanelDrawer>
                 <div class="panel-body">
 
                     <fieldset>

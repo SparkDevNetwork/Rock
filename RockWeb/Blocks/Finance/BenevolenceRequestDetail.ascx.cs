@@ -561,9 +561,10 @@ namespace RockWeb.Blocks.Finance
                     // set the campus but not on page load (e will be null) unless from the person profile page (in which case BenevolenceRequestId in the query string will be 0)
                     int? requestId = Request["BenevolenceRequestId"].AsIntegerOrNull();
                     
-                    if ( !cpCampus.SelectedCampusId.HasValue && (e != null || (requestId.HasValue && requestId ==0)) )
+                    if ( !cpCampus.SelectedCampusId.HasValue && ( e != null || (requestId.HasValue && requestId == 0 ) ) )
                     {
-                        cpCampus.SelectedCampusId = person.GetCampus().Id;
+                        var personCampus = person.GetCampus();
+                        cpCampus.SelectedCampusId = personCampus != null ? personCampus.Id : (int?)null;
                     }
                 }
             }
@@ -655,6 +656,7 @@ namespace RockWeb.Blocks.Finance
             if ( !benevolenceRequestId.Equals( 0 ) )
             {
                 benevolenceRequest = benevolenceRequestService.Get( benevolenceRequestId );
+                pdAuditDetails.SetEntity( benevolenceRequest, ResolveRockUrl( "~" ) );
             }
 
             if ( benevolenceRequest == null )
@@ -671,6 +673,8 @@ namespace RockWeb.Blocks.Finance
                         benevolenceRequest.RequestedByPersonAlias = person.PrimaryAlias;
                     }
                 }
+                // hide the panel drawer that show created and last modified dates
+                pdAuditDetails.Visible = false;
             }
 
             dtbFirstName.Text = benevolenceRequest.FirstName;
@@ -682,7 +686,7 @@ namespace RockWeb.Blocks.Finance
             dtbProvidedNextSteps.Text = benevolenceRequest.ProvidedNextSteps;
             dpRequestDate.SelectedDate = benevolenceRequest.RequestDateTime;
 
-            if (benevolenceRequest.Campus != null )
+            if ( benevolenceRequest.Campus != null )
             {
                 cpCampus.SelectedCampusId = benevolenceRequest.CampusId;
             }

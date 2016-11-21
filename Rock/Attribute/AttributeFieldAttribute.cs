@@ -110,7 +110,10 @@ namespace Rock.Attribute
                             {
                                 MethodInfo getMethod = serviceInstance.GetType().GetMethod( "Get", new Type[] { typeof( Guid ) } );
                                 var entity = getMethod.Invoke( serviceInstance, new object[] { entityTypeQualifierValue.AsGuid() } ) as Rock.Data.IEntity;
-                                FieldConfigurationValues.Add( QUALIFIER_VALUE_KEY, new Field.ConfigurationValue( entity.Id.ToString() ) );
+                                if ( entity != null )
+                                {
+                                    FieldConfigurationValues.Add( QUALIFIER_VALUE_KEY, new Field.ConfigurationValue( entity.Id.ToString() ) );
+                                }
                             }
                         }
                     }

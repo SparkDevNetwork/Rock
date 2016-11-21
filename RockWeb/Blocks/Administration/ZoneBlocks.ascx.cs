@@ -410,15 +410,15 @@ namespace RockWeb.Blocks.Administration
                 {
                     Rock.Security.Authorization.CopyAuthorization( _Page, block, rockContext );
                 }
-            }
 
-            if ( block.Layout != null )
-            {
-                Rock.Web.Cache.PageCache.FlushLayoutBlocks( _Page.LayoutId );
-            }
-            else
-            {
-                _Page.FlushBlocks();
+                if ( block.Layout != null )
+                {
+                    Rock.Web.Cache.PageCache.FlushLayoutBlocks( _Page.LayoutId );
+                }
+                else
+                {
+                    _Page.FlushBlocks();
+                }
             }
 
             PageUpdated = true;

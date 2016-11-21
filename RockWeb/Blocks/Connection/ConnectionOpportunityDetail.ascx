@@ -30,7 +30,7 @@
                         <Rock:HighlightLabel ID="hlStatus" runat="server" />
                     </div>
                 </div>
-
+                <Rock:PanelDrawer ID="pdAuditDetails" runat="server"></Rock:PanelDrawer>
                 <div class="panel-body">
                     <Rock:NotificationBox ID="nbEditModeMessage" runat="server" NotificationBoxType="Info" />
 
@@ -70,6 +70,8 @@
                         <div class="row">
                             <div class="col-md-6">
                                 <Rock:ImageUploader ID="imgupPhoto" runat="server" Label="Photo" />
+                            </div>
+                            <div class="col-md-6">
                                 <%-- Note: RockControlWrapper/Div/CheckboxList is being used instead of just a RockCheckBoxList, because autopostback does not currently work for RockControlCheckbox--%>
                                 <Rock:RockControlWrapper ID="rcwCampus" runat="server" Label="Campuses">
                                     <div class="controls">
@@ -78,15 +80,6 @@
                                     </div>
                                 </Rock:RockControlWrapper>
                             </div>
-                            <div class="col-md-6">
-                                <div class="well">
-                                    <h4>Placement Group Configuration</h4>
-                                    <Rock:RockDropDownList ID="ddlGroupType" runat="server" Label="Group Type" OnSelectedIndexChanged="ddlGroupType_SelectedIndexChanged" AutoPostBack="true" Help="The group type that the user will be placed in" />
-                                    <Rock:RockDropDownList ID="ddlGroupRole" runat="server" Label="Group Member Role" Help="The role that the person will hold after being connected" />
-                                    <Rock:RockDropDownList ID="ddlGroupMemberStatus" runat="server" Label="Group Member Status" Help="The Status of the person upon being connected" />
-                                    <Rock:Toggle ID="tglUseAllGroupsOfGroupType" runat="server" Label="Use All Groups Of This Type" ButtonSizeCssClass="btn btn-sm" OnText="Yes" OffText="No" OnCheckedChanged="tglUseAllGroupsOfGroupType_CheckedChanged" Help="All groups of this group type are used for this opportunity" />
-                                </div>
-                            </div>
                         </div>
 
                         <Rock:PanelWidget ID="wpAttributes" runat="server" Title="Opportunity Attributes">
@@ -94,10 +87,25 @@
                         </Rock:PanelWidget>
 
                         <Rock:PanelWidget ID="wpConnectionOpportunityGroups" runat="server" Title="Placement Groups">
+                            <h4>Placement Group Configuration</h4>
+							<div class="grid">
+								<Rock:Grid ID="gConnectionOpportunityGroupConfigs" runat="server" AllowPaging="false" DisplayType="Light" RowItemText="Group Type" ShowConfirmDeleteDialog="false">
+									<Columns>
+										<Rock:RockBoundField DataField="GroupTypeName" HeaderText="Group Type" />
+										<Rock:RockBoundField DataField="GroupMemberRoleName" HeaderText="Group Member Role" />
+										<Rock:EnumField DataField="GroupMemberStatus" HeaderText="Group Member Status" />
+                                        <Rock:BoolField DataField="UseAllGroupsOfType" HeaderText="Use All Groups of This Type" />
+                                        <Rock:EditField OnClick="gConnectionOpportunityGroupConfigs_Edit" />
+										<Rock:DeleteField OnClick="gConnectionOpportunityGroupConfigs_Delete" />
+									</Columns>
+								</Rock:Grid>
+                            </div>
+                            <h4>Placement Groups</h4>
                             <div class="grid">
                                 <Rock:Grid ID="gConnectionOpportunityGroups" runat="server" AllowPaging="false" DisplayType="Light" RowItemText="Group" ShowConfirmDeleteDialog="false">
                                     <Columns>
                                         <Rock:RockBoundField DataField="GroupName" HeaderText="Name" />
+                                        <Rock:RockBoundField DataField="GroupTypeName" HeaderText="Group Type" />
                                         <Rock:RockBoundField DataField="CampusName" HeaderText="Campus" />
                                         <Rock:DeleteField OnClick="gConnectionOpportunityGroups_Delete" />
                                     </Columns>
@@ -165,8 +173,18 @@
 
                 <div class="row">
                     <div class="col-md-6">
-                        <Rock:RockDropDownList ID="ddlTriggerType" runat="server" Label="Launch Workflow When" DataTextField="Name" DataValueField="Id" 
-                            OnSelectedIndexChanged="ddlTriggerType_SelectedIndexChanged" AutoPostBack="true" Required="true" ValidationGroup="WorkflowDetails" />
+                        <Rock:RockDropDownList ID="ddlTriggerType" runat="server" Label="Launch Workflow When" 
+                            OnSelectedIndexChanged="ddlTriggerType_SelectedIndexChanged" AutoPostBack="true" Required="true" ValidationGroup="WorkflowDetails" >
+                            <asp:ListItem Value="0" Text="Request Started" />
+                            <asp:ListItem Value="8" Text="Request Assigned" />
+                            <asp:ListItem Value="7" Text="Request Transferred" />
+                            <asp:ListItem Value="1" Text="Request Connected" />
+                            <asp:ListItem Value="5" Text="Placement Group Assigned" />
+                            <asp:ListItem Value="2" Text="Status Changed" />
+                            <asp:ListItem Value="3" Text="State Changed" />
+                            <asp:ListItem Value="4" Text="Activity Added" />
+                            <asp:ListItem Value="6" Text="Manual" />
+                        </Rock:RockDropDownList>
                     </div>
                     <div class="col-md-6">
                         <Rock:RockDropDownList ID="ddlWorkflowType" runat="server" Label="Workflow Type" DataTextField="Name" DataValueField="Id" 
@@ -191,6 +209,34 @@
                 <asp:ValidationSummary ID="valGroupDetails" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" ValidationGroup="GroupDetails" />
                 <Rock:NotificationBox ID="nbInvalidGroupType" runat="server" NotificationBoxType="Danger" Visible="false" Heading="Group Type" />
                 <Rock:GroupPicker ID="gpOpportunityGroup" runat="server" Label="Select Group" ValidationGroup="GroupDetails" />
+            </Content>
+        </Rock:ModalDialog>
+
+        <Rock:ModalDialog ID="dlgGroupConfigDetails" runat="server" ValidationGroup="GroupConfig" SaveButtonText="Add" OnSaveClick="dlgGroupConfigDetails_SaveClick" Title="Placement Group Configuration">
+            <Content>
+                <asp:ValidationSummary ID="valGroupConfig" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" ValidationGroup="GroupConfig" />
+                <asp:HiddenField ID="hfGroupConfigGuid" runat="server" />
+                <div class="row">
+                    <div class="col-md-4">
+                        <Rock:RockDropDownList ID="ddlGroupType" runat="server" Label="Group Type" OnSelectedIndexChanged="ddlGroupType_SelectedIndexChanged" AutoPostBack="true" Help="The group type that the user will be placed in" Required="true" ValidationGroup="GroupConfig" />
+                    </div>
+                    <div class="col-md-4">
+                        <Rock:RockDropDownList ID="ddlGroupRole" runat="server" Label="Group Member Role" Help="The role that the person will hold after being connected" Required="true" ValidationGroup="GroupConfig" />
+                    </div>
+                    <div class="col-md-4">
+                        <Rock:RockDropDownList ID="ddlGroupMemberStatus" runat="server" Label="Group Member Status" Help="The Status of the person upon being connected" Required="true" ValidationGroup="GroupConfig" />
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-4">
+                        <Rock:Toggle ID="tglUseAllGroupsOfGroupType" runat="server" Label="Use All Groups of This Type" ButtonSizeCssClass="btn btn-sm" OnText="Yes" OffText="No" Help="All groups of this group type are used for this opportunity" />
+                    </div>
+                </div>
+
+                <div id="divUseGroupsOfTypeNote" runat="server" class="alert alert-info" style="display:none">
+                    Note: Setting the 'Use All Groups of This Type' option will remove any placement groups of this group type that have been specifically configured for this opportunity type.
+                </div>
+
             </Content>
         </Rock:ModalDialog>
 

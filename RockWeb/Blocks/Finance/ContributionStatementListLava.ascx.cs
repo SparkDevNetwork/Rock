@@ -30,6 +30,7 @@ using Rock.Web.UI.Controls;
 using Rock.Attribute;
 using System.Data.Entity;
 using Rock.Security;
+using Rock.Web.UI;
 
 namespace RockWeb.Blocks.Finance
 {
@@ -56,8 +57,23 @@ namespace RockWeb.Blocks.Finance
 {% endfor %}
 </div>", Order = 3)]
     [BooleanField("Enable Debug", "Shows the merge fields available for the Lava", order:4)]
-    public partial class ContributionStatementListLava : Rock.Web.UI.RockBlock
+    [BooleanField("Use Person Context", "Determines if the person context should be used instead of the CurrentPerson.", false, order: 5)]
+
+    [ContextAware]
+    public partial class ContributionStatementListLava : RockBlock
     {
+        #region Properties
+
+        /// <summary>
+        /// Gets the target person.
+        /// </summary>
+        /// <value>
+        /// The target person.
+        /// </value>
+        protected Person TargetPerson { get; private set; }
+
+        #endregion
+
         #region Base Control Methods
 
         //  overrides of the base RockBlock methods (i.e. OnInit, OnLoad)
@@ -69,6 +85,15 @@ namespace RockWeb.Blocks.Finance
         protected override void OnInit( EventArgs e )
         {
             base.OnInit( e );
+
+            if ( GetAttributeValue( "UsePersonContext" ).AsBoolean() )
+            {
+                TargetPerson = ContextEntity<Person>();
+            }
+            else
+            {
+                TargetPerson = CurrentPerson;
+            }
 
             // this event gets fired after block settings are updated. it's nice to repaint the screen if these settings would alter it
             this.BlockUpdated += Block_BlockUpdated;
@@ -116,9 +141,9 @@ namespace RockWeb.Blocks.Finance
             RockContext rockContext = new RockContext();
 
             FinancialTransactionDetailService financialTransactionDetailService = new FinancialTransactionDetailService( rockContext );
-            
+
             var qry = financialTransactionDetailService.Queryable().AsNoTracking()
-                        .Where( t=> t.Transaction.AuthorizedPersonAlias.Person.GivingId == CurrentPerson.GivingId);
+                        .Where( t=> t.Transaction.AuthorizedPersonAlias.Person.GivingId == TargetPerson.GivingId);
 
             if ( string.IsNullOrWhiteSpace( GetAttributeValue( "Accounts" ) ) )
             {
@@ -134,8 +159,9 @@ namespace RockWeb.Blocks.Finance
                                 .OrderByDescending(y => y.Year);
 
             var mergeFields = new Dictionary<string, object>();
-            mergeFields.Add( "DetailPage", LinkedPageUrl( "DetailPage", null ) );
+            mergeFields.Add( "DetailPage", LinkedPageRoute( "DetailPage" ) );
             mergeFields.Add( "StatementYears", yearQry.Take( numberOfYears ) );
+            mergeFields.Add( "PersonGuid", TargetPerson.Guid );
             
             var template = GetAttributeValue( "LavaTemplate" );
 

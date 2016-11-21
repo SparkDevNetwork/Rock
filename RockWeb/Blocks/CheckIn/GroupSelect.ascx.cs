@@ -23,6 +23,7 @@ using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
 
 using Rock;
+using Rock.Attribute;
 using Rock.CheckIn;
 using Rock.Model; 
 
@@ -31,7 +32,7 @@ namespace RockWeb.Blocks.CheckIn
     [DisplayName("Group Select")]
     [Category("Check-in")]
     [Description("Displays a list of groups that a person is configured to checkin to.")]
-    public partial class GroupSelect : CheckInBlock
+    public partial class GroupSelect : CheckInBlockMultiPerson
     {
         /// <summary>
         /// Determines if the block requires that a selection be made. This is used to determine if user should
@@ -67,7 +68,36 @@ namespace RockWeb.Blocks.CheckIn
                 }
 
                 var availGroups = groupTypes.SelectMany( t => t.GetAvailableGroups( schedule ) ).ToList();
-                if ( availGroups.Count == 1 )
+                if ( availGroups.Any() )
+                {
+                    if ( availGroups.Count == 1 )
+                    {
+                        if ( backingUp )
+                        {
+                            GoBack( true );
+                            return false;
+                        }
+                        else
+                        {
+                            var group = availGroups.First();
+                            if ( schedule == null )
+                            {
+                                group.Selected = true;
+                            }
+                            else
+                            {
+                                group.SelectedForSchedule.Add( schedule.Schedule.Id );
+                            }
+
+                            return !ProcessSelection( person, schedule );
+                        }
+                    }
+                    else
+                    {
+                        return true;
+                    }
+                }
+                else
                 {
                     if ( backingUp )
                     {
@@ -76,24 +106,9 @@ namespace RockWeb.Blocks.CheckIn
                     }
                     else
                     {
-                        var group = availGroups.First();
-                        if ( schedule == null )
-                        {
-                            group.Selected = true;
-                        }
-                        else
-                        {
-                            group.SelectedForSchedule.Add( schedule.Schedule.Id );
-                        }
-
-                        return !ProcessSelection( person, schedule );
+                        return true;
                     }
                 }
-                else
-                {
-                    return true;
-                }
-
             }
         }
 
@@ -146,7 +161,39 @@ namespace RockWeb.Blocks.CheckIn
                         .ToList().AsDelimited( ", " );
 
                     var availGroups = groupTypes.SelectMany( t => t.GetAvailableGroups( schedule ) ).ToList();
-                    if ( availGroups.Count == 1 )
+                    if ( availGroups.Any() )
+                    {
+                        if ( availGroups.Count == 1 )
+                        {
+                            if ( UserBackedUp )
+                            {
+                                GoBack();
+                            }
+                            else
+                            {
+                                var group = availGroups.First();
+                                if ( schedule == null )
+                                {
+                                    group.Selected = true;
+                                }
+                                else
+                                {
+                                    group.SelectedForSchedule.Add( schedule.Schedule.Id );
+                                }
+
+                                ProcessSelection( person, schedule );
+                            }
+                        }
+                        else
+                        {
+                            rSelection.DataSource = availGroups
+                                .OrderBy( g => g.Group.Order )
+                                .ToList();
+
+                            rSelection.DataBind();
+                        }
+                    }
+                    else
                     {
                         if ( UserBackedUp )
                         {
@@ -154,26 +201,11 @@ namespace RockWeb.Blocks.CheckIn
                         }
                         else
                         {
-                            var group = availGroups.First();
-                            if ( schedule == null )
-                            {
-                                group.Selected = true;
-                            }
-                            else
-                            {
-                                group.SelectedForSchedule.Add( schedule.Schedule.Id );
-                            }
-
-                            ProcessSelection( person, schedule );
+                            pnlNoOptions.Visible = true;
+                            rSelection.Visible = false;
+                            lNoOptionName.Text = person.Person.NickName;
+                            lNoOptionSchedule.Text = person.CurrentSchedule != null ? person.CurrentSchedule.ToString() : "this time";
                         }
-                    }
-                    else
-                    {
-                        rSelection.DataSource = availGroups
-                            .OrderBy( g => g.Group.Order )
-                            .ToList();
-
-                        rSelection.DataBind();
                     }
                 }
             }
@@ -259,6 +291,16 @@ namespace RockWeb.Blocks.CheckIn
         }
 
         /// <summary>
+        /// Handles the Click event of the btnNoOptionOk control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void btnNoOptionOk_Click( object sender, EventArgs e )
+        {
+            ProcessNoOption();
+        }
+
+        /// <summary>
         /// Handles the Click event of the lbBack control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
@@ -294,7 +336,7 @@ namespace RockWeb.Blocks.CheckIn
                         .SelectMany( t => t.SelectedGroups( schedule )
                             .SelectMany( g => g.Locations.Where( l => !l.ExcludedByFilter ) ) )
                         .Count() <= 0,
-                    "<p>Sorry, based on your selection, there are currently not any available locations that can be checked into.</p>",
+                    string.Format( "<p>Sorry, based on your selection, there are currently not any available locations that {0} can check into.</p>", person.Person.NickName ),
                     true ) )
                 {
                     ClearSelection();

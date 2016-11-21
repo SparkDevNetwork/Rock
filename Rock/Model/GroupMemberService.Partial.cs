@@ -229,6 +229,36 @@ namespace Rock.Model
         }
 
         /// <summary>
+        /// Returns an enumerable collection of <see cref="System.String" /> objects representing the first names of each person in a <see cref="Rock.Model.Group" /> ordered by group role, age, and gender
+        /// </summary>
+        /// <param name="groupId">A <see cref="System.Int32" /> representing the Id of the <see cref="Rock.Model.Group" />.</param>
+        /// <param name="includeDeceased">A <see cref="System.Boolean" /> value indicating if deceased <see cref="Rock.Model.GroupMember">GroupMembers</see> should be included. If <c>true</c>
+        /// deceased group members will be included, if <c>false</c> deceased group members will not be included. This parameter defaults to false.</param>
+        /// <param name="includeInactive">if set to <c>true</c> [include inactive].</param>
+        /// <returns>
+        /// An enumerable collection of <see cref="System.String" /> objects containing the first names of each person in the group.
+        /// </returns>
+        public IEnumerable<string> GetFirstNames( int groupId, bool includeDeceased, bool includeInactive )
+        {
+            var dvActive = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_ACTIVE.AsGuid() );
+            if ( dvActive != null )
+            {
+                return GetByGroupId( groupId, includeDeceased ).
+                    Where( m => m.Person.RecordStatusReasonValueId == dvActive.Id ).
+                    OrderBy( m => m.GroupRole.Order ).
+                    ThenBy( m => m.Person.BirthYear ).ThenBy( m => m.Person.BirthMonth ).ThenBy( m => m.Person.BirthDay ).
+                    ThenBy( m => m.Person.Gender ).
+                    Select( m => m.Person.NickName ).
+                    ToList();
+            }
+            else
+            {
+                return GetFirstNames( groupId, includeDeceased );
+            }
+
+        }
+
+        /// <summary>
         /// Gets a list of <see cref="System.Int32"/> PersonIds who's home address matches the given search value.
         /// </summary>
         /// <param name="partialHomeAddress">a partial address search string</param>
