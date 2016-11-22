@@ -369,6 +369,7 @@ namespace RockWeb.Blocks.Event
         private List<Guid> ExpandedForms { get; set; }
         private List<RegistrationTemplateDiscount> DiscountState { get; set; }
         private List<RegistrationTemplateFee> FeeState { get; set; }
+        private int? GridFieldsDeleteIndex { get; set; }
 
         #endregion
 
@@ -446,6 +447,7 @@ namespace RockWeb.Blocks.Event
             gFields.GridRebind += gFields_GridRebind;
             gFields.RowDataBound += gFields_RowDataBound;
             gFields.GridReorder += gFields_GridReorder;
+            GridFieldsDeleteIndex = gFields.GetColumnIndexByFieldType( typeof( DeleteField ) );
 
             // assign discounts grid actions
             gDiscounts.DataKeyNames = new string[] { "Guid" };
@@ -1294,9 +1296,12 @@ namespace RockWeb.Blocks.Event
                 ( e.Row.Cells[1].Text == "First Name" || e.Row.Cells[1].Text == "Last Name" ) &&
                 e.Row.Cells[2].Text == "Person Field" )
             {
-                foreach ( var lb in e.Row.Cells[8].ControlsOfTypeRecursive<LinkButton>() )
+                if ( GridFieldsDeleteIndex.HasValue )
                 {
-                    lb.Visible = false;
+                    foreach ( var lb in e.Row.Cells[GridFieldsDeleteIndex.Value].ControlsOfTypeRecursive<LinkButton>() )
+                    {
+                        lb.Visible = false;
+                    }
                 }
             }
         }
