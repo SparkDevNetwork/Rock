@@ -30,81 +30,62 @@ namespace Rock.Migrations
         public override void Up()
         {
             CreateTable(
-                "dbo.AnalyticsSourcePersonHistorical",
-                c => new
-                {
-                    Id = c.Int( nullable: false, identity: true ),
-                    MaritalStatus = c.String(),
-                    ConnectionStatus = c.String(),
-                    ReviewReason = c.String(),
-                    RecordStatus = c.String(),
-                    RecordStatusReason = c.String(),
-                    RecordType = c.String(),
-                    Suffix = c.String(),
-                    Title = c.String(),
-                    GenderText = c.String(),
-                    EmailPreferenceText = c.String(),
-                    PersonId = c.Int( nullable: false ),
-                    CurrentRowIndicator = c.Boolean( nullable: false ),
-                    EffectiveDate = c.DateTime( nullable: false, storeType: "date" ),
-                    ExpireDate = c.DateTime( nullable: false, storeType: "date" ),
-                    PrimaryFamilyId = c.Int(),
-                    RecordTypeValueId = c.Int(),
-                    RecordStatusValueId = c.Int(),
-                    RecordStatusLastModifiedDateTime = c.DateTime(),
-                    RecordStatusReasonValueId = c.Int(),
-                    ConnectionStatusValueId = c.Int(),
-                    ReviewReasonValueId = c.Int(),
-                    IsDeceased = c.Boolean( nullable: false ),
-                    TitleValueId = c.Int(),
-                    FirstName = c.String( maxLength: 50 ),
-                    NickName = c.String( maxLength: 50 ),
-                    MiddleName = c.String( maxLength: 50 ),
-                    LastName = c.String( maxLength: 50 ),
-                    SuffixValueId = c.Int(),
-                    PhotoId = c.Int(),
-                    BirthDay = c.Int(),
-                    BirthMonth = c.Int(),
-                    BirthYear = c.Int(),
-                    BirthDateKey = c.Int(),
-                    Gender = c.Int( nullable: false ),
-                    MaritalStatusValueId = c.Int(),
-                    AnniversaryDate = c.DateTime( storeType: "date" ),
-                    GraduationYear = c.Int(),
-                    GivingGroupId = c.Int(),
-                    GivingId = c.String(),
-                    GivingLeaderId = c.Int(),
-                    Email = c.String( maxLength: 75 ),
-                    EmailPreference = c.Int( nullable: false ),
-                    ReviewReasonNote = c.String( maxLength: 1000 ),
-                    InactiveReasonNote = c.String( maxLength: 1000 ),
-                    SystemNote = c.String( maxLength: 1000 ),
-                    ViewedCount = c.Int(),
-                    Guid = c.Guid( nullable: false ),
-                    ForeignId = c.Int(),
-                    ForeignGuid = c.Guid(),
-                    ForeignKey = c.String( maxLength: 100 ),
-                    BirthDateDim_DateKey = c.Int(),
-                    ConnectionStatusValue_ConnectionStatusId = c.Int(),
-                    MaritalStatusValue_MaritalStatusId = c.Int(),
-                    RecordStatusReasonValue_RecordStatusReasonId = c.Int(),
-                    RecordStatusValue_RecordStatusId = c.Int(),
-                    RecordTypeValue_RecordTypeId = c.Int(),
-                    ReviewReasonValue_ReviewReasonId = c.Int(),
-                    SuffixValue_SuffixId = c.Int(),
-                    TitleValue_TitleId = c.Int(),
-                } )
-                .PrimaryKey( t => t.Id )
-                .Index( t => t.Guid, unique: true )
-                .Index( t => t.BirthDateDim_DateKey )
-                .Index( t => t.ConnectionStatusValue_ConnectionStatusId )
-                .Index( t => t.MaritalStatusValue_MaritalStatusId )
-                .Index( t => t.RecordStatusReasonValue_RecordStatusReasonId )
-                .Index( t => t.RecordStatusValue_RecordStatusId )
-                .Index( t => t.RecordTypeValue_RecordTypeId )
-                .Index( t => t.ReviewReasonValue_ReviewReasonId )
-                .Index( t => t.SuffixValue_SuffixId )
-                .Index( t => t.TitleValue_TitleId );
+               "dbo.AnalyticsSourcePersonHistorical",
+               c => new
+               {
+                   Id = c.Int( nullable: false, identity: true ),
+                   PersonId = c.Int( nullable: false ),
+                   CurrentRowIndicator = c.Boolean( nullable: false ),
+                   EffectiveDate = c.DateTime( nullable: false, storeType: "date" ),
+                   ExpireDate = c.DateTime( nullable: false, storeType: "date" ),
+                   PrimaryFamilyId = c.Int(),
+                   RecordTypeValueId = c.Int(),
+                   RecordStatusValueId = c.Int(),
+                   RecordStatusLastModifiedDateTime = c.DateTime(),
+                   RecordStatusReasonValueId = c.Int(),
+                   ConnectionStatusValueId = c.Int(),
+                   ReviewReasonValueId = c.Int(),
+                   IsDeceased = c.Boolean( nullable: false ),
+                   TitleValueId = c.Int(),
+                   FirstName = c.String( maxLength: 50 ),
+                   NickName = c.String( maxLength: 50 ),
+                   MiddleName = c.String( maxLength: 50 ),
+                   LastName = c.String( maxLength: 50 ),
+                   SuffixValueId = c.Int(),
+                   PhotoId = c.Int(),
+                   BirthDay = c.Int(),
+                   BirthMonth = c.Int(),
+                   BirthYear = c.Int(),
+                   BirthDateKey = c.Int(),
+                   Gender = c.Int( nullable: false ),
+                   MaritalStatusValueId = c.Int(),
+                   AnniversaryDate = c.DateTime( storeType: "date" ),
+                   GraduationYear = c.Int(),
+                   GivingGroupId = c.Int(),
+                   GivingId = c.String(),
+                   GivingLeaderId = c.Int(),
+                   Email = c.String( maxLength: 75 ),
+                   EmailPreference = c.Int( nullable: false ),
+                   ReviewReasonNote = c.String( maxLength: 1000 ),
+                   InactiveReasonNote = c.String( maxLength: 1000 ),
+                   SystemNote = c.String( maxLength: 1000 ),
+                   ViewedCount = c.Int(),
+                   Guid = c.Guid( nullable: false ),
+                   ForeignId = c.Int(),
+                   ForeignGuid = c.Guid(),
+                   ForeignKey = c.String( maxLength: 100 ),
+               } )
+               .PrimaryKey( t => t.Id )
+               .Index( t => t.RecordTypeValueId )
+               .Index( t => t.RecordStatusValueId )
+               .Index( t => t.RecordStatusReasonValueId )
+               .Index( t => t.ConnectionStatusValueId )
+               .Index( t => t.ReviewReasonValueId )
+               .Index( t => t.TitleValueId )
+               .Index( t => t.SuffixValueId )
+               .Index( t => t.BirthDateKey )
+               .Index( t => t.MaritalStatusValueId )
+               .Index( t => t.Guid, unique: true );
 
             CreateTable(
                 "dbo.AnalyticsDimDate",
@@ -206,6 +187,7 @@ namespace Rock.Migrations
             AddColumn( "dbo.Attribute", "IsAnalyticHistory", c => c.Boolean( nullable: false ) );
             AddColumn( "dbo.Metric", "EnableAnalytics", c => c.Boolean( nullable: false ) );
 
+            // this could take a minute or so on a large database
             Sql( @"
     ALTER TABLE AttributeValue ADD [ValueAsBoolean] AS (
     CASE 
