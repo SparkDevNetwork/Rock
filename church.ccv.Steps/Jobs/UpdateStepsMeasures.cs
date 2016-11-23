@@ -250,8 +250,10 @@ namespace church.ccv.Steps
                         var actionsHistory_Campus_Adult = adultActionsService.Queryable( ).Where( ah => ah.Date == latestDate )
                                                                                           .GroupBy( ah => ah.CampusId );
 
-                        // Adults organized by region
-                        var actionsHistory_Region_Adult = adultActionsService.Queryable( ).Where( ah => ah.Date == latestDate );
+                        // Adults organized by region (only regions with a neighborhood pastor)
+                        // we will ignore any actions data for regions that don't have a pastor
+                        var regionListIds = regionList.Select( r => r.RegionId );
+                        var actionsHistory_Region_Adult = adultActionsService.Queryable( ).Where( ah => ah.Date == latestDate && regionListIds.Contains( ah.RegionId ) );
                 
                         // get the number of active adults per campus
                         var campusTotals_Adult = actionsHistory_Campus_Adult.Select( wg => new CampusAdultCount
@@ -266,7 +268,7 @@ namespace church.ccv.Steps
                         var actionsHistory_Campus_Student = studentActionsService.Queryable( ).Where( ah => ah.Date == latestDate )
                                                                                               .GroupBy( ah => ah.CampusId );
                 
-                        // get the number of actlive students per campus
+                        // get the number of active students per campus
                         var campusTotals_Student = actionsHistory_Campus_Student.Select( wg => new CampusStudentCount
                                                                                  {
                                                                                      CampusId = wg.Key,
