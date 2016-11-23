@@ -255,6 +255,8 @@ CREATE UNIQUE NONCLUSTERED  INDEX [IX_PersonIdCurrentRow] ON [dbo].[AnalyticsSou
             DropIndex( "dbo.AnalyticsSourcePersonHistorical", new[] { "RecordStatusValueId" } );
             DropIndex( "dbo.AnalyticsSourcePersonHistorical", new[] { "RecordTypeValueId" } );
 
+            DropIndex( "dbo.AttributeValue", new[] { "ValueAsBoolean" } );
+
             DropColumn("dbo.AttributeValue", "ValueAsBoolean");
             DropColumn("dbo.Attribute", "IsAnalyticHistory");
             DropColumn("dbo.Attribute", "IsAnalytic");

@@ -1,3 +1,7 @@
+TRUNCATE TABLE AnalyticsDimDate
+
+SELECT DATENAME(DAY, SYSDATETIME())
+
 -- see https://www.mssqltips.com/sqlservertip/4054/creating-a-date-dimension-or-calendar-table-in-sql-server/ for some background
 DECLARE @BeginDate DATE = DateFromParts(1850, 1, 1)
     ,@InsertDate DATE
@@ -5,6 +9,8 @@ DECLARE @BeginDate DATE = DateFromParts(1850, 1, 1)
 
 BEGIN
     SET @InsertDate = @BeginDate
+
+    BEGIN TRANSACTION
 
     WHILE (@InsertDate < @EndDate)
     BEGIN
@@ -19,6 +25,7 @@ BEGIN
                 ,[Date]
                 ,[FullDateDescription]
                 ,[DayOfWeek]
+                ,[DayOfWeekName]
                 ,[DayOfWeekAbbreviated]
                 ,[DayNumberInCalendarMonth]
                 ,[DayNumberInCalendarYear]
@@ -28,6 +35,7 @@ BEGIN
                 ,[WeekNumberInMonth]
                 ,[SundayDate]
                 ,[GivingMonth]
+                ,[GivingMonthName]
                 ,[CalendarWeekNumberInYear]
                 ,[CalendarInMonthName]
                 ,[CalendarInMonthNameAbbrevated]
@@ -56,16 +64,22 @@ BEGIN
             SELECT convert(INT, (convert(CHAR(8), @InsertDate, 112)))
                 ,@InsertDate
                 ,NULL -- FullDateDescription
-                ,DATENAME(WEEKDAY, @InsertDate) --<DayOfWeek, nvarchar(max),>
-                ,'' --<DayOfWeekAbbreviated, nvarchar(max),>
+                ,DATEPART(WEEKDAY, @InsertDate)
+                ,DATENAME(WEEKDAY, @InsertDate) --<DayOfWeekName, nvarchar(max),>
+                ,SUBSTRING(DATENAME(WEEKDAY, @InsertDate), 1, 3) --<DayOfWeekAbbreviated, nvarchar(max),>
                 ,DATENAME(DAY, @InsertDate) --<DayNumberInCalendarMonth, int,>
                 ,DATENAME(DAYOFYEAR, @InsertDate) --<DayNumberInCalendarYear, int,>
                 ,0 --<DayNumberInFiscalMonth, int,>
                 ,0 --<DayNumberInFiscalYear, int,>
-                ,case when EOMONTH(@InsertDate) = @InsertDate then 1 else 0 end  --<LastDayInMonthIndictor, bit,>
+                ,CASE 
+                    WHEN EOMONTH(@InsertDate) = @InsertDate
+                        THEN 1
+                    ELSE 0
+                    END --<LastDayInMonthIndictor, bit,>
                 ,0 --<WeekNumberInMonth, int,>
                 ,dbo.ufnUtility_GetSundayDate(@InsertDate) -- <SundayDate, date,>
-                ,0 --<GivingMonth, nvarchar(max),>
+                ,0 --<GivingMonth, int,> UI will ask if [use Month of SundayDate, use actual month]
+                ,'' --<GivingMonthName, nvarchar(max),> UI will ask if [use Month of SundayDate, use actual month]
                 ,0 --<CalendarWeekNumberInYear, int,>
                 ,'' --<CalendarInMonthName, nvarchar(max),>
                 ,'' --<CalendarInMonthNameAbbrevated, nvarchar(max),>
@@ -83,7 +97,7 @@ BEGIN
                 ,'' --<FiscalQuarter, nvarchar(max),>
                 ,'' --<FiscalYearQuarter, nvarchar(max),>
                 ,'' --<FiscalHalfYear, nvarchar(max),>
-                ,datepart(year, @InsertDate) --<FiscalYear, int,>
+                ,0 --datepart(year, @InsertDate) --<FiscalYear, int,>
                 ,0 --<HolidayIndicator, bit,>
                 ,0 --<WeekHolidayIndicator, bit,>
                 ,0 --<EasterIndicator, bit,>
@@ -94,4 +108,6 @@ BEGIN
 
         SET @InsertDate = DATEADD(day, 1, @InsertDate)
     END
+
+    COMMIT TRANSACTION
 END
