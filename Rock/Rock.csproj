@@ -613,6 +613,7 @@
     <Compile Include="Model\AnalyticsSourceFinancialTransaction.cs" />
     <Compile Include="Model\Attendance.cs" />
     <Compile Include="Model\AttendanceCode.cs" />
+    <Compile Include="Model\MetricService.Partial.cs" />
     <Compile Include="Model\AttendanceCodeService.Partial.cs" />
     <Compile Include="Model\AttendanceService.Partial.cs" />
     <Compile Include="Model\Attribute.cs" />

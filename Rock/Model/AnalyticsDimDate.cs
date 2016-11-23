@@ -63,6 +63,15 @@ namespace Rock.Model
         public string FullDateDescription { get; set; }
 
         /// <summary>
+        /// Gets or sets the day of week (Sunday=0)
+        /// </summary>
+        /// <value>
+        /// The day of week.
+        /// </value>
+        [DataMember]
+        public int DayOfWeek { get; set; }
+
+        /// <summary>
         /// Gets or sets the day of week.
         /// </summary>
         /// <value>
@@ -70,7 +79,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         [MaxLength(450)]
-        public string DayOfWeek { get; set; }
+        public string DayOfWeekName { get; set; }
 
         /// <summary>
         /// Gets or sets the day of week abbreviated.
@@ -148,42 +157,25 @@ namespace Rock.Model
 
         /// <summary>
         /// Gets or sets the giving month.
+        /// This is based on two options that they choose in the Date Generator UI 1) Fiscal Month and 2) Giving Month: Use Sunday Date
+        /// If they choose the "Use Sunday Date" option, it will use whatever the SundayDate of Date is, but not if it crosses the Fiscal Year
+        /// For example, if their Fiscal year starts on April 1st, it won't use the SundayDate for any of the last days of March if it ends up being in April
+        /// </summary>
+        /// <value>
+        /// The giving month.
+        /// </value>
+        [DataMember]
+        public int GivingMonth { get; set; }
+
+        /// <summary>
+        /// Gets or sets the giving month name.
         /// </summary>
         /// <value>
         /// The giving month.
         /// </value>
         [DataMember]
         [MaxLength( 450 )]
-        public string GivingMonth { get; set; }
-
-        /// <summary>
-        /// Gets or sets the calendar week number in year.
-        /// </summary>
-        /// <value>
-        /// The calendar week number in year.
-        /// </value>
-        [DataMember]
-        public int CalendarWeekNumberInYear { get; set; }
-
-        /// <summary>
-        /// Gets or sets the name of the calendar in month.
-        /// </summary>
-        /// <value>
-        /// The name of the calendar in month.
-        /// </value>
-        [DataMember]
-        [MaxLength( 450 )]
-        public string CalendarInMonthName { get; set; }
-
-        /// <summary>
-        /// Gets or sets the calendar in month name abbrevated.
-        /// </summary>
-        /// <value>
-        /// The calendar in month name abbrevated.
-        /// </value>
-        [DataMember]
-        [MaxLength( 450 )]
-        public string CalendarInMonthNameAbbrevated { get; set; }
+        public string GivingMonthName { get; set; }
 
         /// <summary>
         /// Gets or sets the calendar month number in year.
@@ -193,6 +185,35 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public int CalendarMonthNumberInYear { get; set; }
+
+        /// <summary>
+        /// Gets or sets the calendar month.
+        /// </summary>
+        /// <value>
+        /// The calendar month.
+        /// </value>
+        [DataMember]
+        public int CalendarMonth { get; set; }
+
+        /// <summary>
+        /// Gets or sets the name of the calendar in month.
+        /// </summary>
+        /// <value>
+        /// The name of the calendar in month.
+        /// </value>
+        [DataMember]
+        [MaxLength( 450 )]
+        public string CalendarMonthName { get; set; }
+
+        /// <summary>
+        /// Gets or sets the calendar in month name abbrevated.
+        /// </summary>
+        /// <value>
+        /// The calendar in month name abbrevated.
+        /// </value>
+        [DataMember]
+        [MaxLength( 450 )]
+        public string CalendarMonthNameAbbrevated { get; set; }
 
         /// <summary>
         /// Gets or sets the calendar year month.

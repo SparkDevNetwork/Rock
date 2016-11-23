@@ -176,6 +176,16 @@ namespace Rock.Model
         [DataMember]
         public DateTime? LastRunDateTime { get; set; }
 
+        /// <summary>
+        /// Gets or sets a value indicating whether [enable analytics].
+        /// If this is enabled, a SQL View named 'AnalyticsFactMetric{{Metric.Name}}' will be made available that can be used by Analytic tools, such as Power BI
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [enable analytics]; otherwise, <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool EnableAnalytics { get; set; }
+
         #endregion
 
         #region Virtual Properties
