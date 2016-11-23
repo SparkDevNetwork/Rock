@@ -329,15 +329,15 @@ namespace RockWeb.Blocks.Finance
             }
             mergeFields.Add( "Salutation", salutation );
 
-            var homeAddress = targetPerson.GetHomeLocation();
-            if ( homeAddress != null )
+            var mailingAddress = targetPerson.GetMailingLocation();
+            if ( mailingAddress != null )
             {
-                mergeFields.Add( "StreetAddress1", homeAddress.Street1 );
-                mergeFields.Add( "StreetAddress2", homeAddress.Street2 );
-                mergeFields.Add( "City", homeAddress.City );
-                mergeFields.Add( "State", homeAddress.State );
-                mergeFields.Add( "PostalCode", homeAddress.PostalCode );
-                mergeFields.Add( "Country", homeAddress.Country );
+                mergeFields.Add( "StreetAddress1", mailingAddress.Street1 );
+                mergeFields.Add( "StreetAddress2", mailingAddress.Street2 );
+                mergeFields.Add( "City", mailingAddress.City );
+                mergeFields.Add( "State", mailingAddress.State );
+                mergeFields.Add( "PostalCode", mailingAddress.PostalCode );
+                mergeFields.Add( "Country", mailingAddress.Country );
             }
             else
             {
