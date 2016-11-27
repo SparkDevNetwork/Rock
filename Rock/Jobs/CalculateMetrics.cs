@@ -120,7 +120,7 @@ namespace Rock.Jobs
                                         {
                                             string formattedSql = metric.SourceSql.ResolveMergeFields( metric.GetMergeObjects( scheduleDateTime ) );
                                             var tableResult = DbService.GetDataTable( formattedSql, System.Data.CommandType.Text, null );
-                                            
+
                                             if ( tableResult.Columns.Count >= 2 && tableResult.Columns[1].ColumnName == "MetricValueDateTime" )
                                             {
                                                 getMetricValueDateTimeFromResultSet = true;
@@ -222,9 +222,8 @@ namespace Rock.Jobs
                                         if ( getMetricValueDateTimeFromResultSet )
                                         {
                                             var metricValueDateTimes = metricValuesToAdd.Select( a => a.MetricValueDateTime ).Distinct().ToList();
-                                            if ( metricValueDateTimes.Count == 1 )
+                                            foreach ( var metricValueDateTime in metricValueDateTimes )
                                             {
-                                                var metricValueDateTime = metricValueDateTimes.First();
                                                 bool alreadyHasMetricValues = metricValueService.Queryable().Where( a => a.MetricId == metric.Id && a.MetricValueDateTime == metricValueDateTime ).Any();
                                                 if ( alreadyHasMetricValues )
                                                 {
@@ -248,7 +247,7 @@ namespace Rock.Jobs
                                                 }
                                             }
                                         }
-                                        
+
                                         metricValueService.AddRange( metricValuesToAdd );
 
                                         // disable savechanges PrePostProcessing since there could be hundreds or thousands of metric values getting inserted/updated
