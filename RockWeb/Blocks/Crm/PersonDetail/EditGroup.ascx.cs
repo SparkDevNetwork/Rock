@@ -986,7 +986,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                             role = _groupType.Roles.FirstOrDefault();
                         }
 
-                        bool isAdult = role != null && role.Guid.Equals( Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_ADULT );
+                        bool isAdult = role != null && role.Guid.Equals( Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_ADULT.AsGuid() );
 
                         // People added to group (new or from other group )
                         if ( !groupMemberInfo.ExistingGroupMember )
