@@ -39,7 +39,7 @@ namespace RockWeb.Plugins.com_centralaz.DpsMatch
     [Description( "Block to manually evaluate Person entries similar to known sexual offenders" )]
     [TextField( "Note Text", "The text for the alert note that is placed on the person's timeline", true, "Known Sex Offender" )]
     [TextField( "Completion Text", "The text for the notification box at completion", true, "There are no unprocessed matches at this time." )]
-    [GroupField("Offender Group", "The Group for Offenders", true)]
+    [GroupField( "Offender Group", "The Group for Offenders", true )]
     public partial class DPSEvaluationBlock : Rock.Web.UI.RockBlock
     {
         #region Fields
@@ -269,14 +269,17 @@ namespace RockWeb.Plugins.com_centralaz.DpsMatch
             {
                 if ( !match.VerifiedDate.HasValue || match.IsMatch == true || ( match.PersonAlias.Person.ModifiedDateTime.HasValue && match.VerifiedDate.Value.Date < match.PersonAlias.Person.ModifiedDateTime.Value.Date ) || match.VerifiedDate.Value.Date < match.Offender.ModifiedDateTime.Value.Date )
                 {
-                    if ( _matchList.ContainsKey( match.OffenderId ) )
+                    if ( match.IsMatch != false )
                     {
-                        _matchList[match.OffenderId].Add( match );
-                    }
-                    else
-                    {
-                        _matchList.Add( match.OffenderId, new List<Match>() );
-                        _matchList[match.OffenderId].Add( match );
+                        if ( _matchList.ContainsKey( match.OffenderId ) )
+                        {
+                            _matchList[match.OffenderId].Add( match );
+                        }
+                        else
+                        {
+                            _matchList.Add( match.OffenderId, new List<Match>() );
+                            _matchList[match.OffenderId].Add( match );
+                        }
                     }
                 }
             }
