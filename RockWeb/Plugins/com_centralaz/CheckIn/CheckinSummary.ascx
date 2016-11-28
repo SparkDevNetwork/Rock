@@ -5,7 +5,7 @@
 
         <div class="panel panel-block">
             <div class="panel-heading">
-                <h1 class="panel-title"><i class="fa fa-calendar"></i> Check-in Summary</h1>
+                <h1 class="panel-title"><i class="fa fa-calendar"></i>Check-in Summary</h1>
             </div>
             <div class="panel-body">
                 <div class="row">
@@ -23,6 +23,7 @@
                 <div class="grid">
                     <Rock:GridFilter ID="rFilter" runat="server">
                         <Rock:GroupTypePicker ID="ddlGroupType" runat="server" />
+                        <Rock:LocationItemPicker ID="pkrParentLocation" runat="server" Label="Parent Location" />
                     </Rock:GridFilter>
                     <Rock:Grid ID="gGroupLocations" runat="server" AllowSorting="true" AllowPaging="false" OnRowDataBound="gGroupLocations_RowDataBound">
                         <Columns>

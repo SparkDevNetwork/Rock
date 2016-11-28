@@ -248,6 +248,8 @@ namespace RockWeb.Plugins.com_centralaz.CheckIn
             {
                 pCategory.SetValue( null );
             }
+
+            pkrParentLocation.SetValue( rFilter.GetUserPreference( "Parent Location" ).AsIntegerOrNull() );
         }
 
         #endregion
@@ -262,6 +264,8 @@ namespace RockWeb.Plugins.com_centralaz.CheckIn
         private void rFilter_ApplyFilterClick( object sender, EventArgs e )
         {
             rFilter.SaveUserPreference( "Group Type", ddlGroupType.SelectedValueAsId().ToString() );
+            rFilter.SaveUserPreference( "Parent Location", pkrParentLocation.SelectedValueAsId().ToString() );
+
             BindGrid();
         }
 
@@ -419,9 +423,18 @@ namespace RockWeb.Plugins.com_centralaz.CheckIn
                 groupQry = groupQry.Where( a => descendantGroupTypeIds.Contains( a.GroupTypeId ) );
             }
 
+            var locationService = new LocationService( rockContext );
+            int parentLocationId = pkrParentLocation.SelectedValueAsInt() ?? Rock.Constants.All.Id;
+            var currentAndDescendantLocationIds = new List<int>();
+            if ( parentLocationId != Rock.Constants.All.Id )
+            {
+                currentAndDescendantLocationIds.Add( parentLocationId );
+                currentAndDescendantLocationIds.AddRange( locationService.GetAllDescendents( parentLocationId ).Select( a => a.Id ) );
+            }
 
             var selectedServiceTimes = cblSchedules.SelectedValuesAsInt;
-            groupQry = groupQry.Where( g => g.GroupLocations.Any( gl => gl.Schedules.Any( s => selectedServiceTimes.Contains( s.Id ) ) ) );
+            groupQry = groupQry.Where( g => g.GroupLocations.Any( gl => gl.Schedules.Any( s => selectedServiceTimes.Contains( s.Id ) ) &&
+            ( parentLocationId == Rock.Constants.All.Id || currentAndDescendantLocationIds.Contains( gl.LocationId ) ) ) );
 
             if ( gGroupLocations.SortProperty != null )
             {
@@ -569,6 +582,18 @@ namespace RockWeb.Plugins.com_centralaz.CheckIn
                 if ( lLocations != null )
                 {
                     var locations = group.GroupLocations.Where( gl => gl.Schedules.Any( s => selectedServiceTimes.Contains( s.Id ) ) ).OrderBy( gl => gl.Order );
+
+                    var locationService = new LocationService( new RockContext() );
+                    int parentLocationId = pkrParentLocation.SelectedValueAsInt() ?? Rock.Constants.All.Id;
+                    if ( parentLocationId != Rock.Constants.All.Id )
+                    {
+                        var currentAndDescendantLocationIds = new List<int>();
+                        currentAndDescendantLocationIds.Add( parentLocationId );
+                        currentAndDescendantLocationIds.AddRange( locationService.GetAllDescendents( parentLocationId ).Select( a => a.Id ) );
+
+                        locations = locations.Where( l => currentAndDescendantLocationIds.Contains( l.LocationId ) ).OrderBy( gl => gl.Order );
+                    }
+
                     List<String> locationsFormatted = new List<string>();
                     foreach ( var location in locations )
                     {
