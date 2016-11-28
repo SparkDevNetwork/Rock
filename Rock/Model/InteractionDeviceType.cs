@@ -35,6 +35,15 @@ namespace Rock.Model
         #region Entity Properties
 
         /// <summary>
+        /// Gets or sets the interaction device type name.
+        /// </summary>
+        /// <value>
+        /// The interaction device type name.
+        /// </value>
+        [DataMember]
+        public string Name { get; set; }
+
+        /// <summary>
         /// Gets or sets the device type data.
         /// </summary>
         /// <value>

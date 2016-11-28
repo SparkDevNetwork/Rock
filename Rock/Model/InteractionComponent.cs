@@ -34,6 +34,15 @@ namespace Rock.Model
         #region Entity Properties
 
         /// <summary>
+        /// Gets or sets the interaction component name.
+        /// </summary>
+        /// <value>
+        /// The interaction component name.
+        /// </value>
+        [DataMember]
+        public string Name { get; set; }
+
+        /// <summary>
         /// Gets or sets the interaction component data.
         /// </summary>
         /// <value>
