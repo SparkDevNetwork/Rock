@@ -48,6 +48,9 @@ namespace Rock.Jobs
         {
         }
 
+        private int _columnsAdded = 0;
+        private int _columnsModified = 0;
+        private int _columnsRemoved = 0;
         private int _rowsMarkedAsHistory = 0;
         private int _rowsUpdated = 0;
         private int _rowsInserted = 0;
@@ -88,7 +91,16 @@ namespace Rock.Jobs
             // that have to use FormatValue to get the value instead of directly in the DB
             UpdateAttributeValueUsingFormattedValue( personAnalyticAttributes );
 
-            context.Result = $"Marked {_rowsMarkedAsHistory} records as History, updated {_rowsUpdated} records, updated {_attributeFieldsUpdated} attribute formatted values, and inserted {_rowsInserted} records ";
+            string resultText = string.Empty;
+            if ( _columnsAdded != 0 || _columnsModified != 0 || _columnsRemoved != 0 )
+            {
+                resultText = $"Added {_columnsAdded}, modified {_columnsModified}, and removed {_columnsRemoved} attribute columns.\n";
+            }
+
+
+            resultText += $"Marked {_rowsMarkedAsHistory} records as History, updated {_rowsUpdated} records, updated {_attributeFieldsUpdated} attribute formatted values, and inserted {_rowsInserted} records.";
+
+            context.Result = resultText;
         }
 
         /// <summary>
@@ -104,7 +116,7 @@ namespace Rock.Jobs
             {
                 var attributeValueService = new AttributeValueService( rockContext );
 
-                foreach ( var attribute in personAnalyticAttributes.Where( a => a.IsAnalyticHistory ) )
+                foreach ( var attribute in personAnalyticAttributes.Where( a => a.IsAnalyticHistory && UseFormatValueForUpdate( a ) ) )
                 {
                     var columnName = attribute.Key.RemoveSpecialCharacters();
 
@@ -160,7 +172,7 @@ UPDATE [AnalyticsSourcePersonHistorical]
             {
                 var attributeValueService = new AttributeValueService( rockContext );
 
-                foreach ( var attribute in personAnalyticAttributes )
+                foreach ( var attribute in personAnalyticAttributes.Where( a => UseFormatValueForUpdate( a ) ) )
                 {
                     var columnName = attribute.Key.RemoveSpecialCharacters();
 
@@ -177,11 +189,14 @@ UPDATE [AnalyticsSourcePersonHistorical]
                             var formattedValue = attribute.FieldType.Field.FormatValue( null, personAttributeValue, attribute.QualifierValues, false );
 
                             // mass update the value for the Attribute in the AnalyticsSourcePersonHistorical records 
+                            // Don't update the Historical Records, even if it was just a Text change.  For example, if they changed DefinedValue "Member" to "Owner", 
+                            // have the historical records say "Member" even though it is the same definedvalue id
                             var updateSql = $@"
 UPDATE [AnalyticsSourcePersonHistorical] 
     SET [{columnName}] = @formattedValue 
     WHERE [PersonId] IN (SELECT EntityId FROM AttributeValue WHERE AttributeId = {attribute.Id} AND Value = @personAttributeValue) 
-    AND isnull([{columnName}],'') != @formattedValue";
+    AND isnull([{columnName}],'') != @formattedValue
+    AND [CurrentRowIndicator] = 1";
 
                             var parameters = new Dictionary<string, object>();
                             parameters.Add( "@personAttributeValue", personAttributeValue );
@@ -533,6 +548,7 @@ WHERE asph.CurrentRowIndicator = 1 AND (";
                     if ( databaseColumn == null )
                     {
                         // doesn't exist as a field on the AnalyticsSourcePersonHistorical table, so create it
+                        _columnsAdded++;
                         rockContext.Database.ExecuteSqlCommand( addColumnSQL );
                     }
                     else
@@ -560,6 +576,7 @@ WHERE asph.CurrentRowIndicator = 1 AND (";
                         if ( dropCreate )
                         {
                             // the attribute fieldtype must have changed. Drop and recreate the column
+                            _columnsModified++;
                             rockContext.Database.ExecuteSqlCommand( dropColumnSql );
                             rockContext.Database.ExecuteSqlCommand( addColumnSQL );
                         }
@@ -574,6 +591,7 @@ WHERE asph.CurrentRowIndicator = 1 AND (";
                     {
                         var dropColumnSql = $"ALTER TABLE [AnalyticsSourcePersonHistorical] DROP COLUMN [{databaseAttributeField.ColumnName}]";
 
+                        _columnsRemoved++;
                         rockContext.Database.ExecuteSqlCommand( dropColumnSql );
                     }
                 }
