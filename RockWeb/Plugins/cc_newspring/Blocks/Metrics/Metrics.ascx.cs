@@ -118,7 +118,7 @@ namespace RockWeb.Plugins.cc_newspring.Blocks.Metrics
 
                 if ( comparisonValue > 0 )
                 {
-                    decimal comparison = primaryValue / comparisonValue;
+                    decimal comparison = ( primaryValue * 1.0M ) / ( comparisonValue * 1.0M );
 
                     if ( GetAttributeValue( "DisplayComparisonAs" ).Equals( "Integer" ) )
                     {
@@ -128,10 +128,6 @@ namespace RockWeb.Plugins.cc_newspring.Blocks.Metrics
                     {
                         return comparison * 100;
                     }
-                }
-                else
-                {
-                    return 0.0M;
                 }
             }
 
@@ -146,7 +142,7 @@ namespace RockWeb.Plugins.cc_newspring.Blocks.Metrics
         /// <returns></returns>
         protected decimal GetValueAggregate( List<MetricValue> values, bool isPrimary )
         {
-            if( values == null || !values.Any() )
+            if ( values == null || !values.Any() )
             {
                 return 0;
             }
@@ -157,34 +153,34 @@ namespace RockWeb.Plugins.cc_newspring.Blocks.Metrics
             switch ( GetAttributeValue( preKey + "Aggregation" ) )
             {
                 case "Avg":
-                    aggregateValue = values.Select(v => v.YValue).Average();
+                    aggregateValue = values.Select( v => v.YValue ).Average();
                     break;
 
                 case "Min":
-                    aggregateValue = values.Select(v => v.YValue).Min();
+                    aggregateValue = values.Select( v => v.YValue ).Min();
                     break;
 
                 case "Max":
-                    aggregateValue = values.Select(v => v.YValue).Max();
+                    aggregateValue = values.Select( v => v.YValue ).Max();
                     break;
 
                 case "Median":
-                    aggregateValue = values.Select(v => v.YValue).OrderBy( v => v ).ElementAt( values.Count() / 2 );
+                    aggregateValue = values.Select( v => v.YValue ).OrderBy( v => v ).ElementAt( values.Count() / 2 );
                     break;
 
                 case "Latest":
-                    var latestDate = values.Where(v => v.MetricValueDateTime.HasValue).OrderByDescending(v => v.MetricValueDateTime).First().MetricValueDateTime.Value.Date;
-                    aggregateValue = values.Where(v => v.MetricValueDateTime.HasValue && v.MetricValueDateTime.Value.Date == latestDate).Select(v => v.YValue).Sum();
+                    var latestDate = values.Where( v => v.MetricValueDateTime.HasValue ).OrderByDescending( v => v.MetricValueDateTime ).First().MetricValueDateTime.Value.Date;
+                    aggregateValue = values.Where( v => v.MetricValueDateTime.HasValue && v.MetricValueDateTime.Value.Date == latestDate ).Select( v => v.YValue ).Sum();
                     break;
 
                 default:
-                    aggregateValue = values.Select(v => v.YValue).Sum();
+                    aggregateValue = values.Select( v => v.YValue ).Sum();
                     break;
             }
 
             if ( !aggregateValue.HasValue )
             {
-                aggregateValue = 0.0m;
+                aggregateValue = 0;
             }
 
             return aggregateValue.Value;
@@ -307,21 +303,15 @@ namespace RockWeb.Plugins.cc_newspring.Blocks.Metrics
         {
             // this may be a little complicated to compare date ranges while accepting two metric keys/sources
             decimal currentMetricValues = FormatValues();
-            if ( currentMetricValues > 0 )
-            {
-                var metricComparisonSymbol = string.Empty;
-                var comparisonMetricGuids = GetAttributeValue( "ComparisonMetricSource" ).SplitDelimitedValues().AsGuidOrNullList();
-                if ( comparisonMetricGuids.Any() && GetAttributeValue( "DisplayComparisonAs" ).Equals( "Percentage" ) )
-                {
-                    metricComparisonSymbol = "%";
-                }
 
-                metricValue.Value = string.Format( "{0:n0}{1}", currentMetricValues, metricComparisonSymbol );
-            }
-            else
+            var metricComparisonSymbol = string.Empty;
+            var comparisonMetricGuids = GetAttributeValue( "ComparisonMetricSource" ).SplitDelimitedValues().AsGuidOrNullList();
+            if ( comparisonMetricGuids.Any() && GetAttributeValue( "DisplayComparisonAs" ).Equals( "Percentage" ) )
             {
-                metricValue.Value = "—";
+                metricComparisonSymbol = "%";
             }
+
+            metricValue.Value = string.Format( "{0:0.##}{1}", currentMetricValues, metricComparisonSymbol );
         }
 
         #endregion
