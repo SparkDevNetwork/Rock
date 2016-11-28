@@ -39,6 +39,15 @@ namespace Rock.Model
         #region Entity Properties
 
         /// <summary>
+        /// Gets or sets the interaction channel name.
+        /// </summary>
+        /// <value>
+        /// The interaction channel name.
+        /// </value>
+        [DataMember]
+        public string Name { get; set; }
+
+        /// <summary>
         /// Gets or sets the interaction service data.
         /// </summary>
         /// <value>
