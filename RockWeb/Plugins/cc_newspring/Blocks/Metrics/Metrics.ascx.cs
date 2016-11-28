@@ -311,7 +311,7 @@ namespace RockWeb.Plugins.cc_newspring.Blocks.Metrics
                 metricComparisonSymbol = "%";
             }
 
-            metricValue.Value = string.Format( "{0:0.##}{1}", currentMetricValues, metricComparisonSymbol );
+            metricValue.Value = string.Format( "{0:0.#}{1}", currentMetricValues, metricComparisonSymbol );
         }
 
         #endregion
