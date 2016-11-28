@@ -1385,6 +1385,7 @@ namespace RockWeb.Blocks.Finance
                             .Queryable().AsNoTracking()
                             .Where( t =>
                                 t.TransactionCode == txn.TransactionCode &&
+                                t.AuthorizedPersonAliasId == txn.AuthorizedPersonAliasId &&
                                 t.Id != txn.Id &&
                                 t.TransactionDateTime.HasValue )
                             .OrderBy( t => t.TransactionDateTime.Value )
