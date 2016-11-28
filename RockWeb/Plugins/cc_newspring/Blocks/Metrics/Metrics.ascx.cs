@@ -316,6 +316,9 @@ namespace RockWeb.Plugins.cc_newspring.Blocks.Metrics
 
         #endregion
 
+        /// <summary>
+        /// Loads the source guids.
+        /// </summary>
         private void LoadSourceGuids()
         {
             var metricSourceString = GetAttributeValue( "MetricSource" );
