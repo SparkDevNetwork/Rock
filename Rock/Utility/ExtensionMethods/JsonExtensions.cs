@@ -93,10 +93,36 @@ namespace Rock
                 .Select( r => r.Key )
                 .ToList();
 
-            arrayKeys.ForEach( k => result[k] = ( (JArray)result[k] ).Values().Select( v => ( (JValue)v ).Value ).ToArray() );
+            arrayKeys.ForEach( k => result[k] = ( (JArray)result[k] ).ToObjectArray() );
             valueKeys.ForEach( k => result[k] = ToDictionary( result[k] as JObject ) );
 
             return result;
+        }
+
+        /// <summary>
+        /// Converts a JArray to a Object array
+        /// </summary>
+        /// <param name="jarray">The jarray.</param>
+        /// <returns></returns>
+        public static object[] ToObjectArray( this JArray jarray )
+        {
+            var valueList = new List<object>();
+
+            for( var i = 0; i < jarray.Count; i++ )
+            {
+                var obj = jarray[i];
+                if ( obj.GetType() == typeof( JObject ) )
+                {
+                    valueList.Add( ( (JObject)obj ).ToDictionary() );
+                }
+
+                if ( obj.GetType() == typeof( JValue ))
+                {
+                    valueList.Add( ( (JValue)obj ).Value );
+                }
+            }
+
+            return valueList.ToArray();
         }
 
         #endregion
