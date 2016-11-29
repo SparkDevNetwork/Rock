@@ -69,7 +69,7 @@ order by YValue desc
 </pre>
 </code>",
               CodeEditorMode.Sql )]
-    [TextField( "SQL Params", "Parameters to pass to query", false, "" )]
+    [TextField( "Query Params", "The parameters that the stored procedure expects in the format of 'param1=value;param2=value'. Any parameter with the same name as a page parameter (i.e. querystring, form, or page route) will have it's value replaced with the page's current value. A parameter with the name of 'CurrentPersonId' will have it's value replaced with the currently logged in person's id.", false, "" )]
     [IntegerField( "Chart Height", "", false, 200 )]
     [DefinedValueField( Rock.SystemGuid.DefinedType.CHART_STYLES, "Chart Style", order: 3 )]
 
@@ -335,7 +335,7 @@ function labelFormatter(label, series) {
         /// <returns></returns>
         private Dictionary<string, object> GetParameters()
         {
-            string[] queryParams = GetAttributeValue( "SQLParams" ).SplitDelimitedValues();
+            string[] queryParams = GetAttributeValue( "QueryParams" ).SplitDelimitedValues();
             if ( queryParams.Length > 0 )
             {
                 var parameters = new Dictionary<string, object>();
