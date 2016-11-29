@@ -41,6 +41,7 @@ namespace Rock.Model
         /// The interaction device type name.
         /// </value>
         [DataMember]
+        [MaxLength( 250 )]
         public string Name { get; set; }
 
         /// <summary>

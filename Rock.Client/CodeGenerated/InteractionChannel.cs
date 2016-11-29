@@ -58,6 +58,9 @@ namespace Rock.Client
         public bool ModifiedAuditValuesAlreadyUpdated { get; set; }
 
         /// <summary />
+        public string Name { get; set; }
+
+        /// <summary />
         public int? RetentionDuration { get; set; }
 
         /// <summary>
@@ -100,6 +103,7 @@ namespace Rock.Client
             this.ForeignKey = source.ForeignKey;
             this.InteractionEntityTypeId = source.InteractionEntityTypeId;
             this.ModifiedAuditValuesAlreadyUpdated = source.ModifiedAuditValuesAlreadyUpdated;
+            this.Name = source.Name;
             this.RetentionDuration = source.RetentionDuration;
             this.CreatedDateTime = source.CreatedDateTime;
             this.ModifiedDateTime = source.ModifiedDateTime;
