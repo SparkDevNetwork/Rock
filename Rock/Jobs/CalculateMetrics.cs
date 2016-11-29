@@ -175,6 +175,8 @@ namespace Rock.Jobs
                                             metricValue.MetricValueDateTime = resultValue.MetricValueDateTime;
                                             metricValue.MetricValueType = MetricValueType.Measure;
                                             metricValue.YValue = resultValue.Value;
+                                            metricValue.CreatedDateTime = RockDateTime.Now;
+                                            metricValue.ModifiedDateTime = RockDateTime.Now;
                                             metricValue.MetricValuePartitions = new List<MetricValuePartition>();
                                             var metricPartitionsByPosition = metricPartitions.OrderBy( a => a.Order ).ToList();
 
@@ -232,18 +234,19 @@ namespace Rock.Jobs
                                                         DELETE
                                                         FROM MetricValuePartition
                                                         WHERE MetricValueId IN (
-                                                                SELECT Id
-                                                                FROM MetricValue
-                                                                WHERE MetricId = @metricId and MetricValueDateTime = @metricValueDateTime
-                                                                )
-                                                        ", new SqlParameter( "@metricId", metric.Id ), new SqlParameter( "@metricValueDateTime", metricValueDateTime ) );
+                                                            SELECT Id
+                                                            FROM MetricValue
+                                                            WHERE MetricId = @metricId 
+                                                            AND MetricValueDateTime = @metricValueDateTime
+                                                        )
+                                                    ", new SqlParameter( "@metricId", metric.Id ), new SqlParameter( "@metricValueDateTime", metricValueDateTime ) );
 
                                                     rockContextForMetricValues.Database.ExecuteSqlCommand( @"
                                                         DELETE
                                                         FROM MetricValue
                                                         WHERE MetricId = @metricId
-                                                            AND MetricValueDateTime = @metricValueDateTime
-                                                        ", new SqlParameter( "@metricId", metric.Id ), new SqlParameter( "@metricValueDateTime", metricValueDateTime ) );
+                                                        AND MetricValueDateTime = @metricValueDateTime
+                                                    ", new SqlParameter( "@metricId", metric.Id ), new SqlParameter( "@metricValueDateTime", metricValueDateTime ) );
                                                 }
                                             }
                                         }
