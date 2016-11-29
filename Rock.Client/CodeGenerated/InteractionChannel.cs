@@ -38,7 +38,10 @@ namespace Rock.Client
         public string ChannelData { get; set; }
 
         /// <summary />
-        public int? ChannelMediumValueId { get; set; }
+        public int? ChannelEntityId { get; set; }
+
+        /// <summary />
+        public int? ChannelTypeMediumValueId { get; set; }
 
         /// <summary />
         public int? ComponentEntityTypeId { get; set; }
@@ -97,7 +100,8 @@ namespace Rock.Client
         {
             this.Id = source.Id;
             this.ChannelData = source.ChannelData;
-            this.ChannelMediumValueId = source.ChannelMediumValueId;
+            this.ChannelEntityId = source.ChannelEntityId;
+            this.ChannelTypeMediumValueId = source.ChannelTypeMediumValueId;
             this.ComponentEntityTypeId = source.ComponentEntityTypeId;
             this.ForeignGuid = source.ForeignGuid;
             this.ForeignKey = source.ForeignKey;
@@ -121,7 +125,7 @@ namespace Rock.Client
     public partial class InteractionChannel : InteractionChannelEntity
     {
         /// <summary />
-        public DefinedValue ChannelMediumValue { get; set; }
+        public DefinedValue ChannelTypeMediumValue { get; set; }
 
         /// <summary />
         public EntityType ComponentEntityType { get; set; }

@@ -98,7 +98,7 @@ namespace Rock.Model
         /// The interaction summary.
         /// </value>
         [DataMember]
-        [MaxLength( 200 )]
+        [MaxLength( 500 )]
         public string InteractionSummary { get; set; }
 
         /// <summary>
