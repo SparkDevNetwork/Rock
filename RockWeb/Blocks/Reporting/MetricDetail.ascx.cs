@@ -517,6 +517,9 @@ Example: Let's say you have a DataView called 'Small Group Attendance for Last W
 
                 metricService.Delete( metric );
                 rockContext.SaveChanges();
+
+                // since we deleted the metric, sweep thru and make sure Metric Analytics Views are OK
+                metricService.EnsureMetricAnalyticsViews();
             }
 
             var qryParams = new Dictionary<string, string>();
