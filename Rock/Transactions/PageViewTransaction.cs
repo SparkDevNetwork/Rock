@@ -209,7 +209,7 @@ namespace Rock.Transactions
                     Regex rgx = new Regex( @"rckipid=([^&]*)" );
                     string cleanUrl = rgx.Replace( this.Url, "rckipid=XXXXXXXXXXXXXXXXXXXXXXXXXXXX" );
 
-                    interaction.InteractionSummary = cleanUrl;
+                    interaction.InteractionData = cleanUrl;
                     interaction.Operation = "View";
                     interaction.PersonAliasId = this.PersonAliasId;
                     interaction.InteractionDateTime = this.DateViewed;
