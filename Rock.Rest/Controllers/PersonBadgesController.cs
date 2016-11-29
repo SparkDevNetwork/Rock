@@ -43,7 +43,7 @@ namespace Rock.Rest.Controllers
         [Authenticate, Secured]
         [HttpGet]
         [System.Web.Http.Route( "api/PersonBadges/InGroupOfType/{personId}/{groupTypeGuid}" )]
-        public GroupOfTypeResult GetInGroupOfType(int personId, Guid groupTypeGuid)
+        public GroupOfTypeResult GetInGroupOfType( int personId, Guid groupTypeGuid )
         {
             GroupOfTypeResult result = new GroupOfTypeResult();
             result.PersonId = personId;
@@ -51,18 +51,18 @@ namespace Rock.Rest.Controllers
             result.GroupList = new List<GroupSummary>();
 
             // get person info
-            Person person = new PersonService( (Rock.Data.RockContext)Service.Context ).Get( personId );
+            Person person = new PersonService( ( Rock.Data.RockContext ) Service.Context ).Get( personId );
 
-            if (person != null)
+            if ( person != null )
             {
                 result.NickName = person.NickName;
                 result.LastName = person.LastName;
             }
 
             // get group type info
-            GroupType groupType = new GroupTypeService( (Rock.Data.RockContext)Service.Context ).Get( groupTypeGuid );
+            GroupType groupType = new GroupTypeService( ( Rock.Data.RockContext ) Service.Context ).Get( groupTypeGuid );
 
-            if (groupType != null)
+            if ( groupType != null )
             {
                 result.GroupTypeName = groupType.Name;
                 result.GroupTypeIconCss = groupType.IconCssClass;
@@ -70,16 +70,16 @@ namespace Rock.Rest.Controllers
             }
 
             // determine if person is in this type of group
-            GroupMemberService groupMemberService = new GroupMemberService( (Rock.Data.RockContext)Service.Context );
-            
-            IQueryable<GroupMember> groupMembershipsQuery = groupMemberService.Queryable("Person,GroupRole,Group")
-                                        .Where(t => t.Group.GroupType.Guid == groupTypeGuid 
-                                                && t.PersonId == personId 
-                                                && t.GroupMemberStatus == GroupMemberStatus.Active 
-                                                && t.Group.IsActive)
-                                        .OrderBy(g => g.GroupRole.Order);
+            GroupMemberService groupMemberService = new GroupMemberService( ( Rock.Data.RockContext ) Service.Context );
 
-            foreach (GroupMember member in groupMembershipsQuery)
+            IQueryable<GroupMember> groupMembershipsQuery = groupMemberService.Queryable( "Person,GroupRole,Group" )
+                                        .Where( t => t.Group.GroupType.Guid == groupTypeGuid
+                                                 && t.PersonId == personId
+                                                 && t.GroupMemberStatus == GroupMemberStatus.Active
+                                                 && t.Group.IsActive )
+                                        .OrderBy( g => g.GroupRole.Order );
+
+            foreach ( GroupMember member in groupMembershipsQuery )
             {
                 result.PersonInGroup = true;
                 GroupSummary group = new GroupSummary();
@@ -87,7 +87,7 @@ namespace Rock.Rest.Controllers
                 group.GroupId = member.Group.Id;
                 group.RoleName = member.GroupRole.Name;
 
-                result.GroupList.Add(group);
+                result.GroupList.Add( group );
             }
 
             return result;
@@ -109,7 +109,7 @@ namespace Rock.Rest.Controllers
             result.GroupList = new List<GroupSummary>();
 
             // get person info
-            Person person = new PersonService( (Rock.Data.RockContext)Service.Context ).Get( personId );
+            Person person = new PersonService( ( Rock.Data.RockContext ) Service.Context ).Get( personId );
 
             if ( person != null )
             {
@@ -121,7 +121,7 @@ namespace Rock.Rest.Controllers
             result.Purpose = purposeValue.Value;
 
             // determine if person is in a group with this purpose
-            GroupMemberService groupMemberService = new GroupMemberService( (Rock.Data.RockContext)Service.Context );
+            GroupMemberService groupMemberService = new GroupMemberService( ( Rock.Data.RockContext ) Service.Context );
 
             IQueryable<GroupMember> groupMembershipsQuery = groupMemberService.Queryable( "Person,GroupRole,Group" )
                                         .Where( t => t.Group.GroupType.GroupTypePurposeValueId == purposeValue.Id
@@ -154,7 +154,7 @@ namespace Rock.Rest.Controllers
         [System.Web.Http.Route( "api/PersonBadges/GeofencingGroups/{personId}/{groupTypeGuid}" )]
         public List<GroupAndLeaderInfo> GetGeofencingGroups( int personId, Guid groupTypeGuid )
         {
-            var rockContext = (Rock.Data.RockContext)Service.Context;
+            var rockContext = ( Rock.Data.RockContext ) Service.Context;
             var groupMemberService = new GroupMemberService( rockContext );
 
             var groups = new GroupService( rockContext ).GetGeofencingGroups( personId, groupTypeGuid ).AsNoTracking();
@@ -166,13 +166,13 @@ namespace Rock.Rest.Controllers
                 info.GroupName = group.Name.Trim();
                 info.LeaderNames = groupMemberService
                     .Queryable().AsNoTracking()
-                    .Where( m => 
+                    .Where( m =>
                         m.GroupId == group.Id &&
                         m.GroupRole.IsLeader )
                     .Select( m => m.Person.NickName + " " + m.Person.LastName )
                     .ToList()
-                    .AsDelimited(", ");
-                result.Add(info);
+                    .AsDelimited( ", " );
+                result.Add( info );
             }
 
             return result;
@@ -186,16 +186,16 @@ namespace Rock.Rest.Controllers
         [Authenticate, Secured]
         [HttpGet]
         [System.Web.Http.Route( "api/PersonBadges/WeeksAttendedInDuration/{personId}/{weekCount}" )]
-        public int GetWeeksAttendedInDuration(int personId, int weekCount)
+        public int GetWeeksAttendedInDuration( int personId, int weekCount )
         {
             Dictionary<string, object> parameters = new Dictionary<string, object>();
-            parameters.Add("PersonId", personId);
-            parameters.Add("WeekDuration", weekCount);
+            parameters.Add( "PersonId", personId );
+            parameters.Add( "WeekDuration", weekCount );
 
             var result = DbService.ExecuteScaler( "spCheckin_WeeksAttendedInDuration", System.Data.CommandType.StoredProcedure, parameters );
-            if (result != null)
+            if ( result != null )
             {
-                return (int)result;
+                return ( int ) result;
             }
 
             return -1;
@@ -211,14 +211,25 @@ namespace Rock.Rest.Controllers
         [System.Web.Http.Route( "api/PersonBadges/LastVisitOnSite/{personId}/{siteId}" )]
         public int GetLastVisitOnSite( int personId, int siteId )
         {
-            PageView mostRecentPageView = new PageViewService( (Rock.Data.RockContext)Service.Context ).Queryable()
-                                                .Where( p => p.PersonAlias.PersonId == personId && p.SiteId == siteId )
-                                                .OrderByDescending( p => p.DateTimeViewed )
+            int channelMediumValueId = DefinedValueCache.Read( SystemGuid.DefinedValue.INTERACTIONCHANNELTYPE_WEBSITE.AsGuid() ).Id;
+
+            InteractionChannelService interactionChannelService = new InteractionChannelService( ( Rock.Data.RockContext ) Service.Context );
+            var interactionChannel = interactionChannelService.Queryable()
+                                                .Where( a => a.ChannelTypeMediumValueId == channelMediumValueId && a.ChannelEntityId == siteId )
                                                 .FirstOrDefault();
 
-            if ( mostRecentPageView != null && mostRecentPageView.DateTimeViewed.HasValue)
+            if ( interactionChannel == null )
             {
-                TimeSpan duration = RockDateTime.Now - mostRecentPageView.DateTimeViewed.Value;
+                return -1;
+            }
+            Interaction mostRecentPageView = new InteractionService( ( Rock.Data.RockContext ) Service.Context ).Queryable()
+                                                .Where( a => a.PersonAlias.PersonId == personId && a.InteractionComponent.ChannelId == interactionChannel.Id )
+                                                .OrderByDescending( p => p.InteractionDateTime )
+                                                .FirstOrDefault();
+
+            if ( mostRecentPageView != null )
+            {
+                TimeSpan duration = RockDateTime.Now - mostRecentPageView.InteractionDateTime;
                 return duration.Days;
             }
 
@@ -233,19 +244,19 @@ namespace Rock.Rest.Controllers
         [Authenticate, Secured]
         [HttpGet]
         [System.Web.Http.Route( "api/PersonBadges/FamilyAttendance/{personId}/{monthCount}" )]
-        public IQueryable<MonthlyAttendanceSummary> GetFamilyAttendance(int personId, int monthCount)
+        public IQueryable<MonthlyAttendanceSummary> GetFamilyAttendance( int personId, int monthCount )
         {
             List<MonthlyAttendanceSummary> attendanceSummary = new List<MonthlyAttendanceSummary>();
-            
+
             Dictionary<string, object> parameters = new Dictionary<string, object>();
-            parameters.Add("PersonId", personId);
-            parameters.Add("MonthCount", monthCount);
+            parameters.Add( "PersonId", personId );
+            parameters.Add( "MonthCount", monthCount );
 
             var table = DbService.GetDataTable( "spCheckin_BadgeAttendance", System.Data.CommandType.StoredProcedure, parameters );
 
-            if (table != null)
+            if ( table != null )
             {
-                foreach (DataRow row in table.Rows)
+                foreach ( DataRow row in table.Rows )
                 {
                     MonthlyAttendanceSummary item = new MonthlyAttendanceSummary();
                     item.AttendanceCount = row["AttendanceCount"].ToString().AsInteger();
@@ -253,7 +264,7 @@ namespace Rock.Rest.Controllers
                     item.Month = row["Month"].ToString().AsInteger();
                     item.Year = row["Year"].ToString().AsInteger();
 
-                    attendanceSummary.Add(item);
+                    attendanceSummary.Add( item );
                 }
             }
 
@@ -340,7 +351,7 @@ namespace Rock.Rest.Controllers
             /// The purpose.
             /// </value>
             public string Purpose { get; set; }
-            
+
             /// <summary>
             /// Gets or sets the person id of the individual.
             /// </summary>
