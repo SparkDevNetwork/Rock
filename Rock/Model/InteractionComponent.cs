@@ -40,6 +40,7 @@ namespace Rock.Model
         /// The interaction component name.
         /// </value>
         [DataMember]
+        [MaxLength( 250 )]
         public string Name { get; set; }
 
         /// <summary>

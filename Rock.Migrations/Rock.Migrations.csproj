@@ -118,6 +118,14 @@
     <Compile Include="Migrations\201611282234388_AdditionalInteractionFields.Designer.cs">
       <DependentUpon>201611282234388_AdditionalInteractionFields.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201611291601040_DropInteractionTablesToReorderFields.cs" />
+    <Compile Include="Migrations\201611291601040_DropInteractionTablesToReorderFields.Designer.cs">
+      <DependentUpon>201611291601040_DropInteractionTablesToReorderFields.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201611291612388_AddInteractionTablesBackwithProperReorder.cs" />
+    <Compile Include="Migrations\201611291612388_AddInteractionTablesBackwithProperReorder.Designer.cs">
+      <DependentUpon>201611291612388_AddInteractionTablesBackwithProperReorder.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 6.0\Version 1.6.0\201609282147388_WaitList.cs" />
     <Compile Include="Migrations\Version 6.0\Version 1.6.0\201609282147388_WaitList.Designer.cs">
       <DependentUpon>201609282147388_WaitList.cs</DependentUpon>
@@ -2358,6 +2366,12 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201611282234388_AdditionalInteractionFields.resx">
       <DependentUpon>201611282234388_AdditionalInteractionFields.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201611291601040_DropInteractionTablesToReorderFields.resx">
+      <DependentUpon>201611291601040_DropInteractionTablesToReorderFields.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201611291612388_AddInteractionTablesBackwithProperReorder.resx">
+      <DependentUpon>201611291612388_AddInteractionTablesBackwithProperReorder.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 6.0\Version 1.6.0\201609282147388_WaitList.resx">
       <DependentUpon>201609282147388_WaitList.cs</DependentUpon>
