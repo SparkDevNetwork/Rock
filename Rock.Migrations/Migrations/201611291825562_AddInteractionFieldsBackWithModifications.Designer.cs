@@ -7,13 +7,13 @@ namespace Rock.Migrations
     using System.Resources;
     
     [GeneratedCode("EntityFramework.Migrations", "6.1.3-40302")]
-    public sealed partial class AddInteractionTablesBackwithProperReorder : IMigrationMetadata
+    public sealed partial class AddInteractionFieldsBackWithModifications : IMigrationMetadata
     {
-        private readonly ResourceManager Resources = new ResourceManager(typeof(AddInteractionTablesBackwithProperReorder));
+        private readonly ResourceManager Resources = new ResourceManager(typeof(AddInteractionFieldsBackWithModifications));
         
         string IMigrationMetadata.Id
         {
-            get { return "201611291612388_AddInteractionTablesBackwithProperReorder"; }
+            get { return "201611291825562_AddInteractionFieldsBackWithModifications"; }
         }
         
         string IMigrationMetadata.Source

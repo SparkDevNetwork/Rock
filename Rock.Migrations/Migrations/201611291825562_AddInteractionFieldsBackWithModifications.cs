@@ -22,7 +22,7 @@ namespace Rock.Migrations
     /// <summary>
     ///
     /// </summary>
-    public partial class AddInteractionTablesBackwithProperReorder : Rock.Migrations.RockMigration
+    public partial class AddInteractionFieldsBackWithModifications : Rock.Migrations.RockMigration
     {
         /// <summary>
         /// Operations to be performed during the upgrade process.
@@ -65,7 +65,8 @@ namespace Rock.Migrations
                         ChannelData = c.String(),
                         ComponentEntityTypeId = c.Int(),
                         InteractionEntityTypeId = c.Int(),
-                        ChannelMediumValueId = c.Int(),
+                        ChannelEntityId = c.Int(),
+                        ChannelTypeMediumValueId = c.Int(),
                         RetentionDuration = c.Int(),
                         CreatedDateTime = c.DateTime(),
                         ModifiedDateTime = c.DateTime(),
@@ -77,14 +78,14 @@ namespace Rock.Migrations
                         ForeignKey = c.String(maxLength: 100),
                     })
                 .PrimaryKey(t => t.Id)
-                .ForeignKey("dbo.DefinedValue", t => t.ChannelMediumValueId)
+                .ForeignKey("dbo.DefinedValue", t => t.ChannelTypeMediumValueId)
                 .ForeignKey("dbo.EntityType", t => t.ComponentEntityTypeId)
                 .ForeignKey("dbo.PersonAlias", t => t.CreatedByPersonAliasId)
                 .ForeignKey("dbo.EntityType", t => t.InteractionEntityTypeId)
                 .ForeignKey("dbo.PersonAlias", t => t.ModifiedByPersonAliasId)
                 .Index(t => t.ComponentEntityTypeId)
                 .Index(t => t.InteractionEntityTypeId)
-                .Index(t => t.ChannelMediumValueId)
+                .Index(t => t.ChannelTypeMediumValueId)
                 .Index(t => t.CreatedByPersonAliasId)
                 .Index(t => t.ModifiedByPersonAliasId)
                 .Index(t => t.Guid, unique: true);
@@ -126,7 +127,7 @@ namespace Rock.Migrations
                         EntityId = c.Int(),
                         PersonAliasId = c.Int(),
                         InteractionSessionId = c.Int(),
-                        InteractionSummary = c.String(maxLength: 200),
+                        InteractionSummary = c.String(maxLength: 500),
                         InteractionData = c.String(),
                         CreatedDateTime = c.DateTime(),
                         ModifiedDateTime = c.DateTime(),
@@ -201,7 +202,7 @@ namespace Rock.Migrations
             DropForeignKey("dbo.InteractionChannel", "InteractionEntityTypeId", "dbo.EntityType");
             DropForeignKey("dbo.InteractionChannel", "CreatedByPersonAliasId", "dbo.PersonAlias");
             DropForeignKey("dbo.InteractionChannel", "ComponentEntityTypeId", "dbo.EntityType");
-            DropForeignKey("dbo.InteractionChannel", "ChannelMediumValueId", "dbo.DefinedValue");
+            DropForeignKey("dbo.InteractionChannel", "ChannelTypeMediumValueId", "dbo.DefinedValue");
             DropIndex("dbo.InteractionSession", new[] { "Guid" });
             DropIndex("dbo.InteractionSession", new[] { "ModifiedByPersonAliasId" });
             DropIndex("dbo.InteractionSession", new[] { "CreatedByPersonAliasId" });
@@ -218,7 +219,7 @@ namespace Rock.Migrations
             DropIndex("dbo.InteractionChannel", new[] { "Guid" });
             DropIndex("dbo.InteractionChannel", new[] { "ModifiedByPersonAliasId" });
             DropIndex("dbo.InteractionChannel", new[] { "CreatedByPersonAliasId" });
-            DropIndex("dbo.InteractionChannel", new[] { "ChannelMediumValueId" });
+            DropIndex("dbo.InteractionChannel", new[] { "ChannelTypeMediumValueId" });
             DropIndex("dbo.InteractionChannel", new[] { "InteractionEntityTypeId" });
             DropIndex("dbo.InteractionChannel", new[] { "ComponentEntityTypeId" });
             DropIndex("dbo.InteractionComponent", new[] { "Guid" });

@@ -75,6 +75,14 @@ namespace Rock.Model
         [DataMember]
         public int? InteractionEntityTypeId { get; set; }
 
+        /// <summary>
+        /// Gets or sets the channel entity identifier.
+        /// </summary>
+        /// <value>
+        /// The channel entity identifier.
+        /// </value>
+        [DataMember]
+        public int? ChannelEntityId { get; set; }
 
         /// <summary>
         /// Gets or sets the Id of the Service Type <see cref="Rock.Model.DefinedValue" /> representing what type of Interaction Service this is.
@@ -84,7 +92,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         [DefinedValue( SystemGuid.DefinedType.INTERACTION_CHANNEL_MEDIUM )]
-        public int? ChannelMediumValueId { get; set; }
+        public int? ChannelTypeMediumValueId { get; set; }
 
 
         /// <summary>
@@ -118,7 +126,6 @@ namespace Rock.Model
         [DataMember]
         public virtual Model.EntityType InteractionEntityType { get; set; }
 
-
         /// <summary>
         /// Gets or sets the channel medium value.
         /// </summary>
@@ -126,7 +133,7 @@ namespace Rock.Model
         /// The channel medium value.
         /// </value>
         [DataMember]
-        public virtual DefinedValue ChannelMediumValue { get; set; }
+        public virtual DefinedValue ChannelTypeMediumValue { get; set; }
 
         #endregion
 
@@ -150,7 +157,7 @@ namespace Rock.Model
         {
             this.HasOptional( r => r.ComponentEntityType ).WithMany( ).HasForeignKey( r => r.ComponentEntityTypeId ).WillCascadeOnDelete( false );
             this.HasOptional( r => r.InteractionEntityType ).WithMany().HasForeignKey( r => r.InteractionEntityTypeId ).WillCascadeOnDelete( false );
-            this.HasOptional( r => r.ChannelMediumValue ).WithMany().HasForeignKey( r => r.ChannelMediumValueId ).WillCascadeOnDelete( false );
+            this.HasOptional( r => r.ChannelTypeMediumValue ).WithMany().HasForeignKey( r => r.ChannelTypeMediumValueId ).WillCascadeOnDelete( false );
         }
     }
 
