@@ -843,6 +843,10 @@ namespace RockWeb.Blocks.Event
                             LinkageState.Id = 0;
                             LinkageState.Guid = Guid.NewGuid();
                             LinkageState.RegistrationInstance = linkage.RegistrationInstance != null ? linkage.RegistrationInstance.Clone( false ) : new RegistrationInstance();
+                            LinkageState.RegistrationInstanceId = null;
+                            LinkageState.RegistrationInstance.Id = 0;
+                            LinkageState.RegistrationInstance.Guid = Guid.NewGuid();
+
                             LinkageState.RegistrationInstance.RegistrationTemplate =
                                 linkage.RegistrationInstance != null && linkage.RegistrationInstance.RegistrationTemplate != null ?
                                 linkage.RegistrationInstance.RegistrationTemplate.Clone( false ) : new RegistrationTemplate();
