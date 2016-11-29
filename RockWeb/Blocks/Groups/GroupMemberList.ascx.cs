@@ -44,6 +44,7 @@ namespace RockWeb.Blocks.Groups
     [LinkedPage( "Registration Page", "Page used for viewing the registration(s) associated with a particular group member", false, "", "", 3 )]
     [BooleanField("Show Campus Filter", "Setting to show/hide campus filter.", true, order: 4)]
     [BooleanField( "Show First/Last Attendance", "If the group allows attendance, should the first and last attendance date be displayed for each group member?", false, "", 5, "ShowAttendance" )]
+    [BooleanField( "Show Date Added", "Should the date that person was added to the group be displayed for each group member?", false, "", 6 )]
     public partial class GroupMemberList : RockBlock, ISecondaryBlock
     {
         #region Private Variables
@@ -1112,6 +1113,9 @@ namespace RockWeb.Blocks.Groups
                             attendanceFirstLast.Add( attendance.PersonId, new DateRange( attendance.FirstAttended, attendance.LastAttended ) );
                         }
                     }
+
+                    bool showDateAdded = GetAttributeValue( "ShowDateAdded" ).AsBoolean();
+                    gGroupMembers.ColumnsOfType<DateField>().First( a => a.DataField == "DateTimeAdded" ).Visible = showDateAdded;
 
                     var dataSource = groupMembersList.Select( m => new
                     {
