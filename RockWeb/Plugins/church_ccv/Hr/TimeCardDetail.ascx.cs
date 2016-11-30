@@ -390,9 +390,9 @@ namespace RockWeb.Plugins.church_ccv.Hr
             pnlDetails.Visible = true;
             pnlApproverActions.Visible = false;
             int? timeCardPersonId = timeCard.PersonAlias != null ? timeCard.PersonAlias.PersonId : (int?)null;
-            if ( timeCardPersonId == this.CurrentPersonId )
+            if ( timeCardPersonId == this.CurrentPersonId || this.IsUserAuthorized( Rock.Security.Authorization.EDIT ) )
             {
-                // only allow the timecard to be edited by the timeCard.Person, and only if the status is InProgress or Submitted
+                // only allow the timecard to be edited by the timeCard.Person or by people with EDIT Auth (should only be Admin and HR), and only if the status is InProgress or Submitted
                 if ( timeCard.TimeCardStatus == TimeCardStatus.InProgress || timeCard.TimeCardStatus == TimeCardStatus.Submitted )
                 {
                     editMode = true;
@@ -572,9 +572,9 @@ namespace RockWeb.Plugins.church_ccv.Hr
             RockTextBox tbNotes = repeaterItem.FindControl( "tbNotes" ) as RockTextBox;
             timeCardDay.Notes = tbNotes.Text;
 
-            // log changes to the TimeCardDays if changes are made after getting submitted (status is not TimeCardStatus.InProgress)
+            // log changes to the TimeCardDays if changes are made after getting submitted (status is not TimeCardStatus.InProgress), or if another person is editing the timecard
             List<string> sbTimeCardDayHistory = new List<string>();
-            if ( timeCardDay.TimeCard.TimeCardStatus != TimeCardStatus.InProgress )
+            if ( timeCardDay.TimeCard.TimeCardStatus != TimeCardStatus.InProgress || this.CurrentPersonId != timeCardDay.TimeCard.PersonAlias.PersonId )
             {
                 var properties = timeCardDay.GetType().GetProperties().Where( a => !a.GetGetMethod().IsVirtual );
 
