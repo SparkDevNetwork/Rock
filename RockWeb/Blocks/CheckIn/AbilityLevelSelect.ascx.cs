@@ -414,7 +414,7 @@ namespace RockWeb.Blocks.CheckIn
             }
             else
             {
-                base.NavigateToPreviousPage( validateSelectionRequired );
+                base.NavigateToPreviousPage( queryParams, validateSelectionRequired );
             }
         }
 
