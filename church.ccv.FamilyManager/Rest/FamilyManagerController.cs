@@ -65,6 +65,9 @@ namespace chuch.ccv.FamilyManager.Rest
             {
                 RockContext rockContext = new RockContext( );
 
+                // require login parameters
+                if( loginParameters == null ) break;
+
                 // verify their user login
                 var userLoginService = new UserLoginService( new Rock.Data.RockContext() );
                 var userLogin = userLoginService.GetByUserName( loginParameters.Username );

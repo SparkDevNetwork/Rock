@@ -25,6 +25,8 @@ using church.ccv.MobileApp.Models;
 using System.Web.Http;
 using System.Web.Routing;
 using Rock.Rest.Filters;
+using Rock.Security;
+using Rock.Data;
 
 namespace chuch.ccv.MobileApp.Rest
 {
@@ -32,6 +34,7 @@ namespace chuch.ccv.MobileApp.Rest
     {
         [System.Web.Http.HttpGet]
         [System.Web.Http.Route( "api/MobileApp/LaunchData" )]
+        [Authenticate, Secured]
         public HttpResponseMessage GetLaunchData(  )
         {
             LaunchData launchData = Launch.GetLaunchData( );
@@ -45,6 +48,7 @@ namespace chuch.ccv.MobileApp.Rest
 
         [System.Web.Http.HttpGet]
         [System.Web.Http.Route("api/MobileApp/GroupInfo")]
+        [Authenticate, Secured]
         public HttpResponseMessage GetGroupInfo( int groupId )
         {
             GroupInfo groupInfo = null;
@@ -70,7 +74,55 @@ namespace chuch.ccv.MobileApp.Rest
         }
 
         [System.Web.Http.HttpPost]
+        [System.Web.Http.Route( "api/MobileApp/Login" )]
+        [Authenticate, Secured]
+        public HttpResponseMessage Login( [FromBody]LoginParameters loginParameters )
+        {
+            // default to an internal error
+            HttpStatusCode statusCode = HttpStatusCode.InternalServerError;
+            HttpContent httpContent = null;
+
+            do
+            {
+                RockContext rockContext = new RockContext( );
+
+                // require login parameters
+                if( loginParameters == null ) break;
+
+                // verify their user login
+                var userLoginService = new UserLoginService( new Rock.Data.RockContext() );
+                var userLogin = userLoginService.GetByUserName( loginParameters.Username );
+
+                if ( userLogin == null || userLogin.EntityType == null ) { statusCode = HttpStatusCode.Unauthorized; break; }
+
+
+                // verify their password
+                var component = AuthenticationContainer.GetComponent(userLogin.EntityType.Name);
+                if ( component == null || component.IsActive == false ) { statusCode = HttpStatusCode.Unauthorized; break; }
+                
+                if ( component.Authenticate( userLogin, loginParameters.Password ) == false ) { statusCode = HttpStatusCode.Unauthorized; break; }
+                
+                
+                // ensure there's a person associated with this login.
+                if ( userLogin.PersonId.HasValue == false ) { statusCode = HttpStatusCode.Unauthorized; break; }
+                
+                // if this account hasn't been confirmed yet, do not let them login. This prevents someone from
+                // trying to do a password reset on a stolen email address.
+                if( userLogin.IsConfirmed == false ) { statusCode = HttpStatusCode.Unauthorized; break; }
+                
+                // all good! build and return the response
+                statusCode = HttpStatusCode.OK;
+            }
+            while( false );
+            
+            // build and return the response
+            HttpResponseMessage response = new HttpResponseMessage( ) { StatusCode = statusCode, Content = httpContent };
+            return response;
+        }
+
+        [System.Web.Http.HttpPost]
         [System.Web.Http.Route( "api/MobileApp/GroupRegistration" )]
+        [Authenticate, Secured]
         public HttpResponseMessage GroupRegistration( [FromBody] GroupRegModel regModel )
         {
             bool success = GroupFinder.RegisterPersonInGroup( regModel );
