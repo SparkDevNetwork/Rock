@@ -385,9 +385,10 @@ namespace church.ccv.Utility.Groups
                         memberWithFamily.SpouseName = spouse.FullName;
                     }
                     
-                    // add all kids
-                    ParentWithChildren parent = parentList.Where( p => p.Parent.Id == member.PersonId ).SingleOrDefault( );
-                    if ( parent != null )
+                    // add all kids. do this by getting all the "ParentWithChildren" objects where this person is a parent.
+                    // There can be multiple because it's very possible a divorced person is a parent in two families.
+                    List<ParentWithChildren> groupsAsParent = parentList.Where( p => p.Parent.Id == member.PersonId ).ToList( );
+                    foreach( ParentWithChildren parent in groupsAsParent )
                     {
                         foreach( Person child in parent.Children )
                         {
