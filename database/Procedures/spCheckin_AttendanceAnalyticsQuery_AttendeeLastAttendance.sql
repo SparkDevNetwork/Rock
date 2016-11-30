@@ -1,3 +1,15 @@
+/****** Object:  StoredProcedure [dbo].[spCheckin_AttendanceAnalyticsQuery_AttendeeLastAttendance]    Script Date: 10/27/2016 9:07:30 AM ******/
+IF EXISTS ( SELECT * FROM [sysobjects] WHERE [id] = OBJECT_ID(N'[dbo].[spCheckin_AttendanceAnalyticsQuery_AttendeeLastAttendance]') AND OBJECTPROPERTY([id], N'IsProcedure') = 1 )
+DROP PROCEDURE [dbo].[spCheckin_AttendanceAnalyticsQuery_AttendeeLastAttendance]
+GO
+
+/****** Object:  StoredProcedure [dbo].[spCheckin_AttendanceAnalyticsQuery_AttendeeLastAttendance]    Script Date: 10/27/2016 9:07:30 AM ******/
+SET ANSI_NULLS ON
+GO
+
+SET QUOTED_IDENTIFIER ON
+GO
+
 /*
 <doc>
 	<summary>
@@ -23,14 +35,13 @@
 </doc>
 */
 
-ALTER PROCEDURE [dbo].[spCheckin_AttendanceAnalyticsQuery_AttendeeLastAttendance]
+CREATE PROCEDURE [dbo].[spCheckin_AttendanceAnalyticsQuery_AttendeeLastAttendance]
 	  @GroupIds varchar(max) 
 	, @StartDate datetime = NULL
-	, @EndDate datetime = NULL@CampusIds
+	, @EndDate datetime = NULL
 	, @CampusIds varchar(max) = NULL
 	, @IncludeNullCampusIds bit = 0
 	, @ScheduleIds varchar(max) = NULL
-	WITH RECOMPILE
 
 AS
 
@@ -41,82 +52,37 @@ BEGIN
 	SET @EndDate = COALESCE( DATEADD( day, ( 0 - DATEDIFF( day, CONVERT( datetime, '19000107', 112 ), @EndDate ) % 7 ), @EndDate ), '2100-01-01' )
     IF @EndDate < @StartDate SET @EndDate = DATEADD( day, 6 + DATEDIFF( day, @EndDate, @StartDate ), @EndDate )
 
-	DECLARE @PersonIdTbl TABLE ( [PersonId] INT NOT NULL )
-	INSERT INTO @PersonIdTbl
-	SELECT DISTINCT PA.[PersonId]
-	FROM [Attendance] A
-    INNER JOIN [PersonAlias] PA ON PA.[Id] = A.[PersonAliasId]
-    WHERE A.[GroupId] in ( SELECT * FROM ufnUtility_CsvToTable( @GroupIds ) ) 
-    AND [StartDateTime] BETWEEN @StartDate AND @EndDate
-	AND [DidAttend] = 1
-	AND ( 
-		( @CampusIds IS NULL OR A.[CampusId] in ( SELECT * FROM ufnUtility_CsvToTable( @CampusIds ) ) ) OR  
-		( @IncludeNullCampusIds = 1 AND A.[CampusId] IS NULL ) 
-	)	
-	AND ( @ScheduleIds IS NULL OR A.[ScheduleId] IN ( SELECT * FROM ufnUtility_CsvToTable( @ScheduleIds ) ) )
+	SELECT B.[PersonId], B.[CampusId], B.[GroupId], B.[GroupName], B.[ScheduleId], B.[StartDateTime], B.[LocationId], B.[RoleName], B.[LocationName] 
+	FROM
+	(
+		SELECT PA.[PersonId], ROW_NUMBER() OVER (PARTITION BY PA.[PersonId] ORDER BY A.[StartDateTime] DESC) AS PersonRowNumber,
+			A.[CampusId], A.[GroupId], G.[Name] AS [GroupName], A.[ScheduleId], A.[StartDateTime], A.[LocationId], R.[RoleName], L.[Name] AS [LocationName]
+		FROM [Attendance] A
+		INNER JOIN [PersonAlias] PA ON PA.[Id] = A.[PersonAliasId]
+		INNER JOIN [Group] G ON G.[Id] = A.[GroupId]
+		OUTER APPLY (
+			SELECT TOP 1 R.[Name] AS [RoleName]
+			FROM [GroupMember] M 
+			INNER JOIN [GroupTypeRole] R
+				ON R.[Id] = M.[GroupRoleId]
+			WHERE M.[GroupId] = G.[Id]
+			AND M.[PersonId] = PA.[PersonId]
+			AND M.[GroupMemberStatus] <> 0
+			ORDER BY R.[Order]
+		) R
+		LEFT OUTER JOIN [Location] L
+			ON L.[Id] = A.[LocationId]
+		WHERE A.[GroupId] in ( SELECT * FROM ufnUtility_CsvToTable( @GroupIds ) ) 
+		AND [StartDateTime] BETWEEN @StartDate AND @EndDate
+		AND [DidAttend] = 1
+		AND ( 
+			( @CampusIds IS NULL OR A.[CampusId] in ( SELECT * FROM ufnUtility_CsvToTable( @CampusIds ) ) ) OR  
+			( @IncludeNullCampusIds = 1 AND A.[CampusId] IS NULL ) 
+		)	
+		AND ( @ScheduleIds IS NULL OR A.[ScheduleId] IN ( SELECT * FROM ufnUtility_CsvToTable( @ScheduleIds ) ) )
+	) B
+	WHERE B.PersonRowNumber = 1
 
-	SELECT 
-		PD.[PersonId],
-		PD.[CampusId],
-		PD.[GroupId],
-        PD.[GroupName],
-		PD.[ScheduleId],
-		PD.[StartDateTime],
-		PD.[LocationId],
-		R.[Name] AS [RoleName],
-		L.[Name] AS [LocationName]
-	FROM (
-		SELECT 
-			P.[PersonId],
-			A.[CampusId],
-			A.[GroupId],
-            A.[GroupName],
-			A.[ScheduleId],
-			A.[StartDateTime],
-			A.[LocationId]
-		FROM @PersonIdTbl P
-		CROSS APPLY (
-			SELECT TOP 1 
-				A.[CampusId],
-				A.[GroupId],
-				A.[ScheduleId],
-				A.[LocationId],
-				G.[Name] as GroupName,
-   				A.[StartDateTime]
-			FROM (
-				SELECT 
-					A.[PersonAliasId],
-					A.[CampusId],
-					A.[GroupId],
-					A.[ScheduleId],
-					A.[LocationId],
-					A.[StartDateTime]
- 				FROM [Attendance] A
-				WHERE A.[GroupId] in ( SELECT * FROM ufnUtility_CsvToTable( @GroupIds ) ) 
-				AND [StartDateTime] BETWEEN @StartDate AND @EndDate
-				AND [DidAttend] = 1
-			) A
-			INNER JOIN [PersonAlias] PA ON PA.[Id] = A.[PersonAliasId] 
-			INNER JOIN [Group] G ON G.[Id] = A.[GroupId]
-			AND PA.[PersonId] = P.[PersonId]
-			AND ( 
-				( @CampusIds IS NULL OR A.[CampusId] in ( SELECT * FROM ufnUtility_CsvToTable( @CampusIds ) ) ) OR  
-				( @IncludeNullCampusIds = 1 AND A.[CampusId] IS NULL ) 
-			)
-			AND ( @ScheduleIds IS NULL OR A.[ScheduleId] IN ( SELECT * FROM ufnUtility_CsvToTable( @ScheduleIds ) ) )
-			ORDER BY A.[StartDateTime] DESC
-		) A
-	) PD
-	OUTER APPLY (
-		SELECT TOP 1 R.[Name]
-		FROM [GroupMember] M 
-		INNER JOIN [GroupTypeRole] R
-			ON R.[Id] = M.[GroupRoleId]
-		WHERE M.[GroupId] = PD.[GroupId]
-		AND M.[PersonId] = PD.[PersonId]
-		AND M.[GroupMemberStatus] <> 0
-		ORDER BY R.[Order]
-	) R
-	LEFT OUTER JOIN [Location] L
-		ON L.[Id] = PD.[LocationId]
 END
+GO
+
