@@ -335,7 +335,15 @@ namespace RockWeb.Blocks.Reporting
 
                     if ( schemaOnly )
                     {
-                        return DbService.GetDataSetSchema( query, GetAttributeValue( "StoredProcedure" ).AsBoolean( false ) ? CommandType.StoredProcedure : CommandType.Text, parameters, timeout );
+                        try
+                        {
+                            // GetDataSetSchema won't work in some cases, for example, if the SQL references a TEMP table.  So, fall back to use the regular GetDataSet if there is an exception
+                            return DbService.GetDataSetSchema( query, GetAttributeValue( "StoredProcedure" ).AsBoolean( false ) ? CommandType.StoredProcedure : CommandType.Text, parameters, timeout );
+                        }
+                        catch
+                        {
+                            return DbService.GetDataSet( query, GetAttributeValue( "StoredProcedure" ).AsBoolean( false ) ? CommandType.StoredProcedure : CommandType.Text, parameters, timeout );
+                        }
                     }
                     else
                     {
@@ -507,14 +515,14 @@ namespace RockWeb.Blocks.Reporting
 
                             GridFilter = new GridFilter()
                             {
-                                ID = "gfFilter"
+                                ID = string.Format("gfFilter{0}", tableId )
                             };
 
                             div.Controls.Add( GridFilter );
                             GridFilter.ApplyFilterClick += ApplyFilterClick;
                             GridFilter.DisplayFilterValue += DisplayFilterValue;
-                            GridFilter.Visible = showGridFilterControls;
-
+                            GridFilter.Visible = showGridFilterControls && (dataSet.Tables.Count == 1);
+               
                             var grid = new Grid();
                             div.Controls.Add( grid );
                             grid.ID = string.Format( "dynamic_data_{0}", tableId++ );
@@ -823,7 +831,7 @@ namespace RockWeb.Blocks.Reporting
                 dataView.RowFilter = null;
                 return;
             }
-
+            
             var query = new List<string>();
 
             foreach ( var control in GridFilter.Controls.OfType<Control>() )
