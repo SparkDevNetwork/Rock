@@ -1142,9 +1142,21 @@ namespace RockWeb.Blocks.Finance
                 {
                     AccountId = a.Key,
                     TotalAmount = (decimal?)a.Sum( d => d.Amount )
-                } ).Join( qryFinancialAccount, k1 => k1.AccountId, k2 => k2.Id, ( td, fa ) => new { td.TotalAmount, fa.Name, fa.Order } )
-                .OrderBy( a => a.Order );
-                
+                } ).Join( qryFinancialAccount, k1 => k1.AccountId, k2 => k2.Id, ( td, fa ) => new { td.TotalAmount, fa.Name, fa.Order, fa.Id } );
+
+                // check for filtered accounts
+                var accountIds = (gfTransactions.GetUserPreference( "Account" ) ?? "").SplitDelimitedValues().AsIntegerList().Where( a => a > 0 ).ToList();
+                if ( accountIds.Any() )
+                {
+                    accountSummaryQry = accountSummaryQry.Where( a => accountIds.Contains( a.Id ) ).OrderBy( a => a.Order );
+                    lbFiltered.Text = "Filtered Account List";
+                    lbFiltered.Visible = true;
+                }
+                else
+                {
+                    lbFiltered.Visible = false;
+                }
+
                 var summaryList = accountSummaryQry.ToList();
                 var grandTotalAmount = ( summaryList.Count > 0 ) ? summaryList.Sum( a => a.TotalAmount ?? 0 ) : 0;
                 lGrandTotal.Text = grandTotalAmount.FormatAsCurrency();
