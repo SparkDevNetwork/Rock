@@ -795,11 +795,26 @@ namespace Rock.Rest.Controllers
         /// <param name="groupId">The group identifier.</param>
         /// <param name="statusId">The status identifier.</param>
         /// <returns></returns>
-        /// <exception cref="System.Web.Http.HttpResponseException">
-        /// </exception>
         [Authenticate, Secured]
         [System.Web.Http.Route( "api/Groups/GetMapInfo/{groupId}/Families/{statusId}" )]
         public IQueryable<MapItem> GetFamiliesMapInfo( int groupId, int statusId )
+        {
+            return GetFamiliesMapInfo( groupId, statusId, null );
+        }
+
+        /// <summary>
+        /// Gets the families map information.
+        /// </summary>
+        /// <param name="groupId">The group identifier.</param>
+        /// <param name="statusId">The status identifier.</param>
+        /// <param name="campusIds">If specified, only show families that are associated with any of the campus ids.</param>
+        /// <returns></returns>
+        /// <exception cref="HttpResponseException">
+        /// </exception>
+        /// <exception cref="System.Web.Http.HttpResponseException"></exception>
+        [Authenticate, Secured]
+        [System.Web.Http.Route( "api/Groups/GetMapInfo/{groupId}/Families/{statusId}" )]
+        public IQueryable<MapItem> GetFamiliesMapInfo( int groupId, int statusId, string campusIds)
         {
             // Enable proxy creation since security is being checked and need to navigate parent authorities
             SetProxyCreation( true );
@@ -837,6 +852,7 @@ namespace Rock.Rest.Controllers
                                 l.Location,
                                 l.Group.Id,
                                 l.Group.Name,
+                                l.Group.CampusId,
                                 MinStatus = l.Group.Members
                                     .Where( m =>
                                         m.Person.RecordStatusValue != null &&
@@ -846,6 +862,12 @@ namespace Rock.Rest.Controllers
                                     .Select( m => m.Person.ConnectionStatusValue.Id )
                                     .FirstOrDefault()
                             } );
+
+                        var campusIdList = ( campusIds ?? string.Empty ).SplitDelimitedValues().AsIntegerList();
+                        if ( campusIdList.Any() )
+                        {
+                            families = families.Where( a => a.CampusId.HasValue && campusIdList.Contains( a.CampusId.Value ) );
+                        }
 
                         foreach ( var family in families.Where( f => f.MinStatus == statusId ) )
                         {
