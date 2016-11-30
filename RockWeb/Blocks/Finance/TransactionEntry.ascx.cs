@@ -31,6 +31,7 @@ using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 using Rock.Communication;
+using System.Data.Entity;
 
 namespace RockWeb.Blocks.Finance
 {
@@ -401,6 +402,44 @@ namespace RockWeb.Blocks.Finance
 
             SetPage( 1 );
 
+        }
+
+        /// <summary>
+        /// Handles the CheckedChanged event of the tglGiveAsOption control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void tglGiveAsOption_CheckedChanged( object sender, EventArgs e )
+        {
+            SetGiveAsOptions();
+            if ( tglGiveAsOption.Checked )
+            {
+                ShowPersonal( GetPerson( false ) );
+            }
+            else
+            {
+                ShowBusiness();
+            }
+        }
+
+        /// <summary>
+        /// Handles the SelectedIndexChanged event of the cblBusinessOption control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void cblBusinessOption_SelectedIndexChanged( object sender, EventArgs e )
+        {
+            ShowBusiness();
+        }
+
+        /// <summary>
+        /// Handles the SelectedIndexChanged event of the ddlBusiness control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void ddlBusiness_SelectedIndexChanged( object sender, EventArgs e )
+        {
+            ShowBusiness();
         }
 
         /// <summary>
@@ -972,58 +1011,25 @@ namespace RockWeb.Blocks.Finance
             tdPhoneReceipt.Visible = displayPhone;
 
             var person = GetPerson( false );
-            if ( person != null )
-            {
-                txtCurrentName.Text = person.FullName;
-                txtEmail.Text = person.Email;
+            ShowPersonal( person );
 
-                var rockContext = new RockContext();
-                var personService = new PersonService( rockContext );
-
-                if ( displayPhone )
-                {
-                    var phoneNumber = personService.GetPhoneNumber( person, DefinedValueCache.Read( new Guid( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_HOME ) ) );
-
-                    // If person did not have a home phone number, read the cell phone number (which would then
-                    // get saved as a home number also if they don't change it, which is ok ).
-                    if ( phoneNumber == null || string.IsNullOrWhiteSpace( phoneNumber.Number ) )
-                    {
-                        phoneNumber = personService.GetPhoneNumber( person, DefinedValueCache.Read( new Guid( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE ) ) );
-                    }
-
-                    if ( phoneNumber != null )
-                    {
-                        pnbPhone.CountryCode = phoneNumber.CountryCode;
-                        pnbPhone.Number = phoneNumber.ToString();
-                    }
-                    else
-                    {
-                        pnbPhone.CountryCode = PhoneNumber.DefaultCountryCode();
-                        pnbPhone.Number = string.Empty;
-                    }
-                }
-                Guid addressTypeGuid = Guid.Empty;
-                if ( !Guid.TryParse( GetAttributeValue( "AddressType" ), out addressTypeGuid ) )
-                {
-                    addressTypeGuid = new Guid( Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME );
-                }
-
-                var groupLocation = personService.GetFirstLocation( person.Id, DefinedValueCache.Read( addressTypeGuid ).Id );
-                if ( groupLocation != null )
-                {
-                    GroupLocationId = groupLocation.Id;
-                    acAddress.SetValues( groupLocation.Location );
-                }
-                else
-                {
-                    acAddress.SetValues( null );
-                }
-            }
-
+            // Set personal display
             txtCurrentName.Visible = person != null;
             txtFirstName.Visible = person == null;
             txtLastName.Visible = person == null;
 
+            // Set Give As Person/Business display
+            var loginPageRef = RockPage.Site.LoginPageReference;
+            loginPageRef.Parameters.Add( "returnurl", Context.Server.UrlEncode( Context.Request.RawUrl ) );
+            lBusinessLoginMsg.Text = string.Format( "<a href='{0}'>Login</a> to give as a business", loginPageRef.BuildUrl() );
+            lBusinessLoginMsg.Visible = person == null;
+
+            phGiveAsOption.Visible = person != null;
+            tglGiveAsOption.Checked = true;
+            phGiveAsPerson.Visible = true;
+            phGiveAsBusiness.Visible = false;
+            SetGiveAsOptions();
+            
             // Evaluate if comment entry box should be displayed
             txtCommentEntry.Label = GetAttributeValue( "CommentEntryLabel" );
             txtCommentEntry.Visible = GetAttributeValue( "EnableCommentEntry" ).AsBoolean();
@@ -1124,6 +1130,182 @@ namespace RockWeb.Blocks.Finance
         }
 
         /// <summary>
+        /// Sets the give as options.
+        /// </summary>
+        private void SetGiveAsOptions()
+        {
+            bool showBusinessOption = CurrentPerson != null && !tglGiveAsOption.Checked;
+            phGiveAsPerson.Visible = !showBusinessOption;
+            phGiveAsBusiness.Visible = showBusinessOption;
+
+            if ( showBusinessOption )
+            {
+                if ( hfBusinessesLoaded.ValueAsInt() != CurrentPerson.Id )
+                {
+                    Guid businessGuid = Rock.SystemGuid.GroupRole.GROUPROLE_KNOWN_RELATIONSHIPS_BUSINESS.AsGuid();
+                    Guid ownerGuid = Rock.SystemGuid.GroupRole.GROUPROLE_KNOWN_RELATIONSHIPS_OWNER.AsGuid();
+
+                    ddlBusiness.Items.Clear();
+                    using ( var rockContext = new RockContext() )
+                    {
+                        var personService = new PersonService( rockContext );
+                        var businesses = new GroupMemberService( rockContext )
+                            .Queryable().AsNoTracking()
+                            .Where( m =>
+                                    m.GroupRole.Guid.Equals( businessGuid ) &&
+                                    m.Group.Members.Any( o =>
+                                        o.PersonId == CurrentPerson.Id &&
+                                        o.GroupRole.Guid.Equals( ownerGuid ) ) )
+                            .Select( m => m.Person )
+                            .OrderBy( b => b.LastName );
+
+                        if ( businesses.Any() )
+                        {
+                            foreach ( var business in businesses )
+                            {
+                                ddlBusiness.Items.Add( new ListItem( business.LastName, business.Id.ToString() ) );
+                            }
+                            cblBusinessOption.SelectedValue = "Existing";
+                            cblBusinessOption.Visible = true;
+                            ddlBusiness.Visible = true;
+                            ddlBusiness.SelectedIndex = 0;
+                        }
+                        else
+                        {
+                            cblBusinessOption.Visible = false;
+                            ddlBusiness.Visible = false;
+                        }
+                    }
+
+                    hfBusinessesLoaded.Value = CurrentPerson.Id.ToString();
+                }
+
+                lPersonalInfoTitle.Text = "Business Information";
+            }
+            else
+            {
+                lPersonalInfoTitle.Text = GetAttributeValue( "PersonalInfoTitle" );
+            }
+        }
+
+        private void ShowPersonal( Person person )
+        {
+            if ( person != null )
+            {
+                txtCurrentName.Text = person.FullName;
+                txtEmail.Text = person.Email;
+
+                var rockContext = new RockContext();
+                var personService = new PersonService( rockContext );
+
+                if ( GetAttributeValue( "DisplayPhone" ).AsBoolean() )
+                {
+                    var phoneNumber = personService.GetPhoneNumber( person, DefinedValueCache.Read( new Guid( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_HOME ) ) );
+
+                    // If person did not have a home phone number, read the cell phone number (which would then
+                    // get saved as a home number also if they don't change it, which is ok ).
+                    if ( phoneNumber == null || string.IsNullOrWhiteSpace( phoneNumber.Number ) )
+                    {
+                        phoneNumber = personService.GetPhoneNumber( person, DefinedValueCache.Read( new Guid( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE ) ) );
+                    }
+
+                    if ( phoneNumber != null )
+                    {
+                        pnbPhone.CountryCode = phoneNumber.CountryCode;
+                        pnbPhone.Number = phoneNumber.ToString();
+                    }
+                    else
+                    {
+                        pnbPhone.CountryCode = PhoneNumber.DefaultCountryCode();
+                        pnbPhone.Number = string.Empty;
+                    }
+                }
+                Guid addressTypeGuid = Guid.Empty;
+                if ( !Guid.TryParse( GetAttributeValue( "AddressType" ), out addressTypeGuid ) )
+                {
+                    addressTypeGuid = new Guid( Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME );
+                }
+
+                var groupLocation = personService.GetFirstLocation( person.Id, DefinedValueCache.Read( addressTypeGuid ).Id );
+                if ( groupLocation != null )
+                {
+                    GroupLocationId = groupLocation.Id;
+                    acAddress.SetValues( groupLocation.Location );
+                }
+                else
+                {
+                    acAddress.SetValues( null );
+                }
+            }
+            else
+            {
+                txtLastName.Text = string.Empty;
+                txtFirstName.Text = string.Empty;
+                txtEmail.Text = string.Empty;
+                pnbPhone.CountryCode = PhoneNumber.DefaultCountryCode();
+                pnbPhone.Number = string.Empty;
+                acAddress.SetValues( null );
+            }
+        }
+
+        private void ShowBusiness()
+        {
+            if ( cblBusinessOption.SelectedValue == "Existing" )
+            {
+                ddlBusiness.Visible = ddlBusiness.Items.Count > 0;
+
+                int? businessId = ddlBusiness.SelectedValueAsInt();
+                if ( businessId.HasValue )
+                {
+                    using ( var rockContext = new RockContext() )
+                    {
+                        var personService = new PersonService( rockContext );
+                        var business = personService.Get( businessId.Value );
+                        ShowBusiness( personService, business );
+                    }
+                }
+                else
+                {
+                    ShowBusiness( null, null );
+                }
+            }
+            else
+            {
+                ddlBusiness.Visible = false;
+                ShowBusiness( null, null );
+            }
+        }
+
+        private void ShowBusiness( PersonService personService, Person business )
+        {
+            if ( personService != null && business != null )
+            {
+                txtBusinessName.Text = business.LastName;
+                txtEmail.Text = business.Email;
+
+                Guid addressTypeGuid = Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_WORK.AsGuid();
+                var groupLocation = personService.GetFirstLocation( business.Id, DefinedValueCache.Read( addressTypeGuid ).Id );
+                if ( groupLocation != null )
+                {
+                    GroupLocationId = groupLocation.Id;
+                    acAddress.SetValues( groupLocation.Location );
+                }
+                else
+                {
+                    GroupLocationId = null;
+                    acAddress.SetValues( null );
+                }
+            }
+            else
+            {
+                txtBusinessName.Text = string.Empty;
+                txtEmail.Text = string.Empty;
+                GroupLocationId = null;
+                acAddress.SetValues( null );
+            }
+        }
+
+        /// <summary>
         /// Gets the person.
         /// </summary>
         /// <param name="create">if set to <c>true</c> [create].</param>
@@ -1147,7 +1329,7 @@ namespace RockWeb.Blocks.Finance
                 person = personService.Get( personId );
             }
 
-            if ( create )
+            if ( create && tglGiveAsOption.Checked )  // If tglGiveOption is not checked, then person should not be null
             {
                 if ( person == null )
                 {
@@ -1248,6 +1430,175 @@ namespace RockWeb.Blocks.Finance
             return person;
         }
 
+        private Person GetPersonOrBusiness( Person person )
+        {
+            if ( person != null && !tglGiveAsOption.Checked )
+            {
+                var rockContext = new RockContext();
+                var personService = new PersonService( rockContext );
+                var groupService = new GroupService( rockContext );
+                var groupMemberService = new GroupMemberService( rockContext );
+
+                Person business = null;
+                Group familyGroup = null;
+
+                int? businessId = ddlBusiness.SelectedValueAsInt();
+                if ( businessId.HasValue && cblBusinessOption.SelectedValue == "Existing" )
+                {
+                    business = personService.Get( businessId.Value );
+                }
+
+                if ( business == null )
+                {
+                    DefinedValueCache dvcConnectionStatus = DefinedValueCache.Read( GetAttributeValue( "ConnectionStatus" ).AsGuid() );
+                    DefinedValueCache dvcRecordStatus = DefinedValueCache.Read( GetAttributeValue( "RecordStatus" ).AsGuid() );
+
+                    // Create Person
+                    business = new Person();
+                    business.LastName = txtLastName.Text;
+                    business.IsEmailActive = true;
+                    business.EmailPreference = EmailPreference.EmailAllowed;
+                    business.RecordTypeValueId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_BUSINESS.AsGuid() ).Id;
+                    if ( dvcConnectionStatus != null )
+                    {
+                        business.ConnectionStatusValueId = dvcConnectionStatus.Id;
+                    }
+
+                    if ( dvcRecordStatus != null )
+                    {
+                        business.RecordStatusValueId = dvcRecordStatus.Id;
+                    }
+
+                    // Create Person/Family
+                    familyGroup = PersonService.SaveNewPerson( business, rockContext, null, false );
+
+                    // Get the relationship roles to use
+                    var knownRelationshipGroupType = GroupTypeCache.Read( Rock.SystemGuid.GroupType.GROUPTYPE_KNOWN_RELATIONSHIPS.AsGuid() );
+                    int businessContactRoleId = knownRelationshipGroupType.Roles
+                        .Where( r =>
+                            r.Guid.Equals( Rock.SystemGuid.GroupRole.GROUPROLE_KNOWN_RELATIONSHIPS_BUSINESS_CONTACT.AsGuid() ) )
+                        .Select( r => r.Id )
+                        .FirstOrDefault();
+                    int businessRoleId = knownRelationshipGroupType.Roles
+                        .Where( r =>
+                            r.Guid.Equals( Rock.SystemGuid.GroupRole.GROUPROLE_KNOWN_RELATIONSHIPS_BUSINESS.AsGuid() ) )
+                        .Select( r => r.Id )
+                        .FirstOrDefault();
+                    int ownerRoleId = knownRelationshipGroupType.Roles
+                        .Where( r =>
+                            r.Guid.Equals( Rock.SystemGuid.GroupRole.GROUPROLE_KNOWN_RELATIONSHIPS_OWNER.AsGuid() ) )
+                        .Select( r => r.Id )
+                        .FirstOrDefault();
+
+                    if ( ownerRoleId > 0 && businessContactRoleId > 0 && businessRoleId > 0 )
+                    {
+                        // get the known relationship group of the business contact
+                        // add the business as a group member of that group using the group role of GROUPROLE_KNOWN_RELATIONSHIPS_BUSINESS
+                        var contactKnownRelationshipGroup = groupMemberService.Queryable()
+                            .Where( g =>
+                                g.GroupRoleId == ownerRoleId &&
+                                g.PersonId == person.Id )
+                            .Select( g => g.Group )
+                            .FirstOrDefault();
+                        if ( contactKnownRelationshipGroup == null )
+                        {
+                            // In some cases person may not yet have a know relationship group type
+                            contactKnownRelationshipGroup = new Group();
+                            groupService.Add( contactKnownRelationshipGroup );
+                            contactKnownRelationshipGroup.Name = "Known Relationship";
+                            contactKnownRelationshipGroup.GroupTypeId = knownRelationshipGroupType.Id;
+
+                            var ownerMember = new GroupMember();
+                            ownerMember.PersonId = person.Id;
+                            ownerMember.GroupRoleId = ownerRoleId;
+                            contactKnownRelationshipGroup.Members.Add( ownerMember );
+                        }
+                        var groupMember = new GroupMember();
+                        groupMember.PersonId = business.Id;
+                        groupMember.GroupRoleId = businessRoleId;
+                        contactKnownRelationshipGroup.Members.Add( groupMember );
+
+                        // get the known relationship group of the business
+                        // add the business contact as a group member of that group using the group role of GROUPROLE_KNOWN_RELATIONSHIPS_BUSINESS_CONTACT
+                        var businessKnownRelationshipGroup = groupMemberService.Queryable()
+                            .Where( g =>
+                                g.GroupRole.Guid.Equals( new Guid( Rock.SystemGuid.GroupRole.GROUPROLE_KNOWN_RELATIONSHIPS_OWNER ) ) &&
+                                g.PersonId == business.Id )
+                            .Select( g => g.Group )
+                            .FirstOrDefault();
+                        if ( businessKnownRelationshipGroup == null )
+                        {
+                            // In some cases business may not yet have a know relationship group type
+                            businessKnownRelationshipGroup = new Group();
+                            groupService.Add( businessKnownRelationshipGroup );
+                            businessKnownRelationshipGroup.Name = "Known Relationship";
+                            businessKnownRelationshipGroup.GroupTypeId = knownRelationshipGroupType.Id;
+
+                            var ownerMember = new GroupMember();
+                            ownerMember.PersonId = business.Id;
+                            ownerMember.GroupRoleId = ownerRoleId;
+                            businessKnownRelationshipGroup.Members.Add( ownerMember );
+                        }
+                        var businessGroupMember = new GroupMember();
+                        businessGroupMember.PersonId = person.Id;
+                        businessGroupMember.GroupRoleId = businessContactRoleId;
+                        businessKnownRelationshipGroup.Members.Add( businessGroupMember );
+
+                        rockContext.SaveChanges();
+                    }
+                }
+
+                business.LastName = txtBusinessName.Text;
+                business.Email = txtEmail.Text;
+
+                if ( GetAttributeValue( "DisplayPhone" ).AsBooleanOrNull() ?? false )
+                {
+                    var numberTypeId = DefinedValueCache.Read( new Guid( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_WORK ) ).Id;
+                    var phone = business.PhoneNumbers.FirstOrDefault( p => p.NumberTypeValueId == numberTypeId );
+                    if ( phone == null )
+                    {
+                        phone = new PhoneNumber();
+                        business.PhoneNumbers.Add( phone );
+                        phone.NumberTypeValueId = numberTypeId;
+                    }
+                    phone.CountryCode = PhoneNumber.CleanNumber( pnbPhone.CountryCode );
+                    phone.Number = PhoneNumber.CleanNumber( pnbPhone.Number );
+                }
+
+                if ( familyGroup == null )
+                {
+                    var groupLocationService = new GroupLocationService( rockContext );
+                    if ( GroupLocationId.HasValue )
+                    {
+                        familyGroup = groupLocationService.Queryable()
+                            .Where( gl => gl.Id == GroupLocationId.Value )
+                            .Select( gl => gl.Group )
+                            .FirstOrDefault();
+                    }
+                    else
+                    {
+                        familyGroup = personService.GetFamilies( business.Id ).FirstOrDefault();
+                    }
+                }
+
+                rockContext.SaveChanges();
+
+                if ( familyGroup != null )
+                {
+                    GroupService.AddNewGroupAddress(
+                        rockContext,
+                        familyGroup,
+                        Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_WORK,
+                        acAddress.Street1, acAddress.Street2, acAddress.City, acAddress.State, acAddress.PostalCode, acAddress.Country,
+                        false );
+                }
+
+                return business;
+            }
+
+            return person;
+        }
+
         /// <summary>
         /// Processes the payment information.
         /// </summary>
@@ -1319,6 +1670,7 @@ namespace RockWeb.Blocks.Finance
 
             if ( !_using3StepGateway )
             {
+                
                 if ( rblSavedAccount.Items.Count <= 0 || ( rblSavedAccount.SelectedValueAsInt() ?? 0 ) <= 0 )
                 {
                     bool isACHTxn = hfPaymentTab.Value == "ACH";
@@ -1384,22 +1736,29 @@ namespace RockWeb.Blocks.Finance
 
             PaymentInfo paymentInfo = GetPaymentInfo();
 
-            if ( txtCurrentName.Visible )
+            if ( tglGiveAsOption.Checked )
             {
-                Person person = GetPerson( false );
-                if ( person != null )
+                if ( txtCurrentName.Visible )
                 {
-                    paymentInfo.FirstName = person.FirstName;
-                    paymentInfo.LastName = person.LastName;
+                    Person person = GetPerson( false );
+                    if ( person != null )
+                    {
+                        paymentInfo.FirstName = person.FirstName;
+                        paymentInfo.LastName = person.LastName;
+                    }
+                }
+                else
+                {
+                    paymentInfo.FirstName = txtFirstName.Text;
+                    paymentInfo.LastName = txtLastName.Text;
                 }
             }
             else
             {
-                paymentInfo.FirstName = txtFirstName.Text;
-                paymentInfo.LastName = txtLastName.Text;
+                paymentInfo.LastName = txtBusinessName.Text;
             }
 
-            tdNameConfirm.Description = paymentInfo.FullName;
+            tdNameConfirm.Description = paymentInfo.FullName.Trim();
             tdPhoneConfirm.Description = paymentInfo.Phone;
             tdEmailConfirm.Description = paymentInfo.Email;
             tdAddressConfirm.Description = string.Format( "{0} {1}, {2} {3}", paymentInfo.Street1, paymentInfo.City, paymentInfo.State, paymentInfo.PostalCode );
@@ -1418,7 +1777,9 @@ namespace RockWeb.Blocks.Finance
             }
 
             tdWhenConfirm.Description = schedule != null ? schedule.ToString() : "Today";
-            
+
+            btnConfirmationPrev.Visible = !_using3StepGateway;
+
             return true;
         }
 
@@ -1648,7 +2009,9 @@ namespace RockWeb.Blocks.Finance
                     return false;
                 }
 
-                PaymentInfo paymentInfo = GetTxnPaymentInfo( person, out errorMessage );
+                Person BusinessOrPerson = GetPersonOrBusiness( person );
+
+                PaymentInfo paymentInfo = GetTxnPaymentInfo( BusinessOrPerson, out errorMessage );
                 if ( paymentInfo == null )
                 {
                     return false;
@@ -1677,7 +2040,7 @@ namespace RockWeb.Blocks.Finance
                     // manually assign the Guid that we generated at the beginning of the transaction UI entry to help make duplicate scheduled transactions impossible
                     scheduledTransaction.Guid = transactionGuid;
 
-                    SaveScheduledTransaction( financialGateway, gateway, person, paymentInfo, schedule, scheduledTransaction, rockContext );
+                    SaveScheduledTransaction( financialGateway, gateway, BusinessOrPerson, paymentInfo, schedule, scheduledTransaction, rockContext );
                     paymentDetail = scheduledTransaction.FinancialPaymentDetail.Clone( false );
                 }
                 else
@@ -1699,7 +2062,7 @@ namespace RockWeb.Blocks.Finance
                     // manually assign the Guid that we generated at the beginning of the transaction UI entry to help make duplicate transactions impossible
                     transaction.Guid = transactionGuid;
 
-                    SaveTransaction( financialGateway, gateway, person, paymentInfo, transaction, rockContext );
+                    SaveTransaction( financialGateway, gateway, BusinessOrPerson, paymentInfo, transaction, rockContext );
                     paymentDetail = transaction.FinancialPaymentDetail.Clone( false );
                 }
 
@@ -1745,6 +2108,8 @@ namespace RockWeb.Blocks.Finance
                 errorMessage = "There was a problem creating the person's primary alias";
                 return false;
             }
+
+            Person BusinessOrPerson = GetPersonOrBusiness( person );
 
             PaymentInfo paymentInfo = GetPaymentInfo();
             if ( paymentInfo == null )
@@ -1792,7 +2157,7 @@ namespace RockWeb.Blocks.Finance
                 }
 
                 paymentDetail = scheduledTransaction.FinancialPaymentDetail.Clone( false );
-                SaveScheduledTransaction( financialGateway, gateway, person, paymentInfo, schedule, scheduledTransaction, rockContext );
+                SaveScheduledTransaction( financialGateway, gateway, BusinessOrPerson, paymentInfo, schedule, scheduledTransaction, rockContext );
             }
             else
             {
@@ -1806,7 +2171,7 @@ namespace RockWeb.Blocks.Finance
                 transaction.Guid = transactionGuid;
 
                 paymentDetail = transaction.FinancialPaymentDetail.Clone( false );
-                SaveTransaction( financialGateway, gateway, person, paymentInfo, transaction, rockContext );
+                SaveTransaction( financialGateway, gateway, BusinessOrPerson, paymentInfo, transaction, rockContext );
             }
 
             ShowSuccess( gateway, person, paymentInfo, schedule, paymentDetail, rockContext );
@@ -2230,7 +2595,7 @@ namespace RockWeb.Blocks.Finance
 
     // sets the scroll position to the top of the page after partial postbacks
     // without this the scroll position is the bottom of the page.
-    setTimeout('window.scrollTo(0,0)',0);
+    // setTimeout('window.scrollTo(0,0)',0);
 
     // Posts the iframe (step 2)
     $('#aStep2Submit').on('click', function(e) {{

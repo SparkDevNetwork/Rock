@@ -62,15 +62,36 @@
                         <% } %>
 
                             <div class="panel panel-default contribution-personal">
-                                <div class="panel-heading"><h3 class="panel-title"><asp:Literal ID="lPersonalInfoTitle" runat="server" /></h3></div>
+                                <div class="panel-heading">
+                                    <h3 class="panel-title">
+                                        <asp:Literal ID="lPersonalInfoTitle" runat="server" />
+                                        <div class="pull-right">
+                                            <asp:Literal ID="lBusinessLoginMsg" runat="server" Text="Login to give as a business" />
+                                            <asp:PlaceHolder ID="phGiveAsOption" runat="server">
+                                                <Rock:Toggle ID="tglGiveAsOption" runat="server" OnText="Give as Person" OffText="Give as Business" ButtonSizeCssClass="btn-xs" OnCheckedChanged="tglGiveAsOption_CheckedChanged" />
+                                            </asp:PlaceHolder>
+                                        </div>
+                                    </h3>
+                                </div>
                                 <div class="panel-body">
                                     <fieldset>
-                                        <Rock:RockLiteral ID="txtCurrentName" runat="server" Label="Name" Visible="false" />
-                                        <Rock:RockTextBox ID="txtFirstName" runat="server" Label="First Name" />
-                                        <Rock:RockTextBox ID="txtLastName" runat="server" Label="Last Name" />
+                                        <asp:PlaceHolder ID="phGiveAsPerson" runat="server">
+                                            <Rock:RockLiteral ID="txtCurrentName" runat="server" Label="Name" Visible="false" />
+                                            <Rock:RockTextBox ID="txtFirstName" runat="server" Label="First Name" />
+                                            <Rock:RockTextBox ID="txtLastName" runat="server" Label="Last Name" />
+                                        </asp:PlaceHolder>
+                                        <asp:PlaceHolder ID="phGiveAsBusiness" runat="server" Visible="false">
+                                            <asp:HiddenField ID="hfBusinessesLoaded" runat="server" />
+                                            <Rock:RockRadioButtonList ID="cblBusinessOption" runat="server" RepeatDirection="Horizontal" AutoPostBack="true" OnSelectedIndexChanged="cblBusinessOption_SelectedIndexChanged">
+                                                <asp:ListItem Value="Existing" Text="Existing Business" />
+                                                <asp:ListItem Value="New" Text="New Business" />
+                                            </Rock:RockRadioButtonList>
+                                            <Rock:RockDropDownList ID="ddlBusiness" runat="server" AutoPostBack="true" OnSelectedIndexChanged="ddlBusiness_SelectedIndexChanged" />
+                                            <Rock:RockTextBox ID="txtBusinessName" runat="server" Label="Business Name" />
+                                        </asp:PlaceHolder>
                                         <Rock:PhoneNumberBox ID="pnbPhone" runat="server" Label="Phone"></Rock:PhoneNumberBox>
                                         <Rock:RockTextBox ID="txtEmail" runat="server" Label="Email"></Rock:RockTextBox>
-                                        <Rock:AddressControl ID="acAddress" runat="server" UseStateAbbreviation="true" UseCountryAbbreviation="false" />
+                                        <Rock:AddressControl ID="acAddress" runat="server" UseStateAbbreviation="true" UseCountryAbbreviation="false" Label="Address" />
                                     </fieldset>
                                 </div>
                             </div>
