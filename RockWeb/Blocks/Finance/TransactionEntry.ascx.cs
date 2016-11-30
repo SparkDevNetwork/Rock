@@ -1997,7 +1997,8 @@ TransactionAcountDetails: [
                     return false;
                 }
 
-                Person person = GetPerson( true );
+                // only create/update the person if they are giving as a person. If they are giving as a Business, the person record already exists
+                Person person = GetPerson( tglGiveAsOption.Checked );
                 if ( person == null )
                 {
                     errorMessage = "There was a problem creating the person information";
@@ -2097,7 +2098,9 @@ TransactionAcountDetails: [
                 return false;
             }
 
-            Person person = GetPerson( true );
+            // only create/update the person if they are giving as a person. If they are giving as a Business, the person record already exists
+            Person person = GetPerson( tglGiveAsOption.Checked );
+
             if ( person == null )
             {
                 errorMessage = "There was a problem creating the person information";
