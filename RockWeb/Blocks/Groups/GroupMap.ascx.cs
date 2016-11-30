@@ -304,6 +304,7 @@ namespace RockWeb.Blocks.Groups
 
         initializeMap();
 
+        // the campuses picker only applies to the connection status checkboxes        
         $('.js-campuses-picker').hide();
 
         function initializeMap() {{
@@ -372,8 +373,6 @@ namespace RockWeb.Blocks.Groups
                     }});
                     if (groupMemberItems.length == 0) {{
                         $('.js-show-group-members').hide();
-                        
-                        
                     }} else {{
                         setAllMap(groupMemberItems, null);
                     }}
@@ -490,9 +489,10 @@ namespace RockWeb.Blocks.Groups
                 if ( mapItem.EntityId == {0} ) {{
                     $('.js-connection-status').show();
                     
-                    // the campuses picker only applies to the connection status
+                    // the campuses picker only applies to the connection status checkboxes
                     $('.js-campuses-picker').show();
                 }}
+        
             }}
 
             return items;

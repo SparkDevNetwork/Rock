@@ -588,7 +588,7 @@ namespace Rock.Model
 
             var rockContext = (RockContext)this.Context;
             return new GroupMemberService( rockContext )
-                .Queryable().AsNoTracking() 
+                .Queryable().AsNoTracking()
                 .Where( m =>
                         m.GroupRole.Guid.Equals( businessGuid ) &&
                         m.Group.Members.Any( o =>

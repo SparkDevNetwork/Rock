@@ -854,7 +854,7 @@ namespace RockWeb.Blocks.Event
                 foreach ( var attr in attributesDB.Where( a => !selectedAttributeGuids.Contains( a.Guid ) ).ToList() )
                 {
                     var canDeleteAttribute = true;
-                    foreach (var form in RegistrationTemplate.Forms)
+                    foreach ( var form in RegistrationTemplate.Forms )
                     {
                         // make sure other RegistrationTemplates aren't using this AttributeId (which could happen due to an old bug)
                         var formFieldsFromOtherRegistrationTemplatesUsingAttribute = registrationTemplateFormFieldService.Queryable().Where( a => a.AttributeId.Value == attr.Id && a.RegistrationTemplateForm.RegistrationTemplateId != RegistrationTemplate.Id ).Any();
