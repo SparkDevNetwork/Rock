@@ -432,7 +432,6 @@
 
                 $('.js-saveshape').click(function () {
 
-                    debugger;
                     if (map.SelectedShape) {
                         
                         var geoFencePath;
