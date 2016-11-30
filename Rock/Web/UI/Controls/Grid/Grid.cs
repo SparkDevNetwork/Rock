@@ -1563,11 +1563,11 @@ namespace Rock.Web.UI.Controls
                     }
 
                     // print data
-                    foreach ( DataRowView row in data.DefaultView )
+                    foreach ( DataRowView rowView in data.DefaultView )
                     {
                         for ( int i = 0; i < data.Columns.Count; i++ )
                         {
-                            SetExcelValue( worksheet.Cells[rowCounter, i + 1], row[i] );
+                            SetExcelValue( worksheet.Cells[rowCounter, i + 1], rowView.Row[i] );
                         }
 
                         rowCounter++;
@@ -2183,8 +2183,9 @@ namespace Rock.Web.UI.Controls
                 {
                     DataTable data = this.DataSourceAsDataTable;
 
-                    foreach ( DataRowView row in data.DefaultView )
+                    foreach ( DataRowView rowView in data.DefaultView )
                     {
+                        DataRow row = rowView.Row;
                         object dataKey = row[dataKeyColumn];
                         if ( !keysSelected.Any() || keysSelected.Contains( dataKey ) )
                         {
