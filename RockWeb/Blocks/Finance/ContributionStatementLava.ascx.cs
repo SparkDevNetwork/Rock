@@ -84,13 +84,14 @@ namespace RockWeb.Blocks.Finance
 
 
     <table class=""table table-bordered table-striped table-condensed"">
-        <tr>
-            <th>Date</th>
-            <th>Giving Area</th>
-            <th>Check/Trans #</th>
-            <th align=""right"">Amount</th>
-        </tr>
-    
+        <thead>
+            <tr>
+                <th>Date</th>
+                <th>Giving Area</th>
+                <th>Check/Trans #</th>
+                <th align=""right"">Amount</th>
+            </tr>
+        </thead>    
 
         {% for transaction in TransactionDetails %}
             <tr>
