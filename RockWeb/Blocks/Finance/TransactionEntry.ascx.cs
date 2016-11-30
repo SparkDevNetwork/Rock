@@ -2464,7 +2464,7 @@ TransactionAcountDetails: [
             {
                 // Queue a transaction to send receipts
                 var newTransactionIds = new List<int> { transactionId };
-                var sendPaymentReceiptsTxn = new Rock.Transactions.SendPaymentReceipts( receiptEmail.Value, newTransactionIds );
+                var sendPaymentReceiptsTxn = new Rock.Transactions.SendPaymentReciepts( receiptEmail.Value, newTransactionIds );
                 Rock.Transactions.RockQueue.TransactionQueue.Enqueue( sendPaymentReceiptsTxn );
             }
         }
@@ -2738,7 +2738,7 @@ TransactionAcountDetails: [
         /// </summary>
         [Serializable]
         [DotLiquid.LiquidType( "Id", "Order", "Name", "CampusId", "Amount", "PublicName", "AmountFormatted" )]
-        protected class AccountItem 
+        protected class AccountItem
         {
             public int Id { get; set; }
 
