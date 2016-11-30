@@ -546,9 +546,10 @@ namespace RockWeb.Blocks.Finance
                     // set the campus but not on page load (e will be null) unless from the person profile page (in which case BenevolenceRequestId in the query string will be 0)
                     int? requestId = Request["BenevolenceRequestId"].AsIntegerOrNull();
                     
-                    if ( !cpCampus.SelectedCampusId.HasValue && (e != null || (requestId.HasValue && requestId ==0)) )
+                    if ( !cpCampus.SelectedCampusId.HasValue && ( e != null || (requestId.HasValue && requestId == 0 ) ) )
                     {
-                        cpCampus.SelectedCampusId = person.GetCampus().Id;
+                        var personCampus = person.GetCampus();
+                        cpCampus.SelectedCampusId = personCampus != null ? personCampus.Id : (int?)null;
                     }
                 }
             }
