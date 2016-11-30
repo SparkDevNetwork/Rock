@@ -369,9 +369,10 @@ namespace RockWeb.Blocks.Groups
         /// <param name="e">The <see cref="RowEventArgs"/> instance containing the event data.</param>
         protected void gGroups_RowSelected( object sender, RowEventArgs e )
         {
-            if ( !NavigateToLinkedPage( "GroupDetailPage", "GroupId", e.RowKeyId ) )
+            if (!NavigateToLinkedPage("GroupDetailPage", "GroupId", e.RowKeyId))
             {
                 ShowResults();
+                ScriptManager.RegisterStartupScript(pnlMap, pnlMap.GetType(), "group-finder-row-selected", "openInfoWindowById("+e.RowKeyId+");", true);
             }
         }
 
@@ -1365,6 +1366,16 @@ namespace RockWeb.Blocks.Groups
 
         }}
 
+        function openInfoWindowById(id) {{
+            marker = $.grep(allMarkers, function(m) {{ return m.id == id }})[0];
+            openInfoWindow(marker);
+        }}
+
+        function openInfoWindow(marker) {{
+            infoWindow.setContent( $('<div/>').html(marker.info_window).text() );
+            infoWindow.open(map, marker);
+        }}
+
         function addMapItem( i, mapItem, color ) {{
 
             var items = [];
@@ -1384,11 +1395,13 @@ namespace RockWeb.Blocks.Groups
                     new google.maps.Point(10, 34));
 
                 marker = new google.maps.Marker({{
+                    id: mapItem.EntityId,
                     position: position,
                     map: map,
                     title: htmlDecode(mapItem.Name),
                     icon: pinImage,
-                    shadow: pinShadow
+                    shadow: pinShadow,
+                    info_window: mapItem.InfoWindow
                 }});
     
                 items.push(marker);
@@ -1397,8 +1410,7 @@ namespace RockWeb.Blocks.Groups
                 if ( mapItem.InfoWindow != null ) {{ 
                     google.maps.event.addListener(marker, 'click', (function (marker, i) {{
                         return function () {{
-                            infoWindow.setContent( $('<div/>').html(mapItem.InfoWindow).text() );
-                            infoWindow.open(map, marker);
+                            openInfoWindow(marker);
                         }}
                     }})(marker, i));
                 }}
