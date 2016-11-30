@@ -100,8 +100,6 @@ namespace RockWeb.Blocks.Event
             // Get the calendar id of the calendar that user navigated from 
             _calendarId = PageParameter( "EventCalendarId" ).AsIntegerOrNull();
 
-            btnDelete.Attributes["onclick"] = string.Format( "javascript: return Rock.dialogs.confirmDelete(event, '{0}', 'This will also delete all the event occurrences below! Are you sure you wish to continue with the delete?');", EventItemOccurrence.FriendlyTypeName );
-
             _canEdit = UserCanEdit;
             _canApprove = UserCanAdministrate;
 
@@ -140,6 +138,19 @@ namespace RockWeb.Blocks.Event
             RockPage.AddScriptLink( ResolveRockUrl( "~/Scripts/imagesloaded.min.js" ) );
             RockPage.AddScriptLink( ResolveRockUrl( "~/Scripts/jquery.fluidbox.min.js" ) );
             ScriptManager.RegisterStartupScript( lImage, lImage.GetType(), "image-fluidbox", "$('.photo a').fluidbox();", true );
+
+            string deleteScript = @"
+    $('a.js-delete-event').click(function( e ){
+        e.preventDefault();
+        Rock.dialogs.confirm('Are you sure you want to delete this event? All of the event occurrences will also be deleted!', function (result) {
+            if (result) {
+                window.location = e.target.href ? e.target.href : e.target.parentElement.href;
+            }
+        });
+    });
+";
+            ScriptManager.RegisterStartupScript( btnDelete, btnDelete.GetType(), "deleteInstanceScript", deleteScript, true );
+
         }
 
         /// <summary>
