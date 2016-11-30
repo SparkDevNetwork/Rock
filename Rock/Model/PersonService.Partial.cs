@@ -577,6 +577,28 @@ namespace Rock.Model
         }
 
         /// <summary>
+        /// Gets the businesses.
+        /// </summary>
+        /// <param name="personId">The person identifier.</param>
+        /// <returns></returns>
+        public IQueryable<Person> GetBusinesses( int personId )
+        {
+            Guid businessGuid = Rock.SystemGuid.GroupRole.GROUPROLE_KNOWN_RELATIONSHIPS_BUSINESS.AsGuid();
+            Guid ownerGuid = Rock.SystemGuid.GroupRole.GROUPROLE_KNOWN_RELATIONSHIPS_OWNER.AsGuid();
+
+            var rockContext = (RockContext)this.Context;
+            return new GroupMemberService( rockContext )
+                .Queryable().AsNoTracking()
+                .Where( m =>
+                        m.GroupRole.Guid.Equals( businessGuid ) &&
+                        m.Group.Members.Any( o =>
+                            o.PersonId == personId &&
+                            o.GroupRole.Guid.Equals( ownerGuid ) ) )
+                .Select( m => m.Person )
+                .OrderBy( b => b.LastName );
+        }
+
+        /// <summary>
         /// Gets an queryable collection of <see cref="Rock.Model.Person"/> entities where their phone number partially matches the provided value.
         /// </summary>
         /// <param name="partialPhoneNumber">A <see cref="System.String"/> containing a partial phone number to match.</param>
