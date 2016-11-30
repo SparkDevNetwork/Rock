@@ -2114,7 +2114,7 @@ namespace Rock.Lava
                     convertedStream.Dispose();
                     initialPhotoStream.Dispose();
 
-                    return string.Format( "^FS ~DYE:LOGO,P,P,{0},,{1} ^FD", content.Length, zplImageData.ToString() );
+                    return string.Format( "^FS ~DYR:LOGO,P,P,{0},,{1} ^FD", content.Length, zplImageData.ToString() );
                 }
             }
             catch
