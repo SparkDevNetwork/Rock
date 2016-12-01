@@ -1,0 +1,93 @@
+
+
+//
+// NEXT STEPS PAGE
+// --------------------------------------------------
+
+
+// Imports
+// -------------------------
+@import "../../../../Styles/Bootstrap/variables.less";
+@import "../../../../Styles/Bootstrap/mixins.less";
+@import "../../../../Styles/_rock-variables.less";
+
+@import "../_variables";
+@import "../_mixins";
+
+
+// Custom
+// -------------------------
+
+.nextsteps-logo {
+  max-width: 60em;
+  margin-left: auto;
+  margin-right: auto;
+  display: block;
+  @media @sm {
+    padding-top: @grid-gutter-width;
+    padding-bottom: @grid-gutter-width;
+  }
+}
+
+.nextsteps-container {
+  max-width: 60em;
+}
+
+.nextsteps-section .media>.media-left {
+  float: none;
+  @media @sm {
+    float: left;
+  }
+}
+
+.nextsteps-icon {
+  width: @grid-gutter-width*2;
+  fill: #999;
+  margin-left: auto;
+  margin-right: auto;
+  @media @sm {
+    width: @grid-gutter-width*3;
+    margin-top: @grid-gutter-width;
+    margin-right: @grid-gutter-width;
+  }
+}
+
+.nsbtn {
+  display: block;
+  background: #333;
+  color: #fff;
+  padding: @grid-gutter-width/2;
+  border-radius: @border-radius-large;
+  height: @grid-gutter-width*3;
+  position: relative;
+  text-align: center;
+
+  -webkit-transform-style: preserve-3d;
+     -moz-transform-style: preserve-3d;
+          transform-style: preserve-3d;
+
+  @media @md {
+    height: @grid-gutter-width*4;
+  }
+
+  &:hover {
+    color: #fff;
+    background: #777;
+    text-decoration: none;
+    .nsbtn-title {
+      // opacity: .5;
+      // color: inherit;
+    }
+  }
+}
+  .nsbtn-title {
+    position: relative;
+    top: 50%;
+    .translate(0; -50%);
+    margin: 0;
+    // margin: @grid-gutter-width/2 0;
+    // position: absolute;
+    // bottom: 0;
+    // vertical-align: middle;
+    // display: inline-block;
+  }

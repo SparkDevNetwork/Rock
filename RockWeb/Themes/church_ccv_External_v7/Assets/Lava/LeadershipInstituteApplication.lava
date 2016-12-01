@@ -1,0 +1,274 @@
+{% comment %}
+  {% include '~~/Assets/Lava/LeadershipInstituteApplication.lava' %}
+{% endcomment %}
+
+<div class="form form-horizontal">
+  <fieldset>
+    <!-- Form Name -->
+    <legend>1. General Information</legend>
+    <p class="lead">All Residencies begin the last week of July</p>
+    <!-- Text input-->
+    <div class="form-group">
+      <label class="control-label col-sm-3" for="ApplicationYear">Year for application</label>
+      <div class="col-sm-9">
+        <input id="ApplicationYear" name="ApplicationYear" type="text" pattern="[0-9]*" placeholder="Year" class="input-mini form-control">
+        <p class="help-block">Please indicate the year for which you are applying</p>
+      </div>
+    </div>
+    <!-- Text input-->
+    <div class="form-group">
+      <label class="control-label col-sm-3" for="FullName">Full Name</label>
+      <div class="col-sm-9">
+        <input id="FullName" name="FullName" type="text" placeholder="Name" class="input-xlarge form-control">
+      </div>
+    </div>
+    <!-- Text input-->
+    <div class="form-group">
+      <label class="control-label col-sm-3" for="StreetAddress">Address</label>
+      <div class="col-sm-9">
+        <input id="StreetAddress" name="StreetAddress" type="text" placeholder="Street Address" class="input-xlarge form-control">
+      </div>
+    </div>
+    <!-- Text input-->
+    <div class="form-group">
+      <label class="control-label col-sm-3" for="City"></label>
+      <div class="col-sm-9">
+        <input id="City" name="City" type="text" placeholder="City" class="input-medium form-control">
+      </div>
+    </div>
+    <!-- Text input-->
+    <div class="form-group">
+      <label class="control-label col-sm-3" for="State"></label>
+      <div class="col-sm-9">
+        <input id="State" name="State" type="text" placeholder="State" class="input-mini form-control">
+      </div>
+    </div>
+    <!-- Text input-->
+    <div class="form-group">
+      <label class="control-label col-sm-3" for="Zip"></label>
+      <div class="col-sm-9">
+        <input id="Zip" name="Zip" type="text" pattern="[0-9]*" placeholder="Zip" class="input-small form-control">
+      </div>
+    </div>
+    <!-- Text input-->
+    <div class="form-group">
+      <label class="control-label col-sm-3" for="HomeTown">Home Town</label>
+      <div class="col-sm-9">
+        <input id="HomeTown" name="HomeTown" type="text" placeholder="Town Name, State" class="input-xlarge form-control">
+      </div>
+    </div>
+    <!-- Text input-->
+    <div class="form-group">
+      <label class="control-label col-sm-3" for="BirthDate">Birth Date</label>
+      <div class="col-sm-9">
+        <input id="BirthDate" name="BirthDate" type="text" placeholder="Birth Date" class="input-xlarge form-control">
+      </div>
+    </div>
+    <!-- Text input-->
+    <div class="form-group">
+      <label class="control-label col-sm-3" for="CellPhone">Cell Phone</label>
+      <div class="col-sm-9">
+        <input id="CellPhone" name="CellPhone" type="text" pattern="[0-9]*" placeholder="Cell Phone" class="input-xlarge form-control">
+      </div>
+    </div>
+    <!-- Text input-->
+    <div class="form-group">
+      <label class="control-label col-sm-3" for="Email">Email Address</label>
+      <div class="col-sm-9">
+        <input id="Email" name="Email" type="email" placeholder="Email" class="input-xlarge form-control">
+      </div>
+    </div>
+    <!-- Text input-->
+    <div class="form-group">
+      <label class="control-label col-sm-3" for="HomeChurch">Home Church</label>
+      <div class="col-sm-9">
+        <input id="HomeChurch" name="HomeChurch" type="text" placeholder="Home Church" class="input-xlarge form-control">
+      </div>
+    </div>
+    <!-- Text input-->
+    <div class="form-group">
+      <label class="control-label col-sm-3" for="RelationshipStatus">Relationship Status</label>
+      <div class="col-sm-9">
+        <input id="RelationshipStatus" name="RelationshipStatus" type="text" placeholder="Relationship Status" class="input-small form-control">
+      </div>
+    </div>
+    <!-- Text input-->
+    <div class="form-group">
+      <label class="control-label col-sm-3" for="NumberOfChildren">Number of Children</label>
+      <div class="col-sm-9">
+        <input id="NumberOfChildren" name="NumberOfChildren" type="number" class="input-mini form-control">
+      </div>
+    </div>
+    <!-- Text input-->
+    <div class="form-group">
+      <label class="control-label col-sm-3" for="WhoReferred">Who referred you to the Residency program?</label>
+      <div class="col-sm-9">
+        <input id="WhoReferred" name="WhoReferred" type="text" placeholder="Name" class="input-xlarge form-control">
+      </div>
+    </div>
+    <!-- Description -->
+    <p>Top three areas you are most interested in learning</p>
+    <!-- Select Basic -->
+    <div class="form-group">
+      <label class="control-label col-sm-3" for="1stChoice">1st Choice</label>
+      <div class="col-sm-9">
+        <select id="1stChoice" name="1stChoice" class="input-large">
+          <option>-- Select One --</option>
+          <option>Children &amp; Family</option>
+          <option>Church Administration</option>
+          <option>Multi-sites</option>
+          <option>Intercultural Studies</option>
+          <option>Pastoral</option>
+          <option>Special Needs</option>
+          <option>Sports Management</option>
+          <option>Worship/Production</option>
+          <option>Youth</option>
+        </select>
+      </div>
+    </div>
+    <!-- Select Basic -->
+    <div class="form-group">
+      <label class="control-label col-sm-3" for="2ndChoice">2nd Choice</label>
+      <div class="col-sm-9">
+        <select id="2ndChoice" name="2ndChoice" class="input-large">
+          <option>-- Select One --</option>
+          <option>Children &amp; Family</option>
+          <option>Church Administration</option>
+          <option>Multi-sites</option>
+          <option>Intercultural Studies</option>
+          <option>Pastoral</option>
+          <option>Special Needs</option>
+          <option>Sports Management</option>
+          <option>Worship/Production</option>
+          <option>Youth</option>
+        </select>
+      </div>
+    </div>
+    <!-- Select Basic -->
+    <div class="form-group">
+      <label class="control-label col-sm-3" for="3rdChoice">3rd Choice</label>
+      <div class="col-sm-9">
+        <select id="3rdChoice" name="3rdChoice" class="input-large">
+          <option>-- Select One --</option>
+          <option>Children &amp; Family</option>
+          <option>Church Administration</option>
+          <option>Multi-sites</option>
+          <option>Intercultural Studies</option>
+          <option>Pastoral</option>
+          <option>Special Needs</option>
+          <option>Sports Management</option>
+          <option>Worship/Production</option>
+          <option>Youth</option>
+        </select>
+      </div>
+    </div>
+    <!-- Multiple Radios (inline) -->
+    <div class="form-group">
+      <label class="control-label col-sm-3" for="InterestedInHostHome">Would you be interested in a host-home during your stay as a resident?</label>
+      <div class="col-sm-9">
+        <label class="radio-inline" for="InterestedInHostHome-0">
+          <input type="radio" name="InterestedInHostHome" id="InterestedInHostHome-0" value="Yes" checked="checked">Yes
+        </label>
+        <label class="radio-inline" for="InterestedInHostHome-1">
+          <input type="radio" name="InterestedInHostHome" id="InterestedInHostHome-1" value="No">No
+        </label>
+      </div>
+    </div>
+  </fieldset>
+  <fieldset>
+    <!-- Form Name -->
+    <legend>2. Residency Options</legend>
+    <p class="lead">
+      CCV Residents have the option of participating at one of three levels. Please read through the options below and complete the necessary information for the option that best applies to your specific ministry training needs.
+    </p>
+    <!-- Multiple Checkboxes (inline) -->
+    <div class="form-group">
+      <label class="control-label col-sm-3" for="Option1">Option 1</label>
+      <div class="col-sm-9 checkbox">
+        <label for="Option1-0">
+          <input type="checkbox" name="Option1" id="Option1-0" value="Undergraduate Residency">Undergraduate Residency
+        </label>
+        <p class="help-block">This option is ideal for those entering their fourth year of college. Students continue their education as a CCV resident during their senior year.</p>
+      </div>
+    </div>
+    <!-- Text input-->
+    <div class="form-group">
+      <label class="control-label col-sm-3" for="Option1Detail"></label>
+      <div class="col-sm-9">
+        <input id="Option1Detail" name="Option1Detail" type="text" placeholder="Current college &amp; area of study" class="input-xlarge form-control">
+      </div>
+    </div>
+    <!-- Multiple Checkboxes (inline) -->
+    <div class="form-group">
+      <label class="control-label col-sm-3" for="Option2">Option 2</label>
+      <div class="col-sm-9 checkbox">
+        <label for="Option2-0">
+          <input type="checkbox" name="Option2" id="Option2-0" value="Graduate Residency">Graduate Residency
+        </label>
+        <p class="help-block">Graduate residents work toward a master’s degree from one of our partnering universities. A completed bachelor’s degree and acceptance into one of the graduate programs is required.</p>
+      </div>
+    </div>
+    <!-- Text input-->
+    <div class="form-group">
+      <label class="control-label col-sm-3" for="Option2Detail"></label>
+      <div class="col-sm-9">
+        <input id="Option2Detail" name="Option2Detail" type="text" placeholder="College attended &amp; degree earned" class="input-xlarge form-control">
+      </div>
+    </div>
+    <!-- Multiple Checkboxes (inline) -->
+    <div class="form-group">
+      <label class="control-label col-sm-3" for="Option3">Option 3</label>
+      <div class="col-sm-9 checkbox">
+        <label for="Option3-0">
+          <input type="checkbox" name="Option3" id="Option3-0" value="Professional Residency">Professional Residency
+        </label>
+        <p class="help-block">Adult professionals who are not interested in pursuing college credit have the option of participating within a non-academic level.</p>
+      </div>
+    </div>
+    <!-- Text input-->
+    <div class="form-group">
+      <label class="control-label col-sm-3" for="Option3Detail"></label>
+      <div class="col-sm-9">
+        <input id="Option3Detail" name="Option3Detail" type="text" placeholder="College experience (list degree if earned)" class="input-xlarge form-control">
+      </div>
+    </div>
+  </fieldset>
+  <fieldset>
+    <!-- Form Name -->
+    <legend>3. Ministry Experience</legend>
+    <!-- Textarea -->
+    <div class="form-group">
+      <label class="control-label col-sm-3" for="Ministry Experience">Previous church work during the past 5 years (Date, Church, Location, Responsibilities)</label>
+      <div class="col-sm-9">
+        <textarea class="form-control" id="Ministry Experience" name="Ministry Experience" rows="5">Date, Church, Location, Responsibilities</textarea>
+      </div>
+    </div>
+  </fieldset>
+  <fieldset>
+    <!-- Form Name -->
+    <legend>4. About You</legend>
+    <!-- Text input-->
+    <div class="form-group">
+      <label class="control-label col-sm-3" for="Hobbies">Hobbies</label>
+      <div class="col-sm-9">
+        <input id="Hobbies" name="Hobbies" type="text" placeholder="Hobbies" class="input-medium form-control">
+      </div>
+    </div>
+    <!-- File Button -->
+    <div class="form-group">
+      <label class="control-label col-sm-3" for="LifeEvent">Life Event</label>
+      <div class="col-sm-9">
+        <input id="LifeEvent" name="LifeEvent" class="input-file" type="file">
+        <span class="help-block">In a one page document, please submit a brief description of a significant life event from childhood to present that impacted you the most and why.</span>
+      </div>
+    </div>
+    <!-- File Button -->
+    <div class="form-group">
+      <label class="control-label col-sm-3" for="Photo">Current Photo of Yourself</label>
+      <div class="col-sm-9">
+        <input id="Photo" name="Photo" class="input-file" type="file">
+        <span class="help-block">Waist up or headshot, please</span>
+      </div>
+    </div>
+  </fieldset>
+</div>

@@ -1,0 +1,57 @@
+{% comment %}
+  {% include '~~/Assets/Lava/Toolboxes/NextGen.lava' %}
+{% endcomment %}
+
+{% assign memberDetailPage = memberDetailPage | Default: "/page/1166" %}
+
+
+{% if AllowedActions.View == true || AllowedActions.Edit == true || AllowedActions.Administrate == true %}
+
+  {% include '~~/Assets/Lava/Toolboxes/_default-vars.lava' %}
+  {% include '~~/Assets/Lava/Toolboxes/_pre.lava' %}
+
+  {% capture customEmailButtons %}
+    <a onclick="{{ 'kids' | Postback:'SendCommunication' }}" class="btn btn-default btn-xs">
+      <i class="fa fa-envelope-o"></i> Email Students
+    </a>
+    <a onclick="{{ 'parents' | Postback:'SendCommunication' }}" class="btn btn-default btn-xs">
+      <i class="fa fa-envelope-o"></i> Email Parents
+    </a>
+  {% endcapture %}
+
+  {% include '~~/Assets/Lava/Toolboxes/_header.lava' %}
+
+  {% if CurrentPage.Path == LinkedPages.RosterPage %}
+    {% assign rosterPageIsCurrent = true %}
+  {% endif %}
+
+  {% if CurrentPage.Path == LinkedPages.ParentPage %}
+    {% assign parentPageIsCurrent = true %}
+  {% endif %}
+
+  <ul class="nav nav-tabs">
+    <li role="presentation"{% if rosterPageIsCurrent %} class="active"{% endif %}>
+      <a href="{{ LinkedPages.RosterPage }}?GroupId={{ Group.Id }}">Student Roster</a>
+    </li>
+    <li role="presentation"{% if parentPageIsCurrent %} class="active"{% endif %}>
+      <a href="{{ LinkedPages.ParentPage }}?GroupId={{ Group.Id }}">Parent Roster</a>
+    </li>
+  </ul>
+
+  {% if rosterPageIsCurrent %}
+    {% include '~~/Assets/Lava/Toolboxes/_roster-pending.lava' %}
+    {% include '~~/Assets/Lava/Toolboxes/_roster-active.lava' %}
+    {% include '~~/Assets/Lava/Toolboxes/_roster-inactive.lava' %}
+  {% elsif parentPageIsCurrent %}
+    {% include '~~/Assets/Lava/Toolboxes/_roster-parents.lava' %}
+  {% endif %}
+
+  {% include '~~/Assets/Lava/Toolboxes/_footer-actions.lava' %}
+
+  {% include '~~/Assets/Lava/Toolboxes/_post.lava' %}
+
+{% else %}
+  {% if Group.Id %}
+    <div class='alert alert-warning'>You do not have persmission to view this group.</div>
+  {% endif %}
+{% endif %}

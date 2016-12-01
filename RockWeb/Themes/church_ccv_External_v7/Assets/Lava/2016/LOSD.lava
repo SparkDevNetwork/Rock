@@ -1,0 +1,149 @@
+{% comment %}
+  {% include '~~/Assets/Lava/2016/LOSD.lava' %}
+{% endcomment %}
+
+<link rel="stylesheet" href="/Themes/church_ccv_External_v7/Styles/pages/2016/losd.css" media="screen" title="no title">
+
+<header class="banner bigblock bigblock-inverse bigblock-flexbg" style="background-image: url('https://s3.amazonaws.com/media.ccvonline.com/2016/losd/header-bg.jpg');">
+  <div class="container">
+    <img src="https://s3.amazonaws.com/media.ccvonline.com/2016/losd/logo.svg" alt="Love Our Schools Day 2016" />
+  </div>
+  <div class="cta bg">
+    <p class="lead">Make a lasting difference in your community.</p>
+    <a href="http://app.schoolconnectaz.com/ccv" class="btn btn-primary">Sign Me Up</a>
+  </div>
+</header>
+
+<div class="container">
+
+  <div class="row">
+    <div class="col-sm-6 col-md-7">
+      <h2>I Love My School</h2>
+      <p>
+        Did you know that Arizona ranks 47th in the nation for education? There are a lot of factors that impact this number, but what if we told you that there are simple things that we can do to help turn that number around? Studies show that a clean and encouraging learning environment heightens student involvement in school activities, develops a sense of pride and ownership in the school, and increases students overall learning levels. By performing simple acts like cleaning, landscaping and writing notes of encouragement we can make our schools and neighborhoods a better place.
+      </p>
+      <h2>Make A Difference</h2>
+      <p>
+        At CCV, we believe that serving others is one of the most impactful ways to live out your faith and improve your community. Most of the needs and issues facing our society are represented in our local schools; broken homes, hunger, addiction and abuse. By partnering our Neighborhood Groups with serving opportunities in our local schools, we can make a major impact on the education system in Arizona, and in the lives of those in our own neighborhood. Our goal is build long-term, lasting relationships within our schools, so that together we can build a stronger community.
+      </p>
+      <h2>Let's Get Started</h2>
+      <p>
+        We are kicking off our serve strategy by participating in LOVE OUR SCHOOLS DAY, a community wide initiative bringing together over 10,000 volunteers from the faith community to complete hundreds of service projects at local schools around the valley in one day.
+      </p>
+      <h2>Details</h2>
+      <p>
+        On Saturdays October 1st, (October 8th for the DVSD), we are asking you to gather your family/neighborhood group/team together and join us from 8am-noon as we complete service projects at local schools around the community.
+      </p>
+      <h2>Sign Up Today</h2>
+      <p>
+        We can’t do this without you! Click the button below and follow the prompts to find a school near you to serve.
+      </p>
+      <p class="visible-xs">
+        <a href="http://app.schoolconnectaz.com/ccv" class="btn btn-primary">Sign Me Up</a>
+      </p>
+    </div>
+    <div class="col-sm-6 col-md-5">
+      <h2>Love Our School Days</h2>
+      <div class="days">
+        <div class="icon">
+          <div class="day">1</div>
+          <div class="month">Oct</div>
+        </div>
+        <div class="text">
+          <strong class="heading">Love Our Schools Day</strong>
+          <div class="sub">
+            <em>All districts</em><br>
+            <em>(Excludes Deer Valley Unified School District)</em>
+          </div>
+        </div>
+      </div>
+      <div class="days">
+        <div class="icon">
+          <div class="day">8</div>
+          <div class="month">Oct</div>
+        </div>
+        <div class="text">
+          <strong class="heading">Love Our Schools Day</strong>
+          <div class="sub">
+            <em>Deer Valley Unified School District</em>
+          </div>
+        </div>
+      </div>
+
+      <p>&nbsp;</p>
+      <h4>Frequently Asked Questions</h4>
+      <div id="accordion">
+        <div class="panel">
+          <a href="#one" data-toggle="collapse" data-parent="#accordion">
+            <dt>I want to participate in LOSD Day but I am not in a neighborhood group. How do I find a group?</dt>
+          </a>
+          <div id="one" class="collapse">
+            <dd>You do not have to join a group to serve, but serving together in a group is a lot more fun and meaningful. If you are ready to join a group, you can use your CCV mobile app to find a group, or visit our website at ccv.church/connect to find a group that meets near you. Most groups are open to new members throughout the year. Once you join a group, the Leader will reach out to you and let you know what service project they are performing. </dd>
+          </div>
+          <a href="#two" data-toggle="collapse" data-parent="#accordion">
+            <dt>Will there be Serve projects available for those NOT in a group?</dt>
+          </a>
+          <div id="two" class="collapse">
+            <dd>Yes, there are numerous projects listed on the projects page that have room for others to join in on. This is a good opportunity to meet other people who live in your community. Simply find a project that interests you and sign up. The project leader will contact you with the details. </dd>
+          </div>
+
+          <a href="#three" data-toggle="collapse" data-parent="#accordion">
+            <dt>What if the school I want to serve is is full?</dt>
+          </a>
+          <div id="three" class="collapse">
+            <dd>If your first choice of school is filled, please pick another school that has open projects. We want to make sure as many projects get completed in these first two weekends as possible. After that, you will have the opportunity to serve at the school closest to you throughout the year as new projects are added.</dd>
+          </div>
+
+          <a href="#four" data-toggle="collapse" data-parent="#accordion">
+            <dt>What should I bring on Serve day?</dt>
+          </a>
+          <div id="four" class="collapse">
+            <dd>Plan on bringing any personal items you may need like: sunscreen, drinking water, tennis shoes, a hat, etc., along with any items pertaining to your service project if indicated in the project description. For projects requiring physical labor, work clothes are a good idea. We recommend not wearing jewelry.</dd>
+          </div>
+
+          <a href="#five" data-toggle="collapse" data-parent="#accordion">
+            <dt>Will CCV be communicating additional details about LOSD?</dt>
+          </a>
+          <div id="five" class="collapse">
+            <dd>Project Leaders will manage the communication regarding individual projects. General information will be communicated here on this site. More info may be presented during Sunday services prior to Love Our School Day.</dd>
+          </div>
+
+          <a href="#six" data-toggle="collapse" data-parent="#accordion">
+            <dt>What if it rains?</dt>
+          </a>
+          <div id="six" class="collapse">
+            <dd>If you have an outside project, make plans to have an inclement weather option in mind. One suggestion would be to clean classrooms or join the encouragement team indoors.</dd>
+          </div>
+
+          <a href="#seven" data-toggle="collapse" data-parent="#accordion">
+            <dt>What about kids? Can we bring them along?</dt>
+          </a>
+          <div id="seven" class="collapse">
+            <dd>Yes! Many of the project are such that your kids can work alongside you. Kids can make a great addition to the service team and we’ve chosen some great projects perfect for families. Parents will need to work alongside children under 6th grade.</dd>
+          </div>
+
+          <a href="#eight" data-toggle="collapse" data-parent="#accordion">
+            <dt>Can I invite people to serve with me?</dt>
+          </a>
+          <div id="eight" class="collapse">
+            <dd>Yes, please. Love Our Schools Day is a fun way to make a difference in your local community while building memories with friends, co-workers, neighbors, or classmates. Please bring your friends.</dd>
+          </div>
+        </div>
+      </div>
+
+      <a href="https://app.e2ma.net/app2/audience/signup/1820976/1774747/" class="btn btn-default btn-block">Keep me updated on this project</a>
+      <a href="http://www.schoolconnectaz.org" class="btn btn-default btn-block">Learn more about school connect</a>
+
+    </div>
+  </div>
+
+</div>
+
+<footer class="content-footer bigblock bigblock-inverse bigblock-flexbg" style="background-image: url('https://s3.amazonaws.com/media.ccvonline.com/2016/losd/footer-bg.jpg');">
+  <div class="container">
+    <div class="cta">
+      <p class="lead">Make a lasting difference in your community.</p>
+      <a href="http://app.schoolconnectaz.com/ccv" class="btn btn-primary">Sign Me Up</a>
+    </div>
+  </div>
+</footer>

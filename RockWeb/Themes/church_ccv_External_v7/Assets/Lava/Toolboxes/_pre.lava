@@ -1,0 +1,30 @@
+
+{{ Group.Name | SetPageTitle }}
+
+<style media="screen">
+  .img-popover {
+    display: block;
+    cursor: pointer;
+  }
+  .badge-group.badge-group-steps {
+    display: block;
+    opacity: .75;
+  }
+  .badge-group.badge-group-steps .badge {
+    font-size: 10px;
+    width: 15px;
+    height: 15px;
+    padding: 6px;
+  }
+  .badge-group.badge-group-steps .badge.step-nottaken {
+    background-color: inherit;
+    opacity: .4;
+    color: #939393;
+  }
+  .toolbox-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+  }
+</style>

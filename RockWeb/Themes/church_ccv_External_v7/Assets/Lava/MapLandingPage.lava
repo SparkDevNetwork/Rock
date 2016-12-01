@@ -1,0 +1,34 @@
+<header>
+
+    <a class="logo" href="~/page/1"><span class="sr-only">{{ GlobalAttribute | Attribute:'OrganizationName' }}</span></a>
+
+    <section>
+        <p class="tagline">CCV is one church with many locations</p>
+        <p class="instructions">Select a campus to continue</p>
+
+        <ul class="gridlist gridlist-inverse gridlist-actions hidden-xs margin-b-lg">
+          {% for campus in Campuses %}
+            <li>
+              <a class="cursor" onclick="landingMap.selectCampus({{ campus.Id }})">{{ campus.Name }}</a>
+            </li>
+          {% endfor %}
+        </ul>
+
+        <a class="find-nearest-campus js-find-nearest-campus cursor"><i class="fa fa-fw fa-location-arrow"></i> Find Nearest Campus</a>
+    </section>
+</header>
+
+<main>
+
+    <div id="map-holder">Loading...</div>
+
+</main>
+
+{% include '~~/Assets/Lava/ScriptCampusLocations.lava' %}
+
+{% comment %}
+<script src="~~/Scripts/_map.js"></script>
+<script src="~~/Scripts/map-landing-page.js"></script>
+{% endcomment %}
+
+<script src="~~/Scripts/min/map-landing-page.min.js"></script>

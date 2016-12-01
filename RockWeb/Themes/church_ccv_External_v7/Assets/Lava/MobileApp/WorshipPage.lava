@@ -1,0 +1,67 @@
+{% if Context.Campus %}
+
+  {% assign campus = Context.Campus %}
+
+  {% capture urlString %}{{ campus.Location.Street1 }} {{ campus.Location.Street2 }} {{ campus.Location.City }}, {{ campus.Location.State }} {{ campus.Location.PostalCode }}{% endcapture %}
+  {% assign urlString = urlString | Replace: '  ', ' ' | Replace: ' ', '+' %}
+
+  {% capture phoneString %}+1{{ campus.PhoneNumber | Remove: '(' | Remove: ')' | Remove: ' ' | Remove: '-' }}{% endcapture %}
+
+  <h3 class="page-header">Attend</h3>
+
+  <h3>{{ campus.Name }} Campus</h3>
+
+  <div class="clearfix margin-b-lg">
+    <div class="pull-left">
+      <i class="fa fa-clock-o fa-2x"></i>
+    </div>
+    <div class="pull-left margin-l-md">
+      {% assign useLightIcon = true %}
+      {% assign times = campus.ServiceTimes %}
+      {% include '~~/Assets/Lava/ServiceTimes/TwoLines.lava' %}
+    </div>
+  </div>
+
+  <div class="row margin-b-lg">
+    <div class="col-xs-6">
+      <a href="external:http://maps.apple.com/maps?daddr={{ urlString }}" class="btn btn-primary btn-sm btn-block" target="_blank"><i class="fa fa-location-arrow"></i> Get Directions</a>
+    </div>
+    <div class="col-xs-6">
+      <a href="external:tel:{{ phoneString }}" class="btn btn-default btn-sm btn-block"><i class="fa fa-phone"></i> Call</a>
+    </div>
+  </div>
+  
+  <div class="row">    
+    <div class="col-sm-6">
+        <h3 class="page-header">Study</h3>
+        <p>Read on your own to grow!
+        <p><a href="/ma-reading-plans" class="btn btn-sm btn-default">Study the Bible</a></p>
+    </div>
+  </div>
+
+  <div class="row">    
+    <div class="col-sm-6">
+        <h3 class="page-header">Invite a Friend</h3>
+        <p>If you're interested in bringing a friend to CCV, tap below to send them a quick invite.</p>
+        <p><a href="/page/1261" class="btn btn-sm btn-default">Send an Invite</a></p>
+    </div>
+  </div>
+
+  {% comment %}<hr>
+
+  <div class="container">
+    <p class="text-muted small">© <script>document.write(new Date().getFullYear())</script> Christ’s Church of The Valley</p>
+  </div>{% endcomment %}
+
+  <p>&nbsp;</p>
+
+  {% include '~~/Assets/Lava/ScriptCampusLocations.lava' %}
+
+
+  <script src="~~/Scripts/_map.js"></script>
+  <script src="~~/Scripts/map-single-campus.js"></script>
+
+
+  {% comment %}<script src="~~/Scripts/min/map-single-campus.min.js"></script>{% endcomment %}
+
+{% endif %}

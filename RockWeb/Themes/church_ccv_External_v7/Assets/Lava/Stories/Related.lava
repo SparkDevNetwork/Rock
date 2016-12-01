@@ -1,0 +1,29 @@
+{% comment %}
+
+  {% include '~~/Assets/Lava/Stories/Related.lava' %}
+
+{% endcomment %}
+
+{% unless Items == empty %}
+  {% assign detailPage = detailPage | Default: '/stories' %}
+
+  <hr class="margin-t-xl">
+
+  <div class="container">
+    <h3 class="margin-b-lg">Related stories</h3>
+    <div class="row">
+      {% for item in Items limit: 2 %}
+
+      <div class="col-sm-6">
+        <a class="storythumb storythumb-link" href="{{ detailPage }}/{{ item | Attribute:'ShortUrl' }}" style="background-image: url('{{ item | Attribute: 'Image', 'Url' }}&width=528');">
+          <div class="storythumb-title">
+            <span>{{ item.Title }}</span>
+          </div>
+        </a>
+      </div>
+
+      {% endfor %}
+    </div>
+  </div>
+
+{% endunless %}

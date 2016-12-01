@@ -1,0 +1,171 @@
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 14
+VisualStudioVersion = 14.0.25420.1
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{E24C65DC-7377-472B-9ABA-BC803B73C61A}") = "RockWeb(2)", "RockWeb\", "{22348267-9BDF-4B5E-BB6E-37B5FA770224}"
+	ProjectSection(WebsiteProperties) = preProject
+		UseIISExpress = "true"
+		TargetFrameworkMoniker = ".NETFramework,Version%3Dv4.5.2"
+		ProjectReferences = "{496ec024-71ed-4ad1-b677-2a3fa60ccd05}|church.ccv.SampleProject.dll;{a5b47749-d8b2-4223-822b-26208bce34f4}|church.ccv.CommandCenter.dll;{10702916-bb67-4be9-a507-e1f8932bd05f}|church.ccv.Authentication.dll;{629a186e-1ed2-49bc-95d4-76d65950ae73}|church.ccv.Residency.dll;{f9f3319c-19d7-43a8-bc3a-4781b0b3f281}|church.ccv.Hr.dll;{8280012c-bb74-46ab-baa7-8a4004570829}|church.ccv.Datamart.dll;{9199bfe3-3c75-486b-afa0-d043da822afa}|church.ccv.Utility.dll;{da93ffd7-95fa-479b-bf60-b60979d846b9}|church.ccv.SafetySecurity.dll;{0ea13d43-bd98-48cf-8a15-d902c8a3ed99}|church.ccv.Badges.dll;{f0e9e6bc-9e66-493a-975a-638162fa22b1}|church.ccv.Reporting.dll;{da1fbd70-3d06-46f7-8aa0-a27f18fdfdcd}|church.ccv.Steps.dll;{f48eed81-6e9f-4b28-8742-e87dc47f9530}|church.ccv.Web.dll;{334e53d7-e955-44ed-b190-14d19164cbb1}|church.ccv.Promotions.dll;{1a03c5da-6ae4-4e30-9266-733f68945794}|church.ccv.Podcasts.dll;{00EDCB8D-EF33-459C-AD62-02876BD24DFF}|DotLiquid.dll;{185A31D7-3037-4DAE-8797-0459849A84BD}|Rock.dll;{ADD1EDD0-A4CB-4E82-B6AD-6AD1D556DEAE}|Rock.Rest.dll;{2c4ff899-4347-44c0-adc2-927b58041c0b}|church.ccv.MobileApp.dll;{AEB3EBF4-253A-4438-A380-ECFF89C6BDDA}|church.ccv.Actions.dll;{d9f29b51-5fa0-4691-ba2e-b31ca836c05d}|church.ccv.FamilyManager.dll;{77e6a5fe-6afb-4704-9d8f-9b9587af393f}|church.ccv.MarketingSite.dll;"
+		Debug.AspNetCompiler.VirtualPath = "/localhost_50345"
+		Debug.AspNetCompiler.PhysicalPath = "RockWeb\"
+		Debug.AspNetCompiler.TargetPath = "PrecompiledWeb\localhost_50345\"
+		Debug.AspNetCompiler.Updateable = "true"
+		Debug.AspNetCompiler.ForceOverwrite = "true"
+		Debug.AspNetCompiler.FixedNames = "false"
+		Debug.AspNetCompiler.Debug = "True"
+		Release.AspNetCompiler.VirtualPath = "/localhost_50345"
+		Release.AspNetCompiler.PhysicalPath = "RockWeb\"
+		Release.AspNetCompiler.TargetPath = "PrecompiledWeb\localhost_50345\"
+		Release.AspNetCompiler.Updateable = "true"
+		Release.AspNetCompiler.ForceOverwrite = "true"
+		Release.AspNetCompiler.FixedNames = "false"
+		Release.AspNetCompiler.Debug = "False"
+		VWDPort = "50345"
+		SlnRelativePath = "RockWeb\"
+	EndProjectSection
+	ProjectSection(ProjectDependencies) = postProject
+		{2C4FF899-4347-44C0-ADC2-927B58041C0B} = {2C4FF899-4347-44C0-ADC2-927B58041C0B}
+	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "church.ccv.SampleProject", "church.ccv.SampleProject\church.ccv.SampleProject.csproj", "{496EC024-71ED-4AD1-B677-2A3FA60CCD05}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "church.ccv.Authentication", "church.ccv.Authentication\church.ccv.Authentication.csproj", "{10702916-BB67-4BE9-A507-E1F8932BD05F}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "church.ccv.CommandCenter", "church.ccv.CommandCenter\church.ccv.CommandCenter.csproj", "{A5B47749-D8B2-4223-822B-26208BCE34F4}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "church.ccv.Residency", "church.ccv.Residency\church.ccv.Residency.csproj", "{629A186E-1ED2-49BC-95D4-76D65950AE73}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "church.ccv.Hr", "church.ccv.Hr\church.ccv.Hr.csproj", "{F9F3319C-19D7-43A8-BC3A-4781B0B3F281}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "church.ccv.Datamart", "church.ccv.Datamart\church.ccv.Datamart.csproj", "{8280012C-BB74-46AB-BAA7-8A4004570829}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "church.ccv.Utility", "church.ccv.Utility\church.ccv.Utility.csproj", "{9199BFE3-3C75-486B-AFA0-D043DA822AFA}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "church.ccv.SafetySecurity", "church.ccv.SafetySecurity\church.ccv.SafetySecurity.csproj", "{DA93FFD7-95FA-479B-BF60-B60979D846B9}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "church.ccv.Badges", "church.ccv.Badges\church.ccv.Badges.csproj", "{0EA13D43-BD98-48CF-8A15-D902C8A3ED99}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "church.ccv.Reporting", "church.ccv.Reporting\church.ccv.Reporting.csproj", "{F0E9E6BC-9E66-493A-975A-638162FA22B1}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "church.ccv.Steps", "church.ccv.Steps\church.ccv.Steps.csproj", "{DA1FBD70-3D06-46F7-8AA0-A27F18FDFDCD}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "church.ccv.Web", "church.ccv.Web\church.ccv.Web.csproj", "{F48EED81-6E9F-4B28-8742-E87DC47F9530}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "church.ccv.Promotions", "church.ccv.Promotions\church.ccv.Promotions.csproj", "{334E53D7-E955-44ED-B190-14D19164CBB1}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "church.ccv.Podcast", "church.ccv.Podcast\church.ccv.Podcast.csproj", "{1A03C5DA-6AE4-4E30-9266-733F68945794}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rock", "Rock\Rock.csproj", "{185A31D7-3037-4DAE-8797-0459849A84BD}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DotLiquid", "DotLiquid\DotLiquid.csproj", "{00EDCB8D-EF33-459C-AD62-02876BD24DFF}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rock.Rest", "Rock.Rest\Rock.Rest.csproj", "{ADD1EDD0-A4CB-4E82-B6AD-6AD1D556DEAE}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "church.ccv.MobileApp", "church.ccv.MobileApp\church.ccv.MobileApp.csproj", "{2C4FF899-4347-44C0-ADC2-927B58041C0B}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "church.ccv.Actions", "church.ccv.Actions\church.ccv.Actions.csproj", "{AEB3EBF4-253A-4438-A380-ECFF89C6BDDA}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "church.ccv.FamilyManager", "church.ccv.FamilyManager\church.ccv.FamilyManager.csproj", "{D9F29B51-5FA0-4691-BA2E-B31CA836C05D}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "church.ccv.MarketingSite", "church.ccv.MarketingSite\church.ccv.MarketingSite.csproj", "{77E6A5FE-6AFB-4704-9D8F-9B9587AF393F}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{22348267-9BDF-4B5E-BB6E-37B5FA770224}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{22348267-9BDF-4B5E-BB6E-37B5FA770224}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{22348267-9BDF-4B5E-BB6E-37B5FA770224}.Release|Any CPU.ActiveCfg = Debug|Any CPU
+		{22348267-9BDF-4B5E-BB6E-37B5FA770224}.Release|Any CPU.Build.0 = Debug|Any CPU
+		{496EC024-71ED-4AD1-B677-2A3FA60CCD05}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{496EC024-71ED-4AD1-B677-2A3FA60CCD05}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{496EC024-71ED-4AD1-B677-2A3FA60CCD05}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{496EC024-71ED-4AD1-B677-2A3FA60CCD05}.Release|Any CPU.Build.0 = Release|Any CPU
+		{10702916-BB67-4BE9-A507-E1F8932BD05F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{10702916-BB67-4BE9-A507-E1F8932BD05F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{10702916-BB67-4BE9-A507-E1F8932BD05F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{10702916-BB67-4BE9-A507-E1F8932BD05F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A5B47749-D8B2-4223-822B-26208BCE34F4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A5B47749-D8B2-4223-822B-26208BCE34F4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A5B47749-D8B2-4223-822B-26208BCE34F4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A5B47749-D8B2-4223-822B-26208BCE34F4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{629A186E-1ED2-49BC-95D4-76D65950AE73}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{629A186E-1ED2-49BC-95D4-76D65950AE73}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{629A186E-1ED2-49BC-95D4-76D65950AE73}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{629A186E-1ED2-49BC-95D4-76D65950AE73}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F9F3319C-19D7-43A8-BC3A-4781B0B3F281}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F9F3319C-19D7-43A8-BC3A-4781B0B3F281}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F9F3319C-19D7-43A8-BC3A-4781B0B3F281}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F9F3319C-19D7-43A8-BC3A-4781B0B3F281}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8280012C-BB74-46AB-BAA7-8A4004570829}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8280012C-BB74-46AB-BAA7-8A4004570829}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8280012C-BB74-46AB-BAA7-8A4004570829}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8280012C-BB74-46AB-BAA7-8A4004570829}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9199BFE3-3C75-486B-AFA0-D043DA822AFA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9199BFE3-3C75-486B-AFA0-D043DA822AFA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9199BFE3-3C75-486B-AFA0-D043DA822AFA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9199BFE3-3C75-486B-AFA0-D043DA822AFA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DA93FFD7-95FA-479B-BF60-B60979D846B9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DA93FFD7-95FA-479B-BF60-B60979D846B9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DA93FFD7-95FA-479B-BF60-B60979D846B9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DA93FFD7-95FA-479B-BF60-B60979D846B9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0EA13D43-BD98-48CF-8A15-D902C8A3ED99}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0EA13D43-BD98-48CF-8A15-D902C8A3ED99}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0EA13D43-BD98-48CF-8A15-D902C8A3ED99}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0EA13D43-BD98-48CF-8A15-D902C8A3ED99}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F0E9E6BC-9E66-493A-975A-638162FA22B1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F0E9E6BC-9E66-493A-975A-638162FA22B1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F0E9E6BC-9E66-493A-975A-638162FA22B1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F0E9E6BC-9E66-493A-975A-638162FA22B1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DA1FBD70-3D06-46F7-8AA0-A27F18FDFDCD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DA1FBD70-3D06-46F7-8AA0-A27F18FDFDCD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DA1FBD70-3D06-46F7-8AA0-A27F18FDFDCD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DA1FBD70-3D06-46F7-8AA0-A27F18FDFDCD}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F48EED81-6E9F-4B28-8742-E87DC47F9530}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F48EED81-6E9F-4B28-8742-E87DC47F9530}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F48EED81-6E9F-4B28-8742-E87DC47F9530}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F48EED81-6E9F-4B28-8742-E87DC47F9530}.Release|Any CPU.Build.0 = Release|Any CPU
+		{334E53D7-E955-44ED-B190-14D19164CBB1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{334E53D7-E955-44ED-B190-14D19164CBB1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{334E53D7-E955-44ED-B190-14D19164CBB1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{334E53D7-E955-44ED-B190-14D19164CBB1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1A03C5DA-6AE4-4E30-9266-733F68945794}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1A03C5DA-6AE4-4E30-9266-733F68945794}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1A03C5DA-6AE4-4E30-9266-733F68945794}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1A03C5DA-6AE4-4E30-9266-733F68945794}.Release|Any CPU.Build.0 = Release|Any CPU
+		{185A31D7-3037-4DAE-8797-0459849A84BD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{185A31D7-3037-4DAE-8797-0459849A84BD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{185A31D7-3037-4DAE-8797-0459849A84BD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{185A31D7-3037-4DAE-8797-0459849A84BD}.Release|Any CPU.Build.0 = Release|Any CPU
+		{00EDCB8D-EF33-459C-AD62-02876BD24DFF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{00EDCB8D-EF33-459C-AD62-02876BD24DFF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{00EDCB8D-EF33-459C-AD62-02876BD24DFF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{00EDCB8D-EF33-459C-AD62-02876BD24DFF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{ADD1EDD0-A4CB-4E82-B6AD-6AD1D556DEAE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{ADD1EDD0-A4CB-4E82-B6AD-6AD1D556DEAE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{ADD1EDD0-A4CB-4E82-B6AD-6AD1D556DEAE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{ADD1EDD0-A4CB-4E82-B6AD-6AD1D556DEAE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2C4FF899-4347-44C0-ADC2-927B58041C0B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2C4FF899-4347-44C0-ADC2-927B58041C0B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2C4FF899-4347-44C0-ADC2-927B58041C0B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2C4FF899-4347-44C0-ADC2-927B58041C0B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{AEB3EBF4-253A-4438-A380-ECFF89C6BDDA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AEB3EBF4-253A-4438-A380-ECFF89C6BDDA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AEB3EBF4-253A-4438-A380-ECFF89C6BDDA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AEB3EBF4-253A-4438-A380-ECFF89C6BDDA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D9F29B51-5FA0-4691-BA2E-B31CA836C05D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D9F29B51-5FA0-4691-BA2E-B31CA836C05D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D9F29B51-5FA0-4691-BA2E-B31CA836C05D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D9F29B51-5FA0-4691-BA2E-B31CA836C05D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{77E6A5FE-6AFB-4704-9D8F-9B9587AF393F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{77E6A5FE-6AFB-4704-9D8F-9B9587AF393F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{77E6A5FE-6AFB-4704-9D8F-9B9587AF393F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{77E6A5FE-6AFB-4704-9D8F-9B9587AF393F}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal

@@ -1,0 +1,9 @@
+{% if Page.DisplayChildPages == 'true' and Page.Pages != empty %}
+    <ul class="list-unstyled">
+		{% for childPage in Page.Pages %}
+            <li>
+				<a href="{{ childPage.Url }}" class="btn btn-primary btn-kiosk btn-kiosk-lg margin-b-lg">{{ childPage.Title }}</a>
+            </li>
+        {% endfor %}
+    </ul>
+{% endif %}

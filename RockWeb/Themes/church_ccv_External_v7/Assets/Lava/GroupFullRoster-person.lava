@@ -1,0 +1,51 @@
+<div class="col-sm-6 margin-b-md">
+  <div class="media">
+    
+    <div class="pull-left">
+      <img src="{{ member.Member.Person.PhotoUrl }}&height=180&width=180&mode=crop&scale=both" height="60" width="60" />
+    </div>
+    <div class="media-body">
+      <div class="js-badge-bar-holder" data-id="{{ member.Member.Person.Id }}"><small class="text-muted">loading...</small></div>
+		{% if LinkedPages.PersonDetailPage != '' %}
+			<a href="{{ LinkedPages.PersonDetailPage }}?GroupMemberId={{ member.Member.Id }}&AdminPersonId={{ CurrentPerson.Id }}"> <strong class="media-heading">{{ member.Member.Person.FullName }}</strong></a> <small>({{ member.Member.GroupRole.Name}})</small>
+		{% else %}
+			<strong class="media-heading">{{ member.Member.Person.FullName }}</strong> <small>({{ member.Member.GroupRole.Name}})</small>
+		{% endif %}    
+      <div>
+        {% if member.Member.Person.BirthDate %}
+          {{ member.Member.Person.BirthDate | Date:'M/d/yyyy' }} <small>({{ member.Member.Person.Age }} yrs. old)</small><br>
+        {% endif %}
+        {{ member.Member.Person.Gender }}<br>
+        {% if member.Member.Person.MaritalStatusValue.Value %}
+          {{ member.Member.Person.MaritalStatusValue.Value }} {% if member.Member.Person.AnniversaryDate %}<small>({{ member.Member.Person.AnniversaryDate | Date:'M/d/yyyy' }})</small>{% endif %}<br>
+        {% endif %}
+
+        {% for phone in member.Member.Person.PhoneNumbers %}
+        {{ phone.NumberFormatted }} <small>({{ phone.NumberTypeValue.Value }})</small><br />
+        {% endfor %}
+
+        {% assign memberAddress =  member.Member.Person | Address:'Home' %}
+        {% if memberAddress != '' %}
+        {{ member.Member.Person | Address:'Home' }}<br />
+        {% endif %}
+
+        <a href="mailto:{{ member.Member.Person.Email }}">{{ member.Member.Person.Email }}</a>
+		<div class="js-startingpoint-holder" data-id="{{ member.Member.Person.Id }}"><small class="text-muted"></small></div>
+      </div>
+	  <div>
+		{% assign spouseNameLen = member.SpouseName | Length %}
+	    {% if spouseNameLen > 0 %}
+			Spouse: {{ member.SpouseName }}
+		{%endif %}
+		
+		{% assign numKids = member.ChildrenInfo | Size %}
+		{% if numKids > 0 %}
+			<div>Kids: </div>
+			{% for child in member.ChildrenInfo %}
+				<div>{{ child }}</div>
+			{% endfor %}
+		{% endif %}
+	  </div>
+    </div>
+  </div>
+</div>

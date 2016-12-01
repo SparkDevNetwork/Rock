@@ -1,0 +1,15 @@
+<header class="rocktips panel panel-default panel-body">
+  <div class="rocktips-main">
+    <div class="clearfix">
+      <span class="label label-default margin-t-sm pull-right">Rock Tip #4</span>
+      <h3 class="margin-t-none pull-left">Select people faster</h3>
+    </div>
+    <p>Did you know you can quickly select a person in Rock by double clicking on their name?</p>
+    <a class="text-muted" href="#">More tips &rarr;
+  </div>
+{% comment %}
+  <div class="rocktips-image">
+    <img class="img-responsive" src="https://m.popkey.co/cd7c58/GbAzj.gif?c=popkey&p=popkey&i=dance-reactions&l=search&f=.gif" alt="">
+  </div>
+{% endcomment %}
+</header>

@@ -1,0 +1,14 @@
+<div class="pull-right margin-b-md">
+  {% if invitationListPage %}
+    <a href="{{ invitationListPage }}?GroupId={{ Group.Id }}" class="btn btn-default btn-xs"><i class="fa fa-street-view"></i> Invitation List</a>
+  {% endif %}
+  {% if fullRosterPage %}
+    <a href="{{ fullRosterPage }}?GroupId={{ Group.Id }}" class="btn btn-default btn-xs"><i class="fa fa-file-text-o"></i> Full Roster</a>
+  {% endif %}
+  {% if AllowedActions.Edit == true and showAddMember %}
+    <a href="#" onclick="{{ '' | Postback:'AddGroupMember' }}" class="btn btn-default btn-xs">
+      <i class="fa fa-plus"></i> Add Member
+    </a>
+  {% endif %}
+  {{ extraFooterButtons }}
+</div>

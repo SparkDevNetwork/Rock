@@ -1,0 +1,356 @@
+body {
+  font-family: Geneva, Arial, Helvetica, sans-serif;
+  font-size: .9em;
+  color: #000;
+  line-height: 18px;
+}
+a {
+background-image:url('../Content/HtmlImages/Public/Images/General/redesign06/global/dash_red.gif');
+background-repeat: repeat-x;
+background-position: bottom;
+color: #911A1C;
+padding-bottom: 2px;
+text-decoration: none;
+font-weight:normal;
+}
+a:hover {
+background-image:url('../Content/HtmlImages/Public/Images/General/redesign06/global/line_red.gif');
+}
+
+/*google url display text*/
+.a {
+color: #999999;
+}
+.f {
+font-size: .9em;
+}
+.n {
+border-top: 1px solid #999999;
+padding: 10px 0 0 0;
+}
+.s {
+font-size: .8em;
+}
+.g {
+font-size: 1em;
+}
+
+.bottomBox {
+border-top: 1px solid #999999;
+}
+.topNavBar {
+clear: both;
+}
+table {
+clear: both;
+}
+
+p {
+}
+.clr {
+float: left;
+position: relative;
+clear: both;
+}
+ol {
+padding: 0px 0px 10px 0px;
+margin-left: 20px;
+}*html div ol {padding-left:10px;}
+img a {
+background-image:none;
+}
+h1 {
+font-weight: normal;
+color: #777;
+margin: 0;
+padding: 10px 10px 0px 10px;
+font-size: 1.5em;
+line-height:1.25em;
+text-align: left;
+}
+h2 {
+color: #555;
+font-size: 1.25em;
+margin: 0;
+padding: 10px 5px 1px 0px;
+}
+h3 {
+font-size: 1.05em;
+margin-bottom:0;
+}
+h4 {
+color: #777;
+font-size: 1em;
+margin: 0;
+padding: 10px 5px 1px 0px;
+}
+h5 {
+margin-bottom:0;
+}
+h6 {
+margin:0;
+padding: 10px 5px 1px 0px;
+}
+blockquote {
+font-size: 1.25em;
+margin: 20;
+line-height: 1.25em;
+color: #999;
+}
+hr {
+float: left;
+position: relative;
+clear: both;
+width: 100%;
+color: #CCC;
+background-color: #CCC;
+height: 1px;
+border: 1px;
+margin-top: 10px;;
+}
+.photoDetail {
+}
+.textWrap {
+padding: 10px;
+margin-bottom: 10px;
+}
+ul {
+list-style-type: square;
+margin:0;
+padding-left:30px;
+}
+/*Table Styles 01 */
+.table01grey {
+font: 10px verdana,verdana, arial;
+margin: 0 0 20px 0;
+padding: 0px 0px 10px 0px;
+border-collapse: collapse;
+text-align: left;
+color: #333;
+line-height: 12px;
+border: 1px solid #ccc;
+
+width:100%;
+}
+
+caption {
+font-size: 10px;
+font-weight: bold;
+margin-bottom: 10px;
+text-align: left;
+text-transform: uppercase;
+}
+
+.table01grey td {
+margin: 0;
+padding: 0px 0px 0px 5px;
+}
+
+.table01grey th {
+font-weight: bold;
+text-transform: uppercase;
+border-top: none;
+border-bottom: 1px solid #ccc;
+background-color: #e3e3e3;
+}
+
+.table01grey thead tr th {
+background-color: #e3e3e3;
+padding:  5px 5px;
+color: #fff;
+font-weight: bold;
+border-right: 2px solid #333;
+text-transform: uppercase;
+text-align:center;
+border-top: none;
+border-bottom: 1px solid #ccc;
+}
+
+.table01grey tfoot tr th, .table01grey tfoot tr td {
+background-color: transparent;
+padding:  5px 5px;
+color: #ccc;
+}
+
+.table01grey tbody tr th {
+padding: 5px 5px;
+border-bottom: 1px solid #ccc;
+}
+
+.table01grey tr {
+background-color: #FBFDF6;
+}
+.table01grey tr.odd {
+background-color: #efefef;
+}
+
+.table01grey tr:hover {
+
+}
+
+.table01grey tr:hover td, .table01grey tr:hover td a, .table01grey tr:hover th a {
+color: #efefef;
+}
+
+.table01grey td:hover {
+}
+
+.table01grey tr:hover th a:hover {
+background-color: #faf2f2;
+border-bottom: 2px solid #86C200;
+}
+
+.table01grey a {
+display:block;
+background-image: none;
+text-decoration: none;
+padding: 5px;
+padding-right: 12px;
+margin-left:-5px;
+}
+
+.table01grey a:hover {
+background-image: none;
+text-decoration: none;
+padding: 5px;
+padding-right: 12px;
+}
+
+.table01grey a:visited {
+text-decoration: none;
+padding-right: 12px;
+}
+
+.table01grey a:visited:hover {
+background-image: none;
+text-decoration: none;
+padding-right: 12px;
+}
+.statsTeamName {
+border-right: 1px solid #CCC;
+}
+.statsData {
+}
+
+/*Table Styles 02 */
+.table02 {
+font-size: 11px;
+margin: 0 0 20px 0;
+padding: 0px 0px 10px 0px;
+border-collapse: collapse;
+text-align: left;
+color: #333;
+line-height: 12px;
+border: 1px solid #ccc;
+width:96%;
+}
+
+.table02 td {
+margin: 0;
+padding:5px;
+vertical-align: top;
+}
+
+.table02 th {
+font-weight: bold;
+text-transform: uppercase;
+border-top: none;
+border-bottom: 1px solid #ccc;
+}
+
+.table02 thead tr th {
+background-color: #575757;
+padding:  5px 5px;
+color: #fff;
+font-weight: bold;
+border-right: 2px solid #333;
+text-transform: uppercase;
+text-align:left;
+border-top: none;
+
+border-bottom: 1px solid #ccc;
+}
+
+.table02 tfoot tr th, .table02 tfoot tr td {
+padding:  5px 5px;
+
+}
+
+.table02 tbody tr th {
+padding: 5px 5px;
+background-color: #e3e3e3;
+}
+
+.table02 tr {
+background-color: #FBFDF6;
+}
+.table02 tr.odd {
+background-color: #efefef;
+}
+
+.table02 tr:hover {
+}
+
+.table02 tr:hover td, .table02 tr:hover td a, .table02 tr:hover th a {
+}
+
+.table02 td:hover {
+}
+
+.table02 tr:hover th a:hover {
+}
+
+.table02 a {
+background-image: none;
+text-decoration: none;
+padding: 5px;
+padding-right: 12px;
+margin-left:-5px;
+}
+
+.table02 a:hover {
+background-image: none;
+text-decoration: none;
+padding: 5px;
+padding-right: 12px;
+}
+
+.table02 a:visited {
+text-decoration: none;
+padding-right: 12px;
+}
+
+.table02 a:visited:hover {
+background-image: none;
+text-decoration: none;
+padding-right: 12px;
+}
+
+.table02 .statsTeamName {
+border-right: none;
+}
+/*Table Styles 03 */
+.table03 {
+font-size: 11px;
+margin: 0 0 20px 0;
+padding: 0px 0px 10px 0px;
+border-collapse: collapse;
+text-align: left;
+color: #333;
+line-height: 12px;
+border:none;
+width:96%;
+}
+.table03 td {
+vertical-align:top;
+padding-bottom: 10px;
+}
+
+.keymatch table {
+clear: both;
+float: left;
+border: 1px solid #ccc;
+padding: 5px;
+background-color: #edf7dc;
+margin-bottom: 10px;
+}

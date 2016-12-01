@@ -1,0 +1,33 @@
+{% comment %} TODO: Limit image width {% endcomment %}
+{% assign album = Items.first %}
+{% assign links = album | Attribute: "Links" %}
+{% assign tracks = album | Attribute: "Tracks" %}
+
+{% if album %}
+  {% capture pageTitle %}{{ album.Title }} - CCV Music | CCV{% endcapture %}
+  {{ pageTitle | SetPageTitle }}
+
+  <section class="bigblock bigblock-graylighter">
+    <div class="container">
+      <div class="row">
+        <div class="col-sm-5">
+          <img src="{{ album | Attribute: 'Cover', 'Url' }}&width=915" alt="Album Artwork for {{ album.Title }}">
+        </div>
+        <div class="col-sm-7">
+          <h1>{{ album.Title }}</h1>
+          <p class="lead">{{ album.Content }}</p>
+          <p>
+            {% for item in links %}
+              {% assign link = item | PropertyToKeyValue %}
+              <a href="{{ link.Value }}" class="btn btn-default margin-r-sm" target="_blank">{{ link.Key }}</a>
+            {% endfor %}
+            {% if album.PhysicalsInBookstore == "Yes" %}
+              <small class="text-muted" style="display: inline-block;">Physical CD available in the CCV bookstore</small>
+            {% endif %}
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+{% endif %}

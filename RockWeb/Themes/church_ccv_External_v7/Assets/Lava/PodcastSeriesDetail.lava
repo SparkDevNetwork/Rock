@@ -1,0 +1,57 @@
+{% comment %}
+
+
+REQUIRED VARIABLES
+==================
+
+{% assign seriesListPage = "/page/516" %}
+{% assign seriesDetailPage = "/page/546" %}
+{% assign messageDetailPage = "/page/547" %}
+
+
+{% endcomment %}
+
+
+{% capture ogImage %}http://arena.ccv.church/Arena/cachedblob.aspx?guid={{ table1.rows.first.MessageImageBlobId3 }}{% endcapture %}
+
+{{ 'photo' | AddMetaTagToHead: 'property', 'twitter:card' }}
+{{ '@ccvonline' | AddMetaTagToHead: 'property', 'twitter:site' }}
+
+{{ table1.rows.first.Title | SetPageTitle }}
+{{ table1.rows.first.Title | AddMetaTagToHead: 'property', 'og:title' }}
+{{ table1.rows.first.Description | AddMetaTagToHead: 'property', 'og:description' }}
+{{ ogImage | AddMetaTagToHead: 'property', 'og:image' }}
+
+{{ "/Themes/church_ccv_External_v7/Styles/pages/watch.css" | AddLinkTagToHead:'rel','stylesheet' }}
+
+
+<div class="container">
+  <ul class="breadcrumb">
+    <li><a href="/home">Home</a></li>
+    <li><a href="{{ seriesListPage }}">Watch</a></li>
+    <li class="active">{{ table1.rows.first.Title }}</li>
+  </ul>
+</div>
+
+{% if table1.rows.first.MessageImageBlobId3 != '' %}
+  <header class="bigblock bigblock-flexbg bigblock-flexbg-md" style="background-image: url('http://arena.ccv.church/Arena/cachedblob.aspx?guid={{ table1.rows.first.MessageImageBlobId3 }}');"></header>
+{% else %}
+  <header class="bigblock bigblock-flexbg bigblock-flexbg-md bigblock-flexbg-contain" style="background-image: url('http://arena.ccv.church/Arena/cachedblob.aspx?guid={{ table1.rows.first.MessageImageBlobId1 }}');"></header>
+{% endif %}
+
+
+<div class="container container-md">
+  <p class="lead">{{ table1.rows.first.Description }}</p>
+  <div>
+    {{ table1.rows.first.ExtraDetails }}
+  </div>
+  <h3 class="page-header">Messages in this Series</h3>
+  <ol class="watch-msglist">
+    {% for row in table2.rows %}
+      {% assign publishesInDays = 'Now' | DateDiff: row.PublishDate, 'd' %}
+      {% if publishesInDays <= 0 %}
+        <li><a href="{{ messageDetailPage }}?MessageId={{ row.MessageId }}">{{ row.Title }}</a></li>
+      {% endif %}
+    {% endfor %}
+  </ol>
+</div>

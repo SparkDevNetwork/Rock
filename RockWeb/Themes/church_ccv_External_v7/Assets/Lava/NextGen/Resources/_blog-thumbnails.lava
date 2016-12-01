@@ -1,0 +1,30 @@
+{% comment %}
+  {% include '~~/Assets/Lava/NextGen/Resources/_blog-thumbnails.lava' %}
+{% endcomment %}
+
+{% if linkImages != false %}{% assign linkImages = true %}{% endif %}
+{% assign headerImageCropString = headerImageCropString | Default: '&width=345&height=194&mode=crop&scale=both' %}
+
+<div class="row">
+  {% for item in Items %}
+    <div class="col-xs-6 col-sm-4">
+
+      <div class="card">
+        <div class="card-img-top">
+          {% if linkImages %}<a href="external:{{ item | Attribute: 'Image', 'Url' }}">{% endif %}
+            <img src="{{ item | Attribute: 'Image', 'Url' }}{{headerImageCropString}}" alt="{{ item.Title }}">
+          {% if linkImages %}</a>{% endif %}
+        </div>
+        <div class="card-block">
+          {% if linkImages %}<a href="external:{{ item | Attribute: 'Image', 'Url' }}">{% endif %}
+            <h4 class="card-title">{{ item.Title }}</h4>
+          {% if linkImages %}</a>{% endif %}
+          <p class="card-text">
+            {{ item.Content }}
+          </p>
+        </div>
+      </div>
+
+    </div>
+  {% endfor %}
+</div>

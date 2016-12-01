@@ -1,0 +1,28 @@
+{% comment %}
+  {% include '~~/Assets/Lava/Toolboxes/Neighborhood.lava' %}
+{% endcomment %}
+
+
+{% assign fullRosterPage = "/page/558" %}
+
+
+{% if AllowedActions.View == true || AllowedActions.Edit == true || AllowedActions.Administrate == true %}
+
+  {% include '~~/Assets/Lava/Toolboxes/_default-vars.lava' %}
+  {% include '~~/Assets/Lava/Toolboxes/_pre.lava' %}
+
+  {% include '~~/Assets/Lava/Toolboxes/_header.lava' %}
+
+  {% include '~~/Assets/Lava/Toolboxes/_roster-pending.lava' %}
+  {% include '~~/Assets/Lava/Toolboxes/_roster-active.lava' %}
+  {% include '~~/Assets/Lava/Toolboxes/_roster-inactive.lava' %}
+
+  {% include '~~/Assets/Lava/Toolboxes/_footer-actions.lava' %}
+
+  {% include '~~/Assets/Lava/Toolboxes/_post.lava' %}
+
+{% else %}
+  {% if Group.Id %}
+    <div class='alert alert-warning'>You do not have persmission to view this group.</div>
+  {% endif %}
+{% endif %}

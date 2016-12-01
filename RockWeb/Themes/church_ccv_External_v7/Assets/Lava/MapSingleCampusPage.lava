@@ -1,0 +1,141 @@
+{% comment %}
+
+{% assign campus = Campuses | Where: 'Id', 1 | First %}
+{% assign campusTourLink = "/page/852" %}
+
+{% endcomment %}
+
+{% if campus != Empty %}
+  {% assign campusLeader = campus.LeaderPersonAliasId | PersonByAliasId %}
+
+  {% assign comingSoonUntil = campus | Attribute: 'ComingSoonUntil' | Date: 'yyyyMMdd' %}
+  {% assign today = 'Now' | Date: 'yyyyMMdd' %}
+  {% if today < comingSoonUntil %}
+    {% assign isComingSoon = true %}
+  {% endif %}
+
+  <div class="jumbotron bigblock-inverse bigblock-pflexbg bigblock-shade bigblock-rheight">
+    <div class="bigblock-pflexbgholder">
+      <div class="delayed-image-load" data-src="{{ campus | Attribute: 'CoverPhoto', 'Url' }}&width={width}" data-alt="Campus Photo"></div>
+    </div>
+    <div class="container bigblock-shade-inner">
+      <h1 class="underline">{{ campus.Name }} Campus</h1>
+      {% assign vimeoId = campus | Attribute: 'CampusTourVimeoId' %}
+      {% if vimeoId != empty %}
+        <a class="btn btn-default btn-sm margin-t-sm popup-vimeo" href="//vimeo.com/{{ vimeoId }}" ><i class="fa fa-play-circle"></i> Take a Tour</a>
+      {% endif %}
+    </div>
+  </div>
+
+  <div class="container">
+
+    <div class="row">
+      <div class="col-md-7">
+        <div id="single-campus-map" data-campus-id="{{ campus.Id }}" style="min-height: 320px;"></div>
+      </div>
+      <div class="col-md-5">
+        <div class="well">
+          <h3>Service Times</h3>
+          {% if isComingSoon %}
+            <p class="text-muted small">Coming Soon</p>
+          {% endif %}
+          <div class="commalist">
+            {% include '~~/Assets/Lava/ServiceTimes/CommaList.lava' %}
+          </div>
+        </div>
+        <div class="well margin-b-none">
+          <ul class="fa-ul margin-b-none">
+            <li class="margin-b-sm">
+              {% capture urlString %}{{ campus.Location.Street1 }} {{ campus.Location.Street2 }} {{ campus.Location.City }}, {{ campus.Location.State }} {{ campus.Location.PostalCode }}{% endcapture %}
+              <i class="fa-li fa fa-map-marker"></i>
+              <a href="http://maps.apple.com/maps?daddr={{ urlString }}">
+                {{ campus.Location.Street1 }}<br>
+                {{ campus.Location.City }}, {{ campus.Location.State }} {{ campus.Location.PostalCode }}
+              </a>
+            </li>
+            <li>
+              {% capture phoneString %}+1{{ campus.PhoneNumber | Remove: '(' | Remove: ')' | Remove: ' ' | Remove: '-' }}{% endcapture %}
+              <i class="fa-li fa fa-phone"></i>
+              <a href="tel:{{ phoneString }}">{{ campus.PhoneNumber }}</a>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <hr class="margin-v-lg">
+
+    {% if isComingSoon != true %}
+    <div class="row">
+
+      {% if campusLeader %}
+      <div class="col-sm-6 col-sm-offset-3 col-md-4 col-md-offset-0">
+        <div class="well">
+          <img class="img-rounded" src="{{ campusLeader.Photo.Url }}" alt="{{ campusLeader.FullName }}">
+          <h4 class="margin-t-md">{{ campusLeader.FullName }} <small>Campus Pastor</small></h4>
+          <a href="mailto:{{ campusLeader.Email }}">{{ campusLeader.Email }}</a>
+        </div>
+      </div>
+      {% endif %}
+
+      <div class="col-sm-12 col-md-8">
+        <h3>Kids</h3>
+        <p>For infants - 6th grade, we have safe, fun and interactive programs available during all adult services.</p>
+        <p>
+          <a href="/kids" class="btn btn-default">About Kids</a>
+        </p>
+
+        <p class="hidden-xs">&nbsp;</p>
+
+        <h3>Students</h3>
+        <p>Jr High and High School students meet for separate weekend services.</p>
+        <p>
+          <strong>7th - 8th Grade</strong> {{ campus | Attribute: 'JrHighTime' }}<br>
+          <strong>9th - 12th Grade</strong> {{ campus | Attribute: 'HighSchoolTime' }}
+        </p>
+        <p>
+          <a href="/students" class="btn btn-default">About Students</a>
+        </p>
+
+        {% if campusTourLink %}
+        <p class="hidden-xs">&nbsp;</p>
+        <h3>Campus Tour</h3>
+        <p>Come join us for our Saturday morning, Saturday night, or Sunday morning tour of the CCV campus. During your tour you will get to see everything CCV has to offer and ask any questions you might have.</p>
+        <p>
+          <a href="{{ campusTourLink }}" class="btn btn-default">Learn More</a>
+        </p>
+        {% endif %}
+
+        {% assign bookstoreInfo = campus | Attribute: 'BookstoreInformation' %}
+        <p class="hidden-xs">&nbsp;</p>
+        {% if bookstoreInfo != empty %}
+          <h3>Bookstore</h3>
+          {{ bookstoreInfo }}
+        {% endif %}
+
+      </div>
+    </div>
+    {% endif %}
+
+  </div>
+
+  <script src="~~/Scripts/Vendor/Imager.min.js"></script>
+
+  <script>
+    new Imager({
+      availableWidths: [320, 375, 600, 1000, 1400, 1920],
+      widthInterpolator: function(width, pixelRatio) {
+        return width * pixelRatio;
+      }
+    });
+  </script>
+
+  {% include '~~/Assets/Lava/ScriptCampusLocations.lava' %}
+
+  {% comment %}
+  <script src="~~/Scripts/_map.js"></script>
+  <script src="~~/Scripts/map-single-campus.js"></script>
+  {% endcomment %}
+
+  <script src="~~/Scripts/min/map-single-campus.min.js"></script>
+{% endif %}

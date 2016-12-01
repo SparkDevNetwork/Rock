@@ -1,0 +1,113 @@
+
+
+//
+// LISTS
+// --------------------------------------------------
+
+
+// Brand List (The lists with triangle bullets)
+// -------------------------
+
+.brandlist {
+  list-style: none;
+  padding-left: 0;
+  .din();
+}
+  .brandlist-item {
+    padding-left: @line-height-computed;
+    font-size: @font-size-h4;
+    line-height: @headings-line-height;
+    margin-top: (@line-height-computed / 2);
+    margin-bottom: (@line-height-computed / 2);
+    text-transform: uppercase;
+    font-weight: 700;
+    position: relative;
+    color: @gray-light;
+
+    a { color: inherit; }
+
+    &:before {
+      .fa-icon();
+      content: @fa-var-caret-right;
+      opacity: .25;
+      font-size: 1.175em;
+      position: absolute;
+      left: .125em;
+    }
+  }
+  .brandlist-item-sub {
+    font-size: @font-size-h5;
+    opacity: .5;
+    &:before { display: none; }
+  }
+
+.brandlist-inline {
+  margin-left: -@line-height-computed;
+}
+  .brandlist-inline .brandlist-item {
+    display: inline-block;
+    margin-left: @line-height-computed;
+  }
+
+
+// Button List (transforms ul into a button grid)
+// -------------------------
+
+.list-btns {
+  .list-unstyled();
+  .make-row();
+  max-width: 50em; // same as container-md
+  > li {
+    .make-sm-column(6);
+    > a {
+      .btn();
+      .button-variant(@btn-default-color; @btn-default-bg; @btn-default-border);
+      display: block;
+      margin-bottom: @grid-gutter-width/2;
+    }
+  }
+}
+
+
+// Track List (album detail page)
+// -------------------------
+
+.list-tracks {
+  @media @sm {
+    .content-columns(2);
+  }
+  > li {
+    line-height: @grid-gutter-width;
+    margin-bottom: @grid-gutter-width/2;
+    font-size: 1.2em;
+    border-bottom: 1px solid @gray-lighter;
+    padding-bottom: @grid-gutter-width/2;
+  }
+}
+  .list-trackaudio {
+    width: 30px;
+    display: inline-block;
+    border-radius: 50px;
+    vertical-align: middle;
+    margin-right: @grid-gutter-width/4;
+
+    // MediaElement.js styling
+    .mejs-time,
+    .mejs-volume-button,
+    .mejs-mute {
+      display: none!important;
+    }
+    .mejs-container {
+      background: #fff;
+    }
+    .mejs-play .mejs-container {
+      background: red;
+    }
+    .mejs-container,
+    .mejs-controls {
+      border-radius: 50px;
+    }
+    .mejs-controls .mejs-button button {
+      margin: 7px;
+    }
+  }

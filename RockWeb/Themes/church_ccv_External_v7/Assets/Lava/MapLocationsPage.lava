@@ -1,0 +1,64 @@
+<style>
+  .locationsmap {
+    min-height: 50vh;
+    position: relative;
+  }
+  p.limited {
+    max-width: 31em;
+  }
+</style>
+
+<div class="container-md">
+  <p class="lead margin-t-md margin-b-lg text-center padding-all-lg"><strong>Christ's Church of the Valley is one church in many locations.</strong> At each campus you will experience a welcoming atmosphere, relevant messages and excellent music.</p>
+</div>
+
+<div id="locationsmap" class="locationsmap">
+</div>
+
+<div class="container">
+  <h2 class="page-header margin-b-lg">Our Campuses</h2>
+
+  <div class="row">
+  {% for campus in Campuses %}
+    {% if campus.IsActive %}
+    {% assign isComingSoon = false %}
+    {% assign comingSoonUntil = campus | Attribute: 'ComingSoonUntil' | Date: 'yyyyMMdd' %}
+    {% assign today = 'Now' | Date: 'yyyyMMdd' %}
+    {% if today < comingSoonUntil %}
+      {% assign isComingSoon = true %}
+    {% endif %}
+
+      <div class="col-sm-6 col-md-4">
+        <div class="panel panel-default margin-b-lg">
+          <div class="panel-body">
+            <h4 class="margin-t-none">{{ campus.Name }} Campus</h4>
+            <h5 class="margin-t-md margin-b-sm text-muted">Service Times{% if isComingSoon %} <small>Coming Soon</small>{% endif %}</h5>
+            <p class="text-muted commalist">
+              {% include '~~/Assets/Lava/ServiceTimes/CommaList.lava' %}
+
+              {% if hasSaturday == false and hasSunday %}
+                <br class="hidden-xs"><br class="hidden-xs">
+              {% endif %}
+            </p>
+          </div>
+          {% capture urlString %}{{ campus.Location.Street1 }} {{ campus.Location.Street2 }} {{ campus.Location.City }}, {{ campus.Location.State }} {{ campus.Location.PostalCode }}{% endcapture %}
+          {% assign urlString = urlString | Replace: '  ', ' ' | Replace: ' ', '+' %}
+          <div class="panel-footer clearfix">
+            <a href="{{ campus.Url }}" class="btn btn-default btn-sm pull-left">Learn More</a>
+            <a href="http://maps.apple.com/maps?daddr={{ urlString }}" class="btn btn-link btn-sm pull-right text-muted padding-r-none">Get Directions</a>
+          </div>
+        </div>
+      </div>
+    {% endif %}
+  {% endfor %}
+  </div>
+</div>
+
+{% include '~~/Assets/Lava/ScriptCampusLocations.lava' %}
+
+{% comment %}
+<script src="~~/Scripts/_map.js"></script>
+<script src="~~/Scripts/map-locations-page.js"></script>
+{% endcomment %}
+
+<script src="~~/Scripts/min/map-locations-page.min.js"></script>

@@ -1,0 +1,66 @@
+<div class="thumbnail">
+
+  {% for groupLocation in Group.GroupLocations %}
+    {% if groupLocation.Location.GeoPoint != '' and showMap %}
+      {% assign groupgeo = groupLocation.Location.GeoPoint | Split: ',' %}
+      <div id="groupMap" style="height: 200px;">
+      </div>
+    {% endif %}
+  {% endfor %}
+
+  <div class="caption">
+    <div class="toolbox-header">
+      <div class="toolbox-header-item">
+        <h1 class="margin-t-sm">{{ Group.Name }}</h1>
+      </div>
+      <div class="toolbox-header-item">
+        {% if LinkedPages.CommunicationPage != '' and AllowedActions.Edit == true %}
+          {% if customEmailButtons %}
+            {{ customEmailButtons }}
+          {% else %}
+            <a onclick="{{ '' | Postback:'SendCommunication' }}" class="btn btn-default btn-xs">
+              <i class="fa fa-envelope-o"></i> Email Roster
+            </a>
+          {% endif %}
+        {% endif %}
+        {% if AllowedActions.Edit == true %}
+          <a class="btn btn-default btn-xs" href="#" onclick="{{ Group.Id | Postback:'EditGroup' }}"><i class="fa fa-pencil"></i> Edit</a>
+        {% endif %}
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="col-md-5">
+        {% if Group.Schedule.FriendlyScheduleText %}
+          <h4 class="no-caps margin-t-none">Meets every {{Group.Schedule.FriendlyScheduleText}}</h4>
+        {% endif %}
+        <p>{{ Group.Description }}</p>
+        {% assign groupPicture = Group | Attribute: 'GroupPicture', 'RawValue' %}
+        {% if groupPicture != empty %}
+          <img src="/GetImage.ashx?guid={{ groupPicture }}&width=600" alt="Group Picture" />
+        {% endif %}
+      </div>
+      <div class="col-md-7">
+        <strong>Leaders:</strong>
+        <ul class="unstyled">
+          {% for member in Group.Members %}
+            {% if member.GroupRole.IsLeader %}
+              <li>
+                {{ member.Person.FullName }} <small>({{ member.GroupRole.Name}})</small>
+              </li>
+            {% endif %}
+          {% endfor %}
+        </ul>
+        <p>
+          {% for attribute in Group.AttributeValues %}
+            {% unless attribute.AttributeName == "Meeting Day" or attribute.AttributeName == "Meeting Time" or attribute.ValueFormatted == empty %}
+              {% unless attribute.AttributeName == "Group Picture" %}
+                <strong>{{ attribute.AttributeName }}:</strong> {{ attribute.ValueFormatted }} <br />
+              {% endunless %}
+            {% endunless %}
+          {% endfor %}
+        </p>
+      </div>
+    </div>
+  </div>
+</div>

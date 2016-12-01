@@ -1,0 +1,17 @@
+{% comment %}{% assign tracks = Items | Sort: 'Number' %}{% endcomment %}
+{% if Items != empty %}
+  <section class="bigblock">
+    <div class="container">
+      <ul class="list-unstyled list-tracks">
+        {% for track in Items %}
+          <li>
+            <div class="list-trackaudio">
+              {{ track | Attribute: "Audio" }}
+            </div>
+            <strong>{{ track.Number }}</strong> {{ track.Title }}
+          </li>
+        {% endfor %}
+      </ul>
+    </div>
+  </section>
+{% endif %}

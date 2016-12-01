@@ -1,0 +1,19 @@
+{% comment %}
+  Toolbox variables
+  ---
+  Boolean variables are hard to set with a default value, it's best to set the
+  variable only if it is not set to the opposite of the defult.
+{% endcomment %}
+{% if showMap != false %}{% assign showMap = true %}{% endif %}
+{% if showInactive != false %}{% assign showInactive = true %}{% endif %}
+{% if showAddMember != false %}{% assign showAddMember = true %}{% endif %}
+{% assign personTemplate = personTemplate | Default: '~~/Assets/Lava/Toolboxes/_person.lava' %}
+
+{% comment %}
+  Person partial variables
+{% endcomment %}
+{% assign communicationPage = communicationPage | Default: "/page/491" %}
+{% assign videoPage = videoPage | Default: "/page/1005" %}
+{% assign memberDetailPage = memberDetailPage | Default: "/page/1024" %}
+{% if showBadgeBar != false %}{% assign showBadgeBar = true %}{% endif %}
+{% if linkToDetailPage != false %}{% assign linkToDetailPage = true %}{% endif %}

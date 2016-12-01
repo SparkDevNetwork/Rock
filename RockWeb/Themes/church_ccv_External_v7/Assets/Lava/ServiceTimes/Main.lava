@@ -1,0 +1,57 @@
+{% comment %}
+
+Service Times - Main style (like footer times)
+
+{% assign useLightIcon = true %}
+{% assign times = Context.Campus.ServiceTimes %}
+{% include '~~/Assets/Lava/ServiceTimes/Main.lava' %}
+
+{% endcomment %}
+
+{% capture deafIcon %}
+<img class="slt" src="/Themes/church_ccv_External_v7/Assets/Icons/deaf{% if useLightIcon %}-light{% endif %}.svg" alt="" data-toggle="tooltip" title="Sign language translation available">
+{% endcapture %}
+
+{% if times %}
+
+  {% if isComingSoon %}
+    <p class="small">Coming Soon</p>
+  {% endif %}
+
+  {% assign times = times | Split: '|' %}
+
+  {% for time in times %}
+    {% assign split = time | Split: '^' %}
+    {% if split[0] == 'Saturday' %}
+      {% assign hasSaturday = true %}
+    {% endif %}
+    {% if split[0] == 'Sunday' %}
+      {% assign hasSunday = true %}
+    {% endif %}
+  {% endfor %}
+
+  {% if hasSaturday %}
+    <strong>Saturday</strong>
+    <ul class="list-inline">
+      {% for time in times %}
+        {% assign split = time | Split: '^' %}
+        {% if split[0] == 'Saturday' %}
+          <li>{{ split[1] | Replace: '*', deafIcon }}</li>
+        {% endif %}
+      {% endfor %}
+    </ul>
+  {% endif %}
+
+  {% if hasSunday %}
+    <strong>Sunday</strong>
+    <ul class="list-inline margin-b-none">
+      {% for time in times %}
+        {% assign split = time | Split: '^' %}
+        {% if split[0] == 'Sunday' %}
+          <li>{{ split[1] | Replace: '*', deafIcon }}</li>
+        {% endif %}
+      {% endfor %}
+    </ul>
+  {% endif %}
+
+{% endif %}

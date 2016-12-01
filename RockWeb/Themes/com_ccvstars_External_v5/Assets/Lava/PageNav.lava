@@ -1,0 +1,16 @@
+{% comment %}
+
+{% assign pageMenuClasses = "nav nav-pills"  %}
+
+{% endcomment %}
+
+{% if Page.DisplayChildPages == 'true' and Page.Pages != empty %}
+  <ul class="{{ pageMenuClasses | Default: 'nav nav-pills' }}">
+
+    {% for childPage in Page.Pages %}
+      <li{% if childPage.Current == 'true' %} class="active"{% endif%}>
+        <a href="{{ childPage.Url }}">{% if childPage.IconCssClass != "" %}<i class="{{ childPage.IconCssClass }}"></i> {% endif %}{{ childPage.Title }}</a>
+      </li>
+    {% endfor %}
+  </ul>
+{% endif %}

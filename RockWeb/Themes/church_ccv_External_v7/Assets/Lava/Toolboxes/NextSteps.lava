@@ -1,0 +1,51 @@
+{% comment %}
+  {% include '~~/Assets/Lava/Toolboxes/NextSteps.lava' %}
+{% endcomment %}
+
+
+{% comment %}
+  Toolbox variables
+{% endcomment %}
+
+{% assign fullRosterPage = "/page/1067" %}
+
+{% assign showInactive = false %}
+{% assign showMap = false %}
+{% assign showAddMember = false %}
+
+{% capture extraFooterButtons %}
+<a href="/page/996" class="btn btn-default btn-xs">
+  <i class="fa fa-plus"></i> Request More Clients
+</a>
+{% endcapture %}
+
+
+{% comment %}
+  Person partial variables
+{% endcomment %}
+
+{% assign showTUpVideoButton = true %}
+{% assign memberDetailPage = "/page/1004" %}
+
+
+
+
+{% if AllowedActions.View == true || AllowedActions.Edit == true || AllowedActions.Administrate == true %}
+
+  {% include '~~/Assets/Lava/Toolboxes/_default-vars.lava' %}
+  {% include '~~/Assets/Lava/Toolboxes/_pre.lava' %}
+
+  {% include '~~/Assets/Lava/Toolboxes/_header.lava' %}
+
+  {% include '~~/Assets/Lava/Toolboxes/_roster-pending.lava' %}
+  {% include '~~/Assets/Lava/Toolboxes/_roster-active.lava' %}
+
+  {% include '~~/Assets/Lava/Toolboxes/_footer-actions.lava' %}
+
+  {% include '~~/Assets/Lava/Toolboxes/_post.lava' %}
+
+{% else %}
+  {% if Group.Id %}
+    <div class='alert alert-warning'>You do not have persmission to view this group.</div>
+  {% endif %}
+{% endif %}

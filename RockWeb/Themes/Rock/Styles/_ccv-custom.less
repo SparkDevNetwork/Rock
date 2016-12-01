@@ -1,0 +1,47 @@
+﻿
+
+//
+// CUSTOM CCV STYLES FOR ROCK
+// --------------------------------------------------
+
+
+// Security note highlighting
+// -------------------------
+
+.note-safetyandsecurity {
+
+  article {
+    border-color: #b5a7c7;
+    background-color: #d3ccdb;
+    color: #7f6d94;
+  }
+
+  .actions a {
+    color: #7f6d94;
+  }
+}
+
+
+// Rock Tips
+// -------------------------
+
+.rocktips {
+  @media @sm {
+    display: flex;
+  }
+}
+  .rocktips-main {
+    flex-grow: 1;
+  }
+  .rocktips-image {
+    @media @sm {
+      margin-left: @grid-gutter-width/2;
+    }
+  }
+
+
+// Badges
+// -------------------------
+
+@import "../../../Plugins/church_ccv/Badges/Styles/_badges.less";
+@ccv-badge-font-path: "../../../Plugins/church_ccv/Badges/Assets/Fonts/";

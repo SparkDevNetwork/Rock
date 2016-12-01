@@ -1,0 +1,80 @@
+{% if Context.Campus %}
+
+  <div class="dropdown dropdown-campus">
+    <a id="dCampusLabel" data-target="#" href="http://example.com" data-toggle="dropdown" aria-haspopup="true" role="button" aria-expanded="false">
+      <h3 class="margin-t-none">{{ Context.Campus.Name }} Campus <i class="fa fa-caret-down text-muted"></i></h3>
+    </a>
+
+    <ul class="dropdown-menu" role="menu" aria-labelledby="dCampusLabel">
+      {% assign activeCampuses = Campuses | Where: 'IsActive', true %}
+      {% for campus in activeCampuses %}
+      <li><a class="cursor" onclick="CCV.selectCampus({{ campus.Id }})">{{ campus.Name }} Campus</a></li>
+      {% endfor %}
+    </ul>
+  </div>
+  <div class="row">
+
+    <div class="col-sm-6">
+      <img class="img-rounded margin-b-sm" width="260" height="260" src="//maps.googleapis.com/maps/api/staticmap?zoom=12&size=260x260&markers=scale:2%7Cicon:http://bit.ly/1hlohgi%7C{{ Context.Campus.Location.GeoPoint }}&sensor=false&style=feature:all%7Csaturation:-100&scale=2" alt="Map to {{ Context.Campus.Name }}">
+      <ul class="fa-ul">
+        <li class="margin-b-sm">
+          <i class="fa-li fa fa-map-marker"></i>
+          {{ Context.Campus.Location.Street1 }}<br>
+          {{ Context.Campus.Location.City }}, {{ Context.Campus.Location.State }} {{ Context.Campus.Location.PostalCode }}
+        </li>
+        <li class="margin-b-sm">
+          <i class="fa-li fa fa-phone"></i>
+          {{ Context.Campus.PhoneNumber }}
+        </li>
+      </ul>
+    </div>
+
+    <div class="col-sm-6">
+      <div class="well well-dark well-borderless">
+        <h4>Service Times</h4>
+
+        {% assign comingSoonUntil = Context.Campus | Attribute: 'ComingSoonUntil' | Date: 'yyyyMMdd' %}
+        {% assign today = 'Now' | Date: 'yyyyMMdd' %}
+        {% if today < comingSoonUntil %}
+          {% assign isComingSoon = true %}
+        {% endif %}
+
+        {% assign useLightIcon = true %}
+        {% assign times = Context.Campus.ServiceTimes %}
+        {% include '~~/Assets/Lava/ServiceTimes/Main.lava' %}
+
+      </div>
+      <div class="social social-dark social-fade margin-b-md">
+        <a href="http://twitter.com/ccvonline" data-toggle="tooltip" data-placement="top" title="CCV on Twitter">
+          <span class="fa-stack fa-lg">
+            <i class="fa fa-circle fa-stack-2x"></i>
+            <i class="fa fa-twitter fa-stack-1x fa-inverse"></i>
+          </span>
+        </a>
+        <a href="http://facebook.com/ccvonline" data-toggle="tooltip" data-placement="top" title="CCV on Facebook">
+          <span class="fa-stack fa-lg">
+            <i class="fa fa-circle fa-stack-2x"></i>
+            <i class="fa fa-facebook fa-stack-1x fa-inverse"></i>
+          </span>
+        </a>
+        <a href="http://instagram.com/ccvonline" data-toggle="tooltip" data-placement="top" title="CCV on Instagram">
+          <span class="fa-stack fa-lg">
+            <i class="fa fa-circle fa-stack-2x"></i>
+            <i class="fa fa-instagram fa-stack-1x fa-inverse"></i>
+          </span>
+        </a>
+        <a href="http://ccv.church/apps" data-toggle="tooltip" data-placement="top" title="Mobile Apps from CCV">
+          <span class="fa-stack fa-lg">
+            <i class="fa fa-circle fa-stack-2x"></i>
+            <i class="fa fa-mobile fa-stack-1x fa-inverse social-icon-md"></i>
+          </span>
+        </a>
+      </div>
+    </div>
+  </div>
+
+{% else %}
+  <p class="hidden-xs margin-t-md">&nbsp;</p>
+  {% assign selectCampusBtnClasses = 'btn btn-primary' %}
+  {% include '~~/Assets/Lava/SelectACampus.lava' %}
+{% endif %}

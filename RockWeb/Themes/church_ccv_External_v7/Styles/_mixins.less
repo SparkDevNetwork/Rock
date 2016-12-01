@@ -1,0 +1,107 @@
+
+
+//
+// MIXINS
+// --------------------------------------------------
+
+
+// Bootstrap Overrides
+// -------------------------
+
+.button-size(@padding-vertical; @padding-horizontal; @font-size; @line-height; @border-radius) {
+  font-family: @headings-font-family;
+  padding: @padding-vertical @padding-horizontal;
+  font-size: @font-size+2px; // compensate for DIN size difference
+  line-height: @line-height;
+  border-radius: @border-radius;
+  .text-aa();
+}
+
+
+// Bootstrap Classes to Mixins
+// -------------------------
+
+.sr-only() {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0,0,0,0);
+  border: 0;
+}
+
+.list-unstyled() {
+  padding-left: 0;
+  list-style: none;
+}
+
+.btn() {
+  display: inline-block;
+  margin-bottom: 0; // For input.btn
+  font-weight: @btn-font-weight;
+  text-align: center;
+  vertical-align: middle;
+  cursor: pointer;
+  background-image: none; // Reset unusual Firefox-on-Android default style; see https://github.com/necolas/normalize.css/issues/214
+  border: 1px solid transparent;
+  white-space: nowrap;
+  .button-size(@padding-base-vertical; @padding-base-horizontal; @font-size-base; @line-height-base; @border-radius-base);
+  .user-select(none);
+
+  &,
+  &:active,
+  &.active {
+    &:focus {
+      .tab-focus();
+    }
+  }
+
+  &:hover,
+  &:focus {
+    color: @btn-default-color;
+    text-decoration: none;
+  }
+
+  &:active,
+  &.active {
+    outline: 0;
+    background-image: none;
+    .box-shadow(inset 0 3px 5px rgba(0,0,0,.125));
+  }
+
+  &.disabled,
+  &[disabled],
+  fieldset[disabled] & {
+    cursor: not-allowed;
+    pointer-events: none; // Future-proof disabling of clicks
+    .opacity(.65);
+    .box-shadow(none);
+  }
+  // Custom
+  text-transform: uppercase;
+  font-weight: 700;
+  border-width: 2px;
+}
+
+
+// Custom
+// -------------------------
+
+//          18px                      ~23.4               18px    1.3
+.din(@size: @headings-font-size-base, @lineheight: floor((@size * @line-height-base))) {
+  font-family: @headings-font-family;
+  font-size: @size;
+  line-height: @lineheight;
+}
+
+.text-aa() {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.text-noaa() {
+  -webkit-font-smoothing: subpixel-antialiased;
+  -moz-osx-font-smoothing: auto;
+}

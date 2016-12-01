@@ -1,0 +1,95 @@
+{% if Context.Campus %}
+
+  {% assign campus = Context.Campus %}
+
+  {% capture urlString %}{{ campus.Location.Street1 }} {{ campus.Location.Street2 }} {{ campus.Location.City }}, {{ campus.Location.State }} {{ campus.Location.PostalCode }}{% endcapture %}
+  {% assign urlString = urlString | Replace: '  ', ' ' | Replace: ' ', '+' %}
+
+  {% capture phoneString %}+1{{ campus.PhoneNumber | Remove: '(' | Remove: ')' | Remove: ' ' | Remove: '-' }}{% endcapture %}
+
+  <h3 class="text-center">{{ campus.Name }} Campus</h3>
+
+  <div class="clearfix margin-b-lg">
+    <div class="pull-left">
+      <i class="fa fa-clock-o fa-2x"></i>
+    </div>
+    <div class="pull-left margin-l-md">
+      {% assign useLightIcon = true %}
+      {% assign times = campus.ServiceTimes %}
+      {% include '~~/Assets/Lava/ServiceTimes/TwoLines.lava' %}
+    </div>
+  </div>
+
+  <div class="row margin-b-lg">
+    <div class="col-xs-6">
+      <a href="external:http://maps.apple.com/maps?daddr={{ urlString }}" class="btn btn-primary btn-sm btn-block" target="_blank"><i class="fa fa-location-arrow"></i> Get Directions</a>
+    </div>
+    <div class="col-xs-6">
+      <a href="external:tel:{{ phoneString }}" class="btn btn-default btn-sm btn-block"><i class="fa fa-phone"></i> Call</a>
+    </div>
+  </div>
+
+  <div id="single-campus-map" class="responsive-map" data-campus-id="{{ campus.Id }}" data-map-type="mobile"></div>
+  <p class="small margin-t-lg margin-b-none text-muted">
+    <i class="fa fa-map-marker"></i>
+    <a class="text-muted" href="external:http://maps.apple.com/maps?daddr={{ urlString }}">
+      {{ campus.Location.Street1 }} {{ campus.Location.City }}, {{ campus.Location.State }} {{ campus.Location.PostalCode }}
+    </a>
+  </p>
+
+
+  <div class="row">
+    <div class="col-sm-6">
+      <hr>
+
+      <h4>Kids</h4>
+      <p>We have excellent programs for kids (infants - 6th grade) during all adult services.</p>
+      <p>
+        <a href="external:http://ccv.church/kids" class="btn btn-sm btn-default">Learn More</a>
+        <a href="/parent-kid-resources" class="btn btn-sm btn-default">Parent Resources</a>
+      </p>
+
+      {% comment %}<div class="row">
+        <div class="col-sm-6 margin-b-lg">
+          <a href="/parent-kid-resources" class="btn btn-block btn-default">Kids Weekend Content</a>
+        </div>
+      </div>{% endcomment %}
+    </div>
+    <div class="col-sm-6">
+      <hr>
+
+      <h4>Students</h4>
+      <p>Jr High and High School students meet for separate weekend experiences.</p>
+      <p>
+        {% if Context.Campus.ShortCode == "ATH" %}
+          <strong>7th Grade</strong> Saturdays 4:30-5:30 pm<br>
+          <strong>8th Grade</strong> Saturdays 6:00-7:00 pm<br>
+        {% else %}
+          <strong>7th-8th Grade</strong> {{ campus | Attribute: 'JrHighTime' }}<br>
+        {% endif %}
+        <strong>9th-12th Grade</strong> {{ campus | Attribute: 'HighSchoolTime' }}
+      </p>
+		  <p><a href="external:http://ccv.church/students" class="btn btn-sm btn-default">Learn More</a>
+		  <a href="/parent-kid-resources" class="btn btn-sm btn-default">Parent Resources</a>
+	  </p>
+    </div>
+  </div>
+
+  {% comment %}<hr>
+
+  <div class="container">
+    <p class="text-muted small">© <script>document.write(new Date().getFullYear())</script> Christ’s Church of The Valley</p>
+  </div>{% endcomment %}
+
+  <p>&nbsp;</p>
+
+  {% include '~~/Assets/Lava/ScriptCampusLocations.lava' %}
+
+
+  <script src="~~/Scripts/_map.js"></script>
+  <script src="~~/Scripts/map-single-campus.js"></script>
+
+
+  {% comment %}<script src="~~/Scripts/min/map-single-campus.min.js"></script>{% endcomment %}
+
+{% endif %}

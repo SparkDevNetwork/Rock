@@ -1,0 +1,26 @@
+{% assign showBadgeBar = false %}
+{% assign linkToDetailPage = false %}
+
+{% if RosterMembers != empty %}
+  <h4>Parent Roster <small>Active Students</small></h4>
+  {% for p in RosterMembers %}
+    <div class="well padding-v-sm">
+
+      <h5>{{ p.Child.FullName }}</h5>
+
+      {% for member in p.Parents %}
+        {% assign loop = forloop.index | Modulo: 2 %}
+        {% if loop != 0 %}
+        <div class="row">
+        {% endif %}
+
+        {% include personTemplate %}
+
+        {% if loop == 0 or forloop.last %}
+        </div>
+        {% endif %}
+      {% endfor %}
+
+    </div>
+  {% endfor %}
+{% endif %}

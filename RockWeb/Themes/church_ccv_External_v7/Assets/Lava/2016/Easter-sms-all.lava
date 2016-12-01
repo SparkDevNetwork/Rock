@@ -1,0 +1,22 @@
+{% comment %}
+
+{% include '~~/Assets/Lava/2016/Easter-sms-all.lava' %}
+
+{% endcomment %}
+
+{% assign inviteAllBtnClasses = inviteAllBtnClasses | Default: 'btn btn-default btn-block' %}
+
+{% capture smsAll %}
+I'm going to Easter service at CCV on the {{ item.Name }} campus. Would you like to join me? Check out the service times at http://ccveaster.com and let's plan to go together!
+{% endcapture %}
+
+{% case OSFamily %}
+  {% when 'android' %}
+    {% assign sep = '?' %}
+  {% when 'ios' %}
+    {% assign sep = '&' %}
+  {% else %}
+    {% assign sep = '&' %}
+{% endcase %}
+
+<a class="{{ inviteAllBtnClasses }} js-track-sms" data-label="{{ item.Name }} Don't know yet" href="{{ preUrl }}sms:{{ sep }}body={{ smsAll | Trim | EscapeDataString }}">I don't know yet</a>
