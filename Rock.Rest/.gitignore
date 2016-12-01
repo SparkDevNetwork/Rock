@@ -1,11 +1,4 @@
-#file types
-*.user
-
-#specific files
-StyleCop.Cache
-
-#specific folders
-[Oo]bj/
-[Dd]ebug*/
-[Rr]elease*/
-
+/bin/
+/obj/
+/*.suo
+/*.user

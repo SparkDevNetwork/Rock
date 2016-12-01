@@ -1,4 +1,3 @@
-/web.ConnectionStrings.config
 /bin/*/*.dll
 /bin/*.dll
 /bin/*.pdb
