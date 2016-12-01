@@ -1031,6 +1031,10 @@ namespace Rock.Model
                 {
                     return age + (age == 1 ? " yr old " : " yrs old ");
                 }
+                else if ( age < -1 )
+                {
+                    return string.Empty;
+                }
             }
 
             var today = RockDateTime.Today;
