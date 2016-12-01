@@ -350,6 +350,13 @@ namespace church.ccv.MobileApp
                 int.TryParse(mobileAppAttribute.Value, out launchData.MobileAppVersion);
             }
 
+            // HACK: Jingle Bells
+            var jingleBellsAttribute = new AttributeValueService(rockContext).Queryable().Where(av => av.AttributeId == 33723).SingleOrDefault();
+            if (jingleBellsAttribute!= null)
+            {
+                bool.TryParse(jingleBellsAttribute.Value, out launchData.EnableJingleBells);
+            }
+
             return launchData;
         }
     }
