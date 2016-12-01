@@ -49,6 +49,9 @@ namespace church.ccv.MobileApp.Models
 
         // campuses need the guid, name and ID, so we'll pass down the entire model
         public List<Campus> Campuses;
+
+        // HACK: Jingle Bells
+        public bool EnableJingleBells;
     }
 
     [Serializable]
