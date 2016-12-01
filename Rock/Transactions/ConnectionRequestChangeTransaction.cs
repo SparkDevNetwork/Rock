@@ -66,7 +66,7 @@ namespace Rock.Transactions
                 if ( State != EntityState.Deleted )
                 {
                     ConnectionRequestGuid = connectionRequest.Guid;
-                    PersonId = connectionRequest.PersonAlias != null ? connectionRequest.PersonAlias.PersonId : ( int? ) null;
+                    PersonId = connectionRequest.PersonAlias != null ? connectionRequest.PersonAlias.PersonId : (int?)null;
                     if ( connectionRequest.ConnectionOpportunity != null )
                     {
                         ConnectionTypeId = connectionRequest.ConnectionOpportunity.ConnectionTypeId;
@@ -94,12 +94,12 @@ namespace Rock.Transactions
                         var dbStateProperty = entry.Property( "ConnectionState" );
                         if ( dbStateProperty != null )
                         {
-                            PreviousConnectionState = ( ConnectionState ) dbStateProperty.OriginalValue;
+                            PreviousConnectionState = (ConnectionState)dbStateProperty.OriginalValue;
                         }
                         var dbStatusProperty = entry.Property( "ConnectionStatusId" );
                         if ( dbStatusProperty != null )
                         {
-                            PreviousConnectionStatusId = ( int ) dbStatusProperty.OriginalValue;
+                            PreviousConnectionStatusId = (int)dbStatusProperty.OriginalValue;
                         }
 
                         var dbAssignedGroupIdProperty = entry.Property( "AssignedGroupId" );
