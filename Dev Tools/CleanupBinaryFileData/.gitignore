@@ -1,0 +1,25 @@
+#file types
+_ReSharper.*
+*.DS_Store
+*.tlog
+*.vsp
+*.psess
+*.v11.suo
+*.user
+*.suo
+#*.Framework.XML
+
+#specific files
+RockJobSchedulerService.Xml
+web.[Cc]onnectionStrings.config
+desktop.ini
+Rock.XML
+pageviews.csv
+RockLogster.csv
+Quartz.xml
+StyleCop.Cache
+
+#specific folders
+[Oo]bj/
+[Dd]ebug*/
+[Rr]elease*/
