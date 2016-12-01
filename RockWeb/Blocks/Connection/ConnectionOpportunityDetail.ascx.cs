@@ -1125,6 +1125,16 @@ namespace RockWeb.Blocks.Connection
                     ddlSecondaryQualifier.Visible = false;
                     ddlSecondaryQualifier.Items.Clear();
                     break;
+
+                /* START - CCV Specific Change. This is something specific to CCV that was needed.  
+                 * Core did eventually pull this in and refactor it, so we might be able to just use the regular core version in the future  */
+                case ConnectionWorkflowTriggerType.RequestTransferred:
+                    ddlPrimaryQualifier.Visible = false;
+                    ddlPrimaryQualifier.Items.Clear();
+                    ddlSecondaryQualifier.Visible = false;
+                    ddlSecondaryQualifier.Items.Clear();
+                    break;
+                /* END*/
             }
 
             if ( workflowTypeStateObj != null )
