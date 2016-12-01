@@ -31,6 +31,18 @@ using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
+/* NOTE: CCV Specific Changes in this file
+- An option to prevent people that have an "Alert Note" from adding themselves to a group.  For example, a notorious CCV Member with a bad history, kept signing himself up for groups, and was doing it to just mess with people and cause problems (or something like that)
+https://github.com/ccvonline/CCVRockit/commit/aa61d2817755844fe126f3a7c282e5abecaa8284 and https://github.com/ccvonline/CCVRockit/commit/31bb91992f80b9c631bac4f853c7c04ce549e5c8 (a bug fix for it)
+
+-- A bunch of general bug fixes.  I don't think any of these are related to the AlertNote feature
+https://github.com/ccvonline/CCVRockit/commit/b27d48d6e918f92a7e7960febdfab1547732e753
+
+-- The above changes could be turned into Pull Requests. If core takes these pull requests, we can start using the core version of this block.  Otherwise, we'll just have to be aware of the CCV changes
+when updating to future release of core
+     
+*/
+
 namespace RockWeb.Blocks.Groups
 {
     /// <summary>
