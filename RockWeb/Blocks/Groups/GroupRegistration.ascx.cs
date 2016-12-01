@@ -31,6 +31,18 @@ using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
+/* NOTE: CCV Specific Changes in this file
+- An option to prevent people that have an "Alert Note" from adding themselves to a group.  For example, a notorious CCV Member with a bad history, kept signing himself up for groups, and was doing it to just mess with people and cause problems (or something like that)
+https://github.com/ccvonline/CCVRockit/commit/aa61d2817755844fe126f3a7c282e5abecaa8284 and https://github.com/ccvonline/CCVRockit/commit/31bb91992f80b9c631bac4f853c7c04ce549e5c8 (a bug fix for it)
+
+-- A bunch of general bug fixes.  I don't think any of these are related to the AlertNote feature
+https://github.com/ccvonline/CCVRockit/commit/b27d48d6e918f92a7e7960febdfab1547732e753
+
+-- The above changes could be turned into Pull Requests. If core takes these pull requests, we can start using the core version of this block.  Otherwise, we'll just have to be aware of the CCV changes
+when updating to future release of core
+     
+*/
+
 namespace RockWeb.Blocks.Groups
 {
     /// <summary>
@@ -53,6 +65,7 @@ namespace RockWeb.Blocks.Groups
 ", "", 8 )]
     [CustomRadioListField( "Auto Fill Form", "If set to FALSE then the form will not load the context of the logged in user (default: 'True'.)", "true^True,false^False", true, "true", "", 9 )]
     [TextField( "Register Button Alt Text", "Alternate text to use for the Register button (default is 'Register').", false, "", "", 10 )]
+    [WorkflowTypeField( "Alert Note Re-Route Workflow", "If the person has an alert note, a workflow to run instead of registering them to the group. A GroupMember with the person and group will be set as the workflow 'Entity' when processing is started.", false, false, "", "", 11 )]
     public partial class GroupRegistration : RockBlock
     {
         #region Fields
@@ -65,6 +78,7 @@ namespace RockWeb.Blocks.Groups
         DefinedValueCache _dvcRecordStatus = null;
         DefinedValueCache _married = null;
         DefinedValueCache _homeAddressType = null;
+        DefinedValueCache _previousAddressType = null;
         GroupTypeCache _familyType = null;
         GroupTypeRoleCache _adultRole = null;
         bool _autoFill = true;
@@ -269,55 +283,49 @@ namespace RockWeb.Blocks.Groups
                 {
                     SetPhoneNumber( rockContext, person, pnHome, null, Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_HOME.AsGuid(), changes );
                     SetPhoneNumber( rockContext, person, pnCell, cbSms, Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE.AsGuid(), changes );
-
-                    string oldLocation = homeLocation != null ? homeLocation.Location.ToString() : string.Empty;
-                    string newLocation = string.Empty;
-
+                    
+                    // if they entered an address, either add a new one or update their existing
                     var location = new LocationService( rockContext ).Get( acAddress.Street1, acAddress.Street2, acAddress.City, acAddress.State, acAddress.PostalCode, acAddress.Country );
                     if ( location != null )
                     {
+                        // if they don't currently have a home location, add one for them.
                         if ( homeLocation == null )
                         {
                             homeLocation = new GroupLocation();
                             homeLocation.GroupLocationTypeValueId = _homeAddressType.Id;
+                            homeLocation.Location = location;
+
                             family.GroupLocations.Add( homeLocation );
-                        }
-                        else
-                        {
-                            oldLocation = homeLocation.Location.ToString();
-                        }
 
-                        homeLocation.Location = location;
-                        newLocation = location.ToString();
-                    }
-                    else
-                    {
-                        if ( homeLocation != null )
+                            History.EvaluateChange( familyChanges, "Home Location", string.Empty, location.ToString() );
+                        }
+                        // otherwise, if the location they entered isn't already their home location
+                        else if( homeLocation.Location.Id != location.Id )
                         {
-                            homeLocation.Location = null;
-                            family.GroupLocations.Remove( homeLocation );
-                            new GroupLocationService( rockContext ).Delete( homeLocation );
+                            // make their current home location a previous location
+                            GroupLocation previousLocation = new GroupLocation();
+                            previousLocation.GroupLocationTypeValueId = _previousAddressType.Id;
+                            previousLocation.Location = homeLocation.Location;
+                            family.GroupLocations.Add( previousLocation );
+
+                            // and update their home location to this new one.
+                            homeLocation.Location = location;
+
+                            History.EvaluateChange( familyChanges, "Home Location", previousLocation.Location.ToString( ), homeLocation.Location.ToString() );
                         }
                     }
-
-                    History.EvaluateChange( familyChanges, "Home Location", oldLocation, newLocation );
 
                     // Check for the spouse
                     if ( IsFullWithSpouse && !string.IsNullOrWhiteSpace(tbSpouseFirstName.Text) && !string.IsNullOrWhiteSpace(tbSpouseLastName.Text) )
                     {
-                        spouse = person.GetSpouse();
-                        if ( spouse == null ||
-                            !tbSpouseFirstName.Text.Trim().Equals( spouse.FirstName.Trim(), StringComparison.OrdinalIgnoreCase ) ||
-                            !tbSpouseLastName.Text.Trim().Equals( spouse.LastName.Trim(), StringComparison.OrdinalIgnoreCase ) )
+                        // try to get their spouse
+                        spouse = person.GetSpouse( rockContext );
+
+                        // if they don't have one, we'll create them
+                        if ( spouse == null )
                         {
                             spouse = new Person();
-
-                            spouse.FirstName = tbSpouseFirstName.Text.FixCase();
-                            History.EvaluateChange( spouseChanges, "First Name", string.Empty, spouse.FirstName );
-
-                            spouse.LastName = tbSpouseLastName.Text.FixCase();
-                            History.EvaluateChange( spouseChanges, "Last Name", string.Empty, spouse.LastName );
-
+                            
                             spouse.ConnectionStatusValueId = _dvcConnectionStatus.Id;
                             spouse.RecordStatusValueId = _dvcRecordStatus.Id;
                             spouse.Gender = Gender.Unknown;
@@ -335,8 +343,18 @@ namespace RockWeb.Blocks.Groups
                             person.MaritalStatusValueId = _married.Id;
                         }
 
-                        History.EvaluateChange( changes, "Email", person.Email, tbEmail.Text );
-                        spouse.Email = tbSpouseEmail.Text;
+                        // now either way, update their name, email and phone
+                        History.EvaluateChange( spouseChanges, "First Name", spouse.FirstName, tbSpouseFirstName.Text.FixCase() );
+                        spouse.FirstName = tbSpouseFirstName.Text.FixCase();
+                        
+                        History.EvaluateChange( spouseChanges, "Last Name", spouse.LastName, tbSpouseLastName.Text.FixCase() );
+                        spouse.LastName = tbSpouseLastName.Text.FixCase();
+
+                        if( string.IsNullOrWhiteSpace( tbSpouseEmail.Text ) == false )
+                        {
+                            History.EvaluateChange( spouseChanges, "Email", spouse.Email, tbSpouseEmail.Text );
+                            spouse.Email = tbSpouseEmail.Text;
+                        }
 
                         SetPhoneNumber( rockContext, spouse, pnHome, null, Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_HOME.AsGuid(), spouseChanges );
                         SetPhoneNumber( rockContext, spouse, pnSpouseCell, cbSpouseSms, Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE.AsGuid(), spouseChanges );
@@ -349,37 +367,91 @@ namespace RockWeb.Blocks.Groups
                     Rock.SystemGuid.Category.HISTORY_PERSON_DEMOGRAPHIC_CHANGES.AsGuid(), person.Id, changes );
                 HistoryService.SaveChanges( rockContext, typeof( Person ),
                     Rock.SystemGuid.Category.HISTORY_PERSON_FAMILY_CHANGES.AsGuid(), person.Id, familyChanges );
+
                 if ( spouse != null )
                 {
-
                     HistoryService.SaveChanges( rockContext, typeof( Person ),
                         Rock.SystemGuid.Category.HISTORY_PERSON_DEMOGRAPHIC_CHANGES.AsGuid(), spouse.Id, spouseChanges );
+
                     HistoryService.SaveChanges( rockContext, typeof( Person ),
                         Rock.SystemGuid.Category.HISTORY_PERSON_FAMILY_CHANGES.AsGuid(), spouse.Id, familyChanges );
                 }
 
-                // Check to see if a workflow should be launched for each person
-                WorkflowType workflowType = null;
-                Guid? workflowTypeGuid = GetAttributeValue( "Workflow" ).AsGuidOrNull();
-                if ( workflowTypeGuid.HasValue )
+                // now, it's time to either add them to the group, or kick off the Alert Re-Route workflow
+                // (Or nothing if there's no problem but they're already in the group)
+                GroupMember primaryGroupMember = PersonToGroupMember( rockContext, person );
+
+                GroupMember spouseGroupMember = null;
+                if( spouse != null )
                 {
-                    var workflowTypeService = new WorkflowTypeService( rockContext );
-                    workflowType = workflowTypeService.Get( workflowTypeGuid.Value );
+                    spouseGroupMember = PersonToGroupMember( rockContext, spouse );
                 }
 
-                // Save the registrations ( and launch workflows )
-                var newGroupMembers = new List<GroupMember>();
-                AddPersonToGroup( rockContext, person, workflowType, newGroupMembers );
-                AddPersonToGroup( rockContext, spouse, workflowType, newGroupMembers );
+                // prep the workflow service
+                var workflowTypeService = new WorkflowTypeService( rockContext );
 
-                // Show the results
-                pnlView.Visible = false;
-                pnlResult.Visible = true;
+                bool addToGroup = true;
 
+                // First, check to see if an alert re-route workflow should be launched
+                Guid? workflowTypeGuid = GetAttributeValue( "AlertNoteRe-RouteWorkflow" ).AsGuidOrNull();
+                if ( workflowTypeGuid.HasValue )
+                {
+                    // It does, so see if we need to launch it instead
+                    WorkflowType alertRerouteWorkflowType = workflowTypeService.Get( workflowTypeGuid.Value );
+
+                    // do either of the people registering have alert notes?
+                    int alertNoteCount = new NoteService( rockContext ).Queryable( ).Where( n => (n.EntityId == person.Id) && n.IsAlert == true ).Count( );
+                    
+                    if( spouse != null )
+                    {
+                        alertNoteCount += new NoteService( rockContext ).Queryable().Where( n => ( n.EntityId == spouse.Id ) && n.IsAlert == true ).Count();
+                    }
+
+                    if( alertNoteCount > 0 )
+                    {
+                        // yes they do. so first, flag that we should NOT put them in the group
+                        addToGroup = false;
+
+                        // and kick off the re-route workflow so security can review.
+                        LaunchWorkflow( rockContext, alertRerouteWorkflowType, primaryGroupMember );
+
+                        if( spouseGroupMember != null )
+                        {
+                            LaunchWorkflow( rockContext, alertRerouteWorkflowType, spouseGroupMember );
+                        }
+                    }
+                }
+                
+                // if above, we didn't flag that they should not join the group, let's add them
+                if ( addToGroup == true )
+                {
+                    // try to add them to the group (would only fail if the're already in it)
+                    TryAddGroupMemberToGroup( rockContext, primaryGroupMember );
+
+                    if ( spouseGroupMember != null )
+                    {
+                        TryAddGroupMemberToGroup( rockContext, spouseGroupMember );
+                    }
+
+                    // is there a workflow to fire off?   
+                    workflowTypeGuid = GetAttributeValue( "Workflow" ).AsGuidOrNull();
+                    if ( workflowTypeGuid.HasValue )
+                    {
+                        WorkflowType workflowType = workflowTypeService.Get( workflowTypeGuid.Value );
+                        LaunchWorkflow( rockContext, workflowType, primaryGroupMember );
+
+                        if( spouseGroupMember != null )
+                        {
+                            LaunchWorkflow( rockContext, workflowType, spouseGroupMember );
+                        }
+                    }
+                }
+
+
+                // Now do a PostBack so they see a 'Completion' page result.
                 // Show lava content
                 var mergeFields = new Dictionary<string, object>();
                 mergeFields.Add( "Group", _group );
-                mergeFields.Add( "GroupMembers", newGroupMembers );
 
                 bool showDebug = UserCanEdit && GetAttributeValue( "EnableDebug" ).AsBoolean();
                 lResultDebug.Visible = showDebug;
@@ -393,6 +465,10 @@ namespace RockWeb.Blocks.Groups
 
                 // Will only redirect if a value is specifed
                 NavigateToLinkedPage( "ResultPage" );
+
+                // Show the results
+                pnlView.Visible = false;
+                pnlResult.Visible = true;
             }
         }
 
@@ -456,7 +532,7 @@ namespace RockWeb.Blocks.Groups
                             .FirstOrDefault( n => n.NumberTypeValue.Guid.Equals( homePhoneType ) );
                         if ( homePhone != null )
                         {
-                            pnHome.Text = homePhone.Number;
+                            pnHome.Text = homePhone.NumberFormatted;
                         }
 
                         Guid cellPhoneType = Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE.AsGuid();
@@ -464,11 +540,11 @@ namespace RockWeb.Blocks.Groups
                             .FirstOrDefault( n => n.NumberTypeValue.Guid.Equals( cellPhoneType ) );
                         if ( cellPhone != null )
                         {
-                            pnCell.Text = cellPhone.Number;
+                            pnCell.Text = cellPhone.NumberFormatted;
                             cbSms.Checked = cellPhone.IsMessagingEnabled;
                         }
 
-                        var homeAddress = person.GetHomeLocation();
+                        var homeAddress = person.GetHomeLocation( _rockContext );
                         if ( homeAddress != null )
                         {
                             acAddress.SetValues( homeAddress );
@@ -487,7 +563,7 @@ namespace RockWeb.Blocks.Groups
                                     .FirstOrDefault( n => n.NumberTypeValue.Guid.Equals( cellPhoneType ) );
                                 if ( spouseCellPhone != null )
                                 {
-                                    pnSpouseCell.Text = spouseCellPhone.Number;
+                                    pnSpouseCell.Text = spouseCellPhone.NumberFormatted;
                                     cbSpouseSms.Checked = spouseCellPhone.IsMessagingEnabled;
                                 }
                             }
@@ -497,45 +573,45 @@ namespace RockWeb.Blocks.Groups
             }
         }
 
-        /// <summary>
-        /// Adds the person to group.
-        /// </summary>
-        /// <param name="rockContext">The rock context.</param>
-        /// <param name="person">The person.</param>
-        /// <param name="workflowType">Type of the workflow.</param>
-        /// <param name="groupMembers">The group members.</param>
-        private void AddPersonToGroup( RockContext rockContext, Person person, WorkflowType workflowType, List<GroupMember> groupMembers )
+        private GroupMember PersonToGroupMember( RockContext rockContext, Person person )
         {
-            if (person != null )
-            {
-                if ( !_group.Members
-                    .Any( m => 
-                        m.PersonId == person.Id &&
-                        m.GroupRoleId == _defaultGroupRole.Id))
-                {
-                    var groupMemberService = new GroupMemberService(rockContext);
-                    var groupMember = new GroupMember();
-                    groupMember.PersonId = person.Id;
-                    groupMember.GroupRoleId = _defaultGroupRole.Id;
-                    groupMember.GroupMemberStatus = (GroupMemberStatus)GetAttributeValue("GroupMemberStatus").AsInteger();
-                    groupMember.GroupId = _group.Id;
-                    groupMemberService.Add( groupMember );
-                    rockContext.SaveChanges();
+            // puts a person into a group member object, so that we can pass it to a workflow
+            GroupMember newGroupMember = new GroupMember();
+            newGroupMember.PersonId = person.Id;
+            newGroupMember.GroupRoleId = _defaultGroupRole.Id;
+            newGroupMember.GroupMemberStatus = (GroupMemberStatus)GetAttributeValue("GroupMemberStatus").AsInteger();
+            newGroupMember.GroupId = _group.Id;
 
-                    if ( workflowType != null )
-                    {
-                        try
-                        {
-                            List<string> workflowErrors;
-                            var workflow = Workflow.Activate( workflowType, person.FullName );
-                            new WorkflowService( rockContext ).Process( workflow, groupMember, out workflowErrors );
-                        }
-                        catch (Exception ex)
-                        {
-                            ExceptionLogService.LogException( ex, this.Context );
-                        }
-                    }
-                }
+            return newGroupMember;
+        }
+
+        /// <summary>
+        /// Adds the group member to the group if they aren't already in it
+        /// </summary>
+        private void TryAddGroupMemberToGroup( RockContext rockContext, GroupMember newGroupMember )
+        {
+            if ( !_group.Members.Any( m => 
+                                      m.PersonId == newGroupMember.PersonId &&
+                                      m.GroupRoleId == _defaultGroupRole.Id) )
+            {
+                var groupMemberService = new GroupMemberService(rockContext);
+                groupMemberService.Add( newGroupMember );
+                    
+                rockContext.SaveChanges();
+            }
+        }
+
+        private void LaunchWorkflow( RockContext rockContext, WorkflowType workflowType, GroupMember groupMember )
+        {
+            try
+            {
+                List<string> workflowErrors;
+                var workflow = Workflow.Activate( workflowType, workflowType.Name );
+                new WorkflowService( rockContext ).Process( workflow, groupMember, out workflowErrors );
+            }
+            catch (Exception ex)
+            {
+                ExceptionLogService.LogException( ex, this.Context );
             }
         }
 
@@ -593,13 +669,14 @@ namespace RockWeb.Blocks.Groups
 
             _married = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_MARITAL_STATUS_MARRIED.AsGuid() );
             _homeAddressType = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME.AsGuid() );
+            _previousAddressType = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_PREVIOUS.AsGuid() );
             _familyType = GroupTypeCache.Read( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY.AsGuid() );
             _adultRole = _familyType.Roles.FirstOrDefault( r => r.Guid.Equals( Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_ADULT.AsGuid() ) );
 
-            if ( _married == null || _homeAddressType == null || _familyType == null || _adultRole == null )
+            if ( _married == null || _homeAddressType == null || _familyType == null || _adultRole == null || _previousAddressType == null )
             {
                 nbNotice.Heading = "Missing System Value";
-                nbNotice.Text = "<p>There is a missing or invalid system value. Check the settings for Marital Status of 'Married', Location Type of 'Home', Group Type of 'Family', and Family Group Role of 'Adult'.</p>";
+                nbNotice.Text = "<p>There is a missing or invalid system value. Check the settings for Marital Status of 'Married', Location Type of 'Home' and 'Previous', Group Type of 'Family', and Family Group Role of 'Adult'.</p>";
                 return false;
             }
 
@@ -631,37 +708,33 @@ namespace RockWeb.Blocks.Groups
                 {
                     oldPhoneNumber = phoneNumber.NumberFormattedWithCountryCode;
                 }
-
-                phoneNumber.CountryCode = PhoneNumber.CleanNumber( pnbNumber.CountryCode );
-                phoneNumber.Number = PhoneNumber.CleanNumber( pnbNumber.Number );
-
-                if ( string.IsNullOrWhiteSpace( phoneNumber.Number ) )
+                
+                // if they put a valid phone number, update / add what they have on record.
+                // If they left it blank, don't do anything. It's possible they have a number in our system and
+                // just didn't bother typing it in again.
+                string cleanNumber = PhoneNumber.CleanNumber( pnbNumber.Number );
+                if ( string.IsNullOrWhiteSpace( cleanNumber ) == false )
                 {
-                    if ( phoneNumber.Id > 0 )
-                    {
-                        new PhoneNumberService( rockContext ).Delete( phoneNumber );
-                        person.PhoneNumbers.Remove( phoneNumber );
-                    }
-                }
-                else
-                {
+                    phoneNumber.CountryCode = PhoneNumber.CleanNumber( pnbNumber.CountryCode );
+                    phoneNumber.Number = cleanNumber;
+
                     if ( phoneNumber.Id <= 0)
                     {
                         person.PhoneNumbers.Add( phoneNumber );
                     }
-                    if ( cbSms != null && cbSms.Checked )
+
+                    // let them toggle their SMS preference
+                    if ( cbSms != null )
                     {
-                        phoneNumber.IsMessagingEnabled = true;
+                        phoneNumber.IsMessagingEnabled = cbSms.Checked;
                         person.PhoneNumbers
                             .Where( n => n.NumberTypeValueId != phoneType.Id )
                             .ToList()
                             .ForEach( n => n.IsMessagingEnabled = false );
                     }
-                }
 
-                History.EvaluateChange( changes,
-                    string.Format( "{0} Phone", phoneType.Value ),
-                    oldPhoneNumber, phoneNumber.NumberFormattedWithCountryCode );
+                    History.EvaluateChange( changes, string.Format( "{0} Phone", phoneType.Value ), oldPhoneNumber, phoneNumber.NumberFormattedWithCountryCode );
+                }
             }
         }
 
