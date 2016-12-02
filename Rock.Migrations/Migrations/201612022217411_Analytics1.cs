@@ -183,6 +183,25 @@ namespace Rock.Migrations
                 .Index( t => t.CreditCardTypeValueId )
                 .Index( t => t.Guid, unique: true );
 
+            CreateTable(
+                "dbo.AnalyticsSourceFamilyHistorical",
+                c => new
+                {
+                    Id = c.Int( nullable: false, identity: true ),
+                    GroupId = c.Int( nullable: false ),
+                    CurrentRowIndicator = c.Boolean( nullable: false ),
+                    EffectiveDate = c.DateTime( nullable: false, storeType: "date" ),
+                    ExpireDate = c.DateTime( nullable: false, storeType: "date" ),
+                    CampusId = c.Int(),
+                    Name = c.String( maxLength: 450 ),
+                    Guid = c.Guid( nullable: false ),
+                    ForeignId = c.Int(),
+                    ForeignGuid = c.Guid(),
+                    ForeignKey = c.String( maxLength: 100 ),
+                } )
+                .PrimaryKey( t => t.Id )
+                .Index( t => t.Guid, unique: true );
+
             AddColumn( "dbo.Attribute", "IsAnalytic", c => c.Boolean( nullable: false ) );
             AddColumn( "dbo.Attribute", "IsAnalyticHistory", c => c.Boolean( nullable: false ) );
             AddColumn( "dbo.Metric", "EnableAnalytics", c => c.Boolean( nullable: false ) );
@@ -230,6 +249,16 @@ CREATE UNIQUE NONCLUSTERED  INDEX [IX_PersonIdCurrentRow] ON [dbo].[AnalyticsSou
 	[CurrentRowIndicator]
 ) where CurrentRowIndicator = 1 
 " );
+
+            // Enforce that there isn't more than one CurrentRow per family
+            // Notice the cool 'where CurrentRowIndicator = 1' filter, Woohooo!
+            Sql( @"
+CREATE UNIQUE NONCLUSTERED  INDEX [IX_GroupIdCurrentRow] ON [dbo].[AnalyticsSourceFamilyHistorical]
+(
+	[GroupId] ASC,
+	[CurrentRowIndicator]
+) where CurrentRowIndicator = 1 
+" );
         }
 
         /// <summary>
@@ -259,6 +288,8 @@ CREATE UNIQUE NONCLUSTERED  INDEX [IX_PersonIdCurrentRow] ON [dbo].[AnalyticsSou
             DropIndex( "dbo.AnalyticsSourcePersonHistorical", new[] { "RecordStatusValueId" } );
             DropIndex( "dbo.AnalyticsSourcePersonHistorical", new[] { "RecordTypeValueId" } );
 
+            DropIndex( "dbo.AnalyticsSourceFamilyHistorical", new[] { "Guid" } );
+
             DropIndex( "dbo.AttributeValue", new[] { "ValueAsBoolean" } );
 
             DropColumn( "dbo.Metric", "EnableAnalytics" );
@@ -269,6 +300,7 @@ CREATE UNIQUE NONCLUSTERED  INDEX [IX_PersonIdCurrentRow] ON [dbo].[AnalyticsSou
             DropTable( "dbo.AnalyticsSourceFinancialTransaction" );
             DropTable( "dbo.AnalyticsDimDate" );
             DropTable( "dbo.AnalyticsSourcePersonHistorical" );
+            DropTable( "dbo.AnalyticsSourceFamilyHistorical" );
         }
     }
 }
