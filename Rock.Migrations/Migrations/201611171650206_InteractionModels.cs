@@ -175,9 +175,9 @@ namespace Rock.Migrations
                 .Index(t => t.Guid, unique: true);
 
             RockMigrationHelper.AddDefinedType( "Global", "Interaction Medium", "Mediums to classify channels with.", SystemGuid.DefinedType.INTERACTION_CHANNEL_MEDIUM );
-            RockMigrationHelper.AddDefinedValue( SystemGuid.DefinedType.INTERACTION_CHANNEL_MEDIUM, "Website", "Used for tracking page views for various websites." );
-            RockMigrationHelper.AddDefinedValue( SystemGuid.DefinedType.INTERACTION_CHANNEL_MEDIUM, "Communication", "Used for emails, SMS, etc." );
-            RockMigrationHelper.AddDefinedValue( SystemGuid.DefinedType.INTERACTION_CHANNEL_MEDIUM, "Content Channel", "Used for tracking content channels." );
+            RockMigrationHelper.AddDefinedValue( SystemGuid.DefinedType.INTERACTION_CHANNEL_MEDIUM, "Website", "Used for tracking page views for various websites.", SystemGuid.DefinedValue.INTERACTIONCHANNELTYPE_WEBSITE );
+            RockMigrationHelper.AddDefinedValue( SystemGuid.DefinedType.INTERACTION_CHANNEL_MEDIUM, "Communication", "Used for emails, SMS, etc.", SystemGuid.DefinedValue.INTERACTIONCHANNELTYPE_COMMUNICATION );
+            RockMigrationHelper.AddDefinedValue( SystemGuid.DefinedType.INTERACTION_CHANNEL_MEDIUM, "Content Channel", "Used for tracking content channels.", SystemGuid.DefinedValue.INTERACTIONCHANNELTYPE_CONTENTCHANNEL );
         }
         
         /// <summary>

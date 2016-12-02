@@ -1,6 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <views>
-  <mapping-views hash="210b3484315f0b8b2a7956ee1cd482211423890c00b8be278351889f5b2cd5c5" conceptual-container="RockContext" store-container="CodeFirstDatabase">
+  <mapping-views hash="1d1ab2ab5ce0007764c7e9c63be348d6a2d930f5f12c0f00b11bf8c7b7620ac3" conceptual-container="RockContext" store-container="CodeFirstDatabase">
     <view extent="CodeFirstDatabase.AttendanceCode"><![CDATA[
     SELECT VALUE -- Constructing AttendanceCode
         [CodeFirstDatabaseSchema.AttendanceCode](T1.AttendanceCode_Id, T1.AttendanceCode_IssueDateTime, T1.AttendanceCode_Code, T1.AttendanceCode_Guid, T1.AttendanceCode_ForeignId, T1.AttendanceCode_ForeignGuid, T1.AttendanceCode_ForeignKey)
@@ -3071,10 +3071,11 @@
     ) AS T1]]></view>
     <view extent="CodeFirstDatabase.InteractionComponent"><![CDATA[
     SELECT VALUE -- Constructing InteractionComponent
-        [CodeFirstDatabaseSchema.InteractionComponent](T1.InteractionComponent_Id, T1.InteractionComponent_ComponentData, T1.InteractionComponent_EntityId, T1.InteractionComponent_ChannelId, T1.InteractionComponent_CreatedDateTime, T1.InteractionComponent_ModifiedDateTime, T1.InteractionComponent_CreatedByPersonAliasId, T1.InteractionComponent_ModifiedByPersonAliasId, T1.InteractionComponent_Guid, T1.InteractionComponent_ForeignId, T1.InteractionComponent_ForeignGuid, T1.InteractionComponent_ForeignKey)
+        [CodeFirstDatabaseSchema.InteractionComponent](T1.InteractionComponent_Id, T1.InteractionComponent_Name, T1.InteractionComponent_ComponentData, T1.InteractionComponent_EntityId, T1.InteractionComponent_ChannelId, T1.InteractionComponent_CreatedDateTime, T1.InteractionComponent_ModifiedDateTime, T1.InteractionComponent_CreatedByPersonAliasId, T1.InteractionComponent_ModifiedByPersonAliasId, T1.InteractionComponent_Guid, T1.InteractionComponent_ForeignId, T1.InteractionComponent_ForeignGuid, T1.InteractionComponent_ForeignKey)
     FROM (
         SELECT 
             T.Id AS InteractionComponent_Id, 
+            T.Name AS InteractionComponent_Name, 
             T.ComponentData AS InteractionComponent_ComponentData, 
             T.EntityId AS InteractionComponent_EntityId, 
             T.ChannelId AS InteractionComponent_ChannelId, 
@@ -3091,14 +3092,16 @@
     ) AS T1]]></view>
     <view extent="CodeFirstDatabase.InteractionChannel"><![CDATA[
     SELECT VALUE -- Constructing InteractionChannel
-        [CodeFirstDatabaseSchema.InteractionChannel](T1.InteractionChannel_Id, T1.InteractionChannel_ChannelData, T1.InteractionChannel_ComponentEntityTypeId, T1.InteractionChannel_InteractionEntityTypeId, T1.InteractionChannel_ChannelMediumValueId, T1.InteractionChannel_RetentionDuration, T1.InteractionChannel_CreatedDateTime, T1.InteractionChannel_ModifiedDateTime, T1.InteractionChannel_CreatedByPersonAliasId, T1.InteractionChannel_ModifiedByPersonAliasId, T1.InteractionChannel_Guid, T1.InteractionChannel_ForeignId, T1.InteractionChannel_ForeignGuid, T1.InteractionChannel_ForeignKey)
+        [CodeFirstDatabaseSchema.InteractionChannel](T1.InteractionChannel_Id, T1.InteractionChannel_Name, T1.InteractionChannel_ChannelData, T1.InteractionChannel_ComponentEntityTypeId, T1.InteractionChannel_InteractionEntityTypeId, T1.InteractionChannel_ChannelEntityId, T1.InteractionChannel_ChannelTypeMediumValueId, T1.InteractionChannel_RetentionDuration, T1.InteractionChannel_CreatedDateTime, T1.InteractionChannel_ModifiedDateTime, T1.InteractionChannel_CreatedByPersonAliasId, T1.InteractionChannel_ModifiedByPersonAliasId, T1.InteractionChannel_Guid, T1.InteractionChannel_ForeignId, T1.InteractionChannel_ForeignGuid, T1.InteractionChannel_ForeignKey)
     FROM (
         SELECT 
             T.Id AS InteractionChannel_Id, 
+            T.Name AS InteractionChannel_Name, 
             T.ChannelData AS InteractionChannel_ChannelData, 
             T.ComponentEntityTypeId AS InteractionChannel_ComponentEntityTypeId, 
             T.InteractionEntityTypeId AS InteractionChannel_InteractionEntityTypeId, 
-            T.ChannelMediumValueId AS InteractionChannel_ChannelMediumValueId, 
+            T.ChannelEntityId AS InteractionChannel_ChannelEntityId, 
+            T.ChannelTypeMediumValueId AS InteractionChannel_ChannelTypeMediumValueId, 
             T.RetentionDuration AS InteractionChannel_RetentionDuration, 
             T.CreatedDateTime AS InteractionChannel_CreatedDateTime, 
             T.ModifiedDateTime AS InteractionChannel_ModifiedDateTime, 
@@ -3113,10 +3116,11 @@
     ) AS T1]]></view>
     <view extent="CodeFirstDatabase.InteractionDeviceType"><![CDATA[
     SELECT VALUE -- Constructing InteractionDeviceType
-        [CodeFirstDatabaseSchema.InteractionDeviceType](T1.InteractionDeviceType_Id, T1.InteractionDeviceType_DeviceTypeData, T1.InteractionDeviceType_ClientType, T1.InteractionDeviceType_OperatingSystem, T1.InteractionDeviceType_Application, T1.InteractionDeviceType_CreatedDateTime, T1.InteractionDeviceType_ModifiedDateTime, T1.InteractionDeviceType_CreatedByPersonAliasId, T1.InteractionDeviceType_ModifiedByPersonAliasId, T1.InteractionDeviceType_Guid, T1.InteractionDeviceType_ForeignId, T1.InteractionDeviceType_ForeignGuid, T1.InteractionDeviceType_ForeignKey)
+        [CodeFirstDatabaseSchema.InteractionDeviceType](T1.InteractionDeviceType_Id, T1.InteractionDeviceType_Name, T1.InteractionDeviceType_DeviceTypeData, T1.InteractionDeviceType_ClientType, T1.InteractionDeviceType_OperatingSystem, T1.InteractionDeviceType_Application, T1.InteractionDeviceType_CreatedDateTime, T1.InteractionDeviceType_ModifiedDateTime, T1.InteractionDeviceType_CreatedByPersonAliasId, T1.InteractionDeviceType_ModifiedByPersonAliasId, T1.InteractionDeviceType_Guid, T1.InteractionDeviceType_ForeignId, T1.InteractionDeviceType_ForeignGuid, T1.InteractionDeviceType_ForeignKey)
     FROM (
         SELECT 
             T.Id AS InteractionDeviceType_Id, 
+            T.Name AS InteractionDeviceType_Name, 
             T.DeviceTypeData AS InteractionDeviceType_DeviceTypeData, 
             T.ClientType AS InteractionDeviceType_ClientType, 
             T.OperatingSystem AS InteractionDeviceType_OperatingSystem, 
@@ -6956,10 +6960,11 @@
     ) AS T1]]></view>
     <view extent="RockContext.InteractionComponents"><![CDATA[
     SELECT VALUE -- Constructing InteractionComponents
-        [Rock.Data.InteractionComponent](T1.InteractionComponent_Id, T1.InteractionComponent_ComponentData, T1.InteractionComponent_EntityId, T1.InteractionComponent_ChannelId, T1.InteractionComponent_CreatedDateTime, T1.InteractionComponent_ModifiedDateTime, T1.InteractionComponent_CreatedByPersonAliasId, T1.InteractionComponent_ModifiedByPersonAliasId, T1.InteractionComponent_Guid, T1.InteractionComponent_ForeignId, T1.InteractionComponent_ForeignGuid, T1.InteractionComponent_ForeignKey)
+        [Rock.Data.InteractionComponent](T1.InteractionComponent_Id, T1.InteractionComponent_Name, T1.InteractionComponent_ComponentData, T1.InteractionComponent_EntityId, T1.InteractionComponent_ChannelId, T1.InteractionComponent_CreatedDateTime, T1.InteractionComponent_ModifiedDateTime, T1.InteractionComponent_CreatedByPersonAliasId, T1.InteractionComponent_ModifiedByPersonAliasId, T1.InteractionComponent_Guid, T1.InteractionComponent_ForeignId, T1.InteractionComponent_ForeignGuid, T1.InteractionComponent_ForeignKey)
     FROM (
         SELECT 
             T.Id AS InteractionComponent_Id, 
+            T.Name AS InteractionComponent_Name, 
             T.ComponentData AS InteractionComponent_ComponentData, 
             T.EntityId AS InteractionComponent_EntityId, 
             T.ChannelId AS InteractionComponent_ChannelId, 
@@ -6976,14 +6981,16 @@
     ) AS T1]]></view>
     <view extent="RockContext.InteractionServices"><![CDATA[
     SELECT VALUE -- Constructing InteractionServices
-        [Rock.Data.InteractionChannel](T1.InteractionChannel_Id, T1.InteractionChannel_ChannelData, T1.InteractionChannel_ComponentEntityTypeId, T1.InteractionChannel_InteractionEntityTypeId, T1.InteractionChannel_ChannelMediumValueId, T1.InteractionChannel_RetentionDuration, T1.InteractionChannel_CreatedDateTime, T1.InteractionChannel_ModifiedDateTime, T1.InteractionChannel_CreatedByPersonAliasId, T1.InteractionChannel_ModifiedByPersonAliasId, T1.InteractionChannel_Guid, T1.InteractionChannel_ForeignId, T1.InteractionChannel_ForeignGuid, T1.InteractionChannel_ForeignKey)
+        [Rock.Data.InteractionChannel](T1.InteractionChannel_Id, T1.InteractionChannel_Name, T1.InteractionChannel_ChannelData, T1.InteractionChannel_ComponentEntityTypeId, T1.InteractionChannel_InteractionEntityTypeId, T1.InteractionChannel_ChannelEntityId, T1.InteractionChannel_ChannelTypeMediumValueId, T1.InteractionChannel_RetentionDuration, T1.InteractionChannel_CreatedDateTime, T1.InteractionChannel_ModifiedDateTime, T1.InteractionChannel_CreatedByPersonAliasId, T1.InteractionChannel_ModifiedByPersonAliasId, T1.InteractionChannel_Guid, T1.InteractionChannel_ForeignId, T1.InteractionChannel_ForeignGuid, T1.InteractionChannel_ForeignKey)
     FROM (
         SELECT 
             T.Id AS InteractionChannel_Id, 
+            T.Name AS InteractionChannel_Name, 
             T.ChannelData AS InteractionChannel_ChannelData, 
             T.ComponentEntityTypeId AS InteractionChannel_ComponentEntityTypeId, 
             T.InteractionEntityTypeId AS InteractionChannel_InteractionEntityTypeId, 
-            T.ChannelMediumValueId AS InteractionChannel_ChannelMediumValueId, 
+            T.ChannelEntityId AS InteractionChannel_ChannelEntityId, 
+            T.ChannelTypeMediumValueId AS InteractionChannel_ChannelTypeMediumValueId, 
             T.RetentionDuration AS InteractionChannel_RetentionDuration, 
             T.CreatedDateTime AS InteractionChannel_CreatedDateTime, 
             T.ModifiedDateTime AS InteractionChannel_ModifiedDateTime, 
@@ -6998,10 +7005,11 @@
     ) AS T1]]></view>
     <view extent="RockContext.InteractionDeviceTypes"><![CDATA[
     SELECT VALUE -- Constructing InteractionDeviceTypes
-        [Rock.Data.InteractionDeviceType](T1.InteractionDeviceType_Id, T1.InteractionDeviceType_DeviceTypeData, T1.InteractionDeviceType_ClientType, T1.InteractionDeviceType_OperatingSystem, T1.InteractionDeviceType_Application, T1.InteractionDeviceType_CreatedDateTime, T1.InteractionDeviceType_ModifiedDateTime, T1.InteractionDeviceType_CreatedByPersonAliasId, T1.InteractionDeviceType_ModifiedByPersonAliasId, T1.InteractionDeviceType_Guid, T1.InteractionDeviceType_ForeignId, T1.InteractionDeviceType_ForeignGuid, T1.InteractionDeviceType_ForeignKey)
+        [Rock.Data.InteractionDeviceType](T1.InteractionDeviceType_Id, T1.InteractionDeviceType_Name, T1.InteractionDeviceType_DeviceTypeData, T1.InteractionDeviceType_ClientType, T1.InteractionDeviceType_OperatingSystem, T1.InteractionDeviceType_Application, T1.InteractionDeviceType_CreatedDateTime, T1.InteractionDeviceType_ModifiedDateTime, T1.InteractionDeviceType_CreatedByPersonAliasId, T1.InteractionDeviceType_ModifiedByPersonAliasId, T1.InteractionDeviceType_Guid, T1.InteractionDeviceType_ForeignId, T1.InteractionDeviceType_ForeignGuid, T1.InteractionDeviceType_ForeignKey)
     FROM (
         SELECT 
             T.Id AS InteractionDeviceType_Id, 
+            T.Name AS InteractionDeviceType_Name, 
             T.DeviceTypeData AS InteractionDeviceType_DeviceTypeData, 
             T.ClientType AS InteractionDeviceType_ClientType, 
             T.OperatingSystem AS InteractionDeviceType_OperatingSystem, 

@@ -382,6 +382,10 @@ TransactionAcountDetails: [
             if ( btnFrequency.Items.Count > 0 )
             {
                 dtpStartDate.Label = btnFrequency.Items[0].Selected ? "When" : "First Gift";
+                if ( _scheduledTransactionToBeTransferred != null && _scheduledTransactionToBeTransferred.NextPaymentDate.HasValue )
+                {
+                    dtpStartDate.Label = "Next Gift";
+                }
             }
 
             // Show or Hide the Credit card entry panel based on if a saved account exists and it's selected or not.
@@ -1701,7 +1705,7 @@ TransactionAcountDetails: [
             if ( !IsPostBack )
             {
                 btnFrequency.SelectedValue = scheduledTransaction.TransactionFrequencyValueId.ToString();
-                dtpStartDate.SelectedDate = RockDateTime.Today.AddDays( 1 );
+                dtpStartDate.SelectedDate = ( scheduledTransaction.NextPaymentDate.HasValue ) ? scheduledTransaction.NextPaymentDate : RockDateTime.Today.AddDays( 1 );
             }
         }
 
