@@ -445,5 +445,13 @@ namespace Rock.SystemGuid
         public const string BENEVOLENCE_DENIED = "3720671E-DA48-405F-A6D5-5E2D47436F9A";
         #endregion
 
+        #region Interactions
+        public const string INTERACTIONCHANNELTYPE_WEBSITE = "E503E77D-CF35-E09F-41A2-B213184F48E8";
+
+        public const string INTERACTIONCHANNELTYPE_COMMUNICATION = "55004F5C-A8ED-7CB7-47EE-5988E9F8E0A8";
+
+        public const string INTERACTIONCHANNELTYPE_CONTENTCHANNEL = "F1A19D09-E010-EEB3-465A-940A6F023CEB";
+        #endregion
+
     }
 }
