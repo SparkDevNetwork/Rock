@@ -132,6 +132,7 @@ function() {
             lp.ID = filterControl.ID + "_lp";
             lp.Label = "Location";
             lp.AllowedPickerModes = LocationPickerMode.Named | LocationPickerMode.Polygon;
+            lp.CurrentPickerMode = LocationPickerMode.Named;
             filterControl.Controls.Add( lp );
 
             return new Control[1] { lp };
