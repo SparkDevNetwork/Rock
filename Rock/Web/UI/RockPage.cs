@@ -1275,7 +1275,7 @@ namespace Rock.Web.UI
             if ( !ClientScript.IsStartupScriptRegistered( "googleMapsApiScript" ) )
             {
                 string script = string.Format( @"Rock.controls.util.loadGoogleMapsApi('{0}');", scriptUrl );
-                ClientScript.RegisterStartupScript( this.Page.GetType(), "googleMapsApiScript", script, true );
+                ScriptManager.RegisterStartupScript( this.Page, this.Page.GetType(), "googleMapsApiScript", script, true );
             }
         }
 
