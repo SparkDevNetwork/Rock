@@ -247,11 +247,7 @@ namespace RockWeb.Blocks.Core
                     if ( selectedEntityType.Equals( "category" ) )
                     {
                         selectedCategory = CategoryCache.Read( itemId.GetValueOrDefault() );
-                        // Now we need to get the real (non-cached) category so that IsAuthorized works properly with inherited permissions.
-                        var categoryService = new CategoryService( new RockContext() );
-                        var selectedCategoryNonCache = categoryService.Get( itemId.GetValueOrDefault() );
-
-                        if ( selectedCategoryNonCache != null && !canEditBlock && selectedCategoryNonCache.IsAuthorized( Authorization.EDIT, CurrentPerson ) )
+                        if ( selectedCategory != null && !canEditBlock && selectedCategory.IsAuthorized( Authorization.EDIT, CurrentPerson ) )
                         {
                             // Show the action buttons if user has edit rights to category
                             divTreeviewActions.Visible = true;
