@@ -591,11 +591,6 @@
     <Compile Include="MergeTemplates\MergeTemplateType.cs" />
     <Compile Include="MergeTemplates\MergeTemplateTypeContainer.cs" />
     <Compile Include="MergeTemplates\WordDocumentMergeTemplateType.cs" />
-    <Compile Include="Model\AnalyticsDimFamilyHistorical.cs" />
-    <Compile Include="Model\AnalyticsDimGroupCurrent.cs" />
-    <Compile Include="Model\AnalyticsDimFamilyCurrent.cs" />
-    <Compile Include="Model\AnalyticsDimGroupHistorical.cs" />
-    <Compile Include="Model\AnalyticsSourceGroupHistorical.cs" />
     <Compile Include="Model\AnalyticsDimFinancialAccount.cs" />
     <Compile Include="Model\AnalyticsDimFinancialBatch.cs" />
     <Compile Include="Model\AnalyticsDimFinancialTransactionCreditCardType.cs" />
