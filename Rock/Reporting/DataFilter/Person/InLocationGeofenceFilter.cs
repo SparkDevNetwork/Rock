@@ -184,7 +184,7 @@ function() {
             if ( location != null )
             {
                 LocationPicker locationPicker = controls[0] as LocationPicker;
-                locationPicker.GetBestPickerModeForLocation( location );
+                locationPicker.CurrentPickerMode = locationPicker.GetBestPickerModeForLocation( location );
                 locationPicker.Location = location;
             }
         }
