@@ -18,6 +18,7 @@ using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.SqlClient;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 using Quartz;
@@ -35,6 +36,7 @@ namespace Rock.Jobs
     /// <seealso cref="Quartz.IJob" />
     [DisallowConcurrentExecution]
     [IntegerField( "Command Timeout", "Maximum amount of time (in seconds) to wait for the SQL Query to complete. Leave blank to use the SQL default (30 seconds). However, it could take several minutes, so you might want to set it at 600 (10 minutes) or higher", false, 10 * 60, "General", 1, "CommandTimeout" )]
+    [BooleanField( "Save SQL for Debug", "Save the SQL that is used in this job to App_Data\\Logs", false, "Advanced", 2, "SaveSQLForDebug" )]
     public class ProcessAnalyticsDimPerson : IJob
     {
         /// <summary> 
@@ -56,6 +58,7 @@ namespace Rock.Jobs
         private int _rowsInserted = 0;
         private int _attributeFieldsUpdated = 0;
         private int? _commandTimeout = null;
+        private List<string> _sqlLogs = new List<string>();
 
         /// <summary>
         /// Executes the specified context.
@@ -96,11 +99,40 @@ namespace Rock.Jobs
             {
                 resultText = $"Added {_columnsAdded}, modified {_columnsModified}, and removed {_columnsRemoved} attribute columns.\n";
             }
-
-
+            
             resultText += $"Marked {_rowsMarkedAsHistory} records as History, updated {_rowsUpdated} records, updated {_attributeFieldsUpdated} attribute formatted values, and inserted {_rowsInserted} records.";
 
             context.Result = resultText;
+
+            if ( dataMap.GetString( "SaveSQLForDebug" ).AsBoolean() )
+            {
+                LogSQL( "ProcessAnalyticsDimPerson.sql", _sqlLogs.AsDelimited( "\n" ).ToString() );
+            }
+        }
+
+        /// <summary>
+        /// Logs the SQL.
+        /// </summary>
+        /// <param name="fileName">Name of the file.</param>
+        /// <param name="message">The message.</param>
+        private void LogSQL( string fileName, string message )
+        {
+            try
+            {
+                string directory = AppDomain.CurrentDomain.BaseDirectory;
+                directory = Path.Combine( directory, "App_Data", "Logs" );
+
+                if ( !Directory.Exists( directory ) )
+                {
+                    Directory.CreateDirectory( directory );
+                }
+
+                string filePath = Path.Combine( directory, fileName );
+
+                File.WriteAllText( filePath, message );
+            }
+            catch { }
+
         }
 
         /// <summary>
@@ -152,6 +184,8 @@ UPDATE [AnalyticsSourcePersonHistorical]
                             parameters.Add( "@personAttributeValue", personAttributeValue );
                             parameters.Add( "@formattedValue", formattedValue );
                             this._rowsMarkedAsHistory += DbService.ExecuteCommand( markAsHistorySQL, System.Data.CommandType.Text, parameters );
+
+                            _sqlLogs.Add( parameters.Select(a => $"/* {a.Key} = '{a.Value}' */").ToList().AsDelimited("\n") + markAsHistorySQL );
                         }
                     }
                 }
@@ -202,6 +236,8 @@ UPDATE [AnalyticsSourcePersonHistorical]
                             parameters.Add( "@personAttributeValue", personAttributeValue );
                             parameters.Add( "@formattedValue", formattedValue );
                             _attributeFieldsUpdated += DbService.ExecuteCommand( updateSql, System.Data.CommandType.Text, parameters );
+
+                            _sqlLogs.Add( parameters.Select( a => $"/* {a.Key} = '{a.Value}' */" ).ToList().AsDelimited( "\n" ) + updateSql );
                         }
                     }
                 }
@@ -319,11 +355,15 @@ DECLARE
                 // Move Records To History that have changes in any of fields that trigger history
                 _rowsMarkedAsHistory += DbService.ExecuteCommand( scriptDeclares + markAsHistoryScript, CommandType.Text, null, _commandTimeout );
 
+                _sqlLogs.Add( "/* MarkAsHistoryScript */\n" + scriptDeclares + markAsHistoryScript );
+
                 // Update existing records that have CurrentRowIndicator=1 to match what is in the live tables
                 _rowsUpdated += DbService.ExecuteCommand( scriptDeclares + updateETLScript, CommandType.Text, null, _commandTimeout );
+                _sqlLogs.Add( "/* UpdateETLScript */\n" + scriptDeclares + updateETLScript );
 
                 // Insert new Person Records that aren't in there yet
                 _rowsInserted += DbService.ExecuteCommand( scriptDeclares + processINSERTScript, CommandType.Text, null, _commandTimeout );
+                _sqlLogs.Add( "/* ProcessINSERTScript */\n" + scriptDeclares + processINSERTScript );
             }
         }
 
