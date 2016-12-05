@@ -121,23 +121,7 @@ namespace Rock.Data
         /// The analytics dim dates.
         /// </value>
         public DbSet<AnalyticsDimDate> AnalyticsDimDates { get; set; }
-
-        /// <summary>
-        /// Gets or sets the analytics dim family currents.
-        /// </summary>
-        /// <value>
-        /// The analytics dim family currents.
-        /// </value>
-        public DbSet<AnalyticsDimFamilyCurrent> AnalyticsDimFamilyCurrents { get; set; }
-
-        /// <summary>
-        /// Gets or sets the analytics dim family historicals.
-        /// </summary>
-        /// <value>
-        /// The analytics dim family historicals.
-        /// </value>
-        public DbSet<AnalyticsDimGroupHistorical> AnalyticsDimFamilyHistoricals { get; set; }
-
+        
         /// <summary>
         /// Gets or sets the analytics dim financial accounts.
         /// </summary>
@@ -185,23 +169,7 @@ namespace Rock.Data
         /// The analytics dim financial transaction types.
         /// </value>
         public DbSet<AnalyticsDimFinancialTransactionType> AnalyticsDimFinancialTransactionTypes { get; set; }
-
-        /// <summary>
-        /// Gets or sets the analytics dim group currents.
-        /// </summary>
-        /// <value>
-        /// The analytics dim group currents.
-        /// </value>
-        public DbSet<AnalyticsDimGroupCurrent> AnalyticsDimGroupCurrents { get; set; }
-
-        /// <summary>
-        /// Gets or sets the analytics dim group historicals.
-        /// </summary>
-        /// <value>
-        /// The analytics dim group historicals.
-        /// </value>
-        public DbSet<AnalyticsDimGroupHistorical> AnalyticsDimGroupHistoricals { get; set; }
-
+        
         /// <summary>
         /// Gets or sets the analytics dim person connection statuses.
         /// </summary>
@@ -289,15 +257,7 @@ namespace Rock.Data
         /// The analytics fact financial transactions.
         /// </value>
         public DbSet<AnalyticsFactFinancialTransaction> AnalyticsFactFinancialTransactions { get; set; }
-
-        /// <summary>
-        /// Gets or sets the analytics source group historicals.
-        /// </summary>
-        /// <value>
-        /// The analytics source group historicals.
-        /// </value>
-        public DbSet<AnalyticsSourceGroupHistorical> AnalyticsSourceGroupHistoricals { get; set; }
-
+        
         /// <summary>
         /// Gets or sets the analytics source financial transactions.
         /// </summary>
