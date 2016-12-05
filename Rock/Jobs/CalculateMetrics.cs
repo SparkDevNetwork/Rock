@@ -120,7 +120,7 @@ namespace Rock.Jobs
                                         {
                                             string formattedSql = metric.SourceSql.ResolveMergeFields( metric.GetMergeObjects( scheduleDateTime ) );
                                             var tableResult = DbService.GetDataTable( formattedSql, System.Data.CommandType.Text, null );
-                                            
+
                                             if ( tableResult.Columns.Count >= 2 && tableResult.Columns[1].ColumnName == "MetricValueDateTime" )
                                             {
                                                 getMetricValueDateTimeFromResultSet = true;
@@ -175,6 +175,8 @@ namespace Rock.Jobs
                                             metricValue.MetricValueDateTime = resultValue.MetricValueDateTime;
                                             metricValue.MetricValueType = MetricValueType.Measure;
                                             metricValue.YValue = resultValue.Value;
+                                            metricValue.CreatedDateTime = RockDateTime.Now;
+                                            metricValue.ModifiedDateTime = RockDateTime.Now;
                                             metricValue.MetricValuePartitions = new List<MetricValuePartition>();
                                             var metricPartitionsByPosition = metricPartitions.OrderBy( a => a.Order ).ToList();
 
@@ -222,9 +224,8 @@ namespace Rock.Jobs
                                         if ( getMetricValueDateTimeFromResultSet )
                                         {
                                             var metricValueDateTimes = metricValuesToAdd.Select( a => a.MetricValueDateTime ).Distinct().ToList();
-                                            if ( metricValueDateTimes.Count == 1 )
+                                            foreach ( var metricValueDateTime in metricValueDateTimes )
                                             {
-                                                var metricValueDateTime = metricValueDateTimes.First();
                                                 bool alreadyHasMetricValues = metricValueService.Queryable().Where( a => a.MetricId == metric.Id && a.MetricValueDateTime == metricValueDateTime ).Any();
                                                 if ( alreadyHasMetricValues )
                                                 {
@@ -233,22 +234,23 @@ namespace Rock.Jobs
                                                         DELETE
                                                         FROM MetricValuePartition
                                                         WHERE MetricValueId IN (
-                                                                SELECT Id
-                                                                FROM MetricValue
-                                                                WHERE MetricId = @metricId and MetricValueDateTime = @metricValueDateTime
-                                                                )
-                                                        ", new SqlParameter( "@metricId", metric.Id ), new SqlParameter( "@metricValueDateTime", metricValueDateTime ) );
+                                                            SELECT Id
+                                                            FROM MetricValue
+                                                            WHERE MetricId = @metricId
+                                                            AND MetricValueDateTime = @metricValueDateTime
+                                                        )
+                                                    ", new SqlParameter( "@metricId", metric.Id ), new SqlParameter( "@metricValueDateTime", metricValueDateTime ) );
 
                                                     rockContextForMetricValues.Database.ExecuteSqlCommand( @"
                                                         DELETE
                                                         FROM MetricValue
                                                         WHERE MetricId = @metricId
-                                                            AND MetricValueDateTime = @metricValueDateTime
-                                                        ", new SqlParameter( "@metricId", metric.Id ), new SqlParameter( "@metricValueDateTime", metricValueDateTime ) );
+                                                        AND MetricValueDateTime = @metricValueDateTime
+                                                    ", new SqlParameter( "@metricId", metric.Id ), new SqlParameter( "@metricValueDateTime", metricValueDateTime ) );
                                                 }
                                             }
                                         }
-                                        
+
                                         metricValueService.AddRange( metricValuesToAdd );
 
                                         // disable savechanges PrePostProcessing since there could be hundreds or thousands of metric values getting inserted/updated
