@@ -23,13 +23,12 @@ using System.Runtime.Serialization;
 namespace Rock.Model
 {
     /// <summary>
-    /// AnalyticsDimFamilyCurrent is SQL View off of AnalyticsDimFamilyHistorical
-    /// and represents the CurrentRow record from AnalyticsDimFamilyHistorical
+    /// AnalyticsDimFamilyCurrent is SQL View off of AnalyticsDimGroupCurrent for GroupType of Family
     /// </summary>
     [Table( "AnalyticsDimFamilyCurrent" )]
     [DataContract]
     public class AnalyticsDimFamilyCurrent : AnalyticsDimGroupBase<AnalyticsDimFamilyCurrent>
     {
-        // intentionally blank. See AnalyticsDimFamilyBase, etc for the fields
+        // intentionally blank. See AnalyticsDimGroupBase, etc for the fields
     }
 }
