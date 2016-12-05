@@ -40,6 +40,7 @@ namespace com.centralaz.Workflow.Action.CheckIn
     [ExportMetadata( "ComponentName", "Save Attendance and Set Label Attribute (CentralAZ)" )]
 
     [WorkflowAttribute( "Will Label Print Attribute", "The attribute that determines whether the label will print." )]
+    [GroupTypesField( "Checkin Types To Limit", "The Checkin Types that will be limited to one label print per group per schedule" )]
     [IntegerField( "Number Of Alpha Characters", "Used to decide how many alpha characters should be included in the prefix of the security code.", true, 2 )]
     [IntegerField( "Number Of Numeric Characters", "Used to decide how many numeric characters should be included in the suffix of the security code. It is recommended to set no less than 4 to avoid problems obtaining a unique number.", true, 4 )]
     public class SaveAttendanceAndSetLabelAttribute : CheckInActionComponent
@@ -67,8 +68,12 @@ namespace com.centralaz.Workflow.Action.CheckIn
                     var checkinType = GroupTypeCache.Read( checkInState.CheckinTypeId.Value );
                     if ( checkinType != null )
                     {
-                        checkinType.LoadAttributes();
-                        canPrintLabelMultipleTimes = checkinType.GetAttributeValue( "CanPrintLabelMultipleTimes" ).AsBoolean( resultIfNullOrEmpty: true );
+                        var guidList = GetAttributeValue( action, "CheckinTypesToLimit" ).SplitDelimitedValues().AsGuidList();
+
+                        if ( guidList.Contains( checkinType.Guid ) )
+                        {
+                            canPrintLabelMultipleTimes = false;
+                        }
                     }
                 }
 

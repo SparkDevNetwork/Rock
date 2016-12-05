@@ -89,7 +89,7 @@ namespace com.centralaz.Workflow.Action.CheckIn
                                     }
                                     else if ( attribute.EntityTypeId == new Rock.Model.WorkflowActivity().TypeId )
                                     {
-                                        action.Activity.GetAttributeValue( attribute.Key ).AsBoolean( resultIfNullOrEmpty: true );
+                                        canPrintLabels = action.Activity.GetAttributeValue( attribute.Key ).AsBoolean( resultIfNullOrEmpty: true );
                                     }
                                 }
                             }
