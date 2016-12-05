@@ -1630,6 +1630,7 @@
     <Compile Include="Workflow\Action\Utility\LavaRun.cs" />
     <Compile Include="Workflow\Action\Utility\RunJob.cs" />
     <Compile Include="Workflow\Action\Utility\RunSQL.cs" />
+    <Compile Include="Workflow\Action\Utility\SQLtoExcel.cs" />
     <Compile Include="Workflow\Action\WorkflowAttributes\SetAttributeFromEntity.cs" />
     <Compile Include="Workflow\Action\WorkflowAttributes\SetAttributeFromPerson.cs" />
     <Compile Include="Workflow\Action\WorkflowAttributes\SetAttributeToCurrentPerson.cs" />
