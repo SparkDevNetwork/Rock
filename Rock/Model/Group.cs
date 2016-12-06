@@ -658,8 +658,12 @@ namespace Rock.Model
         {
             var groupEntity = new GroupService( new RockContext() ).Get( id );
 
-            var indexItem = GroupIndex.LoadByModel( groupEntity );
-            IndexContainer.IndexDocument( indexItem );
+            // check that this group type is set to be indexed.
+            if ( groupEntity.GroupType.IsIndexEnabled )
+            {
+                var indexItem = GroupIndex.LoadByModel( groupEntity );
+                IndexContainer.IndexDocument( indexItem );
+            }
         }
 
         /// <summary>
@@ -687,6 +691,29 @@ namespace Rock.Model
         public Type IndexModelType()
         {
             return typeof( GroupIndex );
+        }
+
+        /// <summary>
+        /// Gets the index filter values.
+        /// </summary>
+        /// <returns></returns>
+        public ModelFieldFilterConfig GetIndexFilterConfig()
+        {
+            ModelFieldFilterConfig filterConfig = new ModelFieldFilterConfig();
+            filterConfig.FilterValues = new GroupTypeService( new RockContext() ).Queryable().AsNoTracking().Where( t => t.IsIndexEnabled ).Select( t => t.Name ).ToList();
+            filterConfig.FilterLabel = "Group Types";
+            filterConfig.FilterField = "groupTypeName";
+
+            return filterConfig;
+        }
+
+        /// <summary>
+        /// Gets the index filter field.
+        /// </summary>
+        /// <returns></returns>
+        public bool SupportsIndexFieldFiltering()
+        {
+            return true;
         }
         #endregion
     }

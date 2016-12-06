@@ -65,7 +65,7 @@ namespace RockWeb.Blocks.Finance
 <h4>
 {{ Salutation }} <br />
 {{ StreetAddress1 }} <br />
-{% if StreetAddress2 != '' %}
+{% if StreetAddress2 and StreetAddress2 != '' %}
     {{ StreetAddress2 }} <br />
 {% endif %}
 {{ City }}, {{ State }} {{ PostalCode }}
@@ -84,13 +84,14 @@ namespace RockWeb.Blocks.Finance
 
 
     <table class=""table table-bordered table-striped table-condensed"">
-        <tr>
-            <th>Date</th>
-            <th>Giving Area</th>
-            <th>Check/Trans #</th>
-            <th align=""right"">Amount</th>
-        </tr>
-    
+        <thead>
+            <tr>
+                <th>Date</th>
+                <th>Giving Area</th>
+                <th>Check/Trans #</th>
+                <th align=""right"">Amount</th>
+            </tr>
+        </thead>    
 
         {% for transaction in TransactionDetails %}
             <tr>
@@ -301,6 +302,14 @@ namespace RockWeb.Blocks.Finance
                                     .OrderBy(p => p.FamilyRoleOrder).ThenBy(p => p.Gender)
                                     .ToList();
 
+            // make a list of person ids in the giving group
+            List<int> givingGroupIdsOnly = new List<int>();
+            foreach (var x in givingGroup)
+            {
+                givingGroupIdsOnly.Add(x.PersonId);
+            }
+
+
             string salutation = string.Empty;
 
             if (givingGroup.GroupBy(g => g.LastName).Count() == 1 )
@@ -321,15 +330,15 @@ namespace RockWeb.Blocks.Finance
             }
             mergeFields.Add( "Salutation", salutation );
 
-            var homeAddress = targetPerson.GetHomeLocation();
-            if ( homeAddress != null )
+            var mailingAddress = targetPerson.GetMailingLocation();
+            if ( mailingAddress != null )
             {
-                mergeFields.Add( "StreetAddress1", homeAddress.Street1 );
-                mergeFields.Add( "StreetAddress2", homeAddress.Street2 );
-                mergeFields.Add( "City", homeAddress.City );
-                mergeFields.Add( "State", homeAddress.State );
-                mergeFields.Add( "PostalCode", homeAddress.PostalCode );
-                mergeFields.Add( "Country", homeAddress.Country );
+                mergeFields.Add( "StreetAddress1", mailingAddress.Street1 );
+                mergeFields.Add( "StreetAddress2", mailingAddress.Street2 );
+                mergeFields.Add( "City", mailingAddress.City );
+                mergeFields.Add( "State", mailingAddress.State );
+                mergeFields.Add( "PostalCode", mailingAddress.PostalCode );
+                mergeFields.Add( "Country", mailingAddress.Country );
             }
             else
             {
@@ -375,6 +384,7 @@ namespace RockWeb.Blocks.Finance
                 pledge.AmountGiven = new FinancialTransactionDetailService( rockContext ).Queryable()
                                             .Where( t =>
                                                  t.AccountId == pledge.AccountId
+                                                 && givingGroupIdsOnly.Contains(t.Transaction.AuthorizedPersonAlias.PersonId)
                                                  && t.Transaction.TransactionDateTime >= pledge.PledgeStartDate
                                                  && t.Transaction.TransactionDateTime <= adjustedPedgeEndDate )
                                             .Sum( t => t.Amount );

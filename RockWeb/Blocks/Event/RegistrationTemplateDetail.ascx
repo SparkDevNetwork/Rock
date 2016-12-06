@@ -74,11 +74,11 @@
                                     Help="Typical relationship of registrants that user would register." />
                                 <div id="divCurrentFamilyMembers" runat="server" class="js-current-family-members" >
                                     <Rock:RockCheckBox ID="cbShowCurrentFamilyMembers" runat="server" Label="Show Family Members" Text="Yes"
-                                        Help="If Registrans in Same Family option is set to 'Yes', should the person registering be able to select people from their family when registering (vs. having to enter the family member's information manually)?" />
+                                        Help="If Registrants in Same Family option is set to 'Yes', should the person registering be able to select people from their family when registering (vs. having to enter the family member's information manually)?" />
                                 </div>
                                 
 
-                                <Rock:RockCheckBox id="cbWaitListEnabled" runat="server" Label="Enable Wait List" Text="Yes" Help="Should a wait list be enabled when the maximum number of registrats is reached." />
+                                <Rock:RockCheckBox id="cbWaitListEnabled" runat="server" Label="Enable Wait List" Text="Yes" Help="Should a wait list be enabled when the maximum number of registrants is reached." />
                             </div>
                         </div>
 
@@ -259,7 +259,7 @@
                             <div class="row">
                                 <div class="col-md-12">
                                     <Rock:RockTextBox ID="tbConfirmationSubject" runat="server" Label="Subject" />
-                                    <Rock:CodeEditor ID="ceConfirmationEmailTemplate" runat="server" Label="Confirmation Email Template" EditorMode="Lava" EditorTheme="Rock" EditorHeight="300" />
+                                    <Rock:CodeEditor ID="ceConfirmationEmailTemplate" runat="server" Label="Email Template" EditorMode="Lava" EditorTheme="Rock" EditorHeight="300" />
                                 </div>
                             </div>
                         </Rock:PanelWidget>
@@ -276,7 +276,7 @@
                             <div class="row">
                                 <div class="col-md-12">
                                     <Rock:RockTextBox ID="tbReminderSubject" runat="server" Label="Subject" />
-                                    <Rock:CodeEditor ID="ceReminderEmailTemplate" runat="server" Label="Reminder Email Template" EditorMode="Lava" EditorTheme="Rock" EditorHeight="300" />
+                                    <Rock:CodeEditor ID="ceReminderEmailTemplate" runat="server" Label="Email Template" EditorMode="Lava" EditorTheme="Rock" EditorHeight="300" />
                                 </div>
                             </div>
                         </Rock:PanelWidget>
@@ -293,7 +293,7 @@
                             <div class="row">
                                 <div class="col-md-12">
                                     <Rock:RockTextBox ID="tbPaymentReminderSubject" runat="server" Label="Subject" />
-                                    <Rock:CodeEditor ID="cePaymentReminderEmailTemplate" runat="server" Label="Confirmation Email Template" EditorMode="Lava" EditorTheme="Rock" EditorHeight="300" />
+                                    <Rock:CodeEditor ID="cePaymentReminderEmailTemplate" runat="server" Label="Email Template" EditorMode="Lava" EditorTheme="Rock" EditorHeight="300" />
                                 </div>
                             </div>
                             <div class="row">
@@ -320,7 +320,7 @@
                             <div class="row">
                                 <div class="col-md-12">
                                     <Rock:RockTextBox ID="tbWaitListTransitionSubject" runat="server" Label="Subject" />
-                                    <Rock:CodeEditor ID="ceWaitListTransitionEmailTemplate" runat="server" Label="Confirmation Email Template" EditorMode="Lava" EditorTheme="Rock" EditorHeight="300" />
+                                    <Rock:CodeEditor ID="ceWaitListTransitionEmailTemplate" runat="server" Label="Email Template" EditorMode="Lava" EditorTheme="Rock" EditorHeight="300" />
                                 </div>
                             </div>
                         </Rock:PanelWidget>

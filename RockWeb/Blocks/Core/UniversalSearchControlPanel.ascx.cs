@@ -90,7 +90,9 @@ namespace RockWeb.Blocks.Core
             {
                 LoadIndexDetails();
                 LoadEntities();
-                
+                ShowSmartSearchView();
+
+                ddlSearchType.BindToEnum<SearchType>();
             }
         }
 
@@ -98,7 +100,74 @@ namespace RockWeb.Blocks.Core
 
         #region Events
 
-        // handlers called by the controls on your block
+        /// <summary>
+        /// Handles the Click event of the lbSmartSearchEdit control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void lbSmartSearchEdit_Click( object sender, EventArgs e )
+        {
+            var entities = EntityTypeCache.All();
+            var indexableEntities = entities.Where( i => i.IsIndexingSupported == true ).ToList();
+
+            cblSmartSearchEntities.DataTextField = "FriendlyName";
+            cblSmartSearchEntities.DataValueField = "Id";
+            cblSmartSearchEntities.DataSource = indexableEntities;
+            cblSmartSearchEntities.DataBind();
+
+            var entitySetting = Rock.Web.SystemSettings.GetValue( "core_SmartSearchUniversalSearchEntities" );
+
+            List<string> entityList = entitySetting.Split( ',' ).ToList();
+
+            foreach(ListItem checkbox in cblSmartSearchEntities.Items )
+            {
+                if ( entityList.Contains( checkbox.Value ) ) {
+                    checkbox.Selected = true;
+                }
+            }
+
+            tbSmartSearchFieldCrieria.Text = Rock.Web.SystemSettings.GetValue( "core_SmartSearchUniversalSearchFieldCriteria" );
+
+            var searchType = ((int)SearchType.Wildcard).ToString();
+
+            if ( !string.IsNullOrWhiteSpace( Rock.Web.SystemSettings.GetValue( "core_SmartSearchUniversalSearchSearchType" ) ) )
+            {
+                searchType = Rock.Web.SystemSettings.GetValue( "core_SmartSearchUniversalSearchSearchType" );
+            }
+
+            ddlSearchType.SelectedValue = searchType;
+
+            pnlSmartSearchEdit.Visible = true;
+            pnlSmartSearchView.Visible = false;
+        }
+
+        /// <summary>
+        /// Handles the Click event of the lbSmartSearchSave control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void lbSmartSearchSave_Click( object sender, EventArgs e )
+        {
+            Rock.Web.SystemSettings.SetValue( "core_SmartSearchUniversalSearchEntities", string.Join(",", cblSmartSearchEntities.SelectedValues.Select( n => n.ToString() ).ToArray() ));
+            Rock.Web.SystemSettings.SetValue( "core_SmartSearchUniversalSearchFieldCriteria", tbSmartSearchFieldCrieria.Text );
+            Rock.Web.SystemSettings.SetValue( "core_SmartSearchUniversalSearchSearchType", ddlSearchType.SelectedValue );
+
+            ShowSmartSearchView();
+
+            pnlSmartSearchEdit.Visible = false;
+            pnlSmartSearchView.Visible = true;
+        }
+
+        /// <summary>
+        /// Handles the Click event of the lbSmartSearchCancel control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void lbSmartSearchCancel_Click( object sender, EventArgs e )
+        {
+            pnlSmartSearchEdit.Visible = false;
+            pnlSmartSearchView.Visible = true;
+        }
 
         /// <summary>
         /// Handles the BlockUpdated event of the control.
@@ -172,8 +241,9 @@ namespace RockWeb.Blocks.Core
 
                 if ( !isIndexingEnabled )
                 {
-                    var refreshCell = e.Row.Cells[2].Controls[0].Visible = false;
-                    var bulkDownloadCell = e.Row.Cells[3].Controls[0].Visible = false;
+                    e.Row.Cells[2].Controls[0].Visible = false;
+                    e.Row.Cells[3].Controls[0].Visible = false;
+                    e.Row.Cells[4].Controls[0].Visible = false;
                 }
             }
         }
@@ -238,7 +308,30 @@ namespace RockWeb.Blocks.Core
                 if ( classInstance != null && deleteItemsMethod != null )
                 {
                     deleteItemsMethod.Invoke( classInstance, null );
+
+                    maMessages.Show( string.Format( "All documents in the {0} index have been deleted.", entityType.FriendlyName ), ModalAlertType.Information );
                 }
+            }
+        }
+
+
+        /// <summary>
+        /// Handles the Click event of the gRefresh control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="RowEventArgs"/> instance containing the event data.</param>
+        protected void gRefresh_Click( object sender, RowEventArgs e )
+        {
+            RockContext rockContext = new RockContext();
+            EntityTypeService entityTypeService = new EntityTypeService( rockContext );
+            var entityType = entityTypeService.Get( e.RowKeyId );
+
+            if ( entityType != null )
+            {
+                IndexContainer.DeleteIndex( entityType.IndexModelType );
+                IndexContainer.CreateIndex( entityType.IndexModelType );
+
+                maMessages.Show( string.Format( "The index for {0} has been re-created.", entityType.FriendlyName ), ModalAlertType.Information );
             }
         }
 
@@ -246,6 +339,29 @@ namespace RockWeb.Blocks.Core
 
         #region Methods
 
+        /// <summary>
+        /// Shows the smart search view.
+        /// </summary>
+        private void ShowSmartSearchView()
+        {
+            var entitySetting = Rock.Web.SystemSettings.GetValue( "core_SmartSearchUniversalSearchEntities" );
+
+            if ( !string.IsNullOrWhiteSpace( entitySetting ) )
+            {
+                List<int> entityIds = entitySetting.Split( ',' ).Select( int.Parse ).ToList();
+
+                var selected = string.Join( ", ", EntityTypeCache.All().Where( e => entityIds.Contains( e.Id ) ).Select( e => e.FriendlyName ).ToList() );
+
+                lSmartSearchEntities.Text = string.Join( ",", EntityTypeCache.All().Where( e => entityIds.Contains( e.Id ) ).Select( e => e.FriendlyName ).ToList() );
+            }
+            lSmartSearchFilterCriteria.Text = Rock.Web.SystemSettings.GetValue( "core_SmartSearchUniversalSearchFieldCriteria" );
+
+            lSearchType.Text = Enum.Parse(typeof(SearchType), Rock.Web.SystemSettings.GetValue( "core_SmartSearchUniversalSearchSearchType" ) ).ToString();
+        }
+
+        /// <summary>
+        /// Loads the index details.
+        /// </summary>
         private void LoadIndexDetails()
         {
             bool searchEnabled = false;
@@ -259,7 +375,7 @@ namespace RockWeb.Blocks.Core
                     hlblEnabled.LabelType = LabelType.Success;
                     searchEnabled = true;
 
-                    if (!component.IsConnected )
+                    if ( !component.IsConnected )
                     {
                         hlblEnabled.LabelType = LabelType.Warning;
                         nbMessages.NotificationBoxType = NotificationBoxType.Warning;
@@ -295,6 +411,5 @@ namespace RockWeb.Blocks.Core
         }
 
         #endregion
-
     }
 }

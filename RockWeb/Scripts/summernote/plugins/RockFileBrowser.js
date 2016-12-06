@@ -23,9 +23,9 @@
 
                 $modalPopupIFrame.contents().off('click');
 
-                $modalPopupIFrame.contents().on('click', '.js-select-file-button', function () {
+                $modalPopupIFrame.contents().on('click', '.js-select-file-button', function (e) {
                     Rock.controls.modal.close();
-                    var fileResult = $('body iframe').contents().find('.js-filebrowser-result input[type=hidden]').val();
+                    var fileResult = $(e.target).closest('body').find('.js-filebrowser-result input[type=hidden]').val();
                     if (fileResult) {
 
                         // iframe returns the result in the format "href|text"

@@ -548,6 +548,8 @@
     <Compile Include="Jobs\IndexRockSite.cs" />
     <Compile Include="Jobs\ProcessAnalyticsFactFinancialTransaction.cs" />
     <Compile Include="Jobs\ProcessAnalyticsDimPerson.cs" />
+    <Compile Include="Jobs\SendCreditCardExpirationNotices.cs" />
+    <Compile Include="Jobs\IndexEntities.cs" />
     <Compile Include="Jobs\UniversalSearchBulkIndex.cs" />
     <Compile Include="Jobs\CalculateGroupRequirements.cs" />
     <Compile Include="Jobs\CalculateMetrics.cs" />
@@ -579,6 +581,7 @@
     <Compile Include="Lava\Blocks\Execute.cs" />
     <Compile Include="Lava\Blocks\RockEntity.cs" />
     <Compile Include="Lava\Blocks\RockLavaBlockBase.cs" />
+    <Compile Include="Lava\Blocks\Search.cs" />
     <Compile Include="Lava\Blocks\WebRequest.cs" />
     <Compile Include="Lava\Blocks\Sql.cs" />
     <Compile Include="Lava\CommonMergeFieldsOptions.cs" />
@@ -737,6 +740,11 @@
     <Compile Include="Model\CodeGenerated\GroupTypeService.cs" />
     <Compile Include="Model\CodeGenerated\HistoryService.cs" />
     <Compile Include="Model\CodeGenerated\HtmlContentService.cs" />
+    <Compile Include="Model\CodeGenerated\InteractionChannelService.cs" />
+    <Compile Include="Model\CodeGenerated\InteractionComponentService.cs" />
+    <Compile Include="Model\CodeGenerated\InteractionDeviceTypeService.cs" />
+    <Compile Include="Model\CodeGenerated\InteractionService.cs" />
+    <Compile Include="Model\CodeGenerated\InteractionSessionService.cs" />
     <Compile Include="Model\CodeGenerated\LayoutService.cs" />
     <Compile Include="Model\CodeGenerated\LocationService.cs" />
     <Compile Include="Model\CodeGenerated\MergeTemplateService.cs" />
@@ -899,6 +907,11 @@
     <Compile Include="Model\HistoryService.Partial.cs" />
     <Compile Include="Model\HtmlContent.cs" />
     <Compile Include="Model\HtmlContentService.Partial.cs" />
+    <Compile Include="Model\Interaction.cs" />
+    <Compile Include="Model\InteractionChannel.cs" />
+    <Compile Include="Model\InteractionComponent.cs" />
+    <Compile Include="Model\InteractionDeviceType.cs" />
+    <Compile Include="Model\InteractionSession.cs" />
     <Compile Include="Model\Layout.cs" />
     <Compile Include="Model\LayoutService.Partial.cs" />
     <Compile Include="Model\Location.cs" />
@@ -962,7 +975,11 @@
     <Compile Include="Model\Schedule.cs" />
     <Compile Include="Model\ScheduleService.Partial.cs" />
     <Compile Include="Model\WorkflowActionService.Partial.cs" />
+    <Compile Include="PersonProfile\Badge\InDataView.cs" />
+    <Compile Include="Reporting\DataFilter\Person\InLocationGeofenceFilter.cs" />
     <Compile Include="Reporting\DataSelect\GroupMember\GroupLinkSelect.cs" />
+    <Compile Include="Search\Other\Universal.cs" />
+    <Compile Include="Reporting\DataFilter\Person\InRegistrationInstanceFilter.cs" />
     <Compile Include="Transactions\DeleteIndexEntityTransaction.cs" />
     <Compile Include="Transactions\IndexEntityTransaction.cs" />
     <Compile Include="Transactions\BulkIndexEntityTypeTransaction.cs" />
@@ -1162,9 +1179,13 @@
     <Compile Include="UniversalSearch\IndexModels\IndexModelBase.cs" />
     <Compile Include="UniversalSearch\IndexModels\GroupIndex.cs" />
     <Compile Include="UniversalSearch\IndexModels\SitePageIndex.cs" />
+    <Compile Include="UniversalSearch\IndexModels\StringAttribute.cs" />
     <Compile Include="UniversalSearch\IRockIndexable.cs" />
+    <Compile Include="UniversalSearch\SearchFieldCriteria.cs" />
+    <Compile Include="UniversalSearch\ModelFieldFilterConfig.cs" />
     <Compile Include="UniversalSearch\SearchResultModel.cs" />
     <Compile Include="Utility\DebugHelper.cs" />
+    <Compile Include="Utility\ExcelHelper.cs" />
     <Compile Include="Utility\FileUtilities.cs" />
     <Compile Include="Web\UI\RockTheme.cs" />
     <Compile Include="Web\Cache\AttributeValueCache.cs" />
@@ -1632,6 +1653,7 @@
     <Compile Include="Workflow\Action\Groups\UpdateGroupMemberStatus.cs" />
     <Compile Include="Workflow\Action\People\GetPersonFromFields.cs" />
     <Compile Include="Workflow\Action\People\PersonAddressUpdate.cs" />
+    <Compile Include="Workflow\Action\People\PersonGetHeadOfHousehold.cs" />
     <Compile Include="Workflow\Action\People\PersonGetSpouse.cs" />
     <Compile Include="Workflow\Action\People\PersonNoteAdd.cs" />
     <Compile Include="Workflow\Action\People\PersonPhoneUpdate.cs" />

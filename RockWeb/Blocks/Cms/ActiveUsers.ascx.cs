@@ -119,7 +119,10 @@ namespace RockWeb.Blocks.Cms
 
                 using ( var rockContext = new RockContext() )
                 {
-                    var qryPageViews = new PageViewService( rockContext ).Queryable();
+                    //var qryPageViews = new PageViewService( rockContext ).Queryable();
+
+                    var qryPageViews = new InteractionService( rockContext ).Queryable();
+
                     var qryPersonAlias = new PersonAliasService( rockContext ).Queryable();
                     var pageViewQry = qryPageViews.Join(
                         qryPersonAlias,
@@ -129,10 +132,10 @@ namespace RockWeb.Blocks.Cms
                         new
                         {
                             PersonAliasPersonId = pa.PersonId,
-                            pv.DateTimeViewed,
-                            pv.SiteId,
-                            pv.PageViewSessionId,
-                            PagePageTitle = pv.PageTitle
+                            pv.InteractionDateTime,
+                            pv.InteractionComponent.Channel.ChannelEntityId,
+                            pv.InteractionSessionId,
+                            PagePageTitle = pv.InteractionComponent.Name
                         } );
 
                     var last24Hours = RockDateTime.Now.AddDays( -1 );
@@ -165,8 +168,8 @@ namespace RockWeb.Blocks.Cms
                             },
                             pageViews = pageViewQry
                                 .Where( v => v.PersonAliasPersonId == l.PersonId )
-                                .Where( v => v.DateTimeViewed > last24Hours )
-                                .OrderByDescending( v => v.DateTimeViewed )
+                                .Where( v => v.InteractionDateTime > last24Hours )
+                                .OrderByDescending( v => v.InteractionDateTime )
                                 .Take( pageViewTakeCount )
                         } )
                         .Select( a => new
@@ -184,13 +187,13 @@ namespace RockWeb.Blocks.Cms
                     {
                         var login = activeLogin.login;
 
-                        if ( !activeLogin.pageViews.Any() || activeLogin.pageViews.FirstOrDefault().SiteId != site.Id )
+                        if ( !activeLogin.pageViews.Any() || activeLogin.pageViews.FirstOrDefault().ChannelEntityId != site.Id )
                         {
                             // only show active logins with PageViews and the most recent pageview is for the specified site
                             continue;
                         }
 
-                        var latestPageViewSessionId = activeLogin.pageViews.FirstOrDefault().PageViewSessionId;
+                        var latestPageViewSessionId = activeLogin.pageViews.FirstOrDefault().InteractionSessionId;
 
                         TimeSpan tsLastActivity = login.LastActivityDateTime.HasValue ? RockDateTime.Now.Subtract( login.LastActivityDateTime.Value ) : TimeSpan.MaxValue;
                         string className = tsLastActivity.Minutes <= 5 ? "recent" : "not-recent";
@@ -219,7 +222,7 @@ namespace RockWeb.Blocks.Cms
                             if ( activeLogin.pageViews != null )
                             {
                                 string pageViewsHtml = activeLogin.pageViews
-                                                    .Where( v => v.PageViewSessionId == latestPageViewSessionId )
+                                                    .Where( v => v.InteractionSessionId == latestPageViewSessionId )
                                                     .Select( v => HttpUtility.HtmlEncode( v.PagePageTitle ) ).ToList().AsDelimited( "<br> " );
 
                                 sbUsers.Append( string.Format( activeLoginFormat, className, personLink, pageViewsHtml ) );
