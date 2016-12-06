@@ -38,6 +38,15 @@ namespace Rock.Client
         public int? AssignedGroupId { get; set; }
 
         /// <summary />
+        public string AssignedGroupMemberAttributeValues { get; set; }
+
+        /// <summary />
+        public int? AssignedGroupMemberRoleId { get; set; }
+
+        /// <summary />
+        public Rock.Client.Enums.GroupMemberStatus? AssignedGroupMemberStatus { get; set; }
+
+        /// <summary />
         public int? CampusId { get; set; }
 
         /// <summary />
@@ -106,6 +115,9 @@ namespace Rock.Client
         {
             this.Id = source.Id;
             this.AssignedGroupId = source.AssignedGroupId;
+            this.AssignedGroupMemberAttributeValues = source.AssignedGroupMemberAttributeValues;
+            this.AssignedGroupMemberRoleId = source.AssignedGroupMemberRoleId;
+            this.AssignedGroupMemberStatus = source.AssignedGroupMemberStatus;
             this.CampusId = source.CampusId;
             this.Comments = source.Comments;
             this.ConnectionOpportunityId = source.ConnectionOpportunityId;

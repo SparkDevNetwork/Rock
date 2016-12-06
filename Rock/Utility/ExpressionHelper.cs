@@ -71,9 +71,19 @@ namespace Rock.Utility
                 return value;
             }
 
+            if ( propertyType == typeof( Guid ) )
+            {
+                return value.AsGuid();
+            }
+
             if ( string.IsNullOrWhiteSpace( value ) && isNullableType )
             {
                 return null;
+            }
+
+            if ( propertyType.IsEnum )
+            {
+                return Enum.Parse( propertyType, value );
             }
 
             return Convert.ChangeType( value, propertyType );

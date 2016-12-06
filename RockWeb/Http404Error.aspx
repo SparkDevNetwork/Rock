@@ -22,8 +22,8 @@
 </head>
 <body id="splash" class="error">
     <form id="form1" runat="server">
-    
-        
+
+
         <div id="content">
             <div id="logo">
                 <asp:Literal ID="lLogoSvg" runat="server" />
@@ -32,17 +32,17 @@
             <div id="content-box">
                 <div class="row">
                     <div class="col-md-12">
-                        
+
                         <div class="error-wrap">
                             <h1>We Can't Find That Page</h1>
-                        
+
                             <p class="error-icon info">
                                 <i class="fa fa-question-circle"></i>
                             </p>
 
                             <p>
                                 Sorry, but the page you are looking for can not be found. Check the address of the page
-                                and see your adminstrator if you still need assistance.
+                                and see your administrator if you still need assistance.
                             </p>
                         </div>
                     </div>

@@ -44,7 +44,7 @@ namespace Rock.Migrations
             AddPage( "EA611245-7A5E-4995-A3C6-EB97C6FD7C8D", "195BCD57-1C10-4969-886F-7324B6287B75", "Template Detail", "", "753D62FD-A06F-43A3-B9D2-0A728FF2809A", "" ); // Site:Rock RMS
 
             AddBlockType( "Template Detail", "Used for editing a communication template that can be selected when creating a new communication, SMS, etc. to people.", "~/Blocks/Communication/TemplateDetail.ascx", "Communication", "BFDCA2E2-DAA1-4FA6-B33C-C53C7CF23C5D" );
-            AddBlockType( "Template List", "Lists the available communicaiton templates that can used when creating new communications.", "~/Blocks/Communication/TemplateList.ascx", "Communication", "EACDBBD4-C355-4D38-B604-779BC55D3876" );
+            AddBlockType( "Template List", "Lists the available communication templates that can used when creating new communications.", "~/Blocks/Communication/TemplateList.ascx", "Communication", "EACDBBD4-C355-4D38-B604-779BC55D3876" );
 
             // Add Block to Page: Communication Templates, Site: Rock RMS
             AddBlock( "EA611245-7A5E-4995-A3C6-EB97C6FD7C8D", "", "EACDBBD4-C355-4D38-B604-779BC55D3876", "Template List", "Main", "", "", 0, "8B080D88-D088-4D09-9D74-576B485549A2" );

@@ -1,6 +1,17 @@
 ﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="CommunicationEntry.ascx.cs" Inherits="RockWeb.Blocks.Communication.CommunicationEntry" %>
 <%@ Register src="CommunicationDetail.ascx" TagName="communicationDetail" TagPrefix="cd" %>
 
+<script>
+    //Sys.WebForms.PageRequestManager.getInstance().add_endRequest(scrollToGrid);
+    function scrollToResults() {
+        
+            $('html, body').animate({
+                scrollTop: $('.js-pnl-result')
+            }, 'fast');
+        
+    }
+</script>
+
 <asp:UpdatePanel ID="upPanel" runat="server">
     <ContentTemplate>
  
@@ -96,7 +107,7 @@
 
                 </asp:Panel>
 
-                <asp:Panel ID="pnlResult" runat="server" Visible="false">
+                <asp:Panel ID="pnlResult" runat="server" Visible="false" CssClass="js-pnl-result">
                     <Rock:NotificationBox ID="nbResult" runat="server" NotificationBoxType="Success" />
                     <br />
                     <asp:HyperLink ID="hlViewCommunication" runat="server" Text="View Communication" />

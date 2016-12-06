@@ -53,6 +53,36 @@ namespace Rock.Lava
     {
         #region String Filters
 
+
+        /// <summary>
+        /// Withes the fallback.
+        /// </summary>
+        /// <param name="input">The input.</param>
+        /// <param name="successText">The success text.</param>
+        /// <param name="fallbackText">The fallback text.</param>
+        /// <returns></returns>
+        public static string WithFallback( object input, string successText, string fallbackText )
+        {
+            if ( input == null )
+            {
+                return fallbackText;
+            }
+            else
+            {
+                var inputString = input.ToString();
+
+                if (string.IsNullOrWhiteSpace( inputString ) )
+                {
+                    return fallbackText;
+                }
+                else
+                {
+                    return inputString + successText;
+                }
+            }
+        }
+
+
         /// <summary>
         /// obfuscate a given email
         /// </summary>
@@ -126,14 +156,18 @@ namespace Rock.Lava
                 return input;
             }
 
-            decimal numericQuantity;
+            decimal numericQuantity = 0.0M;
             if ( quantity is string )
             {
                 numericQuantity = ( quantity as string ).AsDecimal();
             }
             else
             {
-                numericQuantity = Convert.ToDecimal( quantity );
+                try
+                {
+                    numericQuantity = Convert.ToDecimal( quantity );
+                }
+                catch { }
             }
 
             if ( numericQuantity > 1 )
@@ -1411,28 +1445,7 @@ namespace Rock.Lava
             // If valid attribute and value were found
             if ( attribute != null && !string.IsNullOrWhiteSpace( rawValue ) )
             {
-                Person currentPerson = null;
-
-                // First check for a person override value included in lava context
-                if ( context.Scopes != null )
-                {
-                    foreach ( var scopeHash in context.Scopes )
-                    {
-                        if ( scopeHash.ContainsKey( "CurrentPerson" ) )
-                        {
-                            currentPerson = scopeHash["CurrentPerson"] as Person;
-                        }
-                    }
-                }
-
-                if ( currentPerson == null )
-                {
-                    var httpContext = System.Web.HttpContext.Current;
-                    if ( httpContext != null && httpContext.Items.Contains( "CurrentPerson" ) )
-                    {
-                        currentPerson = httpContext.Items["CurrentPerson"] as Person;
-                    }
-                }
+                Person currentPerson = GetCurrentPerson( context );
 
                 if ( attribute.IsAuthorized( Authorization.VIEW, currentPerson ) )
                 {
@@ -1503,6 +1516,85 @@ namespace Rock.Lava
         #endregion
 
         #region Person Filters
+
+        /// <summary>
+        /// Sets the person preference.
+        /// </summary>
+        /// <param name="context">The context.</param>
+        /// <param name="input">The input.</param>
+        /// <param name="settingKey">The setting key.</param>
+        /// <param name="settingValue">The setting value.</param>
+        public static void SetUserPreference( DotLiquid.Context context, object input, string settingKey, string settingValue )
+        {
+            Person person = null;
+
+            if (input is int )
+            {
+                person = new PersonService( new RockContext() ).Get( (int)input ); 
+            }
+            else if (input is Person )
+            {
+                person = (Person)input;
+            }
+
+            if (person != null )
+            {
+                PersonService.SaveUserPreference( person, settingKey, settingValue );
+            }
+        }
+
+        /// <summary>
+        /// Gets the person preference.
+        /// </summary>
+        /// <param name="context">The context.</param>
+        /// <param name="input">The input.</param>
+        /// <param name="settingKey">The setting key.</param>
+        /// <returns></returns>
+        public static string GetUserPreference( DotLiquid.Context context, object input, string settingKey )
+        {
+            Person person = null;
+
+            if ( input is int )
+            {
+                person = new PersonService( new RockContext() ).Get( (int)input );
+            }
+            else if ( input is Person )
+            {
+                person = (Person)input;
+            }
+
+            if ( person != null )
+            {
+                return PersonService.GetUserPreference( person, settingKey );
+            }
+
+            return string.Empty;
+        }
+
+        /// <summary>
+        /// Deletes the user preference.
+        /// </summary>
+        /// <param name="context">The context.</param>
+        /// <param name="input">The input.</param>
+        /// <param name="settingKey">The setting key.</param>
+        public static void DeleteUserPreference( DotLiquid.Context context, object input, string settingKey )
+        {
+            Person person = null;
+
+            if ( input is int )
+            {
+                person = new PersonService( new RockContext() ).Get( (int)input );
+            }
+            else if ( input is Person )
+            {
+                person = (Person)input;
+            }
+
+            if ( person != null )
+            {
+                PersonService.DeleteUserPreference( person, settingKey );
+            }
+        }
 
         /// <summary>
         /// Persons the by identifier.
@@ -1772,6 +1864,40 @@ namespace Rock.Lava
             }
 
             return string.Empty;
+        }
+
+        /// <summary>
+        /// Gets the Spouse of the selected person 
+        /// </summary>
+        /// <param name="context">The context.</param>
+        /// <param name="input">The input.</param>
+        /// <returns></returns>
+        public static Person Spouse( DotLiquid.Context context, object input )
+        {
+            var person = GetPerson( input );
+
+            if ( person == null )
+            {
+                return null;
+            }
+            return person.GetSpouse();
+        }
+
+        /// <summary>
+        /// Gets the Head of Household of the selected person 
+        /// </summary>
+        /// <param name="context">The context.</param>
+        /// <param name="input">The input.</param>
+        /// <returns></returns>
+        public static Person HeadOfHousehold( DotLiquid.Context context, object input )
+        {
+            var person = GetPerson( input );
+
+            if ( person == null )
+            {
+                return null;
+            }
+            return person.GetHeadOfHousehold();
         }
 
         /// <summary>
@@ -2528,7 +2654,10 @@ namespace Rock.Lava
                                 return page.Site.Theme;
                             }
                         }
-
+                    case "Description":
+                        {
+                            return page.MetaDescription;
+                        }
                     case "Layout":
                         {
                             return page.Layout.Name;
@@ -2743,6 +2872,232 @@ namespace Rock.Lava
             {
                 return input;
             }
+        }
+
+        #endregion
+
+        #region Object Filters
+
+        /// <summary>
+        /// Gets the Notes of the entity
+        /// </summary>
+        /// <param name="context">The context.</param>
+        /// <param name="input">The input.</param>
+        /// <param name="noteType">The noteType.</param>
+        /// <param name="sortOrder">The sort order.</param>
+        /// <param name="count">The count.</param>
+        /// <returns></returns>
+        public static List<Note> Notes( DotLiquid.Context context, object input, object noteType, string sortOrder = "desc", int? count = null )
+        {
+            int? entityId = null;
+
+            if ( input is int )
+            {
+                entityId = Convert.ToInt32( input );
+            }
+            if ( input is IEntity )
+            {
+                IEntity entity = input as IEntity;
+                entityId = entity.Id;
+            }
+            if ( !entityId.HasValue )
+            {
+                return null;
+            }
+
+            List<int> noteTypeIds = new List<int>();
+
+            if ( noteType is int )
+            {
+                noteTypeIds.Add( (int)noteType );
+            }
+
+            if ( noteType is string )
+            {
+                noteTypeIds = ((string)noteType).Split( ',' ).Select( Int32.Parse ).ToList();
+            }
+
+            var notes = new NoteService( new RockContext() ).Queryable().Where( n => n.EntityId == entityId );
+
+            if ( noteTypeIds.Count > 0 )
+            {
+                notes = notes.Where( n => noteTypeIds.Contains( n.NoteTypeId ) );
+            }
+            else
+            {
+                return null;
+            }
+
+            // add sort order
+            if(sortOrder == "desc" )
+            {
+                notes = notes.OrderByDescending( n => n.CreatedDateTime );
+            }
+            else
+            {
+                notes = notes.OrderBy( n => n.CreatedDateTime );
+            }
+
+            var filterNotes = new List<Note>();
+            foreach ( var note in notes )
+            {
+                if ( note.IsAuthorized( Authorization.VIEW, GetCurrentPerson( context ) ) )
+                {
+                    filterNotes.Add( note );
+                }
+            }
+
+            if ( !count.HasValue )
+            {
+                return filterNotes;
+            }
+            else
+            {
+                return filterNotes.OrderBy(n => n.CreatedDateTime).Take( count.Value ).ToList();
+            }
+        }
+
+        /// <summary>
+        /// Determines whether [has rights to] [the specified context].
+        /// </summary>
+        /// <param name="context">The context.</param>
+        /// <param name="input">The input.</param>
+        /// <param name="verb">The verb.</param>
+        /// <param name="typeName">Name of the type.</param>
+        /// <returns></returns>
+        /// <exception cref="System.Exception">Could not determine type for the input provided. Consider passing it in (e.g. 'Rock.Model.Person')</exception>
+        public static bool HasRightsTo( DotLiquid.Context context, object input, string verb, string typeName = "" )
+        {
+          
+            if (string.IsNullOrWhiteSpace( verb ) )
+            {
+                throw new Exception( "Could not determine the verd to check against (e.g. 'View', 'Edit'...)" );
+            }
+
+            if ( input == null )
+            {
+                return false;
+            }
+            else
+            {
+                var type = input.GetType();
+
+                // if the input is a model call IsAuthorized and get out of here
+                if ( type.IsAssignableFrom( typeof( ISecured ) ) )
+                {
+                    var model = (ISecured)input;
+                    return model.IsAuthorized( verb, GetCurrentPerson( context ) );
+                }
+
+                // not so easy then...
+                if ( string.IsNullOrWhiteSpace( typeName ) )
+                {
+                    // attempt to read it from the input object
+                    var propertyInfo = type.GetProperty( "TypeName" );
+
+                    if ( propertyInfo != null )
+                    {
+                        typeName = propertyInfo.GetValue( input, null ).ToString();
+                    }
+
+                    if ( string.IsNullOrWhiteSpace( typeName ) )
+                    {
+                        throw new Exception( "Could not determine type for the input provided. Consider passing it in (e.g. 'Rock.Model.Person')" );
+                    }
+                }
+
+                int? id = null;
+
+                if ( type == typeof( int ) )
+                {
+                    id = (int)input;
+                }
+                else if ( type == typeof( string ) )
+                {
+                    id = input.ToString().AsIntegerOrNull();
+                }
+                else
+                {
+                    // check if it has an id property
+                    var propertyInfo = type.GetProperty( "Id" );
+
+                    if ( propertyInfo != null )
+                    {
+                        id = (int)propertyInfo.GetValue( input, null );
+                    }
+                }
+
+                if ( id.HasValue )
+                {
+                    var entityTypes = EntityTypeCache.All();
+                    var entityTypeCache = entityTypes.Where( e => String.Equals( e.Name, typeName, StringComparison.OrdinalIgnoreCase ) ).FirstOrDefault();
+
+                    if ( entityTypeCache != null )
+                    {
+                        RockContext _rockContext = new RockContext();
+
+                        Type entityType = entityTypeCache.GetEntityType();
+                        if ( entityType != null )
+                        {
+                            Type[] modelType = { entityType };
+                            Type genericServiceType = typeof( Rock.Data.Service<> );
+                            Type modelServiceType = genericServiceType.MakeGenericType( modelType );
+                            Rock.Data.IService serviceInstance = Activator.CreateInstance( modelServiceType, new object[] { _rockContext } ) as IService;
+
+                            MethodInfo getMethod = serviceInstance.GetType().GetMethod( "Get", new Type[] { typeof( int ) } );
+
+                            if ( getMethod != null )
+                            {
+                                var model = getMethod.Invoke( serviceInstance, new object[] { id.Value } ) as ISecured;
+
+                                if ( model != null )
+                                {
+                                    return model.IsAuthorized( verb, GetCurrentPerson( context ) );
+                                }
+                            }
+                        }
+                    }
+                }
+                else
+                {
+                    throw new Exception( "Could not determine the id of the entity." );
+                }
+            }
+
+            return false;
+        }
+
+        /// <summary>
+        /// Gets the current person.
+        /// </summary>
+        /// <param name="context">The context.</param>
+        /// <returns></returns>
+        private static Person GetCurrentPerson( DotLiquid.Context context )
+        {
+            Person currentPerson = null;
+
+            // First check for a person override value included in lava context
+            if ( context.Scopes != null )
+            {
+                foreach ( var scopeHash in context.Scopes )
+                {
+                    if ( scopeHash.ContainsKey( "CurrentPerson" ) )
+                    {
+                        currentPerson = scopeHash["CurrentPerson"] as Person;
+                    }
+                }
+            }
+
+            if ( currentPerson == null )
+            {
+                var httpContext = System.Web.HttpContext.Current;
+                if ( httpContext != null && httpContext.Items.Contains( "CurrentPerson" ) )
+                {
+                    currentPerson = httpContext.Items["CurrentPerson"] as Person;
+                }
+            }
+
+            return currentPerson;
         }
 
         #endregion

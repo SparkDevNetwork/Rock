@@ -176,6 +176,9 @@ namespace RockWeb.Blocks.Cms
                     return;
                 }
 
+                contentChannel.ParentContentChannels.Clear();
+                contentChannel.ChildContentChannels.Clear();
+
                 contentChannelService.Delete( contentChannel );
                 rockContext.SaveChanges();
             }

@@ -66,7 +66,7 @@ namespace Rock.Web.UI.Controls.Communication
         }
 
         /// <summary>
-        /// On new communicaiton, initializes controls from sender values
+        /// On new communication, initializes controls from sender values
         /// </summary>
         /// <param name="sender">The sender.</param>
         public abstract void InitializeFromSender( Person sender );

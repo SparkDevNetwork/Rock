@@ -170,7 +170,7 @@ namespace RockWeb.Blocks.Event
 
                 // make lava merge fields
                 var mergeFields = new Dictionary<string, object>();
-                mergeFields.Add( "RegistrationPage", LinkedPageUrl( "RegistrationPage", null ) );
+                mergeFields.Add( "RegistrationPage", LinkedPageRoute( "RegistrationPage" ) );
                 mergeFields.Add( "EventItem", eventItem);
                 mergeFields.Add( "EventItemOccurrences", itemOccurrences );
 

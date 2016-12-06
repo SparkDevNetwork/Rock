@@ -17,8 +17,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Web;
-using System.IO;
+using System.Text;
 
 using Quartz;
 
@@ -61,29 +60,80 @@ namespace Rock.Jobs
         public virtual void Execute( IJobExecutionContext context )
         {
             int workflowsProcessed = 0;
-            foreach ( var workflowId in new WorkflowService( new RockContext() ).GetActive().Select(a => a.Id).ToList() )
-            {
-                // create a new rockContext and service for every workflow to prevent a build-up of Context.ChangeTracker.Entries()
-                var rockContext = new RockContext();
-                var workflowService = new WorkflowService( rockContext );
-                var workflow = workflowService.Queryable( "WorkflowType" ).FirstOrDefault( a => a.Id == workflowId );
-                if ( workflow != null )
-                {
-                    if ( !workflow.LastProcessedDateTime.HasValue ||
-                        RockDateTime.Now.Subtract( workflow.LastProcessedDateTime.Value ).TotalSeconds >= ( workflow.WorkflowType.ProcessingIntervalSeconds ?? 0 ) )
-                    {
-                        var errorMessages = new List<string>();
+            int workflowErrors = 0;
+            int workflowExceptions = 0;
+            var ProcessingErrors = new List<string>();
+            var exceptionMsgs = new List<string>();
 
-                        var processed = workflowService.Process( workflow, out errorMessages );
-                        if ( processed )
+            foreach ( var workflowId in new WorkflowService( new RockContext() )
+                .GetActive()
+                .Select( w => w.Id )
+                .ToList() )
+            {
+                try
+                {
+                    // create a new rockContext and service for every workflow to prevent a build-up of Context.ChangeTracker.Entries()
+                    var rockContext = new RockContext();
+                    var workflowService = new WorkflowService( rockContext );
+                    var workflow = workflowService.Queryable( "WorkflowType" ).FirstOrDefault( a => a.Id == workflowId );
+                    if ( workflow != null )
+                    {
+                        try
                         {
-                            workflowsProcessed++;
+                            if ( !workflow.LastProcessedDateTime.HasValue ||
+                                RockDateTime.Now.Subtract( workflow.LastProcessedDateTime.Value ).TotalSeconds >= ( workflow.WorkflowType.ProcessingIntervalSeconds ?? 0 ) )
+                            {
+                                var errorMessages = new List<string>();
+
+                                var processed = workflowService.Process( workflow, out errorMessages );
+                                if ( processed )
+                                {
+                                    workflowsProcessed++;
+                                }
+                                else
+                                {
+                                    workflowErrors++;
+                                    ProcessingErrors.Add( string.Format( "{0} [{1}] - {2} [{3}]: {4}", workflow.WorkflowType.Name, workflow.WorkflowTypeId, workflow.Name, workflow.Id, errorMessages.AsDelimited( ", " ) ) );
+                                }
+                            }
+                        }
+                        catch ( Exception ex )
+                        {
+                            string workflowDetails = string.Format( "{0} [{1}] - {2} [{3}]", workflow.WorkflowType.Name, workflow.WorkflowTypeId, workflow.Name, workflow.Id );
+                            exceptionMsgs.Add( workflowDetails + ": " + ex.Message );
+                            throw new Exception( "Exception occurred processing workflow: " + workflowDetails, ex );
                         }
                     }
                 }
+
+                catch ( Exception ex )
+                {
+                    ExceptionLogService.LogException( ex, null );
+                    workflowExceptions++;
+                }
             }
 
-            context.Result = string.Format( "{0} workflows processed", workflowsProcessed );
+            var resultMsg = new StringBuilder();
+            resultMsg.AppendFormat( "{0} workflows processed", workflowsProcessed );
+            if ( workflowErrors > 0 )
+            {
+                resultMsg.AppendFormat( ", {0} workflows reported an error", workflowErrors );
+            }
+            if ( workflowExceptions > 0 )
+            {
+                resultMsg.AppendFormat( ", {0} workflows caused an exception", workflowExceptions );
+            }
+            if ( ProcessingErrors.Any() )
+            {
+                resultMsg.Append( Environment.NewLine + ProcessingErrors.AsDelimited( Environment.NewLine ) );
+            }
+
+            if ( exceptionMsgs.Any() )
+            {
+                throw new Exception( "One or more exceptions occurred processing workflows..." + Environment.NewLine + exceptionMsgs.AsDelimited( Environment.NewLine ) );
+            }
+
+            context.Result = resultMsg.ToString();
         }
     }
 }

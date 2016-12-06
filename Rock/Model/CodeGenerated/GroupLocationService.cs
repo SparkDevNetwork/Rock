@@ -96,6 +96,7 @@ namespace Rock.Model
             target.IsMailingLocation = source.IsMailingLocation;
             target.IsMappedLocation = source.IsMappedLocation;
             target.LocationId = source.LocationId;
+            target.Order = source.Order;
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;
             target.CreatedByPersonAliasId = source.CreatedByPersonAliasId;

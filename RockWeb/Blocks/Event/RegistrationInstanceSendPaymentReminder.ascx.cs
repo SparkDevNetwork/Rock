@@ -35,7 +35,7 @@ using Rock.Communication;
 namespace RockWeb.Blocks.Event
 {
     /// <summary>
-    /// Template block for developers to use to start a new block.
+    /// Sends payment reminders for paid registrations that have a remaining balance.
     /// </summary>
     [DisplayName( "Registration Instance Send Payment Reminder" )]
     [Category( "Event" )]

@@ -18,6 +18,7 @@
                     <Rock:HighlightLabel ID="hlType" runat="server" LabelType="Type" />
                 </div>
             </div>
+            <Rock:PanelDrawer ID="pdAuditDetails" runat="server"></Rock:PanelDrawer>
             <div class="panel-body">
 
                 <asp:HiddenField ID="hfGroupTypeId" runat="server" />
@@ -114,6 +115,8 @@
                                 
                                 <Rock:RockCheckBox ID="cbDontInactivateMembers" runat="server" Label="Don't Inactivate Members" 
                                     Help="By default, whenever a person record is inactivated, all of that person's group memberships are also inactivated. Check this option if members in groups of this type should not be inactivated when their person record is inactivated." />
+                                <Rock:RockCheckBox ID="cbEnableIndexing" runat="server" Label="Enable Indexing" 
+                                    Help="Determines if groups of this type should be indexed." />
                             </div>
                         </div>
                     </Rock:PanelWidget>
@@ -167,7 +170,7 @@
                                 <Rock:RockDropDownList ID="ddlAttendanceRule" runat="server" Label="Check-in Rule"
                                     Help="The rule that check in should use when a person attempts to check in to a group of this type.  If 'None' is selected, user will not be added to group and is not required to belong to group.  If 'Add On Check In' is selected, user will be added to group if they don't already belong.  If 'Already Belongs' is selected, user must already be a member of the group or they will not be allowed to check in." />
                                 <Rock:RockDropDownList ID="ddlPrintTo" runat="server" Label="Print Using" 
-                                    Help="When printing check-in labels, should the device's printer or the location's printer be used?  Note: the device has a similiar setting which takes precedence over this setting.">
+                                    Help="When printing check-in labels, should the device's printer or the location's printer be used?  Note: the device has a similar setting which takes precedence over this setting.">
                                     <asp:ListItem Text="Device Printer" Value="1" />
                                     <asp:ListItem Text="Location Printer" Value="2" />
                                 </Rock:RockDropDownList>

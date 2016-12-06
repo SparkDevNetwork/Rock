@@ -381,7 +381,7 @@ namespace Rock.Web.UI.Controls
 
                     base.Style.Add( HtmlTextWriterStyle.Display, "none" );
                     writer.WriteLine( string.Format(
-                        "<div class='rock-checkbox-icon {5}'><i onclick=\"$('#{0}').prop('checked', !$('#{0}').prop('checked')); $(this).toggleClass('{1}').toggleClass('{2}'); {6} \" class=\"{3}\"></i> {4}</div>", 
+                        "<div class='rock-checkbox-icon {5}' onclick=\"$('#{0}').prop('checked', !$('#{0}').prop('checked')); $(this).find('i').toggleClass('{1}').toggleClass('{2}'); {6} \" ><i class=\"{3}\"></i> {4}</div>", 
                             this.ClientID, // {0}
                             SelectedIconCssClass, // {1}
                             UnSelectedIconCssClass, // {2}
@@ -402,7 +402,7 @@ namespace Rock.Web.UI.Controls
             {
                 string selectedCss = string.IsNullOrWhiteSpace( SelectedIconCssClass ) ? "fa fa-check-square-o" : SelectedIconCssClass;
                 string unselectedCss = string.IsNullOrWhiteSpace( UnSelectedIconCssClass ) ? "fa fa-square-o" : UnSelectedIconCssClass;
-                writer.WriteLine( string.Format( "<div><i class=\"{0}\"></i> {1}</div>", this.Checked ? selectedCss : unselectedCss, this.Text ) );
+                writer.WriteLine( string.Format( "<div class='rock-checkbox-icon text-muted'><i class=\"{0}\"></i> {1}</div>", this.Checked ? selectedCss : unselectedCss, this.Text ) );
             }
         }
     }

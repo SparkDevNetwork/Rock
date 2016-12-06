@@ -1,5 +1,13 @@
 ﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="RegistrationEntry.ascx.cs" Inherits="RockWeb.Blocks.Event.RegistrationEntry" %>
 
+<style>
+    iframe {
+        width: 100%;
+        height: 800px;
+        overflow: hidden;
+        border-style: none;
+    }
+</style>
 <asp:UpdatePanel ID="upnlContent" runat="server">
 <ContentTemplate>
 
@@ -10,11 +18,12 @@
     <Rock:NotificationBox ID="nbPaymentValidation" runat="server" NotificationBoxType="Danger" Visible="false" />
 
     <Rock:NotificationBox ID="nbMain" runat="server" Visible="false"></Rock:NotificationBox>
+    <Rock:NotificationBox ID="nbWaitingList" runat="server" Visible="false" NotificationBoxType="Warning" />
 
     <asp:Panel ID="pnlHowMany" runat="server" Visible="false" CssClass="registrationentry-intro">
 
         <h1>How many <asp:Literal ID="lRegistrantTerm" runat="server" /> will you be registering?</h1>
-        <Rock:NumberUpDown ID="numHowMany"  runat="server" CssClass="input-lg" />
+        <Rock:NumberUpDown ID="numHowMany"  runat="server" CssClass="input-lg" OnNumberUpdated="numHowMany_NumberUpdated"  />
 
         <div class="actions">
             <Rock:BootstrapButton ID="lbHowManyNext" runat="server" AccessKey="n" Text="Next" DataLoadingText="Next" CssClass="btn btn-primary pull-right" CausesValidation="true" OnClick="lbHowManyNext_Click" />
@@ -24,9 +33,14 @@
 
     <asp:Panel ID="pnlRegistrant" runat="server" Visible="false" CssClass="registrationentry-registrant">
 
-        <h1><asp:Literal ID="lRegistrantTitle" runat="server" /></h1>
         
-        <asp:Panel ID="pnlRegistrantProgressBar" runat="server">
+        <h1>
+            <asp:Literal ID="lRegistrantTitle" runat="server" />
+        </h1>        
+
+        <Rock:NotificationBox ID="nbType" runat="server" NotificationBoxType="Warning"  />
+
+        <asp:Panel ID="pnlRegistrantProgressBar" runat="server" CssClass="clearfix">
             <div class="progress">
                 <div class="progress-bar" role="progressbar" aria-valuenow="<%=this.PercentComplete%>" aria-valuemin="0" aria-valuemax="100" style="width: <%=this.PercentComplete%>%;">
                     <span class="sr-only"><%=this.PercentComplete%>% Complete</span>
@@ -34,18 +48,38 @@
             </div>
         </asp:Panel>
 
-        <div class="js-registration-same-family registrationentry-samefamily">
-            <asp:Panel ID="pnlFamilyOptions" runat="server" CssClass="well">
+        <asp:Panel id="pnlRegistrantFields" runat="server" >
+
+            <asp:Panel ID="pnlFamilyOptions" runat="server" CssClass="well js-registration-same-family">
                 <Rock:RockRadioButtonList ID="rblFamilyOptions" runat="server" Label="Individual is in the same family as" RepeatDirection="Vertical" Required="true" RequiredErrorMessage="Answer to which family is required." DataTextField="Value" DataValueField="Key" />
             </asp:Panel>
-        </div>
         
-        <asp:PlaceHolder ID="phRegistrantControls" runat="server" />
+            <asp:Panel ID="pnlFamilyMembers" runat="server" Visible="false" CssClass="row" >
+                <div class="col-md-6">
+                    <Rock:RockDropDownList ID="ddlFamilyMembers" runat="server" Label="Family Member" AutoPostBack="true" OnSelectedIndexChanged="ddlFamilyMembers_SelectedIndexChanged" />
+                </div>
+            </asp:Panel>
+
+            <asp:PlaceHolder ID="phRegistrantControls" runat="server" />
         
-        <div id="divFees" runat="server" class="well registration-additional-options">
-            <h4><asp:Literal ID="lRegistrantFeeCaption" runat="server" /></h4>
-            <asp:PlaceHolder ID="phFees" runat="server" />
-        </div>
+            <div id="divFees" runat="server" class="well registration-additional-options">
+                <h4><asp:Literal ID="lRegistrantFeeCaption" runat="server" /></h4>
+                <asp:PlaceHolder ID="phFees" runat="server" />
+            </div>
+
+        </asp:Panel>
+
+        <asp:Panel id="pnlDigitalSignature" runat="server" visible="false">
+            <Rock:NotificationBox ID="nbDigitalSignature" runat="server" NotificationBoxType="Info"></Rock:NotificationBox>
+            <asp:HiddenField ID="hfRequiredDocumentLinkUrl" runat="server" />
+            <asp:HiddenField ID="hfRequiredDocumentQueryString" runat="server" />
+
+            <iframe id="iframeRequiredDocument" frameborder="0" ></iframe>
+            <span style="display:none" >
+                <asp:LinkButton ID="lbRequiredDocumentNext" runat="server" Text="Required Document Return" OnClick="lbRequiredDocumentNext_Click" CausesValidation="false" ></asp:LinkButton>
+            </span>
+
+        </asp:Panel>
 
         <div class="actions">
             <asp:LinkButton ID="lbRegistrantPrev" runat="server" AccessKey="p" Text="Previous" CssClass="btn btn-default" CausesValidation="false" OnClick="lbRegistrantPrev_Click"  />
@@ -94,7 +128,17 @@
         <asp:Panel ID="pnlRegistrantsReview" CssClass="margin-b-md" runat="server" Visible="false">
             <asp:Literal ID="lRegistrantsReview" runat="server" />
             <ul>
-                <asp:Repeater ID="rptrRegistrantReview" runat="server">
+                <asp:Repeater ID="rptrRegistrantsReview" runat="server">
+                    <ItemTemplate>
+                        <li><strong> <%# Eval("RegistrantName")  %></strong></li>
+                    </ItemTemplate>
+                </asp:Repeater>
+            </ul>
+        </asp:Panel>
+        <asp:Panel ID="pnlWaitingListReview" CssClass="margin-b-md" runat="server" Visible="false">
+            <asp:Literal ID="lWaitingListReview" runat="server" />
+            <ul>
+                <asp:Repeater ID="rptrWaitingListReview" runat="server">
                     <ItemTemplate>
                         <li><strong> <%# Eval("RegistrantName")  %></strong></li>
                     </ItemTemplate>
@@ -208,7 +252,7 @@
                         <Rock:RockTextBox ID="txtCVV" Label="Card Security Code" CssClass="input-width-xs" runat="server" MaxLength="4" />
                     </div>
                 </div>
-                <Rock:AddressControl ID="acBillingAddress" runat="server" UseStateAbbreviation="true" UseCountryAbbreviation="false" ShowAddressLine2="false" />
+                <Rock:AddressControl ID="acBillingAddress" runat="server" Label="Billing Address" UseStateAbbreviation="true" UseCountryAbbreviation="false" ShowAddressLine2="false" />
             </div>
 
         </asp:Panel>

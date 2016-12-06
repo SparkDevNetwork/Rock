@@ -11,79 +11,79 @@
 
 
 .calendar {
-    padding: 0 10px 10px 10px;
-    display:inline-block;
-    border: 1px solid @panel-default-border;
-    border-radius: @border-radius-base;
-    width: 100%;
+  display: inline-block;
+  width: 100%;
+  padding: 0 10px 10px 10px;
+  border: 1px solid @panel-default-border;
+  border-radius: @border-radius-base;
 }
 
 .calendar-month {
-    border: none;
-    border-collapse: separate;
-    border-spacing: 0;
+  border-spacing: 0;
+  border-collapse: separate;
+  border: none;
+
+  a {
+    color: @text-color !important;
+    text-decoration: none;
+  }
+
+  th {
+    text-align: center;
+  }
+
+  td {
+    color: @text-color !important;
+  }
+
+  table.calendar-title td {
+    padding: 10px 5px;
+  }
+
+  td.calendar-day {
+    padding: 5px;
+  }
+
+  table.calendar-title,
+  table.calendar-title a {
+    font-weight: @font-weight-semibold;
+  }
+
+  .calendar-today {
+    border-radius: @border-radius-base;
+  }
+
+  .calendar-today,
+  .calendar-selecteditem {
+    color: @alert-info-text !important;
+    background-color: @alert-info-bg !important;
+    border-radius: 0;
+  }
+
+  .calendar-selecteditem:first-child {
+    border-radius: @border-radius-base 0 0 @border-radius-base;
+  }
+
+  .calendar-selecteditem:last-child {
+    border-radius: 0 @border-radius-base @border-radius-base 0;
+  }
+
+  .calendar-selected {
+    color: @label-color !important;
+    background-color: @label-info-bg !important;
 
     a {
-        text-decoration: none;
-        color: @text-color !important;
+      color: @label-color !important;
     }
+  }
 
-    th {
-        text-align: center;
-    }
+  .calendar-last-month a {
+    opacity: .2;
+  }
 
-    td {
-        color: @text-color !important;
-    }
-
-    table.calendar-title td {
-        padding: 10px 5px;
-    }
-
-    td.calendar-day {
-        padding: 5px;
-    }
-
-    table.calendar-title,
-    table.calendar-title a {
-        font-weight: @font-weight-semibold;
-    }
-
-    .calendar-today {
-        border-radius: @border-radius-base;
-    }
-
-    .calendar-today, 
-    .calendar-selecteditem {
-        background-color: @alert-info-bg !important;
-        color: @alert-info-text !important;
-        border-radius: 0;
-    }
-
-    .calendar-selecteditem:first-child {
-        border-radius: @border-radius-base 0 0 @border-radius-base;
-    }
-
-    .calendar-selecteditem:last-child {
-        border-radius: 0 @border-radius-base @border-radius-base 0;
-    }
-
-    .calendar-selected {
-        background-color: @label-info-bg !important;
-        color: @label-color !important;
-
-        a {
-            color: @label-color !important
-        }
-    }
-
-    .calendar-last-month a {
-        opacity: .2;
-    }
-
-    .calendar-hasevent {
-        font-weight: @font-weight-bold;
-    }
+  .calendar-hasevent {
+    font-weight: @font-weight-bold;
+  }
 }
 
 
@@ -91,92 +91,90 @@
 // -------------------------
 
 .registrationentry-intro {
-    
-    text-align: center;
-    
-    h1 {
-        margin-top: 24px;
-        margin-bottom: 48px;
-    }
+  text-align: center;
 
-    .input-group {
-        margin: 0 auto 48px auto;
-    }
+  h1 {
+    margin-top: 24px;
+    margin-bottom: 48px;
+  }
+
+  .input-group {
+    margin: 0 auto 48px auto;
+  }
 }
 
 .registration-entry {
-    .feetype-allowmultiples {
-        
-        > .control-label {
-            margin-bottom: 8px;
-            display: block;
-        }
-        
-        .form-group {
-            margin-left: 19px;
-        }
-    } 
+  .feetype-allowmultiples {
+    > .control-label {
+      display: block;
+      margin-bottom: 8px;
+    }
+
+    .form-group {
+      margin-left: 19px;
+    }
+  }
 }
 
 .registrationentry-summary {
-    .fee-table {
-        margin: 0 24px;
+  .fee-table {
+    margin: 0 24px;
 
-        > .row {
-            padding: 6px 0;
+    > .row {
+      padding: 6px 0;
 
-            div[class^='col-']{
-                padding-right: 0;
-                padding-left: 0;
-            }
-        }
+      div[class^='col-'] {
+        padding-right: 0;
+        padding-left: 0;
+      }
     }
-    
-    .row.fee-header {
-        border-bottom: 2px solid lighten(@text-color, 40%);
-        padding-bottom: 2px;
-        margin-bottom: 6px;
-        font-size: 14px;
-    }
+  }
 
-    .fee-row-cost,
-    .fee-row-total {
-        font-weight: @font-weight-semibold;
-    }
+  .row.fee-header {
+    padding-bottom: 2px;
+    margin-bottom: 6px;
+    font-size: 14px;
+    border-bottom: 2px solid lighten(@text-color, 40%);
+  }
 
-    .fee-row-total {
-        margin-top: 6px;
-        border-top: 1px solid lighten(@text-color, 40%);
-    }
+  .fee-row-cost,
+  .fee-row-total {
+    font-weight: @font-weight-semibold;
+  }
 
-    .row.fee-row-fee {
-        font-weight: @font-weight-light;
+  .fee-row-total {
+    margin-top: 6px;
+    border-top: 1px solid lighten(@text-color, 40%);
+  }
 
-        @media @sm {
-            > div.fee-caption {
-                padding-left: 20px;
-            }
-        }
-    }
+  .row.fee-row-fee {
+    font-weight: @font-weight-light;
 
     @media @sm {
-        div.fee-value {
-            text-align: right;
-            float: right;
-        }
+      > div.fee-caption {
+        padding-left: 20px;
+      }
     }
+  }
+
+  @media @sm {
+    div.fee-value {
+      float: right;
+      text-align: right;
+    }
+  }
 }
 
 .fee-totals {
-    margin-top: 24px;
+  margin-top: 24px;
 
-    .fee-totals-options {
-        text-align: right;
-    }
+  .fee-totals-options {
+    text-align: right;
+  }
 }
 
 .amount-to-pay {
-    input {
-        text-align: right;
-    }
+  input {
+    text-align: right;
+  }
 }

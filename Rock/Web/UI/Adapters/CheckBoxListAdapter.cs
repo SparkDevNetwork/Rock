@@ -88,7 +88,18 @@ namespace Rock.Web.UI.Adapters
 
                     if ( cbl.RepeatDirection == RepeatDirection.Vertical )
                     {
-                        writer.AddAttribute( "class", "checkbox" );
+                        string cssClass = "checkbox";
+                        if ( cbl.RepeatColumns > 1 )
+                        {
+                            switch( cbl.RepeatColumns )
+                            {
+                                case 2: cssClass += " col-md-6"; break;
+                                case 3: cssClass += " col-md-4"; break;
+                                case 4: cssClass += " col-md-3"; break;
+                                case 6: cssClass += " col-md-2"; break;
+                            }
+                        }
+                        writer.AddAttribute( "class", cssClass );
                         writer.RenderBeginTag( HtmlTextWriterTag.Div );
                     }
                     else

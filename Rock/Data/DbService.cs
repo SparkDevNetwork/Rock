@@ -88,7 +88,6 @@ namespace Rock.Data
         /// <param name="commandType">Type of the command.</param>
         /// <param name="parameters">The parameters.</param>
         /// <param name="timeOut">The time out in seconds.</param>
-        /// <param name="schemaOnly">if set to <c>true</c> [schema only].</param>
         /// <returns></returns>
         public static DataSet GetDataSet( string query, CommandType commandType, Dictionary<string, object> parameters, int? timeOut = null )
         {
@@ -102,7 +101,6 @@ namespace Rock.Data
         /// <param name="commandType">Type of the command.</param>
         /// <param name="parameters">The parameters.</param>
         /// <param name="timeOut">The time out in seconds.</param>
-        /// <param name="schemaOnly">if set to <c>true</c> [schema only].</param>
         /// <returns></returns>
         public static DataSet GetDataSetSchema( string query, CommandType commandType, Dictionary<string, object> parameters, int? timeOut = null )
         {

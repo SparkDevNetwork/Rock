@@ -18,13 +18,29 @@
                     <Rock:HighlightLabel ID="hfDateAdded" runat="server" LabelType="Default" />
                 </div>
             </div>
-
+            <Rock:PanelDrawer ID="pdAuditDetails" runat="server"></Rock:PanelDrawer>
             <div class="panel-body">
 
                 <Rock:NotificationBox ID="nbEditModeMessage" runat="server" NotificationBoxType="Info" />
                 <asp:ValidationSummary ID="ValidationSummary1" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" />
                 <asp:CustomValidator ID="cvGroupMember" runat="server" Display="None" />
                 <Rock:NotificationBox ID="nbErrorMessage" runat="server" NotificationBoxType="Danger" />
+
+                <asp:Panel ID="pnlRequiredSignatureDocument" runat="server" CssClass="alert alert-warning" Visible="false" >
+                    
+                    <div class="row">
+                        <div class="col-md-9">
+                            <asp:Literal ID="lRequiredSignatureDocumentMessage" runat="server" />
+                        </div>
+                        <div class="col-md-3 text-right">
+                            <asp:LinkButton ID="lbResendDocumentRequest" runat="server" Text="Send Signature Request" CssClass="btn btn-warning btn-sm" OnClick="lbResendDocumentRequest_Click" />
+                        </div>
+                    </div>
+                    <Rock:ModalAlert ID="maSignatureRequestSent" runat="server" Text="A Signature Request Has Been Sent." Visible="false" />
+                </asp:Panel>
+
+                <Rock:NotificationBox ID="NotificationBox1" runat="server" NotificationBoxType="Danger">
+                </Rock:NotificationBox>
 
                 <div id="pnlEditDetails" runat="server">
 
@@ -53,6 +69,8 @@
                                     </asp:Repeater>
                                 </ul>
                             </Rock:RockControlWrapper>
+                            <asp:HiddenField ID="hfSignedDocumentId" runat="server" />
+                            <Rock:FileUploader ID="fuSignedDocument" runat="server" Label="Signed Document" />
                         </div>
                     </div>
 

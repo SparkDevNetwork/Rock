@@ -13,6 +13,7 @@
 @import (less) "./bootstrap-modal/bootstrap-modal.css";
 
 
+
 // Rock modal (page properties, etc.)
 // -------------------------
 
@@ -109,7 +110,7 @@
 // This next section is needed because we're using bootstrap-modal plugin to allow for responsive sized modals. Since they
 // hard code the opacity in their CSS we override it here.
 .modal-backdrop,
-.modal-backdrop.fade.in{
+.modal-backdrop.fade.in {
   opacity: @modal-backdrop-opacity;
   filter: alpha(opacity=70);
   background: @modal-backdrop-bg;
@@ -126,4 +127,3 @@
 .modal-content {
   border: none;
 }
-

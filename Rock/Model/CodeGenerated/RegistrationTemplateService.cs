@@ -127,9 +127,17 @@ namespace Rock.Model
             target.ReminderFromName = source.ReminderFromName;
             target.ReminderSubject = source.ReminderSubject;
             target.RequestEntryName = source.RequestEntryName;
+            target.RequiredSignatureDocumentTemplateId = source.RequiredSignatureDocumentTemplateId;
             target.SetCostOnInstance = source.SetCostOnInstance;
+            target.ShowCurrentFamilyMembers = source.ShowCurrentFamilyMembers;
+            target.SignatureDocumentAction = source.SignatureDocumentAction;
             target.SuccessText = source.SuccessText;
             target.SuccessTitle = source.SuccessTitle;
+            target.WaitListEnabled = source.WaitListEnabled;
+            target.WaitListTransitionEmailTemplate = source.WaitListTransitionEmailTemplate;
+            target.WaitListTransitionFromEmail = source.WaitListTransitionFromEmail;
+            target.WaitListTransitionFromName = source.WaitListTransitionFromName;
+            target.WaitListTransitionSubject = source.WaitListTransitionSubject;
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;
             target.CreatedByPersonAliasId = source.CreatedByPersonAliasId;

@@ -51,6 +51,10 @@ namespace Rock.Model
         public bool CanDelete( ContentChannelItem item, out string errorMessage )
         {
             errorMessage = string.Empty;
+            
+            // ignoring ContentChannelItemAssociation,ChildContentChannelItemId 
+            
+            // ignoring ContentChannelItemAssociation,ContentChannelItemId 
             return true;
         }
     }
@@ -96,6 +100,7 @@ namespace Rock.Model
             target.ExpireDateTime = source.ExpireDateTime;
             target.ForeignGuid = source.ForeignGuid;
             target.ForeignKey = source.ForeignKey;
+            target.Order = source.Order;
             target.Permalink = source.Permalink;
             target.Priority = source.Priority;
             target.StartDateTime = source.StartDateTime;

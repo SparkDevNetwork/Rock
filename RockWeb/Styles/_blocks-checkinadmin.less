@@ -8,39 +8,37 @@
 
 // 1. Group / Location
 // -------------------------
-.panel.panel-widget.checkin-group {
+.panel.panel-widget {
+  &.checkin-group {
     border-top-color: @checkin-group-border-color;
-}
-
-.panel.panel-widget.checkin-grouptype {
+  }
+  &.checkin-grouptype {
     border-top-color: @checkin-area-border-color;
+  }
 }
-
-
 
 // 2. Attendance Analysis
 // -------------------------
 .attendance-reporting {
-    .panel-body {
-        padding-top: 0;
-        padding-bottom: 0;
+  .panel-body {
+    padding-top: 0;
+    padding-bottom: 0;
 
-        & > .row > [class*="col-"]:first-child {
-            padding-top: 15px;
-            padding-bottom: 15px;
-
-        }
-
-        @media @md {
-            .row {
-                margin-left: -16px;
-            }
-        }
+    & > .row > [class*="col-"]:first-child {
+      padding-top: 15px;
+      padding-bottom: 15px;
     }
 
-    .analysis-types {
-        padding: 15px 0;
-        background-color: @gray-lighter;
-        margin-bottom: 24px;
+    @media @md {
+      .row {
+        margin-left: -16px;
+      }
     }
+  }
+
+  .analysis-types {
+    padding: 15px 0;
+    margin-bottom: 24px;
+    background-color: @gray-lighter;
+  }
 }

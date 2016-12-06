@@ -65,6 +65,14 @@ namespace RockWeb.Blocks.Groups
         /// </value>
         public List<AttributeCache> AvailableAttributes { get; set; }
 
+        /// <summary>
+        /// Gets or sets the signed person ids.
+        /// </summary>
+        /// <value>
+        /// The signed person ids.
+        /// </value>
+        private List<int> Signers { get; set; }
+
         #endregion
 
         #region Control Methods
@@ -340,6 +348,7 @@ namespace RockWeb.Blocks.Groups
             rFilter.SaveUserPreference( MakeKeyUniqueToGroup( "Status" ), "Status", cblGroupMemberStatus.SelectedValues.AsDelimited( ";" ) );
             rFilter.SaveUserPreference( MakeKeyUniqueToGroup( "Campus" ), "Campus", cpCampusFilter.SelectedCampusId.ToString() );
             rFilter.SaveUserPreference( MakeKeyUniqueToGroup( "Gender" ), "Gender", cblGenderFilter.SelectedValues.AsDelimited( ";" ) );
+            rFilter.SaveUserPreference( MakeKeyUniqueToGroup( "Signed Document" ), "Signed Document", ddlSignedDocument.SelectedValue );
 
             if ( AvailableAttributes != null )
             {
@@ -421,6 +430,10 @@ namespace RockWeb.Blocks.Groups
                 {
                     e.Value = null;
                 }
+            }
+            else if ( e.Key == MakeKeyUniqueToGroup( "Signed Document") )
+            {
+                return;
             }
             else
             {
@@ -545,6 +558,10 @@ namespace RockWeb.Blocks.Groups
             {
                 cblGroupMemberStatus.SetValues( statusValue.Split( ';' ).ToList() );
             }
+
+            ddlSignedDocument.SetValue( rFilter.GetUserPreference( MakeKeyUniqueToGroup( "Signed Document" ) ) );
+            ddlSignedDocument.Visible = _group.RequiredSignatureDocumentTemplateId.HasValue;
+
         }
 
         /// <summary>
@@ -859,6 +876,21 @@ namespace RockWeb.Blocks.Groups
 
                     var rockContext = new RockContext();
 
+                    if ( _group != null &&
+                        _group.RequiredSignatureDocumentTemplateId.HasValue )
+                    {
+                        Signers = new SignatureDocumentService( rockContext )
+                            .Queryable().AsNoTracking()
+                            .Where( d =>
+                                d.SignatureDocumentTemplateId == _group.RequiredSignatureDocumentTemplateId.Value &&
+                                d.Status == SignatureDocumentStatus.Signed &&
+                                d.BinaryFileId.HasValue &&
+                                d.AppliesToPersonAlias != null )
+                            .OrderByDescending( d => d.LastStatusDate )
+                            .Select( d => d.AppliesToPersonAlias.PersonId )
+                            .ToList();
+                    }
+
                     GroupMemberService groupMemberService = new GroupMemberService( rockContext );
                     var qry = groupMemberService.Queryable( "Person,GroupRole", true ).AsNoTracking()
                         .Where( m => m.GroupId == _group.Id );
@@ -931,6 +963,19 @@ namespace RockWeb.Blocks.Groups
                         qry = qry.Where( a => qryFamilyMembersForCampus.Any( f => f.PersonId == a.PersonId ) );
                     }
 
+                    // Filter by signed documents
+                    if ( Signers != null )
+                    {
+                        if ( ddlSignedDocument.SelectedValue.AsBooleanOrNull() == true )
+                        {
+                            qry = qry.Where( m => Signers.Contains( m.PersonId ) );
+                        }
+                        else if ( ddlSignedDocument.SelectedValue.AsBooleanOrNull() == false )
+                        {
+                            qry = qry.Where( m => !Signers.Contains( m.PersonId ) );
+                        }
+                    }
+
                     // Filter query by any configured attribute filters
                     if ( AvailableAttributes != null && AvailableAttributes.Any() )
                     {
@@ -969,7 +1014,6 @@ namespace RockWeb.Blocks.Groups
                     var groupMemberIdsThatLackGroupRequirements = new GroupService( rockContext ).GroupMembersNotMeetingRequirements( _group.Id, includeWarnings ).Select( a => a.Key.Id );
 
                     List<GroupMember> groupMembersList = null;
-
                     if ( sortProperty != null && sortProperty.Property != "FirstAttended" && sortProperty.Property != "LastAttended" )
                     { 
                         groupMembersList = qry.Sort( sortProperty ).ToList();
@@ -977,6 +1021,14 @@ namespace RockWeb.Blocks.Groups
                     else
                     {
                         groupMembersList = qry.OrderBy( a => a.GroupRole.Order ).ThenBy( a => a.Person.LastName ).ThenBy( a => a.Person.FirstName ).ToList();
+                    }
+
+                    // If there is a required signed document that member has not signed, show an icon in the grid
+                    var personIdsThatHaventSigned = new List<int>();
+                    if ( Signers != null )
+                    {
+                        var memberPersonIds = groupMembersList.Select( m => m.PersonId ).ToList();
+                        personIdsThatHaventSigned = memberPersonIds.Where( i => !Signers.Contains( i ) ).ToList();
                     }
 
                     // Since we're not binding to actual group member list, but are using AttributeField columns,
@@ -1070,13 +1122,16 @@ namespace RockWeb.Blocks.Groups
                         m.Person.LastName,
                         Name =
                         ( isExporting ? m.Person.LastName + ", " + m.Person.NickName : string.Format( photoFormat, m.PersonId, m.Person.PhotoUrl, ResolveUrl( "~/Assets/Images/person-no-photo-male.svg" ) ) +
-                        m.Person.NickName + " " + m.Person.LastName
-                            + ( hasGroupRequirements && groupMemberIdsThatLackGroupRequirements.Contains( m.Id )
+                            m.Person.NickName + " " + m.Person.LastName
+                            + ( ( hasGroupRequirements && groupMemberIdsThatLackGroupRequirements.Contains( m.Id ) ) 
                                 ? " <i class='fa fa-exclamation-triangle text-warning'></i>"
                                 : string.Empty )
                             + ( !string.IsNullOrEmpty( m.Note )
-                            ? " <i class='fa fa-file-text-o text-info'></i>"
-                            : string.Empty ) ),
+                                ? " <i class='fa fa-file-text-o text-info'></i>"
+                                : string.Empty )
+                            + ((personIdsThatHaventSigned.Contains( m.PersonId ))
+                                ? " <i class='fa fa-pencil-square-o text-danger'></i>"
+                                : string.Empty)),
                         m.Person.BirthDate,
                         m.Person.Age,
                         m.Person.ConnectionStatusValueId,

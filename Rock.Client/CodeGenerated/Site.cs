@@ -88,6 +88,12 @@ namespace Rock.Client
         public string GoogleAnalyticsCode { get; set; }
 
         /// <summary />
+        public string IndexStartingLocation { get; set; }
+
+        /// <summary />
+        public bool IsIndexEnabled { get; set; }
+
+        /// <summary />
         public bool IsSystem { get; set; }
 
         /// <summary />
@@ -127,6 +133,9 @@ namespace Rock.Client
 
         /// <summary />
         public int? RegistrationPageRouteId { get; set; }
+
+        /// <summary />
+        public bool RequiresEncryption { get; set; }
 
         /// <summary />
         public string Theme { get; set; }
@@ -180,6 +189,8 @@ namespace Rock.Client
             this.ForeignGuid = source.ForeignGuid;
             this.ForeignKey = source.ForeignKey;
             this.GoogleAnalyticsCode = source.GoogleAnalyticsCode;
+            this.IndexStartingLocation = source.IndexStartingLocation;
+            this.IsIndexEnabled = source.IsIndexEnabled;
             this.IsSystem = source.IsSystem;
             this.LoginPageId = source.LoginPageId;
             this.LoginPageRouteId = source.LoginPageRouteId;
@@ -193,6 +204,7 @@ namespace Rock.Client
             this.RedirectTablets = source.RedirectTablets;
             this.RegistrationPageId = source.RegistrationPageId;
             this.RegistrationPageRouteId = source.RegistrationPageRouteId;
+            this.RequiresEncryption = source.RequiresEncryption;
             this.Theme = source.Theme;
             this.CreatedDateTime = source.CreatedDateTime;
             this.ModifiedDateTime = source.ModifiedDateTime;

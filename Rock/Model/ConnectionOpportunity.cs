@@ -98,16 +98,6 @@ namespace Rock.Model
         public int ConnectionTypeId { get; set; }
 
         /// <summary>
-        /// Gets or sets the group type identifier.
-        /// </summary>
-        /// <value>
-        /// The group type identifier.
-        /// </value>
-        [Required]
-        [DataMember]
-        public int GroupTypeId { get; set; }
-
-        /// <summary>
         /// Gets or sets the icon CSS class.
         /// </summary>
         /// <value>
@@ -131,34 +121,6 @@ namespace Rock.Model
         }
         private bool _isActive = true;
 
-        /// <summary>
-        /// Gets or sets the group member role identifier.
-        /// </summary>
-        /// <value>
-        /// The group member role identifier.
-        /// </value>
-        [DataMember]
-        public int? GroupMemberRoleId { get; set; }
-
-        /// <summary>
-        /// Gets or sets the group member status.
-        /// </summary>
-        /// <value>
-        /// The group member status.
-        /// </value>
-        [DataMember]
-        public GroupMemberStatus GroupMemberStatus { get; set; }
-
-        /// <summary>
-        /// Gets or sets a value indicating whether [use all groups of type].
-        /// </summary>
-        /// <value>
-        /// <c>true</c> if [use all groups of type]; otherwise, <c>false</c>.
-        /// </value>
-        [Required]
-        [DataMember]
-        public bool UseAllGroupsOfType { get; set; }
-
         #endregion
 
         #region Virtual Properties
@@ -170,22 +132,6 @@ namespace Rock.Model
         /// The type of the connection.
         /// </value>
         public virtual ConnectionType ConnectionType { get; set; }
-
-        /// <summary>
-        /// Gets or sets the type of the group.
-        /// </summary>
-        /// <value>
-        /// The type of the group.
-        /// </value>
-        public virtual GroupType GroupType { get; set; }
-
-        /// <summary>
-        /// Gets or sets the group member role.
-        /// </summary>
-        /// <value>
-        /// The group member role.
-        /// </value>
-        public virtual GroupTypeRole GroupMemberRole { get; set; }
 
         /// <summary>
         /// Gets the URL of the Opportunity's photo.
@@ -225,6 +171,20 @@ namespace Rock.Model
         }
 
         private ICollection<ConnectionOpportunityGroup> _connectionOpportunityGroups;
+
+        /// <summary>
+        /// Gets or sets the connection opportunity placement groups.
+        /// </summary>
+        /// <value>
+        /// The connection opportunity placement groups.
+        /// </value>
+        public virtual ICollection<ConnectionOpportunityGroupConfig> ConnectionOpportunityGroupConfigs
+        {
+            get { return _connectionOpportunityGroupConfigs ?? ( _connectionOpportunityGroupConfigs = new Collection<ConnectionOpportunityGroupConfig>() ); }
+            set { _connectionOpportunityGroupConfigs = value; }
+        }
+
+        private ICollection<ConnectionOpportunityGroupConfig> _connectionOpportunityGroupConfigs;
 
         /// <summary>
         /// Gets or sets a collection containing the <see cref="Rock.Model.ConnectionWorkflow">ConnectionWorkflows</see> who are associated with the ConnectionOpportunity.
@@ -425,8 +385,6 @@ namespace Rock.Model
         /// </summary>
         public ConnectionOpportunityConfiguration()
         {
-            this.HasOptional( p => p.GroupMemberRole ).WithMany().HasForeignKey( p => p.GroupMemberRoleId ).WillCascadeOnDelete( false );
-            this.HasRequired( p => p.GroupType ).WithMany().HasForeignKey( p => p.GroupTypeId ).WillCascadeOnDelete( false );
             this.HasRequired( p => p.ConnectionType ).WithMany( p => p.ConnectionOpportunities ).HasForeignKey( p => p.ConnectionTypeId ).WillCascadeOnDelete( false );
             this.HasOptional( p => p.Photo ).WithMany().HasForeignKey( p => p.PhotoId ).WillCascadeOnDelete( false );
         }

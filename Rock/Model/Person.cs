@@ -20,6 +20,7 @@ using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Data.Entity;
 using System.Data.Entity.ModelConfiguration;
 using System.Data.Entity.SqlServer;
 using System.Linq;
@@ -28,6 +29,8 @@ using System.Text;
 using System.Web;
 
 using Rock.Data;
+using Rock.UniversalSearch;
+using Rock.UniversalSearch.IndexModels;
 using Rock.Web.Cache;
 
 namespace Rock.Model
@@ -37,7 +40,7 @@ namespace Rock.Model
     /// </summary>
     [Table( "Person" )]
     [DataContract]
-    public partial class Person : Model<Person>
+    public partial class Person : Model<Person>, IRockIndexable
     {
         #region Constants
 
@@ -732,7 +735,7 @@ namespace Rock.Model
         /// <value>
         /// URL of the photo
         /// </value>
-        [DataMember]
+        [LavaInclude]
         [NotMapped]
         public virtual string PhotoUrl
         {
@@ -1295,6 +1298,21 @@ namespace Rock.Model
             }
         }
 
+        /// <summary>
+        /// Gets a value indicating whether [allows interactive bulk indexing].
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if [allows interactive bulk indexing]; otherwise, <c>false</c>.
+        /// </value>
+        [NotMapped]
+        public bool AllowsInteractiveBulkIndexing
+        {
+            get
+            {
+                return true;
+            }
+        }
+
         #endregion
 
         #region Methods
@@ -1420,7 +1438,7 @@ namespace Rock.Model
         /// </summary>
         /// <param name="dbContext">The database context.</param>
         /// <param name="entry">The entry.</param>
-        public override void PreSaveChanges( DbContext dbContext, System.Data.Entity.Infrastructure.DbEntityEntry entry )
+        public override void PreSaveChanges( Rock.Data.DbContext dbContext, System.Data.Entity.Infrastructure.DbEntityEntry entry )
         {
             var inactiveStatus = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_INACTIVE.AsGuid() );
             var deceased = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_REASON_DECEASED.AsGuid() );
@@ -2372,6 +2390,197 @@ namespace Rock.Model
             return string.Empty;
         }
 
+        /// <summary>
+        /// Gets the home locations for all the person id's passed in. If a person is in 
+        /// more than one family or that family has more than one home address a single 
+        /// location is provided.
+        /// </summary>
+        /// <param name="personIds">The person ids.</param>
+        /// <param name="rockContext">The rock context.</param>
+        /// <returns></returns>
+        public static Dictionary<int, Location> GetHomeLocations( List<int> personIds, RockContext rockContext = null )
+        {
+            var personHomeAddresses = new Dictionary<int, Location>();
+
+            if ( personIds != null )
+            {
+
+                rockContext = rockContext ?? new RockContext();
+
+                Guid? homeAddressGuid = Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME.AsGuidOrNull();
+                Guid? familyGuid = new Guid( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY );
+
+                if ( homeAddressGuid.HasValue && familyGuid.HasValue )
+                {
+                    var homeAddressDv = DefinedValueCache.Read( homeAddressGuid.Value );
+                    var familyGroupType = GroupTypeCache.Read( familyGuid.Value );
+                    if ( homeAddressDv != null && familyGroupType != null )
+                    {
+                        var personLocations = new GroupMemberService( rockContext ).Queryable()
+                                .Where( m =>
+                                     personIds.Contains( m.PersonId )
+                                     && m.Group.GroupTypeId == familyGroupType.Id )
+                                .Select( m => new {
+                                    m.PersonId,
+                                    Location = m.Group.GroupLocations
+                                                                     .Where( gl => gl.GroupLocationTypeValueId == homeAddressDv.Id )
+                                                                     .Select( gl => gl.Location )
+                                                                     .FirstOrDefault()
+                                } ).ToList();
+
+                        foreach ( var personLocation in personLocations )
+                        {
+                            if ( !personHomeAddresses.ContainsKey( personLocation.PersonId ) )
+                            {
+                                personHomeAddresses.Add( personLocation.PersonId, personLocation.Location );
+                            }
+                        }
+                    }
+                }
+            }
+
+            return personHomeAddresses;
+        }
+
+        #endregion
+
+        #region Indexing Methods
+        /// <summary>
+        /// Bulks the index documents.
+        /// </summary>
+        public void BulkIndexDocuments()
+        {
+            List<IndexModelBase> indexableItems = new List<IndexModelBase>();
+
+            var recordTypePersonId = DefinedValueCache.Read( SystemGuid.DefinedValue.PERSON_RECORD_TYPE_PERSON.AsGuid() ).Id;
+            var recordTypeBusinessId = DefinedValueCache.Read( SystemGuid.DefinedValue.PERSON_RECORD_TYPE_BUSINESS.AsGuid() ).Id;
+
+            RockContext rockContext = new RockContext();
+
+            // return people
+            var people = new PersonService( rockContext ).Queryable().AsNoTracking()
+                                .Where( p => p.RecordTypeValueId == recordTypePersonId );
+
+            int recordCounter = 0;
+
+            foreach ( var person in people )
+            {
+                recordCounter++;
+
+                var indexablePerson = PersonIndex.LoadByModel( person );
+                indexableItems.Add( indexablePerson );
+
+                if (recordCounter > 100 )
+                {
+                    IndexContainer.IndexDocuments( indexableItems );
+                    indexableItems = new List<IndexModelBase>();
+                    recordCounter = 0;
+                }
+            }
+
+            // return businesses
+            var businesses = new PersonService( rockContext ).Queryable().AsNoTracking()
+                                .Where( p =>
+                                     p.IsSystem == false
+                                     && p.RecordTypeValueId == recordTypeBusinessId );
+
+            foreach ( var business in businesses )
+            {
+                var indexableBusiness = BusinessIndex.LoadByModel( business );
+                indexableItems.Add( indexableBusiness );
+
+                if ( recordCounter > 100 )
+                {
+                    IndexContainer.IndexDocuments( indexableItems );
+                    indexableItems = new List<IndexModelBase>();
+                    recordCounter = 0;
+                }
+            }
+
+            IndexContainer.IndexDocuments( indexableItems );
+        }
+
+        /// <summary>
+        /// Deletes the indexed documents.
+        /// </summary>
+        public void DeleteIndexedDocuments()
+        {
+            IndexContainer.DeleteDocumentsByType<PersonIndex>();
+            IndexContainer.DeleteDocumentsByType<BusinessIndex>();
+        }
+
+        /// <summary>
+        /// Indexes the name of the model.
+        /// </summary>
+        /// <returns></returns>
+        public Type IndexModelType()
+        {
+            return typeof(PersonIndex);
+        }
+
+        /// <summary>
+        /// Indexes the document.
+        /// </summary>
+        /// <param name="id"></param>
+        public void IndexDocument( int id )
+        {
+            var personEntity = new PersonService( new RockContext() ).Get( id );
+
+            if (personEntity != null )
+            {
+                if (personEntity.RecordTypeValue.Guid == Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_PERSON.AsGuid() )
+                {
+                    var indexItem = PersonIndex.LoadByModel( personEntity );
+                    IndexContainer.IndexDocument( indexItem );
+                }
+                else if ( personEntity.RecordTypeValue.Guid == Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_BUSINESS.AsGuid() )
+                {
+                    var indexItem = BusinessIndex.LoadByModel( personEntity );
+                    IndexContainer.IndexDocument( indexItem );
+                }
+            }
+        }
+
+        /// <summary>
+        /// Deletes the indexed document.
+        /// </summary>
+        /// <param name="id"></param>
+        public void DeleteIndexedDocument( int id )
+        {
+            var personEntity = new PersonService( new RockContext() ).Get( id );
+
+            if ( personEntity != null )
+            {
+                if ( personEntity.RecordTypeValue.Guid == Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_PERSON.AsGuid() )
+                {
+                    Type indexType = Type.GetType( "Rock.UniversalSearch.IndexModels.PersonIndex" );
+                    IndexContainer.DeleteDocumentById( indexType, id );
+                }
+                else if ( personEntity.RecordTypeValue.Guid == Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_BUSINESS.AsGuid() )
+                {
+                    Type indexType = Type.GetType( "Rock.UniversalSearch.IndexModels.PersonIndex" );
+                    IndexContainer.DeleteDocumentById( indexType, id );
+                }
+            }
+        }
+
+        /// <summary>
+        /// Gets the index filter values.
+        /// </summary>
+        /// <returns></returns>
+        public ModelFieldFilterConfig GetIndexFilterConfig()
+        {
+            return new ModelFieldFilterConfig() { FilterLabel = "", FilterField = "" };
+        }
+
+        /// <summary>
+        /// Gets the index filter field.
+        /// </summary>
+        /// <returns></returns>
+        public bool SupportsIndexFieldFiltering()
+        {
+            return false;
+        }
         #endregion
     }
 
@@ -2462,6 +2671,17 @@ namespace Rock.Model
         {
             rockContext = rockContext ?? new RockContext();
             return new PersonService( rockContext ).GetFamilies( person != null ? person.Id : 0 );
+        }
+
+        /// <summary>
+        /// Gets the family for the person. If multiple families the first family is selected with an active family having preference over an inactive one.
+        /// </summary>
+        /// <param name="person">The person.</param>
+        /// <param name="rockContext">The rock context.</param>
+        /// <returns></returns>
+        public static Group GetFamily( this Person person, RockContext rockContext = null )
+        {
+            return person.GetFamilies( rockContext ).OrderByDescending( g => g.IsActive ).FirstOrDefault();
         }
 
         /// <summary>
@@ -2591,6 +2811,7 @@ namespace Rock.Model
         {
             return new PersonService( rockContext ?? new RockContext() ).GetGroupMembers( groupTypeId, person != null ? person.Id : 0, includeSelf );
         }
+        
         /// <summary>
         /// Gets any previous last names for this person sorted alphabetically by LastName
         /// </summary>
@@ -2613,6 +2834,35 @@ namespace Rock.Model
         public static Person GetSpouse( this Person person, RockContext rockContext = null )
         {
             return new PersonService( rockContext ?? new RockContext() ).GetSpouse( person );
+        }
+
+        /// <summary>
+        /// Gets the <see cref="Rock.Model.Person" /> entity of the provided Person's head of household.
+        /// </summary>
+        /// <param name="person">The <see cref="Rock.Model.Person" /> entity of the Person to retrieve the head of household of.</param>
+        /// <param name="rockContext">The rock context.</param>
+        /// <returns>
+        /// The <see cref="Rock.Model.Person" /> entity containing the provided Person's head of household. If the provided Person's head of houseold is not found, this value will be null.
+        /// </returns>
+        public static Person GetHeadOfHousehold( this Person person, RockContext rockContext = null )
+        {
+            return new PersonService( rockContext ?? new RockContext() ).GetHeadOfHousehold( person );
+        }
+
+        /// <summary>
+        /// Gets the family role (adult or child).
+        /// </summary>
+        /// <param name="person">The person.</param>
+        /// <param name="rockContext">The rock context.</param>
+        /// <returns></returns>
+        public static GroupTypeRole GetFamilyRole(this Person person, RockContext rockContext = null )
+        {
+            if (rockContext == null )
+            {
+                rockContext = new RockContext();
+            }
+
+            return new PersonService( rockContext ).GetFamilyRole(person, rockContext);
         }
 
         /// <summary>

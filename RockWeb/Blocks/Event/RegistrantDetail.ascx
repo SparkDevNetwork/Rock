@@ -76,10 +76,13 @@
                             <asp:PlaceHolder ID="phFields" runat="server" />
                         </div>
                         <div class="col-md-6">
+                            <Rock:Toggle ID="tglWaitList" runat="server" OnText="Registrant" OffText="Wait List" Label="Status" ActiveButtonCssClass="btn-info" ButtonSizeCssClass="btn-xs" Help="Moving someone from a wait list here will not send any emails to them. To send a formatted email use the Wait List tab." />
                             <Rock:CurrencyBox ID="cbCost" runat="server" Label="Cost" />
                             <div id="divFees" runat="server" class="well registration-additional-options">
                                 <asp:PlaceHolder ID="phFees" runat="server" />
                             </div>
+                            <asp:HiddenField ID="hfSignedDocumentId" runat="server" />
+                            <Rock:FileUploader ID="fuSignedDocument" runat="server" Label="Signed Document" />
                         </div>
                     </div>
 

@@ -947,7 +947,15 @@ namespace Rock.Web.UI.Controls
                 this.AllowCustomPaging = true;
                 var currentPageData = qry.Skip( this.PageIndex * this.PageSize ).Take( this.PageSize ).ToList();
                 this.DataSource = currentPageData;
-                this.VirtualItemCount = qry.Count();
+                if ( currentPageData.Count < this.PageSize )
+                {
+                    // if the current page has fewer records than the page.size, we are on the last page of records, so we can figure out how many records there are without requerying the database
+                    this.VirtualItemCount = ( this.PageIndex * this.PageSize ) + currentPageData.Count;
+                }
+                else
+                {
+                    this.VirtualItemCount = qry.Count();
+                }
 
                 PreDataBound = false;
                 CurrentPageRows = currentPageData.Count();
@@ -1687,6 +1695,7 @@ namespace Rock.Web.UI.Controls
                             if ( !selectedKeys.Contains( dataKeyValue ) )
                             {
                                 // if there are specific rows selected, skip over rows that aren't selected
+                                dataIndex++;
                                 continue;
                             }
                         }
@@ -1738,8 +1747,8 @@ namespace Rock.Web.UI.Controls
                                     worksheet.Cells[rowCounter, columnCounter].Value = resultHtml;
                                 }
                                 continue;
-                            } 
-                            
+                            }
+
                             var boundField = dataField as BoundField;
                             if ( boundField != null )
                             {
@@ -1747,6 +1756,11 @@ namespace Rock.Web.UI.Controls
                                 if ( prop != null )
                                 {
                                     object propValue = prop.GetValue( item, null );
+
+                                    if ( dataField is CallbackField )
+                                    {
+                                        propValue = ( dataField as CallbackField ).GetFormattedDataValue( propValue );
+                                    }
 
                                     var definedValueAttribute = prop.GetCustomAttributes( typeof( DefinedValueAttribute ), true ).FirstOrDefault();
 

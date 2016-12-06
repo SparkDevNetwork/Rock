@@ -32,6 +32,7 @@ using Rock.Security;
 using Newtonsoft.Json;
 using Rock.Web;
 using System.Web.UI.WebControls;
+using Rock.UniversalSearch;
 
 namespace RockWeb.Blocks.Cms
 {
@@ -45,6 +46,8 @@ namespace RockWeb.Blocks.Cms
     {
 
         #region Properties
+
+        private List<int> ChildContentChannelsList { get; set; }
 
         /// <summary>
         /// Gets or sets the state of the item attributes.
@@ -66,6 +69,8 @@ namespace RockWeb.Blocks.Cms
         {
             base.LoadViewState( savedState );
 
+            ChildContentChannelsList = ViewState["ChildContentChannelList"] as List<int> ?? new List<int>();
+
             string json = ViewState["ItemAttributesState"] as string;
             if ( string.IsNullOrWhiteSpace( json ) )
             {
@@ -84,6 +89,12 @@ namespace RockWeb.Blocks.Cms
         protected override void OnInit( EventArgs e )
         {
             base.OnInit( e );
+
+            gChildContentChannels.DataKeyNames = new string[] { "Id" };
+            gChildContentChannels.Actions.ShowAdd = true;
+            gChildContentChannels.Actions.AddClick += gChildContentChannels_Add;
+            gChildContentChannels.GridRebind += gChildContentChannels_GridRebind;
+            gChildContentChannels.EmptyDataText = Server.HtmlEncode( None.Text );
 
             gItemAttributes.DataKeyNames = new string[] { "Guid" };
             gItemAttributes.Actions.ShowAdd = true;
@@ -154,6 +165,8 @@ namespace RockWeb.Blocks.Cms
         /// </returns>
         protected override object SaveViewState()
         {
+            ViewState["ChildContentChannelList"] = ChildContentChannelsList;
+
             var jsonSetting = new JsonSerializerSettings
             {
                 ReferenceLoopHandling = ReferenceLoopHandling.Ignore,
@@ -281,10 +294,25 @@ namespace RockWeb.Blocks.Cms
                 contentChannel.RootImageDirectory = tbRootImageDirectory.Visible ? tbRootImageDirectory.Text : string.Empty;
                 contentChannel.IconCssClass = tbIconCssClass.Text;
                 contentChannel.RequiresApproval = cbRequireApproval.Checked;
+                contentChannel.IsIndexEnabled = cbIndexChannel.Checked;
+                contentChannel.ItemsManuallyOrdered = cbItemsManuallyOrdered.Checked;
+                contentChannel.ChildItemsManuallyOrdered = cbChildItemsManuallyOrdered.Checked;
                 contentChannel.EnableRss = cbEnableRss.Checked;
                 contentChannel.ChannelUrl = tbChannelUrl.Text;
                 contentChannel.ItemUrl = tbItemUrl.Text;
                 contentChannel.TimeToLive = nbTimetoLive.Text.AsIntegerOrNull();
+                contentChannel.ItemUrl = tbContentChannelItemPublishingPoint.Text;
+
+                contentChannel.ChildContentChannels = new List<ContentChannel>();
+                contentChannel.ChildContentChannels.Clear();
+                foreach ( var item in ChildContentChannelsList )
+                {
+                    var childContentChannel = contentChannelService.Get( item );
+                    if ( childContentChannel != null )
+                    {
+                        contentChannel.ChildContentChannels.Add( childContentChannel );
+                    }
+                }
 
                 contentChannel.LoadAttributes( rockContext );
                 Rock.Attribute.Helper.GetEditValues( phAttributes, contentChannel );
@@ -403,6 +431,8 @@ namespace RockWeb.Blocks.Cms
             edtItemAttributes.ReservedKeyNames = ItemAttributesState.Where( a => !a.Guid.Equals( attributeGuid ) ).Select( a => a.Key ).ToList();
 
             edtItemAttributes.SetAttributeProperties( attribute, typeof( ContentChannelItem ) );
+
+            edtItemAttributes.IsIndexingEnabledVisible = cbIndexChannel.Visible && cbIndexChannel.Checked;
 
             ShowDialog( "ItemAttributes", true );
         }
@@ -538,6 +568,8 @@ namespace RockWeb.Blocks.Cms
         {
             ContentChannel contentChannel = null;
 
+            cbIndexChannel.Visible = IndexContainer.IndexingEnabled;
+
             bool editAllowed = IsUserAuthorized( Authorization.EDIT );
 
             var rockContext = new RockContext();
@@ -549,11 +581,15 @@ namespace RockWeb.Blocks.Cms
                 {
                     editAllowed = editAllowed || contentChannel.IsAuthorized( Authorization.EDIT, CurrentPerson );
                 }
+                pdAuditDetails.SetEntity( contentChannel, ResolveRockUrl( "~" ) );
             }
 
             if ( contentChannel == null )
             {
                 contentChannel = new ContentChannel { Id = 0 };
+                contentChannel.ChildContentChannels = new List<ContentChannel>();
+                // hide the panel drawer that show created and last modified dates
+                pdAuditDetails.Visible = false;
             }
 
             if ( contentChannel != null && contentChannel.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
@@ -619,13 +655,16 @@ namespace RockWeb.Blocks.Cms
 
                 lGroupDescription.Text = contentChannel.Description;
 
-                var descriptionList = new DescriptionList();
+                var descriptionListLeft = new DescriptionList();
+                var descriptionListRight = new DescriptionList();
+
+                descriptionListLeft.Add( "Item's Require Approval", contentChannel.RequiresApproval.ToYesNo() );
+                descriptionListRight.Add( "Is Indexed", contentChannel.IsIndexEnabled.ToYesNo() );
+
                 if ( contentChannel.EnableRss )
                 {
-                    descriptionList
-                    .Add( "Item's Require Approval", contentChannel.RequiresApproval.ToString() )
-                    .Add( "Channel Url", contentChannel.ChannelUrl )
-                    .Add( "Item Url", contentChannel.ItemUrl );
+                    descriptionListLeft.Add( "Channel Url", contentChannel.ChannelUrl );
+                    descriptionListRight.Add( "Item Url", contentChannel.ItemUrl );
                 }
 
                 contentChannel.LoadAttributes();
@@ -638,11 +677,12 @@ namespace RockWeb.Blocks.Cms
                     {
                         string value = attribute.FieldType.Field.FormatValueAsHtml( null,
                             contentChannel.AttributeValues[attribute.Key].Value, attribute.QualifierValues, false );
-                        descriptionList.Add( attribute.Name, value );
+                        descriptionListLeft.Add( attribute.Name, value );
                     }
                 }
 
-                lDetails.Text = descriptionList.Html;
+                lDetailsLeft.Text = descriptionListLeft.Html;
+                lDetailsRight.Text = descriptionListRight.Html;
             }
         }
 
@@ -673,12 +713,20 @@ namespace RockWeb.Blocks.Cms
                 tbRootImageDirectory.Visible = contentChannel.ContentControlType == ContentControlType.HtmlEditor;
                 tbIconCssClass.Text = contentChannel.IconCssClass;
                 cbRequireApproval.Checked = contentChannel.RequiresApproval;
+                cbIndexChannel.Checked = contentChannel.IsIndexEnabled;
+                cbItemsManuallyOrdered.Checked = contentChannel.ItemsManuallyOrdered;
+                cbChildItemsManuallyOrdered.Checked = contentChannel.ChildItemsManuallyOrdered;
                 cbEnableRss.Checked = contentChannel.EnableRss;
+                tbContentChannelItemPublishingPoint.Text = contentChannel.ItemUrl;
 
                 divRss.Attributes["style"] = cbEnableRss.Checked ? "display:block" : "display:none";
                 tbChannelUrl.Text = contentChannel.ChannelUrl;
                 tbItemUrl.Text = contentChannel.ItemUrl;
                 nbTimetoLive.Text = ( contentChannel.TimeToLive ?? 0 ).ToString();
+
+                ChildContentChannelsList = new List<int>();
+                contentChannel.ChildContentChannels.ToList().ForEach( a => ChildContentChannelsList.Add( a.Id ) );
+                BindChildContentChannelsGrid();
 
                 AddAttributeControls( contentChannel );
 
@@ -821,6 +869,11 @@ namespace RockWeb.Blocks.Cms
         {
             switch ( hfActiveDialog.Value )
             {
+                case "CHILDCONTENTCHANNELS":
+                    {
+                        dlgChildContentChannel.Show();
+                        break;
+                    }
                 case "ITEMATTRIBUTES":
                     {
                         dlgItemAttributes.Show();
@@ -836,6 +889,11 @@ namespace RockWeb.Blocks.Cms
         {
             switch ( hfActiveDialog.Value )
             {
+                case "CHILDCONTENTCHANNELS":
+                    {
+                        dlgChildContentChannel.Hide();
+                        break;
+                    }
                 case "ITEMATTRIBUTES":
                     {
                         dlgItemAttributes.Hide();
@@ -847,5 +905,86 @@ namespace RockWeb.Blocks.Cms
         }
 
         #endregion
-}
+
+        #region Child ContentChannel Grid and Picker
+
+        /// <summary>
+        /// Handles the Add event of the gChildContentChannels control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
+        protected void gChildContentChannels_Add( object sender, EventArgs e )
+        {
+            // populate dropdown with all grouptypes that aren't already childgroups
+            var contentChannelList = new ContentChannelService( new RockContext() )
+                .Queryable()
+                .Where( t => !ChildContentChannelsList.Contains( t.Id ) )
+                .OrderBy( t => t.Name )
+                .ToList();
+
+            if ( contentChannelList.Count == 0 )
+            {
+                modalAlert.Show( "There are not any other content channels that can be added", ModalAlertType.Warning );
+            }
+            else
+            {
+                ddlChildContentChannel.DataSource = contentChannelList;
+                ddlChildContentChannel.DataBind();
+                ShowDialog( "ChildContentChannels" );
+            }
+        }
+
+        /// <summary>
+        /// Handles the Delete event of the gChildContentChannels control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="RowEventArgs" /> instance containing the event data.</param>
+        protected void gChildContentChannels_Delete( object sender, RowEventArgs e )
+        {
+            int childContentChannelId = e.RowKeyId;
+            ChildContentChannelsList.Remove( childContentChannelId );
+            BindChildContentChannelsGrid();
+        }
+
+        /// <summary>
+        /// Handles the GridRebind event of the gChildContentChannels control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
+        protected void gChildContentChannels_GridRebind( object sender, EventArgs e )
+        {
+            BindChildContentChannelsGrid();
+        }
+
+        /// <summary>
+        /// Binds the child content channels grid.
+        /// </summary>
+        private void BindChildContentChannelsGrid()
+        {
+            var contentChannelList = new ContentChannelService( new RockContext() )
+                .Queryable()
+                .Where( t => ChildContentChannelsList.Contains( t.Id ) )
+                .OrderBy( t => t.Name )
+                .ToList();
+
+            gChildContentChannels.DataSource = contentChannelList;
+            gChildContentChannels.DataBind();
+        }
+
+        /// <summary>
+        /// Handles the SaveClick event of the dlgChildContentChannel control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void dlgChildContentChannel_SaveClick( object sender, EventArgs e )
+        {
+            ChildContentChannelsList.Add( ddlChildContentChannel.SelectedValueAsId() ?? 0 );
+            BindChildContentChannelsGrid();
+            HideDialog();
+        }
+
+        #endregion
+
+
+    }
 }

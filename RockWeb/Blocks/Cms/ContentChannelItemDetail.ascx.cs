@@ -33,6 +33,7 @@ using Rock.Security;
 using Newtonsoft.Json;
 using Rock.Web;
 using System.Web.UI.WebControls;
+using System.Data.Entity;
 
 namespace RockWeb.Blocks.Cms
 {
@@ -43,8 +44,9 @@ namespace RockWeb.Blocks.Cms
     [Category("CMS")]
     [Description("Displays the details for a content channel item.")]
 
-    [LinkedPage( "Event Occurrence Page", order: 0 )]
+    [LinkedPage( "Event Occurrence Page", order: 0, required:false )]
     [BooleanField( "Show Delete Button", "Shows a delete button for the current item.", false, order: 1 )]
+    [ContentChannelField("Content Channel", "If set the block will ignore content channel query parameters", false)]
     public partial class ContentChannelItemDetail : RockBlock, IDetailBlock
     {
 
@@ -70,6 +72,26 @@ namespace RockWeb.Blocks.Cms
             this.BlockUpdated += Block_BlockUpdated;
             this.AddConfigurationUpdateTrigger( upnlContent );
 
+            gChildItems.DataKeyNames = new string[] { "Id" };
+            gChildItems.AllowSorting = false;
+            gChildItems.Actions.ShowAdd = true;
+            gChildItems.IsDeleteEnabled = true;
+            gChildItems.Actions.AddClick += gChildItems_Add;
+            gChildItems.GridRebind += gChildItems_GridRebind;
+            gChildItems.GridReorder += gChildItems_GridReorder;
+            gChildItems.EntityTypeId = EntityTypeCache.Read<ContentChannelItem>().Id;
+
+            gParentItems.DataKeyNames = new string[] { "Id" };
+            gParentItems.AllowSorting = true;
+            gParentItems.Actions.ShowAdd = false;
+            gParentItems.IsDeleteEnabled = false;
+            gParentItems.GridRebind += gParentItems_GridRebind;
+            gParentItems.EntityTypeId = EntityTypeCache.Read<ContentChannelItem>().Id;
+
+            string clearScript = string.Format( "$('#{0}').val('false');", hfIsDirty.ClientID );
+            lbSave.OnClientClick = clearScript;
+            lbCancel.OnClientClick = clearScript;
+
             string script = string.Format( @"
     $('#{0} .btn-toggle').click(function (e) {{
 
@@ -90,8 +112,48 @@ namespace RockWeb.Blocks.Cms
         }});
 
     }});
-", pnlStatus.ClientID, hfStatus.ClientID );
+
+    $(document).ready( function() {{
+        
+        window.addEventListener('beforeunload', function(e) {{
+            if ( $('#{2}').val() == 'true' ) {{
+                var timeout = setTimeout( function() {{
+                    $('#updateProgress').hide();
+                }}, 1000 );
+
+                var confirmMessage = 'You have not saved your changes. Are you sure you want to continue?';    
+                ( e || window.event).returnValue = confirmMessage;
+                return confirmMessage;
+            }}
+            return;
+        }});
+
+        $('.js-item-details').find('input').blur( function() {{
+            $('#{2}').val('true')
+        }});
+
+        $('.js-item-details').find('textarea').blur( function() {{
+            $('#{2}').val('true')
+        }});
+
+        $('#{3}').on('summernote.blur', function() {{
+            $('#{2}').val('true')
+        }});
+    }});
+
+    function isDirty() {{
+        if ( $('#{2}').val() == 'true' ) {{
+            if ( confirm('You have not saved your changes. Are you sure you want to continue?') ) {{
+                return false;
+            }}
+            return true;
+        }}
+        return false;
+    }}
+
+", pnlStatus.ClientID, hfStatus.ClientID, hfIsDirty.ClientID, htmlContent.ClientID );
             ScriptManager.RegisterStartupScript( pnlStatus, pnlStatus.GetType(), "status-script-" + this.BlockId.ToString(), script, true );
+
 
         }
 
@@ -105,7 +167,16 @@ namespace RockWeb.Blocks.Cms
 
             if ( !Page.IsPostBack )
             {
-                ShowDetail( PageParameter( "contentItemId" ).AsInteger(), PageParameter("contentChannelId").AsIntegerOrNull() );
+                if (string.IsNullOrWhiteSpace(GetAttributeValue("ContentChannel")))
+                {
+                    ShowDetail(PageParameter("contentItemId").AsInteger(), PageParameter("contentChannelId").AsIntegerOrNull());
+                }
+                else
+                {
+                    var contentChannel = GetAttributeValue("ContentChannel").AsGuid();
+                    ShowDetail(PageParameter("contentItemId").AsInteger(), new ContentChannelService(new RockContext()).Get(GetAttributeValue("ContentChannel").AsGuid()).Id);
+                }
+                
             }
             else
             {
@@ -115,6 +186,8 @@ namespace RockWeb.Blocks.Cms
 
                 phAttributes.Controls.Clear();
                 Rock.Attribute.Helper.AddEditControls( item, phAttributes, false, BlockValidationGroup );
+
+                ShowDialog();
             }
         }
 
@@ -127,10 +200,16 @@ namespace RockWeb.Blocks.Cms
         {
             var breadCrumbs = new List<BreadCrumb>();
 
-            int? contentItemId = PageParameter( pageReference, "contentItemId" ).AsIntegerOrNull();
-            if ( contentItemId != null )
+            var itemIds = GetNavHierarchy().AsIntegerList();
+            int? itemId = PageParameter( pageReference, "contentItemId" ).AsIntegerOrNull();
+            if ( itemId != null )
             {
-                ContentChannelItem contentItem = new ContentChannelItemService( new RockContext() ).Get( contentItemId.Value );
+                itemIds.Add( itemId.Value );
+            }
+
+            foreach( var contentItemId in itemIds )
+            { 
+                ContentChannelItem contentItem = new ContentChannelItemService( new RockContext() ).Get( contentItemId );
                 if ( contentItem != null )
                 {
                     breadCrumbs.Add( new BreadCrumb( contentItem.Title, pageReference ) );
@@ -140,13 +219,10 @@ namespace RockWeb.Blocks.Cms
                     breadCrumbs.Add( new BreadCrumb( "New Content Item", pageReference ) );
                 }
             }
-            else
-            {
-                // don't show a breadcrumb if we don't have a pageparam to work with
-            }
 
             return breadCrumbs;
         }
+
         #endregion
 
         #region Events
@@ -165,8 +241,7 @@ namespace RockWeb.Blocks.Cms
                 ( IsUserAuthorized( Authorization.EDIT ) || contentItem.IsAuthorized( Authorization.EDIT, CurrentPerson ) ) )
             {
                 contentItem.Title = tbTitle.Text;
-                contentItem.Content = contentItem.ContentChannel.ContentControlType == ContentControlType.HtmlEditor ?
-                    htmlContent.Text : ceContent.Text;
+                contentItem.Content = htmlContent.Text;
                 contentItem.Priority = nbPriority.Text.AsInteger();
                 if ( contentItem.ContentChannelType.IncludeTime )
                 {
@@ -296,6 +371,228 @@ namespace RockWeb.Blocks.Cms
             ShowDetail( hfId.ValueAsInt() );
         }
 
+        #region Child/Parent List Events
+
+        private void gChildItems_GridRebind( object sender, GridRebindEventArgs e )
+        {
+            var contentItem = GetContentItem();
+            if ( contentItem != null )
+            {
+                BindChildItemsGrid( contentItem );
+            }
+        }
+
+        private void gChildItems_Add( object sender, EventArgs e )
+        {
+            ddlAddNewItemChannel.Items.Clear();
+            ddlAddExistingItemChannel.Items.Clear();
+            ddlAddExistingItem.Items.Clear();
+
+            ddlAddNewItemChannel.Items.Add( new ListItem() );
+            ddlAddExistingItemChannel.Items.Add( new ListItem() );
+
+            var contentItem = GetContentItem();
+            if ( contentItem != null && contentItem.ContentChannel != null && contentItem.ContentChannel.ChildContentChannels != null )
+            {
+                foreach ( var channel in contentItem.ContentChannel.ChildContentChannels
+                    .OrderBy( c => c.Name ) )
+                {
+                    if ( channel.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
+                    {
+                        ddlAddNewItemChannel.Items.Add( new ListItem( channel.Name, channel.Id.ToString() ) );
+                        ddlAddExistingItemChannel.Items.Add( new ListItem( channel.Name, channel.Id.ToString() ) );
+                    }
+                }
+            }
+
+            ShowDialog( "AddChildItem", true );
+        }
+
+        private void gChildItems_GridReorder( object sender, GridReorderEventArgs e )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                var contentItem = GetContentItem( rockContext );
+                if ( contentItem != null )
+                {
+                    bool isFiltered = false;
+                    var items = GetChildItems( contentItem, out isFiltered );
+
+                    if ( !isFiltered )
+                    {
+                        var service = new ContentChannelItemService( rockContext );
+                        service.Reorder( items, e.OldIndex, e.NewIndex );
+                        rockContext.SaveChanges();
+                    }
+                }
+
+                BindChildItemsGrid( contentItem );
+            }
+        }
+
+        protected void gChildItems_RowSelected( object sender, RowEventArgs e )
+        {
+            NavigateToNewItem( e.RowKeyId.ToString() );
+        }
+
+        protected void gChildItems_Delete( object sender, RowEventArgs e )
+        {
+            hfRemoveChildItem.Value = e.RowKeyId.ToString();
+            ShowDialog( "RemoveChildItem", true );
+        }
+
+        private void gParentItems_GridRebind( object sender, GridRebindEventArgs e )
+        {
+            var contentItem = GetContentItem();
+            if ( contentItem != null )
+            {
+                BindParentItemsGrid( contentItem );
+            }
+        }
+
+        protected void gParentItems_RowSelected( object sender, RowEventArgs e )
+        {
+            NavigateToNewItem( e.RowKeyId.ToString() );
+        }
+
+        protected void lbAddNewChildItem_Click( object sender, EventArgs e )
+        {
+            int? channelId = ddlAddNewItemChannel.SelectedValueAsInt();
+            if ( channelId.HasValue )
+            {
+                var qryParams = new Dictionary<string, string>();
+                qryParams.Add( "contentItemId", "0" );
+                qryParams.Add( "contentChannelId", channelId.Value.ToString() );
+
+                var hierarchy = GetNavHierarchy();
+                hierarchy.Add( hfId.Value );
+                qryParams.Add( "Hierarchy", hierarchy.AsDelimited( "," ) );
+
+                NavigateToCurrentPage( qryParams );
+            }
+        }
+
+        protected void lbAddExistingChildItem_Click( object sender, EventArgs e )
+        {
+            int? ItemId = hfId.Value.AsIntegerOrNull();
+            int? childItemId = ddlAddExistingItem.SelectedValueAsInt();
+
+            if ( ItemId.HasValue && childItemId.HasValue )
+            {
+                using ( var rockContext = new RockContext() )
+                {
+                    var service = new ContentChannelItemAssociationService( rockContext );
+                    var order = service.Queryable().AsNoTracking()
+                        .Where( a => a.ContentChannelItemId == ItemId.Value )
+                        .Select( a => (int?)a.Order )
+                        .DefaultIfEmpty()
+                        .Max();
+
+                    var assoc = new ContentChannelItemAssociation();
+                    assoc.ContentChannelItemId = ItemId.Value;
+                    assoc.ChildContentChannelItemId = childItemId.Value;
+                    assoc.Order = order.HasValue ? order.Value + 1 : 0;
+                    service.Add( assoc );
+
+                    rockContext.SaveChanges();
+                }
+            }
+
+            BindChildItemsGrid( GetContentItem() );
+
+            HideDialog();
+        }
+
+        protected void ddlAddExistingItemChannel_SelectedIndexChanged( object sender, EventArgs e )
+        {
+            ddlAddExistingItem.Items.Clear();
+            int? channelId = ddlAddExistingItemChannel.SelectedValueAsInt();
+            if ( channelId.HasValue )
+            {
+                using ( var rockContext = new RockContext() )
+                {
+                    var contentItem = GetContentItem( rockContext );
+
+                    var channel = new ContentChannelService( rockContext ).Get( channelId.Value );
+
+                    var items = new List<ContentChannelItem>();
+                    foreach ( var item in channel.Items )
+                    {
+                        if ( !contentItem.ChildItems.Any( i => i.ChildContentChannelItemId == item.Id ) &&
+                            item.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
+                        {
+                            items.Add( item );
+                        }
+                    }
+
+                    if ( channel.ItemsManuallyOrdered )
+                    {
+                        items = items.OrderBy( i => i.Order ).ToList();
+                    }
+                    else
+                    {
+                        items = items.OrderByDescending( i => i.StartDateTime ).ToList();
+                    }
+
+                    foreach ( var item in items )
+                    {
+                        ddlAddExistingItem.Items.Add( new ListItem( string.Format( "{0} ({1})", item.Title, item.StartDateTime.ToShortDateString() ), item.Id.ToString() ) );
+                    }
+                }
+            }
+        }
+
+        protected void lbRemoveChildItem_Click( object sender, EventArgs e )
+        {
+            int? itemId = hfId.Value.AsIntegerOrNull();
+            int? childItemId = hfRemoveChildItem.Value.AsIntegerOrNull();
+
+            if ( itemId.HasValue && childItemId.HasValue )
+            {
+                using ( var rockContext = new RockContext() )
+                {
+                    var assocService = new ContentChannelItemAssociationService( rockContext );
+                    var assoc = assocService.Queryable()
+                        .Where( a =>
+                            a.ContentChannelItemId == itemId.Value &&
+                            a.ChildContentChannelItemId == childItemId.Value )
+                        .FirstOrDefault();
+
+                    if ( assoc != null )
+                    {
+                        assocService.Delete( assoc );
+                        rockContext.SaveChanges();
+                    }
+                }
+            }
+
+            BindChildItemsGrid( GetContentItem() );
+
+            HideDialog();
+        }
+
+        protected void lbDeleteChildItem_Click( object sender, EventArgs e )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                int childItemId = hfRemoveChildItem.ValueAsInt();
+
+                var service = new ContentChannelItemService( rockContext );
+                var childItem = service.Get( childItemId );
+                if ( childItem != null )
+                {
+                    service.Delete( childItem );
+                    rockContext.SaveChanges();
+                }
+            }
+
+            BindChildItemsGrid( GetContentItem() );
+
+            HideDialog();
+        }
+
+        #endregion
+
         #endregion
 
         #region Internal Methods
@@ -334,6 +631,26 @@ namespace RockWeb.Blocks.Cms
                         StartDateTime = RockDateTime.Now
                     };
 
+                    var hierarchy = GetNavHierarchy();
+                    if ( hierarchy.Any() )
+                    {
+                        var parentItem = contentItemService.Get( hierarchy.Last().AsInteger() );
+                        if ( parentItem != null && 
+                            parentItem.IsAuthorized( Authorization.EDIT, CurrentPerson ) &&
+                            parentItem.ContentChannel.ChildContentChannels.Any( c => c.Id == contentChannel.Id ) )
+                        {
+                            var order = parentItem.ChildItems
+                                .Select( a => (int?)a.Order )
+                                .DefaultIfEmpty()
+                                .Max();
+
+                            var assoc = new ContentChannelItemAssociation();
+                            assoc.ContentChannelItemId = parentItem.Id;
+                            assoc.Order = order.HasValue ? order.Value + 1 : 0;
+                            contentItem.ParentItems.Add( assoc );
+                        }
+                    }
+
                     if ( contentChannel.RequiresApproval )
                     {
                         contentItem.Status = ContentChannelItemStatus.PendingApproval;
@@ -369,23 +686,15 @@ namespace RockWeb.Blocks.Cms
 
             ContentChannelItem contentItem = GetContentItem();
 
-            if ( contentItem != null &&
-                contentItem.CreatedByPersonAlias != null &&
-                contentItem.CreatedByPersonAlias.Person != null )
-            {
-                lCreatedBy.Text = String.Format( "<a href={0}>{1}</a>", ResolveRockUrl( string.Format( "~/Person/{0}", contentItem.CreatedByPersonAlias.PersonId ) ), contentItem.CreatedByPersonName );
-
-                if ( contentItem.CreatedDateTime.HasValue )
-                {
-                    lCreatedBy.Text += String.Format( " <small class='js-date-rollover' data-toggle='tooltip' data-placement='top' title='{0}'>({1})</small>", contentItem.CreatedDateTime.Value.ToString(), contentItem.CreatedDateTime.Value.ToRelativeDateString() );
-                }
-            }
+            pdAuditDetails.SetEntity( contentItem, ResolveRockUrl( "~" ) );
 
             if ( contentItem != null &&
                 contentItem.ContentChannelType != null &&
                 contentItem.ContentChannel != null &&
                 ( canEdit || contentItem.IsAuthorized( Authorization.EDIT, CurrentPerson ) ) ) 
             {
+                hfIsDirty.Value = "false";
+
                 ShowApproval( contentItem );
 
                 pnlEditDetails.Visible = true;
@@ -437,36 +746,21 @@ namespace RockWeb.Blocks.Cms
 
                 tbTitle.Text = contentItem.Title;
 
-                if ( contentItem.ContentChannel.ContentControlType == ContentControlType.HtmlEditor )
-                {
-                    ceContent.Visible = false;
-                    htmlContent.Visible = true;
-                    htmlContent.Text = contentItem.Content;
-                    htmlContent.MergeFields.Clear();
-                    htmlContent.MergeFields.Add( "GlobalAttribute" );
-                    htmlContent.MergeFields.Add( "Rock.Model.ContentChannelItem|Current Item" );
-                    htmlContent.MergeFields.Add( "Rock.Model.Person|Current Person" );
-                    htmlContent.MergeFields.Add( "Campuses" );
-                    htmlContent.MergeFields.Add( "RockVersion" );
+                htmlContent.Text = contentItem.Content;
+                htmlContent.MergeFields.Clear();
+                htmlContent.MergeFields.Add( "GlobalAttribute" );
+                htmlContent.MergeFields.Add( "Rock.Model.ContentChannelItem|Current Item" );
+                htmlContent.MergeFields.Add( "Rock.Model.Person|Current Person" );
+                htmlContent.MergeFields.Add( "Campuses" );
+                htmlContent.MergeFields.Add( "RockVersion" );
 
-                    if ( !string.IsNullOrWhiteSpace( contentItem.ContentChannel.RootImageDirectory ) )
-                    {
-                        htmlContent.DocumentFolderRoot = contentItem.ContentChannel.RootImageDirectory;
-                        htmlContent.ImageFolderRoot = contentItem.ContentChannel.RootImageDirectory;
-                    }
-                }
-                else
+                if ( !string.IsNullOrWhiteSpace( contentItem.ContentChannel.RootImageDirectory ) )
                 {
-                    htmlContent.Visible = false;
-                    ceContent.Visible = true;
-                    ceContent.Text = contentItem.Content;
-                    ceContent.MergeFields.Clear();
-                    ceContent.MergeFields.Add( "GlobalAttribute" );
-                    ceContent.MergeFields.Add( "Rock.Model.ContentChannelItem|Current Item" );
-                    ceContent.MergeFields.Add( "Rock.Model.Person|Current Person" );
-                    ceContent.MergeFields.Add( "Campuses" );
-                    ceContent.MergeFields.Add( "RockVersion" );
+                    htmlContent.DocumentFolderRoot = contentItem.ContentChannel.RootImageDirectory;
+                    htmlContent.ImageFolderRoot = contentItem.ContentChannel.RootImageDirectory;
                 }
+
+                htmlContent.StartInCodeEditorMode = contentItem.ContentChannel.ContentControlType == ContentControlType.CodeEditor;
 
                 if ( contentItem.ContentChannelType.IncludeTime )
                 {
@@ -496,7 +790,7 @@ namespace RockWeb.Blocks.Cms
 
                 contentItem.LoadAttributes();
                 phAttributes.Controls.Clear();
-                Rock.Attribute.Helper.AddEditControls( contentItem, phAttributes, true, BlockValidationGroup );
+                Rock.Attribute.Helper.AddEditControls( contentItem, phAttributes, true, BlockValidationGroup, 2 );
 
                 phOccurrences.Controls.Clear();
                 foreach ( var occurrence in contentItem.EventItemOccurrences
@@ -510,6 +804,32 @@ namespace RockWeb.Blocks.Cms
                     hlOccurrence.ID = string.Format( "hlOccurrence_{0}", occurrence.Id );
                     hlOccurrence.Text = string.Format( "<a href='{0}'><i class='fa fa-calendar-o'></i> {1}</a>", url, occurrence.ToString() );
                     phOccurrences.Controls.Add( hlOccurrence );
+                }
+
+                bool canHaveChildren = contentItem.Id > 0 && contentItem.ContentChannel.ChildContentChannels.Any();
+                bool canHaveParents = contentItem.Id > 0 && contentItem.ContentChannel.ParentContentChannels.Any();
+
+                pnlChildrenParents.Visible = canHaveChildren || canHaveParents;
+                phPills.Visible = canHaveChildren && canHaveParents;
+                if ( canHaveChildren && !canHaveParents )
+                {
+                    lChildrenParentsTitle.Text = "<i class='fa fa-arrow-circle-down'></i> Child Items";
+                }
+
+                if ( !canHaveChildren && canHaveParents )
+                {
+                    lChildrenParentsTitle.Text = "<i class='fa fa-arrow-circle-up'></i> Parent Items";
+                    divParentItems.AddCssClass( "active" );
+                }
+
+                if ( canHaveChildren )
+                {
+                    BindChildItemsGrid( contentItem );
+                }
+
+                if ( canHaveParents )
+                {
+                    BindParentItemsGrid( contentItem );
                 }
             }
             else
@@ -549,6 +869,31 @@ namespace RockWeb.Blocks.Cms
             }
         }
 
+        private void NavigateToNewItem( string itemId )
+        {
+            var qryParams = new Dictionary<string, string>();
+            qryParams.Add( "contentItemId", itemId );
+
+            var hierarchy = GetNavHierarchy();
+            hierarchy.Add( hfId.Value );
+
+            var newHierarchy = new List<string>();
+            foreach( string existingItemId in hierarchy )
+            {
+                if ( existingItemId != itemId )
+                {
+                    newHierarchy.Add( existingItemId );
+                }
+                else
+                {
+                    break;
+                }
+            }
+
+            qryParams.Add( "Hierarchy", newHierarchy.AsDelimited( "," ) );
+
+            NavigateToCurrentPage( qryParams );
+        }
 
         /// <summary>
         /// Returns to parent page.
@@ -563,12 +908,238 @@ namespace RockWeb.Blocks.Cms
                 qryParams.Add( "EventCalendarId", PageParameter( "EventCalendarId" ) );
                 qryParams.Add( "EventItemId", PageParameter( "EventItemId" ) );
                 qryParams.Add( "EventItemOccurrenceId", eventItemOccurrenceId.Value.ToString() );
+                qryParams.Add( "ContentChannelId", hfChannelId.Value );
+                NavigateToParentPage();
             }
-            
-            qryParams.Add( "ContentChannelId", hfChannelId.Value );
-            NavigateToParentPage( qryParams );
+            else
+            {
+                var hierarchy = GetNavHierarchy();
+
+                var newHierarchy = new List<string>();
+                foreach ( string itemId in hierarchy )
+                {
+                    if ( itemId != hfId.Value )
+                    {
+                        newHierarchy.Add( itemId );
+                    }
+                    else
+                    {
+                        break;
+                    }
+                }
+
+                if ( newHierarchy.Any() )
+                {
+                    if ( newHierarchy.Count > 1 )
+                    {
+                        qryParams.Add( "Hierarchy", newHierarchy.Take( newHierarchy.Count() - 1 ).ToList().AsDelimited( "," ) );
+                    }
+                    qryParams.Add( "ContentItemId", newHierarchy.Last() );
+                    NavigateToCurrentPage( qryParams );
+                }
+                else
+                {
+                    qryParams.Add( "ContentChannelId", hfChannelId.Value );
+                    NavigateToParentPage( qryParams );
+                }
+            }
+        }
+
+        #region Child/Parent List Methods
+
+        private void BindChildItemsGrid( ContentChannelItem contentItem )
+        {
+            bool isFiltered = false;
+            var items = GetChildItems( contentItem, out isFiltered );
+
+            if ( contentItem.ContentChannel.ChildItemsManuallyOrdered && !isFiltered )
+            {
+                gChildItems.Columns[0].Visible = true;
+                gChildItems.AllowSorting = false;
+                items = items.OrderBy( i => i.Order ).ToList();
+            }
+            else
+            {
+                gChildItems.Columns[0].Visible = false;
+                gChildItems.AllowSorting = true;
+
+                SortProperty sortProperty = gChildItems.SortProperty;
+                if ( sortProperty != null )
+                {
+                    items = items.AsQueryable().Sort( sortProperty ).ToList();
+                }
+                else
+                {
+                    items = items.OrderByDescending( p => p.StartDateTime ).ToList();
+                }
+            }
+
+            gChildItems.ObjectList = new Dictionary<string, object>();
+            items.ForEach( i => gChildItems.ObjectList.Add( i.Id.ToString(), i ) );
+
+            gChildItems.DataSource = items.Select( i => new
+            {
+                i.Id,
+                i.Guid,
+                i.Title,
+                i.StartDateTime,
+                ExpireDateTime = i.ContentChannelType.DateRangeType == ContentChannelDateType.DateRange ? i.ExpireDateTime : (DateTime?)null,
+                Priority = i.ContentChannelType.DisablePriority ? (int?)null : (int?)i.Priority,
+                Status = i.ContentChannel.RequiresApproval ? DisplayStatus( i.Status ) : string.Empty,
+                CreatedBy = i.CreatedByPersonAlias != null && i.CreatedByPersonAlias.Person != null ? i.CreatedByPersonAlias.Person.NickName + " " + i.CreatedByPersonAlias.Person.LastName : ""
+            } ).ToList();
+
+            gChildItems.DataBind();
+        }
+
+        private void BindParentItemsGrid( ContentChannelItem contentItem )
+        {
+            var items = GetParentItems( contentItem );
+
+            SortProperty sortProperty = gParentItems.SortProperty;
+            if ( sortProperty != null )
+            {
+                items = items.AsQueryable().Sort( sortProperty ).ToList();
+            }
+            else
+            {
+                items = items.OrderByDescending( p => p.StartDateTime ).ToList();
+            }
+
+            gParentItems.ObjectList = new Dictionary<string, object>();
+            items.ForEach( i => gParentItems.ObjectList.Add( i.Id.ToString(), i ) );
+
+            gParentItems.DataSource = items.Select( i => new
+            {
+                i.Id,
+                i.Guid,
+                i.Title,
+                i.StartDateTime,
+                ExpireDateTime = i.ContentChannelType.DateRangeType == ContentChannelDateType.DateRange ? i.ExpireDateTime : (DateTime?)null,
+                Priority = i.ContentChannelType.DisablePriority ? (int?)null : (int?)i.Priority,
+                Status = i.ContentChannel.RequiresApproval ? DisplayStatus( i.Status ) : string.Empty,
+                CreatedBy = i.CreatedByPersonAlias != null && i.CreatedByPersonAlias.Person != null ? i.CreatedByPersonAlias.Person.NickName + " " + i.CreatedByPersonAlias.Person.LastName : ""
+            } ).ToList();
+            gParentItems.DataBind();
+
+        }
+
+        private List<ContentChannelItem> GetChildItems( ContentChannelItem contentItem, out bool isFiltered )
+        {
+            isFiltered = false;
+            var items = new List<ContentChannelItem>();
+
+            foreach ( var item in contentItem.ChildItems.Select( a => a.ChildContentChannelItem ).ToList() )
+            {
+                if ( item.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
+                {
+                    items.Add( item );
+                }
+                else
+                {
+                    isFiltered = true;
+                }
+            }
+            return items;
+        }
+
+        private List<ContentChannelItem> GetParentItems( ContentChannelItem contentItem )
+        {
+            var items = new List<ContentChannelItem>();
+
+            foreach ( var item in contentItem.ParentItems.Select( a => a.ContentChannelItem ).ToList() )
+            {
+                if ( item.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
+                {
+                    items.Add( item );
+                }
+            }
+
+            return items;
         }
 
         #endregion
+
+        protected string DisplayStatus( ContentChannelItemStatus contentItemStatus )
+        {
+            string labelType = "default";
+            if ( contentItemStatus == ContentChannelItemStatus.Approved )
+            {
+                labelType = "success";
+            }
+            else if ( contentItemStatus == ContentChannelItemStatus.Denied )
+            {
+                labelType = "danger";
+            }
+
+            return string.Format( "<span class='label label-{0}'>{1}</span>", labelType, contentItemStatus.ConvertToString() );
+        }
+
+        /// <summary>
+        /// Shows the dialog.
+        /// </summary>
+        /// <param name="dialog">The dialog.</param>
+        /// <param name="setValues">if set to <c>true</c> [set values].</param>
+        private void ShowDialog( string dialog, bool setValues = false )
+        {
+            hfActiveDialog.Value = dialog.ToUpper().Trim();
+            ShowDialog( setValues );
+        }
+
+        /// <summary>
+        /// Shows the dialog.
+        /// </summary>
+        /// <param name="setValues">if set to <c>true</c> [set values].</param>
+        private void ShowDialog( bool setValues = false )
+        {
+            switch ( hfActiveDialog.Value )
+            {
+                case "ADDCHILDITEM":
+                    {
+                        dlgAddChild.Show();
+                        break;
+                    }
+                case "REMOVECHILDITEM":
+                    {
+                        dlgRemoveChild.Show();
+                        break;
+                    }
+            }
+        }
+
+        /// <summary>
+        /// Hides the dialog.
+        /// </summary>
+        private void HideDialog()
+        {
+            switch ( hfActiveDialog.Value )
+            {
+                case "ADDCHILDITEM":
+                    {
+                        dlgAddChild.Hide();
+                        break;
+                    }
+                case "REMOVECHILDITEM":
+                    {
+                        dlgRemoveChild.Hide();
+                        break;
+                    }
+            }
+
+            hfActiveDialog.Value = string.Empty;
+        }
+
+        private List<string> GetNavHierarchy()
+        {
+            var qryParam = PageParameter( "Hierarchy" );
+            if ( !string.IsNullOrWhiteSpace( qryParam ) )
+            {
+                return qryParam.SplitDelimitedValues( false ).ToList();
+            }
+            return new List<string>();
+        }
+
+        #endregion
+
     }
 }

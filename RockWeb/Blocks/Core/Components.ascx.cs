@@ -119,6 +119,8 @@ namespace RockWeb.Blocks.Core
         {
             base.OnLoad( e );
 
+            nbValidationError.Visible = false;
+
             if ( !Page.IsPostBack )
             {
                 if ( _container != null )
@@ -250,14 +252,22 @@ namespace RockWeb.Blocks.Core
         protected void mdEditComponent_SaveClick( object sender, EventArgs e )
         {
             int serviceId = (int)ViewState["serviceId"];
-            Rock.Attribute.IHasAttributes component = _container.Dictionary[serviceId].Value;
+            Component component = _container.Dictionary[serviceId].Value;
 
             Rock.Attribute.Helper.GetEditValues( phProperties, component );
             component.SaveAttributeValues();
 
-            HideDialog();
-
-            BindGrid();
+            string errorMessage = string.Empty;
+            if ( !component.ValidateAttributeValues( out errorMessage ) )
+            {
+                nbValidationError.Text = string.Format( "<ul><li>{0}</li></ul>", errorMessage );
+                nbValidationError.Visible = true;
+            }
+            else
+            {
+                HideDialog();
+                BindGrid();
+            }
         }
 
         #endregion
@@ -365,7 +375,10 @@ namespace RockWeb.Blocks.Core
         /// <param name="setValues">if set to <c>true</c> [set values].</param>
         private void LoadEditControls( int serviceId, bool setValues )
         {
-            Rock.Attribute.IHasAttributes component = _container.Dictionary[serviceId].Value;
+            Component component = _container.Dictionary[serviceId].Value;
+
+            component.InitializeAttributeValues( Request, ResolveRockUrl( "~/" ) );
+
             phProperties.Controls.Clear();
             Rock.Attribute.Helper.AddEditControls( component, phProperties, setValues, BlockValidationGroup, new List<string>() { "Order" } );
         }

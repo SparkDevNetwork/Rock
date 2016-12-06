@@ -262,6 +262,10 @@ namespace RockWeb.Blocks.Crm
                         }
                 }
 
+                var personIdList = people.Select( p => p.Id ).ToList();
+
+                people = personService.Queryable(true).Where( p => personIdList.Contains( p.Id ) );
+				
                 SortProperty sortProperty = gPeople.SortProperty;
                 if ( sortProperty != null )
                 {
@@ -315,12 +319,12 @@ namespace RockWeb.Blocks.Crm
                 {
                     if ( type.ToLower() == "name" )
                     {
-                        var similiarNames = personService.GetSimiliarNames( term,
+                        var similarNames = personService.GetSimilarNames( term,
                             personList.Select( p => p.Id ).ToList(), true );
-                        if ( similiarNames.Any() )
+                        if ( similarNames.Any() )
                         {
                             var hyperlinks = new List<string>();
-                            foreach ( string name in similiarNames.Distinct() )
+                            foreach ( string name in similarNames.Distinct() )
                             {
                                 var pageRef = CurrentPageReference;
                                 pageRef.Parameters["SearchTerm"] = name;

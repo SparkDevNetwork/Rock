@@ -9,25 +9,31 @@
             <div class="panel-heading">
                 <h1 class="panel-title"><i class="fa fa-list"></i> <asp:Literal ID="lActionTitle" runat="server"/></h1>
             </div>
+            <Rock:PanelDrawer ID="pdAuditDetails" runat="server"></Rock:PanelDrawer>
             <div class="panel-body">
 
                 <asp:ValidationSummary ID="valSummaryTop" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" />
 
                 <Rock:NotificationBox ID="nbWarningMessage" runat="server" NotificationBoxType="Warning" />
+                <Rock:NotificationBox ID="nbEditModeMessage" runat="server" NotificationBoxType="Info" />
 
                 <fieldset>
                     <div class="row">
                         <div class="col-md-6">
-                            <Rock:NotificationBox ID="nbEditModeMessage" runat="server" NotificationBoxType="Info" />
-            
-                            <Rock:PersonPicker ID="ppPerson" runat="server" Label="Person" Required="true" IncludeBusinesses="true"/>
-                            <Rock:AccountPicker ID="apAccount" runat="server" Label="Account" Required="True"/>
-            
-                            <Rock:CurrencyBox ID="tbAmount" runat="server" Label="Total Amount" Required="True" />
+                            <Rock:PersonPicker ID="ppPerson" runat="server" Label="Person" Required="true" IncludeBusinesses="true" OnSelectPerson="ppPerson_SelectPerson"/>
                         </div>
-
                         <div class="col-md-6">
                             <Rock:DateRangePicker ID="dpDateRange" runat="server" Label="Date Range" />
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <Rock:RockDropDownList ID="ddlGroup" runat="server" Visible="false" DataTextField="Name" DataValueField="GroupId" />
+                            <Rock:AccountPicker ID="apAccount" runat="server" Label="Account" Required="True"/>
+                            <Rock:CurrencyBox ID="tbAmount" runat="server" Label="Total Amount" Required="True" />
+                        </div>
+                        <div class="col-md-6">
                             <Rock:DataDropDownList ID="ddlFrequencyType" runat="server" SourceTypeName="Rock.Model.FinancialPledge, Rock" PropertyName="PledgeFrequencyValue" Label="Payment Schedule" />
                         </div>
                     </div>

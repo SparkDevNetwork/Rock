@@ -157,13 +157,37 @@ namespace Rock.Client
         public string RequestEntryName { get; set; }
 
         /// <summary />
+        public int? RequiredSignatureDocumentTemplateId { get; set; }
+
+        /// <summary />
         public bool? SetCostOnInstance { get; set; }
+
+        /// <summary />
+        public bool ShowCurrentFamilyMembers { get; set; }
+
+        /// <summary />
+        public Rock.Client.Enums.SignatureDocumentAction SignatureDocumentAction { get; set; }
 
         /// <summary />
         public string SuccessText { get; set; }
 
         /// <summary />
         public string SuccessTitle { get; set; }
+
+        /// <summary />
+        public bool WaitListEnabled { get; set; }
+
+        /// <summary />
+        public string WaitListTransitionEmailTemplate { get; set; }
+
+        /// <summary />
+        public string WaitListTransitionFromEmail { get; set; }
+
+        /// <summary />
+        public string WaitListTransitionFromName { get; set; }
+
+        /// <summary />
+        public string WaitListTransitionSubject { get; set; }
 
         /// <summary>
         /// Leave this as NULL to let Rock set this
@@ -238,9 +262,17 @@ namespace Rock.Client
             this.ReminderFromName = source.ReminderFromName;
             this.ReminderSubject = source.ReminderSubject;
             this.RequestEntryName = source.RequestEntryName;
+            this.RequiredSignatureDocumentTemplateId = source.RequiredSignatureDocumentTemplateId;
             this.SetCostOnInstance = source.SetCostOnInstance;
+            this.ShowCurrentFamilyMembers = source.ShowCurrentFamilyMembers;
+            this.SignatureDocumentAction = source.SignatureDocumentAction;
             this.SuccessText = source.SuccessText;
             this.SuccessTitle = source.SuccessTitle;
+            this.WaitListEnabled = source.WaitListEnabled;
+            this.WaitListTransitionEmailTemplate = source.WaitListTransitionEmailTemplate;
+            this.WaitListTransitionFromEmail = source.WaitListTransitionFromEmail;
+            this.WaitListTransitionFromName = source.WaitListTransitionFromName;
+            this.WaitListTransitionSubject = source.WaitListTransitionSubject;
             this.CreatedDateTime = source.CreatedDateTime;
             this.ModifiedDateTime = source.ModifiedDateTime;
             this.CreatedByPersonAliasId = source.CreatedByPersonAliasId;
@@ -270,6 +302,9 @@ namespace Rock.Client
 
         /// <summary />
         public WorkflowType RegistrationWorkflowType { get; set; }
+
+        /// <summary />
+        public SignatureDocumentTemplate RequiredSignatureDocumentTemplate { get; set; }
 
         /// <summary>
         /// NOTE: Attributes are only populated when ?loadAttributes is specified. Options for loadAttributes are true, false, 'simple', 'expanded' 

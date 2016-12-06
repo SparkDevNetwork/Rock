@@ -459,10 +459,10 @@ function() {
                     financialTransactionDetailsGivingGroupQry = financialTransactionDetailsGivingGroupQry.Where( xx => xx.TotalAmount >= amount );
                 }
 
-                var groupMemberService = new GroupMemberService( rockContext );
-                IQueryable<int> innerQryGivingGroupPersons = groupMemberService.Queryable()
-                    .Where( a => financialTransactionDetailsGivingGroupQry.Select( xx => xx.GivingGroupId ).AsQueryable().Any( gg => gg.GivingGroupId == a.GroupId ) )
-                    .Select( s => s.PersonId );
+                var personService = new PersonService( rockContext );
+                IQueryable<int> innerQryGivingGroupPersons = personService.Queryable()
+                    .Where( a => financialTransactionDetailsGivingGroupQry.Select( xx => xx.GivingGroupId ).AsQueryable().Any( gg => gg.GivingGroupId == a.GivingGroupId ) )
+                    .Select( s => s.Id );
 
                 // include people that either give as individuals or are members of a giving group
                 qryTransactionPersonIds = innerQryIndividual.Union( innerQryGivingGroupPersons );

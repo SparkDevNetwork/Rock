@@ -444,6 +444,14 @@ Registration By: {0} Total Cost/Fees:{1}
         public int? RegistrationId { get; set; }
 
         /// <summary>
+        /// Gets or sets the slots available.
+        /// </summary>
+        /// <value>
+        /// The slots available.
+        /// </value>
+        public int? SlotsAvailable { get; set; }
+
+        /// <summary>
         /// Gets or sets your first name.
         /// </summary>
         /// <value>
@@ -597,6 +605,7 @@ Registration By: {0} Total Cost/Fees:{1}
                 DiscountAmount = registration.DiscountAmount;
                 TotalCost = registration.TotalCost;
                 DiscountedCost = registration.DiscountedCost;
+                SlotsAvailable = registration.Registrants.Where( r => !r.OnWaitList ).Count();
 
                 if ( registration.PersonAlias != null && registration.PersonAlias.Person != null )
                 {
@@ -749,6 +758,14 @@ Registration By: {0} Total Cost/Fees:{1}
         public string PersonName { get; set; }
 
         /// <summary>
+        /// Gets or sets a value indicating whether [on wait list].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [on wait list]; otherwise, <c>false</c>.
+        /// </value>
+        public bool OnWaitList { get; set; }
+
+        /// <summary>
         /// Gets or sets the cost.
         /// </summary>
         /// <value>
@@ -766,6 +783,11 @@ Registration By: {0} Total Cost/Fees:{1}
         {
             get
             {
+                if ( OnWaitList )
+                {
+                    return 0.0M;
+                }
+
                 var cost = Cost;
                 if ( FeeValues != null )
                 {
@@ -795,6 +817,30 @@ Registration By: {0} Total Cost/Fees:{1}
         public Dictionary<int, List<FeeInfo>> FeeValues { get; set; }
 
         /// <summary>
+        /// Gets or sets the signature document Id.
+        /// </summary>
+        /// <value>
+        /// The signature document Id.
+        /// </value>
+        public int? SignatureDocumentId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the signature document key.
+        /// </summary>
+        /// <value>
+        /// The signature document key.
+        /// </value>
+        public string SignatureDocumentKey { get; set; }
+
+        /// <summary>
+        /// Gets or sets the signature document last sent.
+        /// </summary>
+        /// <value>
+        /// The signature document last sent.
+        /// </value>
+        public DateTime? SignatureDocumentLastSent { get; set; }
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="RegistrantInfo"/> class.
         /// </summary>
         public RegistrantInfo()
@@ -807,6 +853,7 @@ Registration By: {0} Total Cost/Fees:{1}
             FamilyGuid = Guid.Empty;
             FieldValues = new Dictionary<int, FieldValueObject>();
             FeeValues = new Dictionary<int, List<FeeInfo>>();
+            OnWaitList = false;
         }
 
         /// <summary>
@@ -863,6 +910,7 @@ Registration By: {0} Total Cost/Fees:{1}
                     registrant.GroupMember.Group.Name : string.Empty;
                 RegistrationId = registrant.RegistrationId;
                 Cost = registrant.Cost;
+                OnWaitList = registrant.OnWaitList;
 
                 Person person = null;
                 Group family = null;
@@ -1001,7 +1049,7 @@ Registration By: {0} Total Cost/Fees:{1}
 
                         case RegistrationFieldSource.GroupMemberAttribute:
                             {
-                                if ( registrant.GroupMember != null )
+                                if ( registrant != null && registrant.GroupMember != null )
                                 {
                                     if ( registrant.GroupMember.Attributes == null )
                                     {
@@ -1014,11 +1062,15 @@ Registration By: {0} Total Cost/Fees:{1}
 
                         case RegistrationFieldSource.RegistrationAttribute:
                             {
-                                if ( registrant.Attributes == null )
+                                if ( registrant != null )
                                 {
-                                    registrant.LoadAttributes();
+                                    if ( registrant.Attributes == null )
+                                    {
+                                        registrant.LoadAttributes();
+                                    }
+                                    return registrant.GetAttributeValue( attribute.Key );
                                 }
-                                return registrant.GetAttributeValue( attribute.Key );
+                                break;
                             }
                     }
                 }

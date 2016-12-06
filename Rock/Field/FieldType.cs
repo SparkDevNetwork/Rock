@@ -152,7 +152,18 @@ namespace Rock.Field
             // by default, get the formatted condensed value that would be displayed to the user
             return FormatValue( parentControl, value, configurationValues, true );
         }
-
+        
+        /// <summary>
+        /// Setting to determine whether the value from this control is sensitive.  This is used for determining
+        /// whether or not the value of this attribute is logged when changed.
+        /// </summary>
+        /// <returns>
+        ///   <c>false</c> By default, any field is not sensitive.
+        /// </returns>
+        public virtual bool IsSensitive()
+        {
+            return false;
+        }
         #endregion
 
         #region Edit Control
@@ -313,15 +324,12 @@ namespace Rock.Field
         {
             RockDropDownList ddlCompare = ComparisonHelper.ComparisonControl( FilterComparisonType, required );
 
-            if ( FilterComparisonType == ComparisonHelper.BinaryFilterComparisonTypes && filterMode == FilterMode.SimpleFilter )
+            if ( filterMode == FilterMode.SimpleFilter && (
+                FilterComparisonType == ComparisonHelper.BinaryFilterComparisonTypes ||
+                FilterComparisonType == ComparisonHelper.StringFilterComparisonTypes ||
+                FilterComparisonType == ComparisonHelper.ContainsFilterComparisonTypes ) )
             {
-                // hide the compare control for SimpleFilter mode if it is just EqualTo/NotEqualTo
-                ddlCompare.Visible = false;
-            }
-
-            if ( FilterComparisonType == ComparisonHelper.ContainsFilterComparisonTypes && filterMode == FilterMode.SimpleFilter )
-            {
-                // hide the compare control for SimpleFilter mode if it is just Contains/NotContains
+                // hide the compare control for SimpleFilter mode if it is a string, list, or binary comparison type
                 ddlCompare.Visible = false;
             }
 
@@ -418,16 +426,21 @@ namespace Rock.Field
                 // if the CompareControl is hidden, but the ValueControl is visible, pick the appropriate ComparisonType
                 if ( !ddlCompare.Visible && filterValueControlVisible )
                 {
-                    if ( FilterComparisonType == ComparisonHelper.BinaryFilterComparisonTypes && filterMode == FilterMode.SimpleFilter )
+                    if ( filterMode == FilterMode.SimpleFilter )
                     {
-                        // in FilterMode.SimpleFilter, if the compare only support EqualTo/NotEqual to, and the compare is hidden, return EqualTo
-                        return ComparisonType.EqualTo.ConvertToInt().ToString();
-                    }
+                        // in FilterMode.SimpleFilter...
+                        if ( FilterComparisonType == ComparisonHelper.BinaryFilterComparisonTypes )
+                        {
+                            // ...if the compare only support EqualTo/NotEqual to, return EqualTo
+                            return ComparisonType.EqualTo.ConvertToInt().ToString();
+                        }
 
-                    if ( FilterComparisonType == ComparisonHelper.ContainsFilterComparisonTypes && filterMode == FilterMode.SimpleFilter )
-                    {
-                        // in FilterMode.SimpleFilter, if the compare only support EqualTo/NotEqual to, and the compare is hidden, return Contains
-                        return ComparisonType.Contains.ConvertToInt().ToString();
+                        if ( FilterComparisonType == ComparisonHelper.StringFilterComparisonTypes ||
+                            FilterComparisonType == ComparisonHelper.ContainsFilterComparisonTypes )
+                        {
+                            // ... if the compare is the string or list type comparison, return Contains
+                            return ComparisonType.Contains.ConvertToInt().ToString();
+                        }
                     }
                 }
 
@@ -435,6 +448,15 @@ namespace Rock.Field
             }
 
             return string.Empty;
+        }
+
+        /// <summary>
+        /// Gets the equal to compare value (types that don't support an equalto comparison (i.e. singleselect) should return null
+        /// </summary>
+        /// <returns></returns>
+        public virtual string GetEqualToCompareValue()
+        {
+            return ComparisonType.EqualTo.ConvertToInt().ToString();
         }
 
         /// <summary>
@@ -529,9 +551,9 @@ namespace Rock.Field
                         else
                         {
                             var filterValueValue = FormatFilterValueValue( configurationValues, filterValues[1] );
-                            if ( ( comparisonType == ComparisonType.Contains || comparisonType == ComparisonType.DoesNotContain ) && string.IsNullOrEmpty( filterValueValue ) )
+                            if ( string.IsNullOrEmpty( filterValueValue ) )
                             {
-                                // if doing a 'Contains or NotContains', but the CompareValue is empty, there is nothing filtered, so just return String.Empty
+                                // if there is no value specified, just return String.Empty
                                 return string.Empty;
                             }
                             else
@@ -657,8 +679,13 @@ namespace Rock.Field
                 if ( comparisonValue != "0" )
                 {
                     ComparisonType comparisonType = comparisonValue.ConvertToEnum<ComparisonType>( ComparisonType.EqualTo );
-                    MemberExpression propertyExpression = Expression.Property( parameterExpression, this.AttributeValueFieldName );
-                    return ComparisonHelper.ComparisonExpression( comparisonType, propertyExpression, AttributeConstantExpression( filterValues[1] ) );
+
+                    bool valueNotNeeded = ( ComparisonType.IsBlank | ComparisonType.IsNotBlank ).HasFlag( comparisonType );
+                    if ( valueNotNeeded || !string.IsNullOrWhiteSpace( filterValues[1] ) )
+                    {
+                        MemberExpression propertyExpression = Expression.Property( parameterExpression, this.AttributeValueFieldName );
+                        return ComparisonHelper.ComparisonExpression( comparisonType, propertyExpression, AttributeConstantExpression( filterValues[1] ) );
+                    }
                 }
             }
 

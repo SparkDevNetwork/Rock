@@ -48,7 +48,7 @@ namespace Rock.Workflow.Action
         new string[] { "Rock.Field.Types.TextFieldType" } )]
 
     [WorkflowTextOrAttribute( "Note", "Attribute Value", "Text or workflow attribute that contains the text to set the group member note to. <span class='tip tip-lava'></span>", true, "", "", 4, "Note",
-        new string[] { "Rock.Field.Types.MemoFieldType", "Rock.Field.Types.TextFieldType" }, 3 )]
+        new string[] { "Rock.Field.Types.MemoFieldType", "Rock.Field.Types.TextFieldType" } )]
 
     [WorkflowTextOrAttribute( "Is Alert", "Attribute Value", "Boolean (must enter True/False) or workflow attribute that contains whether the note should be an alert.", false, "False", "", 5, "IsAlert",
         new string[] { "Rock.Field.Types.BooleanFieldType" } )]

@@ -64,6 +64,9 @@ namespace Rock.Client
         public bool ModifiedAuditValuesAlreadyUpdated { get; set; }
 
         /// <summary />
+        public int Order { get; set; }
+
+        /// <summary />
         public string Permalink { get; set; }
 
         /// <summary />
@@ -120,6 +123,7 @@ namespace Rock.Client
             this.ForeignGuid = source.ForeignGuid;
             this.ForeignKey = source.ForeignKey;
             this.ModifiedAuditValuesAlreadyUpdated = source.ModifiedAuditValuesAlreadyUpdated;
+            this.Order = source.Order;
             this.Permalink = source.Permalink;
             this.Priority = source.Priority;
             this.StartDateTime = source.StartDateTime;

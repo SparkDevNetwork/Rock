@@ -107,10 +107,11 @@ namespace Rock.Model
         /// </summary>
         /// <param name="alphaLength">A <see cref="System.Int32"/> representing the length of the (alpha) portion of the code.</param>
         /// <param name="numericLength">A <see cref="System.Int32"/> representing the length of the (digit) portion of the code.</param>
+        /// <param name="isRandomized">A <see cref="System.Boolean"/> that controls whether or not the AttendanceCodes should be generated randomly or in order (starting from the smallest).</param>
         /// <returns>
         /// A new <see cref="Rock.Model.AttendanceCode" />
         /// </returns>
-        public static AttendanceCode GetNew( int alphaLength = 2, int numericLength = 4 )
+        public static AttendanceCode GetNew( int alphaLength = 2, int numericLength = 4, bool isRandomized = true )
         {
             lock ( _obj )
             {
@@ -129,17 +130,35 @@ namespace Rock.Model
                             .ToList();
                     }
 
-                    // Find a good unique code for today
+                    // Find a good alpha code
                     string alphaCode = GenerateRandomAlphaCode( alphaLength );
                     while ( noGood.Any( s => s == alphaCode ) )
                     {
                         alphaCode = GenerateRandomAlphaCode( alphaLength );
                     }
 
-                    string numericCode = GenerateRandomNumericCode( numericLength );
-                    while ( noGood.Any( s => s == numericCode ) || _todaysCodes.Any( c => c.EndsWith( numericCode ) ) )
+                    // Find a good unique numeric code for today
+                    string numericCode = string.Empty;
+                    if ( isRandomized )
                     {
                         numericCode = GenerateRandomNumericCode( numericLength );
+                        while ( noGood.Any( s => s == numericCode ) || _todaysCodes.Any( c => c.EndsWith( numericCode ) ) )
+                        {
+                            numericCode = GenerateRandomNumericCode( numericLength );
+                        }
+                    }
+                    else
+                    {
+                        var lastCode = _todaysCodes.OrderBy( c => c.Substring( alphaLength ) ).LastOrDefault();
+                        if ( lastCode != null )
+                        {
+                            var maxCode = lastCode.Substring( alphaLength );
+                            numericCode = ( maxCode.AsInteger() + 1 ).ToString( "D" + numericLength );
+                        }
+                        else
+                        {
+                            numericCode = 0.ToString( "D" + numericLength );
+                        }
                     }
                     string code = alphaCode + numericCode;
                     _todaysCodes.Add( code );

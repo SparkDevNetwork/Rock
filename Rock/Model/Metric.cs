@@ -186,6 +186,7 @@ namespace Rock.Model
         /// <value>
         /// The metric partitions.
         /// </value>
+        [LavaInclude]
         public virtual ICollection<MetricPartition> MetricPartitions { get; set; }
 
         /// <summary>

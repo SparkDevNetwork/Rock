@@ -81,9 +81,7 @@ namespace Rock.Data
         /// <value>
         /// The foreign identifier.
         /// </value>
-        [Index]
         [DataMember]
-        [LavaIgnore]
         [HideFromReporting]
         public int? ForeignId { get; set; }
 
@@ -93,9 +91,7 @@ namespace Rock.Data
         /// <value>
         /// The foreign identifier.
         /// </value>
-        [Index]
         [DataMember]
-        [LavaIgnore]
         [HideFromReporting]
         public Guid? ForeignGuid { get; set; }
 
@@ -106,9 +102,7 @@ namespace Rock.Data
         /// The foreign identifier.
         /// </value>
         [MaxLength( 100 )]
-        [Index]
         [DataMember]
-        [LavaIgnore]
         [HideFromReporting]
         public string ForeignKey { get; set; }
 
@@ -123,6 +117,7 @@ namespace Rock.Data
         /// <value>
         /// An <see cref="System.Int32"/> that represents the identifier for the current Entity object type. 
         /// </value>
+        [LavaInclude]
         public virtual int TypeId
         {
             get
@@ -139,6 +134,7 @@ namespace Rock.Data
         /// The name of the entity type.
         /// </value>
         [NotMapped]
+        [LavaInclude]
         public virtual string TypeName
         {
             get

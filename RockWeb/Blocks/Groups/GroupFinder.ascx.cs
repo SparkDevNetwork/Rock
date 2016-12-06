@@ -58,7 +58,8 @@ namespace RockWeb.Blocks.Groups
     [GroupTypeField( "Geofenced Group Type", "", false, "", "CustomSetting" )]
     [TextField( "ScheduleFilters", "", false, "", "CustomSetting" )]
     [BooleanField( "Display Campus Filter", "", false, "CustomSetting" )]
-    [BooleanField( "Enable Campus Context", "", false , "CustomSetting" )]
+    [BooleanField( "Enable Campus Context", "", false, "CustomSetting" )]
+    [BooleanField( "Hide Overcapacity Groups", "When set to true, groups that are at capacity or whose default GroupTypeRole are at capacity are hidden.", true )]
     [AttributeField( Rock.SystemGuid.EntityType.GROUP, "Attribute Filters", "", false, true, "", "CustomSetting" )]
 
     // Map Settings
@@ -82,15 +83,15 @@ namespace RockWeb.Blocks.Groups
 {% endif %}
 </div>
 
-{% if LinkedPages.GroupDetailPage != '' %}
-    <a class='btn btn-xs btn-action margin-r-sm' href='{{ LinkedPages.GroupDetailPage }}?GroupId={{ Group.Id }}'>View {{ Group.GroupType.GroupTerm }}</a>
+{% if LinkedPages.GroupDetailPage and LinkedPages.GroupDetailPage != '' %}
+    <a class='btn btn-xs btn-action margin-r-sm' href='|{{ LinkedPages.GroupDetailPage }}|?GroupId={{ Group.Id }}'>View {{ Group.GroupType.GroupTerm }}</a>
 {% endif %}
 
-{% if LinkedPages.RegisterPage != '' %}
+{% if LinkedPages.RegisterPage and LinkedPages.RegisterPage != '' %}
     {% if LinkedPages.RegisterPage contains '?' %}
-        <a class='btn btn-xs btn-action' href='{{ LinkedPages.RegisterPage }}&GroupId={{ Group.Id }}'>Register</a>
+        <a class='btn btn-xs btn-action' href='{{ LinkedPages.RegisterPage }}&GroupGuid={{ Group.Guid }}'>Register</a>
     {% else %}
-        <a class='btn btn-xs btn-action' href='{{ LinkedPages.RegisterPage }}?GroupId={{ Group.Id }}'>Register</a>
+        <a class='btn btn-xs btn-action' href='{{ LinkedPages.RegisterPage }}?GroupGuid={{ Group.Guid }}'>Register</a>
     {% endif %}
 {% endif %}
 ", "CustomSetting" )]
@@ -383,10 +384,21 @@ namespace RockWeb.Blocks.Groups
         /// <param name="e">The <see cref="RowEventArgs"/> instance containing the event data.</param>
         void registerColumn_Click( object sender, RowEventArgs e )
         {
-            _urlParms.Add( "GroupId", e.RowKeyId.ToString() );
-            if ( !NavigateToLinkedPage( "RegisterPage", _urlParms ) )
+            using ( var rockContext = new RockContext() )
             {
-                ShowResults();
+                var group = new GroupService( rockContext ).Get( e.RowKeyId );
+                if ( group != null )
+                {
+                    _urlParms.Add( "GroupGuid", group.Guid.ToString() );
+                    if ( !NavigateToLinkedPage( "RegisterPage", _urlParms ) )
+                    {
+                        ShowResults();
+                    }
+                }
+                else
+                {
+                    ShowResults();
+                }
             }
         }
 
@@ -845,6 +857,21 @@ namespace RockWeb.Blocks.Groups
                 }
             }
 
+            // This hides the groups that are at or over capacity by doing two things:
+            // 1) If the group has a GroupCapacity, check that we haven't met or exceeded that.
+            // 2) When someone registers for a group on the front-end website, they automatically get added with the group's default
+            //    GroupTypeRole. If that role exists and has a MaxCount, check that we haven't met or exceeded it yet.
+            if ( GetAttributeValue( "HideOvercapacityGroups" ).AsBoolean() )
+            {
+                groupQry = groupQry.Where( g => g.GroupCapacity == null || g.Members.Count() < g.GroupCapacity );
+
+                groupQry = groupQry.Where( g =>
+                     g.GroupType == null ||
+                     g.GroupType.DefaultGroupRole == null ||
+                     g.GroupType.DefaultGroupRole.MaxCount == null ||
+                     g.Members.Where( m => m.GroupRoleId == g.GroupType.DefaultGroupRole.Id ).Count() < g.GroupType.DefaultGroupRole.MaxCount );
+            }
+
             // Filter query by any configured attribute filters
             if ( AttributeFilters != null && AttributeFilters.Any() )
             {
@@ -1040,7 +1067,7 @@ namespace RockWeb.Blocks.Groups
                             }
                             else
                             {
-                                linkedPages.Add( "RegisterPage", LinkedPageUrl( "RegisterPage", null ) );
+                                linkedPages.Add( "RegisterPage", LinkedPageRoute( "RegisterPage" ) );
                             }
 
                             mergeFields.Add( "LinkedPages", linkedPages );
@@ -1103,7 +1130,7 @@ namespace RockWeb.Blocks.Groups
                 mergeFields.Add( "Groups", groups );
 
                 Dictionary<string, object> linkedPages = new Dictionary<string, object>();
-                linkedPages.Add( "GroupDetailPage", LinkedPageUrl( "GroupDetailPage", null ) );
+                linkedPages.Add( "GroupDetailPage", LinkedPageRoute( "GroupDetailPage" ) );
 
                 if ( _targetPersonGuid != Guid.Empty )
                 {
@@ -1111,7 +1138,7 @@ namespace RockWeb.Blocks.Groups
                 }
                 else
                 {
-                    linkedPages.Add( "RegisterPage", LinkedPageUrl( "RegisterPage", null ) );
+                    linkedPages.Add( "RegisterPage", LinkedPageRoute( "RegisterPage" ) );
                 }
 
                 mergeFields.Add( "LinkedPages", linkedPages );

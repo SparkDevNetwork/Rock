@@ -199,7 +199,7 @@ namespace Rock.CheckIn
                         if ( !CurrentCheckInState.CheckInType.UseSameOptions ||
                             ( schedule.Schedule.Id != person.SelectedSchedules.First().Schedule.Id ) )
                         {
-                            string.Format( "{0} @ {1}", person, schedule );
+                            return string.Format( "{0} @ {1}", person, schedule );
                         }
                     }
 

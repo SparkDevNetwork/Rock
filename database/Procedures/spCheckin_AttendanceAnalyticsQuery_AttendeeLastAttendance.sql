@@ -1,15 +1,3 @@
-/****** Object:  StoredProcedure [dbo].[spCheckin_AttendanceAnalyticsQuery_AttendeeLastAttendance]    Script Date: 10/27/2016 9:07:30 AM ******/
-IF EXISTS ( SELECT * FROM [sysobjects] WHERE [id] = OBJECT_ID(N'[dbo].[spCheckin_AttendanceAnalyticsQuery_AttendeeLastAttendance]') AND OBJECTPROPERTY([id], N'IsProcedure') = 1 )
-DROP PROCEDURE [dbo].[spCheckin_AttendanceAnalyticsQuery_AttendeeLastAttendance]
-GO
-
-/****** Object:  StoredProcedure [dbo].[spCheckin_AttendanceAnalyticsQuery_AttendeeLastAttendance]    Script Date: 10/27/2016 9:07:30 AM ******/
-SET ANSI_NULLS ON
-GO
-
-SET QUOTED_IDENTIFIER ON
-GO
-
 /*
 <doc>
 	<summary>
@@ -35,7 +23,7 @@ GO
 </doc>
 */
 
-CREATE PROCEDURE [dbo].[spCheckin_AttendanceAnalyticsQuery_AttendeeLastAttendance]
+ALTER PROCEDURE [dbo].[spCheckin_AttendanceAnalyticsQuery_AttendeeLastAttendance]
 	  @GroupIds varchar(max) 
 	, @StartDate datetime = NULL
 	, @EndDate datetime = NULL
@@ -84,5 +72,3 @@ BEGIN
 	WHERE B.PersonRowNumber = 1
 
 END
-GO
-

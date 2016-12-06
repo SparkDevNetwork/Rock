@@ -102,6 +102,11 @@ namespace Rock.SystemGuid
         /// </summary>
         public const string CURRENCY_TYPE_ACH = "DABEE8FD-AEDF-43E1-8547-4C97FA14D9B6";
 
+        /// <summary>
+        /// ACH
+        /// </summary>
+        public const string CURRENCY_TYPE_NONCASH = "7950FF66-80EE-E8AB-4A77-4A13EDEB7513";
+
         #endregion
 
         #region Financial Transaction Type
@@ -424,10 +429,19 @@ namespace Rock.SystemGuid
         #endregion
 
         #region Benevolence
+        /// <summary>
+        /// Benevolence Pending
+        /// </summary>
         public const string BENEVOLENCE_PENDING = "67B24629-62A9-436A-A98C-30A454642153";
 
+        /// <summary>
+        /// Benevolence Approved
+        /// </summary>
         public const string BENEVOLENCE_APPROVED = "18D3A2DA-F2BA-49AE-83EB-7E60DCD18A3B";
 
+        /// <summary>
+        /// Benevolence Denied
+        /// </summary>
         public const string BENEVOLENCE_DENIED = "3720671E-DA48-405F-A6D5-5E2D47436F9A";
         #endregion
 

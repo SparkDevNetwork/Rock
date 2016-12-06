@@ -16,7 +16,7 @@
 	</code>
 </doc>
 */
-ALTER PROCEDURE spCore_PageViewNullPageId 
+ALTER PROCEDURE [dbo].[spCore_PageViewNullPageId] 
 	@PageId int 
 AS
 BEGIN

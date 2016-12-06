@@ -128,6 +128,9 @@
                     <li id="liLinkage" runat="server">
                         <asp:LinkButton ID="lbLinkage" runat="server" Text="Linkages" OnClick="lbTab_Click" />
                     </li>
+                     <li id="liWaitList" runat="server">
+                        <asp:LinkButton ID="lbWaitList" runat="server" Text="Wait List" OnClick="lbTab_Click" />
+                    </li>
                     <li id="liGroupPlacement" runat="server">
                         <asp:LinkButton ID="lbGroupPlacement" runat="server" Text="Group Placement" OnClick="lbTab_Click" />
                     </li>
@@ -135,7 +138,7 @@
 
                 <asp:Panel ID="pnlRegistrations" runat="server" Visible="false" CssClass="panel panel-block">
                     <div class="panel-heading">
-                        <h1 class="panel-title"><i class="fa fa-user"></i>Registrations</h1>
+                        <h1 class="panel-title"><i class="fa fa-user"></i> Registrations</h1>
                     </div>
                     <div class="panel-body">
                         <Rock:ModalAlert ID="mdRegistrationsGridWarning" runat="server" />
@@ -169,7 +172,7 @@
                                     <Rock:DateTimeField DataField="CreatedDateTime" HeaderText="When" SortExpression="CreatedDateTime" />
                                     <Rock:RockTemplateField HeaderText="Discount Code" ItemStyle-HorizontalAlign="Center" SortExpression="DiscountCode" Visible="false">
                                         <ItemTemplate>
-                                            <asp:Label ID="lDiscount" runat="server" CssClass="label" />
+                                            <asp:Label ID="lDiscount" runat="server" CssClass="label label-default" />
                                         </ItemTemplate>
                                     </Rock:RockTemplateField>
                                     <Rock:RockTemplateField HeaderText="Total Cost" ItemStyle-HorizontalAlign="Right" SortExpression="TotalCost">
@@ -192,7 +195,7 @@
 
                 <asp:Panel ID="pnlRegistrants" runat="server" Visible="false" CssClass="panel panel-block">
                     <div class="panel-heading">
-                        <h1 class="panel-title"><i class="fa fa-users"></i>Registrants</h1>
+                        <h1 class="panel-title"><i class="fa fa-users"></i> Registrants</h1>
                     </div>
                     <div class="panel-body">
                         <Rock:ModalAlert ID="mdRegistrantsGridWarning" runat="server" />
@@ -202,21 +205,55 @@
                                 <Rock:RockTextBox ID="tbRegistrantFirstName" runat="server" Label="First Name" />
                                 <Rock:RockTextBox ID="tbRegistrantLastName" runat="server" Label="Last Name" />
                                 <Rock:RockDropDownList ID="ddlInGroup" runat="server" Label="In Group"  />    
+                                <Rock:RockDropDownList ID="ddlSignedDocument" runat="server" Label="Signed Document" />
                                 <asp:PlaceHolder ID="phRegistrantFormFieldFilters" runat="server" />
                             </Rock:GridFilter>
                             <Rock:Grid ID="gRegistrants" runat="server" DisplayType="Full" AllowSorting="true" OnRowSelected="gRegistrants_RowSelected" RowItemText="Registrant" PersonIdField="PersonId" ExportSource="ColumnOutput">
                                 <Columns>
                                     <Rock:SelectField ItemStyle-Width="48px" />
-                                    <Rock:RockTemplateField HeaderText="Registrant" SortExpression="PersonAlias.Person.LastName, PersonAlias.Person.NickName">
+                                    <Rock:RockTemplateField HeaderText="Registrant" SortExpression="PersonAlias.Person.LastName, PersonAlias.Person.NickName" ExcelExportBehavior="NeverInclude">
                                         <ItemTemplate>
                                             <asp:Literal ID="lRegistrant" runat="server"></asp:Literal>
                                         </ItemTemplate>
                                     </Rock:RockTemplateField>
+                                    <Rock:RockBoundField HeaderText="First Name" DataField="Person.NickName" ExcelExportBehavior="AlwaysInclude" Visible="false" />
+                                    <Rock:RockBoundField HeaderText="Last Name" DataField="Person.LastName" ExcelExportBehavior="AlwaysInclude" Visible="false" />
                                     <Rock:RockTemplateFieldUnselected HeaderText="Group">
                                         <ItemTemplate>
                                             <asp:Literal ID="lGroup" runat="server"></asp:Literal>
                                         </ItemTemplate>
                                     </Rock:RockTemplateFieldUnselected>
+                                    <Rock:RockTemplateField Visible="false" HeaderText="Street 1" ExcelExportBehavior="AlwaysInclude">
+                                        <ItemTemplate>
+                                            <asp:Literal ID="lStreet1" runat="server"></asp:Literal>
+                                        </ItemTemplate>
+                                    </Rock:RockTemplateField>
+                                    <Rock:RockTemplateField Visible="false" HeaderText="Street 2" ExcelExportBehavior="AlwaysInclude">
+                                        <ItemTemplate>
+                                            <asp:Literal ID="lStreet2" runat="server"></asp:Literal>
+                                        </ItemTemplate>
+                                    </Rock:RockTemplateField>
+                                    <Rock:RockTemplateField Visible="false" HeaderText="City" ExcelExportBehavior="AlwaysInclude">
+                                        <ItemTemplate>
+                                            <asp:Literal ID="lCity" runat="server"></asp:Literal>
+                                        </ItemTemplate>
+                                    </Rock:RockTemplateField>
+                                    <Rock:RockTemplateField Visible="false" HeaderText="State" ExcelExportBehavior="AlwaysInclude">
+                                        <ItemTemplate>
+                                            <asp:Literal ID="lState" runat="server"></asp:Literal>
+                                        </ItemTemplate>
+                                    </Rock:RockTemplateField>
+                                    <Rock:RockTemplateField Visible="false" HeaderText="Postal Code" ExcelExportBehavior="AlwaysInclude">
+                                        <ItemTemplate>
+                                            <asp:Literal ID="lPostalCode" runat="server"></asp:Literal>
+                                        </ItemTemplate>
+                                    </Rock:RockTemplateField>
+                                    <Rock:RockTemplateField Visible="false" HeaderText="Country" ExcelExportBehavior="AlwaysInclude">
+                                        <ItemTemplate>
+                                            <asp:Literal ID="lCountry" runat="server"></asp:Literal>
+                                        </ItemTemplate>
+                                    </Rock:RockTemplateField>
+                                    <Rock:RockBoundField HeaderText="Created Datetime" DataField="CreatedDateTime" ExcelExportBehavior="AlwaysInclude" Visible="false" />
                                 </Columns>
                             </Rock:Grid>
                         </div>
@@ -225,7 +262,7 @@
 
                 <asp:Panel ID="pnlPayments" runat="server" Visible="false" CssClass="panel panel-block">
                     <div class="panel-heading">
-                        <h1 class="panel-title"><i class="fa fa-credit-card"></i>Payments</h1>
+                        <h1 class="panel-title"><i class="fa fa-credit-card"></i> Payments</h1>
                     </div>
                     <div class="panel-body">
                         <Rock:ModalAlert ID="mdPaymentsGridWarning" runat="server" />
@@ -260,7 +297,7 @@
 
                 <asp:Panel ID="pnlLinkages" runat="server" Visible="false" CssClass="panel panel-block">
                     <div class="panel-heading">
-                        <h1 class="panel-title"><i class="fa fa-link"></i>Linkages</h1>
+                        <h1 class="panel-title"><i class="fa fa-link"></i> Linkages</h1>
                     </div>
                     <div class="panel-body">
                         <Rock:ModalAlert ID="mdLinkagesGridWarning" runat="server" />
@@ -292,9 +329,43 @@
                     </div>
                 </asp:Panel>
 
+                <asp:Panel ID="pnlWaitList" runat="server" Visible="false" CssClass="panel panel-block">
+                    <div class="panel-heading">
+                        <h1 class="panel-title"><i class="fa fa-clock-o"></i> Wait List</h1>
+                    </div>
+                    <div class="panel-body">
+                        <Rock:ModalAlert ID="mdWaitListWarning" runat="server" />
+                        <div class="grid grid-panel">
+                            <Rock:GridFilter ID="fWaitList" runat="server" OnDisplayFilterValue="fWaitList_DisplayFilterValue">
+                                <Rock:DateRangePicker ID="drpWaitListDateRange" runat="server" Label="Date Range" />
+                                <Rock:RockTextBox ID="tbWaitListFirstName" runat="server" Label="First Name" />
+                                <Rock:RockTextBox ID="tbWaitListLastName" runat="server" Label="Last Name" />
+                                <asp:PlaceHolder ID="phWaitListFormFieldFilters" runat="server" />
+                            </Rock:GridFilter>
+                            <Rock:Grid ID="gWaitList" runat="server" DisplayType="Full" AllowSorting="true" OnRowSelected="gWaitList_RowSelected" RowItemText="Wait List Individual" PersonIdField="PersonId" ExportSource="ColumnOutput">
+                                <Columns>
+                                    <Rock:SelectField ItemStyle-Width="48px" />
+                                    <Rock:RockTemplateField HeaderText="Wait List Order" >
+                                        <ItemTemplate>
+                                            <asp:Literal ID="lWaitListOrder" runat="server"></asp:Literal>
+                                        </ItemTemplate>
+                                    </Rock:RockTemplateField>
+                                    <Rock:RockTemplateField HeaderText="Wait List Individual" SortExpression="PersonAlias.Person.LastName, PersonAlias.Person.NickName" ExcelExportBehavior="NeverInclude">
+                                        <ItemTemplate>
+                                            <asp:Literal ID="lWaitListIndividual" runat="server"></asp:Literal>
+                                        </ItemTemplate>
+                                    </Rock:RockTemplateField>
+                                    <Rock:RockBoundField HeaderText="First Name" DataField="Person.NickName" ExcelExportBehavior="AlwaysInclude" Visible="false" />
+                                    <Rock:RockBoundField HeaderText="Last Name" DataField="Person.LastName" ExcelExportBehavior="AlwaysInclude" Visible="false" />
+                                    <Rock:RockBoundField HeaderText="Added Datetime" DataField="CreatedDateTime" SortExpression="CreatedDateTime" ExcelExportBehavior="AlwaysInclude" Visible="true" />
+                                </Columns>
+                            </Rock:Grid>
+                        </div>
+                </asp:Panel>
+
                 <asp:Panel ID="pnlGroupPlacement" runat="server" Visible="false" CssClass="panel panel-block">
                     <div class="panel-heading">
-                        <h1 class="panel-title"><i class="fa fa-link"></i>Group Placement</h1>
+                        <h1 class="panel-title"><i class="fa fa-link"></i> Group Placement</h1>
                     </div>
                     <div class="panel-body">
                         <div class="row">

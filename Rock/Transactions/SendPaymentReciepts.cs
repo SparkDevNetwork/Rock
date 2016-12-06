@@ -27,9 +27,9 @@ namespace Rock.Transactions
     /// <summary>
     /// Runs a job now
     /// </summary>
+    [Obsolete( "Use SendPaymentReceipts instead" )]
     public class SendPaymentReciepts : ITransaction
     {
-
         /// <summary>
         /// Gets or sets the system email unique identifier.
         /// </summary>
@@ -51,6 +51,7 @@ namespace Rock.Transactions
         /// </summary>
         /// <param name="systemEmailGuid">The system email unique identifier.</param>
         /// <param name="transactionIds">The transaction ids.</param>
+        [Obsolete( "Use SendPaymentReceipts instead" )]
         public SendPaymentReciepts( Guid systemEmailGuid, List<int> transactionIds )
         {
             SystemEmailGuid = systemEmailGuid;
@@ -62,56 +63,8 @@ namespace Rock.Transactions
         /// </summary>
         public void Execute()
         {
-            using ( var rockContext = new RockContext() )
-            {
-                var service = new FinancialTransactionService( rockContext );
-                foreach ( int transactionId in TransactionIds )
-                {
-                    var transaction = service.Get( transactionId );
-                    if ( transaction != null &&
-                        transaction.AuthorizedPersonAlias != null &&
-                        transaction.AuthorizedPersonAlias.Person != null )
-                    {
-                        var person = transaction.AuthorizedPersonAlias.Person;
-
-                        // setup merge fields
-                        var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( null );
-                        mergeFields.Add( "Person", person );
-
-                        decimal totalAmount = 0;
-                        List<Dictionary<String, object>> accountAmounts = new List<Dictionary<String, object>>();
-                        foreach ( var detail in transaction.TransactionDetails )
-                        {
-                            if ( detail.Account != null && detail.Amount > 0 )
-                            {
-                                var accountAmount = new Dictionary<String, object>();
-                                accountAmount.Add( "AccountId", detail.Account.Id );
-                                accountAmount.Add( "AccountName", detail.Account.Name );
-                                accountAmount.Add( "Amount", detail.Amount );
-                                accountAmounts.Add( accountAmount );
-
-                                totalAmount += detail.Amount;
-                            }
-                        }
-
-                        mergeFields.Add( "TotalAmount", totalAmount );
-                        mergeFields.Add( "GaveAnonymous", "False" );
-                        mergeFields.Add( "ReceiptEmail", person.Email );
-                        mergeFields.Add( "ReceiptEmailed", true );
-                        mergeFields.Add( "LastName", person.LastName );
-                        mergeFields.Add( "FirstNames", person.NickName );
-                        mergeFields.Add( "TransactionCode", transaction.TransactionCode );
-                        mergeFields.Add( "Amounts", accountAmounts );
-
-                        var appRoot = Rock.Web.Cache.GlobalAttributesCache.Read( rockContext ).GetValue( "ExternalApplicationRoot" );
-
-                        var recipients = new List<RecipientData>();
-                        recipients.Add( new RecipientData( person.Email, mergeFields ) );
-
-                        Email.Send( SystemEmailGuid, recipients, appRoot );
-                    }
-                }
-            }
+            var newtxn = new SendPaymentReceipts( SystemEmailGuid, TransactionIds );
+            newtxn.Execute();
         }
     }
 }

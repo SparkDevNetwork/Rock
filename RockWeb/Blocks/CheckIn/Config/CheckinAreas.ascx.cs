@@ -17,6 +17,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
@@ -90,6 +91,7 @@ namespace RockWeb.Blocks.CheckIn.Config
             base.OnLoad( e );
 
             nbDeleteWarning.Visible = false;
+            nbInvalid.Visible = false;
             nbSaveSuccess.Visible = false;
 
             if ( _checkinType == null )
@@ -108,6 +110,7 @@ namespace RockWeb.Blocks.CheckIn.Config
                         if ( nameValue.Count() == 2 )
                         {
                             string eventParam = nameValue[0];
+                            hfAreaGroupClicked.Value = "false";
                             switch ( eventParam )
                             {
                                 case "re-order-area":
@@ -123,12 +126,14 @@ namespace RockWeb.Blocks.CheckIn.Config
 
                                 case "select-area":
                                     {
+                                        hfAreaGroupClicked.Value = "true";
                                         SelectArea( nameValue[1].AsGuid() );
                                         break;
                                     }
 
                                 case "select-group":
                                     {
+                                        hfAreaGroupClicked.Value = "true";
                                         SelectGroup( nameValue[1].AsGuid() );
                                         break;
                                     }
@@ -471,6 +476,9 @@ namespace RockWeb.Blocks.CheckIn.Config
                     gridItem.Name = location.Name;
                     gridItem.FullNamePath = location.Name;
                     gridItem.ParentLocationId = location.ParentLocationId;
+                    var max = checkinGroup.Locations.Max( l => l.Order );
+                    gridItem.Order = ( max == null ) ? 0 : max + 1;
+
                     var parentLocation = location.ParentLocation;
                     while ( parentLocation != null )
                     {
@@ -487,9 +495,45 @@ namespace RockWeb.Blocks.CheckIn.Config
             mdLocationPicker.Hide();
         }
 
+        protected void checkinGroup_ReorderLocationClick( object sender, CheckinGroupEventArg e )
+        {
+            // First set the order (indexing from 0)... since initially all locations will have an
+            // order of 0, we'll also order by their 'full name path'
+            int order = 0;
+            foreach ( var location in checkinGroup.Locations.OrderBy( l => l.Order ).ThenBy( l => l.FullNamePath ) )
+            {
+                location.Order = order++;
+            }
+
+            var movedItem = checkinGroup.Locations.FirstOrDefault( a => a.LocationId == e.LocationId );
+            if ( movedItem != null )
+            {
+                if ( e.NewIndex < e.OldIndex )
+                {
+                    // Moved up
+                    foreach ( var otherItem in checkinGroup.Locations.Where( a => a.Order < e.OldIndex && a.Order >= e.NewIndex ) )
+                    {
+                        otherItem.Order = otherItem.Order + 1;
+                    }
+                }
+                else
+                {
+                    // Moved Down
+                    foreach ( var otherItem in checkinGroup.Locations.Where( a => a.Order > e.OldIndex && a.Order <= e.NewIndex ) )
+                    {
+                        otherItem.Order = otherItem.Order - 1;
+                    }
+                }
+
+                movedItem.Order = e.NewIndex;
+                hfIsDirty.Value = "true";
+            }
+        }
 
         protected void btnSave_Click( object sender, EventArgs e )
         {
+            hfAreaGroupClicked.Value = "true";
+
             using ( var rockContext = new RockContext() )
             {
                 var attributeService = new AttributeService( rockContext );
@@ -566,6 +610,10 @@ namespace RockWeb.Blocks.CheckIn.Config
                             nbSaveSuccess.Visible = true;
                             BuildRows();
                         }
+                        else
+                        {
+                            ShowInvalidResults( groupType.ValidationResults );
+                        }
                     }
                 }
 
@@ -596,6 +644,12 @@ namespace RockWeb.Blocks.CheckIn.Config
                             group.GroupLocations.Add( groupLocation );
                         }
 
+                        // Set the new order
+                        foreach ( var item in checkinGroup.Locations.OrderBy( l => l.Order ).ToList() )
+                        {
+                            var groupLocation = group.GroupLocations.FirstOrDefault( gl => gl.LocationId == item.LocationId );
+                            groupLocation.Order = item.Order ?? 0;
+                        }
 
                         if ( group.IsValid )
                         {
@@ -606,11 +660,21 @@ namespace RockWeb.Blocks.CheckIn.Config
                             nbSaveSuccess.Visible = true;
                             BuildRows();
                         }
+                        else
+                        {
+                            ShowInvalidResults( group.ValidationResults );
+                        }
                     }
                 }
             }
 
             hfIsDirty.Value = "false";
+        }
+
+        private void ShowInvalidResults( List<ValidationResult> validationResults )
+        {
+            nbInvalid.Text = string.Format( "Please correct the following:<ul><li>{0}</li></ul>", validationResults.AsDelimited( "</li><li>" ) );
+            nbInvalid.Visible = true;
         }
 
         #endregion
@@ -939,13 +1003,15 @@ namespace RockWeb.Blocks.CheckIn.Config
                         var locationQry = locationService.Queryable().Select( a => new { a.Id, a.ParentLocationId, a.Name } );
 
                         checkinGroup.Locations = new List<CheckinGroup.LocationGridItem>();
-                        foreach ( var location in group.GroupLocations.Select( a => a.Location ).OrderBy( o => o.Name ) )
+                        foreach ( var groupLocation in group.GroupLocations.OrderBy( gl => gl.Order ).ThenBy( gl => gl.Location.Name ) )
                         {
+                            var location = groupLocation.Location;
                             var gridItem = new CheckinGroup.LocationGridItem();
                             gridItem.LocationId = location.Id;
                             gridItem.Name = location.Name;
                             gridItem.FullNamePath = location.Name;
                             gridItem.ParentLocationId = location.ParentLocationId;
+                            gridItem.Order = groupLocation.Order;
 
                             var parentLocationId = location.ParentLocationId;
                             while ( parentLocationId != null )
@@ -1018,6 +1084,5 @@ namespace RockWeb.Blocks.CheckIn.Config
 
         }
         #endregion
-
     }
 }

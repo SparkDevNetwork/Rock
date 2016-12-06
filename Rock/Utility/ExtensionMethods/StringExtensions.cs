@@ -49,6 +49,57 @@ namespace Rock
         }
 
         /// <summary>
+        /// Determines whether the string is not null or whitespace.
+        /// </summary>
+        /// <param name="str">The string.</param>
+        /// <returns></returns>
+        public static bool IsNotNullOrWhitespace( this string str )
+        {
+            return !string.IsNullOrWhiteSpace( str );
+        }
+
+        /// <summary>
+        /// Determines whether the string is made up of only digits
+        /// </summary>
+        /// <param name="str">The string.</param>
+        /// <returns></returns>
+        public static bool IsDigitsOnly( this string str )
+        {
+            foreach ( char c in str )
+            {
+                if ( c < '0' || c > '9' )
+                    return false;
+            }
+
+            return true;
+        }
+
+        /// <summary>
+        /// Makes the Int64 hash code from the provided string.
+        /// </summary>
+        /// <param name="str">The string.</param>
+        /// <returns></returns>
+        public static Int64 MakeInt64HashCode( this string str )
+        {
+            // http://www.codeproject.com/Articles/34309/Convert-String-to-64bit-Integer
+            Int64 hashCode = 0;
+            if ( !string.IsNullOrEmpty( str ) )
+            {
+                //Unicode Encode Covering all characterset
+                byte[] byteContents = Encoding.Unicode.GetBytes( str );
+                System.Security.Cryptography.SHA256 hash =
+                new System.Security.Cryptography.SHA256CryptoServiceProvider();
+                byte[] hashText = hash.ComputeHash( byteContents );
+
+                Int64 hashCodeStart = BitConverter.ToInt64( hashText, 0 );
+                Int64 hashCodeMedium = BitConverter.ToInt64( hashText, 8 );
+                Int64 hashCodeEnd = BitConverter.ToInt64( hashText, 24 );
+                hashCode = hashCodeStart ^ hashCodeMedium ^ hashCodeEnd;
+            }
+            return (hashCode);
+        }
+
+        /// <summary>
         /// removes any invalid FileName chars in a filename
         /// from http://stackoverflow.com/a/14836763/1755417
         /// </summary>
@@ -287,14 +338,13 @@ namespace Rock
         /// Attempts to convert string to an dictionary using the |/comma and ^ delimiter Key/Value syntax.  Returns an empty dictionary if unsuccessful.
         /// </summary>
         /// <param name="str">The string.</param>
-        /// <returns></returns>
-        [System.Diagnostics.DebuggerStepThrough()]
+        /// <returns></returns>                     
         public static System.Collections.Generic.Dictionary<string, string> AsDictionary( this string str )
         {
             var dictionary = new System.Collections.Generic.Dictionary<string, string>();
             string[] nameValues = str.Split( new char[] { '|' }, StringSplitOptions.RemoveEmptyEntries );
             // If we haven't found any pipes, check for commas
-            if ( nameValues.Count() == 1 )
+            if ( nameValues.Count() == 1 && nameValues[0] == str)
             {
                 nameValues = str.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries );
             }
@@ -628,6 +678,16 @@ namespace Rock
             }
 
             return keyPairs;
+        }
+
+        /// <summary>
+        /// Removes the spaces.
+        /// </summary>
+        /// <param name="input">The input.</param>
+        /// <returns></returns>
+        public static string RemoveSpaces( this string input )
+        {
+            return input.Replace( " ", "" );
         }
 
         #endregion String Extensions

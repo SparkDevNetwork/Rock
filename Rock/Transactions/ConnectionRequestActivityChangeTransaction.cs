@@ -66,56 +66,40 @@ namespace Rock.Transactions
                 if ( cachedWorkflows != null && cachedWorkflows.Any() )
                 {
                     // Get the connectionWorkflows associated to the connection
-                    var connectionOpportunityWorkflows = cachedWorkflows
+                    var workflows = cachedWorkflows
                         .Where( w =>
                             w.TriggerType == ConnectionWorkflowTriggerType.ActivityAdded &&
-                            w.ConnectionOpportunityId.HasValue &&
-                            w.ConnectionOpportunityId.Value == ConnectionOpportunityId.Value )
+                            (
+                                ( w.ConnectionOpportunityId.HasValue && w.ConnectionOpportunityId.Value == ConnectionOpportunityId.Value ) ||
+                                ( w.ConnectionTypeId.HasValue )
+                            ) 
+                        )
                         .ToList();
 
-                    // Get any connectionWorkflows associated to a connection type ( if any are found, will then filter by connection type )
-                    var connectionTypeWorkflows = cachedWorkflows
-                        .Where( w =>
-                            w.TriggerType == ConnectionWorkflowTriggerType.ActivityAdded &&
-                            w.ConnectionTypeId.HasValue )
-                        .ToList();
-
-                    if ( connectionOpportunityWorkflows.Any() || connectionTypeWorkflows.Any() )
+                    if ( workflows.Any() )
                     {
                         using ( var rockContext = new RockContext() )
                         {
-                            // If there were any connection type connectionWorkflows, will now need to read the opportunity's connection type id
-                            // and then further filter these connectionWorkflows by the current txn's connection type
-                            if ( connectionTypeWorkflows.Any() )
+                            // Get the current txn's connection type id
+                            var ConnectionTypeId = new ConnectionOpportunityService( rockContext )
+                                .Queryable().AsNoTracking()
+                                .Where( o => o.Id == ConnectionOpportunityId.Value )
+                                .Select( o => o.ConnectionTypeId )
+                                .FirstOrDefault();
+
+                            // Further filter the connection type connectionWorkflows by the connection type id
+                            workflows = workflows
+                                .Where( w =>
+                                    ( w.ConnectionOpportunityId.HasValue && w.ConnectionOpportunityId.Value == ConnectionOpportunityId.Value ) ||
+                                    ( w.ConnectionTypeId.HasValue && w.ConnectionTypeId.Value == ConnectionTypeId ) )
+                                .ToList();
+
+                            // Loop through connectionWorkflows and lauch appropriate workflow
+                            foreach ( var connectionWorkflow in workflows )
                             {
-                                // Get the current txn's connection type id
-                                var ConnectionTypeId = new ConnectionOpportunityService( rockContext )
-                                    .Queryable().AsNoTracking()
-                                    .Where( o => o.Id == ConnectionOpportunityId.Value )
-                                    .Select( o => o.ConnectionTypeId )
-                                    .FirstOrDefault();
-
-                                // Further filter the connection type connectionWorkflows by the connection type id
-                                connectionTypeWorkflows = connectionTypeWorkflows
-                                    .Where( t =>
-                                        t.ConnectionTypeId.HasValue &&
-                                        t.ConnectionTypeId.Equals( ConnectionTypeId ) )
-                                    .ToList();
-                            }
-
-                            // Combine connection opportunity and connection type trigers
-                            var connectionWorkflows = connectionOpportunityWorkflows.Union( connectionTypeWorkflows ).ToList();
-
-                            // If any connectionWorkflows were found
-                            if ( connectionWorkflows.Any() )
-                            {
-                                // Loop through connectionWorkflows and lauch appropriate workflow
-                                foreach ( var connectionWorkflow in connectionWorkflows )
+                                if ( QualifiersMatch( rockContext, connectionWorkflow, ConnectionActivityTypeId ) )
                                 {
-                                    if ( QualifiersMatch( rockContext, connectionWorkflow, ConnectionActivityTypeId ) )
-                                    {
-                                        LaunchWorkflow( rockContext, connectionWorkflow, "Activity Added" );
-                                    }
+                                    LaunchWorkflow( rockContext, connectionWorkflow, "Activity Added" );
                                 }
                             }
                         }

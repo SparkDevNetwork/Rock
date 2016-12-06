@@ -84,18 +84,22 @@ namespace Rock.Web.UI.Controls
             {
                 List<string> subTargetList = eventTarget.Replace( _gLocations.UniqueID, string.Empty ).Split( new char[] { '$' }, StringSplitOptions.RemoveEmptyEntries ).ToList();
                 EnsureChildControls();
-                string lblAddControlId = subTargetList.Last();
-                var lblAdd = _gLocations.Actions.FindControl( lblAddControlId );
-                if ( lblAdd != null )
+
+                // make sure it's not a reorder event
+                if ( subTargetList.Count != 0 )
                 {
-                    AddLocation_Click( this, new EventArgs() );
-                }
-                else
-                {
-                    // rowIndex is determined by the numeric suffix of the control id after the Grid, subtract 2 (one for the header, and another to convert from 0 to 1 based index)
-                    int rowIndex = subTargetList.First().AsNumeric().AsInteger() - 2;
-                    RowEventArgs rowEventArgs = new RowEventArgs( rowIndex, this.Locations.OrderBy( l => l.FullNamePath ).ToList()[rowIndex].LocationId );
-                    DeleteLocation_Click( this, rowEventArgs );
+                    string lblAddControlId = subTargetList.Where( n => n.EndsWith( "Add" ) ).LastOrDefault();
+                    if ( lblAddControlId != null )
+                    {
+                            AddLocation_Click( this, new EventArgs() );
+                    }
+                    else
+                    {
+                        // rowIndex is determined by the numeric suffix of the control id after the Grid, subtract 2 (one for the header, and another to convert from 0 to 1 based index)
+                        int rowIndex = subTargetList.First().AsNumeric().AsInteger() - 2;
+                        RowEventArgs rowEventArgs = new RowEventArgs( rowIndex, this.Locations.OrderBy( l => l.Order ).ThenBy( l => l.FullNamePath ).ToList()[rowIndex].LocationId );
+                        DeleteLocation_Click( this, rowEventArgs );
+                    }
                 }
             }
         }
@@ -141,6 +145,16 @@ namespace Rock.Web.UI.Controls
             /// </value>
             [DataMember]
             public int? ParentLocationId { get; set; }
+
+            /// <summary>
+            /// Gets or sets the order.
+            /// </summary>
+            /// <value>
+            /// The order.
+            /// </value>
+            [DataMember]
+            public int? Order { get; set; }
+
         }
 
         /// <summary>
@@ -285,9 +299,12 @@ namespace Rock.Web.UI.Controls
 
             //// Handle AddClick manually in OnLoad()
             _gLocations.Actions.AddClick += AddLocation_Click;
+            _gLocations.GridReorder += gLocations_Reorder;
 
+            var reorderField = new ReorderField();
+            _gLocations.Columns.Add( reorderField );
+            _gLocations.ShowHeader = false;
             _gLocations.DataKeyNames = new string[] { "LocationId" };
-            _gLocations.TooltipField = "Name";
             _gLocations.Columns.Add( new BoundField { DataField = "FullNamePath", HeaderText = "Name" } );
 
             DeleteField deleteField = new DeleteField();
@@ -324,7 +341,7 @@ namespace Rock.Web.UI.Controls
                 writer.WriteLine( "<h3>Locations</h3>" );
                 if ( this.Locations != null )
                 {
-                    _gLocations.DataSource = this.Locations.OrderBy( l => l.FullNamePath ).ToList();
+                    _gLocations.DataSource = this.Locations.OrderBy( l => l.Order ).ThenBy( l => l.FullNamePath ).ToList();
                     _gLocations.DataBind();
                 }
                 _gLocations.RenderControl( writer );
@@ -349,6 +366,20 @@ namespace Rock.Web.UI.Controls
                     group.LoadAttributes( rockContext );
                 }
                 Rock.Attribute.Helper.AddEditControls( group, _phGroupAttributes, true, this.ValidationGroup );
+            }
+        }
+
+        /// <summary>
+        /// Handles the Reorder event of the gLocations control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="GridReorderEventArgs"/> instance containing the event data.</param>
+        protected void gLocations_Reorder( object sender, GridReorderEventArgs e )
+        {
+            if ( ReorderLocationClick != null )
+            {
+                var eventArg = new CheckinGroupEventArg( GroupGuid, e.DataKey, e.OldIndex, e.NewIndex );
+                ReorderLocationClick( this, eventArg );
             }
         }
 
@@ -379,6 +410,11 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Occurs when [reorder field click].
+        /// </summary>
+        public event EventHandler<CheckinGroupEventArg> ReorderLocationClick;
+
+        /// <summary>
         /// Occurs when [delete location click].
         /// </summary>
         public event EventHandler<RowEventArgs> DeleteLocationClick;
@@ -387,5 +423,68 @@ namespace Rock.Web.UI.Controls
         /// Occurs when [add location click].
         /// </summary>
         public event EventHandler AddLocationClick;
+    }
+
+
+    /// <summary>
+    /// An event args class used for reordering a check-in group's locations 
+    /// </summary>
+    public class CheckinGroupEventArg : EventArgs
+    {
+        /// <summary>
+        /// Gets or sets the check-in group unique identifier.
+        /// </summary>
+        /// <value>
+        /// The check-in group's unique identifier.
+        /// </value>
+        public Guid GroupGuid { get; set; }
+
+        /// <summary>
+        /// Gets or sets the check-in group location id.
+        /// </summary>
+        /// <value>
+        /// The location id.
+        /// </value>
+        public int LocationId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the old index.
+        /// </summary>
+        /// <value>
+        /// The old index.
+        /// </value>
+        public int OldIndex { get; set; }
+
+        /// <summary>
+        /// Gets or sets the new index.
+        /// </summary>
+        /// <value>
+        /// The new index.
+        /// </value>
+        public int NewIndex { get; set; }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="CheckinGroupEventArg"/> class.
+        /// </summary>
+        /// <param name="groupGuid">The check-in group unique identifier.</param>
+        public CheckinGroupEventArg( Guid groupGuid )
+        {
+            GroupGuid = groupGuid;
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="CheckinGroupEventArg"/> class.
+        /// </summary>
+        /// <param name="groupGuid">The check-in group unique identifier.</param>
+        /// <param name="dataKey">The check-in group location Id.</param>
+        /// <param name="oldIndex">The old index.</param>
+        /// <param name="newIndex">The new index.</param>
+        public CheckinGroupEventArg( Guid groupGuid, string dataKey, int oldIndex, int newIndex )
+        {
+            GroupGuid = groupGuid;
+            LocationId = dataKey.AsInteger();
+            OldIndex = oldIndex;
+            NewIndex = newIndex;
+        }
     }
 }

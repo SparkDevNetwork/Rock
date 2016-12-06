@@ -69,6 +69,15 @@ namespace Rock.Model
         public int? GroupMemberId { get; set; }
 
         /// <summary>
+        /// Gets or sets a value indicating whether registrant is on a wait list.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [on wait list]; otherwise, <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool OnWaitList { get; set; }
+
+        /// <summary>
         /// Gets or sets the cost.
         /// </summary>
         /// <value>
@@ -77,6 +86,7 @@ namespace Rock.Model
         [DataMember]
         public decimal Cost { get; set; }
 
+        
         #endregion
 
         #region Virtual Properties
@@ -225,6 +235,11 @@ namespace Rock.Model
         {
             get
             {
+                if ( OnWaitList )
+                {
+                    return 0.0M;
+                }
+
                 var cost = Cost;
                 if ( Fees != null )
                 {
@@ -266,6 +281,11 @@ namespace Rock.Model
         /// <returns></returns>
         public virtual decimal DiscountedCost( decimal discountPercent, decimal discountAmount )
         {
+            if ( OnWaitList )
+            {
+                return 0.0M;
+            }
+
             var discountedCost = Cost - ( Cost * discountPercent );
 
             if ( Fees != null )

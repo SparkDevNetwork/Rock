@@ -40,45 +40,64 @@ namespace RockWeb.Blocks.Event
     [Category( "Event" )]
     [Description( "Displays the details of the given registration template." )]
 
-    [CodeEditorField( "Default Confirmation Email", "The default Confirmation Email Template value to use for a new template", CodeEditorMode.Lava, CodeEditorTheme.Rock, 300, false, @"
-{{ 'Global' | Attribute:'EmailHeader' }}
+    [CodeEditorField( "Default Confirmation Email", "The default Confirmation Email Template value to use for a new template", CodeEditorMode.Lava, CodeEditorTheme.Rock, 300, false, @"{{ 'Global' | Attribute:'EmailHeader' }}
 {% capture currencySymbol %}{{ 'Global' | Attribute:'CurrencySymbol' }}{% endcapture %}
-{% assign registrantCount = Registration.Registrants | Size %}
 
 <h1>{{ RegistrationInstance.RegistrationTemplate.RegistrationTerm }} Confirmation: {{ RegistrationInstance.Name }}</h1>
 
-<p>
-    The following {{ RegistrationInstance.RegistrationTemplate.RegistrantTerm | PluralizeForQuantity:registrantCount | Downcase }}
-    {% if registrantCount > 1 %}have{% else %}has{% endif %} been registered for {{ RegistrationInstance.Name }}:
-</p>
+{% assign registrants = Registration.Registrants | Where:'OnWaitList', false %}
+{% assign registrantCount = registrants | Size %}
+{% if registrantCount > 0 %}
+	<p>
+		The following {{ RegistrationInstance.RegistrationTemplate.RegistrantTerm | PluralizeForQuantity:registrantCount | Downcase }}
+		{% if registrantCount > 1 %}have{% else %}has{% endif %} been registered for {{ RegistrationInstance.Name }}:
+	</p>
 
-<ul>
-{% for registrant in Registration.Registrants %}
-    <li>
+	<ul>
+	{% for registrant in registrants %}
+		<li>
+		
+			<strong>{{ registrant.PersonAlias.Person.FullName }}</strong>
+			
+			{% if registrant.Cost > 0 %}
+				- {{ currencySymbol }}{{ registrant.Cost | Format:'#,##0.00' }}
+			{% endif %}
+			
+			{% assign feeCount = registrant.Fees | Size %}
+			{% if feeCount > 0 %}
+				<br/>{{ RegistrationInstance.RegistrationTemplate.FeeTerm | PluralizeForQuantity:registrantCount }}:
+				<ul>
+				{% for fee in registrant.Fees %}
+					<li>
+						{{ fee.RegistrationTemplateFee.Name }} {{ fee.Option }}
+						{% if fee.Quantity > 1 %} ({{ fee.Quantity }} @ {{ currencySymbol }}{{ fee.Cost | Format:'#,##0.00' }}){% endif %}: {{ currencySymbol }}{{ fee.TotalCost | Format:'#,##0.00' }}
+					</li>
+				{% endfor %}
+				</ul>
+			{% endif %}
+
+		</li>
+	{% endfor %}
+	</ul>
+{% endif %}
+
+{% assign waitlist = Registration.Registrants | Where:'OnWaitList', true %}
+{% assign waitListCount = waitlist | Size %}
+{% if waitListCount > 0 %}
+    <p>
+        The following {{ RegistrationInstance.RegistrationTemplate.RegistrantTerm | PluralizeForQuantity:registrantCount | Downcase }}
+		{% if waitListCount > 1 %}have{% else %}has{% endif %} been added to the wait list for {{ RegistrationInstance.Name }}:
+   </p>
     
-        <strong>{{ registrant.PersonAlias.Person.FullName }}</strong>
-        
-        {% if registrant.Cost > 0 %}
-            - {{ currencySymbol }}{{ registrant.Cost | Format:'#,##0.00' }}
-        {% endif %}
-        
-        {% assign feeCount = registrant.Fees | Size %}
-        {% if feeCount > 0 %}
-            <br/>{{ RegistrationInstance.RegistrationTemplate.FeeTerm | PluralizeForQuantity:registrantCount }}:
-            <ul>
-            {% for fee in registrant.Fees %}
-                <li>
-                    {{ fee.RegistrationTemplateFee.Name }} {{ fee.Option }}
-                    {% if fee.Quantity > 1 %} ({{ fee.Quantity }} @ {{ currencySymbol }}{{ fee.Cost | Format:'#,##0.00' }}){% endif %}: {{ currencySymbol }}{{ fee.TotalCost | Format:'#,##0.00' }}
-                </li>
-            {% endfor %}
-            </ul>
-        {% endif %}
-
-    </li>
-{% endfor %}
-</ul>
-
+    <ul>
+    {% for registrant in waitlist %}
+        <li>
+            <strong>{{ registrant.PersonAlias.Person.FullName }}</strong>
+        </li>
+    {% endfor %}
+    </ul>
+{% endif %}
+	
 {% if Registration.TotalCost > 0 %}
 <p>
     Total Cost: {{ currencySymbol }}{{ Registration.TotalCost | Format:'#,##0.00' }}<br/>
@@ -121,17 +140,37 @@ namespace RockWeb.Blocks.Event
     {{ RegistrationInstance.AdditionalReminderDetails }}
 </p>
 
-<p>
-    The following {{ RegistrationInstance.RegistrationTemplate.RegistrantTerm | PluralizeForQuantity:registrantCount | Downcase }}
-    {% if registrantCount > 1 %}have{% else %}has{% endif %} been registered:
-</p>
+{% assign registrants = Registration.Registrants | Where:'OnWaitList', false %}
+{% assign registrantCount = registrants | Size %}
+{% if registrantCount > 0 %}
+	<p>
+		The following {{ RegistrationInstance.RegistrationTemplate.RegistrantTerm | PluralizeForQuantity:registrantCount | Downcase }}
+		{% if registrantCount > 1 %}have{% else %}has{% endif %} been registered for {{ RegistrationInstance.Name }}:
+	</p>
 
-<ul>
-{% for registrant in Registration.Registrants %}
-    <li>{{ registrant.PersonAlias.Person.FullName }}</li>
-{% endfor %}
-</ul>
+	<ul>
+	{% for registrant in registrants %}
+		<li>{{ registrant.PersonAlias.Person.FullName }}</li>
+	{% endfor %}
+	</ul>
+{% endif %}
 
+{% assign waitlist = Registration.Registrants | Where:'OnWaitList', true %}
+{% assign waitListCount = waitlist | Size %}
+{% if waitListCount > 0 %}
+    <p>
+        The following {{ RegistrationInstance.RegistrationTemplate.RegistrantTerm | PluralizeForQuantity:registrantCount | Downcase }}
+		{% if waitListCount > 1 %}are{% else %}is{% endif %} still on the waiting list:
+   </p>
+    
+    <ul>
+    {% for registrant in waitlist %}
+        <li>
+            <strong>{{ registrant.PersonAlias.Person.FullName }}</strong>
+        </li>
+    {% endfor %}
+    </ul>
+{% endif %}
 
 {% if Registration.BalanceDue > 0 %}
 <p>
@@ -147,44 +186,64 @@ namespace RockWeb.Blocks.Event
     If you have any questions please contact {{ RegistrationInstance.ContactName }} at {{ RegistrationInstance.ContactEmail }}.
 </p>
 
-{{ 'Global' | Attribute:'EmailFooter' }}
-", "", 1 )]
+{{ 'Global' | Attribute:'EmailFooter' }}", "", 1 )]
 
-    [CodeEditorField( "Default Success Text", "The success text default to use for a new template", CodeEditorMode.Lava, CodeEditorTheme.Rock, 300, false, @"
-{% capture currencySymbol %}{{ 'Global' | Attribute:'CurrencySymbol' }}{% endcapture %}
-{% assign registrantCount = Registration.Registrants | Size %}
-<p>
-    You have successfully registered the following 
-    {{ RegistrationInstance.RegistrationTemplate.RegistrantTerm | PluralizeForQuantity:registrantCount | Downcase }}
-    for {{ RegistrationInstance.Name }}:
-</p>
+    [CodeEditorField( "Default Success Text", "The success text default to use for a new template", CodeEditorMode.Lava, CodeEditorTheme.Rock, 300, false, @"{% capture currencySymbol %}{{ 'Global' | Attribute:'CurrencySymbol' }}{% endcapture %}
 
-<ul>
-{% for registrant in Registration.Registrants %}
-    <li>
+{% assign registrants = Registration.Registrants | Where:'OnWaitList', false %}
+{% assign registrantCount = registrants | Size %}
+{% if registrantCount > 0 %}
+    <p>
+        You have successfully registered the following 
+        {{ RegistrationInstance.RegistrationTemplate.RegistrantTerm | PluralizeForQuantity:registrantCount | Downcase }}
+        for {{ RegistrationInstance.Name }}:
+    </p>
     
-        <strong>{{ registrant.PersonAlias.Person.FullName }}</strong>
+    <ul>
+    {% for registrant in registrants %}
+        <li>
         
-        {% if registrant.Cost > 0 %}
-            - {{ currencySymbol }}{{ registrant.Cost | Format:'#,##0.00' }}
-        {% endif %}
-        
-        {% assign feeCount = registrant.Fees | Size %}
-        {% if feeCount > 0 %}
-            <br/>{{ RegistrationInstance.RegistrationTemplate.FeeTerm | PluralizeForQuantity:registrantCount }}:
-            <ul class='list-unstyled'>
-            {% for fee in registrant.Fees %}
-                <li>
-                    {{ fee.RegistrationTemplateFee.Name }} {{ fee.Option }}
-                    {% if fee.Quantity > 1 %} ({{ fee.Quantity }} @ {{ currencySymbol }}{{ fee.Cost | Format:'#,##0.00' }}){% endif %}: {{ currencySymbol }}{{ fee.TotalCost | Format:'#,##0.00' }}
-                </li>
-            {% endfor %}
-            </ul>
-        {% endif %}
-        
-    </li>
-{% endfor %}
-</ul>
+            <strong>{{ registrant.PersonAlias.Person.FullName }}</strong>
+            
+            {% if registrant.Cost > 0 %}
+                - {{ currencySymbol }}{{ registrant.Cost | Format:'#,##0.00' }}
+            {% endif %}
+            
+            {% assign feeCount = registrant.Fees | Size %}
+            {% if feeCount > 0 %}
+                <br/>{{ RegistrationInstance.RegistrationTemplate.FeeTerm | PluralizeForQuantity:registrantCount }}:
+                <ul class='list-unstyled'>
+                {% for fee in registrant.Fees %}
+                    <li>
+                        {{ fee.RegistrationTemplateFee.Name }} {{ fee.Option }}
+                        {% if fee.Quantity > 1 %} ({{ fee.Quantity }} @ {{ currencySymbol }}{{ fee.Cost | Format:'#,##0.00' }}){% endif %}: {{ currencySymbol }}{{ fee.TotalCost | Format:'#,##0.00' }}
+                    </li>
+                {% endfor %}
+                </ul>
+            {% endif %}
+            
+        </li>
+    {% endfor %}
+    </ul>
+{% endif %}
+
+{% assign waitlist = Registration.Registrants | Where:'OnWaitList', true %}
+{% assign waitListCount = waitlist | Size %}
+{% if waitListCount > 0 %}
+    <p>
+        You have successfully added the following 
+        {{ RegistrationInstance.RegistrationTemplate.RegistrantTerm | PluralizeForQuantity:registrantCount | Downcase }}
+        to the waiting list for {{ RegistrationInstance.Name }}:
+    </p>
+    
+    <ul>
+    {% for registrant in waitlist %}
+        <li>
+            <strong>{{ registrant.PersonAlias.Person.FullName }}</strong>
+        </li>
+    {% endfor %}
+    </ul>
+{% endif %}
 
 {% if Registration.TotalCost > 0 %}
 <p>
@@ -207,13 +266,11 @@ namespace RockWeb.Blocks.Event
 <p>
     A confirmation email has been sent to {{ Registration.ConfirmationEmail }}. If you have any questions 
     please contact {{ RegistrationInstance.ContactPersonAlias.Person.FullName }} at {{ RegistrationInstance.ContactEmail }}.
-</p>
-", "", 2 )]
+</p>", "", 2 )]
 
     [CodeEditorField( "Default Payment Reminder Email", "The default Payment Reminder Email Template value to use for a new template", CodeEditorMode.Lava, CodeEditorTheme.Rock, 300, false, @"{{ 'Global' | Attribute:'EmailHeader' }}
 {% capture currencySymbol %}{{ 'Global' | Attribute:'CurrencySymbol' }}{% endcapture %}
 {% capture externalSite %}{{ 'Global' | Attribute:'PublicApplicationRoot' }}{% endcapture %}
-{% assign registrantCount = Registration.Registrants | Size %}
 
 <h1>{{ RegistrationInstance.RegistrationTemplate.RegistrationTerm }} Payment Reminder</h1>
 
@@ -224,11 +281,31 @@ namespace RockWeb.Blocks.Event
     {{ RegistrationInstance.RegistrationTemplate.RegistrationTerm }} are below.
 </p>
 
-<ul>
-{% for registrant in Registration.Registrants %}
-    <li>{{ registrant.PersonAlias.Person.FullName }}</li>
-{% endfor %}
-</ul>
+{% assign registrants = Registration.Registrants | Where:'OnWaitList', false %}
+{% assign registrantCount = registrants | Size %}
+{% if registrantCount > 0 %}
+	<ul>
+	{% for registrant in registrants %}
+		<li>{{ registrant.PersonAlias.Person.FullName }}</li>
+	{% endfor %}
+	</ul>
+
+{% assign waitlist = Registration.Registrants | Where:'OnWaitList', true %}
+{% assign waitListCount = waitlist | Size %}
+{% if waitListCount > 0 %}
+    <p>
+        The following {{ RegistrationInstance.RegistrationTemplate.RegistrantTerm | PluralizeForQuantity:registrantCount | Downcase }}
+		{% if waitListCount > 1 %}are{% else %}is{% endif %} still on the wait list:
+   </p>
+    
+    <ul>
+    {% for registrant in waitlist %}
+        <li>
+            <strong>{{ registrant.PersonAlias.Person.FullName }}</strong>
+        </li>
+    {% endfor %}
+    </ul>
+{% endif %}
 
 <p>
     You can complete the payment for this {{ RegistrationInstance.RegistrationTemplate.RegistrationTerm | Downcase }}
@@ -240,8 +317,48 @@ namespace RockWeb.Blocks.Event
     If you have any questions please contact {{ RegistrationInstance.ContactName }} at {{ RegistrationInstance.ContactEmail }}.
 </p>
 
-{{ 'Global' | Attribute:'EmailFooter' }}
-", "", 3 )]
+{{ 'Global' | Attribute:'EmailFooter' }}", "", 3 )]
+
+    [CodeEditorField( "Default Wait List Transition Email", "The default Wait List Transition Email Template value to use for a new template", CodeEditorMode.Lava, CodeEditorTheme.Rock, 300, false, @"{{ 'Global' | Attribute:'EmailHeader' }}
+{% capture currencySymbol %}{{ 'Global' | Attribute:'CurrencySymbol' }}{% endcapture %}
+{% capture externalSite %}{{ 'Global' | Attribute:'PublicApplicationRoot' }}{% endcapture %}
+
+<h1>{{ RegistrationInstance.Name }} Wait List Update</h1>
+
+<p>
+    {{ Registration.FirstName }}, the following individuals have been moved from the {{ RegistrationInstance.Name }} wait list to a full 
+    {{ RegistrationInstance.RegistrationTemplate.RegistrantTerm | Downcase }}. 
+</p>
+
+<ul>
+    {% for registrant in TransitionedRegistrants %}
+        <li>{{ registrant.PersonAlias.Person.FullName }}</li>
+    {% endfor %}
+</ul>
+
+{% if AdditionalFieldsNeeded %}
+    <p>
+        <strong>Addition information is needed in order to process this registration. Please visit the 
+        <a href='{{ externalSite }}/Registration?RegistrationId={{ Registration.Id }}&rckipid={{ Registration.PersonAlias.Person.UrlEncodedKey }}&StartAtBeginning=True'>
+        online registration page</a> to complete the registration.</strong>
+    </p>
+{% endif %}
+
+
+{% if Registration.BalanceDue > 0 %}
+    <p>
+        A balance of {{ currencySymbol }}{{ Registration.BalanceDue | Format:'#,##0.00' }} remains on this regsitration. You can complete the payment for this {{ RegistrationInstance.RegistrationTemplate.RegistrationTerm | Downcase }}
+        using our <a href='{{ externalSite }}/Registration?RegistrationId={{ Registration.Id }}&rckipid={{ Registration.PersonAlias.Person.UrlEncodedKey }}'>
+        online registration page</a>.
+    </p>
+{% endif %}
+
+<p>
+    If you have any questions please contact {{ RegistrationInstance.ContactName }} at {{ RegistrationInstance.ContactEmail }}.
+</p>
+
+
+{{ 'Global' | Attribute:'EmailFooter' }}", "", 3 )]
     public partial class RegistrationTemplateDetail : RockBlock
     {
 
@@ -458,6 +575,17 @@ namespace RockWeb.Blocks.Event
             return base.SaveViewState();
         }
 
+        protected override void OnPreRender( EventArgs e )
+        {
+            if ( pnlEditDetails.Visible )
+            {
+                var sameFamily = rblRegistrantsInSameFamily.SelectedValueAsEnum<RegistrantsSameFamily>();
+                divCurrentFamilyMembers.Attributes["style"] = sameFamily == RegistrantsSameFamily.Yes ? "display:block" : "display:none";
+            }
+
+            base.OnPreRender( e );
+        }
+
         #endregion
 
         #region Events
@@ -665,6 +793,10 @@ namespace RockWeb.Blocks.Event
             RegistrationTemplate.GroupTypeId = gtpGroupType.SelectedGroupTypeId;
             RegistrationTemplate.GroupMemberRoleId = rpGroupTypeRole.GroupRoleId;
             RegistrationTemplate.GroupMemberStatus = ddlGroupMemberStatus.SelectedValueAsEnum<GroupMemberStatus>();
+            RegistrationTemplate.RequiredSignatureDocumentTemplateId = ddlSignatureDocumentTemplate.SelectedValueAsInt();
+            RegistrationTemplate.SignatureDocumentAction = cbDisplayInLine.Checked ? SignatureDocumentAction.Embed : SignatureDocumentAction.Email;
+            RegistrationTemplate.WaitListEnabled = cbWaitListEnabled.Checked;
+
             RegistrationTemplate.RegistrationWorkflowTypeId = wtpRegistrationWorkflow.SelectedValueAsInt();
             RegistrationTemplate.Notify = notify;
             RegistrationTemplate.AddPersonNote = cbAddPersonNote.Checked;
@@ -674,6 +806,7 @@ namespace RockWeb.Blocks.Event
             RegistrationTemplate.AllowMultipleRegistrants = cbMultipleRegistrants.Checked;
             RegistrationTemplate.MaxRegistrants = nbMaxRegistrants.Text.AsInteger();
             RegistrationTemplate.RegistrantsSameFamily = rblRegistrantsInSameFamily.SelectedValueAsEnum<RegistrantsSameFamily>();
+            RegistrationTemplate.ShowCurrentFamilyMembers = cbShowCurrentFamilyMembers.Checked;
             RegistrationTemplate.SetCostOnInstance = !tglSetCostOnTemplate.Checked;
             RegistrationTemplate.Cost = cbCost.Text.AsDecimal();
             RegistrationTemplate.MinimumInitialPayment = cbMinimumInitialPayment.Text.AsDecimalOrNull();
@@ -695,6 +828,11 @@ namespace RockWeb.Blocks.Event
             RegistrationTemplate.PaymentReminderSubject = tbPaymentReminderSubject.Text;
             RegistrationTemplate.PaymentReminderEmailTemplate = cePaymentReminderEmailTemplate.Text;
             RegistrationTemplate.PaymentReminderTimeSpan = nbPaymentReminderTimeSpan.Text.AsInteger();
+
+            RegistrationTemplate.WaitListTransitionFromName = tbWaitListTransitionFromName.Text;
+            RegistrationTemplate.WaitListTransitionFromEmail = tbWaitListTransitionFromEmail.Text;
+            RegistrationTemplate.WaitListTransitionSubject = tbWaitListTransitionSubject.Text;
+            RegistrationTemplate.WaitListTransitionEmailTemplate = ceWaitListTransitionEmailTemplate.Text;
 
             RegistrationTemplate.RegistrationTerm = string.IsNullOrWhiteSpace( tbRegistrationTerm.Text ) ? "Registration" : tbRegistrationTerm.Text;
             RegistrationTemplate.RegistrantTerm = string.IsNullOrWhiteSpace( tbRegistrantTerm.Text ) ? "Registrant" : tbRegistrantTerm.Text;
@@ -756,6 +894,11 @@ namespace RockWeb.Blocks.Event
                 validationErrors.Add( "A Financial Gateway is required when the registration has a cost or additional fees or is configured to allow instances to set a cost." );
             }
 
+            if ( RegistrationTemplate.WaitListEnabled && RegistrationTemplate.MaxRegistrants == 0 )
+            {
+                validationErrors.Add( "To enable a wait list you must provide a maximum number of registrants." );
+            }
+
             if ( validationErrors.Any() )
             {
                 nbValidationError.Visible = true;
@@ -787,6 +930,11 @@ namespace RockWeb.Blocks.Event
                         f.RegistrationTemplateId == RegistrationTemplate.Id &&
                         !formUiGuids.Contains( f.Guid ) ) )
                 {
+                    foreach( var formField in form.Fields.ToList() )
+                    {
+                        form.Fields.Remove( formField );
+                        registrationTemplateFormFieldService.Delete( formField );
+                    }
                     registrationTemplateFormService.Delete( form );
                 }
 
@@ -926,6 +1074,7 @@ namespace RockWeb.Blocks.Event
                             formField.IsGridField = formFieldUI.IsGridField;
                             formField.IsRequired = formFieldUI.IsRequired;
                             formField.Order = formFieldUI.Order;
+                            formField.ShowOnWaitlist = formFieldUI.ShowOnWaitlist;
                         }
                     }
                 }
@@ -1362,6 +1511,7 @@ namespace RockWeb.Blocks.Event
                     case RegistrationFieldSource.GroupMemberAttribute:
                         {
                             attributeId = ddlGroupTypeAttributes.SelectedValueAsInt();
+                            attributeForm.ShowCurrentValue = false;
                             attributeForm.IsGridField = cbShowOnGrid.Checked;
                             attributeForm.IsRequired = cbRequireInInitialEntry.Checked;
                             break;
@@ -1372,11 +1522,14 @@ namespace RockWeb.Blocks.Event
                             edtRegistrationAttribute.GetAttributeProperties( attribute );
                             attributeForm.Attribute = attribute;
                             attributeForm.Id = attribute.Id;
+                            attributeForm.ShowCurrentValue = false;
                             attributeForm.IsGridField = attribute.IsGridColumn;
                             attributeForm.IsRequired = attribute.IsRequired;
                             break;
                         }
                 }
+
+                attributeForm.ShowOnWaitlist = cbShowOnWaitList.Checked;
 
                 if ( attributeId.HasValue )
                 {
@@ -1788,6 +1941,10 @@ namespace RockWeb.Blocks.Event
                 registrationTemplate.PaymentReminderFromEmail = "{{ RegistrationInstance.ContactEmail }}";
                 registrationTemplate.PaymentReminderFromName = "{{ RegistrationInstance.ContactPersonAlias.Person.FullName }}";
                 registrationTemplate.PaymentReminderSubject = "{{ RegistrationInstance.Name }} Payment Reminder";
+                registrationTemplate.WaitListTransitionEmailTemplate = GetAttributeValue( "DefaultWaitListTransitionEmail" );
+                registrationTemplate.WaitListTransitionFromEmail = "{{ RegistrationInstance.ContactEmail }}";
+                registrationTemplate.WaitListTransitionFromName = "{{ RegistrationInstance.ContactPersonAlias.Person.FullName }}";
+                registrationTemplate.WaitListTransitionSubject = "{{ RegistrationInstance.Name }} Wait List Update";
                 registrationTemplate.AllowMultipleRegistrants = true;
                 registrationTemplate.MaxRegistrants = 10;
                 registrationTemplate.GroupMemberStatus = GroupMemberStatus.Active;
@@ -1873,6 +2030,7 @@ namespace RockWeb.Blocks.Event
                     formField.PersonFieldType = RegistrationPersonFieldType.FirstName;
                     formField.IsGridField = true;
                     formField.IsRequired = true;
+                    formField.ShowOnWaitlist = true;
                     formField.PreText = @"<div class='row'>
     <div class='col-md-6'>
 ";
@@ -1892,6 +2050,7 @@ namespace RockWeb.Blocks.Event
                     formField.PersonFieldType = RegistrationPersonFieldType.LastName;
                     formField.IsGridField = true;
                     formField.IsRequired = true;
+                    formField.ShowOnWaitlist = true;
                     formField.PreText = "    <div class='col-md-6'>";
                     formField.PostText = @"    </div>
 </div>";
@@ -1964,6 +2123,8 @@ namespace RockWeb.Blocks.Event
             rpGroupTypeRole.GroupTypeId = RegistrationTemplate.GroupTypeId ?? 0;
             rpGroupTypeRole.GroupRoleId = RegistrationTemplate.GroupMemberRoleId;
             ddlGroupMemberStatus.SetValue( RegistrationTemplate.GroupMemberStatus.ConvertToInt() );
+            ddlSignatureDocumentTemplate.SetValue( RegistrationTemplate.RequiredSignatureDocumentTemplateId );
+            cbDisplayInLine.Checked = RegistrationTemplate.SignatureDocumentAction == SignatureDocumentAction.Embed;
             wtpRegistrationWorkflow.SetValue( RegistrationTemplate.RegistrationWorkflowTypeId );
 
             foreach( ListItem li in cblNotify.Items )
@@ -1972,6 +2133,7 @@ namespace RockWeb.Blocks.Event
                 li.Selected = ( RegistrationTemplate.Notify & notify ) == notify;
             }
 
+            cbWaitListEnabled.Checked = RegistrationTemplate.WaitListEnabled;
             cbAddPersonNote.Checked = RegistrationTemplate.AddPersonNote;
             cbLoginRequired.Checked = RegistrationTemplate.LoginRequired;
             cbAllowExternalUpdates.Checked = RegistrationTemplate.AllowExternalRegistrationUpdates;
@@ -1980,6 +2142,7 @@ namespace RockWeb.Blocks.Event
             nbMaxRegistrants.Visible = RegistrationTemplate.AllowMultipleRegistrants;
             nbMaxRegistrants.Text = RegistrationTemplate.MaxRegistrants.ToString();
             rblRegistrantsInSameFamily.SetValue( RegistrationTemplate.RegistrantsSameFamily.ConvertToInt() );
+            cbShowCurrentFamilyMembers.Checked = RegistrationTemplate.ShowCurrentFamilyMembers;
             tglSetCostOnTemplate.Checked = !RegistrationTemplate.SetCostOnInstance.HasValue || !RegistrationTemplate.SetCostOnInstance.Value;
             cbCost.Text = RegistrationTemplate.Cost.ToString();
             cbMinimumInitialPayment.Text = RegistrationTemplate.MinimumInitialPayment.HasValue ? RegistrationTemplate.MinimumInitialPayment.Value.ToString( "N2" ) : "";
@@ -2003,6 +2166,11 @@ namespace RockWeb.Blocks.Event
             cePaymentReminderEmailTemplate.Text = RegistrationTemplate.PaymentReminderEmailTemplate;
             nbPaymentReminderTimeSpan.Text = RegistrationTemplate.PaymentReminderTimeSpan.ToString();
 
+            tbWaitListTransitionFromName.Text = RegistrationTemplate.WaitListTransitionFromName;
+            tbWaitListTransitionFromEmail.Text = RegistrationTemplate.WaitListTransitionFromEmail;
+            tbWaitListTransitionSubject.Text = RegistrationTemplate.WaitListTransitionSubject;
+            ceWaitListTransitionEmailTemplate.Text = RegistrationTemplate.WaitListTransitionEmailTemplate;
+            
             tbRegistrationTerm.Text = RegistrationTemplate.RegistrationTerm;
             tbRegistrantTerm.Text = RegistrationTemplate.RegistrantTerm;
             tbFeeTerm.Text = RegistrationTemplate.FeeTerm;
@@ -2045,6 +2213,9 @@ namespace RockWeb.Blocks.Event
                 RegistrationTemplate.Category.Name : string.Empty;
             lGroupType.Text = RegistrationTemplate.GroupType != null ?
                 RegistrationTemplate.GroupType.Name : string.Empty;
+            lRequiredSignedDocument.Text = RegistrationTemplate.RequiredSignatureDocumentTemplate != null ?
+                RegistrationTemplate.RequiredSignatureDocumentTemplate.Name : string.Empty;
+            lRequiredSignedDocument.Visible = !string.IsNullOrWhiteSpace( lRequiredSignedDocument.Text );
             lWorkflowType.Text = RegistrationTemplate.RegistrationWorkflowType != null ?
                 RegistrationTemplate.RegistrationWorkflowType.Name : string.Empty;
             lWorkflowType.Visible = !string.IsNullOrWhiteSpace( lWorkflowType.Text );
@@ -2134,6 +2305,15 @@ namespace RockWeb.Blocks.Event
             ddlPersonField.Items.RemoveAt( 0 );
 
             rblFeeType.BindToEnum<RegistrationFeeType>();
+
+            ddlSignatureDocumentTemplate.Items.Clear();
+            ddlSignatureDocumentTemplate.Items.Add( new ListItem() );
+            foreach( var documentType in new SignatureDocumentTemplateService( rockContext )
+                .Queryable().AsNoTracking()
+                .OrderBy( t => t.Name ) )
+            {
+                ddlSignatureDocumentTemplate.Items.Add( new ListItem( documentType.Name, documentType.Id.ToString() ) );
+            }
         }
 
         #endregion
@@ -2252,7 +2432,8 @@ namespace RockWeb.Blocks.Event
                         a.IsSharedValue,
                         a.ShowCurrentValue,
                         a.IsRequired,
-                        a.IsGridField
+                        a.IsGridField,
+                        a.ShowOnWaitlist
                     } )
                     .ToList();
                 gFields.DataBind();
@@ -2268,6 +2449,8 @@ namespace RockWeb.Blocks.Event
         {
             if ( FormFieldsState.ContainsKey( formGuid ) )
             {
+                ShowDialog( "Attributes" );
+
                 var fieldList = FormFieldsState[formGuid];
 
                 RegistrationTemplateFormField formField = fieldList.FirstOrDefault( a => a.Guid.Equals( formFieldGuid ) );
@@ -2335,6 +2518,7 @@ namespace RockWeb.Blocks.Event
                 edtRegistrationAttribute.SetAttributeProperties( attribute, typeof( RegistrationTemplate ) );
 
                 cbInternalField.Checked = formField.IsInternal;
+                cbShowOnWaitList.Checked = formField.FieldSource != RegistrationFieldSource.GroupMemberAttribute && formField.ShowOnWaitlist;
                 cbShowOnGrid.Checked = formField.IsGridField;
                 cbRequireInInitialEntry.Checked = formField.IsRequired;
                 cbUsePersonCurrentValue.Checked = formField.ShowCurrentValue;
@@ -2342,14 +2526,12 @@ namespace RockWeb.Blocks.Event
 
                 hfFormGuid.Value = formGuid.ToString();
                 hfAttributeGuid.Value = formFieldGuid.ToString();
-
+                
                 lPersonField.Visible = formField.FieldSource == RegistrationFieldSource.PersonField && (
                     formField.PersonFieldType == RegistrationPersonFieldType.FirstName ||
                     formField.PersonFieldType == RegistrationPersonFieldType.LastName );
 
                 SetFieldDisplay();
-
-                ShowDialog( "Attributes" );
             }
 
             BuildControls( true );
@@ -2389,6 +2571,9 @@ namespace RockWeb.Blocks.Event
             cbRequireInInitialEntry.Visible = fieldSource != RegistrationFieldSource.RegistrationAttribute;
 
             edtRegistrationAttribute.Visible = fieldSource == RegistrationFieldSource.RegistrationAttribute;
+
+            cbShowOnWaitList.Visible = cbWaitListEnabled.Visible && cbWaitListEnabled.Checked;
+            cbShowOnWaitList.Enabled = fieldSource != RegistrationFieldSource.GroupMemberAttribute;
         }
 
         /// <summary>

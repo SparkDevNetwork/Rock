@@ -204,7 +204,8 @@ namespace Rock.Model
         /// <param name="propertyName">Name of the property.</param>
         /// <param name="oldValue">The old value.</param>
         /// <param name="newValue">The new value.</param>
-        public static void EvaluateChange( List<string> historyMessages, string propertyName, string oldValue, string newValue )
+        /// <param name="isSensitive">Indicator of whether the values are sensitive in nature and should not be logged.</param>
+        public static void EvaluateChange( List<string> historyMessages, string propertyName, string oldValue, string newValue, bool isSensitive = false )
         {
             if ( !string.IsNullOrWhiteSpace( oldValue ) )
             {
@@ -212,17 +213,39 @@ namespace Rock.Model
                 {
                     if ( oldValue.Trim() != newValue.Trim() )
                     {
-                        historyMessages.Add( string.Format( "Modified <span class='field-name'>{0}</span> value from <span class='field-value'>{1}</span> to <span class='field-value'>{2}</span>.", propertyName, oldValue, newValue ) );
+                        if ( isSensitive )
+                        {
+                            historyMessages.Add( string.Format( "Modified <span class='field-name'>{0}</span> value (Sensitive attribute values are not logged in history).", propertyName ) );
+                        }
+                        else
+                        {
+                            historyMessages.Add( string.Format( "Modified <span class='field-name'>{0}</span> value from <span class='field-value'>{1}</span> to <span class='field-value'>{2}</span>.", propertyName, oldValue, newValue ) );
+
+                        }
                     }
                 }
                 else
                 {
-                    historyMessages.Add( string.Format( "Deleted <span class='field-name'>{0}</span> value of <span class='field-value'>{1}</span>.", propertyName, oldValue ) );
+                    if ( isSensitive )
+                    {
+                        historyMessages.Add( string.Format( "Deleted <span class='field-name'>{0}</span> value (Sensitive attribute values are not logged in history).", propertyName ) );
+                    }
+                    else
+                    {
+                        historyMessages.Add( string.Format( "Deleted <span class='field-name'>{0}</span> value of <span class='field-value'>{1}</span>.", propertyName, oldValue ) );
+                    }
                 }
             }
             else if ( !string.IsNullOrWhiteSpace( newValue ) )
             {
-                historyMessages.Add( string.Format( "Added <span class='field-name'>{0}</span> value of <span class='field-value'>{1}</span>.", propertyName, newValue ) );
+                if ( isSensitive )
+                {
+                    historyMessages.Add( string.Format( "Added <span class='field-name'>{0}</span> value (Sensitive attribute values are not logged in history).", propertyName ) );
+                }
+                else
+                { 
+                    historyMessages.Add( string.Format( "Added <span class='field-name'>{0}</span> value of <span class='field-value'>{1}</span>.", propertyName, newValue ) );
+                }
             }
         }
 
@@ -233,11 +256,13 @@ namespace Rock.Model
         /// <param name="propertyName">Name of the property.</param>
         /// <param name="oldValue">The old value.</param>
         /// <param name="newValue">The new value.</param>
-        public static void EvaluateChange( List<string> historyMessages, string propertyName, int? oldValue, int? newValue )
+        /// <param name="isSensitive">Indicator of whether the values are sensitive in nature and should not be logged.</param>
+        public static void EvaluateChange( List<string> historyMessages, string propertyName, int? oldValue, int? newValue, bool isSensitive = false)
         {
             EvaluateChange( historyMessages, propertyName,
                 oldValue.HasValue ? oldValue.Value.ToString() : string.Empty,
-                newValue.HasValue ? newValue.Value.ToString() : string.Empty );
+                newValue.HasValue ? newValue.Value.ToString() : string.Empty,
+                isSensitive );
         }
 
         /// <summary>
@@ -247,11 +272,13 @@ namespace Rock.Model
         /// <param name="propertyName">Name of the property.</param>
         /// <param name="oldValue">The old value.</param>
         /// <param name="newValue">The new value.</param>
-        public static void EvaluateChange( List<string> historyMessages, string propertyName, decimal? oldValue, decimal? newValue )
+        /// <param name="isSensitive">Indicator of whether the values are sensitive in nature and should not be logged.</param>
+        public static void EvaluateChange( List<string> historyMessages, string propertyName, decimal? oldValue, decimal? newValue, bool isSensitive = false )
         {
             EvaluateChange( historyMessages, propertyName,
                 oldValue.HasValue ? oldValue.Value.ToString("N2") : string.Empty,
-                newValue.HasValue ? newValue.Value.ToString("N2") : string.Empty );
+                newValue.HasValue ? newValue.Value.ToString("N2") : string.Empty,
+                isSensitive );
         }
 
         /// <summary>
@@ -262,7 +289,8 @@ namespace Rock.Model
         /// <param name="oldValue">The old value.</param>
         /// <param name="newValue">The new value.</param>
         /// <param name="includeTime">if set to <c>true</c> [include time].</param>
-        public static void EvaluateChange( List<string> historyMessages, string propertyName, DateTime? oldValue, DateTime? newValue, bool includeTime = false )
+        /// <param name="isSensitive">Indicator of whether the values are sensitive in nature and should not be logged.</param>
+        public static void EvaluateChange( List<string> historyMessages, string propertyName, DateTime? oldValue, DateTime? newValue, bool includeTime = false, bool isSensitive = false )
         {
             string oldStringValue = string.Empty;
             if ( oldValue.HasValue )
@@ -276,7 +304,7 @@ namespace Rock.Model
                 newStringValue = includeTime ? newValue.Value.ToString() : newValue.Value.ToShortDateString();
             }
 
-            EvaluateChange( historyMessages, propertyName, oldStringValue, newStringValue );
+            EvaluateChange( historyMessages, propertyName, oldStringValue, newStringValue, isSensitive );
         }
 
         /// <summary>
@@ -286,11 +314,13 @@ namespace Rock.Model
         /// <param name="propertyName">Name of the property.</param>
         /// <param name="oldValue">if set to <c>true</c> [old value].</param>
         /// <param name="newValue">if set to <c>true</c> [new value].</param>
-        public static void EvaluateChange( List<string> historyMessages, string propertyName, bool? oldValue, bool? newValue )
+        /// <param name="isSensitive">Indicator of whether the values are sensitive in nature and should not be logged.</param>
+        public static void EvaluateChange( List<string> historyMessages, string propertyName, bool? oldValue, bool? newValue, bool isSensitive = false )
         {
             EvaluateChange( historyMessages, propertyName,
                 oldValue.HasValue ? oldValue.Value.ToString() : string.Empty,
-                newValue.HasValue ? newValue.Value.ToString() : string.Empty );
+                newValue.HasValue ? newValue.Value.ToString() : string.Empty, 
+                isSensitive );
         }
 
         /// <summary>
@@ -300,11 +330,12 @@ namespace Rock.Model
         /// <param name="propertyName">Name of the property.</param>
         /// <param name="oldValue">The old value.</param>
         /// <param name="newValue">The new value.</param>
-        public static void EvaluateChange( List<string> historyMessages, string propertyName, Enum oldValue, Enum newValue )
+        /// <param name="isSensitive">Indicator of whether the values are sensitive in nature and should not be logged.</param>
+        public static void EvaluateChange( List<string> historyMessages, string propertyName, Enum oldValue, Enum newValue, bool isSensitive = false )
         {
             string oldStringValue = oldValue != null ? oldValue.ConvertToString() : string.Empty;
             string newStringValue = newValue != null ? newValue.ConvertToString() : string.Empty;
-            EvaluateChange( historyMessages, propertyName, oldStringValue, newStringValue );
+            EvaluateChange( historyMessages, propertyName, oldStringValue, newStringValue, isSensitive );
         }
 
         #endregion

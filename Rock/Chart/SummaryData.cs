@@ -67,6 +67,7 @@ namespace Rock.Chart
         /// <value>
         /// The name of the series.
         /// </value>
+        [Previewable]
         public string SeriesName { get; set; }
 
         /// <summary>

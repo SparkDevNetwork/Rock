@@ -55,6 +55,7 @@ namespace RockWeb.Blocks.Communication
     [IntegerField( "Display Count", "The initial number of recipients to display prior to expanding list", false, 0, "", 4  )]
     [BooleanField( "Send When Approved", "Should communication be sent once it's approved (vs. just being queued for scheduled job to send)?", true, "", 5 )]
     [CustomDropdownListField("Mode", "The mode to use ( 'Simple' mode will prevent uers from searching/adding new people to communication).", "Full,Simple", true, "Full", "", 6)]
+	[BooleanField( "Show Attachment Uploader", "Should the attachment uploader be shown for email communications.", true, "", 7 )]
     public partial class CommunicationEntry : RockBlock
     {
 
@@ -566,6 +567,10 @@ namespace RockWeb.Blocks.Communication
                     {
                         string message = string.Empty;
 
+                        // Save the communication proir to checking recipients.
+                        communication.Status = CommunicationStatus.Draft;
+                        rockContext.SaveChanges();
+
                         if ( CheckApprovalRequired( communication.GetRecipientCount(rockContext) ) && !IsUserAuthorized( "Approve" ) )
                         {
                             communication.Status = CommunicationStatus.PendingApproval;
@@ -913,6 +918,15 @@ namespace RockWeb.Blocks.Communication
                 mediumControl.IsTemplate = false;
                 mediumControl.AdditionalMergeFields = this.AdditionalMergeFields.ToList();
                 mediumControl.ValidationGroup = btnSubmit.ValidationGroup;
+                if ( !GetAttributeValue( "ShowAttachmentUploader" ).AsBoolean() )
+                {
+                    var fuAttachments = mediumControl.FindControl( "fuAttachments_commControl" );
+                    if ( fuAttachments != null )
+                    {
+                        fuAttachments.Visible = false;
+                    }
+                }
+
                 phContent.Controls.Add( mediumControl );
 
                 if ( setData  )
@@ -1243,6 +1257,13 @@ namespace RockWeb.Blocks.Communication
             hlViewCommunication.Visible = this.Page.ControlsOfTypeRecursive<RockWeb.Blocks.Communication.CommunicationDetail>().Any();
 
             pnlResult.Visible = true;
+
+            ScriptManager.RegisterStartupScript(
+                Page,
+                GetType(),
+                "scrollToResults",
+                "scrollToResults();",
+                true );
 
         }
 

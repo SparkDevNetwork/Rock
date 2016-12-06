@@ -318,6 +318,7 @@ namespace RockWeb.Blocks.Core
             if ( !mergeTemplateId.Equals( 0 ) )
             {
                 mergeTemplate = mergeTemplateService.Get( mergeTemplateId );
+                pdAuditDetails.SetEntity( mergeTemplate, ResolveRockUrl( "~" ) );
             }
 
             var mergeTemplateOwnership = this.GetAttributeValue( "MergeTemplatesOwnership" ).ConvertToEnum<MergeTemplateOwnership>( MergeTemplateOwnership.Global );
@@ -332,6 +333,8 @@ namespace RockWeb.Blocks.Core
                     mergeTemplate.PersonAliasId = this.CurrentPersonAliasId;
                     mergeTemplate.PersonAlias = this.CurrentPersonAlias;
                 }
+                // hide the panel drawer that show created and last modified dates
+                pdAuditDetails.Visible = false;
             }
 
             pnlDetails.Visible = true;
