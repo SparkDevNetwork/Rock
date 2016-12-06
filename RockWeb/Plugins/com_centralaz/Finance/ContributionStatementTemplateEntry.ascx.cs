@@ -173,6 +173,7 @@ namespace RockWeb.Plugins.com_centralaz.Finance
             transaction.Account2 = account2;
             transaction.Account3 = account3;
             transaction.Account4 = account4;
+            transaction.Campuses = cblCampus.SelectedValuesAsInt;
             transaction.StartDate = dateRange.Start;
             transaction.EndDate = dateRange.End;
             transaction.MergeTemplate = mergeTemplate;
@@ -190,6 +191,7 @@ namespace RockWeb.Plugins.com_centralaz.Finance
             SetBlockUserPreference( "Account2", apAccount2.SelectedValue );
             SetBlockUserPreference( "Account3", apAccount3.SelectedValue );
             SetBlockUserPreference( "Account4", apAccount4.SelectedValue );
+            SetBlockUserPreference( "Campuses", cblCampus.SelectedValuesAsInt.AsDelimited( "|" ) );
             SetBlockUserPreference( "Date Range", drpDates.DelimitedValues );
 
             nbNotification.Visible = true;
@@ -251,6 +253,14 @@ namespace RockWeb.Plugins.com_centralaz.Finance
             if ( !String.IsNullOrWhiteSpace( GetBlockUserPreference( "Account4" ) ) )
             {
                 apAccount4.SetValue( GetBlockUserPreference( "Account4" ).AsIntegerOrNull() );
+            }
+
+            cblCampus.DataSource = CampusCache.All();
+            cblCampus.DataBind();
+
+            if ( !String.IsNullOrWhiteSpace( GetBlockUserPreference( "Campuses" ) ) )
+            {
+                cblCampus.SetValues( GetBlockUserPreference( "Campuses" ).SplitDelimitedValues().AsIntegerList() );
             }
         }
 

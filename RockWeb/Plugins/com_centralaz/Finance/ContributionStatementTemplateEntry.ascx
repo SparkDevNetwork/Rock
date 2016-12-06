@@ -20,6 +20,8 @@
                 <asp:ValidationSummary ID="ValidationSummary1" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" />
                 <div class="row">
                     <div class="col-md-6">
+                        <Rock:RockCheckBoxList ID="cblCampus" runat="server" Label="Campuses" DataTextField="Name" DataValueField="Id" RepeatDirection="Horizontal" />
+
                         <Rock:SlidingDateRangePicker ID="drpDates" runat="server" Label="Dates" SlidingDateRangeMode="DateRange" Required="true" />
                         <div class="row">
                             <div class="col-md-6">

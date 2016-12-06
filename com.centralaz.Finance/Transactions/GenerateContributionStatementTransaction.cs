@@ -139,6 +139,14 @@ namespace com.centralaz.Finance.Transactions
         public FinancialAccount Account4 { get; set; }
 
         /// <summary>
+        /// Gets or sets the campuses.
+        /// </summary>
+        /// <value>
+        /// The campuses.
+        /// </value>
+        public List<int> Campuses { get; set; }
+
+        /// <summary>
         /// Gets or sets the context.
         /// </summary>
         /// <value>
@@ -273,14 +281,25 @@ namespace com.centralaz.Finance.Transactions
             var count = 0;
             var query = @"DECLARE @cTRANSACTION_TYPE_CONTRIBUTION uniqueidentifier = '2D607262-52D6-4724-910D-5C6E8FB89ACC'
 DECLARE @transactionTypeContributionId int = (select top 1 Id from DefinedValue where [Guid] = @cTRANSACTION_TYPE_CONTRIBUTION)
-    select GivingId
+DECLARE @cLOCATION_TYPE_HOME uniqueidentifier = '8C52E53C-2A66-435A-AE6E-5EE307D9A0DC'
+DECLARE @cLOCATION_TYPE_WORK uniqueidentifier = 'E071472A-F805-4FC4-917A-D5E3C095C35C'
+DECLARE @cGROUPTYPE_FAMILY uniqueidentifier = '790E3215-3B10-442B-AF69-616C0DCB998E'
+    select p.GivingId
 		from FinancialTransaction ft
 		join FinancialTransactionDetail ftd on ftd.TransactionId = ft.Id
 		join PersonAlias pa on ft.AuthorizedPersonAliasId = pa.Id
-		join Person p on pa.PersonId = p.Id
+		join Person p on pa.PersonId = p.Id		
+		JOIN [GroupMember] [gm] ON [gm].[PersonId] = [p].[Id]
+		JOIN [Group] [g] ON [gm].[GroupId] = [g].[Id]
+		Join [GroupLocation] gl on gl.GroupId = g.Id
+		JOIN [Location] [l] ON [l].[Id] = [gl].[LocationId]
 		Where ft.TransactionTypeValueId = @transactionTypeContributionId
 		and (@startDate is null or ft.TransactionDateTime >= @StartDate)
-		and ( @endDate is null or ft.TransactionDateTime < @EndDate)
+		and ( @endDate is null or ft.TransactionDateTime < @EndDate)				
+		and ( ( p.GivingGroupId is null AND [g].[GroupTypeId] = (SELECT Id FROM GroupType WHERE [Guid] = @cGROUPTYPE_FAMILY)) or p.GivingGroupId = g.Id)
+		and g.CampusId in (SELECT * FROM [dbo].[ufnUtility_CsvToTable](@CampusList))
+		and [gl].[IsMailingLocation] = 1
+		AND [gl].[GroupLocationTypeValueId] = (SELECT Id FROM DefinedValue WHERE [Guid] = @cLOCATION_TYPE_HOME)
 		group by GivingId
 		having sum(ftd.Amount) >= @MinimumAmount";
 
@@ -403,6 +422,8 @@ DECLARE @transactionTypeContributionId int = (select top 1 Id from DefinedValue 
             parameters.Add( "account2Id", Account2.Id );
             parameters.Add( "account3Id", Account3.Id );
             parameters.Add( "account4Id", Account4.Id );
+
+            parameters.Add( "campusList", Campuses.AsDelimited( "," ) );
 
             parameters.Add( "minimumAmount", MinimumContributionAmount );
             parameters.Add( "chapterNumber", ChapterNumber );
