@@ -150,6 +150,12 @@ namespace Rock.Model
                     .Where( m => m.Value != null && m.Value.GetType() == typeof( JObject ) )
                     .Select( m => m.Key ).ToList();
                 objectKeys.ForEach( k => AdditionalMergeValues[k] = ( (JObject)AdditionalMergeValues[k] ).ToDictionary() );
+
+                // Convert any arrays to a list, and also check to see if it contains objects that need to be converted to a dictionary for Lava
+                var arrayKeys = AdditionalMergeValues
+                    .Where( m => m.Value != null && m.Value.GetType() == typeof( JArray ) )
+                    .Select( m => m.Key ).ToList();
+                arrayKeys.ForEach( k => AdditionalMergeValues[k] = ( (JArray)AdditionalMergeValues[k] ).ToObjectArray() );
             }
         }
 

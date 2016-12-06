@@ -15,6 +15,7 @@
 // </copyright>
 //
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Web.UI;
@@ -36,11 +37,13 @@ namespace RockWeb.Blocks.Core
     [Category( "Core" )]
     [Description( "Lists all the defined types and allows for managing them and their values." )]
 
-    [LinkedPage("Detail Page")]
+    [LinkedPage( "Detail Page", order: 0 )]
+    [CategoryField( "Categories", "If block should only display Defined Types from specific categories, select the categories here.", true, "Rock.Model.DefinedType", order: 1 )]
     public partial class DefinedTypeList : RockBlock
     {
         #region Control Methods
 
+        private List<Guid> _categoryGuids = null;
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
         /// </summary>
@@ -49,9 +52,19 @@ namespace RockWeb.Blocks.Core
         {
             base.OnInit( e );
 
-            BindFilter();
-            tFilter.ApplyFilterClick += tFilter_ApplyFilterClick;
-            tFilter.DisplayFilterValue += tFilter_DisplayFilterValue;
+            _categoryGuids = GetAttributeValue( "Categories" ).SplitDelimitedValues().AsGuidList();
+            if ( _categoryGuids.Any() )
+            {
+                tFilter.Visible = false;
+                gDefinedType.ColumnsOfType<RockBoundField>().Where( c => c.DataField == "Category" ).First().Visible = _categoryGuids.Count > 1;
+            }
+            else
+            {
+                BindFilter();
+                tFilter.ApplyFilterClick += tFilter_ApplyFilterClick;
+                tFilter.DisplayFilterValue += tFilter_DisplayFilterValue;
+                tFilter.Visible = true;
+            }
 
             gDefinedType.DataKeyNames = new string[] { "Id" };
             gDefinedType.Actions.ShowAdd = true;
@@ -220,10 +233,17 @@ namespace RockWeb.Blocks.Core
         {
             var queryable = new DefinedTypeService( new RockContext() ).Queryable();
 
-            int? categoryId = tFilter.GetUserPreference( "Category" ).AsIntegerOrNull();
-            if ( categoryId.HasValue )
+            if ( _categoryGuids.Any() )
             {
-                queryable = queryable.Where( a => a.CategoryId.HasValue && a.CategoryId.Value == categoryId.Value );
+                queryable = queryable.Where( a => a.Category != null && _categoryGuids.Contains( a.Category.Guid ) );
+            }
+            else
+            {
+                int? categoryId = tFilter.GetUserPreference( "Category" ).AsIntegerOrNull();
+                if ( categoryId.HasValue )
+                {
+                    queryable = queryable.Where( a => a.CategoryId.HasValue && a.CategoryId.Value == categoryId.Value );
+                }
             }
 
             SortProperty sortProperty = gDefinedType.SortProperty;

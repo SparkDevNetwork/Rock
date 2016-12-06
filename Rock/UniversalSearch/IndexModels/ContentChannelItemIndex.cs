@@ -1,4 +1,20 @@
-﻿using System;
+﻿// <copyright>
+// Copyright by the Spark Development Network
+//
+// Licensed under the Rock Community License (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.rockrms.com/license
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+// </copyright>
+//
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -147,6 +163,7 @@ namespace Rock.UniversalSearch.IndexModels
             contentChannelItemIndex.IconCssClass = string.IsNullOrWhiteSpace( contentChannelItem.ContentChannel.IconCssClass ) ? "fa fa-bullhorn" : contentChannelItem.ContentChannel.IconCssClass;
             contentChannelItemIndex.IsApproved = false;
             contentChannelItemIndex.ContentChannel = contentChannelItem.ContentChannel.Name;
+            contentChannelItemIndex.DocumentName = contentChannelItem.Title;
 
             if ( contentChannelItem.ContentChannel != null && contentChannelItem.ContentChannel.RequiresApproval && contentChannelItem.ApprovedDateTime != null )
             {
@@ -156,6 +173,38 @@ namespace Rock.UniversalSearch.IndexModels
             AddIndexableAttributes( contentChannelItemIndex, contentChannelItem );
 
             return contentChannelItemIndex;
+        }
+
+        /// <summary>
+        /// Gets the document URL.
+        /// </summary>
+        /// <param name="displayOptions"></param>
+        /// <returns></returns>
+        public override string GetDocumentUrl( Dictionary<string, object> displayOptions = null )
+        {
+            string url = string.Empty;
+
+            if ( displayOptions != null )
+            {
+                if ( displayOptions.ContainsKey( "ChannelItem.Url" ) )
+                {
+                    url = displayOptions["ChannelItem.Url"].ToString();
+                }
+            }
+
+            // if url was not passed in use default from content channel
+            if ( string.IsNullOrWhiteSpace( url ) )
+            {
+                var channel = new ContentChannelService( new RockContext() ).Get( this.ContentChannelId );
+                url = channel.ItemUrl;
+            }
+
+            var mergeFields = new Dictionary<string, object>();
+            mergeFields.Add( "Id", this.Id );
+            mergeFields.Add( "Title", this.Title );
+            mergeFields.Add( "ContentChannelId", this.ContentChannelId );
+
+            return url.ResolveMergeFields( mergeFields );
         }
 
         /// <summary>
@@ -215,23 +264,18 @@ namespace Rock.UniversalSearch.IndexModels
             mergeFields.Add( "Title", this.Title );
             mergeFields.Add( "ContentChannelId", this.ContentChannelId );
 
-            string result =  string.Format( "<a href='{0}'>{1} <small>({2})</small></a>", url.ResolveMergeFields( mergeFields ), this.Title, this.ContentChannel );                        
-
-            if (showSummary && this["Summary"] != null )
-            {
-                result += "<br />" + this["Summary"];
-            }
+            var summary = this["Summary"] ?? "" + this["summaryText"] ?? "";
 
             return new FormattedSearchResult() { IsViewAllowed = true, FormattedResult = $@"
                             <div class='row model-cannavigate' data-href='{url.ResolveMergeFields( mergeFields )}'>
-                                <div class='col-sm-1'>
+                                <div class='col-sm-1 text-center'>
                                     <i class='{this.IconCssClass} fa-2x'></i>
                                 </div>
                                 <div class='col-sm-4'>
                                     {this.Title} <small>({this.ContentChannel})</small>
                                 </div>
                                 <div class='col-sm-7'>
-                                    {this["Summary"] ?? ""}
+                                    {(showSummary ? summary : "")}
                                 </div>
                             </div>" };
         }

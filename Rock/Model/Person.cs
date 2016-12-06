@@ -1031,6 +1031,10 @@ namespace Rock.Model
                 {
                     return age + (age == 1 ? " yr old " : " yrs old ");
                 }
+                else if ( age < -1 )
+                {
+                    return string.Empty;
+                }
             }
 
             var today = RockDateTime.Today;
@@ -2459,9 +2463,7 @@ namespace Rock.Model
 
             // return people
             var people = new PersonService( rockContext ).Queryable().AsNoTracking()
-                                .Where( p =>
-                                     p.IsSystem == false
-                                     && p.RecordTypeValueId == recordTypePersonId );
+                                .Where( p => p.RecordTypeValueId == recordTypePersonId );
 
             int recordCounter = 0;
 
@@ -2564,6 +2566,24 @@ namespace Rock.Model
                     IndexContainer.DeleteDocumentById( indexType, id );
                 }
             }
+        }
+
+        /// <summary>
+        /// Gets the index filter values.
+        /// </summary>
+        /// <returns></returns>
+        public ModelFieldFilterConfig GetIndexFilterConfig()
+        {
+            return new ModelFieldFilterConfig() { FilterLabel = "", FilterField = "" };
+        }
+
+        /// <summary>
+        /// Gets the index filter field.
+        /// </summary>
+        /// <returns></returns>
+        public bool SupportsIndexFieldFiltering()
+        {
+            return false;
         }
         #endregion
     }
@@ -2702,6 +2722,68 @@ namespace Rock.Model
         }
 
         /// <summary>
+        /// Returns the most ideal mailing location from among this person's families
+        /// </summary>
+        /// <param name="person">The person to find a mailing address for</param>
+        /// <param name="rockContext"></param>
+        /// <returns></returns>
+        public static Location GetMailingLocation( this Person person, RockContext rockContext = null )
+        {
+            // Get the mailing address from this person's giving group if there is one
+            if ( person.GivingGroup != null )
+            {
+                var mailingLocation = person.GivingGroup.GetBestMailingLocation();
+                if ( mailingLocation != null )
+                {
+                    return mailingLocation;
+                }
+            }
+
+            return person.GetFamilies( rockContext ).GetBestMailingLocation();
+        }
+
+        /// <summary>
+        /// Returns the most ideal mailing location from a single family
+        /// </summary>
+        /// <param name="group">The family to find addresses on</param>
+        /// <returns></returns>
+        private static Location GetBestMailingLocation( this Group group )
+        {
+            return GetBestMailingLocation( new List<Group> { group } );
+        }
+
+        /// <summary>
+        /// Returns the most ideal mailing location from among the selected family groups
+        /// </summary>
+        /// <param name="groups">The families to find addresses on</param>
+        /// <returns></returns>
+        private static Location GetBestMailingLocation( this IEnumerable<Group> groups )
+        {
+            if ( groups.Any() )
+            {
+                var homeAddressGuid = Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME.AsGuidOrNull();
+                var workAddressGuid = Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_WORK.AsGuidOrNull();
+                if ( homeAddressGuid.HasValue && workAddressGuid.HasValue )
+                {
+                    var homeAddressDv = DefinedValueCache.Read( homeAddressGuid.Value );
+                    var workAddressDv = DefinedValueCache.Read( workAddressGuid.Value );
+                    if ( homeAddressDv != null && workAddressDv != null )
+                    {
+                        // Get all available mailing locations, prioritizing mapped locations then home locations
+                        var mailingLocations = groups.SelectMany( x => x.GroupLocations )
+                            .Where( l => l.IsMailingLocation )
+                            .Where( l => l.GroupLocationTypeValueId == homeAddressDv.Id || l.GroupLocationTypeValueId == workAddressDv.Id )
+                            .OrderBy( l => l.IsMappedLocation ? 0 : 1 )
+                            .ThenBy( l => l.GroupLocationTypeValueId == homeAddressDv.Id ? 0 : 1 );
+
+                        return mailingLocations.Select( l => l.Location ).FirstOrDefault();
+                    }
+                }
+            }
+            return null;
+        }
+
+        /// <summary>
         /// Updates, adds or removes a PhoneNumber of the given type.
         /// </summary>
         public static void UpdatePhoneNumber( this Person person, int numberTypeValueId, string phoneCountryCode, string phoneNumber, bool? isMessagingEnabled, bool? isUnlisted, RockContext rockContext )
@@ -2795,6 +2877,7 @@ namespace Rock.Model
         {
             return new PersonService( rockContext ?? new RockContext() ).GetGroupMembers( groupTypeId, person != null ? person.Id : 0, includeSelf );
         }
+        
         /// <summary>
         /// Gets any previous last names for this person sorted alphabetically by LastName
         /// </summary>
@@ -2817,6 +2900,19 @@ namespace Rock.Model
         public static Person GetSpouse( this Person person, RockContext rockContext = null )
         {
             return new PersonService( rockContext ?? new RockContext() ).GetSpouse( person );
+        }
+
+        /// <summary>
+        /// Gets the <see cref="Rock.Model.Person" /> entity of the provided Person's head of household.
+        /// </summary>
+        /// <param name="person">The <see cref="Rock.Model.Person" /> entity of the Person to retrieve the head of household of.</param>
+        /// <param name="rockContext">The rock context.</param>
+        /// <returns>
+        /// The <see cref="Rock.Model.Person" /> entity containing the provided Person's head of household. If the provided Person's head of houseold is not found, this value will be null.
+        /// </returns>
+        public static Person GetHeadOfHousehold( this Person person, RockContext rockContext = null )
+        {
+            return new PersonService( rockContext ?? new RockContext() ).GetHeadOfHousehold( person );
         }
 
         /// <summary>

@@ -40,45 +40,64 @@ namespace RockWeb.Blocks.Event
     [Category( "Event" )]
     [Description( "Displays the details of the given registration template." )]
 
-    [CodeEditorField( "Default Confirmation Email", "The default Confirmation Email Template value to use for a new template", CodeEditorMode.Lava, CodeEditorTheme.Rock, 300, false, @"
-{{ 'Global' | Attribute:'EmailHeader' }}
+    [CodeEditorField( "Default Confirmation Email", "The default Confirmation Email Template value to use for a new template", CodeEditorMode.Lava, CodeEditorTheme.Rock, 300, false, @"{{ 'Global' | Attribute:'EmailHeader' }}
 {% capture currencySymbol %}{{ 'Global' | Attribute:'CurrencySymbol' }}{% endcapture %}
-{% assign registrantCount = Registration.Registrants | Size %}
 
 <h1>{{ RegistrationInstance.RegistrationTemplate.RegistrationTerm }} Confirmation: {{ RegistrationInstance.Name }}</h1>
 
-<p>
-    The following {{ RegistrationInstance.RegistrationTemplate.RegistrantTerm | PluralizeForQuantity:registrantCount | Downcase }}
-    {% if registrantCount > 1 %}have{% else %}has{% endif %} been registered for {{ RegistrationInstance.Name }}:
-</p>
+{% assign registrants = Registration.Registrants | Where:'OnWaitList', false %}
+{% assign registrantCount = registrants | Size %}
+{% if registrantCount > 0 %}
+	<p>
+		The following {{ RegistrationInstance.RegistrationTemplate.RegistrantTerm | PluralizeForQuantity:registrantCount | Downcase }}
+		{% if registrantCount > 1 %}have{% else %}has{% endif %} been registered for {{ RegistrationInstance.Name }}:
+	</p>
 
-<ul>
-{% for registrant in Registration.Registrants %}
-    <li>
+	<ul>
+	{% for registrant in registrants %}
+		<li>
+		
+			<strong>{{ registrant.PersonAlias.Person.FullName }}</strong>
+			
+			{% if registrant.Cost > 0 %}
+				- {{ currencySymbol }}{{ registrant.Cost | Format:'#,##0.00' }}
+			{% endif %}
+			
+			{% assign feeCount = registrant.Fees | Size %}
+			{% if feeCount > 0 %}
+				<br/>{{ RegistrationInstance.RegistrationTemplate.FeeTerm | PluralizeForQuantity:registrantCount }}:
+				<ul>
+				{% for fee in registrant.Fees %}
+					<li>
+						{{ fee.RegistrationTemplateFee.Name }} {{ fee.Option }}
+						{% if fee.Quantity > 1 %} ({{ fee.Quantity }} @ {{ currencySymbol }}{{ fee.Cost | Format:'#,##0.00' }}){% endif %}: {{ currencySymbol }}{{ fee.TotalCost | Format:'#,##0.00' }}
+					</li>
+				{% endfor %}
+				</ul>
+			{% endif %}
+
+		</li>
+	{% endfor %}
+	</ul>
+{% endif %}
+
+{% assign waitlist = Registration.Registrants | Where:'OnWaitList', true %}
+{% assign waitListCount = waitlist | Size %}
+{% if waitListCount > 0 %}
+    <p>
+        The following {{ RegistrationInstance.RegistrationTemplate.RegistrantTerm | PluralizeForQuantity:registrantCount | Downcase }}
+		{% if waitListCount > 1 %}have{% else %}has{% endif %} been added to the wait list for {{ RegistrationInstance.Name }}:
+   </p>
     
-        <strong>{{ registrant.PersonAlias.Person.FullName }}</strong>
-        
-        {% if registrant.Cost > 0 %}
-            - {{ currencySymbol }}{{ registrant.Cost | Format:'#,##0.00' }}
-        {% endif %}
-        
-        {% assign feeCount = registrant.Fees | Size %}
-        {% if feeCount > 0 %}
-            <br/>{{ RegistrationInstance.RegistrationTemplate.FeeTerm | PluralizeForQuantity:registrantCount }}:
-            <ul>
-            {% for fee in registrant.Fees %}
-                <li>
-                    {{ fee.RegistrationTemplateFee.Name }} {{ fee.Option }}
-                    {% if fee.Quantity > 1 %} ({{ fee.Quantity }} @ {{ currencySymbol }}{{ fee.Cost | Format:'#,##0.00' }}){% endif %}: {{ currencySymbol }}{{ fee.TotalCost | Format:'#,##0.00' }}
-                </li>
-            {% endfor %}
-            </ul>
-        {% endif %}
-
-    </li>
-{% endfor %}
-</ul>
-
+    <ul>
+    {% for registrant in waitlist %}
+        <li>
+            <strong>{{ registrant.PersonAlias.Person.FullName }}</strong>
+        </li>
+    {% endfor %}
+    </ul>
+{% endif %}
+	
 {% if Registration.TotalCost > 0 %}
 <p>
     Total Cost: {{ currencySymbol }}{{ Registration.TotalCost | Format:'#,##0.00' }}<br/>
@@ -121,17 +140,37 @@ namespace RockWeb.Blocks.Event
     {{ RegistrationInstance.AdditionalReminderDetails }}
 </p>
 
-<p>
-    The following {{ RegistrationInstance.RegistrationTemplate.RegistrantTerm | PluralizeForQuantity:registrantCount | Downcase }}
-    {% if registrantCount > 1 %}have{% else %}has{% endif %} been registered:
-</p>
+{% assign registrants = Registration.Registrants | Where:'OnWaitList', false %}
+{% assign registrantCount = registrants | Size %}
+{% if registrantCount > 0 %}
+	<p>
+		The following {{ RegistrationInstance.RegistrationTemplate.RegistrantTerm | PluralizeForQuantity:registrantCount | Downcase }}
+		{% if registrantCount > 1 %}have{% else %}has{% endif %} been registered for {{ RegistrationInstance.Name }}:
+	</p>
 
-<ul>
-{% for registrant in Registration.Registrants %}
-    <li>{{ registrant.PersonAlias.Person.FullName }}</li>
-{% endfor %}
-</ul>
+	<ul>
+	{% for registrant in registrants %}
+		<li>{{ registrant.PersonAlias.Person.FullName }}</li>
+	{% endfor %}
+	</ul>
+{% endif %}
 
+{% assign waitlist = Registration.Registrants | Where:'OnWaitList', true %}
+{% assign waitListCount = waitlist | Size %}
+{% if waitListCount > 0 %}
+    <p>
+        The following {{ RegistrationInstance.RegistrationTemplate.RegistrantTerm | PluralizeForQuantity:registrantCount | Downcase }}
+		{% if waitListCount > 1 %}are{% else %}is{% endif %} still on the waiting list:
+   </p>
+    
+    <ul>
+    {% for registrant in waitlist %}
+        <li>
+            <strong>{{ registrant.PersonAlias.Person.FullName }}</strong>
+        </li>
+    {% endfor %}
+    </ul>
+{% endif %}
 
 {% if Registration.BalanceDue > 0 %}
 <p>
@@ -147,44 +186,64 @@ namespace RockWeb.Blocks.Event
     If you have any questions please contact {{ RegistrationInstance.ContactName }} at {{ RegistrationInstance.ContactEmail }}.
 </p>
 
-{{ 'Global' | Attribute:'EmailFooter' }}
-", "", 1 )]
+{{ 'Global' | Attribute:'EmailFooter' }}", "", 1 )]
 
-    [CodeEditorField( "Default Success Text", "The success text default to use for a new template", CodeEditorMode.Lava, CodeEditorTheme.Rock, 300, false, @"
-{% capture currencySymbol %}{{ 'Global' | Attribute:'CurrencySymbol' }}{% endcapture %}
-{% assign registrantCount = Registration.Registrants | Size %}
-<p>
-    You have successfully registered the following 
-    {{ RegistrationInstance.RegistrationTemplate.RegistrantTerm | PluralizeForQuantity:registrantCount | Downcase }}
-    for {{ RegistrationInstance.Name }}:
-</p>
+    [CodeEditorField( "Default Success Text", "The success text default to use for a new template", CodeEditorMode.Lava, CodeEditorTheme.Rock, 300, false, @"{% capture currencySymbol %}{{ 'Global' | Attribute:'CurrencySymbol' }}{% endcapture %}
 
-<ul>
-{% for registrant in Registration.Registrants %}
-    <li>
+{% assign registrants = Registration.Registrants | Where:'OnWaitList', false %}
+{% assign registrantCount = registrants | Size %}
+{% if registrantCount > 0 %}
+    <p>
+        You have successfully registered the following 
+        {{ RegistrationInstance.RegistrationTemplate.RegistrantTerm | PluralizeForQuantity:registrantCount | Downcase }}
+        for {{ RegistrationInstance.Name }}:
+    </p>
     
-        <strong>{{ registrant.PersonAlias.Person.FullName }}</strong>
+    <ul>
+    {% for registrant in registrants %}
+        <li>
         
-        {% if registrant.Cost > 0 %}
-            - {{ currencySymbol }}{{ registrant.Cost | Format:'#,##0.00' }}
-        {% endif %}
-        
-        {% assign feeCount = registrant.Fees | Size %}
-        {% if feeCount > 0 %}
-            <br/>{{ RegistrationInstance.RegistrationTemplate.FeeTerm | PluralizeForQuantity:registrantCount }}:
-            <ul class='list-unstyled'>
-            {% for fee in registrant.Fees %}
-                <li>
-                    {{ fee.RegistrationTemplateFee.Name }} {{ fee.Option }}
-                    {% if fee.Quantity > 1 %} ({{ fee.Quantity }} @ {{ currencySymbol }}{{ fee.Cost | Format:'#,##0.00' }}){% endif %}: {{ currencySymbol }}{{ fee.TotalCost | Format:'#,##0.00' }}
-                </li>
-            {% endfor %}
-            </ul>
-        {% endif %}
-        
-    </li>
-{% endfor %}
-</ul>
+            <strong>{{ registrant.PersonAlias.Person.FullName }}</strong>
+            
+            {% if registrant.Cost > 0 %}
+                - {{ currencySymbol }}{{ registrant.Cost | Format:'#,##0.00' }}
+            {% endif %}
+            
+            {% assign feeCount = registrant.Fees | Size %}
+            {% if feeCount > 0 %}
+                <br/>{{ RegistrationInstance.RegistrationTemplate.FeeTerm | PluralizeForQuantity:registrantCount }}:
+                <ul class='list-unstyled'>
+                {% for fee in registrant.Fees %}
+                    <li>
+                        {{ fee.RegistrationTemplateFee.Name }} {{ fee.Option }}
+                        {% if fee.Quantity > 1 %} ({{ fee.Quantity }} @ {{ currencySymbol }}{{ fee.Cost | Format:'#,##0.00' }}){% endif %}: {{ currencySymbol }}{{ fee.TotalCost | Format:'#,##0.00' }}
+                    </li>
+                {% endfor %}
+                </ul>
+            {% endif %}
+            
+        </li>
+    {% endfor %}
+    </ul>
+{% endif %}
+
+{% assign waitlist = Registration.Registrants | Where:'OnWaitList', true %}
+{% assign waitListCount = waitlist | Size %}
+{% if waitListCount > 0 %}
+    <p>
+        You have successfully added the following 
+        {{ RegistrationInstance.RegistrationTemplate.RegistrantTerm | PluralizeForQuantity:registrantCount | Downcase }}
+        to the waiting list for {{ RegistrationInstance.Name }}:
+    </p>
+    
+    <ul>
+    {% for registrant in waitlist %}
+        <li>
+            <strong>{{ registrant.PersonAlias.Person.FullName }}</strong>
+        </li>
+    {% endfor %}
+    </ul>
+{% endif %}
 
 {% if Registration.TotalCost > 0 %}
 <p>
@@ -207,13 +266,11 @@ namespace RockWeb.Blocks.Event
 <p>
     A confirmation email has been sent to {{ Registration.ConfirmationEmail }}. If you have any questions 
     please contact {{ RegistrationInstance.ContactPersonAlias.Person.FullName }} at {{ RegistrationInstance.ContactEmail }}.
-</p>
-", "", 2 )]
+</p>", "", 2 )]
 
     [CodeEditorField( "Default Payment Reminder Email", "The default Payment Reminder Email Template value to use for a new template", CodeEditorMode.Lava, CodeEditorTheme.Rock, 300, false, @"{{ 'Global' | Attribute:'EmailHeader' }}
 {% capture currencySymbol %}{{ 'Global' | Attribute:'CurrencySymbol' }}{% endcapture %}
 {% capture externalSite %}{{ 'Global' | Attribute:'PublicApplicationRoot' }}{% endcapture %}
-{% assign registrantCount = Registration.Registrants | Size %}
 
 <h1>{{ RegistrationInstance.RegistrationTemplate.RegistrationTerm }} Payment Reminder</h1>
 
@@ -224,11 +281,31 @@ namespace RockWeb.Blocks.Event
     {{ RegistrationInstance.RegistrationTemplate.RegistrationTerm }} are below.
 </p>
 
-<ul>
-{% for registrant in Registration.Registrants %}
-    <li>{{ registrant.PersonAlias.Person.FullName }}</li>
-{% endfor %}
-</ul>
+{% assign registrants = Registration.Registrants | Where:'OnWaitList', false %}
+{% assign registrantCount = registrants | Size %}
+{% if registrantCount > 0 %}
+	<ul>
+	{% for registrant in registrants %}
+		<li>{{ registrant.PersonAlias.Person.FullName }}</li>
+	{% endfor %}
+	</ul>
+
+{% assign waitlist = Registration.Registrants | Where:'OnWaitList', true %}
+{% assign waitListCount = waitlist | Size %}
+{% if waitListCount > 0 %}
+    <p>
+        The following {{ RegistrationInstance.RegistrationTemplate.RegistrantTerm | PluralizeForQuantity:registrantCount | Downcase }}
+		{% if waitListCount > 1 %}are{% else %}is{% endif %} still on the wait list:
+   </p>
+    
+    <ul>
+    {% for registrant in waitlist %}
+        <li>
+            <strong>{{ registrant.PersonAlias.Person.FullName }}</strong>
+        </li>
+    {% endfor %}
+    </ul>
+{% endif %}
 
 <p>
     You can complete the payment for this {{ RegistrationInstance.RegistrationTemplate.RegistrationTerm | Downcase }}
@@ -240,13 +317,11 @@ namespace RockWeb.Blocks.Event
     If you have any questions please contact {{ RegistrationInstance.ContactName }} at {{ RegistrationInstance.ContactEmail }}.
 </p>
 
-{{ 'Global' | Attribute:'EmailFooter' }}
-", "", 3 )]
+{{ 'Global' | Attribute:'EmailFooter' }}", "", 3 )]
 
     [CodeEditorField( "Default Wait List Transition Email", "The default Wait List Transition Email Template value to use for a new template", CodeEditorMode.Lava, CodeEditorTheme.Rock, 300, false, @"{{ 'Global' | Attribute:'EmailHeader' }}
 {% capture currencySymbol %}{{ 'Global' | Attribute:'CurrencySymbol' }}{% endcapture %}
 {% capture externalSite %}{{ 'Global' | Attribute:'PublicApplicationRoot' }}{% endcapture %}
-{% assign registrantCount = Registration.Registrants | Size %}
 
 <h1>{{ RegistrationInstance.Name }} Wait List Update</h1>
 
@@ -264,7 +339,7 @@ namespace RockWeb.Blocks.Event
 {% if AdditionalFieldsNeeded %}
     <p>
         <strong>Addition information is needed in order to process this registration. Please visit the 
-        <a href='{{ externalSite }}/Registration?RegistrationId={{ Registration.Id }}&rckipid={{ Registration.PersonAlias.Person.UrlEncodedKey }}&Location=Start'>
+        <a href='{{ externalSite }}/Registration?RegistrationId={{ Registration.Id }}&rckipid={{ Registration.PersonAlias.Person.UrlEncodedKey }}&StartAtBeginning=True'>
         online registration page</a> to complete the registration.</strong>
     </p>
 {% endif %}
@@ -294,6 +369,7 @@ namespace RockWeb.Blocks.Event
         private List<Guid> ExpandedForms { get; set; }
         private List<RegistrationTemplateDiscount> DiscountState { get; set; }
         private List<RegistrationTemplateFee> FeeState { get; set; }
+        private int? GridFieldsDeleteIndex { get; set; }
 
         #endregion
 
@@ -371,6 +447,7 @@ namespace RockWeb.Blocks.Event
             gFields.GridRebind += gFields_GridRebind;
             gFields.RowDataBound += gFields_RowDataBound;
             gFields.GridReorder += gFields_GridReorder;
+            GridFieldsDeleteIndex = gFields.GetColumnIndexByFieldType( typeof( DeleteField ) );
 
             // assign discounts grid actions
             gDiscounts.DataKeyNames = new string[] { "Guid" };
@@ -926,8 +1003,22 @@ namespace RockWeb.Blocks.Event
                 var attributesDB = attributeService.Get( entityTypeId, qualifierColumn, qualifierValue );
                 foreach ( var attr in attributesDB.Where( a => !selectedAttributeGuids.Contains( a.Guid ) ).ToList() )
                 {
-                    attributeService.Delete( attr );
-                    Rock.Web.Cache.AttributeCache.Flush( attr.Id );
+                    var canDeleteAttribute = true;
+                    foreach ( var form in RegistrationTemplate.Forms )
+                    {
+                        // make sure other RegistrationTemplates aren't using this AttributeId (which could happen due to an old bug)
+                        var formFieldsFromOtherRegistrationTemplatesUsingAttribute = registrationTemplateFormFieldService.Queryable().Where( a => a.AttributeId.Value == attr.Id && a.RegistrationTemplateForm.RegistrationTemplateId != RegistrationTemplate.Id ).Any();
+                        if ( formFieldsFromOtherRegistrationTemplatesUsingAttribute )
+                        {
+                            canDeleteAttribute = false;
+                        }
+                    }
+
+                    if ( canDeleteAttribute )
+                    {
+                        attributeService.Delete( attr );
+                        Rock.Web.Cache.AttributeCache.Flush( attr.Id );
+                    }
                 }
 
                 rockContext.SaveChanges();
@@ -1205,9 +1296,12 @@ namespace RockWeb.Blocks.Event
                 ( e.Row.Cells[1].Text == "First Name" || e.Row.Cells[1].Text == "Last Name" ) &&
                 e.Row.Cells[2].Text == "Person Field" )
             {
-                foreach ( var lb in e.Row.Cells[8].ControlsOfTypeRecursive<LinkButton>() )
+                if ( GridFieldsDeleteIndex.HasValue )
                 {
-                    lb.Visible = false;
+                    foreach ( var lb in e.Row.Cells[GridFieldsDeleteIndex.Value].ControlsOfTypeRecursive<LinkButton>() )
+                    {
+                        lb.Visible = false;
+                    }
                 }
             }
         }
@@ -2429,7 +2523,7 @@ namespace RockWeb.Blocks.Event
                 edtRegistrationAttribute.SetAttributeProperties( attribute, typeof( RegistrationTemplate ) );
 
                 cbInternalField.Checked = formField.IsInternal;
-                cbShowOnWaitList.Checked = formField.ShowOnWaitlist;
+                cbShowOnWaitList.Checked = formField.FieldSource != RegistrationFieldSource.GroupMemberAttribute && formField.ShowOnWaitlist;
                 cbShowOnGrid.Checked = formField.IsGridField;
                 cbRequireInInitialEntry.Checked = formField.IsRequired;
                 cbUsePersonCurrentValue.Checked = formField.ShowCurrentValue;
@@ -2484,6 +2578,7 @@ namespace RockWeb.Blocks.Event
             edtRegistrationAttribute.Visible = fieldSource == RegistrationFieldSource.RegistrationAttribute;
 
             cbShowOnWaitList.Visible = cbWaitListEnabled.Visible && cbWaitListEnabled.Checked;
+            cbShowOnWaitList.Enabled = fieldSource != RegistrationFieldSource.GroupMemberAttribute;
         }
 
         /// <summary>

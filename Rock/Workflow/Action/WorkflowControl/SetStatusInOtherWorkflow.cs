@@ -83,8 +83,12 @@ namespace Rock.Workflow.Action
 
                 action.AddLogEntry( "Could not find selected workflow." );
             }
+            else
+            {
+                action.AddLogEntry( "Workflow attribute was not set." );
+                return true;    // Continue processing in this case
+            }
 
-            action.AddLogEntry( "Invalid workflow setting." );
 
             return false;
         }

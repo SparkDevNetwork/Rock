@@ -110,6 +110,11 @@
     <Compile Include="Controllers\AuthController.cs" />
     <Compile Include="Controllers\BinaryFilesController.Partial.cs" />
     <Compile Include="Controllers\CodeGenerated\ConnectionOpportunityGroupConfigsController.cs" />
+    <Compile Include="Controllers\CodeGenerated\InteractionChannelsController.cs" />
+    <Compile Include="Controllers\CodeGenerated\InteractionComponentsController.cs" />
+    <Compile Include="Controllers\CodeGenerated\InteractionDeviceTypesController.cs" />
+    <Compile Include="Controllers\CodeGenerated\InteractionsController.cs" />
+    <Compile Include="Controllers\CodeGenerated\InteractionSessionsController.cs" />
     <Compile Include="Controllers\CodeGenerated\NotificationRecipientsController.cs" />
     <Compile Include="Controllers\CodeGenerated\NotificationsController.cs" />
     <Compile Include="Controllers\CodeGenerated\SignatureDocumentsController.cs" />

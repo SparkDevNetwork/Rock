@@ -684,17 +684,13 @@ namespace Rock.NMI
 
             var txns = new List<Payment>();
 
-            var queryParams = new Dictionary<string, string>();
-            queryParams.Add( "username", GetAttributeValue( financialGateway, "AdminUsername" ) );
-            queryParams.Add( "password", GetAttributeValue( financialGateway, "AdminPassword" ) );
-            queryParams.Add( "start_date", startDate.ToString( "yyyyMMddHHmmss" ) );
-            queryParams.Add( "end_date", endDate.ToString( "yyyyMMddHHmmss" ) );
-
-            string url = GetAttributeValue( financialGateway, "QueryUrl" );
-            string queryString = queryParams.ToList().Select( p => string.Format( "{0}={1}", p.Key, p.Value ) ).ToList().AsDelimited( "&" );
-
-            var restClient = new RestClient( url + "?" + queryString );
+            var restClient = new RestClient( GetAttributeValue( financialGateway, "QueryUrl" ) );
             var restRequest = new RestRequest( Method.GET );
+
+            restRequest.AddParameter( "username", GetAttributeValue( financialGateway, "AdminUsername" ) );
+            restRequest.AddParameter( "password", GetAttributeValue( financialGateway, "AdminPassword" ) );
+            restRequest.AddParameter( "start_date", startDate.ToString( "yyyyMMddHHmmss" ) );
+            restRequest.AddParameter( "end_date", endDate.ToString( "yyyyMMddHHmmss" ) );
 
             try
             {

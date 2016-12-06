@@ -1,4 +1,20 @@
-﻿using System;
+﻿// <copyright>
+// Copyright by the Spark Development Network
+//
+// Licensed under the Rock Community License (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.rockrms.com/license
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+// </copyright>
+//
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -78,7 +94,7 @@ namespace Rock.UniversalSearch.IndexModels
         /// <value>
         /// The description.
         /// </value>
-        [RockIndexField( Boost = 3 )]
+        [RockIndexField( Boost = 2 )]
         public string Description { get; set; }
 
         /// <summary>
@@ -96,7 +112,7 @@ namespace Rock.UniversalSearch.IndexModels
         /// <value>
         /// The leader list.
         /// </value>
-        [RockIndexField( Boost = 2 )]
+        [RockIndexField( Boost = 3 )]
         public string LeaderList { get; set; }
 
         /// <summary>
@@ -113,6 +129,9 @@ namespace Rock.UniversalSearch.IndexModels
             groupIndex.Name = group.Name;
             groupIndex.Description = group.Description;
             groupIndex.GroupTypeId = group.GroupTypeId;
+            groupIndex.DocumentName = group.Name;
+
+            groupIndex.ModelOrder = 5;
 
             if ( group.GroupType != null )
             {
@@ -129,6 +148,26 @@ namespace Rock.UniversalSearch.IndexModels
             AddIndexableAttributes( groupIndex, group );
 
             return groupIndex;
+        }
+
+        /// <summary>
+        /// Gets the document URL.
+        /// </summary>
+        /// <param name="displayOptions"></param>
+        /// <returns></returns>
+        public override string GetDocumentUrl( Dictionary<string, object> displayOptions = null )
+        {
+            string url = "/Group/";
+
+            if ( displayOptions != null )
+            {
+                if ( displayOptions.ContainsKey( "Group.Url" ) )
+                {
+                    url = displayOptions["Group.Url"].ToString();
+                }
+            }
+
+            return url + this.Id;
         }
 
         /// <summary>

@@ -98,9 +98,37 @@
     <Compile Include="Migrations\201611022323122_RemoveForeignColumnIndexes.Designer.cs">
       <DependentUpon>201611022323122_RemoveForeignColumnIndexes.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201612022217411_Analytics1.cs" />
-    <Compile Include="Migrations\201612022217411_Analytics1.Designer.cs">
-      <DependentUpon>201612022217411_Analytics1.cs</DependentUpon>
+    <Compile Include="Migrations\201611081726192_UpdateMissingEntities.cs" />
+    <Compile Include="Migrations\201611081726192_UpdateMissingEntities.Designer.cs">
+      <DependentUpon>201611081726192_UpdateMissingEntities.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201611142131319_ExpiringCreditCards.cs" />
+    <Compile Include="Migrations\201611142131319_ExpiringCreditCards.Designer.cs">
+      <DependentUpon>201611142131319_ExpiringCreditCards.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201611162052022_UpdateRegistrationText.cs" />
+    <Compile Include="Migrations\201611162052022_UpdateRegistrationText.Designer.cs">
+      <DependentUpon>201611162052022_UpdateRegistrationText.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201611171650206_InteractionModels.cs" />
+    <Compile Include="Migrations\201611171650206_InteractionModels.Designer.cs">
+      <DependentUpon>201611171650206_InteractionModels.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201611282234388_AdditionalInteractionFields.cs" />
+    <Compile Include="Migrations\201611282234388_AdditionalInteractionFields.Designer.cs">
+      <DependentUpon>201611282234388_AdditionalInteractionFields.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201611291601040_DropInteractionTablesToReorderFields.cs" />
+    <Compile Include="Migrations\201611291601040_DropInteractionTablesToReorderFields.Designer.cs">
+      <DependentUpon>201611291601040_DropInteractionTablesToReorderFields.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201611291825562_AddInteractionFieldsBackWithModifications.cs" />
+    <Compile Include="Migrations\201611291825562_AddInteractionFieldsBackWithModifications.Designer.cs">
+      <DependentUpon>201611291825562_AddInteractionFieldsBackWithModifications.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201612052305420_WorkflowTypeCleanupFields.cs" />
+    <Compile Include="Migrations\201612052305420_WorkflowTypeCleanupFields.Designer.cs">
+      <DependentUpon>201612052305420_WorkflowTypeCleanupFields.cs</DependentUpon>
     </Compile>
     <Compile Include="Migrations\Version 6.0\Version 1.6.0\201609282147388_WaitList.cs" />
     <Compile Include="Migrations\Version 6.0\Version 1.6.0\201609282147388_WaitList.Designer.cs">
@@ -2328,8 +2356,29 @@
     <EmbeddedResource Include="Migrations\201611022323122_RemoveForeignColumnIndexes.resx">
       <DependentUpon>201611022323122_RemoveForeignColumnIndexes.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201612022217411_Analytics1.resx">
-      <DependentUpon>201612022217411_Analytics1.cs</DependentUpon>
+    <EmbeddedResource Include="Migrations\201611081726192_UpdateMissingEntities.resx">
+      <DependentUpon>201611081726192_UpdateMissingEntities.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201611142131319_ExpiringCreditCards.resx">
+      <DependentUpon>201611142131319_ExpiringCreditCards.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201611162052022_UpdateRegistrationText.resx">
+      <DependentUpon>201611162052022_UpdateRegistrationText.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201611171650206_InteractionModels.resx">
+      <DependentUpon>201611171650206_InteractionModels.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201611282234388_AdditionalInteractionFields.resx">
+      <DependentUpon>201611282234388_AdditionalInteractionFields.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201611291601040_DropInteractionTablesToReorderFields.resx">
+      <DependentUpon>201611291601040_DropInteractionTablesToReorderFields.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201611291825562_AddInteractionFieldsBackWithModifications.resx">
+      <DependentUpon>201611291825562_AddInteractionFieldsBackWithModifications.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201612052305420_WorkflowTypeCleanupFields.resx">
+      <DependentUpon>201612052305420_WorkflowTypeCleanupFields.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 6.0\Version 1.6.0\201609282147388_WaitList.resx">
       <DependentUpon>201609282147388_WaitList.cs</DependentUpon>

@@ -25,25 +25,31 @@
                     </span>
                 </div>
 
-                <div class="row row-eq-height-md margin-t-md">
-                    <div class="col-md-3 filter-options">
-                        <Rock:RockCheckBoxList ID="cblModelFilter" runat="server" RepeatDirection="Vertical" Label="Types" />
-
-                        <Rock:RockCheckBoxList ID="cblGroupTypes" runat="server" Label="Group Types" />
-
-                        <Rock:RockCheckBoxList ID="cblContentChannelTypes" runat="server" Label="Content Channels" />
-                    </div>
-                    <div class="col-md-9">
-                        
-                        <div class="margin-t-md">
-                        
-                        </div>
-                                
-                        <div class="margin-t-md">
-                            <asp:Literal ID="lResults" runat="server" />
-                        </div>
-                    </div>
+                <div class="clearfix margin-t-sm">
+                    <asp:LinkButton ID="lbRefineSearch" runat="server" Text="Refine Search" OnClick="lbRefineSearch_Click" CssClass="pull-right" />
                 </div>
+
+                <asp:Panel ID="pnlRefineSearch" runat="server" Visible="false">
+                    <div class="well margin-t-md">
+                        <Rock:RockCheckBoxList ID="cblModelFilter" runat="server" CssClass="js-model-filter" RepeatDirection="Horizontal" Label="Information Types" />
+
+                        <hr />
+                        
+                        <div class="row">
+                            <asp:PlaceHolder ID="phFilters" runat="server" />  
+                        </div>
+                    </div>
+                </asp:Panel>
+
+                <div class="margin-t-lg">
+                    <asp:Literal ID="lResults" runat="server" />
+                </div>
+
+                <asp:Panel ID="pnlPagination" runat="server" CssClass="text-center">
+                     <ul class="pagination">
+                        <asp:Literal ID="lPagination" runat="server" />
+                    </ul>
+                </asp:Panel>
             </div>
                 
         </asp:Panel>
@@ -54,9 +60,19 @@
 
                     <asp:UpdatePanel ID="upnlEdit" runat="server">
                         <ContentTemplate>
-                            <Rock:RockCheckBox ID="cbShowModelFilter" runat="server" Label="Show Model Filter" />
-                            
-
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <Rock:RockDropDownList ID="ddlSearchType" runat="server" Label="Search Type" />
+                                    <Rock:RockTextBox ID="tbResultsPerPage" runat="server" Label="Results Per Page" CssClass="input-width-sm" />
+                                    <Rock:RockCheckBox ID="cbShowRefinedSearch" runat="server" Label="Show Refinded Search Options" />
+                                    <Rock:RockCheckBox ID="cbShowScores" runat="server" Label="Show Scores" Help="Enables the display of scores for help with debugging." />
+                                </div>
+                                <div class="col-md-6">
+                                    <Rock:RockCheckBoxList ID="cblEnabledModels" runat="server" Label="Enabled Models" />
+                                    <Rock:RockCheckBox ID="cbShowFilter" runat="server" Label="Show Model Filter" />
+                                    <Rock:RockTextBox ID="tbBaseFieldFilters" runat="server" Label="Base Field Filters" Help="These field filters will always be enabled and will not be changeable by the individual. Uses tha same syntax as the lava command." />
+                                </div>
+                            </div>
                         </ContentTemplate>
                     </asp:UpdatePanel>
                 </Content>
@@ -68,6 +84,14 @@
             Sys.Application.add_load( function () {
                 $(".model-cannavigate").click(function () {
                     window.document.location = $(this).data("href");
+                });
+
+                $(".js-model-filter input").change(function () {
+
+                    var entityId = $(this).val();
+                    var selector = ".js-entity-id-" + entityId + " input";
+
+                    $(selector).prop("checked", $(this).is(':checked'));
                 });
             });
         </script>

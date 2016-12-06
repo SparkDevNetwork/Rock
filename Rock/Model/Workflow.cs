@@ -339,9 +339,17 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Marks this Workflow as complete.
+        /// Marks the complete.
         /// </summary>
         public virtual void MarkComplete()
+        {
+            MarkComplete( CompletedDateTime.HasValue ? "" : "Completed" );
+        }
+
+        /// <summary>
+        /// Marks this Workflow as complete.
+        /// </summary>
+        public virtual void MarkComplete( string status )
         {
             foreach( var activity in this.Activities)
             {
@@ -349,7 +357,11 @@ namespace Rock.Model
             }
 
             CompletedDateTime = RockDateTime.Now;
-            Status = "Completed";
+            if ( !string.IsNullOrWhiteSpace( status ) )
+            {
+                Status = status;
+            }
+
             AddLogEntry( "Completed" );
         }
 

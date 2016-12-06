@@ -278,7 +278,12 @@ namespace RockWeb.Blocks.Event
 
                 var rockContext = new RockContext();
 
-                RegistrationInstanceService instanceService = new RegistrationInstanceService( rockContext );
+                var template = new RegistrationTemplateService( rockContext ).Get( _template.Id );
+
+                var waitListCol = gInstances.ColumnsOfType<RockBoundField>().Where( f => f.DataField == "WaitList" ).First();
+                waitListCol.Visible = template != null && template.WaitListEnabled;
+
+                var instanceService = new RegistrationInstanceService( rockContext );
                 var qry = instanceService.Queryable().AsNoTracking()
                     .Where( i => i.RegistrationTemplateId == _template.Id );
 
@@ -328,8 +333,9 @@ namespace RockWeb.Blocks.Event
                     i.EndDateTime,
                     i.IsActive,
                     Details = string.Empty,
-                    Registrants = i.Registrations.Where( r => !r.IsTemporary ).SelectMany( r => r.Registrants ).Count()
-                });
+                    Registrants = i.Registrations.Where( r => !r.IsTemporary ).SelectMany( r => r.Registrants ).Where( r => !r.OnWaitList ).Count(),
+                    WaitList = i.Registrations.Where( r => !r.IsTemporary ).SelectMany( r => r.Registrants ).Where( r => r.OnWaitList ).Count()
+                } );
 
                 gInstances.SetLinqDataSource( instanceQry );
                 gInstances.DataBind();

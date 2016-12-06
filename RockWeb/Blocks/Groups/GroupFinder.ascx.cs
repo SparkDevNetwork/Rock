@@ -745,6 +745,7 @@ namespace RockWeb.Blocks.Groups
             if ( registerPage.PageId > 0 )
             {
                 var registerColumn = new EditField();
+                registerColumn.ToolTip = "Register";
                 registerColumn.HeaderText = "Register";
                 registerColumn.Click += registerColumn_Click;
                 gGroups.Columns.Add( registerColumn );

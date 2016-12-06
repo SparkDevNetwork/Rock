@@ -94,7 +94,7 @@
 
 
         {% if showRegistration == true %}
-          <a href="{{ RegistrationPage }}?RegistrationInstanceId={{ linkage.RegistrationInstanceId }}&EventOccurrenceID={{ EventItemOccurrence.Id }}" class="btn btn-primary btn-block margin-t-md">Register</a>
+          <a href="{{ RegistrationPage }}?RegistrationInstanceId={{ linkage.RegistrationInstanceId }}&EventOccurrenceID={{ EventItemOccurrence.Id }}" class="btn btn-primary btn-block margin-t-md">{{ RegistrationStatusLabel }}</a>
         {% else %}
           {{ registrationMessage }}
         {% endif %}

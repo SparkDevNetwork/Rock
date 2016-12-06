@@ -105,6 +105,7 @@ namespace Rock.Jobs
                                                 var resultValue = new ResultValue();
                                                 resultValue.Value = Convert.ToDecimal( qry.Count() );
                                                 resultValue.Partitions = new List<ResultValuePartition>();
+                                                resultValue.MetricValueDateTime = scheduleDateTime;
                                                 resultValues.Add( resultValue );
                                             }
                                         }

@@ -64,6 +64,14 @@ namespace Rock.UniversalSearch.IndexModels.Attributes
             }
         }
         private IndexFieldType _type = IndexFieldType.String;
+
+        /// <summary>
+        /// Gets or sets the analyzer.
+        /// </summary>
+        /// <value>
+        /// The analyzer.
+        /// </value>
+        public string Analyzer { get; set; }
     }
 
     /// <summary>
@@ -74,17 +82,17 @@ namespace Rock.UniversalSearch.IndexModels.Attributes
         /// <summary>
         /// Analyzed
         /// </summary>
-        Analyzed = 0,
+        Analyzed = 0, // default
 
         /// <summary>
         /// Not Analyzed
         /// </summary>
-        NotAnalyzed = 1,
+        NotAnalyzed = 1, // means it's in the index (database) and available for queries but when added to the index it won't set a analyzer (should be queried as is)
 
         /// <summary>
         /// Not Indexed
         /// </summary>
-        NotIndexed = 2
+        NotIndexed = 2, // means it's in the index (database) but it won't be considered for queries
     }
 
     /// <summary>
