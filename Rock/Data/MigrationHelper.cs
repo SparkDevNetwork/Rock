@@ -120,6 +120,7 @@ namespace Rock.Data
 	                FROM [AttributeValue] V
 	                INNER JOIN [Attribute] A ON A.[Id] = V.[AttributeId]
 	                WHERE ( A.[FieldTypeId] = @EntityTypeFieldTypeId OR A.[FieldTypeId] = @ComponentFieldTypeId	OR A.[FieldTypeId] = @ComponentsFieldTypeId )
+                    OPTION (RECOMPILE)
 
                 END
 ",
