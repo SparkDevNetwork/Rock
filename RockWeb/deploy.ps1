@@ -64,6 +64,10 @@ $accessRule= New-Object System.Security.AccessControl.FileSystemAccessRule("Ever
 $acl.AddAccessRule($accessRule)
 Set-Acl "$webroot\App_Data\Run.Migration" $acl
 
+Write-Host -ForegroundColor Yellow "Updating Theme file..."
+Copy-Item C:\inetpub\wwwroot-test\RockWeb\Themes\Rock\Styles\theme.css -Destination C:\inetpub\wwwroot-test\RockWeb\Themes\Rock\Styles\theme_orig.css -Force
+Copy-Item E:\RockTest\Assets\theme.css -Destination C:\inetpub\wwwroot-test\RockWeb\Themes\Rock\Styles\theme.css -Force 
+
 # delete deploy scripts
 If (Test-Path "$webroot\deploy.ps1"){
 	Remove-Item "$webroot\deploy.ps1"
