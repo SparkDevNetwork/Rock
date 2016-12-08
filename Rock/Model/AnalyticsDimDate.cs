@@ -19,7 +19,7 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Runtime.Serialization;
-//using EntityFramework.Utilities;
+using EntityFramework.Utilities;
 using Rock.Data;
 
 namespace Rock.Model
@@ -408,10 +408,15 @@ namespace Rock.Model
 
         #endregion 
 
-        /*public static void BulkInsert( Rock.Data.RockContext rockContext, IEnumerable<AnalyticsDimDate> analyticsDimDates )
+        /// <summary>
+        /// BulkInserts AnalyticsDimDates (really fast)
+        /// </summary>
+        /// <param name="rockContext">The rock context.</param>
+        /// <param name="analyticsDimDates">The analytics dim dates.</param>
+        public static void BulkInsert( Rock.Data.RockContext rockContext, IEnumerable<AnalyticsDimDate> analyticsDimDates )
         {
             EFBatchOperation.For( rockContext, rockContext.AnalyticsDimDates ).InsertAll( analyticsDimDates );
-        }*/
+        }
     }
 
     /// <summary>
