@@ -597,7 +597,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                     LinkButton lbRemoveMember = new LinkButton();
                     lbRemoveMember.ID = string.Format( "lbRemoveMember_{0}", groupMemberGuidString );
                     lbRemoveMember.AddCssClass( "btn btn-danger btn-xs" );
-                    lbRemoveMember.Text = "Do Not Add";
+                    lbRemoveMember.Text = "Do Not Add Individual";
                     lbRemoveMember.Click += lbRemoveMember_Click;
                     newPersonCol.Controls.Add( lbRemoveMember );
 
