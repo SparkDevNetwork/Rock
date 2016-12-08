@@ -261,22 +261,8 @@ namespace RockWeb.Blocks.Reporting
                 generateDate = generateDate.AddDays( 1 );
             }
 
-            // this might take a few minutes
-            while ( generatedDates.Any() )
-            {
-                using ( var rockContext = new RockContext() )
-                {
-                    rockContext.Configuration.AutoDetectChangesEnabled = false;
-                    rockContext.Configuration.ValidateOnSaveEnabled = false;
-                    var insertRange = generatedDates.Take( 1000 ).ToList();
-                    rockContext.AnalyticsDimDates.AddRange( insertRange );
-                    insertRange.ForEach( a => generatedDates.Remove( a ) );
-                    rockContext.SaveChanges( true );
-                }
-            }
-
-            //var rockContext = new RockContext();
-            //AnalyticsDimDate.BulkInsert( rockContext, generatedDates );
+            var rockContext = new RockContext();
+            AnalyticsDimDate.BulkInsert( rockContext, generatedDates );
         }
 
         // 
