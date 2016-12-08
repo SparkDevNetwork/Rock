@@ -30,7 +30,7 @@ namespace Rock.UniversalSearch.IndexComponents
     [TextField( "Node URL", "The URL of the ElasticSearch node (http://myserver:9200)", true, key: "NodeUrl" )]
     public class Elasticsearch : IndexComponent
     {
-        private ElasticClient _client;
+        protected ElasticClient _client;
 
         /// <summary>
         /// Gets a value indicating whether this instance is connected.
@@ -99,7 +99,7 @@ namespace Rock.UniversalSearch.IndexComponents
         /// <summary>
         /// Connects to server.
         /// </summary>
-        private void ConnectToServer()
+        protected virtual void ConnectToServer()
         {
             if ( !string.IsNullOrWhiteSpace( GetAttributeValue( "NodeUrl" ) ) )
             {
@@ -299,7 +299,7 @@ namespace Rock.UniversalSearch.IndexComponents
         /// </summary>
         /// <param name="entityType">Type of the entity.</param>
         /// <returns></returns>
-        private bool SupportsIndexFieldFiltering( Type entityType )
+        protected bool SupportsIndexFieldFiltering( Type entityType )
         {
             if ( entityType != null )
             {

@@ -66,7 +66,11 @@
       <Private>True</Private>
     </Reference>
     <Reference Include="Elasticsearch.Net, Version=2.0.0.0, Culture=neutral, PublicKeyToken=96c599bbe3e70f5d, processorArchitecture=MSIL">
-      <HintPath>..\packages\Elasticsearch.Net.2.4.3\lib\net45\Elasticsearch.Net.dll</HintPath>
+      <HintPath>..\packages\Elasticsearch.Net.2.4.6\lib\net45\Elasticsearch.Net.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Elasticsearch.Net.Aws, Version=2.2.0.0, Culture=neutral, PublicKeyToken=7b2b00f739ab9aca, processorArchitecture=MSIL">
+      <HintPath>..\packages\Elasticsearch.Net.Aws.2.2.0\lib\net45\Elasticsearch.Net.Aws.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="EntityFramework, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL">
@@ -1136,6 +1140,7 @@
     <Compile Include="Security\Authentication\Twitter.cs" />
     <Compile Include="Transactions\SaveCommunicationTransaction.cs" />
     <Compile Include="UniversalSearch\FormattedSearchResult.cs" />
+    <Compile Include="UniversalSearch\IndexComponents\ElasticsearchAws.cs" />
     <Compile Include="UniversalSearch\IndexComponents\Elasticsearch.cs" />
     <Compile Include="UniversalSearch\IndexContainer.cs" />
     <Compile Include="UniversalSearch\IndexComponent.cs" />
