@@ -63,8 +63,6 @@ namespace RockWeb.Plugins.church_ccv.SpiritualGifts
 
             if ( !Page.IsPostBack )
             {
-                List<string> giftsList = null;
-
                 // grab the gifts for the person being viewed
                 CurrentPerson.LoadAttributes( );
                 var spiritualGiftsAttrib = CurrentPerson.AttributeValues[ "SpiritualGifts" ];
@@ -73,15 +71,18 @@ namespace RockWeb.Plugins.church_ccv.SpiritualGifts
                 // if the format is off, for some reason
                 try
                 {
+                    List<string> giftNames = new List<string>( );
+                    List<int> giftScores = new List<int>( );
+
                     // do they have spiritual gifts set?
                     if( string.IsNullOrWhiteSpace( spiritualGiftsAttrib.Value ) == false )
                     {
                         // parse and sort the gifts
-                        giftsList = ParseSpiritualGifts( spiritualGiftsAttrib.Value );
+                        ParseSpiritualGifts( spiritualGiftsAttrib.Value, ref giftNames, ref giftScores );
                     }
 
                     // we'll either render the gifts, or a note saying they haven't taken the test.
-                    Render( giftsList );
+                    Render( giftNames, giftScores );
                 }
                 catch
                 {
@@ -95,7 +96,7 @@ namespace RockWeb.Plugins.church_ccv.SpiritualGifts
 
         #region Methods
         
-        private List<string> ParseSpiritualGifts( string giftsStr )
+        private void ParseSpiritualGifts( string giftsStr, ref List<string> giftNames, ref List<int> giftScores )
         {
             // first break them up by comma
             List<string> fullGiftsList = giftsStr.Split( ',' ).ToList( );
@@ -117,23 +118,29 @@ namespace RockWeb.Plugins.church_ccv.SpiritualGifts
 
 
             // now remove the trailing scores from each gift, because we simply want to list their gifts
-            List<string> giftNamesOnlyList = new List<string>( );
             foreach ( string gift in fullGiftsList )
             {
+                // get the index
+                int giftSeperatorIndex = gift.IndexOf( ' ' );
+
                 // get just the gift text (they don't want the score portion)
                 string giftName = gift.Substring( 0, gift.IndexOf( ' ' ) );
 
-                giftNamesOnlyList.Add( giftName );
+                // now get the score
+                int giftScore = int.Parse( gift.Substring( giftSeperatorIndex + 1 ) );
+
+                // and put them in the lists
+                giftNames.Add( giftName );
+                giftScores.Add( giftScore );
             }
-            
-            return giftNamesOnlyList;
         }
         
-        private void Render( List<string> spiritualGifts )
+        private void Render( List<string> spiritualGiftNames, List<int> spiritualGiftScores )
         {
             // setup merge fields
             var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson );
-            mergeFields.Add( "SpiritualGifts", spiritualGifts );
+            mergeFields.Add( "SpiritualGiftNames", spiritualGiftNames );
+            mergeFields.Add( "SpiritualGiftScores", spiritualGiftScores );
 
             // show debug info
             bool enableDebug = GetAttributeValue( "EnableDebug" ).AsBoolean();
