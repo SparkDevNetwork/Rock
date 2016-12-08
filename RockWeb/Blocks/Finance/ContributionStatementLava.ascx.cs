@@ -173,7 +173,8 @@ namespace RockWeb.Blocks.Finance
     <em>Unless otherwise noted, the only goods and services provided are intangible religious benefits.</em>
 </p>", order: 2)]
     [BooleanField("Enable Debug", "Shows the merge fields available for the Lava", order:3)]
-    [BooleanField("Allow Person Querystring", "Determines if a person is allowed to be passed through the querystring. For security reasons this is not allowed by default.", false, order: 4)]
+    [DefinedValueField( Rock.SystemGuid.DefinedType.FINANCIAL_CURRENCY_TYPE, "Excluded Currency Types", "Select the currency types you would like to excluded.", false, true, order: 4)]
+    [BooleanField("Allow Person Querystring", "Determines if a person is allowed to be passed through the querystring. For security reasons this is not allowed by default.", false, order: 5)]
     public partial class ContributionStatementLava : Rock.Web.UI.RockBlock
     {
         #region Base Control Methods
@@ -242,6 +243,13 @@ namespace RockWeb.Blocks.Finance
 
             Person targetPerson = CurrentPerson;
 
+            // get excluded currency types setting
+            List<Guid> excludedCurrencyTypes = new List<Guid>();
+            if ( GetAttributeValue( "ExcludedCurrencyTypes" ).IsNotNullOrWhitespace() )
+            {
+                excludedCurrencyTypes = GetAttributeValue( "ExcludedCurrencyTypes" ).Split( ',' ).Select( Guid.Parse ).ToList();
+            }
+
             if ( GetAttributeValue( "AllowPersonQuerystring" ).AsBoolean() )
             {
                 if ( !string.IsNullOrWhiteSpace( Request["PersonGuid"] ) ){
@@ -270,6 +278,11 @@ namespace RockWeb.Blocks.Finance
             {
                 var accountGuids = GetAttributeValue( "Accounts" ).Split( ',' ).Select( Guid.Parse ).ToList();
                 qry = qry.Where( t => accountGuids.Contains( t.Account.Guid ) );
+            }
+
+            if ( excludedCurrencyTypes.Count > 0 )
+            {
+                qry = qry.Where( t => !excludedCurrencyTypes.Contains( t.Transaction.FinancialPaymentDetail.CurrencyTypeValue.Guid ) );
             }
 
             qry = qry.OrderByDescending( t => t.Transaction.TransactionDateTime );
