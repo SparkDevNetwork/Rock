@@ -26,9 +26,9 @@
 				{{ item.Content }}
 			</div>
 			<div class="col-md-4">
-				{% if videoLink != '' && audioLink != '' %}
+				{% if videoLink != '' || audioLink != '' %}
 					<div class="panel panel-default">
-						<div class="panel-heading">Downloads & Resources</div>
+						<div class="panel-heading">Downloads &amp; Resources</div>
 						<div class="list-group">
 							
 							{% if videoLink != '' %}
