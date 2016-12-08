@@ -35,10 +35,12 @@ using Newtonsoft.Json;
 
 namespace RockWeb.Plugins.church_ccv.SpiritualGifts
 {
-    [DisplayName( "Spiritual Gifts Admin View" )]
+    [DisplayName( "Spiritual Gifts View" )]
     [Category( "CCV > Spiritual Gifts" )]
     [Description( "Displays the Spiritual Gifts for a person. Designed to be displayed on a Person Profile page." )]
-    public partial class SpiritualGiftsAdminView : PersonBlock
+    [CodeEditorField( "Lava Template", "The lava template to use to format the group details.", CodeEditorMode.Lava, CodeEditorTheme.Rock, 400, true, "", "", 8 )]
+    [BooleanField( "Enable Debug", "Shows the fields available to merge in lava.", false, "", 10 )]
+    public partial class SpiritualGiftsView : RockBlock
     {
 #region Base Control Methods
         
@@ -64,8 +66,8 @@ namespace RockWeb.Plugins.church_ccv.SpiritualGifts
                 List<string> giftsList = null;
 
                 // grab the gifts for the person being viewed
-                Person.LoadAttributes( );
-                var spiritualGiftsAttrib = Person.AttributeValues[ "SpiritualGifts" ];
+                CurrentPerson.LoadAttributes( );
+                var spiritualGiftsAttrib = CurrentPerson.AttributeValues[ "SpiritualGifts" ];
 
                 // since we're doing string parsing, wrap this in a try/catch so we can display a readable error
                 // if the format is off, for some reason
@@ -83,12 +85,11 @@ namespace RockWeb.Plugins.church_ccv.SpiritualGifts
                 }
                 catch
                 {
-                    lSpiritualGifts.Text = "Error trying to display Spiritual Gifts.";
+                    lMainContent.Text = "Error trying to display Spiritual Gifts.";
                 }
             }
         }
         
-
 #endregion
         
 
@@ -97,11 +98,11 @@ namespace RockWeb.Plugins.church_ccv.SpiritualGifts
         private List<string> ParseSpiritualGifts( string giftsStr )
         {
             // first break them up by comma
-            List<string> giftsList = giftsStr.Split( ',' ).ToList( );
+            List<string> fullGiftsList = giftsStr.Split( ',' ).ToList( );
 
             // now sort them by score. we know the format is "gift SPACE score", 
             // so we'll jump to first SPACE + 1, which puts us at the score, and cast that to an int.
-            giftsList.Sort( 
+            fullGiftsList.Sort( 
                 delegate( string x, string y )
                 {
                     int xScore = int.Parse( x.Substring( x.IndexOf( ' ' ) + 1 ) );
@@ -113,31 +114,45 @@ namespace RockWeb.Plugins.church_ccv.SpiritualGifts
                     }
                     return -1;
                 });
+
+
+            // now remove the trailing scores from each gift, because we simply want to list their gifts
+            List<string> giftNamesOnlyList = new List<string>( );
+            foreach ( string gift in fullGiftsList )
+            {
+                // get just the gift text (they don't want the score portion)
+                string giftName = gift.Substring( 0, gift.IndexOf( ' ' ) );
+
+                giftNamesOnlyList.Add( giftName );
+            }
             
-            return giftsList;
+            return giftNamesOnlyList;
         }
         
         private void Render( List<string> spiritualGifts )
         {
-            if ( spiritualGifts != null )
+            // setup merge fields
+            var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson );
+            mergeFields.Add( "SpiritualGifts", spiritualGifts );
+
+            // show debug info
+            bool enableDebug = GetAttributeValue( "EnableDebug" ).AsBoolean();
+            if ( enableDebug && IsUserAuthorized( Authorization.EDIT ) )
             {
-                // render the gifts as an ordered (numbered) list
-                lSpiritualGifts.Text = "<ol>";
+                string postbackCommands = @"<h5>Available Postback Commands</h5>
+                                            <ul>
+                                                <li><strong>EditGroup:</strong> Shows a panel for modifing group info. Expects a group id. <code>{{ Group.Id | Postback:'EditGroup' }}</code></li>
+                                                <li><strong>AddGroupMember:</strong> Shows a panel for adding group info. Does not require input. <code>{{ '' | Postback:'AddGroupMember' }}</code></li>
+                                                <li><strong>SendCommunication:</strong> Sends a communication to all group members on behalf of the Current User. This will redirect them to the communication page where they can author their email. <code>{{ '' | Postback:'SendCommunication' }}</code></li>
+                                            </ul>";
 
-                foreach ( string gift in spiritualGifts )
-                {
-                    // get just the gift text (they don't want the score portion)
-                    string giftName = gift.Substring( 0, gift.IndexOf( ' ' ) );
-
-                    lSpiritualGifts.Text += "<li style='margin: 10px'>" + giftName + "</li>";
-                }
-
-                lSpiritualGifts.Text += "</ol>";
+                lDebug.Visible = true;
+                lDebug.Text = mergeFields.lavaDebugInfo( null, string.Empty, postbackCommands );
             }
-            else
-            {
-                lSpiritualGifts.Text = "Spiritual Gifts test not taken yet.";
-            }
+
+            // render
+            string template = GetAttributeValue( "LavaTemplate" );
+            lMainContent.Text = template.ResolveMergeFields( mergeFields ).ResolveClientIds( upnlSpiritualGifts.ClientID );
         }
 
         #endregion
