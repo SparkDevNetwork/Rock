@@ -17,21 +17,17 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.IO;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Reflection;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
-using Humanizer;
 using Rock;
+using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
-using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
-using Rock.Attribute;
-using System.ComponentModel.DataAnnotations.Schema;
-using System.Threading;
 
 namespace RockWeb.Blocks.Reporting
 {
@@ -49,8 +45,6 @@ namespace RockWeb.Blocks.Reporting
     public partial class CalendarDimensionSettings : Rock.Web.UI.RockBlock
     {
         #region Base Control Methods
-
-        //  overrides of the base RockBlock methods (i.e. OnInit, OnLoad)
 
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
@@ -126,7 +120,7 @@ namespace RockWeb.Blocks.Reporting
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void Block_BlockUpdated( object sender, EventArgs e )
         {
-
+            //
         }
 
         /// <summary>
@@ -177,19 +171,6 @@ namespace RockWeb.Blocks.Reporting
                 analyticsDimDate.DayNumberInCalendarMonth = generateDate.Day;
                 analyticsDimDate.DayNumberInCalendarYear = generateDate.DayOfYear;
 
-                // DayNumberInFiscalMonth is simply the same as DayNumberInCalendarMonth since we only let them pick a FiscalStartMonth ( not a Month and Day )
-                analyticsDimDate.DayNumberInFiscalMonth = analyticsDimDate.DayNumberInCalendarMonth;
-
-                if ( fiscalStartMonth == 0 )
-                {
-                    analyticsDimDate.DayNumberInFiscalYear = analyticsDimDate.DayNumberInCalendarYear;
-                }
-                else
-                {
-                    // TODO: what about leap year, and double-check that is just the Number Of days since the FiscalStartMonth
-                    analyticsDimDate.DayNumberInFiscalYear = 0;
-                }
-
                 // from http://stackoverflow.com/a/4655207/1755417
                 DateTime endOfMonth = new DateTime( generateDate.Year, generateDate.Month, DateTime.DaysInMonth( generateDate.Year, generateDate.Month ) );
 
@@ -215,16 +196,10 @@ namespace RockWeb.Blocks.Reporting
 
                 /* Fiscal Stuff. Doublecheck exactly how to do these */
 
-
                 // figure out the fiscalMonthNumber and QTR.  For example, if the Fiscal Start Month is April, and Today is April 1st, the Fiscal Month Number would be 1
                 int fiscalMonthNumber = new System.DateTime( generateDate.Year, generateDate.Month, 1 ).AddMonths( 1 - fiscalStartMonth ).Month;
                 int fiscalQuarter = ( fiscalMonthNumber + 2 ) / 3;
-                int fiscalYear = generateDate.AddMonths( -( 1 + fiscalStartMonth ) ).Year;
-
-
-                // TODO: NOTE: This is complicated, see comments on AnalyticsDimDate.GivingMonth
-                // analyticsDimDate.GivingMonth
-                // analyticsDimDate.GivingMonthName
+                int fiscalYear = generateDate.AddMonths( -( fiscalStartMonth - 1 ) ).Year;
 
                 DateTime fiscalStartDate = new DateTime( generateDate.Year, fiscalStartMonth, 1 );
                 int fiscalWeekOffset = fiscalStartDate.GetWeekOfYear( RockDateTime.FirstDayOfWeek ) - 1;
@@ -241,6 +216,52 @@ namespace RockWeb.Blocks.Reporting
                 analyticsDimDate.FiscalYearQuarter = string.Format( "{0} Q{1}", fiscalYear, fiscalQuarter );
                 analyticsDimDate.FiscalHalfYear = fiscalQuarter < 3 ? "First" : "Second";
                 analyticsDimDate.FiscalYear = fiscalYear;
+
+                // DayNumberInFiscalMonth is simply the same as DayNumberInCalendarMonth since we only let them pick a FiscalStartMonth ( not a Month and Day )
+                analyticsDimDate.DayNumberInFiscalMonth = analyticsDimDate.DayNumberInCalendarMonth;
+
+                if ( fiscalStartMonth == 1 )
+                {
+                    analyticsDimDate.DayNumberInFiscalYear = analyticsDimDate.DayNumberInCalendarYear;
+                }
+                else
+                {
+                    // TODO: double-check that is just the Number Of days since the FiscalStartMonth
+                    if ( fiscalStartDate <= generateDate )
+                    {
+                        // fiscal start is the same year as the generated date year
+                        analyticsDimDate.DayNumberInFiscalYear = ( generateDate - fiscalStartDate ).Days + 1;
+                    }
+                    else
+                    {
+                        // fiscal start is the year previous to the generated date year
+                        analyticsDimDate.DayNumberInFiscalYear = ( generateDate - fiscalStartDate.AddYears( -1 ) ).Days + 1;
+                    }
+                }
+
+                // NOTE: This is complicated, see comments on AnalyticsDimDate.GivingMonth
+                if ( givingMonthUseSundayDate )
+                {
+                    var givingMonthSundayDate = generateDate.SundayDate();
+
+                    int sundayDateFiscalYear = givingMonthSundayDate.AddMonths( -( fiscalStartMonth - 1 ) ).Year;
+                    if ( sundayDateFiscalYear != fiscalYear )
+                    {
+                        // if the SundayDate ends up landing in a different year, don't use the Sunday Date, just use the actual generate date
+                        analyticsDimDate.GivingMonth = generateDate.Month;
+                        analyticsDimDate.GivingMonthName = generateDate.ToString( "MMMM" );
+                    }
+                    else
+                    {
+                        analyticsDimDate.GivingMonth = givingMonthSundayDate.Month;
+                        analyticsDimDate.GivingMonthName = givingMonthSundayDate.ToString( "MMMM" );
+                    }
+                }
+                else
+                {
+                    analyticsDimDate.GivingMonth = generateDate.Month;
+                    analyticsDimDate.GivingMonthName = generateDate.ToString( "MMMM" );
+                }
 
                 analyticsDimDate.EasterIndicator = generateDate == easterSundayForYear;
 
@@ -264,9 +285,6 @@ namespace RockWeb.Blocks.Reporting
             var rockContext = new RockContext();
             AnalyticsDimDate.BulkInsert( rockContext, generatedDates );
         }
-
-        // 
-
 
         #endregion
     }
