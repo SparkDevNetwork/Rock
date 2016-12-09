@@ -55,7 +55,7 @@ namespace RockWeb.Blocks.Cms
     [BooleanField( "Enable Versioning", "If checked, previous versions of the content will be preserved. Versioning is required if you want to require approval.", false, "", 8, "SupportVersions" )]
     [BooleanField( "Require Approval", "Require that content be approved?", false, "", 9 )]
     [BooleanField( "Enable Debug", "Show lava merge fields.", false, "", 10 )]
-
+    [BooleanField( "Enable Double-Click Edit", "Allow editing of HTML content by double-clicking the content.", true, "", 11, "EnableQuickEdit")]
     [ContextAware]
     public partial class HtmlContentDetail : RockBlockCustomSettings
     {
@@ -90,6 +90,8 @@ namespace RockWeb.Blocks.Cms
 
             this.BlockUpdated += HtmlContentDetail_BlockUpdated;
             this.AddConfigurationUpdateTrigger( upnlHtmlContent );
+
+            RegisterScript();
 
             gVersions.GridRebind += gVersions_GridRebind;
         }
@@ -134,6 +136,11 @@ namespace RockWeb.Blocks.Cms
             HtmlContentService.FlushCachedContent( this.BlockId, EntityValue() );
             
             ShowView();
+        }
+
+        protected void lbEdit_Click( object sender, EventArgs e )
+        {
+            ShowSettings();
         }
 
         /// <summary>
@@ -344,6 +351,21 @@ namespace RockWeb.Blocks.Cms
         #endregion
 
         #region Methods
+
+        private void RegisterScript()
+        {
+            if ( UserCanEdit && GetAttributeValue( "EnableQuickEdit" ).AsBoolean() )
+            {
+                string script = string.Format( @"
+                Sys.Application.add_load( function () {{
+                    $('#{0}').dblclick(function (e) {{
+                        {1};
+                    }});
+                }});
+                ", upnlHtmlContent.ClientID, this.Page.ClientScript.GetPostBackEventReference( lbEdit, "" ) );
+                ScriptManager.RegisterStartupScript( lbEdit, lbEdit.GetType(), string.Format( "html-content-block-{0}", this.BlockId ), script, true );
+            }
+        }
 
         /// <summary>
         /// Binds the grid.
