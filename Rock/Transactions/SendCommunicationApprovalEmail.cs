@@ -76,7 +76,7 @@ namespace Rock.Transactions
                         string fromName = Rock.Web.Cache.GlobalAttributesCache.Value("OrganizationName");
                         string fromEmail = Rock.Web.Cache.GlobalAttributesCache.Value( "OrganizationEmail" );
                         string subject = "Pending Communication Requires Approval";
-                        var appRoot = Rock.Web.Cache.GlobalAttributesCache.Read( rockContext ).GetValue( "ExternalApplicationRoot" );
+                        var appRoot = Rock.Web.Cache.GlobalAttributesCache.Read( rockContext ).GetValue( "PublicApplicationRoot" );
                         string communicationDetails = string.Empty;
                         string typeName = string.Empty;
 

@@ -87,7 +87,7 @@ namespace Rock.Jobs
                 && ( t.EndDate == null || t.EndDate > DateTime.Now ) )
                 .AsNoTracking();
 
-            var appRoot = Rock.Web.Cache.GlobalAttributesCache.Read( rockContext ).GetValue( "ExternalApplicationRoot" );
+            var appRoot = Rock.Web.Cache.GlobalAttributesCache.Read( rockContext ).GetValue( "PublicApplicationRoot" );
 
             // Get the current month and year 
             DateTime now = DateTime.Now;

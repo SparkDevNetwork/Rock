@@ -567,7 +567,7 @@ namespace RockWeb.Blocks.Finance
             if ( receiptEmail != null )
             {
                 var givingUnit = new PersonAliasService( rockContext ).Get( this.SelectedGivingUnit.PersonAliasId ).Person;
-                var appRoot = Rock.Web.Cache.GlobalAttributesCache.Read( rockContext ).GetValue( "ExternalApplicationRoot" );
+                var appRoot = Rock.Web.Cache.GlobalAttributesCache.Read( rockContext ).GetValue( "PublicApplicationRoot" );
 
                 var recipients = new List<RecipientData>();
                 recipients.Add( new RecipientData( givingUnit.Email, GetMergeFields( givingUnit ) ) );
