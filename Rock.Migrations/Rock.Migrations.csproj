@@ -134,6 +134,10 @@
     <Compile Include="Migrations\201612062246550_Analytics1.Designer.cs">
       <DependentUpon>201612062246550_Analytics1.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201612100013510_Analytics2.cs" />
+    <Compile Include="Migrations\201612100013510_Analytics2.Designer.cs">
+      <DependentUpon>201612100013510_Analytics2.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 6.0\Version 1.6.0\201609282147388_WaitList.cs" />
     <Compile Include="Migrations\Version 6.0\Version 1.6.0\201609282147388_WaitList.Designer.cs">
       <DependentUpon>201609282147388_WaitList.cs</DependentUpon>
@@ -2386,6 +2390,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201612062246550_Analytics1.resx">
       <DependentUpon>201612062246550_Analytics1.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201612100013510_Analytics2.resx">
+      <DependentUpon>201612100013510_Analytics2.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 6.0\Version 1.6.0\201609282147388_WaitList.resx">
       <DependentUpon>201609282147388_WaitList.cs</DependentUpon>
