@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -14,31 +14,31 @@
 // limitations under the License.
 // </copyright>
 //
-namespace Rock.Plugin.HotFixes
+namespace Rock.Migrations
 {
+    using System;
+    using System.Data.Entity.Migrations;
+    
     /// <summary>
-    /// 
+    ///
     /// </summary>
-    [MigrationNumber( 13, "1.6.0" )]
-    public class FixSystemEmailTo_1828 : Migration
+    public partial class HotFixesFrom6_1 : Rock.Migrations.RockMigration
     {
         /// <summary>
-        /// The commands to run to migrate plugin to the specific version
+        /// Operations to be performed during the upgrade process.
         /// </summary>
         public override void Up()
         {
-//  Moved to core migration: 201612121647292_HotFixesFrom6_1
-//            Sql( @"
-//    -- Fix issue #1828
-//    UPDATE [SystemEmail] SET
-//        [To] = ''
-//    WHERE [Guid] = 'BC490DD4-ABBB-7DBA-4A9E-74F07F4B5881' 
-//        AND [To] = 'alisha@rocksolidchurchdemo.com'
-//" );
+            Sql( MigrationSQL._201612121647292_HotFixesFrom6_1 );
+
+            // last part of hotfix 008
+            // Fix for issue #1877 to allow Benevolence workers to upload Benevolence Request Documents.
+            RockMigrationHelper.AddSecurityAuthForBinaryFileType( Rock.SystemGuid.BinaryFiletype.BENEVOLENCE_REQUEST_DOCUMENTS, 0, "Edit", true, Rock.SystemGuid.Group.GROUP_BENEVOLENCE, Model.SpecialRole.None, "620C29F0-983C-45D5-B5D9-782E7792EEE3" );
+
         }
 
         /// <summary>
-        /// The commands to undo a migration from a specific version
+        /// Operations to be performed during the downgrade process.
         /// </summary>
         public override void Down()
         {

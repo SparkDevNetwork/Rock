@@ -27,18 +27,19 @@ namespace Rock.Plugin.HotFixes
         /// </summary>
         public override void Up()
         {
-            Sql( @"
-    UPDATE [Page]
-    SET 
-	    [PageTitle] = 'Request Profile Change'
-	    ,[BrowserTitle] = 'Request Profile Change'
-	    ,[InternalName] = 'Request Profile Change'
-    WHERE
-	    [Guid] = 'E1F9DE5A-CF99-4AF5-BEE6-EFC04F6DE57A'
-	    AND [PageTitle] = 'Workflow Entry'
-	    AND [BrowserTitle] = 'Workflow Entry'
-	    AND [InternalName] = 'Workflow Entry'
-" );
+//  Moved to core migration: 201612121647292_HotFixesFrom6_1
+//            Sql( @"
+//    UPDATE [Page]
+//    SET 
+//	    [PageTitle] = 'Request Profile Change'
+//	    ,[BrowserTitle] = 'Request Profile Change'
+//	    ,[InternalName] = 'Request Profile Change'
+//    WHERE
+//	    [Guid] = 'E1F9DE5A-CF99-4AF5-BEE6-EFC04F6DE57A'
+//	    AND [PageTitle] = 'Workflow Entry'
+//	    AND [BrowserTitle] = 'Workflow Entry'
+//	    AND [InternalName] = 'Workflow Entry'
+//" );
         }
 
         /// <summary>
