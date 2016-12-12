@@ -600,16 +600,16 @@
     <Compile Include="MergeTemplates\MergeTemplateTypeContainer.cs" />
     <Compile Include="MergeTemplates\WordDocumentMergeTemplateType.cs" />
     <Compile Include="Model\AnalyticsDimAttendanceLocation.cs" />
-    <Compile Include="Model\AnalyticsDimAttendanceCampus.cs" />
     <Compile Include="Model\AnalyticsDimAttendanceGroup.cs" />
     <Compile Include="Model\AnalyticsDimAttendanceDevice.cs" />
-    <Compile Include="Model\AnalyticsDimAttendanceSearchType.cs" />
     <Compile Include="Model\AnalyticsDimAttendanceSchedule.cs" />
     <Compile Include="Model\AnalyticsDimFinancialAccount.cs" />
     <Compile Include="Model\AnalyticsDimFinancialBatch.cs" />
     <Compile Include="Model\AnalyticsDimAttendanceAttendanceType.cs" />
     <Compile Include="Model\AnalyticsDimFinancialTransactionCreditCardType.cs" />
     <Compile Include="Model\AnalyticsDimFinancialTransactionCurrencyType.cs" />
+    <Compile Include="Model\AnalyticsDimFamilyHistorical.cs" />
+    <Compile Include="Model\AnalyticsDimFamilyCurrent.cs" />
     <Compile Include="Model\AnalyticsDimPersonHistorical.cs" />
     <Compile Include="Model\AnalyticsDimPersonCurrent.cs" />
     <Compile Include="Model\AnalyticsDimPersonSuffix.cs" />
@@ -625,6 +625,7 @@
     <Compile Include="Model\AnalyticsDimFinancialTransactionType.cs" />
     <Compile Include="Model\AnalyticsFactAttendance.cs" />
     <Compile Include="Model\AnalyticsSourceAttendance.cs" />
+    <Compile Include="Model\AnalyticsSourceFamilyHistorical.cs" />
     <Compile Include="Model\AnalyticsSourcePersonHistorical.cs" />
     <Compile Include="Model\AnalyticsFactFinancialTransaction.cs" />
     <Compile Include="Model\AnalyticsSourceFinancialTransaction.cs" />

@@ -181,7 +181,16 @@ namespace Rock.Model
         /// The campus.
         /// </value>
         [DataMember]
-        public string Campus { get; set; }
+        public string CampusName { get; set; }
+
+        /// <summary>
+        /// Gets or sets the campus short code.
+        /// </summary>
+        /// <value>
+        /// The campus short code.
+        /// </value>
+        [DataMember]
+        public string CampusShortCode { get; set; }
 
         /// <summary>
         /// Gets or sets the parent account identifier.

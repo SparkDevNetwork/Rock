@@ -60,24 +60,6 @@ namespace Rock.Model
         public string ScheduleType { get; set; }
 
         /// <summary>
-        /// Gets or sets the authorized person key.
-        /// </summary>
-        /// <value>
-        /// The authorized person key.
-        /// </value>
-        [DataMember]
-        public int AuthorizedPersonKey { get; set; }
-
-        /// <summary>
-        /// Gets or sets the authorized current person identifier.
-        /// </summary>
-        /// <value>
-        /// The authorized current person identifier.
-        /// </value>
-        [DataMember]
-        public int AuthorizedCurrentPersonId { get; set; }
-
-        /// <summary>
         /// Gets or sets the processed by person key.
         /// </summary>
         /// <value>

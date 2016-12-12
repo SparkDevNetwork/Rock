@@ -156,4 +156,30 @@ BEGIN
 		
 	-- TODO update [AuthorizedFamilyId]
     -- TODO what about modified records
+
+
+
+  -- Update PersonKeys for whatever PersonKey the person had at the time of the transaction
+  UPDATE asft
+    SET [AuthorizedPersonKey] = x.PersonKey
+    FROM AnalyticsSourceFinancialTransaction asft
+    CROSS APPLY (
+        SELECT TOP 1 Id [PersonKey] FROM AnalyticsSourcePersonHistorical ph 
+		join PersonAlias pa on asft.AuthorizedPersonAliasId = pa.Id
+		where ph.PersonId = pa.PersonId
+		and asft.[TransactionDateTime] < ph.[ExpireDate]
+		order by ph.[ExpireDate] DESC
+        ) x
+
+
+-- Update PersonKeys for whatever PersonKey is current right now
+  UPDATE asft
+    SET [AuthorizedCurrentPersonKey] = x.PersonKey
+    FROM AnalyticsSourceFinancialTransaction asft
+    CROSS APPLY (
+        SELECT TOP 1 Id [PersonKey] FROM AnalyticsSourcePersonHistorical ph 
+		join PersonAlias pa on asft.AuthorizedPersonAliasId = pa.Id
+		where ph.PersonId = pa.PersonId
+		and ph.CurrentRowIndicator = 1
+        ) x
 END

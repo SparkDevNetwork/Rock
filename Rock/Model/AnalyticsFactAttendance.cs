@@ -47,15 +47,6 @@ namespace Rock.Model
         [DataMember]
         public string AttendanceTypeName { get; set; }
 
-        /// <summary>
-        /// Gets or sets the person key (reference to AnalyticsDimPerson)
-        /// </summary>
-        /// <value>
-        /// The person key.
-        /// </value>
-        [DataMember]
-        public int PersonKey { get; set; }
-
         #endregion
 
         #region Entity Properties
@@ -77,6 +68,15 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public string CampusName { get; set; }
+
+        /// <summary>
+        /// Gets or sets the campus short code.
+        /// </summary>
+        /// <value>
+        /// The campus short code.
+        /// </value>
+        [DataMember]
+        public string CampusShortCode { get; set; }
 
         /// <summary>
         /// Gets or sets the name of the schedule.
@@ -115,42 +115,6 @@ namespace Rock.Model
         public string DeviceName { get; set; }
 
         /// <summary>
-        /// Gets or sets the name of the search type.
-        /// </summary>
-        /// <value>
-        /// The name of the search type.
-        /// </value>
-        [DataMember]
-        public string SearchTypeName { get; set; }
-
-        /// <summary>
-        /// Gets or sets the name of the search result group.
-        /// </summary>
-        /// <value>
-        /// The name of the search result group.
-        /// </value>
-        [DataMember]
-        public string SearchResultGroupName { get; set; }
-
-        /// <summary>
-        /// Gets or sets the attendance code.
-        /// </summary>
-        /// <value>
-        /// The attendance code.
-        /// </value>
-        [DataMember]
-        public string AttendanceCode { get; set; }
-
-        /// <summary>
-        /// Gets or sets the name of the qualifier.
-        /// </summary>
-        /// <value>
-        /// The name of the qualifier.
-        /// </value>
-        [DataMember]
-        public string QualifierName { get; set; }
-
-        /// <summary>
         /// Gets or sets the RSVP status.
         /// </summary>
         /// <value>
@@ -180,12 +144,10 @@ namespace Rock.Model
 
             // NOTE: When creating a migration for this, don't create the actual FK's in the database for any of these since they are views
             this.HasOptional( t => t.AttendanceType ).WithMany().HasForeignKey( t => t.AttendanceTypeId ).WillCascadeOnDelete( false );
-            this.HasOptional( t => t.Campus ).WithMany().HasForeignKey( t => t.CampusId ).WillCascadeOnDelete( false );
             this.HasOptional( t => t.Device ).WithMany().HasForeignKey( t => t.DeviceId ).WillCascadeOnDelete( false );
             this.HasOptional( t => t.Group ).WithMany().HasForeignKey( t => t.GroupId ).WillCascadeOnDelete( false );
             this.HasOptional( t => t.Location ).WithMany().HasForeignKey( t => t.LocationId ).WillCascadeOnDelete( false );
             this.HasOptional( t => t.Schedule ).WithMany().HasForeignKey( t => t.ScheduleId ).WillCascadeOnDelete( false );
-            this.HasOptional( t => t.SearchType ).WithMany().HasForeignKey( t => t.SearchTypeValueId ).WillCascadeOnDelete( false );
         }
     }
 

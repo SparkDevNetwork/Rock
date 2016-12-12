@@ -44,7 +44,7 @@ namespace Rock.Model
     public abstract class AnalyticsBaseFinancialTransaction<T> : Entity<T> 
         where T : AnalyticsBaseFinancialTransaction<T>, new()
     {
-        #region Entity Properties
+        #region Entity Properties specific to Analytics
 
         /// <summary>
         /// Gets or sets the transaction key in the form of "{Transaction.Id}_{TransactionDetail.Id}"
@@ -66,6 +66,101 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public int TransactionDateKey { get; set; }
+
+        /// <summary>
+        /// Gets or sets the authorized person key 
+        /// TODO Fix this so that this is: At the Time of the Transaction
+        /// </summary>
+        /// <value>
+        /// The authorized person key.
+        /// </value>
+        [DataMember]
+        public int AuthorizedPersonKey { get; set; }
+
+        /// <summary>
+        /// Gets or sets the authorized person key 
+        /// TODO Fix this so that this is: Current Personkey (ETL will have to maintain this )
+        /// </summary>
+        /// <value>
+        /// The authorized person key.
+        /// </value>
+        [DataMember]
+        public int AuthorizedCurrentPersonKey { get; set; }
+
+        /// <summary>
+        /// Number of Days since the last time this giving unit did a TransactionType that is the same as this TransactionType
+        /// If IsFirstTransactionOfType is TRUE, DaysSinceLastTransactionOfType will be null 
+        /// </summary>
+        /// <value>
+        /// The type of the days since last transaction of.
+        /// </value>
+        [DataMember]
+        public int? DaysSinceLastTransactionOfType { get; set; }
+
+        /// <summary>
+        /// This is true if this is the first time this giving unit did a transaction with this TransactionType 
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if this instance is first transaction of type; otherwise, <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool IsFirstTransactionOfType { get; set; }
+
+        /// <summary>
+        /// This is the GroupId of the family of the Authorized Person that did this transaction
+        /// Note that this is the current family that the person is in. 
+        /// To see what GivingGroup they were part of when the Transaction occured, see GivingUnitId
+        /// </summary>
+        /// <value>
+        /// The authorized family identifier.
+        /// </value>
+        [DataMember]
+        public int? AuthorizedFamilyId { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether this instance is scheduled.
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if this instance is scheduled; otherwise, <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool IsScheduled { get; set; }
+
+        /// <summary>
+        /// Gets or sets the giving group id of the person at the time of the transaction.  If an individual would like their giving to be grouped with the rest of their family,
+        /// this will be the id of their family group.  If they elect to contribute on their own, this value will be null.
+        /// </summary>
+        /// <value>
+        /// The giving group id.
+        /// </value>
+        [DataMember]
+        public int? GivingGroupId { get; set; }
+
+        /// <summary>
+        /// The computed giver identifier in the format G{GivingGroupId} if they are part of a GivingGroup, or P{Personid} if they give individually
+        /// Length of 20 is big enough for each to have G/P prefix + int64.MaxValue "G9223372036854775807"
+        /// NOTE: this is the Person's GivingId at the time of the transaction
+        /// </summary>
+        /// <value>
+        /// The giving identifier.
+        /// </value>
+        [DataMember]
+        [MaxLength( 20 )]
+        public string GivingId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the count.
+        /// NOTE: this always has hardcode value of 1. It is stored in the table because it is supposed to help do certain types of things in analytics
+        /// </summary>
+        /// <value>
+        /// The count.
+        /// </value>
+        [DataMember]
+        public int Count { get; set; }
+
+        #endregion
+
+        #region Entity Properties
 
         /// <summary>
         /// Gets or sets date and time that the transaction occurred. This is the local server time.
@@ -118,15 +213,6 @@ namespace Rock.Model
         public int? SourceTypeValueId { get; set; }
 
         /// <summary>
-        /// Gets or sets a value indicating whether this instance is scheduled.
-        /// </summary>
-        /// <value>
-        /// <c>true</c> if this instance is scheduled; otherwise, <c>false</c>.
-        /// </value>
-        [DataMember]
-        public bool IsScheduled { get; set; }
-
-        /// <summary>
         /// Gets or sets the authorized person identifier.
         /// </summary>
         /// <value>
@@ -152,28 +238,6 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public DateTime? ProcessedDateTime { get; set; }
-
-        /// <summary>
-        /// Gets or sets the giving group id of the person at the time of the transaction.  If an individual would like their giving to be grouped with the rest of their family,
-        /// this will be the id of their family group.  If they elect to contribute on their own, this value will be null.
-        /// </summary>
-        /// <value>
-        /// The giving group id.
-        /// </value>
-        [DataMember]
-        public int? GivingGroupId { get; set; }
-
-        /// <summary>
-        /// The computed giver identifier in the format G{GivingGroupId} if they are part of a GivingGroup, or P{Personid} if they give individually
-        /// Length of 20 is big enough for each to have G/P prefix + int64.MaxValue "G9223372036854775807"
-        /// NOTE: this is the Person's GivingId at the time of the transaction
-        /// </summary>
-        /// <value>
-        /// The giving identifier.
-        /// </value>
-        [DataMember]
-        [MaxLength( 20 )]
-        public string GivingId { get; set; }
 
         /// <summary>
         /// Gets or sets BatchId of the <see cref="Rock.Model.FinancialBatch"/> that contains this transaction.
@@ -260,46 +324,6 @@ namespace Rock.Model
         [DataMember]
         [DefinedValue( SystemGuid.DefinedType.FINANCIAL_CREDIT_CARD_TYPE )]
         public int? CreditCardTypeValueId { get; set; }
-
-        /// <summary>
-        /// Number of Days since the last time this giving unit did a TransactionType that is the same as this TransactionType
-        /// If IsFirstTransactionOfType is TRUE, DaysSinceLastTransactionOfType will be null 
-        /// </summary>
-        /// <value>
-        /// The type of the days since last transaction of.
-        /// </value>
-        [DataMember]
-        public int? DaysSinceLastTransactionOfType { get; set; }
-
-        /// <summary>
-        /// This is true if this is the first time this giving unit did a transaction with this TransactionType 
-        /// </summary>
-        /// <value>
-        /// <c>true</c> if this instance is first transaction of type; otherwise, <c>false</c>.
-        /// </value>
-        [DataMember]
-        public bool IsFirstTransactionOfType { get; set; }
-
-        /// <summary>
-        /// This is the GroupId of the family of the Authorized Person that did this transaction
-        /// Note that this is the current family that the person is in. 
-        /// To see what GivingGroup they were part of when the Transaction occured, see GivingUnitId
-        /// </summary>
-        /// <value>
-        /// The authorized family identifier.
-        /// </value>
-        [DataMember]
-        public int? AuthorizedFamilyId { get; set; }
-
-        /// <summary>
-        /// Gets or sets the count.
-        /// NOTE: this always has hardcode value of 1. It is stored in the table because it is supposed to help do certain types of things in analytics
-        /// </summary>
-        /// <value>
-        /// The count.
-        /// </value>
-        [DataMember]
-        public int Count { get; set; }
 
         /// <summary>
         /// Gets or sets the amount.

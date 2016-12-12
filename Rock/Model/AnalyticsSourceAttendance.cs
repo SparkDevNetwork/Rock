@@ -71,7 +71,7 @@ namespace Rock.Model
         public int? AttendanceTypeId { get; set; }
 
         /// <summary>
-        /// Number of Days since the last time this giving unit did a TransactionType that is the same as this TransactionType
+        /// Number of Days since the last time this giving unit did a TransactionType that is the same as this TransactionType (and didattend = true)
         /// If IsFirstTransactionOfType is TRUE, DaysSinceLastTransactionOfType will be null 
         /// </summary>
         /// <value>
@@ -81,7 +81,7 @@ namespace Rock.Model
         public int? DaysSinceLastAttendanceOfType { get; set; }
 
         /// <summary>
-        /// This is true if this is the first time this giving unit did a transaction with this TransactionType 
+        /// This is true if this is the first time this giving unit did a transaction with this TransactionType (and didattend = true)
         /// </summary>
         /// <value>
         /// <c>true</c> if this instance is first transaction of type; otherwise, <c>false</c>.
@@ -98,6 +98,24 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public int Count { get; set; }
+
+        /// <summary>
+        /// Gets or sets the person key which is the AnalyticsDimPersonHistorical record for the person at the time of the Transaction
+        /// </summary>
+        /// <value>
+        /// The person key.
+        /// </value>
+        [DataMember]
+        public int PersonKey { get; set; }
+
+        /// <summary>
+        /// Gets or sets the person key which is the current AnalyticsDimPersonHistorical record for the person 
+        /// </summary>
+        /// <value>
+        /// The current person key.
+        /// </value>
+        [DataMember]
+        public int CurrentPersonKey { get; set; }
 
         #endregion
 
@@ -158,52 +176,13 @@ namespace Rock.Model
         public int? DeviceId { get; set; }
 
         /// <summary>
-        /// Gets or sets the Id of the Check-in Search Type <see cref="Rock.Model.DefinedValue"/> that was used to search for the person/family.
+        /// Gets or sets the Id of the Check-in Search Type Name <see cref="Rock.Model.DefinedValue"/> that was used to search for the person/family.
         /// </summary>
         /// <value>
-        /// A <see cref="System.Int32"/> representing the Id of the Check-in Search Type <see cref="Rock.Model.DefinedValue"/> that was used to search for the person/family.
+        /// A <see cref="System.Int32"/> representing the Name of the Check-in Search Type <see cref="Rock.Model.DefinedValue"/> that was used to search for the person/family.
         /// </value>
         [DataMember]
-        [DefinedValue( SystemGuid.DefinedType.CHECKIN_SEARCH_TYPE )]
-        public int? SearchTypeValueId { get; set; }
-
-        /// <summary>
-        /// Gets or sets the value that was entered when searching for family during check-in.
-        /// </summary>
-        /// <value>
-        /// The search value entered.
-        /// </value>
-        [DataMember]
-        public string SearchValue { get; set; }
-
-        /// <summary>
-        /// Gets or sets the Id of the <see cref="Rock.Model.Group"/> (family) that was selected after searching.
-        /// </summary>
-        /// <value>
-        /// A <see cref="System.Int32"/> representing the Id of the <see cref="Rock.Model.Group"/> (family) that was selected.
-        /// </value>
-        [DataMember]
-        public int? SearchResultGroupId { get; set; }
-
-        /// <summary>
-        /// Gets or sets the Id of the <see cref="Rock.Model.AttendanceCode"/> that is associated with this <see cref="Rock.Model.Attendance"/> entity.
-        /// </summary>
-        /// <value>
-        /// A <see cref="System.Int32"/> representing the Id of the <see cref="Rock.Model.AttendanceCode"/> that is associated with this <see cref="Rock.Model.Attendance"/> entity.
-        /// </value>
-        [DataMember]
-        public int? AttendanceCodeId { get; set; }
-
-        /// <summary>
-        /// Gets or sets the qualifier value id.  Qualifier can be used to 
-        /// "qualify" attendance records.  There are not any system values
-        /// for this particular defined type
-        /// </summary>
-        /// <value>
-        /// The qualifier value id.
-        /// </value>
-        [DataMember]
-        public int? QualifierValueId { get; set; }
+        public string SearchTypeName { get; set; }
 
         /// <summary>
         /// Gets or sets the start date and time/check in time
@@ -244,21 +223,13 @@ namespace Rock.Model
 
         /// <summary>
         /// Gets or sets the did not occur.
+        /// TODO: Make sure to include DidNotOccur Records in the Analytics table
         /// </summary>
         /// <value>
         /// The did not occur.
         /// </value>
-        [DataMember]
-        public bool? DidNotOccur { get; set; }
-
-        /// <summary>
-        /// Gets or sets the processed.
-        /// </summary>
-        /// <value>
-        /// The processed.
-        /// </value>
-        [DataMember]
-        public bool? Processed { get; set; }
+        //[DataMember]
+        //public bool? DidNotOccur { get; set; }
 
         /// <summary>
         /// Gets or sets the note.
@@ -302,15 +273,6 @@ namespace Rock.Model
         public virtual AnalyticsDimAttendanceAttendanceType AttendanceType { get; set; }
 
         /// <summary>
-        /// Gets or sets the campus.
-        /// </summary>
-        /// <value>
-        /// The campus.
-        /// </value>
-        [DataMember]
-        public virtual AnalyticsDimAttendanceCampus Campus { get; set; }
-
-        /// <summary>
         /// Gets or sets the device.
         /// </summary>
         /// <value>
@@ -346,15 +308,6 @@ namespace Rock.Model
         [DataMember]
         public virtual AnalyticsDimAttendanceSchedule Schedule { get; set; }
 
-        /// <summary>
-        /// Gets or sets the type of the search.
-        /// </summary>
-        /// <value>
-        /// The type of the search.
-        /// </value>
-        [DataMember]
-        public virtual AnalyticsDimAttendanceSearchType SearchType { get; set; }
-
         #endregion
     }
 
@@ -376,12 +329,10 @@ namespace Rock.Model
 
             // NOTE: When creating a migration for this, don't create the actual FK's in the database for any of these since they are views
             this.HasOptional( t => t.AttendanceType ).WithMany().HasForeignKey( t => t.AttendanceTypeId ).WillCascadeOnDelete( false );
-            this.HasOptional( t => t.Campus ).WithMany().HasForeignKey( t => t.CampusId ).WillCascadeOnDelete( false );
             this.HasOptional( t => t.Device ).WithMany().HasForeignKey( t => t.DeviceId ).WillCascadeOnDelete( false );
             this.HasOptional( t => t.Group ).WithMany().HasForeignKey( t => t.GroupId ).WillCascadeOnDelete( false );
             this.HasOptional( t => t.Location ).WithMany().HasForeignKey( t => t.LocationId ).WillCascadeOnDelete( false );
             this.HasOptional( t => t.Schedule ).WithMany().HasForeignKey( t => t.ScheduleId ).WillCascadeOnDelete( false );
-            this.HasOptional( t => t.SearchType ).WithMany().HasForeignKey( t => t.SearchTypeValueId ).WillCascadeOnDelete( false );
         }
     }
 

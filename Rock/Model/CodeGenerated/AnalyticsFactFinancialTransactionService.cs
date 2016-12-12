@@ -90,7 +90,6 @@ namespace Rock.Model
             target.Id = source.Id;
             target.AccountId = source.AccountId;
             target.Amount = source.Amount;
-            target.AuthorizedCurrentPersonId = source.AuthorizedCurrentPersonId;
             target.AuthorizedFamilyId = source.AuthorizedFamilyId;
             target.AuthorizedPersonAliasId = source.AuthorizedPersonAliasId;
             target.AuthorizedPersonKey = source.AuthorizedPersonKey;
