@@ -7,7 +7,7 @@ Rock McKinley 6.1
 + Changed label editor to allow for height and width to be specified in decimal inches as well as it now uses PW and LL values to determine initial width and height (fixes #1846).
 + Benevolence workers can now upload files to requests (fixes #1877).
 + The Related Transactions (shown on the transaction details screen) with the same transaction code now only appear if they are from the same person (fixes #1766).
-+ Use the same SVG width and height for children
++ Used the same SVG width and height for children.
 + Corrected Range Slider control to use correct index (fixes #1845)
 + Added a job to send emails to a dataview.
 + Pressing the browser's back button after merging duplicate records from the duplicate finder no longer throws an exception (fixes #1787).
@@ -16,7 +16,7 @@ Rock McKinley 6.1
 + Fixed issue with wrong attribute values being used when exporting selected grid rows (vs exporting all rows)
 + Enhanced Person Search performance (#1798).
 + Improved error reporting in the payment download job.
-+ Update Group Registration block to allow linking by guid (instead of id), and update it to not allow registering for a security role.
++ Updated Group Registration block to allow linking by guid (instead of id), and update it to not allow registering for a security role.
 + Fixed issue with attendance date calculations in Family Analytics procedures.
 
 
