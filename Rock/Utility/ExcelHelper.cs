@@ -15,15 +15,54 @@ namespace Rock.Utility
     /// </summary>
     public static class ExcelHelper
     {
+        /// <summary>
+        /// The general format
+        /// </summary>
         public const string GeneralFormat = "General";
+
+        /// <summary>
+        /// The currency format
+        /// </summary>
         public const string CurrencyFormat = "_($* #,##0.00_);_($* (#,##0.00);_($* \"-\"??_);_(@_)";
+
+        /// <summary>
+        /// The accounting format
+        /// </summary>
         public const string AccountingFormat = "_(* #,##0.00_);_(* (#,##0.00);_(* \"-\"??_);_(@_)";
+
+        /// <summary>
+        /// The accounting no cents format
+        /// </summary>
         public const string AccountingNoCentsFormat = "_(* #,##0_);_(* (#,##0);_(* \"-\"??_);_(@_)";
+
+        /// <summary>
+        /// The date format
+        /// </summary>
         public const string DateFormat = "MM/dd/yyyy";
+
+        /// <summary>
+        /// The date time format
+        /// </summary>
         public const string DateTimeFormat = "MM/dd/yyyy hh:mm";
+
+        /// <summary>
+        /// The text format
+        /// </summary>
         public const string TextFormat = "@";
+
+        /// <summary>
+        /// The unformatted number format
+        /// </summary>
         public const string UnformattedNumberFormat = "0";
+
+        /// <summary>
+        /// The decimal format
+        /// </summary>
         public const string DecimalFormat = "#,##0.00";
+
+        /// <summary>
+        /// The formatted number format
+        /// </summary>
         public const string FormattedNumberFormat = "#,##0";
 
         /// <summary>

@@ -30,6 +30,9 @@ namespace Rock.UniversalSearch.IndexComponents
     [TextField( "Node URL", "The URL of the ElasticSearch node (http://myserver:9200)", true, key: "NodeUrl" )]
     public class Elasticsearch : IndexComponent
     {
+        /// <summary>
+        /// The Client
+        /// </summary>
         protected ElasticClient _client;
 
         /// <summary>

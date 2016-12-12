@@ -4,7 +4,7 @@
     <ContentTemplate>
 
         <span style="display:none">
-            <asp:LinkButton ID="lbEdit" runat="server" OnClick="lbEdit_Click"></asp:LinkButton>
+            <asp:LinkButton ID="lbQuickEdit" runat="server" OnClick="lbQuickEdit_Click"></asp:LinkButton>
         </span>
 
         <Rock:NotificationBox ID="nbApprovalRequired" runat="server" NotificationBoxType="Info" Text="Your changes will not be visible until they are reviewed and approved." Visible="false" />
