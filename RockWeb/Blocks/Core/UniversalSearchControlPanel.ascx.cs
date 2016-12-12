@@ -356,7 +356,10 @@ namespace RockWeb.Blocks.Core
             }
             lSmartSearchFilterCriteria.Text = Rock.Web.SystemSettings.GetValue( "core_SmartSearchUniversalSearchFieldCriteria" );
 
-            lSearchType.Text = Enum.Parse(typeof(SearchType), Rock.Web.SystemSettings.GetValue( "core_SmartSearchUniversalSearchSearchType" ) ).ToString();
+            if ( Rock.Web.SystemSettings.GetValue( "core_SmartSearchUniversalSearchSearchType" ).IsNotNullOrWhitespace() )
+            {
+                lSearchType.Text = Enum.Parse( typeof( SearchType ), Rock.Web.SystemSettings.GetValue( "core_SmartSearchUniversalSearchSearchType" ) ).ToString();
+            }
         }
 
         /// <summary>
