@@ -132,83 +132,100 @@ namespace com.centralaz.ChurchMetrics.Jobs
                                 var metricValue = metricValueService.Queryable().Where( m => m.ForeignId == foreignId ).FirstOrDefault();
                                 if ( metricValue == null )
                                 {
-                                    string campusId = Convert.ToString( record.campus.id );
-                                    var mappedCampusAttributeValue = existingMappedCampusAttributeValues.Where( av => av.Value == campusId ).FirstOrDefault();
-                                    if ( mappedCampusAttributeValue != null )
+                                    if ( !Convert.ToBoolean( record.replaces ) )
                                     {
-                                        var recordDateTime = record.service_date_time as DateTime?;
-                                        if ( recordDateTime.HasValue )
+                                        string campusId = Convert.ToString( record.campus.id );
+                                        var mappedCampusAttributeValue = existingMappedCampusAttributeValues.Where( av => av.Value == campusId ).FirstOrDefault();
+                                        if ( mappedCampusAttributeValue != null )
                                         {
-                                            Schedule schedule = null;
-                                            var metricServiceDateTime = recordDateTime.Value.AddHours( -7 );
-                                            var campus = CampusCache.Read( mappedCampusAttributeValue.EntityId.Value );
-                                            if ( record.@event == null )
+                                            var recordDateTime = record.service_date_time as DateTime?;
+                                            if ( recordDateTime.HasValue )
                                             {
-                                                switch ( campus.Name )
+                                                Schedule schedule = null;
+                                                var metricServiceDateTime = recordDateTime.Value.AddHours( -7 );
+                                                var campus = CampusCache.Read( mappedCampusAttributeValue.EntityId.Value );
+                                                if ( record.@event == null )
                                                 {
-                                                    case "Ahwatukee":
-                                                        schedule = ahwatukeeServiceTimes.Where( s => s.WeeklyDayOfWeek == metricServiceDateTime.DayOfWeek &&
-                                                         s.StartTimeOfDay <= metricServiceDateTime.TimeOfDay &&
-                                                         s.StartTimeOfDay >= metricServiceDateTime.AddMinutes( -30 ).TimeOfDay ).FirstOrDefault();
-                                                        break;
-                                                    case "Gilbert":
-                                                        schedule = gilbertServiceTimes.Where( s => s.WeeklyDayOfWeek == metricServiceDateTime.DayOfWeek &&
-                                                         s.StartTimeOfDay <= metricServiceDateTime.TimeOfDay &&
-                                                         s.StartTimeOfDay >= metricServiceDateTime.AddMinutes( -30 ).TimeOfDay ).FirstOrDefault();
-                                                        break;
-                                                    case "Glendale":
-                                                        schedule = glendaleServicesTimes.Where( s => s.WeeklyDayOfWeek == metricServiceDateTime.DayOfWeek &&
-                                                         s.StartTimeOfDay <= metricServiceDateTime.TimeOfDay &&
-                                                         s.StartTimeOfDay >= metricServiceDateTime.AddMinutes( -30 ).TimeOfDay ).FirstOrDefault();
-                                                        break;
-                                                    case "Mesa":
-                                                        schedule = mesaServiceTimes.Where( s => s.WeeklyDayOfWeek == metricServiceDateTime.DayOfWeek &&
-                                                         s.StartTimeOfDay <= metricServiceDateTime.TimeOfDay &&
-                                                         s.StartTimeOfDay >= metricServiceDateTime.AddMinutes( -30 ).TimeOfDay ).FirstOrDefault();
-                                                        break;
-                                                    case "Queen Creek":
-                                                        schedule = queenCreekServiceTimes.Where( s => s.WeeklyDayOfWeek == metricServiceDateTime.DayOfWeek &&
-                                                         s.StartTimeOfDay <= metricServiceDateTime.TimeOfDay &&
-                                                         s.StartTimeOfDay >= metricServiceDateTime.AddMinutes( -30 ).TimeOfDay ).FirstOrDefault();
-                                                        break;
+                                                    switch ( campus.Name )
+                                                    {
+                                                        case "Ahwatukee":
+                                                            schedule = ahwatukeeServiceTimes.Where( s => s.WeeklyDayOfWeek == metricServiceDateTime.DayOfWeek &&
+                                                             s.StartTimeOfDay <= metricServiceDateTime.TimeOfDay &&
+                                                             s.StartTimeOfDay >= metricServiceDateTime.AddMinutes( -30 ).TimeOfDay ).FirstOrDefault();
+                                                            break;
+                                                        case "Gilbert":
+                                                            schedule = gilbertServiceTimes.Where( s => s.WeeklyDayOfWeek == metricServiceDateTime.DayOfWeek &&
+                                                             s.StartTimeOfDay <= metricServiceDateTime.TimeOfDay &&
+                                                             s.StartTimeOfDay >= metricServiceDateTime.AddMinutes( -30 ).TimeOfDay ).FirstOrDefault();
+                                                            break;
+                                                        case "Glendale":
+                                                            schedule = glendaleServicesTimes.Where( s => s.WeeklyDayOfWeek == metricServiceDateTime.DayOfWeek &&
+                                                             s.StartTimeOfDay <= metricServiceDateTime.TimeOfDay &&
+                                                             s.StartTimeOfDay >= metricServiceDateTime.AddMinutes( -30 ).TimeOfDay ).FirstOrDefault();
+                                                            break;
+                                                        case "Mesa":
+                                                            schedule = mesaServiceTimes.Where( s => s.WeeklyDayOfWeek == metricServiceDateTime.DayOfWeek &&
+                                                             s.StartTimeOfDay <= metricServiceDateTime.TimeOfDay &&
+                                                             s.StartTimeOfDay >= metricServiceDateTime.AddMinutes( -30 ).TimeOfDay ).FirstOrDefault();
+                                                            break;
+                                                        case "Queen Creek":
+                                                            schedule = queenCreekServiceTimes.Where( s => s.WeeklyDayOfWeek == metricServiceDateTime.DayOfWeek &&
+                                                             s.StartTimeOfDay <= metricServiceDateTime.TimeOfDay &&
+                                                             s.StartTimeOfDay >= metricServiceDateTime.AddMinutes( -30 ).TimeOfDay ).FirstOrDefault();
+                                                            break;
+                                                    }
                                                 }
-                                            }
-                                            else
-                                            {
-                                                schedule = eventSchedules.Where( s => s.EffectiveStartDate.Value.DayOfWeek == metricServiceDateTime.DayOfWeek &&
-                                                         s.StartTimeOfDay <= metricServiceDateTime.TimeOfDay &&
-                                                         s.StartTimeOfDay >= metricServiceDateTime.AddMinutes( -30 ).TimeOfDay ).FirstOrDefault();
-                                            }
-
-                                            if ( schedule != null )
-                                            {
-                                                if ( metricServiceDateTime.DayOfWeek == DayOfWeek.Saturday )
+                                                else
                                                 {
-                                                    metricServiceDateTime = metricServiceDateTime.AddDays( 1 );
+                                                    schedule = eventSchedules.Where( s => s.EffectiveStartDate.Value.DayOfWeek == metricServiceDateTime.DayOfWeek &&
+                                                             s.StartTimeOfDay <= metricServiceDateTime.TimeOfDay &&
+                                                             s.StartTimeOfDay >= metricServiceDateTime.AddMinutes( -30 ).TimeOfDay ).FirstOrDefault();
                                                 }
 
-                                                metricValue = new MetricValue();
-                                                metricValue.MetricValueType = MetricValueType.Measure;
-                                                metricValue.MetricId = mappedMetric.Id;
-                                                metricValue.YValue = Convert.ToInt32( record.value );
-                                                metricValue.CreatedDateTime = record.created_at;
-                                                metricValue.ModifiedDateTime = record.updated_at;
-                                                metricValue.ForeignId = foreignId;
-                                                metricValue.MetricValueDateTime = metricServiceDateTime.Date;
-                                                metricValue.MetricValuePartitions = new List<MetricValuePartition>();
+                                                if ( schedule != null )
+                                                {
+                                                    if ( metricServiceDateTime.DayOfWeek == DayOfWeek.Saturday )
+                                                    {
+                                                        metricServiceDateTime = metricServiceDateTime.AddDays( 1 );
+                                                    }
 
-                                                var campusValuePartition = new MetricValuePartition();
-                                                campusValuePartition.MetricPartitionId = campusPartition.Id;
-                                                campusValuePartition.EntityId = mappedCampusAttributeValue.EntityId;
-                                                metricValue.MetricValuePartitions.Add( campusValuePartition );
+                                                    metricValue = new MetricValue();
+                                                    metricValue.MetricValueType = MetricValueType.Measure;
+                                                    metricValue.MetricId = mappedMetric.Id;
+                                                    metricValue.YValue = Convert.ToInt32( record.value );
+                                                    metricValue.CreatedDateTime = record.created_at;
+                                                    metricValue.ModifiedDateTime = record.updated_at;
+                                                    metricValue.ForeignId = foreignId;
+                                                    metricValue.MetricValueDateTime = metricServiceDateTime.Date;
+                                                    metricValue.MetricValuePartitions = new List<MetricValuePartition>();
 
-                                                var serviceValuePartition = new MetricValuePartition();
-                                                serviceValuePartition.MetricPartitionId = servicePartition.Id;
-                                                serviceValuePartition.EntityId = schedule.Id;
-                                                metricValue.MetricValuePartitions.Add( serviceValuePartition );
+                                                    var campusValuePartition = new MetricValuePartition();
+                                                    campusValuePartition.MetricPartitionId = campusPartition.Id;
+                                                    campusValuePartition.EntityId = mappedCampusAttributeValue.EntityId;
+                                                    metricValue.MetricValuePartitions.Add( campusValuePartition );
 
-                                                metricValueService.Add( metricValue );
+                                                    var serviceValuePartition = new MetricValuePartition();
+                                                    serviceValuePartition.MetricPartitionId = servicePartition.Id;
+                                                    serviceValuePartition.EntityId = schedule.Id;
+                                                    metricValue.MetricValuePartitions.Add( serviceValuePartition );
+
+                                                    metricValueService.Add( metricValue );
+                                                }
                                             }
+                                        }
+                                    }
+                                }
+                                else
+                                {
+                                    if( Convert.ToBoolean( record.replaces ) )
+                                    {
+                                        metricValueService.Delete( metricValue );
+                                    }
+                                    else
+                                    {
+                                        if( metricValue.YValue != Convert.ToInt32( record.value ) )
+                                        {
+                                            metricValue.YValue = Convert.ToInt32( record.value );
                                         }
                                     }
                                 }
