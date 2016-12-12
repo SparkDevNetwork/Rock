@@ -1209,7 +1209,7 @@ TransactionAcountDetails: [
         /// </summary>
         private void SetGiveAsOptions()
         {
-            bool showBusinessOption = CurrentPerson != null && !tglGiveAsOption.Checked;
+            bool showBusinessOption = CurrentPerson != null && phGiveAsOption.Visible && !tglGiveAsOption.Checked;
             phGiveAsPerson.Visible = !showBusinessOption;
             phGiveAsBusiness.Visible = showBusinessOption;
 
@@ -1394,7 +1394,7 @@ TransactionAcountDetails: [
                 person = personService.Get( personId );
             }
 
-            if ( create && tglGiveAsOption.Checked )  // If tglGiveOption is not checked, then person should not be null
+            if ( create && ( !phGiveAsOption.Visible || tglGiveAsOption.Checked ) ) // If tglGiveOption is not checked, then person should not be null
             {
                 if ( person == null )
                 {
@@ -1497,7 +1497,7 @@ TransactionAcountDetails: [
 
         private Person GetPersonOrBusiness( Person person )
         {
-            if ( person != null && !tglGiveAsOption.Checked )
+            if ( person != null && phGiveAsOption.Visible && !tglGiveAsOption.Checked )
             {
                 var rockContext = new RockContext();
                 var personService = new PersonService( rockContext );
@@ -1844,7 +1844,7 @@ TransactionAcountDetails: [
 
             PaymentInfo paymentInfo = GetPaymentInfo();
 
-            if ( tglGiveAsOption.Checked )
+            if ( !phGiveAsOption.Visible || tglGiveAsOption.Checked )
             {
                 if ( txtCurrentName.Visible )
                 {
@@ -2105,7 +2105,7 @@ TransactionAcountDetails: [
                 }
 
                 // only create/update the person if they are giving as a person. If they are giving as a Business, the person record already exists
-                Person person = GetPerson( tglGiveAsOption.Checked );
+                Person person = GetPerson( !phGiveAsOption.Visible || tglGiveAsOption.Checked );
                 if ( person == null )
                 {
                     errorMessage = "There was a problem creating the person information";
@@ -2206,7 +2206,7 @@ TransactionAcountDetails: [
             }
 
             // only create/update the person if they are giving as a person. If they are giving as a Business, the person record already exists
-            Person person = GetPerson( tglGiveAsOption.Checked );
+            Person person = GetPerson( !phGiveAsOption.Visible || tglGiveAsOption.Checked );
 
             if ( person == null )
             {
