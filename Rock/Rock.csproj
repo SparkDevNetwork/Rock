@@ -969,6 +969,11 @@
     <Compile Include="Plugin\HotFixes\009_FixCheckinAttributes.cs" />
     <Compile Include="Plugin\HotFixes\008_FamilyAnalyticsUpdate.cs" />
     <Compile Include="Plugin\HotFixes\007_FixGroupAndBenevolenceSecurity.cs" />
+    <Compile Include="Plugin\HotFixes\014_FixEraGiveAttribValues.cs" />
+    <Compile Include="Plugin\HotFixes\013_FixSystemEmailTo_1828.cs" />
+    <Compile Include="Plugin\HotFixes\012_FixAttendanceAnalyticsScript.cs" />
+    <Compile Include="Plugin\HotFixes\011_FixNameProfileChangeRequest.cs" />
+    <Compile Include="Plugin\HotFixes\010_FixGetSpouse.cs" />
     <Compile Include="Plugin\Migration.cs" />
     <Compile Include="Plugin\VersionAttribute.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
