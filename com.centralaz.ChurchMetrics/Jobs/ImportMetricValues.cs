@@ -217,15 +217,18 @@ namespace com.centralaz.ChurchMetrics.Jobs
                                 }
                                 else
                                 {
-                                    if( Convert.ToBoolean( record.replaces ) )
+                                    if ( Convert.ToBoolean( record.replaces ) )
                                     {
                                         metricValueService.Delete( metricValue );
                                     }
                                     else
                                     {
-                                        if( metricValue.YValue != Convert.ToInt32( record.value ) )
+                                        if ( metricValue.CreatedDateTime > RockDateTime.Now.AddYears( -1 ).AddDays( -2 ) )
                                         {
-                                            metricValue.YValue = Convert.ToInt32( record.value );
+                                            if ( metricValue.YValue != Convert.ToInt32( record.value ) )
+                                            {
+                                                metricValue.YValue = Convert.ToInt32( record.value );
+                                            }
                                         }
                                     }
                                 }
