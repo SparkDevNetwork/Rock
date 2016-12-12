@@ -162,7 +162,10 @@ namespace RockWeb.Blocks.Reporting
                 AnalyticsDimDate analyticsDimDate = new AnalyticsDimDate();
                 analyticsDimDate.DateKey = generateDate.ToString( "yyyyMMdd" ).AsInteger();
                 analyticsDimDate.Date = generateDate.Date;
-                analyticsDimDate.FullDateDescription = string.Empty;
+
+                // TODO: Long Date (Monday January 1st, 2016)
+                analyticsDimDate.FullDateDescription = string.Empty; 
+
                 analyticsDimDate.DayOfWeek = generateDate.DayOfWeek.ConvertToInt();
                 analyticsDimDate.DayOfWeekName = generateDate.DayOfWeek.ConvertToString();
 
@@ -182,7 +185,7 @@ namespace RockWeb.Blocks.Reporting
                 analyticsDimDate.SundayDate = generateDate.SundayDate();
 
                 // TODO: Is this right?
-                analyticsDimDate.CalendarMonthNumberInYear = generateDate.Month;
+                //Jon will look into this: nalyticsDimDate.CalendarMonthNumberInYear = generateDate.Month;
                 analyticsDimDate.CalendarMonth = generateDate.Month;
                 analyticsDimDate.CalendarMonthName = generateDate.ToString( "MMMM" );
                 analyticsDimDate.CalendarMonthNameAbbrevated = generateDate.ToString( "MMM" );
@@ -207,7 +210,7 @@ namespace RockWeb.Blocks.Reporting
                 fiscalWeek = fiscalWeek < 1 ? fiscalWeek + 52 : fiscalWeek;
 
                 analyticsDimDate.FiscalWeek = fiscalWeek;
-                analyticsDimDate.FiscalWeekNumberInYear = generateDate.GetWeekOfYear( RockDateTime.FirstDayOfWeek );
+                //Jon will look into this: analyticsDimDate.FiscalWeekNumberInYear = generateDate.GetWeekOfYear( RockDateTime.FirstDayOfWeek );
                 analyticsDimDate.FiscalMonth = generateDate.ToString( "MMMM" );
                 analyticsDimDate.FiscalMonthAbbrevated = generateDate.ToString( "MMM" );
                 analyticsDimDate.FiscalMonthNumberInYear = generateDate.Month;
@@ -265,16 +268,19 @@ namespace RockWeb.Blocks.Reporting
 
                 analyticsDimDate.EasterIndicator = generateDate == easterSundayForYear;
 
-                // Easter Week starts the Sunday before Easter (Palm Sunday) and ends on Holy Saturday (the day before Easter Sunday)
+                // Traditional Easter Week starts the Sunday before Easter (Palm Sunday) and ends on Holy Saturday (the day before Easter Sunday),
+                // TODO: However, for the purposes of Rock Metrics, this is just week starting the Monday of or before the Holiday date
                 int daysUntilEaster = ( easterSundayForYear - generateDate ).Days;
                 analyticsDimDate.EasterWeekIndicator = daysUntilEaster >= 1 && daysUntilEaster < 8;
-
                 analyticsDimDate.ChristmasIndicator = generateDate.Month == 12 && generateDate.Day == 25;
 
-                // Christmas week is 12/24-12/30
-                analyticsDimDate.ChristmasWeekIndicator = generateDate.Minute == 12 && ( generateDate.Day >= 24 && generateDate.Day <= 30 );
+                // Traditional Christmas week is 12/24-12/30
+                // TODO: However, for the purposes of Rock Metrics, this is just week starting the Monday of or before the Holiday date
+                analyticsDimDate.ChristmasWeekIndicator = generateDate.Month == 12 && ( generateDate.Day >= 24 && generateDate.Day <= 30 );
 
                 analyticsDimDate.HolidayIndicator = holidayDatesForYear.Any( a => a.Date == generateDate ) || analyticsDimDate.ChristmasIndicator || analyticsDimDate.EasterIndicator;
+
+                // TODO: Week Inclusive starting Monday for all holidays
                 analyticsDimDate.WeekHolidayIndicator = analyticsDimDate.ChristmasWeekIndicator || analyticsDimDate.EasterWeekIndicator;
 
                 generatedDates.Add( analyticsDimDate );
