@@ -66,7 +66,7 @@ namespace Rock.UniversalSearch.IndexComponents
                     var config = new ConnectionSettings( pool, httpConnection );
                     _client = new ElasticClient( config );
                 }
-                catch (Exception ex) { }
+                catch { }
             }
         }
     }

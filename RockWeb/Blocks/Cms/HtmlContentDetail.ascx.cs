@@ -138,7 +138,12 @@ namespace RockWeb.Blocks.Cms
             ShowView();
         }
 
-        protected void lbEdit_Click( object sender, EventArgs e )
+        /// <summary>
+        /// Handles the Click event of the lbQuickEdit control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void lbQuickEdit_Click( object sender, EventArgs e )
         {
             ShowSettings();
         }
@@ -362,8 +367,8 @@ namespace RockWeb.Blocks.Cms
                         {1};
                     }});
                 }});
-                ", upnlHtmlContent.ClientID, this.Page.ClientScript.GetPostBackEventReference( lbEdit, "" ) );
-                ScriptManager.RegisterStartupScript( lbEdit, lbEdit.GetType(), string.Format( "html-content-block-{0}", this.BlockId ), script, true );
+                ", upnlHtmlContent.ClientID, this.Page.ClientScript.GetPostBackEventReference( lbQuickEdit, "" ) );
+                ScriptManager.RegisterStartupScript( lbQuickEdit, lbQuickEdit.GetType(), string.Format( "html-content-block-{0}", this.BlockId ), script, true );
             }
         }
 
