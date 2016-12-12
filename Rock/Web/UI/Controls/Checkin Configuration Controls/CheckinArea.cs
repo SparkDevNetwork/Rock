@@ -226,6 +226,7 @@ namespace Rock.Web.UI.Controls
         /// Sets the type of the group.
         /// </summary>
         /// <param name="groupType">Type of the group.</param>
+        /// <param name="rockContext">The rock context.</param>
         public void SetGroupType( GroupType groupType, RockContext rockContext )
         {
             EnsureChildControls();
@@ -386,6 +387,7 @@ namespace Rock.Web.UI.Controls
         /// <summary>
         /// Creates the group type attribute controls.
         /// </summary>
+        /// <param name="groupType">Type of the group.</param>
         /// <param name="rockContext">The rock context.</param>
         public void CreateGroupTypeAttributeControls( GroupType groupType,  RockContext rockContext )
         {
