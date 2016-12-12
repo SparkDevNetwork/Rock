@@ -22,6 +22,7 @@ using System.Runtime.Serialization;
 
 using Rock.Data;
 using Rock.Model;
+using Rock.Security;
 
 namespace Rock.Web.Cache
 {
@@ -193,6 +194,20 @@ namespace Rock.Web.Cache
             }
         }
         private List<int> categoryIds = null;
+
+        /// <summary>
+        /// Gets the parent authority.
+        /// </summary>
+        /// <value>
+        /// The parent authority.
+        /// </value>
+        public override ISecured ParentAuthority
+        {
+            get
+            {
+                return this.ParentCategory != null ? this.ParentCategory : base.ParentAuthority;
+            }
+        }
 
         #endregion
 

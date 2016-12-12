@@ -39,9 +39,9 @@ namespace RockWeb.Blocks.Finance
     [DisplayName( "Contribution Statement Lava" )]
     [Category( "Finance" )]
     [Description( "Block for displaying a Lava based contribution statement." )]
-    [AccountsField("Accounts", "A selection of accounts to include on the statement. If none are selected all accounts that are tax-deductible will be uses.", false, order: 0 )]
-    [BooleanField("Display Pledges", "Determines if pledges should be shown.", true, order:1)]
-    [CodeEditorField("Lava Template", "The Lava template to use for the contribution statement.", CodeEditorMode.Lava, CodeEditorTheme.Rock, 500, true, @"{% capture pageTitle %}{{ 'Global' | Attribute:'OrganizationName' }} | Contribution Statement{%endcapture%}
+    [AccountsField( "Accounts", "A selection of accounts to include on the statement. If none are selected all accounts that are tax-deductible will be uses.", false, order: 0 )]
+    [BooleanField( "Display Pledges", "Determines if pledges should be shown.", true, order: 1 )]
+    [CodeEditorField( "Lava Template", "The Lava template to use for the contribution statement.", CodeEditorMode.Lava, CodeEditorTheme.Rock, 500, true, @"{% capture pageTitle %}{{ 'Global' | Attribute:'OrganizationName' }} | Contribution Statement{%endcapture%}
 {{ pageTitle | SetPageTitle }}
 
 <div class=""row margin-b-xl"">
@@ -252,13 +252,14 @@ namespace RockWeb.Blocks.Finance
 
             if ( GetAttributeValue( "AllowPersonQuerystring" ).AsBoolean() )
             {
-                if ( !string.IsNullOrWhiteSpace( Request["PersonGuid"] ) ){
+                if ( !string.IsNullOrWhiteSpace( Request["PersonGuid"] ) )
+                {
                     Guid? personGuid = Request["PersonGuid"].AsGuidOrNull();
 
                     if ( personGuid.HasValue )
                     {
                         var person = new PersonService( rockContext ).Get( personGuid.Value );
-                        if (person != null )
+                        if ( person != null )
                         {
                             targetPerson = person;
                         }
@@ -267,14 +268,15 @@ namespace RockWeb.Blocks.Finance
             }
 
             var qry = financialTransactionDetailService.Queryable().AsNoTracking()
-                        .Where( t=> t.Transaction.AuthorizedPersonAlias.Person.GivingId == targetPerson.GivingId );
+                        .Where( t => t.Transaction.AuthorizedPersonAlias.Person.GivingId == targetPerson.GivingId );
 
             qry = qry.Where( t => t.Transaction.TransactionDateTime.Value.Year == statementYear );
 
             if ( string.IsNullOrWhiteSpace( GetAttributeValue( "Accounts" ) ) )
             {
                 qry = qry.Where( t => t.Account.IsTaxDeductible );
-            } else
+            }
+            else
             {
                 var accountGuids = GetAttributeValue( "Accounts" ).Split( ',' ).Select( Guid.Parse ).ToList();
                 qry = qry.Where( t => accountGuids.Contains( t.Account.Guid ) );
@@ -308,11 +310,11 @@ namespace RockWeb.Blocks.Finance
                                         groupMemberQry,
                                         p => p.Id,
                                         m => m.PersonId,
-                                        (p, m) => new {p, m})
-                                    .SelectMany( x => x.m.DefaultIfEmpty(), (y,z) => new { Person = y.p, GroupMember = z} )
+                                        ( p, m ) => new { p, m } )
+                                    .SelectMany( x => x.m.DefaultIfEmpty(), ( y, z ) => new { Person = y.p, GroupMember = z } )
                                     .Select( p => new { FirstName = p.Person.NickName, LastName = p.Person.LastName, FamilyRoleOrder = p.GroupMember.GroupRole.Order, Gender = p.Person.Gender, PersonId = p.Person.Id } )
-                                    .DistinctBy(p => p.PersonId)
-                                    .OrderBy(p => p.FamilyRoleOrder).ThenBy(p => p.Gender)
+                                    .DistinctBy( p => p.PersonId )
+                                    .OrderBy( p => p.FamilyRoleOrder ).ThenBy( p => p.Gender )
                                     .ToList();
 
             // make a list of person ids in the giving group
@@ -325,7 +327,7 @@ namespace RockWeb.Blocks.Finance
 
             string salutation = string.Empty;
 
-            if (givingGroup.GroupBy(g => g.LastName).Count() == 1 )
+            if ( givingGroup.GroupBy( g => g.LastName ).Count() == 1 )
             {
                 salutation = string.Join( ", ", givingGroup.Select( g => g.FirstName ) ) + " " + givingGroup.FirstOrDefault().LastName;
                 if ( salutation.Contains( "," ) )
@@ -379,19 +381,20 @@ namespace RockWeb.Blocks.Finance
             var pledges = new FinancialPledgeService( rockContext ).Queryable().AsNoTracking()
                                 .Where( p =>
                                      p.PersonAlias.Person.GivingId == targetPerson.GivingId
-                                    && (p.StartDate.Year == statementYear || p.EndDate.Year == statementYear))
-                                .GroupBy(p => p.Account)
-                                .Select(g => new PledgeSummary {
-                                                    AccountId = g.Key.Id,
-                                                    AccountName = g.Key.Name,
-                                                    AmountPledged = g.Sum( p => p.TotalAmount ),
-                                                    PledgeStartDate = g.Min(p => p.StartDate),
-                                                    PledgeEndDate = g.Max( p => p.EndDate)
+                                    && (p.StartDate.Year == statementYear || p.EndDate.Year == statementYear) )
+                                .GroupBy( p => p.Account )
+                                .Select( g => new PledgeSummary
+                                {
+                                    AccountId = g.Key.Id,
+                                    AccountName = g.Key.Name,
+                                    AmountPledged = g.Sum( p => p.TotalAmount ),
+                                    PledgeStartDate = g.Min( p => p.StartDate ),
+                                    PledgeEndDate = g.Max( p => p.EndDate )
                                 } )
                                 .ToList();
 
             // add detailed pledge information
-            foreach(var pledge in pledges )
+            foreach ( var pledge in pledges )
             {
                 var adjustedPedgeEndDate = pledge.PledgeEndDate.Value.Date.AddHours( 23 ).AddMinutes( 59 ).AddSeconds( 59 );
                 pledge.AmountGiven = new FinancialTransactionDetailService( rockContext ).Queryable()
