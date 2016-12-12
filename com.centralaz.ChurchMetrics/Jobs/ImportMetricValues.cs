@@ -66,6 +66,7 @@ namespace com.centralaz.ChurchMetrics.Jobs
             var metricService = new MetricService( rockContext );
             var metricPartitionService = new MetricPartitionService( rockContext );
             var metricValueService = new MetricValueService( rockContext );
+            var metricValuePartitionService = new MetricValuePartitionService( rockContext );
             var scheduleService = new ScheduleService( rockContext );
 
             try
@@ -219,6 +220,7 @@ namespace com.centralaz.ChurchMetrics.Jobs
                                 {
                                     if ( Convert.ToBoolean( record.replaces ) )
                                     {
+                                        metricValuePartitionService.DeleteRange( metricValue.MetricValuePartitions );
                                         metricValueService.Delete( metricValue );
                                     }
                                     else
