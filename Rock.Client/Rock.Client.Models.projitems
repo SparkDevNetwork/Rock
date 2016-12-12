@@ -161,5 +161,18 @@
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\BenevolenceRequestDocument.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\BenevolenceResult.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\MetricPartition.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\ConnectionOpportunityGroupConfig.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\ConnectionOpportunityPlacementGroup.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\ContentChannelItemAssociation.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\Interaction.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\InteractionChannel.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\InteractionComponent.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\InteractionDeviceType.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\InteractionSession.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\Notification.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\NotificationRecipient.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\SignatureDocument.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\SignatureDocumentTemplate.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\SignatureDocumentType.cs" />
   </ItemGroup>
 </Project>
