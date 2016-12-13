@@ -130,9 +130,9 @@
     <Compile Include="Migrations\201612052305420_WorkflowTypeCleanupFields.Designer.cs">
       <DependentUpon>201612052305420_WorkflowTypeCleanupFields.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201612131707111_Analytics1.cs" />
-    <Compile Include="Migrations\201612131707111_Analytics1.Designer.cs">
-      <DependentUpon>201612131707111_Analytics1.cs</DependentUpon>
+    <Compile Include="Migrations\201612121647292_HotFixesFrom6_1.cs" />
+    <Compile Include="Migrations\201612121647292_HotFixesFrom6_1.Designer.cs">
+      <DependentUpon>201612121647292_HotFixesFrom6_1.cs</DependentUpon>
     </Compile>
     <Compile Include="Migrations\Version 6.0\Version 1.6.0\201609282147388_WaitList.cs" />
     <Compile Include="Migrations\Version 6.0\Version 1.6.0\201609282147388_WaitList.Designer.cs">
@@ -2384,8 +2384,8 @@
     <EmbeddedResource Include="Migrations\201612052305420_WorkflowTypeCleanupFields.resx">
       <DependentUpon>201612052305420_WorkflowTypeCleanupFields.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201612131707111_Analytics1.resx">
-      <DependentUpon>201612131707111_Analytics1.cs</DependentUpon>
+    <EmbeddedResource Include="Migrations\201612121647292_HotFixesFrom6_1.resx">
+      <DependentUpon>201612121647292_HotFixesFrom6_1.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 6.0\Version 1.6.0\201609282147388_WaitList.resx">
       <DependentUpon>201609282147388_WaitList.cs</DependentUpon>
@@ -4042,6 +4042,7 @@
     <Content Include="Migrations\201610312310571_ConnectionGroupConfig_ufnCrm_GetGradeOffset.sql" />
     <Content Include="Migrations\201610312310571_ConnectionGroupConfig_ufnCrm_GetAge.sql" />
     <Content Include="Migrations\201610031959052_FamilyAnalyticsUpdate_spCrm_FamilyAnalyticsEraDataset.sql" />
+    <Content Include="Migrations\201612121647292_HotFixesFrom6_1.sql" />
     <Content Include="Migrations\Version 6.0\Version 1.6.0\201608171937068_GivingAnalyticsAccounts_AccountTotals.sql" />
     <Content Include="Migrations\Version 6.0\Version 1.6.0\201608171937068_GivingAnalyticsAccounts_FirstLastEverDates.sql" />
     <Content Include="Migrations\Version 6.0\Version 1.6.0\201608171937068_GivingAnalyticsAccounts_PersonSummary.sql" />

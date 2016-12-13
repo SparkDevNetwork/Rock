@@ -66,7 +66,11 @@
       <Private>True</Private>
     </Reference>
     <Reference Include="Elasticsearch.Net, Version=2.0.0.0, Culture=neutral, PublicKeyToken=96c599bbe3e70f5d, processorArchitecture=MSIL">
-      <HintPath>..\packages\Elasticsearch.Net.2.4.3\lib\net45\Elasticsearch.Net.dll</HintPath>
+      <HintPath>..\packages\Elasticsearch.Net.2.4.6\lib\net45\Elasticsearch.Net.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Elasticsearch.Net.Aws, Version=2.2.0.0, Culture=neutral, PublicKeyToken=7b2b00f739ab9aca, processorArchitecture=MSIL">
+      <HintPath>..\packages\Elasticsearch.Net.Aws.2.2.0\lib\net45\Elasticsearch.Net.Aws.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="EntityFramework, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL">
@@ -555,6 +559,7 @@
     <Compile Include="Jobs\ProcessAnalyticsDimPerson.cs" />
     <Compile Include="Jobs\SendCreditCardExpirationNotices.cs" />
     <Compile Include="Jobs\IndexEntities.cs" />
+    <Compile Include="Jobs\SendDataViewEmail.cs" />
     <Compile Include="Jobs\UniversalSearchBulkIndex.cs" />
     <Compile Include="Jobs\CalculateGroupRequirements.cs" />
     <Compile Include="Jobs\CalculateMetrics.cs" />
@@ -1068,8 +1073,15 @@
     <Compile Include="Plugin\HotFixes\004_FixGradeRequiredAttribute.cs" />
     <Compile Include="Plugin\HotFixes\005_FixCheckinAdminRoute.cs" />
     <Compile Include="Plugin\HotFixes\006_FixCheckinPrevPages.cs" />
+    <Compile Include="Plugin\HotFixes\015_CheckinByBirthdate.cs" />
+    <Compile Include="Plugin\HotFixes\009_FixCheckinAttributes.cs" />
     <Compile Include="Plugin\HotFixes\008_FamilyAnalyticsUpdate.cs" />
     <Compile Include="Plugin\HotFixes\007_FixGroupAndBenevolenceSecurity.cs" />
+    <Compile Include="Plugin\HotFixes\014_FixEraGiveAttribValues.cs" />
+    <Compile Include="Plugin\HotFixes\013_FixSystemEmailTo_1828.cs" />
+    <Compile Include="Plugin\HotFixes\012_FixAttendanceAnalyticsScript.cs" />
+    <Compile Include="Plugin\HotFixes\011_FixNameProfileChangeRequest.cs" />
+    <Compile Include="Plugin\HotFixes\010_FixGetSpouse.cs" />
     <Compile Include="Plugin\Migration.cs" />
     <Compile Include="Plugin\VersionAttribute.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -1185,6 +1197,7 @@
     <Compile Include="Security\Authentication\Twitter.cs" />
     <Compile Include="Transactions\SaveCommunicationTransaction.cs" />
     <Compile Include="UniversalSearch\FormattedSearchResult.cs" />
+    <Compile Include="UniversalSearch\IndexComponents\ElasticsearchAws.cs" />
     <Compile Include="UniversalSearch\IndexComponents\Elasticsearch.cs" />
     <Compile Include="UniversalSearch\IndexContainer.cs" />
     <Compile Include="UniversalSearch\IndexComponent.cs" />
