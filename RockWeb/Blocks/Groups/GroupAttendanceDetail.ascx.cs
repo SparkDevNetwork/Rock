@@ -43,7 +43,7 @@ namespace RockWeb.Blocks.Groups
     [BooleanField( "Allow Campus Filter", "Should block add an option to allow filtering people and attendance counts by campus?", false, "", 2 )]
     [WorkflowTypeField( "Workflow", "An optional workflow type to launch whenever attendance is saved. The Group will be used as the workflow 'Entity' when processing is started. Additionally if a 'StartDateTime' and/or 'Schedule' attribute exist, their values will be set with the corresponding saved attendance values.", false, false, "", "", 3 )]
     [MergeTemplateField( "Attendance Roster Template", "", false, "", "", 4 )]
-    [CodeEditorField( "Lava Template", "An optional lava template to appear next to each person in the list.", CodeEditorMode.Lava, CodeEditorTheme.Rock, 400, true, "", "", 5 )]
+    [CodeEditorField( "Lava Template", "An optional lava template to appear next to each person in the list.", CodeEditorMode.Lava, CodeEditorTheme.Rock, 400, false, "", "", 5 )]
 
     public partial class GroupAttendanceDetail : RockBlock
     {
