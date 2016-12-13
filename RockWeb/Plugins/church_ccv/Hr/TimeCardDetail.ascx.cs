@@ -402,7 +402,8 @@ namespace RockWeb.Plugins.church_ccv.Hr
                     // timecard will be readonly, and not show the approve button
                 }
             }
-            else
+
+            if ( timeCardPersonId != this.CurrentPersonId )
             {
                 if ( this.IsUserAuthorized( Authorization.APPROVE ) || approvers.Any( a => a.Id == this.CurrentPersonId ) )
                 {
