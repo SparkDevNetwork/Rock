@@ -75,7 +75,7 @@ namespace Rock.Model
         /// The authorized person key.
         /// </value>
         [DataMember]
-        public int AuthorizedPersonKey { get; set; }
+        public int? AuthorizedPersonKey { get; set; }
 
         /// <summary>
         /// Gets or sets the authorized person key 
@@ -85,7 +85,7 @@ namespace Rock.Model
         /// The authorized person key.
         /// </value>
         [DataMember]
-        public int AuthorizedCurrentPersonKey { get; set; }
+        public int? AuthorizedCurrentPersonKey { get; set; }
 
         /// <summary>
         /// Number of Days since the last time this giving unit did a TransactionType that is the same as this TransactionType

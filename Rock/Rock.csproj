@@ -610,6 +610,7 @@
     <Compile Include="Model\AnalyticsDimFinancialTransactionCurrencyType.cs" />
     <Compile Include="Model\AnalyticsDimFamilyHistorical.cs" />
     <Compile Include="Model\AnalyticsDimFamilyCurrent.cs" />
+    <Compile Include="Model\AnalyticsDimFamilyHeadOfHousehold.cs" />
     <Compile Include="Model\AnalyticsDimPersonHistorical.cs" />
     <Compile Include="Model\AnalyticsDimPersonCurrent.cs" />
     <Compile Include="Model\AnalyticsDimPersonSuffix.cs" />

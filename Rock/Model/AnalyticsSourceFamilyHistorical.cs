@@ -174,6 +174,24 @@ namespace Rock.Model
         [DataMember]
         public bool IsEra { get; set; }
 
+        /// <summary>
+        /// Gets or sets the mailing address location identifier.
+        /// </summary>
+        /// <value>
+        /// The mailing address location identifier.
+        /// </value>
+        [DataMember]
+        public int? MailingAddressLocationId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the mapped address location identifier.
+        /// </summary>
+        /// <value>
+        /// The mapped address location identifier.
+        /// </value>
+        [DataMember]
+        public int? MappedAddressLocationId { get; set; }
+
         #endregion
 
         #region Virtual

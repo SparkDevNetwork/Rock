@@ -77,23 +77,97 @@ namespace Rock.Migrations
                 .Index(t => t.Date, unique: true);
             
             CreateTable(
+                "dbo.AnalyticsSourceAttendance",
+                c => new
+                    {
+                        Id = c.Int(nullable: false, identity: true),
+                        AttendanceDateKey = c.Int(nullable: false),
+                        AttendanceTypeId = c.Int(),
+                        DaysSinceLastAttendanceOfType = c.Int(),
+                        IsFirstAttendanceOfType = c.Boolean(nullable: false),
+                        Count = c.Int(nullable: false),
+                        PersonKey = c.Int(nullable: false),
+                        CurrentPersonKey = c.Int(nullable: false),
+                        LocationId = c.Int(),
+                        CampusId = c.Int(),
+                        ScheduleId = c.Int(),
+                        GroupId = c.Int(),
+                        PersonAliasId = c.Int(),
+                        DeviceId = c.Int(),
+                        SearchTypeName = c.String(),
+                        StartDateTime = c.DateTime(nullable: false),
+                        EndDateTime = c.DateTime(),
+                        RSVP = c.Int(nullable: false),
+                        DidAttend = c.Boolean(),
+                        Note = c.String(),
+                        SundayDate = c.DateTime(nullable: false, storeType: "date"),
+                        Guid = c.Guid(nullable: false),
+                        ForeignId = c.Int(),
+                        ForeignGuid = c.Guid(),
+                        ForeignKey = c.String(maxLength: 100),
+                    })
+                .PrimaryKey(t => t.Id)
+                .Index(t => t.AttendanceDateKey)
+                .Index(t => t.AttendanceTypeId)
+                .Index(t => t.LocationId)
+                .Index(t => t.ScheduleId)
+                .Index(t => t.GroupId)
+                .Index(t => t.DeviceId)
+                .Index(t => t.StartDateTime)
+                .Index(t => t.Guid, unique: true);
+            
+            CreateTable(
+                "dbo.AnalyticsSourceFamilyHistorical",
+                c => new
+                    {
+                        Id = c.Int(nullable: false, identity: true),
+                        GroupId = c.Int(nullable: false),
+                        CurrentRowIndicator = c.Boolean(nullable: false),
+                        EffectiveDate = c.DateTime(nullable: false, storeType: "date"),
+                        ExpireDate = c.DateTime(nullable: false, storeType: "date"),
+                        Name = c.String(maxLength: 100),
+                        FamilyTitle = c.String(maxLength: 250),
+                        CampusId = c.Int(),
+                        ConnectionStatus = c.String(maxLength: 250),
+                        IsFamilyActive = c.Boolean(nullable: false),
+                        AdultCount = c.Int(nullable: false),
+                        ChildCount = c.Int(nullable: false),
+                        HeadOfHouseholdPersonKey = c.Int(),
+                        IsEra = c.Boolean(nullable: false),
+                        MailingAddressLocationId = c.Int(),
+                        MappedAddressLocationId = c.Int(),
+                        Guid = c.Guid(nullable: false),
+                        ForeignId = c.Int(),
+                        ForeignGuid = c.Guid(),
+                        ForeignKey = c.String(maxLength: 100),
+                    })
+                .PrimaryKey(t => t.Id)
+                .Index(t => t.Guid, unique: true);
+            
+            CreateTable(
                 "dbo.AnalyticsSourceFinancialTransaction",
                 c => new
                     {
                         Id = c.Int(nullable: false, identity: true),
                         TransactionKey = c.String(maxLength: 40),
                         TransactionDateKey = c.Int(nullable: false),
+                        AuthorizedPersonKey = c.Int(nullable: false),
+                        AuthorizedCurrentPersonKey = c.Int(nullable: false),
+                        DaysSinceLastTransactionOfType = c.Int(),
+                        IsFirstTransactionOfType = c.Boolean(nullable: false),
+                        AuthorizedFamilyId = c.Int(),
+                        IsScheduled = c.Boolean(nullable: false),
+                        GivingGroupId = c.Int(),
+                        GivingId = c.String(maxLength: 20),
+                        Count = c.Int(nullable: false),
                         TransactionDateTime = c.DateTime(nullable: false),
                         TransactionCode = c.String(maxLength: 50),
                         Summary = c.String(),
                         TransactionTypeValueId = c.Int(nullable: false),
                         SourceTypeValueId = c.Int(),
-                        IsScheduled = c.Boolean(nullable: false),
                         AuthorizedPersonAliasId = c.Int(),
                         ProcessedByPersonAliasId = c.Int(),
                         ProcessedDateTime = c.DateTime(),
-                        GivingGroupId = c.Int(),
-                        GivingId = c.String(maxLength: 20),
                         BatchId = c.Int(),
                         FinancialGatewayId = c.Int(),
                         EntityTypeId = c.Int(),
@@ -103,10 +177,6 @@ namespace Rock.Migrations
                         AccountId = c.Int(nullable: false),
                         CurrencyTypeValueId = c.Int(),
                         CreditCardTypeValueId = c.Int(),
-                        DaysSinceLastTransactionOfType = c.Int(),
-                        IsFirstTransactionOfType = c.Boolean(nullable: false),
-                        AuthorizedFamilyId = c.Int(),
-                        Count = c.Int(nullable: false),
                         Amount = c.Decimal(nullable: false, precision: 18, scale: 2),
                         ModifiedDateTime = c.DateTime(),
                         Guid = c.Guid(nullable: false),
@@ -185,7 +255,7 @@ namespace Rock.Migrations
             
             AddColumn("dbo.Attribute", "IsAnalytic", c => c.Boolean(nullable: false));
             AddColumn("dbo.Attribute", "IsAnalyticHistory", c => c.Boolean(nullable: false));
-            AddColumn("dbo.Metric", "EnableAnalytics", c => c.Boolean(nullable: false));
+            AddColumn( "dbo.Metric", "EnableAnalytics", c => c.Boolean( nullable: false ) );
 
             // this could take a minute or so on a large database
             Sql( @"
@@ -212,7 +282,7 @@ namespace Rock.Migrations
 	[ValueAsBoolean] ASC
 )" );
 
-            // index to help speed up ETL operations
+            // indexes to help speed up ETL operations
             Sql( @"
 CREATE NONCLUSTERED INDEX [IX_GivingID_TransactionDateTime_TransactionTypeValueId] ON [dbo].[AnalyticsSourceFinancialTransaction]
 (
@@ -220,6 +290,17 @@ CREATE NONCLUSTERED INDEX [IX_GivingID_TransactionDateTime_TransactionTypeValueI
 	[TransactionTypeValueId] ASC,
 	[TransactionDateTime] ASC
 )" );
+
+
+            Sql( @"
+CREATE UNIQUE NONCLUSTERED INDEX [IX_PersonId_ExpireDate] ON [dbo].[AnalyticsSourcePersonHistorical]
+(
+	[PersonId] ASC,
+	[ExpireDate] ASC
+)
+INCLUDE ( [Id]) 
+
+" );
 
             // Enforce that there isn't more than one CurrentRow per person
             // Notice the cool 'where CurrentRowIndicator = 1' filter, Woohooo!
@@ -230,6 +311,7 @@ CREATE UNIQUE NONCLUSTERED  INDEX [IX_PersonIdCurrentRow] ON [dbo].[AnalyticsSou
 	[CurrentRowIndicator]
 ) where CurrentRowIndicator = 1 
 " );
+
         }
         
         /// <summary>
@@ -257,7 +339,18 @@ CREATE UNIQUE NONCLUSTERED  INDEX [IX_PersonIdCurrentRow] ON [dbo].[AnalyticsSou
             DropIndex("dbo.AnalyticsSourceFinancialTransaction", new[] { "TransactionTypeValueId" });
             DropIndex("dbo.AnalyticsSourceFinancialTransaction", new[] { "TransactionDateKey" });
             DropIndex("dbo.AnalyticsSourceFinancialTransaction", new[] { "TransactionKey" });
-            
+
+            DropIndex("dbo.AnalyticsSourceFamilyHistorical", new[] { "Guid" });
+
+            DropIndex("dbo.AnalyticsSourceAttendance", new[] { "Guid" });
+            DropIndex("dbo.AnalyticsSourceAttendance", new[] { "StartDateTime" });
+            DropIndex("dbo.AnalyticsSourceAttendance", new[] { "DeviceId" });
+            DropIndex("dbo.AnalyticsSourceAttendance", new[] { "GroupId" });
+            DropIndex("dbo.AnalyticsSourceAttendance", new[] { "ScheduleId" });
+            DropIndex("dbo.AnalyticsSourceAttendance", new[] { "LocationId" });
+            DropIndex("dbo.AnalyticsSourceAttendance", new[] { "AttendanceTypeId" });
+            DropIndex("dbo.AnalyticsSourceAttendance", new[] { "AttendanceDateKey" });
+
             DropIndex("dbo.AnalyticsDimDate", new[] { "Date" });
 
             DropColumn("dbo.Metric", "EnableAnalytics");
@@ -269,6 +362,9 @@ CREATE UNIQUE NONCLUSTERED  INDEX [IX_PersonIdCurrentRow] ON [dbo].[AnalyticsSou
 
             DropTable("dbo.AnalyticsSourcePersonHistorical");
             DropTable("dbo.AnalyticsSourceFinancialTransaction");
+            DropTable("dbo.AnalyticsSourceFamilyHistorical");
+            DropTable("dbo.AnalyticsSourceAttendance");
+            
             DropTable("dbo.AnalyticsDimDate");
         }
     }

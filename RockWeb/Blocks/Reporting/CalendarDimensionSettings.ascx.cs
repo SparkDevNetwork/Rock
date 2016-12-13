@@ -290,6 +290,8 @@ namespace RockWeb.Blocks.Reporting
 
             var rockContext = new RockContext();
             AnalyticsDimDate.BulkInsert( rockContext, generatedDates );
+
+            nbGenerateSuccess.Text = string.Format( "Successfully generated {0} AnalyticDimDate records", generatedDates.Count );
         }
 
         #endregion

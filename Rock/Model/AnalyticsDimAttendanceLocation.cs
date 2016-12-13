@@ -152,6 +152,24 @@ namespace Rock.Model
         [Newtonsoft.Json.JsonConverter( typeof( DbGeographyConverter ) )]
         public DbGeography GeoFence { get; set; }
 
+        /// <summary>
+        /// Gets or sets the latitude (From GeoPoint)
+        /// </summary>
+        /// <value>
+        /// The latitude.
+        /// </value>
+        [DataMember]
+        public double? Latitude { get; set; }
+
+        /// <summary>
+        /// Gets or sets the longitude (From GeoPoint)
+        /// </summary>
+        /// <value>
+        /// The longitude.
+        /// </value>
+        [DataMember]
+        public double? Longitude { get; set; }
+
         #endregion
     }
 }
