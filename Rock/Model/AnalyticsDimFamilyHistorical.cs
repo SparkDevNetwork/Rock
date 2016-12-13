@@ -166,8 +166,8 @@ namespace Rock.Model
         [Newtonsoft.Json.JsonConverter( typeof( DbGeographyConverter ) )]
         public DbGeography MailingAddressGeoFence { get; set; }
 
-        /// <summary>
-        /// Gets or sets the latitude.
+        /// <summary> 
+        /// Gets or sets the latitude. (From MailingAddressGeoPoint)
         /// </summary>
         /// <value>
         /// The latitude.
@@ -176,7 +176,7 @@ namespace Rock.Model
         public double? MailingAddressLatitude { get; set; }
 
         /// <summary>
-        /// Gets or sets the longitude.
+        /// Gets or sets the longitude. (From MailingAddressGeoPoint)
         /// </summary>
         /// <value>
         /// The longitude.
@@ -290,7 +290,7 @@ namespace Rock.Model
         public DbGeography MappedAddressGeoFence { get; set; }
 
         /// <summary>
-        /// Gets or sets the latitude.
+        /// Gets or sets the latitude. (From MappedAddressGeoPoint)
         /// </summary>
         /// <value>
         /// The latitude.
@@ -299,7 +299,7 @@ namespace Rock.Model
         public double? MappedAddressLatitude { get; set; }
 
         /// <summary>
-        /// Gets or sets the longitude.
+        /// Gets or sets the longitude. (From MappedAddressGeoPoint)
         /// </summary>
         /// <value>
         /// The longitude.

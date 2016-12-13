@@ -46,9 +46,15 @@ namespace Rock.Model
         /// <value>
         /// The name.
         /// </value>
-        [MaxLength( 250 )]
-        [DataMember( IsRequired = true )]
         public string Name { get; set; }
+
+        /// <summary>
+        /// Gets or sets the description.
+        /// </summary>
+        /// <value>
+        /// The description.
+        /// </value>
+        public string Description { get; set; }
 
         /// <summary>
         /// Gets or sets the order.

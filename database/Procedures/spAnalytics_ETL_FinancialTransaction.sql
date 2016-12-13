@@ -159,12 +159,17 @@ BEGIN
 
 
 
+  /* Updating these PersonKeys depends on AnalyticsSourcePersonHistorical getting populated and updated. 
+  -- It is probably best to schedule the ETL of AnalyticsSourcePersonHistorical to occur before spAnalytics_ETL_FinancialTransaction
+  -- However, if not, it will catch up on the next run of spAnalytics_ETL_FinancialTransaction
+  */
+  
   -- Update PersonKeys for whatever PersonKey the person had at the time of the transaction
-  UPDATE asft
+    UPDATE asft
     SET [AuthorizedPersonKey] = x.PersonKey
     FROM AnalyticsSourceFinancialTransaction asft
     CROSS APPLY (
-        SELECT TOP 1 Id [PersonKey] FROM AnalyticsSourcePersonHistorical ph 
+        SELECT TOP 1 ph.Id [PersonKey] FROM AnalyticsSourcePersonHistorical ph 
 		join PersonAlias pa on asft.AuthorizedPersonAliasId = pa.Id
 		where ph.PersonId = pa.PersonId
 		and asft.[TransactionDateTime] < ph.[ExpireDate]
@@ -177,9 +182,8 @@ BEGIN
     SET [AuthorizedCurrentPersonKey] = x.PersonKey
     FROM AnalyticsSourceFinancialTransaction asft
     CROSS APPLY (
-        SELECT TOP 1 Id [PersonKey] FROM AnalyticsSourcePersonHistorical ph 
+        SELECT TOP 1 pc.Id [PersonKey] FROM AnalyticsDimPersonCurrent pc
 		join PersonAlias pa on asft.AuthorizedPersonAliasId = pa.Id
-		where ph.PersonId = pa.PersonId
-		and ph.CurrentRowIndicator = 1
+		where pc.PersonId = pa.PersonId
         ) x
 END

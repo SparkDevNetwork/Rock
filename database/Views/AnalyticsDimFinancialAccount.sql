@@ -39,7 +39,8 @@ SELECT fa.Id [AccountId]
         END [ImageUrl]
     ,fa.[ImageBinaryFileId]
     ,fa.[Url]
-    ,c.NAME [Campus]
+    ,c.Name [CampusName]
+	,c.ShortCode [CampusShortCode]
     ,fa.[ParentAccountId]
 FROM FinancialAccount fa
 LEFT JOIN DefinedValue dvAccountType ON fa.AccountTypeValueId = dvAccountType.Id
