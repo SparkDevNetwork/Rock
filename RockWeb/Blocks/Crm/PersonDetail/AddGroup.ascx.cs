@@ -578,7 +578,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                 if ( Duplicates.ContainsKey( groupMember.Person.Guid ) )
                 {
                     var dupRow = new HtmlGenericControl( "div" );
-                    dupRow.AddCssClass( "row" );
+                    dupRow.AddCssClass( "row row-duplicate" );
                     dupRow.ID = string.Format( "dupRow_{0}", groupMemberGuidString );
                     phDuplicates.Controls.Add( dupRow );
 
@@ -597,7 +597,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                     LinkButton lbRemoveMember = new LinkButton();
                     lbRemoveMember.ID = string.Format( "lbRemoveMember_{0}", groupMemberGuidString );
                     lbRemoveMember.AddCssClass( "btn btn-danger btn-xs" );
-                    lbRemoveMember.Text = "Remove";
+                    lbRemoveMember.Text = "Do Not Add Individual";
                     lbRemoveMember.Click += lbRemoveMember_Click;
                     newPersonCol.Controls.Add( lbRemoveMember );
 
@@ -731,7 +731,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                     groupMembers.Select( m => m.Person.NickName ).ToList().AsDelimited( ", " ) );
             }
 
-            if ( location != null )
+            if ( location != null && location.GetFullStreetAddress().IsNotNullOrWhitespace() )
             {
                 personInfoHtml.AppendFormat( "<p><strong>Address</strong><br/>{0}</p>", location.GetFullStreetAddress().ConvertCrLfToHtmlBr() );
             }
@@ -1079,7 +1079,10 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             pnlGroupData.Visible = CurrentPageIndex == 0;
             pnlContactInfo.Visible = CurrentPageIndex == 1;
             pnlAttributes.Visible = CurrentPageIndex > 1 && CurrentPageIndex <= attributeControls.Count + 1;
-            pnlDuplicateWarning.Visible = CurrentPageIndex > attributeControls.Count + 1;
+
+            bool showDuplicates = (CurrentPageIndex > attributeControls.Count + 1) && phDuplicates.Controls.Count > 0;
+
+            pnlDuplicateWarning.Visible = showDuplicates;
 
             attributeControls.ForEach( c => c.Visible = false );
             if ( CurrentPageIndex > 1 && attributeControls.Count >= ( CurrentPageIndex - 1 ) )
@@ -1098,7 +1101,14 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 
             btnPrevious.Visible = CurrentPageIndex > 0;
             btnNext.Text = CurrentPageIndex > attributeControls.Count ?
-                ( CurrentPageIndex > ( attributeControls.Count + 1 ) ? "Confirm" : "Finish" ) : "Next";
+                (showDuplicates ? "Continue With Add" : "Finish" ) : "Next";
+
+            // If no panels are being show, they have cleared all the duplicates. Provide a message confirming this.
+            if ( !pnlGroupData.Visible && !pnlContactInfo.Visible && !pnlAttributes.Visible  && !pnlDuplicateWarning.Visible )
+            {
+                nbMessages.NotificationBoxType = NotificationBoxType.Success;
+                nbMessages.Text = "No more duplicates remain. Select Finish to complete the addition of these individuals.";
+            }
         }
 
         #endregion

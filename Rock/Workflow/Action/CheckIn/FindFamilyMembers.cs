@@ -58,10 +58,10 @@ namespace Rock.Workflow.Action.CheckIn
                     var people = service.GetByGroupId( family.Group.Id ).AsNoTracking();
                     if ( checkInState.CheckInType != null && checkInState.CheckInType.PreventInactivePeopele )
                     {
-                        var dvActive = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_ACTIVE.AsGuid() );
-                        if ( dvActive != null )
+                        var dvInactive = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_INACTIVE.AsGuid() );
+                        if ( dvInactive != null )
                         {
-                            people = people.Where( m => m.Person.RecordStatusValueId == dvActive.Id );
+                            people = people.Where( m => m.Person.RecordStatusValueId != dvInactive.Id );
                         }
                     }
 

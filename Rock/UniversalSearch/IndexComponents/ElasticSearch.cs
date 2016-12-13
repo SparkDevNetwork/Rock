@@ -30,7 +30,10 @@ namespace Rock.UniversalSearch.IndexComponents
     [TextField( "Node URL", "The URL of the ElasticSearch node (http://myserver:9200)", true, key: "NodeUrl" )]
     public class Elasticsearch : IndexComponent
     {
-        private ElasticClient _client;
+        /// <summary>
+        /// The Client
+        /// </summary>
+        protected ElasticClient _client;
 
         /// <summary>
         /// Gets a value indicating whether this instance is connected.
@@ -99,7 +102,7 @@ namespace Rock.UniversalSearch.IndexComponents
         /// <summary>
         /// Connects to server.
         /// </summary>
-        private void ConnectToServer()
+        protected virtual void ConnectToServer()
         {
             if ( !string.IsNullOrWhiteSpace( GetAttributeValue( "NodeUrl" ) ) )
             {
@@ -299,7 +302,7 @@ namespace Rock.UniversalSearch.IndexComponents
         /// </summary>
         /// <param name="entityType">Type of the entity.</param>
         /// <returns></returns>
-        private bool SupportsIndexFieldFiltering( Type entityType )
+        protected bool SupportsIndexFieldFiltering( Type entityType )
         {
             if ( entityType != null )
             {
@@ -328,193 +331,195 @@ namespace Rock.UniversalSearch.IndexComponents
         /// <returns></returns>
         public override List<IndexModelBase> Search( string query, SearchType searchType, List<int> entities, SearchFieldCriteria fieldCriteria, int? size, int? from, out long totalResultsAvailable )
         {
+            List<IndexModelBase> documents = new List<IndexModelBase>();
             totalResultsAvailable = 0;
 
-            ISearchResponse<dynamic> results = null;
-            List<SearchResultModel> searchResults = new List<SearchResultModel>();
-
-            QueryContainer queryContainer = new QueryContainer();
-
-            // add and field constraints
-            var searchDescriptor = new SearchDescriptor<dynamic>().AllIndices();
-
-            if ( entities == null || entities.Count == 0 )
+            if ( _client != null )
             {
-                searchDescriptor = searchDescriptor.AllTypes();
-            }
-            else
-            {
-                var entityTypes = new List<string>();
-                foreach ( var entityId in entities )
+                ISearchResponse<dynamic> results = null;
+                List<SearchResultModel> searchResults = new List<SearchResultModel>();
+
+                QueryContainer queryContainer = new QueryContainer();
+
+                // add and field constraints
+                var searchDescriptor = new SearchDescriptor<dynamic>().AllIndices();
+
+                if ( entities == null || entities.Count == 0 )
                 {
-                    // get entities search model name
-                    var entityType = new EntityTypeService( new RockContext() ).Get( entityId );
-                    entityTypes.Add( entityType.IndexModelType.Name.ToLower() );
+                    searchDescriptor = searchDescriptor.AllTypes();
+                }
+                else
+                {
+                    var entityTypes = new List<string>();
+                    foreach ( var entityId in entities )
+                    {
+                        // get entities search model name
+                        var entityType = new EntityTypeService( new RockContext() ).Get( entityId );
+                        entityTypes.Add( entityType.IndexModelType.Name.ToLower() );
+                    }
+
+                    searchDescriptor = searchDescriptor.Type( string.Join( ",", entityTypes ) ); // todo: consider adding indexmodeltype to the entity cache
                 }
 
-                searchDescriptor = searchDescriptor.Type( string.Join( ",", entityTypes ) ); // todo: consider adding indexmodeltype to the entity cache
-            }
-
-            QueryContainer matchQuery = null;
-            if ( fieldCriteria != null && fieldCriteria.FieldValues?.Count > 0 )
-            {
-                foreach ( var match in fieldCriteria.FieldValues )
+                QueryContainer matchQuery = null;
+                if ( fieldCriteria != null && fieldCriteria.FieldValues?.Count > 0 )
                 {
-                    if ( fieldCriteria.SearchType == CriteriaSearchType.Or )
+                    foreach ( var match in fieldCriteria.FieldValues )
                     {
-                        matchQuery |= new MatchQuery { Field = match.Field, Query = match.Value, Boost = match.Boost };
-                    }
-                    else
-                    {
-                        matchQuery &= new MatchQuery { Field = match.Field, Query = match.Value, Boost = match.Boost };
+                        if ( fieldCriteria.SearchType == CriteriaSearchType.Or )
+                        {
+                            matchQuery |= new MatchQuery { Field = match.Field, Query = match.Value, Boost = match.Boost };
+                        }
+                        else
+                        {
+                            matchQuery &= new MatchQuery { Field = match.Field, Query = match.Value, Boost = match.Boost };
+                        }
                     }
                 }
-            }
 
-            switch ( searchType )
-            {
-                case SearchType.ExactMatch:
-                    {
-                        if ( !string.IsNullOrWhiteSpace( query ) )
+                switch ( searchType )
+                {
+                    case SearchType.ExactMatch:
                         {
-                            queryContainer &= new QueryStringQuery { Query = query, AnalyzeWildcard = true };
-                        }
-
-                        // special logic to support emails
-                        if ( query.Contains( "@" ) )
-                        {
-                            queryContainer |= new QueryStringQuery { Query = "email:" + query, Analyzer = "whitespace" }; // analyzer = whitespace to keep the email from being parsed into 3 variables because the @ will act as a delimitor by default
-                        }
-
-                        // special logic to support phone search
-                        if ( query.IsDigitsOnly() )
-                        {
-                            queryContainer |= new QueryStringQuery { Query = "phoneNumbers:*" + query + "*", AnalyzeWildcard = true };
-                        }
-
-                        if ( matchQuery != null )
-                        {
-                            queryContainer &= matchQuery;
-                        }
-
-                        if ( size.HasValue )
-                        {
-                            searchDescriptor.Size( size.Value );
-                        }
-
-                        if ( from.HasValue )
-                        {
-                            searchDescriptor.From( from.Value );
-                        }
-
-                        searchDescriptor.Query( q => queryContainer );
-
-                        results = _client.Search<dynamic>( searchDescriptor );
-                        break;
-                    }
-                case SearchType.Fuzzy:
-                    {
-                        results = _client.Search<dynamic>( d =>
-                                    d.AllIndices().AllTypes()
-                                    .Query( q =>
-                                        q.Fuzzy( f => f.Value( query )
-                                        .Rewrite( RewriteMultiTerm.TopTermsN ) )
-                                    )
-                                );
-                        break;
-                    }
-                case SearchType.Wildcard:
-                    {
-                        if ( !string.IsNullOrWhiteSpace( query ) )
-                        {
-                            QueryContainer wildcardQuery = null;
-
-                            // break each search term into a separate query and add the * to the end of each
-                            var queryTerms = query.Split( ' ' ).Select( p => p.Trim() ).ToList();
-
-                            foreach ( var queryTerm in queryTerms )
+                            if ( !string.IsNullOrWhiteSpace( query ) )
                             {
-                                if ( !string.IsNullOrWhiteSpace( queryTerm ) )
-                                {
-                                    wildcardQuery &= new QueryStringQuery { Query = queryTerm + "*", Analyzer = "whitespace", Rewrite = RewriteMultiTerm.ScoringBoolean  }; // without the rewrite all results come back with the score of 1; analyzer of whitespaces says don't fancy parse things like check-in to 'check' and 'in'
-                                }
+                                queryContainer &= new QueryStringQuery { Query = query, AnalyzeWildcard = true };
                             }
 
                             // special logic to support emails
-                            if ( queryTerms.Count == 1 && query.Contains( "@" ) )
+                            if ( query.Contains( "@" ) )
                             {
-                                wildcardQuery |= new QueryStringQuery { Query = "email:*" + query + "*", Analyzer = "whitespace" };
+                                queryContainer |= new QueryStringQuery { Query = "email:" + query, Analyzer = "whitespace" }; // analyzer = whitespace to keep the email from being parsed into 3 variables because the @ will act as a delimitor by default
                             }
 
                             // special logic to support phone search
                             if ( query.IsDigitsOnly() )
                             {
-                                wildcardQuery |= new QueryStringQuery { Query = "phoneNumbers:*" + query, Analyzer = "whitespace" };
+                                queryContainer |= new QueryStringQuery { Query = "phoneNumbers:*" + query + "*", AnalyzeWildcard = true };
                             }
 
-                            queryContainer &= wildcardQuery;
-                        }
+                            if ( matchQuery != null )
+                            {
+                                queryContainer &= matchQuery;
+                            }
 
-                        if ( matchQuery != null )
+                            if ( size.HasValue )
+                            {
+                                searchDescriptor.Size( size.Value );
+                            }
+
+                            if ( from.HasValue )
+                            {
+                                searchDescriptor.From( from.Value );
+                            }
+
+                            searchDescriptor.Query( q => queryContainer );
+
+                            results = _client.Search<dynamic>( searchDescriptor );
+                            break;
+                        }
+                    case SearchType.Fuzzy:
                         {
-                            queryContainer &= matchQuery;
+                            results = _client.Search<dynamic>( d =>
+                                        d.AllIndices().AllTypes()
+                                        .Query( q =>
+                                            q.Fuzzy( f => f.Value( query )
+                                            .Rewrite( RewriteMultiTerm.TopTermsN ) )
+                                        )
+                                    );
+                            break;
                         }
-
-                        if ( size.HasValue )
+                    case SearchType.Wildcard:
                         {
-                            searchDescriptor.Size( size.Value );
+                            if ( !string.IsNullOrWhiteSpace( query ) )
+                            {
+                                QueryContainer wildcardQuery = null;
+
+                                // break each search term into a separate query and add the * to the end of each
+                                var queryTerms = query.Split( ' ' ).Select( p => p.Trim() ).ToList();
+
+                                foreach ( var queryTerm in queryTerms )
+                                {
+                                    if ( !string.IsNullOrWhiteSpace( queryTerm ) )
+                                    {
+                                        wildcardQuery &= new QueryStringQuery { Query = queryTerm + "*", Analyzer = "whitespace", Rewrite = RewriteMultiTerm.ScoringBoolean }; // without the rewrite all results come back with the score of 1; analyzer of whitespaces says don't fancy parse things like check-in to 'check' and 'in'
+                                    }
+                                }
+
+                                // special logic to support emails
+                                if ( queryTerms.Count == 1 && query.Contains( "@" ) )
+                                {
+                                    wildcardQuery |= new QueryStringQuery { Query = "email:*" + query + "*", Analyzer = "whitespace" };
+                                }
+
+                                // special logic to support phone search
+                                if ( query.IsDigitsOnly() )
+                                {
+                                    wildcardQuery |= new QueryStringQuery { Query = "phoneNumbers:*" + query, Analyzer = "whitespace" };
+                                }
+
+                                queryContainer &= wildcardQuery;
+                            }
+
+                            if ( matchQuery != null )
+                            {
+                                queryContainer &= matchQuery;
+                            }
+
+                            if ( size.HasValue )
+                            {
+                                searchDescriptor.Size( size.Value );
+                            }
+
+                            if ( from.HasValue )
+                            {
+                                searchDescriptor.From( from.Value );
+                            }
+
+                            searchDescriptor.Query( q => queryContainer );
+
+                            results = _client.Search<dynamic>( searchDescriptor );
+                            break;
                         }
+                }
 
-                        if ( from.HasValue )
-                        {
-                            searchDescriptor.From( from.Value );
-                        }
+                totalResultsAvailable = results.Total;
 
-                        searchDescriptor.Query( q => queryContainer );
-
-                        results = _client.Search<dynamic>( searchDescriptor );
-                        break;
-                    }
-            }
-
-            totalResultsAvailable = results.Total;
-
-            List<IndexModelBase> documents = new List<IndexModelBase>();
-
-            // normallize the results to rock search results
-            if ( results != null )
-            {
-                foreach ( var hit in results.Hits )
+                // normallize the results to rock search results
+                if ( results != null )
                 {
-                    IndexModelBase document = new IndexModelBase();
-
-                    try
+                    foreach ( var hit in results.Hits )
                     {
-                        if ( hit.Source != null )
+                        IndexModelBase document = new IndexModelBase();
+
+                        try
                         {
-
-                            Type indexModelType = Type.GetType( (string)((JObject)hit.Source)["indexModelType"] );
-
-                            if ( indexModelType != null )
+                            if ( hit.Source != null )
                             {
-                                document = (IndexModelBase)((JObject)hit.Source).ToObject( indexModelType ); // return the source document as the derived type
+
+                                Type indexModelType = Type.GetType( (string)((JObject)hit.Source)["indexModelType"] );
+
+                                if ( indexModelType != null )
+                                {
+                                    document = (IndexModelBase)((JObject)hit.Source).ToObject( indexModelType ); // return the source document as the derived type
+                                }
+                                else
+                                {
+                                    document = ((JObject)hit.Source).ToObject<IndexModelBase>(); // return the source document as the base type
+                                }
                             }
-                            else
+
+                            if ( hit.Explanation != null )
                             {
-                                document = ((JObject)hit.Source).ToObject<IndexModelBase>(); // return the source document as the base type
+                                document["Explain"] = hit.Explanation.ToJson();
                             }
+
+                            document.Score = hit.Score;
+
+                            documents.Add( document );
                         }
-
-                        if ( hit.Explanation != null )
-                        {
-                            document["Explain"] = hit.Explanation.ToJson();
-                        }
-
-                        document.Score = hit.Score;
-
-                        documents.Add( document );
+                        catch { } // ignore if the result if an exception resulted (most likely cause is getting a result from a non-rock index)
                     }
-                    catch { } // ignore if the result if an exception resulted (most likely cause is getting a result from a non-rock index)
                 }
             }
 

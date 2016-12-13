@@ -287,7 +287,7 @@ namespace Rock.Jobs
                             .Distinct()
                             .ToList();
 
-                        var appRoot = Rock.Web.Cache.GlobalAttributesCache.Read( rockContext ).GetValue( "ExternalApplicationRoot" );
+                        var appRoot = Rock.Web.Cache.GlobalAttributesCache.Read( rockContext ).GetValue( "PublicApplicationRoot" );
 
                         foreach ( var person in new PersonService( rockContext )
                             .Queryable().AsNoTracking()
