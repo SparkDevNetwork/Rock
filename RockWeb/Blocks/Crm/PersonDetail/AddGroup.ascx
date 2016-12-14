@@ -11,6 +11,7 @@
             <div class="panel-body">
 
                 <asp:ValidationSummary ID="valSummaryTop" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" />
+                <Rock:NotificationBox ID="nbValidation" runat="server" Heading="Please Correct the Following" NotificationBoxType="Danger" />
 
                 <asp:Panel ID="pnlGroupData" runat="server">
 
@@ -43,6 +44,7 @@
 
                         <div class="col-md-8">
                             <Rock:AddressControl ID="acAddress" Label="Address" runat="server" UseStateAbbreviation="false" UseCountryAbbreviation="false" />
+                            <Rock:RockCheckBox ID="cbHomeless" runat="server" Text="Family is Homeless" Visible="false" />
                         </div>
                     </div>
 
