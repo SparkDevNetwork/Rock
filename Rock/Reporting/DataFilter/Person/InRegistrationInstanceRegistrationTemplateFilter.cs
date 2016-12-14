@@ -182,7 +182,7 @@ namespace Rock.Reporting.DataFilter.Person
             SlidingDateRangePicker registeredOnDateRangePicker = new SlidingDateRangePicker();
             registeredOnDateRangePicker.ID = pwAdvanced.ID + "_addedOnDateRangePicker";
             registeredOnDateRangePicker.AddCssClass( "js-sliding-date-range" );
-            registeredOnDateRangePicker.Label = "Date Added:";
+            registeredOnDateRangePicker.Label = "Date Registered:";
             registeredOnDateRangePicker.Help = "Select the date range that the person was registered. Leaving this blank will not restrict results to a date range.";
             pwAdvanced.Controls.Add( registeredOnDateRangePicker );
 
