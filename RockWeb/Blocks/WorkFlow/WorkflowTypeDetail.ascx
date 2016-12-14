@@ -56,19 +56,7 @@
                         </div>
                     </Rock:PanelWidget>
 
-                    <Rock:PanelWidget ID="wpAdvancedDetails" runat="server" Title="Advanced Details" >
-                        <div class="row">
-                            <div class="col-md-12">
-                                <Rock:CodeEditor ID="ceSummaryViewText" runat="server" EditorMode="Lava" EditorTheme="Rock" Height="600" Label="Summary View" 
-                                    Help="The summary view text to be displayed when a workflow of this type has no user entry form or the workflow has been completed. <span class='tip tip-lava'></span> <span class='tip tip-html'>" />
-                            </div>
-                        </div>
-                        <div class="row">
-                            <div class="col-md-12">
-                                <Rock:CodeEditor ID="ceNoActionMessage" runat="server" EditorMode="Lava" EditorTheme="Rock" Height="200" Label="No Action Message" 
-                                    Help="The text to be displayed when a workflow of this type is active, but does not have an active user entry form. <span class='tip tip-lava'></span> <span class='tip tip-html'>" />
-                            </div>
-                        </div>
+                    <Rock:PanelWidget ID="wpAdvancedDetails" runat="server" Title="Advanced Settings" >
                         <div class="row">
                             <div class="col-md-6">
                                 <Rock:RockTextBox ID="tbProcessingInterval" runat="server" Label="Processing Interval (minutes)"
@@ -78,6 +66,18 @@
                                 <Rock:RockDropDownList ID="ddlLoggingLevel" Help="The level you would like to audit.  Start and stop times can be logged for each workflow, workflow activity, or activity action." runat="server" Label="Logging Level" />
                             </div>
                         </div>                    
+                        <div class="row">
+                            <div class="col-md-12">
+                                <Rock:CodeEditor ID="ceNoActionMessage" runat="server" EditorMode="Lava" EditorTheme="Rock" EditorHeight="100" Label="No Action Message" 
+                                    Help="The text to be displayed when a workflow of this type is active, but does not have an active user entry form. <span class='tip tip-lava'></span> <span class='tip tip-html'>" />
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-12">
+                                <Rock:CodeEditor ID="ceSummaryViewText" runat="server" EditorMode="Lava" EditorTheme="Rock" EditorHeight="500" Label="Summary View" 
+                                    Help="The summary view text to be displayed when a workflow of this type has no user entry form or the workflow has been completed. <span class='tip tip-lava'></span> <span class='tip tip-html'>" />
+                            </div>
+                        </div>
                     </Rock:PanelWidget>
 
                     <Rock:PanelWidget ID="wpAttributes" runat="server" Title="Attributes" CssClass="attribute-panel">
