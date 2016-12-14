@@ -41,8 +41,50 @@ namespace RockWeb.Blocks.WorkFlow
     [Category( "WorkFlow" )]
     [Description( "Displays the details of the given workflow type." )]
 
-    [LinkedPage("Workflow Launch Page", "Page used to launch a workflow.")]
-    [LinkedPage( "Manage Workflows Page", "Page used to manage workflows." )]
+    [LinkedPage("Workflow Launch Page", "Page used to launch a workflow.", true, "", "", 0)]
+    [LinkedPage( "Manage Workflows Page", "Page used to manage workflows.", true, "", "", 1)]
+    [CodeEditorField( "Default Summary View Text", "The default Summary View Text.", CodeEditorMode.Lava, CodeEditorTheme.Rock, 600, false, @"
+<p>This {{ Workflow.WorkflowType.WorkTerm }} was started {{ Workflow.ActivatedDateTime | Date:'dddd, MMMM d, yyyy' }} at {{ Workflow.ActivatedDateTime | Date:'hh:mm tt' }} 
+{% if Workflow.InitiatorPersonAlias %}by <strong><i>{{ Workflow.InitiatorPersonAlias.Person.FullName }}</i></strong>{% endif %} and
+{% if Workflow.IsActive %}is still active with a status of <i>{{ Workflow.Status }}</i>{% else %}was completed {{ Workflow.CompletedDateTime | Date:'dddd, MMMM d, yyyy' }} at {{ Workflow.CompletedDateTime | Date:'hh:mm tt' }}{% endif %}.</p>
+
+<p>The following activities have been started:
+<ul>
+    {% for activity in Workflow.Activities %}
+        <li>
+            <strong><i>{{ activity.ActivityType.Name }}</i></strong> was started {{ activity.ActivatedDateTime | Date:'dddd, MMMM d, yyyy' }} at {{ activity.ActivatedDateTime | Date:'hh:mm tt' }} and
+            {% if activity.IsActive %}is still active{% else %}was completed {{ activity.CompletedDateTime | Date:'dddd, MMMM d, yyyy' }} at {{ activity.CompletedDateTime | Date:'hh:mm tt' }}{% endif %}.
+            {% if activity.IsActive and activity.AssignedPersonAlias %}
+                It is assigned to <strong><i>{{ activity.AssignedPersonAlias.Person.FullName }}</i></strong>.
+            {% endif %}
+            {% if activity.IsActive and activity.AssignedGroup %}
+                It is assigned to the <strong><i>{{ activity.AssignedGroup.Name }}</i></strong> group.
+            {% endif %}
+        </li>
+    {% endfor %}
+</ul>
+</p>
+
+{% assign attributeList = '' %}
+{% for attribute in Workflow.AttributeValues %}
+    {% if attribute.AttributeIsGridColumn %}
+        {% assign attributeValue = attribute.ValueFormatted %}
+        {% if attributeValue != '' %}
+            {% capture item %}<li><strong>{{ attribute.AttributeName }}</strong>: {{ attributeValue }}</li>{% endcapture %}
+            {% assign attributeList = attributeList | Append:item %}
+        {% endif %}
+    {% endif %}
+{% endfor %}
+
+{% if attributeList != '' %}
+    <p>Below are values specific to this {{ Workflow.WorkflowType.WorkTerm }}:
+    <ul>
+        {{ attributeList }}
+    </ul>
+    </p>
+{% endif %}", "", 2 )]
+    [CodeEditorField( "Default No Action Message", "The default No Action Message.", CodeEditorMode.Lava, CodeEditorTheme.Rock, 200, false, @"
+This {{ Workflow.WorkflowType.WorkTerm }} does not currently require your attention.", "", 3 )]
     public partial class WorkflowTypeDetail : RockBlock
     {
         #region Properties
@@ -559,6 +601,8 @@ namespace RockWeb.Blocks.WorkFlow
             workflowType.IsPersisted = cbIsPersisted.Checked;
             workflowType.LoggingLevel = ddlLoggingLevel.SelectedValueAsEnum<WorkflowLoggingLevel>();
             workflowType.IconCssClass = tbIconCssClass.Text;
+            workflowType.SummaryViewText = ceSummaryViewText.Text;
+            workflowType.NoActionMessage = ceNoActionMessage.Text;
 
             if ( validationErrors.Any() )
             {
@@ -1224,6 +1268,8 @@ namespace RockWeb.Blocks.WorkFlow
                 workflowType.ActivityTypes.Add( new WorkflowActivityType { Name = "Start", Guid = Guid.NewGuid(), IsActive = true, IsActivatedWithWorkflow = true } );
                 workflowType.WorkTerm = "Work";
                 workflowType.ProcessingIntervalSeconds = 28800; // Default to every 8 hours
+                workflowType.SummaryViewText = GetAttributeValue( "DefaultSummaryViewText" );
+                workflowType.NoActionMessage = GetAttributeValue( "DefaultNoActionMessage" );
                 // hide the panel drawer that show created and last modified dates
                 pdAuditDetails.Visible = false;
             }
@@ -1380,6 +1426,8 @@ namespace RockWeb.Blocks.WorkFlow
             cbIsPersisted.Checked = workflowType.IsPersisted;
             ddlLoggingLevel.SetValue( (int)workflowType.LoggingLevel );
             tbIconCssClass.Text = workflowType.IconCssClass;
+            ceSummaryViewText.Text = workflowType.SummaryViewText;
+            ceNoActionMessage.Text = workflowType.NoActionMessage;
 
             BindAttributesGrid();
 

@@ -187,6 +187,9 @@ namespace RockWeb.Blocks.WorkFlow
 
             bool editMode = hfMode.Value == "Edit";
 
+            liSummary.Visible = _canEdit && !editMode;
+            divSummary.Visible = !editMode;
+
             liDetails.Visible = _canEdit;
             liActivities.Visible = _canEdit;
             liLog.Visible = _canEdit && !editMode;
@@ -198,8 +201,10 @@ namespace RockWeb.Blocks.WorkFlow
             pnlActivitesEdit.Visible = editMode;
 
             string activeTab = hfActiveTab.Value;
-            ShowHideTab( activeTab == "Details" || activeTab == string.Empty, liDetails );
-            ShowHideTab( activeTab == "Details" || activeTab == string.Empty, divDetails );
+            ShowHideTab( activeTab == "Summary" || activeTab == string.Empty, liSummary );
+            ShowHideTab( activeTab == "Summary" || activeTab == string.Empty, divSummary);
+            ShowHideTab( activeTab == "Details", liDetails );
+            ShowHideTab( activeTab == "Details", divDetails );
             ShowHideTab( activeTab == "Activities", liActivities );
             ShowHideTab( activeTab == "Activities", divActivities );
             ShowHideTab( activeTab == "Log", liLog );
@@ -217,7 +222,7 @@ namespace RockWeb.Blocks.WorkFlow
 
         protected void btnEdit_Click( object sender, EventArgs e )
         {
-            if ( new List<string> { "Notes", "Log" }.Contains( hfActiveTab.Value ) )
+            if ( new List<string> { "Summary", "Notes", "Log" }.Contains( hfActiveTab.Value ) )
             {
                 hfActiveTab.Value = "Details";
             }
@@ -701,6 +706,13 @@ namespace RockWeb.Blocks.WorkFlow
             {
                 if ( _canEdit || Workflow.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
                 {
+                    if ( Workflow.WorkflowType != null )
+                    {
+                        var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson );
+                        mergeFields.Add( "Workflow", Workflow );
+                        lSummary.Text = Workflow.WorkflowType.SummaryViewText.ResolveMergeFields( mergeFields, CurrentPerson );
+                    }
+
                     tdName.Description = Workflow.Name;
                     tdStatus.Description = Workflow.Status;
 

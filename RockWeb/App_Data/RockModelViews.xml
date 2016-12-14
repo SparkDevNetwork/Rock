@@ -1,6 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <views>
-  <mapping-views hash="ca61c806bf2c89f71eab70fb4044b0377666eb2609f225ee3180f3cb52815060" conceptual-container="RockContext" store-container="CodeFirstDatabase">
+  <mapping-views hash="668b30e6457ba4e983f2dc8860023b7d2eb6d35ed768770dad5039e9aa2bad31" conceptual-container="RockContext" store-container="CodeFirstDatabase">
     <view extent="CodeFirstDatabase.AttendanceCode"><![CDATA[
     SELECT VALUE -- Constructing AttendanceCode
         [CodeFirstDatabaseSchema.AttendanceCode](T1.AttendanceCode_Id, T1.AttendanceCode_IssueDateTime, T1.AttendanceCode_Code, T1.AttendanceCode_Guid, T1.AttendanceCode_ForeignId, T1.AttendanceCode_ForeignGuid, T1.AttendanceCode_ForeignKey)
@@ -651,7 +651,7 @@
     ) AS T1]]></view>
     <view extent="CodeFirstDatabase.WorkflowType"><![CDATA[
     SELECT VALUE -- Constructing WorkflowType
-        [CodeFirstDatabaseSchema.WorkflowType](T1.WorkflowType_Id, T1.WorkflowType_IsSystem, T1.WorkflowType_IsActive, T1.WorkflowType_WorkflowIdPrefix, T1.WorkflowType_Name, T1.WorkflowType_Description, T1.WorkflowType_CategoryId, T1.WorkflowType_Order, T1.WorkflowType_WorkTerm, T1.WorkflowType_ProcessingIntervalSeconds, T1.WorkflowType_IsPersisted, T1.WorkflowType_LogRetentionPeriod, T1.WorkflowType_CompletedWorkflowRetentionPeriod, T1.WorkflowType_LoggingLevel, T1.WorkflowType_IconCssClass, T1.WorkflowType_CreatedDateTime, T1.WorkflowType_ModifiedDateTime, T1.WorkflowType_CreatedByPersonAliasId, T1.WorkflowType_ModifiedByPersonAliasId, T1.WorkflowType_Guid, T1.WorkflowType_ForeignId, T1.WorkflowType_ForeignGuid, T1.WorkflowType_ForeignKey)
+        [CodeFirstDatabaseSchema.WorkflowType](T1.WorkflowType_Id, T1.WorkflowType_IsSystem, T1.WorkflowType_IsActive, T1.WorkflowType_WorkflowIdPrefix, T1.WorkflowType_Name, T1.WorkflowType_Description, T1.WorkflowType_CategoryId, T1.WorkflowType_Order, T1.WorkflowType_WorkTerm, T1.WorkflowType_ProcessingIntervalSeconds, T1.WorkflowType_IsPersisted, T1.WorkflowType_SummaryViewText, T1.WorkflowType_NoActionMessage, T1.WorkflowType_LogRetentionPeriod, T1.WorkflowType_CompletedWorkflowRetentionPeriod, T1.WorkflowType_LoggingLevel, T1.WorkflowType_IconCssClass, T1.WorkflowType_CreatedDateTime, T1.WorkflowType_ModifiedDateTime, T1.WorkflowType_CreatedByPersonAliasId, T1.WorkflowType_ModifiedByPersonAliasId, T1.WorkflowType_Guid, T1.WorkflowType_ForeignId, T1.WorkflowType_ForeignGuid, T1.WorkflowType_ForeignKey)
     FROM (
         SELECT 
             T.Id AS WorkflowType_Id, 
@@ -665,6 +665,8 @@
             T.WorkTerm AS WorkflowType_WorkTerm, 
             T.ProcessingIntervalSeconds AS WorkflowType_ProcessingIntervalSeconds, 
             T.IsPersisted AS WorkflowType_IsPersisted, 
+            T.SummaryViewText AS WorkflowType_SummaryViewText, 
+            T.NoActionMessage AS WorkflowType_NoActionMessage, 
             T.LogRetentionPeriod AS WorkflowType_LogRetentionPeriod, 
             T.CompletedWorkflowRetentionPeriod AS WorkflowType_CompletedWorkflowRetentionPeriod, 
             CAST(T.LoggingLevel AS [Edm.Int32]) AS WorkflowType_LoggingLevel, 
@@ -4542,7 +4544,7 @@
     ) AS T1]]></view>
     <view extent="RockContext.WorkflowTypes"><![CDATA[
     SELECT VALUE -- Constructing WorkflowTypes
-        [Rock.Data.WorkflowType](T1.WorkflowType_Id, T1.WorkflowType_IsSystem, T1.WorkflowType_IsActive, T1.WorkflowType_WorkflowIdPrefix, T1.WorkflowType_Name, T1.WorkflowType_Description, T1.WorkflowType_CategoryId, T1.WorkflowType_Order, T1.WorkflowType_WorkTerm, T1.WorkflowType_ProcessingIntervalSeconds, T1.WorkflowType_IsPersisted, T1.WorkflowType_LogRetentionPeriod, T1.WorkflowType_CompletedWorkflowRetentionPeriod, T1.WorkflowType_LoggingLevel, T1.WorkflowType_IconCssClass, T1.WorkflowType_CreatedDateTime, T1.WorkflowType_ModifiedDateTime, T1.WorkflowType_CreatedByPersonAliasId, T1.WorkflowType_ModifiedByPersonAliasId, T1.WorkflowType_Guid, T1.WorkflowType_ForeignId, T1.WorkflowType_ForeignGuid, T1.WorkflowType_ForeignKey)
+        [Rock.Data.WorkflowType](T1.WorkflowType_Id, T1.WorkflowType_IsSystem, T1.WorkflowType_IsActive, T1.WorkflowType_WorkflowIdPrefix, T1.WorkflowType_Name, T1.WorkflowType_Description, T1.WorkflowType_CategoryId, T1.WorkflowType_Order, T1.WorkflowType_WorkTerm, T1.WorkflowType_ProcessingIntervalSeconds, T1.WorkflowType_IsPersisted, T1.WorkflowType_SummaryViewText, T1.WorkflowType_NoActionMessage, T1.WorkflowType_LogRetentionPeriod, T1.WorkflowType_CompletedWorkflowRetentionPeriod, T1.WorkflowType_LoggingLevel, T1.WorkflowType_IconCssClass, T1.WorkflowType_CreatedDateTime, T1.WorkflowType_ModifiedDateTime, T1.WorkflowType_CreatedByPersonAliasId, T1.WorkflowType_ModifiedByPersonAliasId, T1.WorkflowType_Guid, T1.WorkflowType_ForeignId, T1.WorkflowType_ForeignGuid, T1.WorkflowType_ForeignKey)
     FROM (
         SELECT 
             T.Id AS WorkflowType_Id, 
@@ -4556,6 +4558,8 @@
             T.WorkTerm AS WorkflowType_WorkTerm, 
             T.ProcessingIntervalSeconds AS WorkflowType_ProcessingIntervalSeconds, 
             T.IsPersisted AS WorkflowType_IsPersisted, 
+            T.SummaryViewText AS WorkflowType_SummaryViewText, 
+            T.NoActionMessage AS WorkflowType_NoActionMessage, 
             T.LogRetentionPeriod AS WorkflowType_LogRetentionPeriod, 
             T.CompletedWorkflowRetentionPeriod AS WorkflowType_CompletedWorkflowRetentionPeriod, 
             CAST(T.LoggingLevel AS [Rock.Data.WorkflowLoggingLevel]) AS WorkflowType_LoggingLevel, 
