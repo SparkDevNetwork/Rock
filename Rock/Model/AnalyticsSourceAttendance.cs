@@ -39,10 +39,20 @@ namespace Rock.Model
     /// </summary>
     /// <typeparam name="T"></typeparam>
     /// <seealso cref="Rock.Data.Entity{T}" />
-    public abstract class AnalyticsBaseAttendance<T> : Entity<T> 
+    public abstract class AnalyticsBaseAttendance<T> : Entity<T>
         where T : AnalyticsBaseAttendance<T>, new()
     {
         #region Entity Properties specific to Analytics
+
+        /// <summary>
+        /// Gets or sets the attendance identifier from the original Attendance.Id value
+        /// </summary>
+        /// <value>
+        /// The attendance identifier.
+        /// </value>
+        [DataMember]
+        [Index( IsUnique = true )]
+        public int AttendanceId { get; set; }
 
         /// <summary>
         /// Gets or sets the attendance date key which is the form YYYYMMDD, and is based off of Attendance.StartDateTime
@@ -106,7 +116,7 @@ namespace Rock.Model
         /// The person key.
         /// </value>
         [DataMember]
-        public int PersonKey { get; set; }
+        public int? PersonKey { get; set; }
 
         /// <summary>
         /// Gets or sets the person key which is the current AnalyticsDimPersonHistorical record for the person 
@@ -115,7 +125,7 @@ namespace Rock.Model
         /// The current person key.
         /// </value>
         [DataMember]
-        public int CurrentPersonKey { get; set; }
+        public int? CurrentPersonKey { get; set; }
 
         #endregion
 
