@@ -135,7 +135,7 @@ BEGIN
                     AND asft.TransactionDateTime = firstTran.DateTimeOfFirstTransactionOfType
                 ) asft
             )
-        AND IsFirstTransactionOfType = 0
+        AND IsFirstTransactionOfType != 1
 
     -- Update [DaysSinceLastTransactionOfType]
     -- get the number of days since the last transaction of this giving group of the same TransactionType
@@ -152,38 +152,38 @@ BEGIN
             AND convert(DATE, previousTran.TransactionDateTime) < convert(DATE, asft.TransactionDateTime)
         ORDER BY previousTran.TransactionDateTime DESC
         ) x
-        
-		
-	-- TODO update [AuthorizedFamilyId]
+	where asft.DaysSinceLastTransactionOfType != x.CalcDaysSinceLastTransactionOfType
+
+    -- TODO update [AuthorizedFamilyId]
     -- TODO what about modified records
 
-
-
-  /* Updating these PersonKeys depends on AnalyticsSourcePersonHistorical getting populated and updated. 
+    /* Updating these PersonKeys depends on AnalyticsSourcePersonHistorical getting populated and updated. 
   -- It is probably best to schedule the ETL of AnalyticsSourcePersonHistorical to occur before spAnalytics_ETL_FinancialTransaction
   -- However, if not, it will catch up on the next run of spAnalytics_ETL_FinancialTransaction
   */
-  
-  -- Update PersonKeys for whatever PersonKey the person had at the time of the transaction
+    -- Update PersonKeys for whatever PersonKey the person had at the time of the transaction
     UPDATE asft
     SET [AuthorizedPersonKey] = x.PersonKey
     FROM AnalyticsSourceFinancialTransaction asft
     CROSS APPLY (
-        SELECT TOP 1 ph.Id [PersonKey] FROM AnalyticsSourcePersonHistorical ph 
-		join PersonAlias pa on asft.AuthorizedPersonAliasId = pa.Id
-		where ph.PersonId = pa.PersonId
-		and asft.[TransactionDateTime] < ph.[ExpireDate]
-		order by ph.[ExpireDate] DESC
+        SELECT TOP 1 ph.Id [PersonKey]
+        FROM AnalyticsSourcePersonHistorical ph
+        JOIN PersonAlias pa ON asft.AuthorizedPersonAliasId = pa.Id
+        WHERE ph.PersonId = pa.PersonId
+            AND asft.[TransactionDateTime] < ph.[ExpireDate]
+        ORDER BY ph.[ExpireDate] DESC
         ) x
+	WHERE asft.AuthorizedPersonKey != x.PersonKey
 
-
--- Update PersonKeys for whatever PersonKey is current right now
-  UPDATE asft
+    -- Update PersonKeys for whatever PersonKey is current right now
+    UPDATE asft
     SET [AuthorizedCurrentPersonKey] = x.PersonKey
     FROM AnalyticsSourceFinancialTransaction asft
     CROSS APPLY (
-        SELECT TOP 1 pc.Id [PersonKey] FROM AnalyticsDimPersonCurrent pc
-		join PersonAlias pa on asft.AuthorizedPersonAliasId = pa.Id
-		where pc.PersonId = pa.PersonId
+        SELECT TOP 1 pc.Id [PersonKey]
+        FROM AnalyticsDimPersonCurrent pc
+        JOIN PersonAlias pa ON asft.AuthorizedPersonAliasId = pa.Id
+        WHERE pc.PersonId = pa.PersonId
         ) x
+    WHERE asft.AuthorizedCurrentPersonKey != x.PersonKey
 END

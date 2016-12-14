@@ -63,8 +63,8 @@ BEGIN
         ,NEWID() [Guid]
     FROM Attendance a
     LEFT JOIN DefinedValue dvSearchType ON dvSearchType.Id = a.SearchTypeValueId
-	WHERE isnull(a.DidNotOccur, 0) = 0
-    AND a.Id NOT IN (
+    WHERE isnull(a.DidNotOccur, 0) = 0
+        AND a.Id NOT IN (
             SELECT AttendanceId
             FROM AnalyticsSourceAttendance
             )
@@ -75,7 +75,7 @@ BEGIN
     WHERE AttendanceId NOT IN (
             SELECT Id
             FROM Attendance
-			WHERE isnull(DidNotOccur, 0) = 0
+            WHERE isnull(DidNotOccur, 0) = 0
             )
 
     -- Figure Out AttendanceType
@@ -91,8 +91,9 @@ BEGIN
             FROM DefinedValue
             WHERE [Guid] = '4A406CB0-495B-4795-B788-52BDFDE00B01' -- GroupTypePurpose Checkin
             )
+    WHERE asa.AttendanceTypeId != pgt.Id
 
-  /* Updating these PersonKeys depends on AnalyticsSourcePersonHistorical getting populated and updated. 
+    /* Updating these PersonKeys depends on AnalyticsSourcePersonHistorical getting populated and updated. 
   -- It is probably best to schedule the ETL of AnalyticsSourcePersonHistorical to occur before spAnalytics_ETL_Attendance
   -- However, if not, it will catch up on the next run of spAnalytics_ETL_Attendance
   */
@@ -108,45 +109,47 @@ BEGIN
             AND asa.[StartDateTime] < ph.[ExpireDate]
         ORDER BY ph.[ExpireDate] DESC
         ) x
+    WHERE asa.[PersonKey] != x.PersonKey
 
     -- Update PersonKeys for whatever PersonKey is current right now
     UPDATE asa
     SET [CurrentPersonKey] = x.PersonKey
     FROM AnalyticsSourceAttendance asa
     CROSS APPLY (
-        SELECT TOP 1 pc.Id [PersonKey]
+        SELECT max(pc.Id) [PersonKey]
         FROM AnalyticsDimPersonCurrent pc
         JOIN PersonAlias pa ON asa.PersonAliasId = pa.Id
         WHERE pc.PersonId = pa.PersonId
         ) x
+    WHERE asa.[CurrentPersonKey] != x.PersonKey
 
     -- figure out IsFirstAttendanceOfType
-    UPDATE AnalyticsSourceAttendance
-    SET IsFirstAttendanceOfType = 1
+    UPDATE asa
+    SET asa.IsFirstAttendanceOfType = 1
         ,DaysSinceLastAttendanceOfType = NULL
-    WHERE Id IN (
-            SELECT asa.Id
-            FROM (
-                SELECT min(asa.StartDateTime) [DateTimeOfFirstAttendanceOfType]
-                    ,asa.AttendanceTypeId
-                    ,pa.PersonId
-                FROM AnalyticsSourceAttendance asa
-                JOIN PersonAlias pa ON asa.PersonAliasId = pa.Id
-                WHERE asa.AttendanceTypeId IS NOT NULL
-                GROUP BY asa.AttendanceTypeId
-                    ,pa.PersonId
-                ) firstTran
-            CROSS APPLY (
-                SELECT min(asa.Id) [Id]
-                FROM AnalyticsSourceAttendance asa
-                JOIN PersonAlias pa ON asa.PersonAliasId = pa.Id
-                WHERE asa.AttendanceTypeId IS NOT NULL
-                    AND pa.PersonId = firstTran.PersonId
-                    AND asa.AttendanceTypeId = firstTran.AttendanceTypeId
-                    AND asa.[StartDateTime] = firstTran.[DateTimeOfFirstAttendanceOfType]
-                ) asa
-            )
-        AND IsFirstAttendanceOfType = 0
+    FROM (
+        SELECT x.*
+        FROM (
+            SELECT min(asa.StartDateTime) [DateTimeOfFirstAttendanceOfType]
+                ,asa.AttendanceTypeId
+                ,pa.PersonId
+            FROM AnalyticsSourceAttendance asa
+            JOIN PersonAlias pa ON asa.PersonAliasId = pa.Id
+            WHERE asa.AttendanceTypeId IS NOT NULL
+            GROUP BY asa.AttendanceTypeId
+                ,pa.PersonId
+            ) firstTran
+        CROSS APPLY (
+            SELECT TOP 1 a.*
+            FROM AnalyticsSourceAttendance a
+            JOIN PersonAlias pa ON a.PersonAliasId = pa.Id
+            WHERE a.AttendanceTypeId IS NOT NULL
+                AND pa.PersonId = firstTran.PersonId
+                AND a.AttendanceTypeId = firstTran.AttendanceTypeId
+                AND a.[StartDateTime] = firstTran.[DateTimeOfFirstAttendanceOfType]
+            ) x
+        ) asa
+	WHERE asa.IsFirstAttendanceOfType = 0
 
     -- Update [DaysSinceLastAttendanceOfType]
     -- get the number of days since the last attendance of this person of the same AttendanceType
@@ -163,7 +166,5 @@ BEGIN
             AND convert(DATE, previousAttendanceOfType.StartDateTime) < convert(DATE, asa.StartDateTime)
         ORDER BY previousAttendanceOfType.StartDateTime DESC
         ) x
-     
-        	
-
+    WHERE asa.DaysSinceLastAttendanceOfType != x.[CalcDaysSinceLastAttendanceOfType]
 END
