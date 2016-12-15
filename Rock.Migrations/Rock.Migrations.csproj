@@ -138,6 +138,10 @@
     <Compile Include="Migrations\201612132013351_WorkflowTypeText.Designer.cs">
       <DependentUpon>201612132013351_WorkflowTypeText.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201612151843454_ScheduleExclusion.cs" />
+    <Compile Include="Migrations\201612151843454_ScheduleExclusion.Designer.cs">
+      <DependentUpon>201612151843454_ScheduleExclusion.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 6.0\Version 1.6.0\201609282147388_WaitList.cs" />
     <Compile Include="Migrations\Version 6.0\Version 1.6.0\201609282147388_WaitList.Designer.cs">
       <DependentUpon>201609282147388_WaitList.cs</DependentUpon>
@@ -2393,6 +2397,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201612132013351_WorkflowTypeText.resx">
       <DependentUpon>201612132013351_WorkflowTypeText.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201612151843454_ScheduleExclusion.resx">
+      <DependentUpon>201612151843454_ScheduleExclusion.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 6.0\Version 1.6.0\201609282147388_WaitList.resx">
       <DependentUpon>201609282147388_WaitList.cs</DependentUpon>

@@ -166,6 +166,18 @@ namespace Rock.Model
                 return false;
             }  
  
+            if ( new Service<InteractionChannel>( Context ).Queryable().Any( a => a.ComponentEntityTypeId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", EntityType.FriendlyTypeName, InteractionChannel.FriendlyTypeName );
+                return false;
+            }  
+ 
+            if ( new Service<InteractionChannel>( Context ).Queryable().Any( a => a.InteractionEntityTypeId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", EntityType.FriendlyTypeName, InteractionChannel.FriendlyTypeName );
+                return false;
+            }  
+ 
             if ( new Service<MergeTemplate>( Context ).Queryable().Any( a => a.MergeTemplateTypeEntityTypeId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", EntityType.FriendlyTypeName, MergeTemplate.FriendlyTypeName );

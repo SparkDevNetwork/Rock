@@ -1,6 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <views>
-  <mapping-views hash="668b30e6457ba4e983f2dc8860023b7d2eb6d35ed768770dad5039e9aa2bad31" conceptual-container="RockContext" store-container="CodeFirstDatabase">
+  <mapping-views hash="934410533b1f839f20df56624b949c51edd69dadcb6391d5e5e183f1ee088331" conceptual-container="RockContext" store-container="CodeFirstDatabase">
     <view extent="CodeFirstDatabase.AttendanceCode"><![CDATA[
     SELECT VALUE -- Constructing AttendanceCode
         [CodeFirstDatabaseSchema.AttendanceCode](T1.AttendanceCode_Id, T1.AttendanceCode_IssueDateTime, T1.AttendanceCode_Code, T1.AttendanceCode_Guid, T1.AttendanceCode_ForeignId, T1.AttendanceCode_ForeignGuid, T1.AttendanceCode_ForeignKey)
@@ -3843,6 +3843,27 @@
             T.ForeignKey AS WorkflowTrigger_ForeignKey, 
             True AS _from0
         FROM RockContext.WorkflowTriggers AS T
+    ) AS T1]]></view>
+    <view extent="CodeFirstDatabase.ScheduleCategoryExclusion"><![CDATA[
+    SELECT VALUE -- Constructing ScheduleCategoryExclusion
+        [CodeFirstDatabaseSchema.ScheduleCategoryExclusion](T1.ScheduleCategoryExclusion_Id, T1.ScheduleCategoryExclusion_CategoryId, T1.ScheduleCategoryExclusion_Title, T1.ScheduleCategoryExclusion_StartDate, T1.ScheduleCategoryExclusion_EndDate, T1.ScheduleCategoryExclusion_CreatedDateTime, T1.ScheduleCategoryExclusion_ModifiedDateTime, T1.ScheduleCategoryExclusion_CreatedByPersonAliasId, T1.ScheduleCategoryExclusion_ModifiedByPersonAliasId, T1.ScheduleCategoryExclusion_Guid, T1.ScheduleCategoryExclusion_ForeignId, T1.ScheduleCategoryExclusion_ForeignGuid, T1.ScheduleCategoryExclusion_ForeignKey)
+    FROM (
+        SELECT 
+            T.Id AS ScheduleCategoryExclusion_Id, 
+            T.CategoryId AS ScheduleCategoryExclusion_CategoryId, 
+            T.Title AS ScheduleCategoryExclusion_Title, 
+            T.StartDate AS ScheduleCategoryExclusion_StartDate, 
+            T.EndDate AS ScheduleCategoryExclusion_EndDate, 
+            T.CreatedDateTime AS ScheduleCategoryExclusion_CreatedDateTime, 
+            T.ModifiedDateTime AS ScheduleCategoryExclusion_ModifiedDateTime, 
+            T.CreatedByPersonAliasId AS ScheduleCategoryExclusion_CreatedByPersonAliasId, 
+            T.ModifiedByPersonAliasId AS ScheduleCategoryExclusion_ModifiedByPersonAliasId, 
+            T.Guid AS ScheduleCategoryExclusion_Guid, 
+            T.ForeignId AS ScheduleCategoryExclusion_ForeignId, 
+            T.ForeignGuid AS ScheduleCategoryExclusion_ForeignGuid, 
+            T.ForeignKey AS ScheduleCategoryExclusion_ForeignKey, 
+            True AS _from0
+        FROM RockContext.ScheduleCategoryExclusions AS T
     ) AS T1]]></view>
     <view extent="CodeFirstDatabase.DeviceLocation"><![CDATA[
     SELECT VALUE -- Constructing DeviceLocation
@@ -7736,6 +7757,27 @@
             T.ForeignKey AS WorkflowTrigger_ForeignKey, 
             True AS _from0
         FROM CodeFirstDatabase.WorkflowTrigger AS T
+    ) AS T1]]></view>
+    <view extent="RockContext.ScheduleCategoryExclusions"><![CDATA[
+    SELECT VALUE -- Constructing ScheduleCategoryExclusions
+        [Rock.Data.ScheduleCategoryExclusion](T1.ScheduleCategoryExclusion_Id, T1.ScheduleCategoryExclusion_CategoryId, T1.ScheduleCategoryExclusion_Title, T1.ScheduleCategoryExclusion_StartDate, T1.ScheduleCategoryExclusion_EndDate, T1.ScheduleCategoryExclusion_CreatedDateTime, T1.ScheduleCategoryExclusion_ModifiedDateTime, T1.ScheduleCategoryExclusion_CreatedByPersonAliasId, T1.ScheduleCategoryExclusion_ModifiedByPersonAliasId, T1.ScheduleCategoryExclusion_Guid, T1.ScheduleCategoryExclusion_ForeignId, T1.ScheduleCategoryExclusion_ForeignGuid, T1.ScheduleCategoryExclusion_ForeignKey)
+    FROM (
+        SELECT 
+            T.Id AS ScheduleCategoryExclusion_Id, 
+            T.CategoryId AS ScheduleCategoryExclusion_CategoryId, 
+            T.Title AS ScheduleCategoryExclusion_Title, 
+            T.StartDate AS ScheduleCategoryExclusion_StartDate, 
+            T.EndDate AS ScheduleCategoryExclusion_EndDate, 
+            T.CreatedDateTime AS ScheduleCategoryExclusion_CreatedDateTime, 
+            T.ModifiedDateTime AS ScheduleCategoryExclusion_ModifiedDateTime, 
+            T.CreatedByPersonAliasId AS ScheduleCategoryExclusion_CreatedByPersonAliasId, 
+            T.ModifiedByPersonAliasId AS ScheduleCategoryExclusion_ModifiedByPersonAliasId, 
+            T.Guid AS ScheduleCategoryExclusion_Guid, 
+            T.ForeignId AS ScheduleCategoryExclusion_ForeignId, 
+            T.ForeignGuid AS ScheduleCategoryExclusion_ForeignGuid, 
+            T.ForeignKey AS ScheduleCategoryExclusion_ForeignKey, 
+            True AS _from0
+        FROM CodeFirstDatabase.ScheduleCategoryExclusion AS T
     ) AS T1]]></view>
     <view extent="RockContext.Device_Locations"><![CDATA[
     SELECT VALUE -- Constructing Device_Locations
