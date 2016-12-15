@@ -186,6 +186,7 @@ namespace RockWeb.Plugins.com_centralaz.Utility
         {
             var item = ddlSaveSlot.SelectedItem;
             ceLava.Text = GetUserPreference( string.Format( "{0}:{1}", _USER_PREF_KEY, item.Value ) );
+            litOutput.Text = string.Empty;
         }
 
         /// <summary>
@@ -356,8 +357,11 @@ namespace RockWeb.Plugins.com_centralaz.Utility
                         if ( ddlRegistrations.SelectedValueAsInt() != null )
                         {
                             var registration = registrationService.Get( ddlRegistrations.SelectedValueAsInt() ?? -1 );
-                            mergeFields.Add( "RegistrationInstance", registration.RegistrationInstance );
-                            mergeFields.Add( "Registration", registration );
+                            if ( registration != null )
+                            {
+                                mergeFields.Add( "RegistrationInstance", registration.RegistrationInstance );
+                                mergeFields.Add( "Registration", registration );
+                            }
                         }
                     }
 
@@ -393,6 +397,8 @@ namespace RockWeb.Plugins.com_centralaz.Utility
                 SetUserPreference( _USER_PREF_WORKFLOWTYPE, string.Empty );
                 SetUserPreference( _USER_PREF_WORKFLOW, string.Empty );
             }
+
+            litOutput.Text = string.Empty;
         }
 
         /// <summary>
@@ -425,8 +431,9 @@ namespace RockWeb.Plugins.com_centralaz.Utility
                             mergeFields.Add( "Workflow", workflows.Where( w =>w.Id == workflowId ).FirstOrDefault() );
                         }
                     }
-                    
-                    ResolveLava();
+
+                    //ResolveLava();
+                    litOutput.Text = string.Empty;
                 }
             }
         }
@@ -454,8 +461,11 @@ namespace RockWeb.Plugins.com_centralaz.Utility
                 SetUserPreference( _USER_PREF_REGISTRATION, string.Empty );
                 mergeFields.Remove( "RegistrationInstance" );
                 mergeFields.Remove( "Registration" );
-                ResolveLava();
+
+                //ResolveLava();
             }
+
+            litOutput.Text = string.Empty;
         }
 
         /// <summary>
@@ -521,7 +531,8 @@ namespace RockWeb.Plugins.com_centralaz.Utility
                         }
                     }
 
-                    ResolveLava();
+                    //ResolveLava();
+                    litOutput.Text = string.Empty;
                 }
             }
         }
@@ -538,7 +549,8 @@ namespace RockWeb.Plugins.com_centralaz.Utility
             mergeFields.Add( "Workflow", workflowService.Get( ddlWorkflows.SelectedValueAsInt() ?? -1 ) );
             SetUserPreference( _USER_PREF_WORKFLOW, ddlWorkflows.SelectedValue );
 
-            ResolveLava();
+            //ResolveLava();
+            litOutput.Text = string.Empty;
         }
 
         /// <summary>
@@ -563,7 +575,8 @@ namespace RockWeb.Plugins.com_centralaz.Utility
 
             SetUserPreference( _USER_PREF_REGISTRATION, ddlRegistrations.SelectedValue );
 
-            ResolveLava();
+            //ResolveLava();
+            litOutput.Text = string.Empty;
         }
 
         /// <summary>
@@ -588,6 +601,7 @@ namespace RockWeb.Plugins.com_centralaz.Utility
         protected void ppPerson_SelectPerson( object sender, EventArgs e )
         {
             SetUserPreference( _USER_PREF_PERSON, ppPerson.PersonId.ToStringSafe() );
+            litOutput.Text = string.Empty;
         }
 
         /// <summary>
@@ -598,6 +612,7 @@ namespace RockWeb.Plugins.com_centralaz.Utility
         protected void gpGroups_SelectItem( object sender, EventArgs e )
         {
             SetUserPreference( _USER_PREF_GROUP, gpGroups.SelectedValue );
+            litOutput.Text = string.Empty;
         }
 }
 }
