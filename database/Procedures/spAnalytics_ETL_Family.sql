@@ -39,6 +39,11 @@ BEGIN
             FROM Attribute
             WHERE [Key] = 'core_CurrentlyAnEra'
             )
+        ,@GroupLocationTypeFamilyHomeId INT = (
+            SELECT TOP 1 Id
+            FROM DefinedValue
+            WHERE [Guid] = '8C52E53C-2A66-435A-AE6E-5EE307D9A0DC'
+            )
 
     INSERT INTO [dbo].[AnalyticsSourceFamilyHistorical] (
         [GroupId]
@@ -122,8 +127,20 @@ BEGIN
             WHERE a.Id = @AttributeIdCore_CurrentlyAnEra
                 AND av.EntityId = gm.PersonId
             ) [IsEra]
-        ,NULL [MailingAddressLocationId] --todo
-        ,NULL [MappedAddressLocationId] --todo
+        ,(
+            SELECT TOP 1 gl.LocationId
+            FROM GroupLocation gl
+            WHERE gl.GroupId = g.Id
+                AND gl.GroupLocationTypeValueId = @GroupLocationTypeFamilyHomeId
+                AND gl.IsMailingLocation = 1
+            ) [MailingAddressLocationId]
+        ,(
+            SELECT TOP 1 gl.LocationId
+            FROM GroupLocation gl
+            WHERE gl.GroupId = g.Id
+                AND gl.GroupLocationTypeValueId = @GroupLocationTypeFamilyHomeId
+                AND gl.IsMappedLocation = 1
+            ) [MappedAddressLocationId]
         ,newid() [Guid]
     FROM [Group] g
     LEFT OUTER JOIN AnalyticsDimPersonCurrent hhpc ON hhpc.PersonId = dbo._church_ccv_ufnGetHeadOfHousehold(g.Id)
@@ -132,5 +149,14 @@ BEGIN
             SELECT GroupId
             FROM AnalyticsSourceFamilyHistorical
             WHERE CurrentRowIndicator = 1
+            )
+
+    -- delete any Family records that no longer exist the [Group] table (or are no longer GroupType of family)
+    DELETE
+    FROM AnalyticsSourceFamilyHistorical
+    WHERE Groupid NOT IN (
+            SELECT Id
+            FROM [Group]
+            WHERE GroupTypeId = @GroupTypeFamilyId
             )
 END
