@@ -447,6 +447,9 @@ namespace RockWeb.Plugins.church_ccv.Reporting
                 RockBoundField campusSummaryField = new RockBoundField { HeaderText = campus.Name, DataField = campusSummaryFieldName };
                 if ( cbShowTotalColumns.Checked )
                 {
+                    // add a blank "dummy" column to help the Excel Export of Headcounts and Attendance line up
+                    gHeadcountsExport.Columns.Add( new RockBoundField { HeaderText = "-", DataField = string.Format( "campusDummyField_Campus{0}", campus.Id ) });
+
                     gHeadcountsExport.Columns.Add( campusSummaryField );
                 }
             }
@@ -595,7 +598,11 @@ namespace RockWeb.Plugins.church_ccv.Reporting
             foreach ( var boundField in gHeadcountsExport.Columns.OfType<RockBoundField>() )
             {
                 DataColumn dataColumn;
-                if (boundField.DataField == "Area")
+                if ( boundField.DataField == "Area" )
+                {
+                    dataColumn = new DataColumn( boundField.DataField, typeof( string ) );
+                }
+                else if ( boundField.DataField.StartsWith( "campusDummyField_Campus" ) )
                 {
                     dataColumn = new DataColumn( boundField.DataField, typeof( string ) );
                 }
@@ -629,12 +636,17 @@ namespace RockWeb.Plugins.church_ccv.Reporting
                         a.MetricValuePartitions.FirstOrDefault( x => x.MetricPartition.EntityTypeId == entityTypeIdSchedule ).EntityId == scheduleId ).ToList();
 
                     dataRowMain[dataColumn] = (int)campusScheduleValues.Where( a =>
-                         DefinedValueCache.Read(a.MetricValuePartitions.FirstOrDefault( x => x.MetricPartition.EntityTypeId == entityTypeIdDefinedValue).EntityId ?? 0).Value == "Main" )
+                         DefinedValueCache.Read( a.MetricValuePartitions.FirstOrDefault( x => x.MetricPartition.EntityTypeId == entityTypeIdDefinedValue ).EntityId ?? 0 ).Value == "Main" )
                          .Sum( a => a.YValue ?? 0.00M );
 
                     dataRowOverflow[dataColumn] = (int)campusScheduleValues.Where( a =>
                          DefinedValueCache.Read( a.MetricValuePartitions.FirstOrDefault( x => x.MetricPartition.EntityTypeId == entityTypeIdDefinedValue ).EntityId ?? 0 ).Value == "Overflow" )
                          .Sum( a => a.YValue ?? 0.00M );
+                }
+                else if ( dataColumn.ColumnName.StartsWith( "campusDummyField_Campus" ) )
+                {
+                    dataRowMain[dataColumn] = "";
+                    dataRowOverflow[dataColumn] = "";
                 }
                 else if ( dataColumn.ColumnName.StartsWith( "campusSummaryField_" ) )
                 {
