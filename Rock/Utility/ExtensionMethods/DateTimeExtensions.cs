@@ -352,15 +352,17 @@ namespace Rock
 
         /// <summary>
         /// Gets the week of month.
-        /// from http://stackoverflow.com/a/2136549/1755417 but with an option to specify the FirstDayOfWeek (for example RockDateTime.FirstDayOfWeek)
+        /// from http://stackoverflow.com/a/2136549/1755417 but with an option to specify the FirstDayOfWeek
         /// </summary>
         /// <param name="dateTime">The date time.</param>
-        /// <param name="firstDayOfWeek">The first day of week.</param>
+        /// <param name="firstDayOfWeek">The first day of week. For example" RockDateTime.FirstDayOfWeek</param>
         /// <returns></returns>
         public static int GetWeekOfMonth( this DateTime dateTime, DayOfWeek firstDayOfWeek )
         {
             DateTime first = new DateTime( dateTime.Year, dateTime.Month, 1 );
-            return dateTime.GetWeekOfYear( firstDayOfWeek ) - first.GetWeekOfYear( firstDayOfWeek ) + 1;
+
+            // note: CalendarWeekRule doesn't matter since we are subtracting
+            return dateTime.GetWeekOfYear( CalendarWeekRule.FirstDay, firstDayOfWeek ) - first.GetWeekOfYear( CalendarWeekRule.FirstDay, firstDayOfWeek ) + 1;
         }
 
         /// <summary>
@@ -376,9 +378,9 @@ namespace Rock
         /// <param name="dateTime">The date time.</param>
         /// <param name="firstDayOfWeek">The first day of week.</param>
         /// <returns></returns>
-        public static int GetWeekOfYear( this DateTime dateTime, DayOfWeek firstDayOfWeek )
+        public static int GetWeekOfYear( this DateTime dateTime, CalendarWeekRule calendarWeekRule, DayOfWeek firstDayOfWeek )
         {
-            return _gregorianCalendar.GetWeekOfYear( dateTime, CalendarWeekRule.FirstDay, firstDayOfWeek );
+            return _gregorianCalendar.GetWeekOfYear( dateTime, calendarWeekRule, firstDayOfWeek );
         }
 
         #endregion DateTime Extensions
