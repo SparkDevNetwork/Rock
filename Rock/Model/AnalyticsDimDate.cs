@@ -180,13 +180,13 @@ namespace Rock.Model
         public string GivingMonthName { get; set; }
 
         /// <summary>
-        /// Gets or sets the calendar month number in year.
+        /// Gets or sets the calendar week number.
         /// </summary>
         /// <value>
-        /// The calendar month number in year.
+        /// The calendar week number.
         /// </value>
         [DataMember]
-        public int CalendarMonthNumberInYear { get; set; }
+        public int CalendarWeek { get; set; }
 
         /// <summary>
         /// Gets or sets the calendar month.
@@ -447,6 +447,14 @@ namespace Rock.Model
             public DateTime Date { get; set; }
 
             /// <summary>
+            /// Gets or sets the week number of year that the Holiday is in (using RockDateTime.FirstDayOfWeek)
+            /// </summary>
+            /// <value>
+            /// The holiday week number of year.
+            /// </value>
+            public int HolidayWeekNumberOfYear { get; set; }
+
+            /// <summary>
             /// Initializes a new instance of the <see cref="Holiday"/> class.
             /// </summary>
             /// <param name="holidayName">Name of the holiday.</param>
@@ -518,6 +526,11 @@ namespace Rock.Model
                 {
                     holiday.Date = holiday.Date.AddDays( 1 );
                 }
+            }
+
+            foreach(var holiday in holidayList)
+            {
+                holiday.HolidayWeekNumberOfYear = holiday.Date.GetWeekOfYear( System.Globalization.CalendarWeekRule.FirstDay, RockDateTime.FirstDayOfWeek );
             }
 
             return holidayList;
