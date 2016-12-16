@@ -193,6 +193,9 @@
                     </div>
                     <div class="col-md-6">
                         <Rock:RockTextBox ID="tbAccountSummary" runat="server" Label="Summary" TextMode="MultiLine" Rows="3" ValidationGroup="Account" />
+                        <div class="attributes">
+                            <asp:PlaceHolder ID="phAccountAttributeEdits" runat="server" EnableViewState="false"></asp:PlaceHolder>
+                        </div>
                     </div>
                 </div>
             </Content>
