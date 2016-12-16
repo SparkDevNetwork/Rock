@@ -61,6 +61,65 @@ namespace Rock.Jobs
         private List<string> _sqlLogs = new List<string>();
 
         /// <summary>
+        /// 
+        /// </summary>
+        private class ColumnInfo
+        {
+            /// <summary>
+            /// Initializes a new instance of the <see cref="ColumnInfo"/> class.
+            /// </summary>
+            public ColumnInfo()
+            {
+            }
+
+            /// <summary>
+            /// Initializes a new instance of the <see cref="ColumnInfo"/> class.
+            /// </summary>
+            /// <param name="entityField">The entity field.</param>
+            public ColumnInfo( EntityField entityField )
+            {
+                this.ColumnName = entityField.Name;
+
+                if ( entityField.PropertyType == typeof( int? ) )
+                {
+                    this.IsNullDefaultValue = "0";
+                }
+                else if ( entityField.PropertyType == typeof( bool? ) )
+                {
+                    this.IsNullDefaultValue = "0";
+                }
+                else if ( entityField.PropertyType.IsEnum )
+                {
+                    this.IsNullDefaultValue = "0";
+                }
+                else if ( entityField.PropertyType == typeof( DateTime? ) )
+                {
+                    this.IsNullDefaultValue = "DateFromParts( 9999, 1, 1 )";
+                }
+                else
+                {
+                    this.IsNullDefaultValue = "''";
+                }
+            }
+
+            /// <summary>
+            /// Gets or sets the name of the column.
+            /// </summary>
+            /// <value>
+            /// The name of the column.
+            /// </value>
+            public string ColumnName { get; set; }
+
+            /// <summary>
+            /// Gets or sets the is null default value.
+            /// </summary>
+            /// <value>
+            /// The is null default value.
+            /// </value>
+            public string IsNullDefaultValue { get; set; }
+        }
+
+        /// <summary>
         /// Executes the specified context.
         /// </summary>
         /// <param name="context">The context.</param>
@@ -80,33 +139,38 @@ namespace Rock.Jobs
                 .Where( a => a.IsAnalytic )
                 .ToList();
 
-            // Ensure that the Schema of AnalyticsSourcePersonHistorical matches the current fields for Attributes that are marked as IsAnalytic
-            UpdateAnalyticsSourcePersonHistoricalSchema( analyticsSourcePersonHistoricalFields, personAnalyticAttributes );
-
-            // start the update process by marking records as History if any of the "IsAnalyticHistory" values 
-            // have changed for attributes that have to use FormatValue to get the value instead of directly in the DB
-            MarkAsHistoryUsingFormattedValue( personAnalyticAttributes );
-
-            // do the big ETL for stuff that can be done directly in the DB
-            DoMainPopulateETLs( analyticsSourcePersonHistoricalFields, personAnalyticAttributes );
-
-            // finish up by updating Attribute Values in the Analytic tables for attributes 
-            // that have to use FormatValue to get the value instead of directly in the DB
-            UpdateAttributeValueUsingFormattedValue( personAnalyticAttributes );
-
-            string resultText = string.Empty;
-            if ( _columnsAdded != 0 || _columnsModified != 0 || _columnsRemoved != 0 )
+            try
             {
-                resultText = $"Added {_columnsAdded}, modified {_columnsModified}, and removed {_columnsRemoved} attribute columns.\n";
+                // Ensure that the Schema of AnalyticsSourcePersonHistorical matches the current fields for Attributes that are marked as IsAnalytic
+                UpdateAnalyticsSourcePersonHistoricalSchema( analyticsSourcePersonHistoricalFields, personAnalyticAttributes );
+
+                // start the update process by marking records as History if any of the "IsAnalyticHistory" values 
+                // have changed for attributes that have to use FormatValue to get the value instead of directly in the DB
+                MarkAsHistoryUsingFormattedValue( personAnalyticAttributes );
+
+                // do the big ETL for stuff that can be done directly in the DB
+                DoMainPopulateETLs( analyticsSourcePersonHistoricalFields, personAnalyticAttributes );
+
+                // finish up by updating Attribute Values in the Analytic tables for attributes 
+                // that have to use FormatValue to get the value instead of directly in the DB
+                UpdateAttributeValueUsingFormattedValue( personAnalyticAttributes );
+
+                string resultText = string.Empty;
+                if ( _columnsAdded != 0 || _columnsModified != 0 || _columnsRemoved != 0 )
+                {
+                    resultText = $"Added {_columnsAdded}, modified {_columnsModified}, and removed {_columnsRemoved} attribute columns.\n";
+                }
+
+                resultText += $"Marked {_rowsMarkedAsHistory} records as History, updated {_rowsUpdated} records, updated {_attributeFieldsUpdated} attribute formatted values, and inserted {_rowsInserted} records.";
+
+                context.Result = resultText;
             }
-            
-            resultText += $"Marked {_rowsMarkedAsHistory} records as History, updated {_rowsUpdated} records, updated {_attributeFieldsUpdated} attribute formatted values, and inserted {_rowsInserted} records.";
-
-            context.Result = resultText;
-
-            if ( dataMap.GetString( "SaveSQLForDebug" ).AsBoolean() )
+            finally
             {
-                LogSQL( "ProcessAnalyticsDimPerson.sql", _sqlLogs.AsDelimited( "\n" ).ToString() );
+                if ( dataMap.GetString( "SaveSQLForDebug" ).AsBoolean() )
+                {
+                    LogSQL( "ProcessAnalyticsDimPerson.sql", _sqlLogs.AsDelimited( "\n" ).ToString() );
+                }
             }
         }
 
@@ -131,8 +195,10 @@ namespace Rock.Jobs
 
                 File.WriteAllText( filePath, message );
             }
-            catch { }
-
+            catch
+            {
+                // ignore
+            }
         }
 
         /// <summary>
@@ -185,7 +251,7 @@ UPDATE [AnalyticsSourcePersonHistorical]
                             parameters.Add( "@formattedValue", formattedValue );
                             this._rowsMarkedAsHistory += DbService.ExecuteCommand( markAsHistorySQL, System.Data.CommandType.Text, parameters );
 
-                            _sqlLogs.Add( parameters.Select(a => $"/* {a.Key} = '{a.Value}' */").ToList().AsDelimited("\n") + markAsHistorySQL );
+                            _sqlLogs.Add( parameters.Select( a => $"/* {a.Key} = '{a.Value}' */" ).ToList().AsDelimited( "\n" ) + markAsHistorySQL );
                         }
                     }
                 }
@@ -286,22 +352,27 @@ UPDATE [AnalyticsSourcePersonHistorical]
         private void DoMainPopulateETLs( List<EntityField> analyticsSourcePersonHistoricalFields, List<AttributeCache> personAnalyticAttributes )
         {
             // columns that should be considered when determining if a new History record is needed
-            List<string> historyColumns = new List<string>();
+            List<ColumnInfo> historyColumns = new List<ColumnInfo>();
             foreach ( var analyticsSourcePersonHistoricalProperty in analyticsSourcePersonHistoricalFields.Where( a => a.PropertyInfo.GetCustomAttribute<AnalyticHistoryFieldAttribute>() != null ) )
             {
-                historyColumns.Add( analyticsSourcePersonHistoricalProperty.Name );
+                historyColumns.Add( new ColumnInfo( analyticsSourcePersonHistoricalProperty ) );
             }
 
             List<string> populateAttributeValueINSERTClauses = new List<string>();
-            List<string> attributeValueColumns = new List<string>();
+            List<ColumnInfo> attributeValueColumns = new List<ColumnInfo>();
             List<string> populateAttributeValueSELECTClauses = new List<string>();
+            List<string> populatePersonValueSELECTClauses = new List<string>();
+            List<ColumnInfo> populatePersonValueSELECTColumns = new List<ColumnInfo>();
             List<string> populateAttributeValueFROMClauses = new List<string>();
 
             var analyticSpecificColumns = new string[] { "Id", "PersonId", "CurrentRowIndicator", "EffectiveDate", "ExpireDate", "PrimaryFamilyId", "BirthDateKey", "Guid" };
 
-            List<string> populatePersonValueSELECTClauses = analyticsSourcePersonHistoricalFields
-                .Select( a => a.Name )
-                .Where( a => !analyticSpecificColumns.Contains( a ) ).OrderBy( a => a ).ToList();
+            foreach ( var item in analyticsSourcePersonHistoricalFields
+                .Where( a => !analyticSpecificColumns.Contains( a.Name ) ).OrderBy( a => a.Name ).ToList() )
+            {
+                populatePersonValueSELECTClauses.Add( item.Name );
+                populatePersonValueSELECTColumns.Add( new ColumnInfo( item ) );
+            }
 
             List<string> populatePersonValueFROMClauses = new List<string>( populatePersonValueSELECTClauses );
 
@@ -314,10 +385,6 @@ UPDATE [AnalyticsSourcePersonHistorical]
                 {
                     var columnName = personAttribute.Key.RemoveSpecialCharacters();
                     var personAttributeValueFieldName = personAttribute.FieldType.Field.AttributeValueFieldName;
-                    if ( personAttribute.IsAnalyticHistory )
-                    {
-                        historyColumns.Add( columnName );
-                    }
 
                     // each SELECT clause should look something like: attribute_1071.ValueAsDateTime as [attribute_YouthVolunteerApplication]
                     string populateAttributeValueSELECTClause =
@@ -326,7 +393,30 @@ UPDATE [AnalyticsSourcePersonHistorical]
                     populateAttributeValueSELECTClauses.Add( populateAttributeValueSELECTClause );
 
                     populateAttributeValueINSERTClauses.Add( columnName );
-                    attributeValueColumns.Add( columnName );
+                    var columnInfo = new ColumnInfo();
+                    columnInfo.ColumnName = columnName;
+                    switch ( personAttributeValueFieldName )
+                    {
+                        case "ValueAsNumeric":
+                            columnInfo.IsNullDefaultValue = "0";
+                            break;
+                        case "ValueAsDateTime":
+                            columnInfo.IsNullDefaultValue = "DateFromParts( 9999, 1, 1 )";
+                            break;
+                        case "ValueAsBoolean":
+                            columnInfo.IsNullDefaultValue = "0";
+                            break;
+                        default:
+                            columnInfo.IsNullDefaultValue = "''";
+                            break;
+                    }
+
+                    attributeValueColumns.Add( columnInfo );
+                    if ( personAttribute.IsAnalyticHistory )
+                    {
+                        historyColumns.Add( columnInfo );
+                    }
+
                     string lengthCondition = personAttributeValueFieldName == "Value"
                         ? $"AND len(av{personAttribute.Id}.Value) <= {MaxAttributeValueLength}"
                         : null;
@@ -341,11 +431,13 @@ UPDATE [AnalyticsSourcePersonHistorical]
 
                 string processINSERTScript = GetProcessINSERTScript( populateAttributeValueINSERTClauses, populatePersonValueSELECTClauses, selectSQL );
 
-                // build the CTE which is used for both the "Mark as History" and "UPDATE" sripts
-                string withCTEScript = @"\n\n;with cte1 as (" + selectSQL + @")
+                // build the CTE which is used for both the "Mark as History" and "UPDATE" scripts
+                string withCTEScript = @"
+
+;with cte1 as (" + selectSQL + @")
 ";
                 string markAsHistoryScript = GetMarkAsHistoryScript( historyColumns, withCTEScript );
-                string updateETLScript = GetUpdateETLScript( attributeValueColumns, populatePersonValueSELECTClauses, withCTEScript );
+                string updateETLScript = GetUpdateETLScript( attributeValueColumns, populatePersonValueSELECTColumns, withCTEScript );
 
                 string scriptDeclares = @"
 DECLARE 
@@ -471,7 +563,7 @@ OUTER APPLY (
         /// <param name="historyColumns">The history columns.</param>
         /// <param name="withCTEScript">The with cte script.</param>
         /// <returns></returns>
-        private string GetMarkAsHistoryScript( List<string> historyColumns, string withCTEScript )
+        private string GetMarkAsHistoryScript( List<ColumnInfo> historyColumns, string withCTEScript )
         {
             string markAsHistoryScript = withCTEScript;
             markAsHistoryScript += @"UPDATE AnalyticsSourcePersonHistorical SET
@@ -479,7 +571,7 @@ OUTER APPLY (
         [ExpireDate] = @EtlDate
 FROM AnalyticsSourcePersonHistorical asph
 JOIN cte1 ON cte1.PersonId = asph.PersonId
-WHERE asph.CurrentRowIndicator = 1 and (" + historyColumns.Select( a => $" isnull(asph.[{a}], '') != isnull(cte1.[{a}],'')" ).ToList().AsDelimited( " OR \n" ) + @")
+WHERE asph.CurrentRowIndicator = 1 and (" + historyColumns.Select( a => $" isnull(asph.[{a.ColumnName}], {a.IsNullDefaultValue}) != isnull(cte1.[{a.ColumnName}],{a.IsNullDefaultValue})" ).ToList().AsDelimited( " OR \n" ) + @")
 AND asph.PersonId NOT IN ( -- Ensure that there isn't already a History Record for the current EtlDate 
     SELECT PersonId
     FROM AnalyticsSourcePersonHistorical x
@@ -494,10 +586,10 @@ AND asph.PersonId NOT IN ( -- Ensure that there isn't already a History Record f
         /// Gets the update etl script.
         /// </summary>
         /// <param name="attributeValueColumns">The attribute value columns.</param>
-        /// <param name="populatePersonValueSELECTClauses">The populate person value select clauses.</param>
+        /// <param name="populatePersonValueSELECTColumns">The populate person value select columns.</param>
         /// <param name="withCTEScript">The with cte script.</param>
         /// <returns></returns>
-        private string GetUpdateETLScript( List<string> attributeValueColumns, List<string> populatePersonValueSELECTClauses, string withCTEScript )
+        private string GetUpdateETLScript( List<ColumnInfo> attributeValueColumns, List<ColumnInfo> populatePersonValueSELECTColumns, string withCTEScript )
         {
             string updateETLScript = withCTEScript;
 
@@ -507,11 +599,11 @@ AND asph.PersonId NOT IN ( -- Ensure that there isn't already a History Record f
         [PrimaryFamilyId] = cte1.[PrimaryFamilyId],
         [BirthDateKey] = cte1.[BirthDateKey],
 ";
-            updateETLScript += populatePersonValueSELECTClauses.Select( a => $"        [{a}] = cte1.[{a}]" ).ToList().AsDelimited( ",\n" );
+            updateETLScript += populatePersonValueSELECTColumns.Select( a => $"        [{a.ColumnName}] = cte1.[{a.ColumnName}]" ).ToList().AsDelimited( ",\n" );
             if ( attributeValueColumns.Any() )
             {
                 updateETLScript += ",\n";
-                updateETLScript += attributeValueColumns.Select( a => $"        [{a}] = cte1.[{a}]" ).ToList().AsDelimited( ",\n" );
+                updateETLScript += attributeValueColumns.Select( a => $"        [{a.ColumnName}] = cte1.[{a.ColumnName}]" ).ToList().AsDelimited( ",\n" );
             }
 
             updateETLScript += @"
@@ -519,11 +611,11 @@ FROM AnalyticsSourcePersonHistorical asph
 JOIN cte1 ON cte1.PersonId = asph.PersonId
 WHERE asph.CurrentRowIndicator = 1 AND (";
 
-            updateETLScript += populatePersonValueSELECTClauses.Select( a => $"        isnull(asph.[{a}],'') != isnull(cte1.[{a}],'')" ).ToList().AsDelimited( " OR \n" );
+            updateETLScript += populatePersonValueSELECTColumns.Select( a => $"        isnull(asph.[{a.ColumnName}],{a.IsNullDefaultValue}) != isnull(cte1.[{a.ColumnName}],{a.IsNullDefaultValue})" ).ToList().AsDelimited( " OR \n" );
             if ( attributeValueColumns.Any() )
             {
                 updateETLScript += " OR \n";
-                updateETLScript += attributeValueColumns.Select( a => $"        isnull(asph.[{a}],'') != isnull(cte1.[{a}],'')" ).ToList().AsDelimited( " OR \n" );
+                updateETLScript += attributeValueColumns.Select( a => $"        isnull(asph.[{a.ColumnName}],{a.IsNullDefaultValue}) != isnull(cte1.[{a.ColumnName}],{a.IsNullDefaultValue})" ).ToList().AsDelimited( " OR \n" );
             }
 
             updateETLScript += ")";
@@ -639,6 +731,7 @@ WHERE asph.CurrentRowIndicator = 1 AND (";
                 // refresh the view definitions just in case the schema changed
                 rockContext.Database.ExecuteSqlCommand( "exec sp_refreshview [AnalyticsDimPersonHistorical]" );
                 rockContext.Database.ExecuteSqlCommand( "exec sp_refreshview [AnalyticsDimPersonCurrent]" );
+                rockContext.Database.ExecuteSqlCommand( "exec sp_refreshview [AnalyticsDimFamilyHeadOfHousehold]" );
             }
         }
     }
