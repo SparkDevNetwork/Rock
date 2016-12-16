@@ -864,6 +864,15 @@ namespace chuch.ccv.Podcast.Rest
                                 writer.WriteEndElement();
                             }
 
+                            string discussionGuideUrlValue = null;
+                            message.Attributes.TryGetValue( "DiscussionGuideUrl", out discussionGuideUrlValue );
+                            if ( string.IsNullOrWhiteSpace( discussionGuideUrlValue ) == false )
+                            {
+                                writer.WriteStartElement( "DiscussionGuideUrl" );
+                                writer.WriteValue( discussionGuideUrlValue );
+                                writer.WriteEndElement( );
+                            }
+
                             // close the message
                             writer.WriteEndElement();
                         }
