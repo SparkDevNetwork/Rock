@@ -75,7 +75,7 @@ namespace Rock.Model
         /// The giving unit key.
         /// </value>
         [DataMember]
-        public string GivingUnitKey { get; set; }
+        public int? GivingUnitKey { get; set; }
 
         /// <summary>
         /// Gets or sets the gateway identifier.
