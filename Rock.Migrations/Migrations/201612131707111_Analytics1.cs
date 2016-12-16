@@ -312,6 +312,26 @@ CREATE UNIQUE NONCLUSTERED  INDEX [IX_PersonIdCurrentRow] ON [dbo].[AnalyticsSou
 ) where CurrentRowIndicator = 1 
 " );
 
+            Sql( @"
+CREATE UNIQUE NONCLUSTERED INDEX [IX_GroupId_ExpireDate] ON [dbo].[AnalyticsSourceFamilyHistorical]
+(
+	[GroupId] ASC,
+	[ExpireDate] ASC
+)
+INCLUDE ( [Id]) 
+
+" );
+
+            // Enforce that there isn't more than one CurrentRow per Family
+            // Notice the cool 'where CurrentRowIndicator = 1' filter, Woohooo!
+            Sql( @"
+CREATE UNIQUE NONCLUSTERED  INDEX [IX_GroupIdCurrentRow] ON [dbo].[AnalyticsSourceFamilyHistorical]
+(
+	[GroupId] ASC,
+	[CurrentRowIndicator]
+) where CurrentRowIndicator = 1 
+" );
+
         }
         
         /// <summary>

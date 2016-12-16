@@ -342,7 +342,7 @@ UPDATE [AnalyticsSourcePersonHistorical]
                 string processINSERTScript = GetProcessINSERTScript( populateAttributeValueINSERTClauses, populatePersonValueSELECTClauses, selectSQL );
 
                 // build the CTE which is used for both the "Mark as History" and "UPDATE" sripts
-                string withCTEScript = @";with cte1 as (" + selectSQL + @")
+                string withCTEScript = @"\n\n;with cte1 as (" + selectSQL + @")
 ";
                 string markAsHistoryScript = GetMarkAsHistoryScript( historyColumns, withCTEScript );
                 string updateETLScript = GetUpdateETLScript( attributeValueColumns, populatePersonValueSELECTClauses, withCTEScript );
