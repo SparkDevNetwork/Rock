@@ -39,7 +39,7 @@ BEGIN
         )
     SELECT a.Id [AttendanceId]
         ,convert(INT, (convert(CHAR(8), a.StartDateTime, 112))) [AttendanceDateKey]
-        ,NULL --TODO <AttendanceTypeId, int,>
+        ,NULL [AttendanceTypeId] -- fill in later
         ,CASE 
             WHEN a.DidAttend = 1
                 THEN 1
@@ -51,7 +51,7 @@ BEGIN
         ,a.GroupId
         ,a.PersonAliasId
         ,a.DeviceId
-        ,dvSearchType.Value [SearchTypeName]
+        ,isnull(dvSearchType.Value, 'None') [SearchTypeName]
         ,a.StartDateTime
         ,a.EndDateTime
         ,a.RSVP
