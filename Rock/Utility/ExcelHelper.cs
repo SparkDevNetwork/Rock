@@ -130,6 +130,7 @@ namespace Rock.Utility
                 }
             }
 
+            table.ShowHeader = true;
             table.ShowFilter = true;
             table.TableStyle = OfficeOpenXml.Table.TableStyles.None;
 
