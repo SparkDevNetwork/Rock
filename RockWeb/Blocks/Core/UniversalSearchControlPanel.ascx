@@ -44,6 +44,8 @@
                             <Rock:RockLiteral ID="lSmartSearchEntities" runat="server" Label="Entities" />
                         </div>
                         <div class="col-md-6">
+                            <Rock:RockLiteral ID="lSearchType" runat="server" Label="Search Type" />
+
                             <Rock:RockLiteral ID="lSmartSearchFilterCriteria" runat="server" Label="Filter Critieria" />
                         </div>
                     </div>
@@ -60,6 +62,7 @@
                             <Rock:RockCheckBoxList ID="cblSmartSearchEntities" runat="server" Label="Search Entities" Help="Select the entities you would like to be search via the Smart Search feature. If no value is selected all entities will be searched." />
                         </div>
                         <div class="col-md-6">
+                            <Rock:RockDropDownList ID="ddlSearchType" runat="server" Label="Search Type" />
                             <Rock:RockTextBox ID="tbSmartSearchFieldCrieria" runat="server" Label="Field Critieria" Help="The field criteria to apply to Smart Search search. This field used the same syntax as the 'search' Lava command (field^value|field^value1,value2)." />
                         </div>
                     </div>
@@ -86,7 +89,8 @@
                             <Rock:RockBoundField DataField="Name" HeaderText="Entity Name" SortExpression="Name" />
                             <Rock:BoolField DataField="IsIndexingEnabled" HeaderText="Indexing Enabled" SortExpression="IsIndexingEnabled" />
                             <Rock:LinkButtonField CssClass="btn btn-default" HeaderText="Delete All Documents" HeaderStyle-HorizontalAlign="Center" Text="<i class='fa fa-eraser'></i>" OnClick="gClearIndex_Click" />    
-                            <Rock:LinkButtonField CssClass="btn btn-default" HeaderText="Bulk Load Documents" HeaderStyle-HorizontalAlign="Center" Text="<i class='fa fa-download'></i>" OnClick="gBulkLoad_Click" />                  
+                            <Rock:LinkButtonField CssClass="btn btn-default" HeaderText="Bulk Load Documents" HeaderStyle-HorizontalAlign="Center" Text="<i class='fa fa-download'></i>" OnClick="gBulkLoad_Click" /> 
+                            <Rock:LinkButtonField CssClass="btn btn-default" HeaderText="Recreate Index" HeaderStyle-HorizontalAlign="Center" Text="<i class='fa fa-refresh'></i>" OnClick="gRefresh_Click" />                 
                         </Columns>
                     </Rock:Grid>
                 </div>

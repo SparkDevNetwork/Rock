@@ -52,7 +52,7 @@ namespace Rock.Web
         /// <value>
         /// The route parameters.
         /// </value>
-        public Dictionary<string, string> Parameters { get; set; }
+        public Dictionary<string, string> Parameters { get; set; } = new Dictionary<string, string>();
 
         /// <summary>
         /// Gets the query string.
@@ -60,7 +60,7 @@ namespace Rock.Web
         /// <value>
         /// The query string.
         /// </value>
-        public NameValueCollection QueryString { get; set; }
+        public NameValueCollection QueryString { get; set; } = new NameValueCollection();
 
         /// <summary>
         /// Gets or sets the bread crumbs.
@@ -68,7 +68,7 @@ namespace Rock.Web
         /// <value>
         /// The bread crumbs.
         /// </value>
-        public List<BreadCrumb> BreadCrumbs { get; set; }
+        public List<BreadCrumb> BreadCrumbs { get; set; } = new List<BreadCrumb>();
 
         /// <summary>
         /// Gets a value indicating whether this instance is valid.

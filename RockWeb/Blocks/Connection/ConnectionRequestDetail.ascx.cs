@@ -1401,6 +1401,9 @@ namespace RockWeb.Blocks.Connection
                 lPlacementGroup.Text = !string.IsNullOrWhiteSpace( url ) ?
                     string.Format( "<a href='{0}'>{1}</a>{2}", url, connectionRequest.AssignedGroup.Name, roleStatus ) :
                     connectionRequest.AssignedGroup.Name;
+
+                hfGroupMemberAttributeValues.Value = connectionRequest.AssignedGroupMemberAttributeValues;
+                BuildGroupMemberAttributes( connectionRequest.AssignedGroupId, connectionRequest.AssignedGroupMemberRoleId, connectionRequest.AssignedGroupMemberStatus, true );
             }
             else
             {
@@ -1580,7 +1583,7 @@ namespace RockWeb.Blocks.Connection
                         .Where( g =>
                             g.Group != null &&
                             g.Group.IsActive &&
-                            ( !g.Group.CampusId.HasValue || ( campusId.HasValue && campusId.Value == g.Group.CampusId.Value ) ) )
+                            ( !campusId.HasValue || !g.Group.CampusId.HasValue || campusId.Value == g.Group.CampusId.Value ) )
                         .Select( g => g.Group )
                         .ToList();
                 }
@@ -1590,12 +1593,15 @@ namespace RockWeb.Blocks.Connection
                 {
                     if ( groupConfig.UseAllGroupsOfType )
                     {
+                        var existingGroupIds = groups.Select( g => g.Id ).ToList();
+
                         groups.AddRange( new GroupService( new RockContext() )
                             .Queryable().AsNoTracking()
                             .Where( g =>
+                                !existingGroupIds.Contains( g.Id ) &&
                                 g.IsActive &&
                                 g.GroupTypeId == groupConfig.GroupTypeId &&
-                                ( !g.CampusId.HasValue || ( campusId.HasValue && campusId.Value == g.CampusId.Value ) ) )
+                                ( !campusId.HasValue || !g.CampusId.HasValue || campusId.Value == g.CampusId.Value ) )
                             .ToList() );
                     }
                 }
@@ -1627,7 +1633,7 @@ namespace RockWeb.Blocks.Connection
                     {
                         connectionRequest.ConnectionOpportunity.ConnectionOpportunityConnectorGroups
                             .Where( g =>
-                                ( !g.CampusId.HasValue || !campusId.HasValue || g.CampusId.Value == campusId.Value ) )
+                                ( !campusId.HasValue || !g.CampusId.HasValue || g.CampusId.Value == campusId.Value ) )
                             .SelectMany( g => g.ConnectorGroup.Members )
                             .Where( m => m.GroupMemberStatus == GroupMemberStatus.Active )
                             .Select( m => m.Person )
@@ -1801,11 +1807,11 @@ namespace RockWeb.Blocks.Connection
                             var person = new PersonService( rockContext ).Get( personId.Value );
                             if ( person != null )
                             {
-                                nbRequirementsWarning.Text = string.Format( "{0} does not currently meet the requirements for the selected group/role and will not be able to be placed!", person.NickName );
+                                nbRequirementsWarning.Text = string.Format( "{0} does not currently meet the requirements for the selected group/role and will not be able to be placed.", person.NickName );
                             }
                             else
                             {
-                                nbRequirementsWarning.Text = "This person does not currently meet the requirements for this group and will not be able to be placed!";
+                                nbRequirementsWarning.Text = "This person does not currently meet the requirements for this group and will not be able to be placed.";
                             }
                             nbRequirementsWarning.Visible = true;
                         }
@@ -1817,6 +1823,7 @@ namespace RockWeb.Blocks.Connection
         private void BuildGroupMemberAttributes( int? groupId, int? groupMemberRoleId, GroupMemberStatus? groupMemberStatus, bool setValues )
         {
             phGroupMemberAttributes.Controls.Clear();
+            phGroupMemberAttributesView.Controls.Clear();
 
             if ( groupId.HasValue && groupMemberRoleId.HasValue && groupMemberStatus != null )
             {
@@ -1848,6 +1855,7 @@ namespace RockWeb.Blocks.Connection
                         }
 
                         Rock.Attribute.Helper.AddEditControls( groupMember, phGroupMemberAttributes, setValues, BlockValidationGroup, 2 );
+                        Rock.Attribute.Helper.AddDisplayControls( groupMember, phGroupMemberAttributesView, null, false, false );
                     }
                 }
             }

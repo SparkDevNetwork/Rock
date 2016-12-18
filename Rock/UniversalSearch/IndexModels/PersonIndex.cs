@@ -91,7 +91,7 @@ namespace Rock.UniversalSearch.IndexModels
         /// <value>
         /// The spouse.
         /// </value>
-        [RockIndexField]
+        [RockIndexField( Index = IndexType.NotIndexed )]
         public string Spouse { get; set; }
 
         /// <summary>
@@ -199,8 +199,17 @@ namespace Rock.UniversalSearch.IndexModels
         /// <value>
         /// The email.
         /// </value>
-        [RockIndexField]
+        [RockIndexField ( Index = IndexType.NotAnalyzed, Analyzer = "whitespace")]
         public string Email { get; set; }
+
+        /// <summary>
+        /// Gets or sets the phone numbers.
+        /// </summary>
+        /// <value>
+        /// The phone numbers.
+        /// </value>
+        [RockIndexField]
+        public string PhoneNumbers { get; set; }
 
         /// <summary>
         /// Gets the icon CSS class.
@@ -226,11 +235,14 @@ namespace Rock.UniversalSearch.IndexModels
         {
             var personIndex = new PersonIndex();
             personIndex.SourceIndexModel = "Rock.Model.Person";
+            personIndex.ModelConfiguration = "nofilters";
 
             personIndex.Id = person.Id;
             personIndex.FirstName = person.FirstName;
             personIndex.NickName = person.NickName;
             personIndex.LastName = person.LastName;
+
+            personIndex.ModelOrder = 10;
 
             if ( person.SuffixValue != null )
             {
@@ -246,6 +258,11 @@ namespace Rock.UniversalSearch.IndexModels
             personIndex.PhotoUrl = person.PhotoUrl;
             personIndex.Email = person.Email;
             personIndex.DocumentName = person.FullName;
+
+            if ( person.PhoneNumbers != null )
+            {
+                personIndex.PhoneNumbers = string.Join( "|", person.PhoneNumbers.Select( p => p.NumberTypeValue.Value + "^" + p.Number ) );
+            }
 
             // get family role
             var familyRole = person.GetFamilyRole();
@@ -278,6 +295,25 @@ namespace Rock.UniversalSearch.IndexModels
             AddIndexableAttributes( personIndex, person );
 
             return personIndex;
+        }
+
+        /// <summary>
+        /// Gets the document URL.
+        /// </summary>
+        /// <returns></returns>
+        public override string GetDocumentUrl( Dictionary<string, object> displayOptions = null )
+        {
+            string url = "/Person/";
+
+            if ( displayOptions != null )
+            {
+                if ( displayOptions.ContainsKey( "Person.Url" ) )
+                {
+                    url = displayOptions["Person.Url"].ToString();
+                }
+            }
+
+            return url + this.Id;
         }
 
         /// <summary>

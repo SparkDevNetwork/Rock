@@ -64,6 +64,9 @@ namespace Rock.Lava.Blocks
             var parms = ParseMarkup( _markup, context );
 
             SearchFieldCriteria fieldCriteria = new SearchFieldCriteria();
+
+            SearchType searchType = SearchType.Wildcard;
+
             List<int> entityIds = new List<int>();
             string query = string.Empty;
 
@@ -87,9 +90,31 @@ namespace Rock.Lava.Blocks
                 }
             }
 
+            if ( parms.Any( p => p.Key == "searchtype" ) )
+            {
+                switch( parms["searchtype"] )
+                {
+                    case "exactmatch":
+                        {
+                            searchType = SearchType.ExactMatch;
+                            break;
+                        }
+                    case "fuzzy":
+                        {
+                            searchType = SearchType.Fuzzy;
+                            break;
+                        }
+                    case "wildcard":
+                        {
+                            searchType = SearchType.Wildcard;
+                            break;
+                        }
+                }
+            }
+
             if ( parms.Any( p => p.Key == "criteriasearchtype" ) )
             {
-                if (parms[""].ToLower() == "and" )
+                if (parms["criteriasearchtype"].ToLower() == "and" )
                 {
                     fieldCriteria.SearchType = CriteriaSearchType.And;
                 }
@@ -112,7 +137,7 @@ namespace Rock.Lava.Blocks
             }
 
             var client = IndexContainer.GetActiveComponent();
-            var results = client.Search( query, SearchType.ExactMatch, entityIds, fieldCriteria );
+            var results = client.Search( query, searchType, entityIds, fieldCriteria );
 
             context.Scopes.Last()[parms["iterator"]] = results;
 

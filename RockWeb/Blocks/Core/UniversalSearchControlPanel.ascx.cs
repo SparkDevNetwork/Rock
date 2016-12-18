@@ -91,6 +91,8 @@ namespace RockWeb.Blocks.Core
                 LoadIndexDetails();
                 LoadEntities();
                 ShowSmartSearchView();
+
+                ddlSearchType.BindToEnum<SearchType>();
             }
         }
 
@@ -126,6 +128,15 @@ namespace RockWeb.Blocks.Core
 
             tbSmartSearchFieldCrieria.Text = Rock.Web.SystemSettings.GetValue( "core_SmartSearchUniversalSearchFieldCriteria" );
 
+            var searchType = ((int)SearchType.Wildcard).ToString();
+
+            if ( !string.IsNullOrWhiteSpace( Rock.Web.SystemSettings.GetValue( "core_SmartSearchUniversalSearchSearchType" ) ) )
+            {
+                searchType = Rock.Web.SystemSettings.GetValue( "core_SmartSearchUniversalSearchSearchType" );
+            }
+
+            ddlSearchType.SelectedValue = searchType;
+
             pnlSmartSearchEdit.Visible = true;
             pnlSmartSearchView.Visible = false;
         }
@@ -139,6 +150,7 @@ namespace RockWeb.Blocks.Core
         {
             Rock.Web.SystemSettings.SetValue( "core_SmartSearchUniversalSearchEntities", string.Join(",", cblSmartSearchEntities.SelectedValues.Select( n => n.ToString() ).ToArray() ));
             Rock.Web.SystemSettings.SetValue( "core_SmartSearchUniversalSearchFieldCriteria", tbSmartSearchFieldCrieria.Text );
+            Rock.Web.SystemSettings.SetValue( "core_SmartSearchUniversalSearchSearchType", ddlSearchType.SelectedValue );
 
             ShowSmartSearchView();
 
@@ -229,8 +241,9 @@ namespace RockWeb.Blocks.Core
 
                 if ( !isIndexingEnabled )
                 {
-                    var refreshCell = e.Row.Cells[2].Controls[0].Visible = false;
-                    var bulkDownloadCell = e.Row.Cells[3].Controls[0].Visible = false;
+                    e.Row.Cells[2].Controls[0].Visible = false;
+                    e.Row.Cells[3].Controls[0].Visible = false;
+                    e.Row.Cells[4].Controls[0].Visible = false;
                 }
             }
         }
@@ -295,7 +308,30 @@ namespace RockWeb.Blocks.Core
                 if ( classInstance != null && deleteItemsMethod != null )
                 {
                     deleteItemsMethod.Invoke( classInstance, null );
+
+                    maMessages.Show( string.Format( "All documents in the {0} index have been deleted.", entityType.FriendlyName ), ModalAlertType.Information );
                 }
+            }
+        }
+
+
+        /// <summary>
+        /// Handles the Click event of the gRefresh control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="RowEventArgs"/> instance containing the event data.</param>
+        protected void gRefresh_Click( object sender, RowEventArgs e )
+        {
+            RockContext rockContext = new RockContext();
+            EntityTypeService entityTypeService = new EntityTypeService( rockContext );
+            var entityType = entityTypeService.Get( e.RowKeyId );
+
+            if ( entityType != null )
+            {
+                IndexContainer.DeleteIndex( entityType.IndexModelType );
+                IndexContainer.CreateIndex( entityType.IndexModelType );
+
+                maMessages.Show( string.Format( "The index for {0} has been re-created.", entityType.FriendlyName ), ModalAlertType.Information );
             }
         }
 
@@ -318,7 +354,9 @@ namespace RockWeb.Blocks.Core
 
                 lSmartSearchEntities.Text = string.Join( ",", EntityTypeCache.All().Where( e => entityIds.Contains( e.Id ) ).Select( e => e.FriendlyName ).ToList() );
             }
-            lSmartSearchFilterCriteria.Text = Rock.Web.SystemSettings.GetValue( "core_SmartSearchUniversalSearchFieldCriteria" ); ;
+            lSmartSearchFilterCriteria.Text = Rock.Web.SystemSettings.GetValue( "core_SmartSearchUniversalSearchFieldCriteria" );
+
+            lSearchType.Text = Enum.Parse(typeof(SearchType), Rock.Web.SystemSettings.GetValue( "core_SmartSearchUniversalSearchSearchType" ) ).ToString();
         }
 
         /// <summary>
