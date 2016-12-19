@@ -971,6 +971,8 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                     rockContext.SaveChanges();
 
                     // SAVE GROUP MEMBERS
+                    var recordStatusInactiveId = DefinedValueCache.Read( new Guid( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_INACTIVE ) ).Id;
+                    var reasonStatusReasonDeceasedId = DefinedValueCache.Read( new Guid( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_REASON_DECEASED ) ).Id;
                     int? recordStatusValueID = ddlRecordStatus.SelectedValueAsInt();
                     int? reasonValueId = ddlReason.SelectedValueAsInt();
                     var newGroups = new List<Group>();
@@ -1050,7 +1052,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                                     person.RecordStatusValueId = recordStatusValueID;
                                 }
 
-                                if ( person.RecordStatusValueId != recordStatusValueID )
+                                if ( person.RecordStatusReasonValueId != reasonValueId )
                                 {
                                     History.EvaluateChange( demographicChanges, "Record Status Reason", DefinedValueCache.GetName( person.RecordStatusReasonValueId ), DefinedValueCache.GetName( reasonValueId ) );
                                     person.RecordStatusReasonValueId = reasonValueId;
@@ -1140,9 +1142,16 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 
                                         if ( _isFamilyGroupType )
                                         {
-                                            if ( recordStatusValueID > 0 )
+                                            // Only change a person's record status if they were not previously deceased (#1887).
+                                            if ( recordStatusValueID > 0 &&
+                                                ( groupMember.Person.RecordStatusValueId != recordStatusInactiveId
+                                                || ( groupMember.Person.RecordStatusValueId == recordStatusInactiveId
+                                                    && groupMember.Person.RecordStatusReasonValueId != reasonStatusReasonDeceasedId 
+                                                    )
+                                                ) )
                                             {
-                                                History.EvaluateChange( demographicChanges, "Record Status", DefinedValueCache.GetName( groupMember.Person.RecordStatusValueId ), DefinedValueCache.GetName( recordStatusValueID ) );
+                                                History.EvaluateChange( demographicChanges, "Record Status", 
+                                                DefinedValueCache.GetName( groupMember.Person.RecordStatusValueId ), DefinedValueCache.GetName( recordStatusValueID ) );
                                                 groupMember.Person.RecordStatusValueId = recordStatusValueID;
 
                                                 History.EvaluateChange( demographicChanges, "Record Status Reason", DefinedValueCache.GetName( groupMember.Person.RecordStatusReasonValueId ), DefinedValueCache.GetName( reasonValueId ) );
