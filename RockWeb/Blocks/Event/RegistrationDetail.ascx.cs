@@ -1875,14 +1875,23 @@ namespace RockWeb.Blocks.Event
                     var costSummary = new RegistrationCostSummaryInfo();
                     costSummary.Type = RegistrationCostSummaryType.Cost;
                     costSummary.Description = registrant.PersonName;
-                    costSummary.Cost = registrant.Cost;
-                    if ( registration.DiscountPercentage > 0.0m )
+                    if ( registrant.OnWaitList )
                     {
-                        costSummary.DiscountedCost = costSummary.Cost - ( costSummary.Cost * registration.DiscountPercentage );
+                        costSummary.Description += " (Waiting List)";
+                        costSummary.Cost = 0.0M;
+                        costSummary.DiscountedCost = 0.0M;
                     }
                     else
                     {
-                        costSummary.DiscountedCost = costSummary.Cost;
+                        costSummary.Cost = registrant.Cost;
+                        if ( registration.DiscountPercentage > 0.0m )
+                        {
+                            costSummary.DiscountedCost = costSummary.Cost - ( costSummary.Cost * registration.DiscountPercentage );
+                        }
+                        else
+                        {
+                            costSummary.DiscountedCost = costSummary.Cost;
+                        }
                     }
 
                     costs.Add( costSummary );

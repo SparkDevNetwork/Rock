@@ -1867,6 +1867,40 @@ namespace Rock.Lava
         }
 
         /// <summary>
+        /// Gets the Spouse of the selected person 
+        /// </summary>
+        /// <param name="context">The context.</param>
+        /// <param name="input">The input.</param>
+        /// <returns></returns>
+        public static Person Spouse( DotLiquid.Context context, object input )
+        {
+            var person = GetPerson( input );
+
+            if ( person == null )
+            {
+                return null;
+            }
+            return person.GetSpouse();
+        }
+
+        /// <summary>
+        /// Gets the Head of Household of the selected person 
+        /// </summary>
+        /// <param name="context">The context.</param>
+        /// <param name="input">The input.</param>
+        /// <returns></returns>
+        public static Person HeadOfHousehold( DotLiquid.Context context, object input )
+        {
+            var person = GetPerson( input );
+
+            if ( person == null )
+            {
+                return null;
+            }
+            return person.GetHeadOfHousehold();
+        }
+
+        /// <summary>
         /// Gets an number for a person object
         /// </summary>
         /// <param name="context">The context.</param>
@@ -2080,7 +2114,7 @@ namespace Rock.Lava
                     convertedStream.Dispose();
                     initialPhotoStream.Dispose();
 
-                    return string.Format( "^FS ~DYE:LOGO,P,P,{0},,{1} ^FD", content.Length, zplImageData.ToString() );
+                    return string.Format( "^FS ~DYR:LOGO,P,P,{0},,{1} ^FD", content.Length, zplImageData.ToString() );
                 }
             }
             catch
@@ -2843,6 +2877,85 @@ namespace Rock.Lava
         #endregion
 
         #region Object Filters
+
+        /// <summary>
+        /// Gets the Notes of the entity
+        /// </summary>
+        /// <param name="context">The context.</param>
+        /// <param name="input">The input.</param>
+        /// <param name="noteType">The noteType.</param>
+        /// <param name="sortOrder">The sort order.</param>
+        /// <param name="count">The count.</param>
+        /// <returns></returns>
+        public static List<Note> Notes( DotLiquid.Context context, object input, object noteType, string sortOrder = "desc", int? count = null )
+        {
+            int? entityId = null;
+
+            if ( input is int )
+            {
+                entityId = Convert.ToInt32( input );
+            }
+            if ( input is IEntity )
+            {
+                IEntity entity = input as IEntity;
+                entityId = entity.Id;
+            }
+            if ( !entityId.HasValue )
+            {
+                return null;
+            }
+
+            List<int> noteTypeIds = new List<int>();
+
+            if ( noteType is int )
+            {
+                noteTypeIds.Add( (int)noteType );
+            }
+
+            if ( noteType is string )
+            {
+                noteTypeIds = ((string)noteType).Split( ',' ).Select( Int32.Parse ).ToList();
+            }
+
+            var notes = new NoteService( new RockContext() ).Queryable().Where( n => n.EntityId == entityId );
+
+            if ( noteTypeIds.Count > 0 )
+            {
+                notes = notes.Where( n => noteTypeIds.Contains( n.NoteTypeId ) );
+            }
+            else
+            {
+                return null;
+            }
+
+            // add sort order
+            if(sortOrder == "desc" )
+            {
+                notes = notes.OrderByDescending( n => n.CreatedDateTime );
+            }
+            else
+            {
+                notes = notes.OrderBy( n => n.CreatedDateTime );
+            }
+
+            var filterNotes = new List<Note>();
+            foreach ( var note in notes )
+            {
+                if ( note.IsAuthorized( Authorization.VIEW, GetCurrentPerson( context ) ) )
+                {
+                    filterNotes.Add( note );
+                }
+            }
+
+            if ( !count.HasValue )
+            {
+                return filterNotes;
+            }
+            else
+            {
+                return filterNotes.OrderBy(n => n.CreatedDateTime).Take( count.Value ).ToList();
+            }
+        }
 
         /// <summary>
         /// Determines whether [has rights to] [the specified context].

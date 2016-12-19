@@ -24,6 +24,7 @@
                     format: dateFormat,
                     autoclose: true,
                     todayBtn: true,
+                    endDate: options.endDate || new Date(8640000000000000),
                     startView: options.startView || 'month',
                     todayHighlight: options.todayHighlight || true
                 });

@@ -236,7 +236,7 @@ namespace Rock.Jobs
                                                         WHERE MetricValueId IN (
                                                             SELECT Id
                                                             FROM MetricValue
-                                                            WHERE MetricId = @metricId 
+                                                            WHERE MetricId = @metricId
                                                             AND MetricValueDateTime = @metricValueDateTime
                                                         )
                                                     ", new SqlParameter( "@metricId", metric.Id ), new SqlParameter( "@metricValueDateTime", metricValueDateTime ) );

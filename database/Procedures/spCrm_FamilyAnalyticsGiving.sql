@@ -47,7 +47,7 @@ BEGIN
 	DECLARE @SundayGivingDurationShort datetime = DATEADD(DAY,  (7 * @GivingDurationShortWeeks * -1), @SundayDateStart);
 
 
-	-- first gift
+	-- first gift (people w/Giving Group)
 	DECLARE @FirstGaveAttributeId int = (SELECT TOP 1 [Id] FROM [Attribute] WHERE [Guid] = @cATTRIBUTE_FIRST_GAVE)
 	DELETE FROM [AttributeValue] WHERE [AttributeId] = @FirstGaveAttributeId;
 
@@ -66,6 +66,7 @@ BEGIN
 				INNER JOIN [GroupTypeRole] gtr ON gtr.[Id] = gm.[GroupRoleId]
 			WHERE 
 				gm.[PersonId] = p.[Id] 
+				AND p.[GivingGroupId] IS NOT NULL
 				
 			) fr
 		WHERE
@@ -93,8 +94,51 @@ BEGIN
 		WHERE [FamilyRole] = 'Adult') AS g
 	WHERE g.[FirstContributionDate] IS NOT NULL
 
+	-- first gift (people WITHOUT Giving Group)
+	;WITH
+	  cteIndividual ([PersonId], [GivingGroupId], [FamilyRole])
+	  AS
+	  (
+		SELECT p.[Id] AS [PersonId], p.[GivingGroupId], CASE WHEN fr.[FamilyRole] = @AdultRoleId THEN 'Adult' ELSE 'Child' END
+		FROM [Person] p
+		CROSS APPLY
+			(
+			SELECT TOP 1 gm.[GroupRoleId] AS [FamilyRole]
+			FROM    
+				[GroupMember] gm 
+				INNER JOIN [Group] g ON g.[Id] = gm.[GroupId] AND g.[GroupTypeId] = @FamilyGroupTypeId
+				INNER JOIN [GroupTypeRole] gtr ON gtr.[Id] = gm.[GroupRoleId]
+			WHERE 
+				gm.[PersonId] = p.[Id] 
+				AND p.[GivingGroupId] IS NULL
+				
+			) fr
+		WHERE
+			[RecordStatusValueId] = @ActiveRecordStatusValueId -- record is active
+			AND [RecordTypeValueId] = @PersonRecordTypeValueId  -- person record type (not business)
+	  )
+	INSERT INTO AttributeValue ([EntityId], [AttributeId], [Value], [IsSystem], [Guid], [CreatedDateTime])
+	SELECT * FROM 
+		(SELECT 
+			[PersonId]
+			, @FirstGaveAttributeId AS [AttributeId]
+			, (SELECT MIN(ft.TransactionDateTime)
+						FROM [FinancialTransaction] ft
+							INNER JOIN [PersonAlias] pa ON pa.[Id] = ft.[AuthorizedPersonAliasId]
+							INNER JOIN [Person] gp ON gp.[Id] = pa.[PersonId]
+							INNER JOIN [FinancialTransactionDetail] ftd ON ftd.[TransactionId] = ft.[Id]
+							INNER JOIN [FinancialAccount] fa ON fa.[Id] = ftd.AccountId
+						WHERE 
+							gp.[Id] = i.[PersonId] -- match by person id
+							AND fa.[IsTaxDeductible] = 'true') AS [FirstContributionDate]
+			, 0 AS [IsSystem]
+			, newid() AS [Guid]
+			, getdate() AS [CreateDate]
+		FROM cteIndividual i
+		WHERE [FamilyRole] = 'Adult') AS g
+	WHERE g.[FirstContributionDate] IS NOT NULL
 	
-	-- last gift
+	-- last gift (people w/Giving Group)
 	DECLARE @LastGaveAttributeId int = (SELECT TOP 1 [Id] FROM [Attribute] WHERE [Guid] = @cATTRIBUTE_LAST_GAVE)
 	DELETE FROM [AttributeValue] WHERE [AttributeId] = @LastGaveAttributeId;
 
@@ -113,6 +157,7 @@ BEGIN
 				INNER JOIN [GroupTypeRole] gtr ON gtr.[Id] = gm.[GroupRoleId]
 			WHERE 
 				gm.[PersonId] = p.[Id] 
+				AND p.[GivingGroupId] IS NOT NULL
 				
 			) fr
 		WHERE
@@ -140,7 +185,51 @@ BEGIN
 		WHERE [FamilyRole] = 'Adult') AS g
 	WHERE g.[LastContributionDate] IS NOT NULL
 
-	-- number of gifts short duration
+	-- last gift (people WITHOUT Giving Group)
+	;WITH
+	  cteIndividual ([PersonId], [GivingGroupId], [FamilyRole])
+	  AS
+	  (
+		SELECT p.[Id] AS [PersonId], p.[GivingGroupId], CASE WHEN fr.[FamilyRole] = @AdultRoleId THEN 'Adult' ELSE 'Child' END
+		FROM [Person] p
+		CROSS APPLY
+			(
+			SELECT TOP 1 gm.[GroupRoleId] AS [FamilyRole]
+			FROM    
+				[GroupMember] gm 
+				INNER JOIN [Group] g ON g.[Id] = gm.[GroupId] AND g.[GroupTypeId] = @FamilyGroupTypeId
+				INNER JOIN [GroupTypeRole] gtr ON gtr.[Id] = gm.[GroupRoleId]
+			WHERE 
+				gm.[PersonId] = p.[Id] -- match by person id
+				AND p.[GivingGroupId] IS NULL
+				
+			) fr
+		WHERE
+			[RecordStatusValueId] = @ActiveRecordStatusValueId -- record is active
+			AND [RecordTypeValueId] = @PersonRecordTypeValueId  -- person record type (not business)
+	  )
+	INSERT INTO AttributeValue ([EntityId], [AttributeId], [Value], [IsSystem], [Guid], [CreatedDateTime])
+	SELECT * FROM 
+		(SELECT 
+			[PersonId]
+			, @LastGaveAttributeId AS [AttributeId]
+			, (SELECT MAX(ft.TransactionDateTime)
+						FROM [FinancialTransaction] ft
+							INNER JOIN [PersonAlias] pa ON pa.[Id] = ft.[AuthorizedPersonAliasId]
+							INNER JOIN [Person] gp ON gp.[Id] = pa.[PersonId]
+							INNER JOIN [FinancialTransactionDetail] ftd ON ftd.[TransactionId] = ft.[Id]
+							INNER JOIN [FinancialAccount] fa ON fa.[Id] = ftd.AccountId
+						WHERE 
+							gp.[Id] = i.[PersonId]
+							AND fa.[IsTaxDeductible] = 'true') AS [LastContributionDate]
+			, 0 AS [IsSystem]
+			, newid() AS [Guid]
+			, getdate() AS [CreateDate]
+		FROM cteIndividual i
+		WHERE [FamilyRole] = 'Adult') AS g
+	WHERE g.[LastContributionDate] IS NOT NULL
+
+	-- number of gifts short duration (people w/Giving Group)
 	DECLARE @GiftCountShortAttributeId int = (SELECT TOP 1 [Id] FROM [Attribute] WHERE [Guid] = @cATTRIBUTE_GIFT_COUNT_SHORT)
 	DELETE FROM [AttributeValue] WHERE [AttributeId] = @GiftCountShortAttributeId;
 
@@ -159,6 +248,7 @@ BEGIN
 				INNER JOIN [GroupTypeRole] gtr ON gtr.[Id] = gm.[GroupRoleId]
 			WHERE 
 				gm.[PersonId] = p.[Id] 
+				AND p.[GivingGroupId] IS NOT NULL
 				
 			) fr
 		WHERE
@@ -188,7 +278,53 @@ BEGIN
 		WHERE [FamilyRole] = 'Adult') AS g
 	WHERE g.[GiftCountDurationShort] IS NOT NULL
 
-	-- number of gifts long duration
+	-- number of gifts short duration (people WITHOUT Giving Group)
+	;WITH
+	  cteIndividual ([PersonId], [GivingGroupId], [FamilyRole])
+	  AS
+	  (
+		SELECT p.[Id] AS [PersonId], p.[GivingGroupId], CASE WHEN fr.[FamilyRole] = @AdultRoleId THEN 'Adult' ELSE 'Child' END
+		FROM [Person] p
+		CROSS APPLY
+			(
+			SELECT TOP 1 gm.[GroupRoleId] AS [FamilyRole]
+			FROM    
+				[GroupMember] gm 
+				INNER JOIN [Group] g ON g.[Id] = gm.[GroupId] AND g.[GroupTypeId] = @FamilyGroupTypeId
+				INNER JOIN [GroupTypeRole] gtr ON gtr.[Id] = gm.[GroupRoleId]
+			WHERE 
+				gm.[PersonId] = p.[Id] 
+				AND p.[GivingGroupId] IS NULL
+				
+			) fr
+		WHERE
+			[RecordStatusValueId] = @ActiveRecordStatusValueId -- record is active
+			AND [RecordTypeValueId] = @PersonRecordTypeValueId  -- person record type (not business)
+	  )
+	INSERT INTO AttributeValue ([EntityId], [AttributeId], [Value], [IsSystem], [Guid], [CreatedDateTime])
+	SELECT * FROM 
+		(SELECT 
+			[PersonId]
+			, @GiftCountShortAttributeId AS [AttributeId]
+			, (SELECT COUNT(DISTINCT(ft.[Id])) 
+						FROM [FinancialTransaction] ft
+							INNER JOIN [PersonAlias] pa ON pa.[Id] = ft.[AuthorizedPersonAliasId]
+							INNER JOIN [Person] gp ON gp.[Id] = pa.[PersonId]
+							INNER JOIN [FinancialTransactionDetail] ftd ON ftd.[TransactionId] = ft.[Id]
+							INNER JOIN [FinancialAccount] fa ON fa.[Id] = ftd.AccountId
+						WHERE 
+							gp.[Id] = i.[PersonId] -- match by person id
+							AND fa.[IsTaxDeductible] = 'true'
+							AND ft.TransactionDateTime >= @SundayGivingDurationShort
+							AND ft.TransactionDateTime <= @SundayDateStart) AS [GiftCountDurationShort]
+			, 0 AS [IsSystem]
+			, newid() AS [Guid]
+			, getdate() AS [CreateDate]
+		FROM cteIndividual i
+		WHERE [FamilyRole] = 'Adult') AS g
+	WHERE g.[GiftCountDurationShort] IS NOT NULL
+
+	-- number of gifts long duration (people w/Giving Group)
 	DECLARE @GiftCountLongAttributeId int = (SELECT TOP 1 [Id] FROM [Attribute] WHERE [Guid] = @cATTRIBUTE_GIFT_COUNT_LONG)
 	DELETE FROM [AttributeValue] WHERE [AttributeId] = @GiftCountLongAttributeId;
 
@@ -207,6 +343,7 @@ BEGIN
 				INNER JOIN [GroupTypeRole] gtr ON gtr.[Id] = gm.[GroupRoleId]
 			WHERE 
 				gm.[PersonId] = p.[Id] 
+				AND p.[GivingGroupId] IS NOT NULL
 				
 			) fr
 		WHERE
@@ -236,5 +373,50 @@ BEGIN
 		WHERE [FamilyRole] = 'Adult') AS g
 	WHERE g.[GiftCountDurationLong] IS NOT NULL
 	
-
+	-- number of gifts long duration (people WITHOUT Giving Group)
+	;WITH
+	  cteIndividual ([PersonId], [GivingGroupId], [FamilyRole])
+	  AS
+	  (
+		SELECT p.[Id] AS [PersonId], p.[GivingGroupId], CASE WHEN fr.[FamilyRole] = @AdultRoleId THEN 'Adult' ELSE 'Child' END
+		FROM [Person] p
+		CROSS APPLY
+			(
+			SELECT TOP 1 gm.[GroupRoleId] AS [FamilyRole]
+			FROM    
+				[GroupMember] gm 
+				INNER JOIN [Group] g ON g.[Id] = gm.[GroupId] AND g.[GroupTypeId] = @FamilyGroupTypeId
+				INNER JOIN [GroupTypeRole] gtr ON gtr.[Id] = gm.[GroupRoleId]
+			WHERE 
+				gm.[PersonId] = p.[Id] 
+				AND p.[GivingGroupId] IS NULL
+				
+			) fr
+		WHERE
+			[RecordStatusValueId] = @ActiveRecordStatusValueId -- record is active
+			AND [RecordTypeValueId] = @PersonRecordTypeValueId  -- person record type (not business)
+	  )
+	INSERT INTO AttributeValue ([EntityId], [AttributeId], [Value], [IsSystem], [Guid], [CreatedDateTime])
+	SELECT * FROM 
+		(SELECT 
+			[PersonId]
+			, @GiftCountLongAttributeId AS [AttributeId]
+			, (SELECT COUNT(DISTINCT(ft.[Id])) 
+						FROM [FinancialTransaction] ft
+							INNER JOIN [PersonAlias] pa ON pa.[Id] = ft.[AuthorizedPersonAliasId]
+							INNER JOIN [Person] gp ON gp.[Id] = pa.[PersonId]
+							INNER JOIN [FinancialTransactionDetail] ftd ON ftd.[TransactionId] = ft.[Id]
+							INNER JOIN [FinancialAccount] fa ON fa.[Id] = ftd.AccountId
+						WHERE 
+							gp.[Id] = i.[PersonId] -- match by person id
+							AND fa.[IsTaxDeductible] = 'true'
+							AND ft.TransactionDateTime >= @SundayGivingDurationLong
+							AND ft.TransactionDateTime <= @SundayDateStart) AS [GiftCountDurationLong]
+			, 0 AS [IsSystem]
+			, newid() AS [Guid]
+			, getdate() AS [CreateDate]
+		FROM cteIndividual i
+		WHERE [FamilyRole] = 'Adult') AS g
+	WHERE g.[GiftCountDurationLong] IS NOT NULL
+	
 END

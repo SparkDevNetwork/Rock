@@ -36,6 +36,7 @@ namespace Rock.Web.UI.Controls
         private RockRadioButtonList _rblRole;
         private DropDownList _ddlTitle;
         private RockTextBox _tbFirstName;
+        private RockTextBox _tbMiddleName;
         private RockTextBox _tbLastName;
         private DropDownList _ddlSuffix;
         private DropDownList _ddlConnectionStatus;
@@ -116,6 +117,26 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Gets or sets the middle name
+        /// </summary>
+        /// <value>
+        /// The name of the middle.
+        /// </value>
+        public string MiddleName
+        {
+            get { return _tbMiddleName.Text; }
+            set { _tbMiddleName.Text = value; }
+        }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether [show middle name].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [show middle name]; otherwise, <c>false</c>.
+        /// </value>
+        public bool ShowMiddleName { get; set; }
+
+        /// <summary>
         /// Gets or sets the last name.
         /// </summary>
         /// <value>
@@ -189,7 +210,7 @@ namespace Rock.Web.UI.Controls
         /// </value>
         public int? GradeOffset
         {
-            get { return _ddlGradePicker.SelectedValueAsInt(); }
+            get { return _ddlGradePicker.SelectedValueAsInt( NoneAsNull: false ); }
             set { SetListValue( _ddlGradePicker, value ); }
         }
 
@@ -296,6 +317,7 @@ namespace Rock.Web.UI.Controls
                 _rblRole.ValidationGroup = value;
                 _ddlTitle.ValidationGroup = value;
                 _tbFirstName.ValidationGroup = value;
+                _tbMiddleName.ValidationGroup = value;
                 _tbLastName.ValidationGroup = value;
                 _ddlSuffix.ValidationGroup = value;
                 _ddlConnectionStatus.ValidationGroup = value;
@@ -314,6 +336,7 @@ namespace Rock.Web.UI.Controls
             _rblRole = new RockRadioButtonList();
             _ddlTitle = new DropDownList();
             _tbFirstName = new RockTextBox();
+            _tbMiddleName = new RockTextBox();
             _tbLastName = new RockTextBox();
             _ddlSuffix = new DropDownList();
             _ddlConnectionStatus = new DropDownList();
@@ -335,6 +358,7 @@ namespace Rock.Web.UI.Controls
             _rblRole.ID = "_rblRole";
             _ddlTitle.ID = "_ddlTitle";
             _tbFirstName.ID = "_tbFirstName";
+            _tbMiddleName.ID = "_tbMiddleName";
             _tbLastName.ID = "_tbLastName";
             _ddlSuffix.ID = "_ddlSuffix";
             _ddlConnectionStatus.ID = "_ddlConnectionStatus";
@@ -346,6 +370,7 @@ namespace Rock.Web.UI.Controls
             Controls.Add( _rblRole );
             Controls.Add( _ddlTitle );
             Controls.Add( _tbFirstName );
+            Controls.Add( _tbMiddleName );
             Controls.Add( _tbLastName );
             Controls.Add( _ddlSuffix );
             Controls.Add( _ddlConnectionStatus );
@@ -371,6 +396,10 @@ namespace Rock.Web.UI.Controls
             _tbFirstName.Placeholder = "First Name";
             _tbFirstName.Required = true;
             _tbFirstName.RequiredErrorMessage = "First Name is required for all group members";
+
+            _tbMiddleName.CssClass = "form-control";
+            _tbMiddleName.Placeholder = "Middle Name";
+            _tbMiddleName.Required = false;
 
             _tbLastName.CssClass = "form-control";
             _tbLastName.Placeholder = "Last Name";
@@ -425,14 +454,25 @@ namespace Rock.Web.UI.Controls
                 writer.RenderEndTag();
 
                 writer.RenderBeginTag( HtmlTextWriterTag.Td );
+
                 writer.AddAttribute( HtmlTextWriterAttribute.Class, "form-group" + ( _tbFirstName.IsValid ? "" : " has-error" ) );
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
                 _tbFirstName.RenderControl( writer );
                 writer.RenderEndTag();
+
+                if ( this.ShowMiddleName )
+                {
+                    writer.AddAttribute( HtmlTextWriterAttribute.Class, "form-group" + ( _tbMiddleName.IsValid ? "" : " has-error" ) );
+                    writer.RenderBeginTag( HtmlTextWriterTag.Div );
+                    _tbMiddleName.RenderControl( writer );
+                    writer.RenderEndTag();
+                }
+
                 writer.AddAttribute( HtmlTextWriterAttribute.Class, "form-group" + ( _tbLastName.IsValid ? "" : " has-error" ) );
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
                 _tbLastName.RenderControl( writer );
                 writer.RenderEndTag();
+
                 writer.RenderEndTag();
 
                 writer.RenderBeginTag( HtmlTextWriterTag.Td );

@@ -26,6 +26,7 @@ using Rock.Model;
 using Rock.Web.Cache;
 using Rock.UniversalSearch.IndexModels.Attributes;
 using Rock.Data;
+using Newtonsoft.Json;
 
 namespace Rock.UniversalSearch.IndexModels
 {
@@ -38,6 +39,7 @@ namespace Rock.UniversalSearch.IndexModels
         private Dictionary<string, object> _members = new Dictionary<string, object>();
         object Instance;
         Type InstanceType;
+        //private int modelBoost = 1;
 
         PropertyInfo[] InstancePropertyInfo
         {
@@ -69,6 +71,15 @@ namespace Rock.UniversalSearch.IndexModels
         /// </value>
         [RockIndexField( Index = IndexType.NotIndexed )]
         public string SourceIndexModel { get; set; }
+
+        /// <summary>
+        /// Gets or sets the model configuration. This is used to set various configuration options for the model that can be queried for in searches.
+        /// For instance models that do not have filters will use this field to report that fact ('nofilters') to help when searching with field filters.
+        /// </summary>
+        /// <value>
+        /// The model configuration.
+        /// </value>
+        public string ModelConfiguration { get; set; }
 
         /// <summary>
         /// Gets the type of the index model.
@@ -110,6 +121,15 @@ namespace Rock.UniversalSearch.IndexModels
         }
 
         /// <summary>
+        /// Gets the document URL.
+        /// </summary>
+        /// <returns></returns>
+        public virtual string GetDocumentUrl( Dictionary<string, object> displayOptions = null )
+        {
+            return null;
+        }
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="IndexModelBase"/> class.
         /// </summary>
         public IndexModelBase()
@@ -135,6 +155,24 @@ namespace Rock.UniversalSearch.IndexModels
         /// </value>
         [RockIndexField( Index = IndexType.NotIndexed )]
         public virtual string IconCssClass { get; set; } = "fa fa-file";
+
+        /// <summary>
+        /// Gets or sets the score.
+        /// </summary>
+        /// <value>
+        /// The score.
+        /// </value>
+        [RockIndexField( Index = IndexType.NotIndexed )]
+        public double Score { get; set; }
+
+        /// <summary>
+        /// Gets or sets the model order.
+        /// </summary>
+        /// <value>
+        /// Used to give preference to certain model types when scores match.
+        /// </value>
+        [RockIndexField( Index = IndexType.NotIndexed )]
+        public int ModelOrder { get; set; } = 1;
 
         /// <summary>
         /// Adds the indexable attributes.
@@ -363,6 +401,9 @@ namespace Rock.UniversalSearch.IndexModels
                 propertyNames.Add( key );
             }
 
+            propertyNames.Remove( "AvailableKeys" );
+            propertyNames.Remove( "availableKeys" );
+
             return propertyNames;
         }
 
@@ -425,7 +466,7 @@ namespace Rock.UniversalSearch.IndexModels
         }
 
         /// <summary>
-        /// To the liquid.
+        /// Returns liquid for the object
         /// </summary>
         /// <returns></returns>
         public object ToLiquid()
@@ -440,12 +481,8 @@ namespace Rock.UniversalSearch.IndexModels
         /// <returns></returns>
         public bool ContainsKey( object key )
         {
-            return this.GetDynamicMemberNames().Contains(key.ToString());
+            return this.GetDynamicMemberNames().Contains( key.ToString() );
         }
-
-        #endregion
-        
-        #region Static Methods
 
         #endregion
     }
