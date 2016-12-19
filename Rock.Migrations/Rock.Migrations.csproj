@@ -142,6 +142,10 @@
     <Compile Include="Migrations\201612151843454_ScheduleExclusion.Designer.cs">
       <DependentUpon>201612151843454_ScheduleExclusion.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201612191831554_Analytics1.cs" />
+    <Compile Include="Migrations\201612191831554_Analytics1.Designer.cs">
+      <DependentUpon>201612191831554_Analytics1.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 6.0\Version 1.6.0\201609282147388_WaitList.cs" />
     <Compile Include="Migrations\Version 6.0\Version 1.6.0\201609282147388_WaitList.Designer.cs">
       <DependentUpon>201609282147388_WaitList.cs</DependentUpon>
@@ -2401,6 +2405,9 @@
     <EmbeddedResource Include="Migrations\201612151843454_ScheduleExclusion.resx">
       <DependentUpon>201612151843454_ScheduleExclusion.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201612191831554_Analytics1.resx">
+      <DependentUpon>201612191831554_Analytics1.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 6.0\Version 1.6.0\201609282147388_WaitList.resx">
       <DependentUpon>201609282147388_WaitList.cs</DependentUpon>
     </EmbeddedResource>
@@ -4078,6 +4085,93 @@
     </Content>
     <Content Include="Migrations\201612121647292_HotFixesFrom6_1.sql">
       <DependentUpon>201612121647292_HotFixesFrom6_1.cs</DependentUpon>
+    </Content>
+    <Content Include="Migrations\201612191831554_Analytics1_AnalyticsDimAttendanceAttendanceType.sql">
+      <DependentUpon>201612191831554_Analytics1.cs</DependentUpon>
+    </Content>
+    <Content Include="Migrations\201612191831554_Analytics1_AnalyticsDimAttendanceDevice.sql">
+      <DependentUpon>201612191831554_Analytics1.cs</DependentUpon>
+    </Content>
+    <Content Include="Migrations\201612191831554_Analytics1_AnalyticsDimAttendanceGroup.sql">
+      <DependentUpon>201612191831554_Analytics1.cs</DependentUpon>
+    </Content>
+    <Content Include="Migrations\201612191831554_Analytics1_AnalyticsDimAttendanceLocation.sql">
+      <DependentUpon>201612191831554_Analytics1.cs</DependentUpon>
+    </Content>
+    <Content Include="Migrations\201612191831554_Analytics1_AnalyticsDimAttendanceSchedule.sql">
+      <DependentUpon>201612191831554_Analytics1.cs</DependentUpon>
+    </Content>
+    <Content Include="Migrations\201612191831554_Analytics1_AnalyticsDimFamilyCurrent.sql">
+      <DependentUpon>201612191831554_Analytics1.cs</DependentUpon>
+    </Content>
+    <Content Include="Migrations\201612191831554_Analytics1_AnalyticsDimFamilyHeadOfHousehold.sql">
+      <DependentUpon>201612191831554_Analytics1.cs</DependentUpon>
+    </Content>
+    <Content Include="Migrations\201612191831554_Analytics1_AnalyticsDimFamilyHistorical.sql">
+      <DependentUpon>201612191831554_Analytics1.cs</DependentUpon>
+    </Content>
+    <Content Include="Migrations\201612191831554_Analytics1_AnalyticsDimFinancialAccount.sql">
+      <DependentUpon>201612191831554_Analytics1.cs</DependentUpon>
+    </Content>
+    <Content Include="Migrations\201612191831554_Analytics1_AnalyticsDimFinancialBatch.sql">
+      <DependentUpon>201612191831554_Analytics1.cs</DependentUpon>
+    </Content>
+    <Content Include="Migrations\201612191831554_Analytics1_AnalyticsDimFinancialTransactionCreditCardType.sql">
+      <DependentUpon>201612191831554_Analytics1.cs</DependentUpon>
+    </Content>
+    <Content Include="Migrations\201612191831554_Analytics1_AnalyticsDimFinancialTransactionCurrencyType.sql">
+      <DependentUpon>201612191831554_Analytics1.cs</DependentUpon>
+    </Content>
+    <Content Include="Migrations\201612191831554_Analytics1_AnalyticsDimFinancialTransactionSource.sql">
+      <DependentUpon>201612191831554_Analytics1.cs</DependentUpon>
+    </Content>
+    <Content Include="Migrations\201612191831554_Analytics1_AnalyticsDimFinancialTransactionType.sql">
+      <DependentUpon>201612191831554_Analytics1.cs</DependentUpon>
+    </Content>
+    <Content Include="Migrations\201612191831554_Analytics1_AnalyticsDimPersonConnectionStatus.sql">
+      <DependentUpon>201612191831554_Analytics1.cs</DependentUpon>
+    </Content>
+    <Content Include="Migrations\201612191831554_Analytics1_AnalyticsDimPersonCurrent.sql">
+      <DependentUpon>201612191831554_Analytics1.cs</DependentUpon>
+    </Content>
+    <Content Include="Migrations\201612191831554_Analytics1_AnalyticsDimPersonHistorical.sql">
+      <DependentUpon>201612191831554_Analytics1.cs</DependentUpon>
+    </Content>
+    <Content Include="Migrations\201612191831554_Analytics1_AnalyticsDimPersonMaritalStatus.sql">
+      <DependentUpon>201612191831554_Analytics1.cs</DependentUpon>
+    </Content>
+    <Content Include="Migrations\201612191831554_Analytics1_AnalyticsDimPersonRecordStatus.sql">
+      <DependentUpon>201612191831554_Analytics1.cs</DependentUpon>
+    </Content>
+    <Content Include="Migrations\201612191831554_Analytics1_AnalyticsDimPersonRecordStatusReason.sql">
+      <DependentUpon>201612191831554_Analytics1.cs</DependentUpon>
+    </Content>
+    <Content Include="Migrations\201612191831554_Analytics1_AnalyticsDimPersonRecordType.sql">
+      <DependentUpon>201612191831554_Analytics1.cs</DependentUpon>
+    </Content>
+    <Content Include="Migrations\201612191831554_Analytics1_AnalyticsDimPersonReviewReason.sql">
+      <DependentUpon>201612191831554_Analytics1.cs</DependentUpon>
+    </Content>
+    <Content Include="Migrations\201612191831554_Analytics1_AnalyticsDimPersonSuffix.sql">
+      <DependentUpon>201612191831554_Analytics1.cs</DependentUpon>
+    </Content>
+    <Content Include="Migrations\201612191831554_Analytics1_AnalyticsDimPersonTitle.sql">
+      <DependentUpon>201612191831554_Analytics1.cs</DependentUpon>
+    </Content>
+    <Content Include="Migrations\201612191831554_Analytics1_AnalyticsFactAttendance.sql">
+      <DependentUpon>201612191831554_Analytics1.cs</DependentUpon>
+    </Content>
+    <Content Include="Migrations\201612191831554_Analytics1_AnalyticsFactFinancialTransaction.sql">
+      <DependentUpon>201612191831554_Analytics1.cs</DependentUpon>
+    </Content>
+    <Content Include="Migrations\201612191831554_Analytics1_spAnalytics_ETL_Attendance.sql">
+      <DependentUpon>201612191831554_Analytics1.cs</DependentUpon>
+    </Content>
+    <Content Include="Migrations\201612191831554_Analytics1_spAnalytics_ETL_Family.sql">
+      <DependentUpon>201612191831554_Analytics1.cs</DependentUpon>
+    </Content>
+    <Content Include="Migrations\201612191831554_Analytics1_spAnalytics_ETL_FinancialTransaction.sql">
+      <DependentUpon>201612191831554_Analytics1.cs</DependentUpon>
     </Content>
     <Content Include="Migrations\Version 6.0\Version 1.6.0\201608171937068_GivingAnalyticsAccounts_AccountTotals.sql" />
     <Content Include="Migrations\Version 6.0\Version 1.6.0\201608171937068_GivingAnalyticsAccounts_FirstLastEverDates.sql" />
