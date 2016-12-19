@@ -418,9 +418,12 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                     person.RecordStatusValueId = newRecordStatusId;
 
                     int? newRecordStatusReasonId = null;
-                    if ( person.RecordStatusValueId.HasValue && person.RecordStatusValueId.Value == DefinedValueCache.Read( new Guid( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_INACTIVE ) ).Id )
+                    var recordStatusInactiveId = DefinedValueCache.Read( new Guid( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_INACTIVE ) ).Id;
+                    bool recordStatusChangedToInactive = false;
+                    if ( person.RecordStatusValueId.HasValue && person.RecordStatusValueId.Value == recordStatusInactiveId )
                     {
                         newRecordStatusReasonId = ddlReason.SelectedValueAsInt();
+                        recordStatusChangedToInactive = true;
                     }
 
                     History.EvaluateChange( changes, "Inactive Reason", DefinedValueCache.GetName( person.RecordStatusReasonValueId ), DefinedValueCache.GetName( newRecordStatusReasonId ) );
@@ -499,6 +502,27 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                                             rockContext.SaveChanges();
                                         }
                                     }
+                                }
+                            }
+
+                            // Check if any of their families need to be inactivated.
+                            if ( recordStatusChangedToInactive )
+                            {
+                                var markedInactiveFamilies = false;
+                                foreach ( var family in personService.GetFamilies( person.Id ) )
+                                {
+                                    // Are there any more members of the family who are NOT inactive?
+                                    // If not, mark the whole family inactive.
+                                    if ( !family.Members.Where( m => m.Person.RecordStatusValueId != recordStatusInactiveId ).Any() )
+                                    {
+                                        family.IsActive = false;
+                                        markedInactiveFamilies = true;
+                                    }
+                                }
+
+                                if ( markedInactiveFamilies )
+                                {
+                                    rockContext.SaveChanges();
                                 }
                             }
                         }
