@@ -648,15 +648,15 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                 groupMember.Gender = rblNewPersonGender.SelectedValueAsEnum<Gender>();
                 groupMember.MaritalStatusValueId = ddlNewPersonMaritalStatus.SelectedValueAsInt();
                 DateTime? birthdate = dpNewPersonBirthDate.SelectedDate;
-                if ( birthdate.HasValue )
-                {
-                    // If setting a future birthdate, subtract a century until birthdate is not greater than today.
-                    var today = RockDateTime.Today;
-                    while ( birthdate.Value.CompareTo( today ) > 0 )
-                    {
-                        birthdate = birthdate.Value.AddYears( -100 );
-                    }
-                }
+                //if ( birthdate.HasValue )
+                //{
+                //    // If setting a future birthdate, subtract a century until birthdate is not greater than today.
+                //    var today = RockDateTime.Today;
+                //    while ( birthdate.Value.CompareTo( today ) > 0 )
+                //    {
+                //        birthdate = birthdate.Value.AddYears( -100 );
+                //    }
+                //}
 
                 groupMember.BirthDate = birthdate;
                 groupMember.GradeOffset = ddlGradePicker.SelectedValueAsInt();
@@ -986,7 +986,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                             role = _groupType.Roles.FirstOrDefault();
                         }
 
-                        bool isAdult = role != null && role.Guid.Equals( Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_ADULT );
+                        bool isAdult = role != null && role.Guid.Equals( Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_ADULT.AsGuid() );
 
                         // People added to group (new or from other group )
                         if ( !groupMemberInfo.ExistingGroupMember )

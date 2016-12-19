@@ -36,7 +36,7 @@ namespace Rock.Reporting.DataFilter.GroupMember
     /// Filter Group Members by their Attribute Values
     /// </summary>
     [Description( "Filter Group Members by their Attribute Values" )]
-    [Export( typeof(DataFilterComponent) )]
+    [Export( typeof( DataFilterComponent ) )]
     [ExportMetadata( "ComponentName", "Group Member Attributes Filter" )]
     public class GroupMemberAttributesFilter : EntityFieldFilter
     {
@@ -54,7 +54,7 @@ namespace Rock.Reporting.DataFilter.GroupMember
             var attributeService = new AttributeService( context );
             var groupTypeService = new GroupTypeService( context );
 
-            var groupMemberEntityTypeId = EntityTypeCache.GetId( typeof(Model.GroupMember) );
+            var groupMemberEntityTypeId = EntityTypeCache.GetId( typeof( Model.GroupMember ) );
 
             var groupMemberAttributes = attributeService.Queryable()
                                                         .AsNoTracking()
@@ -73,20 +73,20 @@ namespace Rock.Reporting.DataFilter.GroupMember
                                                         .GroupBy( x => x.AttributeName )
                                                         .ToList();
 
-            foreach (var attributesByName in groupMemberAttributes)
+            foreach ( var attributesByName in groupMemberAttributes )
             {
                 var attributeNameAndTypeGroups = attributesByName.GroupBy( x => x.FieldTypeId ).ToList();
 
                 bool requiresTypeQualifier = ( attributeNameAndTypeGroups.Count > 1 );
 
-                foreach (var attributeNameAndTypeGroup in attributeNameAndTypeGroups)
+                foreach ( var attributeNameAndTypeGroup in attributeNameAndTypeGroups )
                 {
-                    foreach (var attribute in attributeNameAndTypeGroup)
+                    foreach ( var attribute in attributeNameAndTypeGroup )
                     {
                         string fieldKey;
                         string fieldName;
 
-                        if (requiresTypeQualifier)
+                        if ( requiresTypeQualifier )
                         {
                             fieldKey = attribute.AttributeName + "_" + attribute.FieldTypeId;
 
@@ -98,7 +98,7 @@ namespace Rock.Reporting.DataFilter.GroupMember
                             fieldKey = attribute.AttributeName;
                         }
 
-                        if (entityAttributeFields.ContainsKey( fieldKey ))
+                        if ( entityAttributeFields.ContainsKey( fieldKey ) )
                         {
                             continue;
                         }
@@ -107,17 +107,20 @@ namespace Rock.Reporting.DataFilter.GroupMember
 
                         var entityField = EntityHelper.GetEntityFieldForAttribute( attributeCache );
 
-                        entityField.Title = fieldName;
-                        entityField.AttributeGuid = null;
+                        if ( entityField != null )
+                        {
+                            entityField.Title = fieldName;
+                            entityField.AttributeGuid = null;
 
-                        entityAttributeFields.Add( fieldKey, entityField );
+                            entityAttributeFields.Add( fieldKey, entityField );
+                        }
                     }
                 }
             }
 
             int index = 0;
             var sortedFields = new List<EntityField>();
-            foreach (var entityProperty in entityAttributeFields.Values.OrderBy( p => p.Title ).ThenBy( p => p.Name ))
+            foreach ( var entityProperty in entityAttributeFields.Values.OrderBy( p => p.Title ).ThenBy( p => p.Name ) )
             {
                 entityProperty.Index = index;
                 index++;
@@ -154,7 +157,7 @@ namespace Rock.Reporting.DataFilter.GroupMember
             {
                 get
                 {
-                    if (string.IsNullOrWhiteSpace( AttributeKey ))
+                    if ( string.IsNullOrWhiteSpace( AttributeKey ) )
                     {
                         return false;
                     }
@@ -198,7 +201,7 @@ namespace Rock.Reporting.DataFilter.GroupMember
         /// </value>
         public override string AppliesToEntityType
         {
-            get { return typeof(Model.GroupMember).FullName; }
+            get { return typeof( Model.GroupMember ).FullName; }
         }
 
         /// <summary>
@@ -258,7 +261,7 @@ namespace Rock.Reporting.DataFilter.GroupMember
             var settings = new FilterSettings( selection );
 
             var entityField = GetGroupMemberAttributes().FirstOrDefault( f => f.Name == settings.AttributeKey );
-            if (entityField != null)
+            if ( entityField != null )
             {
                 result = entityField.FormattedFilterDescription( settings.AttributeFilterSettings );
             }
@@ -296,11 +299,11 @@ namespace Rock.Reporting.DataFilter.GroupMember
             // Add empty selection as first item.
             ddlProperty.Items.Add( new ListItem() );
 
-            foreach (var entityField in GetGroupMemberAttributes())
+            foreach ( var entityField in GetGroupMemberAttributes() )
             {
                 string controlId = pnlGroupAttributeFilterControls.GetChildControlInstanceName( entityField.Name );
                 var control = entityField.FieldType.Field.FilterControl( entityField.FieldConfig, controlId, true, filterControl.FilterMode );
-                if (control != null)
+                if ( control != null )
                 {
                     // Add the field to the dropdown of available fields
                     ddlProperty.Items.Add( new ListItem( entityField.Title, entityField.Name ) );
@@ -310,7 +313,7 @@ namespace Rock.Reporting.DataFilter.GroupMember
 
             ddlProperty.AutoPostBack = true;
 
-            return new Control[] {pnlGroupAttributeFilterControls};
+            return new Control[] { pnlGroupAttributeFilterControls };
         }
 
         /// <summary>
@@ -326,7 +329,7 @@ namespace Rock.Reporting.DataFilter.GroupMember
             var pnlGroupAttributeFilterControls = controls.GetByName<DynamicControlsPanel>( _CtlGroup );
             var ddlProperty = controls.GetByName<DropDownList>( _CtlProperty );
 
-            if (pnlGroupAttributeFilterControls == null)
+            if ( pnlGroupAttributeFilterControls == null )
             {
                 return;
             }
@@ -354,7 +357,7 @@ namespace Rock.Reporting.DataFilter.GroupMember
             var pnlGroupAttributeFilterControls = controls.GetByName<DynamicControlsPanel>( _CtlGroup );
             var ddlProperty = controls.GetByName<DropDownList>( _CtlProperty );
 
-            if (pnlGroupAttributeFilterControls == null)
+            if ( pnlGroupAttributeFilterControls == null )
             {
                 return null;
             }
@@ -364,14 +367,14 @@ namespace Rock.Reporting.DataFilter.GroupMember
 
             var entityFields = GetGroupMemberAttributes();
             var entityField = entityFields.FirstOrDefault( f => f.Name == ddlProperty.SelectedValue );
-            if (entityField != null)
+            if ( entityField != null )
             {
                 var panelControls = new List<Control>();
                 panelControls.AddRange( pnlGroupAttributeFilterControls.Controls.OfType<Control>() );
 
                 var control = panelControls.FirstOrDefault( c => c.ID.EndsWith( "_" + entityField.Name ) );
 
-                if (control != null)
+                if ( control != null )
                 {
                     entityField.FieldType.Field.GetFilterValues( control, entityField.FieldConfig, FilterMode.AdvancedFilter ).ForEach( v => settings.AttributeFilterSettings.Add( v ) );
                 }
@@ -393,19 +396,19 @@ namespace Rock.Reporting.DataFilter.GroupMember
             var pnlGroupAttributeFilterControls = controls.GetByName<DynamicControlsPanel>( _CtlGroup );
             var ddlProperty = controls.GetByName<DropDownList>( _CtlProperty );
 
-            if (pnlGroupAttributeFilterControls == null)
+            if ( pnlGroupAttributeFilterControls == null )
             {
                 return;
             }
 
             var settings = new FilterSettings( selection );
 
-            if (!settings.IsValid)
+            if ( !settings.IsValid )
             {
                 return;
             }
 
-            if (settings.AttributeFilterSettings.Any())
+            if ( settings.AttributeFilterSettings.Any() )
             {
                 var entityFields = GetGroupMemberAttributes();
 
@@ -413,7 +416,7 @@ namespace Rock.Reporting.DataFilter.GroupMember
 
                 panelControls.AddRange( pnlGroupAttributeFilterControls.Controls.OfType<Control>() );
 
-                var parameters = new List<string> {settings.AttributeKey};
+                var parameters = new List<string> { settings.AttributeKey };
 
                 parameters.AddRange( settings.AttributeFilterSettings );
 
@@ -435,12 +438,12 @@ namespace Rock.Reporting.DataFilter.GroupMember
         {
             var settings = new FilterSettings( selection );
 
-            if (settings.IsValid
-                && settings.AttributeFilterSettings.Any())
+            if ( settings.IsValid
+                && settings.AttributeFilterSettings.Any() )
             {
                 var entityFields = GetGroupMemberAttributes();
                 var entityField = entityFields.FirstOrDefault( f => f.Name == settings.AttributeKey );
-                if (entityField != null)
+                if ( entityField != null )
                 {
                     return GetAttributeExpression( serviceInstance, parameterExpression, entityField, settings.AttributeFilterSettings );
                 }

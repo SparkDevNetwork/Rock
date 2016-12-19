@@ -19,6 +19,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
 
+using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 
@@ -31,6 +32,8 @@ namespace Rock.Workflow.Action
     [Description( "Marks the workflow as complete" )]
     [Export(typeof(ActionComponent))]
     [ExportMetadata( "ComponentName", "Workflow Complete" )]
+
+    [WorkflowTextOrAttribute( "Status", "Status Attribute", "The status to set the workflow to when marking the workflow complete. <span class='tip tip-lava'></span>", false, "Completed", "", 0, "Status")]   
     public class CompleteWorkflow : ActionComponent
     {
         /// <summary>
@@ -45,7 +48,8 @@ namespace Rock.Workflow.Action
         {
             errorMessages = new List<string>();
 
-            action.Activity.Workflow.MarkComplete();
+            string status = GetAttributeValue( action, "Status", true ).ResolveMergeFields( GetMergeFields( action ) );
+            action.Activity.Workflow.MarkComplete( status );
 
             action.AddLogEntry( "Marked workflow complete" );
 

@@ -176,6 +176,38 @@ namespace Rock.UniversalSearch.IndexModels
         }
 
         /// <summary>
+        /// Gets the document URL.
+        /// </summary>
+        /// <param name="displayOptions"></param>
+        /// <returns></returns>
+        public override string GetDocumentUrl( Dictionary<string, object> displayOptions = null )
+        {
+            string url = string.Empty;
+
+            if ( displayOptions != null )
+            {
+                if ( displayOptions.ContainsKey( "ChannelItem.Url" ) )
+                {
+                    url = displayOptions["ChannelItem.Url"].ToString();
+                }
+            }
+
+            // if url was not passed in use default from content channel
+            if ( string.IsNullOrWhiteSpace( url ) )
+            {
+                var channel = new ContentChannelService( new RockContext() ).Get( this.ContentChannelId );
+                url = channel.ItemUrl;
+            }
+
+            var mergeFields = new Dictionary<string, object>();
+            mergeFields.Add( "Id", this.Id );
+            mergeFields.Add( "Title", this.Title );
+            mergeFields.Add( "ContentChannelId", this.ContentChannelId );
+
+            return url.ResolveMergeFields( mergeFields );
+        }
+
+        /// <summary>
         /// Formats the search result.
         /// </summary>
         /// <param name="person"></param>
@@ -236,7 +268,7 @@ namespace Rock.UniversalSearch.IndexModels
 
             return new FormattedSearchResult() { IsViewAllowed = true, FormattedResult = $@"
                             <div class='row model-cannavigate' data-href='{url.ResolveMergeFields( mergeFields )}'>
-                                <div class='col-sm-1'>
+                                <div class='col-sm-1 text-center'>
                                     <i class='{this.IconCssClass} fa-2x'></i>
                                 </div>
                                 <div class='col-sm-4'>

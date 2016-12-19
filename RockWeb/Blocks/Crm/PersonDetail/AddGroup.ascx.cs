@@ -59,6 +59,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
     [AttributeCategoryField( "Attribute Categories", "The Person Attribute Categories to display attributes from", true, "Rock.Model.Person", false, "", "", 10 )]
     [BooleanField( "Show Inactive Campuses", "Determines if inactive campuses should be shown.", true, order: 9 )]
     [BooleanField( "Enable Common Last Name", "Autofills the last name field when adding a new group member with the last name of the first group member.", true, order: 11 )]
+    [BooleanField( "Show Middle Name", "Show an edit box for Middle Name.", false, order: 12 )]
     public partial class AddGroup : Rock.Web.UI.RockBlock
     {
         #region Fields
@@ -151,6 +152,11 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         protected override void OnInit( EventArgs e )
         {
             base.OnInit( e );
+
+            // Tell the browsers to not cache. This will help prevent browser using a stale person guid when the user uses the Back button
+            Page.Response.Cache.SetCacheability( System.Web.HttpCacheability.NoCache );
+            Page.Response.Cache.SetExpires( DateTime.UtcNow.AddHours( -1 ) );
+            Page.Response.Cache.SetNoStore();
 
             _groupType = GroupTypeCache.Read( GetAttributeValue( "GroupType" ).AsGuid() );
             if ( _groupType == null )
@@ -496,6 +502,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                 groupMemberRow.RoleId = groupMember.GroupRoleId;
                 groupMemberRow.ShowGradeColumn = _isFamilyGroupType;
                 groupMemberRow.ShowGradePicker = groupMember.GroupRoleId == _childRoleId;
+                groupMemberRow.ShowMiddleName = this.GetAttributeValue( "ShowMiddleName" ).AsBoolean();
                 groupMemberRow.ValidationGroup = BlockValidationGroup;
 
                 var contactInfoRow = new NewGroupContactInfoRow();
@@ -543,6 +550,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                     {
                         groupMemberRow.TitleValueId = groupMember.Person.TitleValueId;
                         groupMemberRow.FirstName = groupMember.Person.FirstName;
+                        groupMemberRow.MiddleName = groupMember.Person.MiddleName;
                         groupMemberRow.LastName = groupMember.Person.LastName;
                         groupMemberRow.SuffixValueId = groupMember.Person.SuffixValueId;
                         groupMemberRow.Gender = groupMember.Person.Gender;
@@ -570,7 +578,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                 if ( Duplicates.ContainsKey( groupMember.Person.Guid ) )
                 {
                     var dupRow = new HtmlGenericControl( "div" );
-                    dupRow.AddCssClass( "row" );
+                    dupRow.AddCssClass( "row row-duplicate" );
                     dupRow.ID = string.Format( "dupRow_{0}", groupMemberGuidString );
                     phDuplicates.Controls.Add( dupRow );
 
@@ -589,7 +597,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                     LinkButton lbRemoveMember = new LinkButton();
                     lbRemoveMember.ID = string.Format( "lbRemoveMember_{0}", groupMemberGuidString );
                     lbRemoveMember.AddCssClass( "btn btn-danger btn-xs" );
-                    lbRemoveMember.Text = "Remove";
+                    lbRemoveMember.Text = "Do Not Add Individual";
                     lbRemoveMember.Click += lbRemoveMember_Click;
                     newPersonCol.Controls.Add( lbRemoveMember );
 
@@ -723,7 +731,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                     groupMembers.Select( m => m.Person.NickName ).ToList().AsDelimited( ", " ) );
             }
 
-            if ( location != null )
+            if ( location != null && location.GetFullStreetAddress().IsNotNullOrWhitespace() )
             {
                 personInfoHtml.AppendFormat( "<p><strong>Address</strong><br/>{0}</p>", location.GetFullStreetAddress().ConvertCrLfToHtmlBr() );
             }
@@ -809,6 +817,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 
                 groupMember.Person.TitleValueId = row.TitleValueId;
                 groupMember.Person.FirstName = row.FirstName;
+                groupMember.Person.MiddleName = row.MiddleName;
                 groupMember.Person.NickName = groupMember.Person.FirstName;
                 groupMember.Person.LastName = row.LastName;
                 groupMember.Person.SuffixValueId = row.SuffixValueId;
@@ -1070,7 +1079,10 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             pnlGroupData.Visible = CurrentPageIndex == 0;
             pnlContactInfo.Visible = CurrentPageIndex == 1;
             pnlAttributes.Visible = CurrentPageIndex > 1 && CurrentPageIndex <= attributeControls.Count + 1;
-            pnlDuplicateWarning.Visible = CurrentPageIndex > attributeControls.Count + 1;
+
+            bool showDuplicates = (CurrentPageIndex > attributeControls.Count + 1) && phDuplicates.Controls.Count > 0;
+
+            pnlDuplicateWarning.Visible = showDuplicates;
 
             attributeControls.ForEach( c => c.Visible = false );
             if ( CurrentPageIndex > 1 && attributeControls.Count >= ( CurrentPageIndex - 1 ) )
@@ -1089,7 +1101,14 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 
             btnPrevious.Visible = CurrentPageIndex > 0;
             btnNext.Text = CurrentPageIndex > attributeControls.Count ?
-                ( CurrentPageIndex > ( attributeControls.Count + 1 ) ? "Confirm" : "Finish" ) : "Next";
+                (showDuplicates ? "Continue With Add" : "Finish" ) : "Next";
+
+            // If no panels are being show, they have cleared all the duplicates. Provide a message confirming this.
+            if ( !pnlGroupData.Visible && !pnlContactInfo.Visible && !pnlAttributes.Visible  && !pnlDuplicateWarning.Visible )
+            {
+                nbMessages.NotificationBoxType = NotificationBoxType.Success;
+                nbMessages.Text = "No more duplicates remain. Select Finish to complete the addition of these individuals.";
+            }
         }
 
         #endregion

@@ -257,7 +257,7 @@ namespace Rock.Jobs
                     }
 
                     // send notificatons
-                    var appRoot = Rock.Web.Cache.GlobalAttributesCache.Read( rockContext ).GetValue( "ExternalApplicationRoot" );
+                    var appRoot = Rock.Web.Cache.GlobalAttributesCache.Read( rockContext ).GetValue( "PublicApplicationRoot" );
 
                     var possibleRecipients = new PersonService( rockContext )
                         .Queryable().AsNoTracking()

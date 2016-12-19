@@ -94,7 +94,7 @@ namespace Rock.UniversalSearch.IndexModels
         /// <value>
         /// The description.
         /// </value>
-        [RockIndexField( Boost = 3 )]
+        [RockIndexField( Boost = 2 )]
         public string Description { get; set; }
 
         /// <summary>
@@ -112,7 +112,7 @@ namespace Rock.UniversalSearch.IndexModels
         /// <value>
         /// The leader list.
         /// </value>
-        [RockIndexField( Boost = 2 )]
+        [RockIndexField( Boost = 3 )]
         public string LeaderList { get; set; }
 
         /// <summary>
@@ -131,6 +131,8 @@ namespace Rock.UniversalSearch.IndexModels
             groupIndex.GroupTypeId = group.GroupTypeId;
             groupIndex.DocumentName = group.Name;
 
+            groupIndex.ModelOrder = 5;
+
             if ( group.GroupType != null )
             {
                 groupIndex.IconCssClass = group.GroupType.IconCssClass;
@@ -146,6 +148,26 @@ namespace Rock.UniversalSearch.IndexModels
             AddIndexableAttributes( groupIndex, group );
 
             return groupIndex;
+        }
+
+        /// <summary>
+        /// Gets the document URL.
+        /// </summary>
+        /// <param name="displayOptions"></param>
+        /// <returns></returns>
+        public override string GetDocumentUrl( Dictionary<string, object> displayOptions = null )
+        {
+            string url = "/Group/";
+
+            if ( displayOptions != null )
+            {
+                if ( displayOptions.ContainsKey( "Group.Url" ) )
+                {
+                    url = displayOptions["Group.Url"].ToString();
+                }
+            }
+
+            return url + this.Id;
         }
 
         /// <summary>
