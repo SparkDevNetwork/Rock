@@ -147,6 +147,7 @@ namespace Rock.Model
                 Dictionary<Guid, Guid> pageGuidDictionary = new Dictionary<Guid, Guid>();
                 Dictionary<Guid, Guid> blockGuidDictionary = new Dictionary<Guid, Guid>();
                 var newPage = GeneratePageCopy( page, pageGuidDictionary, blockGuidDictionary, currentPersonAliasId );
+                newPage.IsSystem = false;
 
                 pageService.Add( newPage );
                 rockContext.SaveChanges();
@@ -204,6 +205,7 @@ namespace Rock.Model
                 newBlock.Id = 0;
                 newBlock.Guid = Guid.NewGuid();
                 newBlock.PageId = 0;
+                newBlock.IsSystem = false;
 
                 blockGuidDictionary.Add( block.Guid, newBlock.Guid );
                 targetPage.Blocks.Add( newBlock );
