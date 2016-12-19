@@ -806,6 +806,7 @@
     <Compile Include="Model\CodeGenerated\ReportService.cs" />
     <Compile Include="Model\CodeGenerated\RestActionService.cs" />
     <Compile Include="Model\CodeGenerated\RestControllerService.cs" />
+    <Compile Include="Model\CodeGenerated\ScheduleCategoryExclusionService.cs" />
     <Compile Include="Model\CodeGenerated\ScheduleService.cs" />
     <Compile Include="Model\CodeGenerated\ServiceJobService.cs" />
     <Compile Include="Model\CodeGenerated\ServiceLogService.cs" />
@@ -987,6 +988,7 @@
     <Compile Include="Model\RegistrationTemplateForm.cs" />
     <Compile Include="Model\RegistrationTemplateFormField.cs" />
     <Compile Include="Model\Report.cs" />
+    <Compile Include="Model\ScheduleCategoryExclusion.cs" />
     <Compile Include="Model\ReportField.cs" />
     <Compile Include="Model\ReportService.partial.cs" />
     <Compile Include="Model\RestAction.cs" />

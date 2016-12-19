@@ -117,6 +117,7 @@
     <Compile Include="Controllers\CodeGenerated\InteractionSessionsController.cs" />
     <Compile Include="Controllers\CodeGenerated\NotificationRecipientsController.cs" />
     <Compile Include="Controllers\CodeGenerated\NotificationsController.cs" />
+    <Compile Include="Controllers\CodeGenerated\ScheduleCategoryExclusionsController.cs" />
     <Compile Include="Controllers\CodeGenerated\SignatureDocumentsController.cs" />
     <Compile Include="Controllers\CodeGenerated\SignatureDocumentTemplatesController.cs" />
     <Compile Include="Controllers\BlocksController.Partial.cs" />
