@@ -23,7 +23,7 @@ using Rock.UniversalSearch.IndexModels;
 
 namespace Rock.UniversalSearch
 {
-    interface IRockIndexable
+    public interface IRockIndexable
     {
 
         /// <summary>

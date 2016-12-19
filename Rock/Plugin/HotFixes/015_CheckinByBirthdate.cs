@@ -27,23 +27,25 @@ namespace Rock.Plugin.HotFixes
         /// </summary>
         public override void Up()
         {
-            RockMigrationHelper.UpdateEntityAttribute( "Rock.Model.Group", "9C7D431C-875C-4792-9E76-93F3A32BB850", "GroupTypeId", "", "Birthdate Range", "The birth date range allowed to check in to these group types.", 0, "", "F1A43EAB-D682-403F-A05E-CCFFBF879F32" );
+// Moved to core migration: 201612132013351_WorkflowTypeText
+//
+//            RockMigrationHelper.UpdateEntityAttribute( "Rock.Model.Group", "9C7D431C-875C-4792-9E76-93F3A32BB850", "GroupTypeId", "", "Birthdate Range", "The birth date range allowed to check in to these group types.", 0, "", "F1A43EAB-D682-403F-A05E-CCFFBF879F32" );
 
-            Sql( @"
-    DECLARE @GroupTypeId int = ( SELECT TOP 1 [Id] FROM [GroupType] WHERE [Guid] = '0572A5FE-20A4-4BF1-95CD-C71DB5281392' )
-    DECLARE @AttributeId int = ( SELECT TOP 1 [Id] FROM [Attribute] WHERE [Guid] = 'F1A43EAB-D682-403F-A05E-CCFFBF879F32' )
-    DECLARE @CategoryId int = ( SELECT TOP 1 [Id] FROM [Category] WHERE [Guid] = 'C8E0FD8D-3032-4ACD-9DB9-FF70B11D6BCC' )
+//            Sql( @"
+//    DECLARE @GroupTypeId int = ( SELECT TOP 1 [Id] FROM [GroupType] WHERE [Guid] = '0572A5FE-20A4-4BF1-95CD-C71DB5281392' )
+//    DECLARE @AttributeId int = ( SELECT TOP 1 [Id] FROM [Attribute] WHERE [Guid] = 'F1A43EAB-D682-403F-A05E-CCFFBF879F32' )
+//    DECLARE @CategoryId int = ( SELECT TOP 1 [Id] FROM [Category] WHERE [Guid] = 'C8E0FD8D-3032-4ACD-9DB9-FF70B11D6BCC' )
 
-    IF @GroupTypeId IS NOT NULL AND @AttributeId IS NOT NULL AND @CategoryId IS NOT NULL
-    BEGIN
-        UPDATE [Attribute] SET [EntityTypeQualifierValue] = CAST(@GroupTypeId AS VARCHAR) WHERE [Id] = @AttributeId
-        IF NOT EXISTS ( SELECT * FROM [AttributeCategory] WHERE [AttributeId] = @AttributeId AND [CategoryId] = @CategoryId )
-        BEGIN
-            INSERT INTO [AttributeCategory] ( [AttributeId], [CategoryId] )
-            VALUES ( @AttributeId, @CategoryId )
-        END
-    END
-" );
+//    IF @GroupTypeId IS NOT NULL AND @AttributeId IS NOT NULL AND @CategoryId IS NOT NULL
+//    BEGIN
+//        UPDATE [Attribute] SET [EntityTypeQualifierValue] = CAST(@GroupTypeId AS VARCHAR) WHERE [Id] = @AttributeId
+//        IF NOT EXISTS ( SELECT * FROM [AttributeCategory] WHERE [AttributeId] = @AttributeId AND [CategoryId] = @CategoryId )
+//        BEGIN
+//            INSERT INTO [AttributeCategory] ( [AttributeId], [CategoryId] )
+//            VALUES ( @AttributeId, @CategoryId )
+//        END
+//    END
+//" );
         }
 
         /// <summary>

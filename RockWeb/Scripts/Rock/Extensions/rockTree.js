@@ -289,14 +289,27 @@
             var self = this,
 				$ul = $('<ul/>'),
 				renderNode = function ($list, node) {
+				    var hasChildren = false;
+				    if (node.hasChildren) {
+				        hasChildren = true;
+				        // we know it has children, but they might not be loaded yet (children === undefined)
+				        // but if they are loaded there may actually be NO active children, so in that case,
+				        // we'll consider them as NOT having children
+				        if ( node.children === undefined ) {
+				          hasChildren = true;
+				        } else if (node.children !== undefined && node.children.length == 0  ) {
+				          hasChildren = false;
+				        }
+				    }
+
 				    var $li = $('<li/>'),
 						$childUl,
 						includeAttrs = self.options.mapping.include,
-				        folderCssClass = node.isOpen ? self.options.iconClasses.branchOpen : self.options.iconClasses.branchClosed,
+				        folderCssClass = hasChildren ? ( node.isOpen ? self.options.iconClasses.branchOpen : self.options.iconClasses.branchClosed ) : "",
 				        leafCssClass = node.iconCssClass || self.options.iconClasses.leaf;
 
 				    $li.addClass('rocktree-item')
-						.addClass(node.hasChildren ? 'rocktree-folder' : 'rocktree-leaf')
+						.addClass(hasChildren ? 'rocktree-folder' : 'rocktree-leaf')
                         .addClass( ( !node.hasOwnProperty('isActive') || node.isActive )? '' : 'is-inactive')
 						.attr('data-id', node.id)
 						.attr('data-parent-id', node.parentId);
@@ -325,7 +338,7 @@
 				        }
 				    }
 
-				    if (node.hasChildren) {
+				    if (hasChildren) {
 				        $li.prepend('<i class="rocktree-icon icon-fw ' + folderCssClass + '"></i>');
 
 				        if (node.iconCssClass) {

@@ -28,15 +28,15 @@ using Rock.Data;
 namespace Rock.Model
 {
     /// <summary>
-    /// InteractionChannel Service class
+    /// ScheduleCategoryExclusion Service class
     /// </summary>
-    public partial class InteractionChannelService : Service<InteractionChannel>
+    public partial class ScheduleCategoryExclusionService : Service<ScheduleCategoryExclusion>
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="InteractionChannelService"/> class
+        /// Initializes a new instance of the <see cref="ScheduleCategoryExclusionService"/> class
         /// </summary>
         /// <param name="context">The context.</param>
-        public InteractionChannelService(RockContext context) : base(context)
+        public ScheduleCategoryExclusionService(RockContext context) : base(context)
         {
         }
 
@@ -48,15 +48,9 @@ namespace Rock.Model
         /// <returns>
         ///   <c>true</c> if this instance can delete the specified item; otherwise, <c>false</c>.
         /// </returns>
-        public bool CanDelete( InteractionChannel item, out string errorMessage )
+        public bool CanDelete( ScheduleCategoryExclusion item, out string errorMessage )
         {
             errorMessage = string.Empty;
- 
-            if ( new Service<InteractionComponent>( Context ).Queryable().Any( a => a.ChannelId == item.Id ) )
-            {
-                errorMessage = string.Format( "This {0} is assigned to a {1}.", InteractionChannel.FriendlyTypeName, InteractionComponent.FriendlyTypeName );
-                return false;
-            }  
             return true;
         }
     }
@@ -64,45 +58,42 @@ namespace Rock.Model
     /// <summary>
     /// Generated Extension Methods
     /// </summary>
-    public static partial class InteractionChannelExtensionMethods
+    public static partial class ScheduleCategoryExclusionExtensionMethods
     {
         /// <summary>
-        /// Clones this InteractionChannel object to a new InteractionChannel object
+        /// Clones this ScheduleCategoryExclusion object to a new ScheduleCategoryExclusion object
         /// </summary>
         /// <param name="source">The source.</param>
         /// <param name="deepCopy">if set to <c>true</c> a deep copy is made. If false, only the basic entity properties are copied.</param>
         /// <returns></returns>
-        public static InteractionChannel Clone( this InteractionChannel source, bool deepCopy )
+        public static ScheduleCategoryExclusion Clone( this ScheduleCategoryExclusion source, bool deepCopy )
         {
             if (deepCopy)
             {
-                return source.Clone() as InteractionChannel;
+                return source.Clone() as ScheduleCategoryExclusion;
             }
             else
             {
-                var target = new InteractionChannel();
+                var target = new ScheduleCategoryExclusion();
                 target.CopyPropertiesFrom( source );
                 return target;
             }
         }
 
         /// <summary>
-        /// Copies the properties from another InteractionChannel object to this InteractionChannel object
+        /// Copies the properties from another ScheduleCategoryExclusion object to this ScheduleCategoryExclusion object
         /// </summary>
         /// <param name="target">The target.</param>
         /// <param name="source">The source.</param>
-        public static void CopyPropertiesFrom( this InteractionChannel target, InteractionChannel source )
+        public static void CopyPropertiesFrom( this ScheduleCategoryExclusion target, ScheduleCategoryExclusion source )
         {
             target.Id = source.Id;
-            target.ChannelData = source.ChannelData;
-            target.ChannelEntityId = source.ChannelEntityId;
-            target.ChannelTypeMediumValueId = source.ChannelTypeMediumValueId;
-            target.ComponentEntityTypeId = source.ComponentEntityTypeId;
+            target.CategoryId = source.CategoryId;
+            target.EndDate = source.EndDate;
             target.ForeignGuid = source.ForeignGuid;
             target.ForeignKey = source.ForeignKey;
-            target.InteractionEntityTypeId = source.InteractionEntityTypeId;
-            target.Name = source.Name;
-            target.RetentionDuration = source.RetentionDuration;
+            target.StartDate = source.StartDate;
+            target.Title = source.Title;
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;
             target.CreatedByPersonAliasId = source.CreatedByPersonAliasId;

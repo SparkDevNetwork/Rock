@@ -27,21 +27,18 @@ using System.Collections.Generic;
 namespace Rock.Client
 {
     /// <summary>
-    /// Base client model for WorkflowType that only includes the non-virtual fields. Use this for PUT/POSTs
+    /// Base client model for ScheduleCategoryExclusion that only includes the non-virtual fields. Use this for PUT/POSTs
     /// </summary>
-    public partial class WorkflowTypeEntity
+    public partial class ScheduleCategoryExclusionEntity
     {
         /// <summary />
         public int Id { get; set; }
 
         /// <summary />
-        public int? CategoryId { get; set; }
+        public int CategoryId { get; set; }
 
         /// <summary />
-        public int? CompletedWorkflowRetentionPeriod { get; set; }
-
-        /// <summary />
-        public string Description { get; set; }
+        public DateTime EndDate { get; set; }
 
         /// <summary />
         public Guid? ForeignGuid { get; set; }
@@ -49,49 +46,16 @@ namespace Rock.Client
         /// <summary />
         public string ForeignKey { get; set; }
 
-        /// <summary />
-        public string IconCssClass { get; set; }
-
-        /// <summary />
-        public bool? IsActive { get; set; }
-
-        /// <summary />
-        public bool IsPersisted { get; set; }
-
-        /// <summary />
-        public bool IsSystem { get; set; }
-
-        /// <summary />
-        public Rock.Client.Enums.WorkflowLoggingLevel LoggingLevel { get; set; }
-
-        /// <summary />
-        public int? LogRetentionPeriod { get; set; }
-
         /// <summary>
         /// If the ModifiedByPersonAliasId is being set manually and should not be overwritten with current user when saved, set this value to true
         /// </summary>
         public bool ModifiedAuditValuesAlreadyUpdated { get; set; }
 
         /// <summary />
-        public string Name { get; set; }
+        public DateTime StartDate { get; set; }
 
         /// <summary />
-        public string NoActionMessage { get; set; }
-
-        /// <summary />
-        public int Order { get; set; }
-
-        /// <summary />
-        public int? ProcessingIntervalSeconds { get; set; }
-
-        /// <summary />
-        public string SummaryViewText { get; set; }
-
-        /// <summary />
-        public string WorkflowIdPrefix { get; set; }
-
-        /// <summary />
-        public string WorkTerm { get; set; }
+        public string Title { get; set; }
 
         /// <summary>
         /// Leave this as NULL to let Rock set this
@@ -120,31 +84,19 @@ namespace Rock.Client
         public int? ForeignId { get; set; }
 
         /// <summary>
-        /// Copies the base properties from a source WorkflowType object
+        /// Copies the base properties from a source ScheduleCategoryExclusion object
         /// </summary>
         /// <param name="source">The source.</param>
-        public void CopyPropertiesFrom( WorkflowType source )
+        public void CopyPropertiesFrom( ScheduleCategoryExclusion source )
         {
             this.Id = source.Id;
             this.CategoryId = source.CategoryId;
-            this.CompletedWorkflowRetentionPeriod = source.CompletedWorkflowRetentionPeriod;
-            this.Description = source.Description;
+            this.EndDate = source.EndDate;
             this.ForeignGuid = source.ForeignGuid;
             this.ForeignKey = source.ForeignKey;
-            this.IconCssClass = source.IconCssClass;
-            this.IsActive = source.IsActive;
-            this.IsPersisted = source.IsPersisted;
-            this.IsSystem = source.IsSystem;
-            this.LoggingLevel = source.LoggingLevel;
-            this.LogRetentionPeriod = source.LogRetentionPeriod;
             this.ModifiedAuditValuesAlreadyUpdated = source.ModifiedAuditValuesAlreadyUpdated;
-            this.Name = source.Name;
-            this.NoActionMessage = source.NoActionMessage;
-            this.Order = source.Order;
-            this.ProcessingIntervalSeconds = source.ProcessingIntervalSeconds;
-            this.SummaryViewText = source.SummaryViewText;
-            this.WorkflowIdPrefix = source.WorkflowIdPrefix;
-            this.WorkTerm = source.WorkTerm;
+            this.StartDate = source.StartDate;
+            this.Title = source.Title;
             this.CreatedDateTime = source.CreatedDateTime;
             this.ModifiedDateTime = source.ModifiedDateTime;
             this.CreatedByPersonAliasId = source.CreatedByPersonAliasId;
@@ -156,16 +108,10 @@ namespace Rock.Client
     }
 
     /// <summary>
-    /// Client model for WorkflowType that includes all the fields that are available for GETs. Use this for GETs (use WorkflowTypeEntity for POST/PUTs)
+    /// Client model for ScheduleCategoryExclusion that includes all the fields that are available for GETs. Use this for GETs (use ScheduleCategoryExclusionEntity for POST/PUTs)
     /// </summary>
-    public partial class WorkflowType : WorkflowTypeEntity
+    public partial class ScheduleCategoryExclusion : ScheduleCategoryExclusionEntity
     {
-        /// <summary />
-        public ICollection<WorkflowActivityType> ActivityTypes { get; set; }
-
-        /// <summary />
-        public Category Category { get; set; }
-
         /// <summary>
         /// NOTE: Attributes are only populated when ?loadAttributes is specified. Options for loadAttributes are true, false, 'simple', 'expanded' 
         /// </summary>
