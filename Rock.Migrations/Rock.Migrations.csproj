@@ -113,6 +113,22 @@
     <Compile Include="Migrations\201611171650206_InteractionModels.Designer.cs">
       <DependentUpon>201611171650206_InteractionModels.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201611282234388_AdditionalInteractionFields.cs" />
+    <Compile Include="Migrations\201611282234388_AdditionalInteractionFields.Designer.cs">
+      <DependentUpon>201611282234388_AdditionalInteractionFields.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201611291601040_DropInteractionTablesToReorderFields.cs" />
+    <Compile Include="Migrations\201611291601040_DropInteractionTablesToReorderFields.Designer.cs">
+      <DependentUpon>201611291601040_DropInteractionTablesToReorderFields.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201611291825562_AddInteractionFieldsBackWithModifications.cs" />
+    <Compile Include="Migrations\201611291825562_AddInteractionFieldsBackWithModifications.Designer.cs">
+      <DependentUpon>201611291825562_AddInteractionFieldsBackWithModifications.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201612052305420_WorkflowTypeCleanupFields.cs" />
+    <Compile Include="Migrations\201612052305420_WorkflowTypeCleanupFields.Designer.cs">
+      <DependentUpon>201612052305420_WorkflowTypeCleanupFields.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 6.0\Version 1.6.0\201609282147388_WaitList.cs" />
     <Compile Include="Migrations\Version 6.0\Version 1.6.0\201609282147388_WaitList.Designer.cs">
       <DependentUpon>201609282147388_WaitList.cs</DependentUpon>
@@ -2350,6 +2366,18 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201611171650206_InteractionModels.resx">
       <DependentUpon>201611171650206_InteractionModels.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201611282234388_AdditionalInteractionFields.resx">
+      <DependentUpon>201611282234388_AdditionalInteractionFields.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201611291601040_DropInteractionTablesToReorderFields.resx">
+      <DependentUpon>201611291601040_DropInteractionTablesToReorderFields.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201611291825562_AddInteractionFieldsBackWithModifications.resx">
+      <DependentUpon>201611291825562_AddInteractionFieldsBackWithModifications.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201612052305420_WorkflowTypeCleanupFields.resx">
+      <DependentUpon>201612052305420_WorkflowTypeCleanupFields.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 6.0\Version 1.6.0\201609282147388_WaitList.resx">
       <DependentUpon>201609282147388_WaitList.cs</DependentUpon>

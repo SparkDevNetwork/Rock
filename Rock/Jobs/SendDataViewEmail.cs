@@ -108,7 +108,7 @@ namespace Rock.Jobs
                     }
                 }
 
-                var appRoot = GlobalAttributesCache.Read( rockContext ).GetValue( "ExternalApplicationRoot" );
+                var appRoot = GlobalAttributesCache.Read( rockContext ).GetValue( "PublicApplicationRoot" );
                 Email.Send( (Guid)emailTemplateGuid, recipients, appRoot );
                 context.Result = string.Format( "{0} emails sent", recipients.Count() );
             }

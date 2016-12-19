@@ -338,7 +338,7 @@ namespace Rock.Jobs
             // process visit dates
             if ( updateVisitDates )
             {
-                resultContext.Database.ExecuteSqlCommand( "spCrm_FamilyAnalyticsGiving" );
+                resultContext.Database.ExecuteSqlCommand( "spCrm_FamilyAnalyticsUpdateVisitDates" );
             }
         }
 

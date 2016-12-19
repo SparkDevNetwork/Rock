@@ -93,6 +93,7 @@ namespace Rock.Model
             target.DeviceTypeData = source.DeviceTypeData;
             target.ForeignGuid = source.ForeignGuid;
             target.ForeignKey = source.ForeignKey;
+            target.Name = source.Name;
             target.OperatingSystem = source.OperatingSystem;
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;

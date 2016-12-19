@@ -58,7 +58,7 @@ namespace Rock.Workflow.Action.CheckIn
                 PhoneNumberService phoneNumberService = new PhoneNumberService( rockContext );
 
                 int familyGroupTypeId = GroupTypeCache.Read( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY.AsGuid() ).Id;
-                var dvActive = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_ACTIVE.AsGuid() );
+                var dvInactive = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_INACTIVE.AsGuid() );
 
                 if ( checkInState.CheckIn.SearchType.Guid.Equals( new Guid( SystemGuid.DefinedValue.CHECKIN_SEARCH_TYPE_PHONE_NUMBER ) ) )
                 {
@@ -93,20 +93,6 @@ namespace Rock.Workflow.Action.CheckIn
                             m => m.PersonId,
                             ( o, m ) => new { PersonNumber = o.PhoneNumber, GroupMember = m } );
 
-
-                    if ( checkInState.CheckInType != null && checkInState.CheckInType.PreventInactivePeopele && dvActive != null )
-                    {
-                        // Reconstruct the query because doing this in the join condition is the fastest way
-                        tmpQry = familyQry.Join( personService.Queryable().AsNoTracking(),
-                            o => new { PersonId = o.PersonId, IsDeceased = false, RecordTypeValueId = personRecordTypeId, RecordStatusValueId = dvActive.Id },
-                            p => new { PersonId = p.Id, IsDeceased = p.IsDeceased, RecordTypeValueId = p.RecordTypeValueId.Value, RecordStatusValueId = p.RecordStatusValueId.Value },
-                            ( pn, p ) => new { Person = p, PhoneNumber = pn } )
-                            .Join( memberService.Queryable().AsNoTracking(),
-                            pn => pn.Person.Id,
-                            m => m.PersonId,
-                            ( o, m ) => new { PersonNumber = o.PhoneNumber, GroupMember = m } );
-                    }
-
                     var familyIdQry = groupService.Queryable().Where( g => tmpQry.Any( o => o.GroupMember.GroupId == g.Id ) && g.GroupTypeId == familyGroupTypeId )
                         .Select( g => g.Id )
                         .Distinct();
@@ -134,11 +120,11 @@ namespace Rock.Workflow.Action.CheckIn
                                 m.GroupId == familyId &&
                                 m.Person.NickName != null );
 
-                        if ( checkInState.CheckInType != null && checkInState.CheckInType.PreventInactivePeopele && dvActive != null )
+                        if ( checkInState.CheckInType != null && checkInState.CheckInType.PreventInactivePeopele && dvInactive != null )
                         {
                             familyMemberQry = familyMemberQry
                                 .Where( m =>
-                                    m.Person.RecordStatusValueId == dvActive.Id );
+                                    m.Person.RecordStatusValueId != dvInactive.Id );
                         }
 
                         var thisFamilyMembers = familyMemberQry.ToList();
@@ -169,9 +155,9 @@ namespace Rock.Workflow.Action.CheckIn
                 else if ( checkInState.CheckIn.SearchType.Guid.Equals( new Guid( SystemGuid.DefinedValue.CHECKIN_SEARCH_TYPE_NAME ) ) )
                 {
                     var people = personService.GetByFullName( checkInState.CheckIn.SearchValue, false ).AsNoTracking();
-                    if ( checkInState.CheckInType != null && checkInState.CheckInType.PreventInactivePeopele && dvActive != null )
+                    if ( checkInState.CheckInType != null && checkInState.CheckInType.PreventInactivePeopele && dvInactive != null )
                     {
-                        people = people.Where( p => p.RecordStatusValueId == dvActive.Id );
+                        people = people.Where( p => p.RecordStatusValueId != dvInactive.Id );
                     }
 
                     foreach ( var person in people )
