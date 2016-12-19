@@ -349,6 +349,11 @@ namespace Rock
             }
         }
 
+        public static string ToShortDateTimeString( this DateTime dt )
+        {
+            return dt.ToShortDateString() + " " + dt.ToShortTimeString();
+        }
+
         #endregion DateTime Extensions
 
         #region TimeSpan Extensions
