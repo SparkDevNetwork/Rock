@@ -38,7 +38,7 @@ namespace Rock.Client
         public int CategoryId { get; set; }
 
         /// <summary />
-        public DateTime? EndDate { get; set; }
+        public DateTime EndDate { get; set; }
 
         /// <summary />
         public Guid? ForeignGuid { get; set; }
@@ -52,7 +52,7 @@ namespace Rock.Client
         public bool ModifiedAuditValuesAlreadyUpdated { get; set; }
 
         /// <summary />
-        public DateTime? StartDate { get; set; }
+        public DateTime StartDate { get; set; }
 
         /// <summary />
         public string Title { get; set; }
