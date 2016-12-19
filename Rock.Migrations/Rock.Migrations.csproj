@@ -4046,17 +4046,39 @@
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="Migrations\201610031959052_FamilyAnalyticsUpdate_spCrm_FamilyAnalyticsAttendance.sql" />
-    <Content Include="Migrations\201610312310571_ConnectionGroupConfig_spCheckin_AttendanceAnalyticsQuery_AttendeeLastAttendance.sql" />
-    <Content Include="Migrations\201610312310571_ConnectionGroupConfig_DropIndexes.sql" />
-    <Content Include="Migrations\201610312310571_ConnectionGroupConfig_ufnCrm_GetParentPhones.sql" />
-    <Content Include="Migrations\201610312310571_ConnectionGroupConfig_ufnCrm_GetParentEmails.sql" />
-    <Content Include="Migrations\201610312310571_ConnectionGroupConfig_ufnCrm_GetParentNames.sql" />
-    <Content Include="Migrations\201610312310571_ConnectionGroupConfig_ufnUtility_CsvToTable.sql" />
-    <Content Include="Migrations\201610312310571_ConnectionGroupConfig_ufnCrm_GetGradeOffset.sql" />
-    <Content Include="Migrations\201610312310571_ConnectionGroupConfig_ufnCrm_GetAge.sql" />
-    <Content Include="Migrations\201610031959052_FamilyAnalyticsUpdate_spCrm_FamilyAnalyticsEraDataset.sql" />
-    <Content Include="Migrations\201612121647292_HotFixesFrom6_1.sql" />
+    <Content Include="Migrations\201610031959052_FamilyAnalyticsUpdate_spCrm_FamilyAnalyticsAttendance.sql">
+      <DependentUpon>201610031959052_FamilyAnalyticsUpdate.cs</DependentUpon>
+    </Content>
+    <Content Include="Migrations\201610031959052_FamilyAnalyticsUpdate_spCrm_FamilyAnalyticsEraDataset.sql">
+      <DependentUpon>201610031959052_FamilyAnalyticsUpdate.cs</DependentUpon>
+    </Content>
+    <Content Include="Migrations\201610312310571_ConnectionGroupConfig_DropIndexes.sql">
+      <DependentUpon>201610312310571_ConnectionGroupConfig.cs</DependentUpon>
+    </Content>
+    <Content Include="Migrations\201610312310571_ConnectionGroupConfig_spCheckin_AttendanceAnalyticsQuery_AttendeeLastAttendance.sql">
+      <DependentUpon>201610312310571_ConnectionGroupConfig.cs</DependentUpon>
+    </Content>
+    <Content Include="Migrations\201610312310571_ConnectionGroupConfig_ufnCrm_GetAge.sql">
+      <DependentUpon>201610312310571_ConnectionGroupConfig.cs</DependentUpon>
+    </Content>
+    <Content Include="Migrations\201610312310571_ConnectionGroupConfig_ufnCrm_GetGradeOffset.sql">
+      <DependentUpon>201610312310571_ConnectionGroupConfig.cs</DependentUpon>
+    </Content>
+    <Content Include="Migrations\201610312310571_ConnectionGroupConfig_ufnCrm_GetParentEmails.sql">
+      <DependentUpon>201610312310571_ConnectionGroupConfig.cs</DependentUpon>
+    </Content>
+    <Content Include="Migrations\201610312310571_ConnectionGroupConfig_ufnCrm_GetParentNames.sql">
+      <DependentUpon>201610312310571_ConnectionGroupConfig.cs</DependentUpon>
+    </Content>
+    <Content Include="Migrations\201610312310571_ConnectionGroupConfig_ufnCrm_GetParentPhones.sql">
+      <DependentUpon>201610312310571_ConnectionGroupConfig.cs</DependentUpon>
+    </Content>
+    <Content Include="Migrations\201610312310571_ConnectionGroupConfig_ufnUtility_CsvToTable.sql">
+      <DependentUpon>201610312310571_ConnectionGroupConfig.cs</DependentUpon>
+    </Content>
+    <Content Include="Migrations\201612121647292_HotFixesFrom6_1.sql">
+      <DependentUpon>201612121647292_HotFixesFrom6_1.cs</DependentUpon>
+    </Content>
     <Content Include="Migrations\Version 6.0\Version 1.6.0\201608171937068_GivingAnalyticsAccounts_AccountTotals.sql" />
     <Content Include="Migrations\Version 6.0\Version 1.6.0\201608171937068_GivingAnalyticsAccounts_FirstLastEverDates.sql" />
     <Content Include="Migrations\Version 6.0\Version 1.6.0\201608171937068_GivingAnalyticsAccounts_PersonSummary.sql" />
