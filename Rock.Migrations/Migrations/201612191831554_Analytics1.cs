@@ -371,8 +371,72 @@ CREATE UNIQUE NONCLUSTERED  INDEX [IX_GroupIdCurrentRow] ON [dbo].[AnalyticsSour
             Sql( MigrationSQL._201612191831554_Analytics1_spAnalytics_ETL_Family );
             Sql( MigrationSQL._201612191831554_Analytics1_spAnalytics_ETL_FinancialTransaction );
 
+            Sql( MigrationSQL._201612191831554_Analytics1_SetAttributesIsAnalytics );
+
+
+            // Add Job to 
+            Sql( @"
+INSERT INTO [dbo].[ServiceJob]
+           ([IsSystem]
+           ,[IsActive]
+           ,[Name]
+           ,[Description]
+           ,[Class]
+           ,[CronExpression]
+           ,[NotificationStatus]
+           ,[Guid])
+     VALUES
+        (0	
+         ,1	
+         ,'Process BI Analytics ETL'
+         ,'Run the Stored Procedures that do the ETL for the AnalyticsDimFamily, AnalyticsFactFinancialTransaction, and AnalyticsFactAttendance tables.'
+         ,'Rock.Jobs.RunSQL'
+         ,'0 0 5 1/1 * ? *'
+         ,3
+         ,'447B248B-2187-4368-9EE3-6E17B8F542A7')
+" );
+
+            // Set the RunSQL Job to run the ETL Stored Procs
+            Sql( @"
+                
+                DECLARE 
+                    @AttributeId int,
+                    @EntityId int
+
+                SET @AttributeId = (SELECT TOP 1 [Id] FROM [Attribute] WHERE [Guid] = '7AD0C57A-D40E-4A14-81D8-8ACA68600FF5')
+                SET @EntityId = (SELECT TOP 1 [ID] FROM [ServiceJob] where [Guid] = '447B248B-2187-4368-9EE3-6E17B8F542A7')
+
+                DELETE FROM [AttributeValue] WHERE [Guid] = 'A6F83C17-5950-44B6-9C07-94DDAFCFBC39'
+
+                INSERT INTO [AttributeValue] (
+                    [IsSystem],[AttributeId],[EntityId],[Value],[Guid])
+                VALUES(
+                    1,@AttributeId,@EntityId,'EXEC [dbo].[spAnalytics_ETL_Family]
+
+EXEC [dbo].[spAnalytics_ETL_FinancialTransaction]
+
+EXEC [dbo].[spAnalytics_ETL_Attendance]','A6F83C17-5950-44B6-9C07-94DDAFCFBC39')" );
+
+
+            // Set the RunSQL Job to have a timeout of 3600 seconds (one hour) 
+            Sql( @"
+                
+                DECLARE 
+                    @AttributeId int,
+                    @EntityId int
+
+                SET @AttributeId = (SELECT TOP 1 [Id] FROM [Attribute] WHERE [Guid] = 'FF66ABF1-B01D-4AE7-814E-95D842B2EA99')
+                SET @EntityId = (SELECT TOP 1 [ID] FROM [ServiceJob] where [Guid] = '447B248B-2187-4368-9EE3-6E17B8F542A7')
+
+                DELETE FROM [AttributeValue] WHERE [Guid] = '4753297A-7012-4400-B161-2C9F54360E62'
+
+                INSERT INTO [AttributeValue] (
+                    [IsSystem],[AttributeId],[EntityId],[Value],[Guid])
+                VALUES(
+                    1,@AttributeId,@EntityId,'3600','4753297A-7012-4400-B161-2C9F54360E62')" );
+
         }
-        
+
         /// <summary>
         /// Operations to be performed during the downgrade process.
         /// </summary>

@@ -91,7 +91,7 @@ BEGIN
             FROM DefinedValue
             WHERE [Guid] = '4A406CB0-495B-4795-B788-52BDFDE00B01' -- GroupTypePurpose Checkin
             )
-    WHERE asa.AttendanceTypeId != pgt.Id
+    WHERE isnull(asa.AttendanceTypeId, 0) != pgt.Id
 
     /* Updating these PersonKeys depends on AnalyticsSourcePersonHistorical getting populated and updated. 
   -- It is probably best to schedule the ETL of AnalyticsSourcePersonHistorical to occur before spAnalytics_ETL_Attendance
@@ -109,7 +109,7 @@ BEGIN
             AND asa.[StartDateTime] < ph.[ExpireDate]
         ORDER BY ph.[ExpireDate] DESC
         ) x
-    WHERE asa.[PersonKey] != x.PersonKey
+    WHERE isnull(asa.[PersonKey], 0) != isnull(x.PersonKey, 0)
 
     -- Update PersonKeys for whatever PersonKey is current right now
     UPDATE asa
@@ -121,7 +121,7 @@ BEGIN
         JOIN PersonAlias pa ON asa.PersonAliasId = pa.Id
         WHERE pc.PersonId = pa.PersonId
         ) x
-    WHERE asa.[CurrentPersonKey] != x.PersonKey
+    WHERE isnull(asa.[CurrentPersonKey], 0) != isnull(x.PersonKey, 0)
 
     -- figure out IsFirstAttendanceOfType
     UPDATE asa
@@ -166,5 +166,5 @@ BEGIN
             AND convert(DATE, previousAttendanceOfType.StartDateTime) < convert(DATE, asa.StartDateTime)
         ORDER BY previousAttendanceOfType.StartDateTime DESC
         ) x
-    WHERE asa.DaysSinceLastAttendanceOfType != x.[CalcDaysSinceLastAttendanceOfType]
+    WHERE isnull(asa.DaysSinceLastAttendanceOfType,0) != isnull(x.[CalcDaysSinceLastAttendanceOfType], 0)
 END
