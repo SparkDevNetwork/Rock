@@ -2942,6 +2942,34 @@ namespace Rock.Migrations.Migrations {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to UPDATE Attribute
+        ///SET IsAnalytic = 1
+        ///WHERE [Key] IN (
+        ///        &apos;BackgroundCheckDate&apos;
+        ///        ,&apos;BackgroundChecked&apos;
+        ///        ,&apos;BaptismDate&apos;
+        ///        ,&apos;core_CurrentlyAnEra&apos;
+        ///        ,&apos;core_EraStartDate&apos;
+        ///        ,&apos;core_EraFirstGave&apos;
+        ///        ,&apos;core_EraLastGave&apos;
+        ///        ,&apos;core_EraTimesGiven52Wks&apos;
+        ///        ,&apos;core_EraTimesGiven6Wks&apos;
+        ///        ,&apos;core_TimesCheckedIn16Wks&apos;
+        ///        ,&apos;Employer&apos;
+        ///        ,&apos;FirstVisit&apos;
+        ///        ,&apos;SecondVisit&apos;
+        ///        )
+        ///    AND EntityTypeId IN (
+        ///        SELECT Id
+        ///        FROM Enti [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _201612191831554_Analytics1_SetAttributesIsAnalytics {
+            get {
+                return ResourceManager.GetString("_201612191831554_Analytics1_SetAttributesIsAnalytics", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to IF EXISTS (
         ///        SELECT *
         ///        FROM [sysobjects]

@@ -155,6 +155,15 @@ namespace Rock.Model
         [HideFromReporting]
         public string EmailPreferenceText { get; set; }
 
+        /// <summary>
+        /// Gets or sets the primary family key which relates to the AnalyticsDimFamily tables/views
+        /// </summary>
+        /// <value>
+        /// The primary family key.
+        /// </value>
+        [DataMember]
+        public int? PrimaryFamilyKey { get; set; }
+
         #endregion
     }
 }

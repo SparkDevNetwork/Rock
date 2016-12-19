@@ -4164,6 +4164,9 @@
     <Content Include="Migrations\201612191831554_Analytics1_AnalyticsFactFinancialTransaction.sql">
       <DependentUpon>201612191831554_Analytics1.cs</DependentUpon>
     </Content>
+    <Content Include="Migrations\201612191831554_Analytics1_SetAttributesIsAnalytics.sql">
+      <DependentUpon>201612191831554_Analytics1.cs</DependentUpon>
+    </Content>
     <Content Include="Migrations\201612191831554_Analytics1_spAnalytics_ETL_Attendance.sql">
       <DependentUpon>201612191831554_Analytics1.cs</DependentUpon>
     </Content>

@@ -502,4 +502,7 @@
   <data name="_201612191831554_Analytics1_spAnalytics_ETL_FinancialTransaction" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>201612191831554_analytics1_spanalytics_etl_financialtransaction.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
   </data>
+  <data name="_201612191831554_Analytics1_SetAttributesIsAnalytics" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>201612191831554_analytics1_setattributesisanalytics.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
+  </data>
 </root>
