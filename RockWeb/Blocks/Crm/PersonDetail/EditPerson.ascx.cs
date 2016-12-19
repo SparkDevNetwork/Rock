@@ -413,17 +413,27 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 
                     person.GivingGroupId = newGivingGroupId;
 
+                    bool recordStatusChangedToOrFromInactive = false;
+                    var recordStatusInactiveId = DefinedValueCache.Read( new Guid( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_INACTIVE ) ).Id;
+
                     int? newRecordStatusId = ddlRecordStatus.SelectedValueAsInt();
+                    // Is the person's record status changing?
+                    if ( person.RecordStatusValueId.HasValue && person.RecordStatusValueId != newRecordStatusId )
+                    {
+                        //  If it was inactive OR if the new status is inactive, flag this for use later below.
+                        if ( person.RecordStatusValueId == recordStatusInactiveId || newRecordStatusId == recordStatusInactiveId )
+                        {
+                            recordStatusChangedToOrFromInactive = true;
+                        }
+                    }
+
                     History.EvaluateChange( changes, "Record Status", DefinedValueCache.GetName( person.RecordStatusValueId ), DefinedValueCache.GetName( newRecordStatusId ) );
                     person.RecordStatusValueId = newRecordStatusId;
 
                     int? newRecordStatusReasonId = null;
-                    var recordStatusInactiveId = DefinedValueCache.Read( new Guid( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_INACTIVE ) ).Id;
-                    bool recordStatusChangedToInactive = false;
                     if ( person.RecordStatusValueId.HasValue && person.RecordStatusValueId.Value == recordStatusInactiveId )
                     {
                         newRecordStatusReasonId = ddlReason.SelectedValueAsInt();
-                        recordStatusChangedToInactive = true;
                     }
 
                     History.EvaluateChange( changes, "Inactive Reason", DefinedValueCache.GetName( person.RecordStatusReasonValueId ), DefinedValueCache.GetName( newRecordStatusReasonId ) );
@@ -505,10 +515,10 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                                 }
                             }
 
-                            // Check if any of their families need to be inactivated.
-                            if ( recordStatusChangedToInactive )
+                            // If the person's record status was changed to or from inactive,
+                            // we need to check if any of their families need to be activated or inactivated.
+                            if ( recordStatusChangedToOrFromInactive )
                             {
-                                var markedInactiveFamilies = false;
                                 foreach ( var family in personService.GetFamilies( person.Id ) )
                                 {
                                     // Are there any more members of the family who are NOT inactive?
@@ -516,14 +526,14 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                                     if ( !family.Members.Where( m => m.Person.RecordStatusValueId != recordStatusInactiveId ).Any() )
                                     {
                                         family.IsActive = false;
-                                        markedInactiveFamilies = true;
+                                    }
+                                    else
+                                    {
+                                        family.IsActive = true;
                                     }
                                 }
 
-                                if ( markedInactiveFamilies )
-                                {
-                                    rockContext.SaveChanges();
-                                }
+                                rockContext.SaveChanges();
                             }
                         }
 
