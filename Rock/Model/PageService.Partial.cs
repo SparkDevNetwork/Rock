@@ -147,7 +147,6 @@ namespace Rock.Model
                 Dictionary<Guid, Guid> pageGuidDictionary = new Dictionary<Guid, Guid>();
                 Dictionary<Guid, Guid> blockGuidDictionary = new Dictionary<Guid, Guid>();
                 var newPage = GeneratePageCopy( page, pageGuidDictionary, blockGuidDictionary, currentPersonAliasId );
-                newPage.IsSystem = false;
 
                 pageService.Add( newPage );
                 rockContext.SaveChanges();
@@ -191,6 +190,7 @@ namespace Rock.Model
             targetPage.PageTitle = sourcePage.PageTitle + " - Copy";
             targetPage.InternalName = sourcePage.InternalName + " - Copy";
             targetPage.BrowserTitle = sourcePage.BrowserTitle + " - Copy";
+            targetPage.IsSystem = false;
             pageGuidDictionary.Add( sourcePage.Guid, targetPage.Guid );
 
             foreach ( var block in sourcePage.Blocks )
