@@ -66,7 +66,18 @@ namespace Rock.Model
         /// The processed by person key.
         /// </value>
         [DataMember]
-        public string ProcessedByPersonKey { get; set; }
+        public int? ProcessedByPersonKey { get; set; }
+
+        /// <summary>
+        /// This is the FamilyKey (AnalyticsDimFamilyCurrent.Id) of the family of the Authorized Person that did this transaction
+        /// Note that this is the current family that the person is in. 
+        /// To see what GivingGroup they were part of when the Transaction occured, see GivingUnitKey
+        /// </summary>
+        /// <value>
+        /// The authorized family key.
+        /// </value>
+        [DataMember]
+        public int? AuthorizedFamilyKey { get; set; }
 
         /// <summary>
         /// Gets or sets the giving unit key.
