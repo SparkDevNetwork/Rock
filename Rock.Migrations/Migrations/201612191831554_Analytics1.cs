@@ -374,7 +374,7 @@ CREATE UNIQUE NONCLUSTERED  INDEX [IX_GroupIdCurrentRow] ON [dbo].[AnalyticsSour
             Sql( MigrationSQL._201612191831554_Analytics1_SetAttributesIsAnalytics );
 
 
-            // Add Job to 
+            // Add Process BI Analytics ETL Job
             Sql( @"
 INSERT INTO [dbo].[ServiceJob]
            ([IsSystem]
@@ -435,6 +435,48 @@ EXEC [dbo].[spAnalytics_ETL_Attendance]','A6F83C17-5950-44B6-9C07-94DDAFCFBC39')
                 VALUES(
                     1,@AttributeId,@EntityId,'3600','4753297A-7012-4400-B161-2C9F54360E62')" );
 
+
+            // Job for Analytics Dim Person
+            Sql( @"
+INSERT INTO [dbo].[ServiceJob]
+           ([IsSystem]
+           ,[IsActive]
+           ,[Name]
+           ,[Description]
+           ,[Class]
+           ,[CronExpression]
+           ,[NotificationStatus]
+           ,[Guid])
+     VALUES
+        (0	
+         ,1	
+         ,'Process Analytics Dimension Tables for Person'
+         ,'Job to take care of schema changes ( dynamic Attribute Value Fields ) and data updates to Person analytic tables'
+         ,'Rock.Jobs.ProcessAnalyticsDimPerson'
+         ,'0 0 4 1/1 * ? *'
+         ,3
+         ,'BBBB1D16-E4B5-439E-94F6-52AB14AE5292')" );
+
+
+            // Calender Dimensions Page/BlockType/Block
+            RockMigrationHelper.AddPage( "0B213645-FA4E-44A5-8E4C-B2D8EF054985", "D65F783D-87A9-4CC9-8110-E83466A0EADB", "Calendar Dimension Settings", "", "2660D554-D161-44A1-9763-A73C60559B50", "fa fa-calendar" ); // Site:Rock RMS
+
+            RockMigrationHelper.UpdateBlockType( "Calendar Dimension Settings", "Helps configure and generate the AnalyticsDimDate table for BI Analytics", "~/Blocks/Reporting/CalendarDimensionSettings.ascx", "Reporting", "7711EAE9-5CF0-46E4-A4E6-26C05A71FE43" );
+            
+            // Add Block to Page: Calendar Dimension Settings, Site: Rock RMS
+            RockMigrationHelper.AddBlock( "2660D554-D161-44A1-9763-A73C60559B50", "", "7711EAE9-5CF0-46E4-A4E6-26C05A71FE43", "Calendar Dimension Settings", "Main", "", "", 0, "18F256EF-8888-4009-814B-B85F36FABE31" );
+
+            // Attrib for BlockType: Calendar Dimension Settings:GivingMonthUseSundayDate
+            RockMigrationHelper.AddBlockTypeAttribute( "7711EAE9-5CF0-46E4-A4E6-26C05A71FE43", "1EDAFDED-DFE6-4334-B019-6EECBA89E05A", "GivingMonthUseSundayDate", "GivingMonthUseSundayDate", "", "", 1, @"False", "2C3BA4C0-2721-4648-A192-CE45E2B48364" );
+
+            // Attrib for BlockType: Calendar Dimension Settings:FiscalStartMonth
+            RockMigrationHelper.AddBlockTypeAttribute( "7711EAE9-5CF0-46E4-A4E6-26C05A71FE43", "A75DFC58-7A1B-4799-BF31-451B2BBE38FF", "FiscalStartMonth", "FiscalStartMonth", "", "", 0, @"1", "EDD9EFC5-6BFA-4979-815E-AC53214B6D47" );
+
+            // Attrib for BlockType: Calendar Dimension Settings:StartDate
+            RockMigrationHelper.AddBlockTypeAttribute( "7711EAE9-5CF0-46E4-A4E6-26C05A71FE43", "6B6AA175-4758-453F-8D83-FCD8044B5F36", "StartDate", "StartDate", "", "", 0, @"", "0FADA4D7-043C-45A6-9449-9F36684B2DFB" );
+
+            // Attrib for BlockType: Calendar Dimension Settings:EndDate
+            RockMigrationHelper.AddBlockTypeAttribute( "7711EAE9-5CF0-46E4-A4E6-26C05A71FE43", "6B6AA175-4758-453F-8D83-FCD8044B5F36", "EndDate", "EndDate", "", "", 0, @"", "BF6DACA9-BCC6-445C-88D1-1D2947755BB7" );
         }
 
         /// <summary>
@@ -442,6 +484,29 @@ EXEC [dbo].[spAnalytics_ETL_Attendance]','A6F83C17-5950-44B6-9C07-94DDAFCFBC39')
         /// </summary>
         public override void Down()
         {
+            // delete Process BI Analytics ETL Job
+            Sql( "DELETE FROM [ServiceJob] where [Guid] = '447B248B-2187-4368-9EE3-6E17B8F542A7'" );
+
+            // delete Job for Analytics Dim Person
+            Sql( "DELETE FROM [ServiceJob] where [Guid] = 'BBBB1D16-E4B5-439E-94F6-52AB14AE5292'" );
+
+            // Attrib for BlockType: Calendar Dimension Settings:GivingMonthUseSundayDate
+            RockMigrationHelper.DeleteAttribute( "2C3BA4C0-2721-4648-A192-CE45E2B48364" );
+            // Attrib for BlockType: Calendar Dimension Settings:FiscalStartMonth
+            RockMigrationHelper.DeleteAttribute( "EDD9EFC5-6BFA-4979-815E-AC53214B6D47" );
+            // Attrib for BlockType: Calendar Dimension Settings:EndDate
+            RockMigrationHelper.DeleteAttribute( "BF6DACA9-BCC6-445C-88D1-1D2947755BB7" );
+            // Attrib for BlockType: Calendar Dimension Settings:StartDate
+            RockMigrationHelper.DeleteAttribute( "0FADA4D7-043C-45A6-9449-9F36684B2DFB" );
+
+            // Remove Block: Calendar Dimension Settings, from Page: Calendar Dimension Settings, Site: Rock RMS
+            RockMigrationHelper.DeleteBlock( "18F256EF-8888-4009-814B-B85F36FABE31" );
+
+            RockMigrationHelper.DeleteBlockType( "7711EAE9-5CF0-46E4-A4E6-26C05A71FE43" ); // Calendar Dimension Settings
+
+            RockMigrationHelper.DeletePage( "2660D554-D161-44A1-9763-A73C60559B50" ); //  Page: Calendar Dimension Settings, Layout: Full Width, Site: Rock RMS
+
+
             Sql( @"
 DROP VIEW AnalyticsDimAttendanceAttendanceType;
 DROP VIEW AnalyticsDimAttendanceDevice;

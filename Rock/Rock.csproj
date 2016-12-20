@@ -555,7 +555,6 @@
     <Compile Include="Follow\Suggestion\InGroupTogether.cs" />
     <Compile Include="Jobs\CalculateFamilyAnalytics.cs" />
     <Compile Include="Jobs\IndexRockSite.cs" />
-    <Compile Include="Jobs\ProcessAnalyticsFactFinancialTransaction.cs" />
     <Compile Include="Jobs\ProcessAnalyticsDimPerson.cs" />
     <Compile Include="Jobs\SendCreditCardExpirationNotices.cs" />
     <Compile Include="Jobs\IndexEntities.cs" />
