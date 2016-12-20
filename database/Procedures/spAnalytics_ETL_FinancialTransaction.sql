@@ -7,6 +7,7 @@ IF EXISTS (
     DROP PROCEDURE [dbo].spAnalytics_ETL_FinancialTransaction
 GO
 
+-- truncate table [AnalyticsSourceFinancialTransaction]
 -- EXECUTE [dbo].[spAnalytics_ETL_FinancialTransaction] 
 CREATE PROCEDURE [dbo].[spAnalytics_ETL_FinancialTransaction]
 AS
@@ -58,8 +59,8 @@ BEGIN
         ,ft.Summary [TransactionSummary]
         ,ft.TransactionTypeValueId [TransactionTypeValueId]
         ,ft.SourceTypeValueId [SourceTypeValueId]
-        ,CASE ft.ScheduledTransactionId
-            WHEN NULL
+        ,CASE 
+            WHEN ft.ScheduledTransactionId IS NULL
                 THEN 0
             ELSE 1
             END [IsScheduled]
@@ -152,11 +153,9 @@ BEGIN
             AND convert(DATE, previousTran.TransactionDateTime) < convert(DATE, asft.TransactionDateTime)
         ORDER BY previousTran.TransactionDateTime DESC
         ) x
-	where asft.DaysSinceLastTransactionOfType != x.CalcDaysSinceLastTransactionOfType
+    WHERE isnull(asft.DaysSinceLastTransactionOfType, 0) != x.CalcDaysSinceLastTransactionOfType
 
-    -- TODO update [AuthorizedFamilyId]
     -- TODO what about modified records
-
     /* Updating these PersonKeys depends on AnalyticsSourcePersonHistorical getting populated and updated. 
   -- It is probably best to schedule the ETL of AnalyticsSourcePersonHistorical to occur before spAnalytics_ETL_FinancialTransaction
   -- However, if not, it will catch up on the next run of spAnalytics_ETL_FinancialTransaction
@@ -173,17 +172,20 @@ BEGIN
             AND asft.[TransactionDateTime] < ph.[ExpireDate]
         ORDER BY ph.[ExpireDate] DESC
         ) x
-	WHERE asft.AuthorizedPersonKey != x.PersonKey
+    WHERE isnull(asft.AuthorizedPersonKey, 0) != x.PersonKey
 
-    -- Update PersonKeys for whatever PersonKey is current right now
+    -- Update PersonKeys and AuthorizedFamilyId for whatever PersonKey/FamilyId is current right now
     UPDATE asft
     SET [AuthorizedCurrentPersonKey] = x.PersonKey
+        ,[AuthorizedFamilyId] = x.PrimaryFamilyId
     FROM AnalyticsSourceFinancialTransaction asft
     CROSS APPLY (
         SELECT TOP 1 pc.Id [PersonKey]
+            ,pc.PrimaryFamilyId
         FROM AnalyticsDimPersonCurrent pc
         JOIN PersonAlias pa ON asft.AuthorizedPersonAliasId = pa.Id
         WHERE pc.PersonId = pa.PersonId
         ) x
-    WHERE asft.AuthorizedCurrentPersonKey != x.PersonKey
+    WHERE isnull(asft.AuthorizedCurrentPersonKey, 0) != x.PersonKey
+        OR (isnull(asft.AuthorizedFamilyId, 0) != x.PrimaryFamilyId)
 END
