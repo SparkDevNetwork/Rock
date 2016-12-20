@@ -148,7 +148,16 @@ BEGIN
                 AND gl.IsMappedLocation = 1
             ) [MappedAddressLocationId]
     FROM [Group] g
-    LEFT OUTER JOIN AnalyticsDimPersonCurrent hhpc ON hhpc.PersonId = dbo._church_ccv_ufnGetHeadOfHousehold(g.Id)
+    LEFT OUTER JOIN AnalyticsDimPersonCurrent hhpc ON hhpc.PersonId = (
+            SELECT TOP 1 P.Id
+            FROM GroupMember FM
+            INNER JOIN Person P ON P.Id = FM.PersonId
+            INNER JOIN [Group] F ON F.Id = FM.GroupId
+                AND F.GroupTypeId = @GroupTypeFamilyId
+            WHERE FM.GroupId = g.Id
+            ORDER BY FM.GroupRoleId
+                ,P.Gender
+            ) --HeadOfHousehold
     CROSS APPLY dbo.ufnCrm_GetFamilyTitle(NULL, g.Id, NULL, 0) ft
     WHERE g.GroupTypeId = @GroupTypeFamilyId
     ORDER BY g.Id
