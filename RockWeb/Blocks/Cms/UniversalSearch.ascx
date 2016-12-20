@@ -31,17 +31,25 @@
 
                 <asp:Panel ID="pnlRefineSearch" runat="server" Visible="false">
                     <div class="well margin-t-md">
-                        <Rock:RockCheckBoxList ID="cblModelFilter" runat="server" RepeatDirection="Horizontal" Label="Types" />
+                        <Rock:RockCheckBoxList ID="cblModelFilter" runat="server" CssClass="js-model-filter" RepeatDirection="Horizontal" Label="Information Types" />
 
-                        <Rock:RockCheckBoxList ID="cblGroupTypes" runat="server" RepeatDirection="Horizontal" Label="Group Types" />
-
-                        <Rock:RockCheckBoxList ID="cblContentChannelTypes" runat="server" RepeatDirection="Horizontal" Label="Content Channels" />
+                        <hr />
+                        
+                        <div class="row">
+                            <asp:PlaceHolder ID="phFilters" runat="server" />  
+                        </div>
                     </div>
                 </asp:Panel>
 
                 <div class="margin-t-lg">
                     <asp:Literal ID="lResults" runat="server" />
                 </div>
+
+                <asp:Panel ID="pnlPagination" runat="server" CssClass="text-center">
+                     <ul class="pagination">
+                        <asp:Literal ID="lPagination" runat="server" />
+                    </ul>
+                </asp:Panel>
             </div>
                 
         </asp:Panel>
@@ -52,11 +60,19 @@
 
                     <asp:UpdatePanel ID="upnlEdit" runat="server">
                         <ContentTemplate>
-                            <Rock:RockCheckBoxList ID="cblEnabledModels" runat="server" Label="Enabled Models" />
-                            
-                            <Rock:RockCheckBox ID="cbShowFilter" runat="server" Label="Show Model Filter" />
-                            
-
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <Rock:RockDropDownList ID="ddlSearchType" runat="server" Label="Search Type" />
+                                    <Rock:RockTextBox ID="tbResultsPerPage" runat="server" Label="Results Per Page" CssClass="input-width-sm" />
+                                    <Rock:RockCheckBox ID="cbShowRefinedSearch" runat="server" Label="Show Refinded Search Options" />
+                                    <Rock:RockCheckBox ID="cbShowScores" runat="server" Label="Show Scores" Help="Enables the display of scores for help with debugging." />
+                                </div>
+                                <div class="col-md-6">
+                                    <Rock:RockCheckBoxList ID="cblEnabledModels" runat="server" Label="Enabled Models" />
+                                    <Rock:RockCheckBox ID="cbShowFilter" runat="server" Label="Show Model Filter" />
+                                    <Rock:RockTextBox ID="tbBaseFieldFilters" runat="server" Label="Base Field Filters" Help="These field filters will always be enabled and will not be changeable by the individual. Uses tha same syntax as the lava command." />
+                                </div>
+                            </div>
                         </ContentTemplate>
                     </asp:UpdatePanel>
                 </Content>
@@ -68,6 +84,14 @@
             Sys.Application.add_load( function () {
                 $(".model-cannavigate").click(function () {
                     window.document.location = $(this).data("href");
+                });
+
+                $(".js-model-filter input").change(function () {
+
+                    var entityId = $(this).val();
+                    var selector = ".js-entity-id-" + entityId + " input";
+
+                    $(selector).prop("checked", $(this).is(':checked'));
                 });
             });
         </script>

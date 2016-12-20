@@ -245,22 +245,22 @@ You can view an online version of this email here:
                     if ( !person.IsEmailActive)
                     {
                         recipient.Status = CommunicationRecipientStatus.Failed;
-                        recipient.StatusNote = "Email is not active!";
+                        recipient.StatusNote = "Email is not active";
                     }
                     if ( person.IsDeceased )
                     {
                         recipient.Status = CommunicationRecipientStatus.Failed;
-                        recipient.StatusNote = "Person is deceased!";
+                        recipient.StatusNote = "Person is deceased";
                     }
                     if ( person.EmailPreference == Model.EmailPreference.DoNotEmail )
                     {
                         recipient.Status = CommunicationRecipientStatus.Failed;
-                        recipient.StatusNote = "Email Preference of 'Do Not Email!'";
+                        recipient.StatusNote = "Email Preference of 'Do Not Email'";
                     }
                     else if ( person.EmailPreference == Model.EmailPreference.NoMassEmails && communication.IsBulkCommunication )
                     {
                         recipient.Status = CommunicationRecipientStatus.Failed;
-                        recipient.StatusNote = "Email Preference of 'No Mass Emails!'";
+                        recipient.StatusNote = "Email Preference of 'No Mass Emails'";
                     }
                 }
 

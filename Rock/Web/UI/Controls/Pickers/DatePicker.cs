@@ -100,6 +100,25 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Controls whether or not the DatePicker allows for future dates to be selected (default true). If set to false, all future dates will be disabled.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> (default); otherwise, <c>false</c>.
+        /// </value>
+        public bool AllowFutureDateSelection
+        {
+            get
+            {
+                return ViewState["AllowFutureDateSelection"] as bool? ?? true;
+            }
+
+            set
+            {
+                ViewState["AllowFutureDateSelection"] = value;
+            }
+        }
+
+        /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
         /// </summary>
         /// <param name="e">An <see cref="T:System.EventArgs" /> object that contains the event data.</param>
@@ -149,8 +168,13 @@ namespace Rock.Web.UI.Controls
             dateFormat = dateFormat.Replace( "M", "m" ).Replace( "m", "mm" ).Replace( "mmmm", "mm" );
             dateFormat = dateFormat.Replace( "d", "dd" ).Replace( "dddd", "dd" );
 
-            var script = string.Format( @"Rock.controls.datePicker.initialize({{ id: '{0}', startView: {1}, format: '{2}', todayHighlight: {3} }});", 
-                this.ClientID, this.StartView.ConvertToInt(), dateFormat, this.HighlightToday.ToString().ToLower() );
+            var script = string.Format( @"Rock.controls.datePicker.initialize({{ id: '{0}', startView: {1}, format: '{2}', todayHighlight: {3}, {4} }});", 
+                this.ClientID,
+                this.StartView.ConvertToInt(),
+                dateFormat,
+                this.HighlightToday.ToString().ToLower(),
+                (this.AllowFutureDateSelection ) ? "" : "endDate: '" + RockDateTime.Today.ToString("o") + "',"
+            );
             ScriptManager.RegisterStartupScript( this, this.GetType(), "date_picker-" + this.ClientID, script, true );
         }
 
@@ -172,7 +196,6 @@ namespace Rock.Web.UI.Controls
                 ViewState["StartView"] = value;
             }
         }
-
 
         /// <summary>
         /// Gets or sets a value indicating whether [highlight today].

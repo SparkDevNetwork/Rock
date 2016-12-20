@@ -137,7 +137,7 @@ namespace Rock.Migrations
 {% if AdditionalFieldsNeeded %}
     <p>
         <strong>Addition information is needed in order to process this registration. Please visit the 
-        <a href=''{{ externalSite }}/Registration?RegistrationId={{ Registration.Id }}&rckipid={{ Registration.PersonAlias.Person.UrlEncodedKey }}&Location=Start''>
+        <a href=''{{ externalSite }}/Registration?RegistrationId={{ Registration.Id }}&rckipid={{ Registration.PersonAlias.Person.UrlEncodedKey }}&StartAtBeginning=True''>
         online registration page</a> to complete the registration.</strong>
     </p>
 {% endif %}

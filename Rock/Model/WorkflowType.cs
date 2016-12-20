@@ -147,6 +147,24 @@ namespace Rock.Model
         public bool IsPersisted { get; set; }
 
         /// <summary>
+        /// Gets or sets the log retention period in days.
+        /// </summary>
+        /// <value>
+        /// The log retention period in days.
+        /// </value>
+        [DataMember]
+        public int? LogRetentionPeriod { get; set; }
+
+        /// <summary>
+        /// Gets or sets the completed workflow rention period in days.
+        /// </summary>
+        /// <value>
+        /// The completed workflow rention period in days.
+        /// </value>
+        [DataMember]
+        public int? CompletedWorkflowRetentionPeriod { get; set; }
+
+        /// <summary>
         /// Gets or sets the logging level.
         /// Gets or sets the <see cref="Rock.Model.WorkflowLoggingLevel"/> indicating the level of detail that should be logged when instances of this WorkflowType are executed.
         /// </summary>

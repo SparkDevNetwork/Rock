@@ -203,7 +203,7 @@ namespace Rock.Jobs
                 }
 
                 // send out notificatons
-                var appRoot = Rock.Web.Cache.GlobalAttributesCache.Read( rockContext ).GetValue( "ExternalApplicationRoot" );
+                var appRoot = Rock.Web.Cache.GlobalAttributesCache.Read( rockContext ).GetValue( "PublicApplicationRoot" );
                 var recipients = new List<RecipientData>();
 
                 var notificationRecipients = _notificationList.GroupBy( p => p.Person.Id ).ToList();

@@ -1,11 +1,11 @@
 /*
 <doc>
 	<summary>
- 		This function returns the head of house for the giving id provided
+ 		This function returns the most likely spouse for the person [Id] provided
 	</summary>
 
 	<returns>
-		Person Id of the head of household. 
+		Person [Id] of the most likely spouse; otherwise returns NULL
 	</returns>
 	<remarks>
 		
@@ -18,32 +18,38 @@
 </doc>
 */
 
-ALTER FUNCTION [dbo].[ufnCrm_GetSpousePersonIdFromPersonId](@PersonId int ) 
-
-RETURNS int AS
+ALTER FUNCTION [dbo].[ufnCrm_GetSpousePersonIdFromPersonId] ( 
+	@PersonId INT 
+) 
+RETURNS INT 
+AS
 BEGIN
 	
-	RETURN (SELECT TOP 1 p.[Id] 
-				FROM 
-					[Person] p
-					INNER JOIN [GroupMember] gm ON gm.[PersonId] = p.[Id]
-					INNER JOIN [GroupTypeRole] gtr ON gtr.[Id] = gm.[GroupRoleId]
-					INNER JOIN [Group] g ON g.[Id] = gm.[GroupId]
-					INNER JOIN [GroupType] gt ON gt.[Id] = g.[GroupTypeId]
-				WHERE 
-					gtr.[Guid] = '2639F9A5-2AAE-4E48-A8C3-4FFE86681E42' -- adult
-					AND gt.[Guid] = '790E3215-3B10-442B-AF69-616C0DCB998E' -- family
-					AND g.[Id] IN (SELECT g2.[Id] 
-									FROM [GroupMember] gm2
-										INNER JOIN [GroupTypeRole] gtr2 ON gtr2.[Id] = gm2.[GroupRoleId]
-										INNER JOIN [Group] g2 ON g.[Id] = gm2.[GroupId]
-										INNER JOIN [GroupType] gt2 ON gt2.[Id] = g2.[GroupTypeId]
-									WHERE gm2.[PersonId] = @PersonId
-										AND gtr.[Guid] = '2639F9A5-2AAE-4E48-A8C3-4FFE86681E42' -- adult
-										AND gt.[Guid] = '790E3215-3B10-442B-AF69-616C0DCB998E' -- family
-									)
-		
-					AND gm.[PersonId] != @PersonId
-				ORDER BY p.[Gender])
+	RETURN (
+		SELECT 
+			TOP 1 S.[Id]
+		FROM 
+			[Group] F
+			INNER JOIN [GroupType] GT ON F.[GroupTypeId] = GT.[Id]
+			INNER JOIN [GroupMember] FM ON FM.[GroupId] = F.[Id]
+			INNER JOIN [Person] P ON P.[Id] = FM.[PersonId]
+			INNER JOIN [GroupTypeRole] R ON R.[Id] = FM.[GroupRoleId]
+			INNER JOIN [GroupMember] FM2 ON FM2.[GroupID] = F.[Id]
+			INNER JOIN [Person] S ON S.[Id] = FM2.[PersonId]
+			INNER JOIN [GroupTypeRole] R2 ON R2.[Id] = FM2.[GroupRoleId]
+		WHERE 
+			GT.[Guid] = '790E3215-3B10-442B-AF69-616C0DCB998E' -- Family
+			AND P.[Id] = @PersonID
+			AND R.[Guid] = '2639F9A5-2AAE-4E48-A8C3-4FFE86681E42' -- Person must be an Adult
+			AND R2.[Guid] = '2639F9A5-2AAE-4E48-A8C3-4FFE86681E42' -- Potential spouse must be an Adult
+			AND P.[MaritalStatusValueId] = 143 -- Person must be Married
+			AND S.[MaritalStatusValueId] = 143 -- Potential spouse must be Married
+			AND FM.[PersonId] != FM2.[PersonId] -- Cannot be married to yourself
+			-- In the future, we may need to implement and check a GLOBAL Attribute "BibleStrict" with this logic: 
+			AND (P.[Gender] != S.[Gender] OR P.[Gender] = 0 OR S.[Gender] = 0) -- Genders cannot match if both are known
+		ORDER BY 
+			ABS(DATEDIFF(DAY, ISNULL(P.[BirthDate], '1/1/0001'), ISNULL(S.[BirthDate], '1/1/0001'))) -- If multiple results, choose nearest in age
+			, S.[Id] -- Sort by Id so that the same result is always returned
+	)
 
 END

@@ -19,6 +19,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Data.Entity;
 using System.Data.Entity.ModelConfiguration;
 using System.Linq;
 using System.Runtime.Serialization;
@@ -355,6 +356,28 @@ namespace Rock.Model
             return typeof( ContentChannelItemIndex );
         }
 
+        /// <summary>
+        /// Gets the index filter values.
+        /// </summary>
+        /// <returns></returns>
+        public ModelFieldFilterConfig GetIndexFilterConfig()
+        {
+            ModelFieldFilterConfig filterConfig = new ModelFieldFilterConfig();
+            filterConfig.FilterValues = new ContentChannelService( new RockContext() ).Queryable().AsNoTracking().Where( c => c.IsIndexEnabled ).Select( c => c.Name ).ToList();
+            filterConfig.FilterLabel = "Content Channels";
+            filterConfig.FilterField = "contentChannel";
+
+            return filterConfig;
+        }
+
+        /// <summary>
+        /// Gets the index filter field.
+        /// </summary>
+        /// <returns></returns>
+        public bool SupportsIndexFieldFiltering()
+        {
+            return true;
+        }
         #endregion
 
         #region Methods
@@ -363,7 +386,7 @@ namespace Rock.Model
         /// </summary>
         /// <param name="dbContext">The database context.</param>
         /// <param name="state">The state.</param>
-        public override void PreSaveChanges( DbContext dbContext, System.Data.Entity.EntityState state )
+        public override void PreSaveChanges( Data.DbContext dbContext, System.Data.Entity.EntityState state )
         {
             if ( state == System.Data.Entity.EntityState.Deleted )
             {
