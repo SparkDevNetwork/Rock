@@ -224,8 +224,8 @@ function() {
             // Define Control: History Data View Picker
             var ddlDataView = new DataViewPicker();
             ddlDataView.ID = filterControl.GetChildControlInstanceName( _CtlDataView );
-            ddlDataView.Label = "Connected to Group Types";
-            ddlDataView.Help = "A Data View that provides the list of GroupTypes to which the Group may be connected.";
+            ddlDataView.Label = "Has a Group Type in this Data View";
+            ddlDataView.Help = "A Data View that provides the set of Group Types to match.";
 
             filterControl.Controls.Add( ddlDataView );
 
