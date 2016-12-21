@@ -251,9 +251,11 @@ function() {
                 }
 
                 GroupMemberService groupMemberService = new GroupMemberService( rockContext );
+                var groupTypeFamily = GroupTypeCache.GetFamilyGroupType();
+                int groupTypeFamilyId = groupTypeFamily != null ? groupTypeFamily.Id : 0;
 
                 var groupMemberServiceQry = groupMemberService.Queryable()
-                    .Where( xx => xx.Group.GroupType.Guid == new Guid( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY ) )
+                    .Where( xx => xx.Group.GroupTypeId == groupTypeFamilyId )
                     .Where( xx => xx.Group.CampusId.HasValue && campusIds.Contains( xx.Group.CampusId.Value ) );
 
                 var qry = new PersonService( rockContext ).Queryable()
