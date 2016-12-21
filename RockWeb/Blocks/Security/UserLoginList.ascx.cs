@@ -269,12 +269,12 @@ namespace RockWeb.Blocks.Security
                         // keep looking until we find the next available one 
                         int numericSuffix = 1;
                         string nextAvailableUserName = newUserName + numericSuffix.ToString();
-                        while (service.GetByUserName(nextAvailableUserName) != null)
+                        while ( service.GetByUserName( nextAvailableUserName ) != null )
                         {
                             numericSuffix++;
                             nextAvailableUserName = newUserName + numericSuffix.ToString();
                         }
-                        
+
                         nbErrorMessage.NotificationBoxType = NotificationBoxType.Warning;
                         nbErrorMessage.Title = "Invalid User Name";
                         nbErrorMessage.Text = "The User Name you selected already exists. Next available username: " + nextAvailableUserName;
@@ -559,6 +559,7 @@ namespace RockWeb.Blocks.Security
                     {
                         tbPassword.Enabled = true;
                         tbPasswordConfirm.Enabled = true;
+                        tbPassword.Focus();
 
                         if ( hfIdValue.Value == "0" )
                         {
