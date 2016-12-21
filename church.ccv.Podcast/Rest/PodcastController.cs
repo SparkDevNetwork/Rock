@@ -781,13 +781,19 @@ namespace chuch.ccv.Podcast.Rest
                         writer.WriteEndElement( );
 
                         // parse and setup the date range for the series
-                        string[] dateRanges = series.Attributes["DateRange"].Split( ',' );
-                        string startDate = DateTime.Parse( dateRanges[ 0 ] ).ToShortDateString( );
-                        string endDate = DateTime.Parse( dateRanges[ 1 ] ).ToShortDateString( );
+                        string dateRangeStr = string.Empty;
+                        series.Attributes.TryGetValue( "DateRange", out dateRangeStr );
 
-                        writer.WriteStartElement( "DateRanges" );
-                        writer.WriteValue( startDate + " - " + endDate );
-                        writer.WriteEndElement( );
+                        if( string.IsNullOrWhiteSpace( dateRangeStr ) == false )
+                        {
+                            string[] dateRanges = dateRangeStr.Split( ',' );
+                            string startDate = DateTime.Parse( dateRanges[ 0 ] ).ToShortDateString( );
+                            string endDate = DateTime.Parse( dateRanges[ 1 ] ).ToShortDateString( );
+
+                            writer.WriteStartElement( "DateRanges" );
+                            writer.WriteValue( startDate + " - " + endDate );
+                            writer.WriteEndElement( );
+                        }
 
                         // The images will be Guids with the GetImage path prefixed (we'll also fix the resolution since that what the mobile app expects)
                         writer.WriteStartElement( "BillboardUrl" );
