@@ -230,7 +230,7 @@ namespace RockWeb.Blocks.Finance
             var txnDetail = new FinancialTransactionDetail();
             txnDetail.LoadAttributes();
             phAccountAttributeEdits.Controls.Clear();
-            Helper.AddEditControls( txnDetail, phAccountAttributeEdits, true );
+            Helper.AddEditControls( txnDetail, phAccountAttributeEdits, true, mdAccount.ValidationGroup );
         }
 
         /// <summary>
@@ -1683,7 +1683,7 @@ namespace RockWeb.Blocks.Finance
             }
 
             phAccountAttributeEdits.Controls.Clear();
-            Helper.AddEditControls( txnDetail, phAccountAttributeEdits, true );
+            Helper.AddEditControls( txnDetail, phAccountAttributeEdits, true, mdAccount.ValidationGroup );
 
             ShowDialog( "ACCOUNT" );
 
