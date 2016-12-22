@@ -1162,12 +1162,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                                         if ( _isFamilyGroupType )
                                         {
                                             // Only change a person's record status if they were not previously deceased (#1887).
-                                            if ( recordStatusValueID > 0 &&
-                                                ( groupMember.Person.RecordStatusValueId != recordStatusInactiveId
-                                                || ( groupMember.Person.RecordStatusValueId == recordStatusInactiveId
-                                                    && groupMember.Person.RecordStatusReasonValueId != reasonStatusReasonDeceasedId 
-                                                    )
-                                                ) )
+                                            if ( recordStatusValueID > 0 && groupMember.Person.RecordStatusReasonValueId != reasonStatusReasonDeceasedId )
                                             {
                                                 History.EvaluateChange( demographicChanges, "Record Status", 
                                                 DefinedValueCache.GetName( groupMember.Person.RecordStatusValueId ), DefinedValueCache.GetName( recordStatusValueID ) );
