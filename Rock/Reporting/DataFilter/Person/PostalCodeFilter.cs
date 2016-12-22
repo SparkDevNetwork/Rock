@@ -174,7 +174,6 @@ function() {
         /// <param name="controls">The controls.</param>
         public override void RenderControls( Type entityType, FilterField filterControl, HtmlTextWriter writer, Control[] controls )
         {
-
             if ( controls.Count() >= 2 )
             {
                 RockDropDownList ddlCompare = controls[0] as RockDropDownList;
@@ -277,12 +276,27 @@ function() {
                     break;
             }
 
+            IQueryable<Rock.Model.Person> qry;
+
             var groupMemberQry = groupLocationQry.Select( gl => gl.Group )
                 .Where( g => g.GroupType.Guid == familyGroupTypeGuid )
                 .SelectMany( g => g.Members );
 
-            var qry = new PersonService( ( RockContext ) serviceInstance.Context ).Queryable()
-                .Where( p => groupMemberQry.Any( xx => xx.PersonId == p.Id ) );
+            //Families which do not have locations need to be added separately
+            if ( comparisonType == ComparisonType.IsBlank || comparisonType == ComparisonType.DoesNotContain )
+            {
+                var noLocationGroupMembersQry = new GroupService( ( RockContext ) serviceInstance.Context ).Queryable()
+                .Where( g => g.GroupType.Guid == familyGroupTypeGuid && !g.GroupLocations.Any() )
+                .SelectMany( g => g.Members );
+
+                qry = new PersonService( ( RockContext ) serviceInstance.Context ).Queryable()
+                    .Where( p => groupMemberQry.Any( xx => xx.PersonId == p.Id ) || noLocationGroupMembersQry.Any( xx => xx.PersonId == p.Id ) );
+            }
+            else
+            {
+                qry = new PersonService( ( RockContext ) serviceInstance.Context ).Queryable()
+                    .Where( p => groupMemberQry.Any( xx => xx.PersonId == p.Id ) );
+            }
 
             Expression extractedFilterExpression = FilterExpressionExtractor.Extract<Rock.Model.Person>( qry, parameterExpression, "p" );
 
