@@ -256,7 +256,7 @@ function() {
 
                 var groupMemberServiceQry = groupMemberService.Queryable()
                     .Where( xx => xx.Group.GroupTypeId == groupTypeFamilyId )
-                    .Where( xx => xx.Group.CampusId.HasValue && campusIds.Contains( xx.Group.CampusId.Value ) );
+                    .Where( xx => campusIds.Contains( xx.Group.CampusId ?? 0 ) );
 
                 var qry = new PersonService( rockContext ).Queryable()
                     .Where( p => groupMemberServiceQry.Any( xx => xx.PersonId == p.Id ) );
