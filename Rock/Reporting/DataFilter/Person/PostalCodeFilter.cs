@@ -282,8 +282,8 @@ function() {
                 .Where( g => g.GroupType.Guid == familyGroupTypeGuid )
                 .SelectMany( g => g.Members );
 
-            //Families which do not have locations need to be added separately
-            if ( comparisonType == ComparisonType.IsBlank || comparisonType == ComparisonType.DoesNotContain )
+            // Families which do not have locations need to be added separately
+            if ( comparisonType == ComparisonType.IsBlank || comparisonType == ComparisonType.DoesNotContain || comparisonType == ComparisonType.NotEqualTo )
             {
                 var noLocationGroupMembersQry = new GroupService( ( RockContext ) serviceInstance.Context ).Queryable()
                 .Where( g => g.GroupType.Guid == familyGroupTypeGuid && !g.GroupLocations.Any() )
