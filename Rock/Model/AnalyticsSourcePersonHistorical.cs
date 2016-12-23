@@ -287,6 +287,15 @@ namespace Rock.Model
         public int? BirthDateKey { get; set; }
 
         /// <summary>
+        /// Gets the Person's age.
+        /// </summary>
+        /// <value>
+        /// An <see cref="System.Int32"/> representing the person's age. Returns null if the birthdate or birthyear is not available.
+        /// </value>
+        [DataMember]
+        public int? Age { get; set; }
+
+        /// <summary>
         /// Gets or sets the gender of the Person. This property is required.
         /// </summary>
         /// <value>
@@ -422,79 +431,7 @@ namespace Rock.Model
         #endregion
         
         #region Virtual
-
-        /// <summary>
-        /// Gets or sets the marital status.
-        /// </summary>
-        /// <value>
-        /// The marital status.
-        /// </value>
-        [DataMember]
-        public virtual AnalyticsDimPersonMaritalStatus MaritalStatusValue { get; set; }
-
-        /// <summary>
-        /// Gets or sets the connection status.
-        /// </summary>
-        /// <value>
-        /// The connection status.
-        /// </value>
-        [DataMember]
-        public virtual AnalyticsDimPersonConnectionStatus ConnectionStatusValue { get; set; }
-
-        /// <summary>
-        /// Gets or sets the review reason.
-        /// </summary>
-        /// <value>
-        /// The review reason.
-        /// </value>
-        [DataMember]
-        public virtual AnalyticsDimPersonReviewReason ReviewReasonValue { get; set; }
-
-        /// <summary>
-        /// Gets or sets the record status.
-        /// </summary>
-        /// <value>
-        /// The record status.
-        /// </value>
-        [DataMember]
-        public virtual AnalyticsDimPersonRecordStatus RecordStatusValue { get; set; }
-
-        /// <summary>
-        /// Gets or sets the record status reason.
-        /// </summary>
-        /// <value>
-        /// The record status reason.
-        /// </value>
-        [DataMember]
-        public virtual AnalyticsDimPersonRecordStatusReason RecordStatusReasonValue { get; set; }
-
-        /// <summary>
-        /// Gets or sets the record type value.
-        /// </summary>
-        /// <value>
-        /// The record type value.
-        /// </value>
-        [DataMember]
-        public virtual AnalyticsDimPersonRecordType RecordTypeValue { get; set; }
-
-        /// <summary>
-        /// Gets or sets the suffix value.
-        /// </summary>
-        /// <value>
-        /// The suffix value.
-        /// </value>
-        [DataMember]
-        public virtual AnalyticsDimPersonSuffix SuffixValue { get; set; }
-
-        /// <summary>
-        /// Gets or sets the title value.
-        /// </summary>
-        /// <value>
-        /// The title value.
-        /// </value>
-        [DataMember]
-        public virtual AnalyticsDimPersonTitle TitleValue { get; set; }
-
+        
         /// <summary>
         /// Gets or sets the birth date dim.
         /// </summary>
@@ -504,15 +441,6 @@ namespace Rock.Model
         [DataMember]
         public virtual AnalyticsDimDate BirthDateDim { get; set; }
 
-        #endregion
-
-        #region IDynamicMetaObjectProvider
-        /* We don't necessarily need this for the BI project, but it would be useful to see what we could do
-        public DynamicMetaObject GetMetaObject( Expression parameter )
-        {
-            throw new NotImplementedException();
-        }
-        */
         #endregion
     }
 
@@ -528,16 +456,6 @@ namespace Rock.Model
         /// </summary>
         public AnalyticsDimPersonHistoricalConfiguration()
         {
-            // NOTE: When creating a migration for this, don't create the actual FK's in the database for any of these since they are views
-            this.HasOptional( t => t.MaritalStatusValue ).WithMany().HasForeignKey( t => t.MaritalStatusValueId ).WillCascadeOnDelete( false );
-            this.HasOptional( t => t.ConnectionStatusValue ).WithMany().HasForeignKey( t => t.ConnectionStatusValueId ).WillCascadeOnDelete( false );
-            this.HasOptional( t => t.ReviewReasonValue ).WithMany().HasForeignKey( t => t.ReviewReasonValueId ).WillCascadeOnDelete( false );
-            this.HasOptional( t => t.RecordStatusValue ).WithMany().HasForeignKey( t => t.RecordStatusValueId ).WillCascadeOnDelete( false );
-            this.HasOptional( t => t.RecordStatusReasonValue ).WithMany().HasForeignKey( t => t.RecordStatusReasonValueId ).WillCascadeOnDelete( false );
-            this.HasOptional( t => t.RecordTypeValue ).WithMany().HasForeignKey( t => t.RecordTypeValueId ).WillCascadeOnDelete( false );
-            this.HasOptional( t => t.SuffixValue ).WithMany().HasForeignKey( t => t.SuffixValueId ).WillCascadeOnDelete( false );
-            this.HasOptional( t => t.TitleValue ).WithMany().HasForeignKey( t => t.TitleValueId ).WillCascadeOnDelete( false );
-
             // NOTE: When creating a migration for this, don't create the actual FK's in the database for this just in case there are outlier birthdates 
             // and so that the AnalyticsDimDate can be rebuilt from scratch as needed
             this.HasOptional( t => t.BirthDateDim ).WithMany().HasForeignKey( t => t.BirthDateKey ).WillCascadeOnDelete( false );

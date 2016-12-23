@@ -97,13 +97,13 @@ namespace Rock.Model
         public string GroupName { get; set; }
 
         /// <summary>
-        /// Gets or sets the name of the group type.
+        /// Gets or sets the name of Area (which is GroupType.Name)
         /// </summary>
         /// <value>
         /// The name of the group type.
         /// </value>
         [DataMember]
-        public string GroupTypeName { get; set; }
+        public string AreaName { get; set; }
 
         /// <summary>
         /// Gets or sets the name of the device.
@@ -143,11 +143,7 @@ namespace Rock.Model
             this.HasRequired( t => t.AttendanceDate ).WithMany().HasForeignKey( t => t.AttendanceDateKey ).WillCascadeOnDelete( false );
 
             // NOTE: When creating a migration for this, don't create the actual FK's in the database for any of these since they are views
-            this.HasOptional( t => t.AttendanceType ).WithMany().HasForeignKey( t => t.AttendanceTypeId ).WillCascadeOnDelete( false );
-            this.HasOptional( t => t.Device ).WithMany().HasForeignKey( t => t.DeviceId ).WillCascadeOnDelete( false );
-            this.HasOptional( t => t.Group ).WithMany().HasForeignKey( t => t.GroupId ).WillCascadeOnDelete( false );
             this.HasOptional( t => t.Location ).WithMany().HasForeignKey( t => t.LocationId ).WillCascadeOnDelete( false );
-            this.HasOptional( t => t.Schedule ).WithMany().HasForeignKey( t => t.ScheduleId ).WillCascadeOnDelete( false );
         }
     }
 

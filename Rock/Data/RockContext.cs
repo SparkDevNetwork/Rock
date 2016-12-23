@@ -115,44 +115,12 @@ namespace Rock.Data
         #region Models
 
         /// <summary>
-        /// Gets or sets the analytics dim attendance attendance types.
-        /// </summary>
-        /// <value>
-        /// The analytics dim attendance attendance types.
-        /// </value>
-        public DbSet<AnalyticsDimAttendanceAttendanceType> AnalyticsDimAttendanceAttendanceTypes { get; set; }
-
-        /// <summary>
-        /// Gets or sets the analytics dim attendance devices.
-        /// </summary>
-        /// <value>
-        /// The analytics dim attendance devices.
-        /// </value>
-        public DbSet<AnalyticsDimAttendanceDevice> AnalyticsDimAttendanceDevices { get; set; }
-
-        /// <summary>
-        /// Gets or sets the analytics dim attendance groups.
-        /// </summary>
-        /// <value>
-        /// The analytics dim attendance groups.
-        /// </value>
-        public DbSet<AnalyticsDimAttendanceGroup> AnalyticsDimAttendanceGroups { get; set; }
-
-        /// <summary>
         /// Gets or sets the analytics dim attendance locations.
         /// </summary>
         /// <value>
         /// The analytics dim attendance locations.
         /// </value>
         public DbSet<AnalyticsDimAttendanceLocation> AnalyticsDimAttendanceLocations { get; set; }
-
-        /// <summary>
-        /// Gets or sets the analytics dim attendance schedules.
-        /// </summary>
-        /// <value>
-        /// The analytics dim attendance schedules.
-        /// </value>
-        public DbSet<AnalyticsDimAttendanceSchedule> AnalyticsDimAttendanceSchedules { get; set; }
         
         /// <summary>
         /// Gets or sets the analytics dim dates.
@@ -203,44 +171,12 @@ namespace Rock.Data
         public DbSet<AnalyticsDimFinancialBatch> AnalyticsDimFinancialBatches { get; set; }
 
         /// <summary>
-        /// Gets or sets the analytics dim financial transaction credit card types.
-        /// </summary>
-        /// <value>
-        /// The analytics dim financial transaction credit card types.
-        /// </value>
-        public DbSet<AnalyticsDimFinancialTransactionCreditCardType> AnalyticsDimFinancialTransactionCreditCardTypes { get; set; }
-
-        /// <summary>
-        /// Gets or sets the analytics dim financial transaction currency types.
-        /// </summary>
-        /// <value>
-        /// The analytics dim financial transaction currency types.
-        /// </value>
-        public DbSet<AnalyticsDimFinancialTransactionCurrencyType> AnalyticsDimFinancialTransactionCurrencyTypes { get; set; }
-
-        /// <summary>
-        /// Gets or sets the analytics dim financial transaction sources.
-        /// </summary>
-        /// <value>
-        /// The analytics dim financial transaction sources.
-        /// </value>
-        public DbSet<AnalyticsDimFinancialTransactionSource> AnalyticsDimFinancialTransactionSources { get; set; }
-
-        /// <summary>
         /// Gets or sets the analytics dim financial transaction types.
         /// </summary>
         /// <value>
         /// The analytics dim financial transaction types.
         /// </value>
         public DbSet<AnalyticsDimFinancialTransactionType> AnalyticsDimFinancialTransactionTypes { get; set; }
-        
-        /// <summary>
-        /// Gets or sets the analytics dim person connection statuses.
-        /// </summary>
-        /// <value>
-        /// The analytics dim person connection statuses.
-        /// </value>
-        public DbSet<AnalyticsDimPersonConnectionStatus> AnalyticsDimPersonConnectionStatuses { get; set; }
 
         /// <summary>
         /// Gets or sets the analytics dim person currents.
@@ -257,62 +193,6 @@ namespace Rock.Data
         /// The analytics dim person historicals.
         /// </value>
         public DbSet<AnalyticsDimPersonHistorical> AnalyticsDimPersonHistoricals { get; set; }
-
-        /// <summary>
-        /// Gets or sets the analytics dim person marital statuses.
-        /// </summary>
-        /// <value>
-        /// The analytics dim person marital statuses.
-        /// </value>
-        public DbSet<AnalyticsDimPersonMaritalStatus> AnalyticsDimPersonMaritalStatuses { get; set; }
-
-        /// <summary>
-        /// Gets or sets the analytics dim person record statuses.
-        /// </summary>
-        /// <value>
-        /// The analytics dim person record statuses.
-        /// </value>
-        public DbSet<AnalyticsDimPersonRecordStatus> AnalyticsDimPersonRecordStatuses { get; set; }
-
-        /// <summary>
-        /// Gets or sets the analytics dim person record status reasons.
-        /// </summary>
-        /// <value>
-        /// The analytics dim person record status reasons.
-        /// </value>
-        public DbSet<AnalyticsDimPersonRecordStatusReason> AnalyticsDimPersonRecordStatusReasons { get; set; }
-
-        /// <summary>
-        /// Gets or sets the analytics dim person record types.
-        /// </summary>
-        /// <value>
-        /// The analytics dim person record types.
-        /// </value>
-        public DbSet<AnalyticsDimPersonRecordType> AnalyticsDimPersonRecordTypes { get; set; }
-
-        /// <summary>
-        /// Gets or sets the analytics dim person review reasons.
-        /// </summary>
-        /// <value>
-        /// The analytics dim person review reasons.
-        /// </value>
-        public DbSet<AnalyticsDimPersonReviewReason> AnalyticsDimPersonReviewReasons { get; set; }
-
-        /// <summary>
-        /// Gets or sets the analytics dim person suffixes.
-        /// </summary>
-        /// <value>
-        /// The analytics dim person suffixes.
-        /// </value>
-        public DbSet<AnalyticsDimPersonSuffix> AnalyticsDimPersonSuffixes { get; set; }
-
-        /// <summary>
-        /// Gets or sets the analytics dim person titles.
-        /// </summary>
-        /// <value>
-        /// The analytics dim person titles.
-        /// </value>
-        public DbSet<AnalyticsDimPersonTitle> AnalyticsDimPersonTitles { get; set; }
 
         /// <summary>
         /// Gets or sets the analytics fact attendances.

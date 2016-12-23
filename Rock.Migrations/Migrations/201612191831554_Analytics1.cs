@@ -18,7 +18,7 @@ namespace Rock.Migrations
 {
     using System;
     using System.Data.Entity.Migrations;
-    
+
     /// <summary>
     ///
     /// </summary>
@@ -32,232 +32,214 @@ namespace Rock.Migrations
             CreateTable(
                 "dbo.AnalyticsDimDate",
                 c => new
-                    {
-                        DateKey = c.Int(nullable: false),
-                        Date = c.DateTime(nullable: false, storeType: "date"),
-                        FullDateDescription = c.String(),
-                        DayOfWeek = c.Int(nullable: false),
-                        DayOfWeekName = c.String(maxLength: 450),
-                        DayOfWeekAbbreviated = c.String(maxLength: 450),
-                        DayNumberInCalendarMonth = c.Int(nullable: false),
-                        DayNumberInCalendarYear = c.Int(nullable: false),
-                        DayNumberInFiscalMonth = c.Int(nullable: false),
-                        DayNumberInFiscalYear = c.Int(nullable: false),
-                        LastDayInMonthIndictor = c.Boolean(nullable: false),
-                        WeekNumberInMonth = c.Int(nullable: false),
-                        SundayDate = c.DateTime(nullable: false, storeType: "date"),
-                        GivingMonth = c.Int(nullable: false),
-                        GivingMonthName = c.String(maxLength: 450),
-                        CalendarWeek = c.Int(nullable: false),
-                        CalendarMonth = c.Int(nullable: false),
-                        CalendarMonthName = c.String(maxLength: 450),
-                        CalendarMonthNameAbbrevated = c.String(maxLength: 450),
-                        CalendarYearMonth = c.String(maxLength: 450),
-                        CalendarQuarter = c.String(maxLength: 450),
-                        CalendarYearQuarter = c.String(maxLength: 450),
-                        CalendarYear = c.Int(nullable: false),
-                        FiscalWeek = c.Int(nullable: false),
-                        FiscalWeekNumberInYear = c.Int(nullable: false),
-                        FiscalMonth = c.String(maxLength: 450),
-                        FiscalMonthAbbrevated = c.String(maxLength: 450),
-                        FiscalMonthNumberInYear = c.Int(nullable: false),
-                        FiscalMonthYear = c.String(maxLength: 450),
-                        FiscalQuarter = c.String(maxLength: 450),
-                        FiscalYearQuarter = c.String(maxLength: 450),
-                        FiscalHalfYear = c.String(maxLength: 450),
-                        FiscalYear = c.Int(nullable: false),
-                        HolidayIndicator = c.Boolean(nullable: false),
-                        WeekHolidayIndicator = c.Boolean(nullable: false),
-                        EasterIndicator = c.Boolean(nullable: false),
-                        EasterWeekIndicator = c.Boolean(nullable: false),
-                        ChristmasIndicator = c.Boolean(nullable: false),
-                        ChristmasWeekIndicator = c.Boolean(nullable: false),
-                    })
-                .PrimaryKey(t => t.DateKey)
-                .Index(t => t.Date, unique: true);
-            
+                {
+                    DateKey = c.Int( nullable: false ),
+                    Date = c.DateTime( nullable: false, storeType: "date" ),
+                    FullDateDescription = c.String(),
+                    DayOfWeek = c.Int( nullable: false ),
+                    DayOfWeekName = c.String( maxLength: 450 ),
+                    DayOfWeekAbbreviated = c.String( maxLength: 450 ),
+                    DayNumberInCalendarMonth = c.Int( nullable: false ),
+                    DayNumberInCalendarYear = c.Int( nullable: false ),
+                    DayNumberInFiscalMonth = c.Int( nullable: false ),
+                    DayNumberInFiscalYear = c.Int( nullable: false ),
+                    LastDayInMonthIndictor = c.Boolean( nullable: false ),
+                    WeekNumberInMonth = c.Int( nullable: false ),
+                    SundayDate = c.DateTime( nullable: false, storeType: "date" ),
+                    GivingMonth = c.Int( nullable: false ),
+                    GivingMonthName = c.String( maxLength: 450 ),
+                    CalendarWeek = c.Int( nullable: false ),
+                    CalendarMonth = c.Int( nullable: false ),
+                    CalendarMonthName = c.String( maxLength: 450 ),
+                    CalendarMonthNameAbbrevated = c.String( maxLength: 450 ),
+                    CalendarYearMonth = c.String( maxLength: 450 ),
+                    CalendarQuarter = c.String( maxLength: 450 ),
+                    CalendarYearQuarter = c.String( maxLength: 450 ),
+                    CalendarYear = c.Int( nullable: false ),
+                    FiscalWeek = c.Int( nullable: false ),
+                    FiscalWeekNumberInYear = c.Int( nullable: false ),
+                    FiscalMonth = c.String( maxLength: 450 ),
+                    FiscalMonthAbbrevated = c.String( maxLength: 450 ),
+                    FiscalMonthNumberInYear = c.Int( nullable: false ),
+                    FiscalMonthYear = c.String( maxLength: 450 ),
+                    FiscalQuarter = c.String( maxLength: 450 ),
+                    FiscalYearQuarter = c.String( maxLength: 450 ),
+                    FiscalHalfYear = c.String( maxLength: 450 ),
+                    FiscalYear = c.Int( nullable: false ),
+                    HolidayIndicator = c.Boolean( nullable: false ),
+                    WeekHolidayIndicator = c.Boolean( nullable: false ),
+                    EasterIndicator = c.Boolean( nullable: false ),
+                    EasterWeekIndicator = c.Boolean( nullable: false ),
+                    ChristmasIndicator = c.Boolean( nullable: false ),
+                    ChristmasWeekIndicator = c.Boolean( nullable: false ),
+                } )
+                .PrimaryKey( t => t.DateKey )
+                .Index( t => t.Date, unique: true );
+
             CreateTable(
                 "dbo.AnalyticsSourceAttendance",
                 c => new
-                    {
-                        Id = c.Int(nullable: false, identity: true),
-                        AttendanceId = c.Int(nullable: false),
-                        AttendanceDateKey = c.Int(nullable: false),
-                        AttendanceTypeId = c.Int(),
-                        DaysSinceLastAttendanceOfType = c.Int(),
-                        IsFirstAttendanceOfType = c.Boolean(nullable: false),
-                        Count = c.Int(nullable: false),
-                        PersonKey = c.Int(),
-                        CurrentPersonKey = c.Int(),
-                        LocationId = c.Int(),
-                        CampusId = c.Int(),
-                        ScheduleId = c.Int(),
-                        GroupId = c.Int(),
-                        PersonAliasId = c.Int(),
-                        DeviceId = c.Int(),
-                        SearchTypeName = c.String(),
-                        StartDateTime = c.DateTime(nullable: false),
-                        EndDateTime = c.DateTime(),
-                        RSVP = c.Int(nullable: false),
-                        DidAttend = c.Boolean(),
-                        Note = c.String(),
-                        SundayDate = c.DateTime(nullable: false, storeType: "date"),
-                        Guid = c.Guid(nullable: false),
-                        ForeignId = c.Int(),
-                        ForeignGuid = c.Guid(),
-                        ForeignKey = c.String(maxLength: 100),
-                    })
-                .PrimaryKey(t => t.Id)
-                .Index(t => t.AttendanceId, unique: true)
-                .Index(t => t.AttendanceDateKey)
-                .Index(t => t.AttendanceTypeId)
-                .Index(t => t.LocationId)
-                .Index(t => t.ScheduleId)
-                .Index(t => t.GroupId)
-                .Index(t => t.DeviceId)
-                .Index(t => t.StartDateTime)
-                .Index(t => t.Guid, unique: true);
-            
+                {
+                    Id = c.Int( nullable: false, identity: true ),
+                    AttendanceId = c.Int( nullable: false ),
+                    AttendanceDateKey = c.Int( nullable: false ),
+                    AttendanceTypeId = c.Int(),
+                    DaysSinceLastAttendanceOfType = c.Int(),
+                    IsFirstAttendanceOfType = c.Boolean( nullable: false ),
+                    Count = c.Int( nullable: false ),
+                    PersonKey = c.Int(),
+                    CurrentPersonKey = c.Int(),
+                    LocationId = c.Int(),
+                    CampusId = c.Int(),
+                    ScheduleId = c.Int(),
+                    GroupId = c.Int(),
+                    PersonAliasId = c.Int(),
+                    DeviceId = c.Int(),
+                    SearchTypeName = c.String(),
+                    StartDateTime = c.DateTime( nullable: false ),
+                    EndDateTime = c.DateTime(),
+                    RSVP = c.Int( nullable: false ),
+                    DidAttend = c.Boolean(),
+                    Note = c.String(),
+                    SundayDate = c.DateTime( nullable: false, storeType: "date" ),
+                    Guid = c.Guid( nullable: false ),
+                    ForeignId = c.Int(),
+                    ForeignGuid = c.Guid(),
+                    ForeignKey = c.String( maxLength: 100 ),
+                } )
+                .PrimaryKey( t => t.Id )
+                .Index( t => t.AttendanceId, unique: true )
+                .Index( t => t.AttendanceDateKey )
+                .Index( t => t.StartDateTime )
+                .Index( t => t.Guid, unique: true );
+
             CreateTable(
                 "dbo.AnalyticsSourceFamilyHistorical",
                 c => new
-                    {
-                        Id = c.Int(nullable: false, identity: true),
-                        GroupId = c.Int(nullable: false),
-                        CurrentRowIndicator = c.Boolean(nullable: false),
-                        EffectiveDate = c.DateTime(nullable: false, storeType: "date"),
-                        ExpireDate = c.DateTime(nullable: false, storeType: "date"),
-                        Name = c.String(maxLength: 100),
-                        FamilyTitle = c.String(maxLength: 250),
-                        CampusId = c.Int(),
-                        ConnectionStatus = c.String(maxLength: 250),
-                        IsFamilyActive = c.Boolean(nullable: false),
-                        AdultCount = c.Int(nullable: false),
-                        ChildCount = c.Int(nullable: false),
-                        HeadOfHouseholdPersonKey = c.Int(),
-                        IsEra = c.Boolean(nullable: false),
-                        MailingAddressLocationId = c.Int(),
-                        MappedAddressLocationId = c.Int(),
-                        Guid = c.Guid(nullable: false),
-                        ForeignId = c.Int(),
-                        ForeignGuid = c.Guid(),
-                        ForeignKey = c.String(maxLength: 100),
-                    })
-                .PrimaryKey(t => t.Id)
-                .Index(t => t.Guid, unique: true);
-            
+                {
+                    Id = c.Int( nullable: false, identity: true ),
+                    FamilyId = c.Int( nullable: false ),
+                    CurrentRowIndicator = c.Boolean( nullable: false ),
+                    EffectiveDate = c.DateTime( nullable: false, storeType: "date" ),
+                    ExpireDate = c.DateTime( nullable: false, storeType: "date" ),
+                    Name = c.String( maxLength: 100 ),
+                    FamilyTitle = c.String( maxLength: 250 ),
+                    CampusId = c.Int(),
+                    ConnectionStatus = c.String( maxLength: 250 ),
+                    IsFamilyActive = c.Boolean( nullable: false ),
+                    AdultCount = c.Int( nullable: false ),
+                    ChildCount = c.Int( nullable: false ),
+                    HeadOfHouseholdPersonKey = c.Int(),
+                    IsEra = c.Boolean( nullable: false ),
+                    MailingAddressLocationId = c.Int(),
+                    MappedAddressLocationId = c.Int(),
+                    Guid = c.Guid( nullable: false ),
+                    ForeignId = c.Int(),
+                    ForeignGuid = c.Guid(),
+                    ForeignKey = c.String( maxLength: 100 ),
+                } )
+                .PrimaryKey( t => t.Id )
+                .Index( t => t.Guid, unique: true );
+
             CreateTable(
                 "dbo.AnalyticsSourceFinancialTransaction",
                 c => new
-                    {
-                        Id = c.Int(nullable: false, identity: true),
-                        TransactionKey = c.String(maxLength: 40),
-                        TransactionDateKey = c.Int(nullable: false),
-                        AuthorizedPersonKey = c.Int(),
-                        AuthorizedCurrentPersonKey = c.Int(),
-                        DaysSinceLastTransactionOfType = c.Int(),
-                        IsFirstTransactionOfType = c.Boolean(nullable: false),
-                        AuthorizedFamilyId = c.Int(),
-                        IsScheduled = c.Boolean(nullable: false),
-                        GivingGroupId = c.Int(),
-                        GivingId = c.String(maxLength: 20),
-                        Count = c.Int(nullable: false),
-                        TransactionDateTime = c.DateTime(nullable: false),
-                        TransactionCode = c.String(maxLength: 50),
-                        Summary = c.String(),
-                        TransactionTypeValueId = c.Int(nullable: false),
-                        SourceTypeValueId = c.Int(),
-                        AuthorizedPersonAliasId = c.Int(),
-                        ProcessedByPersonAliasId = c.Int(),
-                        ProcessedDateTime = c.DateTime(),
-                        BatchId = c.Int(),
-                        FinancialGatewayId = c.Int(),
-                        EntityTypeId = c.Int(),
-                        EntityId = c.Int(),
-                        TransactionId = c.Int(nullable: false),
-                        TransactionDetailId = c.Int(nullable: false),
-                        AccountId = c.Int(nullable: false),
-                        CurrencyTypeValueId = c.Int(),
-                        CreditCardTypeValueId = c.Int(),
-                        Amount = c.Decimal(nullable: false, precision: 18, scale: 2),
-                        ModifiedDateTime = c.DateTime(),
-                        Guid = c.Guid(nullable: false),
-                        ForeignId = c.Int(),
-                        ForeignGuid = c.Guid(),
-                        ForeignKey = c.String(maxLength: 100),
-                    })
-                .PrimaryKey(t => t.Id)
-                .Index(t => t.TransactionKey, unique: true)
-                .Index(t => t.TransactionDateKey)
-                .Index(t => t.TransactionTypeValueId)
-                .Index(t => t.SourceTypeValueId)
-                .Index(t => t.BatchId)
-                .Index(t => t.AccountId)
-                .Index(t => t.CurrencyTypeValueId)
-                .Index(t => t.CreditCardTypeValueId)
-                .Index(t => t.Guid, unique: true);
-            
+                {
+                    Id = c.Int( nullable: false, identity: true ),
+                    TransactionKey = c.String( maxLength: 40 ),
+                    TransactionDateKey = c.Int( nullable: false ),
+                    AuthorizedPersonKey = c.Int(),
+                    AuthorizedCurrentPersonKey = c.Int(),
+                    DaysSinceLastTransactionOfType = c.Int(),
+                    IsFirstTransactionOfType = c.Boolean( nullable: false ),
+                    AuthorizedFamilyId = c.Int(),
+                    IsScheduled = c.Boolean( nullable: false ),
+                    GivingGroupId = c.Int(),
+                    GivingId = c.String( maxLength: 20 ),
+                    Count = c.Int( nullable: false ),
+                    TransactionDateTime = c.DateTime( nullable: false ),
+                    TransactionCode = c.String( maxLength: 50 ),
+                    Summary = c.String(),
+                    TransactionTypeValueId = c.Int( nullable: false ),
+                    SourceTypeValueId = c.Int(),
+                    AuthorizedPersonAliasId = c.Int(),
+                    ProcessedByPersonAliasId = c.Int(),
+                    ProcessedDateTime = c.DateTime(),
+                    BatchId = c.Int(),
+                    FinancialGatewayId = c.Int(),
+                    EntityTypeId = c.Int(),
+                    EntityId = c.Int(),
+                    TransactionId = c.Int( nullable: false ),
+                    TransactionDetailId = c.Int( nullable: false ),
+                    AccountId = c.Int( nullable: false ),
+                    CurrencyTypeValueId = c.Int(),
+                    CreditCardTypeValueId = c.Int(),
+                    Amount = c.Decimal( nullable: false, precision: 18, scale: 2 ),
+                    ModifiedDateTime = c.DateTime(),
+                    Guid = c.Guid( nullable: false ),
+                    ForeignId = c.Int(),
+                    ForeignGuid = c.Guid(),
+                    ForeignKey = c.String( maxLength: 100 ),
+                } )
+                .PrimaryKey( t => t.Id )
+                .Index( t => t.TransactionKey, unique: true )
+                .Index( t => t.TransactionDateKey )
+                .Index( t => t.Guid, unique: true );
+
             CreateTable(
-                "dbo.AnalyticsSourcePersonHistorical",
-                c => new
-                    {
-                        Id = c.Int(nullable: false, identity: true),
-                        PersonId = c.Int(nullable: false),
-                        CurrentRowIndicator = c.Boolean(nullable: false),
-                        EffectiveDate = c.DateTime(nullable: false, storeType: "date"),
-                        ExpireDate = c.DateTime(nullable: false, storeType: "date"),
-                        PrimaryFamilyId = c.Int(),
-                        RecordTypeValueId = c.Int(),
-                        RecordStatusValueId = c.Int(),
-                        RecordStatusLastModifiedDateTime = c.DateTime(),
-                        RecordStatusReasonValueId = c.Int(),
-                        ConnectionStatusValueId = c.Int(),
-                        ReviewReasonValueId = c.Int(),
-                        IsDeceased = c.Boolean(nullable: false),
-                        TitleValueId = c.Int(),
-                        FirstName = c.String(maxLength: 50),
-                        NickName = c.String(maxLength: 50),
-                        MiddleName = c.String(maxLength: 50),
-                        LastName = c.String(maxLength: 50),
-                        SuffixValueId = c.Int(),
-                        PhotoId = c.Int(),
-                        BirthDay = c.Int(),
-                        BirthMonth = c.Int(),
-                        BirthYear = c.Int(),
-                        BirthDateKey = c.Int(),
-                        Gender = c.Int(nullable: false),
-                        MaritalStatusValueId = c.Int(),
-                        AnniversaryDate = c.DateTime(storeType: "date"),
-                        GraduationYear = c.Int(),
-                        GivingGroupId = c.Int(),
-                        GivingId = c.String(),
-                        GivingLeaderId = c.Int(),
-                        Email = c.String(maxLength: 75),
-                        EmailPreference = c.Int(nullable: false),
-                        ReviewReasonNote = c.String(maxLength: 1000),
-                        InactiveReasonNote = c.String(maxLength: 1000),
-                        SystemNote = c.String(maxLength: 1000),
-                        ViewedCount = c.Int(),
-                        Guid = c.Guid(nullable: false),
-                        ForeignId = c.Int(),
-                        ForeignGuid = c.Guid(),
-                        ForeignKey = c.String(maxLength: 100),
-                    })
-                .PrimaryKey(t => t.Id)
-                .Index(t => t.RecordTypeValueId)
-                .Index(t => t.RecordStatusValueId)
-                .Index(t => t.RecordStatusReasonValueId)
-                .Index(t => t.ConnectionStatusValueId)
-                .Index(t => t.ReviewReasonValueId)
-                .Index(t => t.TitleValueId)
-                .Index(t => t.SuffixValueId)
-                .Index(t => t.BirthDateKey)
-                .Index(t => t.MaritalStatusValueId)
-                .Index(t => t.Guid, unique: true);
-            
-            AddColumn("dbo.Attribute", "IsAnalytic", c => c.Boolean(nullable: false));
-            AddColumn("dbo.Attribute", "IsAnalyticHistory", c => c.Boolean(nullable: false));
-            AddColumn("dbo.Metric", "EnableAnalytics", c => c.Boolean(nullable: false));
+               "dbo.AnalyticsSourcePersonHistorical",
+               c => new
+               {
+                   Id = c.Int( nullable: false, identity: true ),
+                   PersonId = c.Int( nullable: false ),
+                   CurrentRowIndicator = c.Boolean( nullable: false ),
+                   EffectiveDate = c.DateTime( nullable: false, storeType: "date" ),
+                   ExpireDate = c.DateTime( nullable: false, storeType: "date" ),
+                   PrimaryFamilyId = c.Int(),
+                   RecordTypeValueId = c.Int(),
+                   RecordStatusValueId = c.Int(),
+                   RecordStatusLastModifiedDateTime = c.DateTime(),
+                   RecordStatusReasonValueId = c.Int(),
+                   ConnectionStatusValueId = c.Int(),
+                   ReviewReasonValueId = c.Int(),
+                   IsDeceased = c.Boolean( nullable: false ),
+                   TitleValueId = c.Int(),
+                   FirstName = c.String( maxLength: 50 ),
+                   NickName = c.String( maxLength: 50 ),
+                   MiddleName = c.String( maxLength: 50 ),
+                   LastName = c.String( maxLength: 50 ),
+                   SuffixValueId = c.Int(),
+                   PhotoId = c.Int(),
+                   BirthDay = c.Int(),
+                   BirthMonth = c.Int(),
+                   BirthYear = c.Int(),
+                   BirthDateKey = c.Int(),
+                   Age = c.Int(),
+                   Gender = c.Int( nullable: false ),
+                   MaritalStatusValueId = c.Int(),
+                   AnniversaryDate = c.DateTime( storeType: "date" ),
+                   GraduationYear = c.Int(),
+                   GivingGroupId = c.Int(),
+                   GivingId = c.String(),
+                   GivingLeaderId = c.Int(),
+                   Email = c.String( maxLength: 75 ),
+                   EmailPreference = c.Int( nullable: false ),
+                   ReviewReasonNote = c.String( maxLength: 1000 ),
+                   InactiveReasonNote = c.String( maxLength: 1000 ),
+                   SystemNote = c.String( maxLength: 1000 ),
+                   ViewedCount = c.Int(),
+                   Guid = c.Guid( nullable: false ),
+                   ForeignId = c.Int(),
+                   ForeignGuid = c.Guid(),
+                   ForeignKey = c.String( maxLength: 100 ),
+               } )
+               .PrimaryKey( t => t.Id )
+               .Index( t => t.BirthDateKey )
+               .Index( t => t.Guid, unique: true );
+
+            AddColumn( "dbo.Attribute", "IsAnalytic", c => c.Boolean( nullable: false ) );
+            AddColumn( "dbo.Attribute", "IsAnalyticHistory", c => c.Boolean( nullable: false ) );
+            AddColumn( "dbo.Metric", "EnableAnalytics", c => c.Boolean( nullable: false ) );
 
             // this could take a minute or so on a large database
             Sql( @"
@@ -315,9 +297,9 @@ CREATE UNIQUE NONCLUSTERED  INDEX [IX_PersonIdCurrentRow] ON [dbo].[AnalyticsSou
 " );
 
             Sql( @"
-CREATE UNIQUE NONCLUSTERED INDEX [IX_GroupId_ExpireDate] ON [dbo].[AnalyticsSourceFamilyHistorical]
+CREATE UNIQUE NONCLUSTERED INDEX [IX_FamilyId_ExpireDate] ON [dbo].[AnalyticsSourceFamilyHistorical]
 (
-	[GroupId] ASC,
+	[FamilyId] ASC,
 	[ExpireDate] ASC
 )
 INCLUDE ( [Id]) 
@@ -327,34 +309,18 @@ INCLUDE ( [Id])
             // Enforce that there isn't more than one CurrentRow per Family
             // Notice the cool 'where CurrentRowIndicator = 1' filter, Woohooo!
             Sql( @"
-CREATE UNIQUE NONCLUSTERED  INDEX [IX_GroupIdCurrentRow] ON [dbo].[AnalyticsSourceFamilyHistorical]
+CREATE UNIQUE NONCLUSTERED  INDEX [IX_FamilyIdCurrentRow] ON [dbo].[AnalyticsSourceFamilyHistorical]
 (
-	[GroupId] ASC,
+	[FamilyId] ASC,
 	[CurrentRowIndicator]
 ) where CurrentRowIndicator = 1 
 " );
 
             // NOTE: Some of these have dependancies on others, so order is important!
-            Sql( MigrationSQL._201612191831554_Analytics1_AnalyticsDimAttendanceAttendanceType );
-            Sql( MigrationSQL._201612191831554_Analytics1_AnalyticsDimAttendanceDevice );
-            Sql( MigrationSQL._201612191831554_Analytics1_AnalyticsDimAttendanceGroup );
             Sql( MigrationSQL._201612191831554_Analytics1_AnalyticsDimAttendanceLocation );
-            Sql( MigrationSQL._201612191831554_Analytics1_AnalyticsDimAttendanceSchedule );
             Sql( MigrationSQL._201612191831554_Analytics1_AnalyticsDimFinancialAccount );
             Sql( MigrationSQL._201612191831554_Analytics1_AnalyticsDimFinancialBatch );
-            Sql( MigrationSQL._201612191831554_Analytics1_AnalyticsDimFinancialTransactionCreditCardType );
-            Sql( MigrationSQL._201612191831554_Analytics1_AnalyticsDimFinancialTransactionCurrencyType );
-            Sql( MigrationSQL._201612191831554_Analytics1_AnalyticsDimFinancialTransactionSource );
             Sql( MigrationSQL._201612191831554_Analytics1_AnalyticsDimFinancialTransactionType );
-            Sql( MigrationSQL._201612191831554_Analytics1_AnalyticsDimPersonConnectionStatus );
-
-            Sql( MigrationSQL._201612191831554_Analytics1_AnalyticsDimPersonMaritalStatus );
-            Sql( MigrationSQL._201612191831554_Analytics1_AnalyticsDimPersonRecordStatus );
-            Sql( MigrationSQL._201612191831554_Analytics1_AnalyticsDimPersonRecordStatusReason );
-            Sql( MigrationSQL._201612191831554_Analytics1_AnalyticsDimPersonRecordType );
-            Sql( MigrationSQL._201612191831554_Analytics1_AnalyticsDimPersonReviewReason );
-            Sql( MigrationSQL._201612191831554_Analytics1_AnalyticsDimPersonSuffix );
-            Sql( MigrationSQL._201612191831554_Analytics1_AnalyticsDimPersonTitle );
 
             Sql( MigrationSQL._201612191831554_Analytics1_AnalyticsDimFamilyHistorical );
             Sql( MigrationSQL._201612191831554_Analytics1_AnalyticsDimFamilyCurrent );
@@ -462,7 +428,7 @@ INSERT INTO [dbo].[ServiceJob]
             RockMigrationHelper.AddPage( "0B213645-FA4E-44A5-8E4C-B2D8EF054985", "D65F783D-87A9-4CC9-8110-E83466A0EADB", "Calendar Dimension Settings", "", "2660D554-D161-44A1-9763-A73C60559B50", "fa fa-calendar" ); // Site:Rock RMS
 
             RockMigrationHelper.UpdateBlockType( "Calendar Dimension Settings", "Helps configure and generate the AnalyticsDimDate table for BI Analytics", "~/Blocks/Reporting/CalendarDimensionSettings.ascx", "Reporting", "7711EAE9-5CF0-46E4-A4E6-26C05A71FE43" );
-            
+
             // Add Block to Page: Calendar Dimension Settings, Site: Rock RMS
             RockMigrationHelper.AddBlock( "2660D554-D161-44A1-9763-A73C60559B50", "", "7711EAE9-5CF0-46E4-A4E6-26C05A71FE43", "Calendar Dimension Settings", "Main", "", "", 0, "18F256EF-8888-4009-814B-B85F36FABE31" );
 
@@ -508,30 +474,15 @@ INSERT INTO [dbo].[ServiceJob]
 
 
             Sql( @"
-DROP VIEW AnalyticsDimAttendanceAttendanceType;
-DROP VIEW AnalyticsDimAttendanceDevice;
-DROP VIEW AnalyticsDimAttendanceGroup;
 DROP VIEW AnalyticsDimAttendanceLocation;
-DROP VIEW AnalyticsDimAttendanceSchedule;
 DROP VIEW AnalyticsDimFamilyCurrent;
 DROP VIEW AnalyticsDimFamilyHeadOfHousehold;
 DROP VIEW AnalyticsDimFamilyHistorical;
 DROP VIEW AnalyticsDimFinancialAccount;
 DROP VIEW AnalyticsDimFinancialBatch;
-DROP VIEW AnalyticsDimFinancialTransactionCreditCardType;
-DROP VIEW AnalyticsDimFinancialTransactionCurrencyType;
-DROP VIEW AnalyticsDimFinancialTransactionSource;
 DROP VIEW AnalyticsDimFinancialTransactionType;
-DROP VIEW AnalyticsDimPersonConnectionStatus;
 DROP VIEW AnalyticsDimPersonCurrent;
 DROP VIEW AnalyticsDimPersonHistorical;
-DROP VIEW AnalyticsDimPersonMaritalStatus;
-DROP VIEW AnalyticsDimPersonRecordStatus;
-DROP VIEW AnalyticsDimPersonRecordStatusReason;
-DROP VIEW AnalyticsDimPersonRecordType;
-DROP VIEW AnalyticsDimPersonReviewReason;
-DROP VIEW AnalyticsDimPersonSuffix;
-DROP VIEW AnalyticsDimPersonTitle;
 DROP VIEW AnalyticsFactAttendance;
 DROP VIEW AnalyticsFactFinancialTransaction;
 DROP PROCEDURE spAnalytics_ETL_Attendance;
@@ -539,53 +490,39 @@ DROP PROCEDURE spAnalytics_ETL_Family;
 DROP PROCEDURE spAnalytics_ETL_FinancialTransaction;
 " );
 
-            DropIndex("dbo.AnalyticsSourcePersonHistorical", new[] { "Guid" });
-            DropIndex("dbo.AnalyticsSourcePersonHistorical", new[] { "MaritalStatusValueId" });
-            DropIndex("dbo.AnalyticsSourcePersonHistorical", new[] { "BirthDateKey" });
-            DropIndex("dbo.AnalyticsSourcePersonHistorical", new[] { "SuffixValueId" });
-            DropIndex("dbo.AnalyticsSourcePersonHistorical", new[] { "TitleValueId" });
-            DropIndex("dbo.AnalyticsSourcePersonHistorical", new[] { "ReviewReasonValueId" });
-            DropIndex("dbo.AnalyticsSourcePersonHistorical", new[] { "ConnectionStatusValueId" });
-            DropIndex("dbo.AnalyticsSourcePersonHistorical", new[] { "RecordStatusReasonValueId" });
-            DropIndex("dbo.AnalyticsSourcePersonHistorical", new[] { "RecordStatusValueId" });
-            DropIndex("dbo.AnalyticsSourcePersonHistorical", new[] { "RecordTypeValueId" });
+            DropIndex( "dbo.AnalyticsSourcePersonHistorical", new[] { "Guid" } );
+            DropIndex( "dbo.AnalyticsSourcePersonHistorical", new[] { "BirthDateKey" } );
 
-            DropIndex("dbo.AnalyticsSourceFinancialTransaction", new[] { "Guid" });
-            DropIndex("dbo.AnalyticsSourceFinancialTransaction", new[] { "CreditCardTypeValueId" });
-            DropIndex("dbo.AnalyticsSourceFinancialTransaction", new[] { "CurrencyTypeValueId" });
-            DropIndex("dbo.AnalyticsSourceFinancialTransaction", new[] { "AccountId" });
-            DropIndex("dbo.AnalyticsSourceFinancialTransaction", new[] { "BatchId" });
-            DropIndex("dbo.AnalyticsSourceFinancialTransaction", new[] { "SourceTypeValueId" });
-            DropIndex("dbo.AnalyticsSourceFinancialTransaction", new[] { "TransactionTypeValueId" });
-            DropIndex("dbo.AnalyticsSourceFinancialTransaction", new[] { "TransactionDateKey" });
-            DropIndex("dbo.AnalyticsSourceFinancialTransaction", new[] { "TransactionKey" });
+            DropIndex( "dbo.AnalyticsSourceFinancialTransaction", new[] { "Guid" } );
 
-            DropIndex("dbo.AnalyticsSourceFamilyHistorical", new[] { "Guid" });
+            DropIndex( "dbo.AnalyticsSourceFinancialTransaction", new[] { "AccountId" } );
+            DropIndex( "dbo.AnalyticsSourceFinancialTransaction", new[] { "BatchId" } );
+            DropIndex( "dbo.AnalyticsSourceFinancialTransaction", new[] { "TransactionTypeValueId" } );
+            DropIndex( "dbo.AnalyticsSourceFinancialTransaction", new[] { "TransactionDateKey" } );
+            DropIndex( "dbo.AnalyticsSourceFinancialTransaction", new[] { "TransactionKey" } );
 
-            DropIndex("dbo.AnalyticsSourceAttendance", new[] { "Guid" });
-            DropIndex("dbo.AnalyticsSourceAttendance", new[] { "StartDateTime" });
-            DropIndex("dbo.AnalyticsSourceAttendance", new[] { "DeviceId" });
-            DropIndex("dbo.AnalyticsSourceAttendance", new[] { "GroupId" });
-            DropIndex("dbo.AnalyticsSourceAttendance", new[] { "ScheduleId" });
-            DropIndex("dbo.AnalyticsSourceAttendance", new[] { "LocationId" });
-            DropIndex("dbo.AnalyticsSourceAttendance", new[] { "AttendanceTypeId" });
-            DropIndex("dbo.AnalyticsSourceAttendance", new[] { "AttendanceDateKey" });
-            DropIndex("dbo.AnalyticsSourceAttendance", new[] { "AttendanceId" });
-            
-            DropIndex("dbo.AnalyticsDimDate", new[] { "Date" });
+            DropIndex( "dbo.AnalyticsSourceFamilyHistorical", new[] { "Guid" } );
 
-            DropColumn("dbo.Metric", "EnableAnalytics");
+            DropIndex( "dbo.AnalyticsSourceAttendance", new[] { "Guid" } );
+            DropIndex( "dbo.AnalyticsSourceAttendance", new[] { "StartDateTime" } );
+            DropIndex( "dbo.AnalyticsSourceAttendance", new[] { "LocationId" } );
+            DropIndex( "dbo.AnalyticsSourceAttendance", new[] { "AttendanceDateKey" } );
+            DropIndex( "dbo.AnalyticsSourceAttendance", new[] { "AttendanceId" } );
+
+            DropIndex( "dbo.AnalyticsDimDate", new[] { "Date" } );
+
+            DropColumn( "dbo.Metric", "EnableAnalytics" );
 
             DropIndex( "dbo.AttributeValue", "IX_ValueAsBoolean" );
-            DropColumn("dbo.AttributeValue", "ValueAsBoolean");
-            DropColumn("dbo.Attribute", "IsAnalyticHistory");
-            DropColumn("dbo.Attribute", "IsAnalytic");
+            DropColumn( "dbo.AttributeValue", "ValueAsBoolean" );
+            DropColumn( "dbo.Attribute", "IsAnalyticHistory" );
+            DropColumn( "dbo.Attribute", "IsAnalytic" );
 
-            DropTable("dbo.AnalyticsSourcePersonHistorical");
-            DropTable("dbo.AnalyticsSourceFinancialTransaction");
-            DropTable("dbo.AnalyticsSourceFamilyHistorical");
-            DropTable("dbo.AnalyticsSourceAttendance");
-            DropTable("dbo.AnalyticsDimDate");
+            DropTable( "dbo.AnalyticsSourcePersonHistorical" );
+            DropTable( "dbo.AnalyticsSourceFinancialTransaction" );
+            DropTable( "dbo.AnalyticsSourceFamilyHistorical" );
+            DropTable( "dbo.AnalyticsSourceAttendance" );
+            DropTable( "dbo.AnalyticsDimDate" );
         }
     }
 }

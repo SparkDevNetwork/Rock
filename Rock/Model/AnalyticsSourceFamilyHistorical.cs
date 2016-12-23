@@ -44,13 +44,13 @@ namespace Rock.Model
         #region Entity Properties specific to Analytics
 
         /// <summary>
-        /// Gets or sets the group identifier (the live [Group] record of GroupTypeFamily that represents the family)
+        /// Gets or sets the FamilyId (which is really a GroupId)  (the live [Group] record of GroupTypeFamily that represents the family)
         /// </summary>
         /// <value>
         /// The group identifier.
         /// </value>
         [DataMember]
-        public int GroupId { get; set; }
+        public int FamilyId { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether [current row indicator].
