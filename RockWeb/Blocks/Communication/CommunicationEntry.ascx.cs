@@ -90,7 +90,14 @@ namespace RockWeb.Blocks.Communication
 
         #region Events
 
-        // handlers called by the controls on your block
+        #region Recipient Selection Events
+        protected void lbRecipientSelectionNext_Click( object sender, EventArgs e )
+        {
+            pnlRecipientSelection.Visible = false;
+            pnlEmailEditor.Visible = true;
+        }
+        #endregion
+
 
         /// <summary>
         /// Handles the BlockUpdated event of the control.
@@ -101,7 +108,6 @@ namespace RockWeb.Blocks.Communication
         {
 
         }
-
         #endregion
 
         #region Methods
@@ -109,5 +115,6 @@ namespace RockWeb.Blocks.Communication
         // helper functional methods (like BindGrid(), etc.)
 
         #endregion
+
     }
 }
