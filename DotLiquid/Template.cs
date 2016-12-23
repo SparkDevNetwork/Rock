@@ -305,10 +305,10 @@ namespace DotLiquid
 				return new List<string>();
 
 			// Trim leading whitespace.
-			source = Regex.Replace(source, string.Format(@"([ \t]+)?({0}|{1})-", Liquid.VariableStart, Liquid.TagStart), "$2");
+			source = Regex.Replace(source, string.Format(@"([ \t]+)?({0}|{1}|{2})-", Liquid.VariableStart, Liquid.TagStart, Liquid.ShortCodeStart), "$2");
 
 			// Trim trailing whitespace.
-			source = Regex.Replace(source, string.Format(@"-({0}|{1})(\n|\r\n|[ \t]+)?", Liquid.VariableEnd, Liquid.TagEnd), "$1");
+			source = Regex.Replace(source, string.Format(@"-({0}|{1}|{2})(\n|\r\n|[ \t]+)?", Liquid.VariableEnd, Liquid.TagEnd, Liquid.ShortCodeEnd), "$1");
 
 			List<string> tokens = Regex.Split(source, Liquid.TemplateParser).ToList();
 
