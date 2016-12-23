@@ -76,7 +76,7 @@ namespace Rock.Model
         /// The order.
         /// </value>
         [DataMember( IsRequired = true )]
-        public int Order { get; set; }
+        public int TransactionTypeOrder { get; set; }
 
         #endregion
     }

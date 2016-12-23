@@ -415,20 +415,8 @@
   <data name="_201612121647292_HotFixesFrom6_1" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>201612121647292_hotfixesfrom6_1.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-16</value>
   </data>
-  <data name="_201612191831554_Analytics1_AnalyticsDimAttendanceAttendanceType" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>201612191831554_analytics1_analyticsdimattendanceattendancetype.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
-  </data>
-  <data name="_201612191831554_Analytics1_AnalyticsDimAttendanceDevice" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>201612191831554_analytics1_analyticsdimattendancedevice.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
-  </data>
-  <data name="_201612191831554_Analytics1_AnalyticsDimAttendanceGroup" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>201612191831554_analytics1_analyticsdimattendancegroup.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
-  </data>
   <data name="_201612191831554_Analytics1_AnalyticsDimAttendanceLocation" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>201612191831554_analytics1_analyticsdimattendancelocation.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
-  </data>
-  <data name="_201612191831554_Analytics1_AnalyticsDimAttendanceSchedule" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>201612191831554_analytics1_analyticsdimattendanceschedule.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
   </data>
   <data name="_201612191831554_Analytics1_AnalyticsDimFamilyCurrent" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>201612191831554_analytics1_analyticsdimfamilycurrent.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-16</value>
@@ -445,47 +433,14 @@
   <data name="_201612191831554_Analytics1_AnalyticsDimFinancialBatch" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>201612191831554_analytics1_analyticsdimfinancialbatch.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
   </data>
-  <data name="_201612191831554_Analytics1_AnalyticsDimFinancialTransactionCreditCardType" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>201612191831554_analytics1_analyticsdimfinancialtransactioncreditcardtype.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
-  </data>
-  <data name="_201612191831554_Analytics1_AnalyticsDimFinancialTransactionCurrencyType" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>201612191831554_analytics1_analyticsdimfinancialtransactioncurrencytype.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
-  </data>
-  <data name="_201612191831554_Analytics1_AnalyticsDimFinancialTransactionSource" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>201612191831554_analytics1_analyticsdimfinancialtransactionsource.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
-  </data>
   <data name="_201612191831554_Analytics1_AnalyticsDimFinancialTransactionType" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>201612191831554_analytics1_analyticsdimfinancialtransactiontype.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
-  </data>
-  <data name="_201612191831554_Analytics1_AnalyticsDimPersonConnectionStatus" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>201612191831554_analytics1_analyticsdimpersonconnectionstatus.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
   </data>
   <data name="_201612191831554_Analytics1_AnalyticsDimPersonCurrent" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>201612191831554_analytics1_analyticsdimpersoncurrent.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-16</value>
   </data>
   <data name="_201612191831554_Analytics1_AnalyticsDimPersonHistorical" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>201612191831554_analytics1_analyticsdimpersonhistorical.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-16</value>
-  </data>
-  <data name="_201612191831554_Analytics1_AnalyticsDimPersonMaritalStatus" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>201612191831554_analytics1_analyticsdimpersonmaritalstatus.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
-  </data>
-  <data name="_201612191831554_Analytics1_AnalyticsDimPersonRecordStatus" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>201612191831554_analytics1_analyticsdimpersonrecordstatus.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
-  </data>
-  <data name="_201612191831554_Analytics1_AnalyticsDimPersonRecordStatusReason" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>201612191831554_analytics1_analyticsdimpersonrecordstatusreason.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
-  </data>
-  <data name="_201612191831554_Analytics1_AnalyticsDimPersonRecordType" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>201612191831554_analytics1_analyticsdimpersonrecordtype.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
-  </data>
-  <data name="_201612191831554_Analytics1_AnalyticsDimPersonReviewReason" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>201612191831554_analytics1_analyticsdimpersonreviewreason.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
-  </data>
-  <data name="_201612191831554_Analytics1_AnalyticsDimPersonSuffix" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>201612191831554_analytics1_analyticsdimpersonsuffix.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
-  </data>
-  <data name="_201612191831554_Analytics1_AnalyticsDimPersonTitle" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>201612191831554_analytics1_analyticsdimpersontitle.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
   </data>
   <data name="_201612191831554_Analytics1_AnalyticsFactAttendance" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>201612191831554_analytics1_analyticsfactattendance.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-16</value>

@@ -232,16 +232,6 @@ namespace Rock.Model
         public bool? DidAttend { get; set; }
 
         /// <summary>
-        /// Gets or sets the did not occur.
-        /// TODO: Make sure to include DidNotOccur Records in the Analytics table
-        /// </summary>
-        /// <value>
-        /// The did not occur.
-        /// </value>
-        //[DataMember]
-        //public bool? DidNotOccur { get; set; }
-
-        /// <summary>
         /// Gets or sets the note.
         /// </summary>
         /// <value>
@@ -272,34 +262,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public virtual AnalyticsDimDate AttendanceDate { get; set; }
-
-        /// <summary>
-        /// Gets or sets the type of the attendance.
-        /// </summary>
-        /// <value>
-        /// The type of the attendance.
-        /// </value>
-        [DataMember]
-        public virtual AnalyticsDimAttendanceAttendanceType AttendanceType { get; set; }
-
-        /// <summary>
-        /// Gets or sets the device.
-        /// </summary>
-        /// <value>
-        /// The device.
-        /// </value>
-        [DataMember]
-        public virtual AnalyticsDimAttendanceDevice Device { get; set; }
-
-        /// <summary>
-        /// Gets or sets the group.
-        /// </summary>
-        /// <value>
-        /// The group.
-        /// </value>
-        [DataMember]
-        public virtual AnalyticsDimAttendanceGroup Group { get; set; }
-
+        
         /// <summary>
         /// Gets or sets the location.
         /// </summary>
@@ -308,15 +271,6 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public virtual AnalyticsDimAttendanceLocation Location { get; set; }
-
-        /// <summary>
-        /// Gets or sets the schedule.
-        /// </summary>
-        /// <value>
-        /// The schedule.
-        /// </value>
-        [DataMember]
-        public virtual AnalyticsDimAttendanceSchedule Schedule { get; set; }
 
         #endregion
     }
@@ -338,11 +292,7 @@ namespace Rock.Model
             this.HasRequired( t => t.AttendanceDate ).WithMany().HasForeignKey( t => t.AttendanceDateKey ).WillCascadeOnDelete( false );
 
             // NOTE: When creating a migration for this, don't create the actual FK's in the database for any of these since they are views
-            this.HasOptional( t => t.AttendanceType ).WithMany().HasForeignKey( t => t.AttendanceTypeId ).WillCascadeOnDelete( false );
-            this.HasOptional( t => t.Device ).WithMany().HasForeignKey( t => t.DeviceId ).WillCascadeOnDelete( false );
-            this.HasOptional( t => t.Group ).WithMany().HasForeignKey( t => t.GroupId ).WillCascadeOnDelete( false );
             this.HasOptional( t => t.Location ).WithMany().HasForeignKey( t => t.LocationId ).WillCascadeOnDelete( false );
-            this.HasOptional( t => t.Schedule ).WithMany().HasForeignKey( t => t.ScheduleId ).WillCascadeOnDelete( false );
         }
     }
 
