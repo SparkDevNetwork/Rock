@@ -15,7 +15,10 @@ namespace DotLiquid
 
 		internal static readonly Regex FullToken = new Regex(string.Format(@"^{0}\s*(\w+)\s*(.*)?{1}$", Liquid.TagStart, Liquid.TagEnd));
 
-		protected override void Parse(List<string> tokens)
+        internal static readonly Regex IsShortCode = new Regex( string.Format( @"^{0}", Liquid.ShortCodeStart ) );
+        internal static readonly Regex FullShortCodeToken = new Regex( string.Format( @"^{0}\s*(\w+)\s*(.*)?{1}$", Liquid.ShortCodeStart, Liquid.ShortCodeEnd ) );
+
+        protected override void Parse(List<string> tokens)
 		{
 			NodeList = NodeList ?? new List<object>();
 			NodeList.Clear();
@@ -24,6 +27,8 @@ namespace DotLiquid
 			while ((token = tokens.Shift()) != null)
 			{
 				Match isTagMatch = IsTag.Match(token);
+                Match isShortCodeMatch = IsShortCode.Match( token );
+
 				if (isTagMatch.Success)
 				{
 					Match fullTokenMatch = FullToken.Match(token);
@@ -60,6 +65,18 @@ namespace DotLiquid
 						throw new SyntaxException(Liquid.ResourceManager.GetString("BlockTagNotTerminatedException"), token, Liquid.TagEnd);
 					}
 				}
+                else if ( isShortCodeMatch.Success )
+                {
+                    Match fullShortCodeMatch = FullShortCodeToken.Match( token );
+                    if ( fullShortCodeMatch.Success )
+                    {
+                        var shortcode = fullShortCodeMatch.Groups[1].Value;
+                    }
+                    else
+                    {
+                        throw new SyntaxException( Liquid.ResourceManager.GetString( "BlockTagNotTerminatedException" ), token, Liquid.TagEnd );
+                    }
+                }
 				else if (IsVariable.Match(token).Success)
 				{
 					NodeList.Add(CreateVariable(token));
