@@ -7,7 +7,6 @@ IF EXISTS (
     DROP PROCEDURE [dbo].spAnalytics_ETL_Family
 GO
 
--- truncate table [AnalyticsSourceFamilyHistorical]
 -- EXECUTE [dbo].[spAnalytics_ETL_Family] 
 CREATE PROCEDURE [dbo].spAnalytics_ETL_Family
 AS
@@ -162,6 +161,32 @@ BEGIN
     WHERE g.GroupTypeId = @GroupTypeFamilyId
     ORDER BY g.Id
 
+	-- Mark Rows as History if any of the important field values change
+	UPDATE fh
+    SET  CurrentRowIndicator = 0,
+        [ExpireDate] = @EtlDate
+    FROM AnalyticsSourceFamilyHistorical fh
+    JOIN #AnalyticsSourceFamily t ON t.GroupId = fh.GroupId
+        AND fh.CurrentRowIndicator = 1
+    WHERE 
+        fh.[FamilyTitle] != t.FamilyTitle
+        OR fh.[CampusId] != t.CampusId
+        OR fh.[ConnectionStatus] != t.ConnectionStatus
+        OR fh.[IsFamilyActive] != t.IsFamilyActive
+        OR fh.[AdultCount] != t.AdultCount
+        OR fh.[ChildCount] != t.ChildCount
+        OR fh.[HeadOfHouseholdPersonKey] != t.HeadOfHouseholdPersonKey
+        OR fh.[IsEra] != t.IsEra
+        OR fh.[MailingAddressLocationId] != t.MailingAddressLocationId
+        OR fh.[MappedAddressLocationId] != t.MappedAddressLocationId
+AND fh.GroupId NOT IN ( -- Ensure that there isn't already a History Record for the current EtlDate 
+    SELECT GroupId
+    FROM AnalyticsSourceFamilyHistorical x
+    WHERE CurrentRowIndicator = 0
+        AND [ExpireDate] = @EtlDate
+    )
+	
+	-- Insert Families that don't have a "CurrentRowIndicator" Row yet (either it was marked as history, or they are a new family)
     INSERT INTO AnalyticsSourceFamilyHistorical (
         [GroupId]
         ,[CurrentRowIndicator]
