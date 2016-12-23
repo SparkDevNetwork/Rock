@@ -1,6 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <views>
-  <mapping-views hash="934410533b1f839f20df56624b949c51edd69dadcb6391d5e5e183f1ee088331" conceptual-container="RockContext" store-container="CodeFirstDatabase">
+  <mapping-views hash="41eff1a9c59b99993b9cae93caab61f076c0bd71211bf2afd5c9f28edeba3642" conceptual-container="RockContext" store-container="CodeFirstDatabase">
     <view extent="CodeFirstDatabase.AttendanceCode"><![CDATA[
     SELECT VALUE -- Constructing AttendanceCode
         [CodeFirstDatabaseSchema.AttendanceCode](T1.AttendanceCode_Id, T1.AttendanceCode_IssueDateTime, T1.AttendanceCode_Code, T1.AttendanceCode_Guid, T1.AttendanceCode_ForeignId, T1.AttendanceCode_ForeignGuid, T1.AttendanceCode_ForeignKey)
@@ -1298,7 +1298,7 @@
     ) AS T1]]></view>
     <view extent="CodeFirstDatabase.RegistrationRegistrant"><![CDATA[
     SELECT VALUE -- Constructing RegistrationRegistrant
-        [CodeFirstDatabaseSchema.RegistrationRegistrant](T1.RegistrationRegistrant_Id, T1.RegistrationRegistrant_RegistrationId, T1.RegistrationRegistrant_PersonAliasId, T1.RegistrationRegistrant_GroupMemberId, T1.RegistrationRegistrant_OnWaitList, T1.RegistrationRegistrant_Cost, T1.RegistrationRegistrant_CreatedDateTime, T1.RegistrationRegistrant_ModifiedDateTime, T1.RegistrationRegistrant_CreatedByPersonAliasId, T1.RegistrationRegistrant_ModifiedByPersonAliasId, T1.RegistrationRegistrant_Guid, T1.RegistrationRegistrant_ForeignId, T1.RegistrationRegistrant_ForeignGuid, T1.RegistrationRegistrant_ForeignKey)
+        [CodeFirstDatabaseSchema.RegistrationRegistrant](T1.RegistrationRegistrant_Id, T1.RegistrationRegistrant_RegistrationId, T1.RegistrationRegistrant_PersonAliasId, T1.RegistrationRegistrant_GroupMemberId, T1.RegistrationRegistrant_OnWaitList, T1.RegistrationRegistrant_Cost, T1.RegistrationRegistrant_DiscountApplies, T1.RegistrationRegistrant_CreatedDateTime, T1.RegistrationRegistrant_ModifiedDateTime, T1.RegistrationRegistrant_CreatedByPersonAliasId, T1.RegistrationRegistrant_ModifiedByPersonAliasId, T1.RegistrationRegistrant_Guid, T1.RegistrationRegistrant_ForeignId, T1.RegistrationRegistrant_ForeignGuid, T1.RegistrationRegistrant_ForeignKey)
     FROM (
         SELECT 
             T.Id AS RegistrationRegistrant_Id, 
@@ -1307,6 +1307,7 @@
             T.GroupMemberId AS RegistrationRegistrant_GroupMemberId, 
             T.OnWaitList AS RegistrationRegistrant_OnWaitList, 
             T.Cost AS RegistrationRegistrant_Cost, 
+            T.DiscountApplies AS RegistrationRegistrant_DiscountApplies, 
             T.CreatedDateTime AS RegistrationRegistrant_CreatedDateTime, 
             T.ModifiedDateTime AS RegistrationRegistrant_ModifiedDateTime, 
             T.CreatedByPersonAliasId AS RegistrationRegistrant_CreatedByPersonAliasId, 
@@ -1431,7 +1432,7 @@
     ) AS T1]]></view>
     <view extent="CodeFirstDatabase.RegistrationTemplateDiscount"><![CDATA[
     SELECT VALUE -- Constructing RegistrationTemplateDiscount
-        [CodeFirstDatabaseSchema.RegistrationTemplateDiscount](T1.RegistrationTemplateDiscount_Id, T1.RegistrationTemplateDiscount_Code, T1.RegistrationTemplateDiscount_RegistrationTemplateId, T1.RegistrationTemplateDiscount_DiscountPercentage, T1.RegistrationTemplateDiscount_DiscountAmount, T1.RegistrationTemplateDiscount_Order, T1.RegistrationTemplateDiscount_CreatedDateTime, T1.RegistrationTemplateDiscount_ModifiedDateTime, T1.RegistrationTemplateDiscount_CreatedByPersonAliasId, T1.RegistrationTemplateDiscount_ModifiedByPersonAliasId, T1.RegistrationTemplateDiscount_Guid, T1.RegistrationTemplateDiscount_ForeignId, T1.RegistrationTemplateDiscount_ForeignGuid, T1.RegistrationTemplateDiscount_ForeignKey)
+        [CodeFirstDatabaseSchema.RegistrationTemplateDiscount](T1.RegistrationTemplateDiscount_Id, T1.RegistrationTemplateDiscount_Code, T1.RegistrationTemplateDiscount_RegistrationTemplateId, T1.RegistrationTemplateDiscount_DiscountPercentage, T1.RegistrationTemplateDiscount_DiscountAmount, T1.RegistrationTemplateDiscount_Order, T1.RegistrationTemplateDiscount_MaxUsage, T1.RegistrationTemplateDiscount_MaxRegistrants, T1.RegistrationTemplateDiscount_MinRegistrants, T1.RegistrationTemplateDiscount_StartDate, T1.RegistrationTemplateDiscount_EndDate, T1.RegistrationTemplateDiscount_CreatedDateTime, T1.RegistrationTemplateDiscount_ModifiedDateTime, T1.RegistrationTemplateDiscount_CreatedByPersonAliasId, T1.RegistrationTemplateDiscount_ModifiedByPersonAliasId, T1.RegistrationTemplateDiscount_Guid, T1.RegistrationTemplateDiscount_ForeignId, T1.RegistrationTemplateDiscount_ForeignGuid, T1.RegistrationTemplateDiscount_ForeignKey)
     FROM (
         SELECT 
             T.Id AS RegistrationTemplateDiscount_Id, 
@@ -1440,6 +1441,11 @@
             T.DiscountPercentage AS RegistrationTemplateDiscount_DiscountPercentage, 
             T.DiscountAmount AS RegistrationTemplateDiscount_DiscountAmount, 
             T.[Order] AS RegistrationTemplateDiscount_Order, 
+            T.MaxUsage AS RegistrationTemplateDiscount_MaxUsage, 
+            T.MaxRegistrants AS RegistrationTemplateDiscount_MaxRegistrants, 
+            T.MinRegistrants AS RegistrationTemplateDiscount_MinRegistrants, 
+            T.StartDate AS RegistrationTemplateDiscount_StartDate, 
+            T.EndDate AS RegistrationTemplateDiscount_EndDate, 
             T.CreatedDateTime AS RegistrationTemplateDiscount_CreatedDateTime, 
             T.ModifiedDateTime AS RegistrationTemplateDiscount_ModifiedDateTime, 
             T.CreatedByPersonAliasId AS RegistrationTemplateDiscount_CreatedByPersonAliasId, 
@@ -5212,7 +5218,7 @@
     ) AS T1]]></view>
     <view extent="RockContext.RegistrationRegistrants"><![CDATA[
     SELECT VALUE -- Constructing RegistrationRegistrants
-        [Rock.Data.RegistrationRegistrant](T1.RegistrationRegistrant_Id, T1.RegistrationRegistrant_RegistrationId, T1.RegistrationRegistrant_PersonAliasId, T1.RegistrationRegistrant_GroupMemberId, T1.RegistrationRegistrant_OnWaitList, T1.RegistrationRegistrant_Cost, T1.RegistrationRegistrant_CreatedDateTime, T1.RegistrationRegistrant_ModifiedDateTime, T1.RegistrationRegistrant_CreatedByPersonAliasId, T1.RegistrationRegistrant_ModifiedByPersonAliasId, T1.RegistrationRegistrant_Guid, T1.RegistrationRegistrant_ForeignId, T1.RegistrationRegistrant_ForeignGuid, T1.RegistrationRegistrant_ForeignKey)
+        [Rock.Data.RegistrationRegistrant](T1.RegistrationRegistrant_Id, T1.RegistrationRegistrant_RegistrationId, T1.RegistrationRegistrant_PersonAliasId, T1.RegistrationRegistrant_GroupMemberId, T1.RegistrationRegistrant_OnWaitList, T1.RegistrationRegistrant_Cost, T1.RegistrationRegistrant_DiscountApplies, T1.RegistrationRegistrant_CreatedDateTime, T1.RegistrationRegistrant_ModifiedDateTime, T1.RegistrationRegistrant_CreatedByPersonAliasId, T1.RegistrationRegistrant_ModifiedByPersonAliasId, T1.RegistrationRegistrant_Guid, T1.RegistrationRegistrant_ForeignId, T1.RegistrationRegistrant_ForeignGuid, T1.RegistrationRegistrant_ForeignKey)
     FROM (
         SELECT 
             T.Id AS RegistrationRegistrant_Id, 
@@ -5221,6 +5227,7 @@
             T.GroupMemberId AS RegistrationRegistrant_GroupMemberId, 
             T.OnWaitList AS RegistrationRegistrant_OnWaitList, 
             T.Cost AS RegistrationRegistrant_Cost, 
+            T.DiscountApplies AS RegistrationRegistrant_DiscountApplies, 
             T.CreatedDateTime AS RegistrationRegistrant_CreatedDateTime, 
             T.ModifiedDateTime AS RegistrationRegistrant_ModifiedDateTime, 
             T.CreatedByPersonAliasId AS RegistrationRegistrant_CreatedByPersonAliasId, 
@@ -5345,7 +5352,7 @@
     ) AS T1]]></view>
     <view extent="RockContext.RegistrationTemplateDiscounts"><![CDATA[
     SELECT VALUE -- Constructing RegistrationTemplateDiscounts
-        [Rock.Data.RegistrationTemplateDiscount](T1.RegistrationTemplateDiscount_Id, T1.RegistrationTemplateDiscount_Code, T1.RegistrationTemplateDiscount_RegistrationTemplateId, T1.RegistrationTemplateDiscount_DiscountPercentage, T1.RegistrationTemplateDiscount_DiscountAmount, T1.RegistrationTemplateDiscount_Order, T1.RegistrationTemplateDiscount_CreatedDateTime, T1.RegistrationTemplateDiscount_ModifiedDateTime, T1.RegistrationTemplateDiscount_CreatedByPersonAliasId, T1.RegistrationTemplateDiscount_ModifiedByPersonAliasId, T1.RegistrationTemplateDiscount_Guid, T1.RegistrationTemplateDiscount_ForeignId, T1.RegistrationTemplateDiscount_ForeignGuid, T1.RegistrationTemplateDiscount_ForeignKey)
+        [Rock.Data.RegistrationTemplateDiscount](T1.RegistrationTemplateDiscount_Id, T1.RegistrationTemplateDiscount_Code, T1.RegistrationTemplateDiscount_RegistrationTemplateId, T1.RegistrationTemplateDiscount_DiscountPercentage, T1.RegistrationTemplateDiscount_DiscountAmount, T1.RegistrationTemplateDiscount_Order, T1.RegistrationTemplateDiscount_MaxUsage, T1.RegistrationTemplateDiscount_MaxRegistrants, T1.RegistrationTemplateDiscount_MinRegistrants, T1.RegistrationTemplateDiscount_StartDate, T1.RegistrationTemplateDiscount_EndDate, T1.RegistrationTemplateDiscount_CreatedDateTime, T1.RegistrationTemplateDiscount_ModifiedDateTime, T1.RegistrationTemplateDiscount_CreatedByPersonAliasId, T1.RegistrationTemplateDiscount_ModifiedByPersonAliasId, T1.RegistrationTemplateDiscount_Guid, T1.RegistrationTemplateDiscount_ForeignId, T1.RegistrationTemplateDiscount_ForeignGuid, T1.RegistrationTemplateDiscount_ForeignKey)
     FROM (
         SELECT 
             T.Id AS RegistrationTemplateDiscount_Id, 
@@ -5354,6 +5361,11 @@
             T.DiscountPercentage AS RegistrationTemplateDiscount_DiscountPercentage, 
             T.DiscountAmount AS RegistrationTemplateDiscount_DiscountAmount, 
             T.[Order] AS RegistrationTemplateDiscount_Order, 
+            T.MaxUsage AS RegistrationTemplateDiscount_MaxUsage, 
+            T.MaxRegistrants AS RegistrationTemplateDiscount_MaxRegistrants, 
+            T.MinRegistrants AS RegistrationTemplateDiscount_MinRegistrants, 
+            T.StartDate AS RegistrationTemplateDiscount_StartDate, 
+            T.EndDate AS RegistrationTemplateDiscount_EndDate, 
             T.CreatedDateTime AS RegistrationTemplateDiscount_CreatedDateTime, 
             T.ModifiedDateTime AS RegistrationTemplateDiscount_ModifiedDateTime, 
             T.CreatedByPersonAliasId AS RegistrationTemplateDiscount_CreatedByPersonAliasId, 
