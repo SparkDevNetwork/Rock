@@ -40,6 +40,10 @@ namespace Rock.Migrations
             Sql( @"
     UPDATE [RegistrationRegistrant] SET [DiscountApplies] = 1
 " );
+            // Fix issue with Waitlist not getting enabled for all existing fields by default
+            Sql( @"
+    UPDATE [RegistrationTemplateFormField] SET [ShowOnWaitlist] = 1
+" );
         }
         
         /// <summary>
