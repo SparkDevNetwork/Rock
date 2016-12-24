@@ -209,11 +209,8 @@ namespace Rock.CheckIn
         {
             if ( selectedOnly )
             {
-                if ( selectedOnly )
-                {
-                    var selectedScheduleIds = SelectedSchedules.Select( s => s.Schedule.Id ).ToList();
-                    return GroupTypes.Where( t => t.Selected || t.SelectedForSchedule.Any( s => selectedScheduleIds.Contains( s ) ) ).ToList();
-                }
+                var selectedScheduleIds = SelectedSchedules.Select( s => s.Schedule.Id ).ToList();
+                return GroupTypes.Where( t => t.Selected || t.SelectedForSchedule.Any( s => selectedScheduleIds.Contains( s ) ) ).ToList();
             }
 
             return GroupTypes;
