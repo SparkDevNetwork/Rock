@@ -433,6 +433,18 @@ namespace Rock.Web.UI
 
         #endregion
 
+        #region Overridden Properties
+
+        /// <summary>
+        /// Gets the PageStatePersister object associated with the page.
+        /// </summary>
+        protected override PageStatePersister PageStatePersister
+        {
+            get { return new CompressedHiddenFieldPageStatePersister( this, 102400 ); }
+        }
+
+        #endregion
+
         #region Protected Methods
 
         /// <summary>
@@ -1343,7 +1355,11 @@ namespace Rock.Web.UI
                 {
                     string script = @"
 Sys.Application.add_load(function () {
-    $('.js-view-state-stats').html('ViewState Size: ' + ($('#__VIEWSTATE').val().length / 1024).toFixed(0) + ' KB');
+    if ($('#__CVIEWSTATESIZE').length > 0 && $('#__CVIEWSTATESIZE').val() != '0') {
+        $('.js-view-state-stats').html('ViewState Size: ' + ($('#__CVIEWSTATESIZE').val() / 1024).toFixed(0) + ' KB (' + ($('#__CVIEWSTATE').val().length / 1024).toFixed(0) + ' KB Compressed)');
+    } else {
+        $('.js-view-state-stats').html('ViewState Size: ' + ($('#__CVIEWSTATE').val().length / 1024).toFixed(0) + ' KB');
+    }
     $('.js-html-size-stats').html('Html Size: ' + ($('html').html().length / 1024).toFixed(0) + ' KB');
 });
 ";
