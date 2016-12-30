@@ -70,7 +70,31 @@ namespace DotLiquid
                     Match fullShortCodeMatch = FullShortCodeToken.Match( token );
                     if ( fullShortCodeMatch.Success )
                     {
-                        var shortcode = fullShortCodeMatch.Groups[1].Value;
+                        // If we found the proper block delimitor just end parsing here and let the outer block
+                        // proceed
+                        if ( BlockDelimiter == fullShortCodeMatch.Groups[1].Value )
+                        {
+                            EndTag();
+                            return;
+                        }
+
+                        // Fetch the shortcode from registered shortcodes
+                        Type shortcodeType;
+                        if ( (shortcodeType = Template.GetShortcodeType( fullShortCodeMatch.Groups[1].Value )) != null )
+                        {
+                            Tag shortcode = (Tag)Activator.CreateInstance( shortcodeType );
+                            shortcode.Initialize( fullShortCodeMatch.Groups[1].Value, fullShortCodeMatch.Groups[2].Value, tokens );
+                            NodeList.Add( shortcode );
+
+                            // If the tag has some rules (eg: it must occur once) then check for them
+                            shortcode.AssertTagRulesViolation( NodeList );
+                        }
+                        else
+                        {
+                            // This tag is not registered with the system
+                            // pass it to the current block for special handling or error reporting
+                            UnknownTag( fullShortCodeMatch.Groups[1].Value, fullShortCodeMatch.Groups[2].Value, tokens );
+                        }
                     }
                     else
                     {

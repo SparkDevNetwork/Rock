@@ -706,6 +706,11 @@
     <Compile Include="Lava\LavaSupportLevel.cs" />
     <Compile Include="Lava\LegacyLavaSyntaxDetectedException.cs" />
     <Compile Include="Lava\RockFilters.cs" />
+    <Compile Include="Lava\Shortcodes\IRockShortcode.cs" />
+    <Compile Include="Lava\Shortcodes\RockLavaShortcodeBlockBase.cs" />
+    <Compile Include="Lava\Shortcodes\RockLavaShortcodeBase.cs" />
+    <Compile Include="Lava\Shortcodes\BootstrapAlert.cs" />
+    <Compile Include="Lava\Shortcodes\YouTube.cs" />
     <Compile Include="MergeTemplates\HtmlMergeTemplateType.cs" />
     <Compile Include="MergeTemplates\MergeTemplateType.cs" />
     <Compile Include="MergeTemplates\MergeTemplateTypeContainer.cs" />
