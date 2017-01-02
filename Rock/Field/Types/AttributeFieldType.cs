@@ -358,7 +358,7 @@ namespace Rock.Field.Types
                     }
                     else
                     {
-                        if ( listControl.Items.Count > 0 )
+                        if (control is Rock.Web.UI.Controls.RockDropDownList &&  listControl.Items.Count > 0 )
                         {
                             listControl.SelectedIndex = 0;
                         }
