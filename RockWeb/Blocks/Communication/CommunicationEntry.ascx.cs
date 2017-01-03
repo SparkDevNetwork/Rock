@@ -100,6 +100,27 @@ namespace RockWeb.Blocks.Communication
         }
         #endregion
 
+        #region Email Editor Events
+        protected void imgupImage_ImageUploaded( object sender, ImageUploaderEventArgs e )
+        {
+            ScriptManager.RegisterStartupScript(
+                Page,
+                GetType(),
+                "SaveAndCloseImageComponentUploaded",
+                "saveAndCloseImageComponent(null);",
+                true );
+        }
+
+        protected void imgupImage_ImageRemoved( object sender, ImageUploaderEventArgs e )
+        {
+            ScriptManager.RegisterStartupScript(
+                Page,
+                GetType(),
+                "SaveAndCloseImageComponentRemoved",
+                "saveAndCloseImageComponent(null);",
+                true );
+        }
+        #endregion
 
         /// <summary>
         /// Handles the BlockUpdated event of the control.
