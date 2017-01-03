@@ -31,12 +31,15 @@
                                 <a person-id='<%# Eval("Person.Id") %>' Class="btn btn-primary btn-checkin-select btn-block js-person-select" style="text-align:left">
                                     <div class="row">
                                         <div class="col-md-2">
-                                            <div class="row">
+                                            <asp:PlaceHolder ID="phCheck" runat="server" Visible="false">
+                                                <i class='<%# GetCheckboxClass( (bool)Eval("PreSelected") ) %>'></i>
+                                            </asp:PlaceHolder>
+                                            <asp:panel id="pnlCheckAndPhoto" runat="server" CssClass="row">
                                                 <div class="col-xs-6"><i class='<%# GetCheckboxClass( (bool)Eval("PreSelected") ) %>'></i></div>
                                                 <div class="col-xs-6">
                                                     <div class="photo-round photo-round-md pull-left" style="display: block; background-image: url('<%# GetPersonImageTag( Eval("Person") ) %>');"></div>
                                                 </div>
-                                            </div>
+                                            </asp:panel>
                                         </div>
                                         <div class="col-md-10 family-personselect"><%# Container.DataItem.ToString() %></div>
                                     </div>

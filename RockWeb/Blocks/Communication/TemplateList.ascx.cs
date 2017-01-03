@@ -35,7 +35,7 @@ namespace RockWeb.Blocks.Communication
 {
     [DisplayName( "Template List" )]
     [Category( "Communication" )]
-    [Description( "Lists the available communicaiton templates that can used when creating new communications." )]
+    [Description( "Lists the available communication templates that can used when creating new communications." )]
 
     [LinkedPage("Detail Page")]
     public partial class TemplateList : Rock.Web.UI.RockBlock

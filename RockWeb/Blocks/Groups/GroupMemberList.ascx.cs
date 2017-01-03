@@ -44,6 +44,7 @@ namespace RockWeb.Blocks.Groups
     [LinkedPage( "Registration Page", "Page used for viewing the registration(s) associated with a particular group member", false, "", "", 3 )]
     [BooleanField("Show Campus Filter", "Setting to show/hide campus filter.", true, order: 4)]
     [BooleanField( "Show First/Last Attendance", "If the group allows attendance, should the first and last attendance date be displayed for each group member?", false, "", 5, "ShowAttendance" )]
+    [BooleanField( "Show Date Added", "Should the date that person was added to the group be displayed for each group member?", false, "", 6 )]
     public partial class GroupMemberList : RockBlock, ISecondaryBlock
     {
         #region Private Variables
@@ -64,6 +65,14 @@ namespace RockWeb.Blocks.Groups
         /// The available attributes.
         /// </value>
         public List<AttributeCache> AvailableAttributes { get; set; }
+
+        /// <summary>
+        /// Gets or sets the signed person ids.
+        /// </summary>
+        /// <value>
+        /// The signed person ids.
+        /// </value>
+        private List<int> Signers { get; set; }
 
         #endregion
 
@@ -340,6 +349,8 @@ namespace RockWeb.Blocks.Groups
             rFilter.SaveUserPreference( MakeKeyUniqueToGroup( "Status" ), "Status", cblGroupMemberStatus.SelectedValues.AsDelimited( ";" ) );
             rFilter.SaveUserPreference( MakeKeyUniqueToGroup( "Campus" ), "Campus", cpCampusFilter.SelectedCampusId.ToString() );
             rFilter.SaveUserPreference( MakeKeyUniqueToGroup( "Gender" ), "Gender", cblGenderFilter.SelectedValues.AsDelimited( ";" ) );
+            rFilter.SaveUserPreference( MakeKeyUniqueToGroup( "Registration" ), "Registration", ddlRegistration.SelectedValue );
+            rFilter.SaveUserPreference( MakeKeyUniqueToGroup( "Signed Document" ), "Signed Document", ddlSignedDocument.SelectedValue );
 
             if ( AvailableAttributes != null )
             {
@@ -409,18 +420,55 @@ namespace RockWeb.Blocks.Groups
             {
                 e.Value = ResolveValues( e.Value, cblGenderFilter );
             }
+
             else if ( e.Key == MakeKeyUniqueToGroup( "Campus" ) )
             {
                 var campusId = e.Value.AsIntegerOrNull();
                 if ( campusId.HasValue )
                 {
                     var campusCache = CampusCache.Read( campusId.Value );
-                    e.Value = campusCache.Name;
+                    if ( campusCache != null )
+                    {
+                        e.Value = campusCache.Name;
+                    }
+                    else
+                    {
+                        e.Value = string.Empty;
+                    }
                 }
                 else
                 {
-                    e.Value = null;
+                    e.Value = string.Empty;
                 }
+            }
+
+            else if ( e.Key == MakeKeyUniqueToGroup( "Registration" ) )
+            {
+                var instanceId = e.Value.AsIntegerOrNull();
+                if ( instanceId.HasValue )
+                {
+                    using ( var rockContext = new RockContext() )
+                    {
+                        var instance = new RegistrationInstanceService( rockContext ).Get( instanceId.Value );
+                        if ( instance != null )
+                        {
+                            e.Value = instance.ToString();
+                        }
+                        else
+                        {
+                            e.Value = string.Empty;
+                        }
+                    }
+                }
+                else
+                {
+                    e.Value = string.Empty;
+                }
+            }
+            
+            else if ( e.Key == MakeKeyUniqueToGroup( "Signed Document") )
+            {
+                return;
             }
             else
             {
@@ -515,10 +563,21 @@ namespace RockWeb.Blocks.Groups
             {
                 cblRole.DataSource = _group.GroupType.Roles.OrderBy( a => a.Order ).ToList();
                 cblRole.DataBind();
+
+                using ( var rockContext = new RockContext() )
+                {
+                    ddlRegistration.DataSource = new RegistrationInstanceService( rockContext )
+                        .Queryable().AsNoTracking()
+                        .Where( i => i.Linkages.Any( l => l.GroupId == _group.Id ) )
+                        .OrderByDescending( i => i.StartDateTime )
+                        .Select( i => new { i.Id, i.Name } )
+                        .ToList();
+                    ddlRegistration.DataBind();
+                    ddlRegistration.Items.Insert(0, new ListItem() );
+                }
             }
 
             cblGroupMemberStatus.BindToEnum<GroupMemberStatus>();
-
             cpCampusFilter.Campuses = CampusCache.All();
 
             BindAttributes();
@@ -545,6 +604,13 @@ namespace RockWeb.Blocks.Groups
             {
                 cblGroupMemberStatus.SetValues( statusValue.Split( ';' ).ToList() );
             }
+
+            ddlRegistration.SetValue( rFilter.GetUserPreference( MakeKeyUniqueToGroup( "Registration" ) ) );
+            ddlRegistration.Visible = ddlRegistration.Items.Count > 1;
+
+            ddlSignedDocument.SetValue( rFilter.GetUserPreference( MakeKeyUniqueToGroup( "Signed Document" ) ) );
+            ddlSignedDocument.Visible = _group.RequiredSignatureDocumentTemplateId.HasValue;
+
         }
 
         /// <summary>
@@ -859,6 +925,21 @@ namespace RockWeb.Blocks.Groups
 
                     var rockContext = new RockContext();
 
+                    if ( _group != null &&
+                        _group.RequiredSignatureDocumentTemplateId.HasValue )
+                    {
+                        Signers = new SignatureDocumentService( rockContext )
+                            .Queryable().AsNoTracking()
+                            .Where( d =>
+                                d.SignatureDocumentTemplateId == _group.RequiredSignatureDocumentTemplateId.Value &&
+                                d.Status == SignatureDocumentStatus.Signed &&
+                                d.BinaryFileId.HasValue &&
+                                d.AppliesToPersonAlias != null )
+                            .OrderByDescending( d => d.LastStatusDate )
+                            .Select( d => d.AppliesToPersonAlias.PersonId )
+                            .ToList();
+                    }
+
                     GroupMemberService groupMemberService = new GroupMemberService( rockContext );
                     var qry = groupMemberService.Queryable( "Person,GroupRole", true ).AsNoTracking()
                         .Where( m => m.GroupId == _group.Id );
@@ -931,6 +1012,34 @@ namespace RockWeb.Blocks.Groups
                         qry = qry.Where( a => qryFamilyMembersForCampus.Any( f => f.PersonId == a.PersonId ) );
                     }
 
+                    // Filter by Registration
+                    var instanceId = ddlRegistration.SelectedValueAsInt();
+                    if ( instanceId.HasValue )
+                    {
+                        var registrants = new RegistrationRegistrantService( rockContext )
+                            .Queryable().AsNoTracking()
+                            .Where( r =>
+                                r.Registration != null &&
+                                r.Registration.RegistrationInstanceId == instanceId.Value &&
+                                r.PersonAlias != null )
+                            .Select( r => r.PersonAlias.PersonId );
+
+                        qry = qry.Where( m => registrants.Contains( m.PersonId ) );
+                    }
+
+                    // Filter by signed documents
+                    if ( Signers != null )
+                    {
+                        if ( ddlSignedDocument.SelectedValue.AsBooleanOrNull() == true )
+                        {
+                            qry = qry.Where( m => Signers.Contains( m.PersonId ) );
+                        }
+                        else if ( ddlSignedDocument.SelectedValue.AsBooleanOrNull() == false )
+                        {
+                            qry = qry.Where( m => !Signers.Contains( m.PersonId ) );
+                        }
+                    }
+
                     // Filter query by any configured attribute filters
                     if ( AvailableAttributes != null && AvailableAttributes.Any() )
                     {
@@ -980,18 +1089,10 @@ namespace RockWeb.Blocks.Groups
 
                     // If there is a required signed document that member has not signed, show an icon in the grid
                     var personIdsThatHaventSigned = new List<int>();
-                    if ( _group.RequiredSignatureDocumentTypeId.HasValue )
+                    if ( Signers != null )
                     {
                         var memberPersonIds = groupMembersList.Select( m => m.PersonId ).ToList();
-                        var personIdsThatHaveSigned = new SignatureDocumentService( rockContext )
-                            .Queryable().AsNoTracking()
-                            .Where( d =>
-                                d.SignatureDocumentTypeId == _group.RequiredSignatureDocumentTypeId.Value &&
-                                d.Status == SignatureDocumentStatus.Signed &&
-                                memberPersonIds.Contains( d.AppliesToPersonAlias.PersonId ) )
-                            .Select( d => d.AppliesToPersonAlias.PersonId )
-                            .ToList();
-                        personIdsThatHaventSigned = memberPersonIds.Where( m => !personIdsThatHaveSigned.Contains( m ) ).ToList();
+                        personIdsThatHaventSigned = memberPersonIds.Where( i => !Signers.Contains( i ) ).ToList();
                     }
 
                     // Since we're not binding to actual group member list, but are using AttributeField columns,
@@ -1076,6 +1177,9 @@ namespace RockWeb.Blocks.Groups
                         }
                     }
 
+                    bool showDateAdded = GetAttributeValue( "ShowDateAdded" ).AsBoolean();
+                    gGroupMembers.ColumnsOfType<DateField>().First( a => a.DataField == "DateTimeAdded" ).Visible = showDateAdded;
+
                     var dataSource = groupMembersList.Select( m => new
                     {
                         m.Id,
@@ -1086,12 +1190,15 @@ namespace RockWeb.Blocks.Groups
                         Name =
                         ( isExporting ? m.Person.LastName + ", " + m.Person.NickName : string.Format( photoFormat, m.PersonId, m.Person.PhotoUrl, ResolveUrl( "~/Assets/Images/person-no-photo-male.svg" ) ) +
                             m.Person.NickName + " " + m.Person.LastName
-                            + ( ( hasGroupRequirements && groupMemberIdsThatLackGroupRequirements.Contains( m.Id ) ) || personIdsThatHaventSigned.Contains( m.PersonId ) 
+                            + ( ( hasGroupRequirements && groupMemberIdsThatLackGroupRequirements.Contains( m.Id ) ) 
                                 ? " <i class='fa fa-exclamation-triangle text-warning'></i>"
                                 : string.Empty )
                             + ( !string.IsNullOrEmpty( m.Note )
                                 ? " <i class='fa fa-file-text-o text-info'></i>"
-                                : string.Empty ) ),
+                                : string.Empty )
+                            + ((personIdsThatHaventSigned.Contains( m.PersonId ))
+                                ? " <i class='fa fa-pencil-square-o text-danger'></i>"
+                                : string.Empty)),
                         m.Person.BirthDate,
                         m.Person.Age,
                         m.Person.ConnectionStatusValueId,

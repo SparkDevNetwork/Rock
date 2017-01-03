@@ -58,9 +58,9 @@ namespace Rock.Model
                 return false;
             }  
  
-            if ( new Service<SignatureDocumentType>( Context ).Queryable().Any( a => a.BinaryFileTypeId == item.Id ) )
+            if ( new Service<SignatureDocumentTemplate>( Context ).Queryable().Any( a => a.BinaryFileTypeId == item.Id ) )
             {
-                errorMessage = string.Format( "This {0} is assigned to a {1}.", BinaryFileType.FriendlyTypeName, SignatureDocumentType.FriendlyTypeName );
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", BinaryFileType.FriendlyTypeName, SignatureDocumentTemplate.FriendlyTypeName );
                 return false;
             }  
             return true;

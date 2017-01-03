@@ -527,11 +527,14 @@ namespace RockWeb.Blocks.Finance
             if ( !businessId.Equals( 0 ) )
             {
                 business = new PersonService( rockContext ).Get( businessId );
+                pdAuditDetails.SetEntity( business, ResolveRockUrl( "~" ) );
             }
 
             if ( business == null )
             {
                 business = new Person { Id = 0, Guid = Guid.NewGuid() };
+                // hide the panel drawer that show created and last modified dates
+                pdAuditDetails.Visible = false;
             }
 
             bool editAllowed = business.IsAuthorized( Authorization.EDIT, CurrentPerson );
@@ -579,12 +582,25 @@ namespace RockWeb.Blocks.Finance
             var business = new PersonService( new RockContext() ).Get( businessId );
             if ( business != null )
             {
-                lDetailsLeft.Text = new DescriptionList()
-                    .Add( "Business Name", business.LastName )
-                    .Add( "Campus", business.GivingGroup.Campus )
-                    .Add( "Record Status", business.RecordStatusValue )
-                    .Add( "Record Status Reason", business.RecordStatusReasonValue )
-                    .Html;
+                var detailsLeft = new DescriptionList();
+                detailsLeft.Add( "Business Name", business.LastName );
+
+                if ( business.GivingGroup != null )
+                {
+                    detailsLeft.Add( "Campus", business.GivingGroup.Campus );
+                }
+
+                if ( business.RecordStatusValue != null )
+                {
+                    detailsLeft.Add( "Record Status", business.RecordStatusValue );
+                }
+
+                if ( business.RecordStatusReasonValue != null )
+                {
+                    detailsLeft.Add( "Record Status Reason", business.RecordStatusReasonValue );
+                }
+
+                lDetailsLeft.Text = detailsLeft.Html;
 
                 var detailsRight = new DescriptionList();
 

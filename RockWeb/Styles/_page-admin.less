@@ -12,207 +12,197 @@
 // 1. Zone Config
 // -------------------------
 
-.zone-instance.outline 
-{
-    border: 1px dashed #909090; /* todo */
-    min-height: 30px;
-    min-width: 50px;
-    position: relative;
-    margin: 1px;
-    border-radius: 3px;
-    float: left;
-    width: 100%;
-    z-index: @zindex-modal - 1;
+.zone-instance.outline {
+  position: relative;
+  z-index: @zindex-modal - 1;
+  float: left;
+  width: 100%;
+  min-width: 50px;
+  min-height: 30px;
+  margin: 1px;
+  border: 1px dashed #909090; /* todo */
+  border-radius: 3px;
 }
 
 .zone-configuration {
-    background: @adminbar-bg;
-    border: 1px solid darken(@adminbar-bg, @const-border-darken-amt);
-    border-radius:  @border-radius-base;
-    cursor: pointer;
-    display: none;
-    height: 26px;
-    overflow: hidden;
-    position: absolute;
-    top: 1px;
-    left: 1px;
-    width: 25px;
-    z-index: 1000;
-    right: auto;
+  position: absolute;
+  top: 1px;
+  right: auto;
+  left: 1px;
+  z-index: 1000;
+  display: none;
+  width: 25px;
+  height: 26px;
+  overflow: hidden;
+  cursor: pointer;
+  background: @adminbar-bg;
+  border: 1px solid darken(@adminbar-bg, @const-border-darken-amt);
+  border-radius: @border-radius-base;
 
-    p {
-        float: left;   
-    }
+  p {
+    float: left;
+  }
 }
 
 .zone-configuration-bar {
-    color: @adminbar-text-color;
-    display: inline-block;
-    float: left;
-    left: 24px;
-    margin-left: 6px;
-    margin-right: -999em;
-    overflow: hidden;
-    position: absolute;
+  position: absolute;
+  left: 24px;
+  display: inline-block;
+  float: left;
+  margin-right: -999em;
+  margin-left: 6px;
+  overflow: hidden;
+  color: @adminbar-text-color;
 
-    span {
-        display: block;
-        float: left;
-        font-size: 10px;
-        padding-right: 20px;
-        margin-top: 4px;
-    }
-} 
+  span {
+    display: block;
+    float: left;
+    padding-right: 20px;
+    margin-top: 4px;
+    font-size: 10px;
+  }
+}
 
 // 2. Module Config
 // -------------------------
 .block-configuration {
-    background: @adminbar-bg;
-    border: 1px solid darken(@adminbar-bg, @const-border-darken-amt);
-    border-radius: @border-radius-base;
-    cursor: pointer;
-    display: none;
-    height: 26px;
-    overflow: hidden;
-    position: absolute;
-    top: 2px;
-    width: 26px;
-    z-index: @zindex-modal - 1;
+  position: absolute;
+  top: 2px;
+  z-index: @zindex-modal - 1;
+  display: none;
+  width: 26px;
+  height: 26px;
+  overflow: hidden;
+  cursor: pointer;
+  background: @adminbar-bg;
+  border: 1px solid darken(@adminbar-bg, @const-border-darken-amt);
+  border-radius: @border-radius-base;
 }
 
-.block-instance.outline 
-{
-    min-height: 36px;
-    clear: both;
-    display: block;
-    position: relative;
+.block-instance.outline {
+  position: relative;
+  display: block;
+  min-height: 36px;
+  clear: both;
 }
 
 .config-bar {
-    -moz-box-shadow: 3px 3px 3px 0px rgba(0,0,0, .4);
-    -webkit-box-shadow: 3px 3px 3px 0px rgba(0,0,0, .4);
-    box-shadow: 3px 3px 3px 0px rgba(0,0,0, .4);
+  -webkit-box-shadow: 3px 3px 3px 0 rgba(0,0,0, .4);
+     -moz-box-shadow: 3px 3px 3px 0 rgba(0,0,0, .4);
+          box-shadow: 3px 3px 3px 0 rgba(0,0,0, .4);
 
-    & > a {
-        text-decoration: none;
-        padding: 0 !important; // important to keep themes from changing this
-        margin: 0 !important; // important to keep themes from changing this
-    }
+  & > a {
+    padding: 0 !important; // important to keep themes from changing this
+    margin: 0 !important; // important to keep themes from changing this
+    text-decoration: none;
+  }
 
-    a i.fa {
-        float: left;
-        margin-left: 5px;
-        margin-top: 3px;
-        font-size: 18px;
-        color: @adminbar-text-color;
-        margin-right: 10px;
-    }
+  a i.fa {
+    float: left;
+    margin-top: 3px;
+    margin-right: 10px;
+    margin-left: 5px;
+    font-size: 18px;
+    color: @adminbar-text-color;
+  }
 }
 
 .block-configuration-bar {
-    color: @adminbar-text-color;
-    display: inline-block;
-    float: left;
-    left: 24px;
-    margin-left: 6px;
-    margin-right: -999em;
-    overflow: hidden;
-    position: absolute;
+  position: absolute;
+  left: 24px;
+  display: inline-block;
+  float: left;
+  margin-right: -999em;
+  margin-left: 6px;
+  overflow: hidden;
+  color: @adminbar-text-color;
 }
 
-.block-configuration-bar .btn
-{
-    margin-right: 12px;
-    color: @adminbar-text-color;
-    text-shadow: none;
+.block-configuration-bar .btn {
+  margin-right: 12px;
+  color: @adminbar-text-color;
+  text-shadow: none;
 }
 
 .block-configuration-bar span {
-    display: block;
-    float: left;
-    font-size: 10px;
-    padding-right: 20px;
-    margin-top: 3px;
+  display: block;
+  float: left;
+  padding-right: 20px;
+  margin-top: 3px;
+  font-size: 10px;
 }
 
 
 // 3. Admin Footer
 // -------------------------
 #cms-admin-footer {
-    bottom: 0;
-    width: 100%;
-    height: 36px;
-    z-index: @zindex-modal - 1;
-    position: fixed;
-    right: 0;
-    margin-right: 0;
-    background: @adminbar-bg;
-    border-color: darken(@adminbar-bg, @const-border-darken-amt);
-    border-width: 1px 1px 0 1px;
-    border-style: solid;
-    color: @adminbar-text-color;
-    padding: 8px 12px 0 12px;
-    
-    transition: .5s;
+  position: fixed;
+  right: 0;
+  bottom: 0;
+  z-index: @zindex-modal - 1;
+  width: 100%;
+  height: 36px;
+  padding: 8px 12px 0 12px;
+  margin-right: 0;
+  color: @adminbar-text-color;
+  background: @adminbar-bg;
+  border-color: darken(@adminbar-bg, @const-border-darken-amt);
+  border-style: solid;
+  border-width: 1px 1px 0 1px;
+  transition: .5s;
 
-    > span {
-        display: none;
-        text-align: center;
-        margin-bottom: 4px;
-        font-size: 12px;
-        margin-top: 3px;
-    }
+  > span {
+    display: none;
+    margin-top: 3px;
+    margin-bottom: 4px;
+    font-size: 12px;
+    text-align: center;
+  }
 
-    a {
-        font-size: 16px;
-    }
+  a {
+    font-size: 16px;
+  }
 
-    .button-bar {
-        margin-top: -8px;
-        margin-left: 12px;
-        text-align: center;
-    }
+  .button-bar {
+    margin-top: -8px;
+    margin-left: 12px;
+    text-align: center;
+  }
 }
 
-#cms-admin-footer .button-bar {
-    
+
+
+#cms-admin-footer .button-bar a {
+  background-color: transparent;
+  background-image: none;
+  border: 0;
 }
 
-#cms-admin-footer .button-bar a 
-{
-    background-color: transparent;
-    background-image: none;
-    border: 0;
-}
-
-#cms-admin-footer .btn
-{
-    color: @adminbar-text-color;
-    box-shadow: none;
-    text-shadow: none;
+#cms-admin-footer .btn {
+  color: @adminbar-text-color;
+  text-shadow: none;
+  box-shadow: none;
 }
 
 
 // 4. Responsive Rules
 // -------------------------
 @media (min-width: @screen-sm-min) {
+  #cms-admin-footer {
+    opacity: 0;
 
-    #cms-admin-footer {
-        opacity: 0;
-
-        &:hover {
-            opacity: 1;
-        }
-
-        > span {
-            display: block;
-            text-align: left;
-            float: left;
-        }
-
-        .button-bar {
-            float: right;
-        }
+    &:hover {
+      opacity: 1;
     }
 
+    > span {
+      display: block;
+      float: left;
+      text-align: left;
+    }
+
+    .button-bar {
+      float: right;
+    }
+  }
 }

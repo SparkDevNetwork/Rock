@@ -17,6 +17,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
@@ -90,6 +91,7 @@ namespace RockWeb.Blocks.CheckIn.Config
             base.OnLoad( e );
 
             nbDeleteWarning.Visible = false;
+            nbInvalid.Visible = false;
             nbSaveSuccess.Visible = false;
 
             if ( _checkinType == null )
@@ -542,7 +544,6 @@ namespace RockWeb.Blocks.CheckIn.Config
                     var groupType = groupTypeService.Get( checkinArea.GroupTypeGuid );
                     if ( groupType != null )
                     {
-                        groupType.LoadAttributes( rockContext );
                         checkinArea.GetGroupTypeValues( groupType );
 
                         if ( groupType.IsValid )
@@ -608,6 +609,10 @@ namespace RockWeb.Blocks.CheckIn.Config
                             nbSaveSuccess.Visible = true;
                             BuildRows();
                         }
+                        else
+                        {
+                            ShowInvalidResults( groupType.ValidationResults );
+                        }
                     }
                 }
 
@@ -654,11 +659,21 @@ namespace RockWeb.Blocks.CheckIn.Config
                             nbSaveSuccess.Visible = true;
                             BuildRows();
                         }
+                        else
+                        {
+                            ShowInvalidResults( group.ValidationResults );
+                        }
                     }
                 }
             }
 
             hfIsDirty.Value = "false";
+        }
+
+        private void ShowInvalidResults( List<ValidationResult> validationResults )
+        {
+            nbInvalid.Text = string.Format( "Please correct the following:<ul><li>{0}</li></ul>", validationResults.AsDelimited( "</li><li>" ) );
+            nbInvalid.Visible = true;
         }
 
         #endregion
@@ -924,7 +939,7 @@ namespace RockWeb.Blocks.CheckIn.Config
                     {
                         _currentGroupTypeGuid = groupType.Guid;
 
-                        checkinArea.SetGroupType( groupType );
+                        checkinArea.SetGroupType( groupType, rockContext );
                         checkinArea.CheckinLabels = new List<CheckinArea.CheckinLabelAttributeInfo>();
 
                         groupType.LoadAttributes( rockContext );

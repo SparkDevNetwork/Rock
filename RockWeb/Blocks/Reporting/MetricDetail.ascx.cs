@@ -71,6 +71,15 @@ namespace RockWeb.Blocks.Reporting
 
             btnSecurity.EntityTypeId = EntityTypeCache.Read( typeof( Rock.Model.Metric ) ).Id;
 
+            ddlDataView.Help = @"NOTE: When using DataView to populate Metrics, multiple partitions is not supported.
+<br />
+<br />
+When using a DataView as the Source Type, the Metric Values will based on the number of records returned by the DataView when the Calculate Metrics job processes this metric.
+<br />
+<br />
+Example: Let's say you have a DataView called 'Small Group Attendance for Last Week', and schedule this metric for every Monday. When the Calculate Metrics job runs this metric, the Metric Value for that week will be number of records returned by the Dataview.
+";
+
             // Metric supports 0 or more Categories, so the entityType is actually MetricCategory, not Metric
             cpMetricCategories.EntityTypeId = EntityTypeCache.Read( typeof( Rock.Model.MetricCategory ) ).Id;
 
@@ -579,10 +588,13 @@ namespace RockWeb.Blocks.Reporting
             if ( !metricId.Equals( 0 ) )
             {
                 metric = metricService.Get( metricId );
+                pdAuditDetails.SetEntity( metric, ResolveRockUrl( "~" ) );
             }
 
             if ( metric == null )
             {
+                // hide the panel drawer that show created and last modified dates
+                pdAuditDetails.Visible = false;
                 metric = new Metric { Id = 0, IsSystem = false };
                 metric.SourceValueTypeId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.METRIC_SOURCE_VALUE_TYPE_MANUAL.AsGuid() ).Id;
                 metric.MetricCategories = new List<MetricCategory>();
@@ -686,7 +698,7 @@ namespace RockWeb.Blocks.Reporting
             ppMetricChampionPerson.SetValue( metric.MetricChampionPersonAlias != null ? metric.MetricChampionPersonAlias.Person : null );
             ppAdminPerson.SetValue( metric.AdminPersonAlias != null ? metric.AdminPersonAlias.Person : null );
             ceSourceSql.Text = metric.SourceSql;
-            ceSourceSql.Help = @"There are several ways to design your SQL to populate the Metric Values. If you use the 'SQL' source type option, the results will be stored with the date of the date when the Calculation is scheduled.
+            ceSourceSql.Help = @"There are several ways to design your SQL to populate the Metric Values. If you use the 'SQL' source type option, the results will be stored with the date of the date when the Calculation is scheduled. To specify a specific date of the metric value, include a [MetricValueDate] column in the result set (see Example #4).
 <br />
 <br />
 <h4>Example #1</h4> 
@@ -738,6 +750,30 @@ WHERE DidAttend = 1
   AND StartDateTime < '{{ RunDateTime | DateAdd:1,'d' | Date:'MM/dd/yyyy' }}' 
 GROUP BY [GroupId], [CampusId], [ScheduleId]
 </pre>
+
+<br />
+<h4>Example #4</h4> 
+A metric with multiple partitions with a specific MetricValueDateTime specified. 
+<ul>
+    <li>The 1st Column will be the YValue </li>
+    <li>If a [MetricValueDateTime] field is specified as the 2nd column, that will be the metric value date. NOTE: This should be a constant value for all rows
+    <li>The 3rd Column will be the EntityId of the 1st Partition </li>
+    <li>The 4th Column will be the EntityId of the 2nd Partition </li>
+    <li>etc.</li>
+</ul>
+<pre>
+-- get totals for the previous week
+{% assign weekEndDate = RunDateTime | SundayDate | DateAdd:-7,'d' %}
+
+SELECT COUNT(*), '{{ weekEndDate }}' [MetricValueDateTime], [GroupId], [CampusId], [ScheduleId]
+FROM [Attendance] 
+WHERE DidAttend = 1
+  AND StartDateTime >= '{{ weekEndDate | DateAdd:-6,'d' | Date:'MM/dd/yyyy' }}' 
+  AND StartDateTime < '{{ weekEndDate | DateAdd:1,'d' | Date:'MM/dd/yyyy' }}'
+GROUP BY [GroupId], [CampusId], [ScheduleId]
+</pre>
+
+NOTE: If a [MetricValueDateTime] is specified and there is already a metric value, the value will get updated. This is handy if you have a weekly metric, but schedule it to calculate every day.
 <hr>
 The SQL can include Lava merge fields:";
 

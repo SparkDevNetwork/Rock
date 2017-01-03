@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -43,6 +43,8 @@ namespace RockWeb.Blocks.Groups
     [BooleanField( "Allow Campus Filter", "Should block add an option to allow filtering people and attendance counts by campus?", false, "", 2 )]
     [WorkflowTypeField( "Workflow", "An optional workflow type to launch whenever attendance is saved. The Group will be used as the workflow 'Entity' when processing is started. Additionally if a 'StartDateTime' and/or 'Schedule' attribute exist, their values will be set with the corresponding saved attendance values.", false, false, "", "", 3 )]
     [MergeTemplateField( "Attendance Roster Template", "", false, "", "", 4 )]
+    [CodeEditorField( "Lava Template", "An optional lava template to appear next to each person in the list.", CodeEditorMode.Lava, CodeEditorTheme.Rock, 400, false, "", "", 5 )]
+
     public partial class GroupAttendanceDetail : RockBlock
     {
         #region Private Variables
@@ -212,7 +214,7 @@ namespace RockWeb.Blocks.Groups
 
                 if ( dateAdjusted )
                 {
-                    foreach( var attendee in existingAttendees )
+                    foreach ( var attendee in existingAttendees )
                     {
                         attendee.StartDateTime = _occurrence.Date;
                     }
@@ -374,7 +376,7 @@ namespace RockWeb.Blocks.Groups
         protected void lbPrintAttendanceRoster_Click( object sender, EventArgs e )
         {
             // NOTE: lbPrintAttendanceRoster is a full postback since we are returning a download of the roster
-            
+
             nbPrintRosterWarning.Visible = false;
             var rockContext = new RockContext();
 
@@ -383,7 +385,7 @@ namespace RockWeb.Blocks.Groups
             {
                 var personIdList = _attendees.Select( a => a.PersonId ).ToList();
                 var personList = new PersonService( rockContext ).GetByIds( personIdList );
-                foreach ( var person in personList.OrderBy(a => a.LastName ).ThenBy(a => a.NickName) )
+                foreach ( var person in personList.OrderBy( a => a.LastName ).ThenBy( a => a.NickName ) )
                 {
                     mergeObjectsDictionary.AddOrIgnore( person.Id, person );
                 }
@@ -393,7 +395,7 @@ namespace RockWeb.Blocks.Groups
             mergeFields.Add( "Group", this._group );
 
             var mergeTemplate = new MergeTemplateService( rockContext ).Get( this.GetAttributeValue( "AttendanceRosterTemplate" ).AsGuid() );
-            
+
             if ( mergeTemplate == null )
             {
                 this.LogException( new Exception( "No Merge Template specified in block settings" ) );
@@ -403,7 +405,7 @@ namespace RockWeb.Blocks.Groups
             }
 
             MergeTemplateType mergeTemplateType = mergeTemplate.GetMergeTemplateType();
-            if (mergeTemplateType == null)
+            if ( mergeTemplateType == null )
             {
                 this.LogException( new Exception( "Unable to determine Merge Template Type" ) );
                 nbPrintRosterWarning.Visible = true;
@@ -419,7 +421,7 @@ namespace RockWeb.Blocks.Groups
 
             // set the name of the output doc
             outputBinaryFileDoc = new BinaryFileService( rockContext ).Get( outputBinaryFileDoc.Id );
-            outputBinaryFileDoc.FileName = _group.Name + " Attendance Roster" + Path.GetExtension( outputBinaryFileDoc.FileName ?? "" ) ?? ".docx"; ;
+            outputBinaryFileDoc.FileName = _group.Name + " Attendance Roster" + Path.GetExtension( outputBinaryFileDoc.FileName ?? "" ) ?? ".docx";
             rockContext.SaveChanges();
 
             if ( mergeTemplateType.Exceptions != null && mergeTemplateType.Exceptions.Any() )
@@ -471,6 +473,9 @@ namespace RockWeb.Blocks.Groups
 
         protected void ppAddPerson_SelectPerson( object sender, EventArgs e )
         {
+
+            string template = GetAttributeValue( "LavaTemplate" );
+
             if ( ppAddPerson.PersonId.HasValue )
             {
                 if ( !_attendees.Any( a => a.PersonId == ppAddPerson.PersonId.Value ) )
@@ -484,6 +489,11 @@ namespace RockWeb.Blocks.Groups
                         attendee.LastName = Person.LastName;
                         attendee.Attended = true;
                         attendee.CampusIds = Person.GetCampusIds();
+
+                        var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( null );
+                        mergeFields.Add( "Person", Person );
+                        mergeFields.Add( "Attended", true );
+                        attendee.MergedTemplate = template.ResolveMergeFields( mergeFields );
                         _attendees.Add( attendee );
                         BindAttendees();
                     }
@@ -569,7 +579,7 @@ namespace RockWeb.Blocks.Groups
                 {
                     // Get all the occurrences for this group, and load the attendance so we can show Attendance Count
                     var occurrence = new ScheduleService( _rockContext )
-                        .GetGroupOccurrences( _group, occurrenceDate.Value.Date, occurrenceDate.Value.AddDays( 1 ), 
+                        .GetGroupOccurrences( _group, occurrenceDate.Value.Date, occurrenceDate.Value.AddDays( 1 ),
                             locationIds, scheduleIds, true )
                         .OrderBy( o => o.Date )
                         .FirstOrDefault();
@@ -595,7 +605,7 @@ namespace RockWeb.Blocks.Groups
                     {
                         schedule = new ScheduleService( _rockContext ).Get( scheduleId.Value );
                     }
-                    return new ScheduleOccurrence( occurrenceDate.Value.Date, ( schedule != null ? schedule.StartTimeOfDay : occurrenceDate.Value.TimeOfDay), scheduleId, string.Empty, locationId );
+                    return new ScheduleOccurrence( occurrenceDate.Value.Date, ( schedule != null ? schedule.StartTimeOfDay : occurrenceDate.Value.TimeOfDay ), scheduleId, string.Empty, locationId );
                 }
             }
 
@@ -772,7 +782,7 @@ namespace RockWeb.Blocks.Groups
                         .ToList();
                 }
 
-                ppAddPerson.Visible = GetAttributeValue( "AllowAddingPerson" ).AsBoolean(); 
+                ppAddPerson.Visible = GetAttributeValue( "AllowAddingPerson" ).AsBoolean();
 
                 // Get the group members
                 var groupMemberService = new GroupMemberService( _rockContext );
@@ -787,6 +797,8 @@ namespace RockWeb.Blocks.Groups
                     .Select( m => m.PersonId )
                     .ToList();
 
+                string template = GetAttributeValue( "LavaTemplate" );
+                var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( null );
                 // Bind the attendance roster
                 _attendees = new PersonService( _rockContext )
                     .Queryable().AsNoTracking()
@@ -798,7 +810,8 @@ namespace RockWeb.Blocks.Groups
                         NickName = p.NickName,
                         LastName = p.LastName,
                         Attended = attendedIds.Contains( p.Id ),
-                        CampusIds = p.GetCampusIds()
+                        CampusIds = p.GetCampusIds(),
+                        MergedTemplate = template.ResolveMergeFields( mergeFields.Union( new Dictionary<string, object>() { { "Person", p } } ).ToDictionary( x => x.Key, x => x.Value ) )
                     } )
                     .ToList();
 
@@ -942,6 +955,8 @@ namespace RockWeb.Blocks.Groups
             /// The campus ids.
             /// </value>
             public List<int> CampusIds { get; set; }
+
+            public string MergedTemplate { get; set; }
         }
 
         #endregion

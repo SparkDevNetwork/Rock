@@ -507,44 +507,62 @@ namespace RockWeb.Blocks.Connection
 
                     var connectionRequestsQry = new ConnectionRequestService( rockContext ).Queryable().Where( a => a.ConnectionOpportunityId == opportunity.Id );
                     var currentDateTime = RockDateTime.Now;
-                    int idleCount = connectionRequestsQry
-                                        .Where( cr => 
+                    int activeRequestCount = connectionRequestsQry
+                        .Where( cr =>
+                                cr.ConnectionState == ConnectionState.Active
+                                || ( cr.ConnectionState == ConnectionState.FutureFollowUp && cr.FollowupDate.HasValue && cr.FollowupDate.Value < _midnightToday )
+                        )
+                        .Count();
+
+                    // only show if the oppportunity is active and there are active requests
+                    if ( opportunity.IsActive || ( !opportunity.IsActive && activeRequestCount > 0 ) )
+                    {
+                        // idle count is: 
+                        //  (the request is active OR future follow-up who's time has come) 
+                        //  AND 
+                        //  (where the activity is more than DaysUntilRequestIdle days old OR no activity but created more than DaysUntilRequestIdle days ago)
+                        int idleCount = connectionRequestsQry
+                                        .Where( cr =>
                                             (
-                                                cr.ConnectionState == ConnectionState.Active 
-                                                || (cr.ConnectionState == ConnectionState.FutureFollowUp && cr.FollowupDate.HasValue && cr.FollowupDate.Value < _midnightToday)
+                                                cr.ConnectionState == ConnectionState.Active
+                                                || ( cr.ConnectionState == ConnectionState.FutureFollowUp && cr.FollowupDate.HasValue && cr.FollowupDate.Value < _midnightToday )
                                             )
-                                            && (
-                                                ( cr.ConnectionRequestActivities.Any() && cr.ConnectionRequestActivities.Max(ra => ra.CreatedDateTime) < SqlFunctions.DateAdd( "day", -cr.ConnectionOpportunity.ConnectionType.DaysUntilRequestIdle, currentDateTime )) )
+                                            &&
+                                            (
+                                                ( cr.ConnectionRequestActivities.Any() && cr.ConnectionRequestActivities.Max( ra => ra.CreatedDateTime ) < SqlFunctions.DateAdd( "day", -cr.ConnectionOpportunity.ConnectionType.DaysUntilRequestIdle, currentDateTime ) )
                                                 || ( !cr.ConnectionRequestActivities.Any() && cr.CreatedDateTime < SqlFunctions.DateAdd( "day", -cr.ConnectionOpportunity.ConnectionType.DaysUntilRequestIdle, currentDateTime ) )
-                                               )
+                                            )
+                                        )
                                         .Count();
 
-                    // Count the number requests that have a status that is considered critical.
-                    int criticalCount = connectionRequestsQry
-                                            .Where( r => 
-                                                r.ConnectionStatus.IsCritical 
-                                                && (
-                                                    r.ConnectionState == ConnectionState.Active 
-                                                    || (r.ConnectionState == ConnectionState.FutureFollowUp && r.FollowupDate.HasValue && r.FollowupDate.Value < _midnightToday)
-                                                    )
-                                                    )
-                                            .Count();
+                        // Count the number requests that have a status that is considered critical.
+                        int criticalCount = connectionRequestsQry
+                                                .Where( r =>
+                                                    r.ConnectionStatus.IsCritical
+                                                    && (
+                                                            r.ConnectionState == ConnectionState.Active
+                                                            || ( r.ConnectionState == ConnectionState.FutureFollowUp && r.FollowupDate.HasValue && r.FollowupDate.Value < _midnightToday )
+                                                       )
+                                                )
+                                                .Count();
 
-                    // Add the opportunity
-                    var opportunitySummary = new OpportunitySummary
-                    {
-                        Id = opportunity.Id,
-                        Name = opportunity.Name,
-                        IconCssClass = opportunity.IconCssClass,
-                        IdleCount = idleCount,
-                        CriticalCount = criticalCount
-                    };
+                        // Add the opportunity
+                        var opportunitySummary = new OpportunitySummary
+                        {
+                            Id = opportunity.Id,
+                            Name = opportunity.Name,
+                            IsActive = opportunity.IsActive,
+                            IconCssClass = opportunity.IconCssClass,
+                            IdleCount = idleCount,
+                            CriticalCount = criticalCount
+                        };
 
-                    // If the user is limited requests with specific campus(es) set the list, otherwise leave it to be null
-                    opportunitySummary.CampusSpecificConnector = campusSpecificConnector;
-                    opportunitySummary.ConnectorCampusIds = campusIds.Distinct().ToList();
+                        // If the user is limited requests with specific campus(es) set the list, otherwise leave it to be null
+                        opportunitySummary.CampusSpecificConnector = campusSpecificConnector;
+                        opportunitySummary.ConnectorCampusIds = campusIds.Distinct().ToList();
 
-                    connectionTypeSummary.Opportunities.Add( opportunitySummary );
+                        connectionTypeSummary.Opportunities.Add( opportunitySummary );
+                    }
                 }
             }
 
@@ -837,6 +855,14 @@ namespace RockWeb.Blocks.Connection
                             .ThenBy( r => r.PersonAlias.Person.NickName );
                     }
 
+                    var requestList = requests.ToList();
+                    var roleIds = requestList.Where( r => r.AssignedGroupMemberRoleId.HasValue).Select( r => r.AssignedGroupMemberRoleId.Value ).ToList();
+
+                    var roles = new GroupTypeRoleService( rockContext )
+                        .Queryable().AsNoTracking()
+                        .Where( r => roleIds.Contains( r.Id ) )
+                        .ToDictionary( k => k.Id, v => v.Name );
+
                     gRequests.DataSource = requests.ToList()
                     .Select( r => new
                     {
@@ -846,6 +872,8 @@ namespace RockWeb.Blocks.Connection
                         Name = r.PersonAlias.Person.FullNameReversed,
                         Campus = r.Campus,
                         Group = r.AssignedGroup != null ? r.AssignedGroup.Name : "",
+                        GroupStatus = r.AssignedGroupMemberStatus != null ? r.AssignedGroupMemberStatus.ConvertToString() : "",
+                        GroupRole = r.AssignedGroupMemberRoleId.HasValue ? roles[r.AssignedGroupMemberRoleId.Value] : "",
                         Connector = r.ConnectorPersonAlias != null ? r.ConnectorPersonAlias.Person.FullName : "",
                         LastActivity = FormatActivity( r.ConnectionRequestActivities.OrderByDescending( a => a.CreatedDateTime ).FirstOrDefault() ),
                         LastActivityNote = gRequests.Columns[6].Visible ? r.ConnectionRequestActivities.OrderByDescending(
@@ -866,6 +894,30 @@ namespace RockWeb.Blocks.Connection
             {
                 pnlGrid.Visible = false;
             }
+        }
+
+        protected string FormatGroupName( object group, object groupRole, object groupStatus )
+        {
+            string groupName = group != null ? group.ToString() : string.Empty;
+            string roleName = groupRole != null ? groupRole.ToString() : string.Empty;
+            string statusName = groupStatus != null ? groupStatus.ToString() : string.Empty;
+
+            if ( !string.IsNullOrWhiteSpace( groupName ) )
+            {
+                var result = new StringBuilder();
+                result.Append( group.ToString() );
+                if ( !string.IsNullOrWhiteSpace( roleName ) || !string.IsNullOrWhiteSpace( statusName ) )
+                {
+                    result.AppendFormat( " ({0}{1}{2})",
+                        statusName,
+                        !string.IsNullOrWhiteSpace( roleName ) && !string.IsNullOrWhiteSpace( statusName ) ? " " : "",
+                        roleName );
+                }
+
+                return result.ToString();
+            }
+
+            return string.Empty;
         }
 
         /// <summary>
@@ -949,6 +1001,7 @@ namespace RockWeb.Blocks.Connection
             public int Id { get; set; }
             public string Name { get; set; }
             public string IconCssClass { get; set; }
+            public bool IsActive { get; set; }
             public bool CampusSpecificConnector { get; set; }
             public List<int> ConnectorCampusIds { get; set; }  // Will be null if user is a connector for all campuses
             public int AssignedToYou { get; set; }

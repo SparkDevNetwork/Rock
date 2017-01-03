@@ -35,7 +35,7 @@ namespace Rock.Migrations
             AddDefinedType( "Global", "Map Styles", "Defines a listing of various map styles to be used as configuration for the various blocks that render maps. Check-out http://snazzymaps.com/ for inspiration.", "4EF89471-C049-49ED-AB50-677F689A4E4E" );
 
             AddDefinedValue( "4EF89471-C049-49ED-AB50-677F689A4E4E", "Rock", "The default styling for Rock maps.", "FDC5D6BA-A818-4A06-96B1-9EF31B4087AC" );
-            AddDefinedValue( "4EF89471-C049-49ED-AB50-677F689A4E4E", "Subtle Grayscale", @"Created by: Paulo �vila
+            AddDefinedValue( "4EF89471-C049-49ED-AB50-677F689A4E4E", "Subtle Grayscale", @"Created by: Paulo Avila
 A nice, simple grayscale version of the map with color extremes that are never too harsh on the eyes. Originally created for http://barvinssurvins.fr/situer.
 
 http://snazzymaps.com/style/15/subtle-grayscale", "B1B95FDC-BB41-429F-A5D0-04D4D8284E2C" );

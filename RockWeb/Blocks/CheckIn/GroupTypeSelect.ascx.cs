@@ -19,6 +19,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Web.UI;
+using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
 
 using Rock;
@@ -32,8 +33,8 @@ namespace RockWeb.Blocks.CheckIn
     [Category( "Check-in" )]
     [Description( "Displays a list of group types the person is configured to checkin to." )]
 
-    [BooleanField( "Select All and Skip", "Select this option if end-user should never see screen to select group types, all group types will automatically be selected and all the groups in all types will be available.", false, "", 5, "SelectAll" )]
-    public partial class GroupTypeSelect : CheckInBlock
+    [BooleanField( "Select All and Skip", "Select this option if end-user should never see screen to select group types, all group types will automatically be selected and all the groups in all types will be available.", false, "", 8, "SelectAll" )]
+    public partial class GroupTypeSelect : CheckInBlockMultiPerson
     {
         /// <summary>
         /// Determines if the block requires that a selection be made. This is used to determine if user should
@@ -61,43 +62,58 @@ namespace RockWeb.Blocks.CheckIn
 
                 var schedule = person.CurrentSchedule;
                 var availGroupTypes = person.GetAvailableGroupTypes( schedule );
-                if ( availGroupTypes.Count == 1 )
+                if ( availGroupTypes.Any() )
                 {
-                    if ( backingUp )
+                    if ( availGroupTypes.Count == 1 )
                     {
-                        GoBack( true );
-                        return false;
-                    }
-                    else
-                    {
-                        var groupType = availGroupTypes.First();
-                        if ( schedule == null )
-                        {
-                            groupType.Selected = true;
-                        }
-                        else
-                        {
-                            groupType.SelectedForSchedule.Add( schedule.Schedule.Id );
-                        }
-
-                        return !ProcessSelection( person, schedule );
-                    }
-                }
-                else
-                {
-                    bool SelectAll = GetAttributeValue( "SelectAll" ).AsBoolean( false );
-                    if ( SelectAll )
-                    {
-                        if ( UserBackedUp )
+                        if ( backingUp )
                         {
                             GoBack( true );
                             return false;
                         }
                         else
                         {
-                            availGroupTypes.ForEach( t => t.Selected = true );
+                            var groupType = availGroupTypes.First();
+                            if ( schedule == null )
+                            {
+                                groupType.Selected = true;
+                            }
+                            else
+                            {
+                                groupType.SelectedForSchedule.Add( schedule.Schedule.Id );
+                            }
+
                             return !ProcessSelection( person, schedule );
                         }
+                    }
+                    else
+                    {
+                        bool SelectAll = GetAttributeValue( "SelectAll" ).AsBoolean( false );
+                        if ( SelectAll )
+                        {
+                            if ( backingUp )
+                            {
+                                GoBack( true );
+                                return false;
+                            }
+                            else
+                            {
+                                availGroupTypes.ForEach( t => t.Selected = true );
+                                return !ProcessSelection( person, schedule );
+                            }
+                        }
+                        else
+                        {
+                            return true;
+                        }
+                    }
+                }
+                else
+                {
+                    if ( backingUp )
+                    {
+                        GoBack( true );
+                        return false;
                     }
                     else
                     {
@@ -117,6 +133,12 @@ namespace RockWeb.Blocks.CheckIn
 
             RockPage.AddScriptLink( "~/Scripts/iscroll.js" );
             RockPage.AddScriptLink( "~/Scripts/CheckinClient/checkin-core.js" );
+
+            var bodyTag = this.Page.Master.FindControl( "bodyTag" ) as HtmlGenericControl;
+            if ( bodyTag != null )
+            {
+                bodyTag.AddCssClass( "checkin-grouptypeselect-bg" );
+            }
 
             if ( CurrentWorkflow == null || CurrentCheckInState == null )
             {
@@ -138,31 +160,9 @@ namespace RockWeb.Blocks.CheckIn
                     lPersonName.Text = GetPersonScheduleSubTitle();
 
                     var availGroupTypes = person.GetAvailableGroupTypes( schedule );
-                    if ( availGroupTypes.Count == 1 )
+                    if ( availGroupTypes.Any() )
                     {
-                        if ( UserBackedUp )
-                        {
-                            GoBack();
-                        }
-                        else
-                        {
-                            var groupType = availGroupTypes.First();
-                            if ( schedule == null )
-                            {
-                                groupType.Selected = true;
-                            }
-                            else
-                            {
-                                groupType.SelectedForSchedule.Add( schedule.Schedule.Id );
-                            }
-
-                            ProcessSelection( person, schedule );
-                        }
-                    }
-                    else
-                    {
-                        bool SelectAll = GetAttributeValue( "SelectAll" ).AsBoolean( false );
-                        if ( SelectAll )
+                        if ( availGroupTypes.Count == 1 )
                         {
                             if ( UserBackedUp )
                             {
@@ -170,17 +170,56 @@ namespace RockWeb.Blocks.CheckIn
                             }
                             else
                             {
-                                availGroupTypes.ForEach( t => t.Selected = true );
+                                var groupType = availGroupTypes.First();
+                                if ( schedule == null )
+                                {
+                                    groupType.Selected = true;
+                                }
+                                else
+                                {
+                                    groupType.SelectedForSchedule.Add( schedule.Schedule.Id );
+                                }
+
                                 ProcessSelection( person, schedule );
                             }
                         }
                         else
                         {
-                            rSelection.DataSource = availGroupTypes
-                                .OrderBy( g => g.GroupType.Order )
-                                .ToList();
+                            bool SelectAll = GetAttributeValue( "SelectAll" ).AsBoolean( false );
+                            if ( SelectAll )
+                            {
+                                if ( UserBackedUp )
+                                {
+                                    GoBack();
+                                }
+                                else
+                                {
+                                    availGroupTypes.ForEach( t => t.Selected = true );
+                                    ProcessSelection( person, schedule );
+                                }
+                            }
+                            else
+                            {
+                                rSelection.DataSource = availGroupTypes
+                                    .OrderBy( g => g.GroupType.Order )
+                                    .ToList();
 
-                            rSelection.DataBind();
+                                rSelection.DataBind();
+                            }
+                        }
+                    }
+                    else
+                    {
+                        if ( UserBackedUp )
+                        {
+                            GoBack();
+                        }
+                        else
+                        {
+                            pnlNoOptions.Visible = true;
+                            rSelection.Visible = false;
+                            lNoOptionName.Text = person.Person.NickName;
+                            lNoOptionSchedule.Text = person.CurrentSchedule != null ? person.CurrentSchedule.ToString() : "this time";
                         }
                     }
                 }
@@ -228,7 +267,7 @@ namespace RockWeb.Blocks.CheckIn
                             groupType.Selected = true;
                         }
                         else
-                        { 
+                        {
                             groupType.SelectedForSchedule.Add( schedule.Schedule.Id );
                         }
 
@@ -236,6 +275,16 @@ namespace RockWeb.Blocks.CheckIn
                     }
                 }
             }
+        }
+
+        /// <summary>
+        /// Handles the Click event of the btnNoOptionOk control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void btnNoOptionOk_Click( object sender, EventArgs e )
+        {
+            ProcessNoOption();
         }
 
         /// <summary>
@@ -273,7 +322,7 @@ namespace RockWeb.Blocks.CheckIn
                     () => person.SelectedGroupTypes( schedule )
                         .SelectMany( t => t.Groups.Where( g => !g.ExcludedByFilter ) )
                         .Count() <= 0,
-                    "<p>Sorry, based on your selection, there are currently not any available locations that can be checked into.</p>",
+                    string.Format( "<p>Sorry, based on your selection, there are currently not any available locations that {0} can check into.</p>", person.Person.NickName ),
                     true ) )
                 {
                     ClearSelection();
@@ -286,5 +335,6 @@ namespace RockWeb.Blocks.CheckIn
 
             return false;
         }
+
     }
 }

@@ -1,0 +1,37 @@
+//
+// Person List - used to show a list of people
+// --------------------------------------------------
+
+.personlist {
+  padding-left: 0;
+  list-style: none;
+
+  li {
+    padding-left: @spacing-md-px;
+
+    i.fa-circle {
+      margin-right: @spacing-sm-px;
+      margin-left: -@spacing-md-px;
+      font-size: 9px;
+      color: #d0cfcf;
+    }
+
+    .actions {
+      opacity: 0;
+      -webkit-transition: opacity .5s ease-out;
+         -moz-transition: opacity .5s ease-out;
+           -o-transition: opacity .5s ease-out;
+              transition: opacity .5s ease-out;
+    }
+
+    &:hover {
+      .actions {
+        opacity: 1;
+      }
+    }
+  }
+
+  .popover {
+    width: 320px;
+  }
+}

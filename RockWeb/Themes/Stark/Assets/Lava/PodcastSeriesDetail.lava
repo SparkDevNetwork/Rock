@@ -70,7 +70,7 @@
 			{{ item.Content }}
 		</div>
 		
-		<h4 class="messages-title margin-t-lg">In This Series/h4>
+		<h4 class="messages-title margin-t-lg">In This Series</h4>
 		<ol class="messages">
 			{% for message in item.ChildItems %}
 				<li>

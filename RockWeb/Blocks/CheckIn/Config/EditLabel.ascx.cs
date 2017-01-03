@@ -22,6 +22,7 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Sockets;
+using System.Text.RegularExpressions;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 using Rock;
@@ -40,6 +41,10 @@ namespace RockWeb.Blocks.CheckIn.Config
     [Description( "Allows editing contents of a label and printing test labels." )]
     public partial class EditLabel : RockBlock
     {
+        #region Properties
+        Regex regexPrintWidth = new Regex( @"\^PW(\d+)" );
+        Regex regexPrintHeight = new Regex( @"\^LL(\d+)" );
+        #endregion
 
         #region Control Methods
 
@@ -68,6 +73,7 @@ namespace RockWeb.Blocks.CheckIn.Config
                         {
                             lTitle.Text = binaryFile.FileName;
                             ceLabel.Text = binaryFile.ContentsToString();
+                            SetLabelSize( ceLabel.Text );
                         }
                     }
                     else
@@ -131,6 +137,7 @@ namespace RockWeb.Blocks.CheckIn.Config
                     if ( file != null )
                     {
                         ceLabel.Text = file.ContentsToString();
+                        SetLabelSize( ceLabel.Text );
                         ceLabel.Label = string.Format( file.FileName );
                         btnSave.Text = "Save " + file.FileName;
                         btnSave.Visible = true;
@@ -214,6 +221,52 @@ namespace RockWeb.Blocks.CheckIn.Config
         protected void btnRedraw_Click( object sender, EventArgs e )
         {
             SetLabelImage();
+        }
+
+        /// <summary>
+        /// Tries to set the size of the label using the ZPL contents to calculate width and height.
+        /// </summary>
+        /// <param name="zpl">The ZPL.</param>
+        private void SetLabelSize( string zpl )
+        {
+            try
+            {
+                int dpi = 203;
+                switch ( ddlPrintDensity.SelectedValue.AsInteger() )
+                {
+                    case 6:
+                        dpi = 152;
+                        break;
+                    case 8:
+                        dpi = 203;
+                        break;
+                    case 12:
+                        dpi = 300;
+                        break;
+                    case 24:
+                        dpi = 600;
+                        break;
+                    default:
+                        break;
+                }
+
+                var widthMatch = regexPrintWidth.Match( zpl );
+                if ( widthMatch.Success )
+                {
+                    var widthInches = ( double ) widthMatch.Groups[1].Value.AsInteger() / ( double ) dpi;
+                    var widthRounded = Math.Round( widthInches, 2, MidpointRounding.AwayFromZero );
+                    nbLabelWidth.Text = widthRounded.ToString();
+                }
+
+                var heightMatch = regexPrintHeight.Match( zpl );
+                if ( heightMatch.Success )
+                {
+                    var heightInches = ( double ) heightMatch.Groups[1].Value.AsInteger() / ( double ) dpi;
+                    var heightRounded = Math.Round( heightInches, 2, MidpointRounding.AwayFromZero );
+                    nbLabelHeight.Text = heightRounded.ToString();
+                }
+            }
+            catch { };
         }
 
         private void SetLabelImage()

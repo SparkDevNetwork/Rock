@@ -8,58 +8,64 @@
 
 // Sizing and Positioning
 .slide-control ul {
-	padding-left: 0;
-	list-style: none;
-	text-align: center;
-	margin-bottom: 0;
-	@media (min-width: @screen-md) {
-		> li { display: inline-block; }
-	}
+  padding-left: 0;
+  margin-bottom: 0;
+  text-align: center;
+  list-style: none;
+  @media (min-width: @screen-md) {
+    > li {
+      display: inline-block;
+    }
+  }
 }
 
 // Styling
 .slide-control {
-	color: #fff;
-	background: @gray-dark;
-	overflow: auto;
-    position: relative;
-	@media (min-width: @screen-sm-min) {
-		.border-bottom-radius(5px);
-	}
-	.tipper {
-		@media (max-width: @screen-sm-max) { .responsive-invisibility(); }
-		.opacity(0);
-		display: inline-block;
-		position: absolute;
-		left: 0;
-		bottom: 0;
+  position: relative;
+  overflow: auto;
+  color: #fff;
+  background: @gray-dark;
+  @media (min-width: @screen-sm-min) {
+    .border-bottom-radius(5px);
+  }
+  .tipper {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    display: inline-block;
+    width: 0;
+    height: 0;
+    border-right: 8px solid transparent;
+    border-bottom: 8px solid @gray-lighter;
+    border-left: 8px solid transparent;
 
-		width: 0; 
-		height: 0; 
-		border-left: 8px solid transparent;
-		border-right: 8px solid transparent;
-		border-bottom: 8px solid @gray-lighter;
-		
-		&.loaded {
-			.opacity(1);
-			.transition(~'opacity .25s ease-in,left .5s');
-		}
-	}
-	li {
-		text-align: center;
-		padding: 0 @grid-gutter-width*@spacing-md;
-		margin: @grid-gutter-width*@spacing-md 0;
-		height: 100%;
-		cursor: pointer;
-		font-size: .8em;
-		@media (min-width: @screen-sm-min) {
-			font-size: .9em;
-		}
-		
-		.transition(opacity .6s); // matches default flexslider animation time
-		.opacity(.5);
-		&.flex-active { .opacity(1); }
-	}
+    .opacity(0);
+    @media (max-width: @screen-sm-max) {
+      .responsive-invisibility();
+    }
+
+    &.loaded {
+      .opacity(1);
+      .transition(~'opacity .25s ease-in,left .5s');
+    }
+  }
+  li {
+    height: 100%;
+    padding: 0 @grid-gutter-width*@spacing-md;
+    margin: @grid-gutter-width*@spacing-md 0;
+    font-size: .8em;
+    text-align: center;
+    cursor: pointer;
+
+    .transition(opacity .6s); // matches default flexslider animation time
+    .opacity(.5);
+    @media (min-width: @screen-sm-min) {
+      font-size: .9em;
+    }
+    &.flex-active {
+      .opacity(1);
+    }
+  }
 }
 
 
@@ -82,24 +88,55 @@
 .flex-container a:active,
 .flexslider a:active,
 .flex-container a:focus,
-.flexslider a:focus  {outline: none;}
+.flexslider a:focus {
+  outline: none;
+}
 .slides,
 .flex-control-nav,
-.flex-direction-nav {margin: 0; padding: 0; list-style: none;}
+.flex-direction-nav {
+  padding: 0;
+  margin: 0;
+  list-style: none;
+}
 
 /* FlexSlider Necessary Styles
 *********************************/
-.flexslider {margin: 0; padding: 0;}
-.flexslider .slides > li {display: none; -webkit-backface-visibility: hidden;} /* Hide the slides before the JS is loaded. Avoids image jumping */
-.flexslider .slides img {width: 100%; display: block;}
-.flex-pauseplay span {text-transform: capitalize;}
+.flexslider {
+  padding: 0;
+  margin: 0;
+}
+.flexslider .slides > li {
+  display: none;
+
+  -webkit-backface-visibility: hidden;
+} /* Hide the slides before the JS is loaded. Avoids image jumping */
+.flexslider .slides img {
+  display: block;
+  width: 100%;
+}
+.flex-pauseplay span {
+  text-transform: capitalize;
+}
 
 /* Clearfix for the .slides element */
-.slides:after {content: "\0020"; display: block; clear: both; visibility: hidden; line-height: 0; height: 0;}
-html[xmlns] .slides {display: block;}
-* html .slides {height: 1%;}
+.slides:after {
+  display: block;
+  height: 0;
+  clear: both;
+  line-height: 0;
+  visibility: hidden;
+  content: "\0020";
+}
+html[xmlns] .slides {
+  display: block;
+}
+* html .slides {
+  height: 1%;
+}
 
 /* No JavaScript Fallback */
 /* If you are not using another script, such as Modernizr, make sure you
  * include js that eliminates this class on page load */
-.no-js .slides > li:first-child {display: block;}
+.no-js .slides > li:first-child {
+  display: block;
+}

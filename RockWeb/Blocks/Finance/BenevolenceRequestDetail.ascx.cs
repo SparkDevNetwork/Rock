@@ -37,6 +37,7 @@ namespace RockWeb.Blocks.Finance
     [Category( "Finance" )]
     [Description( "Block for users to create, edit, and view benevolence requests." )]
     [SecurityRoleField( "Case Worker Role", "The security role to draw case workers from", true, Rock.SystemGuid.Group.GROUP_BENEVOLENCE )]
+    [LinkedPage("Benevolence Request Statement Page", "The page which summarises a benevolence request for printing", true)]
     public partial class BenevolenceRequestDetail : Rock.Web.UI.RockBlock
     {
         #region Properties
@@ -473,6 +474,20 @@ namespace RockWeb.Blocks.Finance
         }
 
         /// <summary>
+        /// Handles the Click event of the lbPrint control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void lbPrint_Click(object sender, EventArgs e)
+        {
+            var benevolenceRequestId = this.PageParameter("BenevolenceRequestId").AsIntegerOrNull();       
+            if (benevolenceRequestId.HasValue && !benevolenceRequestId.Equals(0) && !string.IsNullOrEmpty(GetAttributeValue("BenevolenceRequestStatementPage")))
+            {
+                NavigateToLinkedPage("BenevolenceRequestStatementPage", new Dictionary<string, string> { { "BenevolenceRequestId", benevolenceRequestId.ToString() } });
+            }               
+        }
+
+        /// <summary>
         /// Handles the SelectPerson event of the ppPerson control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
@@ -546,9 +561,10 @@ namespace RockWeb.Blocks.Finance
                     // set the campus but not on page load (e will be null) unless from the person profile page (in which case BenevolenceRequestId in the query string will be 0)
                     int? requestId = Request["BenevolenceRequestId"].AsIntegerOrNull();
                     
-                    if ( !cpCampus.SelectedCampusId.HasValue && (e != null || (requestId.HasValue && requestId ==0)) )
+                    if ( !cpCampus.SelectedCampusId.HasValue && ( e != null || (requestId.HasValue && requestId == 0 ) ) )
                     {
-                        cpCampus.SelectedCampusId = person.GetCampus().Id;
+                        var personCampus = person.GetCampus();
+                        cpCampus.SelectedCampusId = personCampus != null ? personCampus.Id : (int?)null;
                     }
                 }
             }
@@ -640,6 +656,7 @@ namespace RockWeb.Blocks.Finance
             if ( !benevolenceRequestId.Equals( 0 ) )
             {
                 benevolenceRequest = benevolenceRequestService.Get( benevolenceRequestId );
+                pdAuditDetails.SetEntity( benevolenceRequest, ResolveRockUrl( "~" ) );
             }
 
             if ( benevolenceRequest == null )
@@ -656,6 +673,8 @@ namespace RockWeb.Blocks.Finance
                         benevolenceRequest.RequestedByPersonAlias = person.PrimaryAlias;
                     }
                 }
+                // hide the panel drawer that show created and last modified dates
+                pdAuditDetails.Visible = false;
             }
 
             dtbFirstName.Text = benevolenceRequest.FirstName;
@@ -667,7 +686,7 @@ namespace RockWeb.Blocks.Finance
             dtbProvidedNextSteps.Text = benevolenceRequest.ProvidedNextSteps;
             dpRequestDate.SelectedDate = benevolenceRequest.RequestDateTime;
 
-            if (benevolenceRequest.Campus != null )
+            if ( benevolenceRequest.Campus != null )
             {
                 cpCampus.SelectedCampusId = benevolenceRequest.CampusId;
             }

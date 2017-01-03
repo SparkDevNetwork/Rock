@@ -631,6 +631,10 @@ namespace RockWeb.Blocks.Event
                         }
                     }
                 }
+                else
+                {
+                    rockContext.SaveChanges();
+                }
 
                 // Reload registration
                 Registration = GetRegistration( Registration.Id );
@@ -1014,8 +1018,8 @@ namespace RockWeb.Blocks.Event
                             }
 
                             var sendErrorMessages = new List<string>();
-                            if ( new SignatureDocumentTypeService( rockContext ).SendDocument(
-                                Registration.RegistrationInstance.RegistrationTemplate.RequiredSignatureDocumentType,
+                            if ( new SignatureDocumentTemplateService( rockContext ).SendDocument(
+                                Registration.RegistrationInstance.RegistrationTemplate.RequiredSignatureDocumentTemplate,
                                 registrant.PersonAlias.Person, 
                                 assignedTo,
                                 Registration.RegistrationInstance.Name,
@@ -1023,7 +1027,7 @@ namespace RockWeb.Blocks.Event
                                 out sendErrorMessages ) )
                             {
                                 rockContext.SaveChanges();
-                                maSignatureRequestSent.Show( "A Signature Request Has Been Sent!", Rock.Web.UI.Controls.ModalAlertType.Information );
+                                maSignatureRequestSent.Show( "A Signature Request Has Been Sent.", Rock.Web.UI.Controls.ModalAlertType.Information );
                             }
                             else
                             {
@@ -1401,22 +1405,24 @@ namespace RockWeb.Blocks.Event
 
             if ( registration.RegistrationInstance != null && 
                 registration.RegistrationInstance.RegistrationTemplate != null &&
-                registration.RegistrationInstance.RegistrationTemplate.RequiredSignatureDocumentTypeId.HasValue )
+                registration.RegistrationInstance.RegistrationTemplate.RequiredSignatureDocumentTemplateId.HasValue )
             {
                 var personIds = RegistrantsState.Select( r => r.PersonId ).ToList();
                 var documents = new SignatureDocumentService( rockContext )
                     .Queryable().AsNoTracking()
                     .Where( d =>
-                        d.SignatureDocumentTypeId == registration.RegistrationInstance.RegistrationTemplate.RequiredSignatureDocumentTypeId.Value &&
-                        d.AppliesToPersonAlias != null &&
-                        personIds.Contains( d.AppliesToPersonAlias.PersonId ) )
+                        d.SignatureDocumentTemplateId == registration.RegistrationInstance.RegistrationTemplate.RequiredSignatureDocumentTemplateId.Value &&
+                        d.Status == SignatureDocumentStatus.Signed &&
+                        d.BinaryFileId.HasValue &&
+                        d.AppliesToPersonAlias != null && personIds.Contains( d.AppliesToPersonAlias.PersonId ) )
+                    .OrderByDescending( d => d.LastStatusDate )
                     .ToList();
 
                 foreach( var registrantInfo in RegistrantsState )
                 {
-                    var myDocuments = documents.Where( d => d.AppliesToPersonAlias.PersonId == registrantInfo.PersonId ).ToList();
-                    registrantInfo.SignatureDocumentSigned = documents.Any( d => d.Status == SignatureDocumentStatus.Signed );
-                    registrantInfo.SignatureDocumentLastSent = myDocuments.Max( d => (DateTime?)d.RequestDate );
+                    var document = documents.Where( d => d.AppliesToPersonAlias.PersonId == registrantInfo.PersonId ).FirstOrDefault();
+                    registrantInfo.SignatureDocumentId = document != null ? document.BinaryFileId : (int?)null;
+                    registrantInfo.SignatureDocumentLastSent = document != null ? document.LastInviteDate : (DateTime?)null;
                 }
             }
 
@@ -1646,9 +1652,20 @@ namespace RockWeb.Blocks.Event
 
                 var batchService = new FinancialBatchService( rockContext );
 
+                // determine batch prefix
+                string batchPrefix = string.Empty;
+                if ( !string.IsNullOrWhiteSpace( RegistrationTemplateState.BatchNamePrefix ) )
+                {
+                    batchPrefix = RegistrationTemplateState.BatchNamePrefix;
+                }
+                else
+                {
+                    batchPrefix = GetAttributeValue( "BatchNamePrefix" );
+                }
+
                 // Get the batch
                 var batch = batchService.Get(
-                    GetAttributeValue( "BatchNamePrefix" ),
+                    batchPrefix,
                     dvCurrencyType,
                     dvCredCardType,
                     transaction.TransactionDateTime.Value,
@@ -1858,14 +1875,23 @@ namespace RockWeb.Blocks.Event
                     var costSummary = new RegistrationCostSummaryInfo();
                     costSummary.Type = RegistrationCostSummaryType.Cost;
                     costSummary.Description = registrant.PersonName;
-                    costSummary.Cost = registrant.Cost;
-                    if ( registration.DiscountPercentage > 0.0m )
+                    if ( registrant.OnWaitList )
                     {
-                        costSummary.DiscountedCost = costSummary.Cost - ( costSummary.Cost * registration.DiscountPercentage );
+                        costSummary.Description += " (Waiting List)";
+                        costSummary.Cost = 0.0M;
+                        costSummary.DiscountedCost = 0.0M;
                     }
                     else
                     {
-                        costSummary.DiscountedCost = costSummary.Cost;
+                        costSummary.Cost = registrant.Cost;
+                        if ( registration.DiscountPercentage > 0.0m && registrant.DiscountApplies )
+                        {
+                            costSummary.DiscountedCost = costSummary.Cost - ( costSummary.Cost * registration.DiscountPercentage );
+                        }
+                        else
+                        {
+                            costSummary.DiscountedCost = costSummary.Cost;
+                        }
                     }
 
                     costs.Add( costSummary );
@@ -1890,7 +1916,7 @@ namespace RockWeb.Blocks.Event
                             costSummary.Description = desc;
                             costSummary.Cost = feeInfo.Quantity * cost;
 
-                            if ( registration.DiscountPercentage > 0.0m && templateFee != null && templateFee.DiscountApplies )
+                            if ( registration.DiscountPercentage > 0.0m && templateFee != null && templateFee.DiscountApplies && registrant.DiscountApplies )
                             {
                                 costSummary.DiscountedCost = costSummary.Cost - ( costSummary.Cost * registration.DiscountPercentage );
                             }
@@ -1916,7 +1942,7 @@ namespace RockWeb.Blocks.Event
                 // Add row for amount discount
                 if ( registration.DiscountAmount > 0.0m )
                 {
-                    decimal totalDiscount = 0.0m - ( RegistrantsState.Count * registration.DiscountAmount );
+                    decimal totalDiscount = 0.0m - ( RegistrantsState.Where( r => r.DiscountApplies ).Count() * registration.DiscountAmount );
                     costs.Add( new RegistrationCostSummaryInfo
                     {
                         Type = RegistrationCostSummaryType.Discount,
@@ -1951,7 +1977,8 @@ namespace RockWeb.Blocks.Event
                     registration.RegistrationInstance != null &&
                     registration.RegistrationInstance.AccountId.HasValue &&
                     registration.PersonAliasId.HasValue &&
-                    RegistrationTemplateState != null )
+                    RegistrationTemplateState != null &&
+                    EditAllowed )
                 {
                     lbAddPayment.Visible = true;
                     lbProcessPayment.Visible = RegistrationTemplateState.FinancialGateway != null;
@@ -2006,14 +2033,24 @@ namespace RockWeb.Blocks.Event
             divLabels.AddCssClass( "panel-labels" );
             divHeading.Controls.Add( divLabels );
 
-            decimal registrantCost = registrant.TotalCost;
-            if ( registrantCost != 0.0m )
+            if ( registrant.OnWaitList )
+            {
+                var hlOnWaitList = new HighlightLabel();
+                hlOnWaitList.ID = string.Format( "hlWaitList_{0}", registrant.Id );
+                hlOnWaitList.LabelType = LabelType.Warning;
+                hlOnWaitList.Text = "Wait List";
+                hlOnWaitList.CssClass = "margin-r-sm";
+                divLabels.Controls.Add( hlOnWaitList );
+            }
+
+            decimal discountedTotalCost = registrant.DiscountedTotalCost( Registration.DiscountPercentage, Registration.DiscountAmount );
+            if ( discountedTotalCost != 0.0m )
             {
                 var hlCost = new HighlightLabel();
                 hlCost.ID = string.Format( "hlCost_{0}", registrant.Id );
                 hlCost.LabelType = LabelType.Info;
                 hlCost.ToolTip = "Cost";
-                hlCost.Text = registrantCost.FormatAsCurrency();
+                hlCost.Text = discountedTotalCost.FormatAsCurrency();
                 divLabels.Controls.Add( hlCost );
             }
 
@@ -2032,11 +2069,17 @@ namespace RockWeb.Blocks.Event
             divBody.AddCssClass( "panel-body" );
             divPanel.Controls.Add( divBody );
 
-            if ( Registration != null && 
-                Registration.RegistrationInstance != null && 
+            SignatureDocumentTemplate documentTemplate = null;
+
+            if ( Registration != null &&
+                Registration.RegistrationInstance != null &&
                 Registration.RegistrationInstance.RegistrationTemplate != null &&
-                Registration.RegistrationInstance.RegistrationTemplate.RequiredSignatureDocumentType != null &&
-                !registrant.SignatureDocumentSigned )
+                Registration.RegistrationInstance.RegistrationTemplate.RequiredSignatureDocumentTemplate != null )
+            {
+                documentTemplate = Registration.RegistrationInstance.RegistrationTemplate.RequiredSignatureDocumentTemplate;
+            }
+
+            if ( documentTemplate != null && !registrant.SignatureDocumentId.HasValue )
             {
                 var template = Registration.RegistrationInstance.RegistrationTemplate;
                 var divSigAlert = new HtmlGenericControl( "div" );
@@ -2044,9 +2087,11 @@ namespace RockWeb.Blocks.Event
                 divBody.Controls.Add( divSigAlert );
 
                 StringBuilder sb = new StringBuilder();
+                sb.Append( "<div class='row'><div class='col-md-9'>" );
+
                 sb.AppendFormat(
                     "There is not a signed {0} for {1}",
-                    template.RequiredSignatureDocumentType.Name,
+                    template.RequiredSignatureDocumentTemplate.Name,
                     registrant.GetFirstName( template ) );
 
                 if ( registrant.SignatureDocumentLastSent.HasValue )
@@ -2055,34 +2100,36 @@ namespace RockWeb.Blocks.Event
                         " (a request was sent {0})",
                         registrant.SignatureDocumentLastSent.Value.ToElapsedString() );
                 }
-                sb.Append( "." );
+                sb.Append( ".</div>" );
 
                 divSigAlert.Controls.Add( new LiteralControl( sb.ToString() ) );
 
                 var divSigAction = new HtmlGenericControl( "div" );
-                divSigAction.AddCssClass( "actions margin-t-md" );
+                divSigAction.AddCssClass( "col-md-3 text-right" );
                 divSigAlert.Controls.Add( divSigAction );
 
                 var lbResendDocumentRequest = new LinkButton();
                 lbResendDocumentRequest.CausesValidation = false;
                 lbResendDocumentRequest.ID = string.Format( "lbResendDocumentRequest_{0}", registrant.Id );
-                lbResendDocumentRequest.Text = "Send Signature Request";
-                lbResendDocumentRequest.CssClass = "btn btn-default";
+                lbResendDocumentRequest.Text = registrant.SignatureDocumentLastSent.HasValue ? "Resend Signature Request" : "Send Signature Request";
+                lbResendDocumentRequest.CssClass = "btn btn-warning btn-sm";
                 lbResendDocumentRequest.Click += lbResendDocumentRequest_Click;
-                divSigAlert.Controls.Add( lbResendDocumentRequest );
+                divSigAction.Controls.Add( lbResendDocumentRequest );
+
+                divSigAlert.Controls.Add( new LiteralControl( "</div>" ) );
             }
 
             var divRow = new HtmlGenericControl( "div" );
             divRow.AddCssClass( "row" );
             divBody.Controls.Add( divRow );
 
-            var divFields = new HtmlGenericControl( "div" );
-            divFields.AddCssClass( "col-md-6");
-            divRow.Controls.Add( divFields );
+            var divLeftColumn = new HtmlGenericControl( "div" );
+            divLeftColumn.AddCssClass( "col-md-6");
+            divRow.Controls.Add( divLeftColumn );
 
-            var divFees = new HtmlGenericControl( "div" );
-            divFees.AddCssClass( "col-md-6");
-            divRow.Controls.Add( divFees );
+            var divRightColumn = new HtmlGenericControl( "div" );
+            divRightColumn.AddCssClass( "col-md-6");
+            divRow.Controls.Add( divRightColumn );
 
             if ( RegistrationTemplateState != null &&
                 RegistrationTemplateState.GroupTypeId.HasValue &&
@@ -2094,7 +2141,7 @@ namespace RockWeb.Blocks.Event
                 {
                     var rcwGroupMember = new RockControlWrapper();
                     rcwGroupMember.ID = string.Format( "rcwGroupMember_{0}", registrant.Id );
-                    divFields.Controls.Add( rcwGroupMember );
+                    divLeftColumn.Controls.Add( rcwGroupMember );
                     rcwGroupMember.Label = "Group";
 
                     var pGroupMember = new HtmlGenericControl( "p" );
@@ -2135,7 +2182,7 @@ namespace RockWeb.Blocks.Event
                     var fieldControl = BuildRegistrantFieldControl( field, registrant, setValues );
                     if ( fieldControl != null )
                     {
-                        divFields.Controls.Add( fieldControl );
+                        divLeftColumn.Controls.Add( fieldControl );
                     }
                 }
             }
@@ -2146,7 +2193,32 @@ namespace RockWeb.Blocks.Event
                 rlCost.ID = string.Format( "rlCost_{0}", registrant.Id );
                 rlCost.Label = "Cost";
                 rlCost.Text = registrant.Cost.FormatAsCurrency();
-                divFees.Controls.Add( rlCost );
+
+                decimal discountedCost = registrant.DiscountedCost( Registration.DiscountPercentage, Registration.DiscountAmount );
+                if ( registrant.Cost == discountedCost )
+                {
+                    var divCost = new HtmlGenericControl( "div" );
+                    divCost.AddCssClass( "col-xs-12" );
+                    divCost.Controls.Add( rlCost );
+                    divRightColumn.Controls.Add( divCost );
+                }
+                else
+                {
+                    var rlDiscountedCost = new RockLiteral();
+                    rlDiscountedCost.ID = string.Format( "rlDiscountedCost_{0}", registrant.Id );
+                    rlDiscountedCost.Label = "Discounted Cost";
+                    rlDiscountedCost.Text = discountedCost.FormatAsCurrency();
+
+                    var divCost = new HtmlGenericControl( "div" );
+                    divCost.AddCssClass( "col-xs-6" );
+                    divCost.Controls.Add( rlCost );
+                    divRightColumn.Controls.Add( divCost );
+
+                    var divDiscountedCost = new HtmlGenericControl( "div" );
+                    divDiscountedCost.AddCssClass( "col-xs-6" );
+                    divDiscountedCost.Controls.Add( rlDiscountedCost );
+                    divRightColumn.Controls.Add( divDiscountedCost );
+                }
             }
 
             foreach ( var fee in registrant.FeeValues )
@@ -2156,15 +2228,48 @@ namespace RockWeb.Blocks.Event
                 {
                     foreach ( var feeInfo in fee.Value )
                     {
+                        var discountedCost = registrant.DiscountApplies ? feeInfo.DiscountedCost( Registration.DiscountPercentage ) : feeInfo.TotalCost;
                         var feeControl = BuildRegistrantFeeControl( templateFee, feeInfo, registrant, setValues );
                         if ( feeControl != null )
                         {
-                            divFees.Controls.Add( feeControl );
+                            if ( feeInfo.TotalCost == discountedCost )
+                            {
+                                var divFee = new HtmlGenericControl( "div" );
+                                divFee.AddCssClass( "col-xs-12" );
+                                divFee.Controls.Add( feeControl );
+                                divRightColumn.Controls.Add( divFee );
+                            }
+                            else
+                            {
+                                var rlDiscountedFee = new RockLiteral();
+                                rlDiscountedFee.ID = string.Format( "rlDiscountedFee_{0}_{1}_{2}", registrant.Id, templateFee.Id, feeInfo.Option );
+                                rlDiscountedFee.Label = "Discounted Amount";
+                                rlDiscountedFee.Text = discountedCost.FormatAsCurrency();
+
+                                var divFee = new HtmlGenericControl( "div" );
+                                divFee.AddCssClass( "col-xs-6" );
+                                divFee.Controls.Add( feeControl );
+                                divRightColumn.Controls.Add( divFee );
+
+                                var divDiscountedFee = new HtmlGenericControl( "div" );
+                                divDiscountedFee.AddCssClass( "col-xs-6" );
+                                divDiscountedFee.Controls.Add( rlDiscountedFee );
+                                divRightColumn.Controls.Add( divDiscountedFee );
+                            }
                         }
                     }
                 }
             }
 
+            if ( documentTemplate != null && registrant.SignatureDocumentId.HasValue )
+            {
+                var rlDocumentLink = new RockLiteral();
+                rlDocumentLink.ID = string.Format( "rlDocumentLink_{0}", registrant.Id );
+                rlDocumentLink.Label = documentTemplate.Name;
+                rlDocumentLink.Text = string.Format( "<a href='{0}?id={1}' target='_blank'>View Document</a>",
+                    ResolveRockUrl( "~/GetFile.ashx" ), registrant.SignatureDocumentId.Value );
+                divRightColumn.Controls.Add( rlDocumentLink );
+            }
 
             var divActions = new HtmlGenericControl( "Div" );
             divActions.AddCssClass( "actions" );

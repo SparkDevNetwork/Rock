@@ -32,7 +32,7 @@ namespace Rock.Model
     /// </summary>
     [Table( "RegistrationTemplate" )]
     [DataContract]
-    public partial class RegistrationTemplate : Model<RegistrationTemplate>, ICategorized
+    public partial class RegistrationTemplate : Model<RegistrationTemplate>, IHasActiveFlag, ICategorized
     {
 
         #region Entity Properties
@@ -214,6 +214,45 @@ namespace Rock.Model
         public string ReminderEmailTemplate { get; set; }
 
         /// <summary>
+        /// Gets or sets the name of the wait list transition from.
+        /// </summary>
+        /// <value>
+        /// The name of the wait list transition from.
+        /// </value>
+        [DataMember]
+        [MaxLength( 200 )]
+        public string WaitListTransitionFromName { get; set; }
+
+        /// <summary>
+        /// Gets or sets the wait list transition from email.
+        /// </summary>
+        /// <value>
+        /// The wait list transition from email.
+        /// </value>
+        [DataMember]
+        [MaxLength( 200 )]
+        public string WaitListTransitionFromEmail { get; set; }
+
+        /// <summary>
+        /// Gets or sets the wait list transition subject.
+        /// </summary>
+        /// <value>
+        /// The wait list transition subject.
+        /// </value>
+        [DataMember]
+        [MaxLength( 200 )]
+        public string WaitListTransitionSubject { get; set; }
+
+        /// <summary>
+        /// Gets or sets the wait list transition email template.
+        /// </summary>
+        /// <value>
+        /// The wait list transition email template.
+        /// </value>
+        [DataMember]
+        public string WaitListTransitionEmailTemplate { get; set; }
+
+        /// <summary>
         /// Gets or sets the set cost on instance.
         /// </summary>
         /// <value>
@@ -257,6 +296,15 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public RegistrantsSameFamily RegistrantsSameFamily { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether [show current family members].
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if [show current family members]; otherwise, <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool ShowCurrentFamilyMembers { get; set; }
 
         /// <summary>
         /// Gets or sets the name of the request entry.
@@ -436,7 +484,7 @@ namespace Rock.Model
         /// The required signature document type identifier.
         /// </value>
         [DataMember]
-        public int? RequiredSignatureDocumentTypeId { get; set; }
+        public int? RequiredSignatureDocumentTemplateId { get; set; }
 
         /// <summary>
         /// Gets or sets the signature documentaction.
@@ -446,6 +494,15 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public SignatureDocumentAction SignatureDocumentAction { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether a wait list is enabled for this event template
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [wait list enabled]; otherwise, <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool WaitListEnabled { get; set; }
 
         #endregion
 
@@ -492,7 +549,7 @@ namespace Rock.Model
         /// The type of the required signature document.
         /// </value>
         [DataMember]
-        public virtual SignatureDocumentType RequiredSignatureDocumentType { get; set; }
+        public virtual SignatureDocumentTemplate RequiredSignatureDocumentTemplate { get; set; }
 
         /// <summary>
         /// Gets or sets the discounts.
@@ -584,7 +641,7 @@ namespace Rock.Model
             this.HasOptional( t => t.GroupType ).WithMany().HasForeignKey( t => t.GroupTypeId ).WillCascadeOnDelete( false );
             this.HasOptional( t => t.FinancialGateway ).WithMany().HasForeignKey( t => t.FinancialGatewayId ).WillCascadeOnDelete( false );
             this.HasOptional( t => t.RegistrationWorkflowType ).WithMany().HasForeignKey( t => t.RegistrationWorkflowTypeId ).WillCascadeOnDelete( false );
-            this.HasOptional( t => t.RequiredSignatureDocumentType ).WithMany().HasForeignKey( t => t.RequiredSignatureDocumentTypeId ).WillCascadeOnDelete( false );
+            this.HasOptional( t => t.RequiredSignatureDocumentTemplate ).WithMany().HasForeignKey( t => t.RequiredSignatureDocumentTemplateId ).WillCascadeOnDelete( false );
         }
     }
 

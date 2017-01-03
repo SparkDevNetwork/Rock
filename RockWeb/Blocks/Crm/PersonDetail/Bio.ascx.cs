@@ -50,13 +50,13 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
 </pre>
 ", Rock.Web.UI.Controls.CodeEditorMode.Html, Rock.Web.UI.Controls.CodeEditorTheme.Rock, 200, false, "", "", 2, "Actions" )]
     [LinkedPage( "Business Detail Page", "The page to redirect user to if a business is is requested.", false, "", "", 3 )]
-    [BooleanField( "Display Country Code", "When enabled prepends the country code to all phone numbers." )]
-    [BooleanField( "Display Middle Name", "Display the middle name of the person.")]
+    [BooleanField( "Display Country Code", "When enabled prepends the country code to all phone numbers.", false, "", 4 )]
+    [BooleanField( "Display Middle Name", "Display the middle name of the person.", false, "", 5)]
+    [CodeEditorField( "Custom Content", "Custom Content will be rendered after the person's demographic information <span class='tip tip-lava'></span>.",
+        Rock.Web.UI.Controls.CodeEditorMode.Lava, Rock.Web.UI.Controls.CodeEditorTheme.Rock, 200, false, "", "", 6, "CustomContent" )]
+    [BooleanField( "Allow Following", "Should people be able to follow a person by selecting the star on the person's photo?", true, "", 7)]
     public partial class Bio : PersonBlock
     {
-        
-        
-        
         #region Base Control Methods
 
         /// <summary>
@@ -73,6 +73,8 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
 
             if ( Person != null )
             {
+                pnlFollow.Visible = GetAttributeValue( "AllowFollowing" ).AsBoolean();
+
                 // Record Type - this is always "business". it will never change.
                 if ( Person.RecordTypeValueId == DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_BUSINESS.AsGuid() ).Id )
                 {
@@ -135,7 +137,10 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
                         lImage.Text = imgTag;
                     }
 
-                    FollowingsHelper.SetFollowing( Person.PrimaryAlias, pnlFollow, this.CurrentPerson );
+                    if ( GetAttributeValue( "AllowFollowing" ).AsBoolean() )
+                    {
+                        FollowingsHelper.SetFollowing( Person.PrimaryAlias, pnlFollow, this.CurrentPerson );
+                    }
 
                     var socialCategoryGuid = Rock.SystemGuid.Category.PERSON_ATTRIBUTES_SOCIAL.AsGuid();
                     if ( !socialCategoryGuid.IsEmpty() )
@@ -210,7 +215,7 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
                                     {
                                         string url = string.Format( "~/WorkflowEntry/{0}?PersonId={1}", workflowType.Id, Person.Id );
                                         sbActions.AppendFormat(
-                                            "<li><a href='{0}'><i class='icon-fw {1}'></i> {2}</a></li>",
+                                            "<li><a href='{0}'><i class='fa-fw {1}'></i> {2}</a></li>",
                                             ResolveRockUrl( url ),
                                             workflowType.IconCssClass,
                                             workflowType.Name );
@@ -238,6 +243,15 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
 
                     lActions.Text = sbActions.ToString();
                     ulActions.Visible = !string.IsNullOrWhiteSpace( lActions.Text );
+
+                    string customContent = GetAttributeValue( "CustomContent" );
+                    if ( !string.IsNullOrWhiteSpace( customContent ) )
+                    {
+                        var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( RockPage, CurrentPerson );
+                        string resolvedContent = customContent.ResolveMergeFields( mergeFields );
+                        phCustomContent.Controls.Add( new LiteralControl( resolvedContent ) );
+                    }
+
                 }
                 else
                 {
@@ -270,11 +284,11 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
             {
                 if (GetAttributeValue( "DisplayMiddleName" ).AsBoolean() && !String.IsNullOrWhiteSpace(Person.MiddleName))
                 {
-                    nameText = string.Format( "<span class='first-word'>{0}</span> {1} {2}", Person.NickName, Person.MiddleName, Person.LastName );
+                    nameText = string.Format( "<span class='first-word'>{0}</span> <span class='middlename'>{1}</span> <span class='lastname'>{2}</span>", Person.NickName, Person.MiddleName, Person.LastName );
                 }
                 else
                 {
-                    nameText = string.Format( "<span class='first-word'>{0}</span> {1}", Person.NickName, Person.LastName );
+                    nameText = string.Format( "<span class='first-word'>{0}</span> <span class='lastname'>{1}</span>", Person.NickName, Person.LastName );
                 }
                 
 
@@ -283,7 +297,7 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
                 {
                     if ( !string.IsNullOrWhiteSpace( Person.FirstName ) )
                     {
-                        nameText += string.Format( " ({0})", Person.FirstName );
+                        nameText += string.Format( " <span class='firstname'>({0})</span>", Person.FirstName );
                     }
                 }
 

@@ -61,7 +61,7 @@ namespace Rock.Financial
         /// <summary>
         /// Gets or sets a value indicating whether schedule is still active.
         /// </summary>
-        public bool ScheduleActive { get; set; }
+        public bool? ScheduleActive { get; set; }
 
         /// <summary>
         /// Gets or sets the status.

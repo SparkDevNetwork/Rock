@@ -323,6 +323,16 @@ namespace Rock.Client.Enums
 
     /// <summary>
     /// </summary>
+    public enum NotificationClassification
+    {
+        Success = 0x0,
+        Info = 0x1,
+        Warning = 0x2,
+        Danger = 0x3,
+    }
+
+    /// <summary>
+    /// </summary>
     public enum PrintFrom
     {
         Client = 0x0,
@@ -470,6 +480,7 @@ namespace Rock.Client.Enums
         Sent = 0x1,
         Signed = 0x2,
         Cancelled = 0x3,
+        Expired = 0x4,
     }
 
     /// <summary>

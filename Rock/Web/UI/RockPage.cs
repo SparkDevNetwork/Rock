@@ -138,6 +138,14 @@ namespace Rock.Web.UI
         }
 
         /// <summary>
+        /// Gets or sets the body CSS class.
+        /// </summary>
+        /// <value>
+        /// The body CSS class.
+        /// </value>
+        public string BodyCssClass { get; set; }
+
+        /// <summary>
         /// Gets the current <see cref="Rock.Model.Page">Page's</see> layout.
         /// </summary>
         /// <value>
@@ -681,11 +689,23 @@ namespace Rock.Web.UI
                 BrowserTitle = _pageCache.BrowserTitle;
                 PageTitle = _pageCache.PageTitle;
                 PageIcon = _pageCache.IconCssClass;
+                BodyCssClass = _pageCache.BodyCssClass;
 
                 // If there's a master page, update its reference to Current Page
                 if ( this.Master is RockMasterPage )
                 {
                     ( (RockMasterPage)this.Master ).SetPage( _pageCache );
+                }
+
+                // Add CSS class to body
+                if ( !string.IsNullOrWhiteSpace( this.BodyCssClass ) )
+                {                   
+                    // attempt to find the body tag
+                    var body = (HtmlGenericControl)this.Master.FindControl( "body" );
+                    if ( body != null )
+                    {
+                        body.Attributes.Add( "class", this.BodyCssClass );
+                    }
                 }
 
                 // check if page should have been loaded via ssl
@@ -1140,6 +1160,34 @@ namespace Rock.Web.UI
                         Response.Cache.SetExpires( RockDateTime.Now.AddSeconds( _pageCache.OutputCacheDuration ) );
                         Response.Cache.SetValidUntilExpires( true );
                     }
+
+                    // create a page view transaction if enabled
+                    if ( !Page.IsPostBack && _pageCache != null )
+                    {
+                        if ( _pageCache.Layout.Site.EnablePageViews )
+                        {
+                            PageViewTransaction transaction = new PageViewTransaction();
+                            transaction.DateViewed = RockDateTime.Now;
+                            transaction.PageId = _pageCache.Id;
+                            transaction.SiteId = _pageCache.Layout.Site.Id;
+                            if ( CurrentPersonAlias != null )
+                            {
+                                transaction.PersonAliasId = CurrentPersonAlias.Id;
+                            }
+
+                            transaction.IPAddress = GetClientIpAddress();
+                            transaction.UserAgent = Request.UserAgent ?? "";
+                            transaction.Url = Request.Url.ToString();
+                            transaction.PageTitle = _pageCache.PageTitle;
+                            var sessionId = Session["RockSessionID"];
+                            if ( sessionId != null )
+                            {
+                                transaction.SessionId = sessionId.ToString();
+                            }
+
+                            RockQueue.TransactionQueue.Enqueue( transaction );
+                        }
+                    }
                 }
 
                 stopwatchInitEvents.Restart();
@@ -1227,7 +1275,7 @@ namespace Rock.Web.UI
             if ( !ClientScript.IsStartupScriptRegistered( "googleMapsApiScript" ) )
             {
                 string script = string.Format( @"Rock.controls.util.loadGoogleMapsApi('{0}');", scriptUrl );
-                ClientScript.RegisterStartupScript( this.Page.GetType(), "googleMapsApiScript", script, true );
+                ScriptManager.RegisterStartupScript( this.Page, this.Page.GetType(), "googleMapsApiScript", script, true );
             }
         }
 
@@ -1242,34 +1290,6 @@ namespace Rock.Web.UI
             base.OnLoad( e );
 
             Page.Header.DataBind();
-
-            // create a page view transaction if enabled
-            if ( !Page.IsPostBack && _pageCache != null )
-            {
-                if ( _pageCache.Layout.Site.EnablePageViews )
-                {
-                    PageViewTransaction transaction = new PageViewTransaction();
-                    transaction.DateViewed = RockDateTime.Now;
-                    transaction.PageId = _pageCache.Id;
-                    transaction.SiteId = _pageCache.Layout.Site.Id;
-                    if ( CurrentPersonAlias != null )
-                    {
-                        transaction.PersonAliasId = CurrentPersonAlias.Id;
-                    }
-
-                    transaction.IPAddress = GetClientIpAddress();
-                    transaction.UserAgent = Request.UserAgent ?? "";
-                    transaction.Url = Request.Url.ToString();
-                    transaction.PageTitle = _pageCache.PageTitle;
-                    var sessionId = Session["RockSessionID"];
-                    if ( sessionId != null )
-                    {
-                        transaction.SessionId = sessionId.ToString();
-                    }
-
-                    RockQueue.TransactionQueue.Enqueue( transaction );
-                }
-            }
 
             try
             {
@@ -1886,6 +1906,7 @@ Sys.Application.add_load(function () {
             modalBlockMove.Title = "Move Block";
             modalBlockMove.OnOkScript = "Rock.admin.pageAdmin.saveBlockMove();";
             this.Form.Controls.Add( modalBlockMove );
+            modalBlockMove.Visible = true;
 
             HtmlGenericControl fsZoneSelect = new HtmlGenericControl( "fieldset" );
             fsZoneSelect.ClientIDMode = ClientIDMode.Static;

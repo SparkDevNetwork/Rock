@@ -272,7 +272,7 @@
                 </div>
             </div>
 
-            <Rock:ModalAlert ID="maSignatureRequestSent" runat="server" Text="A Signature Request Has Been Sent!" />
+            <Rock:ModalAlert ID="maSignatureRequestSent" runat="server" Text="A Signature Request Has Been Sent." Visible="false" />
 
         </asp:Panel>
 

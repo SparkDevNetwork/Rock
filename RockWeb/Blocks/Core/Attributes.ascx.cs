@@ -49,6 +49,7 @@ namespace RockWeb.Blocks.Core
     [IntegerField( "Entity Id", "The entity id that values apply to", false, 0, "Advanced", 1 )]
     [BooleanField( "Enable Show In Grid", "Should the 'Show In Grid' option be displayed when editing attributes?", false, "Advanced", 2 )]
     [BooleanField( "Enable Ordering", "Should the attributes be allowed to be sorted?", false, "Advanced", 3 )]
+    [TextField( "Category Filter", "A comma separated list of category guids to limit the display of attributes to.", false, "", "Advanced", 4)]
 
     public partial class Attributes : RockBlock
     {
@@ -74,6 +75,12 @@ namespace RockWeb.Blocks.Core
         protected override void OnInit( EventArgs e )
         {
             base.OnInit( e );
+
+            // if limiting by category list hide the filters
+            if ( !string.IsNullOrWhiteSpace( GetAttributeValue( "CategoryFilter" ) ) )
+            {
+                rFilter.Visible = false;
+            }
 
             _configuredType = GetAttributeValue( "ConfigureType" ).AsBooleanOrNull() ?? true;
             edtAttribute.ShowInGridVisible = GetAttributeValue( "EnableShowInGrid" ).AsBooleanOrNull() ?? false;
@@ -367,7 +374,7 @@ namespace RockWeb.Blocks.Core
                         string entityTypeName = EntityTypeCache.Read( attribute.EntityTypeId.Value ).FriendlyName;
                         if ( !string.IsNullOrWhiteSpace( attribute.EntityTypeQualifierColumn ) )
                         {
-                            lEntityQualifier.Text = string.Format( "Where [{0}] = '{1}'", attribute.EntityTypeQualifierColumn, attribute.EntityTypeQualifierValue );
+                            lEntityQualifier.Text = string.Format( "{0} where [{1}] = '{2}'", entityTypeName, attribute.EntityTypeQualifierColumn, attribute.EntityTypeQualifierValue );
                         }
                         else
                         {
@@ -572,19 +579,39 @@ namespace RockWeb.Blocks.Core
             }
             else
             {
-                int entityTypeId = int.MinValue;
-                if ( int.TryParse( rFilter.GetUserPreference( "Entity Type" ), out entityTypeId ) )
+                int? entityTypeId = rFilter.GetUserPreference( "Entity Type" ).AsIntegerOrNull();
+                if ( entityTypeId.HasValue )
                 {
-                    if ( entityTypeId > 0 )
+                    if ( entityTypeId.Value == 0 )
                     {
+                        // Global Attributes
+                        query = attributeService.GetByEntityTypeId( null );
+                    }
+                    else
+                    { 
                         query = attributeService.GetByEntityTypeId( entityTypeId );
                     }
                 }
+                else
+                {
+                    // All entity attribute
+                    query = attributeService.Queryable()
+                        .Where( a =>
+                            ( a.EntityType != null && a.EntityType.IsEntity ) ||    // Entity Attributes
+                            ( a.EntityType == null && a.EntityTypeQualifierColumn == "" && a.EntityTypeQualifierValue == "" ) // Global Attributes
+                        );
+                }
             }
 
-            if ( query == null )
+            // if filtering by block setting of categories
+            if (!string.IsNullOrWhiteSpace( GetAttributeValue( "CategoryFilter" ) ) )
             {
-                query = attributeService.GetByEntityTypeId( null );
+                try {
+                    var categoryGuids = GetAttributeValue( "CategoryFilter" ).Split( ',' ).Select( Guid.Parse ).ToList();
+
+                    query = query.Where( a => a.Categories.Any( c => categoryGuids.Contains( c.Guid ) ) );
+                }
+                catch { }
             }
 
             var selectedCategoryIds = new List<int>();
@@ -637,7 +664,7 @@ namespace RockWeb.Blocks.Core
             if ( attributeModel == null )
             {
                 mdAttribute.Title = "Add Attribute".FormatAsHtmlTitle();
-
+                
                 attributeModel = new Rock.Model.Attribute();
                 attributeModel.FieldTypeId = FieldTypeCache.Read( Rock.SystemGuid.FieldType.TEXT ).Id;
 
@@ -663,8 +690,15 @@ namespace RockWeb.Blocks.Core
             }
             else
             {
+                if ( attributeModel.EntityType != null && attributeModel.EntityType.IsIndexingSupported == true && attributeModel.EntityType.IsIndexingEnabled )
+                {
+                    edtAttribute.IsIndexingEnabledVisible = true;
+                }
+
                 edtAttribute.ActionTitle = Rock.Constants.ActionTitle.Edit( Rock.Model.Attribute.FriendlyTypeName );
                 mdAttribute.Title = ( "Edit " + attributeModel.Name ).FormatAsHtmlTitle();
+
+                edtAttribute.IsIndexingEnabled = attributeModel.IsIndexEnabled;
             }
 
             Type type = null;
@@ -683,15 +717,11 @@ namespace RockWeb.Blocks.Core
 
             if ( _configuredType )
             {
-                ddlAttrEntityType.Visible = false;
-                tbAttrQualifierField.Visible = false;
-                tbAttrQualifierValue.Visible = false;
+                pnlEntityTypeQualifier.Visible = false;
             }
             else
             {
-                ddlAttrEntityType.Visible = true;
-                tbAttrQualifierField.Visible = true;
-                tbAttrQualifierValue.Visible = true;
+                pnlEntityTypeQualifier.Visible = true;
 
                 ddlAttrEntityType.SetValue( attributeModel.EntityTypeId.HasValue ? attributeModel.EntityTypeId.Value.ToString() : "0" );
                 tbAttrQualifierField.Text = attributeModel.EntityTypeQualifierColumn;

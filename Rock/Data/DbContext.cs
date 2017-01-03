@@ -23,6 +23,8 @@ using System.Reflection;
 using System.Web;
 
 using Rock.Model;
+using Rock.Transactions;
+using Rock.UniversalSearch;
 using Rock.Workflow;
 
 namespace Rock.Data
@@ -323,6 +325,8 @@ namespace Rock.Data
                 }
             }
 
+            var indexingEnabled = IndexContainer.GetActiveComponent() == null ? false : true;
+
             foreach ( var item in updatedItems )
             {
                 if ( item.State == EntityState.Detached || item.State == EntityState.Deleted )
@@ -333,6 +337,27 @@ namespace Rock.Data
                 {
                     TriggerWorkflows( item, WorkflowTriggerType.ImmediatePostSave, personAlias );
                     TriggerWorkflows( item, WorkflowTriggerType.PostSave, personAlias );
+                }
+
+                // check if this entity should be passed on for indexing
+                if ( indexingEnabled && item.Entity is IRockIndexable )
+                {
+                    if ( item.State == EntityState.Detached || item.State == EntityState.Deleted )
+                    {
+                        DeleteIndexEntityTransaction transaction = new DeleteIndexEntityTransaction();
+                        transaction.EntityTypeId = item.Entity.TypeId;
+                        transaction.EntityId = item.Entity.Id;
+
+                        RockQueue.TransactionQueue.Enqueue( transaction );
+                    }
+                    else
+                    {
+                        IndexEntityTransaction transaction = new IndexEntityTransaction();
+                        transaction.EntityTypeId = item.Entity.TypeId;
+                        transaction.EntityId = item.Entity.Id;
+
+                        RockQueue.TransactionQueue.Enqueue( transaction );
+                    }
                 }
             }
         }

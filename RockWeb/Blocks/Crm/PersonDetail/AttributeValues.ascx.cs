@@ -253,7 +253,8 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                                         formattedNewValue = attribute.FieldType.Field.FormatValue( null, newValue, attribute.QualifierValues, false );
                                     }
 
-                                    History.EvaluateChange( changes, attribute.Name, formattedOriginalValue, formattedNewValue );
+                                    
+                                    History.EvaluateChange( changes, attribute.Name, formattedOriginalValue, formattedNewValue, attribute.FieldType.Field.IsSensitive());
                                 }
                             }
                         }

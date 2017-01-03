@@ -1,0 +1,62 @@
+//
+// Number Increment
+// --------------------------------------------------
+
+.numberincrement {
+  -webkit-user-select: none;
+     -moz-user-select: none;
+      -ms-user-select: none;
+       -o-user-select: none;
+          user-select: none;
+
+  .numberincrement-up,
+  .numberincrement-down {
+    padding: 6px 12px;
+    color: @input-color;
+    cursor: pointer;
+    background-color: @input-group-addon-bg;
+    border: 1px solid @input-group-addon-border-color;
+
+    &.disabled {
+      color: lighten(@input-color, 20%);
+      cursor: default;
+    }
+  }
+
+  .numberincrement-down {
+    border-radius: @border-radius-base 0 0 @border-radius-base;
+  }
+
+  .numberincrement-up {
+    border-radius: 0 @border-radius-base @border-radius-base 0;
+  }
+
+  .numberincrement-value {
+    padding: 6px 18px;
+    border-color: @input-group-addon-border-color;
+    border-style: solid;
+    border-width: 1px 0;
+  }
+  // adjustments for different sizes
+  &.input-sm {
+    .numberincrement-up,
+    .numberincrement-down {
+      padding: 5px 8px;
+    }
+
+    .numberincrement-value {
+      padding: 5px 12px;
+    }
+  }
+
+  &.input-lg {
+    .numberincrement-up,
+    .numberincrement-down {
+      padding: 12px 20px;
+    }
+
+    .numberincrement-value {
+      padding: 12px 28px;
+    }
+  }
+}

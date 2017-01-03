@@ -38,6 +38,9 @@ namespace Rock.Client
         public decimal Cost { get; set; }
 
         /// <summary />
+        public bool DiscountApplies { get; set; }
+
+        /// <summary />
         public Guid? ForeignGuid { get; set; }
 
         /// <summary />
@@ -50,6 +53,9 @@ namespace Rock.Client
         /// If the ModifiedByPersonAliasId is being set manually and should not be overwritten with current user when saved, set this value to true
         /// </summary>
         public bool ModifiedAuditValuesAlreadyUpdated { get; set; }
+
+        /// <summary />
+        public bool OnWaitList { get; set; }
 
         /// <summary />
         public int? PersonAliasId { get; set; }
@@ -91,10 +97,12 @@ namespace Rock.Client
         {
             this.Id = source.Id;
             this.Cost = source.Cost;
+            this.DiscountApplies = source.DiscountApplies;
             this.ForeignGuid = source.ForeignGuid;
             this.ForeignKey = source.ForeignKey;
             this.GroupMemberId = source.GroupMemberId;
             this.ModifiedAuditValuesAlreadyUpdated = source.ModifiedAuditValuesAlreadyUpdated;
+            this.OnWaitList = source.OnWaitList;
             this.PersonAliasId = source.PersonAliasId;
             this.RegistrationId = source.RegistrationId;
             this.CreatedDateTime = source.CreatedDateTime;

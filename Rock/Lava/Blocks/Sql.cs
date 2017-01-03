@@ -24,6 +24,14 @@ namespace Rock.Lava.Blocks
         string _markup = string.Empty;
 
         /// <summary>
+        /// Method that will be run at Rock startup
+        /// </summary>
+        public override void OnStartup()
+        {
+            Template.RegisterTag<Sql>( "sql" );
+        }
+
+        /// <summary>
         /// Initializes the specified tag name.
         /// </summary>
         /// <param name="tagName">Name of the tag.</param>
@@ -44,7 +52,7 @@ namespace Rock.Lava.Blocks
         /// <param name="result">The result.</param>
         public override void Render( Context context, TextWriter result )
         {
-            // first ensure that entity commands are allowed in the context
+            // first ensure that sql commands are allowed in the context
             if ( !this.IsAuthorized( context ) )
             {
                 result.Write( string.Format( "The Lava command '{0}' is not configured for this template.", this.Name ) );
@@ -95,9 +103,9 @@ namespace Rock.Lava.Blocks
             var internalMergeFields = new Dictionary<string, object>();
 
             // get variables defined in the lava source
-            if ( context.Scopes.Count > 0 )
+            foreach ( var scope in context.Scopes )
             {
-                foreach ( var item in context.Scopes[0] )
+                foreach ( var item in scope )
                 {
                     internalMergeFields.AddOrReplace( item.Key, item.Value );
                 }

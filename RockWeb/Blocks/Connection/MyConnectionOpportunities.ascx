@@ -42,7 +42,7 @@
                             <ul>
                                 <asp:Repeater ID="rptConnectionOpportunities" runat="server" OnItemCommand="rptConnectionOpportunities_ItemCommand">
                                     <ItemTemplate>
-                                        <li class='<%# SelectedOpportunityId.HasValue && (int)Eval("Id") == SelectedOpportunityId.Value ? "active" : "" %> block-status'>
+                                        <li class='<%# SelectedOpportunityId.HasValue && (int)Eval("Id") == SelectedOpportunityId.Value ? "selected" : "" %> block-status <%# (bool)Eval("IsActive") ? "" : "inactive-item"  %>' title='<%# (bool)Eval("IsActive") ? "" : "This opportunity is inactive."  %>' >
                                             <asp:LinkButton ID="lbConnectionOpportunity" runat="server" CommandArgument='<%# Eval("Id") %>' CommandName="Display">
                                                 <%# this.GetOpportunitySummaryHtml( Container.DataItem as OpportunitySummary ) %>
                                             </asp:LinkButton>
@@ -82,7 +82,11 @@
                             <Rock:SelectField />
                             <Rock:RockBoundField DataField="Name" HeaderText="Name" SortExpression="PersonAlias.Person.LastName,PersonAlias.Person.NickName" />
                             <Rock:RockBoundField DataField="Campus" HeaderText="Campus" SortExpression="Campus.Name" />
-                            <Rock:RockBoundField DataField="Group" HeaderText="Group" SortExpression="AssignedGroup.Name" />
+                            <Rock:RockTemplateField HeaderText="Group" SortExpression="AssignedGroup.Name">
+                                <ItemTemplate>
+                                    <%# FormatGroupName( Eval("Group"), Eval("GroupRole"), Eval("GroupStatus") )  %>
+                                </ItemTemplate>
+                            </Rock:RockTemplateField>
                             <Rock:RockBoundField DataField="Connector" HeaderText="Connector" SortExpression="Connector.PersonAlias.Person.LastName,Connector.PersonAlias.Person.NickName" />
                             <Rock:RockBoundField DataField="LastActivity" HeaderText="Last Activity" HtmlEncode="false" />
                             <Rock:RockBoundField DataField="LastActivityNote" HeaderText="Last Activity Note" HtmlEncode="false" />

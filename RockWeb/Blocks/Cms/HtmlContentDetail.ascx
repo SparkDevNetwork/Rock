@@ -3,8 +3,14 @@
 <asp:UpdatePanel runat="server" ID="upnlHtmlContent" ChildrenAsTriggers="false" UpdateMode="Conditional">
     <ContentTemplate>
 
+        <span style="display:none">
+            <asp:LinkButton ID="lbQuickEdit" runat="server" OnClick="lbQuickEdit_Click"></asp:LinkButton>
+        </span>
+
         <Rock:NotificationBox ID="nbApprovalRequired" runat="server" NotificationBoxType="Info" Text="Your changes will not be visible until they are reviewed and approved." Visible="false" />
-        <asp:Literal ID="lHtmlContent" runat="server" />
+        <span class="html-content-view">
+            <asp:Literal ID="lHtmlContent" runat="server" />
+        </span>
 
         <%-- Edit Panel --%>
         <asp:Panel ID="pnlEditModel" runat="server" Visible="false">

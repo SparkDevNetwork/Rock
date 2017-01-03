@@ -108,14 +108,7 @@ namespace RockWeb.Blocks.Core
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void gSignatureDocuments_Add( object sender, EventArgs e )
         {
-            var qryParams = new Dictionary<string, string>();
-            qryParams.Add( "signatureDocumentTypeId", PageParameter( "signatureDocumentTypeId" ) );
-            qryParams.Add( "signatureDocumentId", "0" );
-            if ( TargetPerson != null )
-            {
-                qryParams.Add( "personId", TargetPerson.Id.ToString() );
-            }
-            NavigateToLinkedPage( "DetailPage", qryParams );
+            NavigateToDetailPage( 0 );
         }
 
         /// <summary>
@@ -125,10 +118,7 @@ namespace RockWeb.Blocks.Core
         /// <param name="e">The <see cref="RowEventArgs" /> instance containing the event data.</param>
         protected void gSignatureDocuments_Edit( object sender, RowEventArgs e )
         {
-            var qryParams = new Dictionary<string, string>();
-            qryParams.Add( "signatureDocumentTypeId", PageParameter( "signatureDocumentTypeId" ) );
-            qryParams.Add( "signatureDocumentId", e.RowKeyId.ToString() );
-            NavigateToLinkedPage( "DetailPage", qryParams );
+            NavigateToDetailPage( e.RowKeyId );
         }
 
         /// <summary>
@@ -196,11 +186,11 @@ namespace RockWeb.Blocks.Core
             }
             else
             {
-                int? documentTypeId = PageParameter( "signatureDocumentTypeId" ).AsIntegerOrNull();
+                int? documentTypeId = PageParameter( "SignatureDocumentTemplateId" ).AsIntegerOrNull();
                 if ( documentTypeId.HasValue )
                 {
                     qry = qry.Where( d =>
-                        d.SignatureDocumentTypeId == documentTypeId.Value );
+                        d.SignatureDocumentTemplateId == documentTypeId.Value );
 
                     var typeColumn = gSignatureDocuments.ColumnsOfType<RockBoundField>().Where( f => f.HeaderText == "Document Type" ).First();
                     typeColumn.Visible = false;
@@ -214,7 +204,7 @@ namespace RockWeb.Blocks.Core
             }
             else
             {
-                qry = qry.OrderByDescending( d => d.RequestDate );
+                qry = qry.OrderByDescending( d => d.LastInviteDate );
             }
 
             gSignatureDocuments.DataSource = qry.Select( d => new
@@ -226,12 +216,32 @@ namespace RockWeb.Blocks.Core
                 d.AssignedToPersonAlias,
                 d.SignedByPersonAlias,
                 d.Status,
-                d.RequestDate,
-                d.SignatureDocumentType,
+                d.LastInviteDate,
+                d.SignatureDocumentTemplate,
                 FileText = d.BinaryFileId.HasValue ? "<i class='fa fa-file-text-o fa-lg'></i>" : "",
                 FileId = d.BinaryFileId ?? 0
             } ).ToList();
             gSignatureDocuments.DataBind();
+        }
+
+        private void NavigateToDetailPage( int documentId )
+        {
+            var qryParams = new Dictionary<string, string>();
+
+            int? templateId = PageParameter( "SignatureDocumentTemplateId" ).AsIntegerOrNull();
+            if ( templateId.HasValue )
+            {
+                qryParams.Add( "SignatureDocumentTemplateId", templateId.Value.ToString() );
+            }
+
+            qryParams.Add( "SignatureDocumentId", documentId.ToString() );
+
+            if ( TargetPerson != null )
+            {
+                qryParams.Add( "PersonId", TargetPerson.Id.ToString() );
+            }
+
+            NavigateToLinkedPage( "DetailPage", qryParams );
         }
 
         #endregion

@@ -206,21 +206,28 @@ namespace RockWeb.Blocks.Crm
 
             // put the person we are comparing the duplicates to at the top of the list
             var person = personService.Get( personId );
-            gridList.Insert(
-                0,
-                new
-                {
-                    PersonId = person.Id, // PersonId has to be the key field in the grid for the Merge button to work
+            if ( person != null )
+            {
+                gridList.Insert(
+                    0,
+                    new
+                    {
+                        PersonId = person.Id, // PersonId has to be the key field in the grid for the Merge button to work
                     PersonDuplicateId = 0,
-                    DuplicatePerson = person,
-                    ConfidenceScore = (double?)null,
-                    IsComparePerson = false
-                } );
+                        DuplicatePerson = person,
+                        ConfidenceScore = ( double? ) null,
+                        IsComparePerson = false
+                    } );
 
-            nbNoDuplicatesMessage.Visible = gridList.Count == 1;
+                nbNoDuplicatesMessage.Visible = gridList.Count == 1;
 
-            gList.DataSource = gridList;
-            gList.DataBind();
+                gList.DataSource = gridList;
+                gList.DataBind();
+            }
+            else
+            {
+                ScriptManager.RegisterStartupScript( this, this.GetType(), "goBack", "history.go(-1);", true );
+            }
         }
 
         #endregion

@@ -166,6 +166,18 @@ namespace Rock.Model
                 return false;
             }  
  
+            if ( new Service<InteractionChannel>( Context ).Queryable().Any( a => a.ComponentEntityTypeId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", EntityType.FriendlyTypeName, InteractionChannel.FriendlyTypeName );
+                return false;
+            }  
+ 
+            if ( new Service<InteractionChannel>( Context ).Queryable().Any( a => a.InteractionEntityTypeId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", EntityType.FriendlyTypeName, InteractionChannel.FriendlyTypeName );
+                return false;
+            }  
+ 
             if ( new Service<MergeTemplate>( Context ).Queryable().Any( a => a.MergeTemplateTypeEntityTypeId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", EntityType.FriendlyTypeName, MergeTemplate.FriendlyTypeName );
@@ -196,9 +208,9 @@ namespace Rock.Model
                 return false;
             }  
  
-            if ( new Service<SignatureDocumentType>( Context ).Queryable().Any( a => a.ProviderEntityTypeId == item.Id ) )
+            if ( new Service<SignatureDocumentTemplate>( Context ).Queryable().Any( a => a.ProviderEntityTypeId == item.Id ) )
             {
-                errorMessage = string.Format( "This {0} is assigned to a {1}.", EntityType.FriendlyTypeName, SignatureDocumentType.FriendlyTypeName );
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", EntityType.FriendlyTypeName, SignatureDocumentTemplate.FriendlyTypeName );
                 return false;
             }  
  
@@ -262,6 +274,7 @@ namespace Rock.Model
             target.FriendlyName = source.FriendlyName;
             target.IsCommon = source.IsCommon;
             target.IsEntity = source.IsEntity;
+            target.IsIndexingEnabled = source.IsIndexingEnabled;
             target.IsSecured = source.IsSecured;
             target.MultiValueFieldTypeId = source.MultiValueFieldTypeId;
             target.Name = source.Name;

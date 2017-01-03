@@ -69,7 +69,7 @@ namespace Rock.Workflow.Action
 
             Guid? groupGuid = null;
             Person person = null;
-            DateTime attendanceDateTime = DateTime.MinValue;
+            DateTime attendanceDateTime = DateTime.Now;
             bool addToGroup = true;
            
             // get the group attribute
@@ -117,11 +117,7 @@ namespace Rock.Workflow.Action
             {
                 string attributeDatetime = action.GetWorklowAttributeValue(dateTimeAttributeGuid);
 
-                if ( string.IsNullOrWhiteSpace(attributeDatetime) )
-                {
-                    attendanceDateTime = RockDateTime.Now;
-                }
-                else
+                if ( !string.IsNullOrWhiteSpace(attributeDatetime) )
                 {
                     if ( !DateTime.TryParse(attributeDatetime, out attendanceDateTime) )
                     {
@@ -193,7 +189,6 @@ namespace Rock.Workflow.Action
                         else
                         {
                             action.AddLogEntry(string.Format("{0} was not a member of the group {1} and the action was not configured to add them.", person.FullName, group.Name));
-                            return true;
                         }
                     }
 
@@ -203,6 +198,7 @@ namespace Rock.Workflow.Action
                     attendance.GroupId = group.Id;
                     attendance.PersonAliasId = person.PrimaryAliasId;
                     attendance.StartDateTime = attendanceDateTime;
+                    attendance.CampusId = group.CampusId;
                     attendance.DidAttend = true;
 
                     if ( locationGuid != Guid.Empty )

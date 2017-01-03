@@ -87,6 +87,15 @@ namespace Rock.Model
         public string NumberFormatted { get; set; }
 
         /// <summary>
+        /// Gets or sets the phone number reversed. This is the fastest way to search by phone number ending in xxxx.
+        /// </summary>
+        /// <value>
+        /// A <see cref="System.String"/> representing the phone number without string formatting.
+        /// </value>
+        [DatabaseGenerated( DatabaseGeneratedOption.Computed )]
+        public string NumberReversed { get; set; }
+
+        /// <summary>
         /// Gets or sets the extension (if any) that would need to be dialed to contact the owner. 
         /// </summary>
         /// <value>
@@ -188,6 +197,7 @@ namespace Rock.Model
                 }
                 
                 NumberFormatted = PhoneNumber.FormattedNumber( CountryCode, Number );
+                Number = PhoneNumber.CleanNumber( NumberFormatted );
             }
 
             base.PreSaveChanges( dbContext, state );

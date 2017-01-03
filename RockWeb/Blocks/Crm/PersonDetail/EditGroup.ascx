@@ -90,7 +90,7 @@
                                             <%# Eval("FormattedAddress") %><br />
                                         </ItemTemplate>
                                         <EditItemTemplate>
-                                            <Rock:AddressControl ID="acAddress" runat="server" Required="true"/>
+                                            <Rock:AddressControl ID="acAddress" runat="server" Required="true" RequiredErrorMessage="Address is required"/>
                                         </EditItemTemplate>
                                     </Rock:RockTemplateField>
                                     <Rock:RockTemplateField HeaderText="Mailing" HeaderStyle-HorizontalAlign="Center" ItemStyle-HorizontalAlign="Center">
@@ -168,21 +168,21 @@
                             <div class="col-sm-4">
                                 <div class="well">
                                     <Rock:RockDropDownList ID="ddlNewPersonTitle" runat="server" Label="Title" ValidationGroup="AddPerson" CssClass="input-width-md" />
-                                    <Rock:RockTextBox ID="tbNewPersonFirstName" runat="server" Label="First Name" ValidationGroup="AddPerson" />
-                                    <Rock:RockTextBox ID="tbNewPersonLastName" runat="server" Label="Last Name" ValidationGroup="AddPerson" />
+                                    <Rock:RockTextBox ID="tbNewPersonFirstName" runat="server" Label="First Name" ValidationGroup="AddPerson" Required="true" />
+                                    <Rock:RockTextBox ID="tbNewPersonLastName" runat="server" Label="Last Name" ValidationGroup="AddPerson" Required="true" />
                                     <Rock:RockDropDownList ID="ddlNewPersonSuffix" runat="server" Label="Suffix" ValidationGroup="AddPerson" CssClass="input-width-md" />
                                 </div>
                             </div>
                             <div class="col-sm-4">
                                 <div class="well">
-                                    <Rock:RockDropDownList ID="ddlNewPersonConnectionStatus" runat="server" Label="Connection Status" ValidationGroup="AddPerson"/>
-                                    <Rock:RockRadioButtonList ID="rblNewPersonRole" runat="server" DataTextField="Name" DataValueField="Id" RepeatDirection="Horizontal" Label="Role" ValidationGroup="AddPerson"/>
+                                    <Rock:RockDropDownList ID="ddlNewPersonConnectionStatus" runat="server" Label="Connection Status" ValidationGroup="AddPerson" Required="true"/>
+                                    <Rock:RockRadioButtonList ID="rblNewPersonRole" runat="server" Required="true" DataTextField="Name" DataValueField="Id" RepeatDirection="Horizontal" Label="Role" ValidationGroup="AddPerson"/>
                                     <Rock:RockRadioButtonList ID="rblNewPersonGender" runat="server" Required="true" Label="Gender" RepeatDirection="Horizontal" ValidationGroup="AddPerson"/>
                                 </div>
                             </div>
                             <div class="col-sm-4">
                                 <div class="well">
-                                    <Rock:DatePicker ID="dpNewPersonBirthDate" runat="server" Label="Birthdate" ValidationGroup="AddPerson"/>
+                                    <Rock:DatePicker ID="dpNewPersonBirthDate" runat="server" Label="Birthdate" ValidationGroup="AddPerson" AllowFutureDateSelection="False"/>
                                     <Rock:GradePicker ID="ddlGradePicker" runat="server" Label="Grade" ValidationGroup="AddPerson" UseAbbreviation="true" UseGradeOffsetAsValue="true" />
                                     <Rock:RockDropDownList ID="ddlNewPersonMaritalStatus" runat="server" DataTextField="Name" DataValueField="Id" RepeatDirection="Horizontal" Label="Marital Status"  ValidationGroup="AddPerson"/>
                                 </div>
@@ -200,65 +200,25 @@
 
                 </div>
 
-
-                <script>
-                    Sys.Application.add_load(function () {
-
-                        $('#<%=modalAddPerson.ServerSaveLink.ClientID%>').on('click', function () {
-
-                            // if Save was clicked, set the fields that should be validated based on what tab they are on
-                            if ($('#<%=hfActiveTab.ClientID%>').val() == "Existing") {
-                                enableRequiredField('<%=ppPerson.RequiredFieldValidator.ClientID%>', true)
-                                enableRequiredField('<%=tbNewPersonFirstName.RequiredFieldValidator.ClientID%>', false);
-                                enableRequiredField('<%=tbNewPersonLastName.RequiredFieldValidator.ClientID%>', false);
-                                enableRequiredField('<%=rblNewPersonRole.RequiredFieldValidator.ClientID%>', false);
-                                enableRequiredField('<%=rblNewPersonGender.RequiredFieldValidator.ClientID%>', false);
-                                enableRequiredField('<%=ddlNewPersonConnectionStatus.RequiredFieldValidator.ClientID%>', false);
-                            }
-                            else {
-                                enableRequiredField('<%=ppPerson.RequiredFieldValidator.ClientID%>', false)
-                                enableRequiredField('<%=tbNewPersonFirstName.RequiredFieldValidator.ClientID%>', true);
-                                enableRequiredField('<%=tbNewPersonLastName.RequiredFieldValidator.ClientID%>', true);
-                                enableRequiredField('<%=rblNewPersonRole.RequiredFieldValidator.ClientID%>', true);
-                                enableRequiredField('<%=rblNewPersonGender.RequiredFieldValidator.ClientID%>', true);
-                                enableRequiredField('<%=ddlNewPersonConnectionStatus.RequiredFieldValidator.ClientID%>', true);
-                            }
-
-                            // update the scrollbar since our validation box could show
-                            setTimeout(function () {
-                                Rock.dialogs.updateModalScrollBar('<%=valSummaryAddPerson.ClientID%>');
-                            });
-                        })
-
-                        $('a[data-toggle="pill"]').on('shown.bs.tab', function (e) {
-                            var tabHref = $(e.target).attr("href");
-                            if (tabHref == '#<%=divExistingPerson.ClientID%>') {
-                                $('#<%=hfActiveTab.ClientID%>').val('Existing');
-                            } else {
-                                $('#<%=hfActiveTab.ClientID%>').val('New');
-                            }
-
-                            // if the validation error summary is shown, hide it when they switch tabs
-                            $('#<%=valSummaryAddPerson.ClientID%>').hide();
-                        });
-
-                    })
-
-                    function enableRequiredField(validatorId, enable) {
-                        var jqObj = $('#' + validatorId);
-
-                        if (jqObj != null) {
-                            var domObj = jqObj.get(0);
-                            if (domObj != null) {
-                                ValidatorEnable(domObj, enable);
-                            }
-                        }
-                    }
-
-                </script>
-
             </Content>
         </Rock:ModalDialog>
+
+        <script>
+
+            function enableRequiredField(validatorId, enable) {
+                var jqObj = $('#' + validatorId);
+                if (jqObj != null) {
+                    var domObj = jqObj.get(0);
+                    if (domObj != null) {
+                        console.log( validatorId + ': found');
+                        ValidatorEnable(domObj, enable);
+                    } else {
+                        console.log( validatorId + ': NOT found');
+                    }
+                }
+            }
+
+        </script>
 
     </ContentTemplate>
 </asp:UpdatePanel>

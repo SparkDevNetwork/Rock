@@ -116,7 +116,7 @@ namespace Rock.Web.UI.Controls
             _rangeValidator.Display = ValidatorDisplay.Dynamic;
             _rangeValidator.CssClass = "validation-error help-inline";
             
-            _rangeValidator.Type = System.Web.UI.WebControls.ValidationDataType.Integer;
+            _rangeValidator.Type = this.NumberType;
             _rangeValidator.MinimumValue = int.MinValue.ToString();
             _rangeValidator.MaximumValue = int.MaxValue.ToString();
 

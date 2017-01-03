@@ -17,7 +17,9 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Web;
+using Rock.Web.Cache;
 
 namespace Rock.Attribute
 {
@@ -29,6 +31,8 @@ namespace Rock.Attribute
     {
         private const string ENTITY_TYPE_KEY = "entitytype";
         private const string ALLOW_MULTIPLE_KEY = "allowmultiple";
+        private const string QUALIFIER_COLUMN_KEY = "qualifierColumn";
+        private const string QUALIFIER_VALUE_KEY = "qualifierValue";
 
         /// <summary>
         /// Initializes a new instance of the <see cref="AttributeFieldAttribute" /> class.
@@ -50,6 +54,76 @@ namespace Rock.Attribute
 
             var allowMultipleConfigValue = new Field.ConfigurationValue( allowMultiple.ToString() );
             FieldConfigurationValues.Add( ALLOW_MULTIPLE_KEY, allowMultipleConfigValue );
+
+            if ( string.IsNullOrWhiteSpace( Name ) )
+            {
+                var entityType = Rock.Web.Cache.EntityTypeCache.Read( new Guid( entityTypeGuid ) );
+                name = ( entityType != null ? entityType.Name : "Entity" ) + " Attribute";
+            }
+
+            if ( string.IsNullOrWhiteSpace( Key ) )
+            {
+                Key = Name.Replace( " ", string.Empty );
+            }
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="AttributeFieldAttribute"/> class.
+        /// </summary>
+        /// <param name="entityTypeGuid">The entity type unique identifier.</param>
+        /// <param name="name">The name.</param>
+        /// <param name="description">The description.</param>
+        /// <param name="entityTypeQualifierColumn">The entity type qualifier column.</param>
+        /// <param name="entityTypeQualifierValue">The entity type qualifier value.</param>
+        /// <param name="required">if set to <c>true</c> [required].</param>
+        /// <param name="allowMultiple">if set to <c>true</c> [allow multiple].</param>
+        /// <param name="defaultValue">The default value.</param>
+        /// <param name="category">The category.</param>
+        /// <param name="order">The order.</param>
+        /// <param name="key">The key.</param>
+        public AttributeFieldAttribute( string entityTypeGuid, string entityTypeQualifierColumn, string entityTypeQualifierValue, string name, string description = "", bool required = true, bool allowMultiple = false, string defaultValue = "", string category = "", int order = 0, string key = null )
+            : base( name, description, required, defaultValue, category, order, key, typeof( Rock.Field.Types.AttributeFieldType ).FullName )
+        {
+            var entityTypeConfigValue = new Field.ConfigurationValue( entityTypeGuid );
+            FieldConfigurationValues.Add( ENTITY_TYPE_KEY, entityTypeConfigValue );
+
+            var allowMultipleConfigValue = new Field.ConfigurationValue( allowMultiple.ToString() );
+            FieldConfigurationValues.Add( ALLOW_MULTIPLE_KEY, allowMultipleConfigValue );
+
+            var entityTypeQualifierColumnConfigValue = new Field.ConfigurationValue( entityTypeQualifierColumn );
+            FieldConfigurationValues.Add( QUALIFIER_COLUMN_KEY, entityTypeQualifierColumnConfigValue );
+
+            if ( entityTypeQualifierColumn.EndsWith( "Id" ) && entityTypeQualifierValue.AsGuid() != Guid.Empty )
+            {
+                EntityTypeCache itemEntityType = EntityTypeCache.Read( "Rock.Model." + entityTypeQualifierColumn.Left( entityTypeQualifierColumn.Length - 2 ) );
+                if ( itemEntityType.AssemblyName != null )
+                {
+                    // get the actual type of what is being followed 
+                    Type entityType = itemEntityType.GetEntityType();
+                    if ( entityType != null )
+                    {
+                        var dbContext = Reflection.GetDbContextForEntityType( entityType );
+                        if ( dbContext != null )
+                        {
+                            var serviceInstance = Reflection.GetServiceForEntityType( entityType, dbContext );
+                            if ( serviceInstance != null )
+                            {
+                                MethodInfo getMethod = serviceInstance.GetType().GetMethod( "Get", new Type[] { typeof( Guid ) } );
+                                var entity = getMethod.Invoke( serviceInstance, new object[] { entityTypeQualifierValue.AsGuid() } ) as Rock.Data.IEntity;
+                                if ( entity != null )
+                                {
+                                    FieldConfigurationValues.Add( QUALIFIER_VALUE_KEY, new Field.ConfigurationValue( entity.Id.ToString() ) );
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            else
+            {
+                var entityTypeQualifierValueConfigValue = new Field.ConfigurationValue( entityTypeQualifierValue );
+                FieldConfigurationValues.Add( QUALIFIER_VALUE_KEY, entityTypeQualifierValueConfigValue );
+            }
 
             if ( string.IsNullOrWhiteSpace( Name ) )
             {

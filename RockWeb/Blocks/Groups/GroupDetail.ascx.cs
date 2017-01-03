@@ -388,7 +388,12 @@ namespace RockWeb.Blocks.Groups
                     var schedule = scheduleService.Get( group.ScheduleId.Value );
                     if ( schedule != null && schedule.ScheduleType != ScheduleType.Named )
                     {
-                        scheduleService.Delete( schedule );
+
+                        // Make sure this is the only group trying to use this schedule.
+                        if ( !groupService.Queryable().Where( g => g.ScheduleId == schedule.Id && g.Id != group.Id ).Any() )
+                        {
+                            scheduleService.Delete( schedule );
+                        }
                     }
                 }
 
@@ -556,7 +561,7 @@ namespace RockWeb.Blocks.Groups
             group.GroupTypeId = CurrentGroupTypeId;
             group.ParentGroupId = gpParentGroup.SelectedValueAsInt();
             group.GroupCapacity = nbGroupCapacity.Text.AsIntegerOrNull();
-            group.RequiredSignatureDocumentTypeId = ddlSignatureDocumentType.SelectedValueAsInt();
+            group.RequiredSignatureDocumentTemplateId = ddlSignatureDocumentTemplate.SelectedValueAsInt();
             group.IsSecurityRole = cbIsSecurityRole.Checked;
             group.IsActive = cbIsActive.Checked;
             group.IsPublic = cbIsPublic.Checked;
@@ -619,7 +624,11 @@ namespace RockWeb.Blocks.Groups
                     var schedule = scheduleService.Get( oldScheduleId.Value );
                     if ( schedule != null && string.IsNullOrEmpty( schedule.Name ) )
                     {
-                        scheduleService.Delete( schedule );
+                        // Make sure this is the only group trying to use this schedule.
+                        if ( !groupService.Queryable().Where( g => g.ScheduleId == schedule.Id && g.Id != group.Id ).Any() )
+                        {
+                            scheduleService.Delete( schedule );
+                        }
                     }
                 }
 
@@ -1139,7 +1148,7 @@ namespace RockWeb.Blocks.Groups
                 lReadOnlyTitle.Text = ActionTitle.Add( Group.FriendlyTypeName ).FormatAsHtmlTitle();
 
                 // hide the panel drawer that show created and last modified dates
-                divPanelDrawer.Visible = false;
+                pdAuditDetails.Visible = false;
             }
             else
             {
@@ -1167,7 +1176,7 @@ namespace RockWeb.Blocks.Groups
 
             LoadDropDowns( rockContext );
 
-            ddlSignatureDocumentType.SetValue( group.RequiredSignatureDocumentTypeId );
+            ddlSignatureDocumentTemplate.SetValue( group.RequiredSignatureDocumentTemplateId );
             gpParentGroup.SetValue( group.ParentGroup ?? groupService.Get( group.ParentGroupId ?? 0 ) );
 
             // hide sync and requirements panel if no admin access
@@ -1437,9 +1446,7 @@ namespace RockWeb.Blocks.Groups
             lGroupIconHtml.Text = groupIconHtml;
             lReadOnlyTitle.Text = group.Name.FormatAsHtmlTitle();
 
-            string rootUrl = ResolveRockUrl( "~" );
-            lCreatedBy.Text = group.GetCreatedAuditHtml( rootUrl );
-            lLastModifiedBy.Text = group.GetModifiedAuditHtml( rootUrl );
+            pdAuditDetails.SetEntity( group, ResolveRockUrl( "~" ) );
 
             if ( !string.IsNullOrWhiteSpace( group.Description ) )
             {
@@ -1453,9 +1460,9 @@ namespace RockWeb.Blocks.Groups
                 descriptionList.Add( "Parent Group", group.ParentGroup.Name );
             }
 
-            if ( group.RequiredSignatureDocumentType != null )
+            if ( group.RequiredSignatureDocumentTemplate != null )
             {
-                descriptionList.Add( "Required Signed Document", group.RequiredSignatureDocumentType.Name );
+                descriptionList.Add( "Required Signed Document", group.RequiredSignatureDocumentTemplate.Name );
             }
 
             if ( group.Schedule != null )
@@ -1472,7 +1479,6 @@ namespace RockWeb.Blocks.Groups
             {
                 hlCampus.Visible = false;
             }
-
 
             // configure group capacity
             nbGroupCapacityMessage.Visible = false;
@@ -1739,13 +1745,13 @@ namespace RockWeb.Blocks.Groups
             ddlCampus.DataBind();
             ddlCampus.Items.Insert( 0, new ListItem( None.Text, None.IdValue ) );
 
-            ddlSignatureDocumentType.Items.Clear();
-            ddlSignatureDocumentType.Items.Add( new ListItem() );
-            foreach ( var documentType in new SignatureDocumentTypeService( rockContext )
+            ddlSignatureDocumentTemplate.Items.Clear();
+            ddlSignatureDocumentTemplate.Items.Add( new ListItem() );
+            foreach ( var documentType in new SignatureDocumentTemplateService( rockContext )
                 .Queryable().AsNoTracking()
                 .OrderBy( t => t.Name ) )
             {
-                ddlSignatureDocumentType.Items.Add( new ListItem( documentType.Name, documentType.Id.ToString() ) );
+                ddlSignatureDocumentTemplate.Items.Add( new ListItem( documentType.Name, documentType.Id.ToString() ) );
             }
         }
 

@@ -53,6 +53,12 @@ namespace Rock.Client
         public string ForeignKey { get; set; }
 
         /// <summary />
+        public int InviteCount { get; set; }
+
+        /// <summary />
+        public DateTime? LastInviteDate { get; set; }
+
+        /// <summary />
         public DateTime? LastStatusDate { get; set; }
 
         /// <summary>
@@ -64,10 +70,7 @@ namespace Rock.Client
         public string Name { get; set; }
 
         /// <summary />
-        public DateTime? RequestDate { get; set; }
-
-        /// <summary />
-        public int SignatureDocumentTypeId { get; set; }
+        public int SignatureDocumentTemplateId { get; set; }
 
         /// <summary />
         public int? SignedByPersonAliasId { get; set; }
@@ -114,11 +117,12 @@ namespace Rock.Client
             this.DocumentKey = source.DocumentKey;
             this.ForeignGuid = source.ForeignGuid;
             this.ForeignKey = source.ForeignKey;
+            this.InviteCount = source.InviteCount;
+            this.LastInviteDate = source.LastInviteDate;
             this.LastStatusDate = source.LastStatusDate;
             this.ModifiedAuditValuesAlreadyUpdated = source.ModifiedAuditValuesAlreadyUpdated;
             this.Name = source.Name;
-            this.RequestDate = source.RequestDate;
-            this.SignatureDocumentTypeId = source.SignatureDocumentTypeId;
+            this.SignatureDocumentTemplateId = source.SignatureDocumentTemplateId;
             this.SignedByPersonAliasId = source.SignedByPersonAliasId;
             this.Status = source.Status;
             this.CreatedDateTime = source.CreatedDateTime;

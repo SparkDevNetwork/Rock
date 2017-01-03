@@ -210,7 +210,7 @@ namespace Rock.Model
     #region Enum
 
     /// <summary>
-    /// The type of requirment check that is done. Sql, DataView or Manual.
+    /// The type of requirement check that is done. Sql, DataView or Manual.
     /// </summary>
     public enum RequirementCheckType
     {

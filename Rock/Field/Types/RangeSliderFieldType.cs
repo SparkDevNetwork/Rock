@@ -84,7 +84,7 @@ namespace Rock.Field.Types
             if ( controls != null && controls.Count == 2 )
             {
                 var nbMin = controls[0] as NumberBox;
-                var nbMax = controls[0] as NumberBox;
+                var nbMax = controls[1] as NumberBox;
                 if ( nbMin != null )
                 {
                     configurationValues["min"].Value = nbMin.Text;
@@ -109,7 +109,7 @@ namespace Rock.Field.Types
             if ( controls != null && controls.Count == 2 && configurationValues != null )
             {
                 var nbMin = controls[0] as NumberBox;
-                var nbMax = controls[0] as NumberBox;
+                var nbMax = controls[1] as NumberBox;
                 if ( nbMin != null && configurationValues.ContainsKey( "min" ) )
                 {
                     nbMin.Text = configurationValues["min"].Value;

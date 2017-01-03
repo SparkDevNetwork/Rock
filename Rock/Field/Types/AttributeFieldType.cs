@@ -38,6 +38,8 @@ namespace Rock.Field.Types
 
         private const string ENTITY_TYPE_KEY = "entitytype";
         private const string ALLOW_MULTIPLE_KEY = "allowmultiple";
+        private const string QUALIFIER_COLUMN_KEY = "qualifierColumn";
+        private const string QUALIFIER_VALUE_KEY = "qualifierValue";
 
         /// <summary>
         /// Returns a list of the configuration keys
@@ -48,6 +50,8 @@ namespace Rock.Field.Types
             var configKeys = base.ConfigurationKeys();
             configKeys.Add( ENTITY_TYPE_KEY );
             configKeys.Add( ALLOW_MULTIPLE_KEY );
+            configKeys.Add( QUALIFIER_COLUMN_KEY );
+            configKeys.Add( QUALIFIER_VALUE_KEY );
             return configKeys;
         }
 
@@ -80,6 +84,22 @@ namespace Rock.Field.Types
             cb.Label = "Allow Multiple Values";
             cb.Text = "Yes";
             cb.Help = "When set, allows multiple attributes to be selected.";
+
+            // Add textbox for the qualifier column
+            var tbColumn = new RockTextBox();
+            controls.Add( tbColumn );
+            tbColumn.AutoPostBack = true;
+            tbColumn.TextChanged += OnQualifierUpdated;
+            tbColumn.Label = "Qualifier Column";
+            tbColumn.Help = "Entity column qualifier.";
+
+            // Add textbox for the qualifier value
+            var tbValue = new RockTextBox();
+            controls.Add( tbValue );
+            tbValue.AutoPostBack = true;
+            tbValue.TextChanged += OnQualifierUpdated;
+            tbValue.Label = "Qualifier Value";
+            tbValue.Help = "Entity column value.";
             return controls;
         }
 
@@ -93,8 +113,10 @@ namespace Rock.Field.Types
             Dictionary<string, ConfigurationValue> configurationValues = new Dictionary<string, ConfigurationValue>();
             configurationValues.Add( ENTITY_TYPE_KEY, new ConfigurationValue( "Entity Type", "The Entity Type to select attributes for.", "" ) );
             configurationValues.Add( ALLOW_MULTIPLE_KEY, new ConfigurationValue( "Allow Multiple Values", "When set, allows multiple attributes to be selected.", "" ) );
+            configurationValues.Add( QUALIFIER_COLUMN_KEY, new ConfigurationValue( "Qualifier Column", "Entity column qualifier", "" ) );
+            configurationValues.Add( QUALIFIER_VALUE_KEY, new ConfigurationValue( "Qualifier Value", "Entity column value", "" ) );
 
-            if ( controls != null && controls.Count == 2 )
+            if ( controls != null && controls.Count == 4 )
             {
                 if ( controls[0] != null && controls[0] is EntityTypePicker )
                 {
@@ -115,6 +137,16 @@ namespace Rock.Field.Types
                 {
                     configurationValues[ALLOW_MULTIPLE_KEY].Value = ( (CheckBox)controls[1] ).Checked.ToString();
                 }
+
+                if ( controls[2] != null && controls[2] is TextBox )
+                {
+                    configurationValues[QUALIFIER_COLUMN_KEY].Value = ( (TextBox)controls[2] ).Text;
+                }
+
+                if ( controls[3] != null && controls[3] is TextBox )
+                {
+                    configurationValues[QUALIFIER_VALUE_KEY].Value = ( (TextBox)controls[3] ).Text;
+                }
             }
 
             return configurationValues;
@@ -127,7 +159,7 @@ namespace Rock.Field.Types
         /// <param name="configurationValues"></param>
         public override void SetConfigurationValues( List<Control> controls, Dictionary<string, ConfigurationValue> configurationValues )
         {
-            if ( controls != null && controls.Count == 2 && configurationValues != null )
+            if ( controls != null && controls.Count == 4 && configurationValues != null )
             {
                 if ( controls[0] != null && controls[0] is EntityTypePicker && configurationValues.ContainsKey( ENTITY_TYPE_KEY ) )
                 {
@@ -147,6 +179,16 @@ namespace Rock.Field.Types
                 if ( controls[1] != null && controls[1] is CheckBox && configurationValues.ContainsKey( ALLOW_MULTIPLE_KEY ) )
                 {
                     ( (CheckBox)controls[1] ).Checked = configurationValues[ALLOW_MULTIPLE_KEY].Value.AsBoolean();
+                }
+
+                if ( controls[2] != null && controls[2] is TextBox && configurationValues.ContainsKey( QUALIFIER_COLUMN_KEY ) )
+                {
+                    ( (TextBox)controls[2] ).Text = configurationValues[QUALIFIER_COLUMN_KEY].Value;
+                }
+
+                if ( controls[3] != null && controls[3] is TextBox && configurationValues.ContainsKey( QUALIFIER_VALUE_KEY ) )
+                {
+                    ( (TextBox)controls[3] ).Text = configurationValues[QUALIFIER_VALUE_KEY].Value;
                 }
             }
         }
@@ -223,6 +265,11 @@ namespace Rock.Field.Types
                     {
                         Rock.Model.AttributeService attributeService = new Model.AttributeService( new RockContext() );
                         var attributes = attributeService.GetByEntityTypeId( entityType.Id );
+                        if ( configurationValues.ContainsKey( QUALIFIER_COLUMN_KEY ) && configurationValues.ContainsKey( QUALIFIER_VALUE_KEY ) )
+                        {
+                            attributes = attributeService.Get( entityType.Id, configurationValues[QUALIFIER_COLUMN_KEY].Value, configurationValues[QUALIFIER_VALUE_KEY].Value );
+                        }
+
                         if ( attributes.Any() )
                         {
                             foreach ( var attribute in attributes.OrderBy( a => a.Name ) )

@@ -12,6 +12,7 @@
                     <Rock:HighlightLabel ID="hlblTest" runat="server" LabelType="Info" Text="Label" />
                 </div>
             </div>
+            <Rock:PanelDrawer ID="pdAuditDetails" runat="server"></Rock:PanelDrawer>
             <div class="panel-body">
 
                 <div class="alert alert-info">

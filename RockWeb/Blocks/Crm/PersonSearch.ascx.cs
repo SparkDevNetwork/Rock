@@ -262,6 +262,16 @@ namespace RockWeb.Blocks.Crm
                         }
                 }
 
+                IEnumerable<int> personIdList = people.Select( p => p.Id );
+
+                // just leave the personIdList as a Queryable if it is over 10000 so that we don't throw a SQL exception due to the big list of ids
+                if (people.Count() < 10000)
+                {
+                    personIdList = personIdList.ToList();
+                }
+
+                people = personService.Queryable(true).Where( p => personIdList.Contains( p.Id ) );
+				
                 SortProperty sortProperty = gPeople.SortProperty;
                 if ( sortProperty != null )
                 {
@@ -272,8 +282,11 @@ namespace RockWeb.Blocks.Crm
                     people = people.OrderBy( p => p.LastName ).ThenBy( p => p.FirstName );
                 }
 
-                Guid familyGuid = new Guid( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY );
-                Guid homeAddressTypeGuid = new Guid( Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME );
+                var familyGroupType = GroupTypeCache.GetFamilyGroupType();
+                int familyGroupTypeId = familyGroupType != null ? familyGroupType.Id : 0;
+
+                var groupLocationTypeHome = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME.AsGuid() );
+                int homeAddressTypeId = groupLocationTypeHome != null ? groupLocationTypeHome.Id : 0;
 
                 var personList = people.Select( p => new PersonSearchResult
                 {
@@ -295,14 +308,14 @@ namespace RockWeb.Blocks.Crm
                     PhotoId = p.PhotoId,
                     CampusIds = p.Members
                         .Where( m =>
-                            m.Group.GroupType.Guid.Equals( familyGuid ) &&
+                            m.Group.GroupTypeId == familyGroupTypeId &&
                             m.Group.CampusId.HasValue )
                         .Select( m => m.Group.CampusId.Value )
                         .ToList(),
                     HomeAddresses = p.Members
-                        .Where( m => m.Group.GroupType.Guid == familyGuid )
+                        .Where( m => m.Group.GroupTypeId == familyGroupTypeId )
                         .SelectMany( m => m.Group.GroupLocations )
-                        .Where( gl => gl.GroupLocationTypeValue.Guid.Equals( homeAddressTypeGuid ) )
+                        .Where( gl => gl.GroupLocationTypeValueId == homeAddressTypeId )
                         .Select( gl => gl.Location )
                 } ).ToList();
 
@@ -315,12 +328,12 @@ namespace RockWeb.Blocks.Crm
                 {
                     if ( type.ToLower() == "name" )
                     {
-                        var similiarNames = personService.GetSimiliarNames( term,
+                        var similarNames = personService.GetSimilarNames( term,
                             personList.Select( p => p.Id ).ToList(), true );
-                        if ( similiarNames.Any() )
+                        if ( similarNames.Any() )
                         {
                             var hyperlinks = new List<string>();
-                            foreach ( string name in similiarNames.Distinct() )
+                            foreach ( string name in similarNames.Distinct() )
                             {
                                 var pageRef = CurrentPageReference;
                                 pageRef.Parameters["SearchTerm"] = name;

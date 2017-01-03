@@ -62,6 +62,12 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             set { ViewState["GroupAddresses"] = value; }
         }
 
+        private bool HasDeceasedMembers
+        {
+            get { return ViewState["HasDeceasedMembers"] as bool? ?? false; }
+            set { ViewState["HasDeceasedMembers"] = value; }
+        }
+
         private string DefaultState
         {
             get
@@ -292,6 +298,13 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                                 ddlRecordStatus.Warning += " and record status reasons";
                             }
                         }
+
+                        // Does the family have any deceased members?
+                        var inactiveStatus = DefinedValueCache.Read( new Guid( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_INACTIVE ) ).Id;
+                        if ( _group.Members.Where( m => m.Person.RecordStatusValueId == inactiveStatus ).Any() )
+                        {
+                            HasDeceasedMembers = true;
+                        }
                     }
 
                     // Get all the group members
@@ -337,6 +350,75 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             }
         }
 
+        /// <summary>
+        /// Raises the <see cref="E:System.Web.UI.Control.PreRender" /> event.
+        /// </summary>
+        /// <param name="e">An <see cref="T:System.EventArgs" /> object that contains the event data.</param>
+        protected override void OnPreRender( EventArgs e )
+        {
+            base.OnPreRender( e );
+
+            if ( modalAddPerson.Visible )
+            {
+                string script = string.Format( @"
+
+    $('#{0}').on('click', function () {{
+
+        // if Save was clicked, set the fields that should be validated based on what tab they are on
+        if ($('#{9}').val() == 'Existing') {{
+            enableRequiredField( '{1}', true )
+            enableRequiredField( '{2}_rfv', false );
+            enableRequiredField( '{3}_rfv', false );
+            enableRequiredField( '{4}', false );
+            enableRequiredField( '{5}', false );
+            enableRequiredField( '{6}_rfv', false );
+        }} else {{
+            enableRequiredField('{1}', false)
+            enableRequiredField('{2}_rfv', true);
+            enableRequiredField('{3}_rfv', true);
+            enableRequiredField('{4}', true);
+            enableRequiredField('{5}', true);
+            enableRequiredField('{6}_rfv', true);
+        }}
+
+        // update the scrollbar since our validation box could show
+        setTimeout( function ()
+        {{
+            Rock.dialogs.updateModalScrollBar( '{7}' );
+        }});
+
+    }})
+
+    $('a[data-toggle=""pill""]').on('shown.bs.tab', function (e) {{
+
+        var tabHref = $( e.target ).attr( 'href' );
+        if ( tabHref == '#{8}' )
+        {{
+            $( '#{9}' ).val( 'Existing' );
+        }} else {{
+            $( '#{9}' ).val( 'New' );
+        }}
+
+        // if the validation error summary is shown, hide it when they switch tabs
+        $( '#{7}' ).hide();
+    }});
+",
+                    modalAddPerson.ServerSaveLink.ClientID,                         // {0}
+                    ppPerson.RequiredFieldValidator.ClientID,                       // {1}
+                    tbNewPersonFirstName.ClientID,                                  // {2}
+                    tbNewPersonLastName.ClientID,                                   // {3}
+                    rblNewPersonRole.RequiredFieldValidator.ClientID,               // {4}
+                    rblNewPersonGender.RequiredFieldValidator.ClientID,             // {5}
+                    ddlNewPersonConnectionStatus.ClientID,                          // {6}
+                    valSummaryAddPerson.ClientID,                                   // {7}
+                    divExistingPerson.ClientID,                                     // {8}
+                    hfActiveTab.ClientID                                            // {9}
+                );
+
+                ScriptManager.RegisterStartupScript( modalAddPerson, modalAddPerson.GetType(), "modaldialog-validation", script, true );
+            }
+        }
+
         #region Events
 
         /// <summary>
@@ -366,7 +448,13 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void ddlRecordStatus_SelectedIndexChanged( object sender, EventArgs e )
         {
-            ddlReason.Visible = ddlRecordStatus.SelectedValueAsInt() == DefinedValueCache.Read( new Guid( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_INACTIVE ) ).Id;
+            var inactiveStatus = DefinedValueCache.Read( new Guid( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_INACTIVE ) ).Id;
+            if ( HasDeceasedMembers && ddlRecordStatus.SelectedValueAsInt() != inactiveStatus )
+            {
+                ddlRecordStatus.Warning = "Note: the status of deceased people will not be changed.";
+            }
+
+            ddlReason.Visible = ddlRecordStatus.SelectedValueAsInt() == inactiveStatus;
             confirmExit.Enabled = true;
         }
 
@@ -579,15 +667,15 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                 groupMember.Gender = rblNewPersonGender.SelectedValueAsEnum<Gender>();
                 groupMember.MaritalStatusValueId = ddlNewPersonMaritalStatus.SelectedValueAsInt();
                 DateTime? birthdate = dpNewPersonBirthDate.SelectedDate;
-                if ( birthdate.HasValue )
-                {
-                    // If setting a future birthdate, subtract a century until birthdate is not greater than today.
-                    var today = RockDateTime.Today;
-                    while ( birthdate.Value.CompareTo( today ) > 0 )
-                    {
-                        birthdate = birthdate.Value.AddYears( -100 );
-                    }
-                }
+                //if ( birthdate.HasValue )
+                //{
+                //    // If setting a future birthdate, subtract a century until birthdate is not greater than today.
+                //    var today = RockDateTime.Today;
+                //    while ( birthdate.Value.CompareTo( today ) > 0 )
+                //    {
+                //        birthdate = birthdate.Value.AddYears( -100 );
+                //    }
+                //}
 
                 groupMember.BirthDate = birthdate;
                 groupMember.GradeOffset = ddlGradePicker.SelectedValueAsInt();
@@ -902,6 +990,8 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                     rockContext.SaveChanges();
 
                     // SAVE GROUP MEMBERS
+                    var recordStatusInactiveId = DefinedValueCache.Read( new Guid( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_INACTIVE ) ).Id;
+                    var reasonStatusReasonDeceasedId = DefinedValueCache.Read( new Guid( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_REASON_DECEASED ) ).Id;
                     int? recordStatusValueID = ddlRecordStatus.SelectedValueAsInt();
                     int? reasonValueId = ddlReason.SelectedValueAsInt();
                     var newGroups = new List<Group>();
@@ -917,7 +1007,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                             role = _groupType.Roles.FirstOrDefault();
                         }
 
-                        bool isAdult = role != null && role.Guid.Equals( Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_ADULT );
+                        bool isAdult = role != null && role.Guid.Equals( Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_ADULT.AsGuid() );
 
                         // People added to group (new or from other group )
                         if ( !groupMemberInfo.ExistingGroupMember )
@@ -981,7 +1071,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                                     person.RecordStatusValueId = recordStatusValueID;
                                 }
 
-                                if ( person.RecordStatusValueId != recordStatusValueID )
+                                if ( person.RecordStatusReasonValueId != reasonValueId )
                                 {
                                     History.EvaluateChange( demographicChanges, "Record Status Reason", DefinedValueCache.GetName( person.RecordStatusReasonValueId ), DefinedValueCache.GetName( reasonValueId ) );
                                     person.RecordStatusReasonValueId = reasonValueId;
@@ -1063,7 +1153,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                                 }
                                 else
                                 {
-                                    // Existing member was not remvoved
+                                    // Existing member was not removed
                                     if ( role != null )
                                     {
                                         History.EvaluateChange( memberChanges, "Role", groupMember.GroupRole != null ? groupMember.GroupRole.Name : string.Empty, role.Name );
@@ -1071,9 +1161,11 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 
                                         if ( _isFamilyGroupType )
                                         {
-                                            if ( recordStatusValueID > 0 )
+                                            // Only change a person's record status if they were not previously deceased (#1887).
+                                            if ( recordStatusValueID > 0 && groupMember.Person.RecordStatusReasonValueId != reasonStatusReasonDeceasedId )
                                             {
-                                                History.EvaluateChange( demographicChanges, "Record Status", DefinedValueCache.GetName( groupMember.Person.RecordStatusValueId ), DefinedValueCache.GetName( recordStatusValueID ) );
+                                                History.EvaluateChange( demographicChanges, "Record Status", 
+                                                DefinedValueCache.GetName( groupMember.Person.RecordStatusValueId ), DefinedValueCache.GetName( recordStatusValueID ) );
                                                 groupMember.Person.RecordStatusValueId = recordStatusValueID;
 
                                                 History.EvaluateChange( demographicChanges, "Record Status Reason", DefinedValueCache.GetName( groupMember.Person.RecordStatusReasonValueId ), DefinedValueCache.GetName( reasonValueId ) );
@@ -1098,6 +1190,21 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                         if ( _isFamilyGroupType )
                         {
                             HistoryService.SaveChanges( rockContext, typeof( Person ), Rock.SystemGuid.Category.HISTORY_PERSON_FAMILY_CHANGES.AsGuid(), groupMemberInfo.Id, memberChanges, _group.Name, typeof( Group ), _group.Id );
+                        }
+                    }
+
+                    // Now check if family group should be marked inactive or active
+                    if ( _isFamilyGroupType )
+                    {
+                        // Are there any members of the family who are NOT inactive?
+                        // If not, mark the whole family inactive.
+                        if ( !_group.Members.Where( m => m.Person.RecordStatusValueId != recordStatusInactiveId ).Any() )
+                        {
+                            _group.IsActive = false;
+                        }
+                        else
+                        {
+                            _group.IsActive = true;
                         }
                     }
 

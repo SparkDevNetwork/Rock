@@ -39,6 +39,7 @@
                             <Rock:RockDropDownList ID="ddlCreditCardType" runat="server" Label="Credit Card Type" />
                             <Rock:RockDropDownList ID="ddlSourceType" runat="server" Label="Source Type" />
                             <Rock:CampusPicker ID="campCampus" runat="server" Label="Campus (of Batch)" />
+                            <Rock:PersonPicker ID="ppPerson" runat="server" Label="Person" />
                         </Rock:GridFilter>
 
                         <Rock:ModalAlert ID="mdGridWarning" runat="server" />
@@ -78,6 +79,9 @@
                     <asp:Panel ID="pnlSummary" runat="server" CssClass="panel panel-block">
                         <div class="panel-heading">
                             <h1 class="panel-title">Total Results</h1>
+                            <div class="panel-labels">
+                                <Rock:HighlightLabel ID="lbFiltered" runat="server" LabelType="Default" Visible="false" />
+                            </div>
                         </div>
                         <div class="panel-body">
                             <asp:Repeater ID="rptAccountSummary" runat="server">

@@ -348,23 +348,9 @@ namespace RockWeb.Blocks.Finance
                 using ( var rockContext = new RockContext() )
                 {
                     _campusAccounts = new Dictionary<int, Dictionary<int, string>>();
-
-                    Guid contributionGuid = Rock.SystemGuid.DefinedValue.TRANSACTION_TYPE_CONTRIBUTION.AsGuid();
-                    var contributionAccountIds = new FinancialTransactionDetailService( rockContext )
-                        .Queryable().AsNoTracking()
-                        .Where( d =>
-                            d.Transaction != null &&
-                            d.Transaction.TransactionTypeValue != null &&
-                            d.Transaction.TransactionTypeValue.Guid.Equals( contributionGuid ) )
-                        .Select( d => d.AccountId )
-                        .Distinct()
-                        .ToList();
-
                     foreach ( var campusAccounts in new FinancialAccountService( rockContext )
                         .Queryable().AsNoTracking()
-                        .Where( a =>
-                            a.IsActive &&
-                            contributionAccountIds.Contains( a.Id ) )
+                        .Where( a => a.IsActive && a.IsTaxDeductible )
                         .GroupBy( a => a.CampusId ?? 0 )
                         .Select( c => new
                         {
@@ -1444,7 +1430,7 @@ function(item) {
                                 d.Transaction.TransactionDateTime.HasValue &&
                                 d.Transaction.TransactionDateTime.Value >= missedStart.Value &&
                                 d.Transaction.TransactionDateTime.Value < missedEnd.Value &&
-                                accountIds.Contains( d.AccountId ) &&
+                                ( accountIds.Any() && accountIds.Contains( d.AccountId ) || d.Account.IsTaxDeductible ) &&
                                 d.Amount != 0.0M )
                             .Select( d => d.Transaction.AuthorizedPersonAlias.Person.GivingId )
                             .ToList();

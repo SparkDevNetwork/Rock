@@ -68,8 +68,8 @@
                                     <asp:Literal ID="lPackageDescription" runat="server" />
                                 </p>
 
-                                <p class="clearfix">
-                                    <asp:LinkButton ID="lbPackageLink" runat="server" CssClass="btn btn-default btn-sm pull-right"><i class="fa fa-desktop"></i> Package Website</asp:LinkButton>
+                                <p class="clearfix margin-t-md">
+                                    <asp:HyperLink ID="hlPackageLink" runat="server" CssClass="btn btn-default btn-sm pull-right"><i class="fa fa-desktop"></i> Package Website</asp:HyperLink>
                                 </p>
 
                                 <asp:Literal ID="lVersionWarning" runat="server" />

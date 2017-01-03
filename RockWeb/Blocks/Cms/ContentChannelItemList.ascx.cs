@@ -42,6 +42,11 @@ namespace RockWeb.Blocks.Cms
     [LinkedPage("Detail Page", order:0)]
     [BooleanField("Filter Items For Current User", "Filters the items by those created by the current logged in user.", false, order: 1)]
     [BooleanField("Show Filters", "Allows you to show/hide the grids filters.", true, order: 2)]
+    [BooleanField("Show Event Occurrences Column", "Determines if the column that lists event occurrences should be shown.", true, order: 3)]
+    [BooleanField( "Show Priority Column", "Determines if the column that displays priority should be shown.", true, order: 4 )]
+    [BooleanField( "Show Security Column", "Determines if the security column should be shown.", true, order: 5 )]
+    [BooleanField( "Show Expire Column", "Determines if the expire column should be shown.", true, order: 6 )]
+    [ContentChannelField("Content Channel", "If set the block will ignore content channel query parameters", false)]
     public partial class ContentChannelItemList : RockBlock, ISecondaryBlock
     {
         #region Fields
@@ -82,7 +87,14 @@ namespace RockWeb.Blocks.Cms
 
             gfFilter.Visible = GetAttributeValue( "ShowFilters" ).AsBoolean();
             
-            _channelId = PageParameter( "contentChannelId" ).AsIntegerOrNull();
+            if (string.IsNullOrWhiteSpace(GetAttributeValue("ContentChannel")))
+            {
+                _channelId = PageParameter("contentChannelId").AsIntegerOrNull();
+            }
+            else
+            {
+                _channelId = new ContentChannelService(new RockContext()).Get(GetAttributeValue("ContentChannel").AsGuid()).Id;
+            }
             if ( _channelId != null )
             {
                 upnlContent.Visible = true;
@@ -104,7 +116,7 @@ namespace RockWeb.Blocks.Cms
                     if ( contentChannel.ContentChannelType.IncludeTime )
                     {
                         gItems.Columns[2].Visible = true;
-                        gItems.Columns[3].Visible = isRange;
+                        gItems.Columns[3].Visible = isRange && GetAttributeValue( "ShowExpireColumn" ).AsBoolean();
                         gItems.Columns[4].Visible = false;
                         gItems.Columns[5].Visible = false;
                     }
@@ -113,7 +125,7 @@ namespace RockWeb.Blocks.Cms
                         gItems.Columns[2].Visible = false;
                         gItems.Columns[3].Visible = false;
                         gItems.Columns[4].Visible = true;
-                        gItems.Columns[5].Visible = isRange;
+                        gItems.Columns[5].Visible = isRange && GetAttributeValue( "ShowExpireColumn" ).AsBoolean();
                     }
 
                     gItems.Columns[6].Visible = !contentChannel.ContentChannelType.DisablePriority;
@@ -154,12 +166,11 @@ namespace RockWeb.Blocks.Cms
                     statusField.SortExpression = "Status";
                     statusField.HtmlEncode = false;
                 }
-
                 var securityField = new SecurityField();
                 gItems.Columns.Add( securityField );
                 securityField.TitleField = "Title";
                 securityField.EntityTypeId = EntityTypeCache.Read( typeof( Rock.Model.ContentChannelItem ) ).Id;
-
+                
                 var deleteField = new DeleteField();
                 gItems.Columns.Add( deleteField );
                 deleteField.Click += gItems_Delete;
@@ -167,6 +178,16 @@ namespace RockWeb.Blocks.Cms
                 // this event gets fired after block settings are updated. it's nice to repaint the screen if these settings would alter it
                 this.BlockUpdated += Block_BlockUpdated;
                 this.AddConfigurationUpdateTrigger( upnlContent );
+
+                // Show/hide columns based on block settings
+                gItems.Columns[7].Visible = GetAttributeValue( "ShowEventOccurrencesColumn" ).AsBoolean();
+                gItems.Columns[6].Visible = GetAttributeValue( "ShowPriorityColumn" ).AsBoolean();
+                
+                var securityColumn = gItems.Columns.OfType<SecurityField>().FirstOrDefault();
+                if ( securityColumn != null )
+                {
+                    securityColumn.Visible = GetAttributeValue( "ShowSecurityColumn" ).AsBoolean();
+                }
             }
             else
             {
@@ -270,7 +291,8 @@ namespace RockWeb.Blocks.Cms
         protected void gItems_Delete( object sender, RowEventArgs e )
         {
             var rockContext = new RockContext();
-            ContentChannelItemService contentItemService = new ContentChannelItemService( rockContext );
+            var contentItemService = new ContentChannelItemService( rockContext );
+            var contentItemAssociationService = new ContentChannelItemAssociationService( rockContext );
 
             ContentChannelItem contentItem = contentItemService.Get( e.RowKeyId );
 
@@ -283,8 +305,13 @@ namespace RockWeb.Blocks.Cms
                     return;
                 }
 
-                contentItemService.Delete( contentItem );
-                rockContext.SaveChanges();
+                rockContext.WrapTransaction( () =>
+                {
+                    contentItemAssociationService.DeleteRange( contentItem.ChildItems );
+                    contentItemAssociationService.DeleteRange( contentItem.ParentItems );
+                    contentItemService.Delete( contentItem );
+                    rockContext.SaveChanges();
+                } );
             }
 
             BindGrid();
@@ -330,6 +357,7 @@ namespace RockWeb.Blocks.Cms
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void Block_BlockUpdated( object sender, EventArgs e )
         {
+            OnInit(e);
             BindGrid();
         }
 

@@ -35,7 +35,7 @@ namespace Rock.Web.Cache
     {
         #region Static Fields
 
-        private static ConcurrentDictionary<string, int> _siteDomains = new ConcurrentDictionary<string, int>();
+        private static ConcurrentDictionary<string, int?> _siteDomains = new ConcurrentDictionary<string, int?>();
 
         #endregion
 
@@ -715,7 +715,15 @@ namespace Rock.Web.Cache
         public static void Flush( int id )
         {
             FlushCache( SiteCache.CacheKey( id ) );
-            _siteDomains = new ConcurrentDictionary<string, int>();
+            _siteDomains = new ConcurrentDictionary<string, int?>();
+        }
+
+        /// <summary>
+        /// Flushes this instance.
+        /// </summary>
+        public static void Flush()
+        {
+            _siteDomains = new ConcurrentDictionary<string, int?>();
         }
 
         /// <summary>
@@ -725,10 +733,17 @@ namespace Rock.Web.Cache
         /// <returns></returns>
         public static SiteCache GetSiteByDomain( string host )
         {
-            int siteId = 0;
+            int? siteId;
             if ( _siteDomains.TryGetValue( host, out siteId ) )
             {
-                return Read( siteId );
+                if ( siteId.HasValue )
+                {
+                    return Read( siteId.Value );
+                }
+                else
+                {
+                    return null;
+                }
             }
 
             using ( var rockContext = new RockContext() )
@@ -744,6 +759,10 @@ namespace Rock.Web.Cache
                 {
                     _siteDomains.AddOrUpdate( host, siteDomain.SiteId, ( k, v ) => siteDomain.SiteId );
                     return Read( siteDomain.SiteId );
+                }
+                else
+                {
+                    _siteDomains.AddOrUpdate( host, (int?)null, ( k, v ) => (int?)null );
                 }
             }
 

@@ -375,10 +375,6 @@ namespace Rock.Reporting.DataFilter
             return null;
         }
 
-        #endregion
-
-        #region Private Methods
-
         /// <summary>
         /// Builds an expression for a property field
         /// </summary>
@@ -387,7 +383,7 @@ namespace Rock.Reporting.DataFilter
         /// <param name="entityField">The property.</param>
         /// <param name="values">The values.</param>
         /// <returns></returns>
-        private Expression GetPropertyExpression( IService serviceInstance, ParameterExpression parameterExpression, EntityField entityField, List<string> values )
+        public Expression GetPropertyExpression( IService serviceInstance, ParameterExpression parameterExpression, EntityField entityField, List<string> values )
         {
             Expression trueValue = Expression.Constant( true );
             MemberExpression propertyExpression = Expression.Property( parameterExpression, entityField.Name );

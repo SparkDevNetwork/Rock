@@ -167,7 +167,7 @@ namespace Rock.Field.Types
         /// <returns></returns>
         public override string GetFilterCompareValue( Control control, FilterMode filterMode )
         {
-            return "1"; // Equal To
+            return GetEqualToCompareValue();
         }
 
         /// <summary>

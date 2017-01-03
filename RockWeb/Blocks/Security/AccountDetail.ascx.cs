@@ -131,6 +131,11 @@ namespace RockWeb.Blocks.Security
                     }
                 }
             }
+            else
+            {
+                pnlView.Visible = false;
+                nbNotAuthorized.Visible = true;
+            }
         }
 
         #endregion

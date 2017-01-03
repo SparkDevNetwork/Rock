@@ -177,7 +177,7 @@ namespace Rock.Apps.StatementGenerator
                 var rockConfig = RockConfig.Load();
                 rockConfig.LayoutFile = fileName;
                 rockConfig.Save();
-                ProgressPage nextPage = new ProgressPage();
+                SelectSaveLocationPage nextPage = new SelectSaveLocationPage();
                 this.NavigationService.Navigate( nextPage );
             }
         }

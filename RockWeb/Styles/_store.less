@@ -15,83 +15,82 @@
 // 1. Promo Rotator
 // -------------------------
 .promotionrotator {
-	margin-bottom: 48px;
+  margin-bottom: 48px;
 
-    .carousel-inner {
-        img {
-            width: 100%;
-        }
+  .carousel-inner {
+    img {
+      width: 100%;
+    }
+  }
+
+  .carousel-indicators {
+    bottom: -35px;
+
+    li {
+      border-color: #6a6a6a;
     }
 
-    .carousel-indicators {
-		bottom: -35px;
-
-        li {
-		    border-color: #6A6A6A;
-	    }
-
-        .active {
-		    background-color: #6A6A6A;
-	    }
-	}
-
-    .carousel-control {
-        .fa-chevron-right {
-		    right: 20px;
-	    }
-
-        .fa-chevron-left {
-		    left: 20px;
-	    }
+    .active {
+      background-color: #6a6a6a;
     }
+  }
+
+  .carousel-control {
+    .fa-chevron-right {
+      right: 20px;
+    }
+
+    .fa-chevron-left {
+      left: 20px;
+    }
+  }
 }
 
 // 2. Package Summary
 // -------------------------
 .packagesummary {
-    height: 250px;
-    cursor: pointer;
-    border: 1px solid #ccc;
-    margin-bottom: 24px;
-    background-color: #fff;
+  height: 250px;
+  margin-bottom: 24px;
+  cursor: pointer;
+  background-color: #fff;
+  border: 1px solid #ccc;
 
-    .packagesummary-image-hover {
-        background-color: #000;
-        opacity: 0;
-        width: 100%;
-        height: 140px;
-        content: '';
-        -webkit-transition: opacity .25s ease-in;
-        -moz-transition: opacity .25s ease-in;
-        -o-transition: opacity .25s ease-in;
+  .packagesummary-image-hover {
+    width: 100%;
+    height: 140px;
+    content: '';
+    background-color: #000;
+    opacity: 0;
+    -webkit-transition: opacity .25s ease-in;
+       -moz-transition: opacity .25s ease-in;
         -ms-transition: opacity .25s ease-in;
-        transition: opacity .25s ease-in;
+         -o-transition: opacity .25s ease-in;
+            transition: opacity .25s ease-in;
+  }
+
+  &:hover .packagesummary-image-hover {
+    opacity: .5;
+  }
+
+  .packagesummary-body {
+    padding: 8px;
+
+    h2 {
+      margin: 15px 0 0;
+      overflow: hidden;
+      font-size: 18px;
+      font-weight: @font-weight-semibold;
+      line-height: 1.3em;
+      text-overflow: ellipsis;
+      white-space: nowrap;
     }
 
-    &:hover .packagesummary-image-hover {
-        opacity: 0.5;
+    .vendor {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
     }
-
-    .packagesummary-body {
-        padding: 8px;
-        
-        h2 {
-            line-height: 1.3em;
-            margin: 15px 0 0;
-            font-size: 18px;
-            font-weight: @font-weight-semibold;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-
-        .vendor {
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-    }
-    
+  }
 }
 
 
@@ -99,15 +98,15 @@
 // -------------------------
 
 .packagedetail-image {
-    width: 100%;
+  width: 100%;
 }
 
 .packagedetail-additionalversions {
-    display: none;
+  display: none;
 }
 
 .btn-install {
-    width: 100%;
+  width: 100%;
 }
 
 
@@ -120,99 +119,99 @@
 // @fa-var-star-o: "\f006";
 
 .rating {
-    font-family: FontAwesome;
+  font-family: FontAwesome;
 
-    &.rating-0:before {
-        content: "\f006  \f006  \f006  \f006  \f006";
-    }
+  &.rating-0:before {
+    content: "\f006  \f006  \f006  \f006  \f006";
+  }
 
-    &.rating-05:before {
-        content: "\f089  \f006  \f006  \f006  \f006";
-    }
+  &.rating-05:before {
+    content: "\f089  \f006  \f006  \f006  \f006";
+  }
 
-    &.rating-1:before {
-        content: "\f005  \f006  \f006  \f006  \f006";
-    }
+  &.rating-1:before {
+    content: "\f005  \f006  \f006  \f006  \f006";
+  }
 
-    &.rating-15:before {
-        content: "\f005  \f089  \f006  \f006  \f006";
-    }
+  &.rating-15:before {
+    content: "\f005  \f089  \f006  \f006  \f006";
+  }
 
-    &.rating-2:before {
-        content: "\f005  \f005  \f006  \f006  \f006";
-    }
+  &.rating-2:before {
+    content: "\f005  \f005  \f006  \f006  \f006";
+  }
 
-    &.rating-25:before {
-        content: "\f005  \f005  \f089  \f006  \f006";
-    }
+  &.rating-25:before {
+    content: "\f005  \f005  \f089  \f006  \f006";
+  }
 
-    &.rating-3:before {
-        content: "\f005  \f005  \f005  \f006  \f006";
-    }
+  &.rating-3:before {
+    content: "\f005  \f005  \f005  \f006  \f006";
+  }
 
-    &.rating-35:before {
-        content: "\f005  \f005  \f005  \f089  \f006";
-    }
+  &.rating-35:before {
+    content: "\f005  \f005  \f005  \f089  \f006";
+  }
 
-    &.rating-4:before {
-        content: "\f005  \f005  \f005  \f005  \f006";
-    }
+  &.rating-4:before {
+    content: "\f005  \f005  \f005  \f005  \f006";
+  }
 
-    &.rating-45:before {
-        content: "\f005  \f005  \f005  \f005  \f089";
-    }
+  &.rating-45:before {
+    content: "\f005  \f005  \f005  \f005  \f089";
+  }
 
-    &.rating-5:before {
-        content: "\f005  \f005  \f005  \f005  \f005";
-    }
+  &.rating-5:before {
+    content: "\f005  \f005  \f005  \f005  \f005";
+  }
 }
 
 .pricelabel {
-    padding: 10px;
-    margin-top: 10px;
-    margin-bottom: 20px;
-    border-radius: @border-radius-base;
-    text-align: center;
+  padding: 10px;
+  margin-top: 10px;
+  margin-bottom: 20px;
+  text-align: center;
+  border-radius: @border-radius-base;
 
-    &.cost {
-       background-color: @alert-success-bg;
-       border-color: @alert-success-border;
-       color: @alert-success-text;
-    }
+  &.cost {
+    color: @alert-success-text;
+    background-color: @alert-success-bg;
+    border-color: @alert-success-border;
+  }
 
-    &.free {
-        background-color: @alert-info-bg;
-        border-color: @alert-info-border;
-        color: @alert-info-text;
-    }
+  &.free {
+    color: @alert-info-text;
+    background-color: @alert-info-bg;
+    border-color: @alert-info-border;
+  }
 
-    h4 {
-        font-size: 24px;
-        font-weight: @font-weight-bold;
-        color: inherit;
-    }
+  h4 {
+    font-size: 24px;
+    font-weight: @font-weight-bold;
+    color: inherit;
+  }
 }
 
 // 5. Purchased Package
 // -------------------------
 .purchasedpackage {
-    margin-bottom: 24px;
+  margin-bottom: 24px;
 
-    h1 {
-        margin-top: 0;
-        line-height: 1.3em;
-        font-size: 18px;
-        font-weight: @font-weight-semibold;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-    }
+  h1 {
+    margin-top: 0;
+    overflow: hidden;
+    font-size: 18px;
+    font-weight: @font-weight-semibold;
+    line-height: 1.3em;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
 
-    .purchasedpackage-install {
-        a {
-            width: 100%;
-        }
+  .purchasedpackage-install {
+    a {
+      width: 100%;
     }
+  }
 }
 
 

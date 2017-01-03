@@ -31,8 +31,6 @@ namespace Rock.Web.UI.Controls
     [ToolboxData( "<{0}:CheckinArea runat=server></{0}:CheckinArea>" )]
     public class CheckinArea : CompositeControl
     {
-        private HiddenField _hfGroupTypeGuid;
-        private HiddenField _hfGroupTypeId;
         private Label _lblGroupTypeName;
 
         private DataTextBox _tbGroupTypeName;
@@ -46,14 +44,49 @@ namespace Rock.Web.UI.Controls
         private Grid _gCheckinLabels;
 
         /// <summary>
-        /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
+        /// Gets the group type unique identifier.
         /// </summary>
-        /// <param name="e">An <see cref="T:System.EventArgs" /> object that contains the event data.</param>
-        protected override void OnInit( EventArgs e )
-        {
-            base.OnInit( e );
+        /// <value>
+        /// The group type unique identifier.
+        /// </value>
+        public Guid GroupTypeGuid;
 
-            CreateGroupTypeAttributeControls( new RockContext() );
+        /// <summary>
+        /// Restores view-state information from a previous request that was saved with the <see cref="M:System.Web.UI.WebControls.WebControl.SaveViewState" /> method.
+        /// </summary>
+        /// <param name="savedState">An object that represents the control state to restore.</param>
+        protected override void LoadViewState( object savedState )
+        {
+            base.LoadViewState( savedState );
+
+            GroupTypeGuid = ViewState["GroupTypeGuid"] as Guid? ?? Guid.NewGuid();
+            using ( var rockContext = new RockContext() )
+            {
+                var groupType = new GroupTypeService( rockContext ).Get( GroupTypeGuid );
+                if ( groupType != null )
+                {
+                    groupType.InheritedGroupTypeId = ViewState["InheritedGroupTypeId"] as int?;
+                    CreateGroupTypeAttributeControls( groupType, rockContext );
+                }
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the validation group.
+        /// </summary>
+        /// <value>
+        /// The validation group.
+        /// </value>
+        public string ValidationGroup
+        {
+            get
+            {
+                return ViewState["ValidationGroup"] as string;
+            }
+            set
+            {
+                ViewState["ValidationGroup"] = value;
+            }
         }
 
         /// <summary>
@@ -71,6 +104,22 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Saves any state that was modified after the <see cref="M:System.Web.UI.WebControls.Style.TrackViewState" /> method was invoked.
+        /// </summary>
+        /// <returns>
+        /// An object that contains the current view state of the control; otherwise, if there is no view state associated with the control, null.
+        /// </returns>
+        protected override object SaveViewState()
+        {
+            EnsureChildControls();
+
+            ViewState["GroupTypeGuid"] = GroupTypeGuid;
+            ViewState["InheritedGroupTypeId"] = _ddlGroupTypeInheritFrom.SelectedValueAsId();
+
+            return base.SaveViewState();
+        }
+
+        /// <summary>
         /// Handles the grid events.
         /// </summary>
         private void HandleGridEvents()
@@ -81,6 +130,7 @@ namespace Rock.Web.UI.Controls
             {
                 List<string> subTargetList = eventTarget.Replace( _gCheckinLabels.UniqueID, string.Empty ).Split( new char[] { '$' }, StringSplitOptions.RemoveEmptyEntries ).ToList();
                 EnsureChildControls();
+
                 string lblAddControlId = subTargetList.Last();
                 var lblAdd = _gCheckinLabels.Actions.FindControl( lblAddControlId );
                 if ( lblAdd != null )
@@ -153,21 +203,6 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
-        /// Gets the group type unique identifier.
-        /// </summary>
-        /// <value>
-        /// The group type unique identifier.
-        /// </value>
-        public Guid GroupTypeGuid
-        {
-            get
-            {
-                EnsureChildControls();
-                return new Guid( _hfGroupTypeGuid.Value );
-            }
-        }
-
-        /// <summary>
         /// Gets the type of the checkin group.
         /// </summary>
         /// <param name="groupType">Type of the group.</param>
@@ -180,6 +215,10 @@ namespace Rock.Web.UI.Controls
             groupType.AttendanceRule = _ddlAttendanceRule.SelectedValueAsEnum<AttendanceRule>();
             groupType.AttendancePrintTo = _ddlPrintTo.SelectedValueAsEnum<PrintTo>();
 
+            // Reload Attributes
+            groupType.Attributes = null;
+            groupType.LoadAttributes();
+
             Rock.Attribute.Helper.GetEditValues( _phGroupTypeAttributes, groupType );
         }
 
@@ -187,18 +226,20 @@ namespace Rock.Web.UI.Controls
         /// Sets the type of the group.
         /// </summary>
         /// <param name="groupType">Type of the group.</param>
-        public void SetGroupType( GroupType groupType )
+        /// <param name="rockContext">The rock context.</param>
+        public void SetGroupType( GroupType groupType, RockContext rockContext )
         {
             EnsureChildControls();
 
             if ( groupType != null )
             {
-                _hfGroupTypeId.Value = groupType.Id.ToString();
-                _hfGroupTypeGuid.Value = groupType.Guid.ToString();
+                GroupTypeGuid = groupType.Guid;
                 _tbGroupTypeName.Text = groupType.Name;
                 _ddlGroupTypeInheritFrom.SetValue( groupType.InheritedGroupTypeId );
                 _ddlAttendanceRule.SetValue( (int)groupType.AttendanceRule );
                 _ddlPrintTo.SetValue( (int)groupType.AttendancePrintTo );
+
+                CreateGroupTypeAttributeControls( groupType, rockContext );
             }
         }
 
@@ -222,12 +263,6 @@ namespace Rock.Web.UI.Controls
         protected override void CreateChildControls()
         {
             Controls.Clear();
-
-            _hfGroupTypeGuid = new HiddenField();
-            _hfGroupTypeGuid.ID = this.ID + "_hfGroupTypeGuid";
-
-            _hfGroupTypeId = new HiddenField();
-            _hfGroupTypeId.ID = this.ID + "_hfGroupTypeId";
 
             _lblGroupTypeName = new Label();
             _lblGroupTypeName.ClientIDMode = ClientIDMode.Static;
@@ -256,7 +291,8 @@ namespace Rock.Web.UI.Controls
             {
                 _ddlGroupTypeInheritFrom.Items.Add( new ListItem( groupType.Name, groupType.Id.ToString() ) );
             }
-
+            _ddlGroupTypeInheritFrom.AutoPostBack = true;
+            _ddlGroupTypeInheritFrom.SelectedIndexChanged += _ddlGroupTypeInheritFrom_SelectedIndexChanged;
             _ddlAttendanceRule = new RockDropDownList();
             _ddlAttendanceRule.ID = this.ID + "_ddlAttendanceRule";
             _ddlAttendanceRule.Label = "Check-in Rule";
@@ -266,15 +302,13 @@ namespace Rock.Web.UI.Controls
             _ddlPrintTo = new RockDropDownList();
             _ddlPrintTo.ID = this.ID + "_ddlPrintTo";
             _ddlPrintTo.Label = "Print To";
-            _ddlPrintTo.Help = "When printing check-in labels, should the device's printer or the location's printer be used?  Note: the device has a similiar setting which takes precedence over this setting.";
+            _ddlPrintTo.Help = "When printing check-in labels, should the device's printer or the location's printer be used?  Note: the device has a similar setting which takes precedence over this setting.";
             _ddlPrintTo.Items.Add( new ListItem( "Device Printer", "1" ) );
             _ddlPrintTo.Items.Add( new ListItem( "Location Printer", "2" ) );
 
             _phGroupTypeAttributes = new PlaceHolder();
             _phGroupTypeAttributes.ID = this.ID + "_phGroupTypeAttributes";
 
-            Controls.Add( _hfGroupTypeGuid );
-            Controls.Add( _hfGroupTypeId );
             Controls.Add( _lblGroupTypeName );
             Controls.Add( _ddlGroupTypeInheritFrom );
             Controls.Add( _ddlAttendanceRule );
@@ -327,9 +361,6 @@ namespace Rock.Web.UI.Controls
         {
             if ( this.Visible )
             {
-                _hfGroupTypeGuid.RenderControl( writer );
-                _hfGroupTypeId.RenderControl( writer );
-
                 writer.AddAttribute( HtmlTextWriterAttribute.Style, "margin-top:0;" );
                 writer.RenderBeginTag( HtmlTextWriterTag.H3 );
                 _lblGroupTypeName.Text = _tbGroupTypeName.Text;
@@ -344,9 +375,11 @@ namespace Rock.Web.UI.Controls
                 _phGroupTypeAttributes.RenderControl( writer );
 
                 writer.WriteLine( "<h3>Check-in Labels</h3>" );
-
-                _gCheckinLabels.DataSource = this.CheckinLabels;
-                _gCheckinLabels.DataBind();
+                if ( this.CheckinLabels != null )
+                {
+                    _gCheckinLabels.DataSource = this.CheckinLabels;
+                    _gCheckinLabels.DataBind();
+                }
                 _gCheckinLabels.RenderControl( writer );
             }
         }
@@ -354,22 +387,44 @@ namespace Rock.Web.UI.Controls
         /// <summary>
         /// Creates the group type attribute controls.
         /// </summary>
+        /// <param name="groupType">Type of the group.</param>
         /// <param name="rockContext">The rock context.</param>
-        private void CreateGroupTypeAttributeControls( RockContext rockContext )
+        public void CreateGroupTypeAttributeControls( GroupType groupType,  RockContext rockContext )
         {
-            // make a fakeGroupType to use to get the Attribute Controls based on GroupType id and InheritedGroupTypeId
-            GroupType fakeGroupType = new GroupType();
-            fakeGroupType.Id = _hfGroupTypeId.ValueAsInt();
-            fakeGroupType.InheritedGroupTypeId = _ddlGroupTypeInheritFrom.SelectedValueAsInt();
-            fakeGroupType.LoadAttributes( rockContext );
-
             EnsureChildControls();
 
             _phGroupTypeAttributes.Controls.Clear();
 
-            // exclude checkin labels 
-            List<string> checkinLabelAttributeNames = GetCheckinLabelAttributes( fakeGroupType.Attributes ).Select( a => a.Value.Name ).ToList();
-            Rock.Attribute.Helper.AddEditControls( fakeGroupType, _phGroupTypeAttributes, true, string.Empty, checkinLabelAttributeNames );
+            if ( groupType != null )
+            {
+                if ( groupType.Attributes == null )
+                {
+                    groupType.LoadAttributes( rockContext );
+                }
+
+                // exclude checkin labels 
+                List<string> checkinLabelAttributeNames = GetCheckinLabelAttributes( groupType.Attributes ).Select( a => a.Value.Name ).ToList();
+                Rock.Attribute.Helper.AddEditControls( groupType, _phGroupTypeAttributes, true, string.Empty, checkinLabelAttributeNames );
+            }
+        }
+
+        /// <summary>
+        /// Handles the SelectedIndexChanged event of the _ddlGroupTypeInheritFrom control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        private void _ddlGroupTypeInheritFrom_SelectedIndexChanged( object sender, EventArgs e )
+        {
+            EnsureChildControls();
+            using ( var rockContext = new RockContext() )
+            {
+                var groupType = new GroupTypeService( rockContext ).Get( GroupTypeGuid );
+                if ( groupType != null )
+                {
+                    GetGroupTypeValues( groupType );
+                    CreateGroupTypeAttributeControls( groupType, rockContext );
+                }
+            }
         }
 
         /// <summary>
