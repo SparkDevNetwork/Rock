@@ -2364,5 +2364,24 @@ namespace Rock.Migrations.Migrations {
                 return ResourceManager.GetString("_201612121647292_HotFixesFrom6_1", resourceCulture);
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to /*
+        ///&lt;doc&gt;
+        ///	&lt;summary&gt;
+        /// 		This function rebuilds the database indexes.
+        ///	&lt;/summary&gt;
+        ///
+        ///	&lt;returns&gt;
+        ///	&lt;/returns&gt;
+        ///	&lt;param name=&apos;PageCountLimit&apos; datatype=&apos;int&apos;&gt;The number of page counts the index must have in order to be considered for re-indexing (default 100).&lt;/param&gt;
+        ///	&lt;param name=&apos;MinFragmentation&apos; datatype=&apos;int&apos;&gt;The minimum amount of fragmentation a index must have to be considered for re-indexing (default 10).&lt;/param&gt;
+        ///	&lt;param name=&apos;MinFragmentationRebuild&apos; datatype=&apos;int&apos;&gt;The minimum amount of fragmentat [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _201701022126386_DataMaintenanceJob {
+            get {
+                return ResourceManager.GetString("_201701022126386_DataMaintenanceJob", resourceCulture);
+            }
+        }
     }
 }
