@@ -3,6 +3,14 @@
 <asp:UpdatePanel ID="upnlContent" runat="server">
     <ContentTemplate>
 
+        <style>
+            // always hide thead image remove
+            .propertypanel-image .imageupload-remove {
+                display: none !important;
+            }
+        </style>
+
+
         <asp:Panel ID="pnlView" runat="server" CssClass="panel panel-block">
         
             <div class="panel-heading">
@@ -59,7 +67,7 @@
 						            <h4 class="propertypanel-title">Text</h4>
 						            <div id="text-editor">Hello Summernote</div>
 
-						            <a href="#" class="btn btn-primary" onclick="saveAndCloseTextComponent(event);">Save & Close</a>
+						            <a href="#" class="btn btn-primary" onclick="completeTextComponent(event);">Complete</a>
 					            </div>
 
 					            <div class="emaileditor-propertypanel propertypanel-button" data-component="button" style="display: none;">
@@ -171,7 +179,36 @@
 							            </div>
 						            </div>
 
-						            <a href="#" class="btn btn-primary" onclick="saveAndCloseButtonComponent(event);">Save & Close</a>
+						            <a href="#" class="btn btn-primary" onclick="completeButtonComponent(event);">Complete</a>
+					            </div>
+
+                                <div class="propertypanel propertypanel-image" data-component="image" style="display: none;">
+						            <h4 class="propertypanel-title">Image</h4>
+						            <Rock:ImageUploader ID="imgupImage" ClientIDMode="Static" runat="server" Label="Image" UploadAsTemporary="false" BinaryFileTypeGuid="C085916C-7126-4767-B13D-1643B70C48B6" DoneFunctionClientScript="completeImageComponent(e, data)" />
+
+                                    <div class="row">
+							            <div class="col-md-6">
+								            <div class="form-group">
+									            <label for="component-image-imagewidth">Width</label>
+									            <select id="component-image-imagewidth" class="form-control">
+										            <option value="0">Image Width</option>
+										            <option value="1">Full Width</option>
+									            </select>
+								            </div>
+							            </div>
+							            <div class="col-md-6">
+								            <div class="form-group">
+									            <label for="component-image-imagealign">Align</label>
+									            <select id="component-image-imagealign" class="form-control">
+										            <option value="left">Left</option>
+										            <option value="center">Center</option>
+										            <option value="right">Right</option>
+									            </select>
+								            </div>
+							            </div>
+						            </div>
+
+						            <a href="#" class="btn btn-primary" onclick="completeImageComponent(event);">Complete</a>
 					            </div>
 				            </div>
 
@@ -183,7 +220,7 @@
 				            <div class="component component-text" data-content="<h1>Yo MTV Raps</h1>" data-state="template">
 					            <i class="fa fa-align-justify"></i><br /> Text
 				            </div>
-				            <div class="component component-image" data-content="<img src='http://hiphopgoldenage.com/wp-content/uploads/2015/12/yomtvraps_logo.jpg' style='width: 100%;' />" data-state="template">
+				            <div class="component component-image" data-content="<img src='<%= VirtualPathUtility.ToAbsolute("~/Assets/Images/image-placeholder.jpg") %>' style='width: 100%;' data-width='full' />" data-state="template">
 					            <i class="fa fa-picture-o"></i> <br /> Image
 				            </div>
 				            <div class="component component-section" data-content="<table class='component component-separator' width='100%'><tr><td width='50%'><div class='dropzone'></div></td><td width='50%'><div class='dropzone'></div></td></tr></table>" data-state="template">
@@ -258,6 +295,8 @@
 					case 'button':
 						setPropertiesButtonComponent(componentId);
 						break;
+				    case 'image':
+				        setPropertiesImageComponent(componentId);
 					default:
 						 clearPropertyPane(null);
 				}
@@ -278,6 +317,7 @@
 
 		</script>
 
+        <!-- Button Component -->
 		<script>
 			// script logic for the button component
 			
@@ -321,7 +361,7 @@
 				buttonSetButtonPadding();
 			});
 
-			function saveAndCloseButtonComponent(e){
+			function completeButtonComponent(e){
 				buttonSetButtonText();
 				buttonSetButtonUrl();
 				buttonSetButtonBackgroundColor();
@@ -448,6 +488,7 @@
 			}
 		</script>
 
+        <!-- Text Component -->
 		<script>
 			// script logic for the text component
 
@@ -468,7 +509,7 @@
 				$('#text-editor').summernote('code', currentConent);
 			}
 
-			function saveAndCloseTextComponent(e){
+			function completeTextComponent(e){
 				updateTextComponent();
 				clearPropertyPane(e);
 			}
@@ -479,7 +520,83 @@
 			}
 		</script>
 
+        <!-- Image Component -->
+        <script>
+            function setPropertiesImageComponent(componentId) {
+                var component = $('.js-emaileditor-iframe').contents().find("#" + currentComponentId);
 
+                var imageUrl = $(component).find('img').attr('src');
+                var imageWidth = $(component).find('img').attr('data-width');
+                var imageAlign = $(component).css('text-align');
+
+                $('#imgupImage').find('.imageupload-thumbnail-image').css('background-image', 'url("' + imageUrl + '")');
+
+                if (imageWidth == 'full') {
+                    $('#component-image-imagewidth').val(1);
+                }
+                else {
+                    $('#component-image-imagewidth').val(0);
+                }
+
+                $('#component-image-imagealign').val(imageAlign);
+            }
+
+            function completeImageComponent(e, data) {
+
+                if (data != null) {
+                    imageSetImage(data);
+                }
+
+                imageSetImageWidth();
+                imageSetImageAlign();
+
+                clearPropertyPane(e);
+            }
+
+
+            $('#component-image-imagewidth').on('change', function (e) {
+                imageSetImageWidth();
+            });
+
+            $('#component-image-imagealign').on('change', function (e) {
+                imageSetImageAlign();
+            });
+
+            function imageSetImageAlign(){
+                var selectValue = $('#component-image-imagealign').val();
+
+                var component = $('.js-emaileditor-iframe').contents().find("#" + currentComponentId);
+                $(component).css('text-align', selectValue);
+            }
+
+            function imageSetImageWidth(){
+                var selectValue = $('#component-image-imagewidth').val();
+
+                var component = $('.js-emaileditor-iframe').contents().find("#" + currentComponentId);
+
+                if (selectValue == 0) {
+                    $(component).find('img').css('width', 'auto');
+                    $(component).find('img').attr('data-width', 'image');
+                }
+                else {
+                    $(component).find('img').css('width', '100%');
+                    $(component).find('img').css('data-width', 'full');
+                }
+            }
+
+            function imageSetImage(data) {
+
+                var imageUrl = Rock.settings.get('baseUrl')
+                        + 'GetImage.ashx?'
+                        + 'isBinaryFile=T' 
+                        + '&id=' + data.response().result.Id
+                        + '&fileName=' + data.response().result.FileName
+                        + '&width=500';
+
+                var component = $('.js-emaileditor-iframe').contents().find("#" + currentComponentId);
+                $(component).find('img').attr('src', imageUrl);
+            }
+        </script>
 
     </ContentTemplate>
 </asp:UpdatePanel>
