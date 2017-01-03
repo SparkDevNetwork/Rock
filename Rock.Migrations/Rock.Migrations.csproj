@@ -150,6 +150,10 @@
     <Compile Include="Migrations\201612231305026_ExtendDiscountCodes.Designer.cs">
       <DependentUpon>201612231305026_ExtendDiscountCodes.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201701022126386_DataMaintenanceJob.cs" />
+    <Compile Include="Migrations\201701022126386_DataMaintenanceJob.Designer.cs">
+      <DependentUpon>201701022126386_DataMaintenanceJob.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 6.0\Version 1.6.0\201609282147388_WaitList.cs" />
     <Compile Include="Migrations\Version 6.0\Version 1.6.0\201609282147388_WaitList.Designer.cs">
       <DependentUpon>201609282147388_WaitList.cs</DependentUpon>
@@ -2413,6 +2417,9 @@
     <EmbeddedResource Include="Migrations\201612231305026_ExtendDiscountCodes.resx">
       <DependentUpon>201612231305026_ExtendDiscountCodes.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201701022126386_DataMaintenanceJob.resx">
+      <DependentUpon>201701022126386_DataMaintenanceJob.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 6.0\Version 1.6.0\201609282147388_WaitList.resx">
       <DependentUpon>201609282147388_WaitList.cs</DependentUpon>
     </EmbeddedResource>
@@ -4107,6 +4114,7 @@
     <Content Include="Migrations\201612121647292_HotFixesFrom6_1.sql">
       <DependentUpon>201612121647292_HotFixesFrom6_1.cs</DependentUpon>
     </Content>
+    <Content Include="Migrations\201701022126386_DataMaintenanceJob.sql" />
     <Content Include="Migrations\Version 6.0\Version 1.6.0\201608171937068_GivingAnalyticsAccounts_AccountTotals.sql" />
     <Content Include="Migrations\Version 6.0\Version 1.6.0\201608171937068_GivingAnalyticsAccounts_FirstLastEverDates.sql" />
     <Content Include="Migrations\Version 6.0\Version 1.6.0\201608171937068_GivingAnalyticsAccounts_PersonSummary.sql" />
