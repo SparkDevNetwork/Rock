@@ -71,12 +71,6 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
-    <Compile Include="..\..\..\Rock\Utility\ExtensionMethods\ObjectExtensions.cs">
-      <Link>RockExtensions\ObjectExtensions.cs</Link>
-    </Compile>
-    <Compile Include="..\..\..\Rock\Utility\ExtensionMethods\StringExtensions.cs">
-      <Link>RockExtensions\StringExtensions.cs</Link>
-    </Compile>
     <Compile Include="LoginPage.xaml.cs">
       <DependentUpon>LoginPage.xaml</DependentUpon>
     </Compile>
@@ -90,6 +84,8 @@
       <DependentUpon>ProgressPage.xaml</DependentUpon>
     </Compile>
     <Compile Include="RockConfig.cs" />
+    <Compile Include="RockExtensions\ObjectExtensions.cs" />
+    <Compile Include="RockExtensions\StringExtensions.cs" />
     <Compile Include="SelectAccountsPage.xaml.cs">
       <DependentUpon>SelectAccountsPage.xaml</DependentUpon>
     </Compile>
