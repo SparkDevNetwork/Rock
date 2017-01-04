@@ -21,9 +21,8 @@
 // </copyright>
 //
 using System;
-using System.Dynamic;
 using System.Linq;
-using System.Linq.Expressions;
+
 using Rock.Data;
 
 namespace Rock.Model
@@ -89,6 +88,7 @@ namespace Rock.Model
         public static void CopyPropertiesFrom( this AnalyticsDimPersonCurrent target, AnalyticsDimPersonCurrent source )
         {
             target.Id = source.Id;
+            target.Age = source.Age;
             target.AnniversaryDate = source.AnniversaryDate;
             target.BirthDateKey = source.BirthDateKey;
             target.BirthDay = source.BirthDay;
@@ -121,6 +121,7 @@ namespace Rock.Model
             target.PersonId = source.PersonId;
             target.PhotoId = source.PhotoId;
             target.PrimaryFamilyId = source.PrimaryFamilyId;
+            target.PrimaryFamilyKey = source.PrimaryFamilyKey;
             target.RecordStatus = source.RecordStatus;
             target.RecordStatusLastModifiedDateTime = source.RecordStatusLastModifiedDateTime;
             target.RecordStatusReason = source.RecordStatusReason;

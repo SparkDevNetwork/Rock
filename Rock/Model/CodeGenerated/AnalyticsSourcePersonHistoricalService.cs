@@ -88,6 +88,7 @@ namespace Rock.Model
         public static void CopyPropertiesFrom( this AnalyticsSourcePersonHistorical target, AnalyticsSourcePersonHistorical source )
         {
             target.Id = source.Id;
+            target.Age = source.Age;
             target.AnniversaryDate = source.AnniversaryDate;
             target.BirthDateKey = source.BirthDateKey;
             target.BirthDay = source.BirthDay;
