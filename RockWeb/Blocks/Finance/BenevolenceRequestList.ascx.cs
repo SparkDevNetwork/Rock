@@ -675,14 +675,16 @@ namespace RockWeb.Blocks.Finance
                 }
             }
 
-            gList.DataSource = qry.ToList();
+            var list = qry.ToList();
+
+            gList.DataSource = list;
             gList.DataBind();
 
             // Builds the Totals section
             var definedTypeCache = DefinedTypeCache.Read( new Guid( Rock.SystemGuid.DefinedType.BENEVOLENCE_RESULT_TYPE ) );
             Dictionary<string, decimal> resultTotals = new Dictionary<string, decimal>();
             decimal grandTotal = 0;
-            foreach ( BenevolenceRequest request in qry.ToList() )
+            foreach ( BenevolenceRequest request in list )
             {
                 foreach ( BenevolenceResult result in request.BenevolenceResults )
                 {
