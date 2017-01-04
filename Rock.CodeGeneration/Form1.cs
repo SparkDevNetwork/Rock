@@ -166,7 +166,7 @@ namespace Rock.CodeGeneration
 
                     var projectName = Path.GetFileNameWithoutExtension( lblAssemblyPath.Text );
 
-                    if (cbClient.Checked)
+                    if ( cbClient.Checked )
                     {
                         WriteRockClientIncludeClientFiles( rockClientFolder, cblModels.CheckedItems.OfType<Type>().ToList() );
                         WriteRockClientSystemGuidFiles( rockClientFolder );
@@ -199,7 +199,7 @@ namespace Rock.CodeGeneration
             qryProcs.CommandText = "select ROUTINE_SCHEMA, ROUTINE_NAME, ROUTINE_TYPE FROM INFORMATION_SCHEMA.ROUTINES";
             var readerProcs = qryProcs.ExecuteReader();
             string procPrefixFilter;
-            if (projectName == "Rock")
+            if ( projectName == "Rock" )
             {
                 procPrefixFilter = string.Empty;
             }
@@ -231,12 +231,12 @@ namespace Rock.CodeGeneration
                 {
                     folder = "Functions";
                 }
-                
+
                 string filePath = Path.Combine( databaseRootFolder, folder, routineName + ".sql" );
                 Directory.CreateDirectory( Path.GetDirectoryName( filePath ) );
 
                 string existingScript = string.Empty;
-                if ( File.Exists(filePath) )
+                if ( File.Exists( filePath ) )
                 {
                     existingScript = File.ReadAllText( filePath );
                 }
@@ -266,8 +266,8 @@ GO
                 {
                     script = Regex.Replace( script, "(^\\s*)CREATE\\s*FUNCTION", "$1ALTER FUNCTION", RegexOptions.IgnoreCase | RegexOptions.Multiline );
                 }
-                
-                if (string.IsNullOrEmpty(procPrefixFilter) || routineName.StartsWith(procPrefixFilter, StringComparison.OrdinalIgnoreCase))
+
+                if ( string.IsNullOrEmpty( procPrefixFilter ) || routineName.StartsWith( procPrefixFilter, StringComparison.OrdinalIgnoreCase ) )
                 {
                     File.WriteAllText( filePath, script.Trim() );
                 }
@@ -283,7 +283,6 @@ GO
 
                 string filePath = Path.Combine( databaseRootFolder, "Views", viewName + ".sql" );
                 Directory.CreateDirectory( Path.GetDirectoryName( filePath ) );
-
 
                 string existingScript = string.Empty;
                 if ( File.Exists( filePath ) )
@@ -304,8 +303,6 @@ GO
 ";
                     script = dropIfExistsScript + script;
                 }
-
-                
 
                 if ( string.IsNullOrEmpty( procPrefixFilter ) || viewName.StartsWith( procPrefixFilter, StringComparison.OrdinalIgnoreCase ) )
                 {
@@ -468,9 +465,9 @@ GO
         /// <returns></returns>
         private string GetCanDeleteCode( string serviceFolder, Type type )
         {
-            
-            SqlConnection sqlconn = GetSqlConnection( new DirectoryInfo(serviceFolder).Parent.FullName );
-            if (sqlconn == null)
+
+            SqlConnection sqlconn = GetSqlConnection( new DirectoryInfo( serviceFolder ).Parent.FullName );
+            if ( sqlconn == null )
             {
                 return string.Empty;
             }
@@ -840,13 +837,13 @@ order by [parentTable], [columnName]
             foreach ( var property in type.GetProperties().SortByStandardOrder() )
             {
                 bool include = false;
-                if (includeRockClientIncludes && property.GetCustomAttribute<Rock.Data.RockClientIncludeAttribute>() != null)
+                if ( includeRockClientIncludes && property.GetCustomAttribute<Rock.Data.RockClientIncludeAttribute>() != null )
                 {
                     include = true;
                 }
-                
+
                 var getMethod = property.GetGetMethod();
-                if (getMethod == null)
+                if ( getMethod == null )
                 {
                     continue;
                 }
@@ -875,7 +872,7 @@ order by [parentTable], [columnName]
 
                 if ( !property.GetCustomAttributes( typeof( DatabaseGeneratedAttribute ) ).Any() )
                 {
-                    if ( (property.GetCustomAttribute<ObsoleteAttribute>() == null) )
+                    if ( ( property.GetCustomAttribute<ObsoleteAttribute>() == null ) )
                     {
                         if ( property.SetMethod != null && property.SetMethod.IsPublic && property.GetMethod.IsPublic )
                         {
@@ -931,13 +928,13 @@ order by [parentTable], [columnName]
                 {
                     sb.AppendLine( "    /// <summary>" );
                     sb.AppendLine( "    /// </summary>" );
-                    if (enumType.GetCustomAttribute<FlagsAttribute>() != null)
+                    if ( enumType.GetCustomAttribute<FlagsAttribute>() != null )
                     {
-                        sb.AppendLine( "    [Flags]");
+                        sb.AppendLine( "    [Flags]" );
                     }
                     sb.AppendFormat( "    public enum {0}" + Environment.NewLine, enumType.Name );
                     sb.AppendLine( "    {" );
-                    var enumValues = Enum.GetValues( enumType);
+                    var enumValues = Enum.GetValues( enumType );
                     foreach ( var enumValueName in Enum.GetNames( enumType ) )
                     {
                         int enumValue = (int)Convert.ChangeType( Enum.Parse( enumType, enumValueName ), typeof( int ) );
@@ -1012,7 +1009,7 @@ order by [parentTable], [columnName]
             }
 
 
-            sb.AppendLine( "}");
+            sb.AppendLine( "}" );
 
             var file = new FileInfo( Path.Combine( rootFolder, "CodeGenerated\\SystemGuid", "RockSystemGuids.cs" ) );
             WriteFile( file, sb );
@@ -1023,7 +1020,7 @@ order by [parentTable], [columnName]
         /// </summary>
         /// <param name="rootFolder">The root folder.</param>
         /// <param name="alreadyIncludedTypes">The already included types.</param>
-        private void WriteRockClientIncludeClientFiles( string rootFolder, IEnumerable<Type> alreadyIncludedTypes)
+        private void WriteRockClientIncludeClientFiles( string rootFolder, IEnumerable<Type> alreadyIncludedTypes )
         {
             foreach ( var rockClientIncludeType in rockAssembly.GetTypes().Where( a => a.GetCustomAttribute<Rock.Data.RockClientIncludeAttribute>() != null ).OrderBy( a => a.Name ) )
             {
@@ -1042,22 +1039,22 @@ order by [parentTable], [columnName]
         private void WriteRockClientFile( string rootFolder, Type type )
         {
             // make a copy of the EntityProperties since we are deleting some for this method
-            var entityProperties = GetEntityProperties( type, true ).ToDictionary( k => k.Key, v => v.Value);
+            var entityProperties = GetEntityProperties( type, true ).ToDictionary( k => k.Key, v => v.Value );
 
             var dataMembers = type.GetProperties().SortByStandardOrder()
                 .Where( a => a.GetCustomAttribute<DataMemberAttribute>() != null )
                 .Where( a => a.GetCustomAttribute<ObsoleteAttribute>() == null )
-                .Where( a => (a.GetCustomAttribute<NotMappedAttribute>() == null || a.GetCustomAttribute<Rock.Data.RockClientIncludeAttribute>() != null) )
+                .Where( a => ( a.GetCustomAttribute<NotMappedAttribute>() == null || a.GetCustomAttribute<Rock.Data.RockClientIncludeAttribute>() != null ) )
                 .Where( a => !entityProperties.Keys.Contains( a.Name ) );
 
             var rockClientIncludeAttribute = type.GetCustomAttribute<Rock.Data.RockClientIncludeAttribute>();
             string comments = null;
 
-            if ( rockClientIncludeAttribute != null)
+            if ( rockClientIncludeAttribute != null )
             {
                 comments = rockClientIncludeAttribute.DocumentationMessage;
             }
-            
+
             if ( !entityProperties.Any() && !dataMembers.Any() )
             {
                 return;
@@ -1100,8 +1097,8 @@ order by [parentTable], [columnName]
             sb.AppendLine( "{" );
 
             sb.AppendLine( "    /// <summary>" );
-            
-            
+
+
             if ( !string.IsNullOrWhiteSpace( comments ) )
             {
                 sb.AppendFormat( "    /// {0}" + Environment.NewLine, comments );
@@ -1174,7 +1171,7 @@ order by [parentTable], [columnName]
                 sb.AppendLine( "" );
             }
 
-            sb.AppendFormat( 
+            sb.AppendFormat(
 @"        /// <summary>
         /// Copies the base properties from a source {0} object
         /// </summary>
@@ -1195,7 +1192,7 @@ order by [parentTable], [columnName]
             sb.AppendLine( "    }" );
 
             sb.AppendLine( "" );
-            
+
             sb.AppendLine( "    /// <summary>" );
 
             if ( !string.IsNullOrWhiteSpace( comments ) )
@@ -1221,8 +1218,8 @@ order by [parentTable], [columnName]
                 {
                     dataMemberComments = dataMemberRockClientIncludeAttribute.DocumentationMessage;
                 }
-                
-                if (!string.IsNullOrWhiteSpace(dataMemberComments))
+
+                if ( !string.IsNullOrWhiteSpace( dataMemberComments ) )
                 {
                     sb.AppendLine( "        /// <summary>" );
                     sb.AppendFormat( "        /// {0}" + Environment.NewLine, dataMemberComments );
@@ -1230,9 +1227,9 @@ order by [parentTable], [columnName]
                 }
                 else
                 {
-                    sb.AppendLine( "        /// <summary />" );    
+                    sb.AppendLine( "        /// <summary />" );
                 }
-                
+
                 sb.AppendFormat( "        public {0} {1} {{ get; set; }}" + Environment.NewLine, PropertyTypeName( dataMember.PropertyType ), dataMember.Name );
                 sb.AppendLine( "" );
             }
