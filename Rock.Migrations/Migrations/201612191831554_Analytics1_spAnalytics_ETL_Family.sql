@@ -7,7 +7,6 @@ IF EXISTS (
     DROP PROCEDURE [dbo].spAnalytics_ETL_Family
 GO
 
--- truncate table [AnalyticsSourceFamilyHistorical]
 -- EXECUTE [dbo].[spAnalytics_ETL_Family] 
 CREATE PROCEDURE [dbo].spAnalytics_ETL_Family
 AS
@@ -47,7 +46,7 @@ BEGIN
 
     -- throw it all into a temp table so we can Insert and Update only where needed
     CREATE TABLE #AnalyticsSourceFamily (
-        [GroupId] [int] NOT NULL
+        [FamilyId] [int] NOT NULL
         ,[Name] [nvarchar](100) NULL
         ,[FamilyTitle] [nvarchar](250) NULL
         ,[CampusId] [int] NULL
@@ -59,11 +58,11 @@ BEGIN
         ,[IsEra] [bit] NOT NULL
         ,[MailingAddressLocationId] [int] NULL
         ,[MappedAddressLocationId] [int] NULL
-        ,PRIMARY KEY CLUSTERED ([GroupId])
+        ,PRIMARY KEY CLUSTERED ([FamilyId])
         )
 
     INSERT INTO #AnalyticsSourceFamily (
-        [GroupId]
+        [FamilyId]
         ,[Name]
         ,[FamilyTitle]
         ,[CampusId]
@@ -76,7 +75,7 @@ BEGIN
         ,[MailingAddressLocationId]
         ,[MappedAddressLocationId]
         )
-    SELECT g.Id [GroupId]
+    SELECT g.Id [FamilyId]
         ,g.NAME
         ,SUBSTRING(ft.PersonNames, 1, 250) [FamilyTitle]
         ,g.CampusId [CampusId]
@@ -162,8 +161,34 @@ BEGIN
     WHERE g.GroupTypeId = @GroupTypeFamilyId
     ORDER BY g.Id
 
+	-- Mark Rows as History if any of the important field values change
+	UPDATE fh
+    SET  CurrentRowIndicator = 0,
+        [ExpireDate] = @EtlDate
+    FROM AnalyticsSourceFamilyHistorical fh
+    JOIN #AnalyticsSourceFamily t ON t.FamilyId = fh.FamilyId
+        AND fh.CurrentRowIndicator = 1
+    WHERE 
+        fh.[FamilyTitle] != t.FamilyTitle
+        OR fh.[CampusId] != t.CampusId
+        OR fh.[ConnectionStatus] != t.ConnectionStatus
+        OR fh.[IsFamilyActive] != t.IsFamilyActive
+        OR fh.[AdultCount] != t.AdultCount
+        OR fh.[ChildCount] != t.ChildCount
+        OR fh.[HeadOfHouseholdPersonKey] != t.HeadOfHouseholdPersonKey
+        OR fh.[IsEra] != t.IsEra
+        OR fh.[MailingAddressLocationId] != t.MailingAddressLocationId
+        OR fh.[MappedAddressLocationId] != t.MappedAddressLocationId
+AND fh.FamilyId NOT IN ( -- Ensure that there isn't already a History Record for the current EtlDate 
+    SELECT FamilyId
+    FROM AnalyticsSourceFamilyHistorical x
+    WHERE CurrentRowIndicator = 0
+        AND [ExpireDate] = @EtlDate
+    )
+	
+	-- Insert Families that don't have a "CurrentRowIndicator" Row yet (either it was marked as history, or they are a new family)
     INSERT INTO AnalyticsSourceFamilyHistorical (
-        [GroupId]
+        [FamilyId]
         ,[CurrentRowIndicator]
         ,[EffectiveDate]
         ,[ExpireDate]
@@ -180,7 +205,7 @@ BEGIN
         ,[MappedAddressLocationId]
         ,[Guid]
         )
-    SELECT [GroupId]
+    SELECT [FamilyId]
         ,1 [CurrentRowIndicator]
         ,@EtlDate [EffectiveDate]
         ,@MaxExpireDate [ExpireDate]
@@ -197,8 +222,8 @@ BEGIN
         ,[MappedAddressLocationId]
         ,NEWID()
     FROM #AnalyticsSourceFamily s
-    WHERE s.GroupId NOT IN (
-            SELECT GroupId
+    WHERE s.FamilyId NOT IN (
+            SELECT FamilyId
             FROM AnalyticsSourceFamilyHistorical
             WHERE CurrentRowIndicator = 1
             )
@@ -216,7 +241,7 @@ BEGIN
         ,fh.[MailingAddressLocationId] = t.MailingAddressLocationId
         ,fh.[MappedAddressLocationId] = t.MappedAddressLocationId
     FROM AnalyticsSourceFamilyHistorical fh
-    JOIN #AnalyticsSourceFamily t ON t.GroupId = fh.GroupId
+    JOIN #AnalyticsSourceFamily t ON t.FamilyId = fh.FamilyId
         AND fh.CurrentRowIndicator = 1
     WHERE fh.NAME != t.NAME
         OR fh.[FamilyTitle] != t.FamilyTitle
@@ -233,7 +258,7 @@ BEGIN
     -- delete any Family records that no longer exist the [Group] table (or are no longer GroupType of family)
     DELETE
     FROM AnalyticsSourceFamilyHistorical
-    WHERE Groupid NOT IN (
+    WHERE FamilyId NOT IN (
             SELECT Id
             FROM [Group]
             WHERE GroupTypeId = @GroupTypeFamilyId

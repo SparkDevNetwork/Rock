@@ -154,6 +154,7 @@ namespace Rock.Migrations
                     IsFirstTransactionOfType = c.Boolean( nullable: false ),
                     AuthorizedFamilyId = c.Int(),
                     IsScheduled = c.Boolean( nullable: false ),
+                    TransactionFrequency = c.String ( maxLength: 250),
                     GivingGroupId = c.Int(),
                     GivingId = c.String( maxLength: 20 ),
                     Count = c.Int( nullable: false ),
@@ -332,13 +333,16 @@ CREATE UNIQUE NONCLUSTERED  INDEX [IX_FamilyIdCurrentRow] ON [dbo].[AnalyticsSou
             Sql( MigrationSQL._201612191831554_Analytics1_AnalyticsFactAttendance );
             Sql( MigrationSQL._201612191831554_Analytics1_AnalyticsFactFinancialTransaction );
 
+            Sql( MigrationSQL._201612191831554_Analytics1_AnalyticsDimPersonBirthDate );
+            Sql( MigrationSQL._201612191831554_Analytics1_AnalyticsDimAttendanceDate );
+            Sql( MigrationSQL._201612191831554_Analytics1_AnalyticsDimFinancialTransactionDate );
+
             // Stored Procs for BI Analytics
             Sql( MigrationSQL._201612191831554_Analytics1_spAnalytics_ETL_Attendance );
             Sql( MigrationSQL._201612191831554_Analytics1_spAnalytics_ETL_Family );
             Sql( MigrationSQL._201612191831554_Analytics1_spAnalytics_ETL_FinancialTransaction );
 
             Sql( MigrationSQL._201612191831554_Analytics1_SetAttributesIsAnalytics );
-
 
             // Add Process BI Analytics ETL Job
             Sql( @"
@@ -472,8 +476,10 @@ INSERT INTO [dbo].[ServiceJob]
 
             RockMigrationHelper.DeletePage( "2660D554-D161-44A1-9763-A73C60559B50" ); //  Page: Calendar Dimension Settings, Layout: Full Width, Site: Rock RMS
 
-
             Sql( @"
+DROP VIEW AnalyticsDimPersonBirthDate;
+DROP VIEW AnalyticsDimAttendanceDate;
+DROP VIEW AnalyticsDimFinancialTransactionDate;
 DROP VIEW AnalyticsDimAttendanceLocation;
 DROP VIEW AnalyticsDimFamilyCurrent;
 DROP VIEW AnalyticsDimFamilyHeadOfHousehold;

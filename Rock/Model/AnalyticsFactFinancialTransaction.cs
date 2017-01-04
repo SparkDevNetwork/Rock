@@ -51,7 +51,7 @@ namespace Rock.Model
         public string TransactionSource { get; set; }
 
         /// <summary>
-        /// Gets or sets the type of the schedule.
+        /// Gets or sets the type of the schedule. (Scheduled or Non-Scheduled)
         /// </summary>
         /// <value>
         /// The type of the schedule.

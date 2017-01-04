@@ -4086,6 +4086,9 @@
     <Content Include="Migrations\201612121647292_HotFixesFrom6_1.sql">
       <DependentUpon>201612121647292_HotFixesFrom6_1.cs</DependentUpon>
     </Content>
+    <Content Include="Migrations\201612191831554_Analytics1_AnalyticsDimAttendanceDate.sql">
+      <DependentUpon>201612191831554_Analytics1.cs</DependentUpon>
+    </Content>
     <Content Include="Migrations\201612191831554_Analytics1_AnalyticsDimAttendanceLocation.sql">
       <DependentUpon>201612191831554_Analytics1.cs</DependentUpon>
     </Content>
@@ -4104,7 +4107,13 @@
     <Content Include="Migrations\201612191831554_Analytics1_AnalyticsDimFinancialBatch.sql">
       <DependentUpon>201612191831554_Analytics1.cs</DependentUpon>
     </Content>
+    <Content Include="Migrations\201612191831554_Analytics1_AnalyticsDimFinancialTransactionDate.sql">
+      <DependentUpon>201612191831554_Analytics1.cs</DependentUpon>
+    </Content>
     <Content Include="Migrations\201612191831554_Analytics1_AnalyticsDimFinancialTransactionType.sql">
+      <DependentUpon>201612191831554_Analytics1.cs</DependentUpon>
+    </Content>
+    <Content Include="Migrations\201612191831554_Analytics1_AnalyticsDimPersonBirthDate.sql">
       <DependentUpon>201612191831554_Analytics1.cs</DependentUpon>
     </Content>
     <Content Include="Migrations\201612191831554_Analytics1_AnalyticsDimPersonCurrent.sql">
