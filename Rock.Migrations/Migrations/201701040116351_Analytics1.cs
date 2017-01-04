@@ -154,7 +154,7 @@ namespace Rock.Migrations
                     IsFirstTransactionOfType = c.Boolean( nullable: false ),
                     AuthorizedFamilyId = c.Int(),
                     IsScheduled = c.Boolean( nullable: false ),
-                    TransactionFrequency = c.String ( maxLength: 250),
+                    TransactionFrequency = c.String( maxLength: 250 ),
                     GivingGroupId = c.Int(),
                     GivingId = c.String( maxLength: 20 ),
                     Count = c.Int( nullable: false ),
@@ -318,31 +318,31 @@ CREATE UNIQUE NONCLUSTERED  INDEX [IX_FamilyIdCurrentRow] ON [dbo].[AnalyticsSou
 " );
 
             // NOTE: Some of these have dependancies on others, so order is important!
-            Sql( MigrationSQL._201612191831554_Analytics1_AnalyticsDimAttendanceLocation );
-            Sql( MigrationSQL._201612191831554_Analytics1_AnalyticsDimFinancialAccount );
-            Sql( MigrationSQL._201612191831554_Analytics1_AnalyticsDimFinancialBatch );
-            Sql( MigrationSQL._201612191831554_Analytics1_AnalyticsDimFinancialTransactionType );
+            Sql( MigrationSQL._201701040116351_Analytics1_AnalyticsDimAttendanceLocation );
+            Sql( MigrationSQL._201701040116351_Analytics1_AnalyticsDimFinancialAccount );
+            Sql( MigrationSQL._201701040116351_Analytics1_AnalyticsDimFinancialBatch );
+            Sql( MigrationSQL._201701040116351_Analytics1_AnalyticsDimFinancialTransactionType );
 
-            Sql( MigrationSQL._201612191831554_Analytics1_AnalyticsDimFamilyHistorical );
-            Sql( MigrationSQL._201612191831554_Analytics1_AnalyticsDimFamilyCurrent );
+            Sql( MigrationSQL._201701040116351_Analytics1_AnalyticsDimFamilyHistorical );
+            Sql( MigrationSQL._201701040116351_Analytics1_AnalyticsDimFamilyCurrent );
 
-            Sql( MigrationSQL._201612191831554_Analytics1_AnalyticsDimPersonHistorical );
-            Sql( MigrationSQL._201612191831554_Analytics1_AnalyticsDimPersonCurrent );
-            Sql( MigrationSQL._201612191831554_Analytics1_AnalyticsDimFamilyHeadOfHousehold );
+            Sql( MigrationSQL._201701040116351_Analytics1_AnalyticsDimPersonHistorical );
+            Sql( MigrationSQL._201701040116351_Analytics1_AnalyticsDimPersonCurrent );
+            Sql( MigrationSQL._201701040116351_Analytics1_AnalyticsDimFamilyHeadOfHousehold );
 
-            Sql( MigrationSQL._201612191831554_Analytics1_AnalyticsFactAttendance );
-            Sql( MigrationSQL._201612191831554_Analytics1_AnalyticsFactFinancialTransaction );
+            Sql( MigrationSQL._201701040116351_Analytics1_AnalyticsFactAttendance );
+            Sql( MigrationSQL._201701040116351_Analytics1_AnalyticsFactFinancialTransaction );
 
-            Sql( MigrationSQL._201612191831554_Analytics1_AnalyticsDimPersonBirthDate );
-            Sql( MigrationSQL._201612191831554_Analytics1_AnalyticsDimAttendanceDate );
-            Sql( MigrationSQL._201612191831554_Analytics1_AnalyticsDimFinancialTransactionDate );
+            Sql( MigrationSQL._201701040116351_Analytics1_AnalyticsDimPersonBirthDate );
+            Sql( MigrationSQL._201701040116351_Analytics1_AnalyticsDimAttendanceDate );
+            Sql( MigrationSQL._201701040116351_Analytics1_AnalyticsDimFinancialTransactionDate );
 
             // Stored Procs for BI Analytics
-            Sql( MigrationSQL._201612191831554_Analytics1_spAnalytics_ETL_Attendance );
-            Sql( MigrationSQL._201612191831554_Analytics1_spAnalytics_ETL_Family );
-            Sql( MigrationSQL._201612191831554_Analytics1_spAnalytics_ETL_FinancialTransaction );
+            Sql( MigrationSQL._201701040116351_Analytics1_spAnalytics_ETL_Attendance );
+            Sql( MigrationSQL._201701040116351_Analytics1_spAnalytics_ETL_Family );
+            Sql( MigrationSQL._201701040116351_Analytics1_spAnalytics_ETL_FinancialTransaction );
 
-            Sql( MigrationSQL._201612191831554_Analytics1_SetAttributesIsAnalytics );
+            Sql( MigrationSQL._201701040116351_Analytics1_SetAttributesIsAnalytics );
 
             // Add Process BI Analytics ETL Job
             Sql( @"
