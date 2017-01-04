@@ -26,6 +26,7 @@ BEGIN
         ,[TransactionTypeValueId]
         ,[SourceTypeValueId]
         ,[IsScheduled]
+        ,[TransactionFrequency]
         ,[AuthorizedPersonAliasId]
         ,[ProcessedByPersonAliasId]
         ,[ProcessedDateTime]
@@ -64,6 +65,7 @@ BEGIN
                 THEN 0
             ELSE 1
             END [IsScheduled]
+        ,dvtf.Value [TransactionFrequency]
         ,ft.AuthorizedPersonAliasId
         ,ft.ProcessedByPersonAliasId
         ,ft.ProcessedDateTime
@@ -91,6 +93,8 @@ BEGIN
     JOIN Person p ON p.Id = paAuthorizedPerson.PersonId
     LEFT JOIN EntityType et ON ftd.EntityTypeId = et.Id
     LEFT JOIN FinancialPaymentDetail fpd ON ft.FinancialPaymentDetailId = fpd.Id
+    LEFT JOIN FinancialScheduledTransaction fst ON ft.ScheduledTransactionId = fst.Id
+    LEFT JOIN DefinedValue dvtf ON fst.TransactionFrequencyValueId = dvtf.Id
     WHERE ft.TransactionDateTime > @MinDateTime
         AND CONCAT (
             ft.Id
@@ -155,7 +159,108 @@ BEGIN
         ) x
     WHERE isnull(asft.DaysSinceLastTransactionOfType, 0) != x.CalcDaysSinceLastTransactionOfType
 
-    -- TODO what about modified records
+    -- update just in case any records where modified since originally inserted
+    UPDATE asft
+    SET asft.[TransactionKey] = x.[TransactionKey]
+        ,asft.[TransactionDateKey] = x.[TransactionDateKey]
+        ,asft.[TransactionDateTime] = x.[TransactionDateTime]
+        ,asft.[TransactionCode] = x.[TransactionCode]
+        ,asft.[Summary] = x.[Summary]
+        ,asft.[TransactionTypeValueId] = x.[TransactionTypeValueId]
+        ,asft.[SourceTypeValueId] = x.[SourceTypeValueId]
+        ,asft.[IsScheduled] = x.[IsScheduled]
+        ,asft.[TransactionFrequency] = x.[TransactionFrequency]
+        ,asft.[AuthorizedPersonAliasId] = x.[AuthorizedPersonAliasId]
+        ,asft.[ProcessedByPersonAliasId] = x.[ProcessedByPersonAliasId]
+        ,asft.[ProcessedDateTime] = x.[ProcessedDateTime]
+        ,asft.[GivingGroupId] = x.[GivingGroupId]
+        ,asft.[GivingId] = x.[GivingId]
+        ,asft.[BatchId] = x.[BatchId]
+        ,asft.[FinancialGatewayId] = x.[FinancialGatewayId]
+        ,asft.[EntityTypeId] = x.[EntityTypeId]
+        ,asft.[EntityId] = x.[EntityId]
+        ,asft.[AccountId] = x.[AccountId]
+        ,asft.[CurrencyTypeValueId] = x.[CurrencyTypeValueId]
+        ,asft.[CreditCardTypeValueId] = x.[CreditCardTypeValueId]
+        ,asft.[AuthorizedFamilyId] = x.[AuthorizedFamilyId]
+        ,asft.[Amount] = x.[Amount]
+		,asft.ModifiedDateTime = @EtlDateTime
+    FROM [AnalyticsSourceFinancialTransaction] asft
+    JOIN (
+        SELECT CONCAT (
+                ft.Id
+                ,'_'
+                ,ftd.Id
+                ) [TransactionKey]
+            ,convert(INT, (convert(CHAR(8), ft.TransactionDateTime, 112))) [TransactionDateKey]
+            ,ft.TransactionDateTime
+            ,ft.TransactionCode [TransactionCode]
+            ,ft.Summary [Summary]
+            ,ft.TransactionTypeValueId [TransactionTypeValueId]
+            ,ft.SourceTypeValueId [SourceTypeValueId]
+            ,CASE 
+                WHEN ft.ScheduledTransactionId IS NULL
+                    THEN 0
+                ELSE 1
+                END [IsScheduled]
+            ,dvtf.Value [TransactionFrequency]
+            ,ft.AuthorizedPersonAliasId
+            ,ft.ProcessedByPersonAliasId
+            ,ft.ProcessedDateTime
+            ,p.GivingGroupId
+            ,p.GivingId
+            ,ft.BatchId
+            ,ft.FinancialGatewayId
+            ,ftd.EntityTypeId
+            ,ftd.EntityId
+            ,ft.Id [TransactionId]
+            ,ftd.Id [TransactionDetailId]
+            ,ftd.AccountId
+            ,fpd.CurrencyTypeValueId
+            ,fpd.CreditCardTypeValueId
+            ,NULL [DaysSinceLastTransactionOfType] -- come back and fill this in later
+            ,0 [IsFirstTransactionOfType] -- come back and fill this in later
+            ,NULL [AuthorizedFamilyId] -- TODo: fill this in later
+            ,1 [Count]
+            ,ftd.Amount [Amount]
+            ,@EtlDateTime [ModifiedDateTime]
+            ,NEWID() [Guid]
+        FROM FinancialTransaction ft
+        JOIN FinancialTransactionDetail ftd ON ftd.TransactionId = ft.Id
+        JOIN PersonAlias paAuthorizedPerson ON ft.AuthorizedPersonAliasId = paAuthorizedPerson.Id
+        JOIN Person p ON p.Id = paAuthorizedPerson.PersonId
+        LEFT JOIN EntityType et ON ftd.EntityTypeId = et.Id
+        LEFT JOIN FinancialPaymentDetail fpd ON ft.FinancialPaymentDetailId = fpd.Id
+        LEFT JOIN FinancialScheduledTransaction fst ON ft.ScheduledTransactionId = fst.Id
+        LEFT JOIN DefinedValue dvtf ON fst.TransactionFrequencyValueId = dvtf.Id
+        WHERE ft.TransactionDateTime > @MinDateTime
+        ) x ON x.[TransactionKey] = asft.[TransactionKey]
+        AND (
+            asft.[TransactionKey] != x.[TransactionKey]
+            OR asft.[TransactionDateKey] != x.[TransactionDateKey]
+            OR asft.[TransactionDateTime] != x.[TransactionDateTime]
+            OR asft.[TransactionCode] != x.[TransactionCode]
+            OR asft.[Summary] != x.[Summary]
+            OR asft.[TransactionTypeValueId] != x.[TransactionTypeValueId]
+            OR asft.[SourceTypeValueId] != x.[SourceTypeValueId]
+            OR asft.[IsScheduled] != x.[IsScheduled]
+            OR asft.[TransactionFrequency] != x.[TransactionFrequency]
+            OR asft.[AuthorizedPersonAliasId] != x.[AuthorizedPersonAliasId]
+            OR asft.[ProcessedByPersonAliasId] != x.[ProcessedByPersonAliasId]
+            OR asft.[ProcessedDateTime] != x.[ProcessedDateTime]
+            OR asft.[GivingGroupId] != x.[GivingGroupId]
+            OR asft.[GivingId] != x.[GivingId]
+            OR asft.[BatchId] != x.[BatchId]
+            OR asft.[FinancialGatewayId] != x.[FinancialGatewayId]
+            OR asft.[EntityTypeId] != x.[EntityTypeId]
+            OR asft.[EntityId] != x.[EntityId]
+            OR asft.[AccountId] != x.[AccountId]
+            OR asft.[CurrencyTypeValueId] != x.[CurrencyTypeValueId]
+            OR asft.[CreditCardTypeValueId] != x.[CreditCardTypeValueId]
+            OR asft.[AuthorizedFamilyId] != x.[AuthorizedFamilyId]
+            OR asft.[Amount] != x.[Amount]
+            )
+
     /* Updating these PersonKeys depends on AnalyticsSourcePersonHistorical getting populated and updated. 
   -- It is probably best to schedule the ETL of AnalyticsSourcePersonHistorical to occur before spAnalytics_ETL_FinancialTransaction
   -- However, if not, it will catch up on the next run of spAnalytics_ETL_FinancialTransaction

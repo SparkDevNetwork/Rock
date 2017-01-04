@@ -365,7 +365,7 @@ UPDATE [AnalyticsSourcePersonHistorical]
             List<ColumnInfo> populatePersonValueSELECTColumns = new List<ColumnInfo>();
             List<string> populateAttributeValueFROMClauses = new List<string>();
 
-            var analyticSpecificColumns = new string[] { "Id", "PersonId", "CurrentRowIndicator", "EffectiveDate", "ExpireDate", "PrimaryFamilyId", "BirthDateKey", "Guid" };
+            var analyticSpecificColumns = new string[] { "Id", "PersonId", "CurrentRowIndicator", "EffectiveDate", "ExpireDate", "PrimaryFamilyId", "BirthDateKey", "Age", "Guid" };
 
             foreach ( var item in analyticsSourcePersonHistoricalFields
                 .Where( a => !analyticSpecificColumns.Contains( a.Name ) ).OrderBy( a => a.Name ).ToList() )
@@ -444,18 +444,20 @@ DECLARE
     @EtlDate DATE = convert( DATE, SysDateTime() )
     , @MaxExpireDate DATE = DateFromParts( 9999, 1, 1 )";
 
+                // throw script into logs in case 'Save SQL for Debug' is enabled
+                _sqlLogs.Add( "/* MarkAsHistoryScript */\n" + scriptDeclares + markAsHistoryScript );
+                _sqlLogs.Add( "/* UpdateETLScript */\n" + scriptDeclares + updateETLScript );
+                _sqlLogs.Add( "/* ProcessINSERTScript */\n" + scriptDeclares + processINSERTScript );
+
                 // Move Records To History that have changes in any of fields that trigger history
                 _rowsMarkedAsHistory += DbService.ExecuteCommand( scriptDeclares + markAsHistoryScript, CommandType.Text, null, _commandTimeout );
 
-                _sqlLogs.Add( "/* MarkAsHistoryScript */\n" + scriptDeclares + markAsHistoryScript );
-
                 // Update existing records that have CurrentRowIndicator=1 to match what is in the live tables
                 _rowsUpdated += DbService.ExecuteCommand( scriptDeclares + updateETLScript, CommandType.Text, null, _commandTimeout );
-                _sqlLogs.Add( "/* UpdateETLScript */\n" + scriptDeclares + updateETLScript );
 
                 // Insert new Person Records that aren't in there yet
                 _rowsInserted += DbService.ExecuteCommand( scriptDeclares + processINSERTScript, CommandType.Text, null, _commandTimeout );
-                _sqlLogs.Add( "/* ProcessINSERTScript */\n" + scriptDeclares + processINSERTScript );
+                
             }
         }
 
@@ -476,6 +478,7 @@ INSERT INTO [dbo].[AnalyticsSourcePersonHistorical] (
         [ExpireDate],
         [PrimaryFamilyId],
         [BirthDateKey],
+        [Age],
 " + populatePersonValueSELECTClauses.Select( a => $"        [{a}]" ).ToList().AsDelimited( ",\n" ) + @",
         [Guid]";
 
@@ -525,6 +528,7 @@ WHERE p.Id NOT IN (
         @MaxExpireDate [ExpireDate],
         family.GroupId [PrimaryFamilyId],
         convert(INT, (convert(CHAR(8), DateFromParts(BirthYear, BirthMonth, BirthDay), 112))) [BirthDateKey],
+        dbo.ufnCrm_GetAge(p.BirthDate) [Age], 
 " + populatePersonValueFROMClauses.Select( a => $"        [{a}]" ).ToList().AsDelimited( ",\n" ) + @",
         NEWID() [Guid]";
 
@@ -598,6 +602,7 @@ AND asph.PersonId NOT IN ( -- Ensure that there isn't already a History Record f
             updateETLScript += @"
         [PrimaryFamilyId] = cte1.[PrimaryFamilyId],
         [BirthDateKey] = cte1.[BirthDateKey],
+        [Age] = cte1.[Age],
 ";
             updateETLScript += populatePersonValueSELECTColumns.Select( a => $"        [{a.ColumnName}] = cte1.[{a.ColumnName}]" ).ToList().AsDelimited( ",\n" );
             if ( attributeValueColumns.Any() )
@@ -612,6 +617,7 @@ JOIN cte1 ON cte1.PersonId = asph.PersonId
 WHERE asph.CurrentRowIndicator = 1 AND (";
 
             updateETLScript += populatePersonValueSELECTColumns.Select( a => $"        isnull(asph.[{a.ColumnName}],{a.IsNullDefaultValue}) != isnull(cte1.[{a.ColumnName}],{a.IsNullDefaultValue})" ).ToList().AsDelimited( " OR \n" );
+            updateETLScript += " OR \n        isnull(asph.[Age],-1) != isnull(cte1.[Age],-1)";
             if ( attributeValueColumns.Any() )
             {
                 updateETLScript += " OR \n";

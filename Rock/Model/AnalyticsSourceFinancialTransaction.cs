@@ -127,6 +127,16 @@ namespace Rock.Model
         public bool IsScheduled { get; set; }
 
         /// <summary>
+        /// If this is from a Schedule Transaction, what is the Scheduled Transaction Frequency
+        /// </summary>
+        /// <value>
+        /// The transaction frequency.
+        /// </value>
+        [DataMember]
+        [MaxLength( 250 )]
+        public string TransactionFrequency { get; set; }
+
+        /// <summary>
         /// Gets or sets the giving group id of the person at the time of the transaction.  If an individual would like their giving to be grouped with the rest of their family,
         /// this will be the id of their family group.  If they elect to contribute on their own, this value will be null.
         /// </summary>
