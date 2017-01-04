@@ -235,8 +235,37 @@ namespace Rock.CodeGeneration
                 string filePath = Path.Combine( databaseRootFolder, folder, routineName + ".sql" );
                 Directory.CreateDirectory( Path.GetDirectoryName( filePath ) );
 
-                script = Regex.Replace( script, "(^\\s*)CREATE\\s*PROCEDURE", "$1ALTER PROCEDURE", RegexOptions.IgnoreCase | RegexOptions.Multiline );
-                script = Regex.Replace( script, "(^\\s*)CREATE\\s*FUNCTION", "$1ALTER FUNCTION", RegexOptions.IgnoreCase | RegexOptions.Multiline );
+                string existingScript = string.Empty;
+                if ( File.Exists(filePath) )
+                {
+                    existingScript = File.ReadAllText( filePath );
+                }
+
+                if ( routineType == "PROCEDURE" )
+                {
+                    if ( !existingScript.StartsWith( "IF EXISTS (" ) )
+                    {
+                        script = Regex.Replace( script, "(^\\s*)CREATE\\s*PROCEDURE", "$1ALTER PROCEDURE", RegexOptions.IgnoreCase | RegexOptions.Multiline );
+                    }
+                    else
+                    {
+                        string dropIfExistsScript = $@"IF EXISTS (
+        SELECT *
+        FROM [sysobjects]
+        WHERE [id] = OBJECT_ID(N'[{routineSchema}].[{routineName}]')
+            AND OBJECTPROPERTY([id], N'IsProcedure') = 1
+        )
+    DROP PROCEDURE [{routineSchema}].{routineName}
+GO
+
+";
+                        script = dropIfExistsScript + script;
+                    }
+                }
+                else
+                {
+                    script = Regex.Replace( script, "(^\\s*)CREATE\\s*FUNCTION", "$1ALTER FUNCTION", RegexOptions.IgnoreCase | RegexOptions.Multiline );
+                }
                 
                 if (string.IsNullOrEmpty(procPrefixFilter) || routineName.StartsWith(procPrefixFilter, StringComparison.OrdinalIgnoreCase))
                 {
@@ -254,7 +283,29 @@ namespace Rock.CodeGeneration
 
                 string filePath = Path.Combine( databaseRootFolder, "Views", viewName + ".sql" );
                 Directory.CreateDirectory( Path.GetDirectoryName( filePath ) );
-                script = Regex.Replace( script, "(^\\s*)CREATE\\s*VIEW", "$1ALTER VIEW", RegexOptions.IgnoreCase | RegexOptions.Multiline );
+
+
+                string existingScript = string.Empty;
+                if ( File.Exists( filePath ) )
+                {
+                    existingScript = File.ReadAllText( filePath );
+                }
+
+                if ( !existingScript.StartsWith( "IF OBJECT_ID(" ) )
+                {
+                    script = Regex.Replace( script, "(^\\s*)CREATE\\s*VIEW", "$1ALTER VIEW", RegexOptions.IgnoreCase | RegexOptions.Multiline );
+                }
+                else
+                {
+                    string dropIfExistsScript = $@"IF OBJECT_ID(N'[dbo].[{viewName}]', 'V') IS NOT NULL
+    DROP VIEW {viewName}
+GO
+
+";
+                    script = dropIfExistsScript + script;
+                }
+
+                
 
                 if ( string.IsNullOrEmpty( procPrefixFilter ) || viewName.StartsWith( procPrefixFilter, StringComparison.OrdinalIgnoreCase ) )
                 {
