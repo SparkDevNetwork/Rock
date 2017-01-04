@@ -149,7 +149,65 @@ BEGIN
                 AND a.[StartDateTime] = firstTran.[DateTimeOfFirstAttendanceOfType]
             ) x
         ) asa
-	WHERE asa.IsFirstAttendanceOfType = 0
+    WHERE asa.IsFirstAttendanceOfType = 0
+
+    -- update just in case any records where modified since originally inserted
+    UPDATE asa
+    SET asa.[Count] = x.[Count]
+        ,asa.[LocationId] = x.[LocationId]
+        ,asa.[CampusId] = x.[CampusId]
+        ,asa.[ScheduleId] = x.[ScheduleId]
+        ,asa.[GroupId] = x.[GroupId]
+        ,asa.[PersonAliasId] = x.[PersonAliasId]
+        ,asa.[DeviceId] = x.[DeviceId]
+        ,asa.[SearchTypeName] = x.[SearchTypeName]
+        ,asa.[StartDateTime] = x.[StartDateTime]
+        ,asa.[EndDateTime] = x.[EndDateTime]
+        ,asa.[RSVP] = x.[RSVP]
+        ,asa.[DidAttend] = x.[DidAttend]
+        ,asa.[Note] = x.[Note]
+        ,asa.[SundayDate] = x.[SundayDate]
+    FROM [AnalyticsSourceAttendance] asa
+    JOIN (
+        SELECT a.Id [AttendanceId]
+            ,convert(INT, (convert(CHAR(8), a.StartDateTime, 112))) [AttendanceDateKey]
+            ,CASE 
+                WHEN a.DidAttend = 1
+                    THEN 1
+                ELSE 0
+                END [Count]
+            ,a.LocationId
+            ,a.CampusId
+            ,a.ScheduleId
+            ,a.GroupId
+            ,a.PersonAliasId
+            ,a.DeviceId
+            ,isnull(dvSearchType.Value, 'None') [SearchTypeName]
+            ,a.StartDateTime
+            ,a.EndDateTime
+            ,a.RSVP
+            ,a.DidAttend
+            ,a.Note
+            ,a.SundayDate
+        FROM Attendance a
+        LEFT JOIN DefinedValue dvSearchType ON dvSearchType.Id = a.SearchTypeValueId
+        WHERE isnull(a.DidNotOccur, 0) = 0
+        ) x ON x.AttendanceId = asa.AttendanceId
+        AND (
+            asa.[LocationId] != x.[LocationId]
+            OR asa.[CampusId] != x.[CampusId]
+            OR asa.[ScheduleId] != x.[ScheduleId]
+            OR asa.[GroupId] != x.[GroupId]
+            OR asa.[PersonAliasId] != x.[PersonAliasId]
+            OR asa.[DeviceId] != x.[DeviceId]
+            OR asa.[SearchTypeName] != x.[SearchTypeName]
+            OR asa.[StartDateTime] != x.[StartDateTime]
+            OR asa.[EndDateTime] != x.[EndDateTime]
+            OR asa.[RSVP] != x.[RSVP]
+            OR asa.[DidAttend] != x.[DidAttend]
+            OR asa.[Note] != x.[Note]
+            OR asa.[SundayDate] != x.[SundayDate]
+            )
 
     -- Update [DaysSinceLastAttendanceOfType]
     -- get the number of days since the last attendance of this person of the same AttendanceType
@@ -166,5 +224,5 @@ BEGIN
             AND convert(DATE, previousAttendanceOfType.StartDateTime) < convert(DATE, asa.StartDateTime)
         ORDER BY previousAttendanceOfType.StartDateTime DESC
         ) x
-    WHERE isnull(asa.DaysSinceLastAttendanceOfType,0) != isnull(x.[CalcDaysSinceLastAttendanceOfType], 0)
+    WHERE isnull(asa.DaysSinceLastAttendanceOfType, 0) != isnull(x.[CalcDaysSinceLastAttendanceOfType], 0)
 END
