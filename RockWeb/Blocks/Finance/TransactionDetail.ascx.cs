@@ -226,6 +226,11 @@ namespace RockWeb.Blocks.Finance
                     Helper.AddEditControls(txn.FinancialPaymentDetail, phPaymentAttributeEdits, false);
                 }
             }
+
+            var txnDetail = new FinancialTransactionDetail();
+            txnDetail.LoadAttributes();
+            phAccountAttributeEdits.Controls.Clear();
+            Helper.AddEditControls( txnDetail, phAccountAttributeEdits, true, mdAccount.ValidationGroup );
         }
 
         /// <summary>
@@ -466,6 +471,14 @@ namespace RockWeb.Blocks.Finance
                         txnDetail.AccountId = editorTxnDetail.AccountId;
                         txnDetail.Amount = newAmount;
                         txnDetail.Summary = editorTxnDetail.Summary;
+
+                        if ( editorTxnDetail.AttributeValues != null )
+                        {
+                            txnDetail.LoadAttributes();
+                            txnDetail.AttributeValues = editorTxnDetail.AttributeValues;
+                            rockContext.SaveChanges();
+                            txnDetail.SaveAttributeValues( rockContext );
+                        }
                     }
 
                     // Delete any transaction images that were removed
@@ -789,6 +802,13 @@ namespace RockWeb.Blocks.Finance
                 txnDetail.Amount = tbAccountAmount.Text.AsDecimal();
                 txnDetail.Summary = tbAccountSummary.Text;
 
+                txnDetail.LoadAttributes();
+                Rock.Attribute.Helper.GetEditValues( phAccountAttributeEdits, txnDetail );
+                foreach ( var attributeValue in txnDetail.AttributeValues )
+                {
+                    txnDetail.SetAttributeValue( attributeValue.Key, attributeValue.Value.Value );
+                }
+                
                 BindAccounts();
             }
 
@@ -1646,13 +1666,24 @@ namespace RockWeb.Blocks.Finance
                 apAccount.SetValue( txnDetail.AccountId );
                 tbAccountAmount.Text = txnDetail.Amount.ToString( "N2" );
                 tbAccountSummary.Text = txnDetail.Summary;
+
+                if ( txnDetail.Attributes == null )
+                {
+                    txnDetail.LoadAttributes();
+                }
             }
             else
             {
                 apAccount.SetValue( null );
                 tbAccountAmount.Text = string.Empty;
                 tbAccountSummary.Text = string.Empty;
+
+                txnDetail = new FinancialTransactionDetail();
+                txnDetail.LoadAttributes();
             }
+
+            phAccountAttributeEdits.Controls.Clear();
+            Helper.AddEditControls( txnDetail, phAccountAttributeEdits, true, mdAccount.ValidationGroup );
 
             ShowDialog( "ACCOUNT" );
 

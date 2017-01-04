@@ -383,6 +383,15 @@ namespace Rock
             return _gregorianCalendar.GetWeekOfYear( dateTime, calendarWeekRule, firstDayOfWeek );
         }
 
+        /// Converts a datetime to the short date/time format.
+        /// </summary>
+        /// <param name="dt">The dt.</param>
+        /// <returns></returns>
+        public static string ToShortDateTimeString( this DateTime dt )
+        {
+            return dt.ToShortDateString() + " " + dt.ToShortTimeString();
+        }
+
         #endregion DateTime Extensions
 
         #region TimeSpan Extensions
