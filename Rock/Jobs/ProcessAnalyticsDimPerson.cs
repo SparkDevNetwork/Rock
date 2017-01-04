@@ -633,7 +633,7 @@ WHERE asph.CurrentRowIndicator = 1 AND (";
         /// Updates the analytics source person historical schema.
         /// </summary>
         /// <param name="analyticsSourcePersonHistoricalFields">The analytics source person historical fields.</param>
-        /// <param name="personAttributes">The person attributes.</param>
+        /// <param name="personAnalyticAttributes">The person analytic attributes.</param>
         private void UpdateAnalyticsSourcePersonHistoricalSchema( List<EntityField> analyticsSourcePersonHistoricalFields, List<AttributeCache> personAnalyticAttributes )
         {
             var dataSet = DbService.GetDataSetSchema( "SELECT * FROM [AnalyticsSourcePersonHistorical] where 1=0", System.Data.CommandType.Text, null );
