@@ -28,15 +28,15 @@ using Rock.Data;
 namespace Rock.Model
 {
     /// <summary>
-    /// AnalyticsSourcePersonHistorical Service class
+    /// AnalyticsDimFamilyHeadOfHousehold Service class
     /// </summary>
-    public partial class AnalyticsSourcePersonHistoricalService : Service<AnalyticsSourcePersonHistorical>
+    public partial class AnalyticsDimFamilyHeadOfHouseholdService : Service<AnalyticsDimFamilyHeadOfHousehold>
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="AnalyticsSourcePersonHistoricalService"/> class
+        /// Initializes a new instance of the <see cref="AnalyticsDimFamilyHeadOfHouseholdService"/> class
         /// </summary>
         /// <param name="context">The context.</param>
-        public AnalyticsSourcePersonHistoricalService(RockContext context) : base(context)
+        public AnalyticsDimFamilyHeadOfHouseholdService(RockContext context) : base(context)
         {
         }
 
@@ -48,7 +48,7 @@ namespace Rock.Model
         /// <returns>
         ///   <c>true</c> if this instance can delete the specified item; otherwise, <c>false</c>.
         /// </returns>
-        public bool CanDelete( AnalyticsSourcePersonHistorical item, out string errorMessage )
+        public bool CanDelete( AnalyticsDimFamilyHeadOfHousehold item, out string errorMessage )
         {
             errorMessage = string.Empty;
             return true;
@@ -58,34 +58,34 @@ namespace Rock.Model
     /// <summary>
     /// Generated Extension Methods
     /// </summary>
-    public static partial class AnalyticsSourcePersonHistoricalExtensionMethods
+    public static partial class AnalyticsDimFamilyHeadOfHouseholdExtensionMethods
     {
         /// <summary>
-        /// Clones this AnalyticsSourcePersonHistorical object to a new AnalyticsSourcePersonHistorical object
+        /// Clones this AnalyticsDimFamilyHeadOfHousehold object to a new AnalyticsDimFamilyHeadOfHousehold object
         /// </summary>
         /// <param name="source">The source.</param>
         /// <param name="deepCopy">if set to <c>true</c> a deep copy is made. If false, only the basic entity properties are copied.</param>
         /// <returns></returns>
-        public static AnalyticsSourcePersonHistorical Clone( this AnalyticsSourcePersonHistorical source, bool deepCopy )
+        public static AnalyticsDimFamilyHeadOfHousehold Clone( this AnalyticsDimFamilyHeadOfHousehold source, bool deepCopy )
         {
             if (deepCopy)
             {
-                return source.Clone() as AnalyticsSourcePersonHistorical;
+                return source.Clone() as AnalyticsDimFamilyHeadOfHousehold;
             }
             else
             {
-                var target = new AnalyticsSourcePersonHistorical();
+                var target = new AnalyticsDimFamilyHeadOfHousehold();
                 target.CopyPropertiesFrom( source );
                 return target;
             }
         }
 
         /// <summary>
-        /// Copies the properties from another AnalyticsSourcePersonHistorical object to this AnalyticsSourcePersonHistorical object
+        /// Copies the properties from another AnalyticsDimFamilyHeadOfHousehold object to this AnalyticsDimFamilyHeadOfHousehold object
         /// </summary>
         /// <param name="target">The target.</param>
         /// <param name="source">The source.</param>
-        public static void CopyPropertiesFrom( this AnalyticsSourcePersonHistorical target, AnalyticsSourcePersonHistorical source )
+        public static void CopyPropertiesFrom( this AnalyticsDimFamilyHeadOfHousehold target, AnalyticsDimFamilyHeadOfHousehold source )
         {
             target.Id = source.Id;
             target.Age = source.Age;
@@ -94,16 +94,19 @@ namespace Rock.Model
             target.BirthDay = source.BirthDay;
             target.BirthMonth = source.BirthMonth;
             target.BirthYear = source.BirthYear;
+            target.ConnectionStatus = source.ConnectionStatus;
             target.ConnectionStatusValueId = source.ConnectionStatusValueId;
             target.CurrentRowIndicator = source.CurrentRowIndicator;
             target.EffectiveDate = source.EffectiveDate;
             target.Email = source.Email;
             target.EmailPreference = source.EmailPreference;
+            target.EmailPreferenceText = source.EmailPreferenceText;
             target.ExpireDate = source.ExpireDate;
             target.FirstName = source.FirstName;
             target.ForeignGuid = source.ForeignGuid;
             target.ForeignKey = source.ForeignKey;
             target.Gender = source.Gender;
+            target.GenderText = source.GenderText;
             target.GivingGroupId = source.GivingGroupId;
             target.GivingId = source.GivingId;
             target.GivingLeaderId = source.GivingLeaderId;
@@ -111,20 +114,28 @@ namespace Rock.Model
             target.InactiveReasonNote = source.InactiveReasonNote;
             target.IsDeceased = source.IsDeceased;
             target.LastName = source.LastName;
+            target.MaritalStatus = source.MaritalStatus;
             target.MaritalStatusValueId = source.MaritalStatusValueId;
             target.MiddleName = source.MiddleName;
             target.NickName = source.NickName;
             target.PersonId = source.PersonId;
             target.PhotoId = source.PhotoId;
             target.PrimaryFamilyId = source.PrimaryFamilyId;
+            target.PrimaryFamilyKey = source.PrimaryFamilyKey;
+            target.RecordStatus = source.RecordStatus;
             target.RecordStatusLastModifiedDateTime = source.RecordStatusLastModifiedDateTime;
+            target.RecordStatusReason = source.RecordStatusReason;
             target.RecordStatusReasonValueId = source.RecordStatusReasonValueId;
             target.RecordStatusValueId = source.RecordStatusValueId;
+            target.RecordType = source.RecordType;
             target.RecordTypeValueId = source.RecordTypeValueId;
+            target.ReviewReason = source.ReviewReason;
             target.ReviewReasonNote = source.ReviewReasonNote;
             target.ReviewReasonValueId = source.ReviewReasonValueId;
+            target.Suffix = source.Suffix;
             target.SuffixValueId = source.SuffixValueId;
             target.SystemNote = source.SystemNote;
+            target.Title = source.Title;
             target.TitleValueId = source.TitleValueId;
             target.ViewedCount = source.ViewedCount;
             target.Guid = source.Guid;

@@ -91,6 +91,8 @@ namespace Rock.Model
             target.AccountId = source.AccountId;
             target.AccountType = source.AccountType;
             target.ActiveStatus = source.ActiveStatus;
+            target.CampusName = source.CampusName;
+            target.CampusShortCode = source.CampusShortCode;
             target.Description = source.Description;
             target.EndDate = source.EndDate;
             target.ForeignGuid = source.ForeignGuid;
