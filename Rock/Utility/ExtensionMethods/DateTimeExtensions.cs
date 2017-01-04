@@ -376,6 +376,7 @@ namespace Rock
         /// from http://stackoverflow.com/a/2136549/1755417, but with an option to specify the FirstDayOfWeek (for example RockDateTime.FirstDayOfWeek)
         /// </summary>
         /// <param name="dateTime">The date time.</param>
+        /// <param name="calendarWeekRule">The calendar week rule.</param>
         /// <param name="firstDayOfWeek">The first day of week.</param>
         /// <returns></returns>
         public static int GetWeekOfYear( this DateTime dateTime, CalendarWeekRule calendarWeekRule, DayOfWeek firstDayOfWeek )
@@ -383,6 +384,7 @@ namespace Rock
             return _gregorianCalendar.GetWeekOfYear( dateTime, calendarWeekRule, firstDayOfWeek );
         }
 
+        /// <summary>
         /// Converts a datetime to the short date/time format.
         /// </summary>
         /// <param name="dt">The dt.</param>
