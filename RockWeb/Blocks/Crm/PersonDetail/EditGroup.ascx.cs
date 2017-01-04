@@ -62,6 +62,12 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             set { ViewState["GroupAddresses"] = value; }
         }
 
+        private bool HasDeceasedMembers
+        {
+            get { return ViewState["HasDeceasedMembers"] as bool? ?? false; }
+            set { ViewState["HasDeceasedMembers"] = value; }
+        }
+
         private string DefaultState
         {
             get
@@ -292,6 +298,13 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                                 ddlRecordStatus.Warning += " and record status reasons";
                             }
                         }
+
+                        // Does the family have any deceased members?
+                        var inactiveStatus = DefinedValueCache.Read( new Guid( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_INACTIVE ) ).Id;
+                        if ( _group.Members.Where( m => m.Person.RecordStatusValueId == inactiveStatus ).Any() )
+                        {
+                            HasDeceasedMembers = true;
+                        }
                     }
 
                     // Get all the group members
@@ -435,7 +448,13 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void ddlRecordStatus_SelectedIndexChanged( object sender, EventArgs e )
         {
-            ddlReason.Visible = ddlRecordStatus.SelectedValueAsInt() == DefinedValueCache.Read( new Guid( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_INACTIVE ) ).Id;
+            var inactiveStatus = DefinedValueCache.Read( new Guid( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_INACTIVE ) ).Id;
+            if ( HasDeceasedMembers && ddlRecordStatus.SelectedValueAsInt() != inactiveStatus )
+            {
+                ddlRecordStatus.Warning = "Note: the status of deceased people will not be changed.";
+            }
+
+            ddlReason.Visible = ddlRecordStatus.SelectedValueAsInt() == inactiveStatus;
             confirmExit.Enabled = true;
         }
 
@@ -971,6 +990,8 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                     rockContext.SaveChanges();
 
                     // SAVE GROUP MEMBERS
+                    var recordStatusInactiveId = DefinedValueCache.Read( new Guid( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_INACTIVE ) ).Id;
+                    var reasonStatusReasonDeceasedId = DefinedValueCache.Read( new Guid( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_REASON_DECEASED ) ).Id;
                     int? recordStatusValueID = ddlRecordStatus.SelectedValueAsInt();
                     int? reasonValueId = ddlReason.SelectedValueAsInt();
                     var newGroups = new List<Group>();
@@ -1050,7 +1071,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                                     person.RecordStatusValueId = recordStatusValueID;
                                 }
 
-                                if ( person.RecordStatusValueId != recordStatusValueID )
+                                if ( person.RecordStatusReasonValueId != reasonValueId )
                                 {
                                     History.EvaluateChange( demographicChanges, "Record Status Reason", DefinedValueCache.GetName( person.RecordStatusReasonValueId ), DefinedValueCache.GetName( reasonValueId ) );
                                     person.RecordStatusReasonValueId = reasonValueId;
@@ -1132,7 +1153,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                                 }
                                 else
                                 {
-                                    // Existing member was not remvoved
+                                    // Existing member was not removed
                                     if ( role != null )
                                     {
                                         History.EvaluateChange( memberChanges, "Role", groupMember.GroupRole != null ? groupMember.GroupRole.Name : string.Empty, role.Name );
@@ -1140,9 +1161,11 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 
                                         if ( _isFamilyGroupType )
                                         {
-                                            if ( recordStatusValueID > 0 )
+                                            // Only change a person's record status if they were not previously deceased (#1887).
+                                            if ( recordStatusValueID > 0 && groupMember.Person.RecordStatusReasonValueId != reasonStatusReasonDeceasedId )
                                             {
-                                                History.EvaluateChange( demographicChanges, "Record Status", DefinedValueCache.GetName( groupMember.Person.RecordStatusValueId ), DefinedValueCache.GetName( recordStatusValueID ) );
+                                                History.EvaluateChange( demographicChanges, "Record Status", 
+                                                DefinedValueCache.GetName( groupMember.Person.RecordStatusValueId ), DefinedValueCache.GetName( recordStatusValueID ) );
                                                 groupMember.Person.RecordStatusValueId = recordStatusValueID;
 
                                                 History.EvaluateChange( demographicChanges, "Record Status Reason", DefinedValueCache.GetName( groupMember.Person.RecordStatusReasonValueId ), DefinedValueCache.GetName( reasonValueId ) );
@@ -1167,6 +1190,21 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                         if ( _isFamilyGroupType )
                         {
                             HistoryService.SaveChanges( rockContext, typeof( Person ), Rock.SystemGuid.Category.HISTORY_PERSON_FAMILY_CHANGES.AsGuid(), groupMemberInfo.Id, memberChanges, _group.Name, typeof( Group ), _group.Id );
+                        }
+                    }
+
+                    // Now check if family group should be marked inactive or active
+                    if ( _isFamilyGroupType )
+                    {
+                        // Are there any members of the family who are NOT inactive?
+                        // If not, mark the whole family inactive.
+                        if ( !_group.Members.Where( m => m.Person.RecordStatusValueId != recordStatusInactiveId ).Any() )
+                        {
+                            _group.IsActive = false;
+                        }
+                        else
+                        {
+                            _group.IsActive = true;
                         }
                     }
 

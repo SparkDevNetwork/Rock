@@ -399,6 +399,7 @@
     <Compile Include="Data\IncludeForReportingAttribute.cs" />
     <Compile Include="Data\Interception\QueryHintDbCommandInterceptor.cs" />
     <Compile Include="Data\Interception\QueryHintScope.cs" />
+    <Compile Include="Data\IHasActiveFlag.cs" />
     <Compile Include="Data\IOrdered.cs" />
     <Compile Include="Data\IRockEntity.cs" />
     <Compile Include="Data\IService.cs" />
@@ -554,6 +555,7 @@
     <Compile Include="Follow\SuggestionContainer.cs" />
     <Compile Include="Follow\Suggestion\InGroupTogether.cs" />
     <Compile Include="Jobs\CalculateFamilyAnalytics.cs" />
+    <Compile Include="Jobs\DatabaseMaintenance.cs" />
     <Compile Include="Jobs\IndexRockSite.cs" />
     <Compile Include="Jobs\ProcessAnalyticsDimPerson.cs" />
     <Compile Include="Jobs\SendCreditCardExpirationNotices.cs" />
@@ -983,7 +985,9 @@
     <Compile Include="Model\ScheduleService.Partial.cs" />
     <Compile Include="Model\WorkflowActionService.Partial.cs" />
     <Compile Include="PersonProfile\Badge\InDataView.cs" />
+    <Compile Include="Reporting\DataFilter\Person\InRegistrationInstanceRegistrationTemplateFilter.cs" />
     <Compile Include="Reporting\DataFilter\Person\InLocationGeofenceFilter.cs" />
+    <Compile Include="Reporting\DataFilter\Person\PostalCodeFilter.cs" />
     <Compile Include="Reporting\DataSelect\GroupMember\GroupLinkSelect.cs" />
     <Compile Include="Search\Other\Universal.cs" />
     <Compile Include="Reporting\DataFilter\Person\InRegistrationInstanceFilter.cs" />
@@ -1059,6 +1063,7 @@
     <Compile Include="Plugin\HotFixes\004_FixGradeRequiredAttribute.cs" />
     <Compile Include="Plugin\HotFixes\005_FixCheckinAdminRoute.cs" />
     <Compile Include="Plugin\HotFixes\006_FixCheckinPrevPages.cs" />
+    <Compile Include="Plugin\HotFixes\016_SetInactiveFamilies.cs" />
     <Compile Include="Plugin\HotFixes\015_CheckinByBirthdate.cs" />
     <Compile Include="Plugin\HotFixes\009_FixCheckinAttributes.cs" />
     <Compile Include="Plugin\HotFixes\008_FamilyAnalyticsUpdate.cs" />
@@ -1096,6 +1101,7 @@
     <Compile Include="Reporting\DataFilter\Group\DistanceFromFilter.cs" />
     <Compile Include="Reporting\DataFilter\Group\GroupAttributesFilter.cs" />
     <Compile Include="Reporting\DataFilter\Group\GroupBranchFilter.cs" />
+    <Compile Include="Reporting\DataFilter\Group\GroupTypeDataViewFilter.cs" />
     <Compile Include="Reporting\DataFilter\Group\GroupTypeFilter.cs" />
     <Compile Include="Reporting\DataFilter\Group\MemberCountFilter.cs" />
     <Compile Include="Reporting\DataFilter\Group\SimpleMemberCountFilter.cs" />
@@ -1202,6 +1208,7 @@
     <Compile Include="Utility\DebugHelper.cs" />
     <Compile Include="Utility\ExcelHelper.cs" />
     <Compile Include="Utility\FileUtilities.cs" />
+    <Compile Include="Web\UI\Controls\Pickers\RegistrationTemplatePicker.cs" />
     <Compile Include="Web\UI\RockTheme.cs" />
     <Compile Include="Web\Cache\AttributeValueCache.cs" />
     <Compile Include="Web\UI\Controls\WarningBlock.cs" />

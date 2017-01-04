@@ -1884,7 +1884,7 @@ namespace RockWeb.Blocks.Event
                     else
                     {
                         costSummary.Cost = registrant.Cost;
-                        if ( registration.DiscountPercentage > 0.0m )
+                        if ( registration.DiscountPercentage > 0.0m && registrant.DiscountApplies )
                         {
                             costSummary.DiscountedCost = costSummary.Cost - ( costSummary.Cost * registration.DiscountPercentage );
                         }
@@ -1916,7 +1916,7 @@ namespace RockWeb.Blocks.Event
                             costSummary.Description = desc;
                             costSummary.Cost = feeInfo.Quantity * cost;
 
-                            if ( registration.DiscountPercentage > 0.0m && templateFee != null && templateFee.DiscountApplies )
+                            if ( registration.DiscountPercentage > 0.0m && templateFee != null && templateFee.DiscountApplies && registrant.DiscountApplies )
                             {
                                 costSummary.DiscountedCost = costSummary.Cost - ( costSummary.Cost * registration.DiscountPercentage );
                             }
@@ -1942,7 +1942,7 @@ namespace RockWeb.Blocks.Event
                 // Add row for amount discount
                 if ( registration.DiscountAmount > 0.0m )
                 {
-                    decimal totalDiscount = 0.0m - ( RegistrantsState.Count * registration.DiscountAmount );
+                    decimal totalDiscount = 0.0m - ( RegistrantsState.Where( r => r.DiscountApplies ).Count() * registration.DiscountAmount );
                     costs.Add( new RegistrationCostSummaryInfo
                     {
                         Type = RegistrationCostSummaryType.Discount,
@@ -2043,14 +2043,14 @@ namespace RockWeb.Blocks.Event
                 divLabels.Controls.Add( hlOnWaitList );
             }
 
-            decimal registrantCost = registrant.TotalCost;
-            if ( registrantCost != 0.0m )
+            decimal discountedTotalCost = registrant.DiscountedTotalCost( Registration.DiscountPercentage, Registration.DiscountAmount );
+            if ( discountedTotalCost != 0.0m )
             {
                 var hlCost = new HighlightLabel();
                 hlCost.ID = string.Format( "hlCost_{0}", registrant.Id );
                 hlCost.LabelType = LabelType.Info;
                 hlCost.ToolTip = "Cost";
-                hlCost.Text = registrantCost.FormatAsCurrency();
+                hlCost.Text = discountedTotalCost.FormatAsCurrency();
                 divLabels.Controls.Add( hlCost );
             }
 
@@ -2193,7 +2193,32 @@ namespace RockWeb.Blocks.Event
                 rlCost.ID = string.Format( "rlCost_{0}", registrant.Id );
                 rlCost.Label = "Cost";
                 rlCost.Text = registrant.Cost.FormatAsCurrency();
-                divRightColumn.Controls.Add( rlCost );
+
+                decimal discountedCost = registrant.DiscountedCost( Registration.DiscountPercentage, Registration.DiscountAmount );
+                if ( registrant.Cost == discountedCost )
+                {
+                    var divCost = new HtmlGenericControl( "div" );
+                    divCost.AddCssClass( "col-xs-12" );
+                    divCost.Controls.Add( rlCost );
+                    divRightColumn.Controls.Add( divCost );
+                }
+                else
+                {
+                    var rlDiscountedCost = new RockLiteral();
+                    rlDiscountedCost.ID = string.Format( "rlDiscountedCost_{0}", registrant.Id );
+                    rlDiscountedCost.Label = "Discounted Cost";
+                    rlDiscountedCost.Text = discountedCost.FormatAsCurrency();
+
+                    var divCost = new HtmlGenericControl( "div" );
+                    divCost.AddCssClass( "col-xs-6" );
+                    divCost.Controls.Add( rlCost );
+                    divRightColumn.Controls.Add( divCost );
+
+                    var divDiscountedCost = new HtmlGenericControl( "div" );
+                    divDiscountedCost.AddCssClass( "col-xs-6" );
+                    divDiscountedCost.Controls.Add( rlDiscountedCost );
+                    divRightColumn.Controls.Add( divDiscountedCost );
+                }
             }
 
             foreach ( var fee in registrant.FeeValues )
@@ -2203,10 +2228,34 @@ namespace RockWeb.Blocks.Event
                 {
                     foreach ( var feeInfo in fee.Value )
                     {
+                        var discountedCost = registrant.DiscountApplies ? feeInfo.DiscountedCost( Registration.DiscountPercentage ) : feeInfo.TotalCost;
                         var feeControl = BuildRegistrantFeeControl( templateFee, feeInfo, registrant, setValues );
                         if ( feeControl != null )
                         {
-                            divRightColumn.Controls.Add( feeControl );
+                            if ( feeInfo.TotalCost == discountedCost )
+                            {
+                                var divFee = new HtmlGenericControl( "div" );
+                                divFee.AddCssClass( "col-xs-12" );
+                                divFee.Controls.Add( feeControl );
+                                divRightColumn.Controls.Add( divFee );
+                            }
+                            else
+                            {
+                                var rlDiscountedFee = new RockLiteral();
+                                rlDiscountedFee.ID = string.Format( "rlDiscountedFee_{0}_{1}_{2}", registrant.Id, templateFee.Id, feeInfo.Option );
+                                rlDiscountedFee.Label = "Discounted Amount";
+                                rlDiscountedFee.Text = discountedCost.FormatAsCurrency();
+
+                                var divFee = new HtmlGenericControl( "div" );
+                                divFee.AddCssClass( "col-xs-6" );
+                                divFee.Controls.Add( feeControl );
+                                divRightColumn.Controls.Add( divFee );
+
+                                var divDiscountedFee = new HtmlGenericControl( "div" );
+                                divDiscountedFee.AddCssClass( "col-xs-6" );
+                                divDiscountedFee.Controls.Add( rlDiscountedFee );
+                                divRightColumn.Controls.Add( divDiscountedFee );
+                            }
                         }
                     }
                 }

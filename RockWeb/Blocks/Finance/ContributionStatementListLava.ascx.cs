@@ -142,8 +142,12 @@ namespace RockWeb.Blocks.Finance
 
             FinancialTransactionDetailService financialTransactionDetailService = new FinancialTransactionDetailService( rockContext );
 
+            // fetch all the possible PersonAliasIds that have this GivingID to help optimize the SQL
+            var personAliasIds = new PersonAliasService( rockContext ).Queryable().Where( a => a.Person.GivingId == TargetPerson.GivingId ).Select( a => a.Id ).ToList();
+
+            // get the transactions for the person or all the members in the person's giving group (Family)
             var qry = financialTransactionDetailService.Queryable().AsNoTracking()
-                        .Where( t=> t.Transaction.AuthorizedPersonAlias.Person.GivingId == TargetPerson.GivingId);
+                        .Where( t=> t.Transaction.AuthorizedPersonAliasId.HasValue && personAliasIds.Contains( t.Transaction.AuthorizedPersonAliasId.Value ) );
 
             if ( string.IsNullOrWhiteSpace( GetAttributeValue( "Accounts" ) ) )
             {
