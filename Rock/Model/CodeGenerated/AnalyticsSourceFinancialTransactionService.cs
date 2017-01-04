@@ -90,8 +90,10 @@ namespace Rock.Model
             target.Id = source.Id;
             target.AccountId = source.AccountId;
             target.Amount = source.Amount;
+            target.AuthorizedCurrentPersonKey = source.AuthorizedCurrentPersonKey;
             target.AuthorizedFamilyId = source.AuthorizedFamilyId;
             target.AuthorizedPersonAliasId = source.AuthorizedPersonAliasId;
+            target.AuthorizedPersonKey = source.AuthorizedPersonKey;
             target.BatchId = source.BatchId;
             target.Count = source.Count;
             target.CreditCardTypeValueId = source.CreditCardTypeValueId;
@@ -114,6 +116,7 @@ namespace Rock.Model
             target.TransactionDateKey = source.TransactionDateKey;
             target.TransactionDateTime = source.TransactionDateTime;
             target.TransactionDetailId = source.TransactionDetailId;
+            target.TransactionFrequency = source.TransactionFrequency;
             target.TransactionId = source.TransactionId;
             target.TransactionKey = source.TransactionKey;
             target.TransactionTypeValueId = source.TransactionTypeValueId;

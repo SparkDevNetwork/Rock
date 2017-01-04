@@ -28,15 +28,15 @@ using Rock.Data;
 namespace Rock.Model
 {
     /// <summary>
-    /// Metric Service class
+    /// AnalyticsSourceFamilyHistorical Service class
     /// </summary>
-    public partial class MetricService : Service<Metric>
+    public partial class AnalyticsSourceFamilyHistoricalService : Service<AnalyticsSourceFamilyHistorical>
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="MetricService"/> class
+        /// Initializes a new instance of the <see cref="AnalyticsSourceFamilyHistoricalService"/> class
         /// </summary>
         /// <param name="context">The context.</param>
-        public MetricService(RockContext context) : base(context)
+        public AnalyticsSourceFamilyHistoricalService(RockContext context) : base(context)
         {
         }
 
@@ -48,7 +48,7 @@ namespace Rock.Model
         /// <returns>
         ///   <c>true</c> if this instance can delete the specified item; otherwise, <c>false</c>.
         /// </returns>
-        public bool CanDelete( Metric item, out string errorMessage )
+        public bool CanDelete( AnalyticsSourceFamilyHistorical item, out string errorMessage )
         {
             errorMessage = string.Empty;
             return true;
@@ -58,59 +58,53 @@ namespace Rock.Model
     /// <summary>
     /// Generated Extension Methods
     /// </summary>
-    public static partial class MetricExtensionMethods
+    public static partial class AnalyticsSourceFamilyHistoricalExtensionMethods
     {
         /// <summary>
-        /// Clones this Metric object to a new Metric object
+        /// Clones this AnalyticsSourceFamilyHistorical object to a new AnalyticsSourceFamilyHistorical object
         /// </summary>
         /// <param name="source">The source.</param>
         /// <param name="deepCopy">if set to <c>true</c> a deep copy is made. If false, only the basic entity properties are copied.</param>
         /// <returns></returns>
-        public static Metric Clone( this Metric source, bool deepCopy )
+        public static AnalyticsSourceFamilyHistorical Clone( this AnalyticsSourceFamilyHistorical source, bool deepCopy )
         {
             if (deepCopy)
             {
-                return source.Clone() as Metric;
+                return source.Clone() as AnalyticsSourceFamilyHistorical;
             }
             else
             {
-                var target = new Metric();
+                var target = new AnalyticsSourceFamilyHistorical();
                 target.CopyPropertiesFrom( source );
                 return target;
             }
         }
 
         /// <summary>
-        /// Copies the properties from another Metric object to this Metric object
+        /// Copies the properties from another AnalyticsSourceFamilyHistorical object to this AnalyticsSourceFamilyHistorical object
         /// </summary>
         /// <param name="target">The target.</param>
         /// <param name="source">The source.</param>
-        public static void CopyPropertiesFrom( this Metric target, Metric source )
+        public static void CopyPropertiesFrom( this AnalyticsSourceFamilyHistorical target, AnalyticsSourceFamilyHistorical source )
         {
             target.Id = source.Id;
-            target.AdminPersonAliasId = source.AdminPersonAliasId;
-            target.DataViewId = source.DataViewId;
-            target.Description = source.Description;
-            target.EnableAnalytics = source.EnableAnalytics;
+            target.AdultCount = source.AdultCount;
+            target.CampusId = source.CampusId;
+            target.ChildCount = source.ChildCount;
+            target.ConnectionStatus = source.ConnectionStatus;
+            target.CurrentRowIndicator = source.CurrentRowIndicator;
+            target.EffectiveDate = source.EffectiveDate;
+            target.ExpireDate = source.ExpireDate;
+            target.FamilyId = source.FamilyId;
+            target.FamilyTitle = source.FamilyTitle;
             target.ForeignGuid = source.ForeignGuid;
             target.ForeignKey = source.ForeignKey;
-            target.IconCssClass = source.IconCssClass;
-            target.IsCumulative = source.IsCumulative;
-            target.IsSystem = source.IsSystem;
-            target.LastRunDateTime = source.LastRunDateTime;
-            target.MetricChampionPersonAliasId = source.MetricChampionPersonAliasId;
-            target.NumericDataType = source.NumericDataType;
-            target.ScheduleId = source.ScheduleId;
-            target.SourceSql = source.SourceSql;
-            target.SourceValueTypeId = source.SourceValueTypeId;
-            target.Subtitle = source.Subtitle;
-            target.Title = source.Title;
-            target.XAxisLabel = source.XAxisLabel;
-            target.YAxisLabel = source.YAxisLabel;
-            target.CreatedDateTime = source.CreatedDateTime;
-            target.ModifiedDateTime = source.ModifiedDateTime;
-            target.CreatedByPersonAliasId = source.CreatedByPersonAliasId;
-            target.ModifiedByPersonAliasId = source.ModifiedByPersonAliasId;
+            target.HeadOfHouseholdPersonKey = source.HeadOfHouseholdPersonKey;
+            target.IsEra = source.IsEra;
+            target.IsFamilyActive = source.IsFamilyActive;
+            target.MailingAddressLocationId = source.MailingAddressLocationId;
+            target.MappedAddressLocationId = source.MappedAddressLocationId;
+            target.Name = source.Name;
             target.Guid = source.Guid;
             target.ForeignId = source.ForeignId;
 
