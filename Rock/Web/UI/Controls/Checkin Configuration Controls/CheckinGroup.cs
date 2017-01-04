@@ -233,12 +233,15 @@ namespace Rock.Web.UI.Controls
             //// So, we'll use Guid to uniquely identify in this Control since that'll work in both Saved and Unsaved cases.
             //// If it is saved, we do need the Id so that Attributes will work
 
-            _hfGroupGuid.Value = value.Guid.ToString();
-            _hfGroupId.Value = value.Id.ToString();
-            _hfGroupTypeId.Value = value.GroupTypeId.ToString();
-            _tbGroupName.Text = value.Name;
+            if ( value != null )
+            {
+                _hfGroupGuid.Value = value.Guid.ToString();
+                _hfGroupId.Value = value.Id.ToString();
+                _hfGroupTypeId.Value = value.GroupTypeId.ToString();
+                _tbGroupName.Text = value.Name;
 
-            CreateGroupAttributeControls( value, rockContext );
+                CreateGroupAttributeControls( value, rockContext );
+            }
         }
 
         /// <summary>

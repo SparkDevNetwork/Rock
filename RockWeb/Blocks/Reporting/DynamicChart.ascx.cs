@@ -69,7 +69,7 @@ order by YValue desc
 </pre>
 </code>",
               CodeEditorMode.Sql )]
-
+    [TextField( "Query Params", "The parameters that the stored procedure expects in the format of 'param1=value;param2=value'. Any parameter with the same name as a page parameter (i.e. querystring, form, or page route) will have it's value replaced with the page's current value. A parameter with the name of 'CurrentPersonId' will have it's value replaced with the currently logged in person's id.", false, "" )]
     [IntegerField( "Chart Height", "", false, 200 )]
     [DefinedValueField( Rock.SystemGuid.DefinedType.CHART_STYLES, "Chart Style", order: 3 )]
 
@@ -94,6 +94,7 @@ order by YValue desc
 
             var pageReference = new Rock.Web.PageReference( this.PageCache.Id );
             pageReference.QueryString = new System.Collections.Specialized.NameValueCollection();
+            pageReference.QueryString.Add( this.Request.QueryString );
             pageReference.QueryString.Add( "GetChartData", "true" );
             pageReference.QueryString.Add( "GetChartDataBlockId", this.BlockId.ToString() );
             pageReference.QueryString.Add( "TimeStamp", RockDateTime.Now.ToJavascriptMilliseconds().ToString() );
@@ -191,6 +192,14 @@ function labelFormatter(label, series) {
             public decimal? YValue { get; set; }
 
             /// <summary>
+            /// Gets the y value as a formatted string (for Line and Bar Charts)
+            /// </summary>
+            /// <value>
+            /// The formatted y value.
+            /// </value>
+            public string YValueFormatted { get; set; }
+
+            /// <summary>
             /// Gets or sets the metric title (for pie charts)
             /// </summary>
             /// <value>
@@ -251,7 +260,8 @@ function labelFormatter(label, series) {
                     var mergeFields = GetDynamicDataMergeFields();
                     sql = sql.ResolveMergeFields( mergeFields );
 
-                    DataSet dataSet = DbService.GetDataSet( sql, System.Data.CommandType.Text, null );
+                    var parameters = GetParameters();
+                    DataSet dataSet = DbService.GetDataSet( sql, System.Data.CommandType.Text, parameters );
                     List<DynamicChartData> chartDataList = new List<DynamicChartData>();
                     foreach ( var row in dataSet.Tables[0].Rows.OfType<DataRow>() )
                     {
@@ -290,9 +300,22 @@ function labelFormatter(label, series) {
                             chartData.YValueTotal = chartData.YValue;
                         }
 
+                        if ( row.Table.Columns.Contains( "YValueFormatted" ) )
+                        {
+                            chartData.YValueFormatted = Convert.ToString( row["YValueFormatted"] );
+                        }
+                        else
+                        {
+                            chartData.YValueFormatted = chartData.YValue.HasValue ? chartData.YValue.Value.ToString( "G29" ) : string.Empty;
+                        }
+
                         if ( row.Table.Columns.Contains( "DateTime" ) )
                         {
                             chartData.DateTimeStamp = ( row["DateTime"] as DateTime? ).Value.ToJavascriptMilliseconds();
+                        }
+                        else if ( row.Table.Columns.Contains( "XValue" ) )
+                        {
+                            chartData.DateTimeStamp = (row["XValue"] as int?).Value;
                         }
 
                         chartDataList.Add( chartData );
@@ -325,6 +348,52 @@ function labelFormatter(label, series) {
         {
             // reload the full page since controls are dynamically created based on block settings
             NavigateToPage( this.CurrentPageReference );
+        }
+
+        /// <summary>
+        /// Gets the parameters.
+        /// </summary>
+        /// <returns></returns>
+        private Dictionary<string, object> GetParameters()
+        {
+            string[] queryParams = GetAttributeValue( "QueryParams" ).SplitDelimitedValues();
+            if ( queryParams.Length > 0 )
+            {
+                var parameters = new Dictionary<string, object>();
+                foreach ( string queryParam in queryParams )
+                {
+                    string[] paramParts = queryParam.Split( '=' );
+                    if ( paramParts.Length == 2 )
+                    {
+                        string queryParamName = paramParts[0];
+                        string queryParamValue = paramParts[1];
+
+                        // Remove leading '@' character if was included
+                        if ( queryParamName.StartsWith( "@" ) )
+                        {
+                            queryParamName = queryParamName.Substring( 1 );
+                        }
+
+                        // If a page parameter (query or form) value matches, use it's value instead
+                        string pageValue = PageParameter( queryParamName );
+                        if ( !string.IsNullOrWhiteSpace( pageValue ) )
+                        {
+                            queryParamValue = pageValue;
+                        }
+                        else if ( queryParamName.ToLower() == "currentpersonid" && CurrentPerson != null )
+                        {
+                            // If current person id, use the value of the current person id
+                            queryParamValue = CurrentPerson.Id.ToString();
+                        }
+
+                        parameters.Add( queryParamName, queryParamValue );
+                    }
+                }
+
+                return parameters;
+            }
+
+            return null;
         }
 
         /// <summary>

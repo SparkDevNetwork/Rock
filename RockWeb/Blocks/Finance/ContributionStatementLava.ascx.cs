@@ -39,9 +39,9 @@ namespace RockWeb.Blocks.Finance
     [DisplayName( "Contribution Statement Lava" )]
     [Category( "Finance" )]
     [Description( "Block for displaying a Lava based contribution statement." )]
-    [AccountsField("Accounts", "A selection of accounts to include on the statement. If none are selected all accounts that are tax-deductible will be uses.", false, order: 0 )]
-    [BooleanField("Display Pledges", "Determines if pledges should be shown.", true, order:1)]
-    [CodeEditorField("Lava Template", "The Lava template to use for the contribution statement.", CodeEditorMode.Lava, CodeEditorTheme.Rock, 500, true, @"{% capture pageTitle %}{{ 'Global' | Attribute:'OrganizationName' }} | Contribution Statement{%endcapture%}
+    [AccountsField( "Accounts", "A selection of accounts to include on the statement. If none are selected all accounts that are tax-deductible will be uses.", false, order: 0 )]
+    [BooleanField( "Display Pledges", "Determines if pledges should be shown.", true, order: 1 )]
+    [CodeEditorField( "Lava Template", "The Lava template to use for the contribution statement.", CodeEditorMode.Lava, CodeEditorTheme.Rock, 500, true, @"{% capture pageTitle %}{{ 'Global' | Attribute:'OrganizationName' }} | Contribution Statement{%endcapture%}
 {{ pageTitle | SetPageTitle }}
 
 <div class=""row margin-b-xl"">
@@ -84,13 +84,14 @@ namespace RockWeb.Blocks.Finance
 
 
     <table class=""table table-bordered table-striped table-condensed"">
-        <tr>
-            <th>Date</th>
-            <th>Giving Area</th>
-            <th>Check/Trans #</th>
-            <th align=""right"">Amount</th>
-        </tr>
-    
+        <thead>
+            <tr>
+                <th>Date</th>
+                <th>Giving Area</th>
+                <th>Check/Trans #</th>
+                <th align=""right"">Amount</th>
+            </tr>
+        </thead>    
 
         {% for transaction in TransactionDetails %}
             <tr>
@@ -172,7 +173,8 @@ namespace RockWeb.Blocks.Finance
     <em>Unless otherwise noted, the only goods and services provided are intangible religious benefits.</em>
 </p>", order: 2)]
     [BooleanField("Enable Debug", "Shows the merge fields available for the Lava", order:3)]
-    [BooleanField("Allow Person Querystring", "Determines if a person is allowed to be passed through the querystring. For security reasons this is not allowed by default.", false, order: 4)]
+    [DefinedValueField( Rock.SystemGuid.DefinedType.FINANCIAL_CURRENCY_TYPE, "Excluded Currency Types", "Select the currency types you would like to excluded.", false, true, order: 4)]
+    [BooleanField("Allow Person Querystring", "Determines if a person is allowed to be passed through the querystring. For security reasons this is not allowed by default.", false, order: 5)]
     public partial class ContributionStatementLava : Rock.Web.UI.RockBlock
     {
         #region Base Control Methods
@@ -241,15 +243,23 @@ namespace RockWeb.Blocks.Finance
 
             Person targetPerson = CurrentPerson;
 
+            // get excluded currency types setting
+            List<Guid> excludedCurrencyTypes = new List<Guid>();
+            if ( GetAttributeValue( "ExcludedCurrencyTypes" ).IsNotNullOrWhitespace() )
+            {
+                excludedCurrencyTypes = GetAttributeValue( "ExcludedCurrencyTypes" ).Split( ',' ).Select( Guid.Parse ).ToList();
+            }
+
             if ( GetAttributeValue( "AllowPersonQuerystring" ).AsBoolean() )
             {
-                if ( !string.IsNullOrWhiteSpace( Request["PersonGuid"] ) ){
+                if ( !string.IsNullOrWhiteSpace( Request["PersonGuid"] ) )
+                {
                     Guid? personGuid = Request["PersonGuid"].AsGuidOrNull();
 
                     if ( personGuid.HasValue )
                     {
                         var person = new PersonService( rockContext ).Get( personGuid.Value );
-                        if (person != null )
+                        if ( person != null )
                         {
                             targetPerson = person;
                         }
@@ -269,10 +279,16 @@ namespace RockWeb.Blocks.Finance
             if ( string.IsNullOrWhiteSpace( GetAttributeValue( "Accounts" ) ) )
             {
                 qry = qry.Where( t => t.Account.IsTaxDeductible );
-            } else
+            }
+            else
             {
                 var accountGuids = GetAttributeValue( "Accounts" ).Split( ',' ).Select( Guid.Parse ).ToList();
                 qry = qry.Where( t => accountGuids.Contains( t.Account.Guid ) );
+            }
+
+            if ( excludedCurrencyTypes.Count > 0 )
+            {
+                qry = qry.Where( t => !excludedCurrencyTypes.Contains( t.Transaction.FinancialPaymentDetail.CurrencyTypeValue.Guid ) );
             }
 
             qry = qry.OrderByDescending( t => t.Transaction.TransactionDateTime );
@@ -298,11 +314,11 @@ namespace RockWeb.Blocks.Finance
                                         groupMemberQry,
                                         p => p.Id,
                                         m => m.PersonId,
-                                        (p, m) => new {p, m})
-                                    .SelectMany( x => x.m.DefaultIfEmpty(), (y,z) => new { Person = y.p, GroupMember = z} )
+                                        ( p, m ) => new { p, m } )
+                                    .SelectMany( x => x.m.DefaultIfEmpty(), ( y, z ) => new { Person = y.p, GroupMember = z } )
                                     .Select( p => new { FirstName = p.Person.NickName, LastName = p.Person.LastName, FamilyRoleOrder = p.GroupMember.GroupRole.Order, Gender = p.Person.Gender, PersonId = p.Person.Id } )
-                                    .DistinctBy(p => p.PersonId)
-                                    .OrderBy(p => p.FamilyRoleOrder).ThenBy(p => p.Gender)
+                                    .DistinctBy( p => p.PersonId )
+                                    .OrderBy( p => p.FamilyRoleOrder ).ThenBy( p => p.Gender )
                                     .ToList();
 
             // make a list of person ids in the giving group
@@ -315,7 +331,7 @@ namespace RockWeb.Blocks.Finance
 
             string salutation = string.Empty;
 
-            if (givingGroup.GroupBy(g => g.LastName).Count() == 1 )
+            if ( givingGroup.GroupBy( g => g.LastName ).Count() == 1 )
             {
                 salutation = string.Join( ", ", givingGroup.Select( g => g.FirstName ) ) + " " + givingGroup.FirstOrDefault().LastName;
                 if ( salutation.Contains( "," ) )
@@ -333,15 +349,15 @@ namespace RockWeb.Blocks.Finance
             }
             mergeFields.Add( "Salutation", salutation );
 
-            var homeAddress = targetPerson.GetHomeLocation();
-            if ( homeAddress != null )
+            var mailingAddress = targetPerson.GetMailingLocation();
+            if ( mailingAddress != null )
             {
-                mergeFields.Add( "StreetAddress1", homeAddress.Street1 );
-                mergeFields.Add( "StreetAddress2", homeAddress.Street2 );
-                mergeFields.Add( "City", homeAddress.City );
-                mergeFields.Add( "State", homeAddress.State );
-                mergeFields.Add( "PostalCode", homeAddress.PostalCode );
-                mergeFields.Add( "Country", homeAddress.Country );
+                mergeFields.Add( "StreetAddress1", mailingAddress.Street1 );
+                mergeFields.Add( "StreetAddress2", mailingAddress.Street2 );
+                mergeFields.Add( "City", mailingAddress.City );
+                mergeFields.Add( "State", mailingAddress.State );
+                mergeFields.Add( "PostalCode", mailingAddress.PostalCode );
+                mergeFields.Add( "Country", mailingAddress.Country );
             }
             else
             {
@@ -369,19 +385,20 @@ namespace RockWeb.Blocks.Finance
             var pledges = new FinancialPledgeService( rockContext ).Queryable().AsNoTracking()
                                 .Where( p =>
                                      p.PersonAlias.Person.GivingId == targetPerson.GivingId
-                                    && (p.StartDate.Year == statementYear || p.EndDate.Year == statementYear))
-                                .GroupBy(p => p.Account)
-                                .Select(g => new PledgeSummary {
-                                                    AccountId = g.Key.Id,
-                                                    AccountName = g.Key.Name,
-                                                    AmountPledged = g.Sum( p => p.TotalAmount ),
-                                                    PledgeStartDate = g.Min(p => p.StartDate),
-                                                    PledgeEndDate = g.Max( p => p.EndDate)
+                                    && (p.StartDate.Year == statementYear || p.EndDate.Year == statementYear) )
+                                .GroupBy( p => p.Account )
+                                .Select( g => new PledgeSummary
+                                {
+                                    AccountId = g.Key.Id,
+                                    AccountName = g.Key.Name,
+                                    AmountPledged = g.Sum( p => p.TotalAmount ),
+                                    PledgeStartDate = g.Min( p => p.StartDate ),
+                                    PledgeEndDate = g.Max( p => p.EndDate )
                                 } )
                                 .ToList();
 
             // add detailed pledge information
-            foreach(var pledge in pledges )
+            foreach ( var pledge in pledges )
             {
                 var adjustedPedgeEndDate = pledge.PledgeEndDate.Value.Date.AddHours( 23 ).AddMinutes( 59 ).AddSeconds( 59 );
                 pledge.AmountGiven = new FinancialTransactionDetailService( rockContext ).Queryable()

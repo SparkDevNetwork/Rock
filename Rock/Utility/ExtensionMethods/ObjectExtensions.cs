@@ -18,6 +18,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using Rock.Web.Cache;
 
 namespace Rock
 {
@@ -74,12 +75,12 @@ namespace Rock
 
             try
             {
-                while (propPath.Any())
+                while ( propPath.Any() )
                 {
                     elementName = propPath.First();
 
                     PropertyInfo property = objType.GetProperty( elementName );
-                    if (property != null)
+                    if ( property != null )
                     {
                         objType = property.PropertyType;
                         propPath = propPath.Skip( 1 ).ToList();
@@ -91,7 +92,7 @@ namespace Rock
                 }
 
             }
-            catch (Exception)
+            catch ( Exception )
             {
                 throw new Exception( string.Format( "GetPropertyType failed. Could not resolve element \"{0}\" in path \"{1}.{2}\".", elementName, rootType.Name, propertyPathName ) );
             }
@@ -124,7 +125,45 @@ namespace Rock
         {
             var attrType = typeof( T );
             var property = instance.GetType().GetProperty( propertyName );
-            return (T)property.GetCustomAttributes( attrType, false ).First();
+            return ( T ) property.GetCustomAttributes( attrType, false ).First();
+        }
+
+
+        /// <summary>
+        /// If input is a string that has been formatted as currency, return the decimal value. Otherwise return the object unchanged.
+        /// </summary>
+        /// <param name="input">A value that may be a currency-formatted string.</param>
+        /// <returns></returns>
+        public static object ReverseCurrencyFormatting( this object input )
+        {
+            var exportValueString = input as string;
+
+            // If the object is a string...
+            if ( exportValueString != null )
+            {
+                var currencySymbol = GlobalAttributesCache.Value( "CurrencySymbol" );
+
+                // ... that contains the currency symbol ...
+                if ( exportValueString.Contains( currencySymbol ) )
+                {
+                    var decimalString = exportValueString.Replace( currencySymbol, string.Empty );
+                    decimal exportValueDecimal;
+
+                    // ... and the value without the currency symbol is a valid decimal value ...
+                    if ( decimal.TryParse( decimalString, out exportValueDecimal ) )
+                    {
+                        // ... that matches the input string when formatted as currency ...
+                        if ( exportValueDecimal.FormatAsCurrency() == exportValueString )
+                        {
+                            // ... return the input as a decimal
+                            return exportValueDecimal;
+                        }
+                    }
+                }
+            }
+
+            // Otherwise just return the input back out
+            return input;
         }
 
         #endregion
@@ -164,7 +203,7 @@ namespace Rock
                         {
                             byte[] temp = new byte[readBuffer.Length * 2];
                             Buffer.BlockCopy( readBuffer, 0, temp, 0, readBuffer.Length );
-                            Buffer.SetByte( temp, totalBytesRead, (byte)nextByte );
+                            Buffer.SetByte( temp, totalBytesRead, ( byte ) nextByte );
                             readBuffer = temp;
                             totalBytesRead++;
                         }

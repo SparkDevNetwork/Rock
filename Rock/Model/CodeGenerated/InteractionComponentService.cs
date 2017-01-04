@@ -51,6 +51,12 @@ namespace Rock.Model
         public bool CanDelete( InteractionComponent item, out string errorMessage )
         {
             errorMessage = string.Empty;
+ 
+            if ( new Service<Interaction>( Context ).Queryable().Any( a => a.InteractionComponentId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", InteractionComponent.FriendlyTypeName, Interaction.FriendlyTypeName );
+                return false;
+            }  
             return true;
         }
     }
@@ -93,6 +99,7 @@ namespace Rock.Model
             target.EntityId = source.EntityId;
             target.ForeignGuid = source.ForeignGuid;
             target.ForeignKey = source.ForeignKey;
+            target.Name = source.Name;
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;
             target.CreatedByPersonAliasId = source.CreatedByPersonAliasId;

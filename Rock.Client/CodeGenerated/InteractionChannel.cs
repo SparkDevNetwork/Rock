@@ -38,7 +38,10 @@ namespace Rock.Client
         public string ChannelData { get; set; }
 
         /// <summary />
-        public int? ChannelMediumValueId { get; set; }
+        public int? ChannelEntityId { get; set; }
+
+        /// <summary />
+        public int? ChannelTypeMediumValueId { get; set; }
 
         /// <summary />
         public int? ComponentEntityTypeId { get; set; }
@@ -56,6 +59,9 @@ namespace Rock.Client
         /// If the ModifiedByPersonAliasId is being set manually and should not be overwritten with current user when saved, set this value to true
         /// </summary>
         public bool ModifiedAuditValuesAlreadyUpdated { get; set; }
+
+        /// <summary />
+        public string Name { get; set; }
 
         /// <summary />
         public int? RetentionDuration { get; set; }
@@ -94,12 +100,14 @@ namespace Rock.Client
         {
             this.Id = source.Id;
             this.ChannelData = source.ChannelData;
-            this.ChannelMediumValueId = source.ChannelMediumValueId;
+            this.ChannelEntityId = source.ChannelEntityId;
+            this.ChannelTypeMediumValueId = source.ChannelTypeMediumValueId;
             this.ComponentEntityTypeId = source.ComponentEntityTypeId;
             this.ForeignGuid = source.ForeignGuid;
             this.ForeignKey = source.ForeignKey;
             this.InteractionEntityTypeId = source.InteractionEntityTypeId;
             this.ModifiedAuditValuesAlreadyUpdated = source.ModifiedAuditValuesAlreadyUpdated;
+            this.Name = source.Name;
             this.RetentionDuration = source.RetentionDuration;
             this.CreatedDateTime = source.CreatedDateTime;
             this.ModifiedDateTime = source.ModifiedDateTime;
@@ -117,7 +125,7 @@ namespace Rock.Client
     public partial class InteractionChannel : InteractionChannelEntity
     {
         /// <summary />
-        public DefinedValue ChannelMediumValue { get; set; }
+        public DefinedValue ChannelTypeMediumValue { get; set; }
 
         /// <summary />
         public EntityType ComponentEntityType { get; set; }

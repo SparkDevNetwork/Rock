@@ -70,9 +70,8 @@ namespace Rock.Model
         /// <value>
         /// A <see cref="System.Int32"/> representing the Id of the entity (object) that this interaction component is related to.
         /// </value>
-        [DataMember( IsRequired = true )]
-        [Required]
-        public int EntityId { get; set; }
+        [DataMember]
+        public int? EntityId { get; set; }
 
         /// <summary>
         /// Gets or sets the person alias identifier.
@@ -80,9 +79,8 @@ namespace Rock.Model
         /// <value>
         /// The person alias identifier.
         /// </value>
-        [DataMember( IsRequired = true )]
-        [Required]
-        public int PersonAliasId { get; set; }
+        [DataMember]
+        public int? PersonAliasId { get; set; }
 
         /// <summary>
         /// Gets or sets the Id of the <see cref="Rock.Model.InteractionSession"/> Session that that is associated with this Interaction.
@@ -100,7 +98,7 @@ namespace Rock.Model
         /// The interaction summary.
         /// </value>
         [DataMember]
-        [MaxLength( 200 )]
+        [MaxLength( 500 )]
         public string InteractionSummary { get; set; }
 
         /// <summary>
@@ -163,7 +161,7 @@ namespace Rock.Model
         /// </summary>
         public InteractionConfiguration()
         {
-            this.HasRequired( r => r.PersonAlias ).WithMany().HasForeignKey( r => r.PersonAliasId ).WillCascadeOnDelete( false );
+            this.HasOptional( r => r.PersonAlias ).WithMany().HasForeignKey( r => r.PersonAliasId ).WillCascadeOnDelete( false );
             this.HasRequired( r => r.InteractionComponent ).WithMany().HasForeignKey( r => r.InteractionComponentId ).WillCascadeOnDelete( false );
             this.HasOptional( r => r.InteractionSession ).WithMany( r => r.Interactions ).HasForeignKey( r => r.InteractionSessionId ).WillCascadeOnDelete( false );
         }

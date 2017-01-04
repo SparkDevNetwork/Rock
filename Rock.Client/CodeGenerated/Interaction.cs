@@ -35,7 +35,7 @@ namespace Rock.Client
         public int Id { get; set; }
 
         /// <summary />
-        public int EntityId { get; set; }
+        public int? EntityId { get; set; }
 
         /// <summary />
         public Guid? ForeignGuid { get; set; }
@@ -67,7 +67,7 @@ namespace Rock.Client
         public string Operation { get; set; }
 
         /// <summary />
-        public int PersonAliasId { get; set; }
+        public int? PersonAliasId { get; set; }
 
         /// <summary>
         /// Leave this as NULL to let Rock set this

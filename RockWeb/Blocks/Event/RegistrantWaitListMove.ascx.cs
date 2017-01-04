@@ -235,7 +235,7 @@ namespace RockWeb.Blocks.Event
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnSendEmail_Click( object sender, EventArgs e )
         {
-            var appRoot = Rock.Web.Cache.GlobalAttributesCache.Read().GetValue( "ExternalApplicationRoot" );
+            var appRoot = Rock.Web.Cache.GlobalAttributesCache.Read().GetValue( "PublicApplicationRoot" );
             int sendCount = 0;
 
             foreach ( RepeaterItem repeaterItem in rptRecipients.Items )

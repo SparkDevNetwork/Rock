@@ -40,7 +40,7 @@ namespace Rock.Model
     /// </summary>
     [Table( "Person" )]
     [DataContract]
-    public partial class Person : Model<Person>, IRockIndexable
+    public partial class Person : Model<Person>, IRockIndexable, IAnalyticHistorical
     {
         #region Constants
 
@@ -1030,6 +1030,10 @@ namespace Rock.Model
                 if (age > 0)
                 {
                     return age + (age == 1 ? " yr old " : " yrs old ");
+                }
+                else if ( age < -1 )
+                {
+                    return string.Empty;
                 }
             }
 
@@ -2714,6 +2718,68 @@ namespace Rock.Model
                 }
             }
 
+            return null;
+        }
+
+        /// <summary>
+        /// Returns the most ideal mailing location from among this person's families
+        /// </summary>
+        /// <param name="person">The person to find a mailing address for</param>
+        /// <param name="rockContext"></param>
+        /// <returns></returns>
+        public static Location GetMailingLocation( this Person person, RockContext rockContext = null )
+        {
+            // Get the mailing address from this person's giving group if there is one
+            if ( person.GivingGroup != null )
+            {
+                var mailingLocation = person.GivingGroup.GetBestMailingLocation();
+                if ( mailingLocation != null )
+                {
+                    return mailingLocation;
+                }
+            }
+
+            return person.GetFamilies( rockContext ).GetBestMailingLocation();
+        }
+
+        /// <summary>
+        /// Returns the most ideal mailing location from a single family
+        /// </summary>
+        /// <param name="group">The family to find addresses on</param>
+        /// <returns></returns>
+        private static Location GetBestMailingLocation( this Group group )
+        {
+            return GetBestMailingLocation( new List<Group> { group } );
+        }
+
+        /// <summary>
+        /// Returns the most ideal mailing location from among the selected family groups
+        /// </summary>
+        /// <param name="groups">The families to find addresses on</param>
+        /// <returns></returns>
+        private static Location GetBestMailingLocation( this IEnumerable<Group> groups )
+        {
+            if ( groups.Any() )
+            {
+                var homeAddressGuid = Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME.AsGuidOrNull();
+                var workAddressGuid = Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_WORK.AsGuidOrNull();
+                if ( homeAddressGuid.HasValue && workAddressGuid.HasValue )
+                {
+                    var homeAddressDv = DefinedValueCache.Read( homeAddressGuid.Value );
+                    var workAddressDv = DefinedValueCache.Read( workAddressGuid.Value );
+                    if ( homeAddressDv != null && workAddressDv != null )
+                    {
+                        // Get all available mailing locations, prioritizing mapped locations then home locations
+                        var mailingLocations = groups.SelectMany( x => x.GroupLocations )
+                            .Where( l => l.IsMailingLocation )
+                            .Where( l => l.GroupLocationTypeValueId == homeAddressDv.Id || l.GroupLocationTypeValueId == workAddressDv.Id )
+                            .OrderBy( l => l.IsMappedLocation ? 0 : 1 )
+                            .ThenBy( l => l.GroupLocationTypeValueId == homeAddressDv.Id ? 0 : 1 );
+
+                        return mailingLocations.Select( l => l.Location ).FirstOrDefault();
+                    }
+                }
+            }
             return null;
         }
 
