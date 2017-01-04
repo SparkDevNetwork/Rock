@@ -40,7 +40,7 @@ namespace Rock.Model
     /// </summary>
     [Table( "Person" )]
     [DataContract]
-    public partial class Person : Model<Person>, IRockIndexable
+    public partial class Person : Model<Person>, IRockIndexable, IAnalyticHistorical
     {
         #region Constants
 
