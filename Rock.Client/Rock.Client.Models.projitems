@@ -11,6 +11,22 @@
   <ItemGroup>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\AnalyticsDimAttendanceLocation.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\AnalyticsDimDate.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\AnalyticsDimFamilyCurrent.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\AnalyticsDimFamilyHeadOfHousehold.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\AnalyticsDimFamilyHistorical.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\AnalyticsDimFinancialAccount.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\AnalyticsDimFinancialBatch.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\AnalyticsDimFinancialTransactionType.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\AnalyticsDimPersonCurrent.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\AnalyticsDimPersonHistorical.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\AnalyticsFactAttendance.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\AnalyticsFactFinancialTransaction.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\AnalyticsSourceAttendance.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\AnalyticsSourceFamilyHistorical.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\AnalyticsSourceFinancialTransaction.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\AnalyticsSourcePersonHistorical.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\Attendance.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\AttendanceCode.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\Attribute.cs" />
@@ -19,6 +35,10 @@
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\Audit.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\AuditDetail.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\Auth.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\BackgroundCheck.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\BenevolenceRequest.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\BenevolenceRequestDocument.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\BenevolenceResult.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\BinaryFile.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\BinaryFileData.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\BinaryFileType.cs" />
@@ -35,6 +55,8 @@
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\ConnectionOpportunityCampus.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\ConnectionOpportunityConnectorGroup.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\ConnectionOpportunityGroup.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\ConnectionOpportunityGroupConfig.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\ConnectionOpportunityPlacementGroup.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\ConnectionRequest.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\ConnectionRequestActivity.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\ConnectionRequestWorkflow.cs" />
@@ -43,6 +65,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\ConnectionWorkflow.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\ContentChannel.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\ContentChannelItem.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\ContentChannelItemAssociation.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\ContentChannelType.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\DataView.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\DataViewFilter.cs" />
@@ -96,6 +119,11 @@
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\GroupTypeRole.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\History.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\HtmlContent.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\Interaction.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\InteractionChannel.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\InteractionComponent.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\InteractionDeviceType.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\InteractionSession.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\Layout.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\Location.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\LoginParameters.cs" />
@@ -103,9 +131,13 @@
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\Metaphone.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\Metric.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\MetricCategory.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\MetricPartition.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\MetricValue.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\MetricValuePartition.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\Note.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\NoteType.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\Notification.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\NotificationRecipient.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\Page.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\PageContext.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\PageRoute.cs" />
@@ -135,8 +167,12 @@
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\RestAction.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\RestController.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\Schedule.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\ScheduleCategoryExclusion.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\ServiceJob.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\ServiceLog.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\SignatureDocument.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\SignatureDocumentTemplate.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\SignatureDocumentType.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\Site.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\SiteDomain.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\SystemEmail.cs" />
@@ -155,24 +191,5 @@
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\WorkflowLog.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\WorkflowTrigger.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\WorkflowType.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\MetricValuePartition.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\BackgroundCheck.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\BenevolenceRequest.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\BenevolenceRequestDocument.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\BenevolenceResult.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\MetricPartition.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\ConnectionOpportunityGroupConfig.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\ConnectionOpportunityPlacementGroup.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\ContentChannelItemAssociation.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\Interaction.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\InteractionChannel.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\InteractionComponent.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\InteractionDeviceType.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\InteractionSession.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\Notification.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\NotificationRecipient.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\SignatureDocument.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\SignatureDocumentTemplate.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\SignatureDocumentType.cs" />
   </ItemGroup>
 </Project>

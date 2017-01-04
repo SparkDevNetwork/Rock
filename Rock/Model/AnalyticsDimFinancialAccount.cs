@@ -144,6 +144,8 @@ namespace Rock.Model
         /// The name of the account type based on the value of FinancialAccount.AccountTypeValueId
         /// </summary>
         /// <value>
+        /// The type of the account.
+        /// </value>
         [DataMember]
         public string AccountType { get; set; }
 
