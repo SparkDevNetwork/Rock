@@ -623,6 +623,12 @@
     <Compile Include="Model\AnalyticsSourceFinancialTransaction.cs" />
     <Compile Include="Model\Attendance.cs" />
     <Compile Include="Model\AttendanceCode.cs" />
+    <Compile Include="Model\CodeGenerated\AnalyticsDimFamilyCurrentService.cs" />
+    <Compile Include="Model\CodeGenerated\AnalyticsDimFamilyHeadOfHouseholdService.cs" />
+    <Compile Include="Model\CodeGenerated\AnalyticsDimFamilyHistoricalService.cs" />
+    <Compile Include="Model\CodeGenerated\AnalyticsFactAttendanceService.cs" />
+    <Compile Include="Model\CodeGenerated\AnalyticsSourceAttendanceService.cs" />
+    <Compile Include="Model\CodeGenerated\AnalyticsSourceFamilyHistoricalService.cs" />
     <Compile Include="Model\MetricService.Partial.cs" />
     <Compile Include="Model\AttendanceCodeService.Partial.cs" />
     <Compile Include="Model\AttendanceService.Partial.cs" />
