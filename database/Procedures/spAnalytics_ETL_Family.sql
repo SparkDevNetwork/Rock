@@ -92,7 +92,7 @@ BEGIN
             JOIN [DefinedValue] dv ON p.ConnectionStatusValueId = dv.Id
             WHERE gm.GroupId = g.Id
             ORDER BY dv.[Order]
-            ) [ConnectionStatus] -- ConnectionStatus of ìMost Connected family memberî (based on DefinedValue.Order where First is most connected)
+            ) [ConnectionStatus] -- ConnectionStatus of ‚ÄúMost Connected family member‚Äù (based on DefinedValue.Order where First is most connected)
         ,(
             SELECT CASE count(*)
                     WHEN 0
@@ -119,7 +119,7 @@ BEGIN
         ,hhpc.Id [HeadOfHouseholdPersonKey]
         ,(
             SELECT CASE max(convert(INT, CASE 
-                                WHEN av.ValueAsBoolean IS NULL
+     WHEN av.ValueAsBoolean IS NULL
                                     THEN 0
                                 ELSE av.ValueAsBoolean
                                 END))
