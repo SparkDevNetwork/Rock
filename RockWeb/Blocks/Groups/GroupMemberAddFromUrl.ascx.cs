@@ -94,14 +94,22 @@ namespace RockWeb.Blocks.Groups
                 Group group = null;
                 Guid personGuid = Guid.Empty;
                 GroupTypeRole groupMemberRole = null;
-                
-                // get group id from url
-                if ( Request["GroupId"] != null )
+
+                // get group from url
+                if ( Request["GroupId"] != null || Request["GroupGuid"] != null )
                 {
-                    int groupId = 0;
-                    if ( Int32.TryParse( Request["GroupId"], out groupId ) )
+                    if ( Request["GroupId"] != null )
                     {
-                        group = new GroupService( rockContext ).Queryable("GroupType,GroupType.Roles").Where(g => g.Id == groupId ).FirstOrDefault();
+                        int groupId = 0;
+                        if ( Int32.TryParse(Request["GroupId"], out groupId ) )
+                        {
+                            group = new GroupService( rockContext ).Queryable().Where( g => g.Id == groupId ).FirstOrDefault();
+                        }
+                    }
+                    else
+                    {
+                        Guid groupGuid = Request["GroupGuid"].AsGuid();
+                        group = new GroupService( rockContext ).Queryable().Where( g => g.Guid == groupGuid ).FirstOrDefault();
                     }
                 }
                 else
