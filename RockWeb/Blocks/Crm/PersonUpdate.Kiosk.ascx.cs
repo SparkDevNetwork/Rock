@@ -354,7 +354,7 @@ namespace RockWeb.Blocks.Crm
 
                 if ( receiptEmail != null )
                 {
-                    var appRoot = Rock.Web.Cache.GlobalAttributesCache.Read( rockContext ).GetValue( "ExternalApplicationRoot" );
+                    var appRoot = Rock.Web.Cache.GlobalAttributesCache.Read( rockContext ).GetValue( "PublicApplicationRoot" );
 
                     var recipients = new List<RecipientData>();
                     recipients.Add( new RecipientData( null, mergeFields ) );

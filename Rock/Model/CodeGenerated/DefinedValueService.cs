@@ -172,6 +172,12 @@ namespace Rock.Model
                 return false;
             }  
  
+            if ( new Service<InteractionChannel>( Context ).Queryable().Any( a => a.ChannelTypeMediumValueId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", DefinedValue.FriendlyTypeName, InteractionChannel.FriendlyTypeName );
+                return false;
+            }  
+ 
             if ( new Service<Location>( Context ).Queryable().Any( a => a.LocationTypeValueId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", DefinedValue.FriendlyTypeName, Location.FriendlyTypeName );

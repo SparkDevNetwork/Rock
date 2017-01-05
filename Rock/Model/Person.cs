@@ -40,7 +40,7 @@ namespace Rock.Model
     /// </summary>
     [Table( "Person" )]
     [DataContract]
-    public partial class Person : Model<Person>, IRockIndexable
+    public partial class Person : Model<Person>, IRockIndexable, IAnalyticHistorical
     {
         #region Constants
 
@@ -1030,6 +1030,10 @@ namespace Rock.Model
                 if (age > 0)
                 {
                     return age + (age == 1 ? " yr old " : " yrs old ");
+                }
+                else if ( age < -1 )
+                {
+                    return string.Empty;
                 }
             }
 

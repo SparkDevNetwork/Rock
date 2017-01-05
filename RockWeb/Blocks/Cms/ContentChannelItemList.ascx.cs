@@ -116,7 +116,7 @@ namespace RockWeb.Blocks.Cms
                     if ( contentChannel.ContentChannelType.IncludeTime )
                     {
                         gItems.Columns[2].Visible = true;
-                        gItems.Columns[3].Visible = isRange;
+                        gItems.Columns[3].Visible = isRange && GetAttributeValue( "ShowExpireColumn" ).AsBoolean();
                         gItems.Columns[4].Visible = false;
                         gItems.Columns[5].Visible = false;
                     }
@@ -125,7 +125,7 @@ namespace RockWeb.Blocks.Cms
                         gItems.Columns[2].Visible = false;
                         gItems.Columns[3].Visible = false;
                         gItems.Columns[4].Visible = true;
-                        gItems.Columns[5].Visible = isRange;
+                        gItems.Columns[5].Visible = isRange && GetAttributeValue( "ShowExpireColumn" ).AsBoolean();
                     }
 
                     gItems.Columns[6].Visible = !contentChannel.ContentChannelType.DisablePriority;
@@ -180,7 +180,6 @@ namespace RockWeb.Blocks.Cms
                 this.AddConfigurationUpdateTrigger( upnlContent );
 
                 // Show/hide columns based on block settings
-                gItems.Columns[5].Visible = GetAttributeValue( "ShowExpireColumn" ).AsBoolean();
                 gItems.Columns[7].Visible = GetAttributeValue( "ShowEventOccurrencesColumn" ).AsBoolean();
                 gItems.Columns[6].Visible = GetAttributeValue( "ShowPriorityColumn" ).AsBoolean();
                 

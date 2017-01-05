@@ -154,7 +154,14 @@ namespace Rock.Transactions
 
                     // lookup interactionSession, and create it if it doesn't exist
                     Guid sessionId = this.SessionId.AsGuid();
-                    int? interactionSessionId = interactionSessionService.Queryable().Where( a => a.DeviceTypeId == interactionDeviceType.Id && a.Guid == sessionId ).Select( a => (int?)a.Id ).FirstOrDefault();
+                    int? interactionSessionId = interactionSessionService.Queryable()
+                                                    .Where( 
+                                                        a => a.DeviceTypeId == interactionDeviceType.Id 
+                                                        && a.Guid == sessionId )
+                                                    .Select( a => (int?)a.Id )
+                                                    .FirstOrDefault();
+
+
                     if ( !interactionSessionId.HasValue )
                     {
                         var interactionSession = new InteractionSession();
@@ -169,12 +176,14 @@ namespace Rock.Transactions
                     int componentEntityTypeId = EntityTypeCache.Read<Rock.Model.Page>().Id;
                     string siteName = SiteCache.Read( SiteId ?? 1 ).Name;
 
-                    // lookup the interactionDeviceType, and create it if it doesn't exist
+                    // lookup the interaction channel, and create it if it doesn't exist
                     int channelMediumTypeValueId = DefinedValueCache.Read( SystemGuid.DefinedValue.INTERACTIONCHANNELTYPE_WEBSITE.AsGuid() ).Id;
 
                     // check that the site exists as a channel
                     var interactionChannel = interactionChannelService.Queryable()
-                                                        .Where( a => a.ChannelTypeMediumValueId == channelMediumTypeValueId && a.ChannelEntityId == this.SiteId )
+                                                        .Where( a => 
+                                                            a.ChannelTypeMediumValueId == channelMediumTypeValueId 
+                                                            && a.ChannelEntityId == this.SiteId )
                                                         .FirstOrDefault();
                     if ( interactionChannel == null )
                     {
@@ -189,7 +198,9 @@ namespace Rock.Transactions
 
                     // check that the page exists as a component
                     var interactionComponent = interactionComponentService.Queryable()
-                                                        .Where( a => a.EntityId == PageId && a.ChannelId == interactionChannel.Id )
+                                                        .Where( a => 
+                                                            a.EntityId == PageId 
+                                                            && a.ChannelId == interactionChannel.Id )
                                                         .FirstOrDefault();
                     if ( interactionComponent == null )
                     {

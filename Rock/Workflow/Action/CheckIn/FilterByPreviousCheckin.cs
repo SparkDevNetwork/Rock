@@ -50,9 +50,12 @@ namespace Rock.Workflow.Action.CheckIn
         public override bool Execute( RockContext rockContext, Model.WorkflowAction action, Object entity, out List<string> errorMessages )
         {
             var checkInState = GetCheckInState( entity, out errorMessages );
-            if ( checkInState != null && checkInState.CheckInType.TypeOfCheckin == TypeOfCheckin.Family && checkInState.CheckInType.PreventDuplicateCheckin )
+            if ( checkInState != null && checkInState.CheckInType.TypeOfCheckin == TypeOfCheckin.Family )
             {
+                bool configPrevents = checkInState.CheckInType.PreventDuplicateCheckin;
+
                 var family = checkInState.CheckIn.CurrentFamily;
+
                 if ( family != null )
                 {
                     var remove = GetAttributeValue( action, "Remove" ).AsBoolean();
@@ -87,42 +90,47 @@ namespace Rock.Workflow.Action.CheckIn
                             {
                                 foreach ( var groupType in person.GroupTypes.ToList() )
                                 {
-                                    attendedScheduleIds.ForEach( s => groupType.AvailableForSchedule.Remove( s ) );
-                                    if ( !groupType.AvailableForSchedule.Any() )
+                                    if ( configPrevents || groupType.GroupType.GetAttributeValue( "PreventDuplicateCheckin" ).AsBoolean() )
                                     {
-                                        person.GroupTypes.Remove( groupType );
-                                    }
-                                    else
-                                    {
-                                        foreach ( var group in groupType.Groups.ToList() )
-                                        {
-                                            attendedScheduleIds.ForEach( s => group.AvailableForSchedule.Remove( s ) );
-                                            if ( !group.AvailableForSchedule.Any() )
-                                            {
-                                                groupType.Groups.Remove( group );
-                                            }
-                                            else
-                                            {
-                                                foreach ( var location in group.Locations.ToList() )
-                                                {
-                                                    attendedScheduleIds.ForEach( s => location.AvailableForSchedule.Remove( s ) );
-                                                    if ( !location.AvailableForSchedule.Any() )
-                                                    {
-                                                        group.Locations.Remove( location );
-                                                    }
-                                                }
-                                                if ( group.Locations.Count == 0 )
-                                                {
-                                                    groupType.Groups.Remove( group );
-                                                }
-                                            }
-                                        }
-                                        if ( groupType.Groups.Count == 0 )
+                                        attendedScheduleIds.ForEach( s => groupType.AvailableForSchedule.Remove( s ) );
+
+                                        if ( !groupType.AvailableForSchedule.Any() )
                                         {
                                             person.GroupTypes.Remove( groupType );
                                         }
+                                        else
+                                        {
+                                            foreach ( var group in groupType.Groups.ToList() )
+                                            {
+                                                attendedScheduleIds.ForEach( s => group.AvailableForSchedule.Remove( s ) );
+                                                if ( !group.AvailableForSchedule.Any() )
+                                                {
+                                                    groupType.Groups.Remove( group );
+                                                }
+                                                else
+                                                {
+                                                    foreach ( var location in group.Locations.ToList() )
+                                                    {
+                                                        attendedScheduleIds.ForEach( s => location.AvailableForSchedule.Remove( s ) );
+                                                        if ( !location.AvailableForSchedule.Any() )
+                                                        {
+                                                            group.Locations.Remove( location );
+                                                        }
+                                                    }
+                                                    if ( group.Locations.Count == 0 )
+                                                    {
+                                                        groupType.Groups.Remove( group );
+                                                    }
+                                                }
+                                            }
+                                            if ( groupType.Groups.Count == 0 )
+                                            {
+                                                person.GroupTypes.Remove( groupType );
+                                            }
+                                        }
                                     }
                                 }
+
                                 if ( person.GroupTypes.Count == 0 )
                                 {
                                     family.People.Remove( person );

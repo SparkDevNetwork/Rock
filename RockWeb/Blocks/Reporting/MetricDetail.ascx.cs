@@ -267,7 +267,7 @@ Example: Let's say you have a DataView called 'Small Group Attendance for Last W
                 metricPartition.Order = 0;
                 metric.MetricPartitions.Add( metricPartition );
             }
-
+            
             metric.Title = tbTitle.Text;
             metric.Subtitle = tbSubtitle.Text;
             metric.Description = tbDescription.Text;
@@ -275,6 +275,7 @@ Example: Let's say you have a DataView called 'Small Group Attendance for Last W
             metric.SourceValueTypeId = ddlSourceType.SelectedValueAsId();
             metric.YAxisLabel = tbYAxisLabel.Text;
             metric.IsCumulative = cbIsCumulative.Checked;
+            metric.EnableAnalytics = cbEnableAnalytics.Checked;
 
             int sourceTypeDataView = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.METRIC_SOURCE_VALUE_TYPE_DATAVIEW.AsGuid() ).Id;
             int sourceTypeSQL = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.METRIC_SOURCE_VALUE_TYPE_SQL.AsGuid() ).Id;
@@ -407,6 +408,8 @@ Example: Let's say you have a DataView called 'Small Group Attendance for Last W
                 }
 
                 rockContext.SaveChanges();
+                
+                metricService.EnsureMetricAnalyticsViews();
 
                 // delete any orphaned Unnamed metric schedules
                 var metricIdSchedulesQry = metricService.Queryable().Select( a => a.ScheduleId );
@@ -514,6 +517,9 @@ Example: Let's say you have a DataView called 'Small Group Attendance for Last W
 
                 metricService.Delete( metric );
                 rockContext.SaveChanges();
+
+                // since we deleted the metric, sweep thru and make sure Metric Analytics Views are OK
+                metricService.EnsureMetricAnalyticsViews();
             }
 
             var qryParams = new Dictionary<string, string>();
@@ -695,6 +701,7 @@ Example: Let's say you have a DataView called 'Small Group Attendance for Last W
             ddlSourceType.SetValue( metric.SourceValueTypeId ?? manualSourceType );
             tbYAxisLabel.Text = metric.YAxisLabel;
             cbIsCumulative.Checked = metric.IsCumulative;
+            cbEnableAnalytics.Checked = metric.EnableAnalytics;
             ppMetricChampionPerson.SetValue( metric.MetricChampionPersonAlias != null ? metric.MetricChampionPersonAlias.Person : null );
             ppAdminPerson.SetValue( metric.AdminPersonAlias != null ? metric.AdminPersonAlias.Person : null );
             ceSourceSql.Text = metric.SourceSql;
