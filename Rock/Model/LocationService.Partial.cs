@@ -504,7 +504,7 @@ namespace Rock.Model
         UNION ALL
 
         SELECT [a].Id
-	    FROM [Location] [a]
+	FROM [Location] [a]
         INNER JOIN  CTE pcte ON pcte.Id = [a].[ParentLocationId]
         WHERE [a].[ParentLocationId] IS NOT NULL
 " : "";
