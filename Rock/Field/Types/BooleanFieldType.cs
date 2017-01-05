@@ -563,6 +563,20 @@ namespace Rock.Field.Types
             }
         }
 
+        /// <summary>
+        /// Gets the type of the attribute value field.
+        /// </summary>
+        /// <value>
+        /// The type of the attribute value field.
+        /// </value>
+        public override Type AttributeValueFieldType
+        {
+            get
+            {
+                return typeof( bool? );
+            }
+        }
+
         #endregion
 
     }
