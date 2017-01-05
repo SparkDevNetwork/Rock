@@ -36,6 +36,7 @@
                                     <asp:ListItem Text="Female" Value="Female" />
                                     <asp:ListItem Text="Unknown" Value="Unknown" />
                                 </Rock:RockCheckBoxList>
+                                <Rock:RockDropDownList ID="ddlRegistration" runat="server" Label="Registration" DataTextField="Name" DataValueField="Id" />
                                 <Rock:RockDropDownList ID="ddlSignedDocument" runat="server" Label="Signed Document" >
                                     <asp:ListItem Text="" Value="" />
                                     <asp:ListItem Text="Yes" Value="Yes" />

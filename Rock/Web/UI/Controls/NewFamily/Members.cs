@@ -46,6 +46,18 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Gets or sets a value indicating whether [require birthdate].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [require birthdate]; otherwise, <c>false</c>.
+        /// </value>
+        public bool RequireBirthdate
+        {
+            get { return ViewState["RequireBirthdate"] as bool? ?? false; }
+            set { ViewState["RequireBirthdate"] = value; }
+        }
+
+        /// <summary>
         /// Gets or sets a value indicating whether [require grade].
         /// </summary>
         /// <value>
@@ -178,6 +190,10 @@ namespace Rock.Web.UI.Controls
                 writer.Write( "Gender" );
                 writer.RenderEndTag();
 
+                if ( RequireBirthdate )
+                {
+                    writer.AddAttribute( HtmlTextWriterAttribute.Class, "required" );
+                }
                 writer.RenderBeginTag( HtmlTextWriterTag.Th );
                 writer.Write( "Birthdate" );
                 writer.RenderEndTag();

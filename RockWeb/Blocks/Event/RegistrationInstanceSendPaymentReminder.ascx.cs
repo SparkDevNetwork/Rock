@@ -129,7 +129,7 @@ namespace RockWeb.Blocks.Event
             gRegistrations.SelectedKeys.ToList().ForEach( r => registrationsSelected.Add( r.ToString().AsInteger() ) );
             if ( registrationsSelected.Any() )
             {
-                var appRoot = Rock.Web.Cache.GlobalAttributesCache.Read().GetValue( "ExternalApplicationRoot" );
+                var appRoot = Rock.Web.Cache.GlobalAttributesCache.Read().GetValue( "PublicApplicationRoot" );
                 
                 if ( _registrationInstance == null )
                 {

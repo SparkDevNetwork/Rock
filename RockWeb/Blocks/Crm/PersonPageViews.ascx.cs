@@ -165,6 +165,10 @@ namespace RockWeb.Blocks.Crm
                     {
                         lSessionDuration.Text = string.Format( "{0}h {1}m", duration.Hours, duration.Minutes );
                     }
+                    else if (duration.Minutes == 0 )
+                    {
+                        lSessionDuration.Text = " < 1m";
+                    }
                     else
                     {
                         lSessionDuration.Text = string.Format( "{0}m", duration.Minutes );

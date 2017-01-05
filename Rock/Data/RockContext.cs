@@ -115,6 +115,134 @@ namespace Rock.Data
         #region Models
 
         /// <summary>
+        /// Gets or sets the analytics dim attendance locations.
+        /// </summary>
+        /// <value>
+        /// The analytics dim attendance locations.
+        /// </value>
+        public DbSet<AnalyticsDimAttendanceLocation> AnalyticsDimAttendanceLocations { get; set; }
+        
+        /// <summary>
+        /// Gets or sets the analytics dim dates.
+        /// </summary>
+        /// <value>
+        /// The analytics dim dates.
+        /// </value>
+        public DbSet<AnalyticsDimDate> AnalyticsDimDates { get; set; }
+        
+        /// <summary>
+        /// Gets or sets the analytics dim family currents.
+        /// </summary>
+        /// <value>
+        /// The analytics dim family currents.
+        /// </value>
+        public DbSet<AnalyticsDimFamilyCurrent> AnalyticsDimFamilyCurrents { get; set; }
+
+        /// <summary>
+        /// Gets or sets the analytics dim family head of households.
+        /// </summary>
+        /// <value>
+        /// The analytics dim family head of households.
+        /// </value>
+        public DbSet<AnalyticsDimFamilyHeadOfHousehold> AnalyticsDimFamilyHeadOfHouseholds { get; set; }
+
+        /// <summary>
+        /// Gets or sets the analytics dim family historicals.
+        /// </summary>
+        /// <value>
+        /// The analytics dim family historicals.
+        /// </value>
+        public DbSet<AnalyticsDimFamilyHistorical> AnalyticsDimFamilyHistoricals { get; set; }
+        
+        /// <summary>
+        /// Gets or sets the analytics dim financial accounts.
+        /// </summary>
+        /// <value>
+        /// The analytics dim financial accounts.
+        /// </value>
+        public DbSet<AnalyticsDimFinancialAccount> AnalyticsDimFinancialAccounts { get; set; }
+
+        /// <summary>
+        /// Gets or sets the analytics dim financial batches.
+        /// </summary>
+        /// <value>
+        /// The analytics dim financial batches.
+        /// </value>
+        public DbSet<AnalyticsDimFinancialBatch> AnalyticsDimFinancialBatches { get; set; }
+
+        /// <summary>
+        /// Gets or sets the analytics dim financial transaction types.
+        /// </summary>
+        /// <value>
+        /// The analytics dim financial transaction types.
+        /// </value>
+        public DbSet<AnalyticsDimFinancialTransactionType> AnalyticsDimFinancialTransactionTypes { get; set; }
+
+        /// <summary>
+        /// Gets or sets the analytics dim person currents.
+        /// </summary>
+        /// <value>
+        /// The analytics dim person currents.
+        /// </value>
+        public DbSet<AnalyticsDimPersonCurrent> AnalyticsDimPersonCurrents { get; set; }
+
+        /// <summary>
+        /// Gets or sets the analytics dim person historicals.
+        /// </summary>
+        /// <value>
+        /// The analytics dim person historicals.
+        /// </value>
+        public DbSet<AnalyticsDimPersonHistorical> AnalyticsDimPersonHistoricals { get; set; }
+
+        /// <summary>
+        /// Gets or sets the analytics fact attendances.
+        /// </summary>
+        /// <value>
+        /// The analytics fact attendances.
+        /// </value>
+        public DbSet<AnalyticsFactAttendance> AnalyticsFactAttendances { get; set; }
+
+        /// <summary>
+        /// Gets or sets the analytics fact financial transactions.
+        /// </summary>
+        /// <value>
+        /// The analytics fact financial transactions.
+        /// </value>
+        public DbSet<AnalyticsFactFinancialTransaction> AnalyticsFactFinancialTransactions { get; set; }
+        
+        /// <summary>
+        /// Gets or sets the analytics source financial transactions.
+        /// </summary>
+        /// <value>
+        /// The analytics source financial transactions.
+        /// </value>
+        public DbSet<AnalyticsSourceFinancialTransaction> AnalyticsSourceFinancialTransactions { get; set; }
+
+        /// <summary>
+        /// Gets or sets the analytics source attendances.
+        /// </summary>
+        /// <value>
+        /// The analytics source attendances.
+        /// </value>
+        public DbSet<AnalyticsSourceAttendance> AnalyticsSourceAttendances { get; set; }
+
+        /// <summary>
+        /// Gets or sets the analytics source family historicals.
+        /// </summary>
+        /// <value>
+        /// The analytics source family historicals.
+        /// </value>
+        public DbSet<AnalyticsSourceFamilyHistorical> AnalyticsSourceFamilyHistoricals { get; set; }
+
+        /// <summary>
+        /// Gets or sets the analytics source person historicals.
+        /// </summary>
+        /// <value>
+        /// The analytics source person historicals.
+        /// </value>
+        public DbSet<AnalyticsSourcePersonHistorical> AnalyticsSourcePersonHistoricals { get; set; }
+
+        /// <summary>
         /// Gets or sets the attendances.
         /// </summary>
         /// <value>

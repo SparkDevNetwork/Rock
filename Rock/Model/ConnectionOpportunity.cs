@@ -33,7 +33,7 @@ namespace Rock.Model
     /// </summary>
     [Table( "ConnectionOpportunity" )]
     [DataContract]
-    public partial class ConnectionOpportunity : Model<ConnectionOpportunity>
+    public partial class ConnectionOpportunity : Model<ConnectionOpportunity>, IHasActiveFlag
     {
 
         #region Entity Properties

@@ -120,6 +120,7 @@ namespace Rock.Data
 	                FROM [AttributeValue] V
 	                INNER JOIN [Attribute] A ON A.[Id] = V.[AttributeId]
 	                WHERE ( A.[FieldTypeId] = @EntityTypeFieldTypeId OR A.[FieldTypeId] = @ComponentFieldTypeId	OR A.[FieldTypeId] = @ComponentsFieldTypeId )
+                    OPTION (RECOMPILE)
 
                 END
 ",
@@ -951,7 +952,7 @@ namespace Rock.Data
         {
             if ( !string.IsNullOrWhiteSpace( category ) )
             {
-                throw new Exception( "Attribute Category no longer supported by this helper function. You'll have to write special migration code yourself. Sorry!" );
+                throw new Exception( "Attribute Category no longer supported by this helper function. You'll have to write special migration code yourself." );
             }
 
             Migration.Sql( string.Format( @"
@@ -1028,7 +1029,7 @@ namespace Rock.Data
         {
             if ( !string.IsNullOrWhiteSpace( category ) )
             {
-                throw new Exception( "Attribute Category no longer supported by this helper function. You'll have to write special migration code yourself. Sorry!" );
+                throw new Exception( "Attribute Category no longer supported by this helper function. You'll have to write special migration code yourself." );
             }
 
             Migration.Sql( string.Format( @"
@@ -1099,7 +1100,7 @@ namespace Rock.Data
         {
             if ( !string.IsNullOrWhiteSpace( category ) )
             {
-                throw new Exception( "Attribute Category no longer supported by this helper function. You'll have to write special migration code yourself. Sorry!" );
+                throw new Exception( "Attribute Category no longer supported by this helper function. You'll have to write special migration code yourself." );
             }
 
             if ( string.IsNullOrWhiteSpace( key ) )

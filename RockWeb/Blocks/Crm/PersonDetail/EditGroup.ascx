@@ -90,7 +90,7 @@
                                             <%# Eval("FormattedAddress") %><br />
                                         </ItemTemplate>
                                         <EditItemTemplate>
-                                            <Rock:AddressControl ID="acAddress" runat="server" Required="true"/>
+                                            <Rock:AddressControl ID="acAddress" runat="server" Required="true" RequiredErrorMessage="Address is required"/>
                                         </EditItemTemplate>
                                     </Rock:RockTemplateField>
                                     <Rock:RockTemplateField HeaderText="Mailing" HeaderStyle-HorizontalAlign="Center" ItemStyle-HorizontalAlign="Center">
@@ -182,7 +182,7 @@
                             </div>
                             <div class="col-sm-4">
                                 <div class="well">
-                                    <Rock:DatePicker ID="dpNewPersonBirthDate" runat="server" Label="Birthdate" ValidationGroup="AddPerson"/>
+                                    <Rock:DatePicker ID="dpNewPersonBirthDate" runat="server" Label="Birthdate" ValidationGroup="AddPerson" AllowFutureDateSelection="False"/>
                                     <Rock:GradePicker ID="ddlGradePicker" runat="server" Label="Grade" ValidationGroup="AddPerson" UseAbbreviation="true" UseGradeOffsetAsValue="true" />
                                     <Rock:RockDropDownList ID="ddlNewPersonMaritalStatus" runat="server" DataTextField="Name" DataValueField="Id" RepeatDirection="Horizontal" Label="Marital Status"  ValidationGroup="AddPerson"/>
                                 </div>

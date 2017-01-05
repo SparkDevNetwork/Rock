@@ -109,6 +109,19 @@
     <Compile Include="Controllers\AttributesController.Partial.cs" />
     <Compile Include="Controllers\AuthController.cs" />
     <Compile Include="Controllers\BinaryFilesController.Partial.cs" />
+    <Compile Include="Controllers\CodeGenerated\AnalyticsDimFamilyCurrentsController.cs" />
+    <Compile Include="Controllers\CodeGenerated\AnalyticsDimFamilyHeadOfHouseholdsController.cs" />
+    <Compile Include="Controllers\CodeGenerated\AnalyticsDimFamilyHistoricalsController.cs" />
+    <Compile Include="Controllers\CodeGenerated\AnalyticsDimFinancialAccountsController.cs" />
+    <Compile Include="Controllers\CodeGenerated\AnalyticsDimFinancialBatchesController.cs" />
+    <Compile Include="Controllers\CodeGenerated\AnalyticsDimPersonCurrentsController.cs" />
+    <Compile Include="Controllers\CodeGenerated\AnalyticsDimPersonHistoricalsController.cs" />
+    <Compile Include="Controllers\CodeGenerated\AnalyticsFactAttendancesController.cs" />
+    <Compile Include="Controllers\CodeGenerated\AnalyticsFactFinancialTransactionsController.cs" />
+    <Compile Include="Controllers\CodeGenerated\AnalyticsSourceAttendancesController.cs" />
+    <Compile Include="Controllers\CodeGenerated\AnalyticsSourceFamilyHistoricalsController.cs" />
+    <Compile Include="Controllers\CodeGenerated\AnalyticsSourceFinancialTransactionsController.cs" />
+    <Compile Include="Controllers\CodeGenerated\AnalyticsSourcePersonHistoricalsController.cs" />
     <Compile Include="Controllers\CodeGenerated\ConnectionOpportunityGroupConfigsController.cs" />
     <Compile Include="Controllers\CodeGenerated\InteractionChannelsController.cs" />
     <Compile Include="Controllers\CodeGenerated\InteractionComponentsController.cs" />
@@ -117,6 +130,7 @@
     <Compile Include="Controllers\CodeGenerated\InteractionSessionsController.cs" />
     <Compile Include="Controllers\CodeGenerated\NotificationRecipientsController.cs" />
     <Compile Include="Controllers\CodeGenerated\NotificationsController.cs" />
+    <Compile Include="Controllers\CodeGenerated\ScheduleCategoryExclusionsController.cs" />
     <Compile Include="Controllers\CodeGenerated\SignatureDocumentsController.cs" />
     <Compile Include="Controllers\CodeGenerated\SignatureDocumentTemplatesController.cs" />
     <Compile Include="Controllers\BlocksController.Partial.cs" />

@@ -79,14 +79,16 @@ namespace Rock.Transactions
                     var template = registration.RegistrationInstance.RegistrationTemplate;
                     if ( template != null && !string.IsNullOrWhiteSpace( template.ConfirmationEmailTemplate ) )
                     {
-                        var mergeFields = new Dictionary<string, object>();
+                        var currentPersonOverride = ( registration.RegistrationInstance.ContactPersonAlias != null ) ? registration.RegistrationInstance.ContactPersonAlias.Person : null;
+                        var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( null, currentPersonOverride );
+
                         mergeFields.Add( "RegistrationInstance", registration.RegistrationInstance );
                         mergeFields.Add( "Registration", registration );
 
                         string from = template.ConfirmationFromEmail.ResolveMergeFields( mergeFields );
                         string fromName = template.ConfirmationFromName.ResolveMergeFields( mergeFields );
                         string subject = template.ConfirmationSubject.ResolveMergeFields( mergeFields );
-                        string message = template.ConfirmationEmailTemplate.ResolveMergeFields( mergeFields );
+                        string message = template.ConfirmationEmailTemplate.ResolveMergeFields( mergeFields, currentPersonOverride );
 
                         var recipients = new List<string> { registration.ConfirmationEmail };
                         Email.Send( from, fromName, subject, recipients, message, AppRoot, ThemeRoot );
