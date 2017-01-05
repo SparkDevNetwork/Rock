@@ -89,7 +89,7 @@ namespace Rock.Jobs
             // run integrity check
             if ( runIntegrityCheck ) {
                 string databaseName = new RockContext().Database.Connection.Database;
-                string integrityQuery = $"DBCC CHECKDB('{ databaseName }') WITH NO_INFOMSGS";
+                string integrityQuery = $"DBCC CHECKDB('{ databaseName }',NOINDEX) WITH PHYSICAL_ONLY, NO_INFOMSGS";
 
                 stopwatch = Stopwatch.StartNew();
                 int errors = DbService.ExecuteCommand( integrityQuery, System.Data.CommandType.Text, null, commandTimeout );
@@ -141,7 +141,7 @@ namespace Rock.Jobs
                 // update statistics
                 if ( runStatisticsUpdate )
                 {
-                    string statisticsQuery = "EXEC sp_updatestats";
+                    string statisticsQuery = "EXEC sp_MSForEachtable 'UPDATE STATISTICS ?'";
 
                     stopwatch = Stopwatch.StartNew();
                     DbService.ExecuteCommand( statisticsQuery, System.Data.CommandType.Text, null, commandTimeout );
