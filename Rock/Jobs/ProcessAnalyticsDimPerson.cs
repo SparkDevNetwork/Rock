@@ -35,7 +35,7 @@ namespace Rock.Jobs
     /// </summary>
     /// <seealso cref="Quartz.IJob" />
     [DisallowConcurrentExecution]
-    [IntegerField( "Command Timeout", "Maximum amount of time (in seconds) to wait for the SQL Query to complete. Leave blank to use the SQL default (30 seconds). However, it could take several minutes, so you might want to set it at 600 (10 minutes) or higher", false, 10 * 60, "General", 1, "CommandTimeout" )]
+    [IntegerField( "Command Timeout", "Maximum amount of time (in seconds) to wait for the SQL Query to complete. Leave blank to use the default for this job (1200 seconds). However, it could take several minutes, so you might want to set it at 1200 (20 minutes) or higher", false, 20 * 60, "General", 1, "CommandTimeout" )]
     [BooleanField( "Save SQL for Debug", "Save the SQL that is used in this job to App_Data\\Logs", false, "Advanced", 2, "SaveSQLForDebug" )]
     public class ProcessAnalyticsDimPerson : IJob
     {
@@ -127,8 +127,8 @@ namespace Rock.Jobs
         {
             JobDataMap dataMap = context.JobDetail.JobDataMap;
 
-            // run the populateETLScript
-            _commandTimeout = dataMap.GetString( "CommandTimeout" ).AsIntegerOrNull();
+            // get the configured timeout, or default to 20 minutes if it is blank
+            _commandTimeout = dataMap.GetString( "CommandTimeout" ).AsIntegerOrNull() ?? 1200;
 
             List<EntityField> analyticsSourcePersonHistoricalFields = EntityHelper.GetEntityFields( typeof( Rock.Model.AnalyticsSourcePersonHistorical ), false, false );
 
