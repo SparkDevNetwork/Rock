@@ -10,7 +10,7 @@
 <asp:UpdatePanel ID="upDetail" runat="server">
     <ContentTemplate>
               
-        <asp:Panel ID="pnlDetails" CssClass="panel panel-block" runat="server" Visible="false">
+        <asp:Panel ID="pnlDetails" CssClass="panel panel-block" runat="server" >
             <asp:HiddenField ID="hfWorkflowTypeId" runat="server" />
 
             <div class="panel-heading">
