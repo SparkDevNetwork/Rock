@@ -8,7 +8,7 @@
         </div>
     {% endif %}
     <div class="col-md-8">
-        <h2 class="margin-t-none"><i class='{{Opportunity.IconCssClass}}'></i> {{ Opportunity.Name }}</h2>
+        <h2 class="margin-t-none"><i class='{{ Opportunity.IconCssClass }}'></i> {{ Opportunity.Name }}</h2>
         {{ Opportunity.Description }}
 
         <h4>Opportunity Details:</h4>
@@ -25,7 +25,3 @@
 
     </div>
 </div>
-
-
-
-	
