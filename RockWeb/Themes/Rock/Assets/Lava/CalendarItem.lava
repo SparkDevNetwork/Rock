@@ -63,7 +63,7 @@
       <ul class="list-unstyled">
         {% for scheduledDate in scheduledDates %}
         <li>
-          {{  scheduledDate | Date:'dddd, MMMM d, yyyy @ h:mm tt' }}
+          {{ scheduledDate | Date:'dddd, MMMM d, yyyy @ h:mm tt' }}
         </li>
         {% endfor %}
       </ul>
