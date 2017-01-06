@@ -31,6 +31,8 @@ namespace RockWeb.Plugins.church_ccv.Reporting
 
     [IntegerField( "AttendanceMetricCategoryId", Category = "CustomSetting" )]
     [IntegerField( "HeadcountsMetricCategoryId", Category = "CustomSetting" )]
+    [SchedulesField( "Schedules", Category = "CustomSetting" )]
+    [TextField( "GroupIds", Category = "CustomSetting" )]
     public partial class AttendanceSpreadSheetTool : RockBlockCustomSettings
     {
         #region Base Control Methods
@@ -77,29 +79,12 @@ namespace RockWeb.Plugins.church_ccv.Reporting
                 lastSundayDate = lastSundayDate.AddDays( -7 );
             }
 
-            var scheduleIdList = this.GetBlockUserPreference( "ScheduleIds" ).Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ).AsIntegerList();
-            spSchedules.SetValues( scheduleIdList );
-
-            var formatString = "dddd MMM d, yyyy";
+            var formatString = "MMM d, yyyy";
             ddlSundayDate.Items.Clear();
             while ( lastSundayDate > RockDateTime.Today.AddMonths( -6 ) )
             {
-                ddlSundayDate.Items.Add( new ListItem( lastSundayDate.ToString( formatString ), lastSundayDate.ToString() ) );
+                ddlSundayDate.Items.Add( new ListItem( string.Format("{0} - {1}", lastSundayDate.AddDays(-1).ToString( formatString ), lastSundayDate.ToString( formatString )), lastSundayDate.ToString() ) );
                 lastSundayDate = lastSundayDate.AddDays( -7 );
-            }
-
-            var groupIdList = this.GetBlockUserPreference( "GroupIds" ).Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ).ToList();
-
-            // if no groups are selected, default to showing all of them
-            var selectAll = groupIdList.Count == 0;
-
-            var checkboxListControls = rptGroupTypes.ControlsOfTypeRecursive<RockCheckBoxList>();
-            foreach ( var cblGroup in checkboxListControls )
-            {
-                foreach ( ListItem item in cblGroup.Items )
-                {
-                    item.Selected = selectAll || groupIdList.Contains( item.Value );
-                }
             }
 
             BindCheckinAttendanceGrid();
@@ -140,6 +125,24 @@ namespace RockWeb.Plugins.church_ccv.Reporting
 
             mpAttendanceMetric.SetValue( this.GetAttributeValue( "AttendanceMetricCategoryId" ).AsIntegerOrNull() );
             mpHeadcountsMetric.SetValue( this.GetAttributeValue( "HeadcountsMetricCategoryId" ).AsIntegerOrNull() );
+
+            var scheduleService = new ScheduleService( rockContext );
+            var selectedSchedules = scheduleService.GetByGuids( this.GetAttributeValue( "Schedules" ).SplitDelimitedValues().AsGuidList() );
+            spSchedules.SetValues( selectedSchedules );
+
+            var groupIdList = this.GetAttributeValue( "GroupIds" ).Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ).ToList();
+
+            // if no groups are selected, default to showing all of them
+            var selectAll = groupIdList.Count == 0;
+
+            var checkboxListControls = rptGroupTypes.ControlsOfTypeRecursive<RockCheckBoxList>();
+            foreach ( var cblGroup in checkboxListControls )
+            {
+                foreach ( ListItem item in cblGroup.Items )
+                {
+                    item.Selected = selectAll || groupIdList.Contains( item.Value );
+                }
+            }
         }
 
         /// <summary>
@@ -205,12 +208,7 @@ namespace RockWeb.Plugins.church_ccv.Reporting
         /// <returns></returns>
         private List<int> GetSelectedGroupIds()
         {
-            var selectedGroupIds = new List<int>();
-            var checkboxListControls = rptGroupTypes.ControlsOfTypeRecursive<RockCheckBoxList>();
-            foreach ( var cblGroup in checkboxListControls )
-            {
-                selectedGroupIds.AddRange( cblGroup.SelectedValuesAsInt );
-            }
+            var selectedGroupIds = this.GetAttributeValue( "GroupIds" ).Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ).ToList().AsIntegerList();
 
             return selectedGroupIds;
         }
@@ -371,7 +369,10 @@ namespace RockWeb.Plugins.church_ccv.Reporting
 
         private List<int> GetSelectedScheduleIds()
         {
-            return spSchedules.SelectedValuesAsInt().ToList();
+            var scheduleService = new ScheduleService( new RockContext() );
+            var selectedSchedules = scheduleService.GetByGuids( this.GetAttributeValue( "Schedules" ).SplitDelimitedValues().AsGuidList() );
+
+            return selectedSchedules.Select( a => a.Id ).ToList();
         }
 
         /// <summary>
@@ -468,10 +469,6 @@ namespace RockWeb.Plugins.church_ccv.Reporting
 
             // clear out any existing schedule columns and add the ones that match the current filter setting
             gCheckinAttendanceExport.Columns.Clear();
-            if (cbShowSortKey.Checked)
-            {
-                gCheckinAttendanceExport.Columns.Add( new RockBoundField { DataField = "SortKey", HeaderText = "SortKey" } );
-            }
 
             gCheckinAttendanceExport.Columns.Add( new RockBoundField { DataField = "GroupType", HeaderText = "Area" } );
             gCheckinAttendanceExport.Columns.Add( new RockBoundField { DataField = "GroupName", HeaderText = "Worship" } );
@@ -853,10 +850,6 @@ namespace RockWeb.Plugins.church_ccv.Reporting
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnUpdate_Click( object sender, EventArgs e )
         {
-            var selectedGroupIds = GetSelectedGroupIds();
-            this.SetBlockUserPreference( "GroupIds", selectedGroupIds.AsDelimited( "," ), true );
-            this.SetBlockUserPreference( "ScheduleIds", spSchedules.SelectedValues.ToList().AsDelimited( "," ), true );
-
             BindHeadcountsGrid();
             BindCheckinAttendanceGrid();
         }
@@ -875,6 +868,13 @@ namespace RockWeb.Plugins.church_ccv.Reporting
             this.SetAttributeValue( "Campuses", cblCampuses.SelectedValues.AsDelimited( "," ) );
             this.SetAttributeValue( "AttendanceMetricCategoryId", mpAttendanceMetric.SelectedValue );
             this.SetAttributeValue( "HeadcountsMetricCategoryId", mpHeadcountsMetric.SelectedValue );
+            var selectedScheduleIds = spSchedules.SelectedValuesAsInt().ToList();
+            var selectedScheduleGuids = new ScheduleService( new RockContext() ).GetByIds( selectedScheduleIds ).Select( a => a.Guid ).ToList();
+            this.SetAttributeValue( "Schedules", selectedScheduleGuids.AsDelimited(",") );
+
+            var selectedGroupIds = GetSelectedGroupIds();
+            this.SetAttributeValue( "GroupIds", selectedGroupIds.AsDelimited( "," ) );
+
             SaveAttributeValues();
 
             this.Block_BlockUpdated( sender, e );

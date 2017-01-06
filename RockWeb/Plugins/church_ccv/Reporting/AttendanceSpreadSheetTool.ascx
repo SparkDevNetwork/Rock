@@ -16,29 +16,8 @@
 
                 <div class="grid ">
                     <div class="hidden-print">
-                        <Rock:GridFilter ID="gfList" runat="server" OnApplyFilterClick="btnUpdate_Click">
-                            <asp:Panel ID="pnlCustomLayout" runat="server">
-                                <Rock:RockDropDownList ID="ddlSundayDate" runat="server" Label="Sunday Date" />
-                                <Rock:SchedulePicker ID="spSchedules" runat="server" Label="Schedules" AllowMultiSelect="true" />
 
-                                <asp:Panel ID="pnlGroups" runat="server">
-                                    <h4 class="js-checkbox-selector cursor-pointer">Groups</h4>
-                                    <hr class="margin-t-none" />
-                                    <ul class="list-unstyled js-group-checkboxes group-checkboxes">
-
-                                        <asp:Repeater ID="rptGroupTypes" runat="server" OnItemDataBound="rptGroupTypes_ItemDataBound">
-                                            <ItemTemplate>
-                                            </ItemTemplate>
-                                        </asp:Repeater>
-
-                                    </ul>
-                                </asp:Panel>
-
-                            </asp:Panel>
-
-                        </Rock:GridFilter>
-
-
+                        <Rock:RockDropDownList ID="ddlSundayDate" runat="server" Label="Weekend" />
                         <Rock:RockCheckBox ID="cbShowServiceTimeColumns" runat="server" Text="Show Service Time Columns" Checked="true" />
                         <Rock:RockCheckBox ID="cbShowTotalColumns" runat="server" Text="Show Totals Columns" Checked="true" />
                         <Rock:RockControlWrapper ID="rcwCheckinAreaOptions" runat="server" Label="Checkin Area Options">
@@ -46,15 +25,13 @@
                             <Rock:RockRadioButton ID="rbShowOnlyVolunteerAttendance" GroupName="checkinareaoptions" runat="server" Text="Show only 'Volunteer -' groups" Checked="false" />
                             <Rock:RockRadioButton ID="rbHideVolunteerAttendance" GroupName="checkinareaoptions" runat="server" Text="Hide 'Volunteer -' groups" Checked="false" />
                         </Rock:RockControlWrapper>
-                        <Rock:RockCheckBox ID="cbShowSortKey" runat="server" Text="Show Sort Key" Checked="false" />
                         <asp:LinkButton ID="btnUpdate" runat="server" CssClass="btn btn-sm btn-primary" Text="Update" OnClick="btnUpdate_Click" />
-
                     </div>
 
                 <h2>
                     <asp:Literal ID="lSundayDate" runat="server" /></h2>
                 <h3>Headcounts Export</h3>
-                <Rock:Grid ID="gHeadcountsExport" runat="server" AllowSorting="false" AllowPaging="false" ExportFilename="HeadcountsExport">
+                <Rock:Grid ID="gHeadcountsExport" runat="server" AllowSorting="false" AllowPaging="false" ExportFilename="HeadcountsExport" ExportSource="ColumnOutput">
                     <Columns>
                     </Columns>
                 </Rock:Grid>
@@ -62,7 +39,7 @@
 
                 <h3>Attendance Export (Checkin)</h3>
 
-                <Rock:Grid ID="gCheckinAttendanceExport" runat="server" AllowSorting="false" AllowPaging="false" ExportFilename="CheckInExport">
+                <Rock:Grid ID="gCheckinAttendanceExport" runat="server" AllowSorting="false" AllowPaging="false" ExportFilename="CheckInExport" ExportSource="ColumnOutput">
                     <Columns>
                     </Columns>
                 </Rock:Grid>
@@ -83,6 +60,22 @@
                         Help="The campuses to display attendance for. Leave blank to not filter by campus." />
 
                     <Rock:RockCheckBoxList ID="cblAttendanceTypes" runat="server" Label="Attendance Types" Help="Select the Attendance Types to determine which Groups will be shown." Required="false" ValidationGroup="vgConfigure" />
+
+                    <Rock:SchedulePicker ID="spSchedules" runat="server" Label="Schedules" AllowMultiSelect="true" />
+
+                    <asp:Panel ID="pnlGroups" runat="server">
+                        <h4 class="js-checkbox-selector cursor-pointer">Groups</h4>
+                        <hr class="margin-t-none" />
+                        <ul class="list-unstyled js-group-checkboxes group-checkboxes">
+
+                            <asp:Repeater ID="rptGroupTypes" runat="server" OnItemDataBound="rptGroupTypes_ItemDataBound">
+                                <ItemTemplate>
+                                </ItemTemplate>
+                            </asp:Repeater>
+
+                        </ul>
+                    </asp:Panel>
+
                 </Content>
             </Rock:ModalDialog>
         </asp:Panel>
