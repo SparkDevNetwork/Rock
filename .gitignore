@@ -24,7 +24,12 @@ StyleCop.Cache
 [Oo]bj/
 RockWeb/Cache/*
 RockWeb/App_Data/PackageStaging
+RockWeb/Bin/*
 /scaffolding.config
 *.sln.GhostDoc.xml
 
 Packages/*
+
+# javascript deps
+node_modules
+*bundle.js
