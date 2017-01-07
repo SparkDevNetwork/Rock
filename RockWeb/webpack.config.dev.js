@@ -1,13 +1,18 @@
 const webpack = require("webpack");
 const path = require("path");
+// const NpmInstallPlugin = require("npm-install-webpack-plugin");
+const { getIfUtils, removeEmpty } = require("webpack-config-utils");
 
-process.env.NODE_ENV = "development";
+if (!process.env.NODE_ENV) process.env.NODE_ENV = "development";
+const { ifProduction, ifNotProduction } = getIfUtils(process.env.NODE_ENV);
+
 module.exports = {
   devtool: "cheap-module-source-map",
   performance: {
     hints: false, 
   },
   entry: [
+    "react-hot-loader/patch",
     "./RockWeb/Themes/Rock/Scripts/index.js",
   ],
   output: {
@@ -18,36 +23,40 @@ module.exports = {
   module: {
     rules: [
       {
+        enforce: "pre",
+        test: /\.(js)$/,
+        loader: "eslint-loader",
+      },
+      {
         test: /\.(js)$/,
         loader: "babel-loader",
         options: {
-          babelrc: false,
-          presets: [
-            "es2015",
-            "stage-0",
-            "react",
-          ],
           cacheDirectory: true,
-          plugins: [
-            "react-hot-loader/babel",
-          ]
         }
       },
     ]
   },
-  plugins: [
+  plugins: removeEmpty([
     new webpack.optimize.OccurrenceOrderPlugin(),
-    new webpack.HotModuleReplacementPlugin(),
+    ifProduction(new webpack.optimize.DedupePlugin()),
+    ifProduction(new webpack.optimize.UglifyJsPlugin({
+      compress: {
+        screw_ie8: true,
+        warnings: false,
+      }
+    })),
+    ifNotProduction(new webpack.HotModuleReplacementPlugin()),
+    // ifNotProduction(new NpmInstallPlugin()),
     new webpack.NoErrorsPlugin(),
     new webpack.NamedModulesPlugin(),
-  ],
+  ]),
   devServer: {
-    clientLogLevel: "none",
+    // clientLogLevel: "none",
     compress: true,
     inline: true,
     publicPath: "http://localhost:8080/RockWeb/Themes/Rock/",
     hot: true,
-    quiet: true,
+    // quiet: true,
     headers: {
       "Access-Control-Allow-Origin": "http://localhost:6229",
       "Access-Control-Allow-Credentials": "true",

@@ -1,21 +1,20 @@
-import "react-hot-loader/patch";
-import React from "react";
-import ReactDOM from "react-dom";
+import { render } from "react-dom";
 import { AppContainer } from "react-hot-loader";
 
 import App from "./Hello";
 
-ReactDOM.render(
+render(
   <AppContainer><App /></AppContainer>,
-  document.getElementById("react-root")
+  document.getElementById("react-root"),
 );
 
 if (module.hot) {
   module.hot.accept("./Hello", () => {
+    // eslint-disable-next-line
     const NextApp = require("./Hello").default;
-    ReactDOM.render(
+    render(
       <AppContainer><NextApp /></AppContainer>,
-      document.getElementById("react-root")
+      document.getElementById("react-root"),
     );
   });
 }
