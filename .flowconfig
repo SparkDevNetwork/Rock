@@ -1,0 +1,6 @@
+[ignore]
+.*/node_modules/.*
+.*/libs/.*
+.*/__tests__/.*
+.*/__stories__/.*
+.*/RockWeb/Scripts/.*
