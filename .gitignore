@@ -33,3 +33,5 @@ com.centralaz.*/bin/Release/*/*.*
 *.sln.GhostDoc.xml
 
 Packages/*
+
+appveyor.yml
