@@ -93,7 +93,7 @@ matrix:
 
 # test
 test:
-	assemblies:
+  assemblies:
     - Rock.Tests\**\*.dll
 
 # IIS artifact configuration
