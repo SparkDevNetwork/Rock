@@ -1,5 +1,21 @@
 ﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="SpiritualGiftTest.ascx.cs" Inherits="Rockweb.Plugins.com_centralaz.SpiritualGifts.SpiritualGiftTest" ViewStateMode="Enabled" EnableViewState="true" %>
 
+<script>
+
+    /* This function is called after post back to animate scroll to the proper element 
+    * if the user just clicked an area/group.
+    */
+    var AfterPostBackScrollToTop = function ()
+    {
+        $('html, body').animate({
+            scrollTop: $('.js-gift-test').offset().top + 'px'
+        }, 'fast' );
+    };
+
+    Sys.WebForms.PageRequestManager.getInstance().add_endRequest(AfterPostBackScrollToTop);
+
+</script>
+
 <asp:UpdatePanel ID="upnlContent" runat="server">
     <ContentTemplate>
         <Rock:NotificationBox ID="nbError" runat="server" Visible="false" NotificationBoxType="Danger">You must be signed in to take the test.</Rock:NotificationBox>
@@ -19,10 +35,11 @@
         </asp:Panel>
 
         <asp:Panel ID="pnlQuestions" CssClass="panel panel-block" runat="server">
+
             <div class="panel-heading">
                 <h1 class="panel-title margin-t-sm"><i class="fa fa-bar-chart"></i>Spiritual Gift Test</h1>
             </div>
-            <div class="panel-body">
+            <div class="panel-body js-gift-test">
                 <asp:HiddenField ID="hfStartIndex" runat="server" />
                 <asp:HiddenField ID="hfEndIndex" runat="server" />
 
@@ -30,7 +47,7 @@
                     <asp:Literal ID="lProgress" runat="server" />
                 </h2>
                 <asp:Panel ID="pnlRegistrantProgressBar" runat="server">
-                    <div class="progress">
+                    <div class="progress ">
                         <div class="progress-bar" role="progressbar" aria-valuenow="<%=this.PercentComplete%>" aria-valuemin="0" aria-valuemax="100" style="width: <%=this.PercentComplete%>%;">
                             <span class="sr-only"><%=this.PercentComplete%>% Complete</span>
                         </div>
@@ -67,7 +84,7 @@
 
                 </div>
 
-                <div class="disc-attribution">
+                <div class="disc-attribution margin-t-xl">
                     <small>Spiritual Gifts test courtesy of Jackson Snyder at <a href="http://positivepublications.com/">positivepublications.com/</a>.</small>
                 </div>
             </div>
