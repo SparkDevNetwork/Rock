@@ -1,0 +1,14 @@
+{
+    "version": "0.1.0",
+    "command": "gulp",
+    "fileLocation": ["relative", "${workspaceRoot}./Dev Tools/Themes/gulpfile.js"],
+    "isShellCommand": true,
+    "tasks": [
+        {
+            "taskName": "default",
+            "isBuildCommand": true,
+            "showOutput": "always",
+            "isWatching": true
+        }
+    ]
+}
