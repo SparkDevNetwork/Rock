@@ -7,7 +7,6 @@ IF EXISTS (
     DROP PROCEDURE [dbo].spAnalytics_ETL_Attendance
 GO
 
-
 -- EXECUTE [dbo].[spAnalytics_ETL_Attendance] 
 CREATE PROCEDURE [dbo].spAnalytics_ETL_Attendance
 AS
