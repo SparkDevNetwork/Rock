@@ -26,6 +26,12 @@
         base.OnInit( e );
 
         lLogoSvg.Text = System.IO.File.ReadAllText( HttpContext.Current.Request.MapPath("~/Assets/Images/rock-logo.svg") );
+
+        #if DEBUG
+            lReactBundle.Text = "http://localhost:8080/RockWeb/bundle.js";
+        #else
+            lReactBundle.Text = ResolveRockUrl("~/bundle.js");
+        #endif
     }
 
 </script>
@@ -183,6 +189,7 @@
             });
         });
     </script>
+    <script type="text/javascript" src='<asp:Literal runat="server" Id="lReactBundle" /> '></script>
 
 </body>
 

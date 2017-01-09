@@ -1,20 +1,11 @@
 import Bootstrap from "./Bootstrap";
 
-let pageId;
 let app;
 const load = () => {
-  // this layout or version of rock doesn't support react pages
-  if (!pageId && !document.getElementById("__page_id__")) {
-    console.warn("no page id found to determined blocks to load");
-    return;
-  }
   
-  // parse initial state from server for block info
-  if (!pageId) {
-    const el = document.getElementById("__page_id__");
-    pageId = JSON.parse(el.innerText);
-  }
-  
+  if (!Rock) return;
+
+  const pageId = Rock.settings.get("pageId");
   // bootstrap the page
   if (!app) app = new Bootstrap({ pageId });
 };
