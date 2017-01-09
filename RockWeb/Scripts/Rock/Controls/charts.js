@@ -276,6 +276,10 @@
                                     var timeParts = date.toTimeString().split(':');
                                     tooltipText += ' ' + timeParts[0] + ':' + timeParts[1];
                                 }
+
+                                if (item.series.chartData[item.dataIndex].MetricTitle) {
+                                    tooltipText = item.series.chartData[item.dataIndex].MetricTitle;
+                                }
                             }
 
                             if (tooltipText) {
@@ -287,7 +291,7 @@
                             }
 
                             if (item.series.chartData) {
-                                var pointValue = item.series.chartData[item.dataIndex].YValue || item.series.chartData[item.dataIndex].YValueTotal || '';
+                                var pointValue = item.series.chartData[item.dataIndex].YValueFormatted || item.series.chartData[item.dataIndex].YValue || item.series.chartData[item.dataIndex].YValueTotal || '';
 
                                 tooltipText += ': ' + pointValue;
 

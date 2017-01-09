@@ -349,6 +349,7 @@ namespace RockWeb.Blocks.Groups
             rFilter.SaveUserPreference( MakeKeyUniqueToGroup( "Status" ), "Status", cblGroupMemberStatus.SelectedValues.AsDelimited( ";" ) );
             rFilter.SaveUserPreference( MakeKeyUniqueToGroup( "Campus" ), "Campus", cpCampusFilter.SelectedCampusId.ToString() );
             rFilter.SaveUserPreference( MakeKeyUniqueToGroup( "Gender" ), "Gender", cblGenderFilter.SelectedValues.AsDelimited( ";" ) );
+            rFilter.SaveUserPreference( MakeKeyUniqueToGroup( "Registration" ), "Registration", ddlRegistration.SelectedValue );
             rFilter.SaveUserPreference( MakeKeyUniqueToGroup( "Signed Document" ), "Signed Document", ddlSignedDocument.SelectedValue );
 
             if ( AvailableAttributes != null )
@@ -419,19 +420,52 @@ namespace RockWeb.Blocks.Groups
             {
                 e.Value = ResolveValues( e.Value, cblGenderFilter );
             }
+
             else if ( e.Key == MakeKeyUniqueToGroup( "Campus" ) )
             {
                 var campusId = e.Value.AsIntegerOrNull();
                 if ( campusId.HasValue )
                 {
                     var campusCache = CampusCache.Read( campusId.Value );
-                    e.Value = campusCache.Name;
+                    if ( campusCache != null )
+                    {
+                        e.Value = campusCache.Name;
+                    }
+                    else
+                    {
+                        e.Value = string.Empty;
+                    }
                 }
                 else
                 {
-                    e.Value = null;
+                    e.Value = string.Empty;
                 }
             }
+
+            else if ( e.Key == MakeKeyUniqueToGroup( "Registration" ) )
+            {
+                var instanceId = e.Value.AsIntegerOrNull();
+                if ( instanceId.HasValue )
+                {
+                    using ( var rockContext = new RockContext() )
+                    {
+                        var instance = new RegistrationInstanceService( rockContext ).Get( instanceId.Value );
+                        if ( instance != null )
+                        {
+                            e.Value = instance.ToString();
+                        }
+                        else
+                        {
+                            e.Value = string.Empty;
+                        }
+                    }
+                }
+                else
+                {
+                    e.Value = string.Empty;
+                }
+            }
+            
             else if ( e.Key == MakeKeyUniqueToGroup( "Signed Document") )
             {
                 return;
@@ -529,10 +563,21 @@ namespace RockWeb.Blocks.Groups
             {
                 cblRole.DataSource = _group.GroupType.Roles.OrderBy( a => a.Order ).ToList();
                 cblRole.DataBind();
+
+                using ( var rockContext = new RockContext() )
+                {
+                    ddlRegistration.DataSource = new RegistrationInstanceService( rockContext )
+                        .Queryable().AsNoTracking()
+                        .Where( i => i.Linkages.Any( l => l.GroupId == _group.Id ) )
+                        .OrderByDescending( i => i.StartDateTime )
+                        .Select( i => new { i.Id, i.Name } )
+                        .ToList();
+                    ddlRegistration.DataBind();
+                    ddlRegistration.Items.Insert(0, new ListItem() );
+                }
             }
 
             cblGroupMemberStatus.BindToEnum<GroupMemberStatus>();
-
             cpCampusFilter.Campuses = CampusCache.All();
 
             BindAttributes();
@@ -559,6 +604,9 @@ namespace RockWeb.Blocks.Groups
             {
                 cblGroupMemberStatus.SetValues( statusValue.Split( ';' ).ToList() );
             }
+
+            ddlRegistration.SetValue( rFilter.GetUserPreference( MakeKeyUniqueToGroup( "Registration" ) ) );
+            ddlRegistration.Visible = ddlRegistration.Items.Count > 1;
 
             ddlSignedDocument.SetValue( rFilter.GetUserPreference( MakeKeyUniqueToGroup( "Signed Document" ) ) );
             ddlSignedDocument.Visible = _group.RequiredSignatureDocumentTemplateId.HasValue;
@@ -962,6 +1010,21 @@ namespace RockWeb.Blocks.Groups
                         int campusId = cpCampusFilter.SelectedCampusId.Value;
                         var qryFamilyMembersForCampus = new GroupMemberService( rockContext ).Queryable().Where( a => a.Group.GroupType.Guid == familyGuid && a.Group.CampusId == campusId );
                         qry = qry.Where( a => qryFamilyMembersForCampus.Any( f => f.PersonId == a.PersonId ) );
+                    }
+
+                    // Filter by Registration
+                    var instanceId = ddlRegistration.SelectedValueAsInt();
+                    if ( instanceId.HasValue )
+                    {
+                        var registrants = new RegistrationRegistrantService( rockContext )
+                            .Queryable().AsNoTracking()
+                            .Where( r =>
+                                r.Registration != null &&
+                                r.Registration.RegistrationInstanceId == instanceId.Value &&
+                                r.PersonAlias != null )
+                            .Select( r => r.PersonAlias.PersonId );
+
+                        qry = qry.Where( m => registrants.Contains( m.PersonId ) );
                     }
 
                     // Filter by signed documents

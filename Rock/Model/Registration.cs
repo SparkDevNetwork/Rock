@@ -774,6 +774,19 @@ Registration By: {0} Total Cost/Fees:{1}
         public decimal Cost { get; set; }
 
         /// <summary>
+        /// Gets or sets a value indicating whether [discount applies].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [discount applies]; otherwise, <c>false</c>.
+        /// </value>
+        public bool DiscountApplies
+        {
+            get { return _discountApplies; }
+            set { _discountApplies = value; }
+        }
+        private bool _discountApplies = true;
+
+        /// <summary>
         /// Gets the cost with fees.
         /// </summary>
         /// <value>
@@ -841,6 +854,51 @@ Registration By: {0} Total Cost/Fees:{1}
         public DateTime? SignatureDocumentLastSent { get; set; }
 
         /// <summary>
+        /// Discounteds the cost.
+        /// </summary>
+        /// <param name="discountPercent">The discount percent.</param>
+        /// <param name="discountAmount">The discount amount.</param>
+        /// <returns></returns>
+        public virtual decimal DiscountedCost( decimal discountPercent, decimal discountAmount )
+        {
+            if ( OnWaitList )
+            {
+                return 0.0M;
+            }
+
+            var discountedCost = Cost - ( DiscountApplies ? ( Cost * discountPercent ) : 0.0M );
+            discountedCost = discountedCost - ( DiscountApplies ? discountAmount : 0.0M );
+
+            return discountedCost > 0.0m ? discountedCost : 0.0m;
+        }
+
+        /// <summary>
+        /// Discounteds the cost.
+        /// </summary>
+        /// <param name="discountPercent">The discount percent.</param>
+        /// <param name="discountAmount">The discount amount.</param>
+        /// <returns></returns>
+        public virtual decimal DiscountedTotalCost( decimal discountPercent, decimal discountAmount )
+        {
+            if ( OnWaitList )
+            {
+                return 0.0M;
+            }
+
+            var discountedCost = Cost - ( DiscountApplies ? ( Cost * discountPercent ) : 0.0M );
+            if ( FeeValues != null )
+            {
+                foreach ( var fee in FeeValues.SelectMany( f => f.Value ) )
+                {
+                    discountedCost += DiscountApplies ? fee.DiscountedCost( discountPercent ) : fee.TotalCost;
+                }
+            }
+            discountedCost = discountedCost - ( DiscountApplies ? discountAmount : 0.0M );
+
+            return discountedCost > 0.0m ? discountedCost : 0.0m;
+        }
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="RegistrantInfo"/> class.
         /// </summary>
         public RegistrantInfo()
@@ -854,6 +912,7 @@ Registration By: {0} Total Cost/Fees:{1}
             FieldValues = new Dictionary<int, FieldValueObject>();
             FeeValues = new Dictionary<int, List<FeeInfo>>();
             OnWaitList = false;
+            DiscountApplies = true;
         }
 
         /// <summary>
@@ -910,6 +969,7 @@ Registration By: {0} Total Cost/Fees:{1}
                     registrant.GroupMember.Group.Name : string.Empty;
                 RegistrationId = registrant.RegistrationId;
                 Cost = registrant.Cost;
+                DiscountApplies = registrant.DiscountApplies;
                 OnWaitList = registrant.OnWaitList;
 
                 Person person = null;
@@ -1135,6 +1195,7 @@ Registration By: {0} Total Cost/Fees:{1}
 
             return null;
         }
+
     }
 
     /// <summary>
@@ -1260,6 +1321,14 @@ Registration By: {0} Total Cost/Fees:{1}
         public decimal Cost { get; set; }
 
         /// <summary>
+        /// Gets or sets a value indicating whether [discount applies].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [discount applies]; otherwise, <c>false</c>.
+        /// </value>
+        public bool DiscountApplies { get; set; }
+
+        /// <summary>
         /// Gets the total cost.
         /// </summary>
         /// <value>
@@ -1277,6 +1346,23 @@ Registration By: {0} Total Cost/Fees:{1}
         /// The previous cost.
         /// </value>
         public decimal PreviousCost { get; set; }
+
+        /// <summary>
+        /// Discounteds the cost.
+        /// </summary>
+        /// <param name="discountPercent">The discount percent.</param>
+        /// <returns></returns>
+        public decimal DiscountedCost( decimal discountPercent )
+        {
+            var discountedCost = TotalCost;
+
+            if ( DiscountApplies )
+            {
+                discountedCost = discountedCost - ( discountedCost * discountPercent );
+            }
+
+            return discountedCost;
+        }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="FeeInfo"/> class.
@@ -1310,7 +1396,9 @@ Registration By: {0} Total Cost/Fees:{1}
             Quantity = fee.Quantity;
             Cost = fee.Cost;
             PreviousCost = fee.Cost;
+            DiscountApplies = fee.RegistrationTemplateFee != null && fee.RegistrationTemplateFee.DiscountApplies;
         }
+
     }
 
     /// <summary>

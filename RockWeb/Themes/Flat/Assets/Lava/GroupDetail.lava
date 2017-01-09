@@ -1,4 +1,4 @@
-{% if AllowedActions.View == true || AllowedActions.Edit == true || AllowedActions.Administrate == true %}
+{% if AllowedActions.View == true or AllowedActions.Edit == true or AllowedActions.Administrate == true %}
 
 	{% assign countActive = -1 %}
 	{% assign countInactive = -1 %}
