@@ -255,10 +255,11 @@ namespace Rock.Rest.Controllers
                 Details = a.TransactionDetails.Select( d => new
                 {
                     d.AccountId,
-                    AccountName = d.Account.Name,
+                    AccountName = d.Account.PublicName,
                     d.Summary,
-                    d.Amount
-                } ).OrderBy( x => x.AccountName ),
+                    d.Amount,
+                    AccountOrder = d.Account.Order
+                } ).OrderBy( x => x.AccountOrder ),
             } ).OrderBy( a => a.TransactionDateTime );
 
             DataTable dataTable = new DataTable( "contribution_transactions" );
