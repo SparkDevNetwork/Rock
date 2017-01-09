@@ -90,6 +90,13 @@ namespace Rock.UniversalSearch.IndexComponents
             ConnectToServer();
         }
 
+        /// <summary>
+        /// Method that is called when attribute values are updated. Components can
+        /// override this to perform any needed setup/validation based on current attribute
+        /// values.
+        /// </summary>
+        /// <param name="errorMessage">The error message.</param>
+        /// <returns></returns>
         public override bool ValidateAttributeValues( out string errorMessage )
         {
             // reset the connection when the component settings are changed
