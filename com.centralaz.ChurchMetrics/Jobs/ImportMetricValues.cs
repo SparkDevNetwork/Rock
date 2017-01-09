@@ -188,30 +188,44 @@ namespace com.centralaz.ChurchMetrics.Jobs
                                                     metricServiceDateTime = metricServiceDateTime.AddDays( 1 );
                                                 }
 
-                                                metricValue = new MetricValue();
-                                                metricValue.MetricValueType = MetricValueType.Measure;
-                                                metricValue.MetricId = mappedMetric.Id;
-                                                metricValue.YValue = Convert.ToInt32( record.value );
-                                                metricValue.CreatedDateTime = record.created_at;
-                                                metricValue.ModifiedDateTime = record.updated_at;
-                                                metricValue.ForeignId = foreignId;
-                                                metricValue.MetricValueDateTime = metricServiceDateTime.Date;
-                                                metricValue.MetricValuePartitions = new List<MetricValuePartition>();
+                                                var existingMetricValue = metricValueService.Queryable().Where( mv =>
+                                                 mv.MetricValueDateTime == metricServiceDateTime.Date &&
+                                                 mv.MetricValuePartitions.Any( mvp => mvp.EntityId == mappedCampusAttributeValue.EntityId && mvp.MetricPartitionId == campusPartition.Id ) &&
+                                                 mv.MetricValuePartitions.Any( mvp => mvp.EntityId == schedule.Id && mvp.MetricPartitionId == servicePartition.Id ) )
+                                                 .FirstOrDefault();
 
-                                                var campusValuePartition = new MetricValuePartition();
-                                                campusValuePartition.MetricPartitionId = campusPartition.Id;
-                                                campusValuePartition.EntityId = mappedCampusAttributeValue.EntityId;
-                                                metricValue.MetricValuePartitions.Add( campusValuePartition );
+                                                if ( existingMetricValue == null || existingMetricValue.CreatedDateTime < record.created_at )
+                                                {
+                                                    if ( existingMetricValue != null )
+                                                    {
+                                                        metricValuePartitionService.DeleteRange( existingMetricValue.MetricValuePartitions );
+                                                        metricValueService.Delete( existingMetricValue );
+                                                    }
 
-                                                var serviceValuePartition = new MetricValuePartition();
-                                                serviceValuePartition.MetricPartitionId = servicePartition.Id;
-                                                serviceValuePartition.EntityId = schedule.Id;
-                                                metricValue.MetricValuePartitions.Add( serviceValuePartition );
+                                                    metricValue = new MetricValue();
+                                                    metricValue.MetricValueType = MetricValueType.Measure;
+                                                    metricValue.MetricId = mappedMetric.Id;
+                                                    metricValue.YValue = Convert.ToInt32( record.value );
+                                                    metricValue.CreatedDateTime = record.created_at;
+                                                    metricValue.ModifiedDateTime = record.updated_at;
+                                                    metricValue.ForeignId = foreignId;
+                                                    metricValue.MetricValueDateTime = metricServiceDateTime.Date;
+                                                    metricValue.MetricValuePartitions = new List<MetricValuePartition>();
 
-                                                metricValueService.Add( metricValue );
+                                                    var campusValuePartition = new MetricValuePartition();
+                                                    campusValuePartition.MetricPartitionId = campusPartition.Id;
+                                                    campusValuePartition.EntityId = mappedCampusAttributeValue.EntityId;
+                                                    metricValue.MetricValuePartitions.Add( campusValuePartition );
+
+                                                    var serviceValuePartition = new MetricValuePartition();
+                                                    serviceValuePartition.MetricPartitionId = servicePartition.Id;
+                                                    serviceValuePartition.EntityId = schedule.Id;
+                                                    metricValue.MetricValuePartitions.Add( serviceValuePartition );
+
+                                                    metricValueService.Add( metricValue );
+                                                }
                                             }
                                         }
-
                                     }
                                 }
                                 else
