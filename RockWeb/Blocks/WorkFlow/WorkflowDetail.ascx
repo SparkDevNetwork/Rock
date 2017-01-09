@@ -23,7 +23,10 @@
                 <asp:HiddenField ID="hfActiveTab" runat="server" />
 
                 <ul class="nav nav-pills margin-b-md">
-                    <li id="liDetails" runat="server" class="active">
+                    <li id="liSummary" runat="server" class="active">
+                        <a href='#<%=divSummary.ClientID%>' data-toggle="pill" data-active-div="Details">Summary</a>
+                    </li>
+                    <li id="liDetails" runat="server">
                         <a href='#<%=divDetails.ClientID%>' data-toggle="pill" data-active-div="Details">Details</a>
                     </li>
                     <li id="liActivities" runat="server">
@@ -38,7 +41,15 @@
 
                 <div class="tab-content">
 
-                    <div id="divDetails" runat="server" class="tab-pane active">
+                    <div id="divSummary" runat="server" class="tab-pane active margin-b-lg">
+                        <div class="row">
+                            <div class="col-md-12">
+                                <asp:Literal ID="lSummary" runat="server" />
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="divDetails" runat="server" class="tab-pane">
 
                         <asp:Panel ID="pnlDetailsView" runat="server" >
 

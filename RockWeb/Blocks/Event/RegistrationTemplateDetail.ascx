@@ -212,7 +212,8 @@
                             <Columns>
                                 <Rock:ReorderField />
                                 <Rock:RockBoundField DataField="Code" HeaderText="Code" />
-                                <Rock:RockBoundField DataField="Discount" HeaderText="Discount" ItemStyle-HorizontalAlign="Right" />
+                                <Rock:RockBoundField DataField="Discount" HeaderText="Discount" />
+                                <Rock:RockBoundField DataField="Limits" HeaderText="Limits" />
                                 <Rock:EditField OnClick="gDiscounts_Edit" />
                                 <Rock:DeleteField OnClick="gDiscounts_Delete" />
                             </Columns>
@@ -426,13 +427,27 @@
             <Content>
                 <asp:HiddenField ID="hfDiscountGuid" runat="server" />
                 <asp:ValidationSummary ID="ValidationSummaryDiscount" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" ValidationGroup="Discount" />
-                <Rock:RockTextBox ID="tbDiscountCode" runat="server" CssClass="input-width-xl" Label="Discount Code" ValidationGroup="Discount" Required="true" />
-                <Rock:RockRadioButtonList ID="rblDiscountType" runat="server" Label="Discount Type" RepeatDirection="Horizontal" AutoPostBack="true" OnSelectedIndexChanged="rblDiscountType_SelectedIndexChanged">
-                    <asp:ListItem Text="Percentage" Value="Percentage" />
-                    <asp:ListItem Text="Amount" Value="Amount" />
-                </Rock:RockRadioButtonList>
-                <Rock:NumberBox ID="nbDiscountPercentage" runat="server" AppendText="%" CssClass="input-width-md" Label="Discount Percentage" NumberType="Integer" ValidationGroup="Discount"  />
-                <Rock:CurrencyBox ID="cbDiscountAmount" runat="server" CssClass="input-width-md" Label="Discount Amount" ValidationGroup="Discount" />
+                <div class="row">
+                    <div class="col-md-6">
+                        <Rock:RockTextBox ID="tbDiscountCode" runat="server" CssClass="input-width-xl" Label="Discount Code" ValidationGroup="Discount" Required="true" />
+                        <Rock:RockRadioButtonList ID="rblDiscountType" runat="server" Label="Discount Type" RepeatDirection="Horizontal" AutoPostBack="true" OnSelectedIndexChanged="rblDiscountType_SelectedIndexChanged">
+                            <asp:ListItem Text="Percentage" Value="Percentage" />
+                            <asp:ListItem Text="Amount" Value="Amount" />
+                        </Rock:RockRadioButtonList>
+                        <Rock:NumberBox ID="nbDiscountPercentage" runat="server" AppendText="%" CssClass="input-width-md" Label="Discount Percentage" NumberType="Integer" ValidationGroup="Discount"  />
+                        <Rock:CurrencyBox ID="cbDiscountAmount" runat="server" CssClass="input-width-md" Label="Discount Amount" ValidationGroup="Discount" />
+                    </div>
+                    <div class="col-md-6">
+                        <Rock:NumberBox ID="nbDiscountMaxUsage" runat="server" NumberType="Integer" MinimumValue="0" Label="Maximum Usage" 
+                            Help="The maximum number of times (registrations) that the discount code can be used (leave blank for none)." />
+                        <Rock:NumberBox ID="nbDiscountMaxRegistrants" runat="server" NumberType="Integer" MinimumValue="0" Label="Maximum Registrants" 
+                            Help="The maximum number of registrants (per registration) that the discount code should apply to." />
+                        <Rock:NumberBox ID="nbDiscountMinRegistrants" runat="server" NumberType="Integer" MinimumValue="0" Label="Minimum Registrants" 
+                            Help="The minimum number of registrants (per registration) that are required in order to use this discount code." />
+                        <Rock:DateRangePicker ID="drpDiscountDateRange" runat="server" Label="Effective Dates" 
+                            Help="The beginning and/or ending date that this discount code can be used." />
+                    </div>
+                </div>
             </Content>
         </Rock:ModalDialog>
 

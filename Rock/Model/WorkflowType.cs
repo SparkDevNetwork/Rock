@@ -147,6 +147,24 @@ namespace Rock.Model
         public bool IsPersisted { get; set; }
 
         /// <summary>
+        /// Gets or sets the summary view text to be displayed when a workflow of this type has no form or has been completed. This field supports Lava.
+        /// </summary>
+        /// <value>
+        /// The summary view text.
+        /// </value>
+        [DataMember]
+        public string SummaryViewText { get; set; }
+
+        /// <summary>
+        /// Gets or sets the text to be displayed when a workflow of this type workflow is active, but does not have an active form. This field supports Lava.
+        /// </summary>
+        /// <value>
+        /// The summary view text.
+        /// </value>
+        [DataMember]
+        public string NoActionMessage { get; set; }
+
+        /// <summary>
         /// Gets or sets the log retention period in days.
         /// </summary>
         /// <value>
