@@ -2670,13 +2670,37 @@ namespace Rock.Lava
 
                     case "QueryString":
                         {
-                            var test = page.PageParameters();
                             return page.PageParameters();
                         }
                 }
             }
 
             return null;
+        }
+
+        /// <summary>
+        /// Returns the specified page parm.
+        /// </summary>
+        /// <param name="input">The input.</param>
+        /// <param name="parm">The parm.</param>
+        /// <returns></returns>
+        public static object PageParameter( string input, string parm )
+        {
+            RockPage page = HttpContext.Current.Handler as RockPage;
+
+            var parmReturn = page.PageParameter( parm );
+
+            if ( parmReturn == null )
+            {
+                return null;
+            }
+
+            if (parmReturn.AsIntegerOrNull().HasValue )
+            {
+                return parmReturn.AsIntegerOrNull();
+            }
+
+            return parmReturn;
         }
 
         /// <summary>
