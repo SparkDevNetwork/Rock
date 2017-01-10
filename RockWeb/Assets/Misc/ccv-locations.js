@@ -23,7 +23,7 @@ CCV.locations = [
     city: 'Anthem',
     state: 'AZ',
     zip: '85086-2521',
-    photo: 'http://ccv.church/GetImage.ashx?guid=f093e8c5-20c1-4678-9465-c81489b0a8c4',
+    photo: 'http://rock.ccv.church/GetImage.ashx?guid=f093e8c5-20c1-4678-9465-c81489b0a8c4',
     url: 'http://ccv.church/anthem',
     vimeoid: '96015028',
     facebook: 'ccvanthem',
@@ -46,12 +46,12 @@ CCV.locations = [
     city: 'Avondale',
     state: 'AZ',
     zip: '85392-3935',
-    photo: 'http://ccv.church/GetImage.ashx?guid=87998e74-12d1-4a6b-9176-0f88917216e6',
+    photo: 'http://rock.ccv.church/GetImage.ashx?guid=87998e74-12d1-4a6b-9176-0f88917216e6',
     url: 'http://ccv.church/avondale',
     vimeoid: '132734895',
     facebook: 'ccvavondale',
     serviceTimes: {
-      saturday: ['4:30 pm','6:00 pm',],sunday: ['9:30 am','11:00 am',]
+      saturday: ['4:30 pm','6:00 pm',],sunday: ['9:00 am','10:30 am','12:00 pm',]
     },
   },
 
@@ -69,12 +69,35 @@ CCV.locations = [
     city: 'Mesa',
     state: 'AZ',
     zip: '85209-3767',
-    photo: 'http://ccv.church/GetImage.ashx?guid=abfd309d-cc0f-4803-9ca7-80e9aaa47a7d',
+    photo: 'http://rock.ccv.church/GetImage.ashx?guid=abfd309d-cc0f-4803-9ca7-80e9aaa47a7d',
     url: 'http://ccv.church/eastvalley',
     vimeoid: '76072274',
     facebook: 'ccveastvalley',
     serviceTimes: {
       saturday: ['4:30 pm','6:00 pm',],sunday: ['9:30 am','11:00 am',]
+    },
+  },
+
+
+  {
+    id: '10',
+    name: 'Midtown Phoenix',
+    shortcode: 'MID',
+    geo: {
+      lat: 33.49389,
+      lng: -112.03763,
+    },
+    phone: '(623) 561-3500',
+    street: '2005 E Indian School Rd',
+    city: 'Phoenix',
+    state: 'AZ',
+    zip: '85016',
+    photo: '',
+    url: 'http://ccv.church/midtown',
+    vimeoid: '',
+    facebook: '',
+    serviceTimes: {
+      sunday: ['9:00 am','10:30 am',]
     },
   },
 
@@ -92,7 +115,7 @@ CCV.locations = [
     city: 'Peoria',
     state: 'AZ',
     zip: '85383-3223',
-    photo: 'http://ccv.church/GetImage.ashx?guid=358262c2-c286-4535-9f04-aed54d96fd49',
+    photo: 'http://rock.ccv.church/GetImage.ashx?guid=358262c2-c286-4535-9f04-aed54d96fd49',
     url: 'http://ccv.church/peoria',
     vimeoid: '64237448',
     facebook: 'ccvpeoria',
@@ -115,7 +138,7 @@ CCV.locations = [
     city: 'Scottsdale',
     state: 'AZ',
     zip: '85255-5392',
-    photo: 'http://ccv.church/GetImage.ashx?guid=99fe4a6f-e102-4b29-982d-a93ce1c7b348',
+    photo: 'http://rock.ccv.church/GetImage.ashx?guid=99fe4a6f-e102-4b29-982d-a93ce1c7b348',
     url: 'http://ccv.church/scottsdale',
     vimeoid: '64237449',
     facebook: 'ccvscottsdale',
@@ -138,7 +161,7 @@ CCV.locations = [
     city: 'Surprise',
     state: 'AZ',
     zip: '85379-4418',
-    photo: 'http://ccv.church/GetImage.ashx?guid=76f4ce45-0446-4103-b4ed-cf84d8c509c4',
+    photo: 'http://rock.ccv.church/GetImage.ashx?guid=76f4ce45-0446-4103-b4ed-cf84d8c509c4',
     url: 'http://ccv.church/surprise',
     vimeoid: '64237450',
     facebook: 'ccvsurprise',
