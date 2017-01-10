@@ -2782,7 +2782,7 @@ TransactionAcountDetails: [
                     $form.find('.js-billing-postal').val( $('#{17}_tbPostalCode').val() );
                     $form.find('.js-billing-country').val( $('#{17}_ddlCountry').val() );
                 }}
-
+        
                 if ( $('#{1}').val() == 'CreditCard' ) {{
                     $form.find('.js-cc-first-name').val( $('#{18}').val() );
                     $form.find('.js-cc-last-name').val( $('#{19}').val() );

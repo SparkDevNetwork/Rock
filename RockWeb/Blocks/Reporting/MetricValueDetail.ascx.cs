@@ -134,11 +134,11 @@ namespace RockWeb.Blocks.Reporting
 
                             var entityTypeEditControl = fieldType.Field.EditControl( configurationValues, string.Format( "metricPartition{0}_entityTypeEditControl", metricPartition.Id ) );
                             var panelCol4 = new Panel { CssClass = "col-md-4" };
-                            if ( entityTypeEditControl != null && entityTypeEditControl is IRockControl )
+                            if ( entityTypeEditControl != null && entityTypeEditControl is IRockControl)
                             {
                                 panelCol4.Controls.Add( entityTypeEditControl );
                                 phMetricValuePartitions.Controls.Add( panelCol4 );
-
+                                
                                 var entityTypeRockControl = ( entityTypeEditControl as IRockControl );
                                 entityTypeRockControl.Label = metricPartition.Label;
                                 if ( entityTypeEditControl is WebControl )
@@ -250,6 +250,7 @@ namespace RockWeb.Blocks.Reporting
                     return;
                 }
             }
+
 
             if ( !metricValue.IsValid )
             {
