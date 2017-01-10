@@ -7,7 +7,13 @@ Framework. While Rock specializes in serving the unique needs of churches it's
 useful in a wide range of service industries.  Rock is an ASP.NET 4.5 C# web application
 that uses Entity Framework 6.0, jQuery, Bootstrap 3, and many other open source libraries.
 
-Quick links: [Getting Started](#getting-started) [Running Rock](#running-rock) [New Environments](#new-environments) [Learn More](#learn-more) [Community](#community) [License](#license)
+Quick links: 
+- [Getting Started](#getting-started) 
+- [Running Rock](#running-rock) 
+- [New Environments](#new-environments) 
+- [Learn More](#learn-more) 
+- [Community](#community) 
+- [License](#license)
 
 ## Getting Started
 
@@ -15,7 +21,7 @@ Take a peek at the Rock [Developer 101](http://www.rockrms.com/Rock/Developer/Bo
 
 ## Running Rock
 
-The VMDK file you should've received can be run in VirtualBox, Fusion, or Parallels.
+The VMDK file you should've received can be run in VirtualBox, Fusion, or Parallels.  If you're setting up a new machine, skip to [New Environments](#new-environments).
 
 The default Rock install is hosted at http://rock.dev and you can use IIS Manager to control access to it.
 
@@ -33,7 +39,9 @@ Use SQL Management Studio to connect to local or remote servers for queries or a
 
 ### Migrations
 
-If you need to build or update a new database, look for the Nuget Package Manager Console.  You can either remember this command every time: `update-database -ProjectName 'Rock.Migrations'`. Alternatively, [follow the guide](http://shouldertheboulder.com/Article?id=368) to set your own shortcut.  This will use the connection defined in `web.connectionstrings.config` to build or upgrade your database.
+If you need to build or update a new database, look for the Nuget Package Manager Console.  You can either remember this command every time: `update-database -ProjectName 'Rock.Migrations'`. 
+
+Alternatively, [follow the guide](http://shouldertheboulder.com/Article?id=368) to set your own migration shortcut.  This will use the connection defined in `web.connectionstrings.config` to build or upgrade your database.
 
 ### Maintenance
 
@@ -41,7 +49,7 @@ Eventually you'll need to run `C:\Code\FreeSpace.bat` to clear out old files and
 
 ## New Environments
 
-This guide assumes you'll be running Rock inside Windows.  If that's not the case, [talk to us](https://twitter.com/newspringweb) because we'd be verrry interested.
+This guide assumes you'll be running Rock inside Windows.  If that's not the case, [talk to us](https://twitter.com/newspringweb).
 
 - Create a new Windows 10 x64 machine
 - Select an existing hard disk (VMDK)
