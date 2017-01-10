@@ -40,7 +40,7 @@ namespace Rock.Model
     /// </remarks>
     [Table( "Group" )]
     [DataContract]
-    public partial class Group : Model<Group>, IOrdered, IRockIndexable
+    public partial class Group : Model<Group>, IOrdered, IHasActiveFlag, IRockIndexable
     {
         #region Entity Properties
 

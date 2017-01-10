@@ -79,6 +79,30 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Gets or sets the tooltip.
+        /// </summary>
+        /// <value>
+        /// The tooltip.
+        /// </value>
+        public string Tooltip
+        {
+            get
+            {
+                string tooltip = ViewState["Tooltip"] as string;
+                if ( string.IsNullOrWhiteSpace( tooltip ) )
+                {
+                    tooltip = "Delete";
+                    ViewState["Tooltip"] = tooltip;
+                }
+                return tooltip;
+            }
+            set
+            {
+                ViewState["Tooltip"] = value;
+            }
+        }
+
+        /// <summary>
         /// When exporting a grid with an Export source of ColumnOutput, this property controls whether a column is included
         /// in the export or not
         /// </summary>
@@ -187,7 +211,7 @@ namespace Rock.Web.UI.Controls
                 };
                 
 
-                lbDelete.ToolTip = "Delete";
+                lbDelete.ToolTip = deleteField.Tooltip;
 
                 HtmlGenericControl buttonIcon = new HtmlGenericControl( "i" );
                 buttonIcon.Attributes.Add( "class", deleteField.IconCssClass );

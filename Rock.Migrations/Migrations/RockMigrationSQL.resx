@@ -412,4 +412,7 @@
   <data name="_201610312310571_ConnectionGroupConfig_ufnUtility_CsvToTable" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>201610312310571_connectiongroupconfig_ufnutility_csvtotable.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
   </data>
+  <data name="_201612121647292_HotFixesFrom6_1" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>201612121647292_hotfixesfrom6_1.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-16</value>
+  </data>
 </root>

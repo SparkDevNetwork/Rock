@@ -104,5 +104,19 @@ namespace Rock.SystemGuid
         /// </summary>
         public const string PERSON_ERA_TIMES_GIVEN_6 = "AC11EF53-AE55-79A0-4CAD-43721750E988";
         #endregion
+
+        #region Check-in Attributes
+
+        /// <summary>
+        /// Group attribute to store the age range of the group
+        /// </summary>
+        public const string GROUP_AGE_RANGE = "43511B8F-71D9-423A-85BF-D1CD08C1998E";
+
+        /// <summary>
+        /// Group attribute to store the birthdate range of the group
+        /// </summary>
+        public const string GROUP_BIRTHDATE_RANGE = "F1A43EAB-D682-403F-A05E-CCFFBF879F32";
+
+        #endregion
     }
 }
