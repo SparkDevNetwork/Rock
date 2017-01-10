@@ -388,12 +388,7 @@ namespace RockWeb.Blocks.Groups
                     var schedule = scheduleService.Get( group.ScheduleId.Value );
                     if ( schedule != null && schedule.ScheduleType != ScheduleType.Named )
                     {
-
-                        // Make sure this is the only group trying to use this schedule.
-                        if ( !groupService.Queryable().Where( g => g.ScheduleId == schedule.Id && g.Id != group.Id ).Any() )
-                        {
-                            scheduleService.Delete( schedule );
-                        }
+                        scheduleService.Delete( schedule );
                     }
                 }
 
@@ -624,11 +619,7 @@ namespace RockWeb.Blocks.Groups
                     var schedule = scheduleService.Get( oldScheduleId.Value );
                     if ( schedule != null && string.IsNullOrEmpty( schedule.Name ) )
                     {
-                        // Make sure this is the only group trying to use this schedule.
-                        if ( !groupService.Queryable().Where( g => g.ScheduleId == schedule.Id && g.Id != group.Id ).Any() )
-                        {
-                            scheduleService.Delete( schedule );
-                        }
+                        scheduleService.Delete( schedule );
                     }
                 }
 

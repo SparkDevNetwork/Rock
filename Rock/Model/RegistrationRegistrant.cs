@@ -86,20 +86,7 @@ namespace Rock.Model
         [DataMember]
         public decimal Cost { get; set; }
 
-        /// <summary>
-        /// Gets or sets a flag indicating if the registration's discount code applies to this registrant.
-        /// </summary>
-        /// <value>
-        /// The discount applies.
-        /// </value>
-        [DataMember]
-        public bool DiscountApplies 
-        {
-            get { return _discountApplies; }
-            set { _discountApplies = value; }
-        }
-        private bool _discountApplies = true;
-
+        
         #endregion
 
         #region Virtual Properties
@@ -299,15 +286,17 @@ namespace Rock.Model
                 return 0.0M;
             }
 
-            var discountedCost = Cost - ( DiscountApplies ? ( Cost * discountPercent ) : 0.0M );
+            var discountedCost = Cost - ( Cost * discountPercent );
+
             if ( Fees != null )
             {
                 foreach( var fee in Fees )
                 {
-                    discountedCost += DiscountApplies ? fee.DiscountedCost( discountPercent ) : fee.TotalCost;
+                    discountedCost += fee.DiscountedCost( discountPercent );
                 }
             }
-            discountedCost = discountedCost - ( DiscountApplies ? discountAmount : 0.0M );
+
+            discountedCost = discountedCost - discountAmount;
 
             return discountedCost > 0.0m ? discountedCost : 0.0m;
         }

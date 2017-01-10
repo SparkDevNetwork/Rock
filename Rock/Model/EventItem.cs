@@ -32,7 +32,7 @@ namespace Rock.Model
     /// </summary>
     [Table( "EventItem" )]
     [DataContract]
-    public partial class EventItem : Model<EventItem>, IHasActiveFlag
+    public partial class EventItem : Model<EventItem>
     {
         /// <summary>
         /// Gets or sets the Name of the EventItem. This property is required.

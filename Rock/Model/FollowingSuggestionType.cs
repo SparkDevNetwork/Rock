@@ -33,7 +33,7 @@ namespace Rock.Model
     /// </summary>
     [Table( "FollowingSuggestionType" )]
     [DataContract]
-    public partial class FollowingSuggestionType : Model<FollowingSuggestionType>, IOrdered, IHasActiveFlag
+    public partial class FollowingSuggestionType : Model<FollowingSuggestionType>, IOrdered
     {
         #region Entity Properties
 

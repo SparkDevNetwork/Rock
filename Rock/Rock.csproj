@@ -81,10 +81,6 @@
       <HintPath>..\packages\EntityFramework.6.1.3\lib\net45\EntityFramework.SqlServer.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="EntityFramework.Utilities, Version=1.0.2.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\EFUtilities.1.0.2\lib\EntityFramework.Utilities.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
     <Reference Include="EPPlus">
       <HintPath>..\libs\EPPlus\EPPlus.dll</HintPath>
     </Reference>
@@ -182,7 +178,6 @@
     <Reference Include="System.ComponentModel.DataAnnotations" />
     <Reference Include="System.configuration" />
     <Reference Include="System.Core" />
-    <Reference Include="System.Data.Entity" />
     <Reference Include="System.Data.Entity.Design" />
     <Reference Include="System.Data.Services" />
     <Reference Include="System.DirectoryServices" />
@@ -400,7 +395,6 @@
     <Compile Include="Data\IncludeForReportingAttribute.cs" />
     <Compile Include="Data\Interception\QueryHintDbCommandInterceptor.cs" />
     <Compile Include="Data\Interception\QueryHintScope.cs" />
-    <Compile Include="Data\IHasActiveFlag.cs" />
     <Compile Include="Data\IOrdered.cs" />
     <Compile Include="Data\IRockEntity.cs" />
     <Compile Include="Data\IService.cs" />
@@ -767,7 +761,6 @@
     <Compile Include="Model\CodeGenerated\ReportService.cs" />
     <Compile Include="Model\CodeGenerated\RestActionService.cs" />
     <Compile Include="Model\CodeGenerated\RestControllerService.cs" />
-    <Compile Include="Model\CodeGenerated\ScheduleCategoryExclusionService.cs" />
     <Compile Include="Model\CodeGenerated\ScheduleService.cs" />
     <Compile Include="Model\CodeGenerated\ServiceJobService.cs" />
     <Compile Include="Model\CodeGenerated\ServiceLogService.cs" />
@@ -949,7 +942,6 @@
     <Compile Include="Model\RegistrationTemplateForm.cs" />
     <Compile Include="Model\RegistrationTemplateFormField.cs" />
     <Compile Include="Model\Report.cs" />
-    <Compile Include="Model\ScheduleCategoryExclusion.cs" />
     <Compile Include="Model\ReportField.cs" />
     <Compile Include="Model\ReportService.partial.cs" />
     <Compile Include="Model\RestAction.cs" />
@@ -960,9 +952,7 @@
     <Compile Include="Model\ScheduleService.Partial.cs" />
     <Compile Include="Model\WorkflowActionService.Partial.cs" />
     <Compile Include="PersonProfile\Badge\InDataView.cs" />
-    <Compile Include="Reporting\DataFilter\Person\InRegistrationInstanceRegistrationTemplateFilter.cs" />
     <Compile Include="Reporting\DataFilter\Person\InLocationGeofenceFilter.cs" />
-    <Compile Include="Reporting\DataFilter\Person\PostalCodeFilter.cs" />
     <Compile Include="Reporting\DataSelect\GroupMember\GroupLinkSelect.cs" />
     <Compile Include="Search\Other\Universal.cs" />
     <Compile Include="Reporting\DataFilter\Person\InRegistrationInstanceFilter.cs" />
@@ -1038,16 +1028,9 @@
     <Compile Include="Plugin\HotFixes\004_FixGradeRequiredAttribute.cs" />
     <Compile Include="Plugin\HotFixes\005_FixCheckinAdminRoute.cs" />
     <Compile Include="Plugin\HotFixes\006_FixCheckinPrevPages.cs" />
-    <Compile Include="Plugin\HotFixes\016_SetInactiveFamilies.cs" />
-    <Compile Include="Plugin\HotFixes\015_CheckinByBirthdate.cs" />
     <Compile Include="Plugin\HotFixes\009_FixCheckinAttributes.cs" />
     <Compile Include="Plugin\HotFixes\008_FamilyAnalyticsUpdate.cs" />
     <Compile Include="Plugin\HotFixes\007_FixGroupAndBenevolenceSecurity.cs" />
-    <Compile Include="Plugin\HotFixes\014_FixEraGiveAttribValues.cs" />
-    <Compile Include="Plugin\HotFixes\013_FixSystemEmailTo_1828.cs" />
-    <Compile Include="Plugin\HotFixes\012_FixAttendanceAnalyticsScript.cs" />
-    <Compile Include="Plugin\HotFixes\011_FixNameProfileChangeRequest.cs" />
-    <Compile Include="Plugin\HotFixes\010_FixGetSpouse.cs" />
     <Compile Include="Plugin\Migration.cs" />
     <Compile Include="Plugin\VersionAttribute.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -1076,7 +1059,6 @@
     <Compile Include="Reporting\DataFilter\Group\DistanceFromFilter.cs" />
     <Compile Include="Reporting\DataFilter\Group\GroupAttributesFilter.cs" />
     <Compile Include="Reporting\DataFilter\Group\GroupBranchFilter.cs" />
-    <Compile Include="Reporting\DataFilter\Group\GroupTypeDataViewFilter.cs" />
     <Compile Include="Reporting\DataFilter\Group\GroupTypeFilter.cs" />
     <Compile Include="Reporting\DataFilter\Group\MemberCountFilter.cs" />
     <Compile Include="Reporting\DataFilter\Group\SimpleMemberCountFilter.cs" />
@@ -1183,7 +1165,6 @@
     <Compile Include="Utility\DebugHelper.cs" />
     <Compile Include="Utility\ExcelHelper.cs" />
     <Compile Include="Utility\FileUtilities.cs" />
-    <Compile Include="Web\UI\Controls\Pickers\RegistrationTemplatePicker.cs" />
     <Compile Include="Web\UI\RockTheme.cs" />
     <Compile Include="Web\Cache\AttributeValueCache.cs" />
     <Compile Include="Web\UI\Controls\WarningBlock.cs" />

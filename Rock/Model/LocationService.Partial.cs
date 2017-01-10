@@ -356,13 +356,12 @@ namespace Rock.Model
             return ExecuteQuery( string.Format(
                 @"
                 WITH CTE AS (
-                    SELECT Id FROM [Location] WHERE [ParentLocationId]={0}
+                    SELECT * FROM [Location] WHERE [ParentLocationId]={0}
                     UNION ALL
-                    SELECT [a].Id FROM [Location] [a]
-                    INNER JOIN CTE pcte ON pcte.Id = [a].[ParentLocationId]
+                    SELECT [a].* FROM [Location] [a]
+                    INNER JOIN  CTE pcte ON pcte.Id = [a].[ParentLocationId]
                 )
-                SELECT L.* FROM CTE
-                INNER JOIN [Location] L ON L.[Id] = CTE.[Id]
+                SELECT * FROM CTE
                 ", parentLocationId ) );
         }
 
@@ -502,8 +501,8 @@ namespace Rock.Model
 
         UNION ALL
 
-        SELECT [a].Id
-	    FROM [Location] [a]
+        SELECT [a].*
+        FROM [Location] [a]
         INNER JOIN  CTE pcte ON pcte.Id = [a].[ParentLocationId]
         WHERE [a].[ParentLocationId] IS NOT NULL
 " : "";
@@ -511,15 +510,14 @@ namespace Rock.Model
             return ExecuteQuery( string.Format(
                 @"
     WITH CTE AS (
-        SELECT L.Id
+        SELECT L.*
         FROM [DeviceLocation] D
         INNER JOIN [Location] L ON L.[Id] = D.[LocationId]
         WHERE D.[DeviceId] = {0}
 {1}
     )
 
-    SELECT L.* FROM CTE
-    INNER JOIN [Location] L ON L.[Id] = CTE.[Id]
+    SELECT * FROM CTE
             ", deviceId, childQuery ) );
         }
     }

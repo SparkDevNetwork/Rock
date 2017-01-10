@@ -32,7 +32,7 @@ namespace Rock.Model
     /// </summary>
     [Table( "FinancialAccount" )]
     [DataContract]
-    public partial class FinancialAccount : Model<FinancialAccount>, IOrdered, IHasActiveFlag
+    public partial class FinancialAccount : Model<FinancialAccount>, IOrdered
     {
         #region Entity Properties
 

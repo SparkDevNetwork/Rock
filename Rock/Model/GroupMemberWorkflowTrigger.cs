@@ -28,7 +28,7 @@ namespace Rock.Model
     /// </summary>
     [Table( "GroupMemberWorkflowTrigger" )]
     [DataContract]
-    public partial class GroupMemberWorkflowTrigger : Entity<GroupMemberWorkflowTrigger>, IOrdered, IHasActiveFlag
+    public partial class GroupMemberWorkflowTrigger : Entity<GroupMemberWorkflowTrigger>, IOrdered
     {
         #region Entity Properties
 

@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head profile="http://selenium-ide.openqa.org/profiles/test-case">
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<title>New Test</title>
+</head>
+<body>
+<table cellpadding="1" cellspacing="1" border="1">
+<thead>
+<tr><td rowspan="1" colspan="3">New Test</td></tr>
+</thead><tbody>
+<tr>
+	<td>setSpeed</td>
+	<td>500</td>
+	<td></td>
+</tr>
+<tr>
+	<td>open</td>
+	<td>/page/147</td>
+	<td></td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>css=div.logo</td>
+	<td></td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>link=Power Tools</td>
+	<td></td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>link=SQL Command</td>
+	<td></td>
+</tr>
+<tr>
+	<td>type</td>
+	<td>css=textarea[id$='_tbQuery']</td>
+	<td><br />DECLARE @PersonIDs TABLE (ID int) INSERT INTO @PersonIDs SELECT [Id] FROM [Person] WHERE [FirstName] = 'Blargh' <br />AND [LastName] = 'McFlibbercutty'<br />AND [BirthDay] = 12 AND [BirthMonth] = 5 AND [BirthYear] = 1970 AND [Gender] = 1 AND [Email] = 'a.b@yahoo.com';<br />DECLARE @PersonIDAliases TABLE (ID int) INSERT INTO @PersonIDAliases SELECT [Id] FROM [PersonAlias] WHERE [PersonId] IN (SELECT [Id] FROM @PersonIDs);<br />DELETE FROM [PersonViewed] WHERE [TargetPersonAliasId] IN ( SELECT [Id] FROM @PersonIDAliases );<br />DELETE FROM [PersonAlias] WHERE [PersonId] IN ( SELECT [Id] FROM @PersonIDs ) DELETE FROM [Person] WHERE [Id] IN ( SELECT [Id] FROM @PersonIDs );</td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>css=[id$=_tQuery_btnOff]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>css=[id$=_btnExec]</td>
+	<td></td>
+</tr>
+</tbody></table>
+</body>
+</html>

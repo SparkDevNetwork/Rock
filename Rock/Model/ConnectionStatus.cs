@@ -31,7 +31,7 @@ namespace Rock.Model
     /// </summary>
     [Table( "ConnectionStatus" )]
     [DataContract]
-    public partial class ConnectionStatus : Model<ConnectionStatus>, IHasActiveFlag
+    public partial class ConnectionStatus : Model<ConnectionStatus>
     {
 
         #region Entity Properties

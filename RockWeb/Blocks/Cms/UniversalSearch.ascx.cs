@@ -568,11 +568,7 @@ namespace RockWeb.Blocks.Cms
             lbRefineSearch.Visible = GetAttributeValue( "ShowRefinedSearch" ).AsBoolean();
 
             // model selector
-            var enabledModelIds = new List<int>();
-            if ( GetAttributeValue( "EnabledModels" ).IsNotNullOrWhitespace() )
-            {
-                enabledModelIds = GetAttributeValue( "EnabledModels" ).Split( ',' ).Select( int.Parse ).ToList();
-            }
+            var enabledModelIds = GetAttributeValue( "EnabledModels" ).Split( ',' ).Select( int.Parse ).ToList();
 
             var entities = EntityTypeCache.All();
             var indexableEntities = entities.Where( i => i.IsIndexingSupported == true &&  enabledModelIds.Contains( i.Id )).ToList();

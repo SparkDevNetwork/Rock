@@ -35,10 +35,7 @@ namespace Rock.Workflow.Action.CheckIn
     [ExportMetadata( "ComponentName", "Filter Groups By Grade and Age" )]
 
     [BooleanField( "Remove", "Select 'Yes' if groups should be be removed.  Select 'No' if they should just be marked as excluded.", true )]
-    [AttributeField( Rock.SystemGuid.EntityType.GROUP, "Group Age Range Attribute", "Select the attribute used to define the age range of the group", true, false,
-        Rock.SystemGuid.Attribute.GROUP_AGE_RANGE, order: 2 )]
-    [AttributeField( Rock.SystemGuid.EntityType.GROUP, "Group Birthdate Range Attribute", "Select the attribute used to define the birthdate range of the group", true, false,
-        Rock.SystemGuid.Attribute.GROUP_BIRTHDATE_RANGE, order: 3 )]
+    [AttributeField( Rock.SystemGuid.EntityType.GROUP, "Group Age Range Attribute", "Select the attribute used to define the age range of the group", true, false, "43511B8F-71D9-423A-85BF-D1CD08C1998E", order: 2 )]
     public class FilterGroupsByGradeAndAge : CheckInActionComponent
     {
         /// <summary>
@@ -65,36 +62,23 @@ namespace Rock.Workflow.Action.CheckIn
                 bool gradeRequired = checkInState.CheckInType == null || checkInState.CheckInType.GradeRequired;
                 bool ageRequired = checkInState.CheckInType == null || checkInState.CheckInType.AgeRequired;
 
-                // get the Age Range
-                var ageRangeAttributeKey = string.Empty;
-                var ageRangeAttributeGuid = GetAttributeValue( action, "GroupAgeRangeAttribute" ).AsGuidOrNull();
-                if ( ageRangeAttributeGuid.HasValue )
-                {
-                    var attribute = AttributeCache.Read( ageRangeAttributeGuid.Value, rockContext );
-                    if ( attribute != null )
-                    {
-                        ageRangeAttributeKey = attribute.Key;
-                    }
-                }
-
                 // get the admin-selected attribute key instead of using a hardcoded key
-                var birthdateRangeAttributeKey = string.Empty;
-                var birthdateRangeAttributeGuid = GetAttributeValue( action, "GroupBirthdateRangeAttribute" ).AsGuidOrNull();
-                if ( birthdateRangeAttributeGuid.HasValue )
+                var ageRangeAttributeKey = string.Empty;
+                var ageRangeAttributeGuid = GetAttributeValue( action, "GroupAgeRangeAttribute" ).AsGuid();
+                if ( ageRangeAttributeGuid != Guid.Empty )
                 {
-                    var attribute = AttributeCache.Read( birthdateRangeAttributeGuid.Value, rockContext );
-                    if ( attribute != null )
-                    {
-                        birthdateRangeAttributeKey = attribute.Key;
-                    }
+                    ageRangeAttributeKey = AttributeCache.Read( ageRangeAttributeGuid, rockContext ).Key;
                 }
 
                 foreach ( var person in family.People )
                 {
                     int? gradeOffset = person.Person.GradeOffset;
                     var ageAsDouble = person.Person.AgePrecise;
-                    decimal? age = ageAsDouble.HasValue ? Convert.ToDecimal( ageAsDouble.Value ) : (decimal?)null;
-                    DateTime? birthdate = person.Person.BirthDate;
+                    decimal? age = null;
+                    if ( ageAsDouble.HasValue )
+                    {
+                        age = Convert.ToDecimal( ageAsDouble.Value );
+                    }
 
                     foreach ( var groupType in person.GroupTypes.ToList() )
                     {
@@ -157,9 +141,6 @@ namespace Rock.Workflow.Action.CheckIn
                             // If group was not included or excluded based on grade, then check the age.
                             if ( !isMatch.HasValue )
                             {
-                                bool? ageMatch = null;
-                                bool? birthdayMatch = null;
-
                                 var ageRange = group.Group.GetAttributeValue( ageRangeAttributeKey ).ToStringSafe();
 
                                 var ageRangePair = ageRange.Split( new char[] { ',' }, StringSplitOptions.None );
@@ -182,7 +163,7 @@ namespace Rock.Workflow.Action.CheckIn
                                             decimal? personAgePrecise = age.Floor( groupMinAgePrecision );
                                             if ( personAgePrecise < minAge )
                                             {
-                                                ageMatch = false;
+                                                isMatch = false;
                                             }
                                         }
 
@@ -192,77 +173,21 @@ namespace Rock.Workflow.Action.CheckIn
                                             decimal? personAgePrecise = age.Floor( groupMaxAgePrecision );
                                             if ( personAgePrecise > maxAge )
                                             {
-                                                ageMatch = false;
+                                                isMatch = false;
                                             }
                                         }
 
-                                        if ( !ageMatch.HasValue )
+                                        if ( !isMatch.HasValue )
                                         {
-                                            ageMatch = true;
+                                            isMatch = true;
                                         }
                                     }
                                     else
                                     {
                                         if ( ageRequired )
                                         {
-                                            ageMatch = false;
+                                            isMatch = false;
                                         }
-                                    }
-                                }
-
-                                // If group was not included or excluded based on grade and age did not match, then check the birthdate.
-                                if ( !ageMatch.HasValue || !ageMatch.Value )
-                                {
-                                    var birthdateRange = group.Group.GetAttributeValue( birthdateRangeAttributeKey ).ToStringSafe();
-
-                                    var birthdateRangePair = birthdateRange.Split( new char[] { ',' }, StringSplitOptions.None );
-                                    DateTime? minBirthdate = null;
-                                    DateTime? maxBirthdate = null;
-
-                                    if ( birthdateRangePair.Length == 2 )
-                                    {
-                                        minBirthdate = birthdateRangePair[0].AsDateTime();
-                                        maxBirthdate = birthdateRangePair[1].AsDateTime();
-                                    }
-
-                                    if ( minBirthdate.HasValue || maxBirthdate.HasValue )
-                                    {
-                                        if ( birthdate.HasValue )
-                                        {
-                                            if ( minBirthdate.HasValue && birthdate.Value < minBirthdate.Value )
-                                            {
-                                                birthdayMatch = false;
-                                            }
-
-                                            if ( maxBirthdate.HasValue && birthdate.Value > maxBirthdate.Value )
-                                            {
-                                                birthdayMatch = false;
-                                            }
-
-                                            if ( !birthdayMatch.HasValue )
-                                            {
-                                                birthdayMatch = true;
-                                            }
-                                        }
-                                        else
-                                        {
-                                            if ( ageRequired )
-                                            {
-                                                birthdayMatch = false;
-                                            }
-                                        }
-                                    }
-                                }
-
-                                if ( ageMatch.HasValue || birthdayMatch.HasValue )
-                                {
-                                    if ( !( ( ageMatch ?? false ) || ( birthdayMatch ?? false ) ) )
-                                    {
-                                        isMatch = false;
-                                    }
-                                    else
-                                    {
-                                        isMatch = true;
                                     }
                                 }
                             }

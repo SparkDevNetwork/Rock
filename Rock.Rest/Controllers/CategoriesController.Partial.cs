@@ -59,17 +59,13 @@ namespace Rock.Rest.Controllers
             bool showCategoriesThatHaveNoChildren = true,
             string includedCategoryIds = null,
             string excludedCategoryIds = null,
-            string defaultIconCssClass = null,
-            bool includeInactiveItems = true )
+            string defaultIconCssClass = null )
         {
             Person currentPerson = GetPerson();
 
             var includedCategoryIdList = includedCategoryIds.SplitDelimitedValues().AsIntegerList().Except( new List<int> { 0 } ).ToList();
             var excludedCategoryIdList = excludedCategoryIds.SplitDelimitedValues().AsIntegerList().Except( new List<int> { 0 } ).ToList();
             defaultIconCssClass = defaultIconCssClass ?? "fa fa-list-ol";
-
-            bool hasActiveFlag = false;
-            bool excludeInactiveItems = !includeInactiveItems;
 
             IQueryable<Category> qry = Get();
 
@@ -130,15 +126,11 @@ namespace Rock.Rest.Controllers
                         Type genericServiceType = typeof( Rock.Data.Service<> );
                         Type modelServiceType = genericServiceType.MakeGenericType( modelType );
                         serviceInstance = Activator.CreateInstance( modelServiceType, new object[] { new RockContext() } ) as IService;
-
-                        hasActiveFlag = typeof( IHasActiveFlag ).IsAssignableFrom( entityType );
                     }
                 }
             }
 
-            excludeInactiveItems = excludeInactiveItems && hasActiveFlag;
-
-            List <Category> categoryList = qry.OrderBy( c => c.Order ).ThenBy( c => c.Name ).ToList();
+            List<Category> categoryList = qry.OrderBy( c => c.Order ).ThenBy( c => c.Name ).ToList();
             List<CategoryItem> categoryItemList = new List<CategoryItem>();
 
             foreach ( var category in categoryList )
@@ -159,7 +151,7 @@ namespace Rock.Rest.Controllers
                 // if id is zero and we have a rootCategory, show the children of that rootCategory (but don't show the rootCategory)
                 int parentItemId = id == 0 ? rootCategoryId : id;
 
-                var itemsQry = GetCategorizedItems( serviceInstance, parentItemId, showUnnamedEntityItems, excludeInactiveItems );
+                var itemsQry = GetCategorizedItems( serviceInstance, parentItemId, showUnnamedEntityItems );
                 if ( itemsQry != null )
                 {
                     // do a ToList to load from database prior to ordering by name, just in case Name is a virtual property
@@ -175,16 +167,6 @@ namespace Rock.Rest.Controllers
                             categoryItem.IsCategory = false;
                             categoryItem.IconCssClass = categorizedItem.GetPropertyValue( "IconCssClass" ) as string ?? defaultIconCssClass;
                             categoryItem.IconSmallUrl = string.Empty;
-
-                            if ( hasActiveFlag )
-                            {
-                                IHasActiveFlag activatedItem = categorizedItem as IHasActiveFlag;
-                                if ( activatedItem != null && !activatedItem.IsActive )
-                                {
-                                    categoryItem.IsActive = false;
-                                }
-                            }
-
                             categoryItemList.Add( categoryItem );
                         }
                     }
@@ -211,7 +193,7 @@ namespace Rock.Rest.Controllers
                     {
                         if ( getCategorizedItems )
                         {
-                            var childItems = GetCategorizedItems( serviceInstance, parentId, showUnnamedEntityItems, excludeInactiveItems );
+                            var childItems = GetCategorizedItems( serviceInstance, parentId, showUnnamedEntityItems );
                             if ( childItems != null )
                             {
                                 foreach ( var categorizedItem in childItems )
@@ -243,7 +225,7 @@ namespace Rock.Rest.Controllers
         /// <param name="categoryId">The category id.</param>
         /// <param name="showUnnamedEntityItems">if set to <c>true</c> [show unnamed entity items].</param>
         /// <returns></returns>
-        private IQueryable<ICategorized> GetCategorizedItems( IService serviceInstance, int categoryId, bool showUnnamedEntityItems, bool excludeInactiveItems )
+        private IQueryable<ICategorized> GetCategorizedItems( IService serviceInstance, int categoryId, bool showUnnamedEntityItems )
         {
             if ( serviceInstance != null )
             {
@@ -251,35 +233,22 @@ namespace Rock.Rest.Controllers
                 if ( getMethod != null )
                 {
                     ParameterExpression paramExpression = serviceInstance.ParameterExpression;
+                    MemberExpression propertyExpression = Expression.Property( paramExpression, "CategoryId" );
+                    BinaryExpression compareExpression = null;
+                    ConstantExpression constantExpression = Expression.Constant( categoryId );
 
-                    BinaryExpression categoryExpression = null;
-                    MemberExpression categoryPropertyExpression = Expression.Property( paramExpression, "CategoryId" );
-                    ConstantExpression categoryConstantExpression = Expression.Constant( categoryId );
-                    if ( categoryPropertyExpression.Type == typeof( int? ) )
+                    if ( propertyExpression.Type == typeof( int? ) )
                     {
                         var zeroExpression = Expression.Constant( 0 );
-                        var coalesceExpression = Expression.Coalesce( categoryPropertyExpression, zeroExpression );
-                        categoryExpression = Expression.Equal( coalesceExpression, categoryConstantExpression );
+                        var coalesceExpression = Expression.Coalesce( propertyExpression, zeroExpression );
+                        compareExpression = Expression.Equal( coalesceExpression, constantExpression );
                     }
                     else
                     {
-                        categoryExpression = Expression.Equal( categoryPropertyExpression, categoryConstantExpression );
+                        compareExpression = Expression.Equal( propertyExpression, constantExpression );
                     }
 
-                    IQueryable<ICategorized> result = null;
-
-                    if ( excludeInactiveItems )
-                    {
-                        MemberExpression isActivePropertyExpression = Expression.Property( paramExpression, "IsActive" );
-                        ConstantExpression isActiveConstantExpression = Expression.Constant( true );
-                        BinaryExpression isActiveExpression = Expression.Equal( isActivePropertyExpression, isActiveConstantExpression );
-                        Expression andExpression = Expression.And( categoryExpression, isActiveExpression );
-                        result = getMethod.Invoke( serviceInstance, new object[] { paramExpression, andExpression } ) as IQueryable<ICategorized>;
-                    }
-                    else
-                    {
-                        result = getMethod.Invoke( serviceInstance, new object[] { paramExpression, categoryExpression } ) as IQueryable<ICategorized>;
-                    }
+                    var result = getMethod.Invoke( serviceInstance, new object[] { paramExpression, compareExpression } ) as IQueryable<ICategorized>;
 
                     if ( !showUnnamedEntityItems )
                     {

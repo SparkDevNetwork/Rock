@@ -190,7 +190,6 @@ namespace Rock.Model
             targetPage.PageTitle = sourcePage.PageTitle + " - Copy";
             targetPage.InternalName = sourcePage.InternalName + " - Copy";
             targetPage.BrowserTitle = sourcePage.BrowserTitle + " - Copy";
-            targetPage.IsSystem = false;
             pageGuidDictionary.Add( sourcePage.Guid, targetPage.Guid );
 
             foreach ( var block in sourcePage.Blocks )
@@ -205,7 +204,6 @@ namespace Rock.Model
                 newBlock.Id = 0;
                 newBlock.Guid = Guid.NewGuid();
                 newBlock.PageId = 0;
-                newBlock.IsSystem = false;
 
                 blockGuidDictionary.Add( block.Guid, newBlock.Guid );
                 targetPage.Blocks.Add( newBlock );
