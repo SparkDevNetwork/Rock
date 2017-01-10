@@ -220,6 +220,7 @@ namespace RockWeb.Blocks.Core
         {
             pnlEditDetails.Visible = editable;
             fieldsetViewDetails.Visible = !editable;
+            this.HideSecondaryBlocks( editable );
         }
 
         /// <summary>

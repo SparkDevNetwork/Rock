@@ -363,7 +363,7 @@ namespace RockWeb.Blocks.Cms
             {
                 string script = string.Format( @"
                 Sys.Application.add_load( function () {{
-                    $('#{0}').dblclick(function (e) {{
+                    $('#{0} > span.html-content-view').dblclick(function (e) {{
                         {1};
                     }});
                 }});

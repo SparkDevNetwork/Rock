@@ -8,7 +8,9 @@
         </span>
 
         <Rock:NotificationBox ID="nbApprovalRequired" runat="server" NotificationBoxType="Info" Text="Your changes will not be visible until they are reviewed and approved." Visible="false" />
-        <asp:Literal ID="lHtmlContent" runat="server" />
+        <span class="html-content-view">
+            <asp:Literal ID="lHtmlContent" runat="server" />
+        </span>
 
         <%-- Edit Panel --%>
         <asp:Panel ID="pnlEditModel" runat="server" Visible="false">
