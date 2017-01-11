@@ -8,11 +8,7 @@
 
   <ul class="masthead-navitems">
 
-    <li class="masthead-navitem">
-      <a href="/newhere">New Here?</a>
-    </li>
-
-	{% for childPage in Page.Pages %}
+  {% for childPage in Page.Pages %}
 
     {% if childPage.Title == "Menu" %}
       <li class="masthead-navitem menu-btn collapsed" data-toggle="collapse" data-target=".js-fullmenu">
