@@ -4,7 +4,8 @@
   "env": {
     "node": true,
     "browser": true,
-    "es6": true
+    "es6": true,
+    "jest": true
   },
   "globals": {
     "jest": true
@@ -58,9 +59,10 @@
     }],
     "no-useless-escape": 0,
     "no-cond-assign": 0,
-    "compat/compat": 1,
+    "compat/compat": 2,
   },
   "settings": {
     "targets": ["chrome", "firefox", "edge", "safari", "ie"],
+    "polyfills": ["fetch"]
   }
 }

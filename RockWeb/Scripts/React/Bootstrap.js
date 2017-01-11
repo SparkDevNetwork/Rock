@@ -12,8 +12,7 @@ export default class Bootstrap {
       .then(this.render);
   }
 
-  async bootstrapDOM(){
-
+  async bootstrapDOM() {
     /*
      * Steps for bootstrapping a rock page with React components
      *
@@ -31,14 +30,16 @@ export default class Bootstrap {
     // Step 1
     const zones = [].slice.call(root.querySelectorAll("[id^=\"zone-\"]"))
       .map((element) => ({ id: element.id, element }));
-    
 
+    const expand = "$expand=Blocks,Blocks/BlockType";
+    // const select = "$select=Blocks/BlockType/Path,Order,Name,Id,Zone";
     const page = await fetch(
-      `/api/Pages?$filter=Id eq ${this.props.pageId}&$expand=Blocks,Blocks/BlockType`
-    )
+      `/api/Pages?$filter=Id eq ${this.props.pageId}&${expand}`
+    , { credentials: "same-origin" })
       .then((x) => x.json());
 
     if (!page || !page.length) {
+      // eslint-disable-next-line
       console.warn(`No page details found for PageId: ${this.props.pageId}`);
       return;
     }
@@ -48,15 +49,15 @@ export default class Bootstrap {
       name: Name,
       id: Id,
       zone: Zone,
-      path: BlockType.Path.replace("~/Blocks/", "").replace(".ascx", ""),
+      path: BlockType.Path,
     }));
 
     // Step 2
-    this.blocks = flatten(zones.map(({ id, element }) => 
+    this.blocks = flatten(zones.map(({ id, element }) =>
       [].slice.call(element.querySelectorAll("[id^=\"bid_\"]"))
-        .map((block) => ({ zone: id, id: block.id, element: block }))
+        .map((block) => ({ zone: id, id: block.id, element: block })),
     ))
-      // Step 3 
+      // Step 3
       .filter(({ element }) => {
         const zone = [].slice.call(element.querySelectorAll("[data-react-block]"));
         return zone.length > 0;
@@ -76,33 +77,52 @@ export default class Bootstrap {
       })
       .filter((x) => !!x)
       ;
-
   }
 
   render = () => {
-  
     this.blocks.forEach((block) => {
-      System.import(`../Blocks/${block.path}.js`)
-        .then((component) => {
-          const Component = component.default;
-          const target = [].slice.call(
-            block.element.querySelectorAll("[data-react-block]")
+      const { path } = block;
+      let loader;
+
+      // This is used to limit webpacks bundle scope
+      // otherwise it will look in all folder for js files to bundle
+      // XXX I think this can be done in the webpack config so we can strip the
+      // file type and import it directly
+      if (path.includes("~/Blocks")) {
+        const localPath = path.replace("~/Blocks/", "").replace(".ascx", "");
+        loader = System.import(`../../Blocks/${localPath}.block.js`);
+      } else if (path.includes("~/Plugins")) {
+        const localPath = path.replace("~/Plugins/", "").replace(".ascx", "");
+        loader = System.import(`../../Plugins/${localPath}.block.js`);
+      } else {
+        loader = Promise.reject("Block could not be found on file system");
+      }
+
+      loader.then((component) => {
+        const Component = component.default;
+        const target = [].slice.call(
+            block.element.querySelectorAll("[data-react-block]"),
           )[0];
-          
+
           // this is where redux and apollo integration can be shared between trees
-          let props = {};
-          try {
-            props = JSON.parse(target.dataset.initialProps) || {};
-          } catch (e) { console.warn(`error parsing initial props for ${block.path}`, e); }
+        let props = {};
+        try {
+          const { initialProps } = target.dataset;
+          props = (initialProps && JSON.parse(initialProps)) || {};
+          // eslint-disable-next-line
+        } catch (e) { console.warn(`error parsing initial props for ${block.path}`, e); }
 
-          render(
-            <AppContainer><Component {...props} /></AppContainer>
-            , target
+        render(
+          <AppContainer><Component {...props} /></AppContainer>
+            , target,
           );
-        })
-        .catch((error) => console.warn(`error loading ${block.path}`, error)) 
+      })
+        .catch(
+          // eslint-disable-next-line
+          (error) => console.warn(`error loading ${block.path.replace(".ascx", "")}`,
+          error,
+        ));
     });
-
   }
 
 }
