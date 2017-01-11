@@ -158,6 +158,7 @@ Sorry, your account has been locked.  Please contact our office at {{ 'Global' |
             }
 
             pnlMessage.Visible = false;
+            tbUserName.Focus();
         }
 
         #endregion
