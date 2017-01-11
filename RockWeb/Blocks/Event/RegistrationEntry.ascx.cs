@@ -2671,7 +2671,6 @@ namespace RockWeb.Blocks.Event
                                 RegistrationTemplate.GroupMemberRoleId.HasValue )
                             {
                                 groupMember.GroupRoleId = RegistrationTemplate.GroupMemberRoleId.Value;
-                                groupMember.GroupMemberStatus = RegistrationTemplate.GroupMemberStatus;
                             }
                             else
                             {
@@ -2686,6 +2685,8 @@ namespace RockWeb.Blocks.Event
                                 groupMember.GroupMemberStatus = GroupMemberStatus.Active;
                             }
                         }
+
+                        groupMember.GroupMemberStatus = RegistrationTemplate.GroupMemberStatus;
 
                         rockContext.SaveChanges();
 
