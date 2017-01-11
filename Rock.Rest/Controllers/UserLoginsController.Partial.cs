@@ -42,6 +42,18 @@ namespace Rock.Rest.Controllers
         }
 
         /// <summary>
+        /// Tests if a username is available
+        /// </summary>
+        /// <param name="username"></param>
+        /// <returns></returns>
+        [HttpGet]
+        [System.Web.Http.Route( "api/userlogins/available" )]
+        public bool AvailableByQueryString( string username )
+        {
+            return Available( username );
+        }
+
+        /// <summary>
         /// Posts the specified value.
         /// POST using <see cref="Rock.Model.UserLoginWithPlainTextPassword"/> and set PlainTextPassword to set a password.
         /// </summary>
