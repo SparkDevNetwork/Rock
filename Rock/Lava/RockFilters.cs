@@ -969,6 +969,63 @@ namespace Rock.Lava
         }
 
         /// <summary>
+        /// Days in month
+        /// </summary>
+        /// <param name="input">The input.</param>
+        /// <param name="month">The month to determine</param>
+        /// <param name="year">The year of the month (defaults to current year)</param>
+        /// <returns></returns>
+        public static int? DaysInMonth( object input, object oMonth = null, object oYear = null )
+        {
+            int? month;
+            int? year;
+
+            if (input.ToString().IsNotNullOrWhitespace() )
+            {
+                DateTime? date;
+
+                if (input.ToString().ToLower() == "now" )
+                {
+                    date = RockDateTime.Now;
+                }
+                else
+                {
+                    date = input.ToString().AsDateTime();
+                }
+
+                if (date.HasValue )
+                {
+                    month = date.Value.Month;
+                    year = date.Value.Year;
+                }
+                else
+                {
+                    return null;
+                }
+            }
+            else
+            {
+                if ( oYear == null )
+                {
+                    year = RockDateTime.Now.Year;
+                }
+                else
+                {
+                    year = oYear.ToString().AsIntegerOrNull();
+                }
+
+                month = oMonth.ToString().AsIntegerOrNull();
+            }
+
+            if ( month.HasValue && year.HasValue )
+            {
+                return System.DateTime.DaysInMonth( year.Value, month.Value );
+            }
+
+            return null;
+        }
+
+        /// <summary>
         /// takes two datetimes and humanizes the difference like '1 day'. Supports 'Now' as end date
         /// </summary>
         /// <param name="sStartDate">The s start date.</param>
