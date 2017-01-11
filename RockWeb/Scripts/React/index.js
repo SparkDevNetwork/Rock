@@ -1,8 +1,8 @@
+/* global Rock */
 import Bootstrap from "./Bootstrap";
 
 let app;
 const load = () => {
-  
   if (!Rock) return;
 
   const pageId = Rock.settings.get("pageId");
@@ -12,7 +12,11 @@ const load = () => {
 
 // load everything up
 // written as a function for easy early returns
-load();
+if (!window.fetch) {
+  System.import("whatwg-fetch").then(load);
+} else {
+  load();
+}
 
 // handle local development inline reloads
 if (module.hot) {

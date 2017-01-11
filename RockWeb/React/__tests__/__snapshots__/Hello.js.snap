@@ -1,5 +1,0 @@
-exports[`test should render Hello World 1`] = `
-<h1>
-  Hello world
-</h1>
-`;

@@ -26,11 +26,15 @@
         base.OnInit( e );
 
         lLogoSvg.Text = System.IO.File.ReadAllText( HttpContext.Current.Request.MapPath("~/Assets/Images/rock-logo.svg") );
-
+        
+        // the first link below references the local webpack dev server to serve the blocks
+        // this allows for hot reloading, helpful errors, and more great dev tools.
+        // if you don't want to run the server (npm start), comment out line 34 and uncomment line 35
         #if DEBUG
-            lReactBundle.Text = "http://localhost:8080/RockWeb/bundle.js";
+            // lReactBundle.Text = "http://localhost:8080/RockWeb/Scripts/React/dist/main.blocks.bundle.js";
+            lReactBundle.Text = ResolveRockUrl("~/Scripts/React/dist/main.blocks.bundle.js");
         #else
-            lReactBundle.Text = ResolveRockUrl("~/bundle.js");
+            lReactBundle.Text = ResolveRockUrl("~/Scripts/React/dist/main.blocks.bundle.js");
         #endif
     }
 

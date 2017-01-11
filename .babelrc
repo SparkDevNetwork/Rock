@@ -1,15 +1,15 @@
 {
-  presets: [
+  "presets": [
     "es2015",
     "stage-0",
-    "react",
+    "react"
   ],
-  plugins: [
+  "plugins": [
     "transform-runtime",
     "react-hot-loader/babel",
     "react-require",
     "transform-flow-strip-types",
     "transform-async-to-generator",
-    "lodash",
-  ],
+    "lodash"
+  ]
 }
