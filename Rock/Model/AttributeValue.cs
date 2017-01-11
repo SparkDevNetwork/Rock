@@ -217,7 +217,7 @@ namespace Rock.Model
                 {
                     return attribute.Name;
                 }
-                return string.Empty;
+                return Value;
             }
         }
 
@@ -241,33 +241,10 @@ namespace Rock.Model
                 {
                     return attribute.Key;
                 }
-                return string.Empty;
+                return Value;
             }
         }
 
-        /// <summary>
-        /// Gets a value indicating whether attribute is grid column.
-        /// </summary>
-        /// <remarks>
-        /// Note: this property is provided specifically for Lava templates when the Attribute property is not available
-        /// as a navigable property
-        /// </remarks>
-        /// <value>
-        /// <c>true</c> if [attribute is grid column]; otherwise, <c>false</c>.
-        /// </value>
-        [LavaInclude]
-        public virtual bool AttributeIsGridColumn
-        {
-            get
-            {
-                var attribute = AttributeCache.Read( this.AttributeId );
-                if ( attribute != null )
-                {
-                    return attribute.IsGridColumn;
-                }
-                return false;
-            }
-        }
         #endregion
 
         #region Public Methods

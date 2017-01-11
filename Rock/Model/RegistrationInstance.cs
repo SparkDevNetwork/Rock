@@ -34,7 +34,7 @@ namespace Rock.Model
     /// </summary>
     [Table( "RegistrationInstance" )]
     [DataContract]
-    public partial class RegistrationInstance : Model<RegistrationInstance>, IHasActiveFlag
+    public partial class RegistrationInstance : Model<RegistrationInstance>
     {
 
         #region Entity Properties

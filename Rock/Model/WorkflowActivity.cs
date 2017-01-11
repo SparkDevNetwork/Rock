@@ -137,7 +137,6 @@ namespace Rock.Model
         /// <value>
         /// The assigned person alias.
         /// </value>
-        [LavaInclude]
         public virtual PersonAlias AssignedPersonAlias { get; set; }
 
         /// <summary>
@@ -146,7 +145,6 @@ namespace Rock.Model
         /// <value>
         /// The assigned group.
         /// </value>
-        [LavaInclude]
         public virtual Group AssignedGroup { get; set; }
 
         /// <summary>

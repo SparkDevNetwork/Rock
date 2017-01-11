@@ -54,7 +54,6 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
     [BooleanField( "Display Middle Name", "Display the middle name of the person.", false, "", 5)]
     [CodeEditorField( "Custom Content", "Custom Content will be rendered after the person's demographic information <span class='tip tip-lava'></span>.",
         Rock.Web.UI.Controls.CodeEditorMode.Lava, Rock.Web.UI.Controls.CodeEditorTheme.Rock, 200, false, "", "", 6, "CustomContent" )]
-    [BooleanField( "Allow Following", "Should people be able to follow a person by selecting the star on the person's photo?", true, "", 7)]
     public partial class Bio : PersonBlock
     {
         #region Base Control Methods
@@ -73,8 +72,6 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
 
             if ( Person != null )
             {
-                pnlFollow.Visible = GetAttributeValue( "AllowFollowing" ).AsBoolean();
-
                 // Record Type - this is always "business". it will never change.
                 if ( Person.RecordTypeValueId == DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_BUSINESS.AsGuid() ).Id )
                 {
@@ -137,10 +134,7 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
                         lImage.Text = imgTag;
                     }
 
-                    if ( GetAttributeValue( "AllowFollowing" ).AsBoolean() )
-                    {
-                        FollowingsHelper.SetFollowing( Person.PrimaryAlias, pnlFollow, this.CurrentPerson );
-                    }
+                    FollowingsHelper.SetFollowing( Person.PrimaryAlias, pnlFollow, this.CurrentPerson );
 
                     var socialCategoryGuid = Rock.SystemGuid.Category.PERSON_ATTRIBUTES_SOCIAL.AsGuid();
                     if ( !socialCategoryGuid.IsEmpty() )

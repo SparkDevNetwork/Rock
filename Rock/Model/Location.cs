@@ -37,7 +37,7 @@ namespace Rock.Model
     /// </summary>
     [Table( "Location" )]
     [DataContract]
-    public partial class Location : Model<Location>, IHasActiveFlag
+    public partial class Location : Model<Location>
     {
         #region Entity Properties
 

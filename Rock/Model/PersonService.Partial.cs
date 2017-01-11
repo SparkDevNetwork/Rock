@@ -614,7 +614,9 @@ namespace Rock.Model
                         .Where( p => !excludeIds.Contains( p.Id ) &&
                             lastNames.Contains( p.LastName ) &&
                             ( firstNames.Contains( p.FirstName ) || firstNames.Contains( p.NickName ) ) )
-                        .Select( p => ( reversed ? p.LastName + ", " + p.NickName : p.NickName + " " + p.LastName ) )
+                        .Select( p => ( reversed ?
+                            p.LastName + ", " + p.NickName + ( p.SuffixValueId.HasValue ? " " + p.SuffixValue.Value : "" ) :
+                            p.NickName + " " + p.LastName + ( p.SuffixValueId.HasValue ? " " + p.SuffixValue.Value : "" ) ) )
                         .Distinct()
                         .ToList();
                     }

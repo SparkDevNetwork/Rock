@@ -38,9 +38,6 @@ namespace Rock.Client
         public decimal Cost { get; set; }
 
         /// <summary />
-        public bool DiscountApplies { get; set; }
-
-        /// <summary />
         public Guid? ForeignGuid { get; set; }
 
         /// <summary />
@@ -97,7 +94,6 @@ namespace Rock.Client
         {
             this.Id = source.Id;
             this.Cost = source.Cost;
-            this.DiscountApplies = source.DiscountApplies;
             this.ForeignGuid = source.ForeignGuid;
             this.ForeignKey = source.ForeignKey;
             this.GroupMemberId = source.GroupMemberId;

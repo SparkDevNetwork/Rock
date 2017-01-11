@@ -282,10 +282,11 @@ namespace Rock.Model
                     var startDate = fromDateTime.HasValue ? fromDateTime.Value : RockDateTime.Today.AddMonths( -2 );
                     var endDate = toDateTime.HasValue ? toDateTime.Value : RockDateTime.Today.AddDays( 1 );
 
-                    if ( !string.IsNullOrWhiteSpace( groupSchedule.iCalendarContent ) )
+                    DDay.iCal.Event calEvent = groupSchedule.GetCalenderEvent();
+                    if ( calEvent != null )
                     {
                         // If schedule has an iCal schedule, get all the past occurrences 
-                        foreach ( var occurrence in groupSchedule.GetOccurrences( startDate, endDate ) )
+                        foreach ( var occurrence in calEvent.GetOccurrences( startDate, endDate ) )
                         {
                             var scheduleOccurrence = new ScheduleOccurrence(
                                 occurrence.Period.StartTime.Date, occurrence.Period.StartTime.TimeOfDay, groupSchedule.Id, groupSchedule.Name );

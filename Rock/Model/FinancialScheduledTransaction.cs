@@ -37,7 +37,7 @@ namespace Rock.Model
     /// </remarks>
     [Table( "FinancialScheduledTransaction" )]
     [DataContract]
-    public partial class FinancialScheduledTransaction : Model<FinancialScheduledTransaction>, IHasActiveFlag
+    public partial class FinancialScheduledTransaction : Model<FinancialScheduledTransaction>
     {
 
         #region Entity Properties

@@ -32,7 +32,7 @@ namespace Rock.Model
     /// </summary>
     [Table( "RegistrationTemplate" )]
     [DataContract]
-    public partial class RegistrationTemplate : Model<RegistrationTemplate>, IHasActiveFlag, ICategorized
+    public partial class RegistrationTemplate : Model<RegistrationTemplate>, ICategorized
     {
 
         #region Entity Properties

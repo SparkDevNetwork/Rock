@@ -41,40 +41,8 @@ namespace RockWeb.Blocks.WorkFlow
     [Category( "WorkFlow" )]
     [Description( "Displays the details of the given workflow type." )]
 
-    [LinkedPage("Workflow Launch Page", "Page used to launch a workflow.", true, "", "", 0)]
-    [LinkedPage( "Manage Workflows Page", "Page used to manage workflows.", true, "", "", 1)]
-    [CodeEditorField( "Default No Action Message", "The default No Action Message.", CodeEditorMode.Lava, CodeEditorTheme.Rock, 100, false, @"
-This {{ Workflow.WorkflowType.WorkTerm }} does not currently require your attention.", "", 2 )]
-    [CodeEditorField( "Default Summary View Text", "The default Summary View Text.", CodeEditorMode.Lava, CodeEditorTheme.Rock, 500, false, @"
-<div class='row'>
-    <div class='col-sm-6'>
-        <dl><dt>Started By</dt><dd>{{ Workflow.InitiatorPersonAlias.Person.FullName }}</dd></dl>
-    </div>
-    <div class='col-sm-6'>
-        <dl><dt>Started On</dt><dd>{{ Workflow.ActivatedDateTime | Date:'MM/dd/yyyy' }} at {{ Workflow.ActivatedDateTime | Date:'hh:mm:ss tt' }}</dd></dl>
-    </div>
-</div>
-
-{% assign attributeList = '' %}
-{% for attribute in Workflow.AttributeValues %}
-    {% if attribute.AttributeIsGridColumn %}
-        {% assign attributeValue = attribute.ValueFormatted %}
-        {% if attributeValue != '' %}
-            {% capture item %}<dt>{{ attribute.AttributeName }}</dt><dd>{{ attributeValue }}</dd>{% endcapture %}
-            {% assign attributeList = attributeList | Append:item %}
-        {% endif %}
-    {% endif %}
-{% endfor %}
-
-{% if attributeList != '' %}
-    <div class='row'>
-        <div class='col-sm-6'>
-            <dl>
-                {{ attributeList }}
-            </dl>
-        </div>
-    </div>
-{% endif %}", "", 3 )]
+    [LinkedPage("Workflow Launch Page", "Page used to launch a workflow.")]
+    [LinkedPage( "Manage Workflows Page", "Page used to manage workflows." )]
     public partial class WorkflowTypeDetail : RockBlock
     {
         #region Properties
@@ -591,8 +559,6 @@ This {{ Workflow.WorkflowType.WorkTerm }} does not currently require your attent
             workflowType.IsPersisted = cbIsPersisted.Checked;
             workflowType.LoggingLevel = ddlLoggingLevel.SelectedValueAsEnum<WorkflowLoggingLevel>();
             workflowType.IconCssClass = tbIconCssClass.Text;
-            workflowType.SummaryViewText = ceSummaryViewText.Text;
-            workflowType.NoActionMessage = ceNoActionMessage.Text;
 
             if ( validationErrors.Any() )
             {
@@ -1258,8 +1224,6 @@ This {{ Workflow.WorkflowType.WorkTerm }} does not currently require your attent
                 workflowType.ActivityTypes.Add( new WorkflowActivityType { Name = "Start", Guid = Guid.NewGuid(), IsActive = true, IsActivatedWithWorkflow = true } );
                 workflowType.WorkTerm = "Work";
                 workflowType.ProcessingIntervalSeconds = 28800; // Default to every 8 hours
-                workflowType.SummaryViewText = GetAttributeValue( "DefaultSummaryViewText" );
-                workflowType.NoActionMessage = GetAttributeValue( "DefaultNoActionMessage" );
                 // hide the panel drawer that show created and last modified dates
                 pdAuditDetails.Visible = false;
             }
@@ -1416,8 +1380,6 @@ This {{ Workflow.WorkflowType.WorkTerm }} does not currently require your attent
             cbIsPersisted.Checked = workflowType.IsPersisted;
             ddlLoggingLevel.SetValue( (int)workflowType.LoggingLevel );
             tbIconCssClass.Text = workflowType.IconCssClass;
-            ceSummaryViewText.Text = workflowType.SummaryViewText;
-            ceNoActionMessage.Text = workflowType.NoActionMessage;
 
             BindAttributesGrid();
 

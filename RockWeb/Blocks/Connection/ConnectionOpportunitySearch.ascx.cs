@@ -46,7 +46,6 @@ namespace RockWeb.Blocks.Connection
     [BooleanField( "Set Page Title", "Determines if the block should set the page title with the connection type name.", false )]
     [BooleanField( "Display Name Filter", "Display the name filter", false )]
     [BooleanField( "Display Campus Filter", "Display the campus filter", true )]
-    [BooleanField( "Display Inactive Campuses", "Include inactive campuses in the Campus Filter", true )]
     [BooleanField( "Display Attribute Filters", "Display the attribute filters", true )]
     [LinkedPage( "Detail Page", "The page used to view a connection opportunity." )]
     [IntegerField( "Connection Type Id", "The Id of the connection type whose opportunities are displayed.", true, 1 )]
@@ -303,7 +302,7 @@ namespace RockWeb.Blocks.Connection
                 if ( GetAttributeValue( "DisplayCampusFilter" ).AsBoolean() )
                 {
                     cblCampus.Visible = true;
-                    cblCampus.DataSource = CampusCache.All( GetAttributeValue( "DisplayInactiveCampuses" ).AsBoolean() );
+                    cblCampus.DataSource = CampusCache.All();
                     cblCampus.DataBind();
                 }
                 else

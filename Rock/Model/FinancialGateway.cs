@@ -33,7 +33,7 @@ namespace Rock.Model
     /// </summary>
     [Table( "FinancialGateway" )]
     [DataContract]
-    public partial class FinancialGateway : Model<FinancialGateway>, IHasActiveFlag
+    public partial class FinancialGateway : Model<FinancialGateway>
     {
         #region Entity Properties
 

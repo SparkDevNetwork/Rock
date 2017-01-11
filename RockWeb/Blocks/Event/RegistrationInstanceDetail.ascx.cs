@@ -4197,7 +4197,6 @@ namespace RockWeb.Blocks.Event
                         .Where( r =>
                             r.Registration.RegistrationInstanceId == instanceId.Value &&
                             r.PersonAlias != null &&
-                            r.OnWaitList == false &&
                             r.PersonAlias.Person != null );
 
                     if ( groupId.HasValue )

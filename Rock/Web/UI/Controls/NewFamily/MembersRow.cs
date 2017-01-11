@@ -256,24 +256,6 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
-        /// Gets or sets a value indicating whether [require birthdate].
-        /// </summary>
-        /// <value>
-        ///   <c>true</c> if [require birthdate]; otherwise, <c>false</c>.
-        /// </value>
-        public bool RequireBirthdate
-        {
-            get
-            {
-                return _dpBirthdate.Required;
-            }
-            set
-            {
-                _dpBirthdate.Required = value;
-            }
-        }
-
-        /// <summary>
         /// Gets or sets a value indicating whether [show grade column].
         /// </summary>
         /// <value>
@@ -435,7 +417,6 @@ namespace Rock.Web.UI.Controls
             BindGender();
 
             _dpBirthdate.StartView = DatePicker.StartViewOption.decade;
-            _dpBirthdate.RequiredErrorMessage = "Birthdate is required for all group members";
             _dpBirthdate.Required = false;
 
             _ddlGradePicker.CssClass = "form-control";
@@ -510,10 +491,7 @@ namespace Rock.Web.UI.Controls
                 writer.RenderEndTag();
 
                 writer.RenderBeginTag( HtmlTextWriterTag.Td );
-                writer.AddAttribute( HtmlTextWriterAttribute.Class, "form-group" + ( _dpBirthdate.IsValid ? "" : " has-error" ) );
-                writer.RenderBeginTag( HtmlTextWriterTag.Div );
                 _dpBirthdate.RenderControl( writer );
-                writer.RenderEndTag();
                 writer.RenderEndTag();
 
                 if ( ShowGradeColumn )

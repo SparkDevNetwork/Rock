@@ -262,13 +262,7 @@ namespace RockWeb.Blocks.Crm
                         }
                 }
 
-                IEnumerable<int> personIdList = people.Select( p => p.Id );
-
-                // just leave the personIdList as a Queryable if it is over 10000 so that we don't throw a SQL exception due to the big list of ids
-                if (people.Count() < 10000)
-                {
-                    personIdList = personIdList.ToList();
-                }
+                var personIdList = people.Select( p => p.Id ).ToList();
 
                 people = personService.Queryable(true).Where( p => personIdList.Contains( p.Id ) );
 				
@@ -282,11 +276,8 @@ namespace RockWeb.Blocks.Crm
                     people = people.OrderBy( p => p.LastName ).ThenBy( p => p.FirstName );
                 }
 
-                var familyGroupType = GroupTypeCache.GetFamilyGroupType();
-                int familyGroupTypeId = familyGroupType != null ? familyGroupType.Id : 0;
-
-                var groupLocationTypeHome = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME.AsGuid() );
-                int homeAddressTypeId = groupLocationTypeHome != null ? groupLocationTypeHome.Id : 0;
+                Guid familyGuid = new Guid( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY );
+                Guid homeAddressTypeGuid = new Guid( Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME );
 
                 var personList = people.Select( p => new PersonSearchResult
                 {
@@ -308,14 +299,14 @@ namespace RockWeb.Blocks.Crm
                     PhotoId = p.PhotoId,
                     CampusIds = p.Members
                         .Where( m =>
-                            m.Group.GroupTypeId == familyGroupTypeId &&
+                            m.Group.GroupType.Guid.Equals( familyGuid ) &&
                             m.Group.CampusId.HasValue )
                         .Select( m => m.Group.CampusId.Value )
                         .ToList(),
                     HomeAddresses = p.Members
-                        .Where( m => m.Group.GroupTypeId == familyGroupTypeId )
+                        .Where( m => m.Group.GroupType.Guid == familyGuid )
                         .SelectMany( m => m.Group.GroupLocations )
-                        .Where( gl => gl.GroupLocationTypeValueId == homeAddressTypeId )
+                        .Where( gl => gl.GroupLocationTypeValue.Guid.Equals( homeAddressTypeGuid ) )
                         .Select( gl => gl.Location )
                 } ).ToList();
 
