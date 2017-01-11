@@ -34,7 +34,7 @@ namespace Rock.Model
     /// </summary>
     [Table( "FollowingEventType" )]
     [DataContract]
-    public partial class FollowingEventType : Model<FollowingEventType>, IOrdered
+    public partial class FollowingEventType : Model<FollowingEventType>, IOrdered, IHasActiveFlag
     {
         #region Entity Properties
 

@@ -1198,46 +1198,14 @@ namespace Rock.Web.UI
             ExceptionLogService.LogException( ex, Context, RockPage.PageId, RockPage.Layout.SiteId, CurrentPersonAlias );
 
             // send the event to Sentry if configured
-            var sentryDSN = GlobalAttributesCache.Read().GetValue( "SentryDSN" ) ?? string.Empty;
-            var sentryClient = new RavenClient( sentryDSN );
-            if ( !string.IsNullOrEmpty( sentryDSN ) && sentryClient != null )
+            var sentryDSN = GlobalAttributesCache.Read().GetValue( "SentryDSN" );
+            if ( !string.IsNullOrEmpty( sentryDSN ) )
             {
-                //var exceptionLog = new ExceptionLog
-                //{
-                //    SiteId = RockPage.Layout.SiteId,
-                //    PageId = RockPage.PageId,
-                //    HasInnerException = ex.InnerException != null,
-                //    ExceptionType = ex.GetType().ToString(),
-                //    Description = ex.Message,
-                //    Source = ex.Source,
-                //    StackTrace = ex.StackTrace,
-                //    CreatedByPersonAliasId = CurrentPersonAlias.Id,
-                //    ModifiedByPersonAliasId = CurrentPersonAlias.Id,
-                //    CreatedDateTime = RockDateTime.Now,
-                //    ModifiedDateTime = RockDateTime.Now,
-                //};
-
-                //if ( Context != null && Context.Request != null && Context.Response != null )
-                //{
-                //    exceptionLog.StatusCode = Context.Response.StatusCode.ToString();
-                //    exceptionLog.PageUrl = Context.Request.Url.ToString();
-                //    exceptionLog.QueryString = Context.Request.Url.Query;
-
-                //    var formItems = Context.Request.Form;
-                //    if ( formItems.Keys.Count > 0 )
-                //    {
-                //        exceptionLog.Form = formItems.AllKeys.ToDictionary( k => k, k => formItems[k] ).ToString();
-                //    }
-
-                //    var serverVars = Context.Request.ServerVariables;
-                //    if ( serverVars.Keys.Count > 0 )
-                //    {
-                //        exceptionLog.ServerVariables = serverVars.AllKeys.ToDictionary( k => k, k => serverVars[k] ).ToString();
-                //    }
-                //}
-
-                //ex.Data.Add( "context", exceptionLog );
-                sentryClient.Capture( new SentryEvent( ex ) );
+                var sentryClient = new RavenClient( sentryDSN );
+                if ( sentryClient != null )
+                {
+                    sentryClient.Capture( new SentryEvent( ex ) );
+                }
             }
         }
 

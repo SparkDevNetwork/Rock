@@ -44,10 +44,22 @@ namespace Rock.Client
         public decimal DiscountPercentage { get; set; }
 
         /// <summary />
+        public DateTime? EndDate { get; set; }
+
+        /// <summary />
         public Guid? ForeignGuid { get; set; }
 
         /// <summary />
         public string ForeignKey { get; set; }
+
+        /// <summary />
+        public int? MaxRegistrants { get; set; }
+
+        /// <summary />
+        public int? MaxUsage { get; set; }
+
+        /// <summary />
+        public int? MinRegistrants { get; set; }
 
         /// <summary>
         /// If the ModifiedByPersonAliasId is being set manually and should not be overwritten with current user when saved, set this value to true
@@ -59,6 +71,9 @@ namespace Rock.Client
 
         /// <summary />
         public int RegistrationTemplateId { get; set; }
+
+        /// <summary />
+        public DateTime? StartDate { get; set; }
 
         /// <summary>
         /// Leave this as NULL to let Rock set this
@@ -96,11 +111,16 @@ namespace Rock.Client
             this.Code = source.Code;
             this.DiscountAmount = source.DiscountAmount;
             this.DiscountPercentage = source.DiscountPercentage;
+            this.EndDate = source.EndDate;
             this.ForeignGuid = source.ForeignGuid;
             this.ForeignKey = source.ForeignKey;
+            this.MaxRegistrants = source.MaxRegistrants;
+            this.MaxUsage = source.MaxUsage;
+            this.MinRegistrants = source.MinRegistrants;
             this.ModifiedAuditValuesAlreadyUpdated = source.ModifiedAuditValuesAlreadyUpdated;
             this.Order = source.Order;
             this.RegistrationTemplateId = source.RegistrationTemplateId;
+            this.StartDate = source.StartDate;
             this.CreatedDateTime = source.CreatedDateTime;
             this.ModifiedDateTime = source.ModifiedDateTime;
             this.CreatedByPersonAliasId = source.CreatedByPersonAliasId;
