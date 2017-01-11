@@ -418,8 +418,13 @@ namespace RockWeb.Blocks.WorkFlow
                 }
             }
 
+            var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson );
+            mergeFields.Add( "Action", _action );
+            mergeFields.Add( "Activity", _activity );
+            mergeFields.Add( "Workflow", _workflow );
+
             ShowNotes( false );
-            ShowMessage( NotificationBoxType.Warning, string.Empty, "The selected workflow is not in a state that requires you to enter information." );
+            ShowMessage( NotificationBoxType.Warning, string.Empty, _workflowType.NoActionMessage.ResolveMergeFields( mergeFields, CurrentPerson ) );
             return false;
 
         }

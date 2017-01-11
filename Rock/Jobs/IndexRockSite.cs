@@ -38,11 +38,10 @@ namespace Rock.Jobs
     [DisallowConcurrentExecution]
 
     [SiteField("Site", "The site that will be indexed", true, order: 0)]
-    [TextField("Starting URL", "The URL to start the index from.", true, key: "StartingUrl", order: 1)]
     public class IndexRockSite : IJob
     {
         private int _indexedPageCount = 0;
-        private SiteCache _site;
+        private Site _site;
         
         /// <summary> 
         /// Empty constructor for job initialization
@@ -65,27 +64,27 @@ namespace Rock.Jobs
         public virtual void Execute( IJobExecutionContext context )
         {
             JobDataMap dataMap = context.JobDetail.JobDataMap;
-            var siteGuid = dataMap.GetString( "Site" ).AsIntegerOrNull();
-            var startingUrlAttrib = dataMap.GetString( "StartingUrl" );
-
+            var siteId = dataMap.GetString( "Site" ).AsIntegerOrNull();
+            
             Uri startingUri;
 
-            if ( siteGuid.HasValue )
+            if ( siteId.HasValue )
             {
-                _site = SiteCache.Read( siteGuid.Value );
+                _site = new SiteService( new RockContext()).Get( siteId.Value );
 
                 if ( _site != null )
                 {
+                    var startingUrl = _site.IndexStartingLocation;
 
-                    if ( Uri.TryCreate( startingUrlAttrib, UriKind.Absolute, out startingUri ) && (startingUri.Scheme == Uri.UriSchemeHttp || startingUri.Scheme == Uri.UriSchemeHttps) )
+                    if ( Uri.TryCreate( startingUrl, UriKind.Absolute, out startingUri ) && (startingUri.Scheme == Uri.UriSchemeHttp || startingUri.Scheme == Uri.UriSchemeHttps) )
                     {
                         // ensure that an index is configured for site pages, if not create it
                         IndexContainer.CreateIndex( typeof( SitePageIndex ), false );
 
                         // release the crawler, like the kraken... but not...
-                        //var pages = new Crawler().CrawlSite( startingUri.ToString(), PageCallback );
+                        var pages = new Crawler().CrawlSite( _site );
 
-                        //context.Result = string.Format("Crawler found {0} pages, {1} pages sent to be indexed.", pages, _indexedPageCount);
+                        context.Result = string.Format( "Crawler found {0} pages, {1} pages sent to be indexed.", pages, _indexedPageCount );
                     }
                     else
                     {

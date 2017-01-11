@@ -51,6 +51,12 @@ namespace Rock.Model
         public bool CanDelete( InteractionChannel item, out string errorMessage )
         {
             errorMessage = string.Empty;
+ 
+            if ( new Service<InteractionComponent>( Context ).Queryable().Any( a => a.ChannelId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", InteractionChannel.FriendlyTypeName, InteractionComponent.FriendlyTypeName );
+                return false;
+            }  
             return true;
         }
     }
