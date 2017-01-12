@@ -45,7 +45,7 @@ namespace chuch.ccv.Podcast.Rest
         [HttpGet]
         [HttpHead]
         [System.Web.Http.Route( "api/Podcast/Category/{categoryId}/{platform}/{version}" )]
-        public HttpResponseMessage Category( int categoryId, string platform, int version, int numSeries = int.MaxValue, int numMessages = int.MaxValue )
+        public HttpResponseMessage Category( int categoryId, string platform, int version, int numSeries = int.MaxValue, int numMessages = int.MaxValue, int personAliasId = 0 )
         {
             // first, what platform are we handling?
             StringContent restContent = null;
@@ -59,13 +59,13 @@ namespace chuch.ccv.Podcast.Rest
 
                 case "apple_tv":
                 {
-                    restContent = Retrieve_StreamingBox( version, categoryId, numSeries, numMessages );
+                    restContent = Retrieve_StreamingBox( version, categoryId, numSeries, numMessages, personAliasId );
                     break;
                 }
 
                 case "roku":
                 {
-                    restContent = Retrieve_StreamingBox( version, categoryId, numSeries, numMessages );
+                    restContent = Retrieve_StreamingBox( version, categoryId, numSeries, numMessages, personAliasId );
                     break;
                 }
 
@@ -284,14 +284,16 @@ namespace chuch.ccv.Podcast.Rest
             if( categoryId != 0 )
             {
                 PodcastUtil.PodcastCategory rootCategory = PodcastUtil.GetPodcastsByCategory( categoryId, false, numSeries, numMessages );
-
-                response = JsonConvert.SerializeObject( rootCategory );
+                if( rootCategory != null )
+                {
+                    response = JsonConvert.SerializeObject( rootCategory );
+                }
             }
 
             return new StringContent( response, Encoding.UTF8, "application/json" );
         }
 
-        StringContent Retrieve_StreamingBox( int version, int categoryId, int numSeries, int numMessages )
+        StringContent Retrieve_StreamingBox( int version, int categoryId, int numSeries, int numMessages, int personAliasId )
         {
             string response = string.Empty;
 
@@ -309,73 +311,77 @@ namespace chuch.ccv.Podcast.Rest
                 //--------Walk Thru John (S) [Note, this might actually be in a child category of Neighborhood Videos, but we flatten those.
             
                 // First, get the root category, fully, and with its child categories.
-                PodcastUtil.PodcastCategory fullRootCategory = PodcastUtil.GetPodcastsByCategory( 0, true, numSeries, numMessages );
-
-                // now, we want to create a new root with only any immediate series as its children
-                PodcastUtil.PodcastCategory rootCategory = new PodcastUtil.PodcastCategory( fullRootCategory.Name, fullRootCategory.Id );
-                foreach( PodcastUtil.IPodcastNode node in fullRootCategory.Children )
+                PodcastUtil.PodcastCategory fullRootCategory = PodcastUtil.GetPodcastsByCategory( 0, true, numSeries, numMessages, personAliasId );
+                if ( fullRootCategory != null )
                 {
-                    PodcastUtil.PodcastSeries series = node as PodcastUtil.PodcastSeries;
-                    if ( series != null )
+                    // now, we want to create a new root with only any immediate series as its children
+                    PodcastUtil.PodcastCategory rootCategory = new PodcastUtil.PodcastCategory( fullRootCategory.Name, fullRootCategory.Id );
+                    foreach( PodcastUtil.IPodcastNode node in fullRootCategory.Children )
                     {
-                        rootCategory.Children.Add( series );
-
-                        // track the series we're adding (if a real value was provided)
-                        if( numSeries != int.MaxValue )
+                        PodcastUtil.PodcastSeries series = node as PodcastUtil.PodcastSeries;
+                        if ( series != null )
                         {
-                            numSeries--;
-                        }
+                            rootCategory.Children.Add( series );
 
-                        // track the messages we're adding
-                        if( numMessages != int.MaxValue )
-                        {
-                            numMessages -= series.Messages.Count;
-                        }
-                    }
-                }
-            
-                if( numSeries > 0 && numMessages > 0 )
-                {
-                    // now load the category they care about, so we can get its children
-                    RockContext rockContext = new RockContext( );
-                    var category = new CategoryService( rockContext ).Queryable( ).Where( c => c.Id == fullRootCategory.Id ).SingleOrDefault( );
-
-                    // finally, recursively load all child categories, but flatten it all into one list per child category
-                    foreach ( Category childCategory in category.ChildCategories )
-                    {
-                        // make sure we haven't hit our series / messages limit
-                        if ( numSeries > 0 && numMessages > 0 )
-                        {
-                            // get as many series as numSeries is set to
-                            PodcastUtil.PodcastCategory podcasts = PodcastUtil.GetPodcastsByCategory( childCategory.Id, false, numSeries, numMessages );
-
-                            rootCategory.Children.Add( podcasts );
-
-                            // subtract the total messages added (if provided)
-                            if( numMessages != int.MaxValue )
-                            {
-                                foreach ( PodcastUtil.IPodcastNode node in podcasts.Children )
-                                {
-                                    PodcastUtil.PodcastSeries series = node as PodcastUtil.PodcastSeries;
-                                    numMessages -= series.Messages.Count( );
-                                }
-                            }
-
-                            // subtract the number of series we just took (we know the Children are all series because we passed 'false'
-                            // to keep hierarchy above)
+                            // track the series we're adding (if a real value was provided)
                             if( numSeries != int.MaxValue )
                             {
-                                numSeries -= podcasts.Children.Count( );
+                                numSeries--;
+                            }
+
+                            // track the messages we're adding
+                            if( numMessages != int.MaxValue )
+                            {
+                                numMessages -= series.Messages.Count;
                             }
                         }
-                        else
+                    }
+
+                    if ( numSeries > 0 && numMessages > 0 )
+                    {
+                        // now load the category they care about, so we can get its children
+                        RockContext rockContext = new RockContext( );
+                        var category = new CategoryService( rockContext ).Queryable( ).Where( c => c.Id == fullRootCategory.Id ).SingleOrDefault( );
+
+                        // finally, recursively load all child categories, but flatten it all into one list per child category
+                        foreach ( Category childCategory in category.ChildCategories )
                         {
-                            break;
+                            // make sure we haven't hit our series / messages limit
+                            if ( numSeries > 0 && numMessages > 0 )
+                            {
+                                // get as many series as numSeries is set to
+                                PodcastUtil.PodcastCategory podcasts = PodcastUtil.GetPodcastsByCategory( childCategory.Id, false, numSeries, numMessages, personAliasId );
+                                if ( podcasts != null )
+                                {
+                                    rootCategory.Children.Add( podcasts );
+
+                                    // subtract the total messages added (if provided)
+                                    if ( numMessages != int.MaxValue )
+                                    {
+                                        foreach ( PodcastUtil.IPodcastNode node in podcasts.Children )
+                                        {
+                                            PodcastUtil.PodcastSeries series = node as PodcastUtil.PodcastSeries;
+                                            numMessages -= series.Messages.Count( );
+                                        }
+                                    }
+
+                                    // subtract the number of series we just took (we know the Children are all series because we passed 'false'
+                                    // to keep hierarchy above)
+                                    if ( numSeries != int.MaxValue )
+                                    {
+                                        numSeries -= podcasts.Children.Count( );
+                                    }
+                                }
+                            }
+                            else
+                            {
+                                break;
+                            }
                         }
                     }
-                }
 
-                response = JsonConvert.SerializeObject( rootCategory );
+                    response = JsonConvert.SerializeObject( rootCategory );
+                }
             }
             else
             {
@@ -389,9 +395,11 @@ namespace chuch.ccv.Podcast.Rest
                 // Get the root category, with all its child series, and pass false so we take all child category series without
                 // the categories.
                 // Pass numSeries so we limit the amount requested.
-                PodcastUtil.PodcastCategory rootCategory = PodcastUtil.GetPodcastsByCategory( categoryId, false, numSeries, numMessages );
-
-                response = JsonConvert.SerializeObject( rootCategory );
+                PodcastUtil.PodcastCategory rootCategory = PodcastUtil.GetPodcastsByCategory( categoryId, false, numSeries, numMessages, personAliasId );
+                if( rootCategory != null )
+                {
+                    response = JsonConvert.SerializeObject( rootCategory );
+                }
             }
             return new StringContent( response, Encoding.UTF8, "application/json" );
         }
@@ -522,163 +530,165 @@ namespace chuch.ccv.Podcast.Rest
 
                     // get the weekend series, and remove all categories inbetween (tho there shouldn't be any)
                     PodcastUtil.PodcastCategory rootCategory = PodcastUtil.GetPodcastsByCategory( PodcastUtil.WeekendVideos_CategoryId, false, numSeries );
-                    
-                    foreach( PodcastUtil.IPodcastNode podcastNode in rootCategory.Children )
+                    if ( rootCategory != null )
                     {
-                        // this is safe to cast to a series, because we ask for only Series by passing false to GetPodcastsByCategory                        
-                        PodcastUtil.PodcastSeries series = podcastNode as PodcastUtil.PodcastSeries;
-
-                        // don't inlude series that aren't active
-                        bool activeValue = series.Attributes["Active"] == "True" ? true : false;
-                        if( activeValue )
+                        foreach( PodcastUtil.IPodcastNode podcastNode in rootCategory.Children )
                         {
-                            // Now each message of the series
-                            foreach( PodcastUtil.PodcastMessage message in series.Messages )
+                            // this is safe to cast to a series, because we ask for only Series by passing false to GetPodcastsByCategory                        
+                            PodcastUtil.PodcastSeries series = podcastNode as PodcastUtil.PodcastSeries;
+
+                            // don't inlude series that aren't active
+                            bool activeValue = series.Attributes["Active"] == "True" ? true : false;
+                            if( activeValue )
                             {
-                                // (because this is a new attrib, and not all messages have it, check for null. default to TRUE since that's what thye'll want the majority of the time.)
-                                bool messageActive = true;
-                                if( message.Attributes.ContainsKey( "Active" ) ) messageActive = bool.Parse( message.Attributes["Active"] );
-
-                                // only include items whose start date has already begun and that have been approved
-                                if( message.Date <= DateTime.Now && messageActive == true /*message.Approved == true*/ )
+                                // Now each message of the series
+                                foreach( PodcastUtil.PodcastMessage message in series.Messages )
                                 {
-                                    // there _must_ be a mediaURL and length in order for us to generate the podcast entry
-                                    string mediaUrl = message.Attributes[ mediaKindKey ];
-                                    string mediaLength = message.Attributes[ mediaLengthKey ];
-                                    
-                                    if( string.IsNullOrWhiteSpace( mediaUrl ) == false && string.IsNullOrWhiteSpace( mediaLength ) == false)
+                                    // (because this is a new attrib, and not all messages have it, check for null. default to TRUE since that's what thye'll want the majority of the time.)
+                                    bool messageActive = true;
+                                    if( message.Attributes.ContainsKey( "Active" ) ) messageActive = bool.Parse( message.Attributes["Active"] );
+
+                                    // only include items whose start date has already begun and that have been approved
+                                    if( message.Date <= DateTime.Now && messageActive == true /*message.Approved == true*/ )
                                     {
-                                        // before anything else, get the length of this content
-                                        WebRequest webReq = HttpWebRequest.Create( mediaUrl );
-                                        webReq.Method = "HEAD";
-                                        try
+                                        // there _must_ be a mediaURL and length in order for us to generate the podcast entry
+                                        string mediaUrl = message.Attributes[ mediaKindKey ];
+                                        string mediaLength = message.Attributes[ mediaLengthKey ];
+                                    
+                                        if( string.IsNullOrWhiteSpace( mediaUrl ) == false && string.IsNullOrWhiteSpace( mediaLength ) == false)
                                         {
-                                            using ( WebResponse webResponse = webReq.GetResponse() )
+                                            // before anything else, get the length of this content
+                                            WebRequest webReq = HttpWebRequest.Create( mediaUrl );
+                                            webReq.Method = "HEAD";
+                                            try
                                             {
-                                                string contentLength = webResponse.Headers["Content-Length"];
-                                                if( string.IsNullOrWhiteSpace( contentLength ) == false  )
+                                                using ( WebResponse webResponse = webReq.GetResponse() )
                                                 {
-                                                    writer.WriteStartElement( "item" );
-
-                                                    // Put required elements
-                                                    writer.WriteStartElement( "title" );
-                                                    writer.WriteValue( message.Name );
-                                                    writer.WriteEndElement( );
-
-
-                                                    // setup the summary and extra details. These will be the message's if it has them, and otherwise the series'.
-                                                    string itemSummary = string.Empty;
-                                                    string itemExtraDetails = string.Empty;
-
-                                                    // Summary
-                                                    // does the message have a summary?
-                                                    if( string.IsNullOrWhiteSpace( message.Description ) == false )
+                                                    string contentLength = webResponse.Headers["Content-Length"];
+                                                    if( string.IsNullOrWhiteSpace( contentLength ) == false  )
                                                     {
-                                                        itemSummary = message.Description;
-                                                    }
-                                                    else
-                                                    {
-                                                        itemSummary = series.Description;
-                                                    }
-                                                
-                                                    // does the message have an extra details value?
-                                                    string messageExtraDetails = message.Attributes[ "ExtraDetails" ];
-                                                    if( string.IsNullOrWhiteSpace( messageExtraDetails ) == false )
-                                                    {
-                                                        itemExtraDetails += messageExtraDetails;
-                                                    }
-                                                    else
-                                                    {
-                                                        // then does the series?
-                                                        string seriesExtraDetails = series.Attributes[ "ExtraDetails" ];
-                                                        if( string.IsNullOrWhiteSpace( seriesExtraDetails ) == false )
-                                                        {
-                                                            itemExtraDetails += seriesExtraDetails;
-                                                        }
-                                                    }
+                                                        writer.WriteStartElement( "item" );
 
-                                                    writer.WriteStartElement( "description" );
-                                                    writer.WriteValue( itemSummary );
-                                                    writer.WriteEndElement( );
-
-                                                    // if there WAS item extra details, format it properly
-                                                    if( string.IsNullOrWhiteSpace( itemExtraDetails ) == false )
-                                                    {
-                                                        itemExtraDetails = "<![CDATA[" + itemSummary + itemExtraDetails + "]]>";
-
-                                                        writer.WriteStartElement( "content", "encoded", contentNamespace );
-                                                        writer.WriteValue( itemExtraDetails );
+                                                        // Put required elements
+                                                        writer.WriteStartElement( "title" );
+                                                        writer.WriteValue( message.Name );
                                                         writer.WriteEndElement( );
+
+
+                                                        // setup the summary and extra details. These will be the message's if it has them, and otherwise the series'.
+                                                        string itemSummary = string.Empty;
+                                                        string itemExtraDetails = string.Empty;
+
+                                                        // Summary
+                                                        // does the message have a summary?
+                                                        if( string.IsNullOrWhiteSpace( message.Description ) == false )
+                                                        {
+                                                            itemSummary = message.Description;
+                                                        }
+                                                        else
+                                                        {
+                                                            itemSummary = series.Description;
+                                                        }
+                                                
+                                                        // does the message have an extra details value?
+                                                        string messageExtraDetails = message.Attributes[ "ExtraDetails" ];
+                                                        if( string.IsNullOrWhiteSpace( messageExtraDetails ) == false )
+                                                        {
+                                                            itemExtraDetails += messageExtraDetails;
+                                                        }
+                                                        else
+                                                        {
+                                                            // then does the series?
+                                                            string seriesExtraDetails = series.Attributes[ "ExtraDetails" ];
+                                                            if( string.IsNullOrWhiteSpace( seriesExtraDetails ) == false )
+                                                            {
+                                                                itemExtraDetails += seriesExtraDetails;
+                                                            }
+                                                        }
+
+                                                        writer.WriteStartElement( "description" );
+                                                        writer.WriteValue( itemSummary );
+                                                        writer.WriteEndElement( );
+
+                                                        // if there WAS item extra details, format it properly
+                                                        if( string.IsNullOrWhiteSpace( itemExtraDetails ) == false )
+                                                        {
+                                                            itemExtraDetails = "<![CDATA[" + itemSummary + itemExtraDetails + "]]>";
+
+                                                            writer.WriteStartElement( "content", "encoded", contentNamespace );
+                                                            writer.WriteValue( itemExtraDetails );
+                                                            writer.WriteEndElement( );
+                                                        }
+
+                                                        writer.WriteStartElement( "itunes", "summary", iTunesNamespace );
+                                                        writer.WriteValue( itemSummary );
+                                                        writer.WriteEndElement( );
+
+                                                        writer.WriteStartElement( "itunes", "subtitle", iTunesNamespace );
+                                                        writer.WriteValue( iTunesRSS_Subtitle );
+                                                        writer.WriteEndElement( );
+
+
+                                                        writer.WriteStartElement( "pubDate" );
+                                                        writer.WriteValue( message.Date.Value.ToString( "r" ) );
+                                                        writer.WriteEndElement( );
+
+                                                        writer.WriteStartElement( "itunes", "author", iTunesNamespace );
+                                                        writer.WriteValue( iTunesRSS_Author );
+                                                        writer.WriteEndElement( );
+
+                                                        writer.WriteStartElement( "itunes", "image", iTunesNamespace );
+                                                        writer.WriteAttributeString( "href", iTunesRSS_Image );
+                                                        writer.WriteEndElement( );
+                                        
+                                                        writer.WriteStartElement( "enclosure" );
+                                                            writer.WriteAttributeString( "url", mediaUrl );
+                                                            writer.WriteAttributeString( "length", contentLength );
+                                                            writer.WriteAttributeString( "type", mediaType );
+                                                        writer.WriteEndElement( );
+
+                                                        writer.WriteStartElement( "guid" );
+                                                        writer.WriteValue( mediaUrl );
+                                                        writer.WriteEndElement( );
+
+                                                        writer.WriteStartElement( "itunes", "duration", iTunesNamespace );
+                                                        writer.WriteValue( mediaLength );
+                                                        writer.WriteEndElement( );
+                                        
+                                                        writer.WriteStartElement( "itunes", "keywords", iTunesNamespace );
+                                                        writer.WriteValue( iTunesRSS_Keywords );
+                                                        writer.WriteEndElement( );
+
+                                                        // close the message
+                                                        writer.WriteEndElement();
+
+                                                        // now see if we should stop iterating because we hit our limit
+                                                        numPodcastsAdded++;
                                                     }
-
-                                                    writer.WriteStartElement( "itunes", "summary", iTunesNamespace );
-                                                    writer.WriteValue( itemSummary );
-                                                    writer.WriteEndElement( );
-
-                                                    writer.WriteStartElement( "itunes", "subtitle", iTunesNamespace );
-                                                    writer.WriteValue( iTunesRSS_Subtitle );
-                                                    writer.WriteEndElement( );
-
-
-                                                    writer.WriteStartElement( "pubDate" );
-                                                    writer.WriteValue( message.Date.Value.ToString( "r" ) );
-                                                    writer.WriteEndElement( );
-
-                                                    writer.WriteStartElement( "itunes", "author", iTunesNamespace );
-                                                    writer.WriteValue( iTunesRSS_Author );
-                                                    writer.WriteEndElement( );
-
-                                                    writer.WriteStartElement( "itunes", "image", iTunesNamespace );
-                                                    writer.WriteAttributeString( "href", iTunesRSS_Image );
-                                                    writer.WriteEndElement( );
-                                        
-                                                    writer.WriteStartElement( "enclosure" );
-                                                        writer.WriteAttributeString( "url", mediaUrl );
-                                                        writer.WriteAttributeString( "length", contentLength );
-                                                        writer.WriteAttributeString( "type", mediaType );
-                                                    writer.WriteEndElement( );
-
-                                                    writer.WriteStartElement( "guid" );
-                                                    writer.WriteValue( mediaUrl );
-                                                    writer.WriteEndElement( );
-
-                                                    writer.WriteStartElement( "itunes", "duration", iTunesNamespace );
-                                                    writer.WriteValue( mediaLength );
-                                                    writer.WriteEndElement( );
-                                        
-                                                    writer.WriteStartElement( "itunes", "keywords", iTunesNamespace );
-                                                    writer.WriteValue( iTunesRSS_Keywords );
-                                                    writer.WriteEndElement( );
-
-                                                    // close the message
-                                                    writer.WriteEndElement();
-
-                                                    // now see if we should stop iterating because we hit our limit
-                                                    numPodcastsAdded++;
                                                 }
                                             }
-                                        }
-                                        catch
-                                        {
-                                        }
+                                            catch
+                                            {
+                                            }
+                                        } 
                                     } 
-                                } 
 
-                                // fall out of messages if we hit our limit
-                                if( numPodcastsAdded >= MaxNumPodcasts )
-                                {
-                                    break;
-                                }
-                            } // End Message Loop
-                        }
+                                    // fall out of messages if we hit our limit
+                                    if( numPodcastsAdded >= MaxNumPodcasts )
+                                    {
+                                        break;
+                                    }
+                                } // End Message Loop
+                            }
 
-                        // fall out of series as well
-                        if( numPodcastsAdded >= MaxNumPodcasts )
-                        {
-                            break;
-                        }
+                            // fall out of series as well
+                            if( numPodcastsAdded >= MaxNumPodcasts )
+                            {
+                                break;
+                            }
 
-                    } //End Series Loop
+                        } //End Series Loop
+                    }
 
                     // close the channel
                     writer.WriteEndElement( );
@@ -727,170 +737,172 @@ namespace chuch.ccv.Podcast.Rest
 
                     // get the weekend series, and remove all categories inbetween (tho there shouldn't be any)
                     PodcastUtil.PodcastCategory rootCategory = PodcastUtil.GetPodcastsByCategory( PodcastUtil.WeekendVideos_CategoryId, false, numSeriesRequested );
-
-                    int seriesAdded = 0;
-                    
-                    foreach( PodcastUtil.IPodcastNode podcastNode in rootCategory.Children )
+                    if ( rootCategory != null )
                     {
-                        // this is safe to cast to a series, because we ask for only Series by passing false to GetPodcastsByCategory                        
-                        PodcastUtil.PodcastSeries series = podcastNode as PodcastUtil.PodcastSeries;
-
-                        // write the "Series" start element
-                        writer.WriteStartElement( "Series" );
-
-                        
-                        // here, we need to see if we should flag this series as Private.
-                        // A series is Private if it's Inactive, OR if it has all private messages.
-
-                        // first, has it been set to active?
-                        bool isSeriesActive = series.Attributes["Active"] == "True" ? true : false;
-                        
-                        // second, are ALL messages private? Assume that, and then check each message. If we
-                        // encounter one that is PUBLIC, we'll set that and break.
-
-                        // we can't do this when we iterate across messages further down, because this attribute must be
-                        // written here (per-XML standards)
-                        bool hasPublicMessage = false;
-                        foreach( PodcastUtil.PodcastMessage message in series.Messages )
+                        int seriesAdded = 0;
+                    
+                        foreach( PodcastUtil.IPodcastNode podcastNode in rootCategory.Children )
                         {
-                            // (because this is a new attrib, and not all messages have it, check for null. default to TRUE since that's what thye'll want the majority of the time.)
-                            bool messageActive = true;
-                            if( message.Attributes.ContainsKey( "Active" ) ) messageActive = bool.Parse( message.Attributes["Active"] );
+                            // this is safe to cast to a series, because we ask for only Series by passing false to GetPodcastsByCategory                        
+                            PodcastUtil.PodcastSeries series = podcastNode as PodcastUtil.PodcastSeries;
 
-                            // if the message already started AND has been approved, then its public.
-                            if ( message.Date <= DateTime.Now && messageActive == true/*message.Approved == true*/ )
+                            // write the "Series" start element
+                            writer.WriteStartElement( "Series" );
+
+                        
+                            // here, we need to see if we should flag this series as Private.
+                            // A series is Private if it's Inactive, OR if it has all private messages.
+
+                            // first, has it been set to active?
+                            bool isSeriesActive = series.Attributes["Active"] == "True" ? true : false;
+                        
+                            // second, are ALL messages private? Assume that, and then check each message. If we
+                            // encounter one that is PUBLIC, we'll set that and break.
+
+                            // we can't do this when we iterate across messages further down, because this attribute must be
+                            // written here (per-XML standards)
+                            bool hasPublicMessage = false;
+                            foreach( PodcastUtil.PodcastMessage message in series.Messages )
                             {
-                                hasPublicMessage = true;
-                                break;
+                                // (because this is a new attrib, and not all messages have it, check for null. default to TRUE since that's what thye'll want the majority of the time.)
+                                bool messageActive = true;
+                                if( message.Attributes.ContainsKey( "Active" ) ) messageActive = bool.Parse( message.Attributes["Active"] );
+
+                                // if the message already started AND has been approved, then its public.
+                                if ( message.Date <= DateTime.Now && messageActive == true/*message.Approved == true*/ )
+                                {
+                                    hasPublicMessage = true;
+                                    break;
+                                }
                             }
-                        }
 
-                        // finally, if the series is not active, or has no public messages, then it should be private.
-                        if( isSeriesActive == false || hasPublicMessage == false )
-                        {
-                            writer.WriteAttributeString( "Private", "true" );
-                        }
-
-                        // Put each needed XML element
-                        writer.WriteStartElement( "SeriesName" );
-                        writer.WriteValue( series.Name );
-                        writer.WriteEndElement( );
-
-                        writer.WriteStartElement( "Description" );
-                        writer.WriteValue( series.Description );
-                        writer.WriteEndElement( );
-
-                        // parse and setup the date range for the series
-                        string dateRangeStr = string.Empty;
-                        series.Attributes.TryGetValue( "DateRange", out dateRangeStr );
-
-                        if( string.IsNullOrWhiteSpace( dateRangeStr ) == false )
-                        {
-                            string[] dateRanges = dateRangeStr.Split( ',' );
-                            string startDate = DateTime.Parse( dateRanges[ 0 ] ).ToShortDateString( );
-                            string endDate = DateTime.Parse( dateRanges[ 1 ] ).ToShortDateString( );
-
-                            writer.WriteStartElement( "DateRanges" );
-                            writer.WriteValue( startDate + " - " + endDate );
-                            writer.WriteEndElement( );
-                        }
-
-                        // The images will be Guids with the GetImage path prefixed (we'll also fix the resolution since that what the mobile app expects)
-                        writer.WriteStartElement( "BillboardUrl" );
-                        string billboardUrl = publicApplicationRoot + GetImageEndpoint + series.Attributes["Image_16_9"];
-                        billboardUrl += "&width=750&height=422";
-                        writer.WriteValue( billboardUrl );
-                        writer.WriteEndElement( );
-
-                        writer.WriteStartElement( "ThumbnailUrl" );
-                        string thumbnailUrl = publicApplicationRoot + GetImageEndpoint + series.Attributes["Image_1_1"];
-                        thumbnailUrl += "&width=140&height=140";
-                        writer.WriteValue( thumbnailUrl );
-                        writer.WriteEndElement( );
-
-                
-                        // Now generate each message of the series
-                        foreach( PodcastUtil.PodcastMessage message in series.Messages )
-                        {
-                            writer.WriteStartElement( "Message" );
-                                                        
-                            // (because this is a new attrib, and not all messages have it, check for null. default to TRUE since that's what thye'll want the majority of the time.)
-                            bool messageActive = true;
-                            if( message.Attributes.ContainsKey( "Active" ) ) messageActive = bool.Parse( message.Attributes["Active"] );
-
-                            // if the message doesn't start yet, or hasn't been approved, set it to private.
-                            if( message.Date > DateTime.Now || messageActive == false /*message.Approved == false*/ )
+                            // finally, if the series is not active, or has no public messages, then it should be private.
+                            if( isSeriesActive == false || hasPublicMessage == false )
                             {
                                 writer.WriteAttributeString( "Private", "true" );
                             }
 
-                            // Put required elements
-                            writer.WriteStartElement( "Name" );
-                            writer.WriteValue( message.Name );
+                            // Put each needed XML element
+                            writer.WriteStartElement( "SeriesName" );
+                            writer.WriteValue( series.Name );
                             writer.WriteEndElement( );
 
-                            writer.WriteStartElement( "Speaker" );
-                            writer.WriteValue( message.Attributes["Speaker"] );
+                            writer.WriteStartElement( "Description" );
+                            writer.WriteValue( series.Description );
                             writer.WriteEndElement( );
 
-                            writer.WriteStartElement( "Date" );
-                            writer.WriteValue( message.Date.Value.ToShortDateString( ) );
-                            writer.WriteEndElement( );
-                            
-                            string noteUrlValue = message.Attributes["NoteUrl"];
-                            if( string.IsNullOrWhiteSpace( noteUrlValue ) == false )
-                            {
-                                writer.WriteStartElement( "NoteUrl" );
-                                writer.WriteValue( noteUrlValue );
-                                writer.WriteEndElement();
-                            }
+                            // parse and setup the date range for the series
+                            string dateRangeStr = string.Empty;
+                            series.Attributes.TryGetValue( "DateRange", out dateRangeStr );
 
-                            // Watch/Share/Audio URLs are optional, so check that they exist
-                            string watchUrlValue = message.Attributes["WatchUrl"];
-                            if( string.IsNullOrWhiteSpace( watchUrlValue ) == false )
+                            if( string.IsNullOrWhiteSpace( dateRangeStr ) == false )
                             {
-                                writer.WriteStartElement( "WatchUrl" );
-                                writer.WriteValue( watchUrlValue );
-                                writer.WriteEndElement();
-                            }
-                    
-                            string shareUrlValue = message.Attributes["ShareUrl"];
-                            if( string.IsNullOrWhiteSpace( shareUrlValue ) == false )
-                            {
-                                writer.WriteStartElement( "ShareUrl" );
-                                writer.WriteValue( shareUrlValue );
-                                writer.WriteEndElement();
-                            }
-                            
-                            string audioUrlValue = message.Attributes["HostedAudioUrl"];
-                            if( string.IsNullOrWhiteSpace( audioUrlValue ) == false )
-                            {
-                                writer.WriteStartElement( "AudioUrl" );
-                                writer.WriteValue( audioUrlValue );
-                                writer.WriteEndElement();
-                            }
+                                string[] dateRanges = dateRangeStr.Split( ',' );
+                                string startDate = DateTime.Parse( dateRanges[ 0 ] ).ToShortDateString( );
+                                string endDate = DateTime.Parse( dateRanges[ 1 ] ).ToShortDateString( );
 
-                            string discussionGuideUrlValue = null;
-                            message.Attributes.TryGetValue( "DiscussionGuideUrl", out discussionGuideUrlValue );
-                            if ( string.IsNullOrWhiteSpace( discussionGuideUrlValue ) == false )
-                            {
-                                writer.WriteStartElement( "DiscussionGuideUrl" );
-                                writer.WriteValue( discussionGuideUrlValue );
+                                writer.WriteStartElement( "DateRanges" );
+                                writer.WriteValue( startDate + " - " + endDate );
                                 writer.WriteEndElement( );
                             }
 
-                            // close the message
+                            // The images will be Guids with the GetImage path prefixed (we'll also fix the resolution since that what the mobile app expects)
+                            writer.WriteStartElement( "BillboardUrl" );
+                            string billboardUrl = publicApplicationRoot + GetImageEndpoint + series.Attributes["Image_16_9"];
+                            billboardUrl += "&width=750&height=422";
+                            writer.WriteValue( billboardUrl );
+                            writer.WriteEndElement( );
+
+                            writer.WriteStartElement( "ThumbnailUrl" );
+                            string thumbnailUrl = publicApplicationRoot + GetImageEndpoint + series.Attributes["Image_1_1"];
+                            thumbnailUrl += "&width=140&height=140";
+                            writer.WriteValue( thumbnailUrl );
+                            writer.WriteEndElement( );
+
+                
+                            // Now generate each message of the series
+                            foreach( PodcastUtil.PodcastMessage message in series.Messages )
+                            {
+                                writer.WriteStartElement( "Message" );
+                                                        
+                                // (because this is a new attrib, and not all messages have it, check for null. default to TRUE since that's what thye'll want the majority of the time.)
+                                bool messageActive = true;
+                                if( message.Attributes.ContainsKey( "Active" ) ) messageActive = bool.Parse( message.Attributes["Active"] );
+
+                                // if the message doesn't start yet, or hasn't been approved, set it to private.
+                                if( message.Date > DateTime.Now || messageActive == false /*message.Approved == false*/ )
+                                {
+                                    writer.WriteAttributeString( "Private", "true" );
+                                }
+
+                                // Put required elements
+                                writer.WriteStartElement( "Name" );
+                                writer.WriteValue( message.Name );
+                                writer.WriteEndElement( );
+
+                                writer.WriteStartElement( "Speaker" );
+                                writer.WriteValue( message.Attributes["Speaker"] );
+                                writer.WriteEndElement( );
+
+                                writer.WriteStartElement( "Date" );
+                                writer.WriteValue( message.Date.Value.ToShortDateString( ) );
+                                writer.WriteEndElement( );
+                            
+                                string noteUrlValue = message.Attributes["NoteUrl"];
+                                if( string.IsNullOrWhiteSpace( noteUrlValue ) == false )
+                                {
+                                    writer.WriteStartElement( "NoteUrl" );
+                                    writer.WriteValue( noteUrlValue );
+                                    writer.WriteEndElement();
+                                }
+
+                                // Watch/Share/Audio URLs are optional, so check that they exist
+                                string watchUrlValue = message.Attributes["WatchUrl"];
+                                if( string.IsNullOrWhiteSpace( watchUrlValue ) == false )
+                                {
+                                    writer.WriteStartElement( "WatchUrl" );
+                                    writer.WriteValue( watchUrlValue );
+                                    writer.WriteEndElement();
+                                }
+                    
+                                string shareUrlValue = message.Attributes["ShareUrl"];
+                                if( string.IsNullOrWhiteSpace( shareUrlValue ) == false )
+                                {
+                                    writer.WriteStartElement( "ShareUrl" );
+                                    writer.WriteValue( shareUrlValue );
+                                    writer.WriteEndElement();
+                                }
+                            
+                                string audioUrlValue = message.Attributes["HostedAudioUrl"];
+                                if( string.IsNullOrWhiteSpace( audioUrlValue ) == false )
+                                {
+                                    writer.WriteStartElement( "AudioUrl" );
+                                    writer.WriteValue( audioUrlValue );
+                                    writer.WriteEndElement();
+                                }
+
+                                string discussionGuideUrlValue = null;
+                                message.Attributes.TryGetValue( "DiscussionGuideUrl", out discussionGuideUrlValue );
+                                if ( string.IsNullOrWhiteSpace( discussionGuideUrlValue ) == false )
+                                {
+                                    writer.WriteStartElement( "DiscussionGuideUrl" );
+                                    writer.WriteValue( discussionGuideUrlValue );
+                                    writer.WriteEndElement( );
+                                }
+
+                                // close the message
+                                writer.WriteEndElement();
+                            }
+
+                            // close the series
                             writer.WriteEndElement();
-                        }
 
-                        // close the series
-                        writer.WriteEndElement();
-
-                        // if we're beyond the number of series they wanted, stop.
-                        seriesAdded++;
-                        if( seriesAdded > numSeriesRequested )
-                        {
-                            break;
+                            // if we're beyond the number of series they wanted, stop.
+                            seriesAdded++;
+                            if( seriesAdded > numSeriesRequested )
+                            {
+                                break;
+                            }
                         }
                     }
 

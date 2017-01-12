@@ -38,7 +38,9 @@ namespace church.ccv.Podcast
 
         const int ContentChannelTypeId_PodcastSeries = 8;
 
-        public static PodcastCategory GetPodcastsByCategory( int categoryId, bool keepCategoryHierarchy = true, int maxSeries = int.MaxValue, int numMessages = int.MaxValue )
+        // Returns podcasts by category (or by the root if 0 is provided).
+        // Can return NULL if the user provided isn't allowed to view the category of categoryId
+        public static PodcastCategory GetPodcastsByCategory( int categoryId, bool keepCategoryHierarchy = true, int maxSeries = int.MaxValue, int numMessages = int.MaxValue, int personAliasId = 0 )
         {
             if( maxSeries != int.MaxValue && numMessages != int.MaxValue )
             {
@@ -51,30 +53,50 @@ namespace church.ccv.Podcast
                 categoryId = RootPodcast_CategoryId;
             }
 
-            RockContext rockContext = new RockContext( );
-
             // get the root category that's parent to all categories and podcasts they care about
-            //var category = new CategoryService( rockContext ).Queryable( ).Where( c => c.Id == categoryId ).SingleOrDefault( );
+            RockContext rockContext = new RockContext( );
             var category = CategoryCache.Read( categoryId );
-            
-            // create a query that'll get all of the "Category" attributes for all the content channels
-            var categoryAttribValList = new AttributeValueService( rockContext ).Queryable( ).Where( av => av.Attribute.Guid == new Guid( church.ccv.Utility.SystemGuids.Attribute.CONTENT_CHANNEL_CATEGORY_ATTRIBUTE  ) );
 
-            // now get ALL content channels with their parent category(s) attributes as a joined object
-            ContentChannelService contentChannelService = new ContentChannelService( rockContext );
-            var categoryContentChannelItems = contentChannelService.Queryable( ).Join( categoryAttribValList, 
-                                                                                       cc => cc.Id, cav => cav.EntityId, ( cc, cav ) => new ContentChannelWithAttrib { ContentChannel = cc, AttribValue = cav.Value } );
+            // check the security on this category to see if it should be viewable.
+            // a NULL person is considered an "All Users" person, so if no ID was passed,
+            // we'll treat the requester as an "All User"
+            Person requestingPerson = null;
+            if( personAliasId > 0 )
+            {
+                // take the person, if they're found. If somehow they're null, we'll treat them like
+                // an anonymous user
+                PersonAlias personAlias = new PersonAliasService( rockContext ).Get( personAliasId );
+                if( personAlias != null )
+                {
+                    requestingPerson = personAlias.Person;
+                }
+            }
+            bool viewAllowed = category.IsAuthorized( Rock.Security.Authorization.VIEW, requestingPerson );
+
+            // if this user (anonymous, or specific) is allowed to view the category, load it.
+            // otherwise, we'll just pass back an empty category
+            PodcastCategory rootPodcast = null;
+            if ( viewAllowed )
+            {
+                // create a query that'll get all of the "Category" attributes for all the content channels
+                var categoryAttribValList = new AttributeValueService( rockContext ).Queryable( ).Where( av => av.Attribute.Guid == new Guid( church.ccv.Utility.SystemGuids.Attribute.CONTENT_CHANNEL_CATEGORY_ATTRIBUTE  ) );
+
+                // now get ALL content channels with their parent category(s) attributes as a joined object
+                ContentChannelService contentChannelService = new ContentChannelService( rockContext );
+                var categoryContentChannelItems = contentChannelService.Queryable( ).Join( categoryAttribValList, 
+                                                                                           cc => cc.Id, cav => cav.EntityId, ( cc, cav ) => new ContentChannelWithAttrib { ContentChannel = cc, AttribValue = cav.Value } );
             
-            // create our root podcast object
-            PodcastCategory rootPodcast = new PodcastCategory( category.Name, category.Id );
-                        
-            // see if this category has any podcasts to add.
-            Internal_GetPodcastsByCategory( category, rootPodcast, categoryContentChannelItems, ref maxSeries, ref numMessages, keepCategoryHierarchy );
+                // create our root podcast object
+                rootPodcast = new PodcastCategory( category.Name, category.Id );
+
+                // see if this category has any podcasts to add.
+                Internal_GetPodcastsByCategory( category, rootPodcast, categoryContentChannelItems, ref maxSeries, ref numMessages, keepCategoryHierarchy, requestingPerson );
+            }
     
             return rootPodcast;
         }
 
-        static void Internal_GetPodcastsByCategory( CategoryCache category, PodcastCategory rootPodcast, IQueryable<ContentChannelWithAttrib> categoryContentChannelItems, ref int numSeriesToAdd, ref int numMessagesToAdd, bool keepCategoryHierarchy )
+        static void Internal_GetPodcastsByCategory( CategoryCache category, PodcastCategory rootPodcast, IQueryable<ContentChannelWithAttrib> categoryContentChannelItems, ref int numSeriesToAdd, ref int numMessagesToAdd, bool keepCategoryHierarchy, Person requestingPerson )
         {
             // Get all Content Channels that are immediate children of the provided category. Sort them by date, and then take 'numPodcastsToAdd', since 
             // this is recursive and we might not need anymore.
@@ -95,7 +117,7 @@ namespace church.ccv.Podcast
 
                 // now see if we've hit our max messages.
                 numMessagesToAdd -= podcastSeries.Messages.Count;
-                if( numMessagesToAdd <= 0 ) break;
+                if ( numMessagesToAdd <= 0 ) break;
             }
 
             // subtract the number of podcasts added
@@ -104,33 +126,36 @@ namespace church.ccv.Podcast
             // now recursively handle all child categories
             foreach ( CategoryCache childCategory in category.Categories )
             {
-                PodcastCategory podcastCategory = null;
-
-                // if true, we'll maintain the category hierarchy.
-                if ( keepCategoryHierarchy )
+                if ( childCategory.IsAuthorized( Rock.Security.Authorization.VIEW, requestingPerson ) )
                 {
-                    // so create a new child category object
-                    PodcastCategory childPodcastCategory = new PodcastCategory( childCategory.Name, childCategory.Id );
+                    PodcastCategory podcastCategory = null;
 
-                    // add it to this root podcast
-                    rootPodcast.Children.Add( childPodcastCategory );
+                    // if true, we'll maintain the category hierarchy.
+                    if ( keepCategoryHierarchy )
+                    {
+                        // so create a new child category object
+                        PodcastCategory childPodcastCategory = new PodcastCategory( childCategory.Name, childCategory.Id );
 
-                    // and set it as the next category to use
-                    podcastCategory = childPodcastCategory;
-                }
-                else
-                {
-                    // false, so we should use the initial root category, so that all series / messages go into this category's
-                    // Children list as a big flat list
-                    podcastCategory = rootPodcast;
-                }
+                        // add it to this root podcast
+                        rootPodcast.Children.Add( childPodcastCategory );
+
+                        // and set it as the next category to use
+                        podcastCategory = childPodcastCategory;
+                    }
+                    else
+                    {
+                        // false, so we should use the initial root category, so that all series / messages go into this category's
+                        // Children list as a big flat list
+                        podcastCategory = rootPodcast;
+                    }
 
 
-                // if there are more podcasts to add
-                if( numSeriesToAdd > 0 && numMessagesToAdd > 0 )
-                {
-                    // recursively call this so it can add its children
-                    Internal_GetPodcastsByCategory( childCategory, podcastCategory, categoryContentChannelItems, ref numSeriesToAdd, ref numMessagesToAdd, keepCategoryHierarchy );
+                    // if there are more podcasts to add
+                    if ( numSeriesToAdd > 0 && numMessagesToAdd > 0 )
+                    {
+                        // recursively call this so it can add its children
+                        Internal_GetPodcastsByCategory( childCategory, podcastCategory, categoryContentChannelItems, ref numSeriesToAdd, ref numMessagesToAdd, keepCategoryHierarchy, requestingPerson );
+                    }
                 }
             }
         }
