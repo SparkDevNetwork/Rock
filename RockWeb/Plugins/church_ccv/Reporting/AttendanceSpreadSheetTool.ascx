@@ -1,6 +1,9 @@
 ﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="AttendanceSpreadSheetTool.ascx.cs" Inherits="RockWeb.Plugins.church_ccv.Reporting.AttendanceSpreadSheetTool" %>
 
 <asp:UpdatePanel ID="upnlContent" runat="server">
+    <Triggers>
+        <asp:PostBackTrigger ControlID="btnCreateSpreadsheet" />
+    </Triggers>
     <ContentTemplate>
 
         <asp:Panel ID="pnlView" runat="server" CssClass="panel panel-block">
@@ -28,21 +31,23 @@
                         <asp:LinkButton ID="btnUpdate" runat="server" CssClass="btn btn-sm btn-primary" Text="Update" OnClick="btnUpdate_Click" />
                     </div>
 
-                <h2>
-                    <asp:Literal ID="lSundayDate" runat="server" /></h2>
-                <h3>Headcounts Export</h3>
-                <Rock:Grid ID="gHeadcountsExport" runat="server" AllowSorting="false" AllowPaging="false" ExportFilename="HeadcountsExport" ExportSource="ColumnOutput">
-                    <Columns>
-                    </Columns>
-                </Rock:Grid>
+                    <h2>
+                        <asp:Literal ID="lSundayDate" runat="server" /></h2>
+
+                    <asp:Button ID="btnCreateSpreadsheet" runat="server" CssClass="btn btn-primary" Text="Create Spreadsheet" OnClick="btnCreateSpreadsheet_Click" />
+                    <h3>Headcounts Export</h3>
+                    <Rock:Grid ID="gHeadcountsExport" runat="server" AllowSorting="false" AllowPaging="false" ExportFilename="HeadcountsExport">
+                        <Columns>
+                        </Columns>
+                    </Rock:Grid>
 
 
-                <h3>Attendance Export (Checkin)</h3>
+                    <h3>Attendance Export (Checkin)</h3>
 
-                <Rock:Grid ID="gCheckinAttendanceExport" runat="server" AllowSorting="false" AllowPaging="false" ExportFilename="CheckInExport" ExportSource="ColumnOutput">
-                    <Columns>
-                    </Columns>
-                </Rock:Grid>
+                    <Rock:Grid ID="gCheckinAttendanceExport" runat="server" AllowSorting="false" AllowPaging="false" ExportFilename="CheckInExport">
+                        <Columns>
+                        </Columns>
+                    </Rock:Grid>
                 </div>
 
             </div>
