@@ -346,7 +346,8 @@ namespace church.ccv.Utility.Groups
 
                 RockContext rockContext = new RockContext();
                 GroupService groupService = new GroupService( rockContext );
-
+                GroupMemberService groupMemberService = new GroupMemberService( rockContext );
+                
                 var qry = groupService
                     .Queryable( "GroupLocations,Members,Members.Person,Members.Person.PhoneNumbers,GroupType" )
                     .Where( g => g.Id == _groupId );
@@ -357,24 +358,21 @@ namespace church.ccv.Utility.Groups
                 }
 
                 var group = qry.FirstOrDefault();
+                mergeFields.Add( "Group", group );
 
                 // order group members by name
-                if ( group != null )
-                {
-                    group.Members = group.Members.OrderBy( m => m.Person.LastName ).ThenBy( m => m.Person.FirstName ).ToList();
-                }
-                mergeFields.Add( "Group", group );
+                var groupMembers = groupMemberService.Queryable( ).Where( gm => gm.GroupId == group.Id ).OrderBy( m => m.Person.LastName ).ThenBy( m => m.Person.FirstName ).ToList( );
                 
 
                 // first, for performance, get all the IDs for group members. Use those to select all their person objects (with children when applicable)
                 PersonService personService = new PersonService( rockContext );
-                List<int> memberPersonIds = group.Members.Select( m => m.PersonId ).ToList( );
+                List<int> memberPersonIds = groupMembers.Select( m => m.PersonId ).ToList( );
                 List<ParentWithChildren> parentList = personService.GetParentWithChildren( true ).Where( p => memberPersonIds.Contains( p.Parent.Id ) ).ToList( );
                 
 
                 // now build a list of all members with their spouse / children
                 List<GroupMemberWithFamily> groupMembersWithFamily = new List<GroupMemberWithFamily>( );
-                foreach( GroupMember member in group.Members )
+                foreach( GroupMember member in groupMembers )
                 {
                     GroupMemberWithFamily memberWithFamily = new GroupMemberWithFamily( member );
                     
