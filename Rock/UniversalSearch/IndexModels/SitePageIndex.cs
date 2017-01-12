@@ -147,7 +147,7 @@ namespace Rock.UniversalSearch.IndexModels
         public override FormattedSearchResult FormatSearchResult( Person person, Dictionary<string, object> displayOptions = null )
         {
 
-            return new FormattedSearchResult() { IsViewAllowed = true, FormattedResult = string.Format( "<a href='{0}'>{1}</a>", this.Url, this.PageTitle ) };
+            return new FormattedSearchResult() { IsViewAllowed = true, FormattedResult = string.Format( "<a href='{0}'><strong>{1}</strong></a>", this.Url, this.PageTitle ) };
         }
     }
 }

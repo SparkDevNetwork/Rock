@@ -519,7 +519,7 @@ namespace Rock.UniversalSearch.IndexComponents
                             if ( hit.Source != null )
                             {
 
-                                Type indexModelType = Type.GetType( (string)((JObject)hit.Source)["indexModelType"] );
+                                Type indexModelType = Type.GetType( $"{ ((string)((JObject)hit.Source)["indexModelType"])}, { ((string)((JObject)hit.Source)["indexModelAssembly"])}" );
 
                                 if ( indexModelType != null )
                                 {
