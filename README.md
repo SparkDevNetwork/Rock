@@ -2,10 +2,9 @@
 
 [![Build status](https://ci.appveyor.com/api/projects/status/om3ddkynyoobdnpf/branch/master?svg=true)](https://ci.appveyor.com/project/NewSpring/rock/branch/master)
 
-Rock RMS is an open source Relationship Management System (RMS) and Application 
-Framework. While Rock specializes in serving the unique needs of churches it's
-useful in a wide range of service industries.  Rock is an ASP.NET 4.5 C# web application
-that uses Entity Framework 6.0, jQuery, Bootstrap 3, and many other open source libraries.
+Rock RMS is a Relationship Management System (RMS) and plugin-friendly framework
+written as an ASP.NET 4.5 C# web application, using Entity Framework 6.0, 
+jQuery, Bootstrap 3, and other open source libraries.
 
 The following guide documents how NewSpring Web uses Rock.
 
@@ -14,7 +13,8 @@ Quick links:
 - [Getting Started](#getting-started) 
 - [Primary Differences](#primary-differences)
 - [Running Rock](#running-rock) 
-- [New Environments](#new-environments) 
+- [New Environments](#new-environments)
+- [Deploy Process](#deploy-process)
 - [Learn More](#learn-more) 
 - [Community](#community) 
 - [License](#license)
@@ -23,7 +23,7 @@ Quick links:
 
 Take a peek at the Rock [Developer 101](http://www.rockrms.com/Rock/Developer/BookContent/16/16) book to get started.   Some more information can be found on the [wiki](../../wiki).
 
-If you're completely new to .NET, C# and SQL Server, you may want to read through [this overview](http://www.hanselman.com/blog/WhatNETDevelopersOughtToKnowToStartIn2017.aspx).
+If you're completely new to .NET, C# and SQL Server, you may want to read through [this overview](http://www.hanselman.com/blog/WhatNETDevelopersOughtToKnowToStartIn2017.aspx).  If you're completely new to Github and Git, read through the [Contribution](./CONTRIBUTING.md) guidelines.
 
 
 ## Primary Differences
@@ -41,13 +41,13 @@ If you clone the base repository, you'll notice that there are a  _LOT_ of binar
 
 Applications and Installers can be downloaded through the Rock Shop (for production) or from the base repo (for debugging/development).  We don't use the stock Check-in Labels; all our labels can be found [here](https://github.com/NewSpring/rock-attended-checkin/tree/master/Checkin%20Labels).  Packages are automatically downloaded in production or development via Nuget.
 
-#### Deploy Process
+#### Deploy Configuration
 
 We use [Appveyor](https://www.appveyor.com/) to do continuous deployment to different environments.  It's fast, free (for one build at a time), and relatively easy to set up.  We depend on [Node/Norma](https://github.com/NewSpring/Norma) to add plugins to the build and [MSBuild](https://msdn.microsoft.com/en-us/library/dd393573.aspx) to compile the entire solution.   You'll notice the following files in our repo:
 
 - [./appveyor.yml](./appveyor.yml)
 
-  This file contains all the build settings for AppVeyor.  You can use the UI instead, but you won't be able to track changes (especially helpful if something breaks).
+  This file contains all the build settings for AppVeyor.  You can use the UI instead, but you won't be able to track changes (especially helpful if something breaks).  Formatting wise, Appveyor requires all spaces in this file (no tabs!).
 
 - [./Norma](./Norma)
 
@@ -150,7 +150,7 @@ Here's a sample connection string:
 
 #### Migrations
 
-If you need to build or update a new database, look for the Nuget Package Manager Console and enter this command: `update-database -ProjectName 'Rock.Migrations'`. 
+If you need to build or update a new database, look for the Nuget Package Manager Console and enter this command: `update-database -ProjectName 'Rock.Migrations'`.  Note that if you had any Nuget updates while Visual Studio was open, you'll need to reload Visual Studio to successfully run the Package Manager Console.
 
 Alternatively, [follow the guide](http://shouldertheboulder.com/Article?id=368) to set your own migration shortcut.  This will use the connection defined in `web.connectionstrings.config` to build or upgrade your database.
 
@@ -167,17 +167,58 @@ This guide assumes you'll be running Rock inside a Windows environment.  If that
 - Select an existing hard disk (VMDK)
 - Set minimum CPU processors to 2 
 - Set minimum RAM at 4GB
+- Download [Git](https://git-scm.com/downloads) (includes Git Bash ❤️)
 - Update your [git config](https://git-scm.com/book/en/v2/Getting-Started-First-Time-Git-Setup) using Git Bash
 - Create your first [Pull Request](../../pulls) 
-- [Visual Studio Community](https://www.visualstudio.com/vs/community/) (free)
+- Download [Visual Studio Community](https://www.visualstudio.com/vs/community/) (free)
 - Import the recommended [Visual Studio settings](./.vs/VisualStudio.vssettings)
-- SQL Server: LocalDB (free), [Express](https://www.microsoft.com/en-us/sql-server/sql-server-editions-express) (free), or Standard (not free)
-- [SQL Server Management Studio](https://msdn.microsoft.com/en-us/library/mt238290.aspx) (free)
+- Download SQL Server: LocalDB (free), [Express](https://www.microsoft.com/en-us/sql-server/sql-server-editions-express) (free), or Standard (not free)
+- Download [SQL Server Management Studio](https://msdn.microsoft.com/en-us/library/mt238290.aspx) (free)
 - Install some helpful plugins: [CodeMaid](https://visualstudiogallery.msdn.microsoft.com/76293c4d-8c16-4f4a-aee6-21f83a571496), [GhostDoc](https://visualstudiogallery.msdn.microsoft.com/46A20578-F0D5-4B1E-B55D-F001A6345748) and [Gulp](https://webtooling.visualstudio.com/task-runners/gulp/)
 
 If you haven't already experienced the joy of developing in Visual Studio with IIS, we'd highly recommend it: faster build times, easier debugging, cross-platform browsing, and bypassing the occasional VS insanity.   You'll need to set up an IIS site pointed at [./RockWeb](./RockWeb), your database has to [be configured](http://logicalread.solarwinds.com/sql-server-express-as-a-production-database/) for IIS requests, and Visual Studio has to run as Administrator (so you can attach to IIS when debugging).
 
 If you don't want to go the IIS route or prefer to use Visual Studio for everything, you can still get cross-platform browsing with some [trickery](http://www.hanselman.com/blog/WorkingWithSSLAtDevelopmentTimeIsEasierWithIISExpress.aspx).  You'll also want to set a static IP on your VM and add a `hosts` reference to `rock.dev` with that IP.
+
+
+## Deploy Process
+
+We actively develop against our Rock fork and occasionally "cherry pick" changes from core, instead of waiting for the official or beta releases.  While this does mean we get faster features or bugfixes, we're also some of the first to find out about breaking changes.
+
+We follow the below process to verify changes don't cause issues in production:
+
+####1) Review recent changes in [Spark/pre-alpha-release](https://github.com/SparkDevNetwork/Rock/tree/pre-alpha-release).  
+  
+This branch is typically the last phase in the development cycle before a Rock release (develop -> pre-alpha-spark -> pre-alpha-release -> hotfix / master release).   Click [here](../../compare/pre-alpha-release...SparkDevNetwork:pre-alpha-release) to start a PR to [NewSpring/pre-alpha-release](../../tree/pre-alpha-release).
+
+You'll want to be sensitive to the following changes: 
+- Migrations (will require downtime and typically can't be rolled back)
+- Check-in or workflow actions (could make for Sunday surprises, and not the good kind)
+- Model or ModelService updates (can affect performance)
+
+####2) Fix code merge conflicts and test any migrations against a local database.  
+
+Since we've modified [multiple files](#primary-differences), you'll need to make sure changes (theirs or ours) aren't accidentally overwritten.  You'll also want to test migrations against a recent copy of our database so that any Sites, Blocks, or Attributes we may have tweaked don't cause dependency problems.
+  
+####3) Merge [NewSpring/pre-alpha-release](../../tree/pre-alpha-release) into [NewSpring/alpha](../../tree/alpha).  
+ 
+Alpha is our "did anything break?" environment and is set to automatically deploy when code is committed.  Click [here](../../compare/alpha...NewSpring:pre-alpha-release) to start the PR to [NewSpring/alpha](../../tree/alpha).
+   
+####4) Merge [NewSpring/alpha](../../tree/alpha) into [NewSpring/beta](../../tree/beta) and deploy.
+
+Beta is our "does everything work?" environment and does *not* automatically deploy when code is committed.  Click [here](../../compare/beta...NewSpring:alpha) to start the PR to [NewSpring/beta](../../tree/beta).
+
+####5) Document all feature changes for the Web Operations team to review.  
+
+If you reviewed well in step one, you'll have a list of changes to send for testing on Beta.  You'll want to document the default behavior as well as expected error states.  You may also need to clarify where the new or updated feature lives.
+
+####6) After Operations signoff, merge [NewSpring/beta](../../tree/beta) into [NewSpring/master](../../tree/master) and deploy.
+
+Master is our "go live" environment and does *not* automatically deploy.  After a successful build, you'll need to trigger a deploy from Appveyor during planned or co-ordinated downtime.
+
+####7) Clear cache on newly deployed servers.
+
+It's a good idea to clear cache on the Rock and Check-in servers after a deploy, so that any changes to Sites, Blocks, or Attributes are immediately present.  Theoretically IIS should pick up those changes after a restart, but it occasionally doesn't.
 
 
 ## Learn More
