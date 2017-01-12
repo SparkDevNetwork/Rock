@@ -272,7 +272,7 @@ namespace Rock.UniversalSearch.IndexModels
                                     <i class='{this.IconCssClass} fa-2x'></i>
                                 </div>
                                 <div class='col-sm-4'>
-                                    {this.Title} <small>({this.ContentChannel})</small>
+                                    <strong>{this.Title}</strong> <small>({this.ContentChannel})</small>
                                 </div>
                                 <div class='col-sm-7'>
                                     {(showSummary ? summary : "")}
