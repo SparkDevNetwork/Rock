@@ -23,6 +23,9 @@ using Rock.UniversalSearch.IndexModels;
 
 namespace Rock.UniversalSearch
 {
+    /// <summary>
+    /// Rock Indexable
+    /// </summary>
     public interface IRockIndexable
     {
 
