@@ -3,7 +3,7 @@
 [![Build status](https://ci.appveyor.com/api/projects/status/om3ddkynyoobdnpf/branch/master?svg=true)](https://ci.appveyor.com/project/NewSpring/rock/branch/master)
 
 Rock RMS is a Relationship Management System (RMS) and plugin-friendly framework
-written as an ASP.NET 4.5 C# web application. It uses Entity Framework 6.0, 
+written as an ASP.NET 4.5 C# web application. It uses Entity Framework 6.1, 
 jQuery, Bootstrap 3, and other open source libraries.
 
 The following guide documents how NewSpring Web uses and deploys Rock.
@@ -47,7 +47,7 @@ We use [Appveyor](https://www.appveyor.com/) to do continuous deployment to diff
 
 - [./appveyor.yml](./appveyor.yml)
 
-  This file contains all the build settings for AppVeyor.  You can use the UI instead, but you won't be able to track changes (especially helpful if something breaks).  Formatting wise, Appveyor requires all spaces in this file (no tabs!).
+  This file contains all the build settings for AppVeyor.  You can use Appveyor's UI instead, but you won't be able to track changes (especially helpful if something breaks).  Formatting wise, Appveyor requires all spaces in this file (no tabs!).
 
 - [./Norma](./Norma)
 
