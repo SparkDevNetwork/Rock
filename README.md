@@ -3,10 +3,10 @@
 [![Build status](https://ci.appveyor.com/api/projects/status/om3ddkynyoobdnpf/branch/master?svg=true)](https://ci.appveyor.com/project/NewSpring/rock/branch/master)
 
 Rock RMS is a Relationship Management System (RMS) and plugin-friendly framework
-written as an ASP.NET 4.5 C# web application, using Entity Framework 6.0, 
+written as an ASP.NET 4.5 C# web application. It uses Entity Framework 6.0, 
 jQuery, Bootstrap 3, and other open source libraries.
 
-The following guide documents how NewSpring Web uses Rock.
+The following guide documents how NewSpring Web uses and deploys Rock.
 
 Quick links: 
 
