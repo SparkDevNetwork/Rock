@@ -313,7 +313,7 @@ namespace RockWeb.Blocks.Event
                     }
                 }
 
-                groupMember.GroupMemberStatus = GroupMemberStatus.Active;
+                groupMember.GroupMemberStatus = _template.GroupMemberStatus;
 
                 _rockContext.SaveChanges();
 

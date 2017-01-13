@@ -15,7 +15,7 @@
     </div>
     <div class="panel-body">
       <div class="col-md-2">
-          <img src="{{ opportunity.PhotoUrl }}" class="title-image img-responsive margin-b-md">
+          <img alt="Image for {{ opportunity.PublicName }}" src="{{ opportunity.PhotoUrl }}" class="title-image img-responsive margin-b-md">
       </div>
       <div class="col-md-10">
         <p>{{ opportunity.Summary }}</p>

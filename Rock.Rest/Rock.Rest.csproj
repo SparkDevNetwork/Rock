@@ -287,6 +287,7 @@
     <Compile Include="Controllers\FollowingsController.Partial.cs" />
     <Compile Include="Controllers\GroupMembersController.Partial.cs" />
     <Compile Include="Controllers\GroupsController.Partial.cs" />
+    <Compile Include="Controllers\HtmlContentsController.Partial.cs" />
     <Compile Include="Controllers\LavaController.cs" />
     <Compile Include="Controllers\LocationsController.Partial.cs" />
     <Compile Include="Controllers\MergeFieldsController.cs" />
