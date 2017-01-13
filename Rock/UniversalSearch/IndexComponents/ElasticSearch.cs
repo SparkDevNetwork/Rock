@@ -50,16 +50,7 @@ namespace Rock.UniversalSearch.IndexComponents
                     ConnectToServer();
                 }
 
-                if ( _client != null )
-                {
-                    var results = _client.ClusterState();
-
-                    if ( results != null )
-                    {
-                        return results.IsValid;
-                    }
-                }
-                return false;
+                return (_client.Ping().IsValid);
             }
         }
 
@@ -97,6 +88,21 @@ namespace Rock.UniversalSearch.IndexComponents
         public Elasticsearch()
         {
             ConnectToServer();
+        }
+
+        /// <summary>
+        /// Method that is called when attribute values are updated. Components can
+        /// override this to perform any needed setup/validation based on current attribute
+        /// values.
+        /// </summary>
+        /// <param name="errorMessage">The error message.</param>
+        /// <returns></returns>
+        public override bool ValidateAttributeValues( out string errorMessage )
+        {
+            // reset the connection when the component settings are changed
+            ConnectToServer();
+
+            return base.ValidateAttributeValues( out errorMessage );
         }
 
         /// <summary>

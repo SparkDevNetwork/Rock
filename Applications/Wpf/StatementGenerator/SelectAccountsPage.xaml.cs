@@ -76,7 +76,7 @@ namespace Rock.Apps.StatementGenerator
 
             var accounts = _rockRestClient.GetData<List<Rock.Client.FinancialAccount>>( "api/FinancialAccounts" );
 
-            lstAccounts.ItemsSource = accounts.OrderBy( a => a.Order ).ThenBy( a => a.Name ).Select( a => new NameIdIsChecked { Id = a.Id, Name = a.Name, IsChecked = true } );
+            lstAccounts.ItemsSource = accounts.OrderBy( a => a.Order ).ThenBy( a => a.Name ).Select( a => new NameIdIsChecked { Id = a.Id, Name = a.PublicName, IsChecked = true } );
 
             lblWarning.Visibility = Visibility.Hidden;
         }
