@@ -103,7 +103,7 @@
 		{% if countPending > -1 %}
 			{% assign icountPending = 0 %}
 
-			
+
 
 			{% for member in Group.Members %}
 
@@ -121,7 +121,7 @@
 						{% if LinkedPages.PersonDetailPage %}
 							<a href="{{ LinkedPages.PersonDetailPage }}?PersonId={{ member.PersonId }}">
 						{% endif %}
-						<img src="{{ member.Person.PhotoUrl }}&height=60&width=60&mode=crop&scale=both" height="60" class="pull-left margin-r-sm" />
+						<img src="{{ member.Person.PhotoUrl }}&height=60&width=60&mode=crop&scale=both" height="60" class="pull-left margin-r-sm" alt="">
 						<div class="pull-left">
 							<strong>{{ member.Person.FullName }}</strong>
 							<small>({{ member.GroupRole.Name}})</small>
@@ -189,7 +189,7 @@
 						{% if LinkedPages.PersonDetailPage %}
 							<a href="{{ LinkedPages.PersonDetailPage }}?PersonId={{ member.PersonId }}">
 						{% endif %}
-						<img src="{{ member.Person.PhotoUrl }}&height=60&width=60&mode=crop&scale=both" height="60" class="pull-left margin-r-sm" />
+						<img src="{{ member.Person.PhotoUrl }}&height=60&width=60&mode=crop&scale=both" height="60" class="pull-left margin-r-sm" alt="">
 						<div class="pull-left">
 							<strong>{{ member.Person.FullName }}</strong>
 							<small>({{ member.GroupRole.Name}})</small>
@@ -256,7 +256,7 @@
 						{% if LinkedPages.PersonDetailPage %}
 							<a href="{{ LinkedPages.PersonDetailPage }}?PersonId={{ member.PersonId }}">
 						{% endif %}
-						<img src="{{ member.Person.PhotoUrl }}&height=60&width=60&mode=crop&scale=both" height="60" class="pull-left margin-r-sm" />
+						<img src="{{ member.Person.PhotoUrl }}&height=60&width=60&mode=crop&scale=both" height="60" class="pull-left margin-r-sm" alt="">
 						<div class="pull-left">
 							<strong>{{ member.Person.FullName }}</strong>
 							<small>({{ member.GroupRole.Name}})</small>
@@ -322,4 +322,3 @@
 		<div class='alert alert-warning'>You do not have permission to view this group.</div>
 	{% endif %}
 {% endif %}
-
