@@ -2835,16 +2835,17 @@ namespace RockWeb.Blocks.Event
                                     }
                                     phRegistrantFormFieldFilters.Controls.Add( gpGradeFilter );
 
-                                    string dataFieldExpression = "PersonAlias.Person.GraduationYear";
+                                    // 2017-01-13 as discussed, changing this to Grade but keeping the sort based on grad year
+                                    string dataFieldExpression = "PersonAlias.Person.GradeFormatted";
                                     var gradeField = new RockBoundField();
                                     gradeField.DataField = dataFieldExpression;
-                                    gradeField.HeaderText = "Graduation Year";
-                                    gradeField.SortExpression = dataFieldExpression;
+                                    gradeField.HeaderText = "Grade";
+                                    gradeField.SortExpression = "PersonAlias.Person.GraduationYear";
                                     gRegistrants.Columns.Add( gradeField );
 
                                     var gradeField2 = new RockBoundField();
                                     gradeField2.DataField = dataFieldExpression;
-                                    gradeField2.HeaderText = "Graduation Year";
+                                    gradeField2.HeaderText = "Grade";
                                     gradeField2.SortExpression = dataFieldExpression;
                                     gGroupPlacements.Columns.Add( gradeField2 );
 
