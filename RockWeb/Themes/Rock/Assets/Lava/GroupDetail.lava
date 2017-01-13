@@ -41,7 +41,7 @@
 			{% assign warningLevel = 'danger' %}
 		{% endif %}
 
-		{% assign activeMemberCount = countActive | Plus:1 %} {% comment %}the couter is zero based{% endcomment %}
+		{% assign activeMemberCount = countActive | Plus:1 %} {% comment %}the counter is zero based{% endcomment %}
 		{% assign overageAmount = activeMemberCount | Minus:Group.GroupCapacity %}
 
 		{% if overageAmount > 0 %}
@@ -319,7 +319,7 @@
 
 {% else %}
 	{% if Group.Id %}
-		<div class='alert alert-warning'>You do not have persmission to view this group.</div>
+		<div class='alert alert-warning'>You do not have permission to view this group.</div>
 	{% endif %}
 {% endif %}
 
