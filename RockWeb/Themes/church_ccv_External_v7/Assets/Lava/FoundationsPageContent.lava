@@ -1,8 +1,15 @@
 {% assign item = Items.first %}
+{% assign vimeoId = item | Attribute: 'VimeoId' %}
+{% assign wistiaId = item | Attribute: 'WistiaId' %}
 
+{% if wistiaId != empty %}
+  <script src="//fast.wistia.com/embed/medias/{{ wistiaId }}.jsonp" async></script><script src="//fast.wistia.com/assets/external/E-v1.js" async></script><div class="wistia_responsive_padding" style="padding:56.25% 0 0 0;position:relative;"><div class="wistia_responsive_wrapper" style="height:100%;left:0;position:absolute;top:0;width:100%;"><div class="wistia_embed wistia_async_{{ wistiaId }} videoFoam=true" style="height:100%;width:100%">&nbsp;</div></div></div>
+{% elsif vimeoId != empty %}
 <div class="embed-responsive embed-responsive-16by9">
-  <iframe class="embed-responsive-item" src="//player.vimeo.com/video/{{ item | Attribute: 'VimeoId'}}" width="500" height="281" frameborder="0" webkitallowfullscreen mozallowfullscreen allowfullscreen></iframe>
+  <iframe class="embed-responsive-item" src="//player.vimeo.com/video/{{ vimeoId }}" width="500" height="281" frameborder="0" webkitallowfullscreen mozallowfullscreen allowfullscreen></iframe>
 </div>
+{% endif %}
+
 
 <h3>{{ item.Title}}</h3>
 
