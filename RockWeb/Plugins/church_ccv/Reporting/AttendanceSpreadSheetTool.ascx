@@ -44,7 +44,7 @@
 
                     <h3>Attendance Export (Checkin)</h3>
 
-                    <Rock:Grid ID="gCheckinAttendanceExport" runat="server" AllowSorting="false" AllowPaging="false" ExportFilename="CheckInExport">
+                    <Rock:Grid ID="gCheckinAttendanceExport" runat="server" AllowSorting="false" AllowPaging="false" OnGridReorder="gCheckinAttendanceExport_GridReorder" ExportFilename="CheckInExport" >
                         <Columns>
                         </Columns>
                     </Rock:Grid>
