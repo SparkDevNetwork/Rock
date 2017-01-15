@@ -89,31 +89,31 @@ We've written a [few plugins](https://github.com/NewSpring?utf8=✓&q=rock-) for
 
 The following list details other minor blocks or packages we've added:
 
-- [All Staff Live](./RockWeb/Plugins/cc_newspring/Blocks/AllStaffLive)
+- [Plugins\All Staff Live](./RockWeb/Plugins/cc_newspring/Blocks/AllStaffLive)
 
   This block displays a video feed on our internal homepage for weekly staff meetings.
 
-- [Dashboard Widget](./RockWeb/Plugins/cc_newspring/Blocks/Dashboards)
+- [Plugins\Dashboard Widget](./RockWeb/Plugins/cc_newspring/Blocks/Dashboards)
 
   This block displays metric values using a Liquid template for staff dashboards.
 
-- [Headings](./RockWeb/Plugins/cc_newspring/Blocks/Headings)
+- [Plugins\Headings](./RockWeb/Plugins/cc_newspring/Blocks/Headings)
 
   This block adds headings to a layout with the option to set a column size.
 
-- [Metrics](./RockWeb/Plugins/cc_newspring/Blocks/Metrics)
+- [Plugins\Metrics](./RockWeb/Plugins/cc_newspring/Blocks/Metrics)
 
   This block displays metric values or comparisons on a dashboard based on Campus, Group, Date, or Schedule context.
 
-- [Ooyala](./RockWeb/Plugins/cc_newspring/Blocks/Video)
+- [Plugins\Ooyala](./RockWeb/Plugins/cc_newspring/Blocks/Video)
 
   This block loads the Ooyala video player for a specific video content ID.
 
-- [Sentry Test](./RockWeb/Plugins/cc_newspring/Blocks/Sentry)
+- [Plugins\Sentry Test](./RockWeb/Plugins/cc_newspring/Blocks/Sentry)
 
   We use [Sentry](https://sentry.io) for additional error reporting from Rock, and this block allows you to send a custom error to test your config.  The specific C# library we use is called [SharpRaven](https://www.nuget.org/packages/SharpRaven).  We've added dependencies for Sentry/SharpRaven throughout Rock, including [Rock.csproj](./Rock/Rock.csproj), [RockBlock.cs](./Rock/Web/UI/RockBlock.cs), and the [API Exception Log](.//Rock.Rest/Controllers/ExceptionLogsController.Partial.cs).
 
-- Workflow Alert
+- [Plugins\Workflow Alert](./RockWeb/Plugins/cc_newspring/Blocks/WorkflowAlert)
 
   This block displays a [bell icon](http://fontawesome.io/icon/bell-o/) next for each logged-in user when they have workflows to complete.
 
