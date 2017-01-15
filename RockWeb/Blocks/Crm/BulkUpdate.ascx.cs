@@ -151,6 +151,18 @@ namespace RockWeb.Blocks.Crm
         selectIcon.toggleClass('fa-check-circle-o', enabled);
         selectIcon.toggleClass('fa-circle-o', !enabled);
 
+        // Checkboxes needs special handling
+        var checkboxes = formGroup.find('.checkboxlist-group');
+        if ( checkboxes.length ) {{
+            $( checkboxes[0].children ).each(function() {{
+                if ( this.children[0].nodeName === 'INPUT' ) {{
+                    $( this.children[0] ).toggleClass('aspNetDisabled', !enabled);
+                    $( this.children[0] ).prop('disabled', !enabled);
+                    $( this.children[0] ).closest('.form-group').toggleClass('bulk-item-selected', enabled);
+                }}
+            }});
+        }}
+
         // Enable/Disable the controls
         formGroup.find('.form-control').each( function() {{
 
