@@ -12,8 +12,8 @@ Quick links:
 
 - [Getting Started](#getting-started) 
 - [Primary Differences](#primary-differences)
-- [Running Rock](#running-rock) 
 - [New Environments](#new-environments)
+- [Running Rock](#running-rock) 
 - [Deploy Process](#deploy-process)
 - [Learn More](#learn-more) 
 - [Community](#community) 
@@ -89,31 +89,31 @@ We've written a [few plugins](https://github.com/NewSpring?utf8=✓&q=rock-) for
 
 The following list details other minor blocks or packages we've added:
 
-- [All Staff Live](./RockWeb/Plugins/cc_newspring/Blocks/AllStaffLive)
+- [Plugins\All Staff Live](./RockWeb/Plugins/cc_newspring/Blocks/AllStaffLive)
 
   This block displays a video feed on our internal homepage for weekly staff meetings.
 
-- [Dashboard Widget](./RockWeb/Plugins/cc_newspring/Blocks/Dashboards)
+- [Plugins\Dashboard Widget](./RockWeb/Plugins/cc_newspring/Blocks/Dashboards)
 
   This block displays metric values using a Liquid template for staff dashboards.
 
-- [Headings](./RockWeb/Plugins/cc_newspring/Blocks/Headings)
+- [Plugins\Headings](./RockWeb/Plugins/cc_newspring/Blocks/Headings)
 
   This block adds headings to a layout with the option to set a column size.
 
-- [Metrics](./RockWeb/Plugins/cc_newspring/Blocks/Metrics)
+- [Plugins\Metrics](./RockWeb/Plugins/cc_newspring/Blocks/Metrics)
 
   This block displays metric values or comparisons on a dashboard based on Campus, Group, Date, or Schedule context.
 
-- [Ooyala](./RockWeb/Plugins/cc_newspring/Blocks/Video)
+- [Plugins\Ooyala](./RockWeb/Plugins/cc_newspring/Blocks/Video)
 
   This block loads the Ooyala video player for a specific video content ID.
 
-- [Sentry Test](./RockWeb/Plugins/cc_newspring/Blocks/Sentry)
+- [Plugins\Sentry Test](./RockWeb/Plugins/cc_newspring/Blocks/Sentry)
 
   We use [Sentry](https://sentry.io) for additional error reporting from Rock, and this block allows you to send a custom error to test your config.  The specific C# library we use is called [SharpRaven](https://www.nuget.org/packages/SharpRaven).  We've added dependencies for Sentry/SharpRaven throughout Rock, including [Rock.csproj](./Rock/Rock.csproj), [RockBlock.cs](./Rock/Web/UI/RockBlock.cs), and the [API Exception Log](.//Rock.Rest/Controllers/ExceptionLogsController.Partial.cs).
 
-- Workflow Alert
+- [Plugins\Workflow Alert](./RockWeb/Plugins/cc_newspring/Blocks/WorkflowAlert)
 
   This block displays a [bell icon](http://fontawesome.io/icon/bell-o/) next for each logged-in user when they have workflows to complete.
 
@@ -122,9 +122,31 @@ The following list details other minor blocks or packages we've added:
 In order to fully support Twilio and other API calls, we upgraded the `Microsoft.AspNet.WebApi` packages to version 5.2.3.  The core version of Rock is at 5.2.2.
 
 
+## New Environments
+
+If you were already given a VMDK, most of these steps should be completed.  Also, this guide assumes you'll be running Rock inside a Windows environment, either as a VM or dual-boot.  If that's not the case, [talk to us](https://twitter.com/newspringweb) because we'd love to optimize our development/deployment strategy.
+
+- Create a new Windows 10 x64 machine
+- Select an existing hard disk (VMDK)
+- Set minimum CPU processors to 2 
+- Set minimum RAM at 4GB
+- Download [Git](https://git-scm.com/downloads) (includes Git Bash ❤️)
+- Update your [git config](https://git-scm.com/book/en/v2/Getting-Started-First-Time-Git-Setup) using Git Bash
+- Create your first [Pull Request](../../pulls) 
+- Download [Visual Studio Community](https://www.visualstudio.com/vs/community/) (free)
+- Import the recommended [Visual Studio settings](./.vs/VisualStudio.vssettings)
+- Download SQL Server: LocalDB (free), [Express](https://www.microsoft.com/en-us/sql-server/sql-server-editions-express) (free), or Standard (not free)
+- Download [SQL Server Management Studio](https://msdn.microsoft.com/en-us/library/mt238290.aspx) (free)
+- Install some helpful plugins: [CodeMaid](https://visualstudiogallery.msdn.microsoft.com/76293c4d-8c16-4f4a-aee6-21f83a571496), [GhostDoc](https://visualstudiogallery.msdn.microsoft.com/46A20578-F0D5-4B1E-B55D-F001A6345748) and [Gulp](https://webtooling.visualstudio.com/task-runners/gulp/)
+
+If you haven't already experienced the joy of developing in Visual Studio with IIS, we'd highly recommend it: faster build times, easier debugging, cross-platform browsing, and bypassing the occasional VS insanity.   You'll need to set up an IIS site pointed at [./RockWeb](./RockWeb), your database has to [be configured](http://logicalread.solarwinds.com/sql-server-express-as-a-production-database/) for IIS requests, and Visual Studio has to run as Administrator (so you can attach to IIS when debugging).
+
+If you don't want to go the IIS route or prefer to use Visual Studio for everything, you can still get cross-platform browsing with some [trickery](http://www.hanselman.com/blog/WorkingWithSSLAtDevelopmentTimeIsEasierWithIISExpress.aspx).  You'll also want to set a static IP on your VM and add a `hosts` reference to `rock.dev` with that IP.
+
+
 ## Running Rock
 
-The VMDK file you should've received can be run in VirtualBox, Fusion, or Parallels.  If you're setting up a new machine, skip to [New Environments](#new-environments).
+The VMDK file you should've received can be run in VirtualBox, Fusion, or Parallels.  If you're wondering what settings you should use, go back to [New Environments](#new-environments).
 
 Our Rock version is hosted at `http://rock.dev` and you can use IIS Manager to control access to it.
 
@@ -157,28 +179,6 @@ Alternatively, [follow the guide](http://shouldertheboulder.com/Article?id=368) 
 #### Maintenance
 
 Eventually you'll need to run [./FreeSpace.bat](./FreeSpace.bat) to clear out old files and keep your Windows install trimmed down.  This will also defrag your unused space, which allows you to shrink the disk from Fusion/VirtualBox after you shut the OS down.
-
-
-## New Environments
-
-This guide assumes you'll be running Rock inside a Windows environment.  If that's not the case, [talk to us](https://twitter.com/newspringweb) because we'd love to optimize our development/deployment strategy.
-
-- Create a new Windows 10 x64 machine
-- Select an existing hard disk (VMDK)
-- Set minimum CPU processors to 2 
-- Set minimum RAM at 4GB
-- Download [Git](https://git-scm.com/downloads) (includes Git Bash ❤️)
-- Update your [git config](https://git-scm.com/book/en/v2/Getting-Started-First-Time-Git-Setup) using Git Bash
-- Create your first [Pull Request](../../pulls) 
-- Download [Visual Studio Community](https://www.visualstudio.com/vs/community/) (free)
-- Import the recommended [Visual Studio settings](./.vs/VisualStudio.vssettings)
-- Download SQL Server: LocalDB (free), [Express](https://www.microsoft.com/en-us/sql-server/sql-server-editions-express) (free), or Standard (not free)
-- Download [SQL Server Management Studio](https://msdn.microsoft.com/en-us/library/mt238290.aspx) (free)
-- Install some helpful plugins: [CodeMaid](https://visualstudiogallery.msdn.microsoft.com/76293c4d-8c16-4f4a-aee6-21f83a571496), [GhostDoc](https://visualstudiogallery.msdn.microsoft.com/46A20578-F0D5-4B1E-B55D-F001A6345748) and [Gulp](https://webtooling.visualstudio.com/task-runners/gulp/)
-
-If you haven't already experienced the joy of developing in Visual Studio with IIS, we'd highly recommend it: faster build times, easier debugging, cross-platform browsing, and bypassing the occasional VS insanity.   You'll need to set up an IIS site pointed at [./RockWeb](./RockWeb), your database has to [be configured](http://logicalread.solarwinds.com/sql-server-express-as-a-production-database/) for IIS requests, and Visual Studio has to run as Administrator (so you can attach to IIS when debugging).
-
-If you don't want to go the IIS route or prefer to use Visual Studio for everything, you can still get cross-platform browsing with some [trickery](http://www.hanselman.com/blog/WorkingWithSSLAtDevelopmentTimeIsEasierWithIISExpress.aspx).  You'll also want to set a static IP on your VM and add a `hosts` reference to `rock.dev` with that IP.
 
 
 ## Deploy Process
