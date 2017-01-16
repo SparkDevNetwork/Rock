@@ -1069,6 +1069,7 @@
     <Compile Include="Plugin\HotFixes\004_FixGradeRequiredAttribute.cs" />
     <Compile Include="Plugin\HotFixes\005_FixCheckinAdminRoute.cs" />
     <Compile Include="Plugin\HotFixes\006_FixCheckinPrevPages.cs" />
+    <Compile Include="Plugin\HotFixes\017_FixBackgroundCheckOptionalCampus.cs" />
     <Compile Include="Plugin\HotFixes\016_SetInactiveFamilies.cs" />
     <Compile Include="Plugin\HotFixes\015_CheckinByBirthdate.cs" />
     <Compile Include="Plugin\HotFixes\009_FixCheckinAttributes.cs" />
@@ -1079,6 +1080,7 @@
     <Compile Include="Plugin\HotFixes\012_FixAttendanceAnalyticsScript.cs" />
     <Compile Include="Plugin\HotFixes\011_FixNameProfileChangeRequest.cs" />
     <Compile Include="Plugin\HotFixes\010_FixGetSpouse.cs" />
+    <Compile Include="Plugin\HotFixes\018_RestrictGroupRegistrationGroupTypes.cs" />
     <Compile Include="Plugin\Migration.cs" />
     <Compile Include="Plugin\VersionAttribute.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
