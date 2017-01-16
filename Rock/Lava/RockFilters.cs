@@ -972,8 +972,8 @@ namespace Rock.Lava
         /// Days in month
         /// </summary>
         /// <param name="input">The input.</param>
-        /// <param name="month">The month to determine</param>
-        /// <param name="year">The year of the month (defaults to current year)</param>
+        /// <param name="oMonth">The o month.</param>
+        /// <param name="oYear">The o year.</param>
         /// <returns></returns>
         public static int? DaysInMonth( object input, object oMonth = null, object oYear = null )
         {
