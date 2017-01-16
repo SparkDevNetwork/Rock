@@ -2846,7 +2846,6 @@ namespace RockWeb.Blocks.Event
                                     var gradeField2 = new RockBoundField();
                                     gradeField2.DataField = dataFieldExpression;
                                     gradeField2.HeaderText = "Grade";
-                                    gradeField2.SortExpression = dataFieldExpression;
                                     gGroupPlacements.Columns.Add( gradeField2 );
 
                                     break;
