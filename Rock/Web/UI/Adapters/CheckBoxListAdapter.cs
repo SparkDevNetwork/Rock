@@ -101,17 +101,10 @@ namespace Rock.Web.UI.Adapters
                         }
                         writer.AddAttribute( "class", cssClass );
                         writer.RenderBeginTag( HtmlTextWriterTag.Div );
-
-                        // use the muted text class on the label if the CBL is disabled
-                        if ( !cbl.Enabled )
-                        {
-                            writer.AddAttribute( "class", "text-muted" );
-                        }
                     }
                     else
                     {
-                        // use the muted text class on the label if the CBL is disabled along with the checkbox-inline class
-                        writer.AddAttribute( "class", ( !cbl.Enabled ) ? "text-muted checkbox-inline" : "checkbox-inline" );
+                        writer.AddAttribute( "class", "checkbox-inline" );
                     }
 
                     writer.RenderBeginTag(HtmlTextWriterTag.Label);
@@ -124,11 +117,6 @@ namespace Rock.Web.UI.Adapters
                     if (li.Selected)
                     {
                         writer.AddAttribute("checked", "checked");
-                    }
-
-                    if ( !cbl.Enabled )
-                    {
-                        writer.AddAttribute( "disabled", "" );
                     }
 
                     foreach (var attributeKey in li.Attributes.Keys)
