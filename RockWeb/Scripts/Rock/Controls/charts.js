@@ -255,26 +255,16 @@
                         }
                         else {
                             if (item.series.chartData) {
-                                var date = null;
-
                                 if (item.series.chartData[item.dataIndex].DateTimeStamp) {
-                                    date = new Date(item.series.chartData[item.dataIndex].DateTimeStamp);
-                                    tooltipText = date.toLocaleDateString();
+                                    tooltipText = new Date(item.series.chartData[item.dataIndex].DateTimeStamp).toLocaleDateString();
                                 };
 
                                 if (item.series.chartData[item.dataIndex].StartDateTimeStamp) {
-                                    date = new Date(item.series.chartData[item.dataIndex].StartDateTimeStamp);
-                                    tooltipText = date.toLocaleDateString();
+                                    tooltipText = new Date(item.series.chartData[item.dataIndex].StartDateTimeStamp).toLocaleDateString();
                                 }
 
                                 if (item.series.chartData[item.dataIndex].EndDateTimeStamp) {
-                                    date = new Date(item.series.chartData[item.dataIndex].EndDateTimeStamp);
-                                    tooltipText += " to " + date.toLocaleDateString();
-                                }
-
-                                if (tooltipText && date) {
-                                    var timeParts = date.toTimeString().split(':');
-                                    tooltipText += ' ' + timeParts[0] + ':' + timeParts[1];
+                                    tooltipText += " to " + new Date(item.series.chartData[item.dataIndex].EndDateTimeStamp).toLocaleDateString();
                                 }
 
                                 if (item.series.chartData[item.dataIndex].MetricTitle) {
