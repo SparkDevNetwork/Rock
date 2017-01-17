@@ -194,10 +194,9 @@ namespace chuch.ccv.Podcast.Rest
             var itemsQry = GetTreePodcastsByCategory( parentItemId );
             if ( itemsQry != null )
             {
-                // do a ToList to load from database prior to ordering by name, just in case Name is a virtual property
                 var itemsList = itemsQry.ToList();
 
-                foreach ( var categorizedItem in itemsList.OrderByDescending( i => i.CreatedDateTime ) )
+                foreach ( var categorizedItem in itemsList )
                 {
                     if ( categorizedItem != null && categorizedItem.IsAuthorized( Rock.Security.Authorization.VIEW, currentPerson ) )
                     {
@@ -270,7 +269,9 @@ namespace chuch.ccv.Podcast.Rest
                 // now only take content channel items whose category attribute (which is a list of category guids) includes the category defined by categoryId
                 var finalList = categoryContentChannelItems.Where( cci => cci.CategoryAttribValue.Value.Contains( categoryList.Guid.ToString( ) ) ).Select( cci => cci.ContentChannel );
                 
-                return finalList;
+                // lastly, get the podcasts sorted by priority
+                var podcastsForCategory = PodcastUtil.SortPodcastSeriesByPriority( finalList, rockContext );
+                return podcastsForCategory;
             }
 
             return null;

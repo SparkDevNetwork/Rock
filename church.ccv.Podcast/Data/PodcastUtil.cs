@@ -90,26 +90,27 @@ namespace church.ccv.Podcast
                 rootPodcast = new PodcastCategory( category.Name, category.Id );
 
                 // see if this category has any podcasts to add.
-                Internal_GetPodcastsByCategory( category, rootPodcast, categoryContentChannelItems, ref maxSeries, ref numMessages, keepCategoryHierarchy, requestingPerson );
+                Internal_GetPodcastsByCategory( category, rootPodcast, categoryContentChannelItems, ref maxSeries, ref numMessages, keepCategoryHierarchy, requestingPerson, rockContext );
             }
     
             return rootPodcast;
         }
-
-        static void Internal_GetPodcastsByCategory( CategoryCache category, PodcastCategory rootPodcast, IQueryable<ContentChannelWithAttrib> categoryContentChannelItems, ref int numSeriesToAdd, ref int numMessagesToAdd, bool keepCategoryHierarchy, Person requestingPerson )
+        
+        static void Internal_GetPodcastsByCategory( CategoryCache category, PodcastCategory rootPodcast, IQueryable<ContentChannelWithAttrib> categoryContentChannelItems, ref int numSeriesToAdd, ref int numMessagesToAdd, bool keepCategoryHierarchy, Person requestingPerson, RockContext rockContext )
         {
-            // Get all Content Channels that are immediate children of the provided category. Sort them by date, and then take 'numPodcastsToAdd', since 
-            // this is recursive and we might not need anymore.
-            var podcastsForCategory = categoryContentChannelItems.Where( cci => cci.AttribValue.Contains( category.Guid.ToString( ) ) )
+            // first get ALL podcasts for this category (sorted by creation date)
+            var podcastsForCategoryFull = categoryContentChannelItems.Where( cci => cci.AttribValue.Contains( category.Guid.ToString( ) ) )
                                                                  .Select( cci => cci.ContentChannel )
                                                                  .OrderByDescending( cc => cc.CreatedDateTime )
-                                                                 .Take( numSeriesToAdd )
                                                                  .Include( cc => cc.Items )
                                                                  .AsNoTracking( );
+
+            var podcastsForCategory = SortPodcastSeriesByPriority( podcastsForCategoryFull, rockContext );
+            podcastsForCategory = podcastsForCategory.Take( numSeriesToAdd );
             
             // Convert all the content channel items into PodcastSeries and add them as children.
             // (We're safe to do this because we KNOW we've only added PodcastSeries at this point)
-            foreach( ContentChannel contentChannel in podcastsForCategory )
+            foreach ( ContentChannel contentChannel in podcastsForCategory )
             {
                 // convert the series, which may return null if it doesn't match the requested viewState
                 PodcastSeries podcastSeries = ContentChannelToPodcastSeries( contentChannel, numMessagesToAdd );
@@ -154,10 +155,37 @@ namespace church.ccv.Podcast
                     if ( numSeriesToAdd > 0 && numMessagesToAdd > 0 )
                     {
                         // recursively call this so it can add its children
-                        Internal_GetPodcastsByCategory( childCategory, podcastCategory, categoryContentChannelItems, ref numSeriesToAdd, ref numMessagesToAdd, keepCategoryHierarchy, requestingPerson );
+                        Internal_GetPodcastsByCategory( childCategory, podcastCategory, categoryContentChannelItems, ref numSeriesToAdd, ref numMessagesToAdd, keepCategoryHierarchy, requestingPerson, rockContext );
                     }
                 }
             }
+        }
+
+        public static IQueryable<ContentChannel> SortPodcastSeriesByPriority( IQueryable<ContentChannel> seriesQuery, RockContext rockContext )
+        {
+            // Now we want to join any podcast that has a "Priority" attribute with that attribute, which controls what order they should be in.
+            // Lower number means higher on the list.
+            // Note - Not all Content Channels have the Priority Attribute, as it was added recently. For those, assume a priority of 0.
+            var attribValList = new AttributeValueService( rockContext ).Queryable( ).Where( av => av.Attribute.Guid == new Guid( church.ccv.Utility.SystemGuids.Attribute.CONTENT_CHANNEL_PRIORITY_ATTRIBUTE ) );
+
+            // select all Content Channels joined with their Priority Attribute. For those with no Attribute, we'll use a blank default one.
+            var podcastsForCategoryWithAttrib = seriesQuery.AsQueryable( ).GroupJoin( attribValList,
+                                                                                                  x => x.Id, 
+                                                                                                  y => y.EntityId, 
+                                                                                                  ( x, y ) => new { ContentChannel = x, AttribValue = y } )
+
+                                                                                      .SelectMany( xy => xy.AttribValue.DefaultIfEmpty(),
+                                                                                                   ( x, y ) => new { ContentChannelContainer = x, AttribValue = y } )
+
+                                                                                      .Select( xy => new { ContentChannel = xy.ContentChannelContainer.ContentChannel, AttribValue = xy.AttribValue } )
+                                                                                      .ToList( );
+
+            // Finally, order the items by descending (Lower priority goes on top), and then take the number requested.
+            var podcastsForCategory = podcastsForCategoryWithAttrib.OrderByDescending( cc => cc.ContentChannel.CreatedDateTime )
+                                                                   .OrderBy( cc => cc.AttribValue != null ? int.Parse( cc.AttribValue.Value ) : 0 )
+                                                                   .Select( cc => cc.ContentChannel );
+            
+            return podcastsForCategory.AsQueryable( );
         }
 
         public static DateTime? LatestModifiedDateTime( )
