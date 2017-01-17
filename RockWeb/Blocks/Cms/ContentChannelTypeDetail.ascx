@@ -38,15 +38,31 @@
                                     Help="Should the Date Range include the time of day along with the date?" />
                             </div>
                         </div>
-                        <Rock:RockCheckBox ID="cbDisablePriority" runat="server" Label="Disable Priority" 
-                            Help="Should channels of this type disable the use of priorities?" Text="Yes" />
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="row">
+                            <div class="col-sm-6">
+                                <Rock:RockCheckBox ID="cbDisablePriority" runat="server" Label="Disable Priority" 
+                                    Help="Should channels of this type disable the use of priorities?" Text="Yes" />
+                            </div>
+                            <div class="col-sm-6">
+                                <Rock:RockCheckBox ID="cbDisableContentField" runat="server" Label="Disable Content Field" 
+                                    Help="Should channels of this type disable the use of the content field?" Text="Yes" />
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="row">
+                            <div class="col-sm-6">
+                                <Rock:RockCheckBox ID="cbDisableStatus" runat="server" Label="Disable Status"  
+                                    Help="Should channels of this type disable the use of the status and all be treated as 'Approved'?" Text="Yes" />
+                            </div>
+                            <div class="col-sm-6">
 
-                        <Rock:RockCheckBox ID="cbDisableContentField" runat="server" Label="Disable Content Field" 
-                            Help="Should channels of this type disable the use of the content field?" Text="Yes" />
-
-                        <Rock:RockCheckBox ID="cbDisableStatus" runat="server" Label="Disable Status"  
-                            Help="Should channels of this type disable the use of the status and be treated as Approved?" Text="Yes" />
-
+                            </div>
+                        </div>
                     </div>
                 </div>
 
