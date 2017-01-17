@@ -31,7 +31,7 @@
                     <div class="col-md-6">
                         <div class="row">
                             <div class="col-xs-6">
-                                <Rock:RockDropDownList ID="ddlDateRangeType" runat="server" Label="Date Range Type" />
+                                <Rock:RockDropDownList ID="ddlDateRangeType" runat="server" Label="Date Range Type" AutoPostBack="true" OnSelectedIndexChanged="ddlDateRangeType_SelectedIndexChanged" />
                             </div>
                             <div class="col-xs-6">
                                 <Rock:RockCheckBox ID="cbIncludeTime" runat="server" Label="Include Time" Text="Yes"
@@ -40,6 +40,13 @@
                         </div>
                         <Rock:RockCheckBox ID="cbDisablePriority" runat="server" Label="Disable Priority" 
                             Help="Should channels of this type disable the use of priorities?" Text="Yes" />
+
+                        <Rock:RockCheckBox ID="cbDisableContentField" runat="server" Label="Disable Content Field" 
+                            Help="Should channels of this type disable the use of the content field?" Text="Yes" />
+
+                        <Rock:RockCheckBox ID="cbDisableStatus" runat="server" Label="Disable Status"  
+                            Help="Should channels of this type disable the use of the status and be treated as Approved?" Text="Yes" />
+
                     </div>
                 </div>
 

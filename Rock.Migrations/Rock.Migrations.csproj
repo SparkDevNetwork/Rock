@@ -158,6 +158,10 @@
     <Compile Include="Migrations\201701040116351_Analytics1.Designer.cs">
       <DependentUpon>201701040116351_Analytics1.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201701172024404_ContentChannelTypeDisableStatusOption.cs" />
+    <Compile Include="Migrations\201701172024404_ContentChannelTypeDisableStatusOption.Designer.cs">
+      <DependentUpon>201701172024404_ContentChannelTypeDisableStatusOption.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 6.0\Version 1.6.0\201609282147388_WaitList.cs" />
     <Compile Include="Migrations\Version 6.0\Version 1.6.0\201609282147388_WaitList.Designer.cs">
       <DependentUpon>201609282147388_WaitList.cs</DependentUpon>
@@ -2426,6 +2430,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201701040116351_Analytics1.resx">
       <DependentUpon>201701040116351_Analytics1.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201701172024404_ContentChannelTypeDisableStatusOption.resx">
+      <DependentUpon>201701172024404_ContentChannelTypeDisableStatusOption.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 6.0\Version 1.6.0\201609282147388_WaitList.resx">
       <DependentUpon>201609282147388_WaitList.cs</DependentUpon>
