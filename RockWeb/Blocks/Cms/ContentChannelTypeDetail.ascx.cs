@@ -371,9 +371,22 @@ namespace RockWeb.Blocks.Cms
         protected void gChannelAttributes_Delete( object sender, RowEventArgs e )
         {
             Guid attributeGuid = (Guid)e.RowKeyValue;
-            ChannelAttributesState.RemoveEntity( attributeGuid );
 
-            BindChannelAttributesGrid();
+            // before removing the attribute, adjust the sort order for all attributes remaining
+            var channelAttribToDelete = ChannelAttributesState.Where( a => a.Guid == attributeGuid ).SingleOrDefault( );
+
+            if( channelAttribToDelete != null )
+            {
+                // get all attribs that are ordered AFTER this one, and adjust their Order
+                var orderedChannelAttribs = ChannelAttributesState.Where( a => a.Order > channelAttribToDelete.Order );
+                foreach ( var channelAttrib in orderedChannelAttribs )
+                {
+                    channelAttrib.Order = channelAttrib.Order - 1;
+                }
+
+                ChannelAttributesState.RemoveEntity( attributeGuid );
+                BindChannelAttributesGrid( );
+            }
         }
 
         /// <summary>
@@ -527,9 +540,22 @@ namespace RockWeb.Blocks.Cms
         protected void gItemAttributes_Delete( object sender, RowEventArgs e )
         {
             Guid attributeGuid = (Guid)e.RowKeyValue;
-            ItemAttributesState.RemoveEntity( attributeGuid );
 
-            BindItemAttributesGrid();
+            // before removing the item, adjust the sort order for all items remaining
+            var itemAttribToDelete = ItemAttributesState.Where( a => a.Guid == attributeGuid ).SingleOrDefault( );
+
+            if( itemAttribToDelete != null )
+            {
+                // get all items that are ordered AFTER this one, and adjust their Order
+                var orderedItemAttribs = ItemAttributesState.Where( a => a.Order > itemAttribToDelete.Order );
+                foreach ( var itemAttrib in orderedItemAttribs )
+                {
+                    itemAttrib.Order = itemAttrib.Order - 1;
+                }
+
+                ItemAttributesState.RemoveEntity( attributeGuid );
+                BindItemAttributesGrid();
+            }
         }
 
         /// <summary>
@@ -650,21 +676,57 @@ namespace RockWeb.Blocks.Cms
 
             string qualifierValue = contentType.Id.ToString();
 
+            // Load Channel Attribs
             attributeService.GetByEntityTypeId( new ContentChannel().TypeId ).AsQueryable()
                 .Where( a =>
                     a.EntityTypeQualifierColumn.Equals( "ContentChannelTypeId", StringComparison.OrdinalIgnoreCase ) &&
                     a.EntityTypeQualifierValue.Equals( qualifierValue ) )
                 .ToList()
                 .ForEach( a => ChannelAttributesState.Add( a ) );
-            BindChannelAttributesGrid();
+            
 
+            // Load Items Attribs
             attributeService.GetByEntityTypeId( new ContentChannelItem().TypeId ).AsQueryable()
                 .Where( a =>
                     a.EntityTypeQualifierColumn.Equals( "ContentChannelTypeId", StringComparison.OrdinalIgnoreCase ) &&
                     a.EntityTypeQualifierValue.Equals( qualifierValue ) )
                 .ToList()
                 .ForEach( a => ItemAttributesState.Add( a ) );
+
+
+
+            // JHM 1-17-17: Before binding, update the Order property of each attrib to be contigous.
+            // There was a bug in Delete causing "gaps" in the item order, which broke sorting.
+            // That has been fixed, but doesn't address things edited prior to that fix.
+            // ----
+            // Fix ordering for Channel Attribs
+            var orderedChannelAttribs = ChannelAttributesState
+                                .OrderBy( a => a.Order )
+                                .ThenBy( a => a.Name );
+
+            int channelAttribOrderIndex = 0;
+            foreach( var channelAttrib in orderedChannelAttribs )
+            {
+                channelAttrib.Order = channelAttribOrderIndex;
+
+                channelAttribOrderIndex++;
+            }
+            
+            // Fix ordering for Item Attribs
+            var orderedItemAttribs  = ItemAttributesState
+                                .OrderBy( a => a.Order )
+                                .ThenBy( a => a.Name );
+            int itemAttribOrderIndex = 0;
+            foreach( var itemAttrib in orderedItemAttribs)
+            {
+                itemAttrib.Order = itemAttribOrderIndex;
+
+                itemAttribOrderIndex++;
+            }
+
+            BindChannelAttributesGrid();
             BindItemAttributesGrid();
+            // ----
         }
 
         /// <summary>
