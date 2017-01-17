@@ -165,7 +165,7 @@ namespace Rock.UniversalSearch.IndexModels
             contentChannelItemIndex.ContentChannel = contentChannelItem.ContentChannel.Name;
             contentChannelItemIndex.DocumentName = contentChannelItem.Title;
 
-            if ( contentChannelItem.ContentChannel != null && contentChannelItem.ContentChannel.RequiresApproval && contentChannelItem.ApprovedDateTime != null )
+            if ( contentChannelItem.ContentChannel != null && ((contentChannelItem.ContentChannel.RequiresApproval && contentChannelItem.ApprovedDateTime != null) || contentChannelItem.ContentChannelType.DisableStatus ) )
             {
                 contentChannelItemIndex.IsApproved = true;
             }
