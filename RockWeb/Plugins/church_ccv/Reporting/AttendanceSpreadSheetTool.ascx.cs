@@ -33,8 +33,8 @@ namespace RockWeb.Plugins.church_ccv.Reporting
 
     [IntegerField( "AttendanceMetricCategoryId", Category = "CustomSetting" )]
     [IntegerField( "HeadcountsMetricCategoryId", Category = "CustomSetting" )]
-    [SchedulesField( "Schedules", Category = "CustomSetting" )]
-    [TextField( "GroupIds", Category = "CustomSetting" )]
+    [SchedulesField( "Schedules", Category = "CustomSetting", DefaultValue = "7883cac8-6e30-482b-95a7-2f0dee859be1,33ff69e9-059b-4702-b1e5-4d499cb7b07a,ff6fb240-0c32-4542-be40-159c522f7e51,4628d917-ec9c-4269-b39c-5bcbef3658e7,1f6c15da-982f-43b1-bde9-d4e70cfbcb45,e258b1e1-9930-417a-b2f8-e6f0b5cf8120,ad7cb062-2867-4d87-989a-9f6c73fa8fbf,2263f399-52d4-4871-a00d-ab9def6f63f0,5f087082-5c57-4fd1-8e76-4a2e86b4cfff" )]
+    [TextField( "GroupIds", Category = "CustomSetting", DefaultValue = "1199222,1199221,1199223,1199220,1790001,1199600,1199601,1199602,1789997,1199224,1199225,1559672,1199226,1790006,1790007,1199227,1199228,1199231,1199232,1199233,1790005,1790008,1199229,1199230,1542108,1199596,1199597,1199598,1199599,1542107" )]
     public partial class AttendanceSpreadSheetTool : RockBlockCustomSettings
     {
         #region Base Control Methods
@@ -416,10 +416,7 @@ namespace RockWeb.Plugins.church_ccv.Reporting
 
                         var headerText = string.Format( "{0} - {1}", campus.Name, schedule.FriendlyScheduleText );
                         RockBoundField campusScheduleField = new RockBoundField { HeaderText = headerText, DataField = campusScheduleFieldName };
-                        if ( cbShowServiceTimeColumns.Checked )
-                        {
-                            gHeadcountsExport.Columns.Add( campusScheduleField );
-                        }
+                        gHeadcountsExport.Columns.Add( campusScheduleField );
                     }
                 }
 
@@ -439,22 +436,17 @@ namespace RockWeb.Plugins.church_ccv.Reporting
                     {
                         var headerText = string.Format( "{0} - {1}", campus.Name, schedule.FriendlyScheduleText );
                         RockBoundField campusScheduleField = new RockBoundField { HeaderText = headerText, DataField = campusScheduleFieldName };
-                        if ( cbShowServiceTimeColumns.Checked )
-                        {
-                            gHeadcountsExport.Columns.Add( campusScheduleField );
-                        }
+                        gHeadcountsExport.Columns.Add( campusScheduleField );
                     }
                 }
 
                 string campusSummaryFieldName = string.Format( "campusSummaryField_Campus{0}", campus.Id );
                 RockBoundField campusSummaryField = new RockBoundField { HeaderText = campus.Name, DataField = campusSummaryFieldName };
-                if ( cbShowTotalColumns.Checked )
-                {
-                    // add a blank "dummy" column to help the Excel Export of Headcounts and Attendance line up
-                    gHeadcountsExport.Columns.Add( new RockBoundField { HeaderText = "-", DataField = string.Format( "campusDummyField_Campus{0}", campus.Id ) } );
 
-                    gHeadcountsExport.Columns.Add( campusSummaryField );
-                }
+                // add a blank "dummy" column to help the Excel Export of Headcounts and Attendance line up
+                gHeadcountsExport.Columns.Add( new RockBoundField { HeaderText = "-", DataField = string.Format( "campusDummyField_Campus{0}", campus.Id ) } );
+
+                gHeadcountsExport.Columns.Add( campusSummaryField );
             }
 
             gHeadcountsExport.Columns.Add( new RockBoundField { DataField = "GrandTotal", HeaderText = "Grand Totals" } );
@@ -506,10 +498,7 @@ namespace RockWeb.Plugins.church_ccv.Reporting
 
                         var headerText = string.Format( "{0} - {1}", campus.Name, schedule.FriendlyScheduleText.Replace( " at ", "\n" ) );
                         RockBoundField campusScheduleField = new RockBoundField { HeaderText = headerText, DataField = campusScheduleFieldName };
-                        if ( cbShowServiceTimeColumns.Checked )
-                        {
-                            gCheckinAttendanceExport.Columns.Add( campusScheduleField );
-                        }
+                        gCheckinAttendanceExport.Columns.Add( campusScheduleField );
                     }
                 }
 
@@ -528,21 +517,15 @@ namespace RockWeb.Plugins.church_ccv.Reporting
                     string campusScheduleFieldName = string.Format( "campusScheduleField_Campus{0}_Schedule{1}", campus.Id, schedule.Id );
                     if ( !gCheckinAttendanceExport.Columns.OfType<RockBoundField>().Any( a => a.DataField == campusScheduleFieldName ) )
                     {
-                        var headerText = string.Format( "{0} - {1}", campus.Name, schedule.FriendlyScheduleText );
+                        var headerText = string.Format( "{0} - {1}", campus.Name, schedule.FriendlyScheduleText.Replace( " at ", "\n" ) );
                         RockBoundField campusScheduleField = new RockBoundField { HeaderText = headerText, DataField = campusScheduleFieldName };
-                        if ( cbShowServiceTimeColumns.Checked )
-                        {
-                            gCheckinAttendanceExport.Columns.Add( campusScheduleField );
-                        }
+                        gCheckinAttendanceExport.Columns.Add( campusScheduleField );
                     }
                 }
 
                 string campusSummaryFieldName = string.Format( "campusSummaryField_Campus{0}", campus.Id );
                 RockBoundField campusSummaryField = new RockBoundField { HeaderText = campus.Name + " Totals", DataField = campusSummaryFieldName };
-                if ( cbShowTotalColumns.Checked )
-                {
-                    gCheckinAttendanceExport.Columns.Add( campusSummaryField );
-                }
+                gCheckinAttendanceExport.Columns.Add( campusSummaryField );
             }
 
             gCheckinAttendanceExport.Columns.Add( new RockBoundField { DataField = "GrandTotal", HeaderText = "Grand Totals" } );
@@ -847,27 +830,8 @@ namespace RockWeb.Plugins.church_ccv.Reporting
                     }
                 }
 
-                if ( rbHideVolunteerAttendance.Checked )
-                {
-                    if ( !dataRow.Field<string>( "GroupType" ).StartsWith( "Volunteer -" ) )
-                    {
-                        dataTable.Rows.Add( dataRow );
-                    }
-                }
-                else if ( rbShowOnlyVolunteerAttendance.Checked )
-                {
-                    if ( dataRow.Field<string>( "GroupType" ).StartsWith( "Volunteer -" ) )
-                    {
-                        dataTable.Rows.Add( dataRow );
-                    }
-                }
-                else
-                {
-                    dataTable.Rows.Add( dataRow );
-                }
+                dataTable.Rows.Add( dataRow );
             }
-
-
 
             gHeadcountsExport.ExportFilename = string.Format( "CheckinExport_{0}_{1}", sundayDate.AddDays( -1 ).ToString( "yyyyMMdd" ), sundayDate.ToString( "yyyyMMdd" ) );
             gCheckinAttendanceExport.DataSource = dataTable;
@@ -1000,6 +964,7 @@ namespace RockWeb.Plugins.church_ccv.Reporting
             data.Rows.Add( data.NewRow() );
             data.Rows.Add( data.NewRow() );
 
+            // Combine Attendance Grid data and HeadCounts Grid data
             var headCountsData = gHeadcountsExport.DataSourceAsDataTable;
             var overflowRow = headCountsData.Rows[1];
             var mainRow = headCountsData.Rows[0];
@@ -1010,27 +975,57 @@ namespace RockWeb.Plugins.church_ccv.Reporting
             var newMainRow = data.NewRow();
             data.Rows.Add( newMainRow );
 
-            
+            // copy AreaName to GroupName columns
+            newOverflowRow["GroupName"] = overflowRow["Area"];
+            newMainRow["GroupName"] = mainRow["Area"];
+
+            // copy the counts columns
             foreach ( DataColumn column in headCountsData.Columns )
             {
                 if ( data.Columns.OfType<DataColumn>().Any( a => a.ColumnName == column.ColumnName ) )
                 {
                     newOverflowRow[column.ColumnName] = overflowRow[column.ColumnName];
                     newMainRow[column.ColumnName] = mainRow[column.ColumnName];
-                }            
+                }
             }
 
-
+            // Totals
             DataRow totalsDataRow = data.NewRow();
             totalsDataRow["GroupName"] = "Totals";
 
-            foreach ( var col in data.Columns.OfType<DataColumn>().Where( a => a.DataType == typeof( Int32 ) ) )
+            int grandTotalTotal = 0;
+
+            foreach ( var col in data.Columns.OfType<DataColumn>().Where( a => a.DataType == typeof( int ) ) )
             {
                 totalsDataRow[col] = data.Rows.OfType<DataRow>().Where( a => a[col] is int && a[col] != null ).Select( a => (int)a[col] ).Sum();
+                if ( col.ColumnName == "GrandTotal" )
+                {
+                    grandTotalTotal = (int)totalsDataRow[col];
+                }
             }
 
             data.Rows.Add( totalsDataRow );
 
+            // two blank rows
+            var firstBlankRow = data.NewRow();
+            data.Rows.Add( firstBlankRow );
+            data.Rows.Add( data.NewRow() );
+
+            // PercentOfTotals
+            DataRow percentOfTotalsRow = data.NewRow();
+            percentOfTotalsRow["GroupName"] = "% of Total";
+
+            foreach ( var col in data.Columns.OfType<DataColumn>().Where( a => a.ColumnName.StartsWith( "campusSummaryField_Campus" ) ) )
+            {
+                int campusTotal = data.Rows.OfType<DataRow>().Where( a => a != totalsDataRow && a[col] is int && a[col] != null ).Select( a => (int)a[col] ).Sum();
+                if ( grandTotalTotal > 0 )
+                {
+                    double campusPercentOfTotal = campusTotal * 100 / (double)grandTotalTotal;
+                    percentOfTotalsRow[col] = campusPercentOfTotal;
+                }
+            }
+
+            data.Rows.Add( percentOfTotalsRow );
 
             columnCounter = 0;
 
@@ -1081,6 +1076,8 @@ namespace RockWeb.Plugins.church_ccv.Reporting
                 worksheet.Column( columnCounter ).Style.Numberformat.Format = ExcelHelper.DefaultColumnFormat( column.DataType );
             }
 
+            bool fillInCampusColor = true;
+
             // print data
             foreach ( DataRowView rowView in data.DefaultView )
             {
@@ -1100,10 +1097,32 @@ namespace RockWeb.Plugins.church_ccv.Reporting
 
                     dataCell.Style.Font.Name = "Book Antiqua";
                     dataCell.Style.Font.Size = 10;
+
+                    if ( rowView.Row == totalsDataRow )
+                    {
+                        dataCell.Style.Font.Color.SetColor( System.Drawing.Color.Red );
+                    }
+
                     dataCell.Style.Border.Top.Style = OfficeOpenXml.Style.ExcelBorderStyle.Thin;
                     dataCell.Style.Border.Left.Style = OfficeOpenXml.Style.ExcelBorderStyle.Thin;
                     dataCell.Style.Border.Right.Style = OfficeOpenXml.Style.ExcelBorderStyle.Thin;
                     dataCell.Style.Border.Bottom.Style = OfficeOpenXml.Style.ExcelBorderStyle.Thin;
+
+                    if ( column.ColumnName == "GroupName" )
+                    {
+                        if ( rowView.Row[1].ToString().Equals( "Totals" ) )
+                        {
+                            dataCell.Style.Font.Bold = true;
+                            dataCell.Style.Font.Size = 12;
+                        }
+
+                        if ( rowView.Row[1].ToString().Equals( "% of Total" ) )
+                        {
+                            // nothing special, but just in case there was, this is where to put it
+                        }
+
+                        dataCell.Style.HorizontalAlignment = OfficeOpenXml.Style.ExcelHorizontalAlignment.Right;
+                    }
 
                     if ( rowView.Row[0].ToString().StartsWith( "Volunteer -" ) )
                     {
@@ -1117,12 +1136,20 @@ namespace RockWeb.Plugins.church_ccv.Reporting
 
                     if ( column.ColumnName.StartsWith( "campusSummaryField_Campus" ) )
                     {
-                        var campusId = column.ColumnName.Replace( "campusSummaryField_Campus", string.Empty ).AsInteger();
+                        if ( rowView.Row == firstBlankRow )
+                        {
+                            // stop filling in the campus coloring if we have gotten to the end of the Totals row
+                            fillInCampusColor = false;
+                        }
 
-                        dataCell.Style.Fill.PatternType = OfficeOpenXml.Style.ExcelFillStyle.Solid;
-                        dataCell.Style.Fill.BackgroundColor.SetColor( GetExcelColorForCampus( campusId ) );
-                        dataCell.Style.Font.Bold = true;
-                        dataCell.Style.HorizontalAlignment = OfficeOpenXml.Style.ExcelHorizontalAlignment.Center;
+                        if ( fillInCampusColor )
+                        {
+                            var campusId = column.ColumnName.Replace( "campusSummaryField_Campus", string.Empty ).AsInteger();
+                            dataCell.Style.Fill.PatternType = OfficeOpenXml.Style.ExcelFillStyle.Solid;
+                            dataCell.Style.Fill.BackgroundColor.SetColor( GetExcelColorForCampus( campusId ) );
+                            dataCell.Style.Font.Bold = true;
+                            dataCell.Style.HorizontalAlignment = OfficeOpenXml.Style.ExcelHorizontalAlignment.Center;
+                        }
                     }
                     else if ( column.ColumnName.Equals( "GrandTotal" ) )
                     {
@@ -1135,12 +1162,70 @@ namespace RockWeb.Plugins.church_ccv.Reporting
                     {
                         dataCell.Style.HorizontalAlignment = OfficeOpenXml.Style.ExcelHorizontalAlignment.Center;
                     }
+
+                    if ( rowView.Row == percentOfTotalsRow )
+                    {
+                        dataCell.Style.Numberformat.Format = "0%";
+                        if ( dataCell.Value is int )
+                        {
+                            dataCell.Value = string.Format( "{0}%", (int)dataCell.Value );
+                        }
+                    }
                 }
             }
+
+            // Campus Offering Excel Rows
+            foreach ( var campus in CampusCache.All().OrderBy( a => a.Id ) )
+            {
+                rowCounter++;
+                var nameCell = worksheet.Cells[rowCounter, 2];
+                nameCell.Value = string.Format( "{0} Offering", campus.Name );
+                nameCell.Style.Fill.PatternType = OfficeOpenXml.Style.ExcelFillStyle.Solid;
+                nameCell.Style.Fill.BackgroundColor.SetColor( GetExcelColorForCampus( campus.Id ) );
+                nameCell.Style.Border.BorderAround( OfficeOpenXml.Style.ExcelBorderStyle.Thin );
+
+                var totalCell = worksheet.Cells[rowCounter, 3, rowCounter, 5];
+                totalCell.Merge = true;
+
+                // TODO: This could be populated from the database if we know which Metric these come from
+                totalCell.Value = null;
+                totalCell.Style.Fill.PatternType = OfficeOpenXml.Style.ExcelFillStyle.Solid;
+                totalCell.Style.Fill.BackgroundColor.SetColor( GetExcelColorForCampus( campus.Id ) );
+                totalCell.Style.Border.BorderAround( OfficeOpenXml.Style.ExcelBorderStyle.Thin );
+            }
+
+            // "other" offering excel row
+            rowCounter++;
+            var otherOfferingNameCell = worksheet.Cells[rowCounter, 2];
+            otherOfferingNameCell.Value = "Other";
+            otherOfferingNameCell.Style.Border.BorderAround( OfficeOpenXml.Style.ExcelBorderStyle.Thin );
+
+            var otherOfferingTotalCell = worksheet.Cells[rowCounter, 3, rowCounter, 5];
+            otherOfferingTotalCell.Merge = true;
+            otherOfferingTotalCell.Value = null;
+            otherOfferingTotalCell.Style.Border.BorderAround( OfficeOpenXml.Style.ExcelBorderStyle.Thin );
+
+            // Total Offering excel row
+            rowCounter++;
+            var totalOfferingNameCell = worksheet.Cells[rowCounter, 2];
+            totalOfferingNameCell.Value = "Total Offering";
+            totalOfferingNameCell.Style.Fill.PatternType = OfficeOpenXml.Style.ExcelFillStyle.Solid;
+            totalOfferingNameCell.Style.Fill.BackgroundColor.SetColor( System.Drawing.ColorTranslator.FromHtml( "#ccffff" ) );
+            totalOfferingNameCell.Style.Border.BorderAround( OfficeOpenXml.Style.ExcelBorderStyle.Thin );
+            totalOfferingNameCell.Style.Font.Bold = true;
+
+            var totalOfferingTotalCell = worksheet.Cells[rowCounter, 3, rowCounter, 5];
+            totalOfferingTotalCell.Merge = true;
+            totalOfferingTotalCell.Value = null;
+            totalOfferingTotalCell.Style.Fill.PatternType = OfficeOpenXml.Style.ExcelFillStyle.Solid;
+            totalOfferingTotalCell.Style.Fill.BackgroundColor.SetColor( System.Drawing.ColorTranslator.FromHtml( "#ccffff" ) );
+            totalOfferingTotalCell.Style.Border.BorderAround( OfficeOpenXml.Style.ExcelBorderStyle.Thin );
+            totalOfferingTotalCell.Style.Font.Bold = true;
 
             // don't include GroupType in the SpreadSheet
             worksheet.DeleteColumn( 1 );
 
+            // autofit the GroupName/Area column
             worksheet.Column( 1 ).AutoFit();
 
             // send the spreadsheet to the browser

@@ -19,32 +19,24 @@
 
                 <div class="grid ">
                     <div class="hidden-print">
-
-                        <Rock:RockDropDownList ID="ddlSundayDate" runat="server" Label="Weekend" />
-                        <Rock:RockCheckBox ID="cbShowServiceTimeColumns" runat="server" Text="Show Service Time Columns" Checked="true" />
-                        <Rock:RockCheckBox ID="cbShowTotalColumns" runat="server" Text="Show Totals Columns" Checked="true" />
-                        <Rock:RockControlWrapper ID="rcwCheckinAreaOptions" runat="server" Label="Checkin Area Options">
-                            <Rock:RockRadioButton ID="rbAll" runat="server" GroupName="checkinareaoptions" Text="Show All" Checked="true" />
-                            <Rock:RockRadioButton ID="rbShowOnlyVolunteerAttendance" GroupName="checkinareaoptions" runat="server" Text="Show only 'Volunteer -' groups" Checked="false" />
-                            <Rock:RockRadioButton ID="rbHideVolunteerAttendance" GroupName="checkinareaoptions" runat="server" Text="Hide 'Volunteer -' groups" Checked="false" />
-                        </Rock:RockControlWrapper>
-                        <asp:LinkButton ID="btnUpdate" runat="server" CssClass="btn btn-sm btn-primary" Text="Update" OnClick="btnUpdate_Click" />
+                        <Rock:RockDropDownList ID="ddlSundayDate" runat="server" Label="Weekend" AutoPostBack="true" OnSelectedIndexChanged="btnUpdate_Click" />
                     </div>
 
                     <h2>
                         <asp:Literal ID="lSundayDate" runat="server" /></h2>
 
                     <asp:Button ID="btnCreateSpreadsheet" runat="server" CssClass="btn btn-primary" Text="Create Spreadsheet" OnClick="btnCreateSpreadsheet_Click" />
-                    <h3>Headcounts Export</h3>
-                    <Rock:Grid ID="gHeadcountsExport" runat="server" AllowSorting="false" AllowPaging="false" ExportFilename="HeadcountsExport">
+
+                    <h3>Attendance (Checkin)</h3>
+                    <Rock:NotificationBox runat="server" ID="nbReorderInstructions" NotificationBoxType="Info" Text="Drag the Attendance Areas/Groups below into the order that they should be shown in the Export. Use block settings to add/remove additional areas/groups." />
+
+                    <Rock:Grid ID="gCheckinAttendanceExport" runat="server" AllowSorting="false" AllowPaging="false" OnGridReorder="gCheckinAttendanceExport_GridReorder" ExportFilename="CheckInExport" >
                         <Columns>
                         </Columns>
                     </Rock:Grid>
 
-
-                    <h3>Attendance Export (Checkin)</h3>
-
-                    <Rock:Grid ID="gCheckinAttendanceExport" runat="server" AllowSorting="false" AllowPaging="false" OnGridReorder="gCheckinAttendanceExport_GridReorder" ExportFilename="CheckInExport" >
+                    <h3>Headcounts</h3>
+                    <Rock:Grid ID="gHeadcountsExport" runat="server" AllowSorting="false" AllowPaging="false" ExportFilename="HeadcountsExport">
                         <Columns>
                         </Columns>
                     </Rock:Grid>
