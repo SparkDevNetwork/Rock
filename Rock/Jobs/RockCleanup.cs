@@ -279,7 +279,7 @@ namespace Rock.Jobs
             var workflowService = new WorkflowService( workflowContext );
 
             var completedWorkflows = workflowService.Queryable()
-                .Where( w => w.WorkflowType.CompletedWorkflowRetentionPeriod != null && w.Status.Equals( "Complete" ) )
+                .Where( w => w.WorkflowType.CompletedWorkflowRetentionPeriod != null && w.Status.Equals( "Completed" ) )
                 .ToList();
 
             foreach ( var workflow in completedWorkflows )
@@ -301,8 +301,9 @@ namespace Rock.Jobs
         }
 
         /// <summary>
-        /// Cleans up workflow logs.
+        /// Cleans up workflow logs by removing old logs in batches.
         /// </summary>
+        /// <see cref="http://dba.stackexchange.com/questions/1750/methods-of-speeding-up-a-huge-delete-from-table-with-no-clauses)"/>
         private int CleanUpWorkflowLogs( JobDataMap dataMap )
         {
             int totalRowsDeleted = 0;
@@ -310,24 +311,25 @@ namespace Rock.Jobs
             var workflowService = new WorkflowService( workflowContext );
             int batchAmount = dataMap.GetString( "BatchCleanupAmount" ).AsInteger();
 
-            var typesWithLogsToDelete = workflowService.Queryable()
+            var workflowsWithExpiredLogs = workflowService.Queryable()
                 .Where( w => w.WorkflowType.LogRetentionPeriod.HasValue && w.ModifiedDateTime < RockDateTime.Now.AddDays( -1 * (int)w.WorkflowType.LogRetentionPeriod ) )
                 .ToList();
 
-            foreach ( var workflowType in typesWithLogsToDelete )
+            foreach ( var workflow in workflowsWithExpiredLogs )
             {
-                // Note: WorkflowLogService.CanDelete( log ) always returns true
-
-                // delete in chunks (see http://dba.stackexchange.com/questions/1750/methods-of-speeding-up-a-huge-delete-from-table-with-no-clauses)
+                // WorkflowLogService.CanDelete( log ) always returns true, so no need to check
                 bool keepDeleting = true;
                 while ( keepDeleting )
                 {
-                    var dbTransaction = workflowTypeContext.Database.BeginTransaction();
+                    var dbTransaction = workflowContext.Database.BeginTransaction();
                     try
                     {
-                        string sqlCommand = @"DELETE TOP (@batchAmount) FROM [WorkflowLog] WHERE [EntitySetId] = @entitySetId";
+                        string sqlCommand = @"DELETE TOP (@batchAmount) FROM [WorkflowLog] WHERE [WorkflowId] = @workflowId";
 
-                        int rowsDeleted = workflowTypeContext.Database.ExecuteSqlCommand( sqlCommand, new SqlParameter( "batchAmount", batchAmount ), new SqlParameter( "entitySetId", workflow.Id ) );
+                        int rowsDeleted = workflowContext.Database.ExecuteSqlCommand( sqlCommand,
+                            new SqlParameter( "batchAmount", batchAmount ),
+                            new SqlParameter( "workflowId", workflow.Id )
+                        );
                         keepDeleting = rowsDeleted > 0;
                         totalRowsDeleted += rowsDeleted;
                     }
@@ -336,7 +338,6 @@ namespace Rock.Jobs
                         dbTransaction.Commit();
                     }
                 }
-
             }
 
             return totalRowsDeleted;
@@ -435,7 +436,10 @@ namespace Rock.Jobs
                     {
                         string sqlCommand = @"DELETE TOP (@batchAmount) FROM [ExceptionLog] WHERE [CreatedDateTime] < @createdDateTime";
 
-                        int rowsDeleted = exceptionLogRockContext.Database.ExecuteSqlCommand( sqlCommand, new SqlParameter( "batchAmount", batchAmount ), new SqlParameter( "createdDateTime", exceptionExpireDate ) );
+                        int rowsDeleted = exceptionLogRockContext.Database.ExecuteSqlCommand( sqlCommand,
+                            new SqlParameter( "batchAmount", batchAmount ),
+                            new SqlParameter( "createdDateTime", exceptionExpireDate )
+                        );
                         keepDeleting = rowsDeleted > 0;
                         totalRowsDeleted += rowsDeleted;
                     }
@@ -476,7 +480,10 @@ namespace Rock.Jobs
                         {
                             string sqlCommand = @"DELETE TOP (@batchAmount) FROM [EntitySetItem] WHERE [EntitySetId] = @entitySetId";
 
-                            int rowsDeleted = entitySetRockContext.Database.ExecuteSqlCommand( sqlCommand, new SqlParameter( "batchAmount", batchAmount ), new SqlParameter( "entitySetId", entitySet.Id ) );
+                            int rowsDeleted = entitySetRockContext.Database.ExecuteSqlCommand( sqlCommand,
+                                new SqlParameter( "batchAmount", batchAmount ),
+                                new SqlParameter( "entitySetId", entitySet.Id )
+                            );
                             keepDeleting = rowsDeleted > 0;
                             totalRowsDeleted += rowsDeleted;
                         }
