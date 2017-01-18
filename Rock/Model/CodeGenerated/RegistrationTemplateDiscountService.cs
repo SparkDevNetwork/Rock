@@ -91,10 +91,15 @@ namespace Rock.Model
             target.Code = source.Code;
             target.DiscountAmount = source.DiscountAmount;
             target.DiscountPercentage = source.DiscountPercentage;
+            target.EndDate = source.EndDate;
             target.ForeignGuid = source.ForeignGuid;
             target.ForeignKey = source.ForeignKey;
+            target.MaxRegistrants = source.MaxRegistrants;
+            target.MaxUsage = source.MaxUsage;
+            target.MinRegistrants = source.MinRegistrants;
             target.Order = source.Order;
             target.RegistrationTemplateId = source.RegistrationTemplateId;
+            target.StartDate = source.StartDate;
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;
             target.CreatedByPersonAliasId = source.CreatedByPersonAliasId;

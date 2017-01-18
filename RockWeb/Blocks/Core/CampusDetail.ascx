@@ -39,7 +39,7 @@
                         <div class="col-md-6">
                             <Rock:DataTextBox ID="tbUrl" runat="server" SourceTypeName="Rock.Model.Campus, Rock" Label="URL" PropertyName="Url" />
                             <Rock:DataTextBox ID="tbPhoneNumber" runat="server" SourceTypeName="Rock.Model.Campus, Rock" PropertyName="PhoneNumber" />
-                            <Rock:AddressControl ID="acAddress" runat="server" UseStateAbbreviation="false" UseCountryAbbreviation="false" />
+                            <Rock:AddressControl ID="acAddress" runat="server" Label="Address" UseStateAbbreviation="false" UseCountryAbbreviation="false" />
                         </div>
                     </div>
 

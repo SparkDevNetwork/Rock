@@ -155,7 +155,7 @@ namespace Rock.UniversalSearch.IndexModels
                                 <i class='{this.IconCssClass} fa-2x'></i>
                             </div>
                             <div class='col-sm-11'>
-                                {this.Name}
+                                <strong>{this.Name}</strong>
                             </div>
                         </div>
                     " };

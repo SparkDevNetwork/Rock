@@ -192,6 +192,14 @@ function labelFormatter(label, series) {
             public decimal? YValue { get; set; }
 
             /// <summary>
+            /// Gets the y value as a formatted string (for Line and Bar Charts)
+            /// </summary>
+            /// <value>
+            /// The formatted y value.
+            /// </value>
+            public string YValueFormatted { get; set; }
+
+            /// <summary>
             /// Gets or sets the metric title (for pie charts)
             /// </summary>
             /// <value>
@@ -292,9 +300,22 @@ function labelFormatter(label, series) {
                             chartData.YValueTotal = chartData.YValue;
                         }
 
+                        if ( row.Table.Columns.Contains( "YValueFormatted" ) )
+                        {
+                            chartData.YValueFormatted = Convert.ToString( row["YValueFormatted"] );
+                        }
+                        else
+                        {
+                            chartData.YValueFormatted = chartData.YValue.HasValue ? chartData.YValue.Value.ToString( "G29" ) : string.Empty;
+                        }
+
                         if ( row.Table.Columns.Contains( "DateTime" ) )
                         {
                             chartData.DateTimeStamp = ( row["DateTime"] as DateTime? ).Value.ToJavascriptMilliseconds();
+                        }
+                        else if ( row.Table.Columns.Contains( "XValue" ) )
+                        {
+                            chartData.DateTimeStamp = (row["XValue"] as int?).Value;
                         }
 
                         chartDataList.Add( chartData );

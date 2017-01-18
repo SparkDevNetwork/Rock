@@ -165,7 +165,7 @@ namespace Rock.UniversalSearch.IndexModels
             contentChannelItemIndex.ContentChannel = contentChannelItem.ContentChannel.Name;
             contentChannelItemIndex.DocumentName = contentChannelItem.Title;
 
-            if ( contentChannelItem.ContentChannel != null && contentChannelItem.ContentChannel.RequiresApproval && contentChannelItem.ApprovedDateTime != null )
+            if ( contentChannelItem.ContentChannel != null && ((contentChannelItem.ContentChannel.RequiresApproval && contentChannelItem.ApprovedDateTime != null) || contentChannelItem.ContentChannelType.DisableStatus ) )
             {
                 contentChannelItemIndex.IsApproved = true;
             }
@@ -272,7 +272,7 @@ namespace Rock.UniversalSearch.IndexModels
                                     <i class='{this.IconCssClass} fa-2x'></i>
                                 </div>
                                 <div class='col-sm-4'>
-                                    {this.Title} <small>({this.ContentChannel})</small>
+                                    <strong>{this.Title}</strong> <small>({this.ContentChannel})</small>
                                 </div>
                                 <div class='col-sm-7'>
                                     {(showSummary ? summary : "")}

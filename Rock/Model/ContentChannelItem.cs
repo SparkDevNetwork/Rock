@@ -288,7 +288,7 @@ namespace Rock.Model
             var contentChannelItems = new ContentChannelItemService( rockContext ).Queryable()
                                             .Where( i =>
                                                 i.ContentChannel.IsIndexEnabled
-                                                && (i.ContentChannel.RequiresApproval == false || i.Status == ContentChannelItemStatus.Approved) );
+                                                && (i.ContentChannel.RequiresApproval == false || i.ContentChannel.ContentChannelType.DisableStatus || i.Status == ContentChannelItemStatus.Approved) );
 
             int recordCounter = 0;
 
@@ -322,7 +322,7 @@ namespace Rock.Model
             if ( itemEntity.ContentChannel.IsIndexEnabled )
             {
                 // ensure it's meant to be indexed
-                if ( itemEntity.ContentChannel.IsIndexEnabled && (itemEntity.ContentChannel.RequiresApproval == false || itemEntity.Status == ContentChannelItemStatus.Approved) )
+                if ( itemEntity.ContentChannel.IsIndexEnabled && (itemEntity.ContentChannel.RequiresApproval == false || itemEntity.ContentChannel.ContentChannelType.DisableStatus || itemEntity.Status == ContentChannelItemStatus.Approved) )
                 {
                     var indexItem = ContentChannelItemIndex.LoadByModel( itemEntity );
                     IndexContainer.IndexDocument( indexItem );
