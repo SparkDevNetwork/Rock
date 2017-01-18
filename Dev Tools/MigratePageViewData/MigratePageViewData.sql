@@ -1,3 +1,45 @@
+set statistics time on
+
+/*
+IF NOT EXISTS(SELECT * FROM sys.indexes WHERE name = 'IX_Guid' AND object_id = OBJECT_ID('PageView'))
+BEGIN
+    CREATE UNIQUE NONCLUSTERED INDEX [IX_Guid] ON [dbo].[PageView]
+	(
+		[Guid] ASC
+	)
+END
+
+CREATE unique NONCLUSTERED INDEX [InteractionSessionForeignId]
+ON [dbo].[InteractionSession] ([ForeignId])
+INCLUDE ([Id])
+ where ForeignId is not null
+GO
+
+*/
+
+/*
+SELECT count(*) [Total Interaction Rows]
+FROM Interaction
+
+SELECT count(*) [Total PageView Rows]
+FROM PageView
+
+SELECT count(*) [Total PageViews inserted into Interaction]
+FROM PageView
+WHERE [Guid] IN (
+        SELECT [Guid]
+        FROM Interaction
+        )
+
+SELECT count(*) [Total PageView Rows not in Interaction yet]
+FROM PageView
+WHERE [Guid] NOT IN (
+        SELECT [Guid]
+        FROM Interaction
+        )
+
+*/
+
 /*DELETE FROM [Interaction]
 DELETE FROM [InteractionSession]
 DELETE FROM [InteractionDeviceType]
@@ -28,7 +70,7 @@ FROM [PageView] pv
 INNER JOIN [Site] s ON pv.[SiteId] = s.[Id]
 WHERE s.Id NOT IN (
         SELECT ChannelEntityId
-        FROM InteractionChannel
+        FROM InteractionChannel where ChannelEntityId is not null
         )
 GROUP BY s.[Id]
     ,s.[Name]
@@ -40,27 +82,32 @@ INSERT INTO [InteractionComponent] (
     ,[Guid]
     ,[ChannelId]
     )
-SELECT pv.[PageTitle]
+SELECT isnull(pv.[PageTitle], '')
     ,pv.[PageId]
     ,NEWID() AS NewGuid
     ,c.[Id]
-FROM [PageView] pv
+FROM [PageView] pv 
 INNER JOIN [Site] s ON pv.SiteId = s.Id
 INNER JOIN [InteractionChannel] c ON s.[Id] = c.[ChannelEntityId]
-WHERE CONCAT (
-        pv.PageId
+WHERE (pv.PageId is not null OR pv.PageTitle is not null)
+AND CONCAT (
+        pv.[PageTitle]
+		,'_'
+		,pv.PageId
         ,'_'
         ,c.Id
         ) NOT IN (
         SELECT CONCAT (
-                EntityId
+				[Name]
+				,'_'
+                ,EntityId
                 ,'_'
                 ,ChannelId
                 )
         FROM InteractionComponent
         )
 GROUP BY pv.[PageId]
-    ,pv.[PageTitle]
+    ,isnull(pv.[PageTitle], '')
     ,c.[Id]
 
 -- Insert Devices
@@ -83,7 +130,7 @@ SELECT [OperatingSystem] + ' - ' + [Browser]
 FROM [PageViewUserAgent]
 WHERE Id NOT IN (
         SELECT ForeignId
-        FROM InteractionDeviceType
+        FROM InteractionDeviceType where ForeignId is not null
         )
 
 -- Insert Sessions
@@ -102,61 +149,61 @@ INNER JOIN [PageViewUserAgent] AS b ON a.[PageViewUserAgentId] = b.[Id]
 INNER JOIN [InteractionDeviceType] AS c ON c.[ForeignId] = a.[PageViewUserAgentId]
 WHERE a.Id NOT IN (
         SELECT ForeignId
-        FROM InteractionSession
+        FROM InteractionSession where ForeignId is not null
         );
 
 -- Insert Page Views
+
+-- just in case
+delete from PageView where [Guid] in (select [Guid] from Interaction) 
+
 DECLARE @rowsInserted INT = NULL;
-
-WHILE @rowsInserted is NULL
-    OR @rowsInserted > 0
+DECLARE @insertStartID INT;
+WHILE @rowsInserted IS NULL
+	OR @rowsInserted > 0
 BEGIN
-    INSERT INTO [Interaction] (
-        [InteractionDateTime]
-        ,[Operation]
-        ,[InteractionComponentId]
-        ,[InteractionSessionId]
-        ,[InteractionData]
-        ,[PersonAliasId]
-        ,[Guid]
-        ,[ForeignId]
-        )
-    SELECT TOP 100000 [DateTimeViewed]
-        ,'View' [Operation]
-        ,cmp.[Id] [InteractionComponentId]
-        ,s.[Id] [InteractionSessionId]
-        ,pv.[Url] [InteractionData]
-        ,pv.[PersonAliasId]
-        ,NEWID() [Guid]
-        ,pv.Id
-    FROM [PageView] pv
-    INNER JOIN [InteractionComponent] cmp ON pv.[PageId] = cmp.[EntityId]
-        AND pv.[PageTitle] = cmp.[Name]
-    INNER JOIN [InteractionSession] s ON s.[ForeignId] = pv.[PageViewSessionId]
-    WHERE pv.Id NOT IN (
-            SELECT ForeignId
-            FROM Interaction
-            )
+	SELECT @insertStartID = MAX(ID) FROM Interaction;
+	
+	INSERT INTO [Interaction]  WITH (TABLOCK) (
+		[InteractionDateTime]
+		,[Operation]
+		,[InteractionComponentId]
+		,[InteractionSessionId]
+		,[InteractionData]
+		,[PersonAliasId]
+		,[Guid]
+		)
+	SELECT TOP (25000) *
+	FROM (
+		SELECT [DateTimeViewed]
+			,'View' [Operation]
+			,cmp.[Id] [InteractionComponentId]
+			,s.[Id] [InteractionSessionId]
+			,pv.[Url] [InteractionData]
+			,pv.[PersonAliasId]
+			,pv.[Guid] [Guid]
+		FROM [PageView] pv
+		CROSS APPLY (
+			SELECT max(id) [Id]
+			FROM [InteractionComponent] cmp
+			WHERE pv.[PageId] = cmp.[EntityId]
+				AND pv.PageId IS NOT NULL
+				AND cmp.EntityId IS NOT NULL
+				AND isnull(pv.[PageTitle], '') = isnull(cmp.[Name], '')
+				--AND pv.PageTitle IS NOT NULL
+				--AND cmp.[Name] IS NOT NULL
+			) cmp
+		CROSS APPLY (
+			SELECT top 1 s.Id [Id]
+			FROM [InteractionSession] s
+			WHERE s.[ForeignId] = pv.[PageViewSessionId]
+				AND s.ForeignId IS NOT NULL
+			) s
+		where cmp.Id is not null
+		) x 
 
-    SET @rowsInserted = @@ROWCOUNT
+	SET @rowsInserted = @@ROWCOUNT
+
+	delete from PageView with (tablock) where [Guid] in (select [Guid] from Interaction WHERE Id >= @insertStartID)
 END
 
-SELECT count(*)
-FROM Interaction
-
-SELECT count(*)
-FROM PageView
-
-SELECT count(*)
-FROM PageView
-WHERE Id IN (
-        SELECT ForeignId
-        FROM Interaction
-        )
-
-SELECT count(*)
-FROM PageView
-WHERE Id NOT IN (
-        SELECT ForeignId
-        FROM Interaction
-        )
