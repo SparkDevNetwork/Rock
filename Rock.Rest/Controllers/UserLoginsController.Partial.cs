@@ -36,21 +36,10 @@ namespace Rock.Rest.Controllers
         /// <returns></returns>
         [HttpGet]
         [System.Web.Http.Route( "api/userlogins/available/{username}" )]
+        [System.Web.Http.Route( "api/userlogins/available" )]
         public bool Available( string username )
         {
             return ( (UserLoginService)Service ).GetByUserName( username ) == null;
-        }
-
-        /// <summary>
-        /// Tests if a username is available
-        /// </summary>
-        /// <param name="username"></param>
-        /// <returns></returns>
-        [HttpGet]
-        [System.Web.Http.Route( "api/userlogins/available" )]
-        public bool AvailableByQueryString( string username )
-        {
-            return Available( username );
         }
 
         /// <summary>
