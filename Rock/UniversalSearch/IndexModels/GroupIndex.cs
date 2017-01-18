@@ -186,7 +186,7 @@ namespace Rock.UniversalSearch.IndexModels
                                 <i class='{this.IconCssClass} fa-2x'></i>
                             </div>
                             <div class='col-sm-11'>
-                                {this.Name} <small>({this.GroupTypeName})</small>
+                                <strong>{this.Name}</strong> <small>({this.GroupTypeName})</small>
                                 {(this.Description != "" ? "<br />" + this.Description : "")}
                             </div>
                         </div>" };

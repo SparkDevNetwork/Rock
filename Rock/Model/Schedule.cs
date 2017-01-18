@@ -251,6 +251,24 @@ namespace Rock.Model
         }
 
         /// <summary>
+        /// Gets the first start date time this week.
+        /// </summary>
+        /// <value>
+        /// The first start date time this week.
+        /// </value>
+        [NotMapped]
+        public virtual DateTime? FirstStartDateTimeThisWeek
+        {
+            get
+            {
+                var endDate = RockDateTime.Today.SundayDate();
+                var startDate = endDate.AddDays( -7 );
+                var occurrences = GetScheduledStartTimes( startDate, endDate );
+                return occurrences.Min( o => (DateTime?)o );
+            }
+        }
+
+        /// <summary>
         /// Gets the start time of day.
         /// </summary>
         /// <value>

@@ -217,8 +217,10 @@ function() {
         /// Creates the child controls.
         /// </summary>
         /// <param name="entityType">Type of the entity.</param>
-        /// <param name="parentControl">The parent control.</param>
-        /// <returns></returns>
+        /// <param name="filterControl">The control that serves as the container for the filter controls.</param>
+        /// <returns>
+        /// The array of new controls created to implement the filter.
+        /// </returns>
         public override Control[] CreateChildControls( Type entityType, FilterField filterControl )
         {
             // Define Control: History Data View Picker

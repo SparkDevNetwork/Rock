@@ -96,6 +96,21 @@ namespace Rock.UniversalSearch.IndexModels
         }
 
         /// <summary>
+        /// Gets the index model assembly.
+        /// </summary>
+        /// <value>
+        /// The index model assembly.
+        /// </value>
+        [RockIndexField( Index = IndexType.NotIndexed )]
+        public string IndexModelAssembly
+        {
+            get
+            {
+                return InstanceType.Assembly.FullName;
+            }
+        }
+
+        /// <summary>
         /// Formats the search result.
         /// </summary>
         /// <param name="person">The person.</param>

@@ -344,7 +344,7 @@ namespace Rock.UniversalSearch.IndexModels
                             <i class='{this.IconCssClass} fa-2x'></i>
                         </div>
                         <div class='col-md-3 col-sm-10'>
-                            {this.NickName} {this.LastName} {this.Suffix} <br />
+                            <strong>{this.NickName} {this.LastName} {this.Suffix}</strong> <br />
                             {(this.Email != null ? this.Email + "<br />" : "")}
                             {(this.StreetAddress != null ? this.StreetAddress + "<br />" : "")}
                             {(this.City != null ? this.City + ", " + this.State + " " + this.PostalCode : "")}

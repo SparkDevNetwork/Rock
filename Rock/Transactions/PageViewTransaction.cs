@@ -121,7 +121,7 @@ namespace Rock.Transactions
                 }
 
                 // get user agent info
-                var clientType = PageViewUserAgent.GetClientType( userAgent );
+                var clientType = InteractionDeviceType.GetClientType( userAgent );
 
                 // don't log visits from crawlers
                 if ( clientType != "Crawler" )

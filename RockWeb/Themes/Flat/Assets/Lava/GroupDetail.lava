@@ -41,7 +41,7 @@
 			{% assign warningLevel = 'danger' %}
 		{% endif %}
 
-		{% assign activeMemberCount = countActive | Plus:1 %} {% comment %}the couter is zero based{% endcomment %}
+		{% assign activeMemberCount = countActive | Plus:1 %} {% comment %}the counter is zero based{% endcomment %}
 		{% assign overageAmount = activeMemberCount | Minus:Group.GroupCapacity %}
 
 		{% if overageAmount > 0 %}
@@ -64,7 +64,7 @@
 
 			{% if member.GroupRole.IsLeader %}
 			<li>
-			{{ member.Person.FullName }} <small>({{ member.GroupRole.Name}})</small>
+			{{ member.Person.FullName }} <small>({{ member.GroupRole.Name }})</small>
 			</li>
 			{% endif %}
 			{% endfor %}
@@ -103,7 +103,7 @@
 		{% if countPending > -1 %}
 			{% assign icountPending = 0 %}
 
-			
+
 
 			{% for member in Group.Members %}
 
@@ -121,10 +121,10 @@
 						{% if LinkedPages.PersonDetailPage %}
 							<a href="{{ LinkedPages.PersonDetailPage }}?PersonId={{ member.PersonId }}">
 						{% endif %}
-						<img src="{{ member.Person.PhotoUrl }}&height=60&width=60&mode=crop&scale=both" height="60" class="pull-left margin-r-sm" />
+						<img src="{{ member.Person.PhotoUrl }}&height=60&width=60&mode=crop&scale=both" height="60" class="pull-left margin-r-sm" alt="">
 						<div class="pull-left">
 							<strong>{{ member.Person.FullName }}</strong>
-							<small>({{ member.GroupRole.Name}})</small>
+							<small>({{ member.GroupRole.Name }})</small>
 
 							{% for phone in member.Person.PhoneNumbers %}
 							<br />{{ phone.NumberFormatted }} <small>({{ phone.NumberTypeValue.Value }})</small>
@@ -189,10 +189,10 @@
 						{% if LinkedPages.PersonDetailPage %}
 							<a href="{{ LinkedPages.PersonDetailPage }}?PersonId={{ member.PersonId }}">
 						{% endif %}
-						<img src="{{ member.Person.PhotoUrl }}&height=60&width=60&mode=crop&scale=both" height="60" class="pull-left margin-r-sm" />
+						<img src="{{ member.Person.PhotoUrl }}&height=60&width=60&mode=crop&scale=both" height="60" class="pull-left margin-r-sm" alt="">
 						<div class="pull-left">
 							<strong>{{ member.Person.FullName }}</strong>
-							<small>({{ member.GroupRole.Name}})</small>
+							<small>({{ member.GroupRole.Name }})</small>
 
 							{% for phone in member.Person.PhoneNumbers %}
 							<br />{{ phone.NumberFormatted }} <small>({{ phone.NumberTypeValue.Value }})</small>
@@ -256,10 +256,10 @@
 						{% if LinkedPages.PersonDetailPage %}
 							<a href="{{ LinkedPages.PersonDetailPage }}?PersonId={{ member.PersonId }}">
 						{% endif %}
-						<img src="{{ member.Person.PhotoUrl }}&height=60&width=60&mode=crop&scale=both" height="60" class="pull-left margin-r-sm" />
+						<img src="{{ member.Person.PhotoUrl }}&height=60&width=60&mode=crop&scale=both" height="60" class="pull-left margin-r-sm" alt="">
 						<div class="pull-left">
 							<strong>{{ member.Person.FullName }}</strong>
-							<small>({{ member.GroupRole.Name}})</small>
+							<small>({{ member.GroupRole.Name }})</small>
 
 							{% for phone in member.Person.PhoneNumbers %}
 							<br />{{ phone.NumberFormatted }} <small>({{ phone.NumberTypeValue.Value }})</small>
@@ -319,7 +319,6 @@
 
 {% else %}
 	{% if Group.Id %}
-		<div class='alert alert-warning'>You do not have persmission to view this group.</div>
+		<div class='alert alert-warning'>You do not have permission to view this group.</div>
 	{% endif %}
 {% endif %}
-

@@ -209,13 +209,8 @@ namespace Rock.CheckIn
         {
             if ( selectedOnly )
             {
-                if ( PossibleSchedules.Any() )
-                {
-                    var selectedScheduleIds = SelectedSchedules.Select( s => s.Schedule.Id ).ToList();
-                    return GroupTypes.Where( t => t.SelectedForSchedule.Any( s => selectedScheduleIds.Contains( s ) ) ).ToList();
-                }
-
-                return GroupTypes.Where( t => t.Selected ).ToList();
+                var selectedScheduleIds = SelectedSchedules.Select( s => s.Schedule.Id ).ToList();
+                return GroupTypes.Where( t => t.Selected || t.SelectedForSchedule.Any( s => selectedScheduleIds.Contains( s ) ) ).ToList();
             }
 
             return GroupTypes;
@@ -288,17 +283,17 @@ namespace Rock.CheckIn
         [Rock.Data.LavaIgnore]
         public object this[object key]
         {
-           get
+            get
             {
-               switch( key.ToStringSafe() )
-               {
+                switch ( key.ToStringSafe() )
+                {
                     case "FamilyMember": return FamilyMember;
                     case "LastCheckIn": return LastCheckIn;
                     case "FirstTime": return FirstTime;
                     case "SecurityCode": return SecurityCode;
                     case "GroupTypes": return GetGroupTypes( true );
                     default: return Person[key];
-               }
+                }
             }
         }
 

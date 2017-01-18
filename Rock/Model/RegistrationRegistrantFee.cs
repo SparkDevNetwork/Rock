@@ -131,7 +131,7 @@ namespace Rock.Model
         {
             var discountedCost = TotalCost;
             
-            if ( RegistrationTemplateFee != null && RegistrationTemplateFee.DiscountApplies )
+            if ( RegistrationTemplateFee != null && RegistrationTemplateFee.DiscountApplies && ( RegistrationRegistrant == null || RegistrationRegistrant.DiscountApplies ) )
             {
                 discountedCost = discountedCost - ( discountedCost * discountPercent );
             }
