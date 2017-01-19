@@ -172,7 +172,7 @@ namespace Rock.Jobs
                     resultMessage = string.Format( "{0} groups were sync'ed", groupsSynced );
                 }
 
-                resultMessage += string.Format( " and {0} groups where changed", groupsChanged );
+                resultMessage += string.Format( " and {0} groups were changed", groupsChanged );
 
                 context.Result = resultMessage;
             }
