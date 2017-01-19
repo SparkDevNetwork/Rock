@@ -3,7 +3,7 @@
   {
   body
   {
-  font-size: 10px;
+  font-size: 14px;
   }
   .panel
   {
@@ -11,7 +11,7 @@
   }
   h1, .panel-title
   {
-  font-size: 12px;
+  font-size: 16px;
   padding: 5px;
   }
   .navbar, header, .site-footer, .no-print, .no-print *
@@ -27,7 +27,7 @@
   }
 </style>
 
-<a class="pull-right btn btn-primary no-print" href="javascript:window.print()">print page</a>
+<a class="pull-right btn btn-primary no-print" href="javascript:window.print()">Print Statement</a>
 <img src="/Content/ExternalSite/CentralLogo2008Black.png" width="150" style="margin-bottom: 10px" />
 <br/>
 Central Christian Church<br/>
