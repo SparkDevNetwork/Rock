@@ -16,12 +16,21 @@ namespace Rock.Jobs
     [BooleanField( "Delete Job if no data left to migrate", "Determines if this Job will delete itself if there is no data left to migrate to the Interactions table.", true, key: "DeleteJob" )]
     public class MigrateInteractionsData : IJob
     {
+        private int _channelsInserted = 0;
+        private int _componentsInserted = 0;
+        private int _deviceTypesInserted = 0;
+        private int _sessionsInserted = 0;
+        private int _pageViewsMoved = 0;
+        private int _pageViewsTotal = 0;
+        private int _communicationRecipientActivityMoved = 0;
+        private int _communicationRecipientActivityTotal = 0;
+
         /// <summary>
         /// Executes the specified context.
         /// </summary>
         /// <param name="context">The context.</param>
         /// <exception cref="System.NotImplementedException"></exception>
-        
+
         public void Execute( IJobExecutionContext context )
         {
             JobDataMap dataMap = context.JobDetail.JobDataMap;
@@ -29,7 +38,44 @@ namespace Rock.Jobs
 
             using ( var rockContext = new RockContext() )
             {
-                var entityTypePage = EntityTypeCache.Read<Rock.Model.Page>();
+                _pageViewsTotal = rockContext.Database.SqlQuery<int>( "SELECT COUNT(*) FROM PageView" ).First();
+                _communicationRecipientActivityTotal = rockContext.Database.SqlQuery<int>( "SELECT COUNT(*) FROM CommunicationRecipientActivity" ).First();
+
+                if ( _pageViewsTotal == 0 && _communicationRecipientActivityTotal == 0 && deleteJob )
+                {
+                    // delete job if there are no PageView or CommunicationRecipientActivity rows  left
+                    var jobId = context.GetJobId();
+                    var jobService = new ServiceJobService( rockContext );
+                    var job = jobService.Get( jobId );
+                    if ( job != null )
+                    {
+                        jobService.Delete( job );
+                        rockContext.SaveChanges();
+                        return;
+                    }
+                }
+            }
+
+            MigratePageViewsData( context );
+
+            context.UpdateLastStatusMessage( $@"Channels Inserted: {_channelsInserted}, 
+Components Inserted: {_componentsInserted}, 
+DeviceTypes Inserted: {_deviceTypesInserted},
+Sessions Inserted: {_sessionsInserted},
+PageViews Moved: {_pageViewsMoved}/{_pageViewsTotal},
+CommunicationRecipientActivity Moved: {_communicationRecipientActivityMoved}/{_communicationRecipientActivityTotal}
+" );
+        }
+
+        /// <summary>
+        /// Migrates the page views data.
+        /// </summary>
+        /// <param name="context">The context.</param>
+        private void MigratePageViewsData( IJobExecutionContext context )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                var componentEntityTypePage = EntityTypeCache.Read<Rock.Model.Page>();
                 var channelMediumWebsite = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.INTERACTIONCHANNELTYPE_WEBSITE );
                 var sqlInsertSitesToChannels = $@"
 -- Insert Websites
@@ -41,7 +87,7 @@ INSERT INTO [InteractionChannel] (
     ,[Guid]
     )
 SELECT s.[Name] [Site.Name]
-    ,{entityTypePage.Id}
+    ,{componentEntityTypePage.Id}
     ,'{channelMediumWebsite.Id}'
     ,s.[Id] [SiteId]
     ,NEWID() AS NewGuid
@@ -133,31 +179,15 @@ WHERE a.Id NOT IN (
         FROM InteractionSession where ForeignId is not null
         );";
 
-                var channelsInserted = rockContext.Database.ExecuteSqlCommand( sqlInsertSitesToChannels );
-                var componentsInserted = rockContext.Database.ExecuteSqlCommand( sqlInsertPagesToComponents );
-                var deviceTypesInserted = rockContext.Database.ExecuteSqlCommand( insertUserAgentToDeviceTypes );
-                var sessionsInserted = rockContext.Database.ExecuteSqlCommand( insertSessions );
+                _channelsInserted += rockContext.Database.ExecuteSqlCommand( sqlInsertSitesToChannels );
+                _componentsInserted = rockContext.Database.ExecuteSqlCommand( sqlInsertPagesToComponents );
+                _deviceTypesInserted = rockContext.Database.ExecuteSqlCommand( insertUserAgentToDeviceTypes );
+                _sessionsInserted = rockContext.Database.ExecuteSqlCommand( insertSessions );
                 var interactionService = new InteractionService( rockContext );
 
                 // move PageView data in chunks (see http://dba.stackexchange.com/questions/1750/methods-of-speeding-up-a-huge-delete-from-table-with-no-clauses)
                 bool keepMoving = true;
-                int pageViewsTotal = rockContext.Database.SqlQuery<int>( "SELECT COUNT(*) FROM PageView" ).First();
 
-                if ( pageViewsTotal == 0 && deleteJob)
-                {
-                    // delete job if there are no pageViews left
-                    var jobId = context.GetJobId();
-                    var jobService = new ServiceJobService( rockContext );
-                    var job = jobService.Get( jobId );
-                    if ( job != null )
-                    {
-                        jobService.Delete( job );
-                        rockContext.SaveChanges();
-                        return;
-                    }
-                }
-
-                int pageViewsMoved = 0;
                 while ( keepMoving )
                 {
                     var dbTransaction = rockContext.Database.BeginTransaction();
@@ -206,23 +236,17 @@ WHERE a.Id NOT IN (
                         rockContext.Database.ExecuteSqlCommand( $"delete from PageView with (tablock) where [Guid] in (select [Guid] from Interaction WHERE Id >= {insertStartId})" );
 
                         keepMoving = rowsMoved > 0;
-                        pageViewsMoved += rowsMoved;
+                        _pageViewsMoved += rowsMoved;
                     }
                     finally
                     {
                         dbTransaction.Commit();
                     }
 
-                    var percentComplete = ( pageViewsMoved * 100.0 ) / pageViewsTotal;
-                    var statusMessage = $@"Progress: {pageViewsMoved} of {pageViewsTotal} ({Math.Round( percentComplete, 1 )}%) PageViews data migrated to Interactions";
+                    var percentComplete = ( _pageViewsMoved * 100.0 ) / _pageViewsTotal;
+                    var statusMessage = $@"Progress: {_pageViewsMoved} of {_pageViewsTotal} ({Math.Round( percentComplete, 1 )}%) PageViews data migrated to Interactions";
                     context.UpdateLastStatusMessage( statusMessage );
                 }
-
-                context.UpdateLastStatusMessage( $@"Channels Inserted: {channelsInserted}, 
-componentsInserted: {componentsInserted}, 
-deviceTypesInserted: {deviceTypesInserted},
-sessionsInserted: {sessionsInserted},
-pageViewsMoved: {pageViewsMoved}/{pageViewsTotal}" );
             }
         }
     }
