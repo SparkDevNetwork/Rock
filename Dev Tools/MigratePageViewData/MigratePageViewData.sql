@@ -89,7 +89,6 @@ SELECT isnull(pv.[PageTitle], '')
 FROM [PageView] pv 
 INNER JOIN [Site] s ON pv.SiteId = s.Id
 INNER JOIN [InteractionChannel] c ON s.[Id] = c.[ChannelEntityId]
-WHERE (pv.PageId is not null OR pv.PageTitle is not null)
 AND CONCAT (
         pv.[PageTitle]
 		,'_'
@@ -186,12 +185,8 @@ BEGIN
 		CROSS APPLY (
 			SELECT max(id) [Id]
 			FROM [InteractionComponent] cmp
-			WHERE pv.[PageId] = cmp.[EntityId]
-				AND pv.PageId IS NOT NULL
-				AND cmp.EntityId IS NOT NULL
+			WHERE ISNULL(pv.[PageId], 0) = ISNULL(cmp.[EntityId], 0)
 				AND isnull(pv.[PageTitle], '') = isnull(cmp.[Name], '')
-				--AND pv.PageTitle IS NOT NULL
-				--AND cmp.[Name] IS NOT NULL
 			) cmp
 		CROSS APPLY (
 			SELECT top 1 s.Id [Id]
