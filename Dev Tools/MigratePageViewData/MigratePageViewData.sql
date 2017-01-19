@@ -62,7 +62,7 @@ INSERT INTO [InteractionChannel] (
     ,[Guid]
     )
 SELECT s.[Name] [Site.Name]
-    ,2 -- Rock.Model.Page
+    ,3 -- Rock.Model.Site
     ,@channelMediumValue
     ,s.[Id] [SiteId]
     ,NEWID() AS NewGuid
