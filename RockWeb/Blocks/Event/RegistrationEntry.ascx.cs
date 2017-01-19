@@ -21,6 +21,7 @@ using System.Data.Entity;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Web;
 using System.Web.UI;
 using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
@@ -427,8 +428,22 @@ namespace RockWeb.Blocks.Event
                             }
                             else
                             {
-                                // show the panel for asking how many registrants ( it may be skipped )
-                                ShowHowMany();
+                                if ( SignInline && 
+                                    !PageParameter( "redirected" ).AsBoolean() && 
+                                    DigitalSignatureComponent != null && 
+                                    !string.IsNullOrWhiteSpace( DigitalSignatureComponent.CookieInitializationUrl ) )
+                                {
+                                    // Redirect for Digital Signature Cookie Initialization 
+                                    var returnUrl = GlobalAttributesCache.Read().GetValue( "PublicApplicationRoot" ).EnsureTrailingForwardslash() + Request.Url.PathAndQuery.RemoveLeadingForwardslash();
+                                    returnUrl = returnUrl + ( returnUrl.Contains( "?" ) ? "&" : "?" ) + "redirected=True";
+                                    string redirectUrl = string.Format( "{0}?redirect_uri={1}", DigitalSignatureComponent.CookieInitializationUrl, HttpUtility.UrlEncode( returnUrl ) );
+                                    Response.Redirect( redirectUrl, false );
+                                }
+                                else
+                                {
+                                    // show the panel for asking how many registrants ( it may be skipped )
+                                    ShowHowMany();
+                                }
                             }
                         }
                     }
@@ -3568,11 +3583,15 @@ namespace RockWeb.Blocks.Event
     // The qry parameter value is saved to a hidden field and a post back is performed
     $('#iframeRequiredDocument').on('load', function(e) {{
         var location = this.contentWindow.location;
-        var qryString = this.contentWindow.location.search;
-        if ( qryString && qryString != '' && qryString.startsWith('?document_id') ) {{ 
-            debugger;
-            $('#{19}').val(qryString);
-            {20};
+        try {{
+            var qryString = this.contentWindow.location.search;
+            if ( qryString && qryString != '' && qryString.startsWith('?document_id') ) {{ 
+                $('#{19}').val(qryString);
+                {20};
+            }}
+        }}
+        catch (e) {{
+            console.log(e.message);
         }}
     }});
 
