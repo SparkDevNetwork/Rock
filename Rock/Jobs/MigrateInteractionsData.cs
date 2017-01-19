@@ -29,7 +29,7 @@ namespace Rock.Jobs
 
             using ( var rockContext = new RockContext() )
             {
-                var entityTypeSite = EntityTypeCache.Read<Rock.Model.Site>();
+                var entityTypePage = EntityTypeCache.Read<Rock.Model.Page>();
                 var channelMediumWebsite = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.INTERACTIONCHANNELTYPE_WEBSITE );
                 var sqlInsertSitesToChannels = $@"
 -- Insert Websites
@@ -41,7 +41,7 @@ INSERT INTO [InteractionChannel] (
     ,[Guid]
     )
 SELECT s.[Name] [Site.Name]
-    ,{entityTypeSite.Id}
+    ,{entityTypePage.Id}
     ,'{channelMediumWebsite.Id}'
     ,s.[Id] [SiteId]
     ,NEWID() AS NewGuid
