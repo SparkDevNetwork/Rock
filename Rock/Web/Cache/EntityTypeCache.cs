@@ -179,6 +179,14 @@ namespace Rock.Web.Cache
         /// </value>
         public bool IsAnalyticHistoricalSupported { get; set; }
 
+        /// <summary>
+        /// Gets or sets the index result template.
+        /// </summary>
+        /// <value>
+        /// The index result template.
+        /// </value>
+        public string IndexResultTemplate { get; set; }
+
         #endregion
 
         #region Methods
@@ -219,6 +227,7 @@ namespace Rock.Web.Cache
                 this.IsIndexingSupported = entityType.IsIndexingSupported;
                 this.IsAnalyticSupported = entityType.IsAnalyticSupported;
                 this.IsAnalyticHistoricalSupported = entityType.IsAnalyticHistoricalSupported;
+                this.IndexResultTemplate = entityType.IndexResultTemplate;
 
                 _entityTypes.AddOrUpdate( entityType.Name, entityType.Id, ( k, v ) => entityType.Id );
             }
