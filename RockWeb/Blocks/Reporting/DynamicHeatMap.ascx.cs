@@ -550,7 +550,6 @@ namespace RockWeb.Blocks.Reporting
                     {
                         location.GeoFence = geoFence;
                         rockContext.SaveChanges();
-                        mdSaveLocation.Hide();
                     }
                 }
             }
