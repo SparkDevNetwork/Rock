@@ -14,6 +14,7 @@
             <div class="panel-body">
                 <Rock:NotificationBox ID="nbAttendanceMetricWarning" runat="server" NotificationBoxType="Warning" Text="Please select the attendance metric in the block settings." Dismissable="false" />
                 <Rock:NotificationBox ID="nbHeadcountsMetricWarning" runat="server" NotificationBoxType="Warning" Text="Please select the headcount metric in the block settings." Dismissable="false" />
+                <Rock:NotificationBox ID="nbGeneralFundsMetricWarning" runat="server" NotificationBoxType="Warning" Text="Please select the general funds metric in the block settings." Dismissable="false" />
                 <Rock:NotificationBox ID="nbGroupTypeWarning" runat="server" NotificationBoxType="Warning" Text="Please select a group type template in the block settings." Dismissable="false" />
                 <Rock:NotificationBox ID="nbGroupsWarning" runat="server" NotificationBoxType="Warning" Text="Please select at least one group." Visible="false" />
 
@@ -40,6 +41,15 @@
                         <Columns>
                         </Columns>
                     </Rock:Grid>
+                    
+                    <h3>General Funds by Campus</h3>
+                    <Rock:Grid ID="gGeneralFundsExport" runat="server" AllowSorting="false" AllowPaging="false" ExportFilename="GeneralFundsExport">
+                        <Columns>
+                            <Rock:RockBoundField DataField="EntityID" HeaderText="Campus" />
+                            <Rock:RockBoundField DataField="MetricValue" HeaderText="Offering" />
+                        </Columns>
+                    </Rock:Grid> 
+                    
                 </div>
 
             </div>
@@ -52,6 +62,7 @@
                 <Content>
                     <Rock:MetricCategoryPicker ID="mpAttendanceMetric" runat="server" Label="Metric for Attendance (Checkin)" />
                     <Rock:MetricCategoryPicker ID="mpHeadcountsMetric" runat="server" Label="Metric for Headcounts" />
+                    <Rock:MetricCategoryPicker ID="mpGeneralFundsMetric" runat="server" Label="Metric for General Funds"/>
 
                     <Rock:RockCheckBoxList ID="cblCampuses" runat="server" FormGroupCssClass="campuses-picker js-campuses-picker" CssClass="campuses-picker-vertical" Label="Campuses"
                         Help="The campuses to display attendance for. Leave blank to not filter by campus." />

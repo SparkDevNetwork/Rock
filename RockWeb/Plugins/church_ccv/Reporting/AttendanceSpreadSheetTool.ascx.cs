@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
 using System.Data.Entity;
+using System.Globalization;
 using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
@@ -33,6 +34,7 @@ namespace RockWeb.Plugins.church_ccv.Reporting
 
     [IntegerField( "AttendanceMetricCategoryId", Category = "CustomSetting" )]
     [IntegerField( "HeadcountsMetricCategoryId", Category = "CustomSetting" )]
+    [IntegerField( "GeneralFundsMetricCategoryId", Category = "CustomSetting" )]
     [SchedulesField( "Schedules", Category = "CustomSetting", DefaultValue = "7883cac8-6e30-482b-95a7-2f0dee859be1,33ff69e9-059b-4702-b1e5-4d499cb7b07a,ff6fb240-0c32-4542-be40-159c522f7e51,4628d917-ec9c-4269-b39c-5bcbef3658e7,1f6c15da-982f-43b1-bde9-d4e70cfbcb45,e258b1e1-9930-417a-b2f8-e6f0b5cf8120,ad7cb062-2867-4d87-989a-9f6c73fa8fbf,2263f399-52d4-4871-a00d-ab9def6f63f0,5f087082-5c57-4fd1-8e76-4a2e86b4cfff" )]
     [TextField( "GroupIds", Category = "CustomSetting", DefaultValue = "1199222,1199221,1199223,1199220,1790001,1199600,1199601,1199602,1789997,1199224,1199225,1559672,1199226,1790006,1790007,1199227,1199228,1199231,1199232,1199233,1790005,1790008,1199229,1199230,1542108,1199596,1199597,1199598,1199599,1542107" )]
     public partial class AttendanceSpreadSheetTool : RockBlockCustomSettings
@@ -48,6 +50,7 @@ namespace RockWeb.Plugins.church_ccv.Reporting
             base.OnInit( e );
             gCheckinAttendanceExport.GridRebind += gCheckinAttendanceExport_GridRebind;
             gHeadcountsExport.GridRebind += gHeadcountsExport_GridRebind;
+            gGeneralFundsExport.GridRebind += gGeneralFundsExport_GridRebind;
 
             // this event gets fired after block settings are updated. it's nice to repaint the screen if these settings would alter it
             this.BlockUpdated += Block_BlockUpdated;
@@ -91,6 +94,7 @@ namespace RockWeb.Plugins.church_ccv.Reporting
 
             BindCheckinAttendanceGrid();
             BindHeadcountsGrid();
+            BindGeneralFundsGrid();
         }
 
         /// <summary>
@@ -127,6 +131,7 @@ namespace RockWeb.Plugins.church_ccv.Reporting
 
             mpAttendanceMetric.SetValue( this.GetAttributeValue( "AttendanceMetricCategoryId" ).AsIntegerOrNull() );
             mpHeadcountsMetric.SetValue( this.GetAttributeValue( "HeadcountsMetricCategoryId" ).AsIntegerOrNull() );
+            mpGeneralFundsMetric.SetValue( this.GetAttributeValue( "GeneralFundsMetricCategoryId" ).AsIntegerOrNull() );
 
             var scheduleService = new ScheduleService( rockContext );
             var selectedSchedules = scheduleService.GetByGuids( this.GetAttributeValue( "Schedules" ).SplitDelimitedValues().AsGuidList() );
@@ -365,6 +370,11 @@ namespace RockWeb.Plugins.church_ccv.Reporting
             BindHeadcountsGrid();
         }
 
+        private void gGeneralFundsExport_GridRebind( object sender, GridRebindEventArgs e )
+        {
+            BindGeneralFundsGrid();
+        }
+
         #endregion
 
         #region Methods
@@ -530,6 +540,7 @@ namespace RockWeb.Plugins.church_ccv.Reporting
 
             gCheckinAttendanceExport.Columns.Add( new RockBoundField { DataField = "GrandTotal", HeaderText = "Grand Totals" } );
         }
+
 
         /// <summary>
         /// Binds the headcounts grid.
@@ -838,6 +849,58 @@ namespace RockWeb.Plugins.church_ccv.Reporting
             gCheckinAttendanceExport.DataBind();
         }
 
+        /// <summary>
+        /// Binds the general funds grid.
+        /// </summary>
+        private void BindGeneralFundsGrid()
+        {
+            //open the Rock Context and begin a Metric Category Service
+            RockContext rockContext = new RockContext();
+            var metricCategoryService = new MetricCategoryService( rockContext );
+
+            Metric generalFundsMetric = null;
+            var generalFundsMetricCategoryId = this.GetAttributeValue( "GeneralFundsMetricCategoryId" ).AsIntegerOrNull();
+            if ( generalFundsMetricCategoryId.HasValue )
+            {
+                var metricCategory = metricCategoryService.Get( generalFundsMetricCategoryId.Value );
+                if ( metricCategory != null )
+                {
+                    generalFundsMetric = metricCategory.Metric;
+                }
+            }
+
+            if ( generalFundsMetric == null )
+            {
+                nbGeneralFundsMetricWarning.Visible = true;
+                return;
+            }
+            else
+            {
+                nbGeneralFundsMetricWarning.Visible = false;
+            }
+
+            var sundayDate = ddlSundayDate.SelectedValue.AsDateTime().Value;
+            lSundayDate.Text = ddlSundayDate.SelectedItem.Text;
+
+            var entityTypeIdCampus = EntityTypeCache.Read<Campus>().Id;
+            int entityTypeIdDefinedValue = EntityTypeCache.Read( typeof( Rock.Model.DefinedValue ) ).Id;
+            var metricValuePartitionService = new MetricValuePartitionService( rockContext );
+
+            // LINQ Query from MetricValue table and MetricValuePartitions
+            var generalFundsMetricValuesQuery = metricValuePartitionService.Queryable()
+                 .Where( a => a.MetricValue.MetricId == generalFundsMetricCategoryId && a.MetricValue.MetricValueDateTime == sundayDate )
+                 .Select( m => new
+                 {
+                     m.EntityId,
+                     m.MetricValue
+                 }
+                 ).ToList();
+
+            gGeneralFundsExport.ExportFilename = string.Format( "GeneralFundsExport_{0}_{1}", sundayDate.AddDays( -1 ).ToString( "yyyyMMdd" ), sundayDate.ToString( "yyyyMMdd" ) );
+            gGeneralFundsExport.DataSource = generalFundsMetricValuesQuery;
+            gGeneralFundsExport.DataBind();
+        }
+
         #endregion
 
         /// <summary>
@@ -849,6 +912,7 @@ namespace RockWeb.Plugins.church_ccv.Reporting
         {
             BindHeadcountsGrid();
             BindCheckinAttendanceGrid( false );
+            BindGeneralFundsGrid();
         }
 
         /// <summary>
@@ -865,6 +929,7 @@ namespace RockWeb.Plugins.church_ccv.Reporting
             this.SetAttributeValue( "Campuses", cblCampuses.SelectedValues.AsDelimited( "," ) );
             this.SetAttributeValue( "AttendanceMetricCategoryId", mpAttendanceMetric.SelectedValue );
             this.SetAttributeValue( "HeadcountsMetricCategoryId", mpHeadcountsMetric.SelectedValue );
+            this.SetAttributeValue( "GeneralFundsMetricCategoryId", mpGeneralFundsMetric.SelectedValue );
             var selectedScheduleIds = spSchedules.SelectedValuesAsInt().ToList();
             var selectedScheduleGuids = new ScheduleService( new RockContext() ).GetByIds( selectedScheduleIds ).Select( a => a.Guid ).ToList();
             this.SetAttributeValue( "Schedules", selectedScheduleGuids.AsDelimited( "," ) );
@@ -923,15 +988,21 @@ namespace RockWeb.Plugins.church_ccv.Reporting
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnCreateSpreadsheet_Click( object sender, EventArgs e )
         {
+
+            RockContext rockContext = new RockContext();
+
+            // Grab Sunday date, generate file name and worksheet name
             var sundayDate = ddlSundayDate.SelectedValue.AsDateTime().Value;
             string filename = string.Format( "AttendanceSpreadsheet_{0}_{1}.xlsx", sundayDate.AddDays( -1 ).ToString( "yyyyMMdd" ), sundayDate.ToString( "yyyyMMdd" ) );
             string workSheetName = "Export";
 
+            // Create the new Excel package
             ExcelPackage excel = new ExcelPackage();
 
+            // Set the title in Properties
             excel.Workbook.Properties.Title = "Attendance Spreadsheet";
 
-            // add author info
+            // Add author info to Properties in Excel
             Rock.Model.UserLogin userLogin = Rock.Model.UserLoginService.GetCurrentUser();
             if ( userLogin != null )
             {
@@ -942,24 +1013,29 @@ namespace RockWeb.Plugins.church_ccv.Reporting
                 excel.Workbook.Properties.Author = "Rock";
             }
 
-            // add the page that created this
+            // Add the page that created this to Properties in Excel
             excel.Workbook.Properties.SetCustomPropertyValue( "Source", this.Page.Request.Url.OriginalString );
 
+            // Add a new worksheet to the Excel package with a default column width of 5
             ExcelWorksheet worksheet = excel.Workbook.Worksheets.Add( workSheetName );
             worksheet.DefaultColWidth = 5;
 
+            // set row and column counters for building the spreadsheet
             var headerRows = 3;
             int rowCounter = headerRows;
             int columnCounter = 1;
 
+            // bind the grids
             gCheckinAttendanceExport.AllowPaging = false;
             BindCheckinAttendanceGrid( true );
             BindHeadcountsGrid();
+            BindGeneralFundsGrid();
 
+            // First things first, make a data table out of the CheckinAttendance Grid
             var gridDataFields = gCheckinAttendanceExport.Columns.OfType<BoundField>().ToList();
             DataTable data = gCheckinAttendanceExport.DataSourceAsDataTable;
 
-            // three blank rows
+            // Add three blank rows to the data table
             data.Rows.Add( data.NewRow() );
             data.Rows.Add( data.NewRow() );
             data.Rows.Add( data.NewRow() );
@@ -969,9 +1045,11 @@ namespace RockWeb.Plugins.church_ccv.Reporting
             var overflowRow = headCountsData.Rows[1];
             var mainRow = headCountsData.Rows[0];
 
+            // Add a new row for "Overflow" from Headcounts Grid data table
             var newOverflowRow = data.NewRow();
             data.Rows.Add( newOverflowRow );
 
+            // Add a new row for "Main" from Headcounts Grid 
             var newMainRow = data.NewRow();
             data.Rows.Add( newMainRow );
 
@@ -1175,6 +1253,20 @@ namespace RockWeb.Plugins.church_ccv.Reporting
             }
 
             // Campus Offering Excel Rows
+            var metricValuePartitionService = new MetricValuePartitionService( rockContext );
+            var generalFundsMetricValuesQuery = metricValuePartitionService.Queryable()
+                 .Where( a => a.MetricValue.MetricId == 10 && a.MetricValue.MetricValueDateTime == sundayDate )
+                 .Select( m => new
+                 {
+                     m.EntityId,
+                     m.MetricValue
+                 }
+                 ).ToList();
+
+            var campusCounter = 0;
+            float offeringTotalFloat = 0;
+            float convertedMetricValue = 0;
+
             foreach ( var campus in CampusCache.All().OrderBy( a => a.Id ) )
             {
                 rowCounter++;
@@ -1187,11 +1279,36 @@ namespace RockWeb.Plugins.church_ccv.Reporting
                 var totalCell = worksheet.Cells[rowCounter, 3, rowCounter, 5];
                 totalCell.Merge = true;
 
-                // TODO: This could be populated from the database if we know which Metric these come from
-                totalCell.Value = null;
+                // Colors the Offering table
+                if ( generalFundsMetricValuesQuery == null )
+                {
+                    totalCell.Value = null;
+                }
+                else
+                {
+                    var placeholdOffering = generalFundsMetricValuesQuery.Where( a => a.EntityId == campus.Id )
+                         .Select( m => new
+                         {
+                             m.MetricValue
+                         } )
+                         .FirstOrDefault();
+
+                    if ( placeholdOffering != null )
+                    {
+                        convertedMetricValue = float.Parse( string.Format( "{0}", placeholdOffering.MetricValue ), CultureInfo.InvariantCulture.NumberFormat );
+                    }
+                    else
+                    {
+                        convertedMetricValue = 0;
+                    }
+                    offeringTotalFloat += convertedMetricValue;
+                    totalCell.Value = convertedMetricValue;
+                }
+                totalCell.Style.Numberformat.Format = "#,##0.00;-#,##0.00";
                 totalCell.Style.Fill.PatternType = OfficeOpenXml.Style.ExcelFillStyle.Solid;
                 totalCell.Style.Fill.BackgroundColor.SetColor( GetExcelColorForCampus( campus.Id ) );
                 totalCell.Style.Border.BorderAround( OfficeOpenXml.Style.ExcelBorderStyle.Thin );
+                campusCounter++;
             }
 
             // "other" offering excel row
@@ -1202,7 +1319,7 @@ namespace RockWeb.Plugins.church_ccv.Reporting
 
             var otherOfferingTotalCell = worksheet.Cells[rowCounter, 3, rowCounter, 5];
             otherOfferingTotalCell.Merge = true;
-            otherOfferingTotalCell.Value = null;
+            otherOfferingTotalCell.Value = 0;
             otherOfferingTotalCell.Style.Border.BorderAround( OfficeOpenXml.Style.ExcelBorderStyle.Thin );
 
             // Total Offering excel row
@@ -1216,7 +1333,8 @@ namespace RockWeb.Plugins.church_ccv.Reporting
 
             var totalOfferingTotalCell = worksheet.Cells[rowCounter, 3, rowCounter, 5];
             totalOfferingTotalCell.Merge = true;
-            totalOfferingTotalCell.Value = null;
+            totalOfferingTotalCell.Value = offeringTotalFloat;
+            totalOfferingTotalCell.Style.Numberformat.Format = "#,##0.00;-#,##0.00";
             totalOfferingTotalCell.Style.Fill.PatternType = OfficeOpenXml.Style.ExcelFillStyle.Solid;
             totalOfferingTotalCell.Style.Fill.BackgroundColor.SetColor( System.Drawing.ColorTranslator.FromHtml( "#ccffff" ) );
             totalOfferingTotalCell.Style.Border.BorderAround( OfficeOpenXml.Style.ExcelBorderStyle.Thin );
