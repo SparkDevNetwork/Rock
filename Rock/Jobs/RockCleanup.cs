@@ -279,7 +279,7 @@ namespace Rock.Jobs
             var workflowService = new WorkflowService( workflowContext );
 
             var completedWorkflows = workflowService.Queryable()
-                .Where( w => w.WorkflowType.CompletedWorkflowRetentionPeriod != null && w.Status.Equals( "Completed" ) )
+                .Where( w => w.WorkflowType.CompletedWorkflowRetentionPeriod.HasValue && w.Status.Equals( "Completed" ) )
                 .ToList();
 
             foreach ( var workflow in completedWorkflows )
@@ -309,33 +309,36 @@ namespace Rock.Jobs
             int totalRowsDeleted = 0;
             var workflowContext = new RockContext();
             var workflowService = new WorkflowService( workflowContext );
-            int batchAmount = dataMap.GetString( "BatchCleanupAmount" ).AsInteger();
+            int? batchAmount = dataMap.GetString( "BatchCleanupAmount" ).AsIntegerOrNull() ?? 1000;
 
-            var workflowsWithExpiredLogs = workflowService.Queryable()
-                .Where( w => w.WorkflowType.LogRetentionPeriod.HasValue && w.ModifiedDateTime < RockDateTime.Now.AddDays( -1 * (int)w.WorkflowType.LogRetentionPeriod ) )
+            var workflowsWithExpirationPeriod = workflowService.Queryable()
+                .Where( w => w.WorkflowType.LogRetentionPeriod.HasValue )
                 .ToList();
 
-            foreach ( var workflow in workflowsWithExpiredLogs )
+            foreach ( var workflow in workflowsWithExpirationPeriod )
             {
-                // WorkflowLogService.CanDelete( log ) always returns true, so no need to check
-                bool keepDeleting = true;
-                while ( keepDeleting )
+                if ( workflow.ModifiedDateTime < RockDateTime.Now.AddDays( -1 * (int)workflow.WorkflowType.LogRetentionPeriod ) )
                 {
-                    var dbTransaction = workflowContext.Database.BeginTransaction();
-                    try
+                    // WorkflowLogService.CanDelete( log ) always returns true, so no need to check
+                    bool keepDeleting = true;
+                    while ( keepDeleting )
                     {
-                        string sqlCommand = @"DELETE TOP (@batchAmount) FROM [WorkflowLog] WHERE [WorkflowId] = @workflowId";
+                        var dbTransaction = workflowContext.Database.BeginTransaction();
+                        try
+                        {
+                            string sqlCommand = @"DELETE TOP (@batchAmount) FROM [WorkflowLog] WHERE [WorkflowId] = @workflowId";
 
-                        int rowsDeleted = workflowContext.Database.ExecuteSqlCommand( sqlCommand,
-                            new SqlParameter( "batchAmount", batchAmount ),
-                            new SqlParameter( "workflowId", workflow.Id )
-                        );
-                        keepDeleting = rowsDeleted > 0;
-                        totalRowsDeleted += rowsDeleted;
-                    }
-                    finally
-                    {
-                        dbTransaction.Commit();
+                            int rowsDeleted = workflowContext.Database.ExecuteSqlCommand( sqlCommand,
+                                new SqlParameter( "batchAmount", batchAmount ),
+                                new SqlParameter( "workflowId", workflow.Id )
+                            );
+                            keepDeleting = rowsDeleted > 0;
+                            totalRowsDeleted += rowsDeleted;
+                        }
+                        finally
+                        {
+                            dbTransaction.Commit();
+                        }
                     }
                 }
             }
@@ -380,7 +383,7 @@ namespace Rock.Jobs
         {
             // purge audit log
             int totalRowsDeleted = 0;
-            int batchAmount = dataMap.GetString( "BatchCleanupAmount" ).AsInteger();
+            int? batchAmount = dataMap.GetString( "BatchCleanupAmount" ).AsIntegerOrNull() ?? 1000;
             int? auditExpireDays = dataMap.GetString( "AuditLogExpirationDays" ).AsIntegerOrNull();
             if ( auditExpireDays.HasValue )
             {
@@ -420,7 +423,7 @@ namespace Rock.Jobs
         private int PurgeExceptionLog( JobDataMap dataMap )
         {
             int totalRowsDeleted = 0;
-            int batchAmount = dataMap.GetString( "BatchCleanupAmount" ).AsInteger();
+            int? batchAmount = dataMap.GetString( "BatchCleanupAmount" ).AsIntegerOrNull() ?? 1000;
             int? exceptionExpireDays = dataMap.GetString( "DaysKeepExceptions" ).AsIntegerOrNull();
             if ( exceptionExpireDays.HasValue )
             {
@@ -462,7 +465,7 @@ namespace Rock.Jobs
             var entitySetRockContext = new RockContext();
             var currentDateTime = RockDateTime.Now;
             var entitySetService = new EntitySetService( entitySetRockContext );
-            int batchAmount = dataMap.GetString( "BatchCleanupAmount" ).AsInteger();
+            int? batchAmount = dataMap.GetString( "BatchCleanupAmount" ).AsIntegerOrNull() ?? 1000;
             var qry = entitySetService.Queryable().Where( a => a.ExpireDateTime.HasValue && a.ExpireDateTime < currentDateTime );
             int totalRowsDeleted = 0;
 
@@ -511,7 +514,7 @@ namespace Rock.Jobs
             var pageViewRockContext = new RockContext();
             var currentDateTime = RockDateTime.Now;
             var siteService = new SiteService( pageViewRockContext );
-            int batchAmount = dataMap.GetString( "BatchCleanupAmount" ).AsInteger();
+            int? batchAmount = dataMap.GetString( "BatchCleanupAmount" ).AsIntegerOrNull() ?? 1000;
             var siteQry = siteService.Queryable().Where( a => a.PageViewRetentionPeriodDays.HasValue );
             int totalRowsDeleted = 0;
 
@@ -532,7 +535,11 @@ namespace Rock.Jobs
                     {
                         string sqlCommand = @"DELETE TOP (@batchAmount) FROM [PageView] WHERE [SiteId] = @siteId AND DateTimeViewed < @retentionCutoffDateTime";
 
-                        int rowsDeleted = pageViewRockContext.Database.ExecuteSqlCommand( sqlCommand, new SqlParameter( "batchAmount", batchAmount ), new SqlParameter( "siteId", site.Id ), new SqlParameter( "retentionCutoffDateTime", retentionCutoffDateTime ) );
+                        int rowsDeleted = pageViewRockContext.Database.ExecuteSqlCommand( sqlCommand,
+                            new SqlParameter( "batchAmount", batchAmount ),
+                            new SqlParameter( "siteId", site.Id ),
+                            new SqlParameter( "retentionCutoffDateTime", retentionCutoffDateTime )
+                        );
                         keepDeleting = rowsDeleted > 0;
                         totalRowsDeleted += rowsDeleted;
                     }
