@@ -636,10 +636,32 @@ namespace RockWeb.Blocks.Groups
             }
             btnRegister.Text = registerButtonText;
 
-            int groupId = PageParameter( "GroupId" ).AsInteger();
-            _group = new GroupService( _rockContext )
-                .Queryable( "GroupType.DefaultGroupRole" ).AsNoTracking()
-                .FirstOrDefault( g => g.Id == groupId );
+            var groupService = new GroupService( _rockContext );
+
+            Guid? groupGuid = GetAttributeValue( "Group" ).AsGuidOrNull();
+            if ( groupGuid.HasValue )
+            {
+                _group = groupService.Get( groupGuid.Value );
+            }
+
+            if ( _group == null )
+            {
+                groupGuid = PageParameter( "GroupGuid" ).AsGuidOrNull();
+                if ( groupGuid.HasValue )
+                {
+                    _group = groupService.Get( groupGuid.Value );
+                }
+            }
+
+            if ( _group == null )
+            {
+                int? groupId = PageParameter( "GroupId" ).AsIntegerOrNull();
+                if ( groupId.HasValue )
+                {
+                    _group = groupService.Get( groupId.Value );
+                }
+            }
+
             if ( _group == null )
             {
                 nbNotice.Heading = "Unknown Group";
