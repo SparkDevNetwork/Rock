@@ -13,9 +13,11 @@ namespace Rock.Jobs
     /// </summary>
     /// <seealso cref="Quartz.IJob" />
     [DisallowConcurrentExecution]
+    [IntegerField( "Command Timeout", "Maximum amount of time (in seconds) to wait for the SQL Query to complete. Leave blank to use the default for this job (3600). Note, it could take several minutes, so you might want to set it at 3600 (60 minutes) or higher", false, 60 * 60, "General", 1, "CommandTimeout" )]
     [BooleanField( "Delete Job if no data left to migrate", "Determines if this Job will delete itself if there is no data left to migrate to the Interactions table.", true, key: "DeleteJob" )]
     public class MigrateInteractionsData : IJob
     {
+        private int _commandTimeout = 0;
         private int _channelsInserted = 0;
         private int _componentsInserted = 0;
         private int _deviceTypesInserted = 0;
@@ -34,12 +36,22 @@ namespace Rock.Jobs
         public void Execute( IJobExecutionContext context )
         {
             JobDataMap dataMap = context.JobDetail.JobDataMap;
+
+            _commandTimeout = dataMap.GetString( "CommandTimeout" ).AsIntegerOrNull() ?? 3600;
+
             var deleteJob = dataMap.Get( "DeleteJob" ).ToStringSafe().AsBoolean();
 
             using ( var rockContext = new RockContext() )
             {
                 _pageViewsTotal = rockContext.Database.SqlQuery<int>( "SELECT COUNT(*) FROM PageView" ).First();
-                _communicationRecipientActivityTotal = rockContext.Database.SqlQuery<int>( "SELECT COUNT(*) FROM CommunicationRecipientActivity" ).First();
+                _communicationRecipientActivityTotal = rockContext.Database.SqlQuery<int>( @"SELECT COUNT(*)
+FROM CommunicationRecipientActivity
+WHERE [Guid] NOT IN (
+		SELECT ForeignGuid
+		FROM Interaction
+		WHERE ForeignGuid IS NOT NULL
+		)
+" ).First();
 
                 if ( _pageViewsTotal == 0 && _communicationRecipientActivityTotal == 0 && deleteJob )
                 {
@@ -57,6 +69,7 @@ namespace Rock.Jobs
             }
 
             MigratePageViewsData( context );
+            MigrateCommunicationRecipientActivityData( context );
 
             context.UpdateLastStatusMessage( $@"Channels Inserted: {_channelsInserted}, 
 Components Inserted: {_componentsInserted}, 
@@ -179,11 +192,15 @@ WHERE a.Id NOT IN (
         FROM InteractionSession where ForeignId is not null
         );";
 
+                rockContext.Database.CommandTimeout = _commandTimeout;
                 _channelsInserted += rockContext.Database.ExecuteSqlCommand( sqlInsertSitesToChannels );
                 _componentsInserted = rockContext.Database.ExecuteSqlCommand( sqlInsertPagesToComponents );
                 _deviceTypesInserted = rockContext.Database.ExecuteSqlCommand( insertUserAgentToDeviceTypes );
                 _sessionsInserted = rockContext.Database.ExecuteSqlCommand( insertSessions );
                 var interactionService = new InteractionService( rockContext );
+
+                var interactionCommunicationChannel = new InteractionChannelService( rockContext ).Get( Rock.SystemGuid.InteractionChannel.COMMUNICATION.AsGuid() );
+                var interactionCommunicationChannelId = interactionCommunicationChannel.Id;
 
                 // move PageView data in chunks (see http://dba.stackexchange.com/questions/1750/methods-of-speeding-up-a-huge-delete-from-table-with-no-clauses)
                 bool keepMoving = true;
@@ -197,6 +214,7 @@ WHERE a.Id NOT IN (
                         int insertStartId = interactionService.Queryable().Max( a => a.Id );
                         int chunkSize = 25000;
 
+                        rockContext.Database.CommandTimeout = _commandTimeout;
                         int rowsMoved = rockContext.Database.ExecuteSqlCommand( $@"
                             INSERT INTO [Interaction]  WITH (TABLOCK) (
 		                        [InteractionDateTime]
@@ -220,7 +238,8 @@ WHERE a.Id NOT IN (
 		                        CROSS APPLY (
 			                        SELECT max(id) [Id]
 			                        FROM [InteractionComponent] cmp
-			                        WHERE ISNULL(pv.[PageId], 0) = ISNULL(cmp.[EntityId], 0)
+			                        WHERE ChannelId != {interactionCommunicationChannelId}
+                                        AND ISNULL(pv.[PageId], 0) = ISNULL(cmp.[EntityId], 0)
 				                        AND isnull(pv.[PageTitle], '') = isnull(cmp.[Name], '')
 			                        ) cmp
 		                        CROSS APPLY (
@@ -233,7 +252,8 @@ WHERE a.Id NOT IN (
 		                        ) x " );
 
                         // delete PageViews that have been moved to the Interaction table
-                        rockContext.Database.ExecuteSqlCommand( $"delete from PageView with (tablock) where [Guid] in (select [Guid] from Interaction WHERE Id >= {insertStartId})" );
+                        rockContext.Database.CommandTimeout = _commandTimeout;
+                        rockContext.Database.ExecuteSqlCommand( $"delete from PageView with (tablock) where [Guid] in (select [Guid] from Interaction WHERE Id >= {insertStartId})"  );
 
                         keepMoving = rowsMoved > 0;
                         _pageViewsMoved += rowsMoved;
@@ -245,6 +265,298 @@ WHERE a.Id NOT IN (
 
                     var percentComplete = ( _pageViewsMoved * 100.0 ) / _pageViewsTotal;
                     var statusMessage = $@"Progress: {_pageViewsMoved} of {_pageViewsTotal} ({Math.Round( percentComplete, 1 )}%) PageViews data migrated to Interactions";
+                    context.UpdateLastStatusMessage( statusMessage );
+                }
+            }
+        }
+
+        /// <summary>
+        /// Migrates the communication recipient activity data.
+        /// </summary>
+        /// <param name="context">The context.</param>
+        private void MigrateCommunicationRecipientActivityData( IJobExecutionContext context )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                var componentEntityTypeCommunicationRecipient = EntityTypeCache.Read<Rock.Model.CommunicationRecipient>();
+                var channelMediumCommunication = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.INTERACTIONCHANNELTYPE_COMMUNICATION );
+
+                // InteractionChannel for Communications already exists (in a migration)
+                var interactionChannel = new InteractionChannelService( rockContext ).Get( Rock.SystemGuid.InteractionChannel.COMMUNICATION.AsGuid() );
+                var interactionChannelId = interactionChannel.Id;
+
+                // InteractionComponent : Email Subject Line as Name and Communication.Id as EntityId for any communication that has CommunicationRecipientActivity
+                var insertCommunicationsAsComponentsSQL = $@"
+INSERT INTO [dbo].[InteractionComponent] (
+	[Name]
+	,[EntityId]
+	,[ChannelId]
+	,[Guid]
+	)
+SELECT c.[Subject]
+	,c.Id
+	,{interactionChannelId}
+	,NEWID()
+FROM Communication c
+WHERE (
+		c.Id IN (
+			SELECT cr.CommunicationId
+			FROM CommunicationRecipient cr
+			WHERE cr.Id IN (
+					SELECT cra.CommunicationRecipientId
+					FROM CommunicationRecipientActivity cra
+					)
+			)
+		)
+	AND c.Id NOT IN (
+		SELECT EntityId
+		FROM InteractionComponent
+		WHERE ChannelId = {interactionChannelId}
+		)
+";
+
+                // InteractionDeviceType: CommunicationRecipientActivity puts IP address, ClientType, OS, etc all smooshed together into ActivityDetail, 
+                var populateDeviceTypeFromActivityDetail = @"
+DECLARE @ipaddressPatternSendGridMandrill NVARCHAR(max) = '%([0-9]%.%[0-9]%.%[0-9]%.%[0-9]%)%'
+	DECLARE @ipaddressPatternMailgun NVARCHAR(max) = '%Opened from [0-9]%.%[0-9]%.%[0-9]%.%[0-9]% using %'
+	DECLARE @ipaddressPatternMailgun_start NVARCHAR(max) = '%[0-9]%.%[0-9]%.%[0-9]%.%[0-9]%'
+	DECLARE @ipaddressPatternMailgun_end NVARCHAR(max) = '% using %'
+	DECLARE @ipaddressPatternClickStart NVARCHAR(max) = '% from %[0-9]%.%[0-9]%.%[0-9]%.%[0-9]% using%'
+	DECLARE @ipaddressPatternClickEnd NVARCHAR(max) = '% using %'
+
+	INSERT INTO [dbo].[InteractionDeviceType] (
+		[Name]
+		,[DeviceTypeData]
+		,[Guid]
+		)
+	SELECT CASE 
+			WHEN x.DeviceTypeInfo LIKE '%Apple Mail%'
+				AND x.DeviceTypeInfo LIKE '%OS X%'
+				THEN 'Apple Mail on OS X'
+			WHEN x.DeviceTypeInfo LIKE '%Safari%'
+				AND x.DeviceTypeInfo LIKE '%iOS%'
+				THEN 'Safari on iOS'
+			WHEN x.DeviceTypeInfo LIKE '%IE %'
+				AND x.DeviceTypeInfo LIKE '%Windows%'
+				THEN 'IE on Windows'
+			WHEN x.DeviceTypeInfo LIKE '%Firefox browser%'
+				AND x.DeviceTypeInfo LIKE '%Windows%'
+				THEN 'Firefox browser on Windows'
+			WHEN x.DeviceTypeInfo LIKE '%Chrome browser%'
+				AND x.DeviceTypeInfo LIKE '%Windows%'
+				THEN 'Chrome browser on Windows'
+			WHEN x.DeviceTypeInfo LIKE '%Gmail%'
+				AND x.DeviceTypeInfo LIKE '%Linux%'
+				THEN 'Gmail on Linux'
+			WHEN x.DeviceTypeInfo LIKE '%Android%mobile%'
+				THEN 'Android Mobile'
+			WHEN x.DeviceTypeInfo LIKE '%Android%browser%'
+				THEN 'Android Browser'
+			WHEN x.DeviceTypeInfo LIKE '%Outlook% on %Windows%'
+				THEN 'Outlook on Windows'
+			WHEN x.DeviceTypeInfo LIKE '%Outlook%'
+				AND x.DeviceTypeInfo LIKE '%Windows%'
+				THEN 'Outlook on Windows'
+			ELSE 'Other'
+			END [Name]
+		,DeviceTypeInfo
+		,NEWID()
+	FROM (
+		SELECT rtrim(ltrim(x.DeviceTypeInfo)) [DeviceTypeInfo]
+		FROM (
+			-- get just the UserAgent, etc stuff  (SendGrid or Mandrill): examples
+			--   * Opened from Outlook 2013 on Windows 8 (70.209.106.108)
+			--   * Opened from IE Mobile 7.0 on Windows Phone 7 (203.210.7.152)
+			SELECT replace(substring([ActivityDetail], 0, PATINDEX(@ipaddressPatternSendGridMandrill, [ActivityDetail])), 'Opened from', '') [DeviceTypeInfo]
+			FROM [CommunicationRecipientActivity]
+			WHERE ActivityType = 'Opened'
+				AND [ActivityDetail] NOT LIKE @ipaddressPatternMailgun
+			
+			UNION ALL
+			
+			-- get just the UserAgent, etc stuff  (Mailgun): examples
+			--   * Opened from 207.91.187.194 using OS X desktop Apple Mail email client
+			--   * Opened from 66.102.7.142 using Windows desktop Firefox browser
+			SELECT replace(replace(substring([ActivityDetail], PATINDEX(@ipaddressPatternMailgun_end, [ActivityDetail]), 8000), 'Opened from', ''), ' using ', '') [DeviceTypeInfo]
+			FROM [CommunicationRecipientActivity]
+			WHERE ActivityType = 'Opened'
+				AND [ActivityDetail] LIKE @ipaddressPatternMailgun
+			
+			UNION ALL
+			
+			SELECT ltrim(rtrim(replace(substring([Parsed], PATINDEX(@ipaddressPatternClickEnd, [Parsed]), 8000), ' using ', ''))) [DeviceTypeData]
+			FROM (
+				SELECT substring(ActivityDetail, PATINDEX(@ipaddressPatternClickStart, [ActivityDetail]) + len(' from '), 8000) [Parsed]
+				FROM [CommunicationRecipientActivity]
+				WHERE ActivityType = 'Click'
+				) x
+			) x
+		GROUP BY rtrim(ltrim(x.DeviceTypeInfo))
+		) x
+	WHERE x.DeviceTypeInfo NOT IN (
+			SELECT DeviceTypeData
+			FROM InteractionDeviceType
+			WHERE DeviceTypeData IS NOT NULL
+			)
+";
+
+                // InteractionSession: CommunicationRecipientActivity smooshed the IP address into ActivityDetail
+                var insertSessions = @"
+DECLARE @ipaddressPatternSendGridMandrill NVARCHAR(max) = '%([0-9]%.%[0-9]%.%[0-9]%.%[0-9]%)%'
+	DECLARE @ipaddressPatternMailgun NVARCHAR(max) = '%Opened from [0-9]%.%[0-9]%.%[0-9]%.%[0-9]% using %'
+	DECLARE @ipaddressPatternMailgun_start NVARCHAR(max) = '%[0-9]%.%[0-9]%.%[0-9]%.%[0-9]%'
+	DECLARE @ipaddressPatternMailgun_end NVARCHAR(max) = '% using %'
+	DECLARE @ipaddressPatternClickStart NVARCHAR(max) = '% from %[0-9]%.%[0-9]%.%[0-9]%.%[0-9]% using%'
+	DECLARE @ipaddressPatternClickEnd NVARCHAR(max) = '% using %'
+
+	-- populate InteractionSession
+	INSERT INTO [InteractionSession] (
+		IPAddress
+		,DeviceTypeId
+		,ForeignGuid
+		,[Guid]
+		)
+	SELECT rtrim(ltrim(x.IPAddress)) [IPAddress]
+		,dt.Id [DeviceType.Id]
+		,cra.[Guid]
+		,newid()
+	FROM (
+		-- get the IP Address and DeviceType from Opens (SendGrid or Mandrill)
+		SELECT replace(replace(substring([ActivityDetail], PATINDEX(@ipaddressPatternSendGridMandrill, [ActivityDetail]), 8000), '(', ''), ')', '') [IPAddress]
+			,replace(substring([ActivityDetail], 0, PATINDEX(@ipaddressPatternSendGridMandrill, [ActivityDetail])), 'Opened from', '') [DeviceTypeData]
+			,NULL [InteractionData]
+			,[Id]
+		FROM [CommunicationRecipientActivity]
+		WHERE ActivityType = 'Opened'
+			AND [ActivityDetail] NOT LIKE @ipaddressPatternMailgun
+		
+		UNION ALL
+		
+		-- get the IP Address and DeviceType from Opens (Mailgun)
+		SELECT substring(x.Parsed, 0, PATINDEX(@ipaddressPatternMailgun_end, x.Parsed)) [IPAddress]
+			,[DeviceTypeData]
+			,NULL [InteractionData]
+			,[Id]
+		FROM (
+			SELECT [Id]
+				,replace(replace(substring([ActivityDetail], PATINDEX(@ipaddressPatternMailgun_end, [ActivityDetail]), 8000), 'Opened from', ''), ' using ', '') [DeviceTypeData]
+				,substring([ActivityDetail], PATINDEX(@ipaddressPatternMailgun_start, [ActivityDetail]), 8000) [Parsed]
+			FROM [CommunicationRecipientActivity]
+			WHERE ActivityType = 'Opened'
+				AND [ActivityDetail] LIKE @ipaddressPatternMailgun
+			) x
+		
+		UNION ALL
+		
+		-- get the IP Address and DeviceType from Clicks (all webhooks)
+		SELECT ltrim(rtrim(substring([Parsed], 0, PATINDEX(@ipaddressPatternClickEnd, [Parsed])))) [IPAddress]
+			,ltrim(rtrim(replace(substring([Parsed], PATINDEX(@ipaddressPatternClickEnd, [Parsed]), 8000), ' using ', ''))) [DeviceTypeData]
+			,ltrim(rtrim(replace(replace(replace(ActivityDetail, Parsed, ''), 'Clicked the address', ''), ' from', ''))) [InteractionData]
+			,Id
+		FROM (
+			SELECT substring(ActivityDetail, PATINDEX(@ipaddressPatternClickStart, [ActivityDetail]) + len(' from '), 8000) [Parsed]
+				,replace(replace(substring([ActivityDetail], PATINDEX(@ipaddressPatternClickStart, [ActivityDetail]), 8000), '(', ''), ')', '') [IPAddress]
+				,replace(substring([ActivityDetail], 0, PATINDEX('% from %', [ActivityDetail])), ' from ', '') [DeviceTypeData]
+				,*
+			FROM [CommunicationRecipientActivity]
+			WHERE ActivityType = 'Click'
+			) x
+		) x
+	INNER JOIN CommunicationRecipientActivity cra ON cra.Id = x.Id
+	LEFT JOIN InteractionDeviceType dt ON dt.DeviceTypeData = rtrim(ltrim(x.DeviceTypeData))
+	WHERE cra.[Guid] NOT IN (
+			SELECT ForeignGuid
+			FROM InteractionSession where ForeignGuid is not null
+			)";
+
+                rockContext.Database.CommandTimeout = _commandTimeout;
+                _componentsInserted = rockContext.Database.ExecuteSqlCommand( insertCommunicationsAsComponentsSQL );
+
+                rockContext.Database.CommandTimeout = _commandTimeout;
+                _deviceTypesInserted = rockContext.Database.ExecuteSqlCommand( populateDeviceTypeFromActivityDetail );
+
+                rockContext.Database.CommandTimeout = _commandTimeout;
+                _sessionsInserted = rockContext.Database.ExecuteSqlCommand( insertSessions );
+
+
+                // Interaction
+                int chunkSize = 1000;
+                var populateInteraction = $@"
+BEGIN
+	DECLARE @ipaddressPatternClickStart NVARCHAR(max) = '% from %[0-9]%.%[0-9]%.%[0-9]%.%[0-9]% using%'
+
+	-- populate Interaction
+	insert into Interaction (
+	[InteractionDateTime]
+	,[Operation]
+	,InteractionComponentId
+	,PersonAliasId
+	,EntityId
+	,InteractionSessionId
+	,InteractionData
+	,ForeignGuid
+	,[Guid]
+	)
+	SELECT top {chunkSize} cra.ActivityDateTime [InteractionDateTime]
+		,cra.ActivityType [Operation]
+		,icmp.Id [ComponentId]
+		,cr.PersonAliasId
+		,cr.Id [EntityId]
+		,iss.Id [SessionId]
+		,cra.InteractionData [InteractionData]
+		,cra.[Guid]
+		,NEWID()
+	FROM (
+		SELECT ActivityDateTime
+			,ActivityType
+			,[Guid]
+			,[CommunicationRecipientId]
+			,NULL [InteractionData]
+		FROM CommunicationRecipientActivity
+		WHERE ActivityType = 'Opened'
+		
+		UNION ALL
+		
+		SELECT ActivityDateTime
+			,ActivityType
+			,[Guid]
+			,[CommunicationRecipientId]
+			,ltrim(rtrim(replace(replace(replace(ActivityDetail, Parsed, ''), 'Clicked the address', ''), ' from', ''))) [InteractionData]
+		FROM (
+			SELECT substring(ActivityDetail, PATINDEX(@ipaddressPatternClickStart, [ActivityDetail]) + len(' from '), 8000) [Parsed]
+				,*
+			FROM CommunicationRecipientActivity
+			WHERE ActivityType = 'Click'
+			) cc
+		) cra
+	INNER JOIN InteractionSession iss ON iss.[ForeignGuid] = cra.[Guid]
+	INNER JOIN CommunicationRecipient cr ON cra.CommunicationRecipientId = cr.Id
+	INNER JOIN Communication c ON cr.CommunicationId = c.Id
+	INNER JOIN InteractionComponent icmp ON icmp.ChannelId = {interactionChannelId}
+		AND icmp.EntityId = c.Id
+     where cra.[Guid] not in (select ForeignGuid from Interaction where ForeignGuid is not null)
+END
+";
+
+                bool keepMoving = true;
+
+                while ( keepMoving )
+                {
+                    var dbTransaction = rockContext.Database.BeginTransaction();
+                    try
+                    {
+                        rockContext.Database.CommandTimeout = _commandTimeout;
+                        int rowsMoved = rockContext.Database.ExecuteSqlCommand( populateInteraction );
+                        keepMoving = rowsMoved > 0;
+                        _communicationRecipientActivityMoved += rowsMoved;
+                    }
+                    finally
+                    {
+                        dbTransaction.Commit();
+                    }
+
+                    var percentComplete = ( _communicationRecipientActivityMoved * 100.0 ) / _communicationRecipientActivityTotal;
+                    var statusMessage = $@"Progress: {_communicationRecipientActivityMoved} of {_communicationRecipientActivityTotal} ({Math.Round( percentComplete, 1 )}%) Communication Recipient Activity data migrated to Interactions";
                     context.UpdateLastStatusMessage( statusMessage );
                 }
             }
