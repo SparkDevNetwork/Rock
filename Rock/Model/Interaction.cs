@@ -145,6 +145,10 @@ namespace Rock.Model
 
         #region Public Methods
 
+        /// <summary>
+        /// Gets the interaction details.
+        /// </summary>
+        /// <returns></returns>
         public string GetInteractionDetails()
         {
             var interaction = this;
