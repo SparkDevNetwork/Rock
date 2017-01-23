@@ -36,7 +36,7 @@ BEGIN
             ,MS.Value AS [MaritalStatus]
             ,FV.ValueAsDateTime AS [FirstVisitDate]
             ,FA.ValueAsDateTime AS [FirstActivity]
-            ,dbo._church_ccv_ufnGetAge(HH.BirthDate) AS [Age]
+            ,dbo.ufnCrm_GetAge(HH.BirthDate) AS [Age]
             ,CASE 
                 WHEN HH.IsEmailActive = 1
                     THEN HH.Email
@@ -143,6 +143,7 @@ BEGIN
         ,[Giving2007]
         ,[Guid]
         ,[ForeignId]
+		,[CampusId]
         ,[LastAttendedDate]
         )
     SELECT F.Id AS [FamilyID]
@@ -264,6 +265,7 @@ BEGIN
         ,G.[2007]
         ,NEWID() [Guid]
         ,NULL [ForeignId]
+		,C.Id
         ,(
             SELECT MAX(at.StartDateTime)
             FROM Attendance at
