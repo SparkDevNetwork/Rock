@@ -122,6 +122,7 @@
     <Compile Include="Controllers\CodeGenerated\AnalyticsSourceFamilyHistoricalsController.cs" />
     <Compile Include="Controllers\CodeGenerated\AnalyticsSourceFinancialTransactionsController.cs" />
     <Compile Include="Controllers\CodeGenerated\AnalyticsSourcePersonHistoricalsController.cs" />
+    <Compile Include="Controllers\CodeGenerated\CommunicationRecipientsController.cs" />
     <Compile Include="Controllers\CodeGenerated\ConnectionOpportunityGroupConfigsController.cs" />
     <Compile Include="Controllers\CodeGenerated\InteractionChannelsController.cs" />
     <Compile Include="Controllers\CodeGenerated\InteractionComponentsController.cs" />
@@ -154,8 +155,6 @@
     <Compile Include="Controllers\CodeGenerated\BlockTypesController.cs" />
     <Compile Include="Controllers\CodeGenerated\CampusesController.cs" />
     <Compile Include="Controllers\CodeGenerated\CategoriesController.cs" />
-    <Compile Include="Controllers\CodeGenerated\CommunicationRecipientActivitiesController.cs" />
-    <Compile Include="Controllers\CodeGenerated\CommunicationRecipientsController.cs" />
     <Compile Include="Controllers\CodeGenerated\CommunicationsController.cs" />
     <Compile Include="Controllers\CodeGenerated\CommunicationTemplatesController.cs" />
     <Compile Include="Controllers\CodeGenerated\ConnectionActivityTypesController.cs" />

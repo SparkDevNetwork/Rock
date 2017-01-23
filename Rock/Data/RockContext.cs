@@ -411,14 +411,6 @@ namespace Rock.Data
         public DbSet<CommunicationRecipient> CommunicationRecipients { get; set; }
 
         /// <summary>
-        /// Gets or sets the communication recipient activities.
-        /// </summary>
-        /// <value>
-        /// The communication recipient activities.
-        /// </value>
-        public DbSet<CommunicationRecipientActivity> CommunicationRecipientActivities { get; set; }
-
-        /// <summary>
         /// Gets or sets the communication templates.
         /// </summary>
         /// <value>
