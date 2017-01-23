@@ -137,9 +137,6 @@ namespace Rock.Client
     public partial class CommunicationRecipient : CommunicationRecipientEntity
     {
         /// <summary />
-        public ICollection<CommunicationRecipientActivity> Activities { get; set; }
-
-        /// <summary />
         public Dictionary<string, Object> AdditionalMergeValues { get; set; }
 
         /// <summary />
