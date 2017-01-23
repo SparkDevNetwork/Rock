@@ -12,12 +12,15 @@ REQUIRED VARIABLES
 {% endcomment %}
 
 
+
 {{ "/Themes/church_ccv_External_v7/Styles/pages/watch.css" | AddLinkTagToHead:'rel','stylesheet' }}
 
+<pre>{{ LinkedPages | ToJSON }}</pre>
 
-{% if table1.rows.first.CurrentPage == 1 %}
-<a href="{{ seriesDetailPage }}?SeriesId={{ table1.rows.first.SeriesId }}">
-  <header class="bigblock bigblock-flexbg bigblock-flexbg-md" style="background-image: url('http://arena.ccv.church/Arena/cachedblob.aspx?guid={{ table1.rows.first.MessageImageBlobId3 }}');">
+{% if PageParameter.PageNum == 0 or PageParameter.PageNum == null %}
+{% assign firstSeries = WeekendSeries.Children.first %}
+<a href="#">
+  <header class="bigblock bigblock-flexbg bigblock-flexbg-md" style="background-image: url('/GetImage.ashx?guid={{ firstSeries.Attributes.HeaderImage }}');">
     <div class="container">
       <div class="watch-currenttag">Current Series</div>
     </div>
@@ -205,3 +208,5 @@ REQUIRED VARIABLES
     template: '<div class="popover popover-close" role="tooltip"><div class="arrow"></div><h3 class="popover-title"></h3><div class="popover-content"></div></div>'
   })
 </script>
+
+<pre>{{ WeekendSeries | ToJSON }}</pre>
