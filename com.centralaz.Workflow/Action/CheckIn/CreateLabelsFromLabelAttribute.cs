@@ -30,6 +30,7 @@ using Rock.Web.Cache;
 using Rock;
 using Rock.Workflow;
 using Rock.Workflow.Action.CheckIn;
+using Newtonsoft.Json;
 
 namespace com.centralaz.Workflow.Action.CheckIn
 {
@@ -69,6 +70,25 @@ namespace com.centralaz.Workflow.Action.CheckIn
 
                     var familyLabels = new List<Guid>();
 
+                    Dictionary<int, bool> canCheckInDictionary = new Dictionary<int, bool>();
+
+                    Guid guid = GetAttributeValue( action, "WillLabelPrintAttribute" ).AsGuid();
+                    if ( !guid.IsEmpty() )
+                    {
+                        var attribute = AttributeCache.Read( guid, rockContext );
+                        if ( attribute != null )
+                        {
+                            if ( attribute.EntityTypeId == new Rock.Model.Workflow().TypeId )
+                            {
+                                canCheckInDictionary = JsonConvert.DeserializeObject<Dictionary<int,bool>>( action.Activity.Workflow.GetAttributeValue( attribute.Key ));
+                            }
+                            else if ( attribute.EntityTypeId == new Rock.Model.WorkflowActivity().TypeId )
+                            {
+                                canCheckInDictionary = JsonConvert.DeserializeObject<Dictionary<int, bool>>( action.Activity.GetAttributeValue( attribute.Key ));
+                            }
+                        }
+                    }
+
                     var people = family.GetPeople( true );
                     foreach ( var person in people )
                     {
@@ -76,23 +96,7 @@ namespace com.centralaz.Workflow.Action.CheckIn
                         {
                             groupType.Labels = new List<CheckInLabel>();
 
-                            bool canPrintLabels = true;
-                            Guid guid = GetAttributeValue( action, "WillLabelPrintAttribute" ).AsGuid();
-                            if ( !guid.IsEmpty() )
-                            {
-                                var attribute = AttributeCache.Read( guid, rockContext );
-                                if ( attribute != null )
-                                {
-                                    if ( attribute.EntityTypeId == new Rock.Model.Workflow().TypeId )
-                                    {
-                                        canPrintLabels = action.Activity.Workflow.GetAttributeValue( attribute.Key ).AsBoolean( resultIfNullOrEmpty: true );
-                                    }
-                                    else if ( attribute.EntityTypeId == new Rock.Model.WorkflowActivity().TypeId )
-                                    {
-                                        canPrintLabels = action.Activity.GetAttributeValue( attribute.Key ).AsBoolean( resultIfNullOrEmpty: true );
-                                    }
-                                }
-                            }
+                            bool canPrintLabels = canCheckInDictionary.ContainsKey( person.Person.Id ) ? canCheckInDictionary[person.Person.Id] : true;
 
                             if ( canPrintLabels )
                             {

@@ -86,6 +86,7 @@ namespace com.centralaz.Workflow.Action.CheckIn
                 var groupMemberService = new GroupMemberService( rockContext );
                 var personAliasService = new PersonAliasService( rockContext );
 
+                Dictionary<int, bool> canPrintLabel = new Dictionary<int, bool>();
 
                 var family = checkInState.CheckIn.CurrentFamily;
                 if ( family != null )
@@ -138,13 +139,13 @@ namespace com.centralaz.Workflow.Action.CheckIn
                                                 attendance.DeviceId = checkInState.Kiosk.Device.Id;
                                                 attendance.SearchTypeValueId = checkInState.CheckIn.SearchType.Id;
                                                 attendanceService.Add( attendance );
-
-                                                SetCanPrintLabelValue( rockContext, action, true );
+                                                
+                                                canPrintLabel.AddOrReplace( person.Person.Id, true );
                                             }
                                         }
                                         else
                                         {
-                                            SetCanPrintLabelValue( rockContext, action, canPrintLabelMultipleTimes );
+                                            canPrintLabel.AddOrReplace( person.Person.Id, canPrintLabelMultipleTimes );
                                         }
 
                                         attendance.CreatedDateTime = RockDateTime.Now;
@@ -159,6 +160,8 @@ namespace com.centralaz.Workflow.Action.CheckIn
                             }
                         }
                     }
+
+                    SetCanPrintLabelValue( rockContext, action, canPrintLabel );
                 }
 
                 rockContext.SaveChanges();
@@ -168,7 +171,7 @@ namespace com.centralaz.Workflow.Action.CheckIn
             return false;
         }
 
-        private void SetCanPrintLabelValue( RockContext rockContext, WorkflowAction action, bool value )
+        private void SetCanPrintLabelValue( RockContext rockContext, WorkflowAction action, Dictionary<int, bool> canPrintLabelDictionary )
         {
             Guid guid = GetAttributeValue( action, "WillLabelPrintAttribute" ).AsGuid();
             if ( !guid.IsEmpty() )
@@ -178,13 +181,13 @@ namespace com.centralaz.Workflow.Action.CheckIn
                 {
                     if ( attribute.EntityTypeId == new Rock.Model.Workflow().TypeId )
                     {
-                        action.Activity.Workflow.SetAttributeValue( attribute.Key, value.ToString() );
-                        action.AddLogEntry( string.Format( "Set '{0}' attribute to '{1}'.", attribute.Name, value ) );
+                        action.Activity.Workflow.SetAttributeValue( attribute.Key, canPrintLabelDictionary.ToJson() );
+                        action.AddLogEntry( string.Format( "Set '{0}' attribute to '{1}'.", attribute.Name, canPrintLabelDictionary.ToJson() ) );
                     }
                     else if ( attribute.EntityTypeId == new Rock.Model.WorkflowActivity().TypeId )
                     {
-                        action.Activity.SetAttributeValue( attribute.Key, value.ToString() );
-                        action.AddLogEntry( string.Format( "Set '{0}' attribute to '{1}'.", attribute.Name, value ) );
+                        action.Activity.SetAttributeValue( attribute.Key, canPrintLabelDictionary.ToJson() );
+                        action.AddLogEntry( string.Format( "Set '{0}' attribute to '{1}'.", attribute.Name, canPrintLabelDictionary.ToJson() ) );
                     }
                 }
             }
