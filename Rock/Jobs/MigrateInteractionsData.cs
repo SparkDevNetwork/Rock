@@ -260,6 +260,16 @@ WHERE a.Id NOT IN (
                 _sessionsInserted = rockContext.Database.ExecuteSqlCommand( insertSessions );
                 var interactionService = new InteractionService( rockContext );
 
+                rockContext.Database.ExecuteSqlCommand( @"
+IF NOT EXISTS(SELECT * FROM sys.indexes WHERE name = 'IX_InteractionSessionForeignId' AND object_id = OBJECT_ID('InteractionSession'))
+BEGIN
+    CREATE unique NONCLUSTERED INDEX [IX_InteractionSessionForeignId]
+	ON [dbo].[InteractionSession] ([ForeignId])
+	INCLUDE ([Id])
+	where ForeignId is not null
+END
+" );
+
                 var interactionCommunicationChannel = new InteractionChannelService( rockContext ).Get( Rock.SystemGuid.InteractionChannel.COMMUNICATION.AsGuid() );
                 var interactionCommunicationChannelId = interactionCommunicationChannel.Id;
 
@@ -528,7 +538,10 @@ DECLARE @ipaddressPatternSendGridMandrill NVARCHAR(max) = '%([0-9]%.%[0-9]%.%[0-
 	WHERE cra.[Guid] NOT IN (
 			SELECT ForeignGuid
 			FROM InteractionSession where ForeignGuid is not null
-			)";
+			)
+            AND IPAddress NOT LIKE '%[a-z]%'
+			AND len(IPAddress) <= 15
+";
 
                 rockContext.Database.CommandTimeout = _commandTimeout;
                 _componentsInserted = rockContext.Database.ExecuteSqlCommand( insertCommunicationsAsComponentsSQL );
@@ -541,7 +554,7 @@ DECLARE @ipaddressPatternSendGridMandrill NVARCHAR(max) = '%([0-9]%.%[0-9]%.%[0-
 
 
                 // Interaction
-                int chunkSize = 1000;
+                int chunkSize = 25000;
                 var populateInteraction = $@"
 BEGIN
 	DECLARE @ipaddressPatternClickStart NVARCHAR(max) = '% from %[0-9]%.%[0-9]%.%[0-9]%.%[0-9]% using%'
