@@ -67,6 +67,28 @@ BEGIN
         );
             END;
             " );
+
+
+            // Job for Migrating Interaction Data
+            Sql( @"
+INSERT INTO [dbo].[ServiceJob]
+           ([IsSystem]
+           ,[IsActive]
+           ,[Name]
+           ,[Description]
+           ,[Class]
+           ,[CronExpression]
+           ,[NotificationStatus]
+           ,[Guid])
+     VALUES
+        (0	
+         ,1	
+         ,'Move Data from PageViews and Communication Activity to the new Interaction Tables'
+         ,'Moves the data from Page Views and Communication Recipient Activity into the Interaction tables. When done, the job will drop the PageView and CommunicationRecipientActivity tables, then the job will remove itself.'
+         ,'Rock.Jobs.MigrateInteractionsData'
+         ,'0 0 4 1/1 * ? *'
+         ,3
+         ,'189AE3F1-92E9-4394-ACC5-0F244967F32E')" );
         }
         
         /// <summary>
@@ -74,6 +96,8 @@ BEGIN
         /// </summary>
         public override void Down()
         {
+            // Remove the Job for Migrating Interaction Data
+            Sql( "DELETE FROM [ServiceJob] where [Guid] = '189AE3F1-92E9-4394-ACC5-0F244967F32E'" );
         }
     }
 }

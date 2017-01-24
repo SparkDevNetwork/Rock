@@ -71,6 +71,51 @@ WHERE [Guid] NOT IN (
 
                 if ( _pageViewsTotal == 0 && _communicationRecipientActivityTotal == 0 && deleteJob )
                 {
+                    // drop the tables
+                    rockContext.Database.ExecuteSqlCommand( @"
+IF (EXISTS (SELECT * 
+                 FROM INFORMATION_SCHEMA.TABLES 
+                 WHERE TABLE_SCHEMA = 'dbo' 
+                 AND  TABLE_NAME = 'PageView'))
+BEGIN
+    DROP TABLE PageView;
+END
+
+IF (EXISTS (SELECT * 
+                 FROM INFORMATION_SCHEMA.TABLES 
+                 WHERE TABLE_SCHEMA = 'dbo' 
+                 AND  TABLE_NAME = 'PageView'))
+BEGIN
+    DROP TABLE PageView;
+END
+
+IF (EXISTS (SELECT * 
+                 FROM INFORMATION_SCHEMA.TABLES 
+                 WHERE TABLE_SCHEMA = 'dbo' 
+                 AND  TABLE_NAME = 'PageViewSession'))
+BEGIN
+    DROP TABLE PageViewSession;
+END
+
+IF (EXISTS (SELECT * 
+                 FROM INFORMATION_SCHEMA.TABLES 
+                 WHERE TABLE_SCHEMA = 'dbo' 
+                 AND  TABLE_NAME = 'PageViewUserAgent'))
+BEGIN
+    DROP TABLE PageViewUserAgent;
+END
+
+
+IF (EXISTS (SELECT * 
+                 FROM INFORMATION_SCHEMA.TABLES 
+                 WHERE TABLE_SCHEMA = 'dbo' 
+                 AND  TABLE_NAME = 'CommunicationRecipientActivity'))
+BEGIN
+    DROP TABLE CommunicationRecipientActivity;
+END
+" );
+                    
+                    
                     // delete job if there are no PageView or CommunicationRecipientActivity rows  left
                     var jobId = context.GetJobId();
                     var jobService = new ServiceJobService( rockContext );
