@@ -117,6 +117,7 @@ namespace Rock.Jobs
                 var pageTitle = page.Title.Substring( 0, (page.Title.IndexOf( '|' ) - 1) ).Trim();
 
                 SitePageIndex sitePage = new SitePageIndex();
+                sitePage.SourceIndexModel = "Rock.Model.Site";
                 sitePage.Id = page.Url.MakeInt64HashCode();
                 sitePage.Content = page.Text;
                 sitePage.PageTitle = pageTitle;
@@ -126,6 +127,9 @@ namespace Rock.Jobs
                 sitePage.LastIndexedDateTime = RockDateTime.Now;
 
                 IndexContainer.IndexDocument( sitePage );
+
+                // reduce memory footprint by blanking out text field in passed object
+                page.Text = string.Empty;
 
                 _indexedPageCount++;
                 return true;

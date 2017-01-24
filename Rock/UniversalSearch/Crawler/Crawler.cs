@@ -83,107 +83,117 @@ namespace Rock.UniversalSearch.Crawler
         /// <param name="url">The url to crawl.</param>
         private void CrawlPage( string url )
         {
-            if ( !PageHasBeenCrawled( url ) && _robot.IsPathAllowed( _userAgent, url ) )
+            // remove any named anchors
+            url = url.Substring( 0, url.IndexOf( '#' ) );
+
+            // strip trailing /
+            url = url.TrimEnd( '/' );
+
+            try
             {
-                string rawPage = GetWebText( url );
-
-                if ( !string.IsNullOrWhiteSpace( rawPage ) )
+                if ( !PageHasBeenCrawled( url ) && _robot.IsPathAllowed( _userAgent, url ) )
                 {
-                    var htmlDoc = new HtmlDocument();
-                    htmlDoc.LoadHtml( rawPage );
-                    
-                    // get page title
-                    CrawledPage page = new CrawledPage();
+                    string rawPage = GetWebText( url );
 
-                    if ( htmlDoc.DocumentNode.SelectSingleNode( "//body" ) != null )
+                    if ( !string.IsNullOrWhiteSpace( rawPage ) )
                     {
-                        page.Text = GetPageText( htmlDoc );// htmlDoc.DocumentNode.SelectSingleNode( "//body" ).InnerHtml;
-                    }
-                    else
-                    {
-                        page.Text = rawPage;
-                    }
+                        var htmlDoc = new HtmlDocument();
+                        htmlDoc.LoadHtml( rawPage );
 
-                    if ( htmlDoc.DocumentNode.SelectSingleNode( "//head/title" ) != null)
-                    {
-                        page.Title = htmlDoc.DocumentNode.SelectSingleNode( "//head/title" ).InnerText.Trim();
-                    }
-                    else
-                    {
-                        page.Title = url;
-                    }
-                    
-                    page.Url = url;
+                        // get page title
+                        CrawledPage page = new CrawledPage();
 
-                    // set whether that page should in indexed
-                    HtmlNode metaRobot = htmlDoc.DocumentNode.SelectSingleNode( "//meta[@name='robot']" );
-                    if ( metaRobot != null && metaRobot.Attributes["content"] != null && metaRobot.Attributes["content"].Value.Contains( "noindex" ) )
-                    {
-                        page.AllowsIndex = false;
-                    }
-
-                    _pages.Add( page );
-
-                    // index the page
-                    // clean up the page title a bit by removing  the site name off it
-                    if ( page.AllowsIndex )
-                    {
-                        SitePageIndex sitePage = new SitePageIndex();
-                        sitePage.Id = page.Url.MakeInt64HashCode();
-                        sitePage.Content = page.Text.SanitizeHtml();
-
-                        // store only the page title (strip the site name off per Rock convention)
-                        if ( page.Title.Contains( "|" ) )
+                        if ( htmlDoc.DocumentNode.SelectSingleNode( "//body" ) != null )
                         {
-                            sitePage.PageTitle = page.Title.Substring( 0, (page.Title.IndexOf( '|' ) - 1) ).Trim();
-
+                            page.Text = GetPageText( htmlDoc );// htmlDoc.DocumentNode.SelectSingleNode( "//body" ).InnerHtml;
                         }
                         else
                         {
-                            sitePage.PageTitle = page.Title.Trim();
+                            page.Text = rawPage;
                         }
 
-                        sitePage.DocumentName = sitePage.PageTitle;
-                        sitePage.SiteName = _site.Name;
-                        sitePage.SiteId = _site.Id;
-                        sitePage.Url = page.Url;
-                        sitePage.LastIndexedDateTime = RockDateTime.Now;
-
-                        HtmlNode metaDescription = htmlDoc.DocumentNode.SelectSingleNode( "//meta[@name='description']" );
-                        if ( metaDescription != null && metaDescription.Attributes["content"] != null )
+                        if ( htmlDoc.DocumentNode.SelectSingleNode( "//head/title" ) != null )
                         {
-                            sitePage.PageSummary = metaDescription.Attributes["content"].Value;
+                            page.Title = htmlDoc.DocumentNode.SelectSingleNode( "//head/title" ).InnerText.Trim();
                         }
-
-                        HtmlNode metaKeynotes = htmlDoc.DocumentNode.SelectSingleNode( "//meta[@name='keywords']" );
-                        if ( metaKeynotes != null && metaKeynotes.Attributes["content"] != null )
+                        else
                         {
-                            sitePage.PageKeywords = metaKeynotes.Attributes["content"].Value;
+                            page.Title = url;
                         }
 
-                        IndexContainer.IndexDocument( sitePage );
-                    }
+                        page.Url = url.ToLower();
 
-                    LinkParser linkParser = new LinkParser();
-                    linkParser.ParseLinks( htmlDoc, url, _startUrl );
+                        // set whether that page should in indexed
+                        HtmlNode metaRobot = htmlDoc.DocumentNode.SelectSingleNode( "//meta[@name='robot']" );
+                        if ( metaRobot != null && metaRobot.Attributes["content"] != null && metaRobot.Attributes["content"].Value.Contains( "noindex" ) )
+                        {
+                            page.AllowsIndex = false;
+                        }
+
+                        _pages.Add( page );
+
+                        // index the page
+                        // clean up the page title a bit by removing  the site name off it
+                        if ( page.AllowsIndex )
+                        {
+                            SitePageIndex sitePage = new SitePageIndex();
+                            sitePage.Id = page.Url.MakeInt64HashCode();
+                            sitePage.Content = page.Text.SanitizeHtml();
+
+                            // store only the page title (strip the site name off per Rock convention)
+                            if ( page.Title.Contains( "|" ) )
+                            {
+                                sitePage.PageTitle = page.Title.Substring( 0, (page.Title.IndexOf( '|' ) - 1) ).Trim();
+
+                            }
+                            else
+                            {
+                                sitePage.PageTitle = page.Title.Trim();
+                            }
+
+                            sitePage.DocumentName = sitePage.PageTitle;
+                            sitePage.SiteName = _site.Name;
+                            sitePage.SiteId = _site.Id;
+                            sitePage.Url = page.Url;
+                            sitePage.LastIndexedDateTime = RockDateTime.Now;
+
+                            HtmlNode metaDescription = htmlDoc.DocumentNode.SelectSingleNode( "//meta[@name='description']" );
+                            if ( metaDescription != null && metaDescription.Attributes["content"] != null )
+                            {
+                                sitePage.PageSummary = metaDescription.Attributes["content"].Value;
+                            }
+
+                            HtmlNode metaKeynotes = htmlDoc.DocumentNode.SelectSingleNode( "//meta[@name='keywords']" );
+                            if ( metaKeynotes != null && metaKeynotes.Attributes["content"] != null )
+                            {
+                                sitePage.PageKeywords = metaKeynotes.Attributes["content"].Value;
+                            }
+
+                            IndexContainer.IndexDocument( sitePage );
+                        }
+
+                        LinkParser linkParser = new LinkParser();
+                        linkParser.ParseLinks( htmlDoc, url, _startUrl );
 
 
-                    //Add data to main data lists
-                    AddRangeButNoDuplicates( _externalUrls, linkParser.ExternalUrls );
-                    AddRangeButNoDuplicates( _otherUrls, linkParser.OtherUrls );
-                    AddRangeButNoDuplicates( _failedUrls, linkParser.BadUrls );
+                        //Add data to main data lists
+                        AddRangeButNoDuplicates( _externalUrls, linkParser.ExternalUrls );
+                        AddRangeButNoDuplicates( _otherUrls, linkParser.OtherUrls );
+                        AddRangeButNoDuplicates( _failedUrls, linkParser.BadUrls );
 
-                    foreach ( string exception in linkParser.Exceptions )
-                        _exceptions.Add( exception );
+                        foreach ( string exception in linkParser.Exceptions )
+                            _exceptions.Add( exception );
 
 
-                    //Crawl all the links found on the page.
-                    foreach ( string link in linkParser.GoodUrls )
-                    {
-                        CrawlPage( link );
+                        //Crawl all the links found on the page.
+                        foreach ( string link in linkParser.GoodUrls )
+                        {
+                            CrawlPage( link );
+                        }
                     }
                 }
             }
+            catch ( Exception ex ) { }
         }
 
         /// <summary>
@@ -251,9 +261,11 @@ namespace Rock.UniversalSearch.Crawler
         /// <returns>Boolean indicating whether or not the page has been crawled.</returns>
         private bool PageHasBeenCrawled( string url )
         {
+            string matchUrl = url.ToLower();
+
             foreach ( CrawledPage page in _pages )
             {
-                if ( page.Url == url )
+                if ( page.Url == matchUrl )
                     return true;
             }
 
@@ -299,49 +311,96 @@ namespace Rock.UniversalSearch.Crawler
 
             try
             {
-                HttpWebRequest request = (HttpWebRequest)HttpWebRequest.Create( url );
-                request.AllowAutoRedirect = false;
+                Uri requestURL;
 
-                request.UserAgent = _userAgent;
-
-                HttpWebResponse response = (HttpWebResponse)request.GetResponse();
-
-                // handle redirects by indexing the redirect only if it shares the same hostname
-                if ((int)response.StatusCode >= 300 && (int)response.StatusCode <= 399 )
+                if ( Uri.TryCreate( url, UriKind.RelativeOrAbsolute, out requestURL ) 
+                        && (requestURL.Scheme == Uri.UriSchemeHttp || requestURL.Scheme == Uri.UriSchemeHttps) 
+                        && IsValidUrl( url ) )
                 {
-                    if ( response.Headers["Location"] != null )
+                    HttpWebRequest request = (HttpWebRequest)HttpWebRequest.Create( requestURL );
+                    request.AllowAutoRedirect = false;
+
+                    request.UserAgent = _userAgent;
+
+                    HttpWebResponse response = (HttpWebResponse)request.GetResponse();
+
+                    // handle redirects by indexing the redirect only if it shares the same hostname
+                    if ( (int)response.StatusCode >= 300 && (int)response.StatusCode <= 399 )
                     {
-                        string redirectUrl = response.Headers["Location"];
-
-                        var originalUri = new Uri( url );
-                        var redirectUri = new Uri( redirectUrl );
-
-                        if (originalUri.Host == redirectUri.Host )
+                        if ( response.Headers["Location"] != null )
                         {
-                            return GetWebText( redirectUrl );
+                            string redirectUrl = response.Headers["Location"];
+
+                            var originalUri = new Uri( url );
+                            var redirectUri = new Uri( redirectUrl );
+
+                            if ( originalUri.Host == redirectUri.Host )
+                            {
+                                return GetWebText( redirectUrl );
+                            }
+                            else
+                            {
+                                return string.Empty;
+                            }
+
                         }
                         else
                         {
                             return string.Empty;
                         }
-
                     }
-                    else
+
+                    string htmlText;
+
+                    using ( Stream stream = response.GetResponseStream() )
                     {
-                        return string.Empty;
+                        using ( StreamReader reader = new StreamReader( stream ) )
+                        {
+                            htmlText = reader.ReadToEnd();
+                        }
                     }
+
+                    return htmlText;
                 }
-
-                Stream stream = response.GetResponseStream();
-
-                StreamReader reader = new StreamReader( stream );
-                string htmlText = reader.ReadToEnd();
-
-                return htmlText;
             }
             catch { }
 
             return string.Empty;
+        }
+
+        /// <summary>
+        /// Determines whether the specified URL is valid.
+        /// </summary>
+        /// <param name="url">The URL.</param>
+        /// <returns></returns>
+        private bool IsValidUrl(string url )
+        {
+            if( url.Length > 2000 )
+            {
+                return false;
+            }
+
+            if( url.Split('?').Length > 1 )
+            {
+                return false;
+            }
+
+            if (url.Contains( " " ) )
+            {
+                return false;
+            }
+
+            if (url.Contains( "#" ) )
+            {
+                return false; // we don't need to treat pages linked by a anchor to be treated as a separate page
+            }
+
+            if( url.Contains( "../" ) )
+            {
+                return false;
+            }
+
+            return true;
         }
     }
 }
