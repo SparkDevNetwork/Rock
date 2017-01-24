@@ -774,9 +774,6 @@
     <Compile Include="Model\CodeGenerated\PageContextService.cs" />
     <Compile Include="Model\CodeGenerated\PageRouteService.cs" />
     <Compile Include="Model\CodeGenerated\PageService.cs" />
-    <Compile Include="Model\CodeGenerated\PageViewService.cs" />
-    <Compile Include="Model\CodeGenerated\PageViewSessionService.cs" />
-    <Compile Include="Model\CodeGenerated\PageViewUserAgentService.cs" />
     <Compile Include="Model\CodeGenerated\PersonAliasService.cs" />
     <Compile Include="Model\CodeGenerated\PersonBadgeService.cs" />
     <Compile Include="Model\CodeGenerated\PersonDuplicateService.cs" />
@@ -949,10 +946,6 @@
     <Compile Include="Model\PageRoute.cs" />
     <Compile Include="Model\PageRouteService.Partial.cs" />
     <Compile Include="Model\PageService.Partial.cs" />
-    <Compile Include="Model\PageView.cs" />
-    <Compile Include="Model\PageViewService.Partial.cs" />
-    <Compile Include="Model\PageViewSession.cs" />
-    <Compile Include="Model\PageViewUserAgent.cs" />
     <Compile Include="Model\Person.cs" />
     <Compile Include="Model\PersonAlias.cs" />
     <Compile Include="Model\PersonAliasService.Partial.cs" />
