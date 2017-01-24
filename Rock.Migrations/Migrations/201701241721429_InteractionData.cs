@@ -29,6 +29,42 @@ namespace Rock.Migrations
         /// </summary>
         public override void Up()
         {
+            // Create InteractionChannels for each Site, and make sure Site.PageViewRetentionPeriodDays is copied with it
+            Sql( @"
+DECLARE @ChannelTypeMediumValueWebsiteId INT = (
+		SELECT TOP 1 Id
+		FROM DefinedValue
+		WHERE [Guid] = 'E503E77D-CF35-E09F-41A2-B213184F48E8'
+		)
+	,@EntityTypePageId INT = (
+		SELECT TOP 1 Id
+		FROM EntityType
+		WHERE [Name] = 'Rock.Model.Page'
+		)
+
+INSERT INTO [InteractionChannel] (
+	[Name]
+	,[ComponentEntityTypeId]
+	,[ChannelTypeMediumValueId]
+	,[ChannelEntityId]
+	,[RetentionDuration]
+	,[Guid]
+	)
+SELECT s.[Name] [Site.Name]
+	,@EntityTypePageId
+	,@ChannelTypeMediumValueWebsiteId
+	,s.[Id] [SiteId]
+	,s.PageViewRetentionPeriodDays
+	,NEWID() AS NewGuid
+FROM [Site] s
+WHERE s.Id NOT IN (
+		SELECT ChannelEntityId
+		FROM InteractionChannel
+		WHERE ChannelEntityId IS NOT NULL
+		)
+" );
+
+
             Sql( @"
 -- Channel is just one hardcoded thing called 'Communication' which is for any Email, SMS, etc
 DECLARE @InteractionChannel_COMMUNICATION UNIQUEIDENTIFIER = 'C88A187F-0343-4E7C-AF3F-79A8989DFA65'
