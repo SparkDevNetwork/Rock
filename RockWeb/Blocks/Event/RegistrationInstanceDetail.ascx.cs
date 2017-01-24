@@ -3294,23 +3294,20 @@ namespace RockWeb.Blocks.Event
 
                                     // 2017-01-13 as discussed, changing this to Grade but keeping the sort based on grad year
                                     string dataFieldExpression = "PersonAlias.Person.GradeFormatted";
-                                    string sortExpression = "PersonAlias.Person.GraduationYear";
                                     var gradeField = new RockBoundField();
                                     gradeField.DataField = dataFieldExpression;
                                     gradeField.HeaderText = "Grade";
-                                    gradeField.SortExpression = sortExpression;
+                                    gradeField.SortExpression = "PersonAlias.Person.GraduationYear";
                                     gRegistrants.Columns.Add( gradeField );
 
                                     var gradeField2 = new RockBoundField();
                                     gradeField2.DataField = dataFieldExpression;
                                     gradeField2.HeaderText = "Grade";
-                                    gradeField2.SortExpression = sortExpression;
                                     gGroupPlacements.Columns.Add( gradeField2 );
 
                                     var gradeField3 = new RockBoundField();
                                     gradeField3.DataField = dataFieldExpression;
                                     gradeField3.HeaderText = "Grade";
-                                    gradeField3.SortExpression = sortExpression;
                                     gWaitList.Columns.Add( gradeField3 );
 
                                     break;
