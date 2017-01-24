@@ -45,7 +45,7 @@ namespace Rock.UniversalSearch.IndexModels
         /// <value>
         /// The name of the site.
         /// </value>
-        [RockIndexField( Index = IndexType.NotIndexed )]
+        [RockIndexField]
         public string SiteName { get; set; }
 
         /// <summary>

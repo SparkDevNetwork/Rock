@@ -228,7 +228,7 @@ namespace Rock.UniversalSearch.Crawler
 
             if ( link.StartsWith( "../" ) )
             {
-                ResolveRelativePaths( link, originatingLink );
+                return ResolveRelativePaths( link, originatingLink );
             }
 
             return originatingLink + link;
@@ -246,17 +246,17 @@ namespace Rock.UniversalSearch.Crawler
 
             string[] relativeUrlArray = relativeUrl.Split( new char[] { '/' }, StringSplitOptions.RemoveEmptyEntries );
             string[] originatingUrlElements = originatingUrl.Split( new char[] { '/' }, StringSplitOptions.RemoveEmptyEntries );
+
             int indexOfFirstNonRelativePathElement = 0;
             for ( int i = 0; i <= relativeUrlArray.Length - 1; i++ )
             {
-                if ( relativeUrlArray[i] != ".." )
+                if ( relativeUrlArray[i] == ".." )
                 {
-                    indexOfFirstNonRelativePathElement = i;
-                    break;
+                    indexOfFirstNonRelativePathElement ++;
                 }
             }
 
-            int countOfOriginatingUrlElementsToUse = originatingUrlElements.Length - indexOfFirstNonRelativePathElement - 1;
+            int countOfOriginatingUrlElementsToUse = originatingUrlElements.Length - indexOfFirstNonRelativePathElement;
             for ( int i = 0; i <= countOfOriginatingUrlElementsToUse - 1; i++ )
             {
                 if ( originatingUrlElements[i] == "http:" || originatingUrlElements[i] == "https:" )
@@ -265,77 +265,8 @@ namespace Rock.UniversalSearch.Crawler
                     resolvedUrl += originatingUrlElements[i] + "/";
             }
 
-            for ( int i = 0; i <= relativeUrlArray.Length - 1; i++ )
-            {
-                if ( i >= indexOfFirstNonRelativePathElement )
-                {
-                    resolvedUrl += relativeUrlArray[i];
-
-                    if ( i < relativeUrlArray.Length - 1 )
-                        resolvedUrl += "/";
-                }
-            }
-
             return resolvedUrl;
         }
-
-        ///// <summary>
-        ///// Is the url to an external site?
-        ///// </summary>
-        ///// <param name="url">The url whose externality of destination is in question.</param>
-        ///// <param name="startUrl">The start URL.</param>
-        ///// <returns>
-        ///// Boolean indicating whether or not the url is to an external destination.
-        ///// </returns>
-        //private static bool IsExternalUrl( string url, string startUrl )
-        //{
-        //    if ( url.IndexOf( startUrl ) > -1 )
-        //    {
-        //        return false;
-        //    }
-        //    else if ( url.Length > 7 && ( url.Substring( 0, 7 ) == "http://" || url.Substring( 0, 3 ) == "www" || url.Substring( 0, 7 ) == "https://" ))
-        //    {
-        //        return true;
-        //    }
-
-        //    return false;
-        //}
-
-        ///// <summary>
-        ///// Is the value of the href pointing to a web page?
-        ///// </summary>
-        ///// <param name="foundHref">The value of the href that needs to be interogated.</param>
-        ///// <returns>
-        ///// Boolen
-        ///// </returns>
-        //private static bool IsAWebPage( string foundHref )
-        //{
-        //    if ( foundHref.IndexOf( "javascript:" ) == 0 )
-        //    {
-        //        return false;
-        //    }
-
-        //    if ( foundHref.IndexOf( "mailto:" ) == 0 )
-        //    {
-        //        return false;
-        //    }
-
-        //    if ( foundHref.StartsWith( "#" ) )
-        //    {
-        //        return false;
-        //    }
-
-        //    string extension = foundHref.Substring( foundHref.LastIndexOf( "." ) + 1, foundHref.Length - foundHref.LastIndexOf( "." ) - 1 );
-        //    switch ( extension )
-        //    {
-        //        case "jpg":
-        //        case "css":
-        //            return false;
-        //        default:
-        //            return true;
-        //    }
-
-        //}
 
         private enum LinkType { Internal, External, NonLink, File }
     }
