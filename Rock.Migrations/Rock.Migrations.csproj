@@ -166,9 +166,9 @@
     <Compile Include="Migrations\201701172352092_IndexTemplateField.Designer.cs">
       <DependentUpon>201701172352092_IndexTemplateField.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201701240029103_InteractionData.cs" />
-    <Compile Include="Migrations\201701240029103_InteractionData.Designer.cs">
-      <DependentUpon>201701240029103_InteractionData.cs</DependentUpon>
+    <Compile Include="Migrations\201701241721429_InteractionData.cs" />
+    <Compile Include="Migrations\201701241721429_InteractionData.Designer.cs">
+      <DependentUpon>201701241721429_InteractionData.cs</DependentUpon>
     </Compile>
     <Compile Include="Migrations\Version 6.0\Version 1.6.0\201609282147388_WaitList.cs" />
     <Compile Include="Migrations\Version 6.0\Version 1.6.0\201609282147388_WaitList.Designer.cs">
@@ -2445,8 +2445,8 @@
     <EmbeddedResource Include="Migrations\201701172352092_IndexTemplateField.resx">
       <DependentUpon>201701172352092_IndexTemplateField.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201701240029103_InteractionData.resx">
-      <DependentUpon>201701240029103_InteractionData.cs</DependentUpon>
+    <EmbeddedResource Include="Migrations\201701241721429_InteractionData.resx">
+      <DependentUpon>201701241721429_InteractionData.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 6.0\Version 1.6.0\201609282147388_WaitList.resx">
       <DependentUpon>201609282147388_WaitList.cs</DependentUpon>

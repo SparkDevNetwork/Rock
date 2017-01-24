@@ -242,7 +242,6 @@ namespace RockWeb.Blocks.Cms
                 site.AllowedFrameDomains = tbAllowedFrameDomains.Text;
                 site.RedirectTablets = cbRedirectTablets.Checked;
                 site.EnablePageViews = cbEnablePageViews.Checked;
-                site.PageViewRetentionPeriodDays = nbPageViewRetentionPeriodDays.Text.AsIntegerOrNull();
 
                 site.AllowIndexing = cbAllowIndexing.Checked;
                 site.IsIndexEnabled = cbEnableIndexing.Checked;
@@ -585,7 +584,8 @@ namespace RockWeb.Blocks.Cms
             tbAllowedFrameDomains.Text = site.AllowedFrameDomains;
             cbRedirectTablets.Checked = site.RedirectTablets;
             cbEnablePageViews.Checked = site.EnablePageViews;
-            nbPageViewRetentionPeriodDays.Text = site.PageViewRetentionPeriodDays.ToString();
+
+            //TODO nbPageViewRetentionPeriodDays.Text = site.PageViewRetentionPeriodDays.ToString();
 
             cbEnableIndexing.Checked = site.IsIndexEnabled;
             tbIndexStartingLocation.Text = site.IndexStartingLocation;

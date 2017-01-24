@@ -570,16 +570,12 @@ namespace Rock.Data
         }
 
         /// <summary>
-        /// Deletes the Page and any PageViews that use the page.
+        /// Deletes the Page 
         /// </summary>
         /// <param name="guid">The GUID.</param>
         public void DeletePage( string guid )
         {
             Migration.Sql( string.Format( @"
-
-                DELETE PV
-                FROM [PageView] PV
-                INNER JOIN [Page] P ON P.[Id] = PV.[PageId] AND P.[Guid] = '{0}'
 
                 DELETE [Page] WHERE [Guid] = '{0}'
 ",

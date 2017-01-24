@@ -119,8 +119,6 @@ namespace RockWeb.Blocks.Cms
 
                 using ( var rockContext = new RockContext() )
                 {
-                    //var qryPageViews = new PageViewService( rockContext ).Queryable();
-
                     var qryPageViews = new InteractionService( rockContext ).Queryable();
 
                     var qryPersonAlias = new PersonAliasService( rockContext ).Queryable();
