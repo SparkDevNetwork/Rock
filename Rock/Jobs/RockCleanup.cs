@@ -83,11 +83,11 @@ namespace Rock.Jobs
 
             try
             {
-                databaseRowsDeleted += CleanupPageViews( dataMap );
+                databaseRowsDeleted += CleanupInteractions( dataMap );
             }
             catch ( Exception ex )
             {
-                rockCleanupExceptions.Add( new Exception( "Exception in CleanupPageViews", ex ) );
+                rockCleanupExceptions.Add( new Exception( "Exception in CleanupInteractions", ex ) );
             }
 
             try
@@ -394,14 +394,15 @@ namespace Rock.Jobs
 
 
         /// <summary>
-        /// Cleans up PagesViews for sites that have a Page View retention period
+        /// Cleans up Interactions for Interaction Channels that have a retention period
         /// </summary>
         /// <param name="dataMap">The data map.</param>
-        private int CleanupPageViews( JobDataMap dataMap )
+        private int CleanupInteractions( JobDataMap dataMap )
         {
-            var pageViewRockContext = new Rock.Data.RockContext();
+            /* TODO
+            var interactionRockContext = new Rock.Data.RockContext();
             var currentDateTime = RockDateTime.Now;
-            var siteService = new SiteService( pageViewRockContext );
+            var siteService = new SiteService( interactionRockContext );
             var siteQry = siteService.Queryable().Where( a => a.PageViewRetentionPeriodDays.HasValue );
             int totalRowsDeleted = 0;
             //
@@ -435,6 +436,8 @@ namespace Rock.Jobs
             }
 
             return totalRowsDeleted;
+            */
+            return 0;
         }
 
         /// <summary>

@@ -89,6 +89,13 @@ INSERT INTO [dbo].[ServiceJob]
          ,'0 0 4 1/1 * ? *'
          ,3
          ,'189AE3F1-92E9-4394-ACC5-0F244967F32E')" );
+
+            Sql( @"
+IF EXISTS (SELECT * FROM sys.objects WHERE type = 'P' AND name = 'spCore_PageViewNullPageId') BEGIN
+    DROP PROCEDURE spCore_PageViewNullPageId
+END" );
+
+            DropColumn("dbo.Site", "PageViewRetentionPeriodDays");
         }
         
         /// <summary>
@@ -98,6 +105,8 @@ INSERT INTO [dbo].[ServiceJob]
         {
             // Remove the Job for Migrating Interaction Data
             Sql( "DELETE FROM [ServiceJob] where [Guid] = '189AE3F1-92E9-4394-ACC5-0F244967F32E'" );
+
+            AddColumn("dbo.Site", "PageViewRetentionPeriodDays", c => c.Int());
         }
     }
 }

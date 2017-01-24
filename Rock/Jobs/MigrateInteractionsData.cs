@@ -30,7 +30,6 @@ namespace Rock.Jobs
     /// <seealso cref="Quartz.IJob" />
     [DisallowConcurrentExecution]
     [IntegerField( "Command Timeout", "Maximum amount of time (in seconds) to wait for the SQL Query to complete. Leave blank to use the default for this job (3600). Note, it could take several minutes, so you might want to set it at 3600 (60 minutes) or higher", false, 60 * 60, "General", 1, "CommandTimeout" )]
-    [BooleanField( "Delete Job if no data left to migrate", "Determines if this Job will delete itself if there is no data left to migrate to the Interactions table.", true, key: "DeleteJob" )]
     public class MigrateInteractionsData : IJob
     {
         private int _commandTimeout = 0;
@@ -69,7 +68,7 @@ WHERE [Guid] NOT IN (
 		)
 " ).First();
 
-                if ( _pageViewsTotal == 0 && _communicationRecipientActivityTotal == 0 && deleteJob )
+                if ( _pageViewsTotal == 0 && _communicationRecipientActivityTotal == 0 )
                 {
                     // drop the tables
                     rockContext.Database.ExecuteSqlCommand( @"
@@ -282,7 +281,7 @@ END
                     try
                     {
                         // keep track of where to start so that SQL doesn't have to scan the whole table when deleting
-                        int insertStartId = interactionService.Queryable().Max( a => a.Id );
+                        int insertStartId = interactionService.Queryable().Max( a => (int?)a.Id ) ?? 1;
                         int chunkSize = 25000;
 
                         rockContext.Database.CommandTimeout = _commandTimeout;
@@ -334,7 +333,7 @@ END
                         dbTransaction.Commit();
                     }
 
-                    var percentComplete = ( _pageViewsMoved * 100.0 ) / _pageViewsTotal;
+                    var percentComplete = _pageViewsTotal > 0 ? ( _pageViewsMoved * 100.0 ) / _pageViewsTotal : 100.0;
                     var statusMessage = $@"Progress: {_pageViewsMoved} of {_pageViewsTotal} ({Math.Round( percentComplete, 1 )}%) PageViews data migrated to Interactions";
                     context.UpdateLastStatusMessage( statusMessage );
                 }
@@ -629,7 +628,7 @@ END
                         dbTransaction.Commit();
                     }
 
-                    var percentComplete = ( _communicationRecipientActivityMoved * 100.0 ) / _communicationRecipientActivityTotal;
+                    var percentComplete = _communicationRecipientActivityTotal > 0 ? ( _communicationRecipientActivityMoved * 100.0 ) / _communicationRecipientActivityTotal : 100.0;
                     var statusMessage = $@"Progress: {_communicationRecipientActivityMoved} of {_communicationRecipientActivityTotal} ({Math.Round( percentComplete, 1 )}%) Communication Recipient Activity data migrated to Interactions";
                     context.UpdateLastStatusMessage( statusMessage );
                 }
