@@ -236,6 +236,14 @@ namespace Rock.Model
             }
         }
 
+        /// <summary>
+        /// Gets or sets the index result template.
+        /// </summary>
+        /// <value>
+        /// The index result template.
+        /// </value>
+        public string IndexResultTemplate { get; set; }
+
         #endregion
 
         #region virtual Properties
