@@ -1920,7 +1920,6 @@ namespace RockWeb.Blocks.Examples
             PersonService personService = new PersonService( rockContext );
             PhoneNumberService phoneNumberService = new PhoneNumberService( rockContext );
             PersonViewedService personViewedService = new PersonViewedService( rockContext );
-            PageViewService pageViewService = new PageViewService( rockContext );
             BinaryFileService binaryFileService = new BinaryFileService( rockContext );
             PersonAliasService personAliasService = new PersonAliasService( rockContext );
             PersonDuplicateService personDuplicateService = new PersonDuplicateService( rockContext );
@@ -1995,12 +1994,6 @@ namespace RockWeb.Blocks.Examples
                         foreach ( var view in personViewedService.GetByTargetPersonId( person.Id ) )
                         {
                             personViewedService.Delete( view );
-                        }
-
-                        // delete page viewed records
-                        foreach ( var view in pageViewService.GetByPersonId( person.Id ) )
-                        {
-                            pageViewService.Delete( view );
                         }
 
                         // delete notes created by them or on their record.
