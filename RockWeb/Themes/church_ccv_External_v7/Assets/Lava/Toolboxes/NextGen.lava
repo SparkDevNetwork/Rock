@@ -40,7 +40,7 @@
 
   {% if rosterPageIsCurrent %}
     {% include '~~/Assets/Lava/Toolboxes/_roster-pending.lava' %}
-    {% include '~~/Assets/Lava/Toolboxes/_roster-active.lava' %}
+    {% include '~~/Assets/Lava/Toolboxes/_ng_roster-active.lava' %}
     {% include '~~/Assets/Lava/Toolboxes/_roster-inactive.lava' %}
   {% elsif parentPageIsCurrent %}
     {% include '~~/Assets/Lava/Toolboxes/_roster-parents.lava' %}

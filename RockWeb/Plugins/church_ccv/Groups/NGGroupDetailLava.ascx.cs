@@ -34,6 +34,8 @@ namespace RockWeb.Plugins.church_ccv.Groups
 {
     public class ChildWithParents_Lava : PersonService.ChildWithParents, Rock.Lava.ILiquidizable
     {
+        public bool RegisteredForCamp { get; set; }
+
         /// <summary>
         /// To the liquid.
         /// </summary>
@@ -55,7 +57,7 @@ namespace RockWeb.Plugins.church_ccv.Groups
         {
             get
             {
-                var availableKeys = new List<string> { "Child", "Parents" };
+                var availableKeys = new List<string> { "Child", "Parents", "RegisteredForCamp" };
                 if ( this.Child != null )
                 {
                     availableKeys.AddRange( this.Child.AvailableKeys );
@@ -88,6 +90,7 @@ namespace RockWeb.Plugins.church_ccv.Groups
             {
                switch( key.ToStringSafe() )
                {
+                   case "RegisteredForCamp": return RegisteredForCamp;
                    case "Child": return Child;
                    case "Parents": return Parents;
                }
@@ -103,7 +106,7 @@ namespace RockWeb.Plugins.church_ccv.Groups
         /// <returns></returns>
         public bool ContainsKey( object key )
         {
-            var additionalKeys = new List<string> { "Child", "Parents" };
+            var additionalKeys = new List<string> { "Child", "Parents", "RegisteredForCamp" };
             if ( additionalKeys.Contains( key.ToStringSafe() ) )
             {
                 return true;
@@ -122,6 +125,7 @@ namespace RockWeb.Plugins.church_ccv.Groups
     [Category( "CCV > Groups" )]
     [Description( "Presents the details of a NG group using Lava" )]
     [LinkedPage( "Parent Page", "The page to link to to view the parents of kids in the roster.", true, "", "" )]
+    [TextField( "Camp Group Ids", "Comma delimited list of Ids for this year's camp. If set, a badge is displayed for each person registered for camp.", false)]
     public partial class NGGroupDetailLava : ToolboxGroupDetailLava
     {
         public override UpdatePanel MainPanel { get { return upnlContent; } }
@@ -137,8 +141,6 @@ namespace RockWeb.Plugins.church_ccv.Groups
         public override TimePicker MeetingTime { get { return timeWeekly; } }
                
         public override Literal GroupName { get { return tbName; } }
-        //public override TextBox GroupDesc { get { return tbDescription; } }
-        //public override CheckBox IsActive { get { return cbIsActive; } }
 
         const int NG_GroupRole_Member = 132;
     
@@ -180,25 +182,58 @@ namespace RockWeb.Plugins.church_ccv.Groups
 
             RockContext rockContext = new RockContext();
             GroupMemberService groupMemberService = new GroupMemberService( rockContext );
+            GroupService groupService = new GroupService( rockContext );
+            
+            // get the next-gen group
+            Group group = groupService.Get( _groupId );
 
-            Group group = new GroupService( rockContext ).Get( _groupId );
+            // build a list of valid camp group IDs
+            string campGroupIdsAttrib = GetAttributeValue( "CampGroupIds" );
+            List<int> campGroupIds = new List<int>( );
+
+            if( string.IsNullOrWhiteSpace( campGroupIdsAttrib ) == false )
+            {
+                string[] groupIdsString = campGroupIdsAttrib.Split( ',' );
+                
+                foreach( string groupIdStr in groupIdsString )
+                {
+                    // make sure it actually converts to an int
+                    int groupId = 0;
+                    int.TryParse( groupIdStr, out groupId );
+
+                    if( groupId > 0 )
+                    {
+                        campGroupIds.Add( groupId );
+                    }
+                }
+            }
+            
 
             foreach( GroupMember member in group.Members )
             {
                 // first, get all the groups this person is in as a child.
                 var groupsAsChild = groupMemberService.Queryable( ).Where( gm => gm.PersonId == member.Person.Id && 
                                                                            gm.GroupRole.Guid == new Guid( Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_CHILD ) )
-                                                                           .Select( gm => gm.Group.Id );
+                                                                   .Select( gm => gm.Group.Id );
 
                 // now, get the adults of these groups
                 var parentsInGroup = groupMemberService.Queryable( ).Where( gm => gm.GroupRole.Guid == new Guid( Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_ADULT ) && 
                                                                             groupsAsChild.Contains( gm.GroupId ) )
-                                                                            .Select( gm => gm.Person ).ToList( );
+                                                                    .Select( gm => gm.Person ).ToList( );
 
                 // now create a ChildWithParents object to store this
                 ChildWithParents_Lava childWithParents = new ChildWithParents_Lava( );
                 childWithParents.Parents = parentsInGroup;
                 childWithParents.Child = member.Person;
+
+                // if there are valid camp groups
+                if( campGroupIds.Count > 0 )
+                {
+                    // see if they're in any of them. We don't care which ones specifically.
+                    int numCampGroups = groupMemberService.Queryable( ).Where( gm => gm.PersonId == member.PersonId && campGroupIds.Contains( gm.GroupId ) ).Count( );
+
+                    childWithParents.RegisteredForCamp = numCampGroups > 0 ? true : false;
+                }
 
                 childWithParentsList.Add( childWithParents );
             }
