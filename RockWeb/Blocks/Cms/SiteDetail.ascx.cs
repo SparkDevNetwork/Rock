@@ -295,6 +295,25 @@ namespace RockWeb.Blocks.Cms
                     }
                 } );
 
+                // add/update for the InteractionChannel for this site and set the RetentionPeriod
+                var interactionChannelService = new InteractionChannelService( rockContext );
+                int channelMediumWebsiteValueId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.INTERACTIONCHANNELTYPE_WEBSITE.AsGuid() ).Id;
+                var interactionChannelForSite = interactionChannelService.Queryable()
+                    .Where( a => a.ChannelTypeMediumValueId == channelMediumWebsiteValueId && a.ChannelEntityId == site.Id ).FirstOrDefault();
+
+                if ( interactionChannelForSite == null )
+                {
+                    interactionChannelForSite = new InteractionChannel();
+                    interactionChannelForSite.ChannelTypeMediumValueId = channelMediumWebsiteValueId;
+                    interactionChannelForSite.ChannelEntityId = site.Id;
+                    interactionChannelService.Add( interactionChannelForSite );
+                }
+
+                interactionChannelForSite.Name = site.Name;
+                interactionChannelForSite.RetentionDuration = nbPageViewRetentionPeriodDays.Text.AsIntegerOrNull();
+
+                rockContext.SaveChanges();
+
                 SiteCache.Flush( site.Id );
 
                 // Create the default page is this is a new site
@@ -585,7 +604,14 @@ namespace RockWeb.Blocks.Cms
             cbRedirectTablets.Checked = site.RedirectTablets;
             cbEnablePageViews.Checked = site.EnablePageViews;
 
-            //TODO nbPageViewRetentionPeriodDays.Text = site.PageViewRetentionPeriodDays.ToString();
+            int channelMediumWebsiteValueId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.INTERACTIONCHANNELTYPE_WEBSITE.AsGuid() ).Id;
+            var interactionChannelForSite = new InteractionChannelService( new RockContext() ).Queryable()
+                .Where( a => a.ChannelTypeMediumValueId == channelMediumWebsiteValueId && a.ChannelEntityId == site.Id ).FirstOrDefault();
+
+            if ( interactionChannelForSite != null )
+            {
+                nbPageViewRetentionPeriodDays.Text = interactionChannelForSite.RetentionDuration.ToString();
+            }
 
             cbEnableIndexing.Checked = site.IsIndexEnabled;
             tbIndexStartingLocation.Text = site.IndexStartingLocation;
