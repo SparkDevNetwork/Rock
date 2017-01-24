@@ -411,14 +411,6 @@ namespace Rock.Data
         public DbSet<CommunicationRecipient> CommunicationRecipients { get; set; }
 
         /// <summary>
-        /// Gets or sets the communication recipient activities.
-        /// </summary>
-        /// <value>
-        /// The communication recipient activities.
-        /// </value>
-        public DbSet<CommunicationRecipientActivity> CommunicationRecipientActivities { get; set; }
-
-        /// <summary>
         /// Gets or sets the communication templates.
         /// </summary>
         /// <value>
@@ -1105,30 +1097,6 @@ namespace Rock.Data
         /// the Page Routes.
         /// </value>
         public DbSet<PageRoute> PageRoutes { get; set; }
-
-        /// <summary>
-        /// Gets or sets the page views.
-        /// </summary>
-        /// <value>
-        /// The page views.
-        /// </value>
-        public DbSet<PageView> PageViews { get; set; }
-
-        /// <summary>
-        /// Gets or sets the page view sessions.
-        /// </summary>
-        /// <value>
-        /// The page view sessions.
-        /// </value>
-        public DbSet<PageViewSession> PageViewSessions { get; set; }
-
-        /// <summary>
-        /// Gets or sets the page view user agents.
-        /// </summary>
-        /// <value>
-        /// The page view user agents.
-        /// </value>
-        public DbSet<PageViewUserAgent> PageViewUserAgents { get; set; }
 
         /// <summary>
         /// Gets or sets the People.

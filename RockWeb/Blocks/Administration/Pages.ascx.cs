@@ -152,7 +152,6 @@ namespace RockWeb.Blocks.Administration
         {
             var rockContext = new RockContext();
             var pageService = new PageService( rockContext );
-            var pageViewService = new PageViewService( rockContext );
             var siteService = new SiteService( rockContext );
 
             var page = pageService.Get( e.RowKeyId );
@@ -184,12 +183,6 @@ namespace RockWeb.Blocks.Administration
                         site.RegistrationPageId = null;
                         site.RegistrationPageRouteId = null;
                     }
-                }
-
-                foreach ( var pageView in pageViewService.GetByPageId( page.Id ) )
-                {
-                    pageView.Page = null;
-                    pageView.PageId = null;
                 }
 
                 pageService.Delete( page );
