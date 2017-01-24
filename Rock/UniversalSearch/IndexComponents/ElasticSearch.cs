@@ -223,8 +223,9 @@ namespace Rock.UniversalSearch.IndexComponents
                 createIndexRequest.Mappings = new Mappings();
 
                 var typeMapping = new TypeMapping();
+                typeMapping.Dynamic = DynamicMapping.Allow;
                 typeMapping.Properties = new Properties();
-
+                
                 createIndexRequest.Mappings.Add( indexName, typeMapping );
 
                 var model = (IndexModelBase)instance;
@@ -239,8 +240,6 @@ namespace Rock.UniversalSearch.IndexComponents
                     if ( indexAttribute.Length > 0 )
                     {
                         var attribute = (RockIndexField)indexAttribute[0];
-
-                        
 
                         var propertyName = Char.ToLowerInvariant( property.Name[0] ) + property.Name.Substring( 1 );
 

@@ -39,7 +39,6 @@ namespace Rock.UniversalSearch.IndexModels
         private Dictionary<string, object> _members = new Dictionary<string, object>();
         object Instance;
         Type InstanceType;
-        //private int modelBoost = 1;
 
         PropertyInfo[] InstancePropertyInfo
         {
@@ -120,18 +119,23 @@ namespace Rock.UniversalSearch.IndexModels
         {
             string result = string.Empty;
 
-            // try returning some common properties
-            if ( this["Name"] != null )
-            {
-                result = this.GetPropertyValue( "Name" ).ToString();
+            // get template from entity type
+            var sourceModelEntity = EntityTypeCache.All().Where( e => e.Name == this.SourceIndexModel ).FirstOrDefault();
+
+            if ( sourceModelEntity != null ) {
+                var template = sourceModelEntity.IndexResultTemplate;
+
+                if ( template.IsNotNullOrWhitespace() )
+                {
+                    var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( null, person );
+                    mergeFields.Add( "IndexDocument", this );
+                    mergeFields.Add( "DisplayOptions", displayOptions );
+
+                    return new FormattedSearchResult() { IsViewAllowed = true, FormattedResult = template.ResolveMergeFields( mergeFields ) };
+                }
             }
 
-            if ( this["Title"] != null )
-            {
-                result = this.GetPropertyValue( "Title" ).ToString();
-            }
-
-            // otherwise return not implemented
+            // otherwise return not implemented (blank)
             return new FormattedSearchResult() { IsViewAllowed = true, FormattedResult = result};
         }
 
@@ -277,7 +281,9 @@ namespace Rock.UniversalSearch.IndexModels
             }
 
             // no match - set or add to dictionary
-            _members[binder.Name] = value;
+            // ensure name is starts with an upper case 
+            var name = char.ToUpper( binder.Name[0] ) + binder.Name.Substring( 1 );
+            _members[name] = value;
             return true;
         }
 
@@ -320,14 +326,17 @@ namespace Rock.UniversalSearch.IndexModels
             if ( instance == null )
                 instance = this;
 
-            var miArray = InstanceType.GetMember( name, BindingFlags.Public | BindingFlags.SetProperty | BindingFlags.Instance );
-            if ( miArray != null && miArray.Length > 0 )
+            if ( name != null )
             {
-                var mi = miArray[0];
-                if ( mi.MemberType == MemberTypes.Property )
+                var miArray = InstanceType.GetMember( name, BindingFlags.Public | BindingFlags.SetProperty | BindingFlags.Instance );
+                if ( miArray != null && miArray.Length > 0 )
                 {
-                    ((PropertyInfo)mi).SetValue( Instance, value, null );
-                    return true;
+                    var mi = miArray[0];
+                    if ( mi.MemberType == MemberTypes.Property )
+                    {
+                        ((PropertyInfo)mi).SetValue( Instance, value, null );
+                        return true;
+                    }
                 }
             }
             return false;
@@ -363,18 +372,25 @@ namespace Rock.UniversalSearch.IndexModels
             }
             set
             {
-                if ( _members.ContainsKey( key ) )
+                if ( key != null )
                 {
-                    _members[key] = value;
-                    return;
-                }
+                    if ( _members.ContainsKey( key ) )
+                    {
+                        _members[key] = value;
+                        return;
+                    }
 
-                // check instance for existance of type first
-                var miArray = InstanceType.GetMember( key, BindingFlags.Public | BindingFlags.GetProperty );
-                if ( miArray != null && miArray.Length > 0 )
-                    SetProperty( Instance, key, value );
-                else
-                    _members[key] = value;
+                    // check instance for existance of type first
+                    var miArray = InstanceType.GetMember( key, BindingFlags.Public | BindingFlags.GetProperty );
+                    if ( miArray != null && miArray.Length > 0 )
+                    {
+                        SetProperty( Instance, key, value );
+                    }
+                    else
+                    {
+                        _members[key] = value;
+                    }
+                }
             }
         }
 
