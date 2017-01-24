@@ -17,7 +17,9 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Data.Entity;
 using System.Linq;
+using System.Web.UI;
 using System.Web.UI.WebControls;
 
 using com.minecartstudio.PCOSync;
@@ -29,6 +31,7 @@ using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web;
+using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
@@ -41,9 +44,15 @@ namespace RockWeb.Plugins.com_mineCartStudio.PCOSync
     [Category( "Mine Cart Studio > PCO Sync" )]
     [Description( "Displays the details of the given PCO Account." )]
 
-    [LinkedPage( "Application Group Detail Page")]
+    [LinkedPage( "Group Detail Page" )]
+    [DefinedValueField( Rock.SystemGuid.DefinedType.PERSON_CONNECTION_STATUS, "Default Connection Status",
+        "The connection status to use when people are added to Rock from PCO.", true, false,
+        Rock.SystemGuid.DefinedValue.PERSON_CONNECTION_STATUS_ATTENDEE, "", 2, "ConnectionStatus" )]
     public partial class AccountDetail : RockBlock, IDetailBlock
     {
+        const string EDIT_MODE = "EDIT";
+        const string VIEW_MODE = "VIEW";
+        const string ADD_MODE = "ADD";
 
         #region Base Control Methods
 
@@ -60,6 +69,11 @@ namespace RockWeb.Plugins.com_mineCartStudio.PCOSync
             this.AddConfigurationUpdateTrigger( upnlSettings );
 
             btnDelete.Attributes["onclick"] = string.Format( "javascript: return Rock.dialogs.confirmDelete(event, '{0}');", PCOAccount.FriendlyTypeName );
+
+            //Set server timeout to 10 minutes
+            Server.ScriptTimeout = 600; Server.ScriptTimeout = 600;
+            ScriptManager.GetCurrent( Page ).AsyncPostBackTimeout = 600; ScriptManager.GetCurrent( Page ).AsyncPostBackTimeout = 600;
+            
         }
 
         /// <summary>
@@ -69,6 +83,8 @@ namespace RockWeb.Plugins.com_mineCartStudio.PCOSync
         protected override void OnLoad( EventArgs e )
         {
             base.OnLoad( e );
+
+            nbAdd.Visible = false;
 
             if ( !Page.IsPostBack )
             {
@@ -80,6 +96,13 @@ namespace RockWeb.Plugins.com_mineCartStudio.PCOSync
                 else
                 {
                     pnlDetails.Visible = false;
+                }
+            }
+            else
+            {
+                if ( pnlAdd.Visible )
+                {
+                    BuildAddControls();
                 }
             }
         }
@@ -116,7 +139,7 @@ namespace RockWeb.Plugins.com_mineCartStudio.PCOSync
             var rockContext = new RockContext();
 
             PCOAccount account = null;
-            AccountService accountService = new AccountService( rockContext );
+            PCOAccountService accountService = new PCOAccountService( rockContext );
 
             int accountId = hfAccountId.ValueAsInt();
             if ( accountId > 0 )
@@ -133,12 +156,12 @@ namespace RockWeb.Plugins.com_mineCartStudio.PCOSync
             account.Name = tbName.Text;
             account.ApplicationId = tbApplicationId.Text;
             account.Secret = tbSecret.Text;
+
+            ListItem li = ddlWelcomeEmailTemplate.SelectedItem;
+            account.WelcomeEmailTemplateId = li != null ? li.Value.AsIntegerOrNull() : (int?)null;
+            account.WelcomeEmailTemplate = li != null ? li.Text : "";
+
             account.AllowPermissionDowngrade = cbPermissionDowngrade.Checked;
-            account.AdministratorGroupId = ddlAdministrators.SelectedValueAsInt();
-            account.EditorGroupId = ddlEditors.SelectedValueAsInt();
-            account.SchedulerGroupId = ddlSchedulers.SelectedValueAsInt();
-            account.ViewerGroupId = ddlViewers.SelectedValueAsInt();
-            account.ScheduledViewerGroupId = ddlScheduledViewers.SelectedValueAsInt();
 
             if ( !account.IsValid )
             {
@@ -158,7 +181,7 @@ namespace RockWeb.Plugins.com_mineCartStudio.PCOSync
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void btnEdit_Click( object sender, EventArgs e )
         {
-            AccountService accountService = new AccountService( new RockContext() );
+            PCOAccountService accountService = new PCOAccountService( new RockContext() );
             PCOAccount account = accountService.Get( hfAccountId.ValueAsInt() );
             ShowEditDetails( account );
         }
@@ -171,7 +194,7 @@ namespace RockWeb.Plugins.com_mineCartStudio.PCOSync
         protected void btnDelete_Click( object sender, EventArgs e )
         {
             RockContext rockContext = new RockContext();
-            AccountService accountService = new AccountService( rockContext );
+            PCOAccountService accountService = new PCOAccountService( rockContext );
             PCOAccount account = accountService.Get( int.Parse( hfAccountId.Value ) );
 
             if ( account != null )
@@ -212,11 +235,158 @@ namespace RockWeb.Plugins.com_mineCartStudio.PCOSync
             else
             {
                 // Cancelling on Edit.  Return to Details
-                AccountService accountService = new AccountService(new RockContext());
+                PCOAccountService accountService = new PCOAccountService(new RockContext());
                 PCOAccount account = accountService.Get( hfAccountId.ValueAsInt() );
                 ShowReadonlyDetails( account );
             }
         }
+
+        /// <summary>
+        /// Handles the TextChanged event of the tbToken control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void tbToken_TextChanged( object sender, EventArgs e )
+        {
+            RefreshEmailTemplateList();
+        }
+
+
+        /// <summary>
+        /// Handles the Click event of the btnImportPCO control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void btnImportPCO_Click( object sender, EventArgs e )
+        {
+            BuildAddControls();
+            SetViewMode( ADD_MODE );
+        }
+
+        /// <summary>
+        /// Handles the Click event of the btnImport control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void btnImport_Click( object sender, EventArgs e )
+        {
+            int newPeople = 0;
+            int newAccountRecords = 0; 
+
+            using ( var rockContext = new RockContext() )
+            {
+                var accountService = new PCOAccountService( rockContext );
+                var accountPersonService = new PCOAccountPersonService( rockContext );
+                var groupService = new GroupService( rockContext );
+                var personService = new PersonService( rockContext );
+                var groupMemberService = new GroupMemberService( rockContext );
+
+                var account = accountService.Get( hfAccountId.ValueAsInt() );
+                var defaultConnectionStatus = DefinedValueCache.Read( GetAttributeValue( "ConnectionStatus" ).AsGuid() );
+                var permissionDefinedType = DefinedTypeCache.Read( com.minecartstudio.PCOSync.SystemGuid.DefinedType.PCO_PERMISSION_LEVELS.AsGuid() );
+
+                if ( account != null && defaultConnectionStatus != null && permissionDefinedType != null )
+                {
+                    var permissionLevels = permissionDefinedType.DefinedValues.OrderByDescending( v => v.Order ).ToList();
+                    var permissionGroups = new Dictionary<int, Group>();
+                        
+                    var syncedPCOIds = account.People
+                        .Select( p => p.PCOId )
+                        .ToList();
+
+                    var api = new PCOApi( account );
+                    var pcoPeople = api.GetPeople();
+
+                    foreach ( var pcoPerson in pcoPeople
+                        .Where( p =>
+                            p.permissions != null &&
+                            !syncedPCOIds.Contains( p.id ) )
+                        .ToList() )
+                    {
+                        var permissionLevel = permissionLevels.Where( p => p.Value.ToLower() == pcoPerson.permissions.ToLower() ).FirstOrDefault();
+                        if ( permissionLevel != null )
+                        {
+                            // Get the target Group
+                            Group group = null;
+                            if ( permissionGroups.ContainsKey( permissionLevel.Id ) )
+                            {
+                                group = permissionGroups[permissionLevel.Id];
+                            }
+                            else
+                            {
+                                if ( permissionLevel != null )
+                                {
+                                    var ddlGroup = phAddGroups.FindControl( string.Format( "ddlGroup_{0}", permissionLevel.Id ) ) as RockDropDownList;
+                                    if ( ddlGroup != null )
+                                    {
+                                        int? groupId = ddlGroup.SelectedValueAsInt();
+                                        if ( groupId.HasValue )
+                                        {
+                                            group = groupService.Get( groupId.Value );
+                                        }
+                                    }
+                                    permissionGroups.Add( permissionLevel.Id, group );
+                                }
+                            }
+
+                            // If a group was configured
+                            if ( group != null && group.GroupType != null && group.GroupType.DefaultGroupRoleId.HasValue )
+                            {
+                                Person person = GetRockPerson( rockContext, personService, pcoPerson, defaultConnectionStatus );
+                                if ( person != null )
+                                {
+                                    newAccountRecords++;
+
+                                    if ( person.SystemNote == "JustAdded" )
+                                    {
+                                        newPeople++;
+                                    }
+
+                                    var pcoAccountPerson = new PCOAccountPerson();
+                                    pcoAccountPerson.AccountId = account.Id;
+                                    pcoAccountPerson.PersonAliasId = person.PrimaryAliasId.Value;
+                                    pcoAccountPerson.PCOId = pcoPerson.id;
+                                    pcoAccountPerson.PermissionLevelValueId = permissionLevel.Id;
+                                    accountPersonService.Add( pcoAccountPerson );
+
+                                    var groupMember = groupMemberService.GetByGroupIdAndPersonId( group.Id, person.Id ).FirstOrDefault();
+                                    if ( groupMember == null )
+                                    {
+                                        groupMember = new GroupMember();
+                                        groupMember.GroupId = group.Id;
+                                        groupMember.PersonId = person.Id;
+                                        groupMember.GroupRoleId = group.GroupType.DefaultGroupRoleId.Value;
+                                        groupMemberService.Add( groupMember );
+                                    }
+
+                                    rockContext.SaveChanges();
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            nbAdd.Title = "Import Complete";
+            nbAdd.Text = string.Format( "{0:N0} sync records added. {1:N0} new people created.", newAccountRecords, newPeople );
+            nbAdd.Visible = true;
+        }
+
+        /// <summary>
+        /// Handles the Click event of the btnCancelImport control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void btnCancelImport_Click( object sender, EventArgs e )
+        {
+            PCOAccountService accountService = new PCOAccountService( new RockContext() );
+            PCOAccount account = accountService.Get( hfAccountId.ValueAsInt() );
+            ShowReadonlyDetails( account );
+        }
+
+        #endregion
+
+        #region Methods
 
         /// <summary>
         /// Shows the readonly details.
@@ -224,20 +394,57 @@ namespace RockWeb.Plugins.com_mineCartStudio.PCOSync
         /// <param name="account">Type of the defined.</param>
         private void ShowReadonlyDetails( PCOAccount account )
         {
-            SetEditMode( false );
+            SetViewMode( VIEW_MODE );
 
             lTitle.Text = account.Name.FormatAsHtmlTitle();
 
-            var leftDetails = new DescriptionList();
-            leftDetails.Add( "Administrators", ApplicationGroupAnchorTag( account.AdministratorGroup ) );
-            leftDetails.Add( "Editors", ApplicationGroupAnchorTag( account.EditorGroup ) );
-            leftDetails.Add( "Schedulers", ApplicationGroupAnchorTag( account.SchedulerGroup ) );
-            leftDetails.Add( "Viewers", ApplicationGroupAnchorTag( account.ViewerGroup ) );
-            leftDetails.Add( "Scheduled Viewers", ApplicationGroupAnchorTag( account.ScheduledViewerGroup ) );
-            lblLeftDetails.Text = leftDetails.Html;
+            var details = new DescriptionList();
+            details.Add( "Welcome Email", account.WelcomeEmailTemplate );
 
-            var rightDetails = new DescriptionList();
-            lblRightDetails.Text = rightDetails.Html;
+            using ( var rockContext = new RockContext() )
+            {
+                var groupPermissions = PCOAccount.GetSyncedGroups( account.Id, rockContext );
+                if ( groupPermissions != null )
+                {
+                    var groupList = new Dictionary<string, string>();
+
+                    var permissionsType = DefinedTypeCache.Read( com.minecartstudio.PCOSync.SystemGuid.DefinedType.PCO_PERMISSION_LEVELS.AsGuid(), rockContext );
+
+                    var groupService = new GroupService( rockContext );
+
+                    foreach ( var keyVal in groupPermissions )
+                    {
+                        var groupPath = groupService.GroupAncestorPathName( keyVal.Key );
+                        if ( !string.IsNullOrWhiteSpace( groupPath ) )
+                        {
+                            var qryParams = new Dictionary<string, string> { { "GroupId", keyVal.Key.ToString() } };
+                            var url = LinkedPageUrl( "GroupDetailPage", qryParams );
+                            groupPath = string.Format( "<a href='{0}'>{1}</a>", url, groupPath );
+                            groupList.Add( groupPath, GetSecurityLabel( permissionsType.DefinedValues.FirstOrDefault( v => v.Guid == keyVal.Value ) ) );
+                        }
+                    }
+
+                    details.Add( "Groups Syncing to this Account", 
+                        groupList
+                            .OrderBy( l => l.Key )
+                            .Select( l => string.Format( "<small>{0} {1}</small>", l.Key, l.Value ) )
+                            .ToList()
+                            .AsDelimited( "<br/>") );
+                }
+            }
+
+            lblDetails.Text = details.Html;
+        }
+
+        private string GetSecurityLabel( DefinedValueCache permission )
+        {
+            if ( permission != null )
+            {
+                string labelType = permission.GetAttributeValue( "LabelType" );
+                return string.Format( "<span class='label label-{0}'>{1}</span>",
+                    !string.IsNullOrWhiteSpace( labelType ) ? labelType : "default", permission.Value );
+            }
+            return string.Empty;
         }
 
         /// <summary>
@@ -246,38 +453,6 @@ namespace RockWeb.Plugins.com_mineCartStudio.PCOSync
         /// <param name="account">Type of the defined.</param>
         private void ShowEditDetails( PCOAccount account )
         {
-
-            // Load dropdowns
-            ddlAdministrators.Items.Clear();
-            ddlEditors.Items.Clear();
-            ddlSchedulers.Items.Clear();
-            ddlViewers.Items.Clear();
-            ddlScheduledViewers.Items.Clear();
-
-            ddlAdministrators.Items.Add( new ListItem() );
-            ddlEditors.Items.Add( new ListItem() );
-            ddlSchedulers.Items.Add( new ListItem() );
-            ddlViewers.Items.Add( new ListItem() );
-            ddlScheduledViewers.Items.Add( new ListItem() );
-
-            Guid groupTypeGuid = Rock.SystemGuid.GroupType.GROUPTYPE_APPLICATION_GROUP.AsGuid();
-            var applicationGroups = new GroupService( new RockContext() )
-                .Queryable()
-                .Where( g => g.GroupType.Guid.Equals( groupTypeGuid ) )
-                .OrderBy( t => t.Name );
-
-            if ( applicationGroups.Any() )
-            {
-                foreach ( var group in applicationGroups )
-                {
-                    ddlAdministrators.Items.Add( new ListItem( group.Name, group.Id.ToString() ) );
-                    ddlEditors.Items.Add( new ListItem( group.Name, group.Id.ToString() ) );
-                    ddlSchedulers.Items.Add( new ListItem( group.Name, group.Id.ToString() ) );
-                    ddlViewers.Items.Add( new ListItem( group.Name, group.Id.ToString() ) );
-                    ddlScheduledViewers.Items.Add( new ListItem( group.Name, group.Id.ToString() ) );
-                }
-            }
-
             if ( account.Id > 0 )
             {
                 lTitle.Text = ActionTitle.Edit( PCOAccount.FriendlyTypeName ).FormatAsHtmlTitle();
@@ -287,30 +462,29 @@ namespace RockWeb.Plugins.com_mineCartStudio.PCOSync
                 lTitle.Text = ActionTitle.Add( PCOAccount.FriendlyTypeName ).FormatAsHtmlTitle();
             }
 
-            SetEditMode( true );
+            SetViewMode( EDIT_MODE );
 
             tbName.Text = account.Name;
+            cbPermissionDowngrade.Checked = account.AllowPermissionDowngrade;
             tbApplicationId.Text = account.ApplicationId;
             tbSecret.Text = account.Secret;
-            cbPermissionDowngrade.Checked = account.AllowPermissionDowngrade;
-            ddlAdministrators.SetValue( account.AdministratorGroupId );
-            ddlEditors.SetValue( account.EditorGroupId );
-            ddlSchedulers.SetValue( account.SchedulerGroupId );
-            ddlViewers.SetValue( account.ViewerGroupId );
-            ddlScheduledViewers.SetValue( account.ScheduledViewerGroupId );
+
+            RefreshEmailTemplateList();
+            ddlWelcomeEmailTemplate.SetValue( account.WelcomeEmailTemplateId );
         }
 
         /// <summary>
-        /// Sets the edit mode.
+        /// Sets the view mode.
         /// </summary>
-        /// <param name="editable">if set to <c>true</c> [editable].</param>
-        private void SetEditMode( bool editable )
+        /// <param name="mode">The mode.</param>
+        private void SetViewMode( string mode )
         {
-            pnlEditDetails.Visible = editable;
-            vsDetails.Enabled = editable;
-            fieldsetViewDetails.Visible = !editable;
+            pnlEditDetails.Visible = mode == EDIT_MODE;
+            vsDetails.Enabled = mode == EDIT_MODE;
+            fieldsetViewDetails.Visible = mode == VIEW_MODE;
+            pnlAdd.Visible = mode == ADD_MODE;
 
-            this.HideSecondaryBlocks( editable );
+            this.HideSecondaryBlocks( mode != VIEW_MODE );
         }
 
         /// <summary>
@@ -324,7 +498,7 @@ namespace RockWeb.Plugins.com_mineCartStudio.PCOSync
 
             if ( !accountId.Equals( 0 ) )
             {
-                account = new AccountService( new RockContext() ).Get( accountId );
+                account = new PCOAccountService( new RockContext() ).Get( accountId );
             }
 
             if ( account == null )
@@ -353,7 +527,7 @@ namespace RockWeb.Plugins.com_mineCartStudio.PCOSync
             else
             {
                 btnEdit.Visible = true;
-                btnDelete.Visible = false;
+                btnDelete.Visible = true;
                 if ( account.Id > 0 )
                 {
                     ShowReadonlyDetails( account );
@@ -364,18 +538,164 @@ namespace RockWeb.Plugins.com_mineCartStudio.PCOSync
                 }
             }
         }
-                
-        private string ApplicationGroupAnchorTag( Group group )
+
+        /// <summary>
+        /// Refreshes the email template list.
+        /// </summary>
+        private void RefreshEmailTemplateList()
         {
-            if ( group == null )
+            int? currentSelection = ddlWelcomeEmailTemplate.SelectedValueAsInt();
+            ddlWelcomeEmailTemplate.SelectedIndex = -1;
+            ddlWelcomeEmailTemplate.Items.Clear();
+
+            string appId = tbApplicationId.Text;
+            string secret = tbSecret.Text;
+
+            if ( !string.IsNullOrWhiteSpace( appId ) && !string.IsNullOrWhiteSpace( secret ) )
             {
-                return string.Empty;
+                var account = new PCOAccount { ApplicationId = tbApplicationId.Text, Secret = tbSecret.Text };
+                var api = new PCOApi( account );
+                ddlWelcomeEmailTemplate.DataSource = api.GetEmailTemplates();
+                ddlWelcomeEmailTemplate.DataBind();
+
+                ddlWelcomeEmailTemplate.Items.Insert( 0, new ListItem() );
+
+                ddlWelcomeEmailTemplate.SetValue( currentSelection );
+            }
+        }
+
+        /// <summary>
+        /// Builds the add controls.
+        /// </summary>
+        private void BuildAddControls()
+        {
+            phAddGroups.Controls.Clear();
+
+            var accountService = new PCOAccountService( new RockContext() );
+            var account = accountService.Get( hfAccountId.ValueAsInt() );
+            var permissionDefinedType = DefinedTypeCache.Read( com.minecartstudio.PCOSync.SystemGuid.DefinedType.PCO_PERMISSION_LEVELS.AsGuid() );
+
+            if ( account != null && permissionDefinedType != null )
+            {
+                using ( var rockContext = new RockContext() )
+                {
+                    var attrValueService = new AttributeValueService( rockContext );
+                    var groupService = new GroupService( rockContext );
+
+                    // Get the group ids with a PCO account value equal to this account
+                    var attributeValue = account.Guid.ToString();
+                    var accountGroupIds = attrValueService
+                        .Queryable().AsNoTracking()
+                        .Where( v =>
+                            v.Attribute.Key == "PCOAccount" &&
+                            v.Value == attributeValue )
+                        .Select( v => v.EntityId )
+                        .ToList();
+
+                    // Get all the permission level attributes for those groups
+                    var permissionLevelValues = attrValueService
+                        .Queryable().AsNoTracking()
+                        .Where( v =>
+                            v.Attribute.Key == "PCOPermissionLevel" &&
+                            accountGroupIds.Contains( v.EntityId ) )
+                        .ToList();
+                        
+                    foreach ( var dv in permissionDefinedType.DefinedValues )
+                    {
+                        var div = new System.Web.UI.HtmlControls.HtmlGenericControl( "div" );
+                        div.AddCssClass( "col-sm-6" );
+                        phAddGroups.Controls.Add( div );
+
+                        var ddlGroup = new RockDropDownList();
+                        ddlGroup.ID = string.Format( "ddlGroup_{0}", dv.Id );
+                        ddlGroup.Label = dv.Value + " Group";
+                        div.Controls.Add( ddlGroup );
+
+                        var permissionGroupIds = permissionLevelValues
+                            .Where( v => v.Value.ToLower() == dv.Guid.ToString().ToLower() )
+                            .Select( v => v.EntityId )
+                            .ToList();
+
+                        ddlGroup.Items.Clear();
+                        ddlGroup.Items.Add( new ListItem() );
+
+                        var groups = new Dictionary<int, string>();
+                        foreach( var group in groupService
+                            .Queryable().AsNoTracking()
+                            .Where( g =>
+                                permissionGroupIds.Contains( g.Id ) &&
+                                g.IsActive )
+                            .OrderBy( g => g.Name ) )
+                        {
+                            groups.Add( group.Id, groupService.GroupAncestorPathName( group.Id ) );
+                        }
+                        foreach( var group in groups.OrderBy( g => g.Value ))
+                        {
+                            ddlGroup.Items.Add( new ListItem( group.Value, group.Key.ToString() ) );
+                        }
+                    }
+                }
+
+            }
+        }
+
+        /// <summary>
+        /// Gets the rock person.
+        /// </summary>
+        /// <param name="rockContext">The rock context.</param>
+        /// <param name="personService">The person service.</param>
+        /// <param name="pcoPerson">The pco person.</param>
+        /// <param name="defaultConnectionStatus">The default connection status.</param>
+        /// <returns></returns>
+        private Person GetRockPerson( RockContext rockContext, PersonService personService, PCOPerson pcoPerson, DefinedValueCache defaultConnectionStatus )
+        {
+            string homeEmail = string.Empty;
+            PCOEmailAddress email = pcoPerson.contact_data.email_addresses.Where( p => p.location == "Home" ).FirstOrDefault();
+            if ( email != null )
+            {
+                homeEmail = email.address;
             }
 
-            var qryParams = new Dictionary<string, string> { { "GroupId", group.Id.ToString() }};
-            var pageRef = new PageReference( GetAttributeValue( "ApplicationGroupDetailPage" ), qryParams );
-            string url = pageRef.BuildUrl();
-            return string.Format( "<a href='{0}'>{1}</a>", url, group.Name );
+            // If person had an email, get the first person with the same name and email address.
+            if ( !string.IsNullOrWhiteSpace( homeEmail ) )
+            {
+                Person person = null;
+                var people = personService.GetByMatch( pcoPerson.first_name, pcoPerson.last_name, homeEmail );
+                if ( people.Count() == 1 )
+                {
+                    person = people.First();
+                }
+
+                if ( person == null )
+                {
+                    var personRecordTypeId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_PERSON.AsGuid() ).Id;
+                    var personStatusActive = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_ACTIVE.AsGuid() ).Id;
+
+                    rockContext.WrapTransaction( () =>
+                    {
+                        person = new Person();
+                        person.IsSystem = false;
+                        person.RecordTypeValueId = personRecordTypeId;
+                        person.RecordStatusValueId = personStatusActive;
+                        person.ConnectionStatusValueId = defaultConnectionStatus != null ? defaultConnectionStatus.Id : (int?)null;
+                        person.FirstName = pcoPerson.first_name;
+                        person.LastName = pcoPerson.last_name;
+                        person.Email = homeEmail;
+                        person.IsEmailActive = true;
+                        person.EmailPreference = EmailPreference.EmailAllowed;
+                        person.SystemNote = "Added by PCO Sync";
+
+                        PersonService.SaveNewPerson( person, rockContext, null, false );
+                    } );
+
+                    person = personService.Get( person.Id );
+                    person.SystemNote = "JustAdded";
+                }
+
+                return person;
+            }
+
+            return null;
         }
 
         #endregion

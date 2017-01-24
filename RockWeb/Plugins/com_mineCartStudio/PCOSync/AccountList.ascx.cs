@@ -28,6 +28,10 @@ using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
 using com.minecartstudio.PCOSync.Model;
+using System.Collections.Generic;
+using Rock.Model;
+using System.Data.Entity;
+using Rock.Web.Cache;
 
 namespace RockWeb.Plugins.com_mineCartStudio.PCOSync
 {
@@ -108,8 +112,8 @@ namespace RockWeb.Plugins.com_mineCartStudio.PCOSync
         protected void gAccount_Delete( object sender, RowEventArgs e )
         {
             var rockContext = new RockContext();
-            var accountPersonService = new AccountPersonService( rockContext );
-            var accountService = new AccountService( rockContext );
+            var accountPersonService = new PCOAccountPersonService( rockContext );
+            var accountService = new PCOAccountService( rockContext );
 
             PCOAccount type = accountService.Get( e.RowKeyId );
 
@@ -149,20 +153,84 @@ namespace RockWeb.Plugins.com_mineCartStudio.PCOSync
         /// </summary>
         private void gAccount_Bind()
         {
-            var queryable = new AccountService( new RockContext() ).Queryable();
-
-            SortProperty sortProperty = gAccount.SortProperty;
-            if ( sortProperty != null )
+            using ( var rockContext = new RockContext() )
             {
-                queryable = queryable.Sort( sortProperty );
+                var queryable = new PCOAccountService( rockContext ).Queryable();
+
+                SortProperty sortProperty = gAccount.SortProperty;
+                if ( sortProperty != null )
+                {
+                    queryable = queryable.Sort( sortProperty );
+                }
+                else
+                {
+                    queryable = queryable.OrderBy( a => a.Name );
+                }
+
+                var accounts = new List<AccountHelper>();
+                foreach ( var account in queryable )
+                {
+                    accounts.Add( new AccountHelper( account, rockContext ) );
+                }
+
+                gAccount.DataSource = accounts;
+                gAccount.DataBind();
             }
-            else
+        }
+
+        #endregion
+
+        #region HelperClass
+
+        public class AccountHelper
+        {
+            public int Id { get; set; }
+            public string Name { get; set; }
+            public int GroupCount { get; set; }
+            public int MemberCount { get; set; }
+            public string WelcomeEmailTemplate { get; set; }
+
+            public AccountHelper( PCOAccount account, RockContext rockContext )
             {
-                queryable = queryable.OrderBy( a => a.Name );
+                if ( account != null )
+                {
+                    Id = account.Id;
+                    Name = account.Name;
+                    WelcomeEmailTemplate = account.WelcomeEmailTemplate;
+
+                    var pcoAccountFieldType = FieldTypeCache.Read( com.minecartstudio.PCOSync.SystemGuid.FieldType.PCO_ACCOUNT.AsGuid(), rockContext );
+                    var groupEntityType = EntityTypeCache.Read<Rock.Model.Group>( false, rockContext );
+
+                    if ( pcoAccountFieldType != null && groupEntityType != null )
+                    {
+                        var groupIds = new AttributeValueService( rockContext )
+                            .Queryable().AsNoTracking()
+                            .Where( v =>
+                                v.Attribute.EntityTypeId == groupEntityType.Id &&
+                                v.Attribute.FieldTypeId == pcoAccountFieldType.Id &&
+                                v.EntityId.HasValue &&
+                                v.Value == account.Guid.ToString() )
+                            .Select( v => v.EntityId.Value )
+                            .ToList();
+
+                        GroupCount = new GroupService( rockContext )
+                            .Queryable().AsNoTracking()
+                            .Where( m =>
+                                groupIds.Contains( m.Id ) &&
+                                m.IsActive )
+                            .Count();
+
+                        MemberCount = new GroupMemberService( rockContext )
+                            .Queryable().AsNoTracking()
+                            .Where( m =>
+                                groupIds.Contains( m.Group.Id ) &&
+                                m.Group.IsActive &&
+                                m.GroupMemberStatus == GroupMemberStatus.Active )
+                            .Count();
+                    }
+                }
             }
 
-            gAccount.DataSource = queryable.ToList();
-            gAccount.DataBind();
         }
 
         #endregion
