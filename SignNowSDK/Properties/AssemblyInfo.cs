@@ -5,12 +5,12 @@ using System.Runtime.InteropServices;
 // General Information about an assembly is controlled through the following 
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("Rock.SignNow")]
+[assembly: AssemblyTitle("CSLibrary")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany( "Spark Development Network" )]
-[assembly: AssemblyProduct("Rock.SignNow")]
-[assembly: AssemblyCopyright( "Copyright © Spark Development Network 2011 - 2016" )]
+[assembly: AssemblyCompany("Barracuda Networks")]
+[assembly: AssemblyProduct("CSLibrary")]
+[assembly: AssemblyCopyright("Copyright ©  2015")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
@@ -20,7 +20,7 @@ using System.Runtime.InteropServices;
 [assembly: ComVisible(false)]
 
 // The following GUID is for the ID of the typelib if this project is exposed to COM
-[assembly: Guid("1f5956f2-2b0f-49b8-aaf1-2cc28f01426a")]
+[assembly: Guid("d6ef471b-78c0-4b9a-901e-5bec03a53f8d")]
 
 // Version information for an assembly consists of the following four values:
 //
@@ -32,5 +32,5 @@ using System.Runtime.InteropServices;
 // You can specify all the values or you can default the Build and Revision Numbers 
 // by using the '*' as shown below:
 // [assembly: AssemblyVersion("1.0.*")]
-[assembly: AssemblyVersion("1.6.2.0")]
-[assembly: AssemblyFileVersion("1.6.2.0")]
+[assembly: AssemblyVersion("2.0.2.0")]
+[assembly: AssemblyFileVersion("2.0.2.0")]
