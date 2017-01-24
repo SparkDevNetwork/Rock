@@ -236,20 +236,6 @@ namespace Rock.Data
             private set { }
         }
 
-        /// <summary>
-        /// Gets the index result template.
-        /// </summary>
-        /// <value>
-        /// The index result template.
-        /// </value>
-        public static string IndexResultTemplate
-        {
-            get
-            {
-                return Rock.Web.Cache.EntityTypeCache.Read( typeof( T ) ).IndexResultTemplate;
-            }
-        }
-
         #endregion
 
         #region Static Properties
@@ -546,6 +532,17 @@ namespace Rock.Data
         public static List<T> FromJsonAsList( string json )
         {
             return JsonConvert.DeserializeObject<List<T>>( json ); ;
+        }
+
+        /// <summary>
+        /// Gets the index result template.
+        /// </summary>
+        /// <value>
+        /// The index result template.
+        /// </value>
+        public static string GetIndexResultTemplate()
+        {
+            return Rock.Web.Cache.EntityTypeCache.Read( typeof( T ) ).IndexResultTemplate;
         }
 
         #endregion
