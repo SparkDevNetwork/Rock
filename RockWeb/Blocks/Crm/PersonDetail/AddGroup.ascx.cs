@@ -1049,8 +1049,9 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                         othersAtAddress = groupService
                             .Queryable().AsNoTracking()
                             .Where( g =>
-                                g.GroupTypeId == _locationType.Id &&
-                                g.GroupLocations.Any( l => l.LocationId == location.Id ) )
+                                g.GroupTypeId == _groupType.Id &&
+                                g.GroupLocations.Any( l => l.LocationId == location.Id && 
+                                                           l.GroupLocationTypeValueId == _locationType.Id ) )
                             .SelectMany( g => g.Members )
                             .Select( m => m.PersonId )
                             .ToList();
