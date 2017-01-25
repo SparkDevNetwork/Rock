@@ -312,6 +312,7 @@ namespace church.ccv.Podcast
                                                     .ToList( );
                                     
             PodcastMessage message = new PodcastMessage( );
+            message.SeriesId = contentChannelItem.ContentChannelId;
             message.Id = contentChannelItem.Id;
             message.Name = contentChannelItem.Title;
             message.Description = contentChannelItem.Content;
@@ -525,6 +526,7 @@ namespace church.ccv.Podcast
         public class PodcastMessage : IPodcastNode
         {
             public int Id { get; set; }
+            public int SeriesId { get; set; }
             public string Name { get; set; }
             public string Description { get; set; }
             public DateTime? Date { get; set; }
@@ -538,7 +540,7 @@ namespace church.ccv.Podcast
             {
                 get
                 {
-                    var availableKeys = new List<string> { "Id", "Name", "Description", "Date", "Attributes", "Approved" };
+                    var availableKeys = new List<string> { "Id", "SeriesId", "Name", "Description", "Date", "Attributes", "Approved" };
                     
                     return availableKeys;
                 }
@@ -558,6 +560,7 @@ namespace church.ccv.Podcast
                    switch( key.ToStringSafe() )
                    {
                        case "Id": return Id;
+                       case "SeriesId": return SeriesId;
                        case "Name": return Name;
                        case "Description": return Description;
                        case "Date": return Date;
@@ -571,7 +574,7 @@ namespace church.ccv.Podcast
             
             public bool ContainsKey( object key )
             {
-                var additionalKeys = new List<string> { "Id", "Name", "Description", "Date", "Attributes", "Approved" };
+                var additionalKeys = new List<string> { "Id", "SeriesId", "Name", "Description", "Date", "Attributes", "Approved" };
                 if ( additionalKeys.Contains( key.ToStringSafe() ) )
                 {
                     return true;
