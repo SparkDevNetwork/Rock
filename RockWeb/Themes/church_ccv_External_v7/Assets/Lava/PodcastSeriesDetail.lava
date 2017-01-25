@@ -11,6 +11,7 @@ REQUIRED VARIABLES
 
 {% endcomment %}
 
+<pre>{{ PodcastSeries | ToJSON }}</pre>
 
 {% capture ogImage %}http://arena.ccv.church/Arena/cachedblob.aspx?guid={{ table1.rows.first.MessageImageBlobId3 }}{% endcapture %}
 
