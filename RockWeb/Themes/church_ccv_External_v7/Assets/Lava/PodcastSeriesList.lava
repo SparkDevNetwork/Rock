@@ -1,16 +1,3 @@
-{% comment %}
-
-
-REQUIRED VARIABLES
-==================
-
-{% assign seriesListPage = "/page/516" %}
-{% assign seriesDetailPage = "/page/546" %}
-{% assign messageDetailPage = "/page/547" %}
-
-
-{% endcomment %}
-
 {% assign isFirstPage = false %}
 {% if PageParameter.PageNum == 0 or PageParameter.PageNum == null %}
   {% assign isFirstPage = true %}
