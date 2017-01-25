@@ -127,15 +127,5 @@ namespace Rock.UniversalSearch.IndexModels
             // site page does not have a Rock model
             return null;
         }
-
-        /// <summary>
-        /// Gets the document URL.
-        /// </summary>
-        /// <param name="displayOptions"></param>
-        /// <returns></returns>
-        public override string GetDocumentUrl( Dictionary<string, object> displayOptions = null )
-        {
-            return this.Url;
-        }
     }
 }

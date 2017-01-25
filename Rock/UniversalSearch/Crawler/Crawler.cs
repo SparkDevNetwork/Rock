@@ -36,14 +36,13 @@ namespace Rock.UniversalSearch.Crawler
     {
         #region Private Fields
         private string _userAgent = "Rock Web Indexer";
-        private List<CrawledPage> _pages = new List<CrawledPage>();
-        private List<string> _externalUrls = new List<string>();
-        private List<string> _otherUrls = new List<string>();
-        private List<string> _failedUrls = new List<string>();
-        private List<string> _exceptions = new List<string>();
+        private List<string> _previouslyCrawledPages = new List<string>();
         private Site _site = null;
-        private Robots _robot = null;
+        private string _baseUrl = string.Empty;
+        private Robots _robotHelper = null;
         private string _startUrl = string.Empty;
+
+        string[] nonLinkStartsWith = new string[] { "#", "javascript:", "mailto:" };
         #endregion
 
         /// <summary>
@@ -68,13 +67,17 @@ namespace Rock.UniversalSearch.Crawler
             _site = site;
             
             // get the robot helper class up and running
-            _robot = Robots.Load( _site.IndexStartingLocation );
+            _robotHelper = Robots.Load( _site.IndexStartingLocation );
 
             _startUrl = _site.IndexStartingLocation;
-            
+
+            var startingUri = new Uri( _startUrl );
+
+            _baseUrl = startingUri.Scheme + "://" + startingUri.Authority;
+
             CrawlPage( _site.IndexStartingLocation );
 
-            return _pages.Count;
+            return _previouslyCrawledPages.Count;
         }      
 
         /// <summary>
@@ -83,15 +86,12 @@ namespace Rock.UniversalSearch.Crawler
         /// <param name="url">The url to crawl.</param>
         private void CrawlPage( string url )
         {
-            // remove any named anchors
-            url = url.Substring( 0, url.IndexOf( '#' ) );
-
-            // strip trailing /
-            url = url.TrimEnd( '/' );
+            // clean up the url a bit
+            url = StandardizeUrl( url );
 
             try
             {
-                if ( !PageHasBeenCrawled( url ) && _robot.IsPathAllowed( _userAgent, url ) )
+                if ( !PageHasBeenCrawled( url ) && _robotHelper.IsPathAllowed( _userAgent, url ) && url.StartsWith(_baseUrl) )
                 {
                     string rawPage = GetWebText( url );
 
@@ -100,61 +100,23 @@ namespace Rock.UniversalSearch.Crawler
                         var htmlDoc = new HtmlDocument();
                         htmlDoc.LoadHtml( rawPage );
 
-                        // get page title
-                        CrawledPage page = new CrawledPage();
-
-                        if ( htmlDoc.DocumentNode.SelectSingleNode( "//body" ) != null )
-                        {
-                            page.Text = GetPageText( htmlDoc );// htmlDoc.DocumentNode.SelectSingleNode( "//body" ).InnerHtml;
-                        }
-                        else
-                        {
-                            page.Text = rawPage;
-                        }
-
-                        if ( htmlDoc.DocumentNode.SelectSingleNode( "//head/title" ) != null )
-                        {
-                            page.Title = htmlDoc.DocumentNode.SelectSingleNode( "//head/title" ).InnerText.Trim();
-                        }
-                        else
-                        {
-                            page.Title = url;
-                        }
-
-                        page.Url = url.ToLower();
-
-                        // set whether that page should in indexed
+                        // ensure the page should be indexed by looking at the robot and rock conventions
                         HtmlNode metaRobot = htmlDoc.DocumentNode.SelectSingleNode( "//meta[@name='robot']" );
-                        if ( metaRobot != null && metaRobot.Attributes["content"] != null && metaRobot.Attributes["content"].Value.Contains( "noindex" ) )
+                        if ( metaRobot == null || metaRobot.Attributes["content"] != null || !metaRobot.Attributes["content"].Value.Contains( "noindex" ) )
                         {
-                            page.AllowsIndex = false;
-                        }
+                            _previouslyCrawledPages.Add( url );
 
-                        _pages.Add( page );
-
-                        // index the page
-                        // clean up the page title a bit by removing  the site name off it
-                        if ( page.AllowsIndex )
-                        {
+                            // index the page
                             SitePageIndex sitePage = new SitePageIndex();
-                            sitePage.Id = page.Url.MakeInt64HashCode();
-                            sitePage.Content = page.Text.SanitizeHtml();
 
-                            // store only the page title (strip the site name off per Rock convention)
-                            if ( page.Title.Contains( "|" ) )
-                            {
-                                sitePage.PageTitle = page.Title.Substring( 0, (page.Title.IndexOf( '|' ) - 1) ).Trim();
-
-                            }
-                            else
-                            {
-                                sitePage.PageTitle = page.Title.Trim();
-                            }
-
+                            sitePage.Content = GetPageText( htmlDoc );
+                            sitePage.Url = url;
+                            sitePage.Id = url.MakeInt64HashCode();
+                            sitePage.SourceIndexModel = "Rock.Model.Site";
+                            sitePage.PageTitle = GetPageTitle( htmlDoc, url );
                             sitePage.DocumentName = sitePage.PageTitle;
                             sitePage.SiteName = _site.Name;
                             sitePage.SiteId = _site.Id;
-                            sitePage.Url = page.Url;
                             sitePage.LastIndexedDateTime = RockDateTime.Now;
 
                             HtmlNode metaDescription = htmlDoc.DocumentNode.SelectSingleNode( "//meta[@name='description']" );
@@ -170,30 +132,126 @@ namespace Rock.UniversalSearch.Crawler
                             }
 
                             IndexContainer.IndexDocument( sitePage );
-                        }
 
-                        LinkParser linkParser = new LinkParser();
-                        linkParser.ParseLinks( htmlDoc, url, _startUrl );
-
-
-                        //Add data to main data lists
-                        AddRangeButNoDuplicates( _externalUrls, linkParser.ExternalUrls );
-                        AddRangeButNoDuplicates( _otherUrls, linkParser.OtherUrls );
-                        AddRangeButNoDuplicates( _failedUrls, linkParser.BadUrls );
-
-                        foreach ( string exception in linkParser.Exceptions )
-                            _exceptions.Add( exception );
-
-
-                        //Crawl all the links found on the page.
-                        foreach ( string link in linkParser.GoodUrls )
-                        {
-                            CrawlPage( link );
+                            // crawl all the links found on the page.
+                            foreach ( string link in ParseLinks(htmlDoc) )
+                            {
+                                CrawlPage( link );
+                            }
                         }
                     }
                 }
             }
             catch ( Exception ex ) { }
+        }
+
+        /// <summary>
+        /// Parses the links in the HTML document.
+        /// </summary>
+        /// <param name="page">The page.</param>
+        /// <returns></returns>
+        public List<string> ParseLinks( HtmlDocument page )
+        {
+            var links = new List<string>();
+
+            if ( page.DocumentNode.SelectNodes( "//a[@href]" ) != null )
+            {
+                foreach ( HtmlNode link in page.DocumentNode.SelectNodes( "//a[@href]" ) )
+                {
+                    HtmlAttribute hrefAttribute = link.Attributes["href"];
+                    string anchorLink = hrefAttribute.Value;
+
+                    // check for links that aren't pages (javascript:, mailto:)
+                    if ( IsValidLink( anchorLink ) )
+                    {
+
+                        // make link absolute
+                        var uri = new Uri( anchorLink, UriKind.RelativeOrAbsolute );
+
+                        if ( !uri.IsAbsoluteUri )
+                        {
+                            uri = new Uri( new Uri( _baseUrl ), uri );
+                        }
+
+                        links.Add( uri.ToString() );
+                    }
+                }
+            }
+
+            return links;
+        }
+
+        /// <summary>
+        /// Determines whether [is valid link] [the specified link].
+        /// </summary>
+        /// <param name="link">The link.</param>
+        /// <returns></returns>
+        private bool IsValidLink(string link )
+        {
+            foreach ( string test in nonLinkStartsWith )
+            {
+                if ( link.StartsWith( test, StringComparison.OrdinalIgnoreCase ) )
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        /// <summary>
+        /// Standardizes the URL.
+        /// </summary>
+        /// <param name="url">The URL.</param>
+        /// <returns></returns>
+        private string StandardizeUrl(string url )
+        {
+            // lower case string for comparisons
+            url = url.ToLower();
+
+            // remove any named anchors (otherwise the look like unique matches)
+            var poundIndex = url.IndexOf( '#' );
+            if ( poundIndex > 0 )
+            {
+                url = url.Substring( 0, url.IndexOf( '#' ) );
+            }
+
+            // strip trailing /
+            url = url.TrimEnd( '/' );
+
+            return url;
+        }
+
+        /// <summary>
+        /// Gets the page title.
+        /// </summary>
+        /// <param name="htmlDoc">The HTML document.</param>
+        /// <param name="url">The URL.</param>
+        /// <returns></returns>
+        private string GetPageTitle( HtmlDocument htmlDoc, string url )
+        {
+            string title;
+
+            if ( htmlDoc.DocumentNode.SelectSingleNode( "//head/title" ) != null )
+            {
+                title = htmlDoc.DocumentNode.SelectSingleNode( "//head/title" ).InnerText.Trim();
+
+                if ( title.Contains( "|" ) )
+                {
+                    title = title.Substring( 0, ( title.IndexOf( '|' ) - 1) ).Trim();
+
+                }
+                else
+                {
+                    title = title.Trim();
+                }
+            }
+            else
+            {
+                title = url;
+            }
+
+            return title;
         }
 
         /// <summary>
@@ -203,14 +261,21 @@ namespace Rock.UniversalSearch.Crawler
         /// <returns></returns>
         private string GetPageText(HtmlDocument page )
         {
-            StringBuilder cleanText = new StringBuilder();
-
-            foreach(var childNode in page.DocumentNode.SelectSingleNode( "//body" ).ChildNodes )
+            if ( page.DocumentNode.SelectSingleNode( "//body" ) != null )
             {
-                GetNodeText( childNode, cleanText );
-            }
+                StringBuilder cleanText = new StringBuilder();
 
-            return cleanText.ToString();
+                foreach ( var childNode in page.DocumentNode.SelectSingleNode( "//body" ).ChildNodes )
+                {
+                    GetNodeText( childNode, cleanText );
+                }
+
+                return cleanText.ToString().SanitizeHtml();
+            }
+            else
+            {
+                return page.ToString(); // must be a text file
+            }
         }
 
         /// <summary>
@@ -263,13 +328,7 @@ namespace Rock.UniversalSearch.Crawler
         {
             string matchUrl = url.ToLower();
 
-            foreach ( CrawledPage page in _pages )
-            {
-                if ( page.Url == matchUrl )
-                    return true;
-            }
-
-            return false;
+            return _previouslyCrawledPages.Contains( matchUrl );
         }
 
         /// <summary>
@@ -313,8 +372,8 @@ namespace Rock.UniversalSearch.Crawler
             {
                 Uri requestURL;
 
-                if ( Uri.TryCreate( url, UriKind.RelativeOrAbsolute, out requestURL ) 
-                        && (requestURL.Scheme == Uri.UriSchemeHttp || requestURL.Scheme == Uri.UriSchemeHttps) 
+                if ( Uri.TryCreate( url, UriKind.RelativeOrAbsolute, out requestURL )
+                        && (requestURL.Scheme == Uri.UriSchemeHttp || requestURL.Scheme == Uri.UriSchemeHttps)
                         && IsValidUrl( url ) )
                 {
                     HttpWebRequest request = (HttpWebRequest)HttpWebRequest.Create( requestURL );
@@ -324,43 +383,48 @@ namespace Rock.UniversalSearch.Crawler
 
                     HttpWebResponse response = (HttpWebResponse)request.GetResponse();
 
-                    // handle redirects by indexing the redirect only if it shares the same hostname
-                    if ( (int)response.StatusCode >= 300 && (int)response.StatusCode <= 399 )
+                    // make sure the response was text
+                    if ( response.ContentType.StartsWith( "text" ) )
                     {
-                        if ( response.Headers["Location"] != null )
+
+                        // handle redirects by indexing the redirect only if it shares the same hostname
+                        if ( (int)response.StatusCode >= 300 && (int)response.StatusCode <= 399 )
                         {
-                            string redirectUrl = response.Headers["Location"];
-
-                            var originalUri = new Uri( url );
-                            var redirectUri = new Uri( redirectUrl );
-
-                            if ( originalUri.Host == redirectUri.Host )
+                            if ( response.Headers["Location"] != null )
                             {
-                                return GetWebText( redirectUrl );
+                                string redirectUrl = response.Headers["Location"];
+
+                                var originalUri = new Uri( url );
+                                var redirectUri = new Uri( redirectUrl );
+
+                                if ( originalUri.Host == redirectUri.Host )
+                                {
+                                    return GetWebText( redirectUrl );
+                                }
+                                else
+                                {
+                                    return string.Empty;
+                                }
+
                             }
                             else
                             {
                                 return string.Empty;
                             }
-
                         }
-                        else
+
+                        string htmlText;
+
+                        using ( Stream stream = response.GetResponseStream() )
                         {
-                            return string.Empty;
+                            using ( StreamReader reader = new StreamReader( stream ) )
+                            {
+                                htmlText = reader.ReadToEnd();
+                            }
                         }
+
+                        return htmlText;
                     }
-
-                    string htmlText;
-
-                    using ( Stream stream = response.GetResponseStream() )
-                    {
-                        using ( StreamReader reader = new StreamReader( stream ) )
-                        {
-                            htmlText = reader.ReadToEnd();
-                        }
-                    }
-
-                    return htmlText;
                 }
             }
             catch { }
@@ -388,11 +452,6 @@ namespace Rock.UniversalSearch.Crawler
             if (url.Contains( " " ) )
             {
                 return false;
-            }
-
-            if (url.Contains( "#" ) )
-            {
-                return false; // we don't need to treat pages linked by a anchor to be treated as a separate page
             }
 
             if( url.Contains( "../" ) )

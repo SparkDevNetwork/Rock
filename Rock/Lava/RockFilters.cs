@@ -55,6 +55,18 @@ namespace Rock.Lava
 
 
         /// <summary>
+        /// Returns a <see cref="System.String" /> that represents this instance.
+        /// </summary>
+        /// <param name="input">The input.</param>
+        /// <returns>
+        /// A <see cref="System.String" /> that represents this instance.
+        /// </returns>
+        public static string ToString( object input )
+        {
+            return input.ToString();
+        }
+
+        /// <summary>
         /// Withes the fallback.
         /// </summary>
         /// <param name="input">The input.</param>

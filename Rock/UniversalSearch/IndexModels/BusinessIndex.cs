@@ -111,25 +111,5 @@ namespace Rock.UniversalSearch.IndexModels
 
             return businessIndex;
         }
-
-        /// <summary>
-        /// Gets the document URL.
-        /// </summary>
-        /// <param name="displayOptions"></param>
-        /// <returns></returns>
-        public override string GetDocumentUrl( Dictionary<string, object> displayOptions = null )
-        {
-            string url = "/Business/";
-
-            if ( displayOptions != null )
-            {
-                if ( displayOptions.ContainsKey( "Business-Url" ) )
-                {
-                    url = displayOptions["Business-Url"].ToString();
-                }
-            }
-
-            return url + this.Id;
-        }
     }
 }

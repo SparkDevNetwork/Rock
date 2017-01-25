@@ -170,6 +170,10 @@
     <Compile Include="Migrations\201701241721429_InteractionData.Designer.cs">
       <DependentUpon>201701241721429_InteractionData.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201701252028086_IndexDocumentUrl-Rollup.cs" />
+    <Compile Include="Migrations\201701252028086_IndexDocumentUrl-Rollup.Designer.cs">
+      <DependentUpon>201701252028086_IndexDocumentUrl-Rollup.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 6.0\Version 1.6.0\201609282147388_WaitList.cs" />
     <Compile Include="Migrations\Version 6.0\Version 1.6.0\201609282147388_WaitList.Designer.cs">
       <DependentUpon>201609282147388_WaitList.cs</DependentUpon>
@@ -2447,6 +2451,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201701241721429_InteractionData.resx">
       <DependentUpon>201701241721429_InteractionData.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201701252028086_IndexDocumentUrl-Rollup.resx">
+      <DependentUpon>201701252028086_IndexDocumentUrl-Rollup.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 6.0\Version 1.6.0\201609282147388_WaitList.resx">
       <DependentUpon>201609282147388_WaitList.cs</DependentUpon>

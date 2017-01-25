@@ -244,6 +244,14 @@ namespace Rock.Model
         /// </value>
         public string IndexResultTemplate { get; set; }
 
+        /// <summary>
+        /// Gets or sets the index document URL.
+        /// </summary>
+        /// <value>
+        /// The index document URL.
+        /// </value>
+        public string IndexDocumentUrl { get; set; }
+
         #endregion
 
         #region virtual Properties

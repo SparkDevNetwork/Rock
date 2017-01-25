@@ -84,7 +84,7 @@ namespace Rock.Jobs
                         // release the crawler, like the kraken... but not...
                         var pages = new Crawler().CrawlSite( _site );
 
-                        context.Result = string.Format( "Crawler found {0} pages, {1} pages sent to be indexed.", pages, _indexedPageCount );
+                        context.Result = string.Format( "Crawler indexed {0} pages.", pages, _indexedPageCount );
                     }
                     else
                     {
@@ -102,40 +102,6 @@ namespace Rock.Jobs
             }
 
             
-        }
-
-        /// <summary>
-        /// This method will be called each time a page is found by the crawler.
-        /// </summary>
-        /// <param name="page">The page.</param>
-        /// <returns></returns>
-        public bool PageCallback( CrawledPage page)
-        {
-            if ( page.AllowsIndex )
-            {
-                // clean up the page title a bit by removing  the site name off it
-                var pageTitle = page.Title.Substring( 0, (page.Title.IndexOf( '|' ) - 1) ).Trim();
-
-                SitePageIndex sitePage = new SitePageIndex();
-                sitePage.SourceIndexModel = "Rock.Model.Site";
-                sitePage.Id = page.Url.MakeInt64HashCode();
-                sitePage.Content = page.Text;
-                sitePage.PageTitle = pageTitle;
-                sitePage.SiteName = _site.Name;
-                sitePage.SiteId = _site.Id;
-                sitePage.Url = page.Url;
-                sitePage.LastIndexedDateTime = RockDateTime.Now;
-
-                IndexContainer.IndexDocument( sitePage );
-
-                // reduce memory footprint by blanking out text field in passed object
-                page.Text = string.Empty;
-
-                _indexedPageCount++;
-                return true;
-            }
-
-            return false;
         }
     }
 }
