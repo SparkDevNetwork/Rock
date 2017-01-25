@@ -2,9 +2,15 @@
   {% include '~~/Assets/Lava/NextGen/Resources/JuniorHigh.lava' %}
 {% endcomment %}
 
-{% assign sortedItems = Items | Sort:'StartDateTime' %}
+{% assign resultList = Items | Where:'Id', PageParameter.ContentId %}
+{% assign count = resultList | Size %}
 
-{% assign viewedItem = sortedItems | Last %}
+{% comment %}If the result list is empty or invalid, show the latest item{% endcomment%}
+{% if count > 0 %}
+	{% assign viewedItem = resultList | First %}
+{% else %}
+	{% assign viewedItem = Items | First %}
+{% endif %}
 
 <br/>
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 263.93 44.34">
