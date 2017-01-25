@@ -23,7 +23,7 @@
                     <div class="row">
                         <div class="col-sm-12">
                             <div class="videocontent">
-                                <a id="player"></a>
+                                <a id="player" class="video-player"></a>
                             </div>
                         </div>
                     </div>

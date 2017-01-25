@@ -1,17 +1,17 @@
 ﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="LiveStream.ascx.cs" Inherits="RockWeb.Plugins.church_ccv.CommandCenter.LiveStream" %>
 
-<div style="max-width: 500px;" class="container">
+<div class="container">
     <Rock:NotificationBox id="ntbAlert" runat="server" NotificationBoxType="Danger" Visible="false" Text="There are currently no streams available." />
 </div>
 
 <asp:Repeater ID="rptvideostreams" runat="server" >
     <ItemTemplate>
-        <div class="col-md-4">
+        <div class="<%# Eval("[3]") %>">
             <div class="panel panel-default">                
                 <div class="panel-body">   
                     <h3><%# Eval("[1]") %></h3>
                     <div class="videocontent">
-                        <a id='<%# Eval("[0]") %>' data-flashfit="true" class="live-player"></a>
+                        <a id='<%# Eval("[0]") %>' data-flashfit="true" class="video-player"></a>
                     </div>                                                         
                     <br />
                     <div style="text-align: center;">

@@ -46,21 +46,9 @@
     <link rel="apple-touch-icon-precomposed" sizes="72x72" href="<%# ResolveRockUrl("~/Assets/Icons/touch-icon-ipad.png", true) %>">
     <link rel="apple-touch-icon-precomposed" href="<%# ResolveRockUrl("~/Assets/Icons/touch-icon-iphone.png", true) %>">
 
-    <style type="text/css">
-        .videocontent {
-            width: 100%;
-            max-width: 520px;
-            margin: 0px auto;
-        }
-
-    </style>
-
-
 </head>
 <body>
-
     <form id="form1" runat="server">
-
         <asp:ContentPlaceHolder ID="main" runat="server"></asp:ContentPlaceHolder>
     </form>
 </body>
