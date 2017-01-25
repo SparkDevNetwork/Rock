@@ -145,7 +145,24 @@ namespace Rock.UniversalSearch.IndexModels
         /// <returns></returns>
         public virtual string GetDocumentUrl( Dictionary<string, object> displayOptions = null )
         {
-            return null;
+            // get template from entity type
+            var sourceModelEntity = EntityTypeCache.All().Where( e => e.Name == this.SourceIndexModel ).FirstOrDefault();
+
+            if ( sourceModelEntity != null )
+            {
+                var template = sourceModelEntity.IndexDocumentUrl;
+
+                if ( template.IsNotNullOrWhitespace() )
+                {
+                    var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( null, null );
+                    mergeFields.Add( "IndexDocument", this );
+                    mergeFields.Add( "DisplayOptions", displayOptions );
+
+                    return template.ResolveMergeFields( mergeFields ).Trim();
+                }
+            }
+
+            return string.Empty;;
         }
 
         /// <summary>

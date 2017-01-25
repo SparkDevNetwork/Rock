@@ -186,7 +186,14 @@ namespace Rock.Web.Cache
         /// The index result template.
         /// </value>
         public string IndexResultTemplate { get; set; }
-
+        
+        /// <summary>
+        /// Gets or sets the index document URL.
+        /// </summary>
+        /// <value>
+        /// The index document URL.
+        /// </value>
+        public string IndexDocumentUrl { get; set; }
         #endregion
 
         #region Methods
@@ -228,6 +235,7 @@ namespace Rock.Web.Cache
                 this.IsAnalyticSupported = entityType.IsAnalyticSupported;
                 this.IsAnalyticHistoricalSupported = entityType.IsAnalyticHistoricalSupported;
                 this.IndexResultTemplate = entityType.IndexResultTemplate;
+                this.IndexDocumentUrl = entityType.IndexDocumentUrl;
 
                 _entityTypes.AddOrUpdate( entityType.Name, entityType.Id, ( k, v ) => entityType.Id );
             }

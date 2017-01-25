@@ -217,6 +217,7 @@ namespace RockWeb.Blocks.Core
             entityType.FriendlyName = tbFriendlyName.Text;
             entityType.IsCommon = cbCommon.Checked;
             entityType.IndexResultTemplate = ceIndexResultsTemplate.Text;
+            entityType.IndexDocumentUrl = ceIndexDocumentUrl.Text;
 
             rockContext.SaveChanges();
 
@@ -280,6 +281,7 @@ namespace RockWeb.Blocks.Core
                 tbFriendlyName.Text = entityType.FriendlyName;
                 cbCommon.Checked = entityType.IsCommon;
                 ceIndexResultsTemplate.Text = entityType.IndexResultTemplate;
+                ceIndexDocumentUrl.Text = entityType.IndexDocumentUrl;
             }
             else
             {
@@ -290,6 +292,7 @@ namespace RockWeb.Blocks.Core
                 tbFriendlyName.Text = string.Empty;
                 cbCommon.Checked = false;
                 ceIndexResultsTemplate.Text = string.Empty;
+                ceIndexDocumentUrl.Text = string.Empty;
             }
 
             ShowDialog( "Edit" );
