@@ -50,19 +50,19 @@ namespace RockWeb.Blocks.Cms
             RockContext rockContext = new RockContext();
             PageService pageService = new PageService( rockContext );
 
-            var allPages = pageService.Queryable( "PageContexts, PageRoutes" );
+            var allPages = pageService.Queryable().Include( a => a.PageContexts ).Include( a => a.PageRoutes ).AsNoTracking();
 
             foreach ( var page in allPages )
             {
                 PageCache.Read( page );
             }
 
-            foreach ( var block in new BlockService(rockContext).Queryable() )
+            foreach ( var block in new BlockService( rockContext ).Queryable().AsNoTracking() )
             {
                 BlockCache.Read( block );
             }
 
-            foreach ( var blockType in new BlockTypeService( rockContext ).Queryable() )
+            foreach ( var blockType in new BlockTypeService( rockContext ).Queryable().AsNoTracking() )
             {
                 BlockTypeCache.Read( blockType );
             }
@@ -102,6 +102,10 @@ namespace RockWeb.Blocks.Cms
             else
             {
                 string pageSearch = this.PageParameter( "pageSearch" );
+
+                // NOTE: using "Page" instead of "PageId" since PageId is already parameter of the current page
+                int? selectedPageId = this.PageParameter( "Page" ).AsIntegerOrNull();
+                int? selectedBlockId = this.PageParameter( "BlockId" ).AsIntegerOrNull();
                 if ( !string.IsNullOrWhiteSpace( pageSearch ) )
                 {
                     foreach ( Page page in pageService.Queryable().Where( a => a.InternalName.IndexOf( pageSearch ) >= 0 ) )
@@ -117,14 +121,46 @@ namespace RockWeb.Blocks.Cms
                         }
                     }
                 }
+                else if (selectedPageId.HasValue)
+                {
+                    expandedPageIds.Add( selectedPageId.Value );
+                    hfSelectedItemId.Value = "p" + selectedPageId.ToString();
+                }
+                else if (selectedBlockId.HasValue)
+                {
+                    var selectedBlock = BlockCache.Read( selectedBlockId.Value );
+                    if (selectedBlock != null )
+                    {
+                        if ( selectedBlock.PageId.HasValue )
+                        {
+                            expandedPageIds.Add( selectedBlock.PageId.Value );
+                        }
+
+                        hfSelectedItemId.Value = "b" + selectedBlock.Id.ToString();
+                    }
+                }
+            }
+
+            // also get any additional expanded nodes that were sent in the Post
+            string postedExpandedIds = this.Request.Params["ExpandedIds"];
+            if ( !string.IsNullOrWhiteSpace( postedExpandedIds ) )
+            {
+                var postedExpandedIdList = postedExpandedIds.Split( ',' ).Select( a => a.Replace( "p", string.Empty ) ).ToList().AsIntegerList();
+                foreach ( var postedId in postedExpandedIdList )
+                {
+                    if ( !expandedPageIds.Contains( postedId ) )
+                    {
+                        expandedPageIds.Add( postedId );
+                    }
+                }
             }
 
             var sb = new StringBuilder();
 
             sb.AppendLine( "<ul id=\"treeview\">" );
-            
-            string rootPage = GetAttributeValue("RootPage");
-            if ( ! string.IsNullOrEmpty( rootPage ) )
+
+            string rootPage = GetAttributeValue( "RootPage" );
+            if ( !string.IsNullOrEmpty( rootPage ) )
             {
                 Guid pageGuid = rootPage.AsGuid();
                 allPages = allPages.Where( a => a.ParentPage.Guid == pageGuid );
@@ -134,7 +170,7 @@ namespace RockWeb.Blocks.Cms
                 allPages = allPages.Where( a => a.ParentPageId == null );
             }
 
-            foreach ( var page in allPages.OrderBy( a => a.Order ).ThenBy( a => a.InternalName ).Include(a => a.Blocks).ToList() )
+            foreach ( var page in allPages.OrderBy( a => a.Order ).ThenBy( a => a.InternalName ).Include( a => a.Blocks ).ToList() )
             {
                 sb.Append( PageNode( PageCache.Read( page ), expandedPageIds, rockContext ) );
             }
@@ -156,36 +192,30 @@ namespace RockWeb.Blocks.Cms
             var sb = new StringBuilder();
 
             string pageSearch = this.PageParameter( "pageSearch" );
-            bool isSelected = false;
+
+            // NOTE: using "Page" instead of "PageId" since PageId is already parameter of the current page
+            int? selectedPageId = this.PageParameter( "Page" ).AsIntegerOrNull();
+            int? selectedBlockId = this.PageParameter( "BlockId" ).AsIntegerOrNull();
+            bool isPageSelected = false;
             if ( !string.IsNullOrWhiteSpace( pageSearch ) )
             {
-                isSelected = page.InternalName.IndexOf( pageSearch, StringComparison.OrdinalIgnoreCase ) >= 0;
+                isPageSelected = page.InternalName.IndexOf( pageSearch, StringComparison.OrdinalIgnoreCase ) >= 0;
+            }
+            else if (selectedPageId.HasValue)
+            {
+                isPageSelected = page.Id == selectedPageId.Value;
             }
 
             bool isExpanded = expandedPageIdList.Contains( page.Id );
 
-            var authRoles = Authorization.AuthRules( EntityTypeCache.Read<Rock.Model.Page>().Id, page.Id, Authorization.VIEW );
-            string authHtml = string.Empty;
-            if (authRoles.Any())
-            {
-                authHtml += string.Format(
-                    "&nbsp<i class=\"fa fa-lock\">&nbsp;</i>{0}",
-                    authRoles.Select( a => "<span class=\"badge badge-" + (a.AllowOrDeny == 'A' ? "success" : "danger")  + "\">" + a.DisplayName + "</span>"  ).ToList().AsDelimited( " " ) );
-            }
-
-            int pageEntityTypeId = EntityTypeCache.Read( "Rock.Model.Page" ).Id;
-
             sb.AppendFormat(
-                "<li data-expanded='{4}' data-model='Page' data-id='p{0}'><span><span class='rollover-container'><i class=\"fa fa-file-o\">&nbsp;</i><a href='{1}'>{2}</a> {6} {7}<span class='js-auth-roles hidden'>{5}</span></span></span>{3}", 
-                page.Id, // 0
-                new PageReference( page.Id ).BuildUrl(), // 1
-                isSelected ? "<strong>" + page.InternalName + "</strong>" : page.InternalName, // 2
-                Environment.NewLine, // 3
-                isExpanded.ToString().ToLower(), // 4
-                authHtml, // 5
-                CreatePageCopyIcon( page ), // 6
-                CreatePageConfigIcon( page ), // 7
-                CreateSecurityIcon( pageEntityTypeId, page.Id, page.InternalName ) // 8
+                @"
+<li {0} data-id='p{1}'>
+    <span><i class='fa fa-file-o'></i> {2}</span>
+",
+                isExpanded ? "data-expanded='true'" : string.Empty, // 0
+                page.Id, // 1
+                isPageSelected ? "<strong>" + page.InternalName + "</strong>" : page.InternalName // 2
             );
 
             var childPages = page.GetPages( rockContext );
@@ -198,24 +228,32 @@ namespace RockWeb.Blocks.Cms
                     sb.Append( PageNode( childPage, expandedPageIdList, rockContext ) );
                 }
 
-                foreach ( var block in page.Blocks.OrderBy( b => b.Order ) )
+                bool includeBlocks = false;
+
+                if ( includeBlocks )
                 {
-                    string blockName = block.Name;
-                    string blockCacheName = BlockTypeCache.Read( block.BlockTypeId, rockContext ).Name;
-                    if (blockName != blockCacheName)
+                    foreach ( var block in page.Blocks.OrderBy( b => b.Order ) )
                     {
-                        blockName = blockName + " (" + blockCacheName + ")";
+                        string blockName = block.Name;
+                        string blockCacheName = block.BlockType.Name;
+                        if ( blockName != blockCacheName )
+                        {
+                            blockName = blockName + " (" + blockCacheName + ")";
+                        }
+
+                        var isBlockSelected = selectedBlockId.HasValue && selectedBlockId.Value == block.Id;
+
+
+                        sb.AppendFormat( @"
+<li data-id='b{0}'>
+    <span><i class='fa {2}'></i> {1}</span> 
+</li>
+",
+                            block.Id, // 0
+                            isBlockSelected ? "<strong>" + blockName + "</strong>" : blockName, // 1
+                            block.PageId.HasValue ? "fa-th-large" : "fa-th"
+                        );
                     }
-
-                    int blockEntityTypeId = EntityTypeCache.Read( "Rock.Model.Block" ).Id;
-
-                    sb.AppendFormat( "<li data-expanded='false' data-model='Block' data-id='b{0}'><span><span class='rollover-container'> <i class='fa fa-th-large'>&nbsp;</i> {2} {1} {4}</span></span></li>{3}", 
-                        block.Id, // 0
-                        CreateConfigIcon( block ), // 1
-                        blockName,  // 2
-                        Environment.NewLine, //3
-                        CreateSecurityIcon( blockEntityTypeId, block.Id, block.Name ) // 4
-                    );
                 }
 
                 sb.AppendLine( "</ul>" );
@@ -226,50 +264,19 @@ namespace RockWeb.Blocks.Cms
             return sb.ToString();
         }
 
-        /// <summary>
-        /// Creates the copy icon.
-        /// </summary>
-        /// <param name="block">The block.</param>
-        /// <returns></returns>
-        protected string CreatePageCopyIcon( PageCache page )
+        protected void lbAddPageRoot_Click( object sender, EventArgs e )
         {
-            return string.Format(
-                "&nbsp;<span class='rollover-item' onclick=\"javascript: __doPostBack('CopyPage', '{0}'); event.stopImmediatePropagation();\" title=\"Clone Page and Descendants\"><i class=\"fa fa-clone\"></i>&nbsp;</span>",
-                page.Id );
+
         }
 
-        /// <summary>
-        /// Creates the block config icon.
-        /// </summary>
-        /// <param name="block">The block.</param>
-        /// <returns></returns>
-        protected string CreateConfigIcon( BlockCache block )
+        protected void lbAddPageChild_Click( object sender, EventArgs e )
         {
-            var blockPropertyUrl = ResolveUrl( string.Format( "~/BlockProperties/{0}?t=Block Properties", block.Id ) );
 
-            return string.Format(
-                "<a class='rollover-item' href=\"javascript: Rock.controls.modal.show($(this), '{0}')\" title=\"Block Properties\"><i class=\"fa fa-cog\"></i>&nbsp;</a>",
-                blockPropertyUrl );
         }
 
-        protected string CreateSecurityIcon(int entityTypeId, int entityId, string title )
+        protected void lbAddBlock_Click( object sender, EventArgs e )
         {
-            string url = this.Page.ResolveUrl( string.Format( "~/Secure/{0}/{1}?t={2}&pb=&sb=Done", entityTypeId, entityId, HttpUtility.JavaScriptStringEncode( title ) ) );
-            return string.Format( "<span class='rollover-item' onclick=\"javascript: Rock.controls.modal.show($(this), '{0}'); event.stopImmediatePropagation();\" title=\"Security\"><i class=\"fa fa-lock\">&nbsp;</i></span>", url );
-        }
 
-        /// <summary>
-        /// Creates the page configuration icon.
-        /// </summary>
-        /// <param name="page">The page.</param>
-        /// <returns></returns>
-        protected string CreatePageConfigIcon( PageCache page )
-        {
-            var pagePropertyUrl = ResolveUrl( string.Format( "~/PageProperties/{0}?t=Page Properties", page.Id ) );
-
-            return string.Format(
-                "&nbsp;<span class='rollover-item' onclick=\"javascript: Rock.controls.modal.show($(this), '{0}'); event.stopImmediatePropagation();\" title=\"Page Properties\"><i class=\"fa fa-cog\"></i>&nbsp;</span>",
-                pagePropertyUrl );
         }
     }
 }

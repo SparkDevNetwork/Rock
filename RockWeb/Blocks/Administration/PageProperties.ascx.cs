@@ -22,10 +22,13 @@ using System.Web.Routing;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 using Rock;
+using Rock.Attribute;
+using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
 using Rock.Services.NuGet;
+using Rock.Web;
 using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
@@ -38,6 +41,8 @@ namespace RockWeb.Blocks.Administration
     [DisplayName( "Page Properties" )]
     [Category( "Administration" )]
     [Description( "Displays the page properties." )]
+
+    [BooleanField( "StartReadOnly", "Have the block initially show a readonly summary view, with Edit and Delete buttons. Also include Save and Cancel buttons in Edit Mode.", false )]
     public partial class PageProperties : RockBlock
     {
         #region Fields
@@ -85,6 +90,12 @@ namespace RockWeb.Blocks.Administration
             try
             {
                 int? pageId = PageParameter( "Page" ).AsIntegerOrNull();
+
+                btnSecurity.EntityTypeId = EntityTypeCache.Read( typeof( Rock.Model.Page ) ).Id;
+
+                // only show if there was a Page parameter specified
+                this.Visible = pageId.HasValue;
+
                 if ( pageId.HasValue )
                 {
                     // hide the current page in the page picker to prevent setting this page's parent page to itself (or one of it's child pages)
@@ -146,7 +157,7 @@ namespace RockWeb.Blocks.Administration
                 }
                 else
                 {
-                    DisplayError( "Invalid Page Id value" );
+                    // no 'Page' parameter specified so just leave hidden
                 }
             }
             catch ( SystemException ex )
@@ -158,63 +169,65 @@ namespace RockWeb.Blocks.Administration
         }
 
         /// <summary>
+        /// Shows the readonly details.
+        /// </summary>
+        /// <param name="page">The page.</param>
+        private void ShowReadonlyDetails( Rock.Model.Page page )
+        {
+            SetEditMode( false );
+
+            string pageIconHtml = !string.IsNullOrWhiteSpace( page.IconCssClass ) ?
+                pageIconHtml = string.Format( "<i class='{0} fa-2x' ></i>", page.IconCssClass ) : "";
+            
+            lTitle.Text = page.InternalName.FormatAsHtmlTitle();
+            if ( !string.IsNullOrEmpty( page.IconCssClass ) )
+            {
+                lIcon.Text = string.Format( "<i class='{0}'></i>", page.IconCssClass );
+            }
+            else
+            {
+                lIcon.Text = "<i class='fa fa-square-o'></i>";
+            }
+
+            lblMainDetails.Text = new DescriptionList()
+                .Add( "Internal Name", page.InternalName )
+                .Add( "Page Title", page.PageTitle )
+                .Add( "Browser Title", page.BrowserTitle )
+                .Add( "Layout", page.Layout )
+                .Add( "Description", page.Description)
+                .Html;
+
+        }
+
+        /// <summary>
+        /// Sets the edit mode.
+        /// </summary>
+        /// <param name="editable">if set to <c>true</c> [editable].</param>
+        private void SetEditMode( bool editable )
+        {
+            pnlEditDetails.Visible = editable;
+            fieldsetViewDetails.Visible = !editable;
+            this.HideSecondaryBlocks( editable );
+        }
+
+        /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Load" /> event.
         /// </summary>
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
-            if ( !Page.IsPostBack && _pageId.HasValue )
+
+            if ( !Page.IsPostBack )
             {
-                var rockContext = new RockContext();
-
-                LoadSites( rockContext );
-
-                PageService pageService = new PageService( rockContext );
-                Rock.Model.Page page = pageService.Queryable( "Layout,PageRoutes" )
-                    .Where( p => p.Id == _pageId.Value )
-                    .FirstOrDefault();
-
-                if ( page.Layout != null )
+                string pageIdParam = PageParameter( "Page" );
+                if ( !string.IsNullOrEmpty( pageIdParam ) )
                 {
-                    ddlSite.SelectedValue = page.Layout.SiteId.ToString();
-                    LoadLayouts( rockContext, SiteCache.Read( page.Layout.SiteId ) );
-                    ddlLayout.SelectedValue = page.Layout.Id.ToString();
+                    ShowDetail( pageIdParam.AsInteger(), PageParameter( "ParentPageId" ).AsIntegerOrNull() );
                 }
-
-                rptProperties.DataSource = _tabs;
-                rptProperties.DataBind();
-
-                tbPageName.Text = page.InternalName;
-                tbPageTitle.Text = page.PageTitle;
-                tbBrowserTitle.Text = page.BrowserTitle;
-                tbBodyCssClass.Text = page.BodyCssClass;
-                ppParentPage.SetValue( pageService.Get( page.ParentPageId ?? 0 ) );
-                tbIconCssClass.Text = page.IconCssClass;
-
-                cbPageTitle.Checked = page.PageDisplayTitle;
-                cbPageBreadCrumb.Checked = page.PageDisplayBreadCrumb;
-                cbPageIcon.Checked = page.PageDisplayIcon;
-                cbPageDescription.Checked = page.PageDisplayDescription;
-
-                ddlMenuWhen.SelectedValue = ( (int)page.DisplayInNavWhen ).ToString();
-                cbMenuDescription.Checked = page.MenuDisplayDescription;
-                cbMenuIcon.Checked = page.MenuDisplayIcon;
-                cbMenuChildPages.Checked = page.MenuDisplayChildPages;
-
-                cbBreadCrumbIcon.Checked = page.BreadCrumbDisplayIcon;
-                cbBreadCrumbName.Checked = page.BreadCrumbDisplayName;
-
-                cbRequiresEncryption.Checked = page.RequiresEncryption;
-                cbEnableViewState.Checked = page.EnableViewState;
-                cbIncludeAdminFooter.Checked = page.IncludeAdminFooter;
-                cbAllowIndexing.Checked = page.AllowIndexing;
-                tbCacheDuration.Text = page.OutputCacheDuration.ToString();
-                tbDescription.Text = page.Description;
-                ceHeaderContent.Text = page.HeaderContent;
-                tbPageRoute.Text = string.Join( ",", page.PageRoutes.Select( route => route.Route ).ToArray() );
-
-                // Add enctype attribute to page's <form> tag to allow file upload control to function
-                Page.Form.Attributes.Add( "enctype", "multipart/form-data" );
+                else
+                {
+                    this.Visible = false;
+                }
             }
 
             base.OnLoad( e );
@@ -241,6 +254,155 @@ namespace RockWeb.Blocks.Administration
             }
 
             ShowSelectedPane();
+        }
+
+        /// <summary>
+        /// Shows the detail.
+        /// </summary>
+        /// <param name="pageId">The page identifier.</param>
+        /// <param name="parentPageId">The parent page identifier.</param>
+        public void ShowDetail( int pageId, int? parentPageId )
+        {
+            var rockContext = new RockContext();
+
+            LoadSites( rockContext );
+
+            PageService pageService = new PageService( rockContext );
+            Rock.Model.Page page = pageService.Queryable( "Layout,PageRoutes" )
+                .Where( p => p.Id == _pageId.Value )
+                .FirstOrDefault();
+
+            hfPageId.Value = page.Id.ToString();
+
+            // render UI based on Authorized and IsSystem
+            bool readOnly = false;
+
+            nbEditModeMessage.Text = string.Empty;
+
+            // if the person is Authorized to EDIT the page, or has EDIT for the block
+            var canEdit = page.IsAuthorized( Authorization.EDIT, CurrentPerson ) || this.IsUserAuthorized( Authorization.EDIT );
+            if ( !canEdit )
+            {
+                readOnly = true;
+                nbEditModeMessage.Text = EditModeMessage.ReadOnlyEditActionNotAllowed( Rock.Model.Page.FriendlyTypeName );
+            }
+
+            /*if ( page.IsSystem )
+            {
+                readOnly = true;
+                nbEditModeMessage.Text = EditModeMessage.ReadOnlySystem( Rock.Model.Page.FriendlyTypeName );
+            }*/
+
+            btnSecurity.Visible = page.IsAuthorized( Authorization.ADMINISTRATE, CurrentPerson );
+            btnSecurity.Title = page.InternalName;
+            btnSecurity.EntityId = page.Id;
+            var startReadOnly = this.GetAttributeValue( "StartReadOnly" ).AsBooleanOrNull() ?? false;
+
+            pnlEditModeActions.Visible = startReadOnly;
+            pnlReadOnlyModeActions.Visible = startReadOnly;
+
+            if ( readOnly )
+            {
+                btnEdit.Visible = false;
+                btnDelete.Visible = false;
+                ShowReadonlyDetails( page );
+            }
+            else
+            {
+                btnEdit.Visible = true;
+                string errorMessage = string.Empty;
+                btnDelete.Visible = true;
+                btnDelete.Enabled = pageService.CanDelete( page, out errorMessage );
+                btnDelete.ToolTip = btnDelete.Enabled ? string.Empty : errorMessage;
+
+                if ( page.Id > 0 && startReadOnly )
+                {
+                    ShowReadonlyDetails( page );
+                }
+                else
+                {
+                    ShowEditDetails( page );
+                }
+            }
+
+            if ( btnDelete.Visible && btnDelete.Enabled )
+            {
+                btnDelete.Attributes["onclick"] = string.Format( "javascript: return Rock.dialogs.confirmDelete(event, '{0}');", Rock.Model.Page.FriendlyTypeName.ToLower() );
+            }
+        }
+
+        /// <summary>
+        /// Shows the edit details.
+        /// </summary>
+        /// <param name="page">The page.</param>
+        private void ShowEditDetails(  Rock.Model.Page page )
+        {
+            if ( page.Id > 0 )
+            {
+                lTitle.Text = ActionTitle.Edit( Rock.Model.Page.FriendlyTypeName ).FormatAsHtmlTitle();
+                lIcon.Text = "<i class='fa fa-square-o'></i>";
+            }
+            else
+            {
+                lTitle.Text = ActionTitle.Add( Rock.Model.Page.FriendlyTypeName ).FormatAsHtmlTitle();
+
+                if ( !string.IsNullOrEmpty( page.IconCssClass ) )
+                {
+                    lIcon.Text = String.Format( "<i class='{0}'></i>", page.IconCssClass );
+                }
+                else
+                {
+                    lIcon.Text = "<i class='fa fa-square-o'></i>";
+                }
+            }
+
+            SetEditMode( true );
+
+
+            var rockContext = new RockContext();
+            PageService pageService = new PageService( rockContext );
+
+            if ( page.Layout != null )
+            {
+                ddlSite.SelectedValue = page.Layout.SiteId.ToString();
+                LoadLayouts( rockContext, SiteCache.Read( page.Layout.SiteId ) );
+                ddlLayout.SelectedValue = page.Layout.Id.ToString();
+            }
+
+            rptProperties.DataSource = _tabs;
+            rptProperties.DataBind();
+
+            tbPageName.Text = page.InternalName;
+            tbPageTitle.Text = page.PageTitle;
+            tbBrowserTitle.Text = page.BrowserTitle;
+            tbBodyCssClass.Text = page.BodyCssClass;
+            ppParentPage.SetValue( pageService.Get( page.ParentPageId ?? 0 ) );
+            tbIconCssClass.Text = page.IconCssClass;
+
+            cbPageTitle.Checked = page.PageDisplayTitle;
+            cbPageBreadCrumb.Checked = page.PageDisplayBreadCrumb;
+            cbPageIcon.Checked = page.PageDisplayIcon;
+            cbPageDescription.Checked = page.PageDisplayDescription;
+
+            ddlMenuWhen.SelectedValue = ( (int)page.DisplayInNavWhen ).ToString();
+            cbMenuDescription.Checked = page.MenuDisplayDescription;
+            cbMenuIcon.Checked = page.MenuDisplayIcon;
+            cbMenuChildPages.Checked = page.MenuDisplayChildPages;
+
+            cbBreadCrumbIcon.Checked = page.BreadCrumbDisplayIcon;
+            cbBreadCrumbName.Checked = page.BreadCrumbDisplayName;
+
+            cbRequiresEncryption.Checked = page.RequiresEncryption;
+            cbEnableViewState.Checked = page.EnableViewState;
+            cbIncludeAdminFooter.Checked = page.IncludeAdminFooter;
+            cbAllowIndexing.Checked = page.AllowIndexing;
+            tbCacheDuration.Text = page.OutputCacheDuration.ToString();
+            tbDescription.Text = page.Description;
+            ceHeaderContent.Text = page.HeaderContent;
+            tbPageRoute.Text = string.Join( ",", page.PageRoutes.Select( route => route.Route ).ToArray() );
+
+            // Add enctype attribute to page's <form> tag to allow file upload control to function
+            Page.Form.Attributes.Add( "enctype", "multipart/form-data" );
         }
 
         /// <summary>
@@ -452,7 +614,7 @@ namespace RockWeb.Blocks.Administration
                     rockContext.SaveChanges();
 
                     // remove any routes for this page that are no longer configured
-                    foreach (var existingRoute in RouteTable.Routes.OfType<Route>().Where(a => a.PageIds().Contains( page.Id) ) )
+                    foreach ( var existingRoute in RouteTable.Routes.OfType<Route>().Where( a => a.PageIds().Contains( page.Id ) ) )
                     {
                         if ( !editorRoutes.Any( a => a == existingRoute.Url ) )
                         {
@@ -605,7 +767,7 @@ namespace RockWeb.Blocks.Administration
                 pageRoute.Guid = Guid.NewGuid();
                 if ( !pageRoute.IsValid )
                 {
-                    errorMessages.Add( string.Format( 
+                    errorMessages.Add( string.Format(
                         "The '{0}' route is invalid: {1}",
                         route,
                         pageRoute.ValidationResults.Select( r => r.ErrorMessage ).ToList().AsDelimited( "; " ) ) );
@@ -715,5 +877,101 @@ namespace RockWeb.Blocks.Administration
         }
 
         #endregion
+
+        /// <summary>
+        /// Handles the Click event of the btnEdit control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void btnEdit_Click( object sender, EventArgs e )
+        {
+            PageService service = new PageService( new RockContext() );
+            Rock.Model.Page page = service.Get( hfPageId.ValueAsInt() );
+            ShowEditDetails( page );
+        }
+
+        /// <summary>
+        /// Handles the Click event of the btnDelete control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void btnDelete_Click( object sender, EventArgs e )
+        {
+            int? parentPageId = null;
+
+            var rockContext = new RockContext();
+            var pageService = new PageService( rockContext );
+            var page = pageService.Get( int.Parse( hfPageId.Value ) );
+
+            if ( page != null )
+            {
+                string errorMessage;
+                if ( !pageService.CanDelete( page, out errorMessage ) )
+                {
+                    ShowReadonlyDetails( page );
+                    mdDeleteWarning.Show( errorMessage, ModalAlertType.Information );
+                }
+                else
+                {
+                    parentPageId = page.ParentPageId;
+
+                    PageCache.Flush( page.Id );
+
+                    pageService.Delete( page );
+                    rockContext.SaveChanges();
+
+                    // reload page, selecting the deleted page's parent
+                    var qryParams = new Dictionary<string, string>();
+                    if ( parentPageId != null )
+                    {
+                        qryParams["PageId"] = parentPageId.ToString();
+                    }
+
+                    NavigateToPage( RockPage.Guid, qryParams );
+                }
+            }
+        }
+
+        /// <summary>
+        /// Handles the Click event of the btnSave control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void btnSave_Click( object sender, EventArgs e )
+        {
+            masterPage_OnSave( sender, e );
+        }
+
+        /// <summary>
+        /// Handles the Click event of the btnCancel control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void btnCancel_Click( object sender, EventArgs e )
+        {
+            if ( hfPageId.Value.Equals( "0" ) )
+            {
+                int? parentPageId = PageParameter( "ParentPageId" ).AsIntegerOrNull();
+                if ( parentPageId.HasValue )
+                {
+                    // Cancelling on Add, and we know the parentPageId, so we are probably in treeview mode, so navigate to the current page
+                    var qryParams = new Dictionary<string, string>();
+                    qryParams["Page"] = parentPageId.ToString();
+                    NavigateToPage( RockPage.Guid, qryParams );
+                }
+                else
+                {
+                    // Cancelling on Add.  Return to Grid
+                    NavigateToParentPage();
+                }
+            }
+            else
+            {
+                // Cancelling on Edit.  Return to Details
+                PageService service = new PageService( new RockContext() );
+                Rock.Model.Page page = service.Get( hfPageId.ValueAsInt() );
+                ShowReadonlyDetails( page );
+            }
+        }
     }
 }
