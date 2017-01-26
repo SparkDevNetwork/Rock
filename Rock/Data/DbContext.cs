@@ -604,7 +604,7 @@ namespace Rock.Data
         private static bool AuditProperty( PropertyInfo propertyInfo )
         {
             if ( propertyInfo.GetCustomAttribute( typeof( NotAuditedAttribute ) ) == null &&
-                ( !propertyInfo.GetGetMethod().IsVirtual || propertyInfo.Name == "Id" || propertyInfo.Name == "Guid" || propertyInfo.Name == "Order" ) )
+                ( !propertyInfo.GetGetMethod().IsVirtual || propertyInfo.Name == "Id" || propertyInfo.Name == "Guid" || propertyInfo.Name == "Order" || propertyInfo.Name == "IsActive" ) )
             {
                 return true;
             }
