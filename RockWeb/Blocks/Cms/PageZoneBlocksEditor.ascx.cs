@@ -16,6 +16,7 @@
 //
 using System;
 using System.Collections.Generic;
+using System.Data.Entity;
 using System.Web.UI.WebControls;
 using System.ComponentModel;
 using System.Linq;
@@ -31,7 +32,12 @@ using System.Text.RegularExpressions;
 using System.IO;
 using System.Text;
 using Rock.Web.Cache;
+using Rock.Data;
+using Rock.Web;
 
+/// <summary>
+/// 
+/// </summary>
 namespace RockWeb.Blocks.Cms
 {
     /// <summary>
@@ -64,6 +70,11 @@ namespace RockWeb.Blocks.Cms
             if ( !Page.IsPostBack )
             {
                 ShowDetail( PageParameter( "Page" ).AsInteger() );
+            }
+            else
+            {
+                // make sure repeaters rebuild the controls
+                ShowDetailForZone( ddlZones.SelectedValue );
             }
         }
 
@@ -129,21 +140,21 @@ namespace RockWeb.Blocks.Cms
             int pageId = hfPageId.Value.AsInteger();
 
             ddlZones.Items.Clear();
+            ddlMoveToZoneList.Items.Clear();
             var page = Rock.Web.Cache.PageCache.Read( pageId );
             if ( page != null )
             {
-
                 var zoneNames = FindZoneNames( page );
 
                 foreach ( var zoneName in zoneNames )
                 {
                     var zoneBlockCount = page.Blocks.Where( a => a.Zone.Equals( zoneName, StringComparison.OrdinalIgnoreCase ) ).Count();
                     ddlZones.Items.Add( new ListItem( string.Format( "{0} ({1})", zoneName, zoneBlockCount ), zoneName ) );
+                    ddlMoveToZoneList.Items.Add( new ListItem( zoneName, zoneName ) );
                 }
 
                 // default to Main Zone (if there is one)
                 ddlZones.SetValue( "Main" );
-
             }
         }
 
@@ -193,6 +204,9 @@ namespace RockWeb.Blocks.Cms
                 }
             }
 
+            // remove any spaces
+            zoneNames = zoneNames.Select( a => a.Replace( " ", string.Empty ) ).ToList();
+
             return zoneNames;
         }
 
@@ -224,44 +238,168 @@ namespace RockWeb.Blocks.Cms
 
         #endregion
 
+        /// <summary>
+        /// Adds the admin controls.
+        /// </summary>
+        /// <param name="block">The block.</param>
+        /// <param name="pnlLayoutItem">The PNL layout item.</param>
         private void AddAdminControls( BlockCache block, Panel pnlLayoutItem )
         {
-            string adminButtonsHtmlFormat =
- @"<div class='block-config-buttons pull-right'>
-    <a title='Block Properties' class='properties' id='aBlockProperties' href='javascript: Rock.controls.modal.show($(this), ""/BlockProperties/{0}?t=Block Properties"")' height='500px'><i class='fa fa-cog'></i></a>
-    <a title='Block Security' class='security' id='aSecureBlock' href='javascript: Rock.controls.modal.show($(this), ""/Secure/{2}/{0}?t=Block Security&amp;pb=&amp;sb=Done"")' height='500px'><i class='fa fa-lock'></i></a>
-    <a title='Move Block' class='block-move' href='{0}' data-zone-location='Page' data-zone='Main'><i class='fa fa-external-link'></i></a>
-    <a class='delete block-delete {1}' href='{0}' title='Delete Block'><i class='fa fa-times-circle-o'></i></a>
-</div>";
+            Panel pnlAdminButtons = new Panel { ID = "pnlBlockConfigButtons", CssClass = "pull-right actions" };
 
-            string adminButtonsHtml = string.Format( 
-                adminButtonsHtmlFormat, 
-                block.Id, // {0}
-                block.IsSystem ? "disabled js-disabled" : "",// {1} 
-                EntityTypeCache.Read<Rock.Model.Block>().Id  // {2}
-                ); 
+            // Block Properties
+            Literal btnBlockProperties = new Literal();
+            btnBlockProperties.Text = string.Format( @"<a title='Block Properties' class='btn btn-sm btn-default properties' id='aBlockProperties' href='javascript: Rock.controls.modal.show($(this), ""/BlockProperties/{0}?t=Block Properties"")' height='500px'><i class='fa fa-cog'></i></a>", block.Id );
+            pnlAdminButtons.Controls.Add( btnBlockProperties );
 
-            Literal lAdminButtonsHtml = new Literal();
-            lAdminButtonsHtml.Text = adminButtonsHtml;
-            pnlLayoutItem.Controls.Add( lAdminButtonsHtml );
+            // Block Security
+            int entityTypeBlockId = EntityTypeCache.Read<Rock.Model.Block>().Id;
+            SecurityButton btnBlockSecurity = new SecurityButton { ID = "btnBlockSecurity", EntityTypeId = entityTypeBlockId, EntityId = block.Id, Title = block.Name };
+            btnBlockSecurity.AddCssClass( "btn btn-sm btn-security" );
+            pnlAdminButtons.Controls.Add( btnBlockSecurity );
 
-            /*
+            // Move Block
+            LinkButton btnMoveBlock = new LinkButton();
+            btnMoveBlock.ID = string.Format( "btnMoveBlock_{0}", block.Id );
+            btnMoveBlock.CommandName = "BlockId";
+            btnMoveBlock.CommandArgument = block.Id.ToString();
+            btnMoveBlock.CssClass = "btn btn-sm btn-default fa fa-external-link";
+            btnMoveBlock.ToolTip = "Move Block";
+            btnMoveBlock.Click += btnMoveBlock_Click;
+            pnlAdminButtons.Controls.Add( btnMoveBlock );
+
+            // Delete Block
+            LinkButton btnDeleteBlock = new LinkButton();
+            btnDeleteBlock.ID = string.Format( "btnDeleteBlock_{0}", block.Id );
+            btnDeleteBlock.CommandName = "BlockId";
+            btnDeleteBlock.CommandArgument = block.Id.ToString();
+            btnDeleteBlock.CssClass = "btn btn-xs btn-danger fa fa-times";
+            btnDeleteBlock.ToolTip = "Delete Block";
+            btnDeleteBlock.Click += btnDeleteBlock_Click;
+            btnDeleteBlock.Attributes["onclick"] = string.Format( "javascript: return Rock.dialogs.confirmDelete(event, '{0}');", Block.FriendlyTypeName );
+
+            pnlAdminButtons.Controls.Add( btnDeleteBlock );
+
+            pnlLayoutItem.Controls.Add( pnlAdminButtons );
+
             RockBlock blockControl = this.Page.TemplateControl.LoadControl( block.BlockType.Path ) as RockBlock;
             blockControl.SetBlock( block.Page, block, true, true );
             var adminControls = blockControl.GetAdministrateControls( true, true );
-            foreach ( var adminControl in adminControls )
+            string[] baseAdminControlClasses = new string[4] { "properties", "security", "block-move", "block-delete" };
+            var customAdminControls = adminControls.OfType<WebControl>().Where( a => !baseAdminControlClasses.Any( b => a.CssClass.Contains( b ) ) );
+
+            foreach ( var customAdminControl in customAdminControls )
             {
-                if ( adminControl is LinkButton )
+                if ( customAdminControl is LinkButton )
                 {
-                    WebControl btn = ( adminControl as WebControl );
-                    if ( btn != null && btn.Attributes["onclick"] != null )
+                    LinkButton btn = customAdminControl as LinkButton;
+                    if ( btn != null )
                     {
+                        // ensure custom link button looks like a button
+                        btn.AddCssClass( "btn" );
+                        btn.AddCssClass( "btn-sm" );
+                        btn.AddCssClass( "btn-default" );
+
                         // some admincontrols will toggle the BlockConfig bar, but this isn't a block config bar, so remove the javascript
-                        btn.Attributes["onclick"] = btn.Attributes["onclick"].Replace( "Rock.admin.pageAdmin.showBlockConfig()", string.Empty );
+                        if ( btn.Attributes["onclick"] != null )
+                        {
+                            btn.Attributes["onclick"] = btn.Attributes["onclick"].Replace( "Rock.admin.pageAdmin.showBlockConfig()", string.Empty );
+                        }
                     }
                 }
-                pnlLayoutItem.Controls.Add( adminControl );
-            }*/
+
+                pnlLayoutItem.Controls.Add( customAdminControl );
+            }
+
+            if ( customAdminControls.Any() )
+            {
+                pnlBlocksHolder.Controls.Add( blockControl );
+            }
+        }
+
+        /// <summary>
+        /// Handles the Click event of the btnDeleteBlock control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        private void btnDeleteBlock_Click( object sender, EventArgs e )
+        {
+            LinkButton btnDelete = sender as LinkButton;
+            int? blockId = btnDelete.CommandArgument.AsIntegerOrNull();
+            if ( blockId.HasValue )
+            {
+                var rockContext = new RockContext();
+                var blockService = new BlockService( rockContext );
+                var block = blockService.Get( blockId.Value );
+
+                if ( block != null )
+                {
+                    int? pageId = block.PageId;
+                    int? layoutId = block.LayoutId;
+                    blockService.Delete( block );
+                    rockContext.SaveChanges();
+
+                    // flush all the cache stuff that involves the block
+                    Rock.Web.Cache.BlockCache.Flush( blockId.Value );
+
+                    if ( layoutId.HasValue )
+                    {
+                        Rock.Web.Cache.PageCache.FlushLayoutBlocks( layoutId.Value );
+                    }
+
+                    if ( pageId.HasValue )
+                    {
+                        Rock.Web.Cache.PageCache.Flush( pageId.Value );
+                        var page = Rock.Web.Cache.PageCache.Read( pageId.Value );
+                        page.FlushBlocks();
+                    }
+
+                    ShowDetailForZone( ddlZones.SelectedValue );
+                }
+            }
+        }
+
+        /// <summary>
+        /// Handles the Click event of the btnMoveBlock control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        private void btnMoveBlock_Click( object sender, EventArgs e )
+        {
+            LinkButton btnDelete = sender as LinkButton;
+            int? blockId = btnDelete.CommandArgument.AsIntegerOrNull();
+            if ( blockId.HasValue )
+            {
+                var rockContext = new RockContext();
+                var blockService = new BlockService( rockContext );
+                var block = blockService.Get( blockId.Value );
+
+                if ( block != null )
+                {
+                    hfBlockMoveBlockId.Value = block.Id.ToString();
+                    mdBlockMove.Title = string.Format( "Move {0} Block", block.Name );
+
+                    ddlMoveToZoneList.SetValue( block.Zone );
+                    cblBlockMovePageOrLayout.Items.Clear();
+
+                    var page = PageCache.Read( hfPageId.Value.AsInteger() );
+
+                    var listItemPage = new ListItem();
+                    listItemPage.Text = "Page: " + page.ToString();
+                    listItemPage.Value = "Page";
+                    listItemPage.Selected = block.PageId.HasValue;
+
+                    var listItemLayout = new ListItem();
+                    listItemLayout.Text = string.Format( "All Pages use the '{0}' Layout", page.Layout );
+                    listItemLayout.Value = "Layout";
+                    listItemLayout.Selected = block.LayoutId.HasValue;
+
+                    cblBlockMovePageOrLayout.Items.Add( listItemPage );
+                    cblBlockMovePageOrLayout.Items.Add( listItemLayout );
+
+                    mdBlockMove.Show();
+                }
+            }
         }
 
         /// <summary>
@@ -295,19 +433,148 @@ namespace RockWeb.Blocks.Cms
                 lPanelFooter.Text = "</div></div>";
 
                 pnlBlockEditWidget.Controls.Add( lPanelFooter );
-
-
             }
         }
 
         /// <summary>
-        /// Handles the DeleteClick event of the pwLayoutBlock control.
+        /// Handles the Click event of the btnAddBlock control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void pwLayoutBlock_DeleteClick( object sender, EventArgs e )
+        protected void btnAddBlock_Click( object sender, EventArgs e )
         {
-            PanelWidget pwLayoutBlock = sender as PanelWidget;
+            // Load the block types
+            using ( var rockContext = new RockContext() )
+            {
+                Rock.Model.BlockTypeService blockTypeService = new Rock.Model.BlockTypeService( rockContext );
+                var blockTypes = blockTypeService.Queryable().AsNoTracking()
+                    .Select( b => new { b.Id, b.Name, b.Category, b.Description } )
+                    .ToList();
+
+                ddlBlockType.Items.Clear();
+
+                // Add the categorized block types
+                foreach ( var blockType in blockTypes
+                    .Where( b => b.Category != "" )
+                    .OrderBy( b => b.Category )
+                    .ThenBy( b => b.Name ) )
+                {
+                    var li = new ListItem( blockType.Name, blockType.Id.ToString() );
+                    li.Attributes.Add( "optiongroup", blockType.Category );
+                    li.Attributes.Add( "title", blockType.Description );
+                    ddlBlockType.Items.Add( li );
+                }
+
+                // Add the uncategorized block types
+                foreach ( var blockType in blockTypes
+                    .Where( b => b.Category == null || b.Category == "" )
+                    .OrderBy( b => b.Name ) )
+                {
+                    var li = new ListItem( blockType.Name, blockType.Id.ToString() );
+                    li.Attributes.Add( "optiongroup", "Other (not categorized)" );
+                    li.Attributes.Add( "title", blockType.Description );
+                    ddlBlockType.Items.Add( li );
+                }
+            }
+
+            var htmlContentBlockType = BlockTypeCache.Read( Rock.SystemGuid.BlockType.HTML_CONTENT.AsGuid() );
+
+            ddlBlockType.SetValue( htmlContentBlockType.Id );
+
+            cblAddBlockPageOrLayout.Items.Clear();
+
+            var page = PageCache.Read( hfPageId.Value.AsInteger() );
+
+            var listItemPage = new ListItem();
+            listItemPage.Text = "Page: " + page.ToString();
+            listItemPage.Value = "Page";
+            listItemPage.Selected = true;
+
+            var listItemLayout = new ListItem();
+            listItemLayout.Text = string.Format( "All Pages use the '{0}' Layout", page.Layout );
+            listItemLayout.Value = "Layout";
+            listItemLayout.Selected = false;
+
+            cblAddBlockPageOrLayout.Items.Add( listItemPage );
+            cblAddBlockPageOrLayout.Items.Add( listItemLayout );
+
+            mdAddBlock.Show();
+        }
+
+        /// <summary>
+        /// Handles the SaveClick event of the mdBlockMove control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void mdBlockMove_SaveClick( object sender, EventArgs e )
+        {
+            int blockId = hfBlockMoveBlockId.Value.AsInteger();
+            var rockContext = new RockContext();
+            var blockService = new BlockService( rockContext );
+            var block = blockService.Get( blockId );
+
+            var page = PageCache.Read( hfPageId.Value.AsInteger() );
+
+            if ( block != null )
+            {
+                block.Zone = ddlMoveToZoneList.SelectedValue;
+                if ( cblBlockMovePageOrLayout.SelectedValue == "Page" )
+                {
+                    block.PageId = page.Id;
+                    block.LayoutId = null;
+                }
+                else
+                {
+                    block.PageId = null;
+                    block.LayoutId = page.LayoutId;
+                }
+
+                rockContext.SaveChanges();
+
+                // flush all the cache stuff that involves the block and page
+                Rock.Web.Cache.BlockCache.Flush( block.Id );
+
+                Rock.Web.Cache.LayoutCache.Flush( page.LayoutId );
+                Rock.Web.Cache.PageCache.Flush( page.Id );
+
+                // re-read the pageCache
+                page = Rock.Web.Cache.PageCache.Read( page.Id );
+                page.FlushBlocks();
+
+                mdBlockMove.Hide();
+                ShowDetailForZone( ddlZones.SelectedValue );
+            }
+        }
+
+        protected void mdAddBlock_SaveClick( object sender, EventArgs e )
+        {
+            // TODO
+        }
+
+        protected void btnHtmlContent_Click( object sender, EventArgs e )
+        {
+            // TODO
+        }
+
+        /// <summary>
+        /// Handles the SelectedIndexChanged event of the ddlBlockType control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void ddlBlockType_SelectedIndexChanged( object sender, EventArgs e )
+        {
+            if ( string.IsNullOrWhiteSpace( tbNewBlockName.Text ) )
+            {
+                var parts = ddlBlockType.SelectedItem.Text.Split( new char[] { '>' } );
+                if ( parts.Length > 1 )
+                {
+                    tbNewBlockName.Text = parts[parts.Length - 1].Trim();
+                }
+                else
+                {
+                    tbNewBlockName.Text = ddlBlockType.SelectedItem.Text;
+                }
+            }
         }
     }
 }
