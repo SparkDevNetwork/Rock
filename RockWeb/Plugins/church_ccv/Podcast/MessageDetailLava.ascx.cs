@@ -68,12 +68,16 @@ namespace RockWeb.Plugins.church_ccv.Podcast
         /// 
         protected void ShowDetail( int messageId )
         {
-            PodcastUtil.PodcastMessage podcastMessage = PodcastUtil.GetMessage( messageId);
-            PodcastUtil.PodcastSeries podcastSeries = PodcastUtil.GetSeries(podcastMessage.SeriesId);
+            PodcastUtil.PodcastMessage podcastMessage = PodcastUtil.GetMessage( messageId);  
 
             var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson );
             mergeFields.Add( "PodcastMessage", podcastMessage );
-            mergeFields.Add("PodcastSeries", podcastSeries);
+
+            if (podcastMessage != null)
+            {
+                PodcastUtil.PodcastSeries podcastSeries = PodcastUtil.GetSeries(podcastMessage.SeriesId);
+                mergeFields.Add("PodcastSeries", podcastSeries);
+            }
 
             Dictionary<string, object> linkedPages = new Dictionary<string, object>();
             linkedPages.Add("SeriesListPage", LinkedPageUrl("SeriesListPage", null));
