@@ -41,6 +41,8 @@ namespace RockWeb.Plugins.church_ccv.Podcast
     [CodeEditorField( "Lava Template", "The lava template to use to format the page.", CodeEditorMode.Lava, CodeEditorTheme.Rock, 400, true)]
     [LinkedPage( "Series List Page" )]
     [LinkedPage( "Series Detail Page" )]
+    [LinkedPage("Message Only Page")]
+    [LinkedPage("Full Service Page")]
     public partial class MessageDetailLava : Rock.Web.UI.RockBlock
     {        
         /// <summary>
@@ -82,6 +84,8 @@ namespace RockWeb.Plugins.church_ccv.Podcast
             Dictionary<string, object> linkedPages = new Dictionary<string, object>();
             linkedPages.Add("SeriesListPage", LinkedPageUrl("SeriesListPage", null));
             linkedPages.Add("SeriesDetailPage", LinkedPageUrl("SeriesDetailPage", null));
+            linkedPages.Add("MessageOnlyPage", LinkedPageUrl("MessageOnlyPage", null));
+            linkedPages.Add("FullServicePage", LinkedPageUrl("FullServicePage", null));
             mergeFields.Add("LinkedPages", linkedPages);
     
             string template = GetAttributeValue( "LavaTemplate" );
