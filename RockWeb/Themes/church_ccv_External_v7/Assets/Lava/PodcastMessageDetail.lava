@@ -25,7 +25,7 @@ REQUIRED VARIABLES
 
 {{ pageTitle | SetPageTitle }}
 {{ pageTitle | AddMetaTagToHead: 'property', 'og:title' }}
-{{ table1.rows.first.Description | AddMetaTagToHead: 'property', 'og:description' }}
+{{ Message.Description | AddMetaTagToHead: 'property', 'og:description' }}
 {{ ogImage | AddMetaTagToHead: 'property', 'og:image' }}
 
 
@@ -55,7 +55,7 @@ REQUIRED VARIABLES
       <li><time datetime="{{ Message.Date | Date: 'MMM d, yyyy' }}" title="{{ Message.Date | Date: 'MMM d, yyyy' }}" data-toggle="tooltip" data-placement="right">{{ Message.Date | HumanizeDateTime }}</time></li>
     </ul>
   </div>
-  {% if table1.rows.first.VideoFullService != '' %}
+  {% if Message.Attributes.3rdPartyFullVideoUrl != empty %}
     <div class="col-md-4">
       <div class="btn-group btn-group-justified">
         {% if fullService %}
@@ -93,7 +93,3 @@ REQUIRED VARIABLES
     </div>
   </div>
 </div>
-
-<pre>{{ LinkedPages | ToJSON }}</pre>
-<pre>{{ PodcastSeries | ToJSON }}</pre>
-<pre>{{ PodcastMessage | ToJSON }}</pre>
