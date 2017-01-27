@@ -7,7 +7,7 @@
     </Triggers>
     <ContentTemplate>
         <asp:Panel ID="pnlDetails" CssClass="panel panel-block" runat="server">
-            <div class="panel-heading">
+            <div id="pnlHeading" runat="server" class="panel-heading">
                 <h1 class="panel-title">
                     <asp:Literal ID="lIcon" runat="server" />
                     <asp:Literal ID="lTitle" runat="server" /></h1>
@@ -16,7 +16,7 @@
                     <Rock:HighlightLabel ID="hlblSiteName" runat="server" />
                 </div>
             </div>
-            <div class="panel-body">
+            <asp:Panel ID="pnlBody" runat="server" CssClass="panel-body">
 
                 <asp:HiddenField ID="hfPageId" runat="server" />
 
@@ -220,12 +220,13 @@
                         <Rock:ModalAlert ID="mdDeleteWarning" runat="server" />
                         <asp:LinkButton ID="btnDelete" runat="server" Text="Delete" CssClass="btn btn-link" OnClick="btnDelete_Click" />
                         <div class="pull-right">
-                            <asp:LinkButton ID="btnCopy" runat="server" Tooltip="Copy Data View" CssClass="btn btn-default btn-sm fa fa-clone" OnClick="btnCopy_Click" />
+                            <asp:HyperLink ID="aChildPagesLink" runat="server" ToolTip="Child Pages" CssClass="btn btn-default btn-sm page-child-pages fa fa-sitemap" />
+                            <asp:LinkButton ID="btnCopy" runat="server" Tooltip="Copy Page" CssClass="btn btn-default btn-sm fa fa-clone" OnClick="btnCopy_Click" />
                             <Rock:SecurityButton ID="btnSecurity" runat="server" class="btn btn-sm btn-security" />
                         </div>
                     </asp:Panel>
                 </fieldset>
-            </div>
+            </asp:Panel>
         </asp:Panel>
     </ContentTemplate>
 </asp:UpdatePanel>

@@ -42,7 +42,7 @@ namespace RockWeb.Blocks.Administration
     [Category( "Administration" )]
     [Description( "Displays the page properties." )]
 
-    [BooleanField( "StartReadOnly", "Have the block initially show a readonly summary view, with Edit and Delete buttons. Also include Save and Cancel buttons in Edit Mode.", false )]
+    [BooleanField( "Enable Full Edit Mode", "Have the block initially show a readonly summary view, in a panel, with Edit and Delete buttons. Also include Save and Cancel buttons.", false )]
     public partial class PageProperties : RockBlock
     {
         #region Fields
@@ -177,6 +177,8 @@ namespace RockWeb.Blocks.Administration
             var site = SiteCache.Read( page.Layout.SiteId );
             hlblSiteName.Text = "Site: " + site.Name;
 
+            aChildPagesLink.NavigateUrl = string.Format( "javascript: Rock.controls.modal.show($(this), '/pages/{0}?t=Child Pages&amp;pb=&amp;sb=Done')", page.Id );
+
             lblMainDetailsCol1.Text = new DescriptionList()
                 .Add( "Internal Name", page.InternalName )
                 .Add( "Page Title", page.PageTitle )
@@ -184,8 +186,13 @@ namespace RockWeb.Blocks.Administration
                 .Add( "Description", page.Description )
                 .Html;
 
+            var pageReference = new PageReference( page.Id );
+            var pageUrl = pageReference.BuildUrl();
+            var pageLink = string.Format( "<a href='{0}'>{0}</a>", pageUrl );
+
             lblMainDetailsCol2.Text = new DescriptionList()
                 .Add( "Layout", page.Layout )
+                .Add( "Url", pageLink )
                 .Html;
         }
 
@@ -293,10 +300,16 @@ namespace RockWeb.Blocks.Administration
             btnSecurity.Visible = page.IsAuthorized( Authorization.ADMINISTRATE, CurrentPerson );
             btnSecurity.Title = page.InternalName;
             btnSecurity.EntityId = page.Id;
-            var startReadOnly = this.GetAttributeValue( "StartReadOnly" ).AsBooleanOrNull() ?? false;
 
-            pnlEditModeActions.Visible = startReadOnly;
-            pnlReadOnlyModeActions.Visible = startReadOnly;
+            // this will be true when used in the Page Builder page, and false when used in the System Dialog
+            var enableFullEditMode = this.GetAttributeValue( "EnableFullEditMode" ).AsBooleanOrNull() ?? false;
+
+            // 
+            pnlEditModeActions.Visible = enableFullEditMode;
+            pnlReadOnlyModeActions.Visible = enableFullEditMode;
+            pnlHeading.Visible = enableFullEditMode;
+            pnlDetails.CssClass = enableFullEditMode ? "panel panel-block" : string.Empty;
+            pnlBody.CssClass = enableFullEditMode ? "panel-body" : string.Empty;
 
             if ( readOnly )
             {
@@ -312,7 +325,7 @@ namespace RockWeb.Blocks.Administration
                 btnDelete.Enabled = pageService.CanDelete( page, out errorMessage );
                 btnDelete.ToolTip = btnDelete.Enabled ? string.Empty : errorMessage;
 
-                if ( page.Id > 0 && startReadOnly )
+                if ( page.Id > 0 && enableFullEditMode )
                 {
                     ShowReadonlyDetails( page );
                 }
@@ -1035,6 +1048,16 @@ namespace RockWeb.Blocks.Administration
                     // Cancelling on Add, and we know the parentPageId, so we are probably in treeview mode, so navigate to the current page
                     var qryParams = new Dictionary<string, string>();
                     qryParams["Page"] = parentPageId.ToString();
+
+                    string expandedIds = this.Request.Params["ExpandedIds"];
+                    if ( expandedIds != null )
+                    {
+                        // remove the current pageId param to avoid extra treeview flash
+                        var expandedIdList = expandedIds.SplitDelimitedValues().AsIntegerList();
+                        expandedIdList.Remove( parentPageId.Value );
+                        qryParams["ExpandedIds"] = expandedIdList.AsDelimited( "," );
+                    }
+
                     NavigateToPage( RockPage.Guid, qryParams );
                 }
                 else
