@@ -1,19 +1,9 @@
 ﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="PageZoneBlocksEditor.ascx.cs" Inherits="RockWeb.Blocks.Cms.PageZoneBlocksEditor" %>
 <asp:UpdatePanel ID="upPages" runat="server">
     <ContentTemplate>
-        <style>
-            .block-config-buttons a i.fa {
-                float: left;
-                margin-top: 3px;
-                margin-right: 10px;
-                margin-left: 5px;
-                font-size: 18px;
-                color: #6a6a6a;
-            }
-        </style>
         <asp:HiddenField ID="hfPageId" runat="server" />
 
-        <asp:Panel ID="pnlDetails" CssClass="panel panel-block" runat="server">
+        <asp:Panel ID="pnlDetails" CssClass="panel panel-block" runat="server" >
             <div class="panel-heading">
                 <h1 class="panel-title">
                     <asp:Literal ID="lZoneIcon" runat="server" />
@@ -32,6 +22,8 @@
                     </ItemTemplate>
                 </asp:Repeater>
 
+                <hr />
+
                 <legend>Blocks From Page</legend>
                 <asp:Repeater ID="rptPageBlocks" runat="server" OnItemDataBound="rptPageOrLayoutBlocks_ItemDataBound">
                     <ItemTemplate>
@@ -39,72 +31,45 @@
                         </asp:Panel>
                     </ItemTemplate>
                 </asp:Repeater>
+
+                <div class="actions ">
+                    <div class="pull-right">
+                        <asp:LinkButton ID="btnAddBlock" runat="server" ToolTip="Add Block" Text="<i class='fa fa-plus'></i>" CssClass="btn btn-default" OnClick="btnAddBlock_Click" />
+                    </div>
+
+                </div>
             </div>
+
+            <%--  This will hold blocks that need to be added to the page so that Custom Admin actions will work --%>
+            <%-- Display -9999 offscreen. This will hopefully hide everything except for any modals that get shown with the Custom Action --%>
+            <asp:Panel ID="pnlBlocksHolder" runat="server" style="position:absolute; left:-9999px">
+
+            </asp:Panel>
+
         </asp:Panel>
 
-        <script>
+        <Rock:ModalDialog ID="mdBlockMove" runat="server" ValidationGroup="vgBlockMove" OnSaveClick="mdBlockMove_SaveClick" Title="Move Block">
+            <Content>
+                <asp:HiddenField ID="hfBlockMoveBlockId" runat="server" />
+                <legend>New Location</legend>
+                <Rock:RockDropDownList ID="ddlMoveToZoneList" runat="server" Label="Zone" />
+                <Rock:RockRadioButtonList ID="cblBlockMovePageOrLayout" runat="server" Label="Parent" RepeatDirection="Horizontal" />
 
-            $(document).ready(function () {
+            </Content>
+        </Rock:ModalDialog>
 
-                $(function () {
-                    debugger
-                    // Bind the block instance delete anchor (ensure it is only bound once)
-                    $('.block-config-buttons a.block-delete').off('click').on('click', function (a, b, c) {
-                        var blockId = $(this).attr('href');
+        <Rock:ModalDialog ID="mdAddBlock" runat="server" ValidationGroup="vgAddBlock" OnSaveClick="mdAddBlock_SaveClick" Title="Add Block">
+            <Content>
+                <Rock:RockTextBox ID="tbNewBlockName" runat="server" Label="Name" />
+                <Rock:RockDropDownList ID="ddlBlockType" runat="server" Label="Type" AutoPostBack="true" OnSelectedIndexChanged="ddlBlockType_SelectedIndexChanged" />
+                
+                <asp:LinkButton ID="btnHtmlContent" runat="server" Text="HTML Content" CssClass="btn btn-default" OnClick="btnHtmlContent_Click" />
+                <Rock:RockRadioButtonList ID="cblAddBlockPageOrLayout" runat="server" Label="Parent" RepeatDirection="Horizontal" />
 
-                        Rock.dialogs.confirm('Are you sorta sure you want to delete this block?', function (result) {
 
-                            if (result) {
+            </Content>
+        </Rock:ModalDialog>
 
-                                // delete the block instance
-                                $.ajax({
-                                    type: 'DELETE',
-                                    contentType: 'application/json',
-                                    dataType: 'json',
-                                    url: Rock.settings.get('baseUrl') + 'api/blocks/' + blockId,
-                                    success: function (data, status, xhr) {
-
-                                        // Remove the block instance's container div
-                                        $('#bid_' + blockId).remove();
-
-                                    },
-                                    error: function (xhr, status, error) {
-                                        alert(status + ' [' + error + ']: ' + xhr.responseText);
-                                    }
-                                });
-                            }
-
-                        });
-
-                        // Cancel the default action of the delete anchor tag
-                        return false;
-
-                    });
-
-                    // Bind the click event of the block move anchor tag
-                    $('.block-config-buttons a.block-move').off('click').on('click', function () {
-
-                        // Get a reference to the anchor tag for use in the dialog success function
-                        $moveLink = $(this);
-
-                        // Set the dialog's zone selection select box value to the block's current zone 
-                        $('#block-move-zone').val($(this).attr('data-zone'));
-
-                        // Set the dialog's parent option to the current zone's parent (either the page or the layout)
-                        var pageBlock = $(this).attr('data-zone-location') == 'Page';
-                        $('#block-move-Location_0').prop('checked', pageBlock);
-                        $('#block-move-Location_1').prop('checked', !pageBlock);
-
-                        // Show the popup block move dialog
-                        $('.js-modal-block-move .modal').modal('show');
-
-                        return false;
-
-                    });
-                }
-                )
-            });
-        </script>
     </ContentTemplate>
 </asp:UpdatePanel>
 
