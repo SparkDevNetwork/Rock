@@ -24,15 +24,11 @@
                                 <asp:LinkButton ID="lbAddPageChild" OnClick="lbAddPageChild_Click" Text="Add Child To Selected" runat="server"></asp:LinkButton></li>
                         </ul>
                     </div>
-
-                    <asp:LinkButton ID="lbAddBlock" runat="server" CssClass="add btn btn-xs btn-action" ToolTip="Add Block" CausesValidation="false" OnClick="lbAddBlock_Click">
-                        <i class="fa fa-plus-circle"></i>
-                        <asp:Literal ID="lAddBlock" runat="server" Text="Add Block" />
-                    </asp:LinkButton>
                 </div>
 
             </div>
 
+            <!-- Keep the treeview hidden to avoid flashing while the RockTree is being rendered -->
             <div class="treeview-scroll scroll-container scroll-container-horizontal js-pages-scroll-container" style="visibility: hidden">
 
                 <div class="viewport">
@@ -99,16 +95,7 @@
                         }
                     }
 
-                    var itemSearch;
-                    if (id.startsWith('p')) {
-                        var pageId = id.replace('p', '');
-                        // note: use 'Page' instead of 'PageId' since PageId is a reserved parameter in Rock
-                        itemSearch = '?Page=' + pageId;
-                    }
-                    else if (id.startsWith('b')) {
-                        var blockId = id.replace('b', '');
-                        itemSearch = '?BlockId=' + blockId;
-                    }
+                    var itemSearch = '?Page=' + id;
 
                     if (itemSearch) {
                         var locationUrl = window.location.href.split('?')[0] + itemSearch;

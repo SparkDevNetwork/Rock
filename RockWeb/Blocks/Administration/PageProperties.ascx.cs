@@ -47,8 +47,6 @@ namespace RockWeb.Blocks.Administration
     {
         #region Fields
 
-        private int? _pageId = null;
-
         //// Import/Export hidden until we have time to get it working again.
         //// private readonly List<string> _tabs = new List<string> { "Basic Settings", "Display Settings", "Advanced Settings", "Import/Export"} ;
         private readonly List<string> _tabs = new List<string> { "Basic Settings", "Display Settings", "Advanced Settings" };
@@ -87,82 +85,69 @@ namespace RockWeb.Blocks.Administration
         /// <param name="e">An <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnInit( EventArgs e )
         {
-            try
+            int? pageId = PageParameter( "Page" ).AsIntegerOrNull();
+
+            btnSecurity.EntityTypeId = EntityTypeCache.Read( typeof( Rock.Model.Page ) ).Id;
+
+            // only show if there was a Page parameter specified
+            this.Visible = pageId.HasValue;
+
+            if ( pageId.HasValue )
             {
-                int? pageId = PageParameter( "Page" ).AsIntegerOrNull();
+                // hide the current page in the page picker to prevent setting this page's parent page to itself (or one of it's child pages)
+                ppParentPage.HiddenPageIds = new int[] { pageId.Value };
 
-                btnSecurity.EntityTypeId = EntityTypeCache.Read( typeof( Rock.Model.Page ) ).Id;
+                var pageCache = Rock.Web.Cache.PageCache.Read( pageId.Value );
 
-                // only show if there was a Page parameter specified
-                this.Visible = pageId.HasValue;
-
-                if ( pageId.HasValue )
+                DialogPage dialogPage = this.Page as DialogPage;
+                if ( dialogPage != null )
                 {
-                    // hide the current page in the page picker to prevent setting this page's parent page to itself (or one of it's child pages)
-                    ppParentPage.HiddenPageIds = new int[] { pageId.Value };
+                    dialogPage.OnSave += new EventHandler<EventArgs>( masterPage_OnSave );
+                    dialogPage.SubTitle = string.Format( "Id: {0}", pageId );
+                }
 
-                    var pageCache = Rock.Web.Cache.PageCache.Read( pageId.Value );
+                ddlMenuWhen.BindToEnum<DisplayInNavWhen>();
 
-                    DialogPage dialogPage = this.Page as DialogPage;
-                    if ( dialogPage != null )
+                if ( pageCache != null && pageCache.IsAuthorized( Authorization.ADMINISTRATE, CurrentPerson ) )
+                {
+                    var blockContexts = new Dictionary<string, string>();
+                    foreach ( var block in pageCache.Blocks )
                     {
-                        dialogPage.OnSave += new EventHandler<EventArgs>( masterPage_OnSave );
-                        dialogPage.SubTitle = string.Format( "Id: {0}", pageCache.Id );
-                    }
-
-                    if ( pageCache.IsAuthorized( Authorization.ADMINISTRATE, CurrentPerson ) )
-                    {
-                        ddlMenuWhen.BindToEnum<DisplayInNavWhen>();
-
-                        var blockContexts = new Dictionary<string, string>();
-                        foreach ( var block in pageCache.Blocks )
+                        var blockControl = TemplateControl.LoadControl( block.BlockType.Path ) as RockBlock;
+                        if ( blockControl != null )
                         {
-                            var blockControl = TemplateControl.LoadControl( block.BlockType.Path ) as RockBlock;
-                            if ( blockControl != null )
+                            blockControl.SetBlock( pageCache, block );
+                            foreach ( var context in blockControl.ContextTypesRequired )
                             {
-                                blockControl.SetBlock( pageCache, block );
-                                foreach ( var context in blockControl.ContextTypesRequired )
+                                if ( !blockContexts.ContainsKey( context.Name ) )
                                 {
-                                    if ( !blockContexts.ContainsKey( context.Name ) )
-                                    {
-                                        blockContexts.Add( context.Name, context.FriendlyName );
-                                    }
+                                    blockContexts.Add( context.Name, context.FriendlyName );
                                 }
                             }
                         }
+                    }
 
-                        phContextPanel.Visible = blockContexts.Count > 0;
+                    phContextPanel.Visible = blockContexts.Count > 0;
 
-                        foreach ( var context in blockContexts )
+                    foreach ( var context in blockContexts )
+                    {
+                        var tbContext = new RockTextBox();
+                        tbContext.ID = string.Format( "context_{0}", context.Key.Replace( '.', '_' ) );
+                        tbContext.Required = true;
+                        tbContext.Label = context.Value + " Parameter Name";
+                        tbContext.Help = "The page parameter name that contains the id of this context entity.";
+                        if ( pageCache.PageContexts.ContainsKey( context.Key ) )
                         {
-                            var tbContext = new RockTextBox();
-                            tbContext.ID = string.Format( "context_{0}", context.Key.Replace( '.', '_' ) );
-                            tbContext.Required = true;
-                            tbContext.Label = context.Value + " Parameter Name";
-                            tbContext.Help = "The page parameter name that contains the id of this context entity.";
-                            if ( pageCache.PageContexts.ContainsKey( context.Key ) )
-                            {
-                                tbContext.Text = pageCache.PageContexts[context.Key];
-                            }
-
-                            phContext.Controls.Add( tbContext );
+                            tbContext.Text = pageCache.PageContexts[context.Key];
                         }
 
-                        _pageId = pageCache.Id;
+                        phContext.Controls.Add( tbContext );
                     }
-                    else
-                    {
-                        DisplayError( "You are not authorized to administrate this page" );
-                    }
-                }
-                else
-                {
-                    // no 'Page' parameter specified so just leave hidden
                 }
             }
-            catch ( SystemException ex )
+            else
             {
-                DisplayError( ex.Message );
+                // no 'Page' parameter specified so just leave hidden
             }
 
             base.OnInit( e );
@@ -178,7 +163,7 @@ namespace RockWeb.Blocks.Administration
 
             string pageIconHtml = !string.IsNullOrWhiteSpace( page.IconCssClass ) ?
                 pageIconHtml = string.Format( "<i class='{0} fa-2x' ></i>", page.IconCssClass ) : "";
-            
+
             lTitle.Text = page.InternalName.FormatAsHtmlTitle();
             if ( !string.IsNullOrEmpty( page.IconCssClass ) )
             {
@@ -186,17 +171,22 @@ namespace RockWeb.Blocks.Administration
             }
             else
             {
-                lIcon.Text = "<i class='fa fa-square-o'></i>";
+                lIcon.Text = "<i class='fa fa-file-text-o'></i>";
             }
 
-            lblMainDetails.Text = new DescriptionList()
+            var site = SiteCache.Read( page.Layout.SiteId );
+            hlblSiteName.Text = "Site: " + site.Name;
+
+            lblMainDetailsCol1.Text = new DescriptionList()
                 .Add( "Internal Name", page.InternalName )
                 .Add( "Page Title", page.PageTitle )
                 .Add( "Browser Title", page.BrowserTitle )
-                .Add( "Layout", page.Layout )
-                .Add( "Description", page.Description)
+                .Add( "Description", page.Description )
                 .Html;
 
+            lblMainDetailsCol2.Text = new DescriptionList()
+                .Add( "Layout", page.Layout )
+                .Html;
         }
 
         /// <summary>
@@ -216,7 +206,6 @@ namespace RockWeb.Blocks.Administration
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
-
             if ( !Page.IsPostBack )
             {
                 string pageIdParam = PageParameter( "Page" );
@@ -269,8 +258,16 @@ namespace RockWeb.Blocks.Administration
 
             PageService pageService = new PageService( rockContext );
             Rock.Model.Page page = pageService.Queryable( "Layout,PageRoutes" )
-                .Where( p => p.Id == _pageId.Value )
+                .Where( p => p.Id == pageId )
                 .FirstOrDefault();
+
+            if ( page == null )
+            {
+                page = new Rock.Model.Page { Id = 0, IsSystem = false, ParentPageId = parentPageId };
+
+                // fetch the ParentCategory (if there is one) so that security can check it
+                page.ParentPage = pageService.Get( parentPageId ?? 0 );
+            }
 
             hfPageId.Value = page.Id.ToString();
 
@@ -335,7 +332,7 @@ namespace RockWeb.Blocks.Administration
         /// Shows the edit details.
         /// </summary>
         /// <param name="page">The page.</param>
-        private void ShowEditDetails(  Rock.Model.Page page )
+        private void ShowEditDetails( Rock.Model.Page page )
         {
             if ( page.Id > 0 )
             {
@@ -352,22 +349,39 @@ namespace RockWeb.Blocks.Administration
                 }
                 else
                 {
-                    lIcon.Text = "<i class='fa fa-square-o'></i>";
+                    lIcon.Text = "<i class='fa fa-file-text-o'></i>";
                 }
             }
 
             SetEditMode( true );
-
 
             var rockContext = new RockContext();
             PageService pageService = new PageService( rockContext );
 
             if ( page.Layout != null )
             {
-                ddlSite.SelectedValue = page.Layout.SiteId.ToString();
-                LoadLayouts( rockContext, SiteCache.Read( page.Layout.SiteId ) );
-                ddlLayout.SelectedValue = page.Layout.Id.ToString();
+                ddlSite.SetValue( page.Layout.SiteId );
             }
+            else if ( page.ParentPageId.HasValue )
+            {
+                var parentPageCache = PageCache.Read( page.ParentPageId.Value );
+                if ( parentPageCache != null && parentPageCache.Layout != null )
+                {
+                    ddlSite.SetValue( parentPageCache.Layout.SiteId );
+                }
+            }
+
+            LoadLayouts( rockContext, SiteCache.Read( ddlSite.SelectedValue.AsInteger() ) );
+            if ( page.LayoutId == 0 )
+            {
+                // default a new page's layout to whatever the parent page's layout is
+                if ( page.ParentPage != null )
+                {
+                    page.LayoutId = page.ParentPage.LayoutId;
+                }
+            }
+
+            ddlLayout.SetValue( page.LayoutId );
 
             rptProperties.DataSource = _tabs;
             rptProperties.DataBind();
@@ -423,14 +437,21 @@ namespace RockWeb.Blocks.Administration
         protected void masterPage_OnSave( object sender, EventArgs e )
         {
             Page.Validate( BlockValidationGroup );
-            if ( Page.IsValid && _pageId.HasValue )
+            if ( Page.IsValid )
             {
                 var rockContext = new RockContext();
                 var pageService = new PageService( rockContext );
                 var routeService = new PageRouteService( rockContext );
                 var contextService = new PageContextService( rockContext );
 
-                var page = pageService.Get( _pageId.Value );
+                int pageId = hfPageId.Value.AsInteger();
+
+                var page = pageService.Get( pageId );
+                if ( page == null )
+                {
+                    page = new Rock.Model.Page();
+                    pageService.Add( page );
+                }
 
                 // validate/check for removed routes
                 var editorRoutes = tbPageRoute.Text.SplitDelimitedValues().Distinct();
@@ -449,7 +470,7 @@ namespace RockWeb.Blocks.Administration
                     // validate for any duplicate routes
                     var duplicateRouteQry = routeService.Queryable()
                         .Where( r =>
-                            r.PageId != _pageId &&
+                            r.PageId != pageId &&
                             editorRoutes.Contains( r.Route ) );
                     if ( siteId.HasValue )
                     {
@@ -670,6 +691,8 @@ namespace RockWeb.Blocks.Administration
 
                     string script = "if (typeof window.parent.Rock.controls.modal.close === 'function') window.parent.Rock.controls.modal.close('PAGE_UPDATED');";
                     ScriptManager.RegisterStartupScript( this.Page, this.GetType(), "close-modal", script, true );
+
+                    hfPageId.Value = page.Id.ToString();
                 }
             }
         }
@@ -681,10 +704,11 @@ namespace RockWeb.Blocks.Administration
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void lbExport_Click( object sender, EventArgs e )
         {
-            if ( _pageId.HasValue )
+            int? pageId = hfPageId.Value.AsIntegerOrNull();
+            if ( pageId.HasValue )
             {
                 var pageService = new PageService( new RockContext() );
-                var page = pageService.Get( _pageId.Value );
+                var page = pageService.Get( pageId.Value );
                 var packageService = new PackageService();
                 var pageName = page.InternalName.Replace( " ", "_" ) + ( cbExportChildren.Checked ? "_wChildPages" : string.Empty );
                 using ( var stream = packageService.ExportPage( page, cbExportChildren.Checked ) )
@@ -708,7 +732,8 @@ namespace RockWeb.Blocks.Administration
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void lbImport_Click( object sender, EventArgs e )
         {
-            var page = PageCache.Read( _pageId ?? 0 );
+            int? pageId = hfPageId.Value.AsIntegerOrNull();
+            var page = PageCache.Read( pageId ?? 0 );
             if ( page != null )
             {
                 var extension = fuImport.FileName.Substring( fuImport.FileName.LastIndexOf( '.' ) );
@@ -790,7 +815,7 @@ namespace RockWeb.Blocks.Administration
         private void LoadSites( RockContext rockContext )
         {
             ddlSite.Items.Clear();
-            foreach ( Site site in new SiteService( rockContext ).Queryable().OrderBy( s => s.Name ) )
+            foreach ( SiteCache site in new SiteService( rockContext ).Queryable().OrderBy( s => s.Name ).Select( a => a.Id ).ToList().Select( a => SiteCache.Read( a ) ) )
             {
                 ddlSite.Items.Add( new ListItem( site.Name, site.Id.ToString() ) );
             }
@@ -811,19 +836,6 @@ namespace RockWeb.Blocks.Administration
             {
                 ddlLayout.Items.Add( new ListItem( layout.Name, layout.Id.ToString() ) );
             }
-        }
-
-        /// <summary>
-        /// Displays the error.
-        /// </summary>
-        /// <param name="message">The message.</param>
-        private void DisplayError( string message )
-        {
-            pnlError.Controls.Clear();
-            pnlError.Controls.Add( new LiteralControl( message ) );
-            pnlError.Visible = true;
-
-            phContent.Visible = false;
         }
 
         /// <summary>
@@ -897,38 +909,68 @@ namespace RockWeb.Blocks.Administration
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnDelete_Click( object sender, EventArgs e )
         {
-            int? parentPageId = null;
-
             var rockContext = new RockContext();
             var pageService = new PageService( rockContext );
-            var page = pageService.Get( int.Parse( hfPageId.Value ) );
+            var siteService = new SiteService( rockContext );
 
+            int pageId = hfPageId.Value.AsInteger();
+            var page = pageService.Get( pageId );
             if ( page != null )
             {
-                string errorMessage;
+                string errorMessage = string.Empty;
                 if ( !pageService.CanDelete( page, out errorMessage ) )
                 {
-                    ShowReadonlyDetails( page );
-                    mdDeleteWarning.Show( errorMessage, ModalAlertType.Information );
+                    mdDeleteWarning.Show( errorMessage, ModalAlertType.Alert );
+                    return;
                 }
-                else
+
+                foreach ( var site in siteService.Queryable() )
                 {
-                    parentPageId = page.ParentPageId;
-
-                    PageCache.Flush( page.Id );
-
-                    pageService.Delete( page );
-                    rockContext.SaveChanges();
-
-                    // reload page, selecting the deleted page's parent
-                    var qryParams = new Dictionary<string, string>();
-                    if ( parentPageId != null )
+                    if ( site.DefaultPageId == page.Id )
                     {
-                        qryParams["PageId"] = parentPageId.ToString();
+                        site.DefaultPageId = null;
+                        site.DefaultPageRouteId = null;
                     }
 
-                    NavigateToPage( RockPage.Guid, qryParams );
+                    if ( site.LoginPageId == page.Id )
+                    {
+                        site.LoginPageId = null;
+                        site.LoginPageRouteId = null;
+                    }
+
+                    if ( site.RegistrationPageId == page.Id )
+                    {
+                        site.RegistrationPageId = null;
+                        site.RegistrationPageRouteId = null;
+                    }
                 }
+
+                int? parentPageId = page.ParentPageId;
+
+                pageService.Delete( page );
+
+                rockContext.SaveChanges();
+
+                Rock.Web.Cache.PageCache.Flush( page.Id );
+
+                // reload page, selecting the deleted page's parent
+                var qryParams = new Dictionary<string, string>();
+                if ( parentPageId.HasValue )
+                {
+                    qryParams["Page"] = parentPageId.ToString();
+
+                    string expandedIds = this.Request.Params["ExpandedIds"];
+                    if ( expandedIds != null )
+                    {
+                        // remove the current pageId param to avoid extra treeview flash
+                        var expandedIdList = expandedIds.SplitDelimitedValues().AsIntegerList();
+                        expandedIdList.Remove( parentPageId.Value );
+
+                        qryParams["ExpandedIds"] = expandedIdList.AsDelimited( "," );
+                    }
+                }
+
+                NavigateToPage( RockPage.Guid, qryParams );
             }
         }
 
@@ -940,6 +982,42 @@ namespace RockWeb.Blocks.Administration
         protected void btnSave_Click( object sender, EventArgs e )
         {
             masterPage_OnSave( sender, e );
+
+            // reload page using the current page
+            var pageId = hfPageId.Value.AsIntegerOrNull();
+            var qryParams = new Dictionary<string, string>();
+            if ( pageId.HasValue )
+            {
+                qryParams["Page"] = pageId.ToString();
+
+                string expandedIds = this.Request.Params["ExpandedIds"];
+                if ( expandedIds != null )
+                {
+                    // remove the current pageId param to avoid extra treeview flash
+                    var expandedIdList = expandedIds.SplitDelimitedValues().AsIntegerList();
+                    expandedIdList.Remove( pageId.Value );
+
+                    // add the parentPageId to the expanded ids
+                    var parentPageParam = this.Request.Params["ParentPageId"];
+                    if ( !string.IsNullOrEmpty( parentPageParam ) )
+                    {
+                        var parentPageId = parentPageParam.AsIntegerOrNull();
+                        if ( parentPageId.HasValue )
+                        {
+                            if ( !expandedIdList.Contains( parentPageId.Value ) )
+                            {
+                                expandedIdList.Add( parentPageId.Value );
+                            }
+                        }
+
+
+                    }
+
+                    qryParams["ExpandedIds"] = expandedIdList.AsDelimited( "," );
+                }
+            }
+
+            NavigateToPage( RockPage.Guid, qryParams );
         }
 
         /// <summary>
@@ -972,6 +1050,11 @@ namespace RockWeb.Blocks.Administration
                 Rock.Model.Page page = service.Get( hfPageId.ValueAsInt() );
                 ShowReadonlyDetails( page );
             }
+        }
+
+        protected void btnCopy_Click( object sender, EventArgs e )
+        {
+            // TODO, first prompt of ChildPages should be copied with a Yes No Horizontal CheckboxList
         }
     }
 }

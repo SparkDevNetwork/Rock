@@ -218,7 +218,9 @@ namespace RockWeb.Blocks.Administration
         protected void rGrid_Copy( object sender, RowEventArgs e )
         {
             var pageService = new PageService( new RockContext() );
-            pageService.CopyPage( e.RowKeyId, CurrentPersonAliasId );
+
+            // todo, prompt if childpages should be copied
+            pageService.CopyPage( e.RowKeyId, true, CurrentPersonAliasId );
 
             BindGrid();
         }
