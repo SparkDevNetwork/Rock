@@ -113,7 +113,7 @@ namespace church.ccv.Podcast
             foreach ( ContentChannel contentChannel in podcastsForCategory )
             {
                 // convert the series, which may return null if it doesn't match the requested viewState
-                PodcastSeries podcastSeries = ContentChannelToPodcastSeries( contentChannel, numMessagesToAdd );
+                PodcastSeries podcastSeries = ContentChannelToPodcastSeries( contentChannel, numMessagesToAdd, rockContext );
                 rootPodcast.Children.Add( podcastSeries );
 
                 // now see if we've hit our max messages.
@@ -245,10 +245,9 @@ namespace church.ccv.Podcast
             return latestDate;
         }
 
-        static PodcastSeries ContentChannelToPodcastSeries( ContentChannel contentChannel, int numMessages )
+        static PodcastSeries ContentChannelToPodcastSeries( ContentChannel contentChannel, int numMessages, RockContext rockContext )
         {
             // Given a content channel in the database, this will convert it into our Podcast model.
-            RockContext rockContext = new RockContext( );
             IQueryable<AttributeValue> attribValQuery = new AttributeValueService( rockContext ).Queryable( );
 
             // get the list of attributes for this content channel
@@ -284,33 +283,29 @@ namespace church.ccv.Podcast
 
             // now take whatever's less. the number of messages in the series, or numMessages requested.
             var orderedContentChannelItemList = orderedContentChannelItems.ToList( );
-            
+
+            var ids = orderedContentChannelItems.Select( h => h.Id ).ToList( );
+            var attribs = attribValQuery.Where( av => ids.Contains( av.EntityId.Value ) &&
+                                                      av.Attribute.EntityTypeQualifierColumn == "ContentChannelTypeId" )
+                                        .Select( av => new AttribKey { EntityId = av.EntityId, Key = av.Attribute.Key, Value = av.Value } ).AsNoTracking( ).ToList( );
+
             int i;
             for( i = 0; i < Math.Min( numMessages, orderedContentChannelItems.Count( ) ); i++ )
             {
                 ContentChannelItem contentChannelItem = orderedContentChannelItemList[ i ];
 
                 // convert each contentChannelItem into a PodcastMessage, and add it to our list
-                PodcastMessage message = ContentChannelItemToPodcastMessage( contentChannelItem );
+                PodcastMessage message = ContentChannelItemToPodcastMessage( contentChannelItem, rockContext, attribs );
                 series.Messages.Add( message );
             }
 
             return series;
         }
 
-        static PodcastMessage ContentChannelItemToPodcastMessage( ContentChannelItem contentChannelItem )
+        static PodcastMessage ContentChannelItemToPodcastMessage( ContentChannelItem contentChannelItem, RockContext rockContext, ICollection<AttribKey> attribs = null )
         {
             // Given a content channel item, convert it into a PodcastMessage and return it
-            
-            RockContext rockContext = new RockContext( );
-            IQueryable<AttributeValue> attribValQuery = new AttributeValueService( rockContext ).Queryable( );
 
-            // get this message's attributes
-            var itemAttribValList = attribValQuery.Where( av => av.EntityId == contentChannelItem.Id && av.Attribute.EntityTypeQualifierColumn == "ContentChannelTypeId" )
-                                                    .Select( av => new { AttributeKey = av.Attribute.Key, av.Value } )
-                                                    .AsNoTracking( )
-                                                    .ToList( );
-                                    
             PodcastMessage message = new PodcastMessage( );
             message.Id = contentChannelItem.Id;
             message.Name = contentChannelItem.Title;
@@ -321,11 +316,29 @@ namespace church.ccv.Podcast
             message.Approved = true;
 
             // add all the attributes
-            message.Attributes = new Dictionary<string, string>( );
-            foreach ( var attribValue in itemAttribValList )
+            message.Attributes = new Dictionary<string, string>();
+
+            // If we have the attributes available then use them or else load them from the content channel item
+            if ( attribs != null )
             {
-                message.Attributes.Add( attribValue.AttributeKey, attribValue.Value );
+                var itemAttribValList = attribs.Where( av => av.EntityId == contentChannelItem.Id );
+
+                foreach ( var attribValue in itemAttribValList )
+                {
+                    message.Attributes.Add( attribValue.Key, attribValue.Value );
+                }
             }
+            else
+            {
+                contentChannelItem.LoadAttributes( rockContext );
+
+                foreach ( var attrib in contentChannelItem.Attributes )
+                {
+                    message.Attributes.Add( attrib.Key, attrib.Value.ToString() );
+                }
+
+            }
+            
             return message;
         }
 
@@ -344,7 +357,7 @@ namespace church.ccv.Podcast
             if( seriesContentChannel != null )
             {
                 // convert it to a PodcastSeries and return it
-                PodcastSeries series = ContentChannelToPodcastSeries( seriesContentChannel, int.MaxValue );
+                PodcastSeries series = ContentChannelToPodcastSeries( seriesContentChannel, int.MaxValue, rockContext );
                 return series;
             }
             
@@ -362,7 +375,7 @@ namespace church.ccv.Podcast
             if( messageContentChannelItem != null )
             {
                 // convert it to a PodcastMessage and return it
-                PodcastMessage message = ContentChannelItemToPodcastMessage( messageContentChannelItem );
+                PodcastMessage message = ContentChannelItemToPodcastMessage( messageContentChannelItem, rockContext );
                 return message;
             }
             
@@ -376,6 +389,15 @@ namespace church.ccv.Podcast
             public ContentChannel ContentChannel { get; set; }
             public string AttribValue { get; set; }
         }
+
+        // Helper class for storing an attribute key/value with an entity id
+        public class AttribKey
+        {
+            public int? EntityId;
+            public string Key;
+            public string Value;
+        }
+
 
         // Interface so that PodcastCategories can have either Series or Categories as children.
         public interface IPodcastNode : Rock.Lava.ILiquidizable
