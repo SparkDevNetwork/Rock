@@ -4,10 +4,6 @@
 REQUIRED VARIABLES
 ==================
 
-{% assign seriesListPage = "/page/516" %}
-{% assign seriesDetailPage = "/page/546" %}
-{% assign messageDetailPage = "/page/547" %}
-{% assign fullServicePage = "/page/552" %}
 {% assign fullService = false %}
 
 
@@ -63,11 +59,11 @@ REQUIRED VARIABLES
     <div class="col-md-4">
       <div class="btn-group btn-group-justified">
         {% if fullService %}
-          <a class="btn btn-default" href="{{ messageDetailPage }}?MessageId={{ table1.rows.first.MessageId }}">Message Only</a>
-          <a class="btn btn-default active" href="{{ fullServicePage }}?MessageId={{ table1.rows.first.MessageId }}">Full Service</a>
+          <a class="btn btn-default" href="{{ LinkedPages.MessageOnlyPage }}?MessageId={{ Message.Id }}">Message Only</a>
+          <a class="btn btn-default active" href="{{ LinkedPages.FullServicePage }}?MessageId={{ Message.Id }}">Full Service</a>
         {% else %}
-          <a class="btn btn-default active" href="{{ messageDetailPage }}?MessageId={{ table1.rows.first.MessageId }}">Message Only</a>
-          <a class="btn btn-default" href="{{ fullServicePage }}?MessageId={{ table1.rows.first.MessageId }}">Full Service</a>
+          <a class="btn btn-default active" href="{{ LinkedPages.MessageOnlyPage }}?MessageId={{ Message.Id }}">Message Only</a>
+          <a class="btn btn-default" href="{{ LinkedPages.FullServicePage }}?MessageId={{ Message.Id }}">Full Service</a>
         {% endif %}
       </div>
     </div>
@@ -79,8 +75,8 @@ REQUIRED VARIABLES
     <p>{{ Message.Description }}</p>
     <h3>Other Messages in this Series</h3>
     <ol>
-      {% for message in Series.Messages %}
-        <li><a href="?MessageId={{ Message.Id }}">{{ message.Name }}</a></li>
+      {% for otherMessage in Series.Messages %}
+        <li><a href="?MessageId={{ otherMessage.Id }}">{{ otherMessage.Name }}</a></li>
       {% endfor %}
     </ol>
   </div>
@@ -88,10 +84,10 @@ REQUIRED VARIABLES
     <div class="panel panel-default">
       <div class="panel-heading">Related Downloads</div>
       <div class="list-group">
-        <a href="{{ table1.rows.first.VideoDownload }}" class="list-group-item"><i class="fa fa-fw fa-film"></i> Download Video</a>
-        <a href="{{ table1.rows.first.Audio }}" class="list-group-item"><i class="fa fa-fw fa-headphones"></i> Download Audio</a>
-        {% if table1.rows.first.SermonNotes != "" %}
-          <a href="{{ table1.rows.first.SermonNotes }}" class="list-group-item"><i class="fa fa-fw fa-file-text-o"></i> Download Sermon Notes</a>
+        <a href="{{ Message.Attributes.HostedVideoUrl }}" class="list-group-item"><i class="fa fa-fw fa-film"></i> Download Video</a>
+        <a href="{{ Message.Attributes.HostedAudioUrl }}" class="list-group-item"><i class="fa fa-fw fa-headphones"></i> Download Audio</a>
+        {% if Message.Attributes.DiscussionGuideUrl != empty %}
+          <a href="{{ Message.Attributes.DiscussionGuideUrl }}" class="list-group-item"><i class="fa fa-fw fa-file-text-o"></i> Download Sermon Notes</a>
         {% endif %}
       </div>
     </div>
