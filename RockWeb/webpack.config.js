@@ -10,30 +10,35 @@ const { ifProduction, ifNotProduction } = getIfUtils(process.env.NODE_ENV);
 let publicPath = "http://localhost:8080/RockWeb/Scripts/React/dist/";
 if (ifProduction(true)) publicPath = "/Scripts/React/dist/";
 
-const entry = [
+const client = [
   path.resolve(__dirname, "./Scripts/React/index.js"),
 ];
 
-if (ifProduction(true)) entry.unshift("react-hot-loader/patch");
+if (ifProduction(true)) client.unshift("react-hot-loader/patch");
   
 module.exports = {
   devtool: "cheap-module-source-map",
   performance: {
     hints: ifNotProduction(false), 
   },
-  entry,
+  entry: {
+    client,
+    server: [
+      path.resolve(__dirname, "./Scripts/React/server.js"),
+    ] 
+  },
   output: {
     filename: "[name].blocks.bundle.js",
     chunkFilename: "[id].block.bundle.js",
     path: path.resolve(__dirname, "./Scripts/React/dist/"),
     publicPath: publicPath, 
   },
-  resolve: removeEmpty({
-    alias: ifProduction({
-      react: "preact-compat/dist/preact-compat",
-      "react-dom": "preact-compat/dist/preact-compat",
-    }),
-  }),
+  //resolve: removeEmpty({
+    //alias: ifProduction({
+      //react: "preact-compat/dist/preact-compat",
+      //"react-dom": "preact-compat/dist/preact-compat",
+    //}),
+  //}),
   module: {
     rules: [
       {
@@ -72,7 +77,7 @@ module.exports = {
     ifNotProduction(new webpack.HotModuleReplacementPlugin()),
     new webpack.NoEmitOnErrorsPlugin(),
     new webpack.NamedModulesPlugin(),
-    new BundleAnalyzerPlugin(),
+    ifNotProduction(new BundleAnalyzerPlugin()),
   ]),
   devServer: {
     // clientLogLevel: "none",

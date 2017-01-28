@@ -16,14 +16,11 @@
 //
 using System;
 using System.ComponentModel;
-using System.Net;
 using System.Web.UI;
+using React;
 using Rock;
-using Rock.Utility;
 using Rock.Attribute;
-using Rock.Data;
 using Rock.Model;
-using Rock.Web;
 using Rock.Web.UI;
 
 namespace RockWeb.Blocks.Examples
@@ -57,6 +54,10 @@ namespace RockWeb.Blocks.Examples
                 var startingNumber = GetAttributeValue("StartingNumber").ToStringSafe().AsIntegerOrNull();
                 var initialProps = new InitialProps(startingNumber);
                 props = initialProps.ToJson();
+
+                var env = AssemblyRegistration.Container.Resolve<IReactEnvironment>();
+                var reactComponent = env.CreateComponent("Blocks.Examples.SampleReactBlock", initialProps);
+                PageContent.Text = reactComponent.RenderHtml();
             }
         }
 
