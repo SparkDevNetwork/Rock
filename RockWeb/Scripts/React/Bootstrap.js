@@ -1,12 +1,32 @@
+// @flow
 import { render } from "react-dom";
 import { AppContainer } from "react-hot-loader";
 import { flatten, find } from "lodash";
+import { Provider } from "react-redux";
+
+import createStore from "./store";
+
+export type IBlockDetails = {
+  element: HTMLElement,
+  id: string,
+  path: string,
+  zone: string,
+};
+
+type IBootstrapProps = {
+  pageId: number,
+};
 
 export default class Bootstrap {
+  props: IBootstrapProps;
+  store: Object;
+  blocks: [IBlockDetails];
 
-  constructor(props) {
+  constructor(props: Object) {
     this.props = props;
     if (!this.props.pageId) return;
+
+    this.store = createStore();
 
     this.bootstrapDOM()
       .then(this.render);
@@ -90,22 +110,29 @@ export default class Bootstrap {
       // file type and import it directly
       if (path.includes("~/Blocks")) {
         const localPath = path.replace("~/Blocks/", "").replace(".ascx", "");
-        loader = System.import(`../../Blocks/${localPath}.block.js`);
+        // $FlowIgnore
+        loader = import(`../../Blocks/${localPath}.block.js`);
       } else if (path.includes("~/Plugins")) {
         const localPath = path.replace("~/Plugins/", "").replace(".ascx", "");
-        loader = System.import(`../../Plugins/${localPath}.block.js`);
+        // $FlowIgnore
+        loader = import(`../../Plugins/${localPath}.block.js`);
       } else {
         loader = Promise.reject("Block could not be found on file system");
       }
 
       loader.then((component) => {
         const Component = component.default;
+        const { reducer } = component;
+
+        if (reducer && reducer.key) this.store.inject(reducer.key, reducer);
+
         const target = [].slice.call(
             block.element.querySelectorAll("[data-react-block]"),
           )[0];
 
           // this is where redux and apollo integration can be shared between trees
-        let props = {};
+        let props = { block };
+
         try {
           const { initialProps } = target.dataset;
           props = (initialProps && JSON.parse(initialProps)) || {};
@@ -113,9 +140,13 @@ export default class Bootstrap {
         } catch (e) { console.warn(`error parsing initial props for ${block.path}`, e); }
 
         render(
-          <AppContainer><Component {...props} /></AppContainer>
-            , target,
-          );
+          <AppContainer>
+            <Provider store={this.store}>
+              <Component {...props} />
+            </Provider>
+          </AppContainer>
+          , target,
+        );
       })
         .catch(
           // eslint-disable-next-line
