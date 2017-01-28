@@ -1,6 +1,7 @@
 const webpack = require("webpack");
 const path = require("path");
 const LodashModuleReplacementPlugin = require("lodash-webpack-plugin");
+const BundleAnalyzerPlugin = require("webpack-bundle-analyzer").BundleAnalyzerPlugin;
 const { getIfUtils, removeEmpty } = require("webpack-config-utils");
 
 if (!process.env.NODE_ENV) process.env.NODE_ENV = "development";
@@ -9,15 +10,18 @@ const { ifProduction, ifNotProduction } = getIfUtils(process.env.NODE_ENV);
 let publicPath = "http://localhost:8080/RockWeb/Scripts/React/dist/";
 if (ifProduction(true)) publicPath = "/Scripts/React/dist/";
 
+const entry = [
+  path.resolve(__dirname, "./Scripts/React/index.js"),
+];
+
+if (ifProduction(true)) entry.unshift("react-hot-loader/patch");
+  
 module.exports = {
   devtool: "cheap-module-source-map",
   performance: {
     hints: ifNotProduction(false), 
   },
-  entry: [
-    "react-hot-loader/patch",
-    path.resolve(__dirname, "./Scripts/React/index.js"),
-  ],
+  entry,
   output: {
     filename: "[name].blocks.bundle.js",
     chunkFilename: "[id].block.bundle.js",
@@ -66,8 +70,9 @@ module.exports = {
       },
     })),
     ifNotProduction(new webpack.HotModuleReplacementPlugin()),
-    new webpack.NoErrorsPlugin(),
+    new webpack.NoEmitOnErrorsPlugin(),
     new webpack.NamedModulesPlugin(),
+    new BundleAnalyzerPlugin(),
   ]),
   devServer: {
     // clientLogLevel: "none",

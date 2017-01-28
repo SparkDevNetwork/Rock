@@ -4,3 +4,5 @@
 .*/__tests__/.*
 .*/__stories__/.*
 .*/RockWeb/Scripts/.*
+
+suppress_comment= \\(.\\|\n\\)*\\$FlowIgnore
