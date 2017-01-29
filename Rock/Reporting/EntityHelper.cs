@@ -80,7 +80,7 @@ namespace Rock.Reporting
                 .Where( p =>
                     !p.GetGetMethod().IsVirtual ||
                     p.GetCustomAttributes( typeof( IncludeForReportingAttribute ), true ).Any() ||
-                    p.Name == "Order" )
+                    p.Name == "Order" || p.Name == "IsActive" )
                 .ToList();
 
             // Get Properties
