@@ -9,7 +9,7 @@
                 </div>
 
                 <div class="actions rollover-item">
-                    <a class="edit btn btn-action btn-xs js-md-editbutton"><i class="fa fa-pencil"></i>&nbsp;Edit Markdown</a>
+                    <asp:HyperLink ID="hlEdit" runat="server" CssClass="edit btn btn-action btn-xs js-md-editbutton"><i class="fa fa-pencil"></i> Edit Markdown</asp:HyperLink>
                 </div>
             </span>
 
@@ -39,7 +39,7 @@
                         $mdEditor.height($mdEditor[0].scrollHeight);
 
                         // scroll to the top of the editor
-                        window.scrollTo(0, $mdEditor.position().top);
+                        // window.scrollTo(0, $mdEditor.position().top);
                     });
                 });
             });

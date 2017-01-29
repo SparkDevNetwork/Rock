@@ -1,6 +1,5 @@
-﻿using System.ComponentModel;
-using System.Diagnostics;
-using System.Collections.Generic;
+﻿using System;
+using System.ComponentModel;
 using System.Linq;
 using Rock.Attribute;
 using Rock;
@@ -16,6 +15,25 @@ namespace RockWeb.Plugins.church_ccv.Cms
     [TextField( "MarkdownContent", category: "CustomSetting" )]
     public partial class MarkdownContent : church.ccv.Web.Cms.BaseContentBlock
     {
+        /// <summary>
+        /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
+        /// </summary>
+        /// <param name="e">An <see cref="T:System.EventArgs" /> object that contains the event data.</param>
+        protected override void OnInit( EventArgs e )
+        {
+            base.OnInit( e );
+
+            if ( !this.IsPostBack )
+            {
+                hlEdit.Visible = false;
+
+                if ( this.IsUserAuthorized( "Edit" ) )
+                {
+                    hlEdit.Visible = true;
+                }
+            }
+        }
+
         /// <summary>
         /// Implement to show the content. For example, simply have it do "lContent.Text = this.GetContentHtml();"
         /// </summary>
