@@ -45,7 +45,7 @@ namespace Rock.UniversalSearch.IndexModels
         /// <value>
         /// The name of the group type.
         /// </value>
-        [RockIndexField]
+        [RockIndexField( Boost = 4)]
         public string GroupTypeName { get; set; }
 
         /// <summary>
