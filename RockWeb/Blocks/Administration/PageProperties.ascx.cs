@@ -162,7 +162,7 @@ namespace RockWeb.Blocks.Administration
             SetEditMode( false );
 
             string pageIconHtml = !string.IsNullOrWhiteSpace( page.IconCssClass ) ?
-                pageIconHtml = string.Format( "<i class='{0} fa-2x' ></i>", page.IconCssClass ) : "";
+                pageIconHtml = string.Format( "<i class='{0} fa-2x' ></i>", page.IconCssClass ) : string.Empty;
 
             lTitle.Text = page.InternalName.FormatAsHtmlTitle();
             if ( !string.IsNullOrEmpty( page.IconCssClass ) )
@@ -290,12 +290,6 @@ namespace RockWeb.Blocks.Administration
                 nbEditModeMessage.Text = EditModeMessage.ReadOnlyEditActionNotAllowed( Rock.Model.Page.FriendlyTypeName );
             }
 
-            /*if ( page.IsSystem )
-            {
-                readOnly = true;
-                nbEditModeMessage.Text = EditModeMessage.ReadOnlySystem( Rock.Model.Page.FriendlyTypeName );
-            }*/
-
             btnSecurity.Visible = page.IsAuthorized( Authorization.ADMINISTRATE, CurrentPerson );
             btnSecurity.Title = page.InternalName;
             btnSecurity.EntityId = page.Id;
@@ -303,7 +297,6 @@ namespace RockWeb.Blocks.Administration
             // this will be true when used in the Page Builder page, and false when used in the System Dialog
             var enableFullEditMode = this.GetAttributeValue( "EnableFullEditMode" ).AsBooleanOrNull() ?? false;
 
-            // 
             pnlEditModeActions.Visible = enableFullEditMode;
             pnlReadOnlyModeActions.Visible = enableFullEditMode;
             pnlHeading.Visible = enableFullEditMode;
@@ -357,7 +350,7 @@ namespace RockWeb.Blocks.Administration
 
                 if ( !string.IsNullOrEmpty( page.IconCssClass ) )
                 {
-                    lIcon.Text = String.Format( "<i class='{0}'></i>", page.IconCssClass );
+                    lIcon.Text = string.Format( "<i class='{0}'></i>", page.IconCssClass );
                 }
                 else
                 {
@@ -1021,8 +1014,6 @@ namespace RockWeb.Blocks.Administration
                                 expandedIdList.Add( parentPageId.Value );
                             }
                         }
-
-
                     }
 
                     qryParams["ExpandedIds"] = expandedIdList.AsDelimited( "," );
@@ -1125,8 +1116,6 @@ namespace RockWeb.Blocks.Administration
                                     expandedIdList.Add( parentPageId.Value );
                                 }
                             }
-
-
                         }
 
                         qryParams["ExpandedIds"] = expandedIdList.AsDelimited( "," );

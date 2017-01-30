@@ -185,6 +185,7 @@ namespace Rock.Model
         /// <param name="sourcePage">The source page.</param>
         /// <param name="pageGuidDictionary">The dictionary containing the original page guids and the corresponding copied page guids.</param>
         /// <param name="blockGuidDictionary">The dictionary containing the original block guids and the corresponding copied block guids.</param>
+        /// <param name="includeChildPages">if set to <c>true</c> [include child pages].</param>
         /// <param name="currentPersonAliasId">The current person alias identifier.</param>
         /// <returns></returns>
         private Rock.Model.Page GeneratePageCopy( Rock.Model.Page sourcePage, Dictionary<Guid, Guid> pageGuidDictionary, Dictionary<Guid, Guid> blockGuidDictionary, bool includeChildPages, int? currentPersonAliasId = null )
