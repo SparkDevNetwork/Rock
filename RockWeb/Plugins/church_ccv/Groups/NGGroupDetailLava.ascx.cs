@@ -36,6 +36,8 @@ namespace RockWeb.Plugins.church_ccv.Groups
     {
         public bool RegisteredForCamp { get; set; }
 
+        public Rock.Model.GroupMember GroupMember { get; set; }
+
         /// <summary>
         /// To the liquid.
         /// </summary>
@@ -57,7 +59,7 @@ namespace RockWeb.Plugins.church_ccv.Groups
         {
             get
             {
-                var availableKeys = new List<string> { "Child", "Parents", "RegisteredForCamp" };
+                var availableKeys = new List<string> { "Child", "Parents", "GroupMember", "RegisteredForCamp" };
                 if ( this.Child != null )
                 {
                     availableKeys.AddRange( this.Child.AvailableKeys );
@@ -90,6 +92,7 @@ namespace RockWeb.Plugins.church_ccv.Groups
             {
                switch( key.ToStringSafe() )
                {
+                   case "GroupMember": return GroupMember;
                    case "RegisteredForCamp": return RegisteredForCamp;
                    case "Child": return Child;
                    case "Parents": return Parents;
@@ -106,7 +109,7 @@ namespace RockWeb.Plugins.church_ccv.Groups
         /// <returns></returns>
         public bool ContainsKey( object key )
         {
-            var additionalKeys = new List<string> { "Child", "Parents", "RegisteredForCamp" };
+            var additionalKeys = new List<string> { "Child", "GroupMember", "Parents", "RegisteredForCamp" };
             if ( additionalKeys.Contains( key.ToStringSafe() ) )
             {
                 return true;
@@ -225,6 +228,7 @@ namespace RockWeb.Plugins.church_ccv.Groups
                 ChildWithParents_Lava childWithParents = new ChildWithParents_Lava( );
                 childWithParents.Parents = parentsInGroup;
                 childWithParents.Child = member.Person;
+                childWithParents.GroupMember = member;
 
                 // if there are valid camp groups
                 if( campGroupIds.Count > 0 )

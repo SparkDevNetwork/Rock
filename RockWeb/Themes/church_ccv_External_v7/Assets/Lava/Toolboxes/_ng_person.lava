@@ -1,8 +1,7 @@
-{% if member.Member.Person %}
-  {% assign person = member.Member.Person %}
-{% else %}
-  {% assign person = member %}
-{% endif %}
+
+{% assign person = childWrapperObj.Child %}
+{% assign groupMember = childWrapperObj.GroupMember %}
+
 
 <div class="col-xs-12 col-sm-6 margin-b-md rollover-container">
 
@@ -33,14 +32,14 @@
   <div class="pull-left">
 
     {% if linkToDetailPage %}
-      <a href="{{ memberDetailPage }}?GroupMemberId={{ member.Member.Id }}&AdminPersonId={{ CurrentPerson.Id }}">
+      <a href="{{ memberDetailPage }}?GroupMemberId={{ groupMember.Id }}&AdminPersonId={{ CurrentPerson.Id }}">
         <strong>{{ person.FullName }}</strong>
       </a>
     {% else %}
       <strong>{{ person.FullName }}</strong>
     {% endif %}
 
-    {% if member.Member.GroupMemberStatus == 'Pending' and showTUpVideoButton %}
+    {% if groupMember.GroupMemberStatus == 'Pending' and showTUpVideoButton %}
       <a class="btn btn-link btn-xs" href="{{ videoPage }}?person={{ person.Id }}" title="Send T-Up Video"><i class="fa fa-video-camera"></i></a>
     {% endif %}
 
@@ -53,7 +52,7 @@
       <div class="js-badge-bar-holder" data-id="{{ person.Id }}"><small class="text-muted">loading...</small></div>
     {% endif %}
 	
-	{% if p.RegisteredForCamp == true %}
+	{% if childWrapperObj.RegisteredForCamp == true %}
 		<i class="fa text-success"></i> Registered for Camp 
 	{% else %}
 		<br>

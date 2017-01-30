@@ -3,7 +3,7 @@
 {% if RosterMembers != empty %}
   <h4>Active Roster</h4>
   {% for p in RosterMembers %}
-    {% assign member = p.Child %}
+    {% assign childWrapperObj = p %}
     {% assign loop = forloop.index | Modulo: 2 %}
     {% if loop != 0 %}
     <div class="row">
