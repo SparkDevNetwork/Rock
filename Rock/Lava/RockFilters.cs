@@ -2020,6 +2020,7 @@ namespace Rock.Lava
         /// <param name="context">The context.</param>
         /// <param name="input">The input.</param>
         /// <param name="includeChildren">if set to <c>true</c> [include children].</param>
+        /// <param name="includeInactive">if set to <c>true</c> [include inactive].</param>
         /// <param name="useFormalNames">if set to <c>true</c> [use formal names].</param>
         /// <param name="finalfinalSeparator">The finalfinal separator.</param>
         /// <param name="separator">The separator.</param>
