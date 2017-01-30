@@ -379,10 +379,12 @@ namespace RockWeb.Blocks.Cms
             }
             else
             {
-                // get entities from block config
-                if ( selectedEntities.Count == 0 )
+                selectedEntities = cblModelFilter.SelectedValuesAsInt;
+                
+                // if no entities from the UI get from the block config
+                if ( selectedEntities.Count == 0 && GetAttributeValue( "EnabledModels" ).IsNotNullOrWhitespace() )
                 {
-                    selectedEntities = cblModelFilter.SelectedValuesAsInt;
+                    selectedEntities = GetAttributeValue( "EnabledModels" ).Split( ',' ).Select( int.Parse ).ToList();
                 }
             }
 
@@ -418,9 +420,7 @@ namespace RockWeb.Blocks.Cms
             }
             else
             {
-                // get filters from the block config
-                
-                // add any base field filters
+                // add any base field filters from block settings
                 if ( !string.IsNullOrWhiteSpace( GetAttributeValue( "BaseFieldFilters" ) ) )
                 {
                     foreach ( var filterField in GetAttributeValue( "BaseFieldFilters" ).ToKeyValuePairList() )
