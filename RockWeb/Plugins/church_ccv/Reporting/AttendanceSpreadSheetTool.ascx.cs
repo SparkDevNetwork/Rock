@@ -1264,8 +1264,8 @@ namespace RockWeb.Plugins.church_ccv.Reporting
                  ).ToList();
 
             var campusCounter = 0;
-            float offeringTotalFloat = 0;
-            float convertedMetricValue = 0;
+            decimal offeringTotalFloat = 0;
+            decimal convertedMetricValue = 0;
 
             foreach ( var campus in CampusCache.All().OrderBy( a => a.Id ) )
             {
@@ -1279,7 +1279,7 @@ namespace RockWeb.Plugins.church_ccv.Reporting
                 var totalCell = worksheet.Cells[rowCounter, 3, rowCounter, 5];
                 totalCell.Merge = true;
 
-                // Colors the Offering table
+                // Populates the Offering section of the table
                 if ( generalFundsMetricValuesQuery == null )
                 {
                     totalCell.Value = null;
@@ -1295,7 +1295,7 @@ namespace RockWeb.Plugins.church_ccv.Reporting
 
                     if ( placeholdOffering != null )
                     {
-                        convertedMetricValue = float.Parse( string.Format( "{0}", placeholdOffering.MetricValue ), CultureInfo.InvariantCulture.NumberFormat );
+                        convertedMetricValue = System.Convert.ToDecimal( string.Format( "{0}", placeholdOffering.MetricValue ) );
                     }
                     else
                     {
