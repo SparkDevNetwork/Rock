@@ -1,23 +1,14 @@
-{% comment %}
-
-
-REQUIRED VARIABLES
-==================
-
-{% assign seriesListPage = "/page/516" %}
-{% assign seriesDetailPage = "/page/546" %}
-{% assign messageDetailPage = "/page/547" %}
-
-
-{% endcomment %}
-
+{% assign isFirstPage = false %}
+{% if PageParameter.PageNum == 0 or PageParameter.PageNum == null %}
+  {% assign isFirstPage = true %}
+{% endif %}
 
 {{ "/Themes/church_ccv_External_v7/Styles/pages/watch.css" | AddLinkTagToHead:'rel','stylesheet' }}
 
-
-{% if table1.rows.first.CurrentPage == 1 %}
-<a href="{{ seriesDetailPage }}?SeriesId={{ table1.rows.first.SeriesId }}">
-  <header class="bigblock bigblock-flexbg bigblock-flexbg-md" style="background-image: url('http://arena.ccv.church/Arena/cachedblob.aspx?guid={{ table1.rows.first.MessageImageBlobId3 }}');">
+{% if isFirstPage %}
+{% assign firstSeries = WeekendSeries.Children.first %}
+<a href="{{ LinkedPages.SeriesDetailPage }}?SeriesId={{ firstSeries.Id }}">
+  <header class="bigblock bigblock-flexbg bigblock-flexbg-md" style="background-image: url('/GetImage.ashx?guid={{ firstSeries.Attributes.HeaderImage }}');">
     <div class="container">
       <div class="watch-currenttag">Current Series</div>
     </div>
@@ -26,121 +17,47 @@ REQUIRED VARIABLES
 {% endif %}
 
 <div class="container">
-{% for r in table1.rows %}
 
-    {% if forloop.first %}
-      {% comment %}New Series{% endcomment %}
-      {% assign currentSeries = r.SeriesTitle  %}
-      <div class="row">
-        <div class="col-sm-6 col-md-4">
-          <div class="thumbnail padding-b-none js-series">
-            <a href="{{ seriesDetailPage }}?SeriesId={{ r.SeriesId }}"><img class="img-full" src="http://arena.ccv.church/Arena/cachedblob.aspx?guid={{ r.MessageImageBlobId1 }}&amp;width=720&amp;height=720" alt="{{ r.SeriesTitle }}"></a>
-            <div class="caption">
-              <h3 class="panel-title">{{ r.SeriesTitle }}</h3>
-            </div>
-          </div>
-          <div class="popover-content-holder hide">
-            <span class="description">
-              {{ r.MessageDescription | Truncate: 280, '...'}}
-            </span>
-            <hr class="margin-v-md">
-            <div class="message-list list-2col-wrapper">
-              <ol class="list-flush margin-b-none js-reverselist">
-                <li class="margin-b-sm">
-                  <a href="{{ messageDetailPage }}?MessageId={{ r.MessageId }}">{{ r.MessageTitle }}</a>
-                </li>
-    {% endif %}
+  <div class="row">
 
-    {% if r.SeriesTitle != currentSeries %}
-      {% comment %}New Series{% endcomment %}
-      {% assign currentSeries = r.SeriesTitle  %}
-              </ol>
-            </div>
-          </div>
+    {% for Series in WeekendSeries.Children %}
+    <div class="col-sm-6 col-md-4">
+      <div class="thumbnail padding-b-none js-series">
+        <a href="{{ LinkedPages.SeriesDetailPage }}?SeriesId={{ Series.Id }}"><img class="img-full" src="/GetImage.ashx?guid={{ Series.Attributes.Image_31_20 }}" alt="{{ Series.Name }}"></a>
+        <div class="caption">
+          <h3 class="panel-title">{{ Series.Name }}</h3>
         </div>
-        <div class="col-sm-6 col-md-4">
-          <div class="thumbnail padding-b-none js-series">
-            <a href="{{ seriesDetailPage }}?SeriesId={{ r.SeriesId }}"><img class="img-full" src="http://arena.ccv.church/Arena/cachedblob.aspx?guid={{ r.MessageImageBlobId1 }}&amp;width=720&amp;height=720" alt="{{ r.SeriesTitle }}"></a>
-            <div class="caption">
-              <h3 class="panel-title">{{ r.SeriesTitle }}</h3>
-            </div>
-          </div>
-          <div class="popover-content-holder hide">
-            <span class="description">
-              {{ r.MessageDescription | Truncate: 280, '...'}}
-            </span>
-            <hr class="margin-v-md">
-            <div class="message-list list-2col-wrapper">
-              <ol class="list-flush margin-b-none js-reverselist">
-                <li class="margin-b-sm">
-                  <a href="{{ messageDetailPage }}?MessageId={{ r.MessageId }}">{{ r.MessageTitle }}</a>
-                </li>
-    {% elsif r.SeriesTitle == currentSeries and forloop.first == false %}
-      {% comment %}Same Series{% endcomment %}
-                <li class="margin-b-sm">
-                  <a href="{{ messageDetailPage }}?MessageId={{ r.MessageId }}">{{ r.MessageTitle }}</a>
-                </li>
-    {% endif %}
-
-    {% if forloop.last %}
-              </ol>
-            </div>
-          </div>
-        </div>
-
       </div>
-    {% endif %}
+      <div class="popover-content-holder hide">
+        <span class="description">
+          {{ Series.Description | Truncate: 280, '...'}}
+        </span>
+        <hr class="margin-v-md">
+        <div class="message-list list-2col-wrapper">
+          <ol class="list-flush margin-b-none js-reverselist">
+            {% for Message in Series.Messages %}
+            <li class="margin-b-sm">
+              <a href="{{ LinkedPages.MessageDetailPage }}?MessageId={{ Message.Id }}">{{ Message.Name }}</a>
+            </li>
+            {% endfor %}
+          </ol>
+        </div>
+      </div>
+    </div>
+    {% endfor %}
 
-  {% endfor %}
+  </div>
 
-  {% assign currentPage = table1.rows.first.CurrentPage %}
-  {% assign lastPage = table2.rows.first.Column1 %}
+  {% assign currentPage = PageParameter.PageNum | Default: '0' %}
+  {% assign nextPage = currentPage | Plus: '1' %}
+  {% assign prevPage = currentPage | Minus: '1' %}
 
-  {% assign minusOne = table1.rows.first.CurrentPage | Minus: 1 %}
-  {% assign minusTwo = table1.rows.first.CurrentPage | Minus: 2 %}
-  {% assign plusOne  = table1.rows.first.CurrentPage | Plus: 1  %}
-  {% assign plusTwo  = table1.rows.first.CurrentPage | Plus: 2  %}
-
-  <nav class="text-center">
-    <ul class="pagination pagination-lg">
-
-      {% if currentPage == 1  %}
-        <li class="disabled">
-          <span>
-            <span aria-hidden="true">&laquo;</span>
-          </span>
-        </li>
-      {% else %}
-        <li><a href="?PageNum={{ minusOne }}" aria-label="Previous"><span aria-hidden="true">&laquo;</span></a></li>
-      {% endif %}
-
-      {% if currentPage > 2 %}
-        <li><a href="?PageNum={{ minusTwo }}">{{ minusTwo }}</a></li>
-      {% endif %}
-      {% if currentPage > 1 %}
-        <li><a href="?PageNum={{ minusOne }}">{{ minusOne }}</a></li>
-      {% endif %}
-
-      <li class="active">
-        <span>{{ currentPage }} <span class="sr-only">(current)</span></span>
-      </li>
-
-      {% if currentPage == lastPage %}
-        <li class="disabled">
-          <span>
-            <span aria-hidden="true">&raquo;</span>
-          </span>
-        </li>
-
-      {% elsif plusOne <= lastPage %}
-        <li><a href="?PageNum={{ plusOne }}">{{ plusOne }}</a></li>
-        {% if plusTwo <= lastPage %}
-        <li><a href="?PageNum={{ plusTwo }}">{{ plusTwo }}</a></li>
-        {% endif %}
-
-        <li><a href="?PageNum={{ plusOne }}" aria-label="Next"><span aria-hidden="true">&raquo;</span></a></li>
-      {% endif %}
-
+  <nav>
+    <ul class="pager">
+      {% unless isFirstPage %}
+      <li class="previous"><a href="?PageNum={{ prevPage }}"><span aria-hidden="true">&larr;</span> Newer</a></li>
+      {% endunless %}
+      <li class="next"><a href="?PageNum={{ nextPage }}">Older <span aria-hidden="true">&rarr;</span></a></li>
     </ul>
   </nav>
 
@@ -148,7 +65,7 @@ REQUIRED VARIABLES
 </div>
 
 
-{% if table1.rows.first.CurrentPage == 1 %}
+{% if isFirstPage %}
   <section class="bigblock bigblock-graylighter margin-t-lg">
     <div class="container container-sm">
       <h3 class="margin-t-sm">Podcasts</h3>
