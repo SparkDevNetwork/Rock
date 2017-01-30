@@ -239,6 +239,21 @@ namespace RockWeb.Blocks.Finance
 
                         break;
                     }
+                case "Contains Source Type":
+                    {
+                        var sourceTypeValueId = e.Value.AsIntegerOrNull();
+                        if ( sourceTypeValueId.HasValue )
+                        {
+                            var sourceTypeValue = DefinedValueCache.Read( sourceTypeValueId.Value );
+                            e.Value = sourceTypeValue != null ? sourceTypeValue.ToString() : string.Empty;
+                        }
+                        else
+                        {
+                            e.Value = string.Empty;
+                        }
+
+                        break;
+                    }
             }
         }
 
@@ -259,6 +274,7 @@ namespace RockWeb.Blocks.Finance
             gfBatchFilter.SaveUserPreference( "Status", ddlStatus.SelectedValue );
             gfBatchFilter.SaveUserPreference( "Campus", campCampus.SelectedValue );
             gfBatchFilter.SaveUserPreference( "Contains Transaction Type", ddlTransactionType.SelectedValue );
+            gfBatchFilter.SaveUserPreference( "Contains Source Type", ddlSourceType.SelectedValue );
 
             BindGrid();
         }
@@ -490,6 +506,10 @@ namespace RockWeb.Blocks.Finance
             campCampus.SetValue( gfBatchFilter.GetUserPreference( "Campus" ) );
 
             drpBatchDate.DelimitedValues = gfBatchFilter.GetUserPreference( "Date Range" );
+
+            var definedTypeSourceTypes = DefinedTypeCache.Read( Rock.SystemGuid.DefinedType.FINANCIAL_SOURCE_TYPE.AsGuid() );
+            ddlSourceType.BindToDefinedType( definedTypeSourceTypes, true );
+            ddlSourceType.SetValue( gfBatchFilter.GetUserPreference( "Contains Source Type" ) );
         }
 
         /// <summary>
@@ -653,6 +673,13 @@ namespace RockWeb.Blocks.Finance
             if ( campus != null )
             {
                 qry = qry.Where( b => b.CampusId == campus.Id );
+            }
+
+            // filter by batches that contain transactions of the specified source type
+            var sourceTypeValueId = gfBatchFilter.GetUserPreference( "Contains Source Type" ).AsIntegerOrNull();
+            if ( sourceTypeValueId.HasValue )
+            {
+                qry = qry.Where( a => a.Transactions.Any( t => t.SourceTypeValueId == sourceTypeValueId.Value ) );
             }
 
             IOrderedQueryable<FinancialBatch> sortedQry = null;
