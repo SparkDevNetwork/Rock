@@ -76,11 +76,92 @@ namespace RockWeb.Blocks.Cms
                 // make sure repeaters rebuild the controls
                 ShowDetailForZone( ddlZones.SelectedValue );
             }
+
+            // handle sort events
+            string postbackArgs = Request.Params["__EVENTARGUMENT"];
+            if ( !string.IsNullOrWhiteSpace( postbackArgs ) )
+            {
+                string[] nameValue = postbackArgs.Split( new char[] { ':' } );
+                if ( nameValue.Count() == 2 )
+                {
+                    string eventParam = nameValue[0];
+                    if ( eventParam.Equals( "re-order-panel-widget" ) )
+                    {
+                        string[] values = nameValue[1].Split( new char[] { ';' } );
+                        if ( values.Count() == 2 )
+                        {
+                            SortPanelWidgets( eventParam, values );
+                        }
+                    }
+                }
+            }
         }
 
         #endregion
 
         #region Events
+
+        private void SortPanelWidgets( string eventParam, string[] values )
+        {
+            string panelWidgetClientId = values[0];
+            int newIndex = int.Parse( values[1] );
+            Panel pnlWidget = pnlDetails.ControlsOfTypeRecursive<Panel>().FirstOrDefault( a => a.ClientID == panelWidgetClientId );
+            HiddenField hfLayoutBlockId = pnlWidget.FindControl( "hfLayoutBlockId" ) as HiddenField;
+            HiddenField hfPageBlockId = pnlWidget.FindControl( "hfPageBlockId" ) as HiddenField;
+
+            int? blockId = null;
+            if ( hfLayoutBlockId != null )
+            {
+                blockId = hfLayoutBlockId.Value.AsIntegerOrNull();
+            }
+            else if ( hfPageBlockId != null )
+            {
+                blockId = hfPageBlockId.Value.AsIntegerOrNull();
+            }
+
+            if ( blockId.HasValue )
+            {
+                var rockContext = new RockContext();
+                var blockService = new BlockService( rockContext );
+                var block = blockService.Get( blockId.Value );
+                var page = Rock.Web.Cache.PageCache.Read( hfPageId.Value.AsInteger() );
+                if ( block != null && page != null )
+                {
+                    List<Block> zoneBlocks = null;
+                    if ( block.LayoutId.HasValue )
+                    {
+                        zoneBlocks = blockService.GetByLayoutAndZone( block.LayoutId.Value, block.Zone ).ToList();
+
+                    }
+                    else
+                    {
+                        zoneBlocks = blockService.GetByPageAndZone( block.PageId.Value, block.Zone ).ToList();
+                    }
+
+                    if ( zoneBlocks != null )
+                    {
+                        var oldIndex = zoneBlocks.IndexOf( block );
+                        blockService.Reorder( zoneBlocks, oldIndex, newIndex );
+
+                        rockContext.SaveChanges();
+                    }
+
+                    foreach ( var zoneBlock in zoneBlocks)
+                    {
+                        // make sure the BlockCache for all the re-ordered blocks get flushed so the new Order is updated
+                        BlockCache.Flush( zoneBlock.Id );
+                    }
+                    
+                    page.FlushBlocks();
+                    if ( block.LayoutId.HasValue )
+                    {
+                        Rock.Web.Cache.PageCache.FlushLayoutBlocks( block.LayoutId.Value );
+                    }
+
+                    ShowDetailForZone( ddlZones.SelectedValue );
+                }
+            }
+        }
 
         /// <summary>
         /// Handles the SelectedIndexChanged event of the ddlZones control.
@@ -115,10 +196,19 @@ namespace RockWeb.Blocks.Cms
         {
             int pageId = hfPageId.Value.AsInteger();
             var page = Rock.Web.Cache.PageCache.Read( pageId );
+
             lZoneTitle.Text = string.Format( "{0} Zone", zoneName );
             lZoneIcon.Text = "<i class='fa fa-th-large'></i>";
             if ( page != null )
             {
+                // Refresh ZoneList's "Count" text
+                foreach ( var zoneListItem in ddlZones.Items.OfType<ListItem>() )
+                {
+                    var zoneBlockCount = page.Blocks.Where( a => a.Zone.Equals( zoneListItem.Value, StringComparison.OrdinalIgnoreCase ) ).Count();
+                    zoneListItem.Text = string.Format( "{0} ({1})", zoneListItem.Value, zoneBlockCount );
+                }
+
+                // update LayoutBlock and PageBlock repeaters
                 var zoneBlocks = page.Blocks.Where( a => a.Zone == zoneName ).ToList();
 
                 var layoutBlocks = zoneBlocks.Where( a => a.LayoutId.HasValue ).OrderBy( a => a.Order ).ThenBy( a => a.Name ).ToList();
@@ -443,6 +533,8 @@ namespace RockWeb.Blocks.Cms
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnAddBlock_Click( object sender, EventArgs e )
         {
+            tbNewBlockName.Text = string.Empty;
+
             // Load the block types
             using ( var rockContext = new RockContext() )
             {
@@ -497,7 +589,7 @@ namespace RockWeb.Blocks.Cms
 
             cblAddBlockPageOrLayout.Items.Add( listItemPage );
             cblAddBlockPageOrLayout.Items.Add( listItemLayout );
-
+            mdAddBlock.Title = "Add Block to " + ddlZones.SelectedValue + " Zone";
             mdAddBlock.Show();
         }
 
@@ -546,14 +638,84 @@ namespace RockWeb.Blocks.Cms
             }
         }
 
+        /// <summary>
+        /// Handles the SaveClick event of the mdAddBlock control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void mdAddBlock_SaveClick( object sender, EventArgs e )
         {
-            // TODO
+            using ( var rockContext = new RockContext() )
+            {
+                BlockService blockService = new BlockService( rockContext );
+
+                var page = PageCache.Read( hfPageId.Value.AsInteger() );
+
+                Block block = new Rock.Model.Block();
+                block.Zone = ddlZones.SelectedValue;
+                block.Name = tbNewBlockName.Text;
+                block.BlockTypeId = ddlBlockType.SelectedValue.AsInteger();
+
+                if ( cblAddBlockPageOrLayout.SelectedValue == "Page" )
+                {
+                    block.PageId = page.Id;
+                    block.LayoutId = null;
+                }
+                else
+                {
+                    block.PageId = null;
+                    block.LayoutId = page.LayoutId;
+                }
+
+                block.Order = blockService.GetMaxOrder( block );
+
+                blockService.Add( block );
+
+                rockContext.SaveChanges();
+
+                Rock.Security.Authorization.CopyAuthorization( page, block, rockContext );
+
+                if ( block.LayoutId.HasValue )
+                {
+                    Rock.Web.Cache.PageCache.FlushLayoutBlocks( page.LayoutId );
+                }
+                else
+                {
+                    page.FlushBlocks();
+                }
+
+                mdAddBlock.Hide();
+                ShowDetailForZone( ddlZones.SelectedValue );
+            }
         }
 
-        protected void btnHtmlContent_Click( object sender, EventArgs e )
+        /// <summary>
+        /// Handles the Click event of the btnNewBlockQuickSetting control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void btnNewBlockQuickSetting_Click( object sender, EventArgs e )
         {
-            // TODO
+            BlockTypeCache quickSettingBlockType = null;
+
+            if ( sender == btnHtmlContentQuickSetting )
+            {
+                quickSettingBlockType = BlockTypeCache.Read( Rock.SystemGuid.BlockType.HTML_CONTENT.AsGuid() );
+            }
+            else if ( sender == btnContentChannelQuickSetting )
+            {
+                quickSettingBlockType = BlockTypeCache.Read( Rock.SystemGuid.BlockType.CONTENT_CHANNEL_VIEW.AsGuid() );
+            }
+            else if ( sender == btnPageMenuQuickSetting )
+            {
+                quickSettingBlockType = BlockTypeCache.Read( Rock.SystemGuid.BlockType.PAGE_MENU.AsGuid() );
+            }
+
+            if ( quickSettingBlockType != null )
+            {
+                ddlBlockType.SetValue( quickSettingBlockType.Id );
+                ddlBlockType_SelectedIndexChanged( sender, e );
+            }
         }
 
         /// <summary>
@@ -575,6 +737,16 @@ namespace RockWeb.Blocks.Cms
                     tbNewBlockName.Text = ddlBlockType.SelectedItem.Text;
                 }
             }
+        }
+
+        /// <summary>
+        /// Handles the SaveClick event of the mdCopyPage control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void mdCopyPage_SaveClick( object sender, EventArgs e )
+        {
+
         }
     }
 }

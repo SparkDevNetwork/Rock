@@ -177,8 +177,6 @@ namespace RockWeb.Blocks.Administration
             var site = SiteCache.Read( page.Layout.SiteId );
             hlblSiteName.Text = "Site: " + site.Name;
 
-            aChildPagesLink.NavigateUrl = string.Format( "javascript: Rock.controls.modal.show($(this), '/pages/{0}?t=Child Pages&amp;pb=&amp;sb=Done')", page.Id );
-
             lblMainDetailsCol1.Text = new DescriptionList()
                 .Add( "Internal Name", page.InternalName )
                 .Add( "Page Title", page.PageTitle )
@@ -204,6 +202,7 @@ namespace RockWeb.Blocks.Administration
         {
             pnlEditDetails.Visible = editable;
             fieldsetViewDetails.Visible = !editable;
+            mdCopyPage.Visible = !editable;
             this.HideSecondaryBlocks( editable );
         }
 
@@ -1075,9 +1074,139 @@ namespace RockWeb.Blocks.Administration
             }
         }
 
+        /// <summary>
+        /// Handles the Click event of the btnCopy control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnCopy_Click( object sender, EventArgs e )
         {
-            // TODO, first prompt of ChildPages should be copied with a Yes No Horizontal CheckboxList
+            mdCopyPage.Show();
+        }
+
+        /// <summary>
+        /// Handles the SaveClick event of the mdCopyPage control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void mdCopyPage_SaveClick( object sender, EventArgs e )
+        {
+            RockContext rockContext = new RockContext();
+            PageService pageService = new PageService( rockContext );
+            int sourcePageId = hfPageId.ValueAsInt();
+
+            Guid? copiedPageGuid = pageService.CopyPage( sourcePageId, cbCopyPageIncludeChildPages.Checked, this.CurrentPersonAliasId );
+            if ( copiedPageGuid.HasValue )
+            {
+                var copiedPage = PageCache.Read( copiedPageGuid.Value );
+
+                // reload page (Assuming we are using Page Builder UI) to the new copied page
+                var qryParams = new Dictionary<string, string>();
+                if ( copiedPage != null )
+                {
+                    qryParams["Page"] = copiedPage.Id.ToString();
+
+                    string expandedIds = this.Request.Params["ExpandedIds"];
+                    if ( expandedIds != null )
+                    {
+                        // remove the current pageId param to avoid extra treeview flash
+                        var expandedIdList = expandedIds.SplitDelimitedValues().AsIntegerList();
+                        expandedIdList.Remove( copiedPage.Id );
+
+                        // add the parentPageId to the expanded ids
+                        var parentPageParam = this.Request.Params["ParentPageId"];
+                        if ( !string.IsNullOrEmpty( parentPageParam ) )
+                        {
+                            var parentPageId = parentPageParam.AsIntegerOrNull();
+                            if ( parentPageId.HasValue )
+                            {
+                                if ( !expandedIdList.Contains( parentPageId.Value ) )
+                                {
+                                    expandedIdList.Add( parentPageId.Value );
+                                }
+                            }
+
+
+                        }
+
+                        qryParams["ExpandedIds"] = expandedIdList.AsDelimited( "," );
+                    }
+                }
+
+                NavigateToPage( RockPage.Guid, qryParams );
+            }
+        }
+
+        /// <summary>
+        /// Handles the GridReorder event of the gChildPageOrder control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="GridReorderEventArgs"/> instance containing the event data.</param>
+        protected void gChildPageOrder_GridReorder( object sender, GridReorderEventArgs e )
+        {
+            var page = PageCache.Read( hfPageId.Value.AsInteger() );
+            if ( page == null )
+            {
+                return;
+            }
+
+            var rockContext = new RockContext();
+            var pageService = new PageService( rockContext );
+            var childPages = pageService.GetByParentPageId( page.Id ).ToList();
+            pageService.Reorder( childPages, e.OldIndex, e.NewIndex );
+            rockContext.SaveChanges();
+
+            Rock.Web.Cache.PageCache.Flush( page.Id );
+
+            foreach ( var childPage in childPages )
+            {
+                // make sure the PageCache for all the re-ordered pages get flushed so the new Order is updated
+                Rock.Web.Cache.PageCache.Flush( childPage.Id );
+            }
+
+            page.FlushChildPages();
+
+            BindChildPageOrderGrid();
+        }
+
+        /// <summary>
+        /// Handles the SaveClick event of the mdChildPageOrdering control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void mdChildPageOrdering_SaveClick( object sender, EventArgs e )
+        {
+            mdChildPageOrdering.Visible = false;
+            mdChildPageOrdering.Hide();
+
+            NavigateToCurrentPage( this.Request.QueryString.AllKeys.ToDictionary( k => k, k => this.Request.QueryString[k] ) );
+        }
+
+        /// <summary>
+        /// Handles the Click event of the btnChildPageOrder control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void btnChildPageOrder_Click( object sender, EventArgs e )
+        {
+            BindChildPageOrderGrid();
+
+            mdChildPageOrdering.Visible = true;
+
+            mdChildPageOrdering.Show();
+        }
+
+        /// <summary>
+        /// Binds the child page order grid.
+        /// </summary>
+        private void BindChildPageOrderGrid()
+        {
+            var page = PageCache.Read( hfPageId.Value.AsInteger() );
+            if ( page != null )
+            {
+                gChildPageOrder.DataSource = page.GetPages( new RockContext() );
+                gChildPageOrder.DataBind();
+            }
         }
     }
 }

@@ -3,7 +3,7 @@
     <ContentTemplate>
         <asp:HiddenField ID="hfPageId" runat="server" />
 
-        <asp:Panel ID="pnlDetails" CssClass="panel panel-block" runat="server" >
+        <asp:Panel ID="pnlDetails" CssClass="panel panel-block" runat="server">
             <div class="panel-heading">
                 <h1 class="panel-title">
                     <asp:Literal ID="lZoneIcon" runat="server" />
@@ -15,26 +15,34 @@
             </div>
             <div class="panel-body">
                 <legend>Blocks From Layout</legend>
-                <asp:Repeater ID="rptLayoutBlocks" runat="server" OnItemDataBound="rptPageOrLayoutBlocks_ItemDataBound">
-                    <ItemTemplate>
-                        <asp:Panel ID="pnlBlockEditWidget" runat="server" CssClass="panel panel-widget">
-                        </asp:Panel>
-                    </ItemTemplate>
-                </asp:Repeater>
+                <div class="layout-blocks-sort-container">
+                    <asp:Repeater ID="rptLayoutBlocks" runat="server" OnItemDataBound="rptPageOrLayoutBlocks_ItemDataBound">
+                        <ItemTemplate>
+                            
+                            <asp:Panel ID="pnlBlockEditWidget" runat="server" CssClass="panel panel-widget">
+                                <asp:HiddenField ID="hfLayoutBlockId" runat="server" Value='<%# Eval("Id") %>' />
+                            </asp:Panel>
+                        </ItemTemplate>
+                    </asp:Repeater>
+                </div>
 
                 <hr />
 
                 <legend>Blocks From Page</legend>
-                <asp:Repeater ID="rptPageBlocks" runat="server" OnItemDataBound="rptPageOrLayoutBlocks_ItemDataBound">
-                    <ItemTemplate>
-                        <asp:Panel ID="pnlBlockEditWidget" runat="server" CssClass="panel panel-widget">
-                        </asp:Panel>
-                    </ItemTemplate>
-                </asp:Repeater>
+                <div class="page-blocks-sort-container">
+                    <asp:Repeater ID="rptPageBlocks" runat="server" OnItemDataBound="rptPageOrLayoutBlocks_ItemDataBound">
+                        <ItemTemplate>
+                            
+                            <asp:Panel ID="pnlBlockEditWidget" runat="server" CssClass="panel panel-widget">
+                                <asp:HiddenField ID="hfPageBlockId" runat="server" Value='<%# Eval("Id") %>' />
+                            </asp:Panel>
+                        </ItemTemplate>
+                    </asp:Repeater>
+                </div>
 
                 <div class="actions ">
                     <div class="pull-right">
-                        <asp:LinkButton ID="btnAddBlock" runat="server" ToolTip="Add Block" Text="<i class='fa fa-plus'></i>" CssClass="btn btn-default" OnClick="btnAddBlock_Click" />
+                        <asp:LinkButton ID="btnAddBlock" runat="server" ToolTip="Add Block" Text="<i class='fa fa-plus'></i>" CssClass="btn btn-default btn-sm" OnClick="btnAddBlock_Click" />
                     </div>
 
                 </div>
@@ -42,8 +50,7 @@
 
             <%--  This will hold blocks that need to be added to the page so that Custom Admin actions will work --%>
             <%-- Display -9999 offscreen. This will hopefully hide everything except for any modals that get shown with the Custom Action --%>
-            <asp:Panel ID="pnlBlocksHolder" runat="server" style="position:absolute; left:-9999px">
-
+            <asp:Panel ID="pnlBlocksHolder" runat="server" Style="position: absolute; left: -9999px">
             </asp:Panel>
 
         </asp:Panel>
@@ -60,15 +67,50 @@
 
         <Rock:ModalDialog ID="mdAddBlock" runat="server" ValidationGroup="vgAddBlock" OnSaveClick="mdAddBlock_SaveClick" Title="Add Block">
             <Content>
-                <Rock:RockTextBox ID="tbNewBlockName" runat="server" Label="Name" />
+                <asp:ValidationSummary ID="vsAddBlock" runat="server" ValidationGroup="vgAddBlock" HeaderText="Please Correct the Following" CssClass="alert alert-danger" />
+                <Rock:RockTextBox ID="tbNewBlockName" runat="server" Label="Name" Required="true" ValidationGroup="vgAddBlock" />
                 <Rock:RockDropDownList ID="ddlBlockType" runat="server" Label="Type" AutoPostBack="true" OnSelectedIndexChanged="ddlBlockType_SelectedIndexChanged" />
-                
-                <asp:LinkButton ID="btnHtmlContent" runat="server" Text="HTML Content" CssClass="btn btn-default" OnClick="btnHtmlContent_Click" />
-                <Rock:RockRadioButtonList ID="cblAddBlockPageOrLayout" runat="server" Label="Parent" RepeatDirection="Horizontal" />
 
+                <asp:LinkButton ID="btnHtmlContentQuickSetting" runat="server" Text="HTML Content" CssClass="btn btn-default" OnClick="btnNewBlockQuickSetting_Click" />
+                <asp:LinkButton ID="btnContentChannelQuickSetting" runat="server" Text="Content Channel" CssClass="btn btn-default" OnClick="btnNewBlockQuickSetting_Click" />
+                <asp:LinkButton ID="btnPageMenuQuickSetting" runat="server" Text="Page Menu" CssClass="btn btn-default" OnClick="btnNewBlockQuickSetting_Click" />
+
+                <Rock:RockRadioButtonList ID="cblAddBlockPageOrLayout" runat="server" Label="Add To" RepeatDirection="Horizontal" FormGroupCssClass="margin-t-md" />
 
             </Content>
         </Rock:ModalDialog>
+
+        <script>
+            Sys.Application.add_load(function () {
+
+                var fixHelper = function (e, ui) {
+                    ui.children().each(function () {
+                        $(this).width($(this).width());
+                    });
+                    return ui;
+                };
+
+                // javascript to make the Reorder buttons work on the panel-widget controls
+                $('.layout-blocks-sort-container, .page-blocks-sort-container').sortable({
+                    helper: fixHelper,
+                    handle: '.panel-widget-reorder',
+                    containment: 'parent',
+                    tolerance: 'pointer',
+                    start: function (event, ui) {
+                        {
+                            var start_pos = ui.item.index();
+                            ui.item.data('start_pos', start_pos);
+                        }
+                    },
+                    update: function (event, ui) {
+                        {
+                            var newItemIndex = $(ui.item).prevAll('.panel-widget').length;
+                            __doPostBack('<%=upPages.ClientID %>', 're-order-panel-widget:' + ui.item.attr('id') + ';' + newItemIndex);
+                        }
+                    }
+                });
+            });
+        </script>
 
     </ContentTemplate>
 </asp:UpdatePanel>
