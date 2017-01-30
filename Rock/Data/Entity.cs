@@ -236,20 +236,6 @@ namespace Rock.Data
             private set { }
         }
 
-        /// <summary>
-        /// Gets the index result template.
-        /// </summary>
-        /// <value>
-        /// The index result template.
-        /// </value>
-        public static string IndexResultTemplate
-        {
-            get
-            {
-                return Rock.Web.Cache.EntityTypeCache.Read( typeof( T ) ).IndexResultTemplate;
-            }
-        }
-
         #endregion
 
         #region Static Properties
@@ -298,7 +284,7 @@ namespace Rock.Data
 
             foreach ( var propInfo in this.GetType().GetProperties() )
             {
-                if ( !propInfo.GetGetMethod().IsVirtual || propInfo.Name == "Id" || propInfo.Name == "Guid" || propInfo.Name == "Order" )
+                if ( !propInfo.GetGetMethod().IsVirtual || propInfo.Name == "Id" || propInfo.Name == "Guid" || propInfo.Name == "Order" || propInfo.Name == "IsActive" )
                 {
                     dictionary.Add( propInfo.Name, propInfo.GetValue( this, null ) );
                 }

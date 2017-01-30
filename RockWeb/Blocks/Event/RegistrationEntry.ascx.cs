@@ -884,7 +884,7 @@ namespace RockWeb.Blocks.Event
                     if ( discount == null )
                     {
                         validDiscount = false;
-                        nbDiscountCode.Text = string.Format( "'{1}' is not a valid {1}.", discountCode, DiscountCodeTerm );
+                        nbDiscountCode.Text = string.Format( "'{0}' is not a valid {1}.", discountCode, DiscountCodeTerm );
                         nbDiscountCode.Visible = true;
                     }
 

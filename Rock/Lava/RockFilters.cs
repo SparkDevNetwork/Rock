@@ -55,6 +55,18 @@ namespace Rock.Lava
 
 
         /// <summary>
+        /// Returns a <see cref="System.String" /> that represents this instance.
+        /// </summary>
+        /// <param name="input">The input.</param>
+        /// <returns>
+        /// A <see cref="System.String" /> that represents this instance.
+        /// </returns>
+        public static string ToString( object input )
+        {
+            return input.ToString();
+        }
+
+        /// <summary>
         /// Withes the fallback.
         /// </summary>
         /// <param name="input">The input.</param>
@@ -1738,7 +1750,16 @@ namespace Rock.Lava
         /// <returns></returns>
         public static List<Person> Parents( DotLiquid.Context context, object input )
         {
-            var person = GetPerson( input );
+            Person person = null;
+
+            if ( input is int )
+            {
+                person = new PersonService( new RockContext() ).Get( (int)input );
+            }
+            else if ( input is Person )
+            {
+                person = (Person)input;
+            }
 
             if ( person != null )
             {
@@ -1758,7 +1779,16 @@ namespace Rock.Lava
         /// <returns></returns>
         public static List<Person> Children( DotLiquid.Context context, object input )
         {
-            var person = GetPerson( input );
+            Person person = null;
+
+            if ( input is int )
+            {
+                person = new PersonService( new RockContext() ).Get( (int)input );
+            }
+            else if ( input is Person )
+            {
+                person = (Person)input;
+            }
 
             if ( person != null )
             {
@@ -1780,7 +1810,16 @@ namespace Rock.Lava
         /// <returns></returns>
         public static string Address( DotLiquid.Context context, object input, string addressType, string qualifier = "" )
         {
-            var person = GetPerson( input );
+            Person person = null;
+
+            if ( input is int )
+            {
+                person = new PersonService( new RockContext() ).Get( (int)input );
+            }
+            else if ( input is Person )
+            {
+                person = (Person)input;
+            }
 
             if ( person != null )
             {
@@ -1931,7 +1970,16 @@ namespace Rock.Lava
         /// <returns></returns>
         public static Person Spouse( DotLiquid.Context context, object input )
         {
-            var person = GetPerson( input );
+            Person person = null;
+
+            if ( input is int )
+            {
+                person = new PersonService( new RockContext() ).Get( (int)input );
+            }
+            else if ( input is Person )
+            {
+                person = (Person)input;
+            }
 
             if ( person == null )
             {
@@ -1948,13 +1996,54 @@ namespace Rock.Lava
         /// <returns></returns>
         public static Person HeadOfHousehold( DotLiquid.Context context, object input )
         {
-            var person = GetPerson( input );
+            Person person = null;
+
+            if ( input is int )
+            {
+                person = new PersonService( new RockContext() ).Get( (int)input );
+            }
+            else if ( input is Person )
+            {
+                person = (Person)input;
+            }
 
             if ( person == null )
             {
                 return null;
             }
             return person.GetHeadOfHousehold();
+        }
+
+        /// <summary>
+        /// Families the salutation.
+        /// </summary>
+        /// <param name="context">The context.</param>
+        /// <param name="input">The input.</param>
+        /// <param name="includeChildren">if set to <c>true</c> [include children].</param>
+        /// <param name="includeInactive">if set to <c>true</c> [include inactive].</param>
+        /// <param name="useFormalNames">if set to <c>true</c> [use formal names].</param>
+        /// <param name="finalfinalSeparator">The finalfinal separator.</param>
+        /// <param name="separator">The separator.</param>
+        /// <returns></returns>
+        public static string FamilySalutation( DotLiquid.Context context, object input, bool includeChildren = false, bool includeInactive = true, bool useFormalNames = false, string finalfinalSeparator = "&", string separator = "," )
+        {
+            Person person = null;
+
+            if ( input is int )
+            {
+                person = new PersonService( new RockContext() ).Get( (int)input );
+            }
+            else if ( input is Person )
+            {
+                person = (Person)input;
+            }
+
+            if ( person == null )
+            {
+                return null;
+            }
+
+            return Person.GetFamilySalutation(person, includeChildren, includeInactive, useFormalNames, finalfinalSeparator, separator);
         }
 
         /// <summary>
@@ -1967,7 +2056,18 @@ namespace Rock.Lava
         /// <returns></returns>
         public static string PhoneNumber( DotLiquid.Context context, object input, string phoneType = "Home", bool countryCode = false )
         {
-            var person = GetPerson( input );
+            Person person = null;
+
+            if ( input is int )
+            {
+                person = new PersonService( new RockContext() ).Get( (int)input );
+            }
+            else if ( input is Person )
+            {
+                person = (Person)input;
+            }
+
+
             string phoneNumber = null;
 
             if ( person != null )
