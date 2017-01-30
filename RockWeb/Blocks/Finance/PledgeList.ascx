@@ -27,7 +27,6 @@
                             <Rock:DateField DataField="StartDate" HeaderText="Starts" SortExpression="StartDate"/>
                             <Rock:DateField DataField="EndDate" HeaderText="Ends"  SortExpression="EndDate"/>
                             <Rock:DateField DataField="ModifiedDateTime" HeaderText="Last Modified" SortExpression="ModifiedDateTime"/>
-                            <Rock:DeleteField OnClick="gPledges_Delete"/>
                         </Columns>
                     </Rock:Grid>
                 </div>
