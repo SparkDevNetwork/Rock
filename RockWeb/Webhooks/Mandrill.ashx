@@ -54,6 +54,7 @@ public class Mandrill : IHttpHandler
             var rockContext = new Rock.Data.RockContext();
 
             CommunicationRecipientService communicationRecipientService = new CommunicationRecipientService( rockContext );
+            InteractionComponentService interactionComponentService = new InteractionComponentService( rockContext );
             InteractionService interactionService = new InteractionService( rockContext );
 
             var payload = JsonConvert.DeserializeObject<IEnumerable<MailEvent>>( postedData );
@@ -98,11 +99,32 @@ public class Mandrill : IHttpHandler
                         {
                             var communicationRecipient = communicationRecipientService.Get( communicationRecipientGuid );
 
-                            if ( communicationRecipient != null )
+                            if ( communicationRecipient != null && communicationRecipient.Communication != null )
                             {
                                 if ( item.UserAgent == null )
                                 {
                                     item.UserAgent = new UserAgent();
+                                }
+
+                                InteractionComponent interactionComponent = null;
+                                var interactionChannel = new InteractionChannelService( rockContext ).Get( Rock.SystemGuid.InteractionChannel.COMMUNICATION.AsGuid() );
+                                if ( interactionChannel != null )
+                                {
+                                    interactionComponent = interactionComponentService.Queryable()
+                                            .Where( c =>
+                                                c.ChannelId == interactionChannel.Id &&
+                                                c.EntityId == communicationRecipient.CommunicationId )
+                                            .FirstOrDefault();
+                                    if ( interactionComponent == null )
+                                    {
+
+                                        interactionComponent = new InteractionComponent();
+                                        interactionComponent.Name = communicationRecipient.Communication.Subject;
+                                        interactionComponent.EntityId = communicationRecipient.Communication.Id;
+                                        interactionComponent.ChannelId = interactionChannel.Id;
+                                        interactionComponentService.Add( interactionComponent );
+                                        rockContext.SaveChanges();
+                                    }
                                 }
 
                                 switch ( item.EventType )
@@ -111,6 +133,7 @@ public class Mandrill : IHttpHandler
                                         communicationRecipient.Status = CommunicationRecipientStatus.Delivered;
                                         communicationRecipient.StatusNote = String.Format( "Confirmed delivered by Mandrill at {0}", item.EventDateTime.ToString() );
                                         break;
+
                                     case MandrillEventType.Opened:
                                         communicationRecipient.Status = CommunicationRecipientStatus.Opened;
                                         communicationRecipient.OpenedDateTime = item.EventDateTime;
@@ -118,29 +141,39 @@ public class Mandrill : IHttpHandler
                                                                                 item.UserAgent.OperatingSystemName ?? "unknown",
                                                                                 item.UserAgent.UserAgentName ?? "unknown",
                                                                                 item.UserAgent.Type ?? "unknown" );
-                                        Interaction openActivity = new Interaction();
-                                        openActivity.EntityId = communicationRecipient.Id;
-                                        openActivity.Operation = "Opened";
-                                        openActivity.InteractionDateTime = item.EventDateTime;
-                                        openActivity.PersonAliasId = communicationRecipient.PersonAliasId;
 
-                                        var openInteractionDeviceType = interactionService.GetInteractionDeviceType( item.UserAgent.UserAgentName, item.UserAgent.OperatingSystemName, item.UserAgent.Type, null );
-                                        var openInteractionSession = interactionService.GetInteractionSession( null, item.IpAddress, openInteractionDeviceType.Id );
+                                        if ( interactionComponent != null )
+                                        {
+                                            Interaction openActivity = new Interaction();
+                                            openActivity.InteractionComponentId = interactionComponent.Id;
+                                            openActivity.EntityId = communicationRecipient.Id;
+                                            openActivity.Operation = "Opened";
+                                            openActivity.InteractionDateTime = item.EventDateTime;
+                                            openActivity.PersonAliasId = communicationRecipient.PersonAliasId;
 
-                                        openActivity.InteractionSessionId = openInteractionSession.Id;
-                                        interactionService.Add( openActivity );
+                                            var openInteractionDeviceType = interactionService.GetInteractionDeviceType( item.UserAgent.UserAgentName, item.UserAgent.OperatingSystemName, item.UserAgent.Type, null );
+                                            var openInteractionSession = interactionService.GetInteractionSession( null, item.IpAddress, openInteractionDeviceType.Id );
+
+                                            openActivity.InteractionSessionId = openInteractionSession.Id;
+                                            interactionService.Add( openActivity );
+                                        }
                                         break;
-                                    case MandrillEventType.Clicked:
-                                        Interaction clickActivity = new Interaction();
-                                        clickActivity.EntityId = communicationRecipient.Id;
-                                        clickActivity.Operation = "Click";
-                                        clickActivity.InteractionDateTime = item.EventDateTime;
-                                        clickActivity.PersonAliasId = communicationRecipient.PersonAliasId;
-                                        var clickInteractionDeviceType = interactionService.GetInteractionDeviceType( item.UserAgent.UserAgentName, item.UserAgent.OperatingSystemName, item.UserAgent.Type, null );
-                                        var clickInteractionSession = interactionService.GetInteractionSession( null, item.IpAddress, clickInteractionDeviceType.Id );
 
-                                        clickActivity.InteractionSessionId = clickInteractionSession.Id;
-                                        interactionService.Add( clickActivity );
+                                    case MandrillEventType.Clicked:
+                                        if ( interactionComponent != null )
+                                        {
+                                            Interaction clickActivity = new Interaction();
+                                            clickActivity.InteractionComponentId = interactionComponent.Id;
+                                            clickActivity.EntityId = communicationRecipient.Id;
+                                            clickActivity.Operation = "Click";
+                                            clickActivity.InteractionDateTime = item.EventDateTime;
+                                            clickActivity.PersonAliasId = communicationRecipient.PersonAliasId;
+                                            var clickInteractionDeviceType = interactionService.GetInteractionDeviceType( item.UserAgent.UserAgentName, item.UserAgent.OperatingSystemName, item.UserAgent.Type, null );
+                                            var clickInteractionSession = interactionService.GetInteractionSession( null, item.IpAddress, clickInteractionDeviceType.Id );
+
+                                            clickActivity.InteractionSessionId = clickInteractionSession.Id;
+                                            interactionService.Add( clickActivity );
+                                        }
                                         break;
                                 }
                             }
