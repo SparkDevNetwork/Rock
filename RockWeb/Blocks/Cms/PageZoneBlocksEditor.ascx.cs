@@ -131,7 +131,6 @@ namespace RockWeb.Blocks.Cms
                     if ( block.LayoutId.HasValue )
                     {
                         zoneBlocks = blockService.GetByLayoutAndZone( block.LayoutId.Value, block.Zone ).ToList();
-
                     }
                     else
                     {
@@ -547,7 +546,7 @@ namespace RockWeb.Blocks.Cms
 
                 // Add the categorized block types
                 foreach ( var blockType in blockTypes
-                    .Where( b => b.Category != "" )
+                    .Where( b => b.Category != string.Empty )
                     .OrderBy( b => b.Category )
                     .ThenBy( b => b.Name ) )
                 {
@@ -559,7 +558,7 @@ namespace RockWeb.Blocks.Cms
 
                 // Add the uncategorized block types
                 foreach ( var blockType in blockTypes
-                    .Where( b => b.Category == null || b.Category == "" )
+                    .Where( b => b.Category == null || b.Category == string.Empty )
                     .OrderBy( b => b.Name ) )
                 {
                     var li = new ListItem( blockType.Name, blockType.Id.ToString() );
@@ -737,16 +736,6 @@ namespace RockWeb.Blocks.Cms
                     tbNewBlockName.Text = ddlBlockType.SelectedItem.Text;
                 }
             }
-        }
-
-        /// <summary>
-        /// Handles the SaveClick event of the mdCopyPage control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void mdCopyPage_SaveClick( object sender, EventArgs e )
-        {
-
         }
     }
 }
