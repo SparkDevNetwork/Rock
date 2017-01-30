@@ -99,7 +99,7 @@
 
                     if (itemSearch) {
                         var locationUrl = window.location.href.split('?')[0] + itemSearch;
-                        locationUrl += "&ExpandedIds=" + encodeURIComponent(expandedDataIds);
+                        locationUrl += "&ExpandedIds=" + encodeURIComponent(expandedDataIds).toLowerCase();
                         if (window.location != locationUrl) {
                             window.location = locationUrl;
                         }
