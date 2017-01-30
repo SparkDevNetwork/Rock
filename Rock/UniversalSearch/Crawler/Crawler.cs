@@ -142,7 +142,7 @@ namespace Rock.UniversalSearch.Crawler
                     }
                 }
             }
-            catch ( Exception ex ) { }
+            catch { }
         }
 
         /// <summary>

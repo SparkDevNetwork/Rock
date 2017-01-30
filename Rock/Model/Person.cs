@@ -1577,6 +1577,7 @@ namespace Rock.Model
         /// </summary>
         /// <param name="person">The person.</param>
         /// <param name="includeChildren">if set to <c>true</c> [include children].</param>
+        /// <param name="includeInactive">if set to <c>true</c> [include inactive].</param>
         /// <param name="useFormalNames">if set to <c>true</c> [use formal name].</param>
         /// <param name="finalSeparator">The final separator.</param>
         /// <param name="separator">The separator.</param>

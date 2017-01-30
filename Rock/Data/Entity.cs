@@ -236,20 +236,6 @@ namespace Rock.Data
             private set { }
         }
 
-        /// <summary>
-        /// Gets the index result template.
-        /// </summary>
-        /// <value>
-        /// The index result template.
-        /// </value>
-        public static string IndexResultTemplate
-        {
-            get
-            {
-                return Rock.Web.Cache.EntityTypeCache.Read( typeof( T ) ).IndexResultTemplate;
-            }
-        }
-
         #endregion
 
         #region Static Properties
