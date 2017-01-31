@@ -370,6 +370,7 @@ namespace RockWeb.Plugins.com_centralaz.LifeGroupFinder
             groupMember.PersonId = ppGroupMemberPerson.PersonId.Value;
             groupMember.GroupRoleId = role.Id;
             groupMember.GroupMemberStatus = rblStatus.SelectedValueAsEnum<GroupMemberStatus>();
+            groupMember.Note = tbNote.Text;
 
             groupMember.LoadAttributes();
 
@@ -1000,6 +1001,7 @@ namespace RockWeb.Plugins.com_centralaz.LifeGroupFinder
             ppGroupMemberPerson.SetValue( groupMember.Person );
             ddlGroupRole.SetValue( groupMember.GroupRoleId );
             rblStatus.SetValue( (int)groupMember.GroupMemberStatus );
+            tbNote.Text = groupMember.Note;
 
             // set attributes
             groupMember.LoadAttributes();
