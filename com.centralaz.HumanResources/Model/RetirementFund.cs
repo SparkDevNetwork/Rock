@@ -68,6 +68,7 @@ namespace com.centralaz.HumanResources.Model
         /// </summary>
         public RetirementFundConfiguration()
         {
+            this.HasEntitySetName( "RetirementFund" );
             this.HasRequired( r => r.PersonAlias ).WithMany().HasForeignKey( r => r.PersonAliasId ).WillCascadeOnDelete( false );
             this.HasRequired( r => r.FundValue ).WithMany().HasForeignKey( r => r.FundValueId ).WillCascadeOnDelete( false );
         }

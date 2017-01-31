@@ -65,6 +65,8 @@ namespace com.centralaz.HumanResources.Model
         /// </summary>
         public ContributionElectionConfiguration()
         {
+            this.HasEntitySetName( "ContributionElection" );
+
             this.HasRequired( r => r.PersonAlias ).WithMany().HasForeignKey( r => r.PersonAliasId ).WillCascadeOnDelete( false );
             this.HasRequired( r => r.FinancialAccount ).WithMany().HasForeignKey( r => r.FinancialAccountId ).WillCascadeOnDelete( false );
         }

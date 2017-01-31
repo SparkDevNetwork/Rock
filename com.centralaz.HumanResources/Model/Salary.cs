@@ -66,6 +66,7 @@ namespace com.centralaz.HumanResources.Model
         /// </summary>
         public SalaryConfiguration()
         {
+            this.HasEntitySetName( "Salary" );
             this.HasRequired( r => r.PersonAlias ).WithMany().HasForeignKey( r => r.PersonAliasId ).WillCascadeOnDelete( false );
         }
     }
