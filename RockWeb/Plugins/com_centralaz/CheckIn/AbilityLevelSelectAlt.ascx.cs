@@ -19,6 +19,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Web.UI;
+using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
 using Rock;
 using Rock.Attribute;
@@ -29,13 +30,12 @@ using Rock.Web.Cache;
 
 namespace RockWeb.Plugins.com_centralaz.CheckIn
 {
-    [DisplayName("Ability Level Select (Alt)")]
+    [DisplayName( "Ability Level Select (Alt)" )]
     [Category( "com_centralaz > Check-in" )]
     [Description( "Check-in Ability Level Select block" )]
     [BooleanField( "Allow Previous Selection", "If enabled, allows previous abilities (those that are lower in order) to be selected even if someone has already passed that ability level. When disabled, it also causes the screen to be bypassed if the person is at the top ability level already. ", true )]
-    [LinkedPage( "Repeat Page (Family Check-in)", "The page to navigate back to if there are people or schedules already processed.", false, "", "", 3, "FamilyRepeatPage" )]
     [LinkedPage( "Previous Page (Family Check-in)", "The page to navigate back to if none of the people and schedules have been processed.", false, "", "", 4, "FamilyPreviousPage" )]
-    public partial class AbilityLevelSelectAlt : CheckInBlock
+    public partial class AbilityLevelSelectAlt : CheckInBlockMultiPerson
     {
         private string _personAbilityLevelGuid;
         private bool _shouldLowlight = true;
@@ -58,8 +58,7 @@ namespace RockWeb.Plugins.com_centralaz.CheckIn
             var person = CurrentCheckInState.CheckIn.CurrentPerson;
             if ( person == null )
             {
-                CancelCheckin();
-                return false;
+                return true;
             }
 
             if ( IsOverride || NoConfiguredAbilityLevels( person.GroupTypes ) )
@@ -108,6 +107,12 @@ namespace RockWeb.Plugins.com_centralaz.CheckIn
             RockPage.AddScriptLink( "~/Scripts/iscroll.js" );
             RockPage.AddScriptLink( "~/Scripts/CheckinClient/checkin-core.js" );
             _allowPreviousSelection = GetAttributeValue( "AllowPreviousSelection" ).AsBoolean( true );
+
+            var bodyTag = this.Page.Master.FindControl( "bodyTag" ) as HtmlGenericControl;
+            if ( bodyTag != null )
+            {
+                bodyTag.AddCssClass( "checkin-abilitylevelselect-bg" );
+            }
 
             if ( CurrentWorkflow == null || CurrentCheckInState == null )
             {
@@ -197,6 +202,16 @@ namespace RockWeb.Plugins.com_centralaz.CheckIn
         }
 
         /// <summary>
+        /// Handles the Click event of the btnNoOptionOk control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void btnNoOptionOk_Click( object sender, EventArgs e )
+        {
+            CancelCheckin();
+        }
+
+        /// <summary>
         /// Handles the Click event of the lbBack control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
@@ -261,51 +276,54 @@ namespace RockWeb.Plugins.com_centralaz.CheckIn
             var person = CurrentCheckInState.CheckIn.CurrentPerson;
             if ( person == null )
             {
-                CancelCheckin();
-            }
-
-            lPersonName.Text = person.ToString();
-
-            if ( IsOverride || NoConfiguredAbilityLevels( person.GroupTypes ) )
-            {
-                if ( UserBackedUp )
-                {
-                    GoBack( true );
-                }
-                else
-                {
-                    NavigateToNextPage( true );
-                }
+                pnlNoOptions.Visible = true;
+                divAbilityLevel.Visible = false;
             }
             else
             {
-                // If an ability level has already been selected, just process the selection
-                if ( person.StateParameters.ContainsKey( "AbilityLevel" ) )
+                lPersonName.Text = person.ToString();
+
+                if ( IsOverride || NoConfiguredAbilityLevels( person.GroupTypes ) )
                 {
-                    ProcessSelection();
+                    if ( UserBackedUp )
+                    {
+                        GoBack( true );
+                    }
+                    else
+                    {
+                        NavigateToNextPage( true );
+                    }
                 }
                 else
                 {
-                    person.Person.LoadAttributes();
-                    _personAbilityLevelGuid = person.Person.GetAttributeValue( "AbilityLevel" ).ToUpper();
-
-                    var abilityLevelDType = DefinedTypeCache.Read( Rock.SystemGuid.DefinedType.PERSON_ABILITY_LEVEL_TYPE.AsGuid() );
-                    if ( abilityLevelDType != null )
+                    // If an ability level has already been selected, just process the selection
+                    if ( person.StateParameters.ContainsKey( "AbilityLevel" ) )
                     {
-                        rSelection.DataSource = abilityLevelDType.DefinedValues.ToList();
-                        rSelection.DataBind();
+                        ProcessSelection();
                     }
-
-                    // Navigate to next page if the block config doesn't allow changing to previous options
-                    // and if person is at max ability level.
-                    if ( !_allowPreviousSelection )
+                    else
                     {
-                        var maxItem = abilityLevelDType.DefinedValues.OrderByDescending( d => d.Order ).FirstOrDefault();
-                        if ( maxItem.Guid == _personAbilityLevelGuid.AsGuid() )
+                        person.Person.LoadAttributes();
+                        _personAbilityLevelGuid = person.Person.GetAttributeValue( "AbilityLevel" ).ToUpper();
+
+                        var abilityLevelDType = DefinedTypeCache.Read( Rock.SystemGuid.DefinedType.PERSON_ABILITY_LEVEL_TYPE.AsGuid() );
+                        if ( abilityLevelDType != null )
                         {
-                            // Save the fact that user has already selected an ability level so they won't be asked again
-                            person.StateParameters.AddOrReplace( "AbilityLevel", _personAbilityLevelGuid.ToString() );
-                            ProcessSelection();
+                            rSelection.DataSource = abilityLevelDType.DefinedValues.ToList();
+                            rSelection.DataBind();
+                        }
+
+                        // Navigate to next page if the block config doesn't allow changing to previous options
+                        // and if person is at max ability level.
+                        if ( !_allowPreviousSelection )
+                        {
+                            var maxItem = abilityLevelDType.DefinedValues.OrderByDescending( d => d.Order ).FirstOrDefault();
+                            if ( maxItem.Guid == _personAbilityLevelGuid.AsGuid() )
+                            {
+                                // Save the fact that user has already selected an ability level so they won't be asked again
+                                person.StateParameters.AddOrReplace( "AbilityLevel", _personAbilityLevelGuid.ToString() );
+                                ProcessSelection();
+                            }
                         }
                     }
                 }
@@ -322,7 +340,7 @@ namespace RockWeb.Plugins.com_centralaz.CheckIn
                 () => CurrentCheckInState.CheckIn.CurrentPerson.GroupTypes
                     .Where( t => !t.ExcludedByFilter ) 
                     .Count() <= 0,
-                "<p>Sorry, based on your selection, there are currently not any available locations that can be checked into.</p>",
+                string.Format( "<p>Sorry, based on your selection, there are currently not any available locations that {0} can check into.</p>", CurrentCheckInState.CheckIn.CurrentPerson.Person.NickName ),
                 true ) ) 
             {
                 // Clear any filtered items so that user can select another option
@@ -412,15 +430,15 @@ namespace RockWeb.Plugins.com_centralaz.CheckIn
                 { 
                     if ( validateSelectionRequired )
                     {
-                        var nextBlock = GetCheckInBlock( "FamilyRepeatPage" );
+                        var nextBlock = GetCheckInBlock( "MultiPersonLastPage" );
                         if ( nextBlock != null && nextBlock.RequiresSelection( true ) )
                         {
-                            NavigateToLinkedPage( "FamilyRepeatPage", queryParams );
+                            NavigateToLinkedPage( "MultiPersonLastPage", queryParams );
                         }
                     }
                     else
                     {
-                        NavigateToLinkedPage( "FamilyRepeatPage", queryParams );
+                        NavigateToLinkedPage( "MultiPersonLastPage", queryParams );
                     }
                 }
                 else
