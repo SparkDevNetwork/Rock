@@ -22,6 +22,7 @@ using System.Linq.Expressions;
 
 using Rock.Data;
 using Rock.Model;
+using Rock.Web.Cache;
 
 namespace Rock.Reporting.DataSelect.Person
 {
@@ -142,31 +143,32 @@ namespace Rock.Reporting.DataSelect.Person
             MemberExpression groupProperty = Expression.Property( groupMemberParameter, "Group" );
             MemberExpression groupCampusProperty = Expression.Property( groupProperty, "Campus" );
 
-            // m.Group.GroupType
-            MemberExpression groupTypeProperty = Expression.Property( groupProperty, "GroupType" );
+            // m.Group.GroupTypeId
+            MemberExpression groupTypeProperty = Expression.Property( groupProperty, "GroupTypeID" );
 
-            // m.Group.GroupType.Guid
-            MemberExpression groupTypeGuidProperty = Expression.Property( groupTypeProperty, "Guid" );
 
-            // family group type guid
-            Expression groupTypeConstant = Expression.Constant( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY.AsGuid() );
+            var groupTypeFamily = GroupTypeCache.GetFamilyGroupType();
+            int groupTypeFamilyId = groupTypeFamily != null ? groupTypeFamily.Id : 0;
+
+            // family group type Id
+            Expression groupTypeConstant = Expression.Constant( groupTypeFamilyId );
 
             // m.PersonId == p.Id
             Expression personCompare = Expression.Equal( memberPersonIdProperty, entityIdProperty );
 
-            // m.Group.GroupType.Guid == GROUPTYPE_FAMILY guid
-            Expression groupTypeCompare = Expression.Equal( groupTypeGuidProperty, groupTypeConstant );
+            // m.Group.GroupTypeId == GROUPTYPE_FAMILY Id
+            Expression groupTypeCompare = Expression.Equal( groupTypeProperty, groupTypeConstant );
 
-            // m.PersonID == p.Id && m.Group.GroupType.Guid == GROUPTYPE_FAMILY guid
+            // m.PersonID == p.Id && m.Group.GroupTypeId == GROUPTYPE_FAMILY Id
             Expression andExpression = Expression.And( personCompare, groupTypeCompare );
 
-            // m => m.PersonID == p.Id && m.Group.GroupType.Guid == GROUPTYPE_FAMILY guid
+            // m => m.PersonID == p.Id && m.Group.GroupTypeId == GROUPTYPE_FAMILY Id
             var compare = new Expression[] {
                 Expression.Constant(groupMembers),
                 Expression.Lambda<Func<Rock.Model.GroupMember, bool>>(andExpression, new ParameterExpression[] { groupMemberParameter } )
             };
 
-            // groupmembers.Where(m => m.PersonID == p.Id && m.Group.GroupType.Guid == GROUPTYPE_FAMILY guid)
+            // groupmembers.Where(m => m.PersonID == p.Id && m.Group.GroupTypeId == GROUPTYPE_FAMILY Id)
             Expression whereExpression = Expression.Call( typeof( Queryable ), "Where", new Type[] { typeof( Rock.Model.GroupMember ) }, compare );
 
             // m.Group.Campus.Name
@@ -175,10 +177,10 @@ namespace Rock.Reporting.DataSelect.Person
             // m => m.Group.Campus.Name
             Expression groupCampusNameLambda = Expression.Lambda( groupCampusName, new ParameterExpression[] { groupMemberParameter } );
 
-            // groupmembers.Where(m => m.PersonID == p.Id && m.Group.GroupType.Guid == GROUPTYPE_FAMILY guid).Select( m => m.Group.Name);
+            // groupmembers.Where(m => m.PersonID == p.Id && m.Group.GroupTypeId == GROUPTYPE_FAMILY Id).Select( m => m.Group.Name);
             Expression selectName = Expression.Call( typeof( Queryable ), "Select", new Type[] { typeof( Rock.Model.GroupMember ), typeof( string ) }, whereExpression, groupCampusNameLambda );
 
-            // groupmembers.Where(m => m.PersonID == p.Id && m.Group.GroupType.Guid == GROUPTYPE_FAMILY guid).Select( m => m.Group.Name).FirstOrDefault();
+            // groupmembers.Where(m => m.PersonID == p.Id && m.Group.GroupTypeId == GROUPTYPE_FAMILY Id).Select( m => m.Group.Name).FirstOrDefault();
             Expression firstOrDefault = Expression.Call( typeof( Queryable ), "FirstOrDefault", new Type[] { typeof( string ) }, selectName );
 
             return firstOrDefault;

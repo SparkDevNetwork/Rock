@@ -40,7 +40,7 @@ namespace Rock.Web.Cache
     /// </summary>
     [Serializable]
     [DataContract]
-    [DotLiquid.LiquidType( "AttributeId", "Value", "ValueFormatted", "AttributeName", "AttributeKey" )]
+    [DotLiquid.LiquidType( "AttributeId", "Value", "ValueFormatted", "AttributeName", "AttributeKey", "AttributeIsGridColumn" )]
     public class AttributeValueCache
     {
         #region constructors
@@ -163,7 +163,7 @@ namespace Rock.Web.Cache
                 {
                     return attribute.Name;
                 }
-                return Value;
+                return string.Empty;
             }
         }
 
@@ -187,10 +187,33 @@ namespace Rock.Web.Cache
                 {
                     return attribute.Key;
                 }
-                return Value;
+                return string.Empty;
             }
         }
 
+        /// <summary>
+        /// Gets a value indicating whether attribute is grid column.
+        /// </summary>
+        /// <remarks>
+        /// Note: this property is provided specifically for Lava templates when the Attribute property is not available
+        /// as a navigable property
+        /// </remarks>
+        /// <value>
+        /// <c>true</c> if [attribute is grid column]; otherwise, <c>false</c>.
+        /// </value>
+        [LavaInclude]
+        public virtual bool AttributeIsGridColumn
+        {
+            get
+            {
+                var attribute = AttributeCache.Read( this.AttributeId );
+                if ( attribute != null )
+                {
+                    return attribute.IsGridColumn;
+                }
+                return false;
+            }
+        }
         /// <summary>
         /// Returns the Formatted Value of this Attribute Value
         /// </summary>

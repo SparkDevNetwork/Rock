@@ -169,7 +169,15 @@ namespace Rock.Web.UI.Controls
         public string ValidationGroup
         {
             get { return ViewState["ValidationGroup"] as string; }
-            set { ViewState["ValidationGroup"] = value; }
+            set
+            {
+                ViewState["ValidationGroup"] = value;
+
+                if ( CustomValidator != null )
+                {
+                    CustomValidator.ValidationGroup = value;
+                }
+            }
         }
         
         /// <summary>
@@ -185,6 +193,14 @@ namespace Rock.Web.UI.Controls
                 return !Required || RequiredFieldValidator == null || RequiredFieldValidator.IsValid;
             }
         }
+
+        /// <summary>
+        /// Gets or sets the custom validator.
+        /// </summary>
+        /// <value>
+        /// The custom validator.
+        /// </value>
+        public CustomValidator CustomValidator { get; set; }
 
         /// <summary>
         /// Gets or sets the help block.
@@ -217,11 +233,54 @@ namespace Rock.Web.UI.Controls
         private DropDownList yearDropDownList;
 
         /// <summary>
+        /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
+        /// </summary>
+        /// <param name="e">An <see cref="T:System.EventArgs" /> object that contains the event data.</param>
+        protected override void OnInit( System.EventArgs e )
+        {
+            EnsureChildControls();
+            base.OnInit( e );
+
+            string script = string.Format( @" function ValidateBirthdate_{0}(source, args) {{
+                var month = $(""select[id ^= '{0}_monthDropDownList_{1}']"");
+                var day = $(""select[id ^= '{0}_dayDropDownList_{1}']"");
+                var year = $(""select[id ^= '{0}_yearDropDownList_{1}']"");
+
+                var isValid = true;
+
+                if ( month.val() && day.val() && year.val() ) {{
+                    var monthIndex = month.val();
+                    monthIndex--;
+                    var bDate = new Date( year.val(), monthIndex, day.val() );
+                    var now = new Date();
+                    // is the birtdate in the future?
+                    if ( bDate > now ) {{
+                        isValid = false;
+                    }}
+                }}
+   
+                var control = $(""label[for='{0}']"").closest('.birthday-picker');
+                if (isValid) {{
+                    control.removeClass('has-error');
+                }} else {{
+                    control.addClass('has-error');
+                }}
+
+                args.IsValid = isValid;
+
+        }}", this.ClientID, this.ID );
+            ScriptManager.RegisterClientScriptBlock( this, typeof( BirthdayPicker ), "RockBirthdayPickerScript_" + this.ClientID, script, true );
+        }
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="BirthdayPicker"/> class.
         /// </summary>
         public BirthdayPicker()
             : base()
         {
+            CustomValidator = new CustomValidator();
+            CustomValidator.ValidationGroup = this.ValidationGroup;
+
             HelpBlock = new HelpBlock();
             WarningBlock = new WarningBlock();
         }
@@ -253,6 +312,15 @@ namespace Rock.Web.UI.Controls
             Controls.Add( monthDropDownList );
             Controls.Add( dayDropDownList );
             Controls.Add( yearDropDownList );
+
+            // add custom validator
+            CustomValidator.ID = this.ID + "_cfv";
+            CustomValidator.ClientValidationFunction = "ValidateBirthdate_" + this.ClientID;
+            CustomValidator.ErrorMessage = this.Label != string.Empty ? this.Label + " cannot be a future date." : string.Empty;
+            CustomValidator.CssClass = "validation-error help-inline";
+            CustomValidator.Enabled = true;
+            CustomValidator.Display = ValidatorDisplay.Dynamic;
+            Controls.Add( CustomValidator );
 
             PopulateDropDowns();
         }
@@ -374,6 +442,8 @@ namespace Rock.Web.UI.Controls
                 }
             }
 
+            CustomValidator.RenderControl( writer );
+
             writer.RenderEndTag();
         }
 
@@ -397,7 +467,15 @@ namespace Rock.Web.UI.Controls
                     // if they picked a day of the month that is invalid, just round it to last day that month;
                     int correctedDayOfMonth = Math.Min( DateTime.DaysInMonth( DateTime.MinValue.Year, selectedMonth.Value ), selectedDay.Value );
 
-                    return new DateTime( (selectedYear.HasValue ? selectedYear.Value : DateTime.MinValue.Year), selectedMonth.Value, correctedDayOfMonth );
+                    var date = new DateTime( (selectedYear.HasValue ? selectedYear.Value : DateTime.MinValue.Year), selectedMonth.Value, correctedDayOfMonth );
+                    if ( date > RockDateTime.Today )
+                    {
+                        ShowErrorMessage( "Birthdates cannot be in the future" );
+                    }
+                    else
+                    {
+                        return date;
+                    }
                 }
 
                 return null;
@@ -419,6 +497,16 @@ namespace Rock.Web.UI.Controls
                     yearDropDownList.SelectedValue = string.Empty;
                 }
             }
+        }
+
+        /// <summary>
+        /// Shows the error message.
+        /// </summary>
+        /// <param name="errorMessage">The error message.</param>
+        public void ShowErrorMessage( string errorMessage )
+        {
+            CustomValidator.ErrorMessage = errorMessage;
+            CustomValidator.IsValid = false;
         }
     }
 }

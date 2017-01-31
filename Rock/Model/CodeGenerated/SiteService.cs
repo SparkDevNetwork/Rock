@@ -114,7 +114,6 @@ namespace Rock.Model
             target.PageHeaderContent = source.PageHeaderContent;
             target.PageNotFoundPageId = source.PageNotFoundPageId;
             target.PageNotFoundPageRouteId = source.PageNotFoundPageRouteId;
-            target.PageViewRetentionPeriodDays = source.PageViewRetentionPeriodDays;
             target.RedirectTablets = source.RedirectTablets;
             target.RegistrationPageId = source.RegistrationPageId;
             target.RegistrationPageRouteId = source.RegistrationPageRouteId;

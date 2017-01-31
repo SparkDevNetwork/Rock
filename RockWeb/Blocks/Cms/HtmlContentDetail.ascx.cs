@@ -31,6 +31,7 @@ using Rock.Data;
 using Rock.Web.Cache;
 using System.Text;
 using HtmlAgilityPack;
+using System.Web;
 
 namespace RockWeb.Blocks.Cms
 {
@@ -55,7 +56,7 @@ namespace RockWeb.Blocks.Cms
     [BooleanField( "Enable Versioning", "If checked, previous versions of the content will be preserved. Versioning is required if you want to require approval.", false, "", 8, "SupportVersions" )]
     [BooleanField( "Require Approval", "Require that content be approved?", false, "", 9 )]
     [BooleanField( "Enable Debug", "Show lava merge fields.", false, "", 10 )]
-
+    [CustomDropdownListField( "Quick Edit", "Allow quick editing of HTML contents.", "AIREDIT^In Place Editing,DBLCLICK^Double-Click For Edit Dialog", false, "", "", 11, "QuickEdit")]
     [ContextAware]
     public partial class HtmlContentDetail : RockBlockCustomSettings
     {
@@ -91,6 +92,8 @@ namespace RockWeb.Blocks.Cms
             this.BlockUpdated += HtmlContentDetail_BlockUpdated;
             this.AddConfigurationUpdateTrigger( upnlHtmlContent );
 
+            RegisterScript();
+
             gVersions.GridRebind += gVersions_GridRebind;
         }
 
@@ -110,6 +113,20 @@ namespace RockWeb.Blocks.Cms
             {
                 nbApprovalRequired.Visible = false;
             }
+        }
+
+        /// <summary>
+        /// Raises the <see cref="E:System.Web.UI.Control.PreRender" /> event.
+        /// </summary>
+        /// <param name="e">An <see cref="T:System.EventArgs" /> object that contains the event data.</param>
+        protected override void OnPreRender( EventArgs e )
+        {
+            if ( GetAttributeValue( "QuickEdit" ) == "AIREDIT" )
+            {
+                hfEntityValue.Value = EntityValue();
+            }
+
+            base.OnPreRender( e );
         }
 
         #endregion
@@ -134,6 +151,16 @@ namespace RockWeb.Blocks.Cms
             HtmlContentService.FlushCachedContent( this.BlockId, EntityValue() );
             
             ShowView();
+        }
+
+        /// <summary>
+        /// Handles the Click event of the lbQuickEdit control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void lbQuickEdit_Click( object sender, EventArgs e )
+        {
+            ShowSettings();
         }
 
         /// <summary>
@@ -344,6 +371,51 @@ namespace RockWeb.Blocks.Cms
         #endregion
 
         #region Methods
+
+        private void RegisterScript()
+        {
+            if ( UserCanEdit )
+            {
+                string script = "";
+                if ( GetAttributeValue( "QuickEdit" ) == "DBLCLICK" )
+                {
+                    script = string.Format( @"
+    Sys.Application.add_load( function () {{
+        $('#{0} > div.html-content-view').dblclick(function (e) {{
+            {1};
+        }});
+    }});
+", upnlHtmlContent.ClientID, this.Page.ClientScript.GetPostBackEventReference( lbQuickEdit, "" ) );
+                }
+
+                if ( GetAttributeValue( "QuickEdit" ) == "AIREDIT" )
+                {
+                    RockPage.AddScriptLink( Page, ResolveUrl( "~/Scripts/summernote/summernote.min.js" ), true );
+
+                    script = string.Format( @"
+    Sys.Application.add_load( function () {{
+        $('#{0} > div.html-content-view').summernote( {{
+            airMode: true,
+            callbacks: {{
+                onChange: function( contents, $editable ) {{
+                    var htmlContents = {{
+                        EntityValue: $('#{2}').val(),
+                        Content: contents
+                    }};
+                    $.post( Rock.settings.get('baseUrl') + 'api/HtmlContents/UpdateContents/{1}', htmlContents, null, 'application/json' );
+                }}
+            }}
+        }});
+    }});
+", upnlHtmlContent.ClientID, this.BlockId, hfEntityValue.ClientID );
+                }
+
+                if ( !string.IsNullOrWhiteSpace( script ) )
+                {
+                    ScriptManager.RegisterStartupScript( lbQuickEdit, lbQuickEdit.GetType(), string.Format( "html-content-block-{0}", this.BlockId ), script, true );
+                }
+            }
+        }
 
         /// <summary>
         /// Binds the grid.

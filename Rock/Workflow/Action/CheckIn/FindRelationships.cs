@@ -25,6 +25,7 @@ using System.Runtime.Caching;
 using Rock.CheckIn;
 using Rock.Data;
 using Rock.Model;
+using Rock.Web.Cache;
 
 namespace Rock.Workflow.Action.CheckIn
 {
@@ -88,33 +89,52 @@ namespace Rock.Workflow.Action.CheckIn
                 var family = checkInState.CheckIn.CurrentFamily;
                 if ( family != null )
                 {
+                    bool preventInactive = ( checkInState.CheckInType != null && checkInState.CheckInType.PreventInactivePeopele );
+                    var dvInactive = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_INACTIVE.AsGuid() );
+
                     var groupMemberService = new GroupMemberService( rockContext );
 
                     var familyMemberIds = family.People.Select( p => p.Person.Id ).ToList();
 
-                    // Get the Known Relationship group id's for each person in the family
-                    var relationshipGroups = groupMemberService
-                        .Queryable().AsNoTracking()
-                        .Where( g =>
-                            g.GroupRole.Guid.Equals( new Guid( Rock.SystemGuid.GroupRole.GROUPROLE_KNOWN_RELATIONSHIPS_OWNER ) ) &&
-                            familyMemberIds.Contains( g.PersonId ) )
-                        .Select( g => g.GroupId );
-
-                    // Get anyone in any of those groups that has a role with the canCheckIn attribute set
-                    foreach ( var person in groupMemberService
-                        .Queryable().AsNoTracking()
-                        .Where( g =>
-                            relationshipGroups.Contains( g.GroupId ) &&
-                            roles.Contains( g.GroupRoleId ) )
-                        .Select( g => g.Person )
-                        .ToList() )
+                    var knownRelationshipGroupType = GroupTypeCache.Read( Rock.SystemGuid.GroupType.GROUPTYPE_KNOWN_RELATIONSHIPS.AsGuid() );
+                    if ( knownRelationshipGroupType != null )
                     {
-                        if ( !family.People.Any( p => p.Person.Id == person.Id ) )
+                        var ownerRole = knownRelationshipGroupType.Roles.FirstOrDefault( r => r.Guid == Rock.SystemGuid.GroupRole.GROUPROLE_KNOWN_RELATIONSHIPS_OWNER.AsGuid() );
+                        if ( ownerRole != null )
                         {
-                            var relatedPerson = new CheckInPerson();
-                            relatedPerson.Person = person.Clone( false );
-                            relatedPerson.FamilyMember = false;
-                            family.People.Add( relatedPerson );
+                            // Get the Known Relationship group id's for each person in the family
+                            var relationshipGroupIds = groupMemberService
+                                .Queryable().AsNoTracking()
+                                .Where( g =>
+                                    g.GroupRoleId == ownerRole.Id &&
+                                    familyMemberIds.Contains( g.PersonId ) )
+                                .Select( g => g.GroupId );
+
+                            // Get anyone in any of those groups that has a role with the canCheckIn attribute set
+                            var personIds = groupMemberService
+                                .Queryable().AsNoTracking()
+                                .Where( g =>
+                                    relationshipGroupIds.Contains( g.GroupId ) &&
+                                    roles.Contains( g.GroupRoleId ) )
+                                .Select( g => g.PersonId )
+                                .ToList();
+
+                            foreach ( var person in new PersonService( rockContext )
+                                .Queryable().AsNoTracking()
+                                .Where( p => personIds.Contains( p.Id ) )
+                                .ToList() )
+                            {
+                                if ( !family.People.Any( p => p.Person.Id == person.Id ) )
+                                {
+                                    if ( !preventInactive || dvInactive == null || person.RecordStatusValueId != dvInactive.Id )
+                                    {
+                                        var relatedPerson = new CheckInPerson();
+                                        relatedPerson.Person = person.Clone( false );
+                                        relatedPerson.FamilyMember = false;
+                                        family.People.Add( relatedPerson );
+                                    }
+                                }
+                            }
                         }
                     }
 

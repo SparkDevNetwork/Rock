@@ -278,7 +278,7 @@ namespace Rock.Model
         public bool RedirectTablets { get; set; }
 
         /// <summary>
-        /// Gets or sets a value indicating whether to log Page Views for pages in this site
+        /// Gets or sets a value indicating whether to log Page Views into the Interaction tables for pages in this site
         /// </summary>
         /// <value>
         ///   <c>true</c> if [enable page views]; otherwise, <c>false</c>.
@@ -291,15 +291,6 @@ namespace Rock.Model
             set { _enablePageViews = value; }
         }
         private bool _enablePageViews = true;
-
-        /// <summary>
-        /// Gets or sets the number of days to keep Page Views for pages in this site
-        /// </summary>
-        /// <value>
-        /// The page view retention period days.
-        /// </value>
-        [DataMember]
-        public int? PageViewRetentionPeriodDays { get; set; }
 
         /// <summary>
         /// Gets or sets the content of the page header.

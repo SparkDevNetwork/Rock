@@ -25,6 +25,7 @@ using System.Linq;
 using System.Runtime.Serialization;
 using Humanizer;
 using Rock.Data;
+using Rock.Transactions;
 using Rock.Web.Cache;
 
 namespace Rock.Model
@@ -273,6 +274,31 @@ namespace Rock.Model
                 {
                     verb = "DELETE";
                     action = "Removed from group.";
+                }
+
+                // process universal search indexing if required
+                if ( group == null )
+                {
+                    group = this.Group;
+                }
+                if ( group == null )
+                {
+                    group = new GroupService( rockContext ).Get( this.GroupId );
+                }
+                if ( group != null )
+                {
+                    var groupType = GroupTypeCache.Read( group.GroupTypeId );
+                    if ( groupType != null )
+                    {
+                        if ( groupType.IsIndexEnabled )
+                        {
+                            IndexEntityTransaction transaction = new IndexEntityTransaction();
+                            transaction.EntityTypeId = groupType.Id;
+                            transaction.EntityId = group.Id;
+
+                            RockQueue.TransactionQueue.Enqueue( transaction );
+                        }
+                    }
                 }
 
                 if ( !string.IsNullOrWhiteSpace( action ) )

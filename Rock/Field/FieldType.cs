@@ -286,7 +286,10 @@ namespace Rock.Field
             col2.ID = string.Format( "{0}_col2", id );
             row.Controls.Add( col2 );
             col2.AddCssClass( col2Class );
-            col2.Controls.Add( valueControl );
+            if ( valueControl != null )
+            {
+                col2.Controls.Add( valueControl );
+            }
 
             return row;
         }
@@ -693,7 +696,7 @@ namespace Rock.Field
         }
 
         /// <summary>
-        /// Gets the name of the attribute value field that should be bound to (Value, ValueAsDateTime, or ValueAsNumeric)
+        /// Gets the name of the attribute value field that should be bound to (Value, ValueAsDateTime, ValueAsBoolean, or ValueAsNumeric)
         /// </summary>
         /// <value>
         /// The name of the attribute value field.

@@ -3,23 +3,23 @@
 <asp:UpdatePanel ID="upGroupType" runat="server" UpdateMode="Conditional" ChildrenAsTriggers="false">
     <ContentTemplate>
         <asp:HiddenField ID="hfRootGroupId" runat="server" />
-        <asp:HiddenField ID="hfInitialGroupId" runat="server"  />
-        <asp:HiddenField ID="hfGroupTypesInclude" runat="server"  />
-        <asp:HiddenField ID="hfGroupTypesExclude" runat="server"  />
-        <asp:HiddenField ID="hfIncludeInactiveGroups" runat="server"  />
-        <asp:HiddenField ID="hfCountsType" runat="server"  />
-        <asp:HiddenField ID="hfInitialGroupParentIds" runat="server"  />
+        <asp:HiddenField ID="hfInitialGroupId" runat="server" />
+        <asp:HiddenField ID="hfGroupTypesInclude" runat="server" />
+        <asp:HiddenField ID="hfGroupTypesExclude" runat="server" />
+        <asp:HiddenField ID="hfIncludeInactiveGroups" runat="server" />
+        <asp:HiddenField ID="hfCountsType" runat="server" />
+        <asp:HiddenField ID="hfInitialGroupParentIds" runat="server" />
         <asp:HiddenField ID="hfLimitToSecurityRoleGroups" runat="server" />
-        <asp:HiddenField ID="hfSelectedGroupId" runat="server"  />
-        <asp:HiddenField ID="hfPageRouteTemplate" runat="server"  />
-        <asp:HiddenField ID="hfDetailPageUrl" runat="server"  />
+        <asp:HiddenField ID="hfSelectedGroupId" runat="server" />
+        <asp:HiddenField ID="hfPageRouteTemplate" runat="server" />
+        <asp:HiddenField ID="hfDetailPageUrl" runat="server" />
 
         <div class="treeview js-grouptreeview">
             <div class="treeview-actions rollover-container" id="divTreeviewActions" runat="server">
 
                 <div class="btn-group pull-left margin-r-sm">
                     <button type="button" class="btn btn-action btn-xs dropdown-toggle" data-toggle="dropdown">
-                        <i class="fa fa-plus-circle"></i> Add Group <span class="fa fa-caret-down"></span>
+                        <i class="fa fa-plus-circle"></i>Add Group <span class="fa fa-caret-down"></span>
                     </button>
                     <ul class="dropdown-menu" role="menu">
                         <li>
@@ -34,9 +34,9 @@
                 </div>
             </div>
 
-            <div class="js-config-panel" style="display:none" id="pnlConfigPanel" runat="server">
-                <Rock:Toggle ID="tglHideInactiveGroups" runat="server" OnText="Active" OffText="All" Checked="true" ButtonSizeCssClass="btn-xs" OnCheckedChanged="tglHideInactiveGroups_CheckedChanged" Label="Show" /></span>
-                <Rock:RockDropDownList ID="ddlCountsType" runat="server" Label="Show Count For" OnSelectedIndexChanged="ddlCountsType_SelectedIndexChanged" CssClass="input-sm" AutoPostBack="true"  />
+            <div class="js-config-panel" style="display: none" id="pnlConfigPanel" runat="server">
+                <Rock:Toggle ID="tglHideInactiveGroups" runat="server" OnText="Active" OffText="All" Checked="true" ButtonSizeCssClass="btn-xs" OnCheckedChanged="tglHideInactiveGroups_CheckedChanged" Label="Show" />
+                <Rock:RockDropDownList ID="ddlCountsType" runat="server" Label="Show Count For" OnSelectedIndexChanged="ddlCountsType_SelectedIndexChanged" CssClass="input-sm" AutoPostBack="true" />
             </div>
 
             <div class="treeview-scroll scroll-container scroll-container-horizontal">
@@ -64,7 +64,7 @@
             $(function () {
                 var $selectedId = $('#<%=hfSelectedGroupId.ClientID%>'),
                     $expandedIds = $('#<%=hfInitialGroupParentIds.ClientID%>');
-                
+
                 var scrollbCategory = $('#<%=pnlTreeviewContent.ClientID%>').closest('.treeview-scroll');
                 scrollbCategory.tinyscrollbar({ axis: 'x', sizethumb: 60, size: 200 });
 
@@ -101,7 +101,7 @@
                                 else {
                                     locationUrl = window.location.href.split('?')[0] + groupSearch;
                                 }
-                                
+
                                 locationUrl += "&ExpandedIds=" + encodeURIComponent(expandedDataIds);
                             }
 
@@ -128,13 +128,13 @@
                     });
             });
 
-            function resizeScrollbar(scrollControl) {
-                var overviewHeight = $(scrollControl).find('.overview').height();
+                function resizeScrollbar(scrollControl) {
+                    var overviewHeight = $(scrollControl).find('.overview').height();
 
-                $(scrollControl).find('.viewport').height(overviewHeight);
+                    $(scrollControl).find('.viewport').height(overviewHeight);
 
-                scrollControl.tinyscrollbar_update('relative');
-            }
+                    scrollControl.tinyscrollbar_update('relative');
+                }
         </script>
 
     </ContentTemplate>

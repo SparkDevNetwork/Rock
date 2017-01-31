@@ -160,8 +160,13 @@ TransactionAcountDetails: [
         private bool _gatewaysIncompatible = false;
         private string _ccSavedAccountFreqSupported = "both";
         private string _achSavedAccountFreqSupported = "both";
-
         protected bool FluidLayout = false;
+
+        /// <summary>
+        /// The scheduled transaction to be transferred.  This will get set if the
+        /// page parameter "transfer" and the "ScheduledTransactionId" are passed in.
+        /// </summary>
+        private FinancialScheduledTransaction _scheduledTransactionToBeTransferred = null;
 
         #endregion
 
@@ -321,12 +326,28 @@ TransactionAcountDetails: [
                 return;
             }
 
+            // Check if this is a transfer and that the person is the authorized person on the transaction
+            if ( PageParameter( "transfer" ) != null && PageParameter( "ScheduledTransactionId" ) != null )
+            {
+                InitializeTransfer( PageParameter( "ScheduledTransactionId" ).AsIntegerOrNull() );
+            }
+
             if ( !Page.IsPostBack )
             {
                 hfTransactionGuid.Value = Guid.NewGuid().ToString();
 
                 SetControlOptions();
 
+                if ( _scheduledTransactionToBeTransferred != null )
+                {
+                    // Was this NOT a personal gift? If so, we need to set the correct business in the Give As section.
+                    if ( _scheduledTransactionToBeTransferred.AuthorizedPersonAlias.Person.GivingId != _targetPerson.GivingId )
+                    {
+                        tglGiveAsOption.Checked = false;
+                        SetGiveAsOptions();
+                        ShowBusiness();
+                    }
+                }
                 SetPage( 1 );
 
                 // Get the list of accounts that can be used
@@ -335,7 +356,6 @@ TransactionAcountDetails: [
             }
             else
             {
-
                 // Save amounts from controls to the viewstate list
                 foreach ( RepeaterItem item in rptAccountList.Items )
                 {
@@ -362,6 +382,10 @@ TransactionAcountDetails: [
             if ( btnFrequency.Items.Count > 0 )
             {
                 dtpStartDate.Label = btnFrequency.Items[0].Selected ? "When" : "First Gift";
+                if ( _scheduledTransactionToBeTransferred != null && _scheduledTransactionToBeTransferred.NextPaymentDate.HasValue )
+                {
+                    dtpStartDate.Label = "Next Gift";
+                }
             }
 
             // Show or Hide the Credit card entry panel based on if a saved account exists and it's selected or not.
@@ -422,7 +446,6 @@ TransactionAcountDetails: [
             BindAccounts();
         }
 
-
         protected void btnFrequency_SelectionChanged( object sender, EventArgs e )
         {
             int oneTimeFrequencyId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_ONE_TIME ).Id;
@@ -441,7 +464,6 @@ TransactionAcountDetails: [
             }
 
             SetPage( 1 );
-
         }
 
         /// <summary>
@@ -504,7 +526,6 @@ TransactionAcountDetails: [
                     this.AddHistory( "GivingDetail", "1", null );
                     SetPage( 3 );
                 }
-
             }
             else
             {
@@ -871,7 +892,6 @@ TransactionAcountDetails: [
                     dtpStartDate.SelectedDate = RockDateTime.Today;
                 }
             }
-
         }
 
         private string GetSavedAcccountFreqSupported( GatewayComponent component )
@@ -1001,11 +1021,8 @@ TransactionAcountDetails: [
                         rblSavedAccount.Items[0].Selected = true;
                     }
                 }
-
             }
-
         }
-
 
         private void SetControlOptions()
         {
@@ -1032,6 +1049,7 @@ TransactionAcountDetails: [
 
             bool displayPhone = GetAttributeValue( "DisplayPhone" ).AsBoolean();
             pnbPhone.Visible = displayPhone;
+            pnbBusinessContactPhone.Visible = displayPhone;
             tdPhoneConfirm.Visible = displayPhone;
             tdPhoneReceipt.Visible = displayPhone;
 
@@ -1045,21 +1063,11 @@ TransactionAcountDetails: [
 
             if ( GetAttributeValue( "EnableBusinessGiving" ).AsBoolean() )
             {
-                // Set Give As Person/Business display
-                var loginPageRef = RockPage.Site.LoginPageReference;
-                loginPageRef.Parameters.Add( "returnurl", Context.Server.UrlEncode( Context.Request.RawUrl ) );
-                lBusinessLoginMsg.Text = string.Format( "<a href='{0}'>Login</a> to give as a business", loginPageRef.BuildUrl() );
-                lBusinessLoginMsg.Visible = person == null;
-
-                phGiveAsOption.Visible = person != null;
                 tglGiveAsOption.Checked = true;
-                phGiveAsPerson.Visible = true;
-                phGiveAsBusiness.Visible = false;
                 SetGiveAsOptions();
             }
             else
             {
-                lBusinessLoginMsg.Visible = false;
                 phGiveAsOption.Visible = false;
             }
 
@@ -1096,7 +1104,6 @@ TransactionAcountDetails: [
             // Determine if billing address should be displayed
             cbBillingAddress.Visible = _ccGatewayComponent.PromptForBillingAddress( _ccGateway );
             divBillingAddress.Visible = _ccGatewayComponent.PromptForBillingAddress( _ccGateway );
-
         }
 
         #endregion
@@ -1128,6 +1135,7 @@ TransactionAcountDetails: [
                 .OrderBy( f => f.Order ) )
             {
                 var accountItem = new AccountItem( account.Id, account.Order, account.Name, account.CampusId, account.PublicName );
+
                 if ( showAll )
                 {
                     SelectedAccounts.Add( accountItem );
@@ -1145,6 +1153,35 @@ TransactionAcountDetails: [
                             AvailableAccounts.Add( accountItem );
                         }
                     }
+                }
+            }
+
+            // Set account item *amounts* using the existing transaction
+            if ( _scheduledTransactionToBeTransferred != null )
+            {
+                foreach ( var item in _scheduledTransactionToBeTransferred.ScheduledTransactionDetails )
+                {
+                    // Find a matching account
+                    var account = SelectedAccounts.Where( a => a.Id == item.AccountId ).FirstOrDefault();
+                    
+                    // if not in the selected list, try the available list
+                    if ( account == null )
+                    {
+                        account = AvailableAccounts.Where( a => a.Id == item.AccountId ).FirstOrDefault();
+                        if ( account != null )
+                        {
+                            AvailableAccounts = AvailableAccounts.Except( new List<AccountItem>() { account } ).ToList();
+                            SelectedAccounts.AddRange( new List<AccountItem>() { account } );
+                        }
+                    }
+
+                    // if still not found, just use the first account
+                    if ( account == null )
+                    {
+                        account = SelectedAccounts.First();
+                    }
+
+                    account.Amount += item.Amount;
                 }
             }
         }
@@ -1167,19 +1204,27 @@ TransactionAcountDetails: [
         /// </summary>
         private void SetGiveAsOptions()
         {
-            bool showBusinessOption = CurrentPerson != null && !tglGiveAsOption.Checked;
-            phGiveAsPerson.Visible = !showBusinessOption;
-            phGiveAsBusiness.Visible = showBusinessOption;
+            bool givingAsBusiness = GetAttributeValue( "EnableBusinessGiving" ).AsBoolean() && !tglGiveAsOption.Checked;
+            bool userLoggedIn = CurrentPerson != null;
 
-            if ( showBusinessOption )
+            acAddress.Label = givingAsBusiness ? "Business Address" : "Address";
+            pnbPhone.Label = givingAsBusiness ? "Business Phone" : "Phone";
+            txtEmail.Label = givingAsBusiness ? "Business Email" : "Email";
+
+            phGiveAsPerson.Visible = !givingAsBusiness;
+            phGiveAsBusiness.Visible = givingAsBusiness;
+            phBusinessContact.Visible = givingAsBusiness && !userLoggedIn;
+            int contactPersonId = userLoggedIn ? CurrentPerson.Id : 0;
+
+            if ( givingAsBusiness )
             {
-                if ( hfBusinessesLoaded.ValueAsInt() != CurrentPerson.Id )
+                if ( hfBusinessesLoaded.Value != contactPersonId.ToString() )
                 {
                     cblBusiness.Items.Clear();
                     using ( var rockContext = new RockContext() )
                     {
                         var personService = new PersonService( rockContext );
-                        var businesses = personService.GetBusinesses( CurrentPerson.Id ).ToList();
+                        var businesses = personService.GetBusinesses( contactPersonId ).ToList();
                         if ( businesses.Any() )
                         {
                             foreach ( var business in businesses )
@@ -1190,7 +1235,19 @@ TransactionAcountDetails: [
                             cblBusiness.Items.Add( new ListItem( "New Business", "" ) );
 
                             cblBusiness.Visible = true;
-                            cblBusiness.SelectedIndex = 0;
+
+                            if ( _scheduledTransactionToBeTransferred != null )
+                            {
+                                var matchBusiness = businesses.Where( b => b.Id == _scheduledTransactionToBeTransferred.AuthorizedPersonAlias.PersonId ).FirstOrDefault();
+                                if ( matchBusiness != null )
+                                {
+                                    cblBusiness.SetValue( matchBusiness.Id.ToString() );
+                                }
+                            }
+                            else
+                            {
+                                cblBusiness.SelectedIndex = 0;
+                            }
                         }
                         else
                         {
@@ -1198,7 +1255,7 @@ TransactionAcountDetails: [
                         }
                     }
 
-                    hfBusinessesLoaded.Value = CurrentPerson.Id.ToString();
+                    hfBusinessesLoaded.Value = contactPersonId.ToString();
                 }
 
                 lPersonalInfoTitle.Text = "Business Information";
@@ -1314,6 +1371,11 @@ TransactionAcountDetails: [
                 GroupLocationId = null;
                 acAddress.SetValues( null );
             }
+
+            txtBusinessContactFirstName.Text = string.Empty;
+            txtBusinessContactLastName.Text = string.Empty;
+            pnbBusinessContactPhone.Text = string.Empty;
+            txtBusinessContactEmail.Text = string.Empty;
         }
 
         /// <summary>
@@ -1340,7 +1402,8 @@ TransactionAcountDetails: [
                 person = personService.Get( personId );
             }
 
-            if ( create && tglGiveAsOption.Checked )  // If tglGiveOption is not checked, then person should not be null
+            bool givingAsBusiness = GetAttributeValue( "EnableBusinessGiving" ).AsBoolean() && !tglGiveAsOption.Checked;
+            if ( create && !givingAsBusiness ) 
             {
                 if ( person == null )
                 {
@@ -1441,9 +1504,87 @@ TransactionAcountDetails: [
             return person;
         }
 
+        /// <summary>
+        /// Creates the business contact.
+        /// </summary>
+        /// <returns></returns>
+        private Person GetBusinessContact()
+        {
+            Person person = null;
+            var rockContext = new RockContext();
+            var personService = new PersonService( rockContext );
+
+            // Check to see if there's only one person with same email, first name, and last name
+            if ( !string.IsNullOrWhiteSpace( txtBusinessContactEmail.Text ) &&
+                !string.IsNullOrWhiteSpace( txtBusinessContactFirstName.Text ) &&
+                !string.IsNullOrWhiteSpace( txtBusinessContactLastName.Text ) )
+            {
+                // Same logic as CreatePledge.ascx.cs
+                var personMatches = personService.GetByMatch( txtBusinessContactFirstName.Text, txtBusinessContactLastName.Text, txtBusinessContactEmail.Text );
+                if ( personMatches.Count() == 1 )
+                {
+                    person = personMatches.FirstOrDefault();
+                }
+                else
+                {
+                    person = null;
+                }
+            }
+
+            if ( person == null )
+            {
+                DefinedValueCache dvcConnectionStatus = DefinedValueCache.Read( GetAttributeValue( "ConnectionStatus" ).AsGuid() );
+                DefinedValueCache dvcRecordStatus = DefinedValueCache.Read( GetAttributeValue( "RecordStatus" ).AsGuid() );
+
+                // Create Person
+                person = new Person();
+                person.FirstName = txtBusinessContactFirstName.Text;
+                person.LastName = txtBusinessContactLastName.Text;
+                person.IsEmailActive = true;
+                person.EmailPreference = EmailPreference.EmailAllowed;
+                person.RecordTypeValueId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_PERSON.AsGuid() ).Id;
+                if ( dvcConnectionStatus != null )
+                {
+                    person.ConnectionStatusValueId = dvcConnectionStatus.Id;
+                }
+
+                if ( dvcRecordStatus != null )
+                {
+                    person.RecordStatusValueId = dvcRecordStatus.Id;
+                }
+
+                // Create Person/Family
+                PersonService.SaveNewPerson( person, rockContext, null, false );
+            }
+
+            if ( person != null ) // person should never be null at this point
+            {
+                person.Email = txtBusinessContactEmail.Text;
+
+                if ( GetAttributeValue( "DisplayPhone" ).AsBooleanOrNull() ?? false )
+                {
+                    var numberTypeId = DefinedValueCache.Read( new Guid( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_WORK ) ).Id;
+                    var phone = person.PhoneNumbers.FirstOrDefault( p => p.NumberTypeValueId == numberTypeId );
+                    if ( phone == null )
+                    {
+                        phone = new PhoneNumber();
+                        person.PhoneNumbers.Add( phone );
+                        phone.NumberTypeValueId = numberTypeId;
+                    }
+                    phone.CountryCode = PhoneNumber.CleanNumber( pnbBusinessContactPhone.CountryCode );
+                    phone.Number = PhoneNumber.CleanNumber( pnbBusinessContactPhone.Number );
+                }
+
+                rockContext.SaveChanges();
+            }
+
+            return person;
+        }
+
         private Person GetPersonOrBusiness( Person person )
         {
-            if ( person != null && !tglGiveAsOption.Checked )
+            bool givingAsBusiness = GetAttributeValue( "EnableBusinessGiving" ).AsBoolean() && !tglGiveAsOption.Checked;
+            if ( person != null && givingAsBusiness )
             {
                 var rockContext = new RockContext();
                 var personService = new PersonService( rockContext );
@@ -1461,12 +1602,24 @@ TransactionAcountDetails: [
 
                 if ( business == null )
                 {
+                    // Try to find existing business for person that has the same name
+                    var personBusinesses = person.GetBusinesses()
+                        .Where( b => b.LastName == txtBusinessName.Text )
+                        .ToList();
+                    if ( personBusinesses.Count() == 1 )
+                    {
+                        business = personBusinesses.First();
+                    }
+                }
+
+                if ( business == null )
+                {
                     DefinedValueCache dvcConnectionStatus = DefinedValueCache.Read( GetAttributeValue( "ConnectionStatus" ).AsGuid() );
                     DefinedValueCache dvcRecordStatus = DefinedValueCache.Read( GetAttributeValue( "RecordStatus" ).AsGuid() );
 
                     // Create Person
                     business = new Person();
-                    business.LastName = txtLastName.Text;
+                    business.LastName = txtBusinessName.Text;
                     business.IsEmailActive = true;
                     business.EmailPreference = EmailPreference.EmailAllowed;
                     business.RecordTypeValueId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_BUSINESS.AsGuid() ).Id;
@@ -1611,6 +1764,47 @@ TransactionAcountDetails: [
         }
 
         /// <summary>
+        /// Fetches the old (to be transferred) scheduled transaction and verifies
+        /// that the target person is the same on the scheduled transaction.  Then
+        /// it puts it into the _scheduledTransactionToBeTransferred private field 
+        /// for use throughout the entry process so that its values can be used on
+        /// the form for the new transaction.
+        /// </summary>
+        /// <param name="scheduledTransactionId">The scheduled transaction identifier.</param>
+        private void InitializeTransfer( int? scheduledTransactionId )
+        {
+            if ( scheduledTransactionId == null )
+            {
+                return;
+            }
+
+            RockContext rockContext = new RockContext();
+            var scheduledTransaction = new FinancialScheduledTransactionService( rockContext ).Get( scheduledTransactionId.Value );
+            var personService = new PersonService( rockContext );
+
+            // get business giving id
+            var givingIds = personService.GetBusinesses( _targetPerson.Id ).Select( g => g.GivingId ).ToList();
+
+            // add the person's regular giving id
+            givingIds.Add( _targetPerson.GivingId );
+
+            // Make sure the current person is the authorized person, otherwise return
+            if ( scheduledTransaction == null || ! givingIds.Contains( scheduledTransaction.AuthorizedPersonAlias.Person.GivingId ) )
+            {
+                return;
+            }
+
+            _scheduledTransactionToBeTransferred = scheduledTransaction;
+
+            // Set the frequency to be the same on the initial page build
+            if ( !IsPostBack )
+            {
+                btnFrequency.SelectedValue = scheduledTransaction.TransactionFrequencyValueId.ToString();
+                dtpStartDate.SelectedDate = ( scheduledTransaction.NextPaymentDate.HasValue ) ? scheduledTransaction.NextPaymentDate : RockDateTime.Today.AddDays( 1 );
+            }
+        }
+
+        /// <summary>
         /// Processes the payment information.
         /// </summary>
         /// <param name="errorMessage">The error message.</param>
@@ -1620,6 +1814,8 @@ TransactionAcountDetails: [
             errorMessage = string.Empty;
 
             var errorMessages = new List<string>();
+
+            bool givingAsBusiness = GetAttributeValue( "EnableBusinessGiving" ).AsBoolean() && !tglGiveAsOption.Checked;
 
             // Validate that an amount was entered
             if ( SelectedAccounts.Sum( a => a.Amount ) <= 0 )
@@ -1660,6 +1856,18 @@ TransactionAcountDetails: [
                 }
             }
 
+            if ( givingAsBusiness && string.IsNullOrWhiteSpace( txtBusinessName.Text ) )
+            {
+                errorMessages.Add( "Make sure to enter a Business Name" );
+            }
+
+            var location = new Location();
+            acAddress.GetValues( location );
+            if ( string.IsNullOrWhiteSpace( location.Street1 ) )
+            {
+                errorMessages.Add( "Make sure to enter a valid address.  An address is required for us to process this transaction" );
+            }
+
             bool displayPhone = GetAttributeValue( "DisplayPhone" ).AsBoolean();
             if ( displayPhone && string.IsNullOrWhiteSpace( pnbPhone.Number ) )
             {
@@ -1672,11 +1880,21 @@ TransactionAcountDetails: [
                 errorMessages.Add( "Make sure to enter a valid email address.  An email address is required for us to send you a payment confirmation" );
             }
 
-            var location = new Location();
-            acAddress.GetValues( location );
-            if ( string.IsNullOrWhiteSpace( location.Street1 ) )
+            if ( givingAsBusiness && phBusinessContact.Visible )
             {
-                errorMessages.Add( "Make sure to enter a valid address.  An address is required for us to process this transaction" );
+                if ( string.IsNullOrWhiteSpace( txtBusinessContactFirstName.Text ) || string.IsNullOrWhiteSpace( txtBusinessContactLastName.Text ) )
+                {
+                    errorMessages.Add( "Make sure to enter both a first and last name for Business Contact" );
+                }
+                if ( displayPhone && string.IsNullOrWhiteSpace( pnbBusinessContactPhone.Number ) )
+                {
+                    errorMessages.Add( "Make sure to enter a valid Business Contact phone number." );
+                }
+
+                if ( displayEmail && string.IsNullOrWhiteSpace( txtBusinessContactEmail.Text ) )
+                {
+                    errorMessages.Add( "Make sure to enter a valid Business Contact email address." );
+                }
             }
 
             if ( !_using3StepGateway )
@@ -1749,7 +1967,7 @@ TransactionAcountDetails: [
 
             PaymentInfo paymentInfo = GetPaymentInfo();
 
-            if ( tglGiveAsOption.Checked )
+            if ( !givingAsBusiness )
             {
                 if ( txtCurrentName.Visible )
                 {
@@ -2009,8 +2227,17 @@ TransactionAcountDetails: [
                     return false;
                 }
 
-                // only create/update the person if they are giving as a person. If they are giving as a Business, the person record already exists
-                Person person = GetPerson( tglGiveAsOption.Checked );
+                bool givingAsBusiness = GetAttributeValue( "EnableBusinessGiving" ).AsBoolean() && !tglGiveAsOption.Checked;
+
+                // only create/update the person if they are giving as a person. If they are giving as a Business, the person shouldn't be created this way
+                Person person = GetPerson( !givingAsBusiness );
+
+                // Add contact person if giving as a business and current person is unknow
+                if ( person == null && givingAsBusiness )
+                {
+                    person = GetBusinessContact();
+                }
+
                 if ( person == null )
                 {
                     errorMessage = "There was a problem creating the person information";
@@ -2111,7 +2338,8 @@ TransactionAcountDetails: [
             }
 
             // only create/update the person if they are giving as a person. If they are giving as a Business, the person record already exists
-            Person person = GetPerson( tglGiveAsOption.Checked );
+            bool givingAsBusiness = GetAttributeValue( "EnableBusinessGiving" ).AsBoolean() && !tglGiveAsOption.Checked;
+            Person person = GetPerson( !givingAsBusiness );
 
             if ( person == null )
             {
@@ -2298,6 +2526,12 @@ TransactionAcountDetails: [
             transactionService.Add( scheduledTransaction );
             rockContext.SaveChanges();
 
+            // If this is a transfer, now we can delete the old transaction
+            if ( _scheduledTransactionToBeTransferred != null )
+            {
+                DeleteOldTransaction( _scheduledTransactionToBeTransferred.Id );
+            }
+
             // Add a note about the change
             var noteType = NoteTypeCache.Read( Rock.SystemGuid.NoteType.SCHEDULED_TRANSACTION_NOTE.AsGuid() );
             if ( noteType != null )
@@ -2314,6 +2548,34 @@ TransactionAcountDetails: [
 
             ScheduleId = scheduledTransaction.GatewayScheduleId;
             TransactionCode = scheduledTransaction.TransactionCode;
+        }
+
+        private void DeleteOldTransaction( int scheduledTransactionId )
+        {
+            using ( var rockContext = new Rock.Data.RockContext() )
+            {
+                FinancialScheduledTransactionService fstService = new FinancialScheduledTransactionService( rockContext );
+                var currentTransaction = fstService.Get( scheduledTransactionId );
+                if ( currentTransaction != null && currentTransaction.FinancialGateway != null )
+                {
+                    currentTransaction.FinancialGateway.LoadAttributes( rockContext );
+                }
+                string errorMessage = string.Empty;
+                if ( fstService.Cancel( currentTransaction, out errorMessage ) )
+                {
+                    try
+                    {
+                        fstService.GetStatus( currentTransaction, out errorMessage );
+                    }
+                    catch { }
+                    rockContext.SaveChanges();
+                    //content.Text = String.Format( "<div class='alert alert-success'>Your recurring {0} has been deleted.</div>", GetAttributeValue( "TransactionLabel" ).ToLower() );
+                }
+                else
+                {
+                    //content.Text = String.Format( "<div class='alert alert-danger'>An error occured while deleting your scheduled transation. Message: {0}</div>", errorMessage );
+                }
+            }
         }
 
         private void SaveTransaction( FinancialGateway financialGateway, GatewayComponent gateway, Person person, PaymentInfo paymentInfo, FinancialTransaction transaction, RockContext rockContext )
@@ -2783,6 +3045,5 @@ TransactionAcountDetails: [
         #endregion
 
         #endregion
-
     }
 }

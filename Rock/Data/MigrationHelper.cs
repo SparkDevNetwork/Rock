@@ -91,9 +91,9 @@ namespace Rock.Data
         {
             Migration.Sql( string.Format( @"
 
-                DECLARE @Id int
-                SET @Id = (SELECT [Id] FROM [EntityType] WHERE [Name] = '{0}')
-                IF @Id IS NULL
+                DECLARE @Guid uniqueidentifier
+                SET @Guid = (SELECT [Guid] FROM [EntityType] WHERE [Name] = '{0}')
+                IF @Guid IS NULL
                 BEGIN
                     INSERT INTO [EntityType] (
                         [Name],[FriendlyName],[AssemblyName],[IsEntity],[IsSecured],[IsCommon],[Guid])
@@ -102,6 +102,7 @@ namespace Rock.Data
                 END
                 ELSE
                 BEGIN
+
                     UPDATE [EntityType] SET
                         [FriendlyName] = '{1}',
                         [AssemblyName] = '{2}',
@@ -109,6 +110,18 @@ namespace Rock.Data
                         [IsSecured] = {4},
                         [Guid] = '{5}'
                     WHERE [Name] = '{0}'
+
+                    -- Update any attribute values that might have been using entity's old guid value
+	                DECLARE @EntityTypeFieldTypeId int = ( SELECT TOP 1 [Id] FROM [FieldType] WHERE [Class] = 'Rock.Field.Types.EntityTypeFieldType' )
+	                DECLARE @ComponentFieldTypeId int = ( SELECT TOP 1 [Id] FROM [FieldType] WHERE [Class] = 'Rock.Field.Types.ComponentFieldType' )
+	                DECLARE @ComponentsFieldTypeId int = ( SELECT TOP 1 [Id] FROM [FieldType] WHERE [Class] = 'Rock.Field.Types.ComponentsFieldType' )
+
+                    UPDATE V SET [Value] = REPLACE( LOWER([Value]), LOWER(CAST(@Guid AS varchar(50))), LOWER('{5}') )
+	                FROM [AttributeValue] V
+	                INNER JOIN [Attribute] A ON A.[Id] = V.[AttributeId]
+	                WHERE ( A.[FieldTypeId] = @EntityTypeFieldTypeId OR A.[FieldTypeId] = @ComponentFieldTypeId	OR A.[FieldTypeId] = @ComponentsFieldTypeId )
+                    OPTION (RECOMPILE)
+
                 END
 ",
                     name.Replace( "'", "''" ),
@@ -557,16 +570,12 @@ namespace Rock.Data
         }
 
         /// <summary>
-        /// Deletes the Page and any PageViews that use the page.
+        /// Deletes the Page 
         /// </summary>
         /// <param name="guid">The GUID.</param>
         public void DeletePage( string guid )
         {
             Migration.Sql( string.Format( @"
-
-                DELETE PV
-                FROM [PageView] PV
-                INNER JOIN [Page] P ON P.[Id] = PV.[PageId] AND P.[Guid] = '{0}'
 
                 DELETE [Page] WHERE [Guid] = '{0}'
 ",
@@ -939,7 +948,7 @@ namespace Rock.Data
         {
             if ( !string.IsNullOrWhiteSpace( category ) )
             {
-                throw new Exception( "Attribute Category no longer supported by this helper function. You'll have to write special migration code yourself. Sorry!" );
+                throw new Exception( "Attribute Category no longer supported by this helper function. You'll have to write special migration code yourself." );
             }
 
             Migration.Sql( string.Format( @"
@@ -1016,7 +1025,7 @@ namespace Rock.Data
         {
             if ( !string.IsNullOrWhiteSpace( category ) )
             {
-                throw new Exception( "Attribute Category no longer supported by this helper function. You'll have to write special migration code yourself. Sorry!" );
+                throw new Exception( "Attribute Category no longer supported by this helper function. You'll have to write special migration code yourself." );
             }
 
             Migration.Sql( string.Format( @"
@@ -1087,7 +1096,7 @@ namespace Rock.Data
         {
             if ( !string.IsNullOrWhiteSpace( category ) )
             {
-                throw new Exception( "Attribute Category no longer supported by this helper function. You'll have to write special migration code yourself. Sorry!" );
+                throw new Exception( "Attribute Category no longer supported by this helper function. You'll have to write special migration code yourself." );
             }
 
             if ( string.IsNullOrWhiteSpace( key ) )

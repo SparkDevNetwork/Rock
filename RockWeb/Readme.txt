@@ -1,3 +1,45 @@
+Rock McKinley 6.2
+
++ Fixed issue with icons printing incorrectly when using ipad checkin and client printing (fixes #1971).
++ Changed the list of event's registrants (shown in RegistrationInstanceDetail block) to display Grade field (when used) as Grade instead of Graduation Year (fixes #1946).
++ Updated the Registration Template detail block so that it will no longer change a person attribute to a registration attribute (fixes #1856).
++ Fixed the regsitration entry block to set the person's group member status to that of the registration template even if they are already in the group (previously it only set it when adding a new group member).
++ Added two additional block settings to allow restricting the Group Registration block even further (fixes #1799).
++ Changed campus field to be optional on the Background Check Request workflow and created Cancel type button (fixes #1701).
++ Changed Group Attendance Detail block's lava template setting to be optional (fixes #1952).
++ Updated Statement Generator to use Public Account Name vs the Standard Account Name.
++ Updated Person Attributes (Adults and Children) in Block Settings to not have a default checked when none selected (fixes #1880).
++ Updated Address Detail in person profile to hide Threshold fields (fixes #1665).
++ Fixed Address not saving on public person profile block.
++ Changed EditGroup and EditPerson block to mark family group inactive if all members people's record status are inactive (fixes #1103).
++ Changed EditGroup block to prevent a person's status from changing if they were formerly inactive/deceased (fixes #1887).
++ Changed EditPerson block to inactivate a person's family groups if, when changing the person to inactive, the family has no members except inactive people (fixes #1103).
++ Corrected "or" operator to be valid Lava (fixes #1912).
++ Added option to configure check-in areas/groups by Birth Date in addition to Age and/or Grade.
+
+
+Rock McKinley 6.1
+
++ Changed lava conditional to use the 'or' (||) operator in the PodcastMessageDetail lava (fixes #1912).
++ Added a block setting to the Contribution Statement Lava to exclude transactions from a specific currency type. Default is to show all. This allows you to remove 'Non-cash' transactions from your on-line contribution statements.
++ Data View category actions are now visible when permissions/rights are inherited by a parent category (fixes #1777).
++ Corrected Family Analytics job to update first/second visit dates when the Set Visit Dates flag is enabled (fixes #1833).
++ Changed label editor to allow for height and width to be specified in decimal inches as well as it now uses PW and LL values to determine initial width and height (fixes #1846).
++ Benevolence workers can now upload files to requests (fixes #1877).
++ The Related Transactions (shown on the transaction details screen) with the same transaction code now only appear if they are from the same person (fixes #1766).
++ Used the same SVG width and height for children.
++ Corrected Range Slider control to use correct index (fixes #1845)
++ Added a job to send emails to a dataview.
++ Pressing the browser's back button after merging duplicate records from the duplicate finder no longer throws an exception (fixes #1787).
++ Viewing the Registrants of an event no longer defaults to filtering by 12th grade if the registration instance had a Grade option on the form (fixes #1816).
++ Fixed problem where 12th grade would not stay selected when entering a new child via the New Family operation (fixes #1834).
++ Fixed issue with wrong attribute values being used when exporting selected grid rows (vs exporting all rows)
++ Enhanced Person Search performance (#1798).
++ Improved error reporting in the payment download job.
++ Updated Group Registration block to allow linking by guid (instead of id), and update it to not allow registering for a security role.
++ Fixed issue with attendance date calculations in Family Analytics procedures.
+
+
 Rock McKinley 6.0
 
 CALENDAR

@@ -19,7 +19,7 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using Rock.Data;
 using Rock.Model;
-
+using Rock.Web.Cache;
 using UAParser;
 
 namespace Rock.Transactions
@@ -113,79 +113,91 @@ namespace Rock.Transactions
         {
             using ( var rockContext = new RockContext() )
             {
-                PageViewService pageViewService = new PageViewService( rockContext );
-                PageViewUserAgentService pageViewUserAgentService = new PageViewUserAgentService( rockContext );
-                PageViewSessionService pageViewSessionService = new PageViewSessionService( rockContext );
-
-                var userAgent = ( this.UserAgent ?? string.Empty ).Trim();
+                
+                var userAgent = (this.UserAgent ?? string.Empty).Trim();
                 if ( userAgent.Length > 450 )
                 {
                     userAgent = userAgent.Substring( 0, 450 ); // trim super long useragents to fit in pageViewUserAgent.UserAgent
                 }
 
                 // get user agent info
-                var clientType = PageViewUserAgent.GetClientType( userAgent );
-                ClientInfo client = uaParser.Parse( userAgent );
-                var clientOs = client.OS.ToString();
-                var clientBrowser = client.UserAgent.ToString();
+                var clientType = InteractionDeviceType.GetClientType( userAgent );
 
-                // lookup the pageViewUserAgent, and create it if it doesn't exist
-                var pageViewUserAgent = pageViewUserAgentService.Queryable().Where( a => a.UserAgent == userAgent ).FirstOrDefault();
-                if ( pageViewUserAgent == null )
+                // don't log visits from crawlers
+                if ( clientType != "Crawler" )
                 {
-                    pageViewUserAgent = new PageViewUserAgent();
-                    pageViewUserAgent.UserAgent = userAgent;
-                    pageViewUserAgent.ClientType = clientType;
+                    InteractionChannelService interactionChannelService = new InteractionChannelService( rockContext );
+                    InteractionComponentService interactionComponentService = new InteractionComponentService( rockContext );
+                    InteractionDeviceTypeService interactionDeviceTypeService = new InteractionDeviceTypeService( rockContext );
+                    InteractionSessionService interactionSessionService = new InteractionSessionService( rockContext );
+                    InteractionService interactionService = new InteractionService( rockContext );
 
-                    pageViewUserAgent.OperatingSystem = clientOs;
-                    pageViewUserAgent.Browser = clientBrowser;
+                    ClientInfo client = uaParser.Parse( userAgent );
+                    var clientOs = client.OS.ToString();
+                    var clientBrowser = client.UserAgent.ToString();
 
-                    pageViewUserAgentService.Add( pageViewUserAgent );
-                    rockContext.SaveChanges();
-                }
-                else
-                {
-                    // check if the user agent properties need to be updated
-                    if ( clientType != pageViewUserAgent.ClientType || clientOs != pageViewUserAgent.OperatingSystem || clientBrowser != pageViewUserAgent.Browser )
+                    // lookup the interactionDeviceType, and create it if it doesn't exist
+                    var interactionDeviceType = interactionService.GetInteractionDeviceType( clientBrowser, clientOs, clientType, userAgent );
+
+                    // lookup interactionSession, and create it if it doesn't exist
+                    Guid sessionId = this.SessionId.AsGuid();
+                    InteractionSession interactionSession = interactionService.GetInteractionSession( sessionId, this.IPAddress, interactionDeviceType.Id );
+
+                    int componentEntityTypeId = EntityTypeCache.Read<Rock.Model.Page>().Id;
+                    string siteName = SiteCache.Read( SiteId ?? 1 ).Name;
+
+                    // lookup the interaction channel, and create it if it doesn't exist
+                    int channelMediumTypeValueId = DefinedValueCache.Read( SystemGuid.DefinedValue.INTERACTIONCHANNELTYPE_WEBSITE.AsGuid() ).Id;
+
+                    // check that the site exists as a channel
+                    var interactionChannel = interactionChannelService.Queryable()
+                                                        .Where( a => 
+                                                            a.ChannelTypeMediumValueId == channelMediumTypeValueId 
+                                                            && a.ChannelEntityId == this.SiteId )
+                                                        .FirstOrDefault();
+                    if ( interactionChannel == null )
                     {
-                        pageViewUserAgent.ClientType = clientType;
-                        pageViewUserAgent.OperatingSystem = clientOs;
-                        pageViewUserAgent.Browser = clientBrowser;
+                        interactionChannel = new InteractionChannel();
+                        interactionChannel.Name = siteName;
+                        interactionChannel.ChannelTypeMediumValueId = channelMediumTypeValueId;
+                        interactionChannel.ChannelEntityId = this.SiteId;
+                        interactionChannel.ComponentEntityTypeId = componentEntityTypeId;
+                        interactionChannelService.Add( interactionChannel );
                         rockContext.SaveChanges();
                     }
-                }
 
-                // lookup PageViewSession, and create it if it doesn't exist
-                Guid sessionId = this.SessionId.AsGuid();
-                int? pageViewSessionId = pageViewSessionService.Queryable().Where( a => a.PageViewUserAgentId == pageViewUserAgent.Id && a.SessionId == sessionId && a.IpAddress == this.IPAddress ).Select( a => (int?)a.Id ).FirstOrDefault();
-                if ( !pageViewSessionId.HasValue )
-                {
-                    var pageViewSession = new PageViewSession();
-                    pageViewSession.PageViewUserAgentId = pageViewUserAgent.Id;
-                    pageViewSession.SessionId = sessionId;
-                    pageViewSession.IpAddress = this.IPAddress;
-                    pageViewSessionService.Add( pageViewSession );
+                    // check that the page exists as a component
+                    var interactionComponent = interactionComponentService.Queryable()
+                                                        .Where( a => 
+                                                            a.EntityId == PageId 
+                                                            && a.ChannelId == interactionChannel.Id )
+                                                        .FirstOrDefault();
+                    if ( interactionComponent == null )
+                    {
+                        interactionComponent = new InteractionComponent();
+                        interactionComponent.Name = PageTitle;
+                        interactionComponent.EntityId = PageId;
+                        interactionComponent.ChannelId = interactionChannel.Id;
+                        interactionComponentService.Add( interactionComponent );
+                        rockContext.SaveChanges();
+                    }
+                                      
+                    // add the interaction
+                    Interaction interaction = new Interaction();
+                    interactionService.Add( interaction );
+
+                    // obfuscate rock magic token
+                    Regex rgx = new Regex( @"rckipid=([^&]*)" );
+                    string cleanUrl = rgx.Replace( this.Url, "rckipid=XXXXXXXXXXXXXXXXXXXXXXXXXXXX" );
+
+                    interaction.InteractionData = cleanUrl;
+                    interaction.Operation = "View";
+                    interaction.PersonAliasId = this.PersonAliasId;
+                    interaction.InteractionDateTime = this.DateViewed;
+                    interaction.InteractionSessionId = interactionSession.Id;
+                    interaction.InteractionComponentId = interactionComponent.Id;
                     rockContext.SaveChanges();
-                    pageViewSessionId = pageViewSession.Id;
                 }
-
-                PageView pageView = new PageView();
-                pageViewService.Add( pageView );
-
-                // obfuscate rock magic token
-                Regex rgx = new Regex( @"rckipid=([^&]*)" );
-                string cleanUrl = rgx.Replace( this.Url, "rckipid=XXXXXXXXXXXXXXXXXXXXXXXXXXXX" );
-
-                pageView.PageId = this.PageId;
-                pageView.SiteId = this.SiteId;
-                pageView.Url = cleanUrl;
-                pageView.DateTimeViewed = this.DateViewed;
-                pageView.PersonAliasId = this.PersonAliasId;
-                pageView.PageTitle = this.PageTitle;
-
-                pageView.PageViewSessionId = pageViewSessionId.Value;
-
-                rockContext.SaveChanges();
             }
         }
     }
