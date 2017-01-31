@@ -313,9 +313,6 @@ namespace church.ccv.Podcast
             message.Description = contentChannelItem.Content;
             message.Date = contentChannelItem.StartDateTime;
             
-            //JHM TODO: Remove this once Roku and Apple TV are both updated to use the new "Active" attribute.
-            message.Approved = true;
-
             // add all the attributes
             message.Attributes = new Dictionary<string, string>();
 
@@ -333,11 +330,11 @@ namespace church.ccv.Podcast
             {
                 contentChannelItem.LoadAttributes( rockContext );
 
-                foreach ( var attrib in contentChannelItem.Attributes )
+                foreach ( var attribValue in contentChannelItem.AttributeValues )
                 {
-                    message.Attributes.Add( attrib.Key, attrib.Value.ToString() );
+                    // we need to use attribValue.Value.Value because we want the value OF the attributeValue...
+                    message.Attributes.Add( attribValue.Key, attribValue.Value.Value );
                 }
-
             }
             
             return message;
