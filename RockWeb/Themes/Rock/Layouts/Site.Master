@@ -1,6 +1,5 @@
 ﻿<%@ Master Language="C#" AutoEventWireup="true" Inherits="Rock.Web.UI.RockMasterPage" %>
 <%@ Import Namespace="System.Web.Optimization" %>
-<%@ Import Namespace="System.Configuration" %>
 <!DOCTYPE html>
 
 <!--
@@ -27,7 +26,6 @@
         base.OnInit( e );
 
         lLogoSvg.Text = System.IO.File.ReadAllText( HttpContext.Current.Request.MapPath("~/Assets/Images/rock-logo.svg") );
-        lReactBundle.Text = ConfigurationManager.AppSettings["ReactBundleUrl"];
     }
 
 </script>
@@ -185,7 +183,6 @@
             });
         });
     </script>
-    <script type="text/javascript" src='<asp:Literal runat="server" Id="lReactBundle" />'></script>
 
 </body>
 

@@ -1,2 +1,2 @@
 ﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="SampleReactBlock.ascx.cs" Inherits="RockWeb.Blocks.Examples.SampleReactBlock" %>
-<div data-react-block data-initial-props='<%= props %>'><asp:Literal ID="PageContent" runat="server"></asp:Literal></div>
+<asp:Literal ID="PageContent" runat="server"></asp:Literal>

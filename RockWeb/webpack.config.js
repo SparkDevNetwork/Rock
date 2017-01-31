@@ -14,7 +14,7 @@ const client = [
   path.resolve(__dirname, "./Scripts/React/index.js"),
 ];
 
-if (ifProduction(true)) client.unshift("react-hot-loader/patch");
+if (ifNotProduction(true)) client.unshift("react-hot-loader/patch");
   
 module.exports = {
   devtool: "cheap-module-source-map",
@@ -77,7 +77,7 @@ module.exports = {
     ifNotProduction(new webpack.HotModuleReplacementPlugin()),
     new webpack.NoEmitOnErrorsPlugin(),
     new webpack.NamedModulesPlugin(),
-    ifNotProduction(new BundleAnalyzerPlugin()),
+    // ifNotProduction(new BundleAnalyzerPlugin()),
   ]),
   devServer: {
     // clientLogLevel: "none",

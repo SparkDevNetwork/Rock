@@ -17,7 +17,6 @@
 using System;
 using System.ComponentModel;
 using System.Web.UI;
-using React;
 using Rock;
 using Rock.Attribute;
 using Rock.Model;
@@ -33,9 +32,8 @@ namespace RockWeb.Blocks.Examples
     [Description("Creates a generic counter to showcase React integration")]
 
     [IntegerField("StartingNumber", "Specify a value to start the counter with", required: false)]
-    public partial class SampleReactBlock : RockBlock
+    public partial class SampleReactBlock : ReactBlock
     {
-        protected string props = "";
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
         /// </summary>
@@ -50,23 +48,10 @@ namespace RockWeb.Blocks.Examples
             base.OnLoad(e);
 
             if (!Page.IsPostBack)
-            { 
-                var startingNumber = GetAttributeValue("StartingNumber").ToStringSafe().AsIntegerOrNull();
-                var initialProps = new InitialProps(startingNumber);
-                props = initialProps.ToJson();
-
-                var env = AssemblyRegistration.Container.Resolve<IReactEnvironment>();
-                var reactComponent = env.CreateComponent("Blocks.Examples.SampleReactBlock", initialProps);
-                PageContent.Text = reactComponent.RenderHtml();
-            }
-        }
-
-        class InitialProps
-        {
-            public int startingNumber;
-            public InitialProps(int? start)
             {
-                startingNumber = start ?? 0;
+  
+                Props.staringNumber = GetAttributeValue("StartingNumber").ToStringSafe().AsIntegerOrNull();
+                PageContent.Text = Render();
             }
         }
     }

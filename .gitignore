@@ -33,5 +33,3 @@ Packages/*
 # javascript deps
 node_modules
 *.map
-bundle.js
-*.bundle.js
