@@ -1,7 +1,6 @@
 // @flow
 import { Component } from "react";
 
-import withProps from "../../Scripts/React/withServerProps";
 
 type ISampleReactBlockProps = {
   startingNumber?: number,
@@ -14,7 +13,7 @@ type ISampleReactBlockState = {
 // eslint-disable-next-line
 const link = "https://chrome.google.com/webstore/detail/react-developer-tools/fmkadmapgofadopljbjfkapdkoienihi?hl=enj";
 
-class SampleReactBlock extends Component {
+export default class SampleReactBlock extends Component {
 
   props: ISampleReactBlockProps
   state: ISampleReactBlockState = { counter: 1 }
@@ -46,4 +45,3 @@ class SampleReactBlock extends Component {
   }
 }
 
-export default withProps(SampleReactBlock);

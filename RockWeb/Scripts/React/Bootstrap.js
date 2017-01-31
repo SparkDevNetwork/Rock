@@ -5,6 +5,7 @@ import { flatten } from "lodash";
 // import { Provider } from "react-redux";
 
 // import createStore from "./store";
+import withProps from "./withServerProps";
 
 export type IBlockDetails = {
   element: HTMLElement,
@@ -13,19 +14,11 @@ export type IBlockDetails = {
   zone: string,
 };
 
-type IBootstrapProps = {
-  pageId: number,
-};
-
 export default class Bootstrap {
-  props: IBootstrapProps;
   // store: Object;
   blocks: [IBlockDetails];
 
-  constructor(props: Object) {
-    this.props = props;
-    if (!this.props.pageId) return;
-
+  constructor() {
     // this.store = createStore();
 
     this.bootstrapDOM()
@@ -110,7 +103,7 @@ export default class Bootstrap {
       }
 
       loader.then((component) => {
-        const Component = component.default;
+        const Component = withProps(component.default);
         // const { reducer } = component;
 
         // if (reducer && reducer.key) this.store.inject(reducer.key, reducer);
