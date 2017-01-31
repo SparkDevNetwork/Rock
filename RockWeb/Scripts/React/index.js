@@ -1,13 +1,9 @@
-/* global Rock */
 import Bootstrap from "./Bootstrap";
 
 let app;
 const load = () => {
-  if (!Rock) return;
-
-  const pageId = Rock.settings.get("pageId");
   // bootstrap the page
-  if (!app) app = new Bootstrap({ pageId });
+  if (!app) app = new Bootstrap();
 };
 
 // load everything up

@@ -34,6 +34,17 @@ namespace RockWeb.Blocks.Examples
     [IntegerField("StartingNumber", "Specify a value to start the counter with", required: false)]
     public partial class SampleReactBlock : ReactBlock
     {
+        #region Properties
+
+        class InitialProps : Props
+        {
+            public int? startingNumber { get; set; }
+        }
+
+        #endregion
+
+        #region Base Control Methods
+
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
         /// </summary>
@@ -50,9 +61,12 @@ namespace RockWeb.Blocks.Examples
             if (!Page.IsPostBack)
             {
   
-                Props.staringNumber = GetAttributeValue("StartingNumber").ToStringSafe().AsIntegerOrNull();
-                PageContent.Text = Render();
+                var initialProps = new InitialProps();
+                initialProps.startingNumber = GetAttributeValue("StartingNumber").ToStringSafe().AsIntegerOrNull();
+                PageContent.Text = Render(initialProps);
             }
         }
+
+        #endregion
     }
 }

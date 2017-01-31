@@ -1,7 +1,11 @@
-/* eslint-disable global-require */
+
+import withProps from "./withServerProps";
+
+import SampleReactBlock from "../../Blocks/Examples/SampleReactBlock.block";
+
 module.exports = {
   Examples: {
-    SampleReactBlock: require("../../Blocks/Examples/SampleReactBlock.block").default,
+    SampleReactBlock: withProps(SampleReactBlock),
   },
 };
 
