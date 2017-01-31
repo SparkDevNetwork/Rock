@@ -544,7 +544,6 @@ namespace RockWeb.Blocks.CheckIn.Config
                     var groupType = groupTypeService.Get( checkinArea.GroupTypeGuid );
                     if ( groupType != null )
                     {
-                        groupType.LoadAttributes( rockContext );
                         checkinArea.GetGroupTypeValues( groupType );
 
                         if ( groupType.IsValid )
@@ -940,7 +939,7 @@ namespace RockWeb.Blocks.CheckIn.Config
                     {
                         _currentGroupTypeGuid = groupType.Guid;
 
-                        checkinArea.SetGroupType( groupType );
+                        checkinArea.SetGroupType( groupType, rockContext );
                         checkinArea.CheckinLabels = new List<CheckinArea.CheckinLabelAttributeInfo>();
 
                         groupType.LoadAttributes( rockContext );

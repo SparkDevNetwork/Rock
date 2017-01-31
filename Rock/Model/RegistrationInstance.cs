@@ -34,7 +34,7 @@ namespace Rock.Model
     /// </summary>
     [Table( "RegistrationInstance" )]
     [DataContract]
-    public partial class RegistrationInstance : Model<RegistrationInstance>
+    public partial class RegistrationInstance : Model<RegistrationInstance>, IHasActiveFlag
     {
 
         #region Entity Properties
@@ -123,7 +123,6 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public int? AccountId { get; set; }
-
 
         /// <summary>
         /// Gets or sets the cost (if template is configured to allow cost on instance).

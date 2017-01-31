@@ -29,6 +29,7 @@ using Rock.Web;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 using Rock.Security;
+using System.Data.Entity;
 
 namespace RockWeb.Blocks.Core
 {
@@ -396,17 +397,36 @@ namespace RockWeb.Blocks.Core
             hfScheduleId.SetValue( schedule.Id );
             lReadOnlyTitle.Text = schedule.Name.FormatAsHtmlTitle();
 
-            var calendarEvent = schedule.GetCalenderEvent();
             string occurrenceText = string.Empty;
-            if ( calendarEvent != null )
+            var occurrences = schedule.GetOccurrences( RockDateTime.Now, RockDateTime.Now.AddYears( 1 ) );
+            if ( occurrences.Any() )
             {
-                if ( calendarEvent.DTStart != null )
+                occurrenceText = GetOccurrenceText( occurrences[0] );
+            }
+
+            if ( schedule.CategoryId.HasValue )
+            {
+                var today = RockDateTime.Today;
+                var nextYear = today.AddYears( 1 );
+                var exclusions = new List<string>();
+
+                foreach ( var exclusion in new ScheduleCategoryExclusionService( new RockContext() )
+                    .Queryable().AsNoTracking()
+                    .Where( e =>
+                        e.CategoryId == schedule.CategoryId.Value &&
+                        e.EndDate >= today &&
+                        e.StartDate < nextYear )
+                    .OrderBy( e => e.StartDate ) )
                 {
-                    var occurrences = calendarEvent.GetOccurrences( RockDateTime.Now, RockDateTime.Now.AddYears( 1 ) );
-                    if ( occurrences.Any() )
-                    {
-                        occurrenceText = GetOccurrenceText( occurrences[0] );
-                    }
+                    exclusions.Add( string.Format( "<strong>{0}</strong>: {1} - {2}",
+                        exclusion.Title, exclusion.StartDate.ToShortDateString(), exclusion.EndDate.ToShortDateString() ) );
+                }
+
+                if ( exclusions.Any() )
+                {
+                    nbExclusions.Text = string.Format( "<p>This schedule will not be active during the following dates due to being excluded by the schedule's category:</p><p>{0}</p>",
+                        exclusions.AsDelimited( "<br/>" ) );
+                    nbExclusions.Visible = true;
                 }
             }
 

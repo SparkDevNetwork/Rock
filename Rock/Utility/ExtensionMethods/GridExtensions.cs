@@ -42,6 +42,28 @@ namespace Rock
             return null;
         }
 
+        /// <summary>
+        /// Gets the index of the grid's first column that contains the specified type.  This is 
+        /// very useful when you're looking for for the column that has the DeleteField or EditField.
+        /// Use like so:
+        /// int? index  = gFields.GetColumnIndexByFieldType( typeof( DeleteField ) );
+        /// </summary>
+        /// <param name="grid">The grid.</param>
+        /// <param name="type">The type.</param>
+        /// <returns></returns>
+        public static int? GetColumnIndexByFieldType( this GridView grid, System.Type type )
+        {
+            foreach ( DataControlField col in grid.Columns )
+            {
+                if ( col.GetType() == type )
+                {
+                    return grid.Columns.IndexOf( col );
+                }
+            }
+
+            return null;
+        }
+
         #endregion
     }
 }

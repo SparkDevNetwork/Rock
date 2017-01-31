@@ -261,13 +261,6 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                     var birthday = bpBirthDay.SelectedDate;
                     if ( birthday.HasValue )
                     {
-                        // If setting a future birthdate, subtract a century until birthdate is not greater than today.
-                        var today = RockDateTime.Today;
-                        while ( birthday.Value.CompareTo( today ) > 0 )
-                        {
-                            birthday = birthday.Value.AddYears( -100 );
-                        }
-
                         person.BirthMonth = birthday.Value.Month;
                         person.BirthDay = birthday.Value.Day;
                         if ( birthday.Value.Year != DateTime.MinValue.Year )
@@ -413,12 +406,25 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 
                     person.GivingGroupId = newGivingGroupId;
 
+                    bool recordStatusChangedToOrFromInactive = false;
+                    var recordStatusInactiveId = DefinedValueCache.Read( new Guid( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_INACTIVE ) ).Id;
+
                     int? newRecordStatusId = ddlRecordStatus.SelectedValueAsInt();
+                    // Is the person's record status changing?
+                    if ( person.RecordStatusValueId.HasValue && person.RecordStatusValueId != newRecordStatusId )
+                    {
+                        //  If it was inactive OR if the new status is inactive, flag this for use later below.
+                        if ( person.RecordStatusValueId == recordStatusInactiveId || newRecordStatusId == recordStatusInactiveId )
+                        {
+                            recordStatusChangedToOrFromInactive = true;
+                        }
+                    }
+
                     History.EvaluateChange( changes, "Record Status", DefinedValueCache.GetName( person.RecordStatusValueId ), DefinedValueCache.GetName( newRecordStatusId ) );
                     person.RecordStatusValueId = newRecordStatusId;
 
                     int? newRecordStatusReasonId = null;
-                    if ( person.RecordStatusValueId.HasValue && person.RecordStatusValueId.Value == DefinedValueCache.Read( new Guid( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_INACTIVE ) ).Id )
+                    if ( person.RecordStatusValueId.HasValue && person.RecordStatusValueId.Value == recordStatusInactiveId )
                     {
                         newRecordStatusReasonId = ddlReason.SelectedValueAsInt();
                     }
@@ -500,6 +506,27 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                                         }
                                     }
                                 }
+                            }
+
+                            // If the person's record status was changed to or from inactive,
+                            // we need to check if any of their families need to be activated or inactivated.
+                            if ( recordStatusChangedToOrFromInactive )
+                            {
+                                foreach ( var family in personService.GetFamilies( person.Id ) )
+                                {
+                                    // Are there any more members of the family who are NOT inactive?
+                                    // If not, mark the whole family inactive.
+                                    if ( !family.Members.Where( m => m.Person.RecordStatusValueId != recordStatusInactiveId ).Any() )
+                                    {
+                                        family.IsActive = false;
+                                    }
+                                    else
+                                    {
+                                        family.IsActive = true;
+                                    }
+                                }
+
+                                rockContext.SaveChanges();
                             }
                         }
 

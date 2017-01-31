@@ -40,7 +40,7 @@ namespace Rock.Model
     /// </remarks>
     [Table( "Group" )]
     [DataContract]
-    public partial class Group : Model<Group>, IOrdered, IRockIndexable
+    public partial class Group : Model<Group>, IOrdered, IHasActiveFlag, IRockIndexable
     {
         #region Entity Properties
 
@@ -659,7 +659,7 @@ namespace Rock.Model
             var groupEntity = new GroupService( new RockContext() ).Get( id );
 
             // check that this group type is set to be indexed.
-            if ( groupEntity.GroupType.IsIndexEnabled )
+            if ( groupEntity.GroupType.IsIndexEnabled && groupEntity.IsActive )
             {
                 var indexItem = GroupIndex.LoadByModel( groupEntity );
                 IndexContainer.IndexDocument( indexItem );

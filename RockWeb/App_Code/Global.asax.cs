@@ -167,20 +167,30 @@ namespace RockWeb
                     //// Run any needed Rock and/or plugin migrations
                     //// NOTE: MigrateDatabase must be the first thing that touches the database to help prevent EF from creating empty tables for a new database
                     MigrateDatabase( rockContext );
-                    
+
+                    // Run any plugin migrations
+                    stopwatch.Restart();
+                    MigratePlugins( rockContext );
+                    if ( System.Web.Hosting.HostingEnvironment.IsDevelopmentEnvironment )
+                    {
+                        System.Diagnostics.Debug.WriteLine( string.Format( "MigratePlugins - {0} ms", stopwatch.Elapsed.TotalMilliseconds ) );
+                    }
+
                     // Preload the commonly used objects
                     stopwatch.Restart();
                     LoadCacheObjects( rockContext );
-
                     if ( System.Web.Hosting.HostingEnvironment.IsDevelopmentEnvironment )
                     {
                         System.Diagnostics.Debug.WriteLine( string.Format( "LoadCacheObjects - {0} ms", stopwatch.Elapsed.TotalMilliseconds ) );
                     }
 
-                    // Run any plugin migrations
-                    MigratePlugins( rockContext );
-
+                    // Register Routes
+                    stopwatch.Restart();
                     RegisterRoutes( rockContext, RouteTable.Routes );
+                    if ( System.Web.Hosting.HostingEnvironment.IsDevelopmentEnvironment )
+                    {
+                        System.Diagnostics.Debug.WriteLine( string.Format( "RegisterRoutes - {0} ms", stopwatch.Elapsed.TotalMilliseconds ) );
+                    }
 
                     // Configure Rock Rest API
                     stopwatch.Restart();

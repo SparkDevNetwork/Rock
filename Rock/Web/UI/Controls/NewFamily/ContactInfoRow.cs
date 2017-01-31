@@ -77,6 +77,24 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Gets or sets a value indicating whether [show cell phone first].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [show cell phone first]; otherwise, <c>false</c>.
+        /// </value>
+        public bool ShowCellPhoneFirst
+        {
+            get
+            {
+                return ViewState["ShowCellPhoneFirst"] as bool? ?? false;
+            }
+            set
+            {
+                ViewState["ShowCellPhoneFirst"] = value;
+            }
+        }
+
+        /// <summary>
         /// Gets or sets the home phone country code.
         /// </summary>
         /// <value>
@@ -302,26 +320,16 @@ namespace Rock.Web.UI.Controls
                 writer.Write( PersonName );
                 writer.RenderEndTag();
 
-                writer.RenderBeginTag( HtmlTextWriterTag.Td );
-                writer.AddAttribute( "class", "form-group" );
-                writer.RenderBeginTag( HtmlTextWriterTag.Div );
-                _pnbHomePhone.RenderControl( writer );
-                writer.RenderEndTag();
-                writer.RenderEndTag();
-
-                writer.RenderBeginTag( HtmlTextWriterTag.Td );
-                writer.AddAttribute( "class", "form-group" );
-                writer.RenderBeginTag( HtmlTextWriterTag.Div );
-                _pnbCellPhone.RenderControl( writer );
-                writer.RenderEndTag();
-                writer.RenderEndTag();
-
-                writer.RenderBeginTag(HtmlTextWriterTag.Td);
-                writer.AddAttribute("class", "text-center");
-                writer.RenderBeginTag(HtmlTextWriterTag.Div);
-                _cbIsMessagingEnabled.RenderControl(writer);
-                writer.RenderEndTag();
-                writer.RenderEndTag();
+                if ( ShowCellPhoneFirst )
+                {
+                    RenderCellPhone( writer );
+                    RenderHomePhone( writer );
+                }
+                else
+                {
+                    RenderHomePhone( writer );
+                    RenderCellPhone( writer );
+                }
 
                 writer.RenderBeginTag( HtmlTextWriterTag.Td );
                 writer.AddAttribute( "class", "form-group" );
@@ -332,6 +340,34 @@ namespace Rock.Web.UI.Controls
 
                 writer.RenderEndTag();  // Tr
             }
+        }
+
+        private void RenderHomePhone( HtmlTextWriter writer )
+        {
+            writer.RenderBeginTag( HtmlTextWriterTag.Td );
+            writer.AddAttribute( "class", "form-group" );
+            writer.RenderBeginTag( HtmlTextWriterTag.Div );
+            _pnbHomePhone.RenderControl( writer );
+            writer.RenderEndTag();
+            writer.RenderEndTag();
+        }
+
+        private void RenderCellPhone( HtmlTextWriter writer )
+        {
+            writer.RenderBeginTag( HtmlTextWriterTag.Td );
+            writer.AddAttribute( "class", "form-group" );
+            writer.RenderBeginTag( HtmlTextWriterTag.Div );
+            _pnbCellPhone.RenderControl( writer );
+            writer.RenderEndTag();
+            writer.RenderEndTag();
+
+            writer.RenderBeginTag( HtmlTextWriterTag.Td );
+            writer.AddAttribute( "class", "text-center" );
+            writer.RenderBeginTag( HtmlTextWriterTag.Div );
+            _cbIsMessagingEnabled.RenderControl( writer );
+            writer.RenderEndTag();
+            writer.RenderEndTag();
+
         }
     }
 
