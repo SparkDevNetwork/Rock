@@ -83,7 +83,7 @@ namespace Rock.Web.UI
 
             this.Props.id = "bid_" + BlockId; ;
             this.Props.path = name;
-            this.Component = name.Replace("/", ".");
+            this.Component = name.Replace("/", ".").Remove(0, 1);
         }
 
         /// <summary>
