@@ -85,8 +85,11 @@ REQUIRED VARIABLES
       <div class="list-group">
         <a href="{{ Message.Attributes.HostedVideoUrl }}" class="list-group-item"><i class="fa fa-fw fa-film"></i> Download Video</a>
         <a href="{{ Message.Attributes.HostedAudioUrl }}" class="list-group-item"><i class="fa fa-fw fa-headphones"></i> Download Audio</a>
+        {% if Message.Attributes.SermonNotePDFUrl != empty %}
+          <a href="{{ Message.Attributes.SermonNotePDFUrl }}" class="list-group-item"><i class="fa fa-fw fa-file-text-o"></i> Download Sermon Note</a>
+        {% endif %}
         {% if Message.Attributes.DiscussionGuideUrl != empty %}
-          <a href="{{ Message.Attributes.DiscussionGuideUrl }}" class="list-group-item"><i class="fa fa-fw fa-file-text-o"></i> Download Sermon Notes</a>
+          <a href="{{ Message.Attributes.DiscussionGuideUrl }}" class="list-group-item"><i class="fa fa-fw fa-file-text-o"></i> Download Discussion Guide</a>
         {% endif %}
       </div>
     </div>
