@@ -46,7 +46,7 @@ namespace RockWeb.Blocks.Cms
     [DisplayName( "Page/Zone Blocks Editor" )]
     [Category( "CMS" )]
     [Description( "Edit the Blocks for a Zone on a specific page/layout." )]
-    public partial class PageZoneBlocksEditor : RockBlock, IDetailBlock
+    public partial class PageZoneBlocksEditor : RockBlock, IDetailBlock, ISecondaryBlock
     {
         #region Base Control Methods
 
@@ -736,6 +736,15 @@ namespace RockWeb.Blocks.Cms
                     tbNewBlockName.Text = ddlBlockType.SelectedItem.Text;
                 }
             }
+        }
+
+        /// <summary>
+        /// Hook so that other blocks can set the visibility of all ISecondaryBlocks on its page
+        /// </summary>
+        /// <param name="visible">if set to <c>true</c> [visible].</param>
+        public void SetVisible( bool visible )
+        {
+            pnlDetails.Visible = visible;
         }
     }
 }
