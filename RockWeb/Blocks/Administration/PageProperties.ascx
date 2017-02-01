@@ -86,6 +86,10 @@
                                 </fieldset>
                             </asp:Panel>
 
+                            <Rock:PanelWidget ID="wpPageAttributes" runat="server" Title="Page Attribute Values">
+                                <asp:PlaceHolder ID="phPageAttributes" runat="server" EnableViewState="false"></asp:PlaceHolder>
+                            </Rock:PanelWidget>
+
                             <asp:Panel ID="pnlAdvancedSettings" runat="server" Visible="false">
                                 <div class="row">
                                     <div class="col-md-6">
