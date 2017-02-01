@@ -508,67 +508,70 @@ namespace RockWeb.Blocks.Reporting
                         {
                             dataSet = GetData( out errorMessage );
                         }
-                         
-                        foreach ( DataTable dataTable in dataSet.Tables )
+                        
+                        if ( dataSet != null )
                         {
-                            var div = new HtmlGenericControl( "div" );
-                            div.AddCssClass( "grid" );
-
-                            if ( GetAttributeValue( "PaneledGrid" ).AsBoolean() )
+                            foreach ( DataTable dataTable in dataSet.Tables )
                             {
-                                div.AddCssClass( "grid-panel" );
-                            }
+                                var div = new HtmlGenericControl( "div" );
+                                div.AddCssClass( "grid" );
 
-                            phContent.Controls.Add( div );
-
-                            GridFilter = new GridFilter()
-                            {
-                                ID = string.Format("gfFilter{0}", tableId )
-                            };
-
-                            div.Controls.Add( GridFilter );
-                            GridFilter.ApplyFilterClick += ApplyFilterClick;
-                            GridFilter.DisplayFilterValue += DisplayFilterValue;
-                            GridFilter.Visible = showGridFilterControls && (dataSet.Tables.Count == 1);
-               
-                            var grid = new Grid();
-                            div.Controls.Add( grid );
-                            grid.ID = string.Format( "dynamic_data_{0}", tableId++ );
-                            grid.AllowSorting = true;
-                            grid.EmptyDataText = "No Results";
-                            grid.Actions.ShowCommunicate = GetAttributeValue( "ShowCommunicate" ).AsBoolean();
-                            grid.Actions.ShowMergePerson = GetAttributeValue( "ShowMergePerson" ).AsBoolean();
-                            grid.Actions.ShowBulkUpdate = GetAttributeValue( "ShowBulkUpdate" ).AsBoolean();
-                            grid.Actions.ShowExcelExport = GetAttributeValue( "ShowExcelExport" ).AsBoolean();
-                            grid.Actions.ShowMergeTemplate = GetAttributeValue( "ShowMergeTemplate" ).AsBoolean();
-
-                            grid.GridRebind += gReport_GridRebind;
-                            grid.RowSelected += gReport_RowSelected;
-                            if ( personReport )
-                            {
-                                grid.PersonIdField = "Id";
-                            }
-                            else
-                            {
-                                grid.PersonIdField = null;
-                            }
-                            grid.CommunicateMergeFields = GetAttributeValue( "MergeFields" ).SplitDelimitedValues().ToList<string>();
-
-                            AddGridColumns( grid, dataTable );
-                            SetDataKeyNames( grid, dataTable );
-
-                            if ( setData )
-                            {
-                                FilterTable( grid, dataTable );
-                                SortTable( grid, dataTable );
-                                grid.DataSource = dataTable;
-                                
-                                if ( personReport)
+                                if ( GetAttributeValue( "PaneledGrid" ).AsBoolean() )
                                 {
-                                    grid.EntityTypeId = EntityTypeCache.GetId<Person>();
+                                    div.AddCssClass( "grid-panel" );
                                 }
 
-                                grid.DataBind();
+                                phContent.Controls.Add( div );
+
+                                GridFilter = new GridFilter()
+                                {
+                                    ID = string.Format( "gfFilter{0}", tableId )
+                                };
+
+                                div.Controls.Add( GridFilter );
+                                GridFilter.ApplyFilterClick += ApplyFilterClick;
+                                GridFilter.DisplayFilterValue += DisplayFilterValue;
+                                GridFilter.Visible = showGridFilterControls && ( dataSet.Tables.Count == 1 );
+
+                                var grid = new Grid();
+                                div.Controls.Add( grid );
+                                grid.ID = string.Format( "dynamic_data_{0}", tableId++ );
+                                grid.AllowSorting = true;
+                                grid.EmptyDataText = "No Results";
+                                grid.Actions.ShowCommunicate = GetAttributeValue( "ShowCommunicate" ).AsBoolean();
+                                grid.Actions.ShowMergePerson = GetAttributeValue( "ShowMergePerson" ).AsBoolean();
+                                grid.Actions.ShowBulkUpdate = GetAttributeValue( "ShowBulkUpdate" ).AsBoolean();
+                                grid.Actions.ShowExcelExport = GetAttributeValue( "ShowExcelExport" ).AsBoolean();
+                                grid.Actions.ShowMergeTemplate = GetAttributeValue( "ShowMergeTemplate" ).AsBoolean();
+
+                                grid.GridRebind += gReport_GridRebind;
+                                grid.RowSelected += gReport_RowSelected;
+                                if ( personReport )
+                                {
+                                    grid.PersonIdField = "Id";
+                                }
+                                else
+                                {
+                                    grid.PersonIdField = null;
+                                }
+                                grid.CommunicateMergeFields = GetAttributeValue( "MergeFields" ).SplitDelimitedValues().ToList<string>();
+
+                                AddGridColumns( grid, dataTable );
+                                SetDataKeyNames( grid, dataTable );
+
+                                if ( setData )
+                                {
+                                    FilterTable( grid, dataTable );
+                                    SortTable( grid, dataTable );
+                                    grid.DataSource = dataTable;
+
+                                    if ( personReport )
+                                    {
+                                        grid.EntityTypeId = EntityTypeCache.GetId<Person>();
+                                    }
+
+                                    grid.DataBind();
+                                }
                             }
                         }
                     }
