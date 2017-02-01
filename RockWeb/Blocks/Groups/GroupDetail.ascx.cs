@@ -693,7 +693,7 @@ namespace RockWeb.Blocks.Groups
                 return;
             }
             
-            // use WrapTransaction since SaveAttributeValues does it's own RockContext.SaveChanges()
+            // use WrapTransaction since SaveAttributeValues does its own RockContext.SaveChanges()
             rockContext.WrapTransaction( () =>
             {
                 var adding = group.Id.Equals( 0 );

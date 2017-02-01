@@ -224,6 +224,25 @@ namespace RockWeb.Blocks.Administration
                     this.Visible = false;
                 }
             }
+            else
+            {
+                if ( pnlEditDetails.Visible )
+                {
+                    // Load the Attribute Controls
+                    var pageService = new PageService( new RockContext() );
+                    var page = pageService.Get( hfPageId.Value.AsInteger() );
+                    if ( page == null )
+                    {
+                        page = new Rock.Model.Page();
+                        page.LayoutId = ddlLayout.SelectedValue.AsInteger();
+                    }
+
+                    page.LoadAttributes();
+                    phPageAttributes.Controls.Clear();
+
+                    Rock.Attribute.Helper.AddEditControls( page, phPageAttributes, false, BlockValidationGroup );
+                }
+            }
 
             base.OnLoad( e );
         }
@@ -387,6 +406,19 @@ namespace RockWeb.Blocks.Administration
             }
 
             ddlLayout.SetValue( page.LayoutId );
+
+            phPageAttributes.Controls.Clear();
+            page.LoadAttributes();
+
+            if ( page.Attributes != null && page.Attributes.Any() )
+            {
+                wpPageAttributes.Visible = true;
+                Rock.Attribute.Helper.AddEditControls( page, phPageAttributes, true, BlockValidationGroup );
+            }
+            else
+            {
+                wpPageAttributes.Visible = false;
+            }
 
             rptProperties.DataSource = _tabs;
             rptProperties.DataBind();
@@ -634,10 +666,21 @@ namespace RockWeb.Blocks.Administration
                     }
                 }
 
+                // Page Attributes
+                page.LoadAttributes();
+
+                Rock.Attribute.Helper.GetEditValues( phPageAttributes, page );
+
                 // save page and it's routes
                 if ( page.IsValid )
                 {
-                    rockContext.SaveChanges();
+                    // use WrapTransaction since SaveAttributeValues does its own RockContext.SaveChanges()
+                    rockContext.WrapTransaction( () =>
+                    {
+                        rockContext.SaveChanges();
+
+                        page.SaveAttributeValues( rockContext );
+                    } );
 
                     // remove any routes for this page that are no longer configured
                     foreach ( var existingRoute in RouteTable.Routes.OfType<Route>().Where( a => a.PageIds().Contains( page.Id ) ) )
