@@ -15,7 +15,7 @@
     "compat"
   ],
   "rules": {
-    "linebreak-style": ["error", "windows"],
+    "linebreak-style": ["ignore", "windows"],
     "arrow-parens": [2, "always"],
     "quotes": [2, "double"],
     "import/extensions": 0,

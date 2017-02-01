@@ -1,7 +1,6 @@
 // @flow
 import { Component } from "react";
 
-
 type ISampleReactBlockProps = {
   startingNumber?: number,
 };
