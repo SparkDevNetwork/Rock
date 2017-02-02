@@ -359,11 +359,13 @@ Response XML ({2}):
                     }
                 }
 
-                if ( _HTTPStatusCode == HttpStatusCode.OK )
+                using ( var newRockContext = new RockContext() )
                 {
-                    using ( var newRockContext = new RockContext() )
+                    var handledErrorMessages = new List<string>();
+
+                    bool createdNewAttribute = false;
+                    if ( _HTTPStatusCode == HttpStatusCode.OK )
                     {
-                        bool createdNewAttribute = false;
                         var xOrderXML = xResult.Elements( "OrderXML" ).FirstOrDefault();
                         if ( xOrderXML != null )
                         {
@@ -377,15 +379,11 @@ Response XML ({2}):
                                 }
                             }
 
+                            handledErrorMessages.AddRange( xOrderXML.Elements( "Message" ).Select( x => x.Value ).ToList() );
                             var xErrors = xOrderXML.Elements( "Errors" ).FirstOrDefault();
                             if ( xErrors != null )
                             {
-                                string errorMsg = xErrors.Elements( "Message" ).Select( x => x.Value ).ToList().AsDelimited( Environment.NewLine );
-                                if ( SaveAttributeValue( workflow, "RequestMessage", errorMsg,
-                                    FieldTypeCache.Read( Rock.SystemGuid.FieldType.TEXT.AsGuid() ), newRockContext, null ) )
-                                {
-                                    createdNewAttribute = true;
-                                }
+                                handledErrorMessages.AddRange( xOrderXML.Elements( "Message" ).Select( x => x.Value ).ToList() );
                             }
 
                             if ( xResult.Root.Descendants().Count() > 0 )
@@ -393,29 +391,29 @@ Response XML ({2}):
                                 SaveResults( xResult, workflow, rockContext, false );
                             }
                         }
-                        else
+                    }
+                    else
+                    {
+                        handledErrorMessages.Add( "Invalid HttpStatusCode: " + _HTTPStatusCode.ToString() );
+                    }
+
+                    if ( handledErrorMessages.Any() )
+                    {
+                        if ( SaveAttributeValue( workflow, "RequestMessage", handledErrorMessages.AsDelimited( Environment.NewLine ),
+                            FieldTypeCache.Read( Rock.SystemGuid.FieldType.TEXT.AsGuid() ), newRockContext, null ) )
                         {
-                            if ( SaveAttributeValue( workflow, "RequestMessage", errorMessages.AsDelimited( Environment.NewLine ),
-                                FieldTypeCache.Read( Rock.SystemGuid.FieldType.TEXT.AsGuid() ), newRockContext, null ) )
-                            {
-                                createdNewAttribute = true;
-                            }
-
-                        }
-
-                        newRockContext.SaveChanges();
-
-                        if ( createdNewAttribute )
-                        {
-                            AttributeCache.FlushEntityAttributes();
+                            createdNewAttribute = true;
                         }
                     }
+
+                    newRockContext.SaveChanges();
+
+                    if ( createdNewAttribute )
+                    {
+                        AttributeCache.FlushEntityAttributes();
+                    }
+
                     return true;
-                }
-                else
-                {
-                    errorMessages.Add( "Invalid HttpStatusCode: " + _HTTPStatusCode.ToString() );
-                    return false;
                 }
             }
 
