@@ -145,12 +145,12 @@ namespace RockWeb.Blocks.Cms
                         rockContext.SaveChanges();
                     }
 
-                    foreach ( var zoneBlock in zoneBlocks)
+                    foreach ( var zoneBlock in zoneBlocks )
                     {
                         // make sure the BlockCache for all the re-ordered blocks get flushed so the new Order is updated
                         BlockCache.Flush( zoneBlock.Id );
                     }
-                    
+
                     page.FlushBlocks();
                     if ( block.LayoutId.HasValue )
                     {
@@ -267,10 +267,10 @@ namespace RockWeb.Blocks.Cms
 
             Regex masterPageRegEx = new Regex( "<%@.*MasterPageFile=\"([^\"]*)\".*%>", RegexOptions.Compiled );
 
-            var match = masterPageRegEx.Match( layoutAspx.DocumentNode.FirstChild.InnerText );
-            if ( match.Success && match.Groups.Count > 1 )
+            var masterPageMatch = masterPageRegEx.Match( layoutAspx.DocumentNode.FirstChild.InnerText );
+            if ( masterPageMatch.Success && masterPageMatch.Groups.Count > 1 )
             {
-                string masterPageFileName = Path.Combine( Path.GetDirectoryName( layoutFullPath ), match.Groups[1].Value );
+                string masterPageFileName = Path.Combine( Path.GetDirectoryName( layoutFullPath ), masterPageMatch.Groups[1].Value );
                 HtmlAgilityPack.HtmlDocument masterAspx = new HtmlAgilityPack.HtmlDocument();
                 masterAspx.OptionFixNestedTags = true;
                 masterAspx.Load( masterPageFileName );
@@ -292,6 +292,18 @@ namespace RockWeb.Blocks.Cms
                     zoneNames.AddRange( layoutControlNodes.Where( a => a.Attributes["Name"] != null ).Select( a => a.Attributes["Name"].Value ).ToList() );
                 }
             }
+
+            
+            // if the layout block doesn't have a master page, or if there are other ContentPlaceHolders that we didn't know about, add any other zones that we haven't added already
+            var layoutZones = layoutControlNodes.Where( a => a.Attributes["Name"] != null ).Select( a => a.Attributes["Name"].Value ).ToList();
+            foreach ( var layoutZone in layoutZones )
+            {
+                if ( !zoneNames.Contains( layoutZone ) )
+                {
+                    zoneNames.Add( layoutZone );
+                }
+            }
+            
 
             // remove any spaces
             zoneNames = zoneNames.Select( a => a.Replace( " ", string.Empty ) ).ToList();
