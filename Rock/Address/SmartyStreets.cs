@@ -71,7 +71,11 @@ namespace Rock.Address
                 if ( hoursSinceLastUpdate > 24 || true )
                 {
                     var rockInstanceId = Rock.Web.SystemSettings.GetRockInstanceId();
-                    var getAPIKeyClient = new RestClient( $"http://localhost:6229/api/Utility/GetSmartyStreetsData?rockInstanceId={rockInstanceId}" );
+                    var getAPIKeyClient = new RestClient( "https://www.rockrms.com/api/SmartyStreets/GetSmartyStreetsApiKey?rockInstanceId={rockInstanceId}" );
+
+                    // If debugging locally
+                    // var getAPIKeyClient = new RestClient( $"http://localhost:57822/api/SmartyStreets/GetSmartyStreetsApiKey?rockInstanceId={rockInstanceId}" );
+
                     var getApiKeyRequest = new RestRequest( Method.GET );
                     var getApiKeyResponse = getAPIKeyClient.Get<SmartyStreetsAPIKey>( getApiKeyRequest );
 
