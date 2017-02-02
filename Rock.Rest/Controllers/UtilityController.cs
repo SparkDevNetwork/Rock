@@ -104,5 +104,18 @@ namespace Rock.Rest.Controllers
 
             return 0;
         }
+
+
+        /* NOTE: This is just temporary */
+        [System.Web.Http.Route( "api/Utility/GetSmartyStreetsData" )]
+        [HttpGet]
+        public Rock.Address.SmartyStreetsAPIKey GetSmartyStreetsData( string rockInstanceId, string requestToken )
+        {
+            var smartyStreetsAPIKey = new Rock.Address.SmartyStreetsAPIKey();
+            smartyStreetsAPIKey.AuthID = "SecretAuthID";
+            smartyStreetsAPIKey.AuthToken = "SecretAuthToken";
+
+            return smartyStreetsAPIKey;
+        }
     }
 }
