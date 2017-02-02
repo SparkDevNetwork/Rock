@@ -858,6 +858,7 @@ namespace RockWeb.Plugins.church_ccv.Reporting
             RockContext rockContext = new RockContext();
             var metricCategoryService = new MetricCategoryService( rockContext );
 
+            // use the Service to get the General Funds Metric
             Metric generalFundsMetric = null;
             var generalFundsMetricCategoryId = this.GetAttributeValue( "GeneralFundsMetricCategoryId" ).AsIntegerOrNull();
             if ( generalFundsMetricCategoryId.HasValue )
@@ -886,12 +887,15 @@ namespace RockWeb.Plugins.church_ccv.Reporting
             int entityTypeIdDefinedValue = EntityTypeCache.Read( typeof( Rock.Model.DefinedValue ) ).Id;
             var metricValuePartitionService = new MetricValuePartitionService( rockContext );
 
+            var campusService = new CampusService( rockContext ).Queryable();
+
             // LINQ Query from MetricValue table and MetricValuePartitions
             var generalFundsMetricValuesQuery = metricValuePartitionService.Queryable()
                  .Where( a => a.MetricValue.MetricId == generalFundsMetricCategoryId && a.MetricValue.MetricValueDateTime == sundayDate )
                  .Select( m => new
                  {
                      m.EntityId,
+                     CampusName = campusService.Where( c => c.Id == m.EntityId ).Select( c => c.Name ).FirstOrDefault(),
                      m.MetricValue
                  }
                  ).ToList();

@@ -45,7 +45,7 @@
                     <h3>General Funds by Campus</h3>
                     <Rock:Grid ID="gGeneralFundsExport" runat="server" AllowSorting="false" AllowPaging="false" ExportFilename="GeneralFundsExport">
                         <Columns>
-                            <Rock:RockBoundField DataField="EntityID" HeaderText="Campus" />
+                            <Rock:RockBoundField DataField="CampusName" HeaderText="Campus" />
                             <Rock:RockBoundField DataField="MetricValue" HeaderText="Offering" />
                         </Columns>
                     </Rock:Grid> 
