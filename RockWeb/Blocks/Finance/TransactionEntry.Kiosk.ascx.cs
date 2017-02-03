@@ -612,19 +612,37 @@ namespace RockWeb.Blocks.Finance
         }
         protected void lbRegisterNext_Click( object sender, EventArgs e )
         {
+            var rockContext = new RockContext();
+
             _dvcConnectionStatus = DefinedValueCache.Read( GetAttributeValue( "ConnectionStatus" ).AsGuid() );
             _dvcRecordStatus = DefinedValueCache.Read( GetAttributeValue( "RecordStatus" ).AsGuid() );
+            var homePhoneType = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_HOME );
             
             // create new person / family
             Person person = new Person();
             person.FirstName = tbFirstName.Text.Trim();
             person.LastName = tbLastName.Text.Trim();
+            person.UpdatePhoneNumber( homePhoneType.Id, "1", tbPhone.Text.Trim(), null, null, rockContext );
             person.Email = tbEmail.Text.Trim();
             person.ConnectionStatusValueId = _dvcConnectionStatus.Id;
             person.RecordStatusValueId = _dvcRecordStatus.Id;
             person.Gender = Gender.Unknown;
 
-            PersonService.SaveNewPerson( person, new RockContext(), this.CampusId, false );
+            var newFamily = PersonService.SaveNewPerson( person, rockContext, this.CampusId, false );
+
+            rockContext.SaveChanges();
+
+            GroupService.AddNewGroupAddress(
+                        rockContext,
+                        newFamily,
+                        Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME,
+                        acAddress.Street1.Trim(),
+                        acAddress.Street2.Trim(),
+                        acAddress.City.Trim(),
+                        acAddress.State.Trim(),
+                        acAddress.PostalCode.Trim(),
+                        GlobalAttributesCache.Read().OrganizationCountry,
+                        true );
 
             // set as selected giving unit
             this.SelectedGivingUnit = new GivingUnit( person.PrimaryAliasId.Value, person.LastName, person.FirstName );
