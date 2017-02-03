@@ -1,0 +1,35 @@
+{% assign personTemplate = '~~/Assets/Lava/Toolboxes/_ng_person.lava' %}
+
+{% assign pendingMembersCount = 0 %}
+{% for p in RosterMembers %}
+	{% if p.GroupMember.GroupMemberStatus == 'Pending' %}
+		{% assign pendingMembersCount = pendingMembersCount | Plus: 1 %}
+	{% endif %}
+{% endfor %}
+
+{% if pendingMembersCount > 0 %}
+	<div class="well">
+		<h4>Pending Roster</h4>
+  
+		{% assign numRendered = 1 %}
+
+		{% for p in RosterMembers %}
+			{% assign childWrapperObj = p %}
+
+			{% if childWrapperObj.GroupMember.GroupMemberStatus == 'Pending' %}
+				{% assign loop = numRendered | Modulo: 2 %}
+				{% if loop != 0 %}
+					<div class="row">
+				{% endif %}
+
+				{% include personTemplate %}
+
+				{% if loop == 0 or numRendered == pendingMembersCount %}
+					</div>
+				{% endif %}
+				
+				{% assign numRendered = numRendered | Plus: 1 %}
+			{% endif %}
+		{% endfor %}
+	</div>
+{% endif %}

@@ -39,11 +39,11 @@
   </ul>
 
   {% if rosterPageIsCurrent %}
-    {% include '~~/Assets/Lava/Toolboxes/_roster-pending.lava' %}
+    {% include '~~/Assets/Lava/Toolboxes/_ng_roster-pending.lava' %}
     {% include '~~/Assets/Lava/Toolboxes/_ng_roster-active.lava' %}
-    {% include '~~/Assets/Lava/Toolboxes/_roster-inactive.lava' %}
+    {% include '~~/Assets/Lava/Toolboxes/_ng_roster-inactive.lava' %}
   {% elsif parentPageIsCurrent %}
-    {% include '~~/Assets/Lava/Toolboxes/_roster-parents.lava' %}
+    {% include '~~/Assets/Lava/Toolboxes/_ng_roster-parents.lava' %}
   {% endif %}
 
   {% include '~~/Assets/Lava/Toolboxes/_footer-actions.lava' %}
