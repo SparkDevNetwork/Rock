@@ -58,6 +58,9 @@ namespace RockWeb.Blocks.Event
     [BooleanField( "Enable Debug", "Display the merge fields that are available for lava ( Success Page ).", false, "", 5 )]
     [BooleanField( "Allow InLine Digital Signature Documents", "Should inline digital documents be allowed? This requires that the registration template is configured to display the document inline", true, "", 6, "SignInline" )]
     [SystemEmailField( "Confirm Account Template", "Confirm Account Email Template", false, Rock.SystemGuid.SystemEmail.SECURITY_CONFIRM_ACCOUNT, "", 7 )]
+	[TextField ( "Family Term", "The term to use for specifying which household or family a person is a member of.", true, "immediate family", "", 8)]
+	[BooleanField( "Force Email Update", "Force the email to be updated on the person's record.", false, "", 9 )]
+
     public partial class RegistrationEntry : RockBlock
     {
         #region Fields
@@ -3640,7 +3643,7 @@ namespace RockWeb.Blocks.Event
             name = 'Individual';
         }}
         var $lbl = $('div.js-registration-same-family').find('label.control-label')
-        $lbl.text( name + ' is in the same immediate family as');
+        $lbl.text( name + ' is in the same #{22} as');
     }} );
     $('input.js-your-first-name').change( function() {{
         var name = $(this).val();
@@ -3650,7 +3653,7 @@ namespace RockWeb.Blocks.Event
             name += ' is';
         }}
         var $lbl = $('div.js-registration-same-family').find('label.control-label')
-        $lbl.text( name + ' in the same immediate family as');
+        $lbl.text( name + ' in the same #{22} as');
     }} );
 
     $('#{0}').on('change', function() {{
@@ -3803,6 +3806,7 @@ namespace RockWeb.Blocks.Event
             ,hfRequiredDocumentQueryString.ClientID // {19}
             ,this.Page.ClientScript.GetPostBackEventReference( lbRequiredDocumentNext, "" ) // {20}
             ,hfRequiredDocumentLinkUrl.ClientID     // {21}
+            ,GetAttributeValue( "FamilyTerm")       // {22}
 );
 
             ScriptManager.RegisterStartupScript( Page, Page.GetType(), "registrationEntry", script, true );
@@ -4823,10 +4827,13 @@ namespace RockWeb.Blocks.Event
                 }
 
                 rblRegistrarFamilyOptions.Label = string.IsNullOrWhiteSpace( tbYourFirstName.Text ) ?
-                    "You are in the same immediate family as" :
-                    tbYourFirstName.Text + " is in the same immediate family as";
+                    "You are in the same " + GetAttributeValue( "FamilyTerm") + " as" :
+                    tbYourFirstName.Text + " is in the same " + GetAttributeValue( "FamilyTerm") + " as";
 
-                cbUpdateEmail.Visible = CurrentPerson != null && !string.IsNullOrWhiteSpace( CurrentPerson.Email );
+                cbUpdateEmail.Visible = CurrentPerson != null && !string.IsNullOrWhiteSpace( CurrentPerson.Email ) && !(GetAttributeValue("ForceEmailUpdate").AsBoolean());
+				if (CurrentPerson != null && GetAttributeValue("ForceEmailUpdate").AsBoolean()) {
+					lUpdateEmailWarning.Visible = true;
+				}
 
                 //rblRegistrarFamilyOptions.SetValue( RegistrationState.FamilyGuid.ToString() );
 
