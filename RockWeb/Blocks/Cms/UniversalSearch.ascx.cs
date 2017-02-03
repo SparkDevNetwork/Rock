@@ -221,18 +221,26 @@ namespace RockWeb.Blocks.Cms
             var indexDocumentType = indexDocumentEntityType.GetEntityType();
 
             var client = IndexContainer.GetActiveComponent();
-            var document = client.GetDocumentById( indexDocumentType, documentId.AsInteger() );
 
-            var documentUrl = document.GetDocumentUrl();
+            if ( indexDocumentType != null ) {
+                var document = client.GetDocumentById( indexDocumentType, documentId.AsInteger() );
 
-            if ( !string.IsNullOrWhiteSpace( documentUrl ) )
-            {
-                Response.Redirect( documentUrl );
+                var documentUrl = document.GetDocumentUrl();
+
+                if ( !string.IsNullOrWhiteSpace( documentUrl ) )
+                {
+                    Response.Redirect( documentUrl );
+                }
+                else
+                {
+                    lResults.Text = "<div class='alert alert-warning'>No url is available for the provided index document.</div>";
+                }
             }
-            else
+            else 
             {
-                lResults.Text = "<div class='alert alert-warning'>No url is available for the provided index document.</div>";
+                lResults.Text = "<div class='alert alert-warning'>Invalid document type.</div>";
             }
+
         }
 
         /// <summary>
@@ -502,6 +510,13 @@ namespace RockWeb.Blocks.Cms
 
             // add dynamic filters
             var selectedEntities = cblModelFilter.SelectedValuesAsInt;
+
+            // if no entities from the UI get from the block config
+            if ( selectedEntities.Count == 0 && GetAttributeValue( "EnabledModels" ).IsNotNullOrWhitespace() )
+            {
+                selectedEntities = GetAttributeValue( "EnabledModels" ).Split( ',' ).Select( int.Parse ).ToList();
+            }
+
             if ( selectedEntities.Count > 0 )
             {
                 foreach ( var control in phFilters.Controls )
@@ -619,6 +634,8 @@ namespace RockWeb.Blocks.Cms
             {
                 cblModelFilter.Visible = false;
             }
+
+            hrSeparator.Visible = cblModelFilter.Visible;
 
             ddlSearchType.BindToEnum<SearchType>();
             ddlSearchType.SelectedValue = GetAttributeValue( "SearchType" );
