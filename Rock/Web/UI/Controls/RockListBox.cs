@@ -14,20 +14,21 @@
 // limitations under the License.
 // </copyright>
 //
-using System;
-using System.Collections.Generic;
 using System.ComponentModel;
+using System.Collections.Generic;
 using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
+using System;
+using System.Collections.Specialized;
 
 namespace Rock.Web.UI.Controls
 {
     /// <summary>
-    /// A <see cref="T:System.Web.UI.WebControls.DropDownList"/> control with an associated label.
+    /// A <see cref="T:System.Web.UI.WebControls.ListBox"/> control with an associated label.
     /// </summary>
-    [ToolboxData( "<{0}:RockDropDownList runat=server></{0}:RockDropDownList>" )]
-    public class RockDropDownList : DropDownList, IRockControl, IDisplayRequiredIndicator
+    [ToolboxData( "<{0}:RockListBox runat=server></{0}:RockListBox>" )]
+    public class RockListBox : ListBox, IRockControl, IDisplayRequiredIndicator
     {
         #region IRockControl implementation (NOTE: uses a different Required property than other IRockControl controls)
 
@@ -238,27 +239,36 @@ namespace Rock.Web.UI.Controls
 
         #endregion
 
-        /// <summary>
-        /// Gets or sets a value indicating whether the dropdownlist should allow a searc when used for single select
-        /// </summary>
-        /// <value>
-        ///   <c>true</c> if [enhance for long list]; otherwise, <c>false</c>.
-        /// </value>
-        public bool AllowSearch
-        {
-            get { return ViewState["AllowSearch"] as bool? ?? false; }
-            set { ViewState["AllowSearch"] = value; }
-        }
+        protected HiddenField hfValue;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="RockDropDownList" /> class.
+        /// Initializes a new instance of the <see cref="RockListBox" /> class.
         /// </summary>
-        public RockDropDownList()
+        public RockListBox()
         {
             RequiredFieldValidator = new RequiredFieldValidator();
             RequiredFieldValidator.ValidationGroup = this.ValidationGroup;
             HelpBlock = new HelpBlock();
             WarningBlock = new WarningBlock();
+        }
+
+        /// <summary>
+        /// Loads the posted content of the list control, if it is different from the last posting.
+        /// </summary>
+        /// <param name="postDataKey">The key identifier for the control, used to index the <paramref name="postCollection" />.</param>
+        /// <param name="postCollection">A <see cref="T:System.Collections.Specialized.NameValueCollection" /> that contains value information indexed by control identifiers.</param>
+        /// <returns>
+        /// true if the posted content is different from the last posting; otherwise, false.
+        /// </returns>
+        protected override bool LoadPostData( string postDataKey, NameValueCollection postCollection )
+        {
+            var selectedValues = this.Page.Request.Form[this.UniqueID].SplitDelimitedValues().ToList();
+            foreach ( ListItem li in this.Items )
+            {
+                li.Selected = selectedValues.Contains( li.Value );
+            }
+
+            return true;
         }
 
         /// <summary>
@@ -268,7 +278,14 @@ namespace Rock.Web.UI.Controls
         {
             base.CreateChildControls();
             Controls.Clear();
+
+            hfValue = new HiddenField();
+            hfValue.ID = this.ClientID + "_hf";
+            Controls.Add( hfValue );
+
             RockControlHelper.CreateChildControls( this, Controls );
+
+            this.SelectionMode = ListSelectionMode.Multiple;
         }
 
         /// <summary>
@@ -293,11 +310,11 @@ namespace Rock.Web.UI.Controls
             ( (WebControl)this ).AddCssClass( "chosen-select" );
 
             string script = string.Format( @"
-    $('#{0}').chosen({{
-        allow_single_deselect: true,
-        disable_search: {1}
+    $('#{0}').chosen();
+    $('#{0}').on('change', function( evt, params ) {{
+        $('#{0}_hf').val($(this).val());
     }});
-", this.ClientID, ( !AllowSearch ).ToString().ToLower() );
+", this.ClientID );
             ScriptManager.RegisterStartupScript( this, this.GetType(), "ChosenScript_" + this.ClientID, script, true );
 
             base.RenderControl( writer );
@@ -321,7 +338,7 @@ namespace Rock.Web.UI.Controls
         /// </returns>
         protected override ControlCollection CreateControlCollection()
         {
-            // By default a DropDownList control does not allow adding of child controls.
+            // By default a ListBox control does not allow adding of child controls.
             // This method needs to be overridden to allow this
             return new ControlCollection( this );
         }
@@ -335,7 +352,7 @@ namespace Rock.Web.UI.Controls
             base.LoadViewState( savedState );
             var savedAttributes = ViewState["ItemAttributes"] as List<Dictionary<string, string>>;
             int itemPosition = 0;
-
+            
             // make sure the list has the same number of items as it did when ViewState was saved
             if ( savedAttributes.Count == this.Items.Count )
             {

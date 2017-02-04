@@ -27,6 +27,7 @@ namespace Rock.Attribute
     {
         private const string DEFINED_TYPE_KEY = "definedtype";
         private const string ALLOW_MULTIPLE_KEY = "allowmultiple";
+        private const string ENHANCED_SELECTION_KEY = "enhancedselection";
 
         /// <summary>
         /// Initializes a new instance of the <see cref="DefinedValueFieldAttribute" /> class.
@@ -41,6 +42,24 @@ namespace Rock.Attribute
         /// <param name="order">The order.</param>
         /// <param name="key">The key.</param>
         public DefinedValueFieldAttribute( string definedTypeGuid, string name = "", string description = "", bool required = true, bool allowMultiple = false, string defaultValue = "", string category = "", int order = 0, string key = null )
+             : this( definedTypeGuid, name, description, required, allowMultiple, false, defaultValue, category, order, key )
+        {
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="DefinedValueFieldAttribute"/> class.
+        /// </summary>
+        /// <param name="definedTypeGuid">The defined type unique identifier.</param>
+        /// <param name="name">The name.</param>
+        /// <param name="description">The description.</param>
+        /// <param name="required">if set to <c>true</c> [required].</param>
+        /// <param name="allowMultiple">if set to <c>true</c> [allow multiple].</param>
+        /// <param name="enhanced">if set to <c>true</c> [enhanced].</param>
+        /// <param name="defaultValue">The default value.</param>
+        /// <param name="category">The category.</param>
+        /// <param name="order">The order.</param>
+        /// <param name="key">The key.</param>
+        public DefinedValueFieldAttribute( string definedTypeGuid, string name, string description, bool required, bool allowMultiple, bool enhanced, string defaultValue, string category, int order, string key = null )
             : base( name, description, required, defaultValue, category, order, key, typeof( Rock.Field.Types.DefinedValueFieldType ).FullName )
         {
             var definedType = Rock.Web.Cache.DefinedTypeCache.Read( new Guid( definedTypeGuid ) );
@@ -51,6 +70,9 @@ namespace Rock.Attribute
 
                 var allowMultipleConfigValue = new Field.ConfigurationValue( allowMultiple.ToString() );
                 FieldConfigurationValues.Add( ALLOW_MULTIPLE_KEY, allowMultipleConfigValue );
+
+                var enhancedConfigValue = new Field.ConfigurationValue( enhanced.ToString() );
+                FieldConfigurationValues.Add( ENHANCED_SELECTION_KEY, enhancedConfigValue );
 
                 if ( string.IsNullOrWhiteSpace( Name ) )
                 {

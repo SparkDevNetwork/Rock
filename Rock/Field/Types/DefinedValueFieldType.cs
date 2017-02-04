@@ -40,6 +40,7 @@ namespace Rock.Field.Types
         private const string DEFINED_TYPE_KEY = "definedtype";
         private const string ALLOW_MULTIPLE_KEY = "allowmultiple";
         private const string DISPLAY_DESCRIPTION = "displaydescription";
+        private const string ENHANCED_SELECTION_KEY = "enhancedselection";
 
         /// <summary>
         /// Returns a list of the configuration keys
@@ -51,6 +52,7 @@ namespace Rock.Field.Types
             configKeys.Add( DEFINED_TYPE_KEY );
             configKeys.Add( ALLOW_MULTIPLE_KEY );
             configKeys.Add( DISPLAY_DESCRIPTION );
+            configKeys.Add( ENHANCED_SELECTION_KEY );
             return configKeys;
         }
 
@@ -67,6 +69,7 @@ namespace Rock.Field.Types
             var ddl = new RockDropDownList();
             controls.Add( ddl );
             ddl.AutoPostBack = true;
+            ddl.AllowSearch = true;
             ddl.SelectedIndexChanged += OnQualifierUpdated;
             ddl.Label = "Defined Type";
             ddl.Help = "The Defined Type to select values from.";
@@ -95,6 +98,16 @@ namespace Rock.Field.Types
             cbDescription.Label = "Display Descriptions";
             cbDescription.Text = "Yes";
             cbDescription.Help = "When set, the defined value descriptions will be displayed instead of the values.";
+
+            // option for Displaying an enhanced 'chosen' value picker
+            var cbEnanced = new RockCheckBox();
+            controls.Add( cbEnanced );
+            cbEnanced.AutoPostBack = true;
+            cbEnanced.CheckedChanged += OnQualifierUpdated;
+            cbEnanced.Label = "Enhance For Long Lists";
+            cbEnanced.Text = "Yes";
+            cbEnanced.Help = "When set, will render a searchable selection of options.";
+
             return controls;
         }
 
@@ -109,6 +122,7 @@ namespace Rock.Field.Types
             configurationValues.Add( DEFINED_TYPE_KEY, new ConfigurationValue( "Defined Type", "The Defined Type to select values from", string.Empty ) );
             configurationValues.Add( ALLOW_MULTIPLE_KEY, new ConfigurationValue( "Allow Multiple Values", "When set, allows multiple defined type values to be selected.", string.Empty ) );
             configurationValues.Add( DISPLAY_DESCRIPTION, new ConfigurationValue( "Display Descriptions", "When set, the defined value descriptions will be displayed instead of the values.", string.Empty ) );
+            configurationValues.Add( ENHANCED_SELECTION_KEY, new ConfigurationValue( "Enhance For Long Lists", "When set, will render a searchable selection of options.", string.Empty ) );
 
             if ( controls != null )
             {
@@ -125,6 +139,11 @@ namespace Rock.Field.Types
                 if ( controls.Count > 2 && controls[2] != null && controls[2] is CheckBox )
                 {
                     configurationValues[DISPLAY_DESCRIPTION].Value = ( (CheckBox)controls[2] ).Checked.ToString();
+                }
+
+                if ( controls.Count > 3 && controls[3] != null && controls[3] is CheckBox )
+                {
+                    configurationValues[ENHANCED_SELECTION_KEY].Value = ( (CheckBox)controls[3] ).Checked.ToString();
                 }
             }
 
@@ -154,6 +173,11 @@ namespace Rock.Field.Types
                 {
                     ( (CheckBox)controls[2] ).Checked = configurationValues[DISPLAY_DESCRIPTION].Value.AsBoolean();
                 }
+
+                if ( controls.Count > 3 && controls[3] != null && controls[3] is CheckBox && configurationValues.ContainsKey( ENHANCED_SELECTION_KEY ) )
+                {
+                    ( (CheckBox)controls[3] ).Checked = configurationValues[ENHANCED_SELECTION_KEY].Value.AsBoolean();
+                }
             }
         }
 
@@ -173,6 +197,7 @@ namespace Rock.Field.Types
             configurationValues.Add( DEFINED_TYPE_KEY, new ConfigurationValue( "Defined Type", "The Defined Type to select values from", string.Empty ) );
             configurationValues.Add( ALLOW_MULTIPLE_KEY, new ConfigurationValue( "Allow Multiple Values", "When set, allows multiple defined type values to be selected.", string.Empty ) );
             configurationValues.Add( DISPLAY_DESCRIPTION, new ConfigurationValue( "Display Descriptions", "When set, the defined value descriptions will be displayed instead of the values.", string.Empty ) );
+            configurationValues.Add( ENHANCED_SELECTION_KEY, new ConfigurationValue( "Enhance For Long Lists", "When set, will render a searchable selection of options.", string.Empty ) );
 
             if ( entityTypeQualifierColumn.Equals("DefinedTypeId", StringComparison.OrdinalIgnoreCase ))
             {
@@ -279,16 +304,31 @@ namespace Rock.Field.Types
             bool useDescription = configurationValues != null && configurationValues.ContainsKey( DISPLAY_DESCRIPTION ) && configurationValues[DISPLAY_DESCRIPTION].Value.AsBoolean();
             int? definedTypeId = configurationValues != null && configurationValues.ContainsKey( DEFINED_TYPE_KEY ) ? configurationValues[DEFINED_TYPE_KEY].Value.AsIntegerOrNull() : null;
 
+            if ( definedTypeId.HasValue )
+            {
+                var definedType = DefinedTypeCache.Read( definedTypeId.Value );
+
+            }
             if ( configurationValues != null && configurationValues.ContainsKey( ALLOW_MULTIPLE_KEY ) && configurationValues[ALLOW_MULTIPLE_KEY].Value.AsBoolean() )
             {
-                editControl = new DefinedValuesPicker { ID = id, DisplayDescriptions = useDescription, DefinedTypeId = definedTypeId };
-                editControl.AddCssClass( "checkboxlist-group" );
+                if ( configurationValues != null && configurationValues.ContainsKey( ENHANCED_SELECTION_KEY ) && configurationValues[ENHANCED_SELECTION_KEY].Value.AsBoolean() )
+                {
+                    editControl = new DefinedValuesPickerEnhanced { ID = id, DisplayDescriptions = useDescription, DefinedTypeId = definedTypeId };
+                }
+                else
+                {
+                    editControl = new DefinedValuesPicker { ID = id, DisplayDescriptions = useDescription, DefinedTypeId = definedTypeId };
+                }
             }
             else
             {
                 editControl = new DefinedValuePicker { ID = id, DisplayDescriptions = useDescription, DefinedTypeId = definedTypeId };
+                if ( configurationValues != null && configurationValues.ContainsKey( ENHANCED_SELECTION_KEY ) && configurationValues[ENHANCED_SELECTION_KEY].Value.AsBoolean() )
+                {
+                    ( (DefinedValuePicker)editControl ).AllowSearch = true;
+                }
             }
-                
+
             if ( definedTypeId.HasValue )
             {
                 return editControl;
@@ -309,18 +349,9 @@ namespace Rock.Field.Types
 
             if ( control != null && control is ListControl )
             {
-                if ( control is DefinedValuePicker )
-                {
-                    definedValueIdList.Add( ( (ListControl)control ).SelectedValue.AsInteger() );
-                }
-                else if ( control is DefinedValuesPicker )
-                {
-                    var cblControl = control as Rock.Web.UI.Controls.RockCheckBoxList;
-
-                    definedValueIdList.AddRange( cblControl.Items.Cast<ListItem>()
-                        .Where( i => i.Selected )
-                        .Select( i => i.Value ).AsIntegerList() );
-                }
+                definedValueIdList.AddRange( ( (ListControl)control ).Items.Cast<ListItem>()
+                    .Where( i => i.Selected )
+                    .Select( i => i.Value ).AsIntegerList() );
             }
 
             var guids = new List<Guid>();
