@@ -18,14 +18,13 @@ using System.Linq;
 using System.Web.UI.WebControls;
 
 using Rock.Data;
-using Rock.Web.Cache;
 
 namespace Rock.Web.UI.Controls
 {
     /// <summary>
     /// 
     /// </summary>
-    public class DefinedValuePicker : RockDropDownList, IDefinedValuePicker
+    public class DefinedValuesPickerEnhanced : RockListBox, IDefinedValuePicker
     {
         /// <summary>
         /// Gets or sets the defined type identifier ( Required )
@@ -60,40 +59,5 @@ namespace Rock.Web.UI.Controls
         /// </value>
         public bool DisplayDescriptions { get; set; }
 
-        /// <summary>
-        /// Loads the drop down items.
-        /// </summary>
-        internal static void LoadDropDownItems( IDefinedValuePicker picker )
-        {
-            var selectedItems = picker.Items.Cast<ListItem>()
-                .Where( i => i.Selected )
-                .Select( i => i.Value ).AsIntegerList();
-
-            picker.Items.Clear();
-
-            if ( picker.DefinedTypeId.HasValue )
-            {
-                // add Empty option first
-                picker.Items.Add( new ListItem() );
-
-                var dt = DefinedTypeCache.Read( picker.DefinedTypeId.Value );
-                if ( dt.DefinedValues.Any() )
-                {
-                    foreach ( var definedValue in dt.DefinedValues.OrderBy( v => v.Order ).ThenBy( v => v.Value ) )
-                    {
-                        var li = new ListItem( picker.DisplayDescriptions ? definedValue.Description : definedValue.Value, definedValue.Id.ToString() );
-                        li.Selected = selectedItems.Contains( definedValue.Id );
-                        picker.Items.Add( li );
-                    }
-                }
-            }
-        }
-    }
-
-    public interface IDefinedValuePicker 
-    {
-        int? DefinedTypeId { get; set; }
-        bool DisplayDescriptions { get; set; }
-        ListItemCollection Items { get; }
     }
 }
