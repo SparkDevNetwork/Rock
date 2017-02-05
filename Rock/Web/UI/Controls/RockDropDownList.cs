@@ -251,6 +251,18 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Gets or sets a value indicating whether [display drop as absolute].
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if [display drop as absolute]; otherwise, <c>false</c>.
+        /// </value>
+        public bool DisplayDropAsAbsolute
+        {
+            get { return ViewState["DisplayDropAsAbsolute"] as bool? ?? false; }
+            set { ViewState["DisplayDropAsAbsolute"] = value; }
+        }
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="RockDropDownList" /> class.
         /// </summary>
         public RockDropDownList()
@@ -292,20 +304,27 @@ namespace Rock.Web.UI.Controls
             ( (WebControl)this ).AddCssClass( "form-control" );
             ( (WebControl)this ).AddCssClass( "chosen-select" );
 
-            string script = string.Format( @"
+            var script = new System.Text.StringBuilder();
+            script.AppendFormat( @"
     $('#{0}').chosen({{
         allow_single_deselect: true,
         disable_search: {1}
     }});
-    $('#{0}').on('chosen:showing_dropdown', function( evt, params ) {{
+", this.ClientID, ( !AllowSearch ).ToString().ToLower() );
+
+            if ( DisplayDropAsAbsolute )
+            {
+                script.AppendFormat( @"
+    $( '#{0}').on('chosen:showing_dropdown', function( evt, params ) {{
         $(this).next('.chosen-container').find('.chosen-drop').css('position','relative');
     }});
     $('#{0}').on('chosen:hiding_dropdown', function( evt, params ) {{
         $(this).next('.chosen-container').find('.chosen-drop').css('position','absolute');
     }});
+", this.ClientID );
+            }
 
-", this.ClientID, ( !AllowSearch ).ToString().ToLower() );
-            ScriptManager.RegisterStartupScript( this, this.GetType(), "ChosenScript_" + this.ClientID, script, true );
+            ScriptManager.RegisterStartupScript( this, this.GetType(), "ChosenScript_" + this.ClientID, script.ToString(), true );
 
             base.RenderControl( writer );
 
