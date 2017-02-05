@@ -239,8 +239,6 @@ namespace Rock.Web.UI.Controls
 
         #endregion
 
-        protected HiddenField hfValue;
-
         /// <summary>
         /// Initializes a new instance of the <see cref="RockListBox" /> class.
         /// </summary>
@@ -279,10 +277,6 @@ namespace Rock.Web.UI.Controls
             base.CreateChildControls();
             Controls.Clear();
 
-            hfValue = new HiddenField();
-            hfValue.ID = this.ClientID + "_hf";
-            Controls.Add( hfValue );
-
             RockControlHelper.CreateChildControls( this, Controls );
 
             this.SelectionMode = ListSelectionMode.Multiple;
@@ -311,8 +305,11 @@ namespace Rock.Web.UI.Controls
 
             string script = string.Format( @"
     $('#{0}').chosen();
-    $('#{0}').on('change', function( evt, params ) {{
-        $('#{0}_hf').val($(this).val());
+    $('#{0}').on('chosen:showing_dropdown', function( evt, params ) {{
+        $(this).next('.chosen-container').find('.chosen-drop').css('position','relative');
+    }});
+    $('#{0}').on('chosen:hiding_dropdown', function( evt, params ) {{
+        $(this).next('.chosen-container').find('.chosen-drop').css('position','absolute');
     }});
 ", this.ClientID );
             ScriptManager.RegisterStartupScript( this, this.GetType(), "ChosenScript_" + this.ClientID, script, true );

@@ -297,6 +297,13 @@ namespace Rock.Web.UI.Controls
         allow_single_deselect: true,
         disable_search: {1}
     }});
+    $('#{0}').on('chosen:showing_dropdown', function( evt, params ) {{
+        $(this).next('.chosen-container').find('.chosen-drop').css('position','relative');
+    }});
+    $('#{0}').on('chosen:hiding_dropdown', function( evt, params ) {{
+        $(this).next('.chosen-container').find('.chosen-drop').css('position','absolute');
+    }});
+
 ", this.ClientID, ( !AllowSearch ).ToString().ToLower() );
             ScriptManager.RegisterStartupScript( this, this.GetType(), "ChosenScript_" + this.ClientID, script, true );
 
