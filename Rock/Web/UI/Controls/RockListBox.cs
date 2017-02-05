@@ -240,6 +240,18 @@ namespace Rock.Web.UI.Controls
         #endregion
 
         /// <summary>
+        /// Gets or sets a value indicating whether [display drop as absolute].
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if [display drop as absolute]; otherwise, <c>false</c>.
+        /// </value>
+        public bool DisplayDropAsAbsolute
+        {
+            get { return ViewState["DisplayDropAsAbsolute"] as bool? ?? false; }
+            set { ViewState["DisplayDropAsAbsolute"] = value; }
+        }
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="RockListBox" /> class.
         /// </summary>
         public RockListBox()
@@ -303,16 +315,23 @@ namespace Rock.Web.UI.Controls
             ( (WebControl)this ).AddCssClass( "form-control" );
             ( (WebControl)this ).AddCssClass( "chosen-select" );
 
-            string script = string.Format( @"
+            var script = new System.Text.StringBuilder();
+            script.AppendFormat( @"
     $('#{0}').chosen();
-    $('#{0}').on('chosen:showing_dropdown', function( evt, params ) {{
+", this.ClientID );
+
+            if ( DisplayDropAsAbsolute )
+            {
+                script.AppendFormat( @"
+    $( '#{0}').on('chosen:showing_dropdown', function( evt, params ) {{
         $(this).next('.chosen-container').find('.chosen-drop').css('position','relative');
     }});
     $('#{0}').on('chosen:hiding_dropdown', function( evt, params ) {{
         $(this).next('.chosen-container').find('.chosen-drop').css('position','absolute');
     }});
 ", this.ClientID );
-            ScriptManager.RegisterStartupScript( this, this.GetType(), "ChosenScript_" + this.ClientID, script, true );
+            }
+            ScriptManager.RegisterStartupScript( this, this.GetType(), "ChosenScript_" + this.ClientID, script.ToString(), true );
 
             base.RenderControl( writer );
 
