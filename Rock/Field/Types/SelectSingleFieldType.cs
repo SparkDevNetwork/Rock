@@ -200,6 +200,7 @@ namespace Rock.Field.Types
                 {
                     editControl = new RockDropDownList { ID = id };
                     ( (RockDropDownList)editControl ).AllowSearch = fieldType == "ddl_enhanced";
+                    ( (RockDropDownList)editControl ).DisplayDropAsAbsolute = true;
                     editControl.Items.Add( new ListItem() );
                 }
 
