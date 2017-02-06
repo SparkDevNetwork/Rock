@@ -32,7 +32,7 @@
   </div>
   <h3 class="page-header">Messages in this Series</h3>
   <ol class="watch-msglist">
-    {% for Message in Series.Messages %}
+    {% for Message in Series.Messages reversed %}
       <li><a href="{{ LinkedPages.MessageDetailPage }}?MessageId={{ Message.Id }}">{{ Message.Name }}</a></li>
     {% endfor %}
   </ol>
