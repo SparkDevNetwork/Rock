@@ -366,7 +366,7 @@ namespace Rock.Rest.Controllers
         [System.Web.Http.Route( "api/People/Search" )]
         public IQueryable<PersonSearchResult> Search( string name, bool includeHtml, bool includeDetails, bool includeBusinesses = false, bool includeDeceased = false )
         {
-            int count = 20;
+            int count = GlobalAttributesCache.Value( "core.PersonPickerFetchCount" ).AsIntegerOrNull() ?? 60;
             bool showFullNameReversed;
             bool allowFirstNameOnly = false;
 

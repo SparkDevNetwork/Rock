@@ -86,7 +86,9 @@
                        currentPersonId = $el.closest('.picker-select-item').attr('data-person-id');
 
                     if (currentPersonId != selectedPersonId) {
-                        $el.slideUp();
+                        if ($el.is(":visible")) {
+                            // just leave the other ones visible. To change this, add a $el.slideUp(); here
+                        }
                     }
                 });
 
@@ -185,6 +187,13 @@
         };
 
         PersonPicker.prototype.updateScrollbar = function () {
+            // first, update this control's scrollbar, then the modal's
+            var $container = $('#' + this.controlId).find('.scroll-container')
+
+            if ($container.is(':visible')) {
+                $container.tinyscrollbar_update('relative');
+            }
+
             // update the outer modal scrollbar
             Rock.dialogs.updateModalScrollBar(this.controlId);
         }
@@ -246,6 +255,9 @@
                     }
                 }
             });
+
+            var $control = $('#' + this.controlId);
+            $control.find('.scroll-container').tinyscrollbar({ size: 120, sizethumb: 20 });
 
             this.initializeEventHandlers();
         };
