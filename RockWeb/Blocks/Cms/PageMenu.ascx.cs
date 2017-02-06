@@ -78,8 +78,6 @@ namespace RockWeb.Blocks.Cms
         {
             base.OnPreRender( e );
             Render();
-
-            string test = BlockCache.Read( this.BlockId ).BlockType.Path;
         }
 
         /// <summary>

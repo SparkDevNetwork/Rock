@@ -69,7 +69,6 @@ namespace Rock.Field.Types
             var ddl = new RockDropDownList();
             controls.Add( ddl );
             ddl.AutoPostBack = true;
-            ddl.AllowSearch = true;
             ddl.SelectedIndexChanged += OnQualifierUpdated;
             ddl.Label = "Defined Type";
             ddl.Help = "The Defined Type to select values from.";
@@ -325,7 +324,7 @@ namespace Rock.Field.Types
                 editControl = new DefinedValuePicker { ID = id, DisplayDescriptions = useDescription, DefinedTypeId = definedTypeId };
                 if ( configurationValues != null && configurationValues.ContainsKey( ENHANCED_SELECTION_KEY ) && configurationValues[ENHANCED_SELECTION_KEY].Value.AsBoolean() )
                 {
-                    ( (DefinedValuePicker)editControl ).AllowSearch = true;
+                    ( (DefinedValuePicker)editControl ).EnhanceForLongLists = true;
                 }
             }
 

@@ -72,7 +72,7 @@ namespace Rock.Field.Types
             var ddl = new RockDropDownList();
             controls.Add( ddl );
             ddl.Items.Add( new ListItem( "Drop Down List", "ddl" ) );
-            ddl.Items.Add( new ListItem( "Drop Down List (with search)", "ddl_enhanced" ) );
+            ddl.Items.Add( new ListItem( "Drop Down List (Enhanced for Long Lists)", "ddl_enhanced" ) );
             ddl.Items.Add( new ListItem( "Radio Buttons", "rb" ) );
             ddl.AutoPostBack = true;
             ddl.SelectedIndexChanged += OnQualifierUpdated;
@@ -199,8 +199,8 @@ namespace Rock.Field.Types
                 else
                 {
                     editControl = new RockDropDownList { ID = id };
-                    ( (RockDropDownList)editControl ).AllowSearch = fieldType == "ddl_enhanced";
-                    ( (RockDropDownList)editControl ).DisplayDropAsAbsolute = true;
+                    ( (RockDropDownList)editControl ).EnhanceForLongLists = fieldType == "ddl_enhanced";
+                    ( (RockDropDownList)editControl ).DisplayEnhancedAsAbsolute = true;
                     editControl.Items.Add( new ListItem() );
                 }
 

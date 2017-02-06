@@ -65,8 +65,7 @@
             <Rock:DataTextBox ID="tbBlockName" runat="server" SourceTypeName="Rock.Model.Block, Rock" PropertyName="Name" Required="true" 
                 ValidationGroup="ZoneBlockValidationGroup" CssClass="input-large"/>
             <Rock:DataDropDownList ID="ddlBlockType" runat="server" SourceTypeName="Rock.Model.Block, Rock" PropertyName="BlockTypeId" Label="Type" 
-                AutoPostBack="true" AllowSearch="true" DisplayDropAsAbsolute="true" OnSelectedIndexChanged="ddlBlockType_SelectedIndexChanged" 
-                CssClass="input-large" ValidationGroup="ZoneBlockValidationGroup" />
+                AutoPostBack="true" OnSelectedIndexChanged="ddlBlockType_SelectedIndexChanged" CssClass="input-large" ValidationGroup="ZoneBlockValidationGroup" />
         </fieldset>
 
         <div class="actions">

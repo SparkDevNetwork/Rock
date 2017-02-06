@@ -244,10 +244,10 @@ namespace Rock.Web.UI.Controls
         /// <value>
         ///   <c>true</c> if [enhance for long list]; otherwise, <c>false</c>.
         /// </value>
-        public bool AllowSearch
+        public bool EnhanceForLongLists
         {
-            get { return ViewState["AllowSearch"] as bool? ?? false; }
-            set { ViewState["AllowSearch"] = value; }
+            get { return ViewState["EnhanceForLongLists"] as bool? ?? false; }
+            set { ViewState["EnhanceForLongLists"] = value; }
         }
 
         /// <summary>
@@ -256,10 +256,10 @@ namespace Rock.Web.UI.Controls
         /// <value>
         /// <c>true</c> if [display drop as absolute]; otherwise, <c>false</c>.
         /// </value>
-        public bool DisplayDropAsAbsolute
+        public bool DisplayEnhancedAsAbsolute
         {
-            get { return ViewState["DisplayDropAsAbsolute"] as bool? ?? false; }
-            set { ViewState["DisplayDropAsAbsolute"] = value; }
+            get { return ViewState["DisplayEnhancedAsAbsolute"] as bool? ?? false; }
+            set { ViewState["DisplayEnhancedAsAbsolute"] = value; }
         }
 
         /// <summary>
@@ -302,19 +302,22 @@ namespace Rock.Web.UI.Controls
         public void RenderBaseControl( HtmlTextWriter writer )
         {
             ( (WebControl)this ).AddCssClass( "form-control" );
-            ( (WebControl)this ).AddCssClass( "chosen-select" );
 
-            var script = new System.Text.StringBuilder();
-            script.AppendFormat( @"
-    $('#{0}').chosen({{
-        allow_single_deselect: true,
-        disable_search: {1}
-    }});
-", this.ClientID, ( !AllowSearch ).ToString().ToLower() );
-
-            if ( DisplayDropAsAbsolute )
+            if ( EnhanceForLongLists )
             {
+                ( (WebControl)this ).AddCssClass( "chosen-select" );
+
+                var script = new System.Text.StringBuilder();
                 script.AppendFormat( @"
+    $('#{0}').chosen({{
+        width: '100%',
+        allow_single_deselect: true
+    }});
+", this.ClientID );
+
+                if ( DisplayEnhancedAsAbsolute )
+                {
+                    script.AppendFormat( @"
     $( '#{0}').on('chosen:showing_dropdown', function( evt, params ) {{
         $(this).next('.chosen-container').find('.chosen-drop').css('position','relative');
     }});
@@ -322,9 +325,10 @@ namespace Rock.Web.UI.Controls
         $(this).next('.chosen-container').find('.chosen-drop').css('position','absolute');
     }});
 ", this.ClientID );
-            }
+                }
 
-            ScriptManager.RegisterStartupScript( this, this.GetType(), "ChosenScript_" + this.ClientID, script.ToString(), true );
+                ScriptManager.RegisterStartupScript( this, this.GetType(), "ChosenScript_" + this.ClientID, script.ToString(), true );
+            }
 
             base.RenderControl( writer );
 
