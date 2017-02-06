@@ -115,44 +115,93 @@ WHERE Id = @pageMapBlockId and [Zone] != 'Sidebar1'" );
             RockMigrationHelper.UpdateBlockType( "Sample Linq Report", "Sample Block that executes a Linq statment and displays the result (if any).", "~/Blocks/Reporting/SampleLinqReport.ascx", "Reporting", "E98E0584-0D87-4DC6-9085-DC93F17AFB7F" );
             RockMigrationHelper.UpdateBlockType( "Logout", "This block logs the current person out.", "~/Blocks/Security/Logout.ascx", "Security", "CCB87054-8AA3-4F44-AA48-19BD028C4190" );
 
+            // Delete any duplicate attributes
+            Sql( @"
+;with cte as (
+	select	
+		min(id) as firstid,
+		entitytypeid,
+		entitytypequalifiercolumn,
+		entitytypequalifiervalue,
+		[key],
+		count(*) as dupcount
+	from attribute
+	group by entitytypeid, EntityTypeQualifierColumn, EntityTypeQualifierValue, [key]
+)
+
+update v set AttributeId = cte.firstid
+from cte
+inner join attribute a
+	on a.EntityTypeId = cte.EntityTypeId
+	and a.EntityTypeQualifierColumn = cte.EntityTypeQualifierColumn
+	and a.EntityTypeQualifierValue = cte.EntityTypeQualifierValue
+	and a.[Key] = cte.[Key]
+inner join attributevalue v
+	on v.AttributeId = a.Id
+where cte.dupcount > 1
+and v.AttributeId <> cte.firstid
+
+;with cte as (
+	select	
+		min(id) as firstid,
+		entitytypeid,
+		entitytypequalifiercolumn,
+		entitytypequalifiervalue,
+		[key],
+		count(*) as dupcount
+	from attribute
+	group by entitytypeid, EntityTypeQualifierColumn, EntityTypeQualifierValue, [key]
+)
+
+delete a
+from cte
+inner join attribute a
+	on a.EntityTypeId = cte.EntityTypeId
+	and a.EntityTypeQualifierColumn = cte.EntityTypeQualifierColumn
+	and a.EntityTypeQualifierValue = cte.EntityTypeQualifierValue
+	and a.[Key] = cte.[Key]
+	and a.Id <> cte.firstid
+where cte.dupcount > 1
+" );
+
             /* Catch up new BlockType Attributes that haven't been in a migration yet */
             // Attrib for BlockType: HTML Content:Quick Edit
-            RockMigrationHelper.AddBlockTypeAttribute( "19B61D65-37E3-459F-A44F-DEF0089118A3", "7525C4CB-EE6B-41D4-9B64-A08048D5A5C0", "Quick Edit", "QuickEdit", "", "Allow quick editing of HTML contents.", 11, @"", "2034DE48-4643-45A3-9FF7-9539F6731EFF" );
+            RockMigrationHelper.UpdateBlockTypeAttribute( "19B61D65-37E3-459F-A44F-DEF0089118A3", "7525C4CB-EE6B-41D4-9B64-A08048D5A5C0", "Quick Edit", "QuickEdit", "", "Allow quick editing of HTML contents.", 11, @"", "2034DE48-4643-45A3-9FF7-9539F6731EFF" );
             // Attrib for BlockType: HTML Content:Enabled Lava Commands
-            RockMigrationHelper.AddBlockTypeAttribute( "19B61D65-37E3-459F-A44F-DEF0089118A3", "4BD9088F-5CC6-89B1-45FC-A2AAFFC7CC0D", "Enabled Lava Commands", "EnabledLavaCommands", "", "The Lava commands that should be enabled for this HTML block.", 0, @"", "7146AC24-9250-4FC4-9DF2-9803B9A84299" );
+            RockMigrationHelper.UpdateBlockTypeAttribute( "19B61D65-37E3-459F-A44F-DEF0089118A3", "4BD9088F-5CC6-89B1-45FC-A2AAFFC7CC0D", "Enabled Lava Commands", "EnabledLavaCommands", "", "The Lava commands that should be enabled for this HTML block.", 0, @"", "7146AC24-9250-4FC4-9DF2-9803B9A84299" );
             // Attrib for BlockType: Rock Solid Church Sample Data:Enable Giving
-            RockMigrationHelper.AddBlockTypeAttribute( "A42E0031-B2B9-403A-845B-9C968D7716A6", "1EDAFDED-DFE6-4334-B019-6EECBA89E05A", "Enable Giving", "EnableGiving", "", "If true, the giving data will be loaded otherwise it will be skipped.", 4, @"True", "EF391043-0B8C-40E7-9153-47332E626503" );
+            RockMigrationHelper.UpdateBlockTypeAttribute( "A42E0031-B2B9-403A-845B-9C968D7716A6", "1EDAFDED-DFE6-4334-B019-6EECBA89E05A", "Enable Giving", "EnableGiving", "", "If true, the giving data will be loaded otherwise it will be skipped.", 4, @"True", "EF391043-0B8C-40E7-9153-47332E626503" );
             // Attrib for BlockType: Group Members:Auto Create Group
-            RockMigrationHelper.AddBlockTypeAttribute( "FC137BDA-4F05-4ECE-9899-A249C90D11FC", "1EDAFDED-DFE6-4334-B019-6EECBA89E05A", "Auto Create Group", "AutoCreateGroup", "", "If person doesn't belong to a group of this type, should one be created for them (default is Yes).", 1, @"True", "26018994-D9DD-4F3A-BE69-719AF5EB866F" );
+            RockMigrationHelper.UpdateBlockTypeAttribute( "FC137BDA-4F05-4ECE-9899-A249C90D11FC", "1EDAFDED-DFE6-4334-B019-6EECBA89E05A", "Auto Create Group", "AutoCreateGroup", "", "If person doesn't belong to a group of this type, should one be created for them (default is Yes).", 1, @"True", "26018994-D9DD-4F3A-BE69-719AF5EB866F" );
             // Attrib for BlockType: Person Bio:Allow Following
-            RockMigrationHelper.AddBlockTypeAttribute( "0F5922BB-CD68-40AC-BF3C-4AAB1B98760C", "1EDAFDED-DFE6-4334-B019-6EECBA89E05A", "Allow Following", "AllowFollowing", "", "Should people be able to follow a person by selecting the star on the person's photo?", 7, @"True", "D52AD5E1-41B6-45D2-8979-4C04619A86EE" );
+            RockMigrationHelper.UpdateBlockTypeAttribute( "0F5922BB-CD68-40AC-BF3C-4AAB1B98760C", "1EDAFDED-DFE6-4334-B019-6EECBA89E05A", "Allow Following", "AllowFollowing", "", "Should people be able to follow a person by selecting the star on the person's photo?", 7, @"True", "D52AD5E1-41B6-45D2-8979-4C04619A86EE" );
             // Attrib for BlockType: Notes:Note Types
-            RockMigrationHelper.AddBlockTypeAttribute( "2E9F32D4-B4FC-4A5F-9BE1-B2E3EA624DD3", "276CCA63-5670-48CA-8B5A-2AAC97E8EE5E", "Note Types", "NoteTypes", "", "Optional list of note types to limit display to", 12, @"", "CB89C2A5-49DB-4108-B924-6C610CEDFBF4" );
+            RockMigrationHelper.UpdateBlockTypeAttribute( "2E9F32D4-B4FC-4A5F-9BE1-B2E3EA624DD3", "276CCA63-5670-48CA-8B5A-2AAC97E8EE5E", "Note Types", "NoteTypes", "", "Optional list of note types to limit display to", 12, @"", "CB89C2A5-49DB-4108-B924-6C610CEDFBF4" );
             // Attrib for BlockType: Pledge List:Show Last Modified Filter
-            RockMigrationHelper.AddBlockTypeAttribute( "7011E792-A75F-4F22-B17E-D3A58C0EDB6D", "1EDAFDED-DFE6-4334-B019-6EECBA89E05A", "Show Last Modified Filter", "ShowLastModifiedFilter", "", "Allows last modified filter to be hidden.", 3, @"True", "550E6B86-98BF-4DA7-9B54-634ADE0EE466" );
+            RockMigrationHelper.UpdateBlockTypeAttribute( "7011E792-A75F-4F22-B17E-D3A58C0EDB6D", "1EDAFDED-DFE6-4334-B019-6EECBA89E05A", "Show Last Modified Filter", "ShowLastModifiedFilter", "", "Allows last modified filter to be hidden.", 3, @"True", "550E6B86-98BF-4DA7-9B54-634ADE0EE466" );
             // Attrib for BlockType: Pledge List:Limit Pledges To Current Person
-            RockMigrationHelper.AddBlockTypeAttribute( "7011E792-A75F-4F22-B17E-D3A58C0EDB6D", "1EDAFDED-DFE6-4334-B019-6EECBA89E05A", "Limit Pledges To Current Person", "LimitPledgesToCurrentPerson", "", "Limit the results to pledges for the current person.", 4, @"False", "6A056518-3E38-4E78-AF6F-16D5C23A057D" );
+            RockMigrationHelper.UpdateBlockTypeAttribute( "7011E792-A75F-4F22-B17E-D3A58C0EDB6D", "1EDAFDED-DFE6-4334-B019-6EECBA89E05A", "Limit Pledges To Current Person", "LimitPledgesToCurrentPerson", "", "Limit the results to pledges for the current person.", 4, @"False", "6A056518-3E38-4E78-AF6F-16D5C23A057D" );
             // Attrib for BlockType: Pledge List:Show Last Modified Date Column
-            RockMigrationHelper.AddBlockTypeAttribute( "7011E792-A75F-4F22-B17E-D3A58C0EDB6D", "1EDAFDED-DFE6-4334-B019-6EECBA89E05A", "Show Last Modified Date Column", "ShowLastModifiedDateColumn", "", "Allows the Last Modified Date column to be hidden.", 2, @"True", "B27608E5-E5BF-4AC4-8C7E-C2A26456480B" );
+            RockMigrationHelper.UpdateBlockTypeAttribute( "7011E792-A75F-4F22-B17E-D3A58C0EDB6D", "1EDAFDED-DFE6-4334-B019-6EECBA89E05A", "Show Last Modified Date Column", "ShowLastModifiedDateColumn", "", "Allows the Last Modified Date column to be hidden.", 2, @"True", "B27608E5-E5BF-4AC4-8C7E-C2A26456480B" );
             // Attrib for BlockType: Pledge List:Show Account Filter
-            RockMigrationHelper.AddBlockTypeAttribute( "7011E792-A75F-4F22-B17E-D3A58C0EDB6D", "1EDAFDED-DFE6-4334-B019-6EECBA89E05A", "Show Account Filter", "ShowAccountFilter", "", "Allows account filter to be hidden.", 1, @"True", "B16A3F35-C8A4-47B3-BA7A-E20098E7B028" );
+            RockMigrationHelper.UpdateBlockTypeAttribute( "7011E792-A75F-4F22-B17E-D3A58C0EDB6D", "1EDAFDED-DFE6-4334-B019-6EECBA89E05A", "Show Account Filter", "ShowAccountFilter", "", "Allows account filter to be hidden.", 1, @"True", "B16A3F35-C8A4-47B3-BA7A-E20098E7B028" );
             // Attrib for BlockType: Pledge List:Show Account Column
-            RockMigrationHelper.AddBlockTypeAttribute( "7011E792-A75F-4F22-B17E-D3A58C0EDB6D", "1EDAFDED-DFE6-4334-B019-6EECBA89E05A", "Show Account Column", "ShowAccountColumn", "", "Allows the account column to be hidden.", 1, @"True", "63A83579-C73A-4387-B317-D9852F6647F3" );
+            RockMigrationHelper.UpdateBlockTypeAttribute( "7011E792-A75F-4F22-B17E-D3A58C0EDB6D", "1EDAFDED-DFE6-4334-B019-6EECBA89E05A", "Show Account Column", "ShowAccountColumn", "", "Allows the account column to be hidden.", 1, @"True", "63A83579-C73A-4387-B317-D9852F6647F3" );
             // Attrib for BlockType: Pledge List:Show Person Filter
-            RockMigrationHelper.AddBlockTypeAttribute( "7011E792-A75F-4F22-B17E-D3A58C0EDB6D", "1EDAFDED-DFE6-4334-B019-6EECBA89E05A", "Show Person Filter", "ShowPersonFilter", "", "Allows person filter to be hidden.", 0, @"True", "807B41A4-4286-434C-918A-FE3942A75F7B" );
+            RockMigrationHelper.UpdateBlockTypeAttribute( "7011E792-A75F-4F22-B17E-D3A58C0EDB6D", "1EDAFDED-DFE6-4334-B019-6EECBA89E05A", "Show Person Filter", "ShowPersonFilter", "", "Allows person filter to be hidden.", 0, @"True", "807B41A4-4286-434C-918A-FE3942A75F7B" );
             // Attrib for BlockType: Pledge List:Show Date Range Filter
-            RockMigrationHelper.AddBlockTypeAttribute( "7011E792-A75F-4F22-B17E-D3A58C0EDB6D", "1EDAFDED-DFE6-4334-B019-6EECBA89E05A", "Show Date Range Filter", "ShowDateRangeFilter", "", "Allows date range filter to be hidden.", 2, @"True", "0049EC69-9814-4322-833F-BD82F92C64E9" );
+            RockMigrationHelper.UpdateBlockTypeAttribute( "7011E792-A75F-4F22-B17E-D3A58C0EDB6D", "1EDAFDED-DFE6-4334-B019-6EECBA89E05A", "Show Date Range Filter", "ShowDateRangeFilter", "", "Allows date range filter to be hidden.", 2, @"True", "0049EC69-9814-4322-833F-BD82F92C64E9" );
             // Attrib for BlockType: Person Search:Show Birthdate
-            RockMigrationHelper.AddBlockTypeAttribute( "764D3E67-2D01-437A-9F45-9F8C97878434", "1EDAFDED-DFE6-4334-B019-6EECBA89E05A", "Show Birthdate", "ShowBirthdate", "", "Should a birthdate column be displayed?", 1, @"False", "76EF16F4-7E1D-49C5-9DC9-0A9976B801BB" );
+            RockMigrationHelper.UpdateBlockTypeAttribute( "764D3E67-2D01-437A-9F45-9F8C97878434", "1EDAFDED-DFE6-4334-B019-6EECBA89E05A", "Show Birthdate", "ShowBirthdate", "", "Should a birthdate column be displayed?", 1, @"False", "76EF16F4-7E1D-49C5-9DC9-0A9976B801BB" );
             
             // Attrib for BlockType: Transaction Entry:Enable Business Giving
-            RockMigrationHelper.AddBlockTypeAttribute( "74EE3481-3E5A-4971-A02E-D463ABB45591", "1EDAFDED-DFE6-4334-B019-6EECBA89E05A", "Enable Business Giving", "EnableBusinessGiving", "", "Should the option to give as as a business be displayed", 31, @"True", "16E84C69-7E88-440C-930F-2AA03BA4B8B7" );
+            RockMigrationHelper.UpdateBlockTypeAttribute( "74EE3481-3E5A-4971-A02E-D463ABB45591", "1EDAFDED-DFE6-4334-B019-6EECBA89E05A", "Enable Business Giving", "EnableBusinessGiving", "", "Should the option to give as as a business be displayed", 31, @"True", "16E84C69-7E88-440C-930F-2AA03BA4B8B7" );
             // Attrib for BlockType: Transaction Entry:Comment Entry Label
-            RockMigrationHelper.AddBlockTypeAttribute( "74EE3481-3E5A-4971-A02E-D463ABB45591", "9C204CD0-1233-41C5-818A-C5DA439445AA", "Comment Entry Label", "CommentEntryLabel", "", "The label to use on the comment edit field (e.g. Trip Name to give to a specific trip).", 30, @"Comment", "7C1C46F9-6713-4825-976E-6859702EDBAA" );
+            RockMigrationHelper.UpdateBlockTypeAttribute( "74EE3481-3E5A-4971-A02E-D463ABB45591", "9C204CD0-1233-41C5-818A-C5DA439445AA", "Comment Entry Label", "CommentEntryLabel", "", "The label to use on the comment edit field (e.g. Trip Name to give to a specific trip).", 30, @"Comment", "7C1C46F9-6713-4825-976E-6859702EDBAA" );
             // Attrib for BlockType: Transaction Entry:Enable Comment Entry
-            RockMigrationHelper.AddBlockTypeAttribute( "74EE3481-3E5A-4971-A02E-D463ABB45591", "1EDAFDED-DFE6-4334-B019-6EECBA89E05A", "Enable Comment Entry", "EnableCommentEntry", "", "Allows the guest to enter the the value that's put into the comment field (will be appended to the 'Payment Comment' setting)", 29, @"False", "12FDEC08-5257-4E67-B486-480AAFC43E6B" );
+            RockMigrationHelper.UpdateBlockTypeAttribute( "74EE3481-3E5A-4971-A02E-D463ABB45591", "1EDAFDED-DFE6-4334-B019-6EECBA89E05A", "Enable Comment Entry", "EnableCommentEntry", "", "Allows the guest to enter the the value that's put into the comment field (will be appended to the 'Payment Comment' setting)", 29, @"False", "12FDEC08-5257-4E67-B486-480AAFC43E6B" );
             // Attrib for BlockType: Contribution Statement Lava:Excluded Currency Types
-            RockMigrationHelper.AddBlockTypeAttribute( "AF986B72-ADD9-4E05-971F-1DE4EBED8667", "59D5A94C-94A0-4630-B80A-BB25697D74C7", "Excluded Currency Types", "ExcludedCurrencyTypes", "", "Select the currency types you would like to excluded.", 4, @"", "244EDB88-10B0-47C0-BC1A-ECEDAE70AA70" );
+            RockMigrationHelper.UpdateBlockTypeAttribute( "AF986B72-ADD9-4E05-971F-1DE4EBED8667", "59D5A94C-94A0-4630-B80A-BB25697D74C7", "Excluded Currency Types", "ExcludedCurrencyTypes", "", "Select the currency types you would like to excluded.", 4, @"", "244EDB88-10B0-47C0-BC1A-ECEDAE70AA70" );
 
 
             /* Migration for Business Page Contribution Blocks */
