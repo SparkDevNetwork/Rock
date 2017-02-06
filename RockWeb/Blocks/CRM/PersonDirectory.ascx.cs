@@ -647,6 +647,7 @@ namespace RockWeb.Blocks.Crm
                 Name = m.Group.Name
             } )
             .Distinct()
+            .OrderBy( f => f.Name )
             .Take( GetAttributeValue( "MaxResults" ).AsInteger() )
             .ToList();
 
