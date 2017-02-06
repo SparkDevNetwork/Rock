@@ -317,7 +317,9 @@ namespace Rock.Web.UI.Controls
 
             var script = new System.Text.StringBuilder();
             script.AppendFormat( @"
-    $('#{0}').chosen();
+    $('#{0}').chosen({{
+        width: '100%'
+    }});
 ", this.ClientID );
 
             if ( DisplayDropAsAbsolute )
