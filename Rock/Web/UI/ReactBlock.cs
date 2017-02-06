@@ -16,6 +16,7 @@
 //
 using System;
 using React;
+using Rock.Web.Cache;
 
 namespace Rock.Web.UI
 {
@@ -51,8 +52,7 @@ namespace Rock.Web.UI
         {
             base.OnInit(e);
 
-            var name = TemplateSourceDirectory + "/" + BlockName.Replace(" ", string.Empty);
-
+            string name = BlockCache.Read(BlockId).BlockType.Path.Replace("~", "").Replace(".ascx", "");
             Id = "bid_" + BlockId;
             Path = name;
             Component = name.Replace("/", ".").Remove(0, 1);
