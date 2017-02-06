@@ -241,6 +241,7 @@
                                             <asp:LinkButton ID="lbProcessPayment" runat="server" CssClass="btn btn-primary btn-xs margin-t-sm" Text="Process New Payment" OnClick="lbProcessPayment_Click" CausesValidation="false"></asp:LinkButton>
                                             <asp:LinkButton ID="lbAddPayment" runat="server" CssClass="btn btn-default btn-xs margin-t-sm margin-l-sm" Text="Add Manual Payment" OnClick="lbAddPayment_Click" CausesValidation="false"></asp:LinkButton>
                                             <asp:LinkButton ID="lbCancelPaymentDetails" runat="server" Text="Cancel" CssClass="btn btn-link pull-right" OnClick="lbCancelPaymentDetails_Click" CausesValidation="false" />
+                                            <asp:Literal ID="lNoAssociatedAccount" runat="server" Text="To add Payment, edit this registration and associate it with a person."/>
                                         </div>
                                     </div>
 

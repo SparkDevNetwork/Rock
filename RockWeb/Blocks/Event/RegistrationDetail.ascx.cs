@@ -1980,11 +1980,13 @@ namespace RockWeb.Blocks.Event
                     RegistrationTemplateState != null &&
                     EditAllowed )
                 {
+                    lNoAssociatedAccount.Visible = false;
                     lbAddPayment.Visible = true;
                     lbProcessPayment.Visible = RegistrationTemplateState.FinancialGateway != null;
                 }
                 else
                 {
+                    lNoAssociatedAccount.Visible = true;
                     lbAddPayment.Visible = false;
                     lbProcessPayment.Visible = false;
                 }
