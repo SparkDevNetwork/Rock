@@ -62,7 +62,7 @@ namespace RockWeb.Blocks.Examples
             {
   
                 var initialProps = new InitialProps();
-                initialProps.startingNumber = GetAttributeValue("StartingNumber").ToStringSafe().AsIntegerOrNull();
+                initialProps.startingNumber = GetAttributeValue("StartingNumber").ToStringSafe().AsIntegerOrNull() ?? 0;
                 PageContent.Text = Render(initialProps);
             }
         }
