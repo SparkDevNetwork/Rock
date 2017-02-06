@@ -179,6 +179,7 @@ namespace Rock.Field.Types
                 if ( configurationValues.ContainsKey( ENHANCED_SELECTION_KEY ) && configurationValues[ENHANCED_SELECTION_KEY].Value.AsBoolean() )
                 {
                     editControl = new RockListBox { ID = id };
+                    ( (RockListBox)editControl ).DisplayDropAsAbsolute = true;
                 }
                 else
                 {
