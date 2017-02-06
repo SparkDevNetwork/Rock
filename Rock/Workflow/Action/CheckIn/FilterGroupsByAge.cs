@@ -114,26 +114,21 @@ namespace Rock.Workflow.Action.CheckIn
                                     maxAgeValue = ageRangePair[1];
                                 }
 
-                                if ( minAgeValue != null || maxAgeValue != null )
+                                decimal? minAge = minAgeValue.AsDecimalOrNull();
+                                decimal? maxAge = maxAgeValue.AsDecimalOrNull();
+
+                                if ( minAge.HasValue || maxAge.HasValue )
                                 {
                                     if ( age.HasValue )
                                     {
-                                        if ( minAgeValue != null )
+                                        if ( minAge.HasValue && age.Value < minAge.Value )
                                         {
-                                            decimal? minAge = minAgeValue.AsDecimalOrNull();
-                                            if ( minAge.HasValue && age.Value < minAge.Value )
-                                            {
-                                                ageMatch = false;
-                                            }
+                                            ageMatch = false;
                                         }
 
-                                        if ( maxAgeValue != null )
+                                        if ( maxAge.HasValue && age.Value > maxAge.Value )
                                         {
-                                            decimal? maxAge = maxAgeValue.AsDecimalOrNull();
-                                            if ( maxAge.HasValue && age.Value > maxAge.Value )
-                                            {
-                                                ageMatch = false;
-                                            }
+                                            ageMatch = false;
                                         }
 
                                         if ( !ageMatch.HasValue )
@@ -164,26 +159,20 @@ namespace Rock.Workflow.Action.CheckIn
                                     maxBirthdateValue = birthdateRangePair[1];
                                 }
 
-                                if ( minBirthdateValue != null || maxBirthdateValue != null )
+                                DateTime? minBirthdate = minBirthdateValue.AsDateTime();
+                                DateTime? maxBirthdate = maxBirthdateValue.AsDateTime();
+                                if ( minBirthdate.HasValue || maxBirthdate.HasValue )
                                 {
                                     if ( birthdate.HasValue )
                                     {
-                                        if ( minBirthdateValue != null )
+                                        if ( minBirthdate.HasValue && birthdate.Value < minBirthdate.Value )
                                         {
-                                            DateTime? minBirthdate = minBirthdateValue.AsDateTime();
-                                            if ( minBirthdate.HasValue && birthdate.Value < minBirthdate.Value )
-                                            {
-                                                birthdayMatch = false;
-                                            }
+                                            birthdayMatch = false;
                                         }
 
-                                        if ( maxBirthdateValue != null )
+                                        if ( maxBirthdate.HasValue && birthdate.Value > maxBirthdate.Value )
                                         {
-                                            DateTime? maxBirthdate = maxBirthdateValue.AsDateTime();
-                                            if ( maxBirthdate.HasValue && birthdate.Value > maxBirthdate.Value )
-                                            {
-                                                birthdayMatch = false;
-                                            }
+                                            birthdayMatch = false;
                                         }
 
                                         if ( !birthdayMatch.HasValue )
