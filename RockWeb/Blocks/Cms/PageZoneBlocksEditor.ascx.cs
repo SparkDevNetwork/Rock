@@ -549,6 +549,16 @@ namespace RockWeb.Blocks.Cms
             // Load the block types
             using ( var rockContext = new RockContext() )
             {
+                try
+                {
+                    BlockTypeService.RegisterBlockTypes( Request.MapPath( "~" ), Page );
+                }
+                catch
+                {
+                    // ignore
+                }
+
+
                 Rock.Model.BlockTypeService blockTypeService = new Rock.Model.BlockTypeService( rockContext );
                 var blockTypes = blockTypeService.Queryable().AsNoTracking()
                     .Select( b => new { b.Id, b.Name, b.Category, b.Description } )
