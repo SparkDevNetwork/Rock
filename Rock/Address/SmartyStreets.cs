@@ -221,7 +221,20 @@ namespace Rock.Address
     /// </summary>
     public class SmartyStreetsAPIKey
     {
+        /// <summary>
+        /// Gets or sets the authentication identifier.
+        /// </summary>
+        /// <value>
+        /// The authentication identifier.
+        /// </value>
         public string AuthID { get; set; }
+
+        /// <summary>
+        /// Gets or sets the authentication token.
+        /// </summary>
+        /// <value>
+        /// The authentication token.
+        /// </value>
         public string AuthToken { get; set; }
     }
 }
