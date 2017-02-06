@@ -90,10 +90,33 @@ namespace Rock.Web.UI.Controls
         }
     }
 
+    /// <summary>
+    /// Interface used by defined value pickers
+    /// </summary>
     public interface IDefinedValuePicker 
     {
+        /// <summary>
+        /// Gets or sets the defined type identifier.
+        /// </summary>
+        /// <value>
+        /// The defined type identifier.
+        /// </value>
         int? DefinedTypeId { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether [display descriptions].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [display descriptions]; otherwise, <c>false</c>.
+        /// </value>
         bool DisplayDescriptions { get; set; }
+
+        /// <summary>
+        /// Gets the items.
+        /// </summary>
+        /// <value>
+        /// The items.
+        /// </value>
         ListItemCollection Items { get; }
     }
 }
