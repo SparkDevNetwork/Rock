@@ -127,7 +127,13 @@ namespace RockWeb.Blocks.Event
                         {
                             registrant.GroupMemberId = groupMemberId.Value;
                         }
+
+                        // set the registrant to no longer be on the Wait List, and make sure their registration's last reminder sent is now,
+                        // since they'll receive a communication that they've been moved to a full roster from the wait list.
                         registrant.OnWaitList = false;
+
+                        // specifically NOT testing for null Registration, as we should not be here if we have a registrant with no parent Registration object
+                        registrant.Registration.LastPaymentReminderDateTime = DateTime.Now;
 
                         _rockContext.SaveChanges();
                     }
