@@ -48,6 +48,7 @@ namespace RockWeb.Blocks.Groups
 </div>" )]
     [BooleanField("Enable Debug", "Shows the Lava variables availabled for this block")]
     [EnumField("Group Member Status", "The status to use when adding a person to the group.", typeof(GroupMemberStatus), true, "Active")]
+    [GroupTypesField( "Limit Group Type", "To ensure that people cannot modify the URL and try adding themselves to standard Rock security groups with known Id numbers you can limit which Group Type that are considered valid during add.", false )]
     public partial class GroupMemberAddFromUrl : Rock.Web.UI.RockBlock
     {
         #region Fields
@@ -118,6 +119,20 @@ namespace RockWeb.Blocks.Groups
                     return;
                 }
 
+                // Validate the group type.
+                if ( !string.IsNullOrEmpty( GetAttributeValue( "LimitGroupType" ) ) )
+                {
+                    bool groupTypeMatch = GetAttributeValue( "LimitGroupType" )
+                        .Split( ',' )
+                        .Contains( group.GroupType.Guid.ToString(), StringComparer.CurrentCultureIgnoreCase );
+
+                    if ( !groupTypeMatch )
+                    {
+                        lAlerts.Text = "Invalid group specified.";
+                        return;
+                    }
+                }
+
                 // get group role id from url
                 if ( Request["GroupMemberRoleId"] != null )
                 {
@@ -127,13 +142,17 @@ namespace RockWeb.Blocks.Groups
                         groupMemberRole = new GroupTypeRoleService( rockContext ).Get( groupMemberRoleId );
                     }
                 }
-                else
+                else if ( !string.IsNullOrWhiteSpace( GetAttributeValue( "DefaultGroupMemberRole" ) ) )
                 {
                     Guid groupMemberRoleGuid = Guid.Empty;
                     if ( Guid.TryParse( GetAttributeValue( "DefaultGroupMemberRole" ), out groupMemberRoleGuid ) )
                     {
                         groupMemberRole = new GroupTypeRoleService( rockContext ).Get( groupMemberRoleGuid );
                     }
+                }
+                else
+                {
+                    groupMemberRole = group.GroupType.DefaultGroupRole;
                 }
 
                 if ( groupMemberRole == null )
