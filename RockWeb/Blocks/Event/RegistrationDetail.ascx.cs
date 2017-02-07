@@ -1986,7 +1986,9 @@ namespace RockWeb.Blocks.Event
                 }
                 else
                 {
-                    lNoAssociatedAccount.Visible = true;
+                    // if there's a balance due and we're here, then the system couldn't find the registration or person.
+                    lNoAssociatedAccount.Visible = registration.BalanceDue > 0.0m ? true : false;
+
                     lbAddPayment.Visible = false;
                     lbProcessPayment.Visible = false;
                 }
