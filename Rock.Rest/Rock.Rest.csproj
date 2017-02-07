@@ -279,6 +279,7 @@
     <Compile Include="Controllers\ExceptionLogsController.Partial.cs" />
     <Compile Include="Controllers\FileBrowserController.cs" />
     <Compile Include="Controllers\FinancialAccountsController.Partial.cs" />
+    <Compile Include="Controllers\FinancialScheduledTransactionsController.Partial.cs" />
     <Compile Include="Controllers\FinancialTransactionsController.Partial.cs" />
     <Compile Include="Controllers\FollowingsController.Partial.cs" />
     <Compile Include="Controllers\GroupMembersController.Partial.cs" />
