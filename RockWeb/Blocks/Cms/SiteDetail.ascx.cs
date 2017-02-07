@@ -512,6 +512,7 @@ namespace RockWeb.Blocks.Cms
 
                 interactionChannelForSite.Name = site.Name;
                 interactionChannelForSite.RetentionDuration = nbPageViewRetentionPeriodDays.Text.AsIntegerOrNull();
+                interactionChannelForSite.ComponentEntityTypeId = EntityTypeCache.Read<Rock.Model.Page>().Id;
 
                 rockContext.SaveChanges();
 
