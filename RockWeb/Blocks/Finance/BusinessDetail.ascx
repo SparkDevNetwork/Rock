@@ -84,7 +84,7 @@
                 </div>
             </div>
 
-            <div class="panel panel-block">
+            <asp:Panel ID="pnlContactList" runat="server" CssClass="panel panel-block">
                 <div class="panel-heading">
                     <h1 class="panel-title"><i class="fa fa-users"></i> Business Contacts</h1>
                 </div>
@@ -98,7 +98,7 @@
                         </Rock:Grid>
                     </div>
                 </div>
-            </div>
+            </asp:Panel>
 
 
             <Rock:ModalDialog ID="mdAddContact" runat="server" Title="Add Contact" ValidationGroup="AddContact">

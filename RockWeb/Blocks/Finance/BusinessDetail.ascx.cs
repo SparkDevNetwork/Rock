@@ -709,6 +709,7 @@ namespace RockWeb.Blocks.Finance
             pnlEditDetails.Visible = editable;
             fieldsetViewSummary.Visible = !editable;
             gContactList.Visible = !editable;
+            pnlContactList.Visible = !editable;
             this.HideSecondaryBlocks( editable );
         }
 
