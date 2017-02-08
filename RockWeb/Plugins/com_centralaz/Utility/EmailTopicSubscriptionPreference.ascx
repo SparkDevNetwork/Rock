@@ -8,7 +8,7 @@
         <asp:Panel ID="pnlViewPreferences" runat="server">
             <Rock:NotificationBox ID="nbSuccess" runat="server" Visible="false" NotificationBoxType="Success" Text="Your preferences were saved."></Rock:NotificationBox>
             <asp:Literal ID="lPreferences" runat="server" /></h1>
-            <asp:LinkButton ID="lbEditPreferences" runat="server" CssClass="btn btn-primary btn-xs" OnClick="lbEditPreferences_Click"><i class="fa fa-pencil"></i> Edit Subscription Preferences</asp:LinkButton>
+            <asp:LinkButton ID="lbEditPreferences" runat="server" CssClass="btn btn-primary btn-xs" OnClick="lbEditPreferences_Click"><i class="fa fa-pencil"></i> Edit My Subscriptions</asp:LinkButton>
         </asp:Panel>
         <asp:Panel ID="pnlEditPreferences" runat="server" Visible="false">
             <Rock:ModalDialog ID="mdConfirmUnsubscribe" CssClass="subscription-popup" runat="server" OnSaveClick="mdConfirmUnsubscribe_SaveClick" OnCancelScript="clearDialog();" SaveButtonText="Yes">

@@ -203,6 +203,7 @@ namespace RockWeb.Plugins.com_centralaz.Utility
         #endregion
 
         #region Methods
+
         /// <summary>
         /// Shows the detail.
         /// </summary>
