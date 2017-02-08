@@ -20,7 +20,7 @@
                 <asp:ValidationSummary ID="ValidationSummary1" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" />
                 <div class="row">
                     <div class="col-md-6">
-                        <Rock:PersonPicker ID="ppPerson" runat="server" Label="Person" Required="true" />
+                        <Rock:PersonPicker ID="ppPerson" runat="server" Label="Person" Required="true" IncludeBusinesses="true" />
 
                         <Rock:SlidingDateRangePicker ID="drpDates" runat="server" Label="Dates" SlidingDateRangeMode="DateRange" Required="true" />
                         <br />
