@@ -37,7 +37,7 @@ namespace RockWeb.Plugins.com_centralaz.ChurchMetrics
     [DisplayName( "Metric Date Picker" )]
     [Category( "com_centralaz > ChurchMetrics" )]
     [Description( "Allows users to select a week to view metrics for" )]
-    [CategoryField( "Metric Root Category", required: true, entityTypeName: "Rock.Model.Metric" )]
+    [CategoryField( "Metric Root Category", required: true, entityTypeName: "Rock.Model.MetricCategory" )]
     [CategoryField( "Schedule Root Category", required: true, entityTypeName: "Rock.Model.Schedule" )]
     [CodeEditorField( "Lava Template", "The lava template to use to format the group list.", CodeEditorMode.Lava, CodeEditorTheme.Rock, 400, false, "", "", 0 )]
     public partial class MetricDatePicker : Rock.Web.UI.RockBlock
