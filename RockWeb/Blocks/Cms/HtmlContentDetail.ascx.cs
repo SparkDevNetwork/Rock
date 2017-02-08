@@ -57,8 +57,10 @@ namespace RockWeb.Blocks.Cms
     [BooleanField( "Require Approval", "Require that content be approved?", false, "", 9 )]
     [BooleanField( "Enable Debug", "Show lava merge fields.", false, "", 10 )]
     [CustomDropdownListField( "Quick Edit", "Allow quick editing of HTML contents.", "AIREDIT^In Place Editing,DBLCLICK^Double-Click For Edit Dialog", false, "", "", 11, "QuickEdit")]
+
+    [BooleanField( "Is Secondary Block", "Flag indicating whether this block is considered secondary and should be hidden when other secondary blocks are hidden.", false, "", 12 )]
     [ContextAware]
-    public partial class HtmlContentDetail : RockBlockCustomSettings
+    public partial class HtmlContentDetail : RockBlockCustomSettings, ISecondaryBlock
     {
 
         #region Properties
@@ -732,6 +734,24 @@ namespace RockWeb.Blocks.Cms
             }
 
             return entityValue;
+        }
+
+        /// <summary>
+        /// Hook so that other blocks can set the visibility of all ISecondaryBlocks on its page
+        /// </summary>
+        /// <param name="visible">if set to <c>true</c> [visible].</param>
+        public void SetVisible( bool visible )
+        {
+            if ( this.GetAttributeValue("IsSecondaryBlock").AsBooleanOrNull() ?? false )
+            {
+                if ( lHtmlContent.Visible != visible )
+                {
+                    lHtmlContent.Visible = visible;
+
+                    // upnlHtmlContent has UpdateMode=Conditional so tell it to update if Visible changed 
+                    upnlHtmlContent.Update();
+                }
+            }
         }
 
         #endregion
