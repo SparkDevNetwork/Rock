@@ -73,7 +73,10 @@ namespace Rock.Jobs
                         .Where( r =>
                             !r.IsTemporary &&
                             r.ConfirmationEmail != null &&
-                            r.ConfirmationEmail != "" ) )
+                            r.ConfirmationEmail != "" &&
+
+                            // make sure that this registration has at least one person NOT on a wait list.
+                            r.Registrants.Where( rt => rt.OnWaitList == false ).Count( ) > 0 ) )
                     {
                         var mergeFields = new Dictionary<string, object>();
                         mergeFields.Add( "RegistrationInstance", registration.RegistrationInstance );
