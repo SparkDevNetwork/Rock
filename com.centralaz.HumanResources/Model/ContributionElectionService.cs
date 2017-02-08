@@ -41,6 +41,7 @@ namespace com.centralaz.HumanResources.Model
             target.ForeignGuid = source.ForeignGuid;
             target.ForeignKey = source.ForeignKey;
             target.FinancialAccountId = source.FinancialAccountId;
+            target.PersonAliasId = source.PersonAliasId;
             target.IsFixedAmount = source.IsFixedAmount;
             target.Amount = source.Amount;
             target.ActiveDate = source.ActiveDate;
