@@ -50,7 +50,7 @@ namespace RockWeb.Blocks.Cms
     [BooleanField( "Show Filters", "Toggles the display of the model filter which allows the user to select which models to search on.", true, "CustomSetting" )]
     [TextField( "Enabled Models", "The models that should be enabled for searching.", true,  category: "CustomSetting" )]
     [IntegerField("Results Per Page", "The number of results to show per page.", true, 20, category: "CustomSetting" )]
-    [EnumField("Search Type", "The type of search to perform.", typeof(SearchType), true, "2", category: "CustomSetting" )]
+    [EnumField("Search Type", "The type of search to perform.", typeof(SearchType), true, "0", category: "CustomSetting" )]
     [TextField("Base Field Filters", "These field filters will always be enabled and will not be changeable by the individual. Uses tha same syntax as the lava command.", false, category: "CustomSetting" )]
     [BooleanField("Show Refined Search", "Determines whether the refinded search should be shown.", true, category: "CustomSetting" )]
     [BooleanField("Show Scores", "Enables the display of scores for help with debugging.", category: "CustomSetting" )]
@@ -87,6 +87,8 @@ namespace RockWeb.Blocks.Cms
         protected override void OnInit( EventArgs e )
         {
             base.OnInit( e );
+
+            RockPage.AddScriptLink( ResolveRockUrl( "~/Scripts/jquery.lazyload.min.js" ) );
 
             // this event gets fired after block settings are updated. it's nice to repaint the screen if these settings would alter it
             this.BlockUpdated += Block_BlockUpdated;
@@ -343,7 +345,7 @@ namespace RockWeb.Blocks.Cms
 
                 for ( int i = startPage; i <= endPage; i++ )
                 {
-                    if ( _currentPageNum == i )
+                    if ( (_currentPageNum + 1) == i )
                     {
                         pagination.Append( string.Format( "<li class='active'><span>{0} </span></li>", i ) );
                     }
@@ -546,7 +548,7 @@ namespace RockWeb.Blocks.Cms
 
             if (_currentPageNum != 0 || pageOffset != 0 )
             {
-                pageReference.Parameters.AddOrReplace( "CurrentPage", (( _currentPageNum + 1 ) + pageOffset).ToString() );
+                pageReference.Parameters.AddOrReplace( "CurrentPage", ( ( _currentPageNum + 1)  + pageOffset ).ToString() );
             }
 
             if( !string.IsNullOrWhiteSpace( PageParameter( "SearchType" ) ) )
@@ -671,7 +673,7 @@ namespace RockWeb.Blocks.Cms
 
             if ( !string.IsNullOrWhiteSpace( PageParameter( "CurrentPage" ) ) )
             {
-                _currentPageNum = PageParameter( "CurrentPage" ).AsInteger();
+                _currentPageNum = PageParameter( "CurrentPage" ).AsInteger() -1;
             }
 
             if ( !string.IsNullOrWhiteSpace( PageParameter( "RefinedSearch" ) ) )
