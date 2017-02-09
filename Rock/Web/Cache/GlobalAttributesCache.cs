@@ -375,7 +375,8 @@ namespace Rock.Web.Cache
         /// <returns></returns>
         public static string Value( string key )
         {
-            return Read().GetValue( key );
+            // pass null to the Read(RockContext rockContext) overload so that it doesn't create the RockContext unless it needs to fetch it from the database. This speeds this up from 0.250ms/call to about .001ms/call
+            return Read( null ).GetValue( key );
         }
 
         /// <summary>
