@@ -6,6 +6,14 @@
     }
 </style>
 
+<script>
+    Sys.Application.add_load( function () {
+        $("div.photo-round").lazyload({
+            effect: "fadeIn"
+        });
+    });
+</script>
+
 <asp:UpdatePanel ID="upnlContent" runat="server" UpdateMode="Conditional">
     <ContentTemplate>
 
