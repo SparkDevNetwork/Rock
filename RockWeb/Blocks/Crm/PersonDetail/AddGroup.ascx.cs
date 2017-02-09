@@ -45,25 +45,27 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 
     [GroupTypeField( "Group Type", "The group type to display groups for (default is Family)", false, Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY, "", 0 )]
     [GroupField( "Parent Group", "The parent group to add the new group to (default is none)", false, "", "", 1 )]
-    [BooleanField( "Show Middle Name", "Show an edit box for Middle Name.", false, order: 2 )]
-    [BooleanField( "Enable Common Last Name", "Autofills the last name field when adding a new group member with the last name of the first group member.", true, order: 3 )]
+    [BooleanField( "Show Title", "Show person title.", true, order: 2 )]
+    [BooleanField( "Show Middle Name", "Show an edit box for Middle Name.", false, order: 3 )]
+    [BooleanField( "Show Suffix", "Show person suffix.", true, order: 4 )]
+    [BooleanField( "Enable Common Last Name", "Autofills the last name field when adding a new group member with the last name of the first group member.", true, order: 5 )]
     [DefinedValueField( Rock.SystemGuid.DefinedType.PERSON_CONNECTION_STATUS, "Default Connection Status",
-        "The connection status that should be set by default", false, false, Rock.SystemGuid.DefinedValue.PERSON_CONNECTION_STATUS_VISITOR, "", 4 )]
-    [BooleanField( "Gender", "Require a gender for each person", "Don't require", "Should Gender be required for each person added?", false, "", 5 )]
-    [BooleanField( "Birth Date", "Require a birthdate for each person", "Don't require", "Should a Birthdate be required for each person added?", false, "", 6 )]
-    [BooleanField( "Grade", "Require a grade for each child", "Don't require", "When Family group type, should Grade be required for each child added?", false, "", 7 )]
-    [BooleanField( "Show Inactive Campuses", "Determines if inactive campuses should be shown.", true, order: 8 )]
-    [DefinedValueField( Rock.SystemGuid.DefinedType.PERSON_MARITAL_STATUS, "Adult Marital Status", "When Family group type, the default marital status for adults in the family.", false, false, "", "", 9 )]
+        "The connection status that should be set by default", false, false, Rock.SystemGuid.DefinedValue.PERSON_CONNECTION_STATUS_VISITOR, "", 6 )]
+    [BooleanField( "Gender", "Require a gender for each person", "Don't require", "Should Gender be required for each person added?", false, "", 7 )]
+    [BooleanField( "Birth Date", "Require a birthdate for each person", "Don't require", "Should a Birthdate be required for each person added?", false, "", 8 )]
+    [CustomDropdownListField( "Grade", "When Family group type, should Grade be required for each child added?", "True^Require a grade for each child,False^Don't require,None^Grade is not displayed", false, "", "", 9 )]
+    [BooleanField( "Show Inactive Campuses", "Determines if inactive campuses should be shown.", true, order: 10 )]
+    [DefinedValueField( Rock.SystemGuid.DefinedType.PERSON_MARITAL_STATUS, "Adult Marital Status", "When Family group type, the default marital status for adults in the family.", false, false, "", "", 11 )]
     [DefinedValueField( Rock.SystemGuid.DefinedType.PERSON_MARITAL_STATUS, "Child Marital Status", "When Famiy group type, the marital status to use for children in the family.", false, false,
-        Rock.SystemGuid.DefinedValue.PERSON_MARITAL_STATUS_SINGLE, "", 10 )]
-    [BooleanField( "Marital Status Confirmation", "When Family group type, should user be asked to confirm saving an adult without a marital status?", true, "", 11 )]
-    [CustomDropdownListField( "Address", "Should an address be required for the family?", "REQUIRE^Require an address,HOMELESS^Require an address unless family is homeless,NOTREQUIRED^Don't require", false, "NOTREQUIRED", "", 12 )]
+        Rock.SystemGuid.DefinedValue.PERSON_MARITAL_STATUS_SINGLE, "", 12 )]
+    [BooleanField( "Marital Status Confirmation", "When Family group type, should user be asked to confirm saving an adult without a marital status?", true, "", 13 )]
+    [CustomDropdownListField( "Address", "Should an address be required for the family?", "REQUIRE^Require an address,HOMELESS^Require an address unless family is homeless,NOTREQUIRED^Don't require", false, "NOTREQUIRED", "", 14 )]
     [DefinedValueField( Rock.SystemGuid.DefinedType.GROUP_LOCATION_TYPE, "Location Type",
-        "The type of location that address should use", false, false, Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME, "", 13 )]
-    [BooleanField( "Show Cell Phone Number First", "Should the cell phone number be listed first before home phone number?", false, "", 14 )]
-    [BooleanField( "Phone Number", "Require a phone number", "Don't require", "Should a phone number be required for at least one person?", false, "", 15 )]
-    [BooleanField( "SMS", "SMS is enabled by default", "SMS is not enabled by default", "Should SMS be enabled for cell phone numbers by default?", false, "", 16 )]
-    [AttributeCategoryField( "Attribute Categories", "The Person Attribute Categories to display attributes from", true, "Rock.Model.Person", false, "", "", 17 )]
+        "The type of location that address should use", false, false, Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME, "", 15 )]
+    [BooleanField( "Show Cell Phone Number First", "Should the cell phone number be listed first before home phone number?", false, "", 16 )]
+    [BooleanField( "Phone Number", "Require a phone number", "Don't require", "Should a phone number be required for at least one person?", false, "", 17 )]
+    [CustomDropdownListField( "SMS", "Should SMS be enabled for cell phone numbers by default?", "True^SMS is enabled by default,False^SMS is not enabled by default,None^SMS option is hidden", false, "", "", 18 )]
+    [AttributeCategoryField( "Attribute Categories", "The Person Attribute Categories to display attributes from", true, "Rock.Model.Person", false, "", "", 19 )]
     public partial class AddGroup : Rock.Web.UI.RockBlock
     {
         #region Fields
@@ -80,7 +82,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         private Dictionary<string, int?> _verifiedLocations = null;
         private DefinedValueCache _homePhone = null;
         private DefinedValueCache _cellPhone = null;
-        private bool _smsEnabled = false;
+        private string _smsOption = "False";
 
         #endregion
 
@@ -208,11 +210,14 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                 ddlMaritalStatus.Visible = false;
             }
 
-            nfmMembers.ShowGrade = _isFamilyGroupType;
+            nfmMembers.ShowGrade = _isFamilyGroupType && GetAttributeValue( "Grade" ) != "None";
             nfmMembers.RequireGender = GetAttributeValue( "Gender" ).AsBoolean();
             nfmMembers.RequireBirthdate = GetAttributeValue( "BirthDate" ).AsBoolean();
             nfmMembers.RequireGrade = GetAttributeValue( "Grade" ).AsBoolean();
-            _smsEnabled = GetAttributeValue( "SMS" ).AsBoolean();
+            nfmMembers.ShowTitle = GetAttributeValue( "ShowTitle" ).AsBoolean();
+            nfmMembers.ShowMiddleName = GetAttributeValue( "ShowMiddleName" ).AsBoolean();
+            nfmMembers.ShowSuffix = GetAttributeValue( "ShowSuffix" ).AsBoolean();
+            _smsOption = GetAttributeValue( "SMS" );
 
             lTitle.Text = string.Format( "Add {0}", _groupType.Name ).FormatAsHtmlTitle();
 
@@ -340,7 +345,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         {
             NewGroupMembersRow row = sender as NewGroupMembersRow;
             row.ShowGradePicker = row.RoleId == _childRoleId;
-            row.ShowGradeColumn = _isFamilyGroupType;
+            row.ShowGradeColumn = _isFamilyGroupType && GetAttributeValue( "Grade" ) != "None";
         }
 
         /// <summary>
@@ -557,6 +562,10 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             var location = new Location();
             acAddress.GetValues( location );
 
+            var showTitle = this.GetAttributeValue( "ShowTitle" ).AsBoolean();
+            var showMiddleName = this.GetAttributeValue( "ShowMiddleName" ).AsBoolean();
+            var showSuffix = this.GetAttributeValue( "ShowSuffix" ).AsBoolean();
+            var showGrade = GetAttributeValue( "Grade" ) != "None";
             foreach ( var groupMember in GroupMembers )
             {
                 string groupMemberGuidString = groupMember.Person.Guid.ToString().Replace( "-", "_" );
@@ -572,16 +581,19 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                 groupMemberRow.RequireBirthdate = nfmMembers.RequireBirthdate;
                 groupMemberRow.RequireGrade = nfmMembers.RequireGrade;
                 groupMemberRow.RoleId = groupMember.GroupRoleId;
-                groupMemberRow.ShowGradeColumn = _isFamilyGroupType;
+                groupMemberRow.ShowTitle = showTitle;
+                groupMemberRow.ShowMiddleName = showGrade;
+                groupMemberRow.ShowSuffix = showSuffix;
+                groupMemberRow.ShowGradeColumn = _isFamilyGroupType && showGrade;
                 groupMemberRow.ShowGradePicker = groupMember.GroupRoleId == _childRoleId;
-                groupMemberRow.ShowMiddleName = this.GetAttributeValue( "ShowMiddleName" ).AsBoolean();
                 groupMemberRow.ValidationGroup = BlockValidationGroup;
 
                 var contactInfoRow = new NewGroupContactInfoRow();
                 nfciContactInfo.Controls.Add( contactInfoRow );
                 contactInfoRow.ID = string.Format( "ci_row_{0}", groupMemberGuidString );
                 contactInfoRow.PersonGuid = groupMember.Person.Guid;
-                contactInfoRow.IsMessagingEnabled = _smsEnabled;
+                contactInfoRow.IsMessagingVisible = string.IsNullOrWhiteSpace( _smsOption ) || _smsOption != "None";
+                contactInfoRow.IsMessagingEnabled = _smsOption.AsBoolean();
                 contactInfoRow.PersonName = groupMember.Person.FullName;
                 contactInfoRow.ShowCellPhoneFirst = this.GetAttributeValue( "ShowCellPhoneNumberFirst" ).AsBoolean();
 

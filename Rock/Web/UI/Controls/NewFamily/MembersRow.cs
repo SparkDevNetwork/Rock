@@ -93,6 +93,30 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Gets or sets a value indicating whether [show title].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [show title]; otherwise, <c>false</c>.
+        /// </value>
+        public bool ShowTitle
+        {
+            get { return ViewState["ShowTitle"] as bool? ?? false; }
+            set { ViewState["ShowTitle"] = value; }
+        }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether [show suffix].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [show suffix]; otherwise, <c>false</c>.
+        /// </value>
+        public bool ShowSuffix
+        {
+            get { return ViewState["ShowSuffix"] as bool? ?? false; }
+            set { ViewState["ShowSuffix"] = value; }
+        }
+
+        /// <summary>
         /// Gets or sets the title value id.
         /// </summary>
         /// <value>
@@ -472,9 +496,12 @@ namespace Rock.Web.UI.Controls
                 writer.RenderEndTag();
                 writer.RenderEndTag();
 
+                if ( this.ShowTitle )
+                {
                 writer.RenderBeginTag( HtmlTextWriterTag.Td );
                 _ddlTitle.RenderControl( writer );
                 writer.RenderEndTag();
+                }
 
                 writer.RenderBeginTag( HtmlTextWriterTag.Td );
 
@@ -498,9 +525,12 @@ namespace Rock.Web.UI.Controls
 
                 writer.RenderEndTag();
 
+                if ( this.ShowSuffix )
+                {
                 writer.RenderBeginTag( HtmlTextWriterTag.Td );
                 _ddlSuffix.RenderControl( writer );
                 writer.RenderEndTag();
+                }
 
                 writer.RenderBeginTag( HtmlTextWriterTag.Td );
                 _ddlConnectionStatus.RenderControl( writer );

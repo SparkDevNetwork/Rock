@@ -34,6 +34,16 @@ namespace Rock.Web.UI.Controls
         private LinkButton _lbAddGroupMember;
 
         /// <summary>
+        public bool ShowTitle
+        {
+            get { return ViewState["ShowTitle"] as bool? ?? false; }
+            set { ViewState["ShowTitle"] = value; }
+        }
+        public bool ShowSuffix
+        {
+            get { return ViewState["ShowSuffix"] as bool? ?? false; }
+            set { ViewState["ShowSuffix"] = value; }
+        }
         /// Gets or sets a value indicating whether [require gender].
         /// </summary>
         /// <value>
@@ -79,6 +89,11 @@ namespace Rock.Web.UI.Controls
         {
             get { return ViewState["ShowGrade"] as bool? ?? false; }
             set { ViewState["ShowGrade"] = value; }
+        }
+        public bool ShowMiddleName
+        {
+            get { return ViewState["ShowMiddleName"] as bool? ?? false; }
+            set { ViewState["ShowMiddleName"] = value; }
         }
 
         /// <summary>
@@ -164,18 +179,24 @@ namespace Rock.Web.UI.Controls
                 writer.Write( "Role" );
                 writer.RenderEndTag();
 
+                if ( this.ShowTitle )
+                {
                 writer.RenderBeginTag( HtmlTextWriterTag.Th );
                 writer.Write( "Title" );
                 writer.RenderEndTag();
+                }
 
                 writer.AddAttribute( HtmlTextWriterAttribute.Class, "required" );
                 writer.RenderBeginTag( HtmlTextWriterTag.Th );
                 writer.Write( "Name" );
                 writer.RenderEndTag();
 
+                if ( this.ShowSuffix )
+                {
                 writer.RenderBeginTag( HtmlTextWriterTag.Th );
                 writer.Write( "Suffix" );
                 writer.RenderEndTag();
+                }
 
                 writer.AddAttribute( HtmlTextWriterAttribute.Class, "required" );
                 writer.RenderBeginTag( HtmlTextWriterTag.Th );

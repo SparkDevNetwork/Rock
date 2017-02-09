@@ -23,6 +23,7 @@ using System.Web.UI;
 using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
 
+using Rock;
 using Rock.Model;
 using Rock.Web.Cache;
 
@@ -194,6 +195,21 @@ namespace Rock.Web.UI.Controls
             }
         }
 
+        public bool IsMessagingVisible
+        {
+            get
+            {
+                if ( ViewState["IsMessagingVisible"] != null )
+                {
+                    return ViewState["IsMessagingVisible"].ToString().AsBooleanOrNull() ?? true;
+                }
+                else
+                {
+                    return true;
+                }
+            }
+            set { ViewState["IsMessagingVisible"] = value; }
+        }
         /// <summary>
         /// Gets or sets the Is Messaging Enabled bool.
         /// </summary>
@@ -361,13 +377,15 @@ namespace Rock.Web.UI.Controls
             writer.RenderEndTag();
             writer.RenderEndTag();
 
+            if ( IsMessagingVisible )
+            {
             writer.RenderBeginTag( HtmlTextWriterTag.Td );
             writer.AddAttribute( "class", "text-center" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
             _cbIsMessagingEnabled.RenderControl( writer );
             writer.RenderEndTag();
             writer.RenderEndTag();
-
+            }
         }
     }
 
