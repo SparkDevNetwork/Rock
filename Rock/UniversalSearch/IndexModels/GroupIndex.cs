@@ -86,7 +86,7 @@ namespace Rock.UniversalSearch.IndexModels
         /// <value>
         /// The name.
         /// </value>
-        [RockIndexField( Boost = 6 )]
+        [RockIndexField( Boost = 3 )]
         public string Name { get; set; }
 
         /// <summary>
@@ -95,7 +95,7 @@ namespace Rock.UniversalSearch.IndexModels
         /// <value>
         /// The description.
         /// </value>
-        [RockIndexField( Boost = 2 )]
+        [RockIndexField]
         public string Description { get; set; }
 
         /// <summary>
@@ -113,7 +113,7 @@ namespace Rock.UniversalSearch.IndexModels
         /// <value>
         /// The leader list.
         /// </value>
-        [RockIndexField( Boost = 2 )]
+        [RockIndexField]
         public string LeaderList { get; set; }
 
         /// <summary>
