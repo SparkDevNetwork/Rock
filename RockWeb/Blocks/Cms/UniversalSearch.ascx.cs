@@ -59,6 +59,8 @@ namespace RockWeb.Blocks.Cms
 {% endfor %}</ul>" )]
     [BooleanField("Use Custom Results", "Determines if the custom results should be displayed.", category: "CustomSetting" )]
     [LavaCommandsField("Custom Results Commands", "The custom Lava fields to allow.", category: "CustomSetting" )]
+    [CodeEditorField( "Search Input Pre-HTML", "Custom Lava to place before the search input (for styling).", CodeEditorMode.Lava, category: "CustomSetting", key: "PreHtml" )]
+    [CodeEditorField( "Search Input Post-HTML", "Custom Lava to place after the search input (for styling).", CodeEditorMode.Lava, category: "CustomSetting", key: "PostHtml" )]
     public partial class UniversalSearch : RockBlockCustomSettings
     {
         #region Fields
@@ -126,6 +128,17 @@ namespace RockWeb.Blocks.Cms
                     tbSearch.Text = PageParameter( "Q" );
                     Search();
                 }
+
+                // add pre/post html
+                var preHtml = GetAttributeValue( "PreHtml" );
+                var postHtml = GetAttributeValue( "PostHtml" );
+
+                if (preHtml.IsNotNullOrWhitespace() || postHtml.IsNotNullOrWhitespace() )
+                {
+                    var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( null );
+                    lPreHtml.Text = preHtml.ResolveMergeFields( mergeFields );
+                    lPostHtml.Text = postHtml.ResolveMergeFields( mergeFields );
+                }
             }
         }
 
@@ -167,6 +180,10 @@ namespace RockWeb.Blocks.Cms
             SetAttributeValue( "UseCustomResults", cbUseCustomResults.Checked.ToString() );
 
             SetAttributeValue( "LavaResultTemplate", ceCustomResultsTemplate.Text );
+
+            SetAttributeValue( "PreHtml", cePreHtml.Text );
+
+            SetAttributeValue( "PostHtml", cePostHtml.Text );
 
             SetAttributeValue( "CustomResultsCommands", string.Join( ",", cblLavaCommands.SelectedValues ) );
 
@@ -811,6 +828,9 @@ namespace RockWeb.Blocks.Cms
 
             cbUseCustomResults.Checked = GetAttributeValue( "UseCustomResults" ).AsBoolean();
             ceCustomResultsTemplate.Text = GetAttributeValue( "LavaResultTemplate" );
+
+            cePreHtml.Text = GetAttributeValue( "PreHtml" );
+            cePostHtml.Text = GetAttributeValue( "PostHtml" );
 
             tbBaseFieldFilters.Text = GetAttributeValue( "BaseFieldFilters" );
 
