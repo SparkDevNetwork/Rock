@@ -58,7 +58,7 @@
 
     <script>
         window.addEventListener('load', function () {
-            new FastClick(document.body);
+            new FastClick(document.body, { tapDelay: 40, touchBoundary: 40 });
         }, false);
 
         // add quick fade-in effect to the page
