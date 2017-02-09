@@ -717,7 +717,7 @@ namespace RockWeb.Blocks.Cms
                     filterConfig.RepeatDirection = RepeatDirection.Horizontal;
                     filterConfig.Attributes.Add( "entity-id", entity.Id.ToString() );
                     filterConfig.Attributes.Add( "entity-filter-field", filterOptions.FilterField );
-                    filterConfig.DataSource = filterOptions.FilterValues;
+                    filterConfig.DataSource = filterOptions.FilterValues.Where( i => i != null );
                     filterConfig.DataBind();
 
                     // set any selected values from the query string
