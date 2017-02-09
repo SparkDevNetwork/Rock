@@ -17,6 +17,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity;
 using System.Linq;
 using System.Web.UI;
@@ -45,9 +46,10 @@ namespace RockWeb.Blocks.Finance
     [BooleanField( "Show Only Active Accounts on Filter", "If account filter is displayed, only list active accounts", false, "", 2, "ActiveAccountsOnlyFilter" )]
     [BooleanField( "Show Options", "Show an Options button in the title panel for showing images or summary.", false, order: 3 )]
     [IntegerField( "Image Height", "If the Show Images option is selected, the image height", false, 200, order: 4 )]
-    [DefinedValueField( Rock.SystemGuid.DefinedType.FINANCIAL_TRANSACTION_TYPE, "Transaction Types", "Optional list of transation types to limit the list to (if none are selected all types will be included).", false, true, "", "", 5 )]
+    [DefinedValueField( Rock.SystemGuid.DefinedType.FINANCIAL_TRANSACTION_TYPE, "Transaction Types", "Optional list of transaction types to limit the list to (if none are selected all types will be included).", false, true, "", "", 5 )]
+    [CustomDropdownListField( "Default Transaction View", "Select whether you want to initially see Transactions or Transaction Details", "Transactions,Transaction Details", false, "Transactions", "", 6 )]
 
-    [LinkedPage( "Batch Page", order: 6 )]
+    [LinkedPage( "Batch Page", order: 7 )]
     public partial class TransactionList : Rock.Web.UI.RockBlock, ISecondaryBlock, IPostBackEventHandler
     {
         private bool _isExporting = false;
@@ -67,6 +69,8 @@ namespace RockWeb.Blocks.Finance
         // Dictionaries to cache values for databinding performance
         private Dictionary<int, string> _currencyTypes;
         private Dictionary<int, string> _creditCardTypes;
+        private Dictionary<int, string> _personFullNameReversedLookupByAliasId;
+        private IDictionary<int, FinancialAccount> _financialAccountLookup;
 
         private string _batchPageRoute = null;
 
@@ -444,13 +448,22 @@ namespace RockWeb.Blocks.Finance
         {
             if ( e.Row.RowType == DataControlRowType.DataRow )
             {
-                var txn = e.Row.DataItem as FinancialTransaction;
+                var txn = e.Row.DataItem as FinancialTransactionBaseRow;
                 var lCurrencyType = e.Row.FindControl( "lCurrencyType" ) as Literal;
-                
+                var lPersonFullNameReversed = e.Row.FindControl( "lPersonFullNameReversed" ) as Literal;
+
                 if ( txn != null && lCurrencyType != null )
                 {
                     string currencyType = string.Empty;
                     string creditCardType = string.Empty;
+
+                    if ( lPersonFullNameReversed != null )
+                    {
+                        if ( _personFullNameReversedLookupByAliasId.ContainsKey( txn.AuthorizedPersonAliasId ) )
+                        {
+                            lPersonFullNameReversed.Text = _personFullNameReversedLookupByAliasId[txn.AuthorizedPersonAliasId];
+                        }
+                    }
 
                     if ( txn.FinancialPaymentDetail != null && txn.FinancialPaymentDetail.CurrencyTypeValueId.HasValue )
                     {
@@ -491,22 +504,22 @@ namespace RockWeb.Blocks.Finance
                     var lTransactionImage = e.Row.FindControl( "lTransactionImage" ) as Literal;
                     if ( lTransactionImage != null && lTransactionImage.Visible )
                     {
-                        var firstImage = txn.Images.FirstOrDefault();
-                        if ( firstImage != null )
+                        int? firstImageId = txn.ImageBinaryFileIds.FirstOrDefault();
+                        if ( firstImageId != null )
                         {
-                            string imageSrc = string.Format( "~/GetImage.ashx?id={0}&height={1}", firstImage.BinaryFileId, _imageHeight );
+                            string imageSrc = string.Format( "~/GetImage.ashx?id={0}&height={1}", firstImageId, _imageHeight );
                             lTransactionImage.Text = string.Format( "<image src='{0}' />", this.ResolveUrl( imageSrc ) );
                         }
                     }
 
                     var lBatchId = e.Row.FindControl( "lBatchId" ) as Literal;
-                    if (lBatchId != null)
+                    if ( lBatchId != null )
                     {
                         if ( _batchPageRoute.IsNotNullOrWhitespace() && txn.BatchId.HasValue )
                         {
                             var cell = e.Row.Cells.OfType<DataControlFieldCell>().Where( a => a == lBatchId.FirstParentControlOfType<DataControlFieldCell>() ).First();
                             cell.RemoveCssClass( "grid-select-cell" );
-                            lBatchId.Text = string.Format( "<a href='{0}?BatchId={1}'>{1}</a>",  _batchPageRoute, txn.BatchId);
+                            lBatchId.Text = string.Format( "<a href='{0}?BatchId={1}'>{1}</a>", _batchPageRoute, txn.BatchId );
                         }
                         else
                         {
@@ -947,7 +960,54 @@ namespace RockWeb.Blocks.Finance
 
             // Qry
             var rockContext = new RockContext();
-            var qry = new FinancialTransactionService( rockContext ).Queryable();
+
+            IQueryable<FinancialTransactionBaseRow> qry;
+            if ( hfTransactionViewMode.Value == "Transaction Details" )
+            {
+                qry = new FinancialTransactionDetailService( rockContext ).Queryable()
+                    .Where( a => a.Transaction.AuthorizedPersonAliasId.HasValue && a.Transaction.TransactionDateTime.HasValue )
+                    .Select( a => new FinancialTransactionDetailRow
+                    {
+                        Id = a.TransactionId,
+                        BatchId = a.Transaction.BatchId,
+                        TransactionTypeValueId = a.Transaction.TransactionTypeValueId,
+                        ScheduledTransactionId = a.Transaction.ScheduledTransactionId,
+                        AuthorizedPersonAliasId = a.Transaction.AuthorizedPersonAliasId.Value,
+                        TransactionDateTime = a.Transaction.TransactionDateTime.Value,
+                        SourceTypeValueId = a.Transaction.SourceTypeValueId,
+                        TotalAmount = a.Amount,
+                        TransactionCode = a.Transaction.TransactionCode,
+                        TransactionDetail = new DetailInfo { AccountId = a.AccountId, Amount = a.Amount, EntityId = a.EntityId, EntityTypeId = a.EntityId, ParentAccountId = a.Account.ParentAccountId },
+                        Summary = a.Transaction.Summary,
+                        Batch = new BatchInfo { CampusId = a.Transaction.BatchId.HasValue ? a.Transaction.Batch.CampusId : null },
+                        ImageBinaryFileIds = a.Transaction.Images.Select( i => i.BinaryFileId ),
+                        FinancialPaymentDetail = new PaymentDetailInfo { CreditCardTypeValueId = a.Transaction.FinancialPaymentDetail.CreditCardTypeValueId, CurrencyTypeValueId = a.Transaction.FinancialPaymentDetail.CurrencyTypeValueId }
+                    }
+                );
+            }
+            else
+            {
+                qry = new FinancialTransactionService( rockContext ).Queryable()
+                    .Where( a => a.AuthorizedPersonAliasId.HasValue && a.TransactionDateTime.HasValue )
+                    .Select( a => new FinancialTransactionRow
+                    {
+                        Id = a.Id,
+                        BatchId = a.BatchId,
+                        TransactionTypeValueId = a.TransactionTypeValueId,
+                        ScheduledTransactionId = a.ScheduledTransactionId,
+                        AuthorizedPersonAliasId = a.AuthorizedPersonAliasId.Value,
+                        TransactionDateTime = a.TransactionDateTime.Value,
+                        TransactionDetails = a.TransactionDetails.Select( d => new DetailInfo { AccountId = d.AccountId, Amount = d.Amount, EntityId = d.EntityId, EntityTypeId = d.EntityTypeId, ParentAccountId = d.Account.ParentAccountId } ),
+                        SourceTypeValueId = a.SourceTypeValueId,
+                        TotalAmount = a.TransactionDetails.Sum( d => d.Amount ),
+                        TransactionCode = a.TransactionCode,
+                        Summary = a.Summary,
+                        Batch = new BatchInfo { CampusId = a.BatchId.HasValue ? a.Batch.CampusId : null },
+                        ImageBinaryFileIds = a.Images.Select( i => i.BinaryFileId ),
+                        //FinancialPaymentDetail = a.FinancialPaymentDetailId.HasValue ? new PaymentDetailInfo { CreditCardTypeValueId = a.FinancialPaymentDetail.CreditCardTypeValueId, CurrencyTypeValueId = a.FinancialPaymentDetail.CurrencyTypeValueId } : null
+                        FinancialPaymentDetail = new PaymentDetailInfo { CreditCardTypeValueId = a.FinancialPaymentDetail.CreditCardTypeValueId, CurrencyTypeValueId = a.FinancialPaymentDetail.CurrencyTypeValueId }
+                    } );
+            }
 
             // Transaction Types
             var transactionTypeValueIdList = GetAttributeValue( "TransactionTypes" ).SplitDelimitedValues().AsGuidList().Select( a => DefinedValueCache.Read( a ) ).Where( a => a != null ).Select( a => a.Id ).ToList();
@@ -982,13 +1042,26 @@ namespace RockWeb.Blocks.Finance
             }
             else if ( _registration != null )
             {
-                qry = qry
-                    .Where( t => t.TransactionDetails
-                        .Any( d =>
-                            d.EntityTypeId.HasValue &&
-                            d.EntityTypeId.Value == registrationEntityTypeId &&
-                            d.EntityId.HasValue &&
-                            d.EntityId.Value == _registration.Id ) );
+                if ( qry is IQueryable<FinancialTransactionRow> )
+                {
+                    var ftQry = (IQueryable<FinancialTransactionRow>)qry;
+                    ftQry = ftQry
+                        .Where( t => t.TransactionDetails
+                            .Any( d =>
+                                d.EntityTypeId.HasValue &&
+                                d.EntityTypeId.Value == registrationEntityTypeId &&
+                                d.EntityId.HasValue &&
+                                d.EntityId.Value == _registration.Id ) );
+                }
+                else
+                {
+                    var ftQry = (IQueryable<FinancialTransactionDetailRow>)qry;
+                    ftQry = ftQry
+                        .Where( t => t.TransactionDetail.EntityTypeId.HasValue &&
+                                t.TransactionDetail.EntityTypeId.Value == registrationEntityTypeId &&
+                                t.TransactionDetail.EntityId.HasValue &&
+                                t.TransactionDetail.EntityId.Value == _registration.Id );
+                }
 
                 gTransactions.IsDeleteEnabled = false;
             }
@@ -1001,7 +1074,7 @@ namespace RockWeb.Blocks.Finance
                     var personAliasIds = new PersonAliasService( rockContext ).Queryable().Where( a => a.Person.GivingId == _person.GivingId ).Select( a => a.Id ).ToList();
 
                     // get the transactions for the person or all the members in the person's giving group (Family)
-                    qry = qry.Where( t => t.AuthorizedPersonAliasId.HasValue && personAliasIds.Contains(t.AuthorizedPersonAliasId.Value) );
+                    qry = qry.Where( t => personAliasIds.Contains( t.AuthorizedPersonAliasId ) );
                 }
 
                 // Date Range
@@ -1023,12 +1096,12 @@ namespace RockWeb.Blocks.Finance
                 nre.DelimitedValues = gfTransactions.GetUserPreference( "Amount Range" );
                 if ( nre.LowerValue.HasValue )
                 {
-                    qry = qry.Where( t => t.TransactionDetails.Sum( d => d.Amount ) >= nre.LowerValue.Value );
+                    qry = qry.Where( t => t.TotalAmount >= nre.LowerValue.Value );
                 }
 
                 if ( nre.UpperValue.HasValue )
                 {
-                    qry = qry.Where( t => t.TransactionDetails.Sum( d => d.Amount ) <= nre.UpperValue.Value );
+                    qry = qry.Where( t => t.TotalAmount <= nre.UpperValue.Value );
                 }
 
                 // Transaction Code
@@ -1043,7 +1116,17 @@ namespace RockWeb.Blocks.Finance
                 {
                     if ( accountIds.Any() )
                     {
-                        qry = qry.Where( t => t.TransactionDetails.Any( d => accountIds.Contains( d.AccountId ) || ( d.Account.ParentAccountId.HasValue && accountIds.Contains( d.Account.ParentAccountId.Value ) ) ) );
+                        if ( qry is IQueryable<FinancialTransactionRow> )
+                        {
+                            var ftQry = (IQueryable<FinancialTransactionRow>)qry;
+                            ftQry = ftQry.Where( t => t.TransactionDetails.Any( d => accountIds.Contains( d.AccountId ) || ( d.ParentAccountId.HasValue && accountIds.Contains( d.ParentAccountId.Value ) ) ) );
+                        }
+                        else
+                        {
+                            var ftQry = (IQueryable<FinancialTransactionDetailRow>)qry;
+                            ftQry = ftQry.Where( a => accountIds.Contains( a.TransactionDetail.AccountId ) || ( a.TransactionDetail.ParentAccountId.HasValue && accountIds.Contains( a.TransactionDetail.ParentAccountId.Value ) ) );
+                        }
+
                     }
                 }
 
@@ -1098,7 +1181,7 @@ namespace RockWeb.Blocks.Finance
                             var personAliasIds = new PersonAliasService( rockContext ).Queryable().Where( a => a.Person.GivingId == filterPerson.GivingId ).Select( a => a.Id ).ToList();
 
                             // get the transactions for the person or all the members in the person's giving group (Family)
-                            qry = qry.Where( t => t.AuthorizedPersonAliasId.HasValue && personAliasIds.Contains( t.AuthorizedPersonAliasId.Value ) );
+                            qry = qry.Where( t => personAliasIds.Contains( t.AuthorizedPersonAliasId ) );
                         }
                     }
                 }
@@ -1111,11 +1194,11 @@ namespace RockWeb.Blocks.Finance
                 {
                     if ( sortProperty.Direction == SortDirection.Ascending )
                     {
-                        qry = qry.OrderBy( t => t.TransactionDetails.Sum( d => (decimal?)d.Amount ) ?? 0.00M );
+                        qry = qry.OrderBy( t => t.TotalAmount );
                     }
                     else
                     {
-                        qry = qry.OrderByDescending( t => t.TransactionDetails.Sum( d => (decimal?)d.Amount ) ?? 0.0M );
+                        qry = qry.OrderByDescending( t => t.TotalAmount );
                     }
                 }
                 else
@@ -1150,15 +1233,25 @@ namespace RockWeb.Blocks.Finance
                 summaryField.Visible = !showImages;
             }
 
-            if ( showImages )
-            {
-                qry = qry.Include( a => a.Images );
-            }
-
             _isExporting = isExporting;
+            DebugHelper.SQLLoggingStart();
+
+            var qryPersonAlias = new PersonAliasService( rockContext ).Queryable();
+
+            _personFullNameReversedLookupByAliasId = qryPersonAlias.Where( a => qry.Any( q => q.AuthorizedPersonAliasId == a.Id ) ).Select( a => new
+            {
+                a.Id,
+                a.Person.LastName,
+                a.Person.NickName,
+                a.Person.SuffixValueId,
+                a.Person.RecordTypeValueId
+            } ).AsNoTracking().ToList().ToDictionary( k => k.Id, v => Person.FormatFullNameReversed( v.LastName, v.NickName, v.SuffixValueId, v.RecordTypeValueId ) );
+
+            _financialAccountLookup = new FinancialAccountService( rockContext ).Queryable().AsNoTracking().ToList().ToDictionary( k => k.Id, v => v );
 
             gTransactions.SetLinqDataSource( qry.AsNoTracking() );
             gTransactions.DataBind();
+            DebugHelper.SQLLoggingStop();
 
             _isExporting = false;
 
@@ -1170,32 +1263,48 @@ namespace RockWeb.Blocks.Finance
                 pnlSummary.Visible = true;
 
                 // No context - show account summary
-                var qryTransactionDetails = qry.SelectMany( a => a.TransactionDetails );
+
+                // TODO
+
                 var qryFinancialAccount = new FinancialAccountService( rockContext ).Queryable();
-                var accountSummaryQry = qryTransactionDetails.GroupBy( a => a.AccountId ).Select( a => new
+                if ( qry is IQueryable<FinancialTransactionDetailRow> )
                 {
-                    AccountId = a.Key,
-                    TotalAmount = (decimal?)a.Sum( d => d.Amount )
-                } ).Join( qryFinancialAccount, k1 => k1.AccountId, k2 => k2.Id, ( td, fa ) => new { td.TotalAmount, fa.Name, fa.Order, fa.Id } );
+                    var accountSummaryQry = ( qry as IQueryable<FinancialTransactionDetailRow> ).Select( a => new
+                    {
+                        Id = a.TransactionDetail.AccountId,
+                        TotalAmount = a.TotalAmount
+                    } ).GroupBy( a => a.Id ).Select( a => new
+                    {
+                        AccountId = a.Key,
+                        TotalAmount = a.Sum( x => x.TotalAmount )
+                    } ).ToList().Select( a => new
+                    {
+                        a.AccountId,
+                        _financialAccountLookup[a.AccountId].Order,
+                        _financialAccountLookup[a.AccountId].Name,
+                        a.TotalAmount
+                    } );
 
-                // check for filtered accounts
-                var accountIds = ( gfTransactions.GetUserPreference( "Account" ) ?? "" ).SplitDelimitedValues().AsIntegerList().Where( a => a > 0 ).ToList();
-                if ( accountIds.Any() )
-                {
-                    accountSummaryQry = accountSummaryQry.Where( a => accountIds.Contains( a.Id ) ).OrderBy( a => a.Order );
-                    lbFiltered.Text = "Filtered Account List";
-                    lbFiltered.Visible = true;
-                }
-                else
-                {
-                    lbFiltered.Visible = false;
-                }
 
-                var summaryList = accountSummaryQry.ToList();
-                var grandTotalAmount = ( summaryList.Count > 0 ) ? summaryList.Sum( a => a.TotalAmount ?? 0 ) : 0;
-                lGrandTotal.Text = grandTotalAmount.FormatAsCurrency();
-                rptAccountSummary.DataSource = summaryList.Select( a => new { a.Name, TotalAmount = a.TotalAmount.FormatAsCurrency() } ).ToList();
-                rptAccountSummary.DataBind();
+                    // check for filtered accounts
+                    var accountIds = ( gfTransactions.GetUserPreference( "Account" ) ?? "" ).SplitDelimitedValues().AsIntegerList().Where( a => a > 0 ).ToList();
+                    if ( accountIds.Any() )
+                    {
+                        accountSummaryQry = accountSummaryQry.Where( a => accountIds.Contains( a.AccountId ) ).OrderBy( a => a.Order );
+                        lbFiltered.Text = "Filtered Account List";
+                        lbFiltered.Visible = true;
+                    }
+                    else
+                    {
+                        lbFiltered.Visible = false;
+                    }
+
+                    var summaryList = accountSummaryQry.ToList();
+                    var grandTotalAmount = ( summaryList.Count > 0 ) ? summaryList.Sum( a => a.TotalAmount ) : 0;
+                    lGrandTotal.Text = grandTotalAmount.FormatAsCurrency();
+                    rptAccountSummary.DataSource = summaryList.Select( a => new { a.Name, TotalAmount = a.TotalAmount.FormatAsCurrency() } ).ToList();
+                    rptAccountSummary.DataBind();
+                }
             }
             else
             {
@@ -1210,13 +1319,25 @@ namespace RockWeb.Blocks.Finance
         /// <returns></returns>
         protected string GetAccounts( object dataItem )
         {
-            var txn = dataItem as FinancialTransaction;
+            var txn = dataItem as FinancialTransactionBaseRow;
             if ( txn != null )
             {
-                var summary = txn.TransactionDetails
-                    .OrderBy( d => d.Account.Order )
-                    .Select( d => string.Format( "{0}: {1}", d.Account.Name, d.Amount.FormatAsCurrency() ) )
-                    .ToList();
+                List<string> summary;
+                if ( txn is FinancialTransactionDetailRow )
+                {
+                    var financialTransactionDetailRow = ( txn as FinancialTransactionDetailRow );
+                    string summaryLine = string.Format( "{0}: {1}", _financialAccountLookup[financialTransactionDetailRow.TransactionDetail.AccountId].Name, financialTransactionDetailRow.TransactionDetail.Amount.FormatAsCurrency() );
+                    summary = new List<string>();
+                    summary.Add( summaryLine );
+                }
+                else
+                {
+                    summary = ( txn as FinancialTransactionRow ).TransactionDetails.Select( a => new { Account = _financialAccountLookup[a.AccountId], a.Amount } )
+                   .OrderBy( d => d.Account.Order )
+                   .Select( d => string.Format( "{0}: {1}", d.Account.Name, d.Amount.FormatAsCurrency() ) )
+                   .ToList();
+                }
+
                 if ( summary.Any() )
                 {
                     if ( _isExporting )
@@ -1306,6 +1427,77 @@ namespace RockWeb.Blocks.Finance
         protected void bddlOptions_SelectionChanged( object sender, EventArgs e )
         {
             BindGrid();
+        }
+
+        /// <summary>
+        /// Handles the Click event of the btnTransactions and btnTransactionDetails control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void btnTransactionsViewMode_Click( object sender, EventArgs e )
+        {
+            if ( sender == btnTransactions )
+            {
+                hfTransactionViewMode.Value = "Transactions";
+                btnTransactionDetails.CssClass = "btn btn-xs btn-default";
+                btnTransactions.CssClass = "btn btn-xs btn-primary";
+            }
+            else
+            {
+                hfTransactionViewMode.Value = "Transaction Details";
+                btnTransactionDetails.CssClass = "btn btn-xs btn-primary";
+                btnTransactions.CssClass = "btn btn-xs btn-default";
+            }
+
+            BindGrid();
+        }
+
+        [NotMapped]
+        private class FinancialTransactionBaseRow
+        {
+            public int Id { get; set; }
+            public int AuthorizedPersonAliasId { get; internal set; }
+            public int? BatchId { get; internal set; }
+            public int? ScheduledTransactionId { get; internal set; }
+            public DateTime TransactionDateTime { get; internal set; }
+            public int TransactionTypeValueId { get; internal set; }
+            public PaymentDetailInfo FinancialPaymentDetail { get; internal set; }
+            public string TransactionCode { get; internal set; }
+            public int? SourceTypeValueId { get; internal set; }
+            public BatchInfo Batch { get; internal set; }
+            public IEnumerable<int> ImageBinaryFileIds { get; internal set; }
+            public decimal TotalAmount { get; set; }
+            public string Summary { get; set; }
+        }
+
+        private class FinancialTransactionDetailRow : FinancialTransactionBaseRow
+        {
+            public DetailInfo TransactionDetail { get; set; }
+        }
+
+        private class FinancialTransactionRow : FinancialTransactionBaseRow
+        {
+            public IEnumerable<DetailInfo> TransactionDetails { get; set; }
+        }
+
+        private class DetailInfo
+        {
+            public int AccountId { get; internal set; }
+            public decimal Amount { get; internal set; }
+            public int? EntityId { get; internal set; }
+            public int? EntityTypeId { get; internal set; }
+            public int? ParentAccountId { get; internal set; }
+        }
+
+        private class BatchInfo
+        {
+            public int? CampusId { get; internal set; }
+        }
+
+        private class PaymentDetailInfo
+        {
+            public int? CreditCardTypeValueId { get; internal set; }
+            public int? CurrencyTypeValueId { get; internal set; }
         }
     }
 }
