@@ -1561,7 +1561,9 @@ namespace Rock.Web.UI.Controls
                         }
 
                         // Update column formatting based on data
-                        worksheet.Column( columnCounter ).Style.Numberformat.Format = ExcelHelper.FinalColumnFormat( exportValue, worksheet.Column( columnCounter ).Style.Numberformat.Format );
+                        var format = worksheet.Column( columnCounter ).Style.Numberformat.Format;
+
+                        format = ExcelHelper.FinalColumnFormat( exportValue, format );
                     }
                 }
             }
