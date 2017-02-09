@@ -1179,11 +1179,12 @@ namespace RockWeb.Blocks.Groups
             ddlSignatureDocumentTemplate.SetValue( group.RequiredSignatureDocumentTemplateId );
             gpParentGroup.SetValue( group.ParentGroup ?? groupService.Get( group.ParentGroupId ?? 0 ) );
 
-            // hide sync and requirements panel if no admin access
+            // hide sync and requirements panel and hide is security checkbox if no admin access
             bool canAdministrate = group.IsAuthorized( Authorization.ADMINISTRATE, CurrentPerson );
             wpGroupSync.Visible = canAdministrate;
             wpGroupRequirements.Visible = canAdministrate;
             wpGroupMemberAttributes.Visible = canAdministrate;
+            cbIsSecurityRole.Visible = canAdministrate;
 
             var systemEmails = new SystemEmailService( rockContext ).Queryable().OrderBy( e => e.Title )
                 .Select( a => new
