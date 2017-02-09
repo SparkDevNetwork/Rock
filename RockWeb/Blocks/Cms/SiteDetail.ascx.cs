@@ -691,6 +691,13 @@ namespace RockWeb.Blocks.Cms
                 // hide the panel drawer that show created and last modified dates
                 pdAuditDetails.Visible = false;
             }
+            else
+            {
+                if ( site.DefaultPageId.HasValue )
+                {
+                    lVisitSite.Text = string.Format( @"<a href=""{0}{1}"" target=""_blank""><span class=""label label-info"">Visit Site</span></a>", ResolveRockUrl( "~/page/" ), site.DefaultPageId );
+                }
+            }
 
             // set theme compile button
             if ( ! new RockTheme(site.Theme ).AllowsCompile) 
