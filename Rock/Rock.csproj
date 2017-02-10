@@ -1095,6 +1095,7 @@
     <Compile Include="Scripting.native.cs" />
     <Compile Include="Search\Group\Name.cs" />
     <Compile Include="Search\Person\Address.cs" />
+    <Compile Include="Search\Person\BirthDate.cs" />
     <Compile Include="Search\Person\BusinessName.cs" />
     <Compile Include="Search\Person\Email.cs" />
     <Compile Include="Search\Person\Name.cs" />
