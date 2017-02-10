@@ -42,7 +42,7 @@ ___ 8. Delete the following files from the RockWeb directory
         * Settings.StyleCop
         * .editorconfig
 
-___ 9. Zip up the RockWeb directory
+___ 9. Zip up the RockWeb directory (so that all it's subfolders are the root of the zip)
 
 ___ 10. Rename zip file 'rock-install-latest.zip'
 
