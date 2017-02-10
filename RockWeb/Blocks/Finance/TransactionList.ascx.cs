@@ -1301,23 +1301,31 @@ namespace RockWeb.Blocks.Finance
                 _imageBinaryFileIdLookupByTransactionId = new Dictionary<int, List<int>>();
             }
 
+            gTransactions.EntityTypeId = EntityTypeCache.GetId<Rock.Model.FinancialTransaction>();
             gTransactions.SetLinqDataSource( qry.AsNoTracking() );
             gTransactions.DataBind();
-
-            _isExporting = false;
 
             if ( _batch == null &&
                 _scheduledTxn == null &&
                 _registration == null &&
-                _person == null )
+                _person == null &&
+                !isExporting)
             {
                 pnlSummary.Visible = true;
 
                 // No context - show account summary
 
-                var qryAccountDetails = new FinancialTransactionDetailService( rockContext ).Queryable().Where( a => qry.Any( t => t.Id == a.TransactionId ) );
+                IQueryable<DetailInfo> qryAccountDetails;
+                if ( hfTransactionViewMode.Value == "Transactions" )
+                {
+                    qryAccountDetails = qry.SelectMany( a => a.TransactionDetails );
+                }
+                else
+                {
+                    qryAccountDetails = qry.Select( a => a.TransactionDetail );
+                }
 
-                var accountSummaryQry = qryAccountDetails.Select( a => new
+                var accountSummaryQry1 = qryAccountDetails.Select( a => new
                 {
                     Id = a.AccountId,
                     Amount = a.Amount
@@ -1325,7 +1333,9 @@ namespace RockWeb.Blocks.Finance
                 {
                     AccountId = a.Key,
                     TotalAmount = a.Sum( x => x.Amount )
-                } ).ToList().Select( a => new AccountSummaryRow
+                } );
+
+                var summaryQryList = accountSummaryQry1.ToList().Select( a => new AccountSummaryRow
                 {
                     AccountId = a.AccountId,
                     Order = _financialAccountLookup[a.AccountId].Order,
@@ -1337,7 +1347,7 @@ namespace RockWeb.Blocks.Finance
                 var accountIds = ( gfTransactions.GetUserPreference( "Account" ) ?? "" ).SplitDelimitedValues().AsIntegerList().Where( a => a > 0 ).ToList();
                 if ( accountIds.Any() )
                 {
-                    accountSummaryQry = accountSummaryQry.Where( a => accountIds.Contains( a.AccountId ) ).OrderBy( a => a.Order );
+                    summaryQryList = summaryQryList.Where( a => accountIds.Contains( a.AccountId ) ).OrderBy( a => a.Order );
                     lbFiltered.Text = "Filtered Account List";
                     lbFiltered.Visible = true;
                 }
@@ -1346,16 +1356,19 @@ namespace RockWeb.Blocks.Finance
                     lbFiltered.Visible = false;
                 }
 
-                var summaryList = accountSummaryQry.ToList();
+                var summaryList = summaryQryList.ToList();
                 var grandTotalAmount = ( summaryList.Count > 0 ) ? summaryList.Sum( a => a.TotalAmount ) : 0;
                 lGrandTotal.Text = grandTotalAmount.FormatAsCurrency();
                 rptAccountSummary.DataSource = summaryList.Select( a => new { a.Name, TotalAmount = a.TotalAmount.FormatAsCurrency() } ).ToList();
                 rptAccountSummary.DataBind();
+               
             }
             else
             {
                 pnlSummary.Visible = false;
             }
+
+            _isExporting = false;
         }
 
         /// <summary>
