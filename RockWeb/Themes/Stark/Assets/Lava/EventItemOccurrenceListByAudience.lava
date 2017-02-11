@@ -1,6 +1,5 @@
 <div class="module">
   <header class="clearfix">
-    <img src="/Themes/NewCovenant_v1/Assets/Images/icon_calendar.png" />
     <h1>Upcoming Events</h1>
   </header>
 
@@ -12,7 +11,7 @@
         {% else %}
         <a href="{{ EventDetailPage }}?EventOccurrenceId={{ occurrence.Id }}">
           {% endif %}
-          {{ occurrence.EventItem.Name }} <small>({{ occurrence.Schedule.iCalendarContent | DatesFromICal | First | Date: 'M/d '  }})</small>
+          {{ occurrence.EventItem.Name }} <small>({{ occurrence.Schedule.iCalendarContent | DatesFromICal | First | Date: 'M/d ' }})</small>
         </a>
 
       </li>

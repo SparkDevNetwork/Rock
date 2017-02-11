@@ -15,6 +15,7 @@
 // </copyright>
 //
 using System;
+using System.Globalization;
 
 namespace Rock
 {
@@ -347,6 +348,40 @@ namespace Rock
                 int diff = 7 - (int)dt.DayOfWeek;
                 return dt.AddDays( diff ).Date;
             }
+        }
+
+        /// <summary>
+        /// Gets the week of month.
+        /// from http://stackoverflow.com/a/2136549/1755417 but with an option to specify the FirstDayOfWeek
+        /// </summary>
+        /// <param name="dateTime">The date time.</param>
+        /// <param name="firstDayOfWeek">The first day of week. For example" RockDateTime.FirstDayOfWeek</param>
+        /// <returns></returns>
+        public static int GetWeekOfMonth( this DateTime dateTime, DayOfWeek firstDayOfWeek )
+        {
+            DateTime first = new DateTime( dateTime.Year, dateTime.Month, 1 );
+
+            // note: CalendarWeekRule doesn't matter since we are subtracting
+            return dateTime.GetWeekOfYear( CalendarWeekRule.FirstDay, firstDayOfWeek ) - first.GetWeekOfYear( CalendarWeekRule.FirstDay, firstDayOfWeek ) + 1;
+        }
+
+        /// <summary>
+        /// The _gregorian calendar
+        /// from http://stackoverflow.com/a/2136549/1755417
+        /// </summary>
+        private static GregorianCalendar _gregorianCalendar = new GregorianCalendar();
+
+        /// <summary>
+        /// Gets the week of year.
+        /// from http://stackoverflow.com/a/2136549/1755417, but with an option to specify the FirstDayOfWeek (for example RockDateTime.FirstDayOfWeek)
+        /// </summary>
+        /// <param name="dateTime">The date time.</param>
+        /// <param name="calendarWeekRule">The calendar week rule.</param>
+        /// <param name="firstDayOfWeek">The first day of week.</param>
+        /// <returns></returns>
+        public static int GetWeekOfYear( this DateTime dateTime, CalendarWeekRule calendarWeekRule, DayOfWeek firstDayOfWeek )
+        {
+            return _gregorianCalendar.GetWeekOfYear( dateTime, calendarWeekRule, firstDayOfWeek );
         }
 
         /// <summary>

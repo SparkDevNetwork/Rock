@@ -154,11 +154,9 @@ Sorry, your account has been locked.  Please contact our office at {{ 'Global' |
             if ( !Page.IsPostBack )
             {
                 lPromptMessage.Text = GetAttributeValue( "PromptMessage" );
-                tbUserName.Focus();
             }
 
             pnlMessage.Visible = false;
-            
             tbUserName.Focus();
         }
 

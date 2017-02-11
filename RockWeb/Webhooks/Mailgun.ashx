@@ -75,8 +75,8 @@ public class Mailgun : IHttpHandler
             }
 
             string eventType = request.Form["event"];
-            
-            if ( !string.IsNullOrWhiteSpace( request.Form["workflow_action_guid"]))
+
+            if ( !string.IsNullOrWhiteSpace( request.Form["workflow_action_guid"] ) )
             {
                 Guid? actionGuid = request.Form["workflow_action_guid"].Split( ',' )[0].AsGuidOrNull();
                 string status = string.Empty;
@@ -88,14 +88,15 @@ public class Mailgun : IHttpHandler
                     case "clicked": status = SendEmailWithEvents.CLICKED_STATUS; break;
                     case "opened": status = SendEmailWithEvents.OPENED_STATUS; break;
                     case "dropped":
-                    case "bounced": status = SendEmailWithEvents.FAILED_STATUS;
+                    case "bounced":
+                        status = SendEmailWithEvents.FAILED_STATUS;
                         int secs = request.Form["timestamp"].AsInteger();
-                        DateTime ts = RockDateTime.ConvertLocalDateTimeToRockDateTime( new DateTime(1970,1,1,0,0,0,DateTimeKind.Utc).AddSeconds(secs).ToLocalTime());
-                             Rock.Communication.Email.ProcessBounce(
-                                    request.Form["recipient"],
-                                    Rock.Communication.BounceType.HardBounce,
-                                    request.Form["notification"],
-                                    ts );
+                        DateTime ts = RockDateTime.ConvertLocalDateTimeToRockDateTime( new DateTime( 1970, 1, 1, 0, 0, 0, DateTimeKind.Utc ).AddSeconds( secs ).ToLocalTime() );
+                        Rock.Communication.Email.ProcessBounce(
+                               request.Form["recipient"],
+                               Rock.Communication.BounceType.HardBounce,
+                               request.Form["notification"],
+                               ts );
                         break;
                 }
                 if ( actionGuid != null && !string.IsNullOrWhiteSpace( status ) )
@@ -111,14 +112,37 @@ public class Mailgun : IHttpHandler
                 if ( communicationRecipientGuid.HasValue )
                 {
                     var communicationRecipientService = new CommunicationRecipientService( rockContext );
-                    var communicationRecipientActivityService = new CommunicationRecipientActivityService( rockContext );
+                    var interactionComponentService = new InteractionComponentService( rockContext );
+                    var interactionService = new InteractionService( rockContext );
 
                     var communicationRecipient = communicationRecipientService.Get( communicationRecipientGuid.Value );
-                    if ( communicationRecipient != null )
+                    if ( communicationRecipient != null && communicationRecipient.Communication != null )
                     {
 
                         int secs = request.Form["timestamp"].AsInteger();
-                        DateTime ts = RockDateTime.ConvertLocalDateTimeToRockDateTime( new DateTime(1970,1,1,0,0,0,DateTimeKind.Utc).AddSeconds(secs).ToLocalTime());
+                        DateTime ts = RockDateTime.ConvertLocalDateTimeToRockDateTime( new DateTime( 1970, 1, 1, 0, 0, 0, DateTimeKind.Utc ).AddSeconds( secs ).ToLocalTime() );
+
+                        InteractionComponent interactionComponent = null;
+                        var interactionChannel = new InteractionChannelService( rockContext ).Get( Rock.SystemGuid.InteractionChannel.COMMUNICATION.AsGuid() );
+                        if ( interactionChannel != null )
+                        {
+                            interactionComponent = interactionComponentService.Queryable()
+                                    .Where( c =>
+                                        c.ChannelId == interactionChannel.Id &&
+                                        c.EntityId == communicationRecipient.CommunicationId )
+                                    .FirstOrDefault();
+                            if ( interactionComponent == null )
+                            {
+
+                                interactionComponent = new InteractionComponent();
+                                interactionComponent.Name = communicationRecipient.Communication.Subject;
+                                interactionComponent.EntityId = communicationRecipient.Communication.Id;
+                                interactionComponent.ChannelId = interactionChannel.Id;
+                                interactionComponentService.Add( interactionComponent );
+                                rockContext.SaveChanges();
+                            }
+                        }
+
 
                         switch ( eventType )
                         {
@@ -126,7 +150,7 @@ public class Mailgun : IHttpHandler
                                 communicationRecipient.Status = CommunicationRecipientStatus.Delivered;
                                 communicationRecipient.StatusNote = String.Format( "Confirmed delivered by Mailgun at {0}", ts.ToString() );
                                 break;
-                                
+
                             case "opened":
                                 communicationRecipient.Status = CommunicationRecipientStatus.Opened;
                                 communicationRecipient.OpenedDateTime = ts;
@@ -134,43 +158,51 @@ public class Mailgun : IHttpHandler
                                     request.Form["client-os"] ?? "unknown",
                                     request.Form["client-name"] ?? "unknown",
                                     request.Form["device-type"] ?? "unknown" );
-                                
-                                CommunicationRecipientActivity openActivity = new CommunicationRecipientActivity();
-                                openActivity.CommunicationRecipientId = communicationRecipient.Id;
-                                openActivity.ActivityType = "Opened";
-                                openActivity.ActivityDateTime = ts;
-                                openActivity.ActivityDetail = string.Format( "Opened from {0} using {1} {2} {3} {4}",
-                                    request.Form["ip"] ?? "",
-                                    request.Form["client-os"] ?? "",
-                                    request.Form["device-type"] ?? "",
-                                    request.Form["client-name"] ?? "",
-                                    request.Form["client-type"] ?? "" );
-                                communicationRecipientActivityService.Add( openActivity );
+
+                                if ( interactionComponent != null )
+                                {
+                                    Interaction openActivity = new Interaction();
+                                    openActivity.InteractionComponentId = interactionComponent.Id;
+                                    openActivity.EntityId = communicationRecipient.Id;
+                                    openActivity.Operation = "Opened";
+                                    openActivity.InteractionDateTime = ts;
+                                    openActivity.PersonAliasId = communicationRecipient.PersonAliasId;
+
+                                    var openInteractionDeviceType = interactionService.GetInteractionDeviceType( request.Form["client-name"], request.Form["client-os"], request.Form["client-type"], request.Form["device-type"] );
+                                    var openInteractionSession = interactionService.GetInteractionSession( null, request.Form["ip"], openInteractionDeviceType.Id );
+
+                                    openActivity.InteractionSessionId = openInteractionSession.Id;
+                                    interactionService.Add( openActivity );
+                                }
                                 break;
-                                
+
                             case "clicked":
-                                CommunicationRecipientActivity clickActivity = new CommunicationRecipientActivity();
-                                clickActivity.CommunicationRecipientId = communicationRecipient.Id;
-                                clickActivity.ActivityType = "Click";
-                                clickActivity.ActivityDateTime = ts;
-                                clickActivity.ActivityDetail = string.Format( "Clicked the address {0} from {1} using {2} {3} {4} {5}",
-                                    request.Form["url"] ?? "",
-                                    request.Form["ip"] ?? "",
-                                    request.Form["client-os"] ?? "",
-                                    request.Form["device-type"] ?? "",
-                                    request.Form["client-name"] ?? "",
-                                    request.Form["client-type"] ?? "" );
-                                communicationRecipientActivityService.Add( clickActivity );
+                                if ( interactionComponent != null )
+                                {
+                                    Interaction clickActivity = new Interaction();
+                                    clickActivity.InteractionComponentId = interactionComponent.Id;
+                                    clickActivity.EntityId = communicationRecipient.Id;
+                                    clickActivity.Operation = "Click";
+                                    clickActivity.InteractionData = request.Form["url"];
+                                    clickActivity.InteractionDateTime = ts;
+                                    clickActivity.PersonAliasId = communicationRecipient.PersonAliasId;
+
+                                    var clickInteractionDeviceType = interactionService.GetInteractionDeviceType( request.Form["client-name"], request.Form["client-os"], request.Form["client-type"], request.Form["device-type"] );
+                                    var clickInteractionSession = interactionService.GetInteractionSession( null, request.Form["ip"], clickInteractionDeviceType.Id );
+
+                                    clickActivity.InteractionSessionId = clickInteractionSession.Id;
+                                    interactionService.Add( clickActivity );
+                                }
                                 break;
-                                
+
                             case "complained": break;
                             case "unsubscribed": break;
-                                
+
                             case "dropped":
                                 communicationRecipient.Status = CommunicationRecipientStatus.Failed;
                                 communicationRecipient.StatusNote = request.Form["description"];
                                 break;
-                                
+
                             case "bounced":
                                 communicationRecipient.Status = CommunicationRecipientStatus.Failed;
                                 communicationRecipient.StatusNote = request.Form["notification"];
@@ -180,7 +212,7 @@ public class Mailgun : IHttpHandler
                                     Rock.Communication.BounceType.HardBounce,
                                     request.Form["notification"],
                                     ts );
-                                
+
                                 break;
                         }
 
@@ -188,12 +220,12 @@ public class Mailgun : IHttpHandler
                     }
                 }
             }
-                        
+
             response.Write( String.Format( "Successfully processed '{0}' message", eventType ) );
             response.StatusCode = 200;
         }
     }
-    
+
     private static bool ValidSignature( string key, int timestamp, string token, string signature )
     {
         var encoding = System.Text.Encoding.ASCII;
@@ -211,5 +243,5 @@ public class Mailgun : IHttpHandler
         {
             return false;
         }
-    }    
+    }
 }

@@ -659,7 +659,7 @@ namespace Rock.Model
             var groupEntity = new GroupService( new RockContext() ).Get( id );
 
             // check that this group type is set to be indexed.
-            if ( groupEntity.GroupType.IsIndexEnabled )
+            if ( groupEntity.GroupType.IsIndexEnabled && groupEntity.IsActive )
             {
                 var indexItem = GroupIndex.LoadByModel( groupEntity );
                 IndexContainer.IndexDocument( indexItem );

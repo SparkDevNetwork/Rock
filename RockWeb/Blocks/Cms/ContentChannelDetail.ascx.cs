@@ -238,7 +238,7 @@ namespace RockWeb.Blocks.Cms
                     channel.ContentChannelTypeId.ToString() != ddlChannelType.SelectedValue && 
                     channel.Items.Any() )
                 {
-                    maContentChannelWarning.Show( "Changing the content type will result in all of this channel\\'s items losing any data that is specific to the original content type!", ModalAlertType.Warning );
+                    maContentChannelWarning.Show( "Changing the content type will result in all of this channel's items losing any data that is specific to the original content type!", ModalAlertType.Warning );
                 }
             }
 
@@ -247,8 +247,24 @@ namespace RockWeb.Blocks.Cms
                 channel = new ContentChannel();
             }
 
+            UpdateControlsForContentChannelType( channel );
+        }
+
+        /// <summary>
+        /// Updates the type of the controls for content channel.
+        /// </summary>
+        /// <param name="channel">The channel.</param>
+        private void UpdateControlsForContentChannelType( ContentChannel channel )
+        {
             AddAttributeControls( channel );
 
+            int contentChannelTypeId = ddlChannelType.SelectedValueAsInt() ?? 0;
+            var contentChannelType = new ContentChannelTypeService( new RockContext() ).Get( contentChannelTypeId );
+            if ( contentChannelType != null )
+            {
+                ddlContentControlType.Visible = !contentChannelType.DisableContentField;
+                cbRequireApproval.Visible = !contentChannelType.DisableStatus;
+            }
         }
 
         /// <summary>
@@ -293,7 +309,9 @@ namespace RockWeb.Blocks.Cms
                 contentChannel.ContentControlType = ddlContentControlType.SelectedValueAsEnum<ContentControlType>();
                 contentChannel.RootImageDirectory = tbRootImageDirectory.Visible ? tbRootImageDirectory.Text : string.Empty;
                 contentChannel.IconCssClass = tbIconCssClass.Text;
-                contentChannel.RequiresApproval = cbRequireApproval.Checked;
+
+                // the cbRequireApproval will be hidden if contentChannelType.DisableStatus == True
+                contentChannel.RequiresApproval = cbRequireApproval.Visible && cbRequireApproval.Checked;
                 contentChannel.IsIndexEnabled = cbIndexChannel.Checked;
                 contentChannel.ItemsManuallyOrdered = cbItemsManuallyOrdered.Checked;
                 contentChannel.ChildItemsManuallyOrdered = cbChildItemsManuallyOrdered.Checked;
@@ -728,7 +746,7 @@ namespace RockWeb.Blocks.Cms
                 contentChannel.ChildContentChannels.ToList().ForEach( a => ChildContentChannelsList.Add( a.Id ) );
                 BindChildContentChannelsGrid();
 
-                AddAttributeControls( contentChannel );
+                UpdateControlsForContentChannelType( contentChannel );
 
                 // load attribute data 
                 ItemAttributesState = new List<Attribute>();

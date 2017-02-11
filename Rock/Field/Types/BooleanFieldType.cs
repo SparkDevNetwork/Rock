@@ -538,6 +538,45 @@ namespace Rock.Field.Types
             
         }
 
+        /// <summary>
+        /// Attributes the constant expression.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
+        public override ConstantExpression AttributeConstantExpression( string value )
+        {
+            var booleanValue = value.AsBoolean();
+            return Expression.Constant( booleanValue, typeof( bool ) );
+        }
+
+        /// <summary>
+        /// Gets the name of the attribute value field that should be bound to (Value, ValueAsDateTime, ValueAsBoolean, or ValueAsNumeric)
+        /// </summary>
+        /// <value>
+        /// The name of the attribute value field.
+        /// </value>
+        public override string AttributeValueFieldName
+        {
+            get
+            {
+                return "ValueAsBoolean";
+            }
+        }
+
+        /// <summary>
+        /// Gets the type of the attribute value field.
+        /// </summary>
+        /// <value>
+        /// The type of the attribute value field.
+        /// </value>
+        public override Type AttributeValueFieldType
+        {
+            get
+            {
+                return typeof( bool? );
+            }
+        }
+
         #endregion
 
     }

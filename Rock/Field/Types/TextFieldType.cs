@@ -84,6 +84,21 @@ namespace Rock.Field.Types
         }
 
         /// <summary>
+        /// Determines whether the Attribute Configuration for this field has IsPassword = True
+        /// </summary>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <returns></returns>
+        public bool IsPassword( Dictionary<string, ConfigurationValue> configurationValues )
+        {
+            if (configurationValues != null && configurationValues.ContainsKey( IS_PASSWORD_KEY ) )
+            {
+                return configurationValues[IS_PASSWORD_KEY].Value.AsBoolean();
+            }
+
+            return false;
+        }
+
+        /// <summary>
         /// Sets the configuration value.
         /// </summary>
         /// <param name="controls"></param>
