@@ -63,15 +63,15 @@
         </article>
 
         <div class="Footer">
-            <p class="Copyright">Copyright 2015 Christ’s Church of the Valley. All Rights Reserved.</p>
+            <p class="Copyright">Copyright 2017 Christ’s Church of the Valley. All Rights Reserved.</p>
             <p class="ViewFullLink">
-            <a href="http://ccv.church/landing" class="ccvonline-link">ccv.church full web site</a></p>
+            <a href="http://my.ccv.church/landing" class="ccvonline-link">ccv.church full web site</a></p>
         </div>
 
     </form>
 
     <script type="text/javascript">
-        var _sf_async_config = { uid: 23413, domain: 'ccv.church', useCanonical: true };
+        var _sf_async_config = { uid: 23413, domain: 'my.ccv.church', useCanonical: true };
         (function() {
             function loadChartbeat() {
                 window._sf_endpt = (new Date()).getTime();
