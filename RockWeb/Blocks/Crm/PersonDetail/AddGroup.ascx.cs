@@ -25,6 +25,7 @@ using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
 
 using Newtonsoft.Json;
+using Humanizer;
 
 using Rock;
 using Rock.Attribute;
@@ -55,17 +56,18 @@ namespace RockWeb.Blocks.Crm.PersonDetail
     [BooleanField( "Birth Date", "Require a birthdate for each person", "Don't require", "Should a Birthdate be required for each person added?", false, "", 8 )]
     [CustomDropdownListField( "Grade", "When Family group type, should Grade be required for each child added?", "True^Require a grade for each child,False^Don't require,None^Grade is not displayed", false, "", "", 9 )]
     [BooleanField( "Show Inactive Campuses", "Determines if inactive campuses should be shown.", true, order: 10 )]
-    [DefinedValueField( Rock.SystemGuid.DefinedType.PERSON_MARITAL_STATUS, "Adult Marital Status", "When Family group type, the default marital status for adults in the family.", false, false, "", "", 11 )]
+    [BooleanField( "Require Campus", "Determines if a campus is required.", true, "", 11 )]
+    [DefinedValueField( Rock.SystemGuid.DefinedType.PERSON_MARITAL_STATUS, "Adult Marital Status", "When Family group type, the default marital status for adults in the family.", false, false, "", "", 12 )]
     [DefinedValueField( Rock.SystemGuid.DefinedType.PERSON_MARITAL_STATUS, "Child Marital Status", "When Famiy group type, the marital status to use for children in the family.", false, false,
-        Rock.SystemGuid.DefinedValue.PERSON_MARITAL_STATUS_SINGLE, "", 12 )]
-    [BooleanField( "Marital Status Confirmation", "When Family group type, should user be asked to confirm saving an adult without a marital status?", true, "", 13 )]
-    [CustomDropdownListField( "Address", "Should an address be required for the family?", "REQUIRE^Require an address,HOMELESS^Require an address unless family is homeless,NOTREQUIRED^Don't require", false, "NOTREQUIRED", "", 14 )]
+        Rock.SystemGuid.DefinedValue.PERSON_MARITAL_STATUS_SINGLE, "", 13 )]
+    [BooleanField( "Marital Status Confirmation", "When Family group type, should user be asked to confirm saving an adult without a marital status?", true, "", 14 )]
+    [CustomDropdownListField( "Address", "Should an address be required for the family?", "REQUIRE^Require an address,HOMELESS^Require an address unless family is homeless,NOTREQUIRED^Don't require", false, "NOTREQUIRED", "", 15 )]
     [DefinedValueField( Rock.SystemGuid.DefinedType.GROUP_LOCATION_TYPE, "Location Type",
-        "The type of location that address should use", false, false, Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME, "", 15 )]
-    [BooleanField( "Show Cell Phone Number First", "Should the cell phone number be listed first before home phone number?", false, "", 16 )]
-    [BooleanField( "Phone Number", "Require a phone number", "Don't require", "Should a phone number be required for at least one person?", false, "", 17 )]
-    [CustomDropdownListField( "SMS", "Should SMS be enabled for cell phone numbers by default?", "True^SMS is enabled by default,False^SMS is not enabled by default,None^SMS option is hidden", false, "", "", 18 )]
-    [AttributeCategoryField( "Attribute Categories", "The Person Attribute Categories to display attributes from", true, "Rock.Model.Person", false, "", "", 19 )]
+        "The type of location that address should use", false, false, Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME, "", 16 )]
+    [BooleanField( "Show Cell Phone Number First", "Should the cell phone number be listed first before home phone number?", false, "", 17 )]
+    [BooleanField( "Phone Number", "Require a phone number", "Don't require", "Should a phone number be required for at least one person?", false, "", 18 )]
+    [CustomDropdownListField( "SMS", "Should SMS be enabled for cell phone numbers by default?", "True^SMS is enabled by default,False^SMS is not enabled by default,None^SMS option is hidden", false, "", "", 19 )]
+    [AttributeCategoryField( "Attribute Categories", "The Person Attribute Categories to display attributes from", true, "Rock.Model.Person", false, "", "", 20 )]
     public partial class AddGroup : Rock.Web.UI.RockBlock
     {
         #region Fields
@@ -180,14 +182,16 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 
             if ( _isFamilyGroupType )
             {
+                bool campusRequired = GetAttributeValue( "RequireCampus" ).AsBoolean( true );
                 divGroupName.Visible = false;
                 var campusi = GetAttributeValue( "ShowInactiveCampuses" ).AsBoolean() ? CampusCache.All() : CampusCache.All().Where( c => c.IsActive == true ).ToList();
                 cpCampus.Campuses = campusi;
                 cpCampus.Visible = campusi.Any();
-                if ( campusi.Count == 1 )
+                if ( campusi.Count == 1 && campusRequired )
                 {
                     cpCampus.SelectedCampusId = campusi.FirstOrDefault().Id;
                 }
+                cpCampus.Required = campusRequired;
 
                 ddlMaritalStatus.Visible = true;
                 ddlMaritalStatus.BindToDefinedType( DefinedTypeCache.Read( Rock.SystemGuid.DefinedType.PERSON_MARITAL_STATUS.AsGuid() ), true );
@@ -222,6 +226,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             lTitle.Text = string.Format( "Add {0}", _groupType.Name ).FormatAsHtmlTitle();
 
             nfciContactInfo.ShowCellPhoneFirst = GetAttributeValue( "ShowCellPhoneNumberFirst" ).AsBoolean();
+            nfciContactInfo.IsMessagingVisible = string.IsNullOrWhiteSpace( _smsOption ) || _smsOption != "None";
 
             acAddress.Required = GetAttributeValue( "Address" ) == "REQUIRED";
             cbHomeless.Visible = GetAttributeValue( "Address" ) == "HOMELESS";
@@ -566,6 +571,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             var showMiddleName = this.GetAttributeValue( "ShowMiddleName" ).AsBoolean();
             var showSuffix = this.GetAttributeValue( "ShowSuffix" ).AsBoolean();
             var showGrade = GetAttributeValue( "Grade" ) != "None";
+
             foreach ( var groupMember in GroupMembers )
             {
                 string groupMemberGuidString = groupMember.Person.Guid.ToString().Replace( "-", "_" );
@@ -901,10 +907,10 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                 }
 
                 groupMember.Person.TitleValueId = row.TitleValueId;
-                groupMember.Person.FirstName = row.FirstName;
-                groupMember.Person.MiddleName = row.MiddleName;
+                groupMember.Person.FirstName = row.FirstName.Humanize( LetterCasing.Title );
                 groupMember.Person.NickName = groupMember.Person.FirstName;
-                groupMember.Person.LastName = row.LastName;
+                groupMember.Person.MiddleName = row.MiddleName.Humanize( LetterCasing.Title );
+                groupMember.Person.LastName = row.LastName.Humanize( LetterCasing.Title );
                 groupMember.Person.SuffixValueId = row.SuffixValueId;
                 groupMember.Person.Gender = row.Gender;
 
