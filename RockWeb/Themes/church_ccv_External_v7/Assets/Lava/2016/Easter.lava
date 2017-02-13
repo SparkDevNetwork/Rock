@@ -124,7 +124,7 @@ Campus={{ Context.Campus.Guid }}|OSFamily={{ OSFamily }}
                 Text Message
               </button>
 
-              <a class="btn btn-default js-fb js-track-fb hide" data-label="{{ item.Name }}" href="https://www.facebook.com/dialog/send?app_id=476409745797650&display=popup&link=http://my.ccv.church/easter16?utm_source=facebook&redirect_uri=http://ccv.church/easter16?utm_source=facebook">Facebook</a>
+              <a class="btn btn-default js-fb js-track-fb hide" data-label="{{ item.Name }}" href="https://www.facebook.com/dialog/send?app_id=476409745797650&display=popup&link=http://my.ccv.church/easter16?utm_source=facebook&redirect_uri=http://my.ccv.church/easter16?utm_source=facebook">Facebook</a>
             </p>
           </div>
 
