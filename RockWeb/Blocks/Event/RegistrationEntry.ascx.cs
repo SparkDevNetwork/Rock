@@ -826,7 +826,16 @@ namespace RockWeb.Blocks.Event
                     }
                     else
                     {
-                        ShowPayment();
+                        // Failure on entering payment info, resubmit step 1
+                        string errorMessage = string.Empty;
+                        if ( ProcessStep1( out errorMessage ) )
+                        {
+                            ShowPayment();
+                        }
+                        else
+                        {
+                            ShowSummary();
+                        }
                     }
                 }
             }
