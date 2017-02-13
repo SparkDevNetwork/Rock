@@ -7,8 +7,8 @@ REQUIRED VARIABLES
 {% assign currentPage      = "/page/216" %}
 {% assign loginPage        = "/page/207" %}
 {% assign faqPage          = "/page/212" %}
-{% assign annualReportPage = "//ccv.church/annualreport" %}
-{% assign annualReportImage = "//ccv.church/GetImage.ashx?id=819156&width=914" %}
+{% assign annualReportPage = "//my.ccv.church/annualreport" %}
+{% assign annualReportImage = "//my.ccv.church/GetImage.ashx?id=819156&width=914" %}
 {% assign annualReportClass = "bigblock-graydark" %}
 
 

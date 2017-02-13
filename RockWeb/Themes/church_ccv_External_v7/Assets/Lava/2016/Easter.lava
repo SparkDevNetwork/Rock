@@ -187,10 +187,10 @@ Campus={{ Context.Campus.Guid }}|OSFamily={{ OSFamily }}
 <footer class="brandfooter">
   <div class="container">
     <div class="brandfooter-inner">
-      <a href="//ccv.church" class="logo">
+      <a href="//my.ccv.church" class="logo">
         <img src="/Themes/church_ccv_External_v7/assets/logo.svg" alt="Christ's Church of the Valley">
       </a>
-      <a class="btn btn-default" href="//ccv.church/newhere">Learn more about CCV</a>
+      <a class="btn btn-default" href="//my.ccv.church/newhere">Learn more about CCV</a>
     </div>
   </div>
 </footer>
