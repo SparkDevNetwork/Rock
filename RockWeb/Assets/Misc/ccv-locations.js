@@ -24,7 +24,7 @@ CCV.locations = [
     state: 'AZ',
     zip: '85086-2521',
     photo: 'http://rock.ccv.church/GetImage.ashx?guid=f093e8c5-20c1-4678-9465-c81489b0a8c4',
-    url: 'http://ccv.church/anthem',
+    url: 'http://my.ccv.church/anthem',
     vimeoid: '96015028',
     facebook: 'ccvanthem',
     serviceTimes: {
@@ -47,7 +47,7 @@ CCV.locations = [
     state: 'AZ',
     zip: '85392-3935',
     photo: 'http://rock.ccv.church/GetImage.ashx?guid=87998e74-12d1-4a6b-9176-0f88917216e6',
-    url: 'http://ccv.church/avondale',
+    url: 'http://my.ccv.church/avondale',
     vimeoid: '132734895',
     facebook: 'ccvavondale',
     serviceTimes: {
@@ -70,7 +70,7 @@ CCV.locations = [
     state: 'AZ',
     zip: '85209-3767',
     photo: 'http://rock.ccv.church/GetImage.ashx?guid=abfd309d-cc0f-4803-9ca7-80e9aaa47a7d',
-    url: 'http://ccv.church/eastvalley',
+    url: 'http://my.ccv.church/eastvalley',
     vimeoid: '76072274',
     facebook: 'ccveastvalley',
     serviceTimes: {
@@ -93,7 +93,7 @@ CCV.locations = [
     state: 'AZ',
     zip: '85016',
     photo: '',
-    url: 'http://ccv.church/midtown',
+    url: 'http://my.ccv.church/midtown',
     vimeoid: '',
     facebook: '',
     serviceTimes: {
@@ -116,7 +116,7 @@ CCV.locations = [
     state: 'AZ',
     zip: '85383-3223',
     photo: 'http://rock.ccv.church/GetImage.ashx?guid=358262c2-c286-4535-9f04-aed54d96fd49',
-    url: 'http://ccv.church/peoria',
+    url: 'http://my.ccv.church/peoria',
     vimeoid: '64237448',
     facebook: 'ccvpeoria',
     serviceTimes: {
@@ -139,7 +139,7 @@ CCV.locations = [
     state: 'AZ',
     zip: '85255-5392',
     photo: 'http://rock.ccv.church/GetImage.ashx?guid=99fe4a6f-e102-4b29-982d-a93ce1c7b348',
-    url: 'http://ccv.church/scottsdale',
+    url: 'http://my.ccv.church/scottsdale',
     vimeoid: '64237449',
     facebook: 'ccvscottsdale',
     serviceTimes: {
@@ -162,7 +162,7 @@ CCV.locations = [
     state: 'AZ',
     zip: '85379-4418',
     photo: 'http://rock.ccv.church/GetImage.ashx?guid=76f4ce45-0446-4103-b4ed-cf84d8c509c4',
-    url: 'http://ccv.church/surprise',
+    url: 'http://my.ccv.church/surprise',
     vimeoid: '64237450',
     facebook: 'ccvsurprise',
     serviceTimes: {
