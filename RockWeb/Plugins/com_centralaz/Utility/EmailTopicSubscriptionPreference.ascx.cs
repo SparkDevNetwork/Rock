@@ -29,22 +29,40 @@ using Rock.Web.UI.Controls;
 using Rock.Attribute;
 using Rock.Web.UI;
 using System.Text;
+using Rock.Security;
 
 namespace RockWeb.Plugins.com_centralaz.Utility
 {
     [DisplayName( "Email Topic Subscription Preference" )]
     [Category( "com_centralaz > Utility" )]
     [Description( "Displays and or sets the user's email subscriptions" )]
-    [TextField( "Label Text", "The Text that will be displayed as the checkboxlist's label.", true, "Subscribed Topics:", order: 0 )]
-    [AttributeField( Rock.SystemGuid.EntityType.PERSON, "Subscription Preference Attribute Guid", "Guid of the person attribute that holds each person's frequency choice.  Note: The attribute must be of type DefinedType.", required: true, defaultValue: "1E372FF6-93D9-4D42-9107-4FAD1E452218", order: 1 )]
-    [TextField( "Popup Defined Values", "Any Defined Values with guids listed here will have a popup appear should someone uncheck them. Separate guids by commas.", order: 2 )]
+    [AttributeField( Rock.SystemGuid.EntityType.PERSON, "Subscription Preference Attribute", "The person attribute that holds each person's subscribed topics.", required: true, defaultValue: "1E372FF6-93D9-4D42-9107-4FAD1E452218", order: 0 )]
     [CodeEditorField( "Lava Template", "The lava template to use for the results", CodeEditorMode.Lava, CodeEditorTheme.Rock, defaultValue: "Are you sure you want to unsubscribe to these?", order: 3 )]
-
-    public partial class EmailTopicSubscriptionPreference : Rock.Web.UI.RockBlock
+    [TextField( "Popup Text", "The Text that will be displayed as the checkboxlist's label.", true, "Are you sure you want to unsubscribe to these?", order: 0 )]
+    [TextField( "Popup Values", required: false )]
+    public partial class EmailTopicSubscriptionPreference : Rock.Web.UI.RockBlockCustomSettings
     {
         #region Fields
 
         private Person _person = null;
+
+        #endregion
+
+        #region Properties
+
+        /// <summary>
+        /// Gets the settings tool tip.
+        /// </summary>
+        /// <value>
+        /// The settings tool tip.
+        /// </value>
+        public override string SettingsToolTip
+        {
+            get
+            {
+                return "Edit Header Image";
+            }
+        }
 
         #endregion
 
@@ -70,18 +88,15 @@ namespace RockWeb.Plugins.com_centralaz.Utility
                 _person = CurrentPerson;
             }
 
-            if ( _person != null )
-            {
-                nbSuccess.NotificationBoxType = NotificationBoxType.Success;
-                nbSuccess.Text = "Your preferences were saved.";
-            }
-            else
+            if ( _person == null )
             {
                 nbSuccess.NotificationBoxType = NotificationBoxType.Danger;
                 nbSuccess.Text = "Unfortunately, we're unable to update your email preference, as we're not sure who you are.";
                 nbSuccess.Visible = true;
                 lbEditPreferences.Visible = false;
             }
+
+            cblSubscriptions.ClientIDMode = ClientIDMode.AutoID;
 
             // this event gets fired after block settings are updated. it's nice to repaint the screen if these settings would alter it
             this.BlockUpdated += Block_BlockUpdated;
@@ -110,6 +125,22 @@ namespace RockWeb.Plugins.com_centralaz.Utility
         #region Events
 
         /// <summary>
+        /// Handles the Click event of the lbSaveSettings control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void lbSaveSettings_Click( object sender, EventArgs e )
+        {
+            SetAttributeValue( "SubscriptionPreferenceAttribute", ddlPersonAttribute.SelectedValue );
+            SetAttributeValue( "PopupValues", cblPopupValues.SelectedValues.AsDelimited( "," ) );
+            SetAttributeValue( "PopupText", tbPopupText.Text );
+            SetAttributeValue( "LavaTemplate", htmlEditor.Text );
+            SaveAttributeValues();
+
+            ShowDetail();
+        }
+
+        /// <summary>
         /// Handles the Click event of the btnSave control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
@@ -123,29 +154,41 @@ namespace RockWeb.Plugins.com_centralaz.Utility
                 if ( _person != null )
                 {
                     _person.LoadAttributes();
+
+                    DefinedTypeCache definedType = GetDefinedType();
+                    if ( definedType == null )
+                    {
+                        pnlViewPreferences.Visible = false;
+                        nbConfigurationError.Visible = true;
+                        return;
+                    }
+
                     var personAttributeValueGuid = _person.GetAttributeValue( hfAttributeKey.Value );
                     if ( personAttributeValueGuid != null )
                     {
-                        List<Guid> guidPopupRequiredList = GetAttributeValue( "PopupDefinedValues" ).SplitDelimitedValues().AsGuidList();
-                        List<Guid> guidPersonList = personAttributeValueGuid.SplitDelimitedValues().AsGuidList();
-                        List<Guid> guidPopupList = new List<Guid>();
+                        List<DefinedValueCache> popupRequiredList = definedType.DefinedValues.Where( dv => GetAttributeValue( "PopupValues" ).ToLower().SplitDelimitedValues().Contains( dv.Guid.ToString().ToLower() ) ).ToList();
+                        List<DefinedValueCache> personAttributeList = definedType.DefinedValues.Where( dv => personAttributeValueGuid.SplitDelimitedValues().AsGuidList().Contains( dv.Guid ) ).ToList();
+                        List<DefinedValueCache> popupList = new List<DefinedValueCache>();
 
-                        foreach ( var popupRequiredValue in guidPopupRequiredList )
+                        foreach ( var popupRequiredValue in popupRequiredList )
                         {
-                            if ( guidPersonList.Contains( popupRequiredValue ) && !cblPreference.SelectedValues.AsGuidList().Contains( popupRequiredValue ) )
+                            if ( personAttributeList.Contains( popupRequiredValue ) && !cblSubscriptions.Items.OfType<ListItem>().Where( l => l.Selected ).Select( a => a.Value ).AsGuidList().Contains( popupRequiredValue.Guid ) )
                             {
-                                guidPopupList.Add( popupRequiredValue );
+                                popupList.Add( popupRequiredValue );
                             }
                         }
-                        if ( guidPopupList.Count == 0 )
+
+                        if ( popupList.Count == 0 )
                         {
-                            SaveAttribute();
+                            SaveSubscriptionSettings();
                         }
                         else
                         {
-                            ShowPopup( guidPopupList );
+                            lWarning.Text = GetAttributeValue( "PopupText" );
+                            mdConfirmUnsubscribe.Show();
                         }
                     }
+
                 }
             }
             catch
@@ -163,7 +206,7 @@ namespace RockWeb.Plugins.com_centralaz.Utility
         protected void mdConfirmUnsubscribe_SaveClick( object sender, EventArgs e )
         {
             mdConfirmUnsubscribe.Hide();
-            SaveAttribute();
+            SaveSubscriptionSettings();
         }
 
         /// <summary>
@@ -200,21 +243,88 @@ namespace RockWeb.Plugins.com_centralaz.Utility
             ShowDetail();
         }
 
+        protected void ddlPersonAttribute_SelectedIndexChanged( object sender, EventArgs e )
+        {
+            UpdatePopupValues();
+        }
+
+        protected void grpEmailPreference_CheckedChanged( object sender, EventArgs e )
+        {
+            if ( radDoNotEmail.Checked || radNoMassEmail.Checked )
+            {
+                foreach ( ListItem item in cblSubscriptions.Items )
+                {
+                    item.Selected = false;
+                }
+            }
+        }
+
+        protected void cblSubscriptions_SelectedIndexChanged( object sender, EventArgs e )
+        {
+            radDoNotEmail.Checked = false;
+            radNoMassEmail.Checked = false;
+            radEmailAllowed.Checked = true;
+        }
+
         #endregion
 
         #region Methods
+
+        /// <summary>
+        /// Shows the settings.
+        /// </summary>
+        /// <exception cref="System.NotImplementedException"></exception>
+        protected override void ShowSettings()
+        {
+            ddlPersonAttribute.Items.Clear();
+            var personGuid = Rock.SystemGuid.EntityType.PERSON.AsGuid();
+            var definedValueGuid = Rock.SystemGuid.FieldType.DEFINED_VALUE.AsGuid();
+            var attributes = new AttributeService( new RockContext() ).Queryable().Where( a =>
+                  a.EntityType.Guid == personGuid &&
+                  a.FieldType.Guid == definedValueGuid )
+                  .OrderBy( a => a.Name )
+                .ToList();
+            foreach ( var attribute in attributes )
+            {
+                ddlPersonAttribute.Items.Add( new ListItem( attribute.Name, attribute.Guid.ToString().ToLower() ) );
+            }
+            ddlPersonAttribute.SetValue( GetAttributeValue( "SubscriptionPreferenceAttribute" ).ToLower() );
+            UpdatePopupValues();
+            tbPopupText.Text = GetAttributeValue( "PopupText" );
+            htmlEditor.Text = GetAttributeValue( "LavaTemplate" );
+            pnlEditModal.Visible = true;
+            mdEdit.Show();
+        }
+
+        private void UpdatePopupValues()
+        {
+            var definedType = GetDefinedType( ddlPersonAttribute.SelectedValue.AsGuid() );
+            if ( definedType != null )
+            {
+                cblPopupValues.Items.Clear();
+                foreach ( var definedValue in definedType.DefinedValues )
+                {
+                    cblPopupValues.Items.Add( new ListItem( definedValue.Value, definedValue.Guid.ToString().ToLower() ) );
+                }
+
+                cblPopupValues.SetValues( GetAttributeValue( "PopupValues" ).ToLower().SplitDelimitedValues() );
+            }
+        }
 
         /// <summary>
         /// Shows the detail.
         /// </summary>
         private void ShowDetail()
         {
+            mdEdit.Hide();
+            pnlEditModal.Visible = false;
             pnlEditPreferences.Visible = false;
             pnlViewPreferences.Visible = true;
 
             DefinedTypeCache definedType = GetDefinedType();
             if ( definedType == null )
             {
+                pnlViewPreferences.Visible = false;
                 nbConfigurationError.Visible = true;
                 return;
             }
@@ -227,14 +337,19 @@ namespace RockWeb.Plugins.com_centralaz.Utility
                 subscribedGuidList = subscribedDefinedValueGuids.SplitDelimitedValues().AsGuidList();
             }
 
-            StringBuilder sb = new StringBuilder();
-            sb.AppendLine( String.Format( "<b>{0}</b><br>", GetAttributeValue( "LabelText" ) ) );
-            foreach ( var value in definedType.DefinedValues )
-            {
-                sb.AppendLine( String.Format( "<i class='fa fa-{1}'></i>  {0}<br>", value.Value, subscribedGuidList.Contains( value.Guid ) ? "check-square-o" : "square-o" ) );
-            }
+            var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson );
+            mergeFields.Add( "SubscribedTopics", definedType.DefinedValues.Where( dv => subscribedGuidList.Contains( dv.Guid ) ) );
+            mergeFields.Add( "EmailPreference", _person.EmailPreference.ConvertToInt() );
 
-            lPreferences.Text = sb.ToString();
+            string template = GetAttributeValue( "LavaTemplate" );
+            lContent.Text = template.ResolveMergeFields( mergeFields );
+
+            // show debug info
+            if ( GetAttributeValue( "EnableDebug" ).AsBoolean() && IsUserAuthorized( Authorization.EDIT ) )
+            {
+                lDebug.Visible = true;
+                lDebug.Text = mergeFields.lavaDebugInfo();
+            }
         }
 
         /// <summary>
@@ -247,6 +362,7 @@ namespace RockWeb.Plugins.com_centralaz.Utility
                 DefinedTypeCache definedType = GetDefinedType();
                 if ( definedType == null )
                 {
+                    pnlViewPreferences.Visible = false;
                     nbConfigurationError.Visible = true;
                     return;
                 }
@@ -260,35 +376,50 @@ namespace RockWeb.Plugins.com_centralaz.Utility
                         v.Guid
                     } );
 
-                cblPreference.SelectedIndex = -1;
-                cblPreference.DataSource = ds;
-                cblPreference.DataTextField = "Name";
-                cblPreference.DataValueField = "Guid";
-                cblPreference.TextAlign = TextAlign.Left;
-                cblPreference.Label = GetAttributeValue( "LabelText" );
-                cblPreference.DataBind();
+                cblSubscriptions.SelectedIndex = -1;
+                cblSubscriptions.DataSource = ds;
+                cblSubscriptions.DataTextField = "Name";
+                cblSubscriptions.DataValueField = "Guid";
+                cblSubscriptions.TextAlign = TextAlign.Left;
+                cblSubscriptions.DataBind();
 
-                // set the person's current value as the selected one
-                _person.LoadAttributes();
-
-                // The Guids that are put into the data list will be in lowercase as per
-                // https://msdn.microsoft.com/en-us/library/97af8hh4(v=vs.110).aspx
-                // so we need to make sure we're comparing with the lowercase of whatever
-                // was stored.
-                var personAttributeValueGuid = _person.GetAttributeValue( hfAttributeKey.Value );
-                if ( personAttributeValueGuid != null )
+                if ( _person.EmailPreference == EmailPreference.EmailAllowed )
                 {
-                    try
+                    radEmailAllowed.Checked = true;
+
+                    // set the person's current value as the selected one
+                    _person.LoadAttributes();
+
+                    // The Guids that are put into the data list will be in lowercase as per
+                    // https://msdn.microsoft.com/en-us/library/97af8hh4(v=vs.110).aspx
+                    // so we need to make sure we're comparing with the lowercase of whatever
+                    // was stored.
+                    var personAttributeValueGuid = _person.GetAttributeValue( hfAttributeKey.Value );
+                    if ( personAttributeValueGuid != null )
                     {
-                        cblPreference.SetValues( personAttributeValueGuid.SplitDelimitedValues() );
+                        try
+                        {
+                            cblSubscriptions.SetValues( personAttributeValueGuid.SplitDelimitedValues() );
+                        }
+                        catch
+                        { }
                     }
-                    catch
-                    { }
+                }
+
+                else if ( _person.EmailPreference == EmailPreference.NoMassEmails )
+                {
+                    radNoMassEmail.Checked = true;
+                }
+
+                else if ( _person.EmailPreference == EmailPreference.DoNotEmail )
+                {
+                    radDoNotEmail.Checked = true;
                 }
 
             }
             catch ( Exception ex )
             {
+                pnlViewPreferences.Visible = false;
                 nbConfigurationError.Visible = true;
                 nbConfigurationError.Text = "There appears to be a problem with something we did not expect. We've reported this to the system administrators.";
                 ExceptionLogService.LogException( new Exception( "Unable to load Email Topic Subscription Preference block.", ex ), null );
@@ -299,18 +430,22 @@ namespace RockWeb.Plugins.com_centralaz.Utility
         /// Gets the type of the defined.
         /// </summary>
         /// <returns></returns>
-        private DefinedTypeCache GetDefinedType()
+        private DefinedTypeCache GetDefinedType( Guid? attributeGuid = null )
         {
             DefinedTypeCache definedType = null;
 
             nbConfigurationError.Visible = false;
-            Guid? frequencyAttribute = GetAttributeValue( "SubscriptionPreferenceAttributeGuid" ).AsGuidOrNull();
-            if ( !frequencyAttribute.HasValue )
+            if ( attributeGuid == null )
+            {
+                attributeGuid = GetAttributeValue( "SubscriptionPreferenceAttribute" ).AsGuidOrNull();
+            }
+
+            if ( !attributeGuid.HasValue )
             {
                 return definedType;
             }
 
-            var personAttribute = Rock.Web.Cache.AttributeCache.Read( frequencyAttribute.Value );
+            var personAttribute = Rock.Web.Cache.AttributeCache.Read( attributeGuid.Value );
             if ( personAttribute == null )
             {
                 return definedType;
@@ -332,35 +467,42 @@ namespace RockWeb.Plugins.com_centralaz.Utility
             return definedType;
         }
 
-
         /// <summary>
-        /// Shows the popup.
+        /// Saves the subscription settings.
         /// </summary>
-        /// <exception cref="System.NotImplementedException"></exception>
-        private void ShowPopup( List<Guid> guidPopupList )
+        private void SaveSubscriptionSettings()
         {
-            var definedValueList = new DefinedValueService( new RockContext() ).GetByGuids( guidPopupList ).ToList();
-            var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this._person );
-            mergeFields.Add( "DefinedValues", definedValueList );
+            using ( var rockContext = new RockContext() )
+            {
+                _person = new PersonService( rockContext ).Get( _person.Id );
+                _person.LoadAttributes();
+                _person.SetAttributeValue( hfAttributeKey.Value, cblSubscriptions.Items.OfType<ListItem>().Where( l => l.Selected ).Select( a => a.Value ).ToList().AsDelimited( "," ) );
+                _person.SaveAttributeValues();
 
-            lWarning.Text = GetAttributeValue( "LavaTemplate" ).ResolveMergeFields( mergeFields );
-            mdConfirmUnsubscribe.Show();
-        }
+                if ( radEmailAllowed.Checked )
+                {
+                    _person.EmailPreference = EmailPreference.EmailAllowed;
+                }
 
-        /// <summary>
-        /// Saves the attribute.
-        /// </summary>
-        private void SaveAttribute()
-        {
-            _person.LoadAttributes();
-            _person.SetAttributeValue( hfAttributeKey.Value, cblPreference.SelectedValues.AsDelimited( "," ) );
-            _person.SaveAttributeValues();
+                else if ( radNoMassEmail.Checked )
+                {
+                    _person.EmailPreference = EmailPreference.NoMassEmails;
+                }
+
+                else if ( radDoNotEmail.Checked )
+                {
+                    _person.EmailPreference = EmailPreference.DoNotEmail;
+                }
+
+                rockContext.SaveChanges();
+            }
+
             nbSuccess.Visible = true;
+            nbSuccess.NotificationBoxType = NotificationBoxType.Success;
+            nbSuccess.Text = "Your preferences were saved.";
             ShowDetail();
         }
 
-        #endregion
-
-
+        #endregion        
     }
 }
