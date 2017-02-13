@@ -98,7 +98,12 @@ namespace Rock.Jobs
             {
                 int expirationMonthDecrypted = Int32.Parse( Encryption.DecryptString( transaction.FinancialPaymentDetail.ExpirationMonthEncrypted ) );
                 int expirationYearDecrypted = Int32.Parse( Encryption.DecryptString( transaction.FinancialPaymentDetail.ExpirationYearEncrypted ) );
-                string acctNum = transaction.FinancialPaymentDetail.AccountNumberMasked.Substring( transaction.FinancialPaymentDetail.AccountNumberMasked.Length - 4 );
+                string acctNum = string.Empty;
+
+                if ( !string.IsNullOrEmpty( transaction.FinancialPaymentDetail.AccountNumberMasked ) && transaction.FinancialPaymentDetail.AccountNumberMasked.Length >= 4 )
+                {
+                    acctNum = transaction.FinancialPaymentDetail.AccountNumberMasked.Substring( transaction.FinancialPaymentDetail.AccountNumberMasked.Length - 4 );
+                }
 
                 int warningYear = expirationYearDecrypted;
                 int warningMonth = expirationMonthDecrypted - 1;

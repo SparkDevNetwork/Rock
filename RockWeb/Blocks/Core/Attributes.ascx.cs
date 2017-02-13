@@ -189,7 +189,7 @@ namespace RockWeb.Blocks.Core
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void ddlEntityType_SelectedIndexChanged( object sender, EventArgs e )
         {
-            BindCategoryFilter();
+            BindFilterForSelectedEntityType();
         }
 
         /// <summary>
@@ -211,6 +211,7 @@ namespace RockWeb.Blocks.Core
                 .AsDelimited( "," );
 
             rFilter.SaveUserPreference( "Categories", categoryFilterValue );
+            rFilter.SaveUserPreference( "Analytics Enabled", cbAnalyticsEnabled.Checked.ToString() );
 
             BindGrid();
         }
@@ -263,6 +264,22 @@ namespace RockWeb.Blocks.Core
                         else
                         {
                             e.Value = EntityTypeCache.Read( e.Value.AsInteger() ).FriendlyName;
+                        }
+                    }
+
+                    break;
+
+                case "Analytics Enabled":
+
+                    if ( !cbAnalyticsEnabled.Visible )
+                    {
+                        e.Value = string.Empty;
+                    }
+                    else
+                    {
+                        if ( e.Value.AsBoolean() )
+                        {
+                            e.Value = "Yes";
                         }
                     }
 
@@ -537,6 +554,20 @@ namespace RockWeb.Blocks.Core
         {
             ddlEntityType.Visible = !_configuredType;
             ddlEntityType.SelectedValue = rFilter.GetUserPreference( "Entity Type" );
+            BindFilterForSelectedEntityType();
+        }
+
+        /// <summary>
+        /// Binds the type of the filter for selected entity.
+        /// </summary>
+        private void BindFilterForSelectedEntityType()
+        {
+            int? entityTypeId = _configuredType ? _entityTypeId : ddlEntityType.SelectedValueAsInt();
+            
+            var entityTypeCache = entityTypeId.HasValue ? EntityTypeCache.Read( entityTypeId.Value ) : null;
+            cbAnalyticsEnabled.Visible = entityTypeCache != null && entityTypeCache.IsAnalyticSupported;
+            cbAnalyticsEnabled.Checked = rFilter.GetUserPreference( "Analytics Enabled" ).AsBoolean();
+
             BindCategoryFilter();
         }
 
@@ -612,6 +643,11 @@ namespace RockWeb.Blocks.Core
                     query = query.Where( a => a.Categories.Any( c => categoryGuids.Contains( c.Guid ) ) );
                 }
                 catch { }
+            }
+
+            if ( cbAnalyticsEnabled.Visible && cbAnalyticsEnabled.Checked )
+            {
+                query = query.Where( a => a.IsAnalytic || a.IsAnalyticHistory );
             }
 
             var selectedCategoryIds = new List<int>();

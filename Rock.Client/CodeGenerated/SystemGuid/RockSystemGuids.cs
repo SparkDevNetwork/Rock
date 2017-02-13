@@ -426,6 +426,13 @@ namespace Rock.Client.SystemGuid
 
     /// <summary>
     /// </summary>
+    public class InteractionChannel
+    {
+        public const string COMMUNICATION = "C88A187F-0343-4E7C-AF3F-79A8989DFA65";
+    }
+
+    /// <summary>
+    /// </summary>
     public class NoteType
     {
         public const string PERSON_EVENT_REGISTRATION = "BBADA8EF-23FC-4B46-B7A7-0F6D31F8C045";

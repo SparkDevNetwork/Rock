@@ -300,42 +300,32 @@ namespace RockWeb.Blocks.Event
                         SortExpression = "Title"
                     } );
 
-                    if ( contentChannel.ContentChannelType.IncludeTime )
+                    if ( contentChannel.ContentChannelType.DateRangeType != ContentChannelDateType.NoDates )
                     {
-                        gItems.Columns.Add( new DateTimeField
+                        RockBoundField startDateTimeField;
+                        RockBoundField expireDateTimeField;
+                        if ( contentChannel.ContentChannelType.IncludeTime )
                         {
-                            DataField = "StartDateTime",
-                            HeaderText = contentChannel.ContentChannelType.DateRangeType == ContentChannelDateType.DateRange ? "Start" : "Active",
-                            SortExpression = "StartDateTime"
-                        } );
-
-                        if ( contentChannel.ContentChannelType.DateRangeType == ContentChannelDateType.DateRange )
-                        {
-                            gItems.Columns.Add( new DateTimeField
-                            {
-                                DataField = "ExpireDateTime",
-                                HeaderText = "Expire",
-                                SortExpression = "ExpireDateTime"
-                            } );
+                            startDateTimeField = new DateTimeField();
+                            expireDateTimeField = new DateTimeField();
                         }
-                    }
-                    else
-                    {
-                        gItems.Columns.Add( new DateField
+                        else
                         {
-                            DataField = "StartDateTime",
-                            HeaderText = contentChannel.ContentChannelType.DateRangeType == ContentChannelDateType.DateRange ? "Start" : "Active",
-                            SortExpression = "StartDateTime"
-                        } );
+                            startDateTimeField = new DateField();
+                            expireDateTimeField = new DateField();
+                        }
 
+                        startDateTimeField.DataField = "StartDateTime";
+                        startDateTimeField.HeaderText = contentChannel.ContentChannelType.DateRangeType == ContentChannelDateType.DateRange ? "Start" : "Active";
+                        startDateTimeField.SortExpression = "StartDateTime";
+                        gItems.Columns.Add( startDateTimeField );
+
+                        expireDateTimeField.DataField = "ExpireDateTime";
+                        expireDateTimeField.HeaderText = "Expire";
+                        expireDateTimeField.SortExpression = "ExpireDateTime";
                         if ( contentChannel.ContentChannelType.DateRangeType == ContentChannelDateType.DateRange )
                         {
-                            gItems.Columns.Add( new DateField
-                            {
-                                DataField = "ExpireDateTime",
-                                HeaderText = "Expire",
-                                SortExpression = "ExpireDateTime"
-                            } );
+                            gItems.Columns.Add( expireDateTimeField );
                         }
                     }
 
@@ -383,7 +373,7 @@ namespace RockWeb.Blocks.Event
                         }
                     }
 
-                    if ( contentChannel.RequiresApproval )
+                    if ( contentChannel.RequiresApproval && !contentChannel.ContentChannelType.DisableStatus )
                     {
                         var statusField = new BoundField();
                         gItems.Columns.Add( statusField );

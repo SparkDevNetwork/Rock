@@ -2472,9 +2472,17 @@ namespace RockWeb.Blocks.Event
                 RegistrationTemplateFormField formField = fieldList.FirstOrDefault( a => a.Guid.Equals( formFieldGuid ) );
                 if ( formField == null )
                 {
+                    lFieldSource.Visible = false;
+                    ddlFieldSource.Visible = true;
                     formField = new RegistrationTemplateFormField();
                     formField.Guid = formFieldGuid;
                     formField.FieldSource = RegistrationFieldSource.PersonAttribute;
+                }
+                else
+                {
+                    lFieldSource.Text = formField.FieldSource.ConvertToString();
+                    lFieldSource.Visible = true;
+                    ddlFieldSource.Visible = false;
                 }
 
                 ceAttributePreText.Text = formField.PreText;

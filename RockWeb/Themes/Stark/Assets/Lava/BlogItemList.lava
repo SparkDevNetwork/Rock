@@ -18,22 +18,22 @@
   {% assign nextPageString = Pagination.NextPage | ToString %}
   {% assign prevPageString = Pagination.PreviousPage | ToString %}
 
-  {% if {{Pagination.PreviousPage == -1 }} %}
+  {% if {{ Pagination.PreviousPage == -1 }} %}
   <div class="btn btn-default pull-left">
     <i class="fa fa-chevron-left"></i> Prev
   </div>
   {% else %}
-  <a class="btn btn-primary pull-left" href="{{Pagination.UrlTemplate | Replace:'PageNum', prevPageString}}">
+  <a class="btn btn-primary pull-left" href="{{ Pagination.UrlTemplate | Replace:'PageNum', prevPageString }}">
     <i class="fa fa-chevron-left"></i> Prev
   </a>
   {% endif %}
 
-  {% if {{Pagination.NextPage == -1 }} %}
+  {% if {{ Pagination.NextPage == -1 }} %}
   <div class="btn btn-default pull-right">
     Next <i class="fa fa-chevron-right"></i>
   </div>
   {% else %}
-  <a class="btn btn-primary pull-right" href="{{Pagination.UrlTemplate | Replace:'PageNum', nextPageString}}">
+  <a class="btn btn-primary pull-right" href="{{ Pagination.UrlTemplate | Replace:'PageNum', nextPageString }}">
     Next <i class="fa fa-chevron-right"></i>
   </a>
   {% endif %}
