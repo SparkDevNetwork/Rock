@@ -255,7 +255,7 @@ namespace Rock
         /// <summary>
         /// Sets the Selected property of each item to true for each given matching string values.
         /// </summary>
-        /// <param name="checkBoxList">The check box list.</param>
+        /// <param name="listBox">The list box.</param>
         /// <param name="values">The values.</param>
         public static void SetValues( this ListBox listBox, IEnumerable<string> values )
         {
@@ -268,7 +268,7 @@ namespace Rock
         /// <summary>
         /// Sets the Selected property of each item to true for each given matching int values.
         /// </summary>
-        /// <param name="checkBoxList">The check box list.</param>
+        /// <param name="listBox">The list box.</param>
         /// <param name="values">The values.</param>
         public static void SetValues( this ListBox listBox, IEnumerable<int> values )
         {
