@@ -479,7 +479,6 @@ namespace Rock.Model
             {
                 Dictionary<string, object> parameters = new Dictionary<string, object>();
                 parameters.Add( "PageId", this.Id );
-                Rock.Data.DbService.ExecuteCommand( "spCore_PageViewNullPageId", System.Data.CommandType.StoredProcedure, parameters );
 
                 // since routes have a cascade delete relationship (their presave won't get called), delete routes from route table
                 var routes = RouteTable.Routes;

@@ -83,11 +83,11 @@ namespace Rock.Jobs
 
             try
             {
-                databaseRowsDeleted += CleanupPageViews( dataMap );
+                databaseRowsDeleted += CleanupInteractions( dataMap );
             }
             catch ( Exception ex )
             {
-                rockCleanupExceptions.Add( new Exception( "Exception in CleanupPageViews", ex ) );
+                rockCleanupExceptions.Add( new Exception( "Exception in CleanupInteractions", ex ) );
             }
 
             try
@@ -392,23 +392,22 @@ namespace Rock.Jobs
             return totalRowsDeleted;
         }
 
-
         /// <summary>
-        /// Cleans up PagesViews for sites that have a Page View retention period
+        /// Cleans up Interactions for Interaction Channels that have a retention period
         /// </summary>
         /// <param name="dataMap">The data map.</param>
-        private int CleanupPageViews( JobDataMap dataMap )
+        private int CleanupInteractions( JobDataMap dataMap )
         {
-            var pageViewRockContext = new Rock.Data.RockContext();
+            var interactionRockContext = new Rock.Data.RockContext();
             var currentDateTime = RockDateTime.Now;
-            var siteService = new SiteService( pageViewRockContext );
-            var siteQry = siteService.Queryable().Where( a => a.PageViewRetentionPeriodDays.HasValue );
+            var interactionChannelService = new InteractionChannelService( interactionRockContext );
+            var interactionChannelQry = interactionChannelService.Queryable().Where( a => a.RetentionDuration.HasValue );
             int totalRowsDeleted = 0;
             //
 
-            foreach ( var site in siteQry.ToList() )
+            foreach ( var interactionChannel in interactionChannelQry.ToList() )
             {
-                var retentionCutoffDateTime = currentDateTime.AddDays( -site.PageViewRetentionPeriodDays.Value );
+                var retentionCutoffDateTime = currentDateTime.AddDays( -interactionChannel.RetentionDuration.Value );
                 if ( retentionCutoffDateTime < System.Data.SqlTypes.SqlDateTime.MinValue.Value )
                 {
                     retentionCutoffDateTime = System.Data.SqlTypes.SqlDateTime.MinValue.Value;
@@ -418,12 +417,18 @@ namespace Rock.Jobs
                 bool keepDeleting = true;
                 while ( keepDeleting )
                 {
-                    var dbTransaction = pageViewRockContext.Database.BeginTransaction();
+                    var dbTransaction = interactionRockContext.Database.BeginTransaction();
                     try
                     {
-                        string sqlCommand = @"DELETE TOP (1000) FROM [PageView] WHERE [SiteId] = @siteId AND DateTimeViewed < @retentionCutoffDateTime";
-
-                        int rowsDeleted = pageViewRockContext.Database.ExecuteSqlCommand( sqlCommand, new SqlParameter( "siteId", site.Id ), new SqlParameter( "retentionCutoffDateTime", retentionCutoffDateTime ) );
+                        string sqlCommand = @"
+DELETE TOP (1000)
+FROM ia
+FROM [Interaction] ia
+INNER JOIN [InteractionComponent] ic ON ia.InteractionComponentId = ic.Id
+WHERE ic.ChannelId = @channelId
+	AND ia.InteractionDateTime < @retentionCutoffDateTime
+";
+                        int rowsDeleted = interactionRockContext.Database.ExecuteSqlCommand( sqlCommand, new SqlParameter( "channelId", interactionChannel.Id ), new SqlParameter( "retentionCutoffDateTime", retentionCutoffDateTime ) );
                         keepDeleting = rowsDeleted > 0;
                         totalRowsDeleted += rowsDeleted;
                     }

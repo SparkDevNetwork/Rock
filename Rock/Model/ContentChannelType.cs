@@ -96,6 +96,16 @@ namespace Rock.Model
         [DataMember]
         public bool DisableContentField { get; set; }
 
+        /// <summary>
+        /// Gets or sets a value indicating whether [disable status].
+        /// If this is set to True, all of the ContentChannelItems are "Approved"
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [disable status]; otherwise, <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool DisableStatus { get; set; }
+
         #endregion
 
         #region Virtual Properties
@@ -188,7 +198,12 @@ namespace Rock.Model
         /// <summary>
         /// Allows a date range (start - end date)
         /// </summary>
-        DateRange = 2
+        DateRange = 2,
+
+        /// <summary>
+        /// Hides Date Controls
+        /// </summary>
+        NoDates = 3
     }
 
     #endregion

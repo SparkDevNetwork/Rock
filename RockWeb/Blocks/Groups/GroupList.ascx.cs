@@ -390,7 +390,7 @@ namespace RockWeb.Blocks.Groups
             SortProperty sortProperty = gGroups.SortProperty;
             if ( sortProperty == null )
             {
-                sortProperty = new SortProperty( new GridViewSortEventArgs( "IsActiveOrder, GroupTypeOrder, GroupTypeName, GroupOrder, Name", SortDirection.Ascending ) );
+                sortProperty = new SortProperty( new GridViewSortEventArgs( "Name", SortDirection.Ascending ) );
             }
 
             bool onlySecurityGroups = GetAttributeValue( "LimittoSecurityRoleGroups" ).AsBoolean();
