@@ -991,7 +991,6 @@
     <Compile Include="Reporting\DataSelect\GroupMember\GroupLinkSelect.cs" />
     <Compile Include="Search\Other\Universal.cs" />
     <Compile Include="Reporting\DataFilter\Person\InRegistrationInstanceFilter.cs" />
-    <Compile Include="Search\Person\BirthDate.cs" />
     <Compile Include="SystemGuid\InteractionChannel.cs" />
     <Compile Include="Transactions\DeleteIndexEntityTransaction.cs" />
     <Compile Include="Transactions\IndexEntityTransaction.cs" />
