@@ -126,8 +126,8 @@ namespace church.ccv.Steps
 
                     try
                     {
-                        latestHistoryDate = adultActionsService.Queryable( ).Where( ah => ah.Date <= RockDateTime.Now ).Max( ah => ah.Date );
-                        lastProcessedHistoryDate = adultActionsService.Queryable( ).Where( ah => ah.Date <= lastProcessedDate ).Max( ah => ah.Date );
+                        latestHistoryDate = adultActionsService.Queryable( ).AsNoTracking( ).Where( ah => ah.Date <= RockDateTime.Now ).Max( ah => ah.Date );
+                        lastProcessedHistoryDate = adultActionsService.Queryable( ).AsNoTracking( ).Where( ah => ah.Date <= lastProcessedDate ).Max( ah => ah.Date );
                     }
                     catch
                     {
@@ -142,7 +142,7 @@ namespace church.ccv.Steps
                             // We'll filter out anyone in this list so that we don't count them having taken any single step more than once a year.
                             DateTime oneYearAgo = new DateTime( RockDateTime.Now.Year - 1, RockDateTime.Now.Month, RockDateTime.Now.Day );
                             StepTakenService stepTakenService = new StepTakenService( rockContext );
-                            IQueryable<StepTaken> pastYearStepsQuery = stepTakenService.Queryable( ).Where( s => s.DateTaken >= oneYearAgo );
+                            IQueryable<StepTaken> pastYearStepsQuery = stepTakenService.Queryable( ).AsNoTracking( ).Where( s => s.DateTaken >= oneYearAgo );
                         
                             // Most of these require the history when we last processed, and the most recent history.
                             // we then compare those to see if anything went from 'false' to 'true', meaning they began one of the steps.
@@ -150,8 +150,8 @@ namespace church.ccv.Steps
                             // Note - this means that if this isn't run for a month, and someone started giving within that month, THIS JOB will consider
                             // their start date for giving to be NOW, because we're not grabbing the history date for exactly when they started giving.
                             // However, this job is designed to be run once a week, so it shouldn't matter
-                            IQueryable<ActionsHistory_Adult_Person> lastProcessedHistory = adultActionsService.Queryable( ).Where( ah => ah.Date == lastProcessedHistoryDate );
-                            IQueryable<ActionsHistory_Adult_Person> latestHistory = adultActionsService.Queryable( ).Where( ah => ah.Date == latestHistoryDate );
+                            IQueryable<ActionsHistory_Adult_Person> lastProcessedHistory = adultActionsService.Queryable( ).Where( ah => ah.Date == lastProcessedHistoryDate ).AsNoTracking( );
+                            IQueryable<ActionsHistory_Adult_Person> latestHistory = adultActionsService.Queryable( ).Where( ah => ah.Date == latestHistoryDate ).AsNoTracking( );
 
                             // Baptisms and Membership have actual dates that they occurred, so we can simply pass in the latest history
                             ProcessBaptisms( pastYearStepsQuery, latestHistory );
