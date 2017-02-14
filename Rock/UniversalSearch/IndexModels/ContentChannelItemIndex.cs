@@ -149,7 +149,7 @@ namespace Rock.UniversalSearch.IndexModels
         public static ContentChannelItemIndex LoadByModel(ContentChannelItem contentChannelItem )
         {
             var contentChannelItemIndex = new ContentChannelItemIndex();
-            contentChannelItemIndex.SourceIndexModel = "Rock.Model.ContentChannelItem";
+            contentChannelItemIndex.SourceIndexModel = "Rock.Model.ContentChannel";
 
             contentChannelItemIndex.Id = contentChannelItem.Id;
             contentChannelItemIndex.Title = contentChannelItem.Title;
@@ -165,7 +165,7 @@ namespace Rock.UniversalSearch.IndexModels
             contentChannelItemIndex.ContentChannel = contentChannelItem.ContentChannel.Name;
             contentChannelItemIndex.DocumentName = contentChannelItem.Title;
 
-            if ( contentChannelItem.ContentChannel != null && ((contentChannelItem.ContentChannel.RequiresApproval && contentChannelItem.ApprovedDateTime != null) || contentChannelItem.ContentChannelType.DisableStatus ) )
+            if ( contentChannelItem.ContentChannel != null && contentChannelItem.ContentChannel.RequiresApproval && contentChannelItem.ApprovedDateTime != null )
             {
                 contentChannelItemIndex.IsApproved = true;
             }
@@ -176,6 +176,38 @@ namespace Rock.UniversalSearch.IndexModels
         }
 
         /// <summary>
+        /// Gets the document URL.
+        /// </summary>
+        /// <param name="displayOptions"></param>
+        /// <returns></returns>
+        public override string GetDocumentUrl( Dictionary<string, object> displayOptions = null )
+        {
+            string url = string.Empty;
+
+            if ( displayOptions != null )
+            {
+                if ( displayOptions.ContainsKey( "ChannelItem.Url" ) )
+                {
+                    url = displayOptions["ChannelItem.Url"].ToString();
+                }
+            }
+
+            // if url was not passed in use default from content channel
+            if ( string.IsNullOrWhiteSpace( url ) )
+            {
+                var channel = new ContentChannelService( new RockContext() ).Get( this.ContentChannelId );
+                url = channel.ItemUrl;
+            }
+
+            var mergeFields = new Dictionary<string, object>();
+            mergeFields.Add( "Id", this.Id );
+            mergeFields.Add( "Title", this.Title );
+            mergeFields.Add( "ContentChannelId", this.ContentChannelId );
+
+            return url.ResolveMergeFields( mergeFields );
+        }
+
+        /// <summary>
         /// Formats the search result.
         /// </summary>
         /// <param name="person"></param>
@@ -183,14 +215,23 @@ namespace Rock.UniversalSearch.IndexModels
         /// <returns></returns>
         public override FormattedSearchResult FormatSearchResult( Person person, Dictionary<string, object> displayOptions = null )
         {
+            bool showSummary = true;
             string url = string.Empty;
             bool isSecurityDisabled = false;
 
             if ( displayOptions != null )
             {
-                if ( displayOptions.ContainsKey( "ChannelItem-IsSecurityDisabled" ) )
+                if ( displayOptions.ContainsKey( "ChannelItem.ShowSummary" ) )
                 {
-                    isSecurityDisabled = displayOptions["ChannelItem-IsSecurityDisabled"].ToString().AsBoolean();
+                    showSummary = displayOptions["ChannelItem.ShowSummary"].ToString().AsBoolean();
+                }
+                if ( displayOptions.ContainsKey( "ChannelItem.Url" ) )
+                {
+                    url = displayOptions["ChannelItem.Url"].ToString();
+                }
+                if ( displayOptions.ContainsKey( "ChannelItem.IsSecurityDisabled" ) )
+                {
+                    isSecurityDisabled = displayOptions["ChannelItem.IsSecurityDisabled"].ToString().AsBoolean();
                 }
             }
 
@@ -212,30 +253,31 @@ namespace Rock.UniversalSearch.IndexModels
             }
 
             // if url was not passed in use default from content channel
-            if ( displayOptions == null || !displayOptions.ContainsKey( "ChannelItem-Url" ) )
+            if ( string.IsNullOrWhiteSpace( url ) )
             {
                 var channel = new ContentChannelService( new RockContext() ).Get( this.ContentChannelId );
-                if ( channel != null )
-                {
-                    url = channel.ItemUrl;
-
-                    if ( url.IsNotNullOrWhitespace() )
-                    {
-                        var mergeFields = new Dictionary<string, object>();
-                        mergeFields.Add( "Id", this.Id );
-                        mergeFields.Add( "Title", this.Title );
-                        mergeFields.Add( "ContentChannelId", this.ContentChannelId );
-
-                        if (displayOptions == null )
-                        {
-                            displayOptions = new Dictionary<string, object>();
-                        }
-                        displayOptions["ChannelItem-Url"] = url.ResolveMergeFields( mergeFields );
-                    }
-                }
+                url = channel.ItemUrl;
             }
 
-            return base.FormatSearchResult( person, displayOptions );
+            var mergeFields = new Dictionary<string, object>();
+            mergeFields.Add( "Id", this.Id );
+            mergeFields.Add( "Title", this.Title );
+            mergeFields.Add( "ContentChannelId", this.ContentChannelId );
+
+            var summary = this["Summary"] ?? "" + this["summaryText"] ?? "";
+
+            return new FormattedSearchResult() { IsViewAllowed = true, FormattedResult = $@"
+                            <div class='row model-cannavigate' data-href='{url.ResolveMergeFields( mergeFields )}'>
+                                <div class='col-sm-1 text-center'>
+                                    <i class='{this.IconCssClass} fa-2x'></i>
+                                </div>
+                                <div class='col-sm-4'>
+                                    {this.Title} <small>({this.ContentChannel})</small>
+                                </div>
+                                <div class='col-sm-7'>
+                                    {(showSummary ? summary : "")}
+                                </div>
+                            </div>" };
         }
     }
 }

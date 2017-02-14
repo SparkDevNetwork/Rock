@@ -27,7 +27,6 @@ using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
-using Rock.Web.UI;
 
 namespace RockWeb.Blocks.Finance
 {
@@ -42,24 +41,8 @@ namespace RockWeb.Blocks.Finance
     [AccountsField( "Accounts", "List of accounts to allow the person to view", false, "", "", 3 )]
     [BooleanField( "Show Transaction Code", "Show the transaction code column in the table.", true, "", 4, "ShowTransactionCode" )]
     [DefinedValueField( Rock.SystemGuid.DefinedType.FINANCIAL_TRANSACTION_TYPE, "Transaction Types", "Optional list of transation types to limit the list to (if none are selected all types will be included).", false, true, "", "", 5 )]
-    [BooleanField( "Use Person Context", "Determines if the person context should be used instead of the CurrentPerson.", false, order: 5 )]
-
-    [ContextAware]
     public partial class TransactionReport : Rock.Web.UI.RockBlock
     {
-        #region Properties
-
-        /// <summary>
-        /// Gets the target person.
-        /// </summary>
-        /// <value>
-        /// The target person.
-        /// </value>
-        protected Person TargetPerson { get; private set; }
-
-        #endregion
-
-
         #region Base Control Methods
 
         /// <summary>
@@ -69,15 +52,6 @@ namespace RockWeb.Blocks.Finance
         protected override void OnInit( EventArgs e )
         {
             base.OnInit( e );
-
-            if ( GetAttributeValue( "UsePersonContext" ).AsBoolean() )
-            {
-                TargetPerson = ContextEntity<Person>();
-            }
-            else
-            {
-                TargetPerson = CurrentPerson;
-            }
 
             // this event gets fired after block settings are updated. it's nice to repaint the screen if these settings would alter it
             this.BlockUpdated += Block_BlockUpdated;
@@ -204,20 +178,13 @@ namespace RockWeb.Blocks.Finance
             FinancialTransactionService transService = new FinancialTransactionService( rockContext );
             var qry = transService.Queryable( "TransactionDetails.Account,FinancialPaymentDetail" );
 
-            List<int> personAliasIds;
+            string currentPersonGivingId = CurrentPerson.GivingId;
 
-            if ( TargetPerson != null )
-            {
-                personAliasIds = new PersonAliasService( rockContext ).Queryable().Where( a => a.Person.GivingId == TargetPerson.GivingId ).Select( a => a.Id ).ToList();
-            }
-            else
-            {
-                personAliasIds = new List<int>();
-            }
+            qry = qry.Where( t => t.AuthorizedPersonAlias != null &&
+                            t.AuthorizedPersonAlias.Person != null &&
+                            t.AuthorizedPersonAlias.Person.GivingId == currentPersonGivingId );
 
-            qry = qry.Where( t => t.AuthorizedPersonAliasId.HasValue && personAliasIds.Contains( t.AuthorizedPersonAliasId.Value ) );
-
-
+            
             // if the Account Checkboxlist is visible, filter to what was selected.  Otherwise, show all the accounts that the person contributed to
             if ( cblAccounts.Visible )
             {
