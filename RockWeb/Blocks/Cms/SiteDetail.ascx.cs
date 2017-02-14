@@ -335,6 +335,7 @@ namespace RockWeb.Blocks.Cms
             Site site = siteService.Get( hfSiteId.Value.AsInteger() );
             LayoutService layoutService = new LayoutService( rockContext );
             PageService pageService = new PageService( rockContext );
+            PageViewService pageViewService = new PageViewService( rockContext );
 
             if ( site != null )
             {
@@ -344,6 +345,17 @@ namespace RockWeb.Blocks.Cms
                     site.RegistrationPageId ?? -1, 
                     site.PageNotFoundPageId ?? -1
                 };
+
+                foreach ( var pageView in pageViewService
+                    .Queryable()
+                    .Where( t =>
+                        t.Page != null &&
+                        t.Page.Layout != null &&
+                        t.Page.Layout.SiteId == site.Id ) )
+                {
+                    pageView.Page = null;
+                    pageView.PageId = null;
+                }
 
                 var pageQry = pageService.Queryable( "Layout" )
                     .Where( t =>
@@ -441,6 +453,7 @@ namespace RockWeb.Blocks.Cms
                 site.AllowedFrameDomains = tbAllowedFrameDomains.Text;
                 site.RedirectTablets = cbRedirectTablets.Checked;
                 site.EnablePageViews = cbEnablePageViews.Checked;
+                site.PageViewRetentionPeriodDays = nbPageViewRetentionPeriodDays.Text.AsIntegerOrNull();
 
                 site.AllowIndexing = cbAllowIndexing.Checked;
                 site.IsIndexEnabled = cbEnableIndexing.Checked;
@@ -495,25 +508,6 @@ namespace RockWeb.Blocks.Cms
                         Rock.Security.Authorization.CopyAuthorization( RockPage.Layout.Site, site, rockContext, Authorization.APPROVE );
                     }
                 } );
-
-                // add/update for the InteractionChannel for this site and set the RetentionPeriod
-                var interactionChannelService = new InteractionChannelService( rockContext );
-                int channelMediumWebsiteValueId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.INTERACTIONCHANNELTYPE_WEBSITE.AsGuid() ).Id;
-                var interactionChannelForSite = interactionChannelService.Queryable()
-                    .Where( a => a.ChannelTypeMediumValueId == channelMediumWebsiteValueId && a.ChannelEntityId == site.Id ).FirstOrDefault();
-
-                if ( interactionChannelForSite == null )
-                {
-                    interactionChannelForSite = new InteractionChannel();
-                    interactionChannelForSite.ChannelTypeMediumValueId = channelMediumWebsiteValueId;
-                    interactionChannelForSite.ChannelEntityId = site.Id;
-                    interactionChannelService.Add( interactionChannelForSite );
-                }
-
-                interactionChannelForSite.Name = site.Name;
-                interactionChannelForSite.RetentionDuration = nbPageViewRetentionPeriodDays.Text.AsIntegerOrNull();
-
-                rockContext.SaveChanges();
 
                 SiteCache.Flush( site.Id );
                 AttributeCache.FlushEntityAttributes();
@@ -835,15 +829,7 @@ namespace RockWeb.Blocks.Cms
             tbAllowedFrameDomains.Text = site.AllowedFrameDomains;
             cbRedirectTablets.Checked = site.RedirectTablets;
             cbEnablePageViews.Checked = site.EnablePageViews;
-
-            int channelMediumWebsiteValueId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.INTERACTIONCHANNELTYPE_WEBSITE.AsGuid() ).Id;
-            var interactionChannelForSite = new InteractionChannelService( new RockContext() ).Queryable()
-                .Where( a => a.ChannelTypeMediumValueId == channelMediumWebsiteValueId && a.ChannelEntityId == site.Id ).FirstOrDefault();
-
-            if ( interactionChannelForSite != null )
-            {
-                nbPageViewRetentionPeriodDays.Text = interactionChannelForSite.RetentionDuration.ToString();
-            }
+            nbPageViewRetentionPeriodDays.Text = site.PageViewRetentionPeriodDays.ToString();
 
             cbEnableIndexing.Checked = site.IsIndexEnabled;
             tbIndexStartingLocation.Text = site.IndexStartingLocation;

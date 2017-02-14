@@ -104,18 +104,19 @@ namespace RockWeb.Blocks.Cms
                 if ( contentChannel != null )
                 {
                     string startHeading = contentChannel.ContentChannelType.DateRangeType == ContentChannelDateType.DateRange ? "Start" : "Active";
+                    bool isRange = contentChannel.ContentChannelType.DateRangeType == ContentChannelDateType.DateRange;
 
                     _manuallyOrdered = contentChannel.ItemsManuallyOrdered;
 
                     gItems.Columns[2].HeaderText = startHeading;
                     gItems.Columns[4].HeaderText = startHeading;
 
-                    ddlStatus.Visible = contentChannel.RequiresApproval && !contentChannel.ContentChannelType.DisableStatus;
+                    ddlStatus.Visible = contentChannel.RequiresApproval;
 
                     if ( contentChannel.ContentChannelType.IncludeTime )
                     {
-                        gItems.Columns[2].Visible = contentChannel.ContentChannelType.DateRangeType != ContentChannelDateType.NoDates;
-                        gItems.Columns[3].Visible = contentChannel.ContentChannelType.DateRangeType == ContentChannelDateType.DateRange && GetAttributeValue( "ShowExpireColumn" ).AsBoolean();
+                        gItems.Columns[2].Visible = true;
+                        gItems.Columns[3].Visible = isRange && GetAttributeValue( "ShowExpireColumn" ).AsBoolean();
                         gItems.Columns[4].Visible = false;
                         gItems.Columns[5].Visible = false;
                     }
@@ -123,8 +124,8 @@ namespace RockWeb.Blocks.Cms
                     {
                         gItems.Columns[2].Visible = false;
                         gItems.Columns[3].Visible = false;
-                        gItems.Columns[4].Visible = contentChannel.ContentChannelType.DateRangeType != ContentChannelDateType.NoDates;
-                        gItems.Columns[5].Visible = contentChannel.ContentChannelType.DateRangeType == ContentChannelDateType.DateRange && GetAttributeValue( "ShowExpireColumn" ).AsBoolean();
+                        gItems.Columns[4].Visible = true;
+                        gItems.Columns[5].Visible = isRange && GetAttributeValue( "ShowExpireColumn" ).AsBoolean();
                     }
 
                     gItems.Columns[6].Visible = !contentChannel.ContentChannelType.DisablePriority;
@@ -156,7 +157,7 @@ namespace RockWeb.Blocks.Cms
 
                 AddAttributeColumns();
 
-                if ( contentChannel != null && contentChannel.RequiresApproval && !contentChannel.ContentChannelType.DisableStatus )
+                if ( contentChannel != null && contentChannel.RequiresApproval )
                 {
                     var statusField = new BoundField();
                     gItems.Columns.Add( statusField );

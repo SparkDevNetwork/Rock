@@ -54,6 +54,7 @@ public class Mandrill : IHttpHandler
             var rockContext = new Rock.Data.RockContext();
 
             CommunicationRecipientService communicationRecipientService = new CommunicationRecipientService( rockContext );
+
             InteractionComponentService interactionComponentService = new InteractionComponentService( rockContext );
             InteractionService interactionService = new InteractionService( rockContext );
 
@@ -71,26 +72,26 @@ public class Mandrill : IHttpHandler
                     if ( item.Msg.Metadata.ContainsKey( "workflow_action_guid" ) )
                     {
                         Guid? actionGuid = item.Msg.Metadata["workflow_action_guid"].AsGuidOrNull();
-                        string status = string.Empty;
-                        switch ( item.EventType )
-                        {
-                            case MandrillEventType.Send: status = SendEmailWithEvents.SENT_STATUS; break;
-                            case MandrillEventType.Opened: status = SendEmailWithEvents.OPENED_STATUS; break;
-                            case MandrillEventType.Clicked: status = SendEmailWithEvents.CLICKED_STATUS; break;
-                            case MandrillEventType.HardBounced:
-                            case MandrillEventType.Rejected:
-                            case MandrillEventType.SoftBounced:
-                            case MandrillEventType.Spam:
-                            case MandrillEventType.Unsubscribe:
-                                status = SendEmailWithEvents.FAILED_STATUS; break;
-                        }
-
-                        if ( actionGuid != null && !string.IsNullOrWhiteSpace( status ) )
+                            string status = string.Empty;
+                            switch ( item.EventType )
+                            {
+                                case MandrillEventType.Send: status = SendEmailWithEvents.SENT_STATUS; break;
+                                case MandrillEventType.Opened: status = SendEmailWithEvents.OPENED_STATUS; break;
+                                case MandrillEventType.Clicked: status = SendEmailWithEvents.CLICKED_STATUS; break;
+                                case MandrillEventType.HardBounced: 
+                                case MandrillEventType.Rejected:
+                                case MandrillEventType.SoftBounced:
+                                case MandrillEventType.Spam:
+                                case MandrillEventType.Unsubscribe:
+                                    status = SendEmailWithEvents.FAILED_STATUS; break;
+                            }
+                            
+                        if (actionGuid != null && !string.IsNullOrWhiteSpace( status ) )
                         {
                             SendEmailWithEvents.UpdateEmailStatus( actionGuid.Value, status, item.EventType.ConvertToString().SplitCase(), rockContext, true );
                         }
                     }
-
+                    
                     // process a communication recipient
                     if ( item.Msg.Metadata.ContainsKey( "communication_recipient_guid" ) )
                     {

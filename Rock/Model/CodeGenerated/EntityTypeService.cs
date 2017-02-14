@@ -272,7 +272,6 @@ namespace Rock.Model
             target.ForeignGuid = source.ForeignGuid;
             target.ForeignKey = source.ForeignKey;
             target.FriendlyName = source.FriendlyName;
-            target.IndexResultTemplate = source.IndexResultTemplate;
             target.IsCommon = source.IsCommon;
             target.IsEntity = source.IsEntity;
             target.IsIndexingEnabled = source.IsIndexingEnabled;

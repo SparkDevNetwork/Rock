@@ -399,12 +399,20 @@ namespace Rock.Web.Cache
         public bool RedirectTablets { get; set; }
 
         /// <summary>
-        /// Gets or sets a value indicating whether page views will be stored in the Interaction tables
+        /// Gets or sets a value indicating whether [enable page views].
         /// </summary>
         /// <value>
         ///   <c>true</c> if [enable page views]; otherwise, <c>false</c>.
         /// </value>
         public bool EnablePageViews { get; set; }
+
+        /// <summary>
+        /// Gets or sets the page view retention period days.
+        /// </summary>
+        /// <value>
+        /// The page view retention period days.
+        /// </value>
+        public int? PageViewRetentionPeriodDays { get; set; }
 
         /// <summary>
         /// Gets or sets the content of the page header.
@@ -483,6 +491,7 @@ namespace Rock.Web.Cache
                 this.AllowedFrameDomains = site.AllowedFrameDomains;
                 this.RedirectTablets = site.RedirectTablets;
                 this.EnablePageViews = site.EnablePageViews;
+                this.PageViewRetentionPeriodDays = site.PageViewRetentionPeriodDays;
                 this.PageHeaderContent = site.PageHeaderContent;
                 this.AllowIndexing = site.AllowIndexing;
                 this.ChangePasswordPageId = site.ChangePasswordPageId;

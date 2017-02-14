@@ -150,7 +150,7 @@ namespace Rock.Web
                             // get the device type
                             string u = requestContext.HttpContext.Request.UserAgent;
 
-                            var clientType = InteractionDeviceType.GetClientType( u );
+                            var clientType = PageViewUserAgent.GetClientType( u );
 
                             // first check if device is a mobile device
                             if ( clientType == "Mobile" )

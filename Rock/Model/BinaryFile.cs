@@ -377,16 +377,12 @@ namespace Rock.Model
                                 StorageEntityTypeId.Value != BinaryFileType.StorageEntityTypeId.Value ||
                                 StorageEntitySettings != settingsJson ) )
                             {
-                                // Save the file contents before deleting
-                                var contentStream = ContentStream;
-
                                 // Delete the current provider's storage
                                 StorageProvider.DeleteContent( this );
 
                                 // Set the new storage provider with its settings
                                 StorageEntityTypeId = BinaryFileType.StorageEntityTypeId;
                                 StorageEntitySettings = settingsJson;
-                                ContentStream = contentStream;
                             }
                         }
                     }

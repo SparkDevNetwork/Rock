@@ -755,32 +755,42 @@ namespace RockWeb.Blocks.Cms
                     }
                 }
 
-                if ( channel.ContentChannelType.DateRangeType != ContentChannelDateType.NoDates )
+                if ( channel.ContentChannelType.IncludeTime )
                 {
-                    RockBoundField startDateTimeField;
-                    RockBoundField expireDateTimeField;
-                    if ( channel.ContentChannelType.IncludeTime )
-                    {
-                        startDateTimeField = new DateTimeField();
-                        expireDateTimeField = new DateTimeField();
-                    }
-                    else
-                    {
-                        startDateTimeField = new DateField();
-                        expireDateTimeField = new DateField();
-                    }
+                    // Add Start column
+                    var startField = new DateTimeField();
+                    startField.DataField = "StartDateTime";
+                    startField.HeaderText = channel.ContentChannelType.DateRangeType == ContentChannelDateType.DateRange ? "Start" : "Date";
+                    startField.SortExpression = "StartDateTime";
+                    gContentChannelItems.Columns.Add( startField );
 
-                    startDateTimeField.DataField = "StartDateTime";
-                    startDateTimeField.HeaderText = channel.ContentChannelType.DateRangeType == ContentChannelDateType.DateRange ? "Start" : "Date";
-                    startDateTimeField.SortExpression = "StartDateTime";
-                    gContentChannelItems.Columns.Add( startDateTimeField );
-
-                    expireDateTimeField.DataField = "ExpireDateTime";
-                    expireDateTimeField.HeaderText = "Expire";
-                    expireDateTimeField.SortExpression = "ExpireDateTime";
+                    // Expire column
                     if ( channel.ContentChannelType.DateRangeType == ContentChannelDateType.DateRange )
                     {
-                        gContentChannelItems.Columns.Add( expireDateTimeField );
+                        var expireField = new DateTimeField();
+                        expireField.DataField = "ExpireDateTime";
+                        expireField.HeaderText = "Expire";
+                        expireField.SortExpression = "ExpireDateTime";
+                        gContentChannelItems.Columns.Add( expireField );
+                    }
+                }
+                else
+                {
+                    // Add Start column
+                    var startField = new DateField();
+                    startField.DataField = "StartDateTime";
+                    startField.HeaderText = channel.ContentChannelType.DateRangeType == ContentChannelDateType.DateRange ? "Start" : "Date";
+                    startField.SortExpression = "StartDateTime";
+                    gContentChannelItems.Columns.Add( startField );
+
+                    // Expire column
+                    if ( channel.ContentChannelType.DateRangeType == ContentChannelDateType.DateRange )
+                    {
+                        var expireField = new DateField();
+                        expireField.DataField = "ExpireDateTime";
+                        expireField.HeaderText = "Expire";
+                        expireField.SortExpression = "ExpireDateTime";
+                        gContentChannelItems.Columns.Add( expireField );
                     }
                 }
 
@@ -792,6 +802,7 @@ namespace RockWeb.Blocks.Cms
                 priorityField.DataFormatString = "{0:N0}";
                 priorityField.ItemStyle.HorizontalAlign = HorizontalAlign.Right;
                 gContentChannelItems.Columns.Add( priorityField );
+
 
                 // Status column
                 if ( channel.RequiresApproval )
