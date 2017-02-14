@@ -256,37 +256,29 @@ namespace RockWeb.Blocks.Cms
                         dpExpire.SelectedDate : null;
                 }
 
-                if ( contentItem.ContentChannelType.DisableStatus )
+                int newStatusID = hfStatus.Value.AsIntegerOrNull() ?? contentItem.Status.ConvertToInt();
+                int oldStatusId = contentItem.Status.ConvertToInt();
+                if ( newStatusID != oldStatusId && contentItem.IsAuthorized(Authorization.APPROVE, CurrentPerson))
                 {
-                    // if DisableStatus == True, just set the status to Approved
-                    contentItem.Status = ContentChannelItemStatus.Approved;
-                }
-                else
-                {
-                    int newStatusID = hfStatus.Value.AsIntegerOrNull() ?? contentItem.Status.ConvertToInt();
-                    int oldStatusId = contentItem.Status.ConvertToInt();
-                    if ( newStatusID != oldStatusId && contentItem.IsAuthorized( Authorization.APPROVE, CurrentPerson ) )
-                    {
-                        contentItem.Status = hfStatus.Value.ConvertToEnum<ContentChannelItemStatus>( ContentChannelItemStatus.PendingApproval );
-                        if ( contentItem.Status == ContentChannelItemStatus.PendingApproval )
-                        {
-                            contentItem.ApprovedDateTime = null;
-                            contentItem.ApprovedByPersonAliasId = null;
-                        }
-                        else
-                        {
-                            contentItem.ApprovedDateTime = RockDateTime.Now;
-                            contentItem.ApprovedByPersonAliasId = CurrentPersonAliasId;
-                        }
-                    }
-
-                    // remove approved status if they do not have approve access when editing
-                    if ( !contentItem.IsAuthorized( Authorization.APPROVE, CurrentPerson ) )
+                    contentItem.Status = hfStatus.Value.ConvertToEnum<ContentChannelItemStatus>( ContentChannelItemStatus.PendingApproval );
+                    if ( contentItem.Status == ContentChannelItemStatus.PendingApproval )
                     {
                         contentItem.ApprovedDateTime = null;
                         contentItem.ApprovedByPersonAliasId = null;
-                        contentItem.Status = ContentChannelItemStatus.PendingApproval;
                     }
+                    else
+                    {
+                        contentItem.ApprovedDateTime = RockDateTime.Now;
+                        contentItem.ApprovedByPersonAliasId = CurrentPersonAliasId;
+                    }
+                }
+
+                // remove approved status if they do not have approve access when editing
+                if ( !contentItem.IsAuthorized( Authorization.APPROVE, CurrentPerson ) )
+                {
+                    contentItem.ApprovedDateTime = null;
+                    contentItem.ApprovedByPersonAliasId = null;
+                    contentItem.Status = ContentChannelItemStatus.PendingApproval;
                 }
 
                 contentItem.LoadAttributes( rockContext );
@@ -751,11 +743,9 @@ namespace RockWeb.Blocks.Cms
                         contentItem.ApprovedDateTime.Value.ToShortTimeString() );
                 }
                 hlStatus.ToolTip = statusDetail.ToString();
-                hlStatus.Visible = !contentItem.ContentChannelType.DisableStatus;
 
                 tbTitle.Text = contentItem.Title;
 
-                htmlContent.Visible = !contentItem.ContentChannelType.DisableContentField;
                 htmlContent.Text = contentItem.Content;
                 htmlContent.MergeFields.Clear();
                 htmlContent.MergeFields.Add( "GlobalAttribute" );
@@ -776,7 +766,7 @@ namespace RockWeb.Blocks.Cms
                 {
                     dpStart.Visible = false;
                     dpExpire.Visible = false;
-                    dtpStart.Visible = contentItem.ContentChannelType.DateRangeType != ContentChannelDateType.NoDates;
+                    dtpStart.Visible = true;
                     dtpExpire.Visible = contentItem.ContentChannelType.DateRangeType == ContentChannelDateType.DateRange;
 
                     dtpStart.SelectedDateTime = contentItem.StartDateTime;
@@ -785,7 +775,7 @@ namespace RockWeb.Blocks.Cms
                 }
                 else
                 {
-                    dpStart.Visible = contentItem.ContentChannelType.DateRangeType != ContentChannelDateType.NoDates;
+                    dpStart.Visible = true;
                     dpExpire.Visible = contentItem.ContentChannelType.DateRangeType == ContentChannelDateType.DateRange;
                     dtpStart.Visible = false;
                     dtpExpire.Visible = false;
@@ -995,7 +985,7 @@ namespace RockWeb.Blocks.Cms
                 i.StartDateTime,
                 ExpireDateTime = i.ContentChannelType.DateRangeType == ContentChannelDateType.DateRange ? i.ExpireDateTime : (DateTime?)null,
                 Priority = i.ContentChannelType.DisablePriority ? (int?)null : (int?)i.Priority,
-                Status = (i.ContentChannel.RequiresApproval && !i.ContentChannelType.DisableStatus) ? DisplayStatus( i.Status ) : string.Empty,
+                Status = i.ContentChannel.RequiresApproval ? DisplayStatus( i.Status ) : string.Empty,
                 CreatedBy = i.CreatedByPersonAlias != null && i.CreatedByPersonAlias.Person != null ? i.CreatedByPersonAlias.Person.NickName + " " + i.CreatedByPersonAlias.Person.LastName : ""
             } ).ToList();
 
@@ -1024,10 +1014,10 @@ namespace RockWeb.Blocks.Cms
                 i.Id,
                 i.Guid,
                 i.Title,
-                StartDateTime = i.ContentChannelType.DateRangeType != ContentChannelDateType.NoDates ? i.StartDateTime : (DateTime?)null,
+                i.StartDateTime,
                 ExpireDateTime = i.ContentChannelType.DateRangeType == ContentChannelDateType.DateRange ? i.ExpireDateTime : (DateTime?)null,
                 Priority = i.ContentChannelType.DisablePriority ? (int?)null : (int?)i.Priority,
-                Status = (i.ContentChannel.RequiresApproval && !i.ContentChannelType.DisableStatus) ? DisplayStatus( i.Status ) : string.Empty,
+                Status = i.ContentChannel.RequiresApproval ? DisplayStatus( i.Status ) : string.Empty,
                 CreatedBy = i.CreatedByPersonAlias != null && i.CreatedByPersonAlias.Person != null ? i.CreatedByPersonAlias.Person.NickName + " " + i.CreatedByPersonAlias.Person.LastName : ""
             } ).ToList();
             gParentItems.DataBind();

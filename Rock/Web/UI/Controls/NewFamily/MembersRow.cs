@@ -129,6 +129,14 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Gets or sets a value indicating whether [show middle name].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [show middle name]; otherwise, <c>false</c>.
+        /// </value>
+        public bool ShowMiddleName { get; set; }
+
+        /// <summary>
         /// Gets or sets the last name.
         /// </summary>
         /// <value>
@@ -287,18 +295,6 @@ namespace Rock.Web.UI.Controls
         {
             get { return ViewState["ShowGradePicker"] as bool? ?? false; }
             set { ViewState["ShowGradePicker"] = value; }
-        }
-        
-        /// <summary>
-        /// Gets or sets a value indicating whether [show middle name].
-        /// </summary>
-        /// <value>
-        ///   <c>true</c> if [show middle name]; otherwise, <c>false</c>.
-        /// </value>
-        public bool ShowMiddleName
-        {
-            get { return ViewState["ShowMiddleName"] as bool? ?? false; }
-            set { ViewState["ShowMiddleName"] = value; }
         }
 
         /// <summary>

@@ -618,7 +618,7 @@ namespace RockWeb.Blocks.Cms
                                                         .FirstOrDefault();
                                         if ( familyGroup != null )
                                         {
-                                            Guid? addressTypeGuid = GetAttributeValue( "AddressType" ).AsGuidOrNull();
+                                            Guid? addressTypeGuid = GetAttributeValue( "LocationType" ).AsGuidOrNull();
                                             if ( addressTypeGuid.HasValue )
                                             {
                                                 var groupLocationService = new GroupLocationService( rockContext );

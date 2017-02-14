@@ -494,8 +494,6 @@ namespace RockWeb.Blocks.Core
             divAdvSettings.Visible = !_personId.HasValue;
             cbIsActive.Visible = !_personId.HasValue;
             geopFence.Visible = !_personId.HasValue;
-            nbSoftThreshold.Visible = !_personId.HasValue;
-            nbFirmThreshold.Visible = !_personId.HasValue;
 
             if ( location.Id == 0 )
             {

@@ -18,7 +18,7 @@
             </div>
             <div class="panel-body">
 
-                <Rock:NotificationBox ID="nbValidation" runat="server" NotificationBoxType="Warning" />
+                <Rock:NotificationBox ID="nbValidation" runat="server" NotificationBoxType="Danger" />
 
                 <div class="row">
                     <div class="col-md-4">
