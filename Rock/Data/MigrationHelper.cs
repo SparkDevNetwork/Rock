@@ -570,16 +570,12 @@ namespace Rock.Data
         }
 
         /// <summary>
-        /// Deletes the Page and any PageViews that use the page.
+        /// Deletes the Page 
         /// </summary>
         /// <param name="guid">The GUID.</param>
         public void DeletePage( string guid )
         {
             Migration.Sql( string.Format( @"
-
-                DELETE PV
-                FROM [PageView] PV
-                INNER JOIN [Page] P ON P.[Id] = PV.[PageId] AND P.[Guid] = '{0}'
 
                 DELETE [Page] WHERE [Guid] = '{0}'
 ",
@@ -952,7 +948,7 @@ namespace Rock.Data
         {
             if ( !string.IsNullOrWhiteSpace( category ) )
             {
-                throw new Exception( "Attribute Category no longer supported by this helper function. You'll have to write special migration code yourself. Sorry!" );
+                throw new Exception( "Attribute Category no longer supported by this helper function. You'll have to write special migration code yourself." );
             }
 
             Migration.Sql( string.Format( @"
@@ -1029,7 +1025,7 @@ namespace Rock.Data
         {
             if ( !string.IsNullOrWhiteSpace( category ) )
             {
-                throw new Exception( "Attribute Category no longer supported by this helper function. You'll have to write special migration code yourself. Sorry!" );
+                throw new Exception( "Attribute Category no longer supported by this helper function. You'll have to write special migration code yourself." );
             }
 
             Migration.Sql( string.Format( @"
@@ -1100,7 +1096,7 @@ namespace Rock.Data
         {
             if ( !string.IsNullOrWhiteSpace( category ) )
             {
-                throw new Exception( "Attribute Category no longer supported by this helper function. You'll have to write special migration code yourself. Sorry!" );
+                throw new Exception( "Attribute Category no longer supported by this helper function. You'll have to write special migration code yourself." );
             }
 
             if ( string.IsNullOrWhiteSpace( key ) )

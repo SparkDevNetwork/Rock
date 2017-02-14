@@ -6,7 +6,7 @@
     </center>
     {% endif %}
 
-    <h1>{{Event.Name}}</h1>
+    <h1>{{ Event.Name }}</h1>
     {{ Event.Description }}
 
     {{ 'summary_large_image' | AddMetaTagToHead:'property','twitter:card' }}
@@ -31,7 +31,7 @@
       {% assign linkage = EventItemOccurrence.Linkages | First %}
 
       {% if EventItemOccurrence.Campus != null %}
-      <h4> {{EventItemOccurrence.Campus.Name}} Campus</h4>
+      <h4> {{ EventItemOccurrence.Campus.Name }} Campus</h4>
       {% endif %}
 
       {% if (EventItemOccurrence.ContactPersonAlias.Person.Fullname | Trim != '') or EventItemOccurrence.ContactEmail != '' or EventItemOccurrence.ContactPhone != '' %}
@@ -61,7 +61,7 @@
       <ul class="list-unstyled">
         {% for scheduledDate in scheduledDates %}
         <li>
-          {{  scheduledDate | Date:'dddd, MMMM d, yyyy @ h:mm tt' }}
+          {{ scheduledDate | Date:'dddd, MMMM d, yyyy @ h:mm tt' }}
         </li>
         {% endfor %}
       </ul>

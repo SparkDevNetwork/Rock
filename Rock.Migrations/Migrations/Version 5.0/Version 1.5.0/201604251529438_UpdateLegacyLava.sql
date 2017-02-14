@@ -275,28 +275,18 @@ WHERE [Guid] IN ('11D4769F-5B93-4605-8BCA-D21C14B0CEBA')
     AND ModifiedDateTime IS NULL
     AND Header LIKE '%GlobalAttribute.OrganizationPhone%'
 
-
 /*  Kiosk Labels */
-UPDATE [AttributeValue] SET [Value] = '
-{% assign personAllergy = Person | Attribute:''Allergy'' %}
-{% if personAllergy != '''' %}{{ personAllergy | Truncate:100,''...'' }}{% endif %}'
+UPDATE [AttributeValue] SET [Value] = '{% assign personAllergy = Person | Attribute:''Allergy'' %}{% if personAllergy != '''' %}{{ personAllergy | Truncate:100,''...'' }}{% endif %}'
 WHERE [Guid] = '4315A58E-6514-49A8-B80C-22AC7710AC19' AND [ModifiedDateTime] IS NULL
 
-UPDATE [AttributeValue] SET [Value] = '
-{% assign personLegalNotes = Person | Attribute:''LegalNotes'' %}
-{% if personLegalNotes != '''' %}{{ personLegalNotes | Truncate:100,''...'' }}{% endif %}'
+UPDATE [AttributeValue] SET [Value] = '{% assign personLegalNotes = Person | Attribute:''LegalNotes'' %}{% if personLegalNotes != '''' %}{{ personLegalNotes | Truncate:100,''...'' }}{% endif %}'
 WHERE [Guid] = '89C604FA-61A9-4255-AE1F-B6381B23603F' AND [ModifiedDateTime] IS NULL
 
-UPDATE [AttributeValue] SET [Value] = '
-{% assign personAllergy = Person | Attribute:''Allergy'' %}
-{% if personAllergy != '''' -%}A{% endif -%}'
+UPDATE [AttributeValue] SET [Value] = '{% assign personAllergy = Person | Attribute:''Allergy'' %}{% if personAllergy != '''' -%}A{% endif -%}'
 WHERE [Guid] = '5DD35431-D22D-4410-9A55-55EAC9859C35' AND [ModifiedDateTime] IS NULL
 
-UPDATE [AttributeValue] SET [Value] = '
-{% assign personLegalNotes = Person | Attribute:''LegalNotes'' %}
-{% if personLegalNotes != '''' %}L{% endif %}'
+UPDATE [AttributeValue] SET [Value] = '{% assign personLegalNotes = Person | Attribute:''LegalNotes'' %}{% if personLegalNotes != '''' %}L{% endif %}'
 WHERE [Guid] = '872DBF30-E0C0-4810-A36E-D28FC3124A51' AND [ModifiedDateTime] IS NULL
-
 
 DECLARE @AttributeId int = (SELECT TOP 1 [Id] FROM [Attribute] WHERE [Guid] = '01C9BA59-D8D4-4137-90A6-B3C06C70BBC3')
 DECLARE @EntityId int = (SELECT TOP 1 [Id] FROM [PersonBadge] WHERE [Guid] = '66972BFF-42CD-49AB-9A7A-E1B9DECA4EBE')

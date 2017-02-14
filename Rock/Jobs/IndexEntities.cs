@@ -34,7 +34,8 @@ namespace Rock.Jobs
     /// <summary>
     /// Job to run quick SQL queries on a schedule
     /// </summary>
-    [CustomCheckboxListField("Entities", "Entities to re-index. Not selecting a value will re-index all index enabled entities.", "SELECT TOP 10 CAST([Id] AS VARCHAR) [Value], [FriendlyName] [Text] FROM [EntityType] WHERE [IsIndexingEnabled] = 1", false )]
+    [BooleanField("Index All Entities", "Indexes all entities, the entity filter will be ignored.", true, order: 0)]
+    [CustomCheckboxListField("Entity Filter", "Entities to re-index. Not selecting a value will re-index all index enabled entities.", "SELECT CAST([Id] AS VARCHAR) [Value], [FriendlyName] [Text] FROM [EntityType] WHERE [IsIndexingEnabled] = 1 AND [FriendlyName] != 'Site'", false, order: 1 )]
     [DisallowConcurrentExecution]
     public class IndexEntities : IJob
     {
@@ -59,19 +60,24 @@ namespace Rock.Jobs
         public virtual void Execute( IJobExecutionContext context )
         {
             JobDataMap dataMap = context.JobDetail.JobDataMap;
-            string selectedEntitiesSetting = dataMap.GetString( "Entities" );
+            string selectedEntitiesSetting = dataMap.GetString( "EntityFilter" );
+            bool allEntities = dataMap.GetBoolean( "IndexAllEntities" );
 
             RockContext rockContext = new RockContext();
-            
-            var selectedEntityTypes = EntityTypeCache.All().Where(e => e.IsIndexingSupported && e.IsIndexingEnabled);
 
-            string results = string.Empty;
+            var selectedEntityTypes = EntityTypeCache.All().Where( e => e.IsIndexingSupported && e.IsIndexingEnabled && e.FriendlyName != "Site" );
 
-            if ( selectedEntitiesSetting.IsNotNullOrWhitespace() )
+            // if 'All' wasn't selected the filter out the ones that weren't selected
+            if ( !allEntities )
             {
-                var selectedEntityIds = selectedEntitiesSetting.Split( ',' ).Select( int.Parse ).ToList();
-                selectedEntityTypes = selectedEntityTypes.Where( e => selectedEntityIds.Contains( e.Id ) );
-            }
+                if ( selectedEntitiesSetting.IsNotNullOrWhitespace() )
+                {
+                    var selectedEntityIds = selectedEntitiesSetting.Split( ',' ).Select( int.Parse ).ToList();
+                    selectedEntityTypes = selectedEntityTypes.Where( e => selectedEntityIds.Contains( e.Id ) );
+                }
+            }            
+
+            string results = string.Empty;           
 
             foreach(var entityTypeCache in selectedEntityTypes )
             {
@@ -100,6 +106,5 @@ namespace Rock.Jobs
 
             context.Result = "Indexing results: " + results.Trim( ',' );
         }
-
     }
 }

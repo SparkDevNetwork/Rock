@@ -46,16 +46,17 @@ namespace RockWeb.Blocks.Crm
     [GroupField("Opt-out Group", "A group that contains people that should be excluded from this list.", false, "", "", 1, "OptOut")]
     [CustomRadioListField("Show By", "People can be displayed indivually, or grouped by family", "Individual,Family", true, "Individual", "", 2)]
     [BooleanField( "Show All People", "Display all people by default? If false, a search is required first, and only those matching search criteria will be displayed.", false, "", 3)]
-    [IntegerField( "First Name Characters Required", "The number of characters that need to be entered before allowing a search.", false, 1, "", 4)]
-    [IntegerField( "Last Name Characters Required", "The number of characters that need to be entered before allowing a search.", false, 3, "", 5 )]
-    [BooleanField( "Show Email", "Should email address be included in the directory?", true, "", 6)]
-    [BooleanField( "Show Address", "Should email address be included in the directory?", true, "", 7 )]
+    [LinkedPage("Person Profile Page", "Page to navigate to when clicking a person's name (leave blank if link should not be enabled).", false, "", "", 4)]
+    [IntegerField( "First Name Characters Required", "The number of characters that need to be entered before allowing a search.", false, 1, "", 5)]
+    [IntegerField( "Last Name Characters Required", "The number of characters that need to be entered before allowing a search.", false, 3, "", 6 )]
+    [BooleanField( "Show Email", "Should email address be included in the directory?", true, "", 7)]
+    [BooleanField( "Show Address", "Should email address be included in the directory?", true, "", 8 )]
     [DefinedValueField( Rock.SystemGuid.DefinedType.PERSON_PHONE_TYPE, "Show Phones", "The phone numbers to be included in the directory",
-        false, true, "407e7e45-7b2e-4fcd-9605-ecb1339f2453,aa8732fb-2cea-4c76-8d6d-6aaa2c6a4303,2cc66d5a-f61c-4b74-9af9-590a9847c13c", "", 8 )]
-    [BooleanField( "Show Birthday", "Should email address be included in the directory?", true, "", 9 )]
-    [BooleanField( "Show Gender", "Should email address be included in the directory?", true, "", 10 )]
-    [BooleanField( "Show Grade", "Should grade be included in the directory?", false, "", 11 )]
-    [IntegerField( "Max Results", "The maximum number of results to show on the page.", true, 1500)]
+        false, true, "407e7e45-7b2e-4fcd-9605-ecb1339f2453,aa8732fb-2cea-4c76-8d6d-6aaa2c6a4303,2cc66d5a-f61c-4b74-9af9-590a9847c13c", "", 9 )]
+    [BooleanField( "Show Birthday", "Should email address be included in the directory?", true, "", 10 )]
+    [BooleanField( "Show Gender", "Should email address be included in the directory?", true, "", 11 )]
+    [BooleanField( "Show Grade", "Should grade be included in the directory?", false, "", 12 )]
+    [IntegerField( "Max Results", "The maximum number of results to show on the page.", true, 1500, "", 13)]
     public partial class PersonDirectory : Rock.Web.UI.RockBlock
     {
         #region Fields
@@ -64,6 +65,7 @@ namespace RockWeb.Blocks.Crm
         private Guid? _optOutGroupGuid = null;
         private bool _showFamily = false;
         private bool _showAllPeople = false;
+        private string _personProfileUrl = string.Empty;
         private int? _firsNameCharsRequired = 1;
         private int? _lastNameCharsRequired = 3;
         private bool _showEmail = true;
@@ -121,6 +123,7 @@ namespace RockWeb.Blocks.Crm
             _showBirthday = GetAttributeValue( "ShowBirthday" ).AsBoolean();
             _showGender = GetAttributeValue( "ShowGender" ).AsBoolean();
             _showGrade = GetAttributeValue( "ShowGrade" ).AsBoolean();
+            _personProfileUrl = LinkedPageUrl( "PersonProfilePage", new Dictionary<string, string> { { "PersonId", "999" } } ).Replace( "999", "{0}" );
 
             foreach ( var guid in GetAttributeValue( "ShowPhones" ).SplitDelimitedValues().AsGuidList() )
             {
@@ -230,9 +233,12 @@ namespace RockWeb.Blocks.Crm
                 {
                     var sb = new StringBuilder();
 
+                    string personName = personItem.NickName + " " + personItem.LastName;
+                    personName = string.IsNullOrWhiteSpace( _personProfileUrl ) ? personName : string.Format( "<a href='{0}'>{1}</a>", string.Format(_personProfileUrl, personItem.Id), personName );
+
                     sb.Append( string.Format( "<div class=\"photo-round photo-round-sm pull-left\" data-original=\"{0}&w=100\" style=\"background-image: url('{1}');\"></div>", personItem.PhotoUrl, ResolveUrl( "~/Assets/Images/person-no-photo-male.svg" ) ) );
                     sb.Append( "<div class=\"pull-left margin-l-sm\">" );
-                    sb.AppendFormat( "<strong>{0} {1}</strong>", personItem.NickName, personItem.LastName );
+                    sb.AppendFormat( "<strong>{0}</strong>", personName );
 
                     if ( _showEmail && !string.IsNullOrWhiteSpace( personItem.Email ) )
                     {
@@ -641,6 +647,7 @@ namespace RockWeb.Blocks.Crm
                 Name = m.Group.Name
             } )
             .Distinct()
+            .OrderBy( f => f.Name )
             .Take( GetAttributeValue( "MaxResults" ).AsInteger() )
             .ToList();
 
