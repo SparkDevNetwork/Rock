@@ -1,5 +1,5 @@
 ﻿// <copyright>
-// Copyright by the Spark Development Network
+// Copyright by Central Christian Church
 //
 // Licensed under the Rock Community License (the "License");
 // you may not use this file except in compliance with the License.

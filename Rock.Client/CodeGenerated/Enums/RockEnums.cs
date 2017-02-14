@@ -141,7 +141,6 @@ namespace Rock.Client.Enums
     {
         SingleDate = 0x1,
         DateRange = 0x2,
-        NoDates = 0x3,
     }
 
     /// <summary>

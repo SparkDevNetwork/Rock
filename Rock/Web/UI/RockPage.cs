@@ -415,7 +415,7 @@ namespace Rock.Web.UI
             {
                 if ( _clientType == null )
                 {
-                    _clientType = InteractionDeviceType.GetClientType( Request.UserAgent ?? "" );
+                    _clientType = PageViewUserAgent.GetClientType( Request.UserAgent ?? "" );
                 }
                 return _clientType;
             }

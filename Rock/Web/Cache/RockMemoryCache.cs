@@ -15,7 +15,6 @@
 // </copyright>
 //
 using System;
-using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Configuration;
 using System.Linq.Expressions;
@@ -499,7 +498,7 @@ namespace Rock.Web.Cache
         }
 
         /// <summary>
-        /// Clears all items from MemoryCache.
+        /// Clears all items from cache.
         /// </summary>
         public static void Clear()
         {
@@ -512,37 +511,6 @@ namespace Rock.Web.Cache
             {
                 FlushMemoryCache();
             }
-        }
-
-        /// <summary>
-        /// Clears all cached items (MemoryCache, Authorizations, EntityAttributes, SiteCache, TriggerCache).
-        /// </summary>
-        /// <returns></returns>
-        public static List<string> ClearAllCachedItems()
-        {
-            var msgs = new List<string>();
-
-            // Clear the static object that contains all auth rules (so that it will be refreshed)
-            Rock.Security.Authorization.Flush();
-            msgs.Add( "Authorizations have been cleared" );
-
-            // Flush the static entity attributes cache
-            Rock.Web.Cache.AttributeCache.FlushEntityAttributes();
-            msgs.Add( "EntityAttributes have been cleared" );
-
-            // Clear all cached items
-            Clear();
-            msgs.Add( "RockMemoryCache has been cleared" );
-
-            // Flush Site Domains
-            Rock.Web.Cache.SiteCache.Flush();
-            msgs.Add( "SiteCache has been cleared" );
-
-            // Clear workflow trigger cache
-            Rock.Workflow.TriggerCache.Refresh();
-            msgs.Add( "TriggerCache has been cleared" );
-
-            return msgs;
         }
 
         /// <summary>

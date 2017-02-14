@@ -292,6 +292,18 @@ namespace Rock.Model
                 return false;
             }  
  
+            if ( new Service<CommunicationRecipientActivity>( Context ).Queryable().Any( a => a.CreatedByPersonAliasId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", PersonAlias.FriendlyTypeName, CommunicationRecipientActivity.FriendlyTypeName );
+                return false;
+            }  
+ 
+            if ( new Service<CommunicationRecipientActivity>( Context ).Queryable().Any( a => a.ModifiedByPersonAliasId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", PersonAlias.FriendlyTypeName, CommunicationRecipientActivity.FriendlyTypeName );
+                return false;
+            }  
+ 
             if ( new Service<CommunicationTemplate>( Context ).Queryable().Any( a => a.CreatedByPersonAliasId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", PersonAlias.FriendlyTypeName, CommunicationTemplate.FriendlyTypeName );
@@ -1405,6 +1417,12 @@ namespace Rock.Model
             if ( new Service<PageRoute>( Context ).Queryable().Any( a => a.ModifiedByPersonAliasId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", PersonAlias.FriendlyTypeName, PageRoute.FriendlyTypeName );
+                return false;
+            }  
+ 
+            if ( new Service<PageView>( Context ).Queryable().Any( a => a.PersonAliasId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", PersonAlias.FriendlyTypeName, PageView.FriendlyTypeName );
                 return false;
             }  
  

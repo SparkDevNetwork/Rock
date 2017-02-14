@@ -103,7 +103,6 @@ namespace Rock.Model
             target.DateRangeType = source.DateRangeType;
             target.DisableContentField = source.DisableContentField;
             target.DisablePriority = source.DisablePriority;
-            target.DisableStatus = source.DisableStatus;
             target.ForeignGuid = source.ForeignGuid;
             target.ForeignKey = source.ForeignKey;
             target.IncludeTime = source.IncludeTime;

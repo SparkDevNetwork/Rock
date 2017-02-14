@@ -44,9 +44,6 @@ namespace Rock.Client
         public bool DisablePriority { get; set; }
 
         /// <summary />
-        public bool DisableStatus { get; set; }
-
-        /// <summary />
         public Guid? ForeignGuid { get; set; }
 
         /// <summary />
@@ -102,7 +99,6 @@ namespace Rock.Client
             this.DateRangeType = source.DateRangeType;
             this.DisableContentField = source.DisableContentField;
             this.DisablePriority = source.DisablePriority;
-            this.DisableStatus = source.DisableStatus;
             this.ForeignGuid = source.ForeignGuid;
             this.ForeignKey = source.ForeignKey;
             this.IncludeTime = source.IncludeTime;
