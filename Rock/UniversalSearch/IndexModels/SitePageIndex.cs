@@ -45,7 +45,7 @@ namespace Rock.UniversalSearch.IndexModels
         /// <value>
         /// The name of the site.
         /// </value>
-        [RockIndexField( Index = IndexType.NotIndexed )]
+        [RockIndexField]
         public string SiteName { get; set; }
 
         /// <summary>
@@ -126,28 +126,6 @@ namespace Rock.UniversalSearch.IndexModels
         {
             // site page does not have a Rock model
             return null;
-        }
-
-        /// <summary>
-        /// Gets the document URL.
-        /// </summary>
-        /// <param name="displayOptions"></param>
-        /// <returns></returns>
-        public override string GetDocumentUrl( Dictionary<string, object> displayOptions = null )
-        {
-            return this.Url;
-        }
-
-        /// <summary>
-        /// Formats the search result.
-        /// </summary>
-        /// <param name="person">The person.</param>
-        /// <param name="displayOptions">The display options.</param>
-        /// <returns></returns>
-        public override FormattedSearchResult FormatSearchResult( Person person, Dictionary<string, object> displayOptions = null )
-        {
-
-            return new FormattedSearchResult() { IsViewAllowed = true, FormattedResult = string.Format( "<a href='{0}'>{1}</a>", this.Url, this.PageTitle ) };
         }
     }
 }

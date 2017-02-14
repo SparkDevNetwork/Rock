@@ -77,6 +77,7 @@ namespace Rock.UniversalSearch.IndexModels
 
             businessIndex.Id = business.Id;
             businessIndex.Name = business.LastName;
+            businessIndex.DocumentName = business.LastName;
             
             // do not currently index business attributes since they are shared with people
             //AddIndexableAttributes( businessIndex, person );
@@ -104,61 +105,11 @@ namespace Rock.UniversalSearch.IndexModels
 
                 if ( contacts != null )
                 {
-                    businessIndex.Contacts = string.Join( " ", contacts );
+                    businessIndex.Contacts = string.Join( ", ", contacts );
                 }
             }
 
             return businessIndex;
-        }
-
-        /// <summary>
-        /// Gets the document URL.
-        /// </summary>
-        /// <param name="displayOptions"></param>
-        /// <returns></returns>
-        public override string GetDocumentUrl( Dictionary<string, object> displayOptions = null )
-        {
-            string url = "/Business/";
-
-            if ( displayOptions != null )
-            {
-                if ( displayOptions.ContainsKey( "Business.Url" ) )
-                {
-                    url = displayOptions["Business.Url"].ToString();
-                }
-            }
-
-            return url + this.Id;
-        }
-
-        /// <summary>
-        /// Formats the search result.
-        /// </summary>
-        /// <param name="person"></param>
-        /// <param name="displayOptions"></param>
-        /// <returns></returns>
-        public override FormattedSearchResult FormatSearchResult( Person person, Dictionary<string, object> displayOptions = null )
-        {
-            string url = "/Business/";
-
-            if (displayOptions != null )
-            {
-                if ( displayOptions.ContainsKey( "Business.Url" ) )
-                {
-                    url = displayOptions["Business.Url"].ToString();
-                }
-            }
-
-            return new FormattedSearchResult() { IsViewAllowed = true, FormattedResult = $@"
-                         <div class='row model-cannavigate' data-href='{url}{this.Id}'>
-                            <div class='col-sm-1 text-center'>
-                                <i class='{this.IconCssClass} fa-2x'></i>
-                            </div>
-                            <div class='col-sm-11'>
-                                {this.Name}
-                            </div>
-                        </div>
-                    " };
         }
     }
 }

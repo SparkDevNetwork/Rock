@@ -180,19 +180,7 @@ namespace Rock.Model
         /// </value>
         public virtual Communication Communication { get; set; }
 
-        /// <summary>
-        /// Gets or sets a collection containing the <see cref="Rock.Model.CommunicationRecipient">CommunicationRecipients</see> for the Communication.
-        /// </summary>
-        /// <value>
-        /// The <see cref="Rock.Model.CommunicationRecipient">CommunicationRecipients</see> of the Communication.
-        /// </value>
-        [DataMember]
-        public virtual ICollection<CommunicationRecipientActivity> Activities
-        {
-            get { return _activities ?? ( _activities = new Collection<CommunicationRecipientActivity>() ); }
-            set { _activities = value; }
-        }
-        private ICollection<CommunicationRecipientActivity> _activities;
+
 
         /// <summary>
         /// Gets or sets a dictionary containing the Additional Merge values for this communication
@@ -219,17 +207,23 @@ namespace Rock.Model
         {
             get
             {
-                StringBuilder sb = new StringBuilder();
-                foreach ( var activity in Activities )
+                using ( var rockContext = new RockContext() )
                 {
-                    sb.AppendFormat( "{0} ({1} {2}): {3}<br/>",
-                        activity.ActivityType,
-                        activity.ActivityDateTime.ToShortDateString(),
-                        activity.ActivityDateTime.ToShortTimeString(),
-                        activity.ActivityDetail );
-                }
+                    var interactions = this.GetInteractions( rockContext )
+                       .OrderBy( a => a.InteractionDateTime )
+                       .ToList();
+                    StringBuilder sb = new StringBuilder();
+                    foreach ( var interaction in interactions )
+                    {
+                        sb.AppendFormat( "{0} ({1} {2}): {3}<br/>",
+                            interaction.Operation,
+                            interaction.InteractionDateTime.ToShortDateString(),
+                            interaction.InteractionDateTime.ToShortTimeString(),
+                            interaction.GetInteractionDetails() );
+                    }
 
-                return sb.ToString();
+                    return sb.ToString();
+                }
             }
         }
 
@@ -244,25 +238,47 @@ namespace Rock.Model
         {
             get
             {
-                StringBuilder sb = new StringBuilder();
-                sb.Append( "<ul>" );
-                foreach ( var activity in Activities )
+                using ( var rockContext = new RockContext() )
                 {
-                    sb.AppendFormat( "<li>{0} <small>({1} {2})</small>: {3}</li>",
-                        activity.ActivityType,
-                        activity.ActivityDateTime.ToShortDateString(),
-                        activity.ActivityDateTime.ToShortTimeString(),
-                        activity.ActivityDetail );
-                }
-                sb.Append( "</ul>" );
+                    var interactions = this.GetInteractions( rockContext )
+                        .OrderBy( a => a.InteractionDateTime )
+                        .ToList();
 
-                return sb.ToString();
+                    StringBuilder sb = new StringBuilder();
+                    sb.Append( "<ul>" );
+                    foreach ( var interaction in interactions )
+                    {
+                        sb.AppendFormat( "<li>{0} <small>({1} {2})</small>: {3}</li>",
+                            interaction.Operation,
+                            interaction.InteractionDateTime.ToShortDateString(),
+                            interaction.InteractionDateTime.ToShortTimeString(),
+                            interaction.GetInteractionDetails() );
+                    }
+
+                    sb.Append( "</ul>" );
+
+                    return sb.ToString();
+                }
             }
         }
 
         #endregion
 
         #region Public Methods
+
+        /// <summary>
+        /// Gets the interactions (Opened and Click activity)
+        /// </summary>
+        /// <param name="rockContext">The rock context.</param>
+        /// <returns></returns>
+        public virtual IQueryable<Interaction> GetInteractions( RockContext rockContext )
+        {
+            var interactionService = new InteractionService( rockContext );
+            var interactionChannelGuid = Rock.SystemGuid.InteractionChannel.COMMUNICATION.AsGuid();
+            var result = interactionService.Queryable()
+                .Where( a => a.InteractionComponent.Channel.Guid == interactionChannelGuid && a.InteractionComponentId == this.CommunicationId );
+            return result;
+        }
 
         /// <summary>
         /// Helper method to get recipient merge values for sending communication.

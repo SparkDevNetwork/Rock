@@ -32,7 +32,7 @@ namespace Rock.Jobs
     /// Job to close workflows
     /// </summary>
     [WorkflowTypeField("Workflow Types", "The type of workflows to close.", true, true, order: 0 )]
-    [TextField("Close Status", "The status to set the workflow to when closed.", true, "Complete", order: 1)]
+    [TextField("Close Status", "The status to set the workflow to when closed.", true, "Completed", order: 1)]
     [IntegerField("Expiration Age", "The age in minutes that a workflow needs to be in order to close them.", false, order: 2)]
     [DisallowConcurrentExecution]
     public class CompleteWorkflows : IJob

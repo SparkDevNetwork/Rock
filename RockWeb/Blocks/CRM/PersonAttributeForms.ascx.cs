@@ -410,6 +410,9 @@ namespace RockWeb.Blocks.Crm
 
             SaveAttributeValues();
 
+            mdEdit.Hide();
+            pnlEditModal.Visible = false;
+
             ShowDetail();
 
             upnlContent.Update();
@@ -596,7 +599,7 @@ namespace RockWeb.Blocks.Crm
         {
             _mode = "VIEW";
 
-            pnlEdit.Visible = false;
+            pnlEditModal.Visible = false;
 
             string json = GetAttributeValue( "Forms" );
             if ( string.IsNullOrWhiteSpace( json ) )
@@ -713,7 +716,7 @@ namespace RockWeb.Blocks.Crm
 
         private void ParseViewControls()
         {
-            if ( FormState.Count > CurrentPageIndex )
+            if ( FormState != null && FormState.Count > CurrentPageIndex )
             {
                 var form = FormState[CurrentPageIndex];
                 foreach ( var field in form.Fields
@@ -742,6 +745,10 @@ namespace RockWeb.Blocks.Crm
         /// </summary>
         protected override void ShowSettings()
         {
+            //NOTE: This isn't shown in a modal :(
+            
+
+
             cbDisplayProgressBar.Checked = GetAttributeValue( "DisplayProgressBar" ).AsBoolean();
             ddlSaveValues.SetValue( GetAttributeValue( "SaveValues" ) );
 
@@ -774,8 +781,9 @@ namespace RockWeb.Blocks.Crm
 
             BuildEditControls( true );
 
-            pnlEdit.Visible = true;
+            pnlEditModal.Visible = true;
             pnlView.Visible = false;
+            mdEdit.Show();
 
             _mode = "EDIT";
 
@@ -817,7 +825,7 @@ namespace RockWeb.Blocks.Crm
             control.ID = form.Guid.ToString( "N" );
             parentControl.Controls.Add( control );
 
-            control.ValidationGroup = btnSave.ValidationGroup;
+            control.ValidationGroup = mdEdit.ValidationGroup;
 
             control.DeleteFieldClick += tfeForm_DeleteFieldClick;
             control.ReorderFieldClick += tfeForm_ReorderFieldClick;

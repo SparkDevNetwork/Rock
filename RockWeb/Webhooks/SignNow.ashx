@@ -123,7 +123,7 @@ public class SignNow : IHttpHandler
         string accessToken = component.GetAccessToken( false, out errorMessage );
         if ( !string.IsNullOrWhiteSpace( accessToken ) )
         {
-            JObject getDocumentRes = CudaSign.Document.Get( accessToken, documentId );
+            JObject getDocumentRes = SignNowSDK.Document.Get( accessToken, documentId );
             return getDocumentRes.Value<string>( "origin_document_id" );
         }
 

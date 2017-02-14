@@ -145,7 +145,7 @@ namespace RockWeb
                         var content = contentService.Queryable( "ContentChannelType" )
                                         .Where( c => 
                                             c.ContentChannelId == channel.Id && 
-                                            ( c.Status == ContentChannelItemStatus.Approved || c.ContentChannel.RequiresApproval == false ) && 
+                                            ( c.Status == ContentChannelItemStatus.Approved || c.ContentChannel.ContentChannelType.DisableStatus || c.ContentChannel.RequiresApproval == false ) && 
                                             c.StartDateTime <= RockDateTime.Now );
 
                         if ( channel.ContentChannelType.DateRangeType == ContentChannelDateType.DateRange )

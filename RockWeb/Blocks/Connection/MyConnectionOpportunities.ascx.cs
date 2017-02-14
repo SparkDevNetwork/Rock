@@ -629,7 +629,7 @@ namespace RockWeb.Blocks.Connection
             var statusMergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields(this.RockPage);
             statusMergeFields.Add( "ConnectionOpportunities", allOpportunities );
             statusMergeFields.Add( "ConnectionTypes", connectionTypes );
-            statusMergeFields.Add( "IdleTooltip", sb.ToString() );
+            statusMergeFields.Add( "IdleTooltip", sb.ToString().EncodeHtml() );
             lStatusBarContent.Text = statusTemplate.ResolveMergeFields( statusMergeFields );
             BindSummaryData();
         }

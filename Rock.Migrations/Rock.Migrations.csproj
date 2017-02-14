@@ -150,6 +150,34 @@
     <Compile Include="Migrations\201612231305026_ExtendDiscountCodes.Designer.cs">
       <DependentUpon>201612231305026_ExtendDiscountCodes.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201701022126386_DataMaintenanceJob.cs" />
+    <Compile Include="Migrations\201701022126386_DataMaintenanceJob.Designer.cs">
+      <DependentUpon>201701022126386_DataMaintenanceJob.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201701040116351_Analytics1.cs" />
+    <Compile Include="Migrations\201701040116351_Analytics1.Designer.cs">
+      <DependentUpon>201701040116351_Analytics1.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201701172024404_ContentChannelTypeDisableStatusOption.cs" />
+    <Compile Include="Migrations\201701172024404_ContentChannelTypeDisableStatusOption.Designer.cs">
+      <DependentUpon>201701172024404_ContentChannelTypeDisableStatusOption.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201701172352092_IndexTemplateField.cs" />
+    <Compile Include="Migrations\201701172352092_IndexTemplateField.Designer.cs">
+      <DependentUpon>201701172352092_IndexTemplateField.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201701241721429_InteractionData.cs" />
+    <Compile Include="Migrations\201701241721429_InteractionData.Designer.cs">
+      <DependentUpon>201701241721429_InteractionData.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201701252028086_IndexDocumentUrl-Rollup.cs" />
+    <Compile Include="Migrations\201701252028086_IndexDocumentUrl-Rollup.Designer.cs">
+      <DependentUpon>201701252028086_IndexDocumentUrl-Rollup.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201702032247537_PageBuilder.cs" />
+    <Compile Include="Migrations\201702032247537_PageBuilder.Designer.cs">
+      <DependentUpon>201702032247537_PageBuilder.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 6.0\Version 1.6.0\201609282147388_WaitList.cs" />
     <Compile Include="Migrations\Version 6.0\Version 1.6.0\201609282147388_WaitList.Designer.cs">
       <DependentUpon>201609282147388_WaitList.cs</DependentUpon>
@@ -2347,6 +2375,7 @@
       <DependentUpon>201606061308109_ClearPreviousMigrations5.cs</DependentUpon>
     </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="SqlServerTypes\Loader.cs" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Migrations\201609302332378_UniversalSearchModelUpdates.resx">
@@ -2411,6 +2440,27 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201612231305026_ExtendDiscountCodes.resx">
       <DependentUpon>201612231305026_ExtendDiscountCodes.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201701022126386_DataMaintenanceJob.resx">
+      <DependentUpon>201701022126386_DataMaintenanceJob.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201701040116351_Analytics1.resx">
+      <DependentUpon>201701040116351_Analytics1.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201701172024404_ContentChannelTypeDisableStatusOption.resx">
+      <DependentUpon>201701172024404_ContentChannelTypeDisableStatusOption.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201701172352092_IndexTemplateField.resx">
+      <DependentUpon>201701172352092_IndexTemplateField.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201701241721429_InteractionData.resx">
+      <DependentUpon>201701241721429_InteractionData.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201701252028086_IndexDocumentUrl-Rollup.resx">
+      <DependentUpon>201701252028086_IndexDocumentUrl-Rollup.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201702032247537_PageBuilder.resx">
+      <DependentUpon>201702032247537_PageBuilder.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 6.0\Version 1.6.0\201609282147388_WaitList.resx">
       <DependentUpon>201609282147388_WaitList.cs</DependentUpon>
@@ -4057,6 +4107,22 @@
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
+    <Content Include="..\packages\Microsoft.SqlServer.Types.11.0.2\nativeBinaries\x64\msvcr100.dll">
+      <Link>SqlServerTypes\x64\msvcr100.dll</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\packages\Microsoft.SqlServer.Types.11.0.2\nativeBinaries\x64\SqlServerSpatial110.dll">
+      <Link>SqlServerTypes\x64\SqlServerSpatial110.dll</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\packages\Microsoft.SqlServer.Types.11.0.2\nativeBinaries\x86\msvcr100.dll">
+      <Link>SqlServerTypes\x86\msvcr100.dll</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\packages\Microsoft.SqlServer.Types.11.0.2\nativeBinaries\x86\SqlServerSpatial110.dll">
+      <Link>SqlServerTypes\x86\SqlServerSpatial110.dll</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <Content Include="Migrations\201610031959052_FamilyAnalyticsUpdate_spCrm_FamilyAnalyticsAttendance.sql">
       <DependentUpon>201610031959052_FamilyAnalyticsUpdate.cs</DependentUpon>
     </Content>
@@ -4090,6 +4156,63 @@
     <Content Include="Migrations\201612121647292_HotFixesFrom6_1.sql">
       <DependentUpon>201612121647292_HotFixesFrom6_1.cs</DependentUpon>
     </Content>
+    <Content Include="Migrations\201701022126386_DataMaintenanceJob.sql">
+      <DependentUpon>201701022126386_DataMaintenanceJob.cs</DependentUpon>
+    </Content>
+    <Content Include="Migrations\201701040116351_Analytics1_AnalyticsDimAttendanceDate.sql">
+      <DependentUpon>201701040116351_Analytics1.cs</DependentUpon>
+    </Content>
+    <Content Include="Migrations\201701040116351_Analytics1_AnalyticsDimAttendanceLocation.sql">
+      <DependentUpon>201701040116351_Analytics1.cs</DependentUpon>
+    </Content>
+    <Content Include="Migrations\201701040116351_Analytics1_AnalyticsDimFamilyCurrent.sql">
+      <DependentUpon>201701040116351_Analytics1.cs</DependentUpon>
+    </Content>
+    <Content Include="Migrations\201701040116351_Analytics1_AnalyticsDimFamilyHeadOfHousehold.sql">
+      <DependentUpon>201701040116351_Analytics1.cs</DependentUpon>
+    </Content>
+    <Content Include="Migrations\201701040116351_Analytics1_AnalyticsDimFamilyHistorical.sql">
+      <DependentUpon>201701040116351_Analytics1.cs</DependentUpon>
+    </Content>
+    <Content Include="Migrations\201701040116351_Analytics1_AnalyticsDimFinancialAccount.sql">
+      <DependentUpon>201701040116351_Analytics1.cs</DependentUpon>
+    </Content>
+    <Content Include="Migrations\201701040116351_Analytics1_AnalyticsDimFinancialBatch.sql">
+      <DependentUpon>201701040116351_Analytics1.cs</DependentUpon>
+    </Content>
+    <Content Include="Migrations\201701040116351_Analytics1_AnalyticsDimFinancialTransactionDate.sql">
+      <DependentUpon>201701040116351_Analytics1.cs</DependentUpon>
+    </Content>
+    <Content Include="Migrations\201701040116351_Analytics1_AnalyticsDimFinancialTransactionType.sql">
+      <DependentUpon>201701040116351_Analytics1.cs</DependentUpon>
+    </Content>
+    <Content Include="Migrations\201701040116351_Analytics1_AnalyticsDimPersonBirthDate.sql">
+      <DependentUpon>201701040116351_Analytics1.cs</DependentUpon>
+    </Content>
+    <Content Include="Migrations\201701040116351_Analytics1_AnalyticsDimPersonCurrent.sql">
+      <DependentUpon>201701040116351_Analytics1.cs</DependentUpon>
+    </Content>
+    <Content Include="Migrations\201701040116351_Analytics1_AnalyticsDimPersonHistorical.sql">
+      <DependentUpon>201701040116351_Analytics1.cs</DependentUpon>
+    </Content>
+    <Content Include="Migrations\201701040116351_Analytics1_AnalyticsFactAttendance.sql">
+      <DependentUpon>201701040116351_Analytics1.cs</DependentUpon>
+    </Content>
+    <Content Include="Migrations\201701040116351_Analytics1_AnalyticsFactFinancialTransaction.sql">
+      <DependentUpon>201701040116351_Analytics1.cs</DependentUpon>
+    </Content>
+    <Content Include="Migrations\201701040116351_Analytics1_SetAttributesIsAnalytics.sql">
+      <DependentUpon>201701040116351_Analytics1.cs</DependentUpon>
+    </Content>
+    <Content Include="Migrations\201701040116351_Analytics1_spAnalytics_ETL_Attendance.sql">
+      <DependentUpon>201701040116351_Analytics1.cs</DependentUpon>
+    </Content>
+    <Content Include="Migrations\201701040116351_Analytics1_spAnalytics_ETL_Family.sql">
+      <DependentUpon>201701040116351_Analytics1.cs</DependentUpon>
+    </Content>
+    <Content Include="Migrations\201701040116351_Analytics1_spAnalytics_ETL_FinancialTransaction.sql">
+      <DependentUpon>201701040116351_Analytics1.cs</DependentUpon>
+    </Content>
     <Content Include="Migrations\Version 6.0\Version 1.6.0\201608171937068_GivingAnalyticsAccounts_AccountTotals.sql" />
     <Content Include="Migrations\Version 6.0\Version 1.6.0\201608171937068_GivingAnalyticsAccounts_FirstLastEverDates.sql" />
     <Content Include="Migrations\Version 6.0\Version 1.6.0\201608171937068_GivingAnalyticsAccounts_PersonSummary.sql" />
@@ -4100,6 +4223,7 @@
     <Content Include="Migrations\Version 6.0\Version 1.6.0\201606091237191_GivingAnalyticsRefactor_TransactionData.sql" />
     <Content Include="Migrations\Version 6.0\Version 1.6.0\201606231511599_RegistrationWorkflow_Indexes.sql" />
     <Content Include="Migrations\Version 6.0\Version 1.6.0\201607102235065_ScheduledTransactionType.sql" />
+    <Content Include="SqlServerTypes\readme.htm" />
     <None Include="Migrations\Version 6.0\Version 1.6.0\201608101635463_PledgeGroup_SP1.sql" />
     <None Include="Migrations\Version 6.0\Version 1.6.0\201608101635463_PledgeGroup_SP2.sql" />
     <Content Include="Migrations\Version 6.0\Version 1.6.0\201608172242214_Podcasting.sql" />
