@@ -57,8 +57,6 @@ namespace Rock.Model
                 errorMessage = string.Format( "This {0} contains one or more child {1}.", Page.FriendlyTypeName, Page.FriendlyTypeName.Pluralize().ToLower() );
                 return false;
             }  
-            
-            // ignoring PageView,PageId 
  
             if ( new Service<Site>( Context ).Queryable().Any( a => a.ChangePasswordPageId == item.Id ) )
             {

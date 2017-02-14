@@ -108,6 +108,8 @@ namespace RockWeb.Blocks.Security.BackgroundCheck
 
                     rockContext.SaveChanges();
 
+                    BackgroundCheckContainer.Instance.Refresh();
+
                     ShowView( settings );
                 }
             }
@@ -149,6 +151,8 @@ namespace RockWeb.Blocks.Security.BackgroundCheck
                     SetSettingValue( rockContext, settings, "TestMode", cbTestMode.Checked.ToString() );
                     SetSettingValue( rockContext, settings, "Active", cbActive.Checked.ToString() );
                     rockContext.SaveChanges();
+
+                    BackgroundCheckContainer.Instance.Refresh();
 
                     ShowView( settings );
                 }

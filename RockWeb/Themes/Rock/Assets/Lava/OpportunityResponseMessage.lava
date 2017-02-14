@@ -3,5 +3,5 @@
 	Congratulations!
 	</strong>
 	</br>
-	Your request to serve on the {{Opportunity.PublicName}} team has been submitted.
+	Your request to serve on the {{ Opportunity.PublicName }} team has been submitted.
 </div>

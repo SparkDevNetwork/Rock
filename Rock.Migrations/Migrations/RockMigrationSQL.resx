@@ -415,4 +415,61 @@
   <data name="_201612121647292_HotFixesFrom6_1" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>201612121647292_hotfixesfrom6_1.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-16</value>
   </data>
+  <data name="_201701022126386_DataMaintenanceJob" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>201701022126386_datamaintenancejob.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
+  </data>
+  <data name="_201701040116351_Analytics1_AnalyticsDimAttendanceDate" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>201701040116351_analytics1_analyticsdimattendancedate.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
+  </data>
+  <data name="_201701040116351_Analytics1_AnalyticsDimAttendanceLocation" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>201701040116351_analytics1_analyticsdimattendancelocation.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
+  </data>
+  <data name="_201701040116351_Analytics1_AnalyticsDimFamilyCurrent" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>201701040116351_analytics1_analyticsdimfamilycurrent.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-16</value>
+  </data>
+  <data name="_201701040116351_Analytics1_AnalyticsDimFamilyHeadOfHousehold" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>201701040116351_analytics1_analyticsdimfamilyheadofhousehold.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-16</value>
+  </data>
+  <data name="_201701040116351_Analytics1_AnalyticsDimFamilyHistorical" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>201701040116351_analytics1_analyticsdimfamilyhistorical.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-16</value>
+  </data>
+  <data name="_201701040116351_Analytics1_AnalyticsDimFinancialAccount" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>201701040116351_analytics1_analyticsdimfinancialaccount.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
+  </data>
+  <data name="_201701040116351_Analytics1_AnalyticsDimFinancialBatch" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>201701040116351_analytics1_analyticsdimfinancialbatch.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
+  </data>
+  <data name="_201701040116351_Analytics1_AnalyticsDimFinancialTransactionDate" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>201701040116351_analytics1_analyticsdimfinancialtransactiondate.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
+  </data>
+  <data name="_201701040116351_Analytics1_AnalyticsDimFinancialTransactionType" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>201701040116351_analytics1_analyticsdimfinancialtransactiontype.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
+  </data>
+  <data name="_201701040116351_Analytics1_AnalyticsDimPersonBirthDate" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>201701040116351_analytics1_analyticsdimpersonbirthdate.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
+  </data>
+  <data name="_201701040116351_Analytics1_AnalyticsDimPersonCurrent" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>201701040116351_analytics1_analyticsdimpersoncurrent.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-16</value>
+  </data>
+  <data name="_201701040116351_Analytics1_AnalyticsDimPersonHistorical" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>201701040116351_analytics1_analyticsdimpersonhistorical.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-16</value>
+  </data>
+  <data name="_201701040116351_Analytics1_AnalyticsFactAttendance" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>201701040116351_analytics1_analyticsfactattendance.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-16</value>
+  </data>
+  <data name="_201701040116351_Analytics1_AnalyticsFactFinancialTransaction" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>201701040116351_analytics1_analyticsfactfinancialtransaction.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-16</value>
+  </data>
+  <data name="_201701040116351_Analytics1_SetAttributesIsAnalytics" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>201701040116351_analytics1_setattributesisanalytics.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
+  </data>
+  <data name="_201701040116351_Analytics1_spAnalytics_ETL_Attendance" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>201701040116351_analytics1_spanalytics_etl_attendance.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
+  </data>
+  <data name="_201701040116351_Analytics1_spAnalytics_ETL_Family" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>201701040116351_analytics1_spanalytics_etl_family.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
+  </data>
+  <data name="_201701040116351_Analytics1_spAnalytics_ETL_FinancialTransaction" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>201701040116351_analytics1_spanalytics_etl_financialtransaction.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
+  </data>
 </root>

@@ -31,9 +31,9 @@
         </div>
         <div class="row">
           {% if eventItemOccurrence.EventItemOccurrence.Schedule.EffectiveStartDate != eventItemOccurrence.EventItemOccurrence.Schedule.EffectiveEndDate %}
-            {{ eventItemOccurrence.EventItemOccurrence.Schedule.EffectiveStartDate  | Date: 'MMM d' }} -  {{ eventItemOccurrence.EventItemOccurrence.Schedule.EffectiveEndDate  | Date: 'MMM d'}}
+            {{ eventItemOccurrence.EventItemOccurrence.Schedule.EffectiveStartDate  | Date: 'MMM d' }} -  {{ eventItemOccurrence.EventItemOccurrence.Schedule.EffectiveEndDate  | Date: 'MMM d' }}
           {% else %}
-            {{ eventItemOccurrence.Date | Date: 'MMM d'}}
+            {{ eventItemOccurrence.Date | Date: 'MMM d' }}
           {% endif %}
         </div>
       </div>
@@ -42,7 +42,7 @@
           <b>Time</b>
         </div>
         <div class="row">
-          {{ eventItemOccurrence.Time}}
+          {{ eventItemOccurrence.Time }}
         </div>
       </div>
       <div class="col-md-3">
@@ -50,7 +50,7 @@
           <b>Location</b>
         </div>
         <div class="row">
-          {{ eventItemOccurrence.Location}}
+          {{ eventItemOccurrence.Location }}
         </div>
       </div>
       <div class="col-md-4">
@@ -58,7 +58,7 @@
           <b>Summary</b>
         </div>
         <div class="row">
-          {{eventItemOccurrence.Summary}}
+          {{ eventItemOccurrence.Summary }}
         </div>
       </div>
     </div>

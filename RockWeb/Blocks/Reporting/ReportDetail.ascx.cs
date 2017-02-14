@@ -143,6 +143,7 @@ namespace RockWeb.Blocks.Reporting
             if ( sm.AsyncPostBackTimeout < databaseTimeout + 5 )
             {
                 sm.AsyncPostBackTimeout = databaseTimeout + 5;
+                Server.ScriptTimeout = databaseTimeout + 5;
             }
         }
 

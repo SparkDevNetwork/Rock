@@ -17,6 +17,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Web.UI;
 using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
@@ -57,6 +58,8 @@ namespace Rock.Web.UI.Controls
         private RockCheckBox _cbShowInGrid;
         private RockCheckBox _cbAllowSearch;
         private RockCheckBox _cbIsIndexingEnabled;
+        private RockCheckBox _cbIsAnalytic;
+        private RockCheckBox _cbIsAnalyticHistory;
 
         private RockDropDownList _ddlFieldType;
         private PlaceHolder _phQualifiers;
@@ -403,6 +406,46 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Gets or sets a value indicating whether this instance is analytic.
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if this instance is analytic; otherwise, <c>false</c>.
+        /// </value>
+        public bool IsAnalytic
+        {
+            get
+            {
+                EnsureChildControls();
+                return _cbIsAnalytic.Checked;
+            }
+            set
+            {
+                EnsureChildControls();
+                _cbIsAnalytic.Checked = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether this instance is analytic history.
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if this instance is analytic history; otherwise, <c>false</c>.
+        /// </value>
+        public bool IsAnalyticHistory
+        {
+            get
+            {
+                EnsureChildControls();
+                return _cbIsAnalyticHistory.Checked;
+            }
+            set
+            {
+                EnsureChildControls();
+                _cbIsAnalyticHistory.Checked = value;
+            }
+        }
+
+        /// <summary>
         /// Gets or sets the field type id.
         /// </summary>
         /// <value>
@@ -640,6 +683,22 @@ namespace Rock.Web.UI.Controls
                 _cbIsIndexingEnabled.Visible = false;  // Default is to not show this option
                 Controls.Add( _cbIsIndexingEnabled );
 
+                _cbIsAnalytic = new RockCheckBox();
+                _cbIsAnalytic.ID = "_cbIsAnalytic";
+                _cbIsAnalytic.Label = "Analytics Enabled";
+                _cbIsAnalytic.Text = "Yes";
+                _cbIsAnalytic.Help = "If selected, this attribute will be made available as an Analytic";
+                _cbIsAnalytic.Visible = false;  // Default is to not show this option
+                Controls.Add( _cbIsAnalytic );
+
+                _cbIsAnalyticHistory = new RockCheckBox();
+                _cbIsAnalyticHistory.ID = "_cbIsAnalyticHistory";
+                _cbIsAnalyticHistory.Label = "Analytics History Enabled";
+                _cbIsAnalyticHistory.Text = "Yes";
+                _cbIsAnalyticHistory.Help = "If selected, changes to the value of this attribute will cause Analytics to create a history record. Note that this requires that 'Analytics Enabled' is also enabled.";
+                _cbIsAnalyticHistory.Visible = false;  // Default is to not show this option
+                Controls.Add( _cbIsAnalyticHistory );
+
                 _ddlFieldType = new RockDropDownList();
                 _ddlFieldType.ID = "ddlFieldType";
                 _ddlFieldType.Label = "Field Type";
@@ -715,6 +774,20 @@ namespace Rock.Web.UI.Controls
             // new qualifier values
             CreateFieldTypeDetailControls( FieldTypeId, true );
 
+            _cbIsAnalytic.Visible = false;
+            _cbIsAnalyticHistory.Visible = false;
+
+            // Only show the Analytic checkbox if the Entity is IAnalytic
+            if ( this.AttributeEntityTypeId.HasValue )
+            {
+                var entityType = EntityTypeCache.Read( this.AttributeEntityTypeId.Value );
+                if ( entityType != null )
+                {
+                    _cbIsAnalytic.Visible = entityType.IsAnalyticSupported;
+                    _cbIsAnalyticHistory.Visible = entityType.IsAnalyticHistoricalSupported;
+                }
+            }
+
             // Set the validation group for all controls
             string validationGroup = ValidationGroup;
             _validationSummary.ValidationGroup = validationGroup;
@@ -728,6 +801,8 @@ namespace Rock.Web.UI.Controls
             _cbShowInGrid.ValidationGroup = validationGroup;
             _cbAllowSearch.ValidationGroup = validationGroup;
             _cbIsIndexingEnabled.ValidationGroup = validationGroup;
+            _cbIsAnalytic.ValidationGroup = validationGroup;
+            _cbIsAnalyticHistory.ValidationGroup = validationGroup;
             _ddlFieldType.ValidationGroup = validationGroup;
             foreach ( var control in _phQualifiers.Controls )
             {
@@ -815,6 +890,8 @@ namespace Rock.Web.UI.Controls
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
             _cbRequired.RenderControl( writer );
             _cbIsIndexingEnabled.RenderControl( writer );
+            _cbIsAnalytic.RenderControl( writer );
+            _cbIsAnalyticHistory.RenderControl( writer );
             writer.RenderEndTag();
 
             writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-sm-6" );
@@ -944,6 +1021,8 @@ namespace Rock.Web.UI.Controls
                 this.ShowInGrid = attribute.IsGridColumn;
                 this.AllowSearch = attribute.AllowSearch;
                 this.IsIndexingEnabled = attribute.IsIndexEnabled;
+                this.IsAnalytic = attribute.IsAnalytic;
+                this.IsAnalyticHistory = attribute.IsAnalyticHistory;
 
                 var qualifiers = new Dictionary<string, ConfigurationValue>();
                 if ( attribute.AttributeQualifiers != null )
@@ -991,6 +1070,8 @@ namespace Rock.Web.UI.Controls
                 attribute.IsGridColumn = this.ShowInGrid;
                 attribute.AllowSearch = this.AllowSearch;
                 attribute.IsIndexEnabled = this.IsIndexingEnabled;
+                attribute.IsAnalytic = this.IsAnalytic;
+                attribute.IsAnalyticHistory = this.IsAnalyticHistory;
 
                 attribute.Categories.Clear();
                 new CategoryService( new RockContext() ).Queryable().Where( c => this.CategoryIds.Contains( c.Id ) ).ToList().ForEach( c =>

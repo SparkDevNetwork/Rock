@@ -347,7 +347,6 @@ td.grid-col-actions {
 
   &.grid-columncommand {
     min-width: 48px;
-    padding: 6px;
   }
 
   &.grid-columnreorder {
@@ -359,6 +358,10 @@ td.grid-col-actions {
       color: lighten(@text-color, 20%);
     }
   }
+}
+
+.grid .table > tbody > tr > td.grid-columncommand {
+  padding: 6px;
 }
 
 .table .color-field {

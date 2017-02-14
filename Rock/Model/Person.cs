@@ -40,7 +40,7 @@ namespace Rock.Model
     /// </summary>
     [Table( "Person" )]
     [DataContract]
-    public partial class Person : Model<Person>, IRockIndexable
+    public partial class Person : Model<Person>, IRockIndexable, IAnalyticHistorical
     {
         #region Constants
 
@@ -1573,6 +1573,134 @@ namespace Rock.Model
         #region Static Helper Methods
 
         /// <summary>
+        /// Gets the family salutation.
+        /// </summary>
+        /// <param name="person">The person.</param>
+        /// <param name="includeChildren">if set to <c>true</c> [include children].</param>
+        /// <param name="includeInactive">if set to <c>true</c> [include inactive].</param>
+        /// <param name="useFormalNames">if set to <c>true</c> [use formal name].</param>
+        /// <param name="finalSeparator">The final separator.</param>
+        /// <param name="separator">The separator.</param>
+        /// <returns></returns>
+        public static string GetFamilySalutation( Person person, bool includeChildren = false, bool includeInactive = true, bool useFormalNames = false, string finalSeparator = "&", string separator = ","  )
+        {
+            var _familyType = GroupTypeCache.Read( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY.AsGuid() );
+            var _adultRole = _familyType.Roles.FirstOrDefault( r => r.Guid.Equals( Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_ADULT.AsGuid() ) );
+            var _childRole = _familyType.Roles.FirstOrDefault( r => r.Guid.Equals( Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_CHILD.AsGuid() ) );
+            var _deceased = DefinedValueCache.Read( SystemGuid.DefinedValue.PERSON_RECORD_STATUS_REASON_DECEASED ).Id;
+
+            // clean up the separators
+            finalSeparator = $" {finalSeparator} "; // add spaces before and after
+            if (separator == "," )
+            {
+                separator = $"{separator} "; // add space after
+            }
+            else
+            {
+                separator = $" {separator} "; // add spaces before and after
+            }
+
+            List<string> familyMemberNames = new List<string>();
+            string primaryLastName = string.Empty;
+
+            var familyMembers = person.GetFamilyMembers( true ).Where( f => f.Person.RecordStatusReasonValueId != _deceased ).ToList();
+
+            // filter for inactive
+            if ( !includeInactive )
+            {
+                var activeRecordStatusId = DefinedValueCache.Read( SystemGuid.DefinedValue.PERSON_RECORD_STATUS_ACTIVE ).Id;
+                familyMembers = familyMembers.Where( f => f.Person.RecordStatusValueId == activeRecordStatusId ).ToList();
+            }
+
+            // check that a family even existed if not return their name
+            if ( familyMembers.Count > 0 )
+            {
+                // filter out kids if not needed
+                if ( !includeChildren )
+                {
+                    familyMembers = familyMembers.Where( f => f.GroupRoleId == _adultRole.Id ).ToList();
+                }
+
+                // determine if more than one last name is at play
+                var multipleLastNamesExist = familyMembers.Select( f => f.Person.LastName ).Distinct().Count() > 1;
+
+                // add adults and children separately as adults need to be sorted by gender and children by age
+
+                // adults
+                var adults = familyMembers.Where( f => f.GroupRoleId == _adultRole.Id ).OrderBy( f => f.Person.Gender );
+
+                if ( adults.Count() > 0 )
+                {
+                    primaryLastName = adults.First().Person.LastName;
+
+                    foreach ( var adult in adults.Select( f => f.Person ) )
+                    {
+                        var firstName = adult.NickName;
+
+                        if ( useFormalNames )
+                        {
+                            firstName = adult.FirstName;
+                        }
+
+                        if ( !multipleLastNamesExist )
+                        {
+                            familyMemberNames.Add( firstName );
+                        }
+                        else
+                        {
+                            familyMemberNames.Add( $"{firstName} {adult.LastName}" );
+                        }
+                    }
+                }
+
+                // children
+                if ( includeChildren )
+                {
+                    var children = familyMembers.Where( f => f.GroupRoleId == _childRole.Id ).OrderByDescending( f => f.Person.Age );
+
+                    if ( primaryLastName.IsNullOrWhiteSpace() )
+                    {
+                        primaryLastName = children.First().Person.LastName;
+                    }
+
+                    if ( children.Count() > 0 )
+                    {
+                        foreach ( var child in children.Select( f => f.Person ) )
+                        {
+                            var firstName = child.NickName;
+
+                            if ( useFormalNames )
+                            {
+                                firstName = child.FirstName;
+                            }
+
+                            if ( !multipleLastNamesExist )
+                            {
+                                familyMemberNames.Add( firstName );
+                            }
+                            else
+                            {
+                                familyMemberNames.Add( $"{firstName} {child.LastName}" );
+                            }
+                        }
+                    }
+                }
+
+                var familySalutation = string.Join( separator, familyMemberNames ).ReplaceLastOccurrence( separator, finalSeparator );
+
+                if ( !multipleLastNamesExist )
+                {
+                    familySalutation = familySalutation + " " + primaryLastName;
+                }
+
+                return familySalutation;
+      
+            }
+
+            return $"{(useFormalNames ? person.FirstName : person.NickName)} {person.LastName}";
+        }
+
+        /// <summary>
         /// Gets the photo URL.
         /// </summary>
         /// <param name="photoId">The photo identifier.</param>
@@ -2944,6 +3072,17 @@ namespace Rock.Model
         public static TResult GetSpouse<TResult>( this Person person, System.Linq.Expressions.Expression<Func<GroupMember, TResult>> selector, RockContext rockContext = null )
         {
             return new PersonService( rockContext ?? new RockContext() ).GetSpouse( person, selector );
+        }
+
+        /// <summary>
+        /// Gets the businesses.
+        /// </summary>
+        /// <param name="person">The person.</param>
+        /// <param name="rockContext">The rock context.</param>
+        /// <returns></returns>
+        public static IQueryable<Person> GetBusinesses( this Person person, RockContext rockContext = null )
+        {
+            return new PersonService( rockContext ?? new RockContext() ).GetBusinesses( person.Id );
         }
 
         /// <summary>
