@@ -142,17 +142,8 @@ namespace RockWeb.Blocks.Finance
 
             FinancialTransactionDetailService financialTransactionDetailService = new FinancialTransactionDetailService( rockContext );
 
-            List<int> personAliasIds;
-
             // fetch all the possible PersonAliasIds that have this GivingID to help optimize the SQL
-            if ( TargetPerson != null )
-            {
-                personAliasIds = new PersonAliasService( rockContext ).Queryable().Where( a => a.Person.GivingId == TargetPerson.GivingId ).Select( a => a.Id ).ToList();
-            }
-            else
-            {
-                personAliasIds = new List<int>();
-            }
+            var personAliasIds = new PersonAliasService( rockContext ).Queryable().Where( a => a.Person.GivingId == TargetPerson.GivingId ).Select( a => a.Id ).ToList();
 
             // get the transactions for the person or all the members in the person's giving group (Family)
             var qry = financialTransactionDetailService.Queryable().AsNoTracking()
@@ -171,23 +162,14 @@ namespace RockWeb.Blocks.Finance
                                 .Select( g => new { Year = g.Key } )
                                 .OrderByDescending(y => y.Year);
 
-            var statementYears = yearQry.Take( numberOfYears ).ToList();
-
             var mergeFields = new Dictionary<string, object>();
             mergeFields.Add( "DetailPage", LinkedPageRoute( "DetailPage" ) );
-            mergeFields.Add( "StatementYears", statementYears );
-
-            if ( TargetPerson != null )
-            {
-                mergeFields.Add( "PersonGuid", TargetPerson.Guid );
-            }
+            mergeFields.Add( "StatementYears", yearQry.Take( numberOfYears ) );
+            mergeFields.Add( "PersonGuid", TargetPerson.Guid );
             
             var template = GetAttributeValue( "LavaTemplate" );
 
             lResults.Text = template.ResolveMergeFields( mergeFields );
-
-            // don't show anything if the person doesn't have any transactions
-            lResults.Visible = statementYears.Any();
 
             // show debug info
             if ( GetAttributeValue( "EnableDebug" ).AsBoolean() && IsUserAuthorized( Authorization.EDIT ) )

@@ -3270,13 +3270,7 @@ namespace RockWeb.Blocks.Event
                                     gpGradeFilter.UseAbbreviation = true;
                                     gpGradeFilter.UseGradeOffsetAsValue = true;
                                     gpGradeFilter.CssClass = "input-width-md";
-                                    // Since 12th grade is the 0 Value, we need to handle the "no user preference" differently
-                                    // by not calling SetValue otherwise it will select 12th grade.
-                                    var gradeUserPreference = fRegistrants.GetUserPreference( "Grade" ).AsIntegerOrNull();
-                                    if ( gradeUserPreference != null )
-                                    {
-                                        gpGradeFilter.SetValue( gradeUserPreference );
-                                    }
+                                    gpGradeFilter.SetValue( fRegistrants.GetUserPreference( "Grade" ).AsIntegerOrNull() );
                                     phRegistrantFormFieldFilters.Controls.Add( gpGradeFilter );
 
                                     var gpGradeFilter2 = new GradePicker();
@@ -3285,29 +3279,26 @@ namespace RockWeb.Blocks.Event
                                     gpGradeFilter2.UseAbbreviation = true;
                                     gpGradeFilter2.UseGradeOffsetAsValue = true;
                                     gpGradeFilter2.CssClass = "input-width-md";
-                                    var wlGradeUserPreference = fRegistrants.GetUserPreference( "WL-Grade" ).AsIntegerOrNull();
-                                    if ( wlGradeUserPreference != null )
-                                    {
-                                        gpGradeFilter2.SetValue( wlGradeUserPreference );
-                                    }
+                                    gpGradeFilter2.SetValue( fRegistrants.GetUserPreference( "WL-Grade" ).AsIntegerOrNull() );
                                     phWaitListFormFieldFilters.Controls.Add( gpGradeFilter2 );
 
-                                    // 2017-01-13 as discussed, changing this to Grade but keeping the sort based on grad year
-                                    string dataFieldExpression = "PersonAlias.Person.GradeFormatted";
+                                    string dataFieldExpression = "PersonAlias.Person.GraduationYear";
                                     var gradeField = new RockBoundField();
                                     gradeField.DataField = dataFieldExpression;
-                                    gradeField.HeaderText = "Grade";
-                                    gradeField.SortExpression = "PersonAlias.Person.GraduationYear";
+                                    gradeField.HeaderText = "Graduation Year";
+                                    gradeField.SortExpression = dataFieldExpression;
                                     gRegistrants.Columns.Add( gradeField );
 
                                     var gradeField2 = new RockBoundField();
                                     gradeField2.DataField = dataFieldExpression;
-                                    gradeField2.HeaderText = "Grade";
+                                    gradeField2.HeaderText = "Graduation Year";
+                                    gradeField2.SortExpression = dataFieldExpression;
                                     gGroupPlacements.Columns.Add( gradeField2 );
 
                                     var gradeField3 = new RockBoundField();
                                     gradeField3.DataField = dataFieldExpression;
-                                    gradeField3.HeaderText = "Grade";
+                                    gradeField3.HeaderText = "Graduation Year";
+                                    gradeField3.SortExpression = dataFieldExpression;
                                     gWaitList.Columns.Add( gradeField3 );
 
                                     break;

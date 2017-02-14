@@ -625,7 +625,7 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Gets the businesses sorted by name
+        /// Gets the businesses.
         /// </summary>
         /// <param name="personId">The person identifier.</param>
         /// <returns></returns>

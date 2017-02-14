@@ -45,24 +45,9 @@ namespace Rock.SignNow
     [TextField( "API Client Secret", "The SignNow API Client Secret", true, "", "", 3, null, true )]
     [BooleanField( "Use API Sandbox", "Use the SignNow API Sandbox (vs. Production Environment)", false, "", 4 )]
     [TextField( "Webhook Url", "The URL of the webhook that SignNow should post to when a document is updated (signed).", true, "", "", 5 )]
-    [TextField( "Cookie Initialization Url", "The URL of the SignNow page to use for setting an initial cookie.", true, "https://mw.signnow.com/setcookie", "Advanced", 0)]
+
     public class SignNow : DigitalSignatureComponent
     {
-        /// <summary>
-        /// Gets the Cookie Initialization URL. If specified, Rock will first redirect user to this url in order to set a cookie prior to submitting any requests.
-        /// </summary>
-        /// <value>
-        /// The set cookie URL.
-        /// </value>
-        /// <exception cref="System.NotImplementedException"></exception>
-        public override string CookieInitializationUrl
-        {
-            get
-            {
-                return GetAttributeValue( "CookieInitializationUrl" );
-            }
-        }
-
         /// <summary>
         /// Method that is called before attribute values are updated. Components can
         /// override this to perform any needed initialization of attribute
@@ -99,7 +84,7 @@ namespace Rock.SignNow
             }
 
             // Delete any existing document.update webhook
-            JObject listWebhookRes = SignNowSDK.Webhook.List( accessToken );
+            JObject listWebhookRes = CudaSign.Webhook.List( accessToken );
             var errors = ParseErrors( listWebhookRes );
             if ( errors.Any() )
             {
@@ -116,7 +101,7 @@ namespace Rock.SignNow
                         string subscriptionId = subscription.Value<string>( "id" );
                         if ( !string.IsNullOrWhiteSpace( subscriptionId ) )
                         {
-                            JObject deleteWebHookRes = SignNowSDK.Webhook.Delete( accessToken, subscriptionId );
+                            JObject deleteWebHookRes = CudaSign.Webhook.Delete( accessToken, subscriptionId );
                             errors = ParseErrors( deleteWebHookRes );
                             if ( errors.Any() )
                             {
@@ -129,7 +114,7 @@ namespace Rock.SignNow
             }
 
             // Re-add the webhook
-            JObject createWebhookRes = SignNowSDK.Webhook.Create( accessToken, "document.update", GetAttributeValue( "WebhookUrl" ) );
+            JObject createWebhookRes = CudaSign.Webhook.Create( accessToken, "document.update", GetAttributeValue( "WebhookUrl" ) );
             string webhookId = createWebhookRes.Value<string>( "id" );
             if ( string.IsNullOrWhiteSpace( webhookId ) )
             {
@@ -165,7 +150,7 @@ namespace Rock.SignNow
                 return null;
             }
 
-            JObject folderListRes = SignNowSDK.Folder.List( accessToken );
+            JObject folderListRes = CudaSign.Folder.List( accessToken );
             errors = ParseErrors( folderListRes );
             if ( errors.Any() )
             {
@@ -183,7 +168,7 @@ namespace Rock.SignNow
                         string folderId = folder.Value<string>( "id" );
                         if ( !string.IsNullOrWhiteSpace( folderId ) )
                         {
-                            JObject documentListRes = SignNowSDK.Folder.Get( accessToken, folderId );
+                            JObject documentListRes = CudaSign.Folder.Get( accessToken, folderId );
                             errors = ParseErrors( documentListRes );
                             if ( errors.Any() )
                             {
@@ -233,7 +218,7 @@ namespace Rock.SignNow
             }
 
             // Create a docuemnt from the template
-            JObject copyTemplateRes = SignNowSDK.Template.Copy( accessToken, documentTemplate.ProviderTemplateKey, documentName );
+            JObject copyTemplateRes = CudaSign.Template.Copy( accessToken, documentTemplate.ProviderTemplateKey, documentName );
             string documentId = copyTemplateRes.Value<string>( "id" );
             if ( string.IsNullOrWhiteSpace( documentId ) )
             {
@@ -254,7 +239,7 @@ namespace Rock.SignNow
                     GlobalAttributesCache.Value( "OrganizationName" ), documentTemplate.Name, appliesTo != null ? appliesTo.FullName : assignedTo.FullName );
 
                 // Get the document to determine the roles (if any) are needed
-                JObject getDocumentRes = SignNowSDK.Document.Get( accessToken, documentId );
+                JObject getDocumentRes = CudaSign.Document.Get( accessToken, documentId );
                 errors = ParseErrors( getDocumentRes );
                 if ( errors.Any() )
                 {
@@ -300,7 +285,7 @@ namespace Rock.SignNow
                 }
 
                 // Send the invite
-                JObject inviteRes = SignNowSDK.Document.Invite( accessToken, documentId, inviteObj );
+                JObject inviteRes = CudaSign.Document.Invite( accessToken, documentId, inviteObj );
                 errors = ParseErrors( inviteRes );
                 if ( errors.Any() )
                 {
@@ -336,7 +321,7 @@ namespace Rock.SignNow
                 return null;
             }
 
-            JObject inviteLinkRes = SignNowSDK.Link.Create( accessToken, document.DocumentKey );
+            JObject inviteLinkRes = CudaSign.Link.Create( accessToken, document.DocumentKey );
             string inviteLink = inviteLinkRes.Value<string>( "url_no_signup" );
             if ( string.IsNullOrWhiteSpace( inviteLink ) )
             {
@@ -360,7 +345,7 @@ namespace Rock.SignNow
                 return null;
             }
 
-            JObject inviteLinkRes = SignNowSDK.Link.Create( accessToken, documentId );
+            JObject inviteLinkRes = CudaSign.Link.Create( accessToken, documentId );
             string inviteLink = inviteLinkRes.Value<string>( "url_no_signup" );
             if ( string.IsNullOrWhiteSpace( inviteLink ) )
             {
@@ -407,7 +392,7 @@ namespace Rock.SignNow
             }
 
             // Get the document to determine the roles (if any) are needed
-            JObject getDocumentRes = SignNowSDK.Document.Get( accessToken, document.DocumentKey );
+            JObject getDocumentRes = CudaSign.Document.Get( accessToken, document.DocumentKey );
             errors = ParseErrors( getDocumentRes );
             if ( errors.Any() )
             {
@@ -416,7 +401,7 @@ namespace Rock.SignNow
             }
 
             // Cancel existing invite
-            JObject CancelRes = SignNowSDK.Document.CancelInvite( accessToken, document.DocumentKey );
+            JObject CancelRes = CudaSign.Document.CancelInvite( accessToken, document.DocumentKey );
             errors = ParseErrors( CancelRes );
             if ( errors.Any() )
             {
@@ -473,7 +458,7 @@ namespace Rock.SignNow
             }
 
             // Send the invite
-            JObject inviteRes = SignNowSDK.Document.Invite( accessToken, document.DocumentKey, inviteObj );
+            JObject inviteRes = CudaSign.Document.Invite( accessToken, document.DocumentKey, inviteObj );
             errors = ParseErrors( inviteRes );
             if ( errors.Any() )
             {
@@ -508,7 +493,7 @@ namespace Rock.SignNow
                 return false;
             }
 
-            JObject CancelRes = SignNowSDK.Document.CancelInvite( accessToken, document.DocumentKey );
+            JObject CancelRes = CudaSign.Document.CancelInvite( accessToken, document.DocumentKey );
             errors = ParseErrors( CancelRes );
             if ( errors.Any() )
             {
@@ -558,7 +543,7 @@ namespace Rock.SignNow
             }
 
             string filePath = Path.Combine( folder.FullName, fileName );
-            JObject downloadRes = SignNowSDK.Document.Download( accessToken, document.DocumentKey, filePath, fileName );
+            JObject downloadRes = CudaSign.Document.Download( accessToken, document.DocumentKey, filePath, fileName );
             errors = ParseErrors( downloadRes );
             if ( !errors.Any() )
             {
@@ -594,7 +579,7 @@ namespace Rock.SignNow
             }
 
             // Get the document to determine the roles (if any) are needed
-            JObject getDocumentRes = SignNowSDK.Document.Get( accessToken, document.DocumentKey );
+            JObject getDocumentRes = CudaSign.Document.Get( accessToken, document.DocumentKey );
             errors = ParseErrors( getDocumentRes );
             if ( errors.Any() )
             {
@@ -641,7 +626,7 @@ namespace Rock.SignNow
             {
                 try
                 {
-                    JObject tokenVerification = SignNowSDK.OAuth2.Verify( accessToken );
+                    JObject tokenVerification = CudaSign.OAuth2.Verify( accessToken );
                     var errors = ParseErrors( tokenVerification );
                     if ( !errors.Any() )
                     {
@@ -655,8 +640,8 @@ namespace Rock.SignNow
             }
 
             // Get new Access Token
-            SignNowSDK.Config.init( GetAttributeValue( "APIClientId" ), GetAttributeValue( "APIClientSecret" ), GetAttributeValue( "UseAPISandbox" ).AsBoolean() );
-            JObject OAuthRes = SignNowSDK.OAuth2.RequestToken( GetAttributeValue( "Username" ), GetAttributeValue( "Password" ) );
+            CudaSign.Config.init( GetAttributeValue( "APIClientId" ), GetAttributeValue( "APIClientSecret" ), !GetAttributeValue( "UseAPISandbox" ).AsBoolean() );
+            JObject OAuthRes = CudaSign.OAuth2.RequestToken( GetAttributeValue( "Username" ), GetAttributeValue( "Password" ) );
             errorMessage = ParseErrors( OAuthRes ).AsDelimited( "; " );
             if ( string.IsNullOrWhiteSpace( errorMessage ) )
             {

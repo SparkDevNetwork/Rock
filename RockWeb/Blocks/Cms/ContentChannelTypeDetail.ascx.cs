@@ -222,11 +222,9 @@ namespace RockWeb.Blocks.Cms
             if ( contentType != null )
             {
                 contentType.Name = tbName.Text;
-                contentType.DateRangeType = ddlDateRangeType.SelectedValue.ConvertToEnum<ContentChannelDateType>();
+                contentType.DateRangeType = (ContentChannelDateType)int.Parse( ddlDateRangeType.SelectedValue );
                 contentType.IncludeTime = cbIncludeTime.Checked;
                 contentType.DisablePriority = cbDisablePriority.Checked;
-                contentType.DisableContentField = cbDisableContentField.Checked;
-                contentType.DisableStatus = cbDisableStatus.Checked;
 
                 if ( !Page.IsValid || !contentType.IsValid )
                 {
@@ -641,12 +639,8 @@ namespace RockWeb.Blocks.Cms
             tbName.Text = contentType.Name;
             ddlDateRangeType.BindToEnum<ContentChannelDateType>();
             ddlDateRangeType.SetValue( (int)contentType.DateRangeType );
-            ddlDateRangeType_SelectedIndexChanged( null, null );
-
             cbIncludeTime.Checked = contentType.IncludeTime;
             cbDisablePriority.Checked = contentType.DisablePriority;
-            cbDisableContentField.Checked = contentType.DisableContentField;
-            cbDisableStatus.Checked = contentType.DisableStatus;
 
             // load attribute data 
             ChannelAttributesState = new List<Attribute>();
@@ -765,14 +759,5 @@ namespace RockWeb.Blocks.Cms
 
         #endregion
 
-        /// <summary>
-        /// Handles the SelectedIndexChanged event of the ddlDateRangeType control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void ddlDateRangeType_SelectedIndexChanged( object sender, EventArgs e )
-        {
-            cbIncludeTime.Visible = ddlDateRangeType.SelectedValueAsEnum<ContentChannelDateType>() != ContentChannelDateType.NoDates;
-        }
-    }
+}
 }
