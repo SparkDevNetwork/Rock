@@ -151,6 +151,56 @@ namespace Rock.Model
         }
 
         /// <summary>
+        /// Gets a value indicating whether this instance is analytic supported.
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if this instance is analytic supported; otherwise, <c>false</c>.
+        /// </value>
+        public bool IsAnalyticSupported
+        {
+            get
+            {
+                Type type = null;
+                if ( !string.IsNullOrWhiteSpace( this.AssemblyName ) )
+                {
+                    type = Type.GetType( this.AssemblyName );
+                }
+
+                if ( type != null )
+                {
+                    return typeof( IAnalytic ).IsAssignableFrom( type );
+                }
+
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// Gets a value indicating whether this instance is analytic historical supported.
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if this instance is analytic historical supported; otherwise, <c>false</c>.
+        /// </value>
+        public bool IsAnalyticHistoricalSupported
+        {
+            get
+            {
+                Type type = null;
+                if ( !string.IsNullOrWhiteSpace( this.AssemblyName ) )
+                {
+                    type = Type.GetType( this.AssemblyName );
+                }
+
+                if ( type != null )
+                {
+                    return typeof( IAnalyticHistorical ).IsAssignableFrom( type );
+                }
+
+                return false;
+            }
+        }
+
+        /// <summary>
         /// Gets the name of the get index model.
         /// </summary>
         /// <value>
@@ -185,6 +235,22 @@ namespace Rock.Model
                 return null;
             }
         }
+
+        /// <summary>
+        /// Gets or sets the index result template.
+        /// </summary>
+        /// <value>
+        /// The index result template.
+        /// </value>
+        public string IndexResultTemplate { get; set; }
+
+        /// <summary>
+        /// Gets or sets the index document URL.
+        /// </summary>
+        /// <value>
+        /// The index document URL.
+        /// </value>
+        public string IndexDocumentUrl { get; set; }
 
         #endregion
 

@@ -70,7 +70,7 @@ namespace Rock.Jobs
             var jobService = new ServiceJobService( rockContext );
             var job = jobService.Get( jobId );
 
-            if (job != null && job.Guid != Rock.SystemGuid.ServiceJob.JOB_PULSE.AsGuid())
+            if ( job != null && job.Guid != Rock.SystemGuid.ServiceJob.JOB_PULSE.AsGuid() )
             {
                 job.LastStatus = "Running";
                 job.LastStatusMessage = "Started at " + RockDateTime.Now.ToString();
@@ -102,13 +102,19 @@ namespace Rock.Jobs
             StringBuilder message = new StringBuilder();
             bool sendMessage = false;
 
-            // get job type id
-            int jobId = Convert.ToInt16( context.JobDetail.Description );
+            // get job id
+            int jobId = context.GetJobId();
 
             // load job
             var rockContext = new RockContext();
             var jobService = new ServiceJobService( rockContext );
             var job = jobService.Get( jobId );
+
+            if ( job == null )
+            {
+                // if job was deleted or wasn't found, just exit
+                return;
+            }
 
             // format the message
             message.Append( string.Format( "The job {0} ran for {1} seconds on {2}.  Below is the results:<p>", job.Name, context.JobRunTime.TotalSeconds, context.FireTimeUtc.Value.DateTime.ToLocalTime() ) );

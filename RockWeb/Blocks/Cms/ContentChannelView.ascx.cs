@@ -667,7 +667,7 @@ $(document).ready(function() {
                             {
                                 qry = qry.Where( i => i.ContentChannelId == contentChannel.Id );
 
-                                if ( contentChannel.RequiresApproval )
+                                if ( contentChannel.RequiresApproval && !contentChannel.ContentChannelType.DisableStatus)
                                 {
                                     // Check for the configured status and limit query to those
                                     var statuses = new List<ContentChannelItemStatus>();
@@ -870,7 +870,7 @@ $(document).ready(function() {
                 if ( channel != null )
                 {
 
-                    cblStatus.Visible = channel.RequiresApproval;
+                    cblStatus.Visible = channel.RequiresApproval && !channel.ContentChannelType.DisableStatus;
 
                     cbSetRssAutodiscover.Visible = channel.EnableRss;
 

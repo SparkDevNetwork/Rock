@@ -534,6 +534,17 @@ namespace Rock.Data
             return JsonConvert.DeserializeObject<List<T>>( json ); ;
         }
 
+        /// <summary>
+        /// Gets the index result template.
+        /// </summary>
+        /// <value>
+        /// The index result template.
+        /// </value>
+        public static string GetIndexResultTemplate()
+        {
+            return Rock.Web.Cache.EntityTypeCache.Read( typeof( T ) ).IndexResultTemplate;
+        }
+
         #endregion
 
     }

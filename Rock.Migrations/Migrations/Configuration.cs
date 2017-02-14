@@ -67,30 +67,6 @@ namespace Rock.Migrations
                     }
                 }
             }
-
-            // Previous to Rock v4.0 the PageViews didn't store Browser or OS info. This can probably be removed in a future update 
-            // after v4.0 -DT
-            var pageViewRockContext = new Rock.Data.RockContext();
-            var pageViewUserAgentService = new Rock.Model.PageViewUserAgentService( pageViewRockContext );
-            var qryPageViewUserAgent = pageViewUserAgentService.Queryable().Where(a => a.Browser == null || a.OperatingSystem == null || a.ClientType == null);
-            foreach ( var pageViewUserAgent in qryPageViewUserAgent.Where(a => a.UserAgent != null ))
-            {
-                try
-                {
-                    UAParser.Parser uaParser = UAParser.Parser.GetDefault();
-                    UAParser.ClientInfo client = uaParser.Parse( pageViewUserAgent.UserAgent );
-                    pageViewUserAgent.ClientType = Rock.Model.PageViewUserAgent.GetClientType( pageViewUserAgent.UserAgent );
-                    pageViewUserAgent.OperatingSystem = client.OS.ToString();
-                    pageViewUserAgent.Browser = client.UserAgent.ToString();
-                }
-                catch
-                {
-                    // shouldn't happen, but skip if unable to parse
-                }
-            }
-
-            pageViewRockContext.SaveChanges( true );
-
         }
     }
 }

@@ -49,10 +49,10 @@ namespace Rock.Model
         public string Name { get; set; }
 
         /// <summary>
-        /// Gets or sets the interaction service data.
+        /// Gets or sets the channel data.
         /// </summary>
         /// <value>
-        /// The interaction service data.
+        /// The channel data.
         /// </value>
         [DataMember]
         public string ChannelData { get; set; }
@@ -77,6 +77,10 @@ namespace Rock.Model
 
         /// <summary>
         /// Gets or sets the channel entity identifier.
+        /// Note, the ChannelEntityType is inferred based on what the ChannelTypeMediumValue is 
+        /// INTERACTIONCHANNELTYPE_WEBSITE = Rock.Model.Site
+        /// INTERACTIONCHANNELTYPE_COMMUNICATION = Rock.Model.Communication
+        /// INTERACTIONCHANNELTYPE_CONTENTCHANNEL = Rock.Model.ContentChannel
         /// </summary>
         /// <value>
         /// The channel entity identifier.
@@ -85,10 +89,10 @@ namespace Rock.Model
         public int? ChannelEntityId { get; set; }
 
         /// <summary>
-        /// Gets or sets the Id of the Service Type <see cref="Rock.Model.DefinedValue" /> representing what type of Interaction Service this is.
+        /// Gets or sets the Id of the Channel Type <see cref="Rock.Model.DefinedValue" /> representing what type of Interaction Channel this is.
         /// </summary>
         /// <value>
-        /// A <see cref="System.Int32"/> representing the Id of the <see cref="Rock.Model.DefinedValue"/> identifying the interaction service type. If no value is selected this can be null.
+        /// A <see cref="System.Int32"/> representing the Id of the <see cref="Rock.Model.DefinedValue"/> identifying the interaction channel type. If no value is selected this can be null.
         /// </value>
         [DataMember]
         [DefinedValue( SystemGuid.DefinedType.INTERACTION_CHANNEL_MEDIUM )]

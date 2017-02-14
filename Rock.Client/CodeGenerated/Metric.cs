@@ -44,6 +44,9 @@ namespace Rock.Client
         public string Description { get; set; }
 
         /// <summary />
+        public bool EnableAnalytics { get; set; }
+
+        /// <summary />
         public Guid? ForeignGuid { get; set; }
 
         /// <summary />
@@ -129,6 +132,7 @@ namespace Rock.Client
             this.AdminPersonAliasId = source.AdminPersonAliasId;
             this.DataViewId = source.DataViewId;
             this.Description = source.Description;
+            this.EnableAnalytics = source.EnableAnalytics;
             this.ForeignGuid = source.ForeignGuid;
             this.ForeignKey = source.ForeignKey;
             this.IconCssClass = source.IconCssClass;
