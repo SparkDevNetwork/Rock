@@ -74,7 +74,7 @@ REQUIRED VARIABLES
     <p>{{ Message.Description }}</p>
     <h3>Other Messages in this Series</h3>
     <ol>
-      {% for otherMessage in Series.Messages %}
+      {% for otherMessage in Series.Messages reversed %}
         <li><a href="?MessageId={{ otherMessage.Id }}">{{ otherMessage.Name }}</a></li>
       {% endfor %}
     </ol>
