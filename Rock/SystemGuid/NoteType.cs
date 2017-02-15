@@ -48,5 +48,10 @@ namespace Rock.SystemGuid
         /// </summary>
         public const string SCHEDULED_TRANSACTION_NOTE = "360CFFE2-7FE3-4B0B-85A7-BFDACC9AF588";
 
+        /// <summary>
+        /// The fundraising opportunity comment
+        /// </summary>
+        public const string FUNDRAISING_OPPORTUNITY_COMMENT = "9BB1A7B6-0E51-4E0E-BFC0-1E42F4F2DA95";
+
     }
 }
