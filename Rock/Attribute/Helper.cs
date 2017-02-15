@@ -800,13 +800,31 @@ namespace Rock.Attribute
         {
             if ( model != null && model.Attributes != null && model.AttributeValues != null )
             {
-                foreach ( var attribute in model.Attributes )
+                rockContext = rockContext ?? new RockContext();
+                var attributeValueService = new Model.AttributeValueService( rockContext );
+                var attributeValues = attributeValueService.GetByEntityId( model.Id ).ToDictionary(x => x.AttributeKey);
+                foreach (var attribute in model.Attributes.Values)
                 {
                     if ( model.AttributeValues.ContainsKey( attribute.Key ) )
                     {
-                        SaveAttributeValue( model, attribute.Value, model.AttributeValues[attribute.Key].Value, rockContext );
+                        if ( attributeValues.ContainsKey( attribute.Key ) )
+                        {
+                            if ( attributeValues[attribute.Key].Value != model.AttributeValues[attribute.Key].Value )
+                            {
+                                attributeValues[attribute.Key].Value = model.AttributeValues[attribute.Key].Value;
+                            }
+                        }
+                        else
+                        {
+                            var attributeValue = new AttributeValue();
+                            attributeValue.AttributeId = attribute.Id;
+                            attributeValue.EntityId = model.Id;
+                            attributeValue.Value = model.AttributeValues[attribute.Key].Value ?? string.Empty;
+                            attributeValueService.Add( attributeValue );
+                        }
                     }
                 }
+                rockContext.SaveChanges();
             }
         }
 
