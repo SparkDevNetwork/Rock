@@ -120,6 +120,7 @@
                     $control.find('.picker-select-none').show();
 
                     $spanNames.text(selectedNames.join(', '));
+                    $spanNames.attr('title', $spanNames.text());
 
                     $(this).closest('.picker-menu').slideUp(function () {
                         self.updateScrollbar();
@@ -148,6 +149,7 @@
                     $control.siblings('.js-hide-on-select-none').hide();
 
                     $spanNames.text(self.options.defaultText);
+                    $spanNames.attr('title', $spanNames.text());
                 });
             },
             updateScrollbar: function (sPosition) {
