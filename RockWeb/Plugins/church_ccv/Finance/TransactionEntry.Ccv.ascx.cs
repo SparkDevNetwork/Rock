@@ -1059,7 +1059,7 @@ namespace RockWeb.Plugins.church_ccv.Finance
             {
                 // Queue a transaction to send reciepts
                 var newTransactionIds = new List<int> { transactionId };
-                var sendPaymentRecieptsTxn = new Rock.Transactions.SendPaymentReciepts( recieptEmail.Value, newTransactionIds );
+                var sendPaymentRecieptsTxn = new Rock.Transactions.SendPaymentReceipts( recieptEmail.Value, newTransactionIds );
                 Rock.Transactions.RockQueue.TransactionQueue.Enqueue( sendPaymentRecieptsTxn );
             }
         }
