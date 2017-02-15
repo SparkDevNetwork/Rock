@@ -26,7 +26,7 @@ namespace RockWeb.Blocks.Cms
     [DisplayName("Redirect")]
     [Category("CMS")]
     [Description("Redirects the page to the URL provided.")]
-    [TextField( "Url", "The path to redirect to", order:0 )]
+    [TextField( "Url", "The path to redirect to <span class='tip tip-lava'></span>.", order:0 )]
     [CustomDropdownListField("Redirect When", "When the redirect will occur.", "1^Always,2^When On Provided Network,3^When NOT On Provided Network", true, "1", order:1)]
     [TextField("Network", "The network to compare to in the format of '192.168.0.0/24'. See http://www.ipaddressguide.com/cidr for assistance in calculating CIDR addresses.", false, "", order:2)]
     public partial class Redirect : Rock.Web.UI.RockBlock
@@ -104,13 +104,16 @@ namespace RockWeb.Blocks.Cms
 
         private void RedirectToUrl(string url)
         {
+            var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, CurrentPerson );
+            string resolvedUrl = url.ResolveMergeFields( mergeFields );
+
             if ( IsUserAuthorized( Rock.Security.Authorization.ADMINISTRATE ) )
             {
-                nbAlert.Text = string.Format( "If you did not have Administrate permissions on this block, you would have been redirected to here: <a href='{0}'>{0}</a>.", Page.ResolveUrl( url ) );
+                nbAlert.Text = string.Format( "If you did not have Administrate permissions on this block, you would have been redirected to here: <a href='{0}'>{0}</a>.", Page.ResolveUrl( resolvedUrl ) );
             }
             else
             {
-                Response.Redirect( url, false );
+                Response.Redirect( resolvedUrl, false );
                 Context.ApplicationInstance.CompleteRequest();
                 return;
             }
