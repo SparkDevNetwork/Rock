@@ -64,7 +64,7 @@ namespace Rock
         /// <param name="entity">The entity.</param>
         /// <param name="keys">The attribute keys.</param>
         /// <param name="rockContext">The rock context.</param>
-        public static void SaveAttributeValue( this Rock.Attribute.IHasAttributes entity, IEnumerable<string> keys, RockContext rockContext = null )
+        public static void SaveAttributeValues( this Rock.Attribute.IHasAttributes entity, IEnumerable<string> keys, RockContext rockContext = null )
         {
             foreach ( var key in keys )
             {
