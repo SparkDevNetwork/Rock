@@ -115,55 +115,6 @@ WHERE Id = @pageMapBlockId and [Zone] != 'Sidebar1'" );
             RockMigrationHelper.UpdateBlockType( "Sample Linq Report", "Sample Block that executes a Linq statment and displays the result (if any).", "~/Blocks/Reporting/SampleLinqReport.ascx", "Reporting", "E98E0584-0D87-4DC6-9085-DC93F17AFB7F" );
             RockMigrationHelper.UpdateBlockType( "Logout", "This block logs the current person out.", "~/Blocks/Security/Logout.ascx", "Security", "CCB87054-8AA3-4F44-AA48-19BD028C4190" );
 
-            // Delete any duplicate attributes
-            Sql( @"
-;with cte as (
-	select	
-		min(id) as firstid,
-		entitytypeid,
-		entitytypequalifiercolumn,
-		entitytypequalifiervalue,
-		[key],
-		count(*) as dupcount
-	from attribute
-	group by entitytypeid, EntityTypeQualifierColumn, EntityTypeQualifierValue, [key]
-)
-
-update v set AttributeId = cte.firstid
-from cte
-inner join attribute a
-	on a.EntityTypeId = cte.EntityTypeId
-	and a.EntityTypeQualifierColumn = cte.EntityTypeQualifierColumn
-	and a.EntityTypeQualifierValue = cte.EntityTypeQualifierValue
-	and a.[Key] = cte.[Key]
-inner join attributevalue v
-	on v.AttributeId = a.Id
-where cte.dupcount > 1
-and v.AttributeId <> cte.firstid
-
-;with cte as (
-	select	
-		min(id) as firstid,
-		entitytypeid,
-		entitytypequalifiercolumn,
-		entitytypequalifiervalue,
-		[key],
-		count(*) as dupcount
-	from attribute
-	group by entitytypeid, EntityTypeQualifierColumn, EntityTypeQualifierValue, [key]
-)
-
-delete a
-from cte
-inner join attribute a
-	on a.EntityTypeId = cte.EntityTypeId
-	and a.EntityTypeQualifierColumn = cte.EntityTypeQualifierColumn
-	and a.EntityTypeQualifierValue = cte.EntityTypeQualifierValue
-	and a.[Key] = cte.[Key]
-	and a.Id <> cte.firstid
-where cte.dupcount > 1
-" );
-
             /* Catch up new BlockType Attributes that haven't been in a migration yet */
             // Attrib for BlockType: HTML Content:Quick Edit
             RockMigrationHelper.UpdateBlockTypeAttribute( "19B61D65-37E3-459F-A44F-DEF0089118A3", "7525C4CB-EE6B-41D4-9B64-A08048D5A5C0", "Quick Edit", "QuickEdit", "", "Allow quick editing of HTML contents.", 11, @"", "2034DE48-4643-45A3-9FF7-9539F6731EFF" );
