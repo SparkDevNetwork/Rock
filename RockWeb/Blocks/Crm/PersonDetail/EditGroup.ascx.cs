@@ -1512,10 +1512,13 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             {
                 phGroupAttributes.Controls.Clear();
                 _group.LoadAttributes();
-                if ( _group.Attributes != null && _group.Attributes.Any() )
+
+                var attributes = _group.GetAuthorizedAttributes( Authorization.EDIT, CurrentPerson );
+                if ( attributes.Any() )
                 {
                     pnlAttributes.Visible = true;
-                    Rock.Attribute.Helper.AddEditControls( _group, phGroupAttributes, setValues, BlockValidationGroup );
+                    Helper.AddEditControls( string.Empty, attributes.Select( a => a.Key ).ToList(),
+                        _group, phGroupAttributes, BlockValidationGroup, setValues, new List<string>(), 3);
                 }
                 else
                 {
