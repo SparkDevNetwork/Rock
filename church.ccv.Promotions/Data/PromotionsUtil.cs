@@ -13,10 +13,8 @@ namespace church.ccv.Promotions.Data
 {
     public static class PromotionsUtil
     {
-        public static bool IsContentChannelMultiCampus( int contentChannelId )
+        public static bool IsContentChannelMultiCampus( RockContext rockContext, int contentChannelId )
         {
-            RockContext rockContext = new RockContext( );
-                        
             // if it has the multiCampusKey, then it supports multi-campus.
             var multiCampusAttributeValue = new AttributeService( rockContext ).Queryable( )
                 .Where( a => a.EntityTypeQualifierValue == contentChannelId.ToString( ) && 
@@ -54,48 +52,45 @@ namespace church.ccv.Promotions.Data
                                                       string campusGuids,
                                                       int? promoRequestId )
         {
-            PromotionsContext promoContext = new PromotionsContext( );
-                        
-            // get the event item linked to the request
-            RockContext rockContext = new RockContext( );
-            
-            // build the content channel item for this event
-            ContentChannelItemService contentService = new ContentChannelItemService( rockContext );
-            ContentChannelItem contentItem = new ContentChannelItem( );
-            contentItem.ContentChannelId = contentChannelId;
-            contentItem.ContentChannelTypeId = contentChannelTypeId;
-            contentItem.StartDateTime = startDate;
-            contentItem.ApprovedDateTime = DateTime.Now;
-            contentItem.ApprovedByPersonAliasId = approvedByPersonAliasId;
-            contentItem.ExpireDateTime = null;
-            contentItem.Title = title;
-            contentItem.Content = content;
-            contentService.Add( contentItem );
-            rockContext.SaveChanges( );
-
-            // now set the campus, (if the event has one and this content channel type supports one)
-            contentItem.LoadAttributes( rockContext );
-            
-            // this will either be the key for a single campus attribute, or the multi-campus attribute. It's
-            // the caller's responsibility to figure that out.
-            var attribute = contentItem.Attributes.Where( a => a.Value.FieldType.Guid == new Guid( contentChannelItemCampusGuid ) ).Select( a => a.Value ).FirstOrDefault( );
-            if( attribute != null )
+            using ( RockContext rockContext = new RockContext( ) )
             {
-                contentItem.SetAttributeValue( attribute.Key, campusGuids );
-                
-                contentItem.SaveAttributeValues( rockContext );
-            }
+                // build the content channel item for this event
+                ContentChannelItemService contentService = new ContentChannelItemService( rockContext );
+                ContentChannelItem contentItem = new ContentChannelItem( );
+                contentItem.ContentChannelId = contentChannelId;
+                contentItem.ContentChannelTypeId = contentChannelTypeId;
+                contentItem.StartDateTime = startDate;
+                contentItem.ApprovedDateTime = DateTime.Now;
+                contentItem.ApprovedByPersonAliasId = approvedByPersonAliasId;
+                contentItem.ExpireDateTime = null;
+                contentItem.Title = title;
+                contentItem.Content = content;
+                contentService.Add( contentItem );
+                rockContext.SaveChanges( );
 
-            rockContext.SaveChanges();
+                // now set the campus, (if the event has one and this content channel type supports one)
+                contentItem.LoadAttributes( rockContext );
             
-            // finally, create the promotion occurrence item
-            PromotionOccurrence promoOccurrence = new PromotionOccurrence( );
-            promoOccurrence.ContentChannelItemId = contentItem.Id;
-            promoOccurrence.PromotionRequestId = promoRequestId;
-            promoContext.PromotionOccurrence.Add( promoOccurrence );
-            
-            // save changes to database
-            promoContext.SaveChanges( );
+                // this will either be the key for a single campus attribute, or the multi-campus attribute. It's
+                // the caller's responsibility to figure that out.
+                var attribute = contentItem.Attributes.Where( a => a.Value.FieldType.Guid == new Guid( contentChannelItemCampusGuid ) ).Select( a => a.Value ).FirstOrDefault( );
+                if( attribute != null )
+                {
+                    contentItem.SetAttributeValue( attribute.Key, campusGuids );
+                
+                    contentItem.SaveAttributeValues( rockContext );
+                }
+
+                // finally, create the promotion occurrence item
+                PromotionsService<PromotionOccurrence> promoService = new PromotionsService<PromotionOccurrence>( rockContext );
+                PromotionOccurrence promoOccurrence = new PromotionOccurrence( );
+                promoOccurrence.ContentChannelItemId = contentItem.Id;
+                promoOccurrence.PromotionRequestId = promoRequestId;
+                promoService.Add( promoOccurrence );
+
+                // save changes to database
+                rockContext.SaveChanges( );
+            }
         }
     }
 }

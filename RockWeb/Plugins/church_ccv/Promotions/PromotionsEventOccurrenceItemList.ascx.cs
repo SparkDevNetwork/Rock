@@ -105,7 +105,7 @@ namespace RockWeb.Plugins.church_ccv.Promotions
             if ( !Page.IsPostBack )
             {
                 var rockContext = new RockContext();
-
+                
                 EventItemOccurrenceId = PageParameter( "EventItemOccurrenceId" ).AsInteger( );
                 EventCalendarId = PageParameter( "EventCalendarId" ).AsInteger( );
                 EventItemId = PageParameter( "EventItemId" ).AsInteger( );
@@ -156,8 +156,7 @@ namespace RockWeb.Plugins.church_ccv.Promotions
             else if( eventItemOccurrence.NextStartDateTime >= DateTime.Now )
             {
                 // does it have any promotion occurrences where this event has been modified AFTER?
-                PromotionsContext promoContext = new PromotionsContext( );
-                PromotionsService<PromotionRequest> promoRequestService = new PromotionsService<PromotionRequest>( promoContext );
+                PromotionsService<PromotionRequest> promoRequestService = new PromotionsService<PromotionRequest>( rockContext );
                 var promoRequestList = promoRequestService.Queryable( ).Where( pr => pr.EventItemOccurrenceId == EventItemOccurrenceId && pr.EventLastModifiedTime < eventItemOccurrence.ModifiedDateTime ).ToList( );
 
                 if( promoRequestList.Count > 0 )
@@ -167,12 +166,12 @@ namespace RockWeb.Plugins.church_ccv.Promotions
                     {
                         promoRequest.EventLastModifiedTime = eventItemOccurrence.ModifiedDateTime;
                     }
-                    promoContext.SaveChanges( );
+                    rockContext.SaveChanges( );
 
                     var promoRequestIds = promoRequestList.Select( pr => pr.Id ).ToList( );
 
                     // get all the promotion occurrences tied to this event.
-                    PromotionsService<PromotionOccurrence> promoOccurrenceService = new PromotionsService<PromotionOccurrence>( promoContext );
+                    PromotionsService<PromotionOccurrence> promoOccurrenceService = new PromotionsService<PromotionOccurrence>( rockContext );
                     var promoOccurrenceList = promoOccurrenceService.Queryable( ).Where( po => po.PromotionRequestId.HasValue && promoRequestIds.Contains( po.PromotionRequestId.Value ) ).ToList( );
                     
                     // send an email
@@ -365,6 +364,8 @@ namespace RockWeb.Plugins.church_ccv.Promotions
 
         private void gItems_RowCommand( object sender, GridViewCommandEventArgs e )
         {
+            RockContext rockContext = new RockContext( );
+
             // take the row index, and get its bound key value.
             int rowIndex = Convert.ToInt32( e.CommandArgument );
             int rowKeyValueId = (int)gItems.DataKeys[rowIndex].Value;
@@ -373,8 +374,7 @@ namespace RockWeb.Plugins.church_ccv.Promotions
             ContentChannel contentChannel = ContentChannels.Where( cc => cc.Id == rowKeyValueId ).SingleOrDefault( );
             
             // in the promo request table, create the request.
-            PromotionsContext promoContext = new PromotionsContext( );
-            PromotionsService<PromotionRequest> promoService = new PromotionsService<PromotionRequest>( promoContext );
+            PromotionsService<PromotionRequest> promoService = new PromotionsService<PromotionRequest>( rockContext );
             PromotionRequest promoRequest = promoService.Queryable( ).Where( pr => pr.EventItemOccurrenceId == EventItemOccurrenceId && 
                                                                                    pr.ContentChannelId == contentChannel.Id ).SingleOrDefault( );
 
@@ -394,9 +394,9 @@ namespace RockWeb.Plugins.church_ccv.Promotions
                     promoRequest.EventLastModifiedTime = eventItemOccurrence.ModifiedDateTime;
                     promoRequest.ContentChannelId = contentChannel.Id;
                     promoRequest.IsActive = true;
-
-                    promoContext.PromotionRequest.Add( promoRequest );
-                    promoContext.SaveChanges();
+                    
+                    promoService.Add( promoRequest );
+                    rockContext.SaveChanges();
 
                     BindGrids();
                 }
@@ -404,7 +404,7 @@ namespace RockWeb.Plugins.church_ccv.Promotions
                 else if ( promoRequest.IsActive == false )
                 {
                     promoRequest.IsActive = true;
-                    promoContext.SaveChanges();
+                    rockContext.SaveChanges();
 
                     BindGrids();
                 }
@@ -412,7 +412,7 @@ namespace RockWeb.Plugins.church_ccv.Promotions
                 else
                 {
                     promoRequest.IsActive = false;
-                    promoContext.SaveChanges();
+                    rockContext.SaveChanges();
 
                     BindGrids();
                 }
@@ -426,8 +426,10 @@ namespace RockWeb.Plugins.church_ccv.Promotions
         {
             if ( ContentChannels.Any() )
             {
+                RockContext rockContext = new RockContext( );
+
                 // ok, first get all the promo requests for this event occurrence
-                var promoRequests = new PromotionsService<PromotionRequest>( new PromotionsContext() )
+                var promoRequests = new PromotionsService<PromotionRequest>( rockContext )
                     .Queryable().Where( pr => pr.EventItemOccurrenceId == EventItemOccurrenceId );
                 
                 // get the UI grid for the content channel types

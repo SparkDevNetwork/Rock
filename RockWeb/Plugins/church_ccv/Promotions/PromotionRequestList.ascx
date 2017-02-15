@@ -58,7 +58,7 @@
             <Rock:ModalDialog ID="mdCampusSelect" runat="server" ValidationGroup="vgConfigure">
                 <Content>
                     <h5>This event is multi-campus, and the promotion type supports multiple campuses.</h5>
-                    <h5>Select the campuses you wish to run this promotion on.</h5>
+                    <h5>Select the campuses you wish to run this promotion on. (Leave blank for all campuses.)</h5>
                     <div class="margin-v-md" />
                     <asp:Label ID="lbCampusSelectEventInfo" runat="server" />
                     <div class="margin-v-md" />

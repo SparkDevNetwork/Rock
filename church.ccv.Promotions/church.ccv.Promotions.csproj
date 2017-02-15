@@ -49,7 +49,6 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Data\PromotionsContext.cs" />
     <Compile Include="Data\PromotionsService.cs" />
     <Compile Include="Data\PromotionsUtil.cs" />
     <Compile Include="Migrations\001_CreateDb.cs" />

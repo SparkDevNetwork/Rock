@@ -36,6 +36,7 @@ using Rock.Web.Cache;
 using Newtonsoft.Json;
 using System.Web.UI.WebControls;
 using System.Web.UI.HtmlControls;
+using System.Data.Entity;
 
 namespace RockWeb.Plugins.church_ccv.Promotions
 {
@@ -45,7 +46,7 @@ namespace RockWeb.Plugins.church_ccv.Promotions
     public partial class PromotionRequestList : RockBlock
     {
         public object RockTransactionScope { get; private set; }
-        
+                
         #region Control Methods
 
         /// <summary>
@@ -55,7 +56,7 @@ namespace RockWeb.Plugins.church_ccv.Promotions
         protected override void OnInit( EventArgs e )
         {
             base.OnInit( e );
-
+            
             PopulatePromoTypesControl( );
 
             PopulateCampusSelectorControls( );
@@ -116,7 +117,10 @@ namespace RockWeb.Plugins.church_ccv.Promotions
 
                 RestoreDateControls( );
                 
-                BindGrid();
+                using ( RockContext rockContext = new RockContext( ) )
+                {
+                    BindGrid( rockContext );
+                }
             }
         }
 
@@ -125,30 +129,32 @@ namespace RockWeb.Plugins.church_ccv.Promotions
             // Filter Promos
             ddlPromoType.Items.Clear( );
 
-            // first, get all of the promotions we're currently managing
-            PromotionsService<PromotionRequest> promoService = new PromotionsService<PromotionRequest>( new PromotionsContext( ) );
-            var eventOccurrenceIds = promoService.Queryable( ).Select( p => p.EventItemOccurrenceId ).ToList( );
-
-            // now, we want to get all the relevant content channels. how do we know which ones?
-            // An event calendar has a list of supported content channels. So we want all content channels for all the event calendars we're using.
-            RockContext rockContext = new RockContext();
-            var eventItemIds = new EventItemOccurrenceService( rockContext ).Queryable( ).Where( eio => eventOccurrenceIds.Contains( eio.Id ) ).Select( ei => ei.EventItemId );
-            var eventCalIds = new EventCalendarItemService( rockContext ).Queryable( ).Where( eci => eventItemIds.Contains( eci.EventItemId ) ).Select( eci => eci.EventCalendarId );
-            var contentChannelIds = new EventCalendarContentChannelService( rockContext ).Queryable( ).Where( ecc => eventCalIds.Contains( ecc.EventCalendarId ) ).Select( ecc => ecc.ContentChannelId );
-            
-            // got a list! Now pull it into memory
-            var contentChannels = new ContentChannelService( rockContext ).Queryable()
-                .Where( c=> contentChannelIds.Contains( c.Id ) )
-                .ToList();
-            
-            // add each item to the filter
-            foreach( ContentChannel cc in contentChannels )
+            using ( RockContext rockContext = new RockContext( ) )
             {
-                ddlPromoType.Items.Add( new ListItem( cc.Name, cc.Id.ToString( ) ) );
-            }
-            ddlPromoType.Items.Insert( 0, new ListItem( "", "" ) );
+                // first, get all of the promotions we're currently managing
+                PromotionsService<PromotionRequest> promoService = new PromotionsService<PromotionRequest>( rockContext );
+                var eventOccurrenceIds = promoService.Queryable( ).AsNoTracking( ).Select( p => p.EventItemOccurrenceId ).ToList( );
 
-            ddlPromoType.DataBind();
+                // now, we want to get all the relevant content channels. how do we know which ones?
+                // An event calendar has a list of supported content channels. So we want all content channels for all the event calendars we're using.
+                var eventItemIds = new EventItemOccurrenceService( rockContext ).Queryable( ).AsNoTracking( ).Where( eio => eventOccurrenceIds.Contains( eio.Id ) ).Select( ei => ei.EventItemId );
+                var eventCalIds = new EventCalendarItemService( rockContext ).Queryable( ).AsNoTracking( ).Where( eci => eventItemIds.Contains( eci.EventItemId ) ).Select( eci => eci.EventCalendarId );
+                var contentChannelIds = new EventCalendarContentChannelService( rockContext ).Queryable( ).AsNoTracking( ).Where( ecc => eventCalIds.Contains( ecc.EventCalendarId ) ).Select( ecc => ecc.ContentChannelId );
+            
+                // got a list! Now pull it into memory
+                var contentChannels = new ContentChannelService( rockContext ).Queryable().AsNoTracking( )
+                    .Where( c=> contentChannelIds.Contains( c.Id ) )
+                    .ToList();
+            
+                // add each item to the filter
+                foreach( ContentChannel cc in contentChannels )
+                {
+                    ddlPromoType.Items.Add( new ListItem( cc.Name, cc.Id.ToString( ) ) );
+                }
+                ddlPromoType.Items.Insert( 0, new ListItem( "", "" ) );
+
+                ddlPromoType.DataBind( );
+            }
         }
         
         void RestoreDateControls( )
@@ -186,7 +192,10 @@ namespace RockWeb.Plugins.church_ccv.Promotions
         {
             rFilter.SaveUserPreference( "Title", tbTitle.Text );
             
-            BindGrid();
+            using ( RockContext rockContext = new RockContext( ) )
+            {
+                BindGrid( rockContext );
+            }
         }
 
         /// <summary>
@@ -212,7 +221,10 @@ namespace RockWeb.Plugins.church_ccv.Promotions
         {
             SaveDateControls( );
 
-            BindGrid( );
+            using ( RockContext rockContext = new RockContext( ) )
+            {
+                BindGrid( rockContext );
+            }
         }
 
         protected void gPromotions_Approve( object sender, RowEventArgs e )
@@ -220,70 +232,69 @@ namespace RockWeb.Plugins.church_ccv.Promotions
             // require a promotion date be set
             if( dpTargetPromoDate.SelectedDate.HasValue )
             {
-                // this is more like, "publish for this week"
-                PromotionsContext promoContext = new PromotionsContext( );
-                PromotionsService<PromotionRequest> promoService = new PromotionsService<PromotionRequest>( promoContext );
+                using ( RockContext rockContext = new RockContext( ) )
+                {
+                    // this is more like, "publish for this week"
+                    PromotionsService<PromotionRequest> promoService = new PromotionsService<PromotionRequest>( rockContext );
 
-                // grab the item that was clicked
-                PromotionRequest promoRequest = promoService.Get( e.RowKeyId );
+                    // grab the item that was clicked
+                    PromotionRequest promoRequest = promoService.Get( e.RowKeyId );
                 
-                // get the event item linked to the request
-                RockContext rockContext = new RockContext( );
-                EventItemOccurrenceService eventService = new EventItemOccurrenceService( rockContext );
-                var eventItem = eventService.Get( promoRequest.EventItemOccurrenceId );
+                    // get the event item linked to the request
+                    EventItemOccurrenceService eventService = new EventItemOccurrenceService( rockContext );
+                    var eventItem = eventService.Get( promoRequest.EventItemOccurrenceId );
             
-                // figure out if this promo should be using single "Campus" or multiple "Campuses"
-                var campusObj = new CampusService( rockContext ).Get( ddlCampus.SelectedValue.AsInteger( ) );
+                    // figure out if this promo should be using single "Campus" or multiple "Campuses"
+                    var campusObj = new CampusService( rockContext ).Get( ddlCampus.SelectedValue.AsInteger( ) );
             
-                bool multiCampus = PromotionsUtil.IsContentChannelMultiCampus( promoRequest.ContentChannel.Id );
+                    bool multiCampus = PromotionsUtil.IsContentChannelMultiCampus( rockContext, promoRequest.ContentChannel.Id );
 
-                // the campus attribute type (multi or single), along with the event's campus,
-                // will determine how we setup the data
+                    // the campus attribute type (multi or single), along with the event's campus,
+                    // will determine how we setup the data
 
-                // if it's multi-campus, and the event is an all-campus event
-                if ( multiCampus && eventItem.Campus == null )
-                {
-                    // throw up the dialog so they can decide.
-                    HandleMultiCampusPromotion( promoRequest );
-                }
-                else
-                {
-                    // otherwise, it's either a single-campus event and a multi-campus promo type,
-                    // or it's a single campus promo type.
-                    string campusAttributeGuid = string.Empty;
-                    string campusGuids = campusObj.Guid.ToString();
-
-                    // the only difference will be the key
-                    if ( multiCampus )
+                    // if it's multi-campus, and the event is an all-campus event
+                    if ( multiCampus && eventItem.Campus == null )
                     {
-                        campusAttributeGuid = Rock.SystemGuid.FieldType.CAMPUSES;
+                        // throw up the dialog so they can decide.
+                        HandleMultiCampusPromotion( rockContext, promoRequest );
                     }
                     else
                     {
-                        campusAttributeGuid = Rock.SystemGuid.FieldType.CAMPUS;
+                        // otherwise, it's either a single-campus event and a multi-campus promo type,
+                        // or it's a single campus promo type.
+                        string campusAttributeGuid = string.Empty;
+                        string campusGuids = campusObj.Guid.ToString();
+
+                        // the only difference will be the key
+                        if ( multiCampus )
+                        {
+                            campusAttributeGuid = Rock.SystemGuid.FieldType.CAMPUSES;
+                        }
+                        else
+                        {
+                            campusAttributeGuid = Rock.SystemGuid.FieldType.CAMPUS;
+                        }
+
+                        PromotionsUtil.CreatePromotionOccurrence( promoRequest.ContentChannel.Id,
+                                                                  promoRequest.ContentChannel.ContentChannelTypeId,
+                                                                  dpTargetPromoDate.SelectedDate.Value,
+                                                                  CurrentPersonAliasId,
+                                                                  eventItem.EventItem.Name,
+                                                                  BuildPromoContent( eventItem ),
+                                                                  campusAttributeGuid,
+                                                                  campusGuids,
+                                                                  promoRequest.Id );
+
+                        BindGrid( rockContext );
                     }
-
-                    PromotionsUtil.CreatePromotionOccurrence( promoRequest.ContentChannel.Id,
-                                                              promoRequest.ContentChannel.ContentChannelTypeId,
-                                                              dpTargetPromoDate.SelectedDate.Value,
-                                                              CurrentPersonAliasId,
-                                                              eventItem.EventItem.Name,
-                                                              BuildPromoContent( eventItem ),
-                                                              campusAttributeGuid,
-                                                              campusGuids,
-                                                              promoRequest.Id );
-
-                    BindGrid();
                 }
             }
         }
         
-        protected void HandleMultiCampusPromotion( PromotionRequest promoRequest )
+        protected void HandleMultiCampusPromotion( RockContext rockContext, PromotionRequest promoRequest )
         {
-            PromotionsContext promoContext = new PromotionsContext( );
-
             // grab all promo occurrences tied to this promotion request, and pull them into memory
-            PromotionsService<PromotionOccurrence> promoOccurrenceService = new PromotionsService<PromotionOccurrence>( promoContext );
+            PromotionsService<PromotionOccurrence> promoOccurrenceService = new PromotionsService<PromotionOccurrence>( rockContext );
             var promoOccurrenceList = promoOccurrenceService.Queryable( ).Where( po => po.PromotionRequestId == promoRequest.Id ).ToList( );
             
             // we need to see, for the selected date, what campuses this promotion is running on
@@ -302,7 +313,7 @@ namespace RockWeb.Plugins.church_ccv.Promotions
                 .ToList( );
                 
             // now, for each promotion occurrence, join with its "Campuses" attribute value
-            var campusesAttribValList = new AttributeValueService( new RockContext( ) ).Queryable( ).Where( av => av.Attribute.FieldType.Guid == new Guid( Rock.SystemGuid.FieldType.CAMPUSES ) ).ToList( );
+            var campusesAttribValList = new AttributeValueService( rockContext ).Queryable( ).Where( av => av.Attribute.FieldType.Guid == new Guid( Rock.SystemGuid.FieldType.CAMPUSES ) ).ToList( );
 
             var campusGuids = promoOccurrenceList.Join( campusesAttribValList, 
 
@@ -339,7 +350,7 @@ namespace RockWeb.Plugins.church_ccv.Promotions
             hfPromoRequestId.Value = promoRequest.Id.ToString( );
 
             // set the title for the modal using the event item
-            EventItemOccurrenceService eventService = new EventItemOccurrenceService( new RockContext( ) );
+            EventItemOccurrenceService eventService = new EventItemOccurrenceService( rockContext );
             var eventItem = eventService.Get( promoRequest.EventItemOccurrenceId );
 
             string campusString = eventItem.Campus != null ? eventItem.Campus.Name : "All Campuses";
@@ -353,47 +364,55 @@ namespace RockWeb.Plugins.church_ccv.Promotions
 
         protected void mdCampusSelect_SaveClick( object sender, EventArgs e )
         {
-            PromotionsContext promoContext = new PromotionsContext( );
-            PromotionsService<PromotionRequest> promoService = new PromotionsService<PromotionRequest>( promoContext );
-
-            // grab the item that was clicked
-            PromotionRequest promoRequest = promoService.Get( hfPromoRequestId.Value.AsInteger( ) );
-
-            // get the event item linked to the request
-            RockContext rockContext = new RockContext( );
-            EventItemOccurrenceService eventService = new EventItemOccurrenceService( rockContext );
-            var eventItem = eventService.Get( promoRequest.EventItemOccurrenceId );
-
-            string campusGuids = string.Empty;
-            foreach( RockCheckBox checkBox in mdCampusSelect.ControlsOfTypeRecursive<RockCheckBox>( ) )
+            using ( RockContext rockContext = new RockContext( ) )
             {
-                // if its enabled AND checked, they clicked it.
-                if( checkBox.Enabled == true && checkBox.Checked == true )
+                PromotionsService<PromotionRequest> promoService = new PromotionsService<PromotionRequest>( rockContext );
+
+                // grab the item that was clicked
+                PromotionRequest promoRequest = promoService.Get( hfPromoRequestId.Value.AsInteger( ) );
+
+                // get the event item linked to the request
+                EventItemOccurrenceService eventService = new EventItemOccurrenceService( rockContext );
+                var eventItem = eventService.Get( promoRequest.EventItemOccurrenceId );
+
+                string campusGuids = string.Empty;
+                foreach( RockCheckBox checkBox in mdCampusSelect.ControlsOfTypeRecursive<RockCheckBox>( ) )
                 {
-                    campusGuids += checkBox.ID + ",";
+                    // if its enabled AND checked, they clicked it.
+                    if( checkBox.Enabled == true && checkBox.Checked == true )
+                    {
+                        campusGuids += checkBox.ID + ",";
+                    }
                 }
+
+                // remove the trailing comma (if there are any guids in the string)
+                if( campusGuids.Length > 0 )
+                {
+                    campusGuids = campusGuids.Substring( 0, campusGuids.Length - 1 );
+
+                    // if they checked every campus, convert it to blank, since that means "all campuses".
+                    string[] campusGuidArray = campusGuids.Split( ',' );
+                    if( campusGuidArray.Count( ) == CampusCache.All( ).Count( ) )
+                    {
+                        campusGuids = string.Empty;
+                    }
+                }
+
+                // create the combined promo occurrence
+                PromotionsUtil.CreatePromotionOccurrence( promoRequest.ContentChannel.Id, 
+                                                          promoRequest.ContentChannel.ContentChannelTypeId, 
+                                                          dpTargetPromoDate.SelectedDate.HasValue ? dpTargetPromoDate.SelectedDate.Value : DateTime.Now, 
+                                                          CurrentPersonAliasId, 
+                                                          eventItem.EventItem.Name,
+                                                          BuildPromoContent( eventItem ),
+                                                          Rock.SystemGuid.FieldType.CAMPUSES,
+                                                          campusGuids,
+                                                          promoRequest.Id );
+
+                mdCampusSelect.Hide();
+
+                BindGrid( rockContext );
             }
-
-            // remove the trailing comma (if there are any guids in the string)
-            if( campusGuids.Length > 0 )
-            {
-                campusGuids = campusGuids.Substring( 0, campusGuids.Length - 1 );
-            }
-
-            // create the combined promo occurrence
-            PromotionsUtil.CreatePromotionOccurrence( promoRequest.ContentChannel.Id, 
-                                                      promoRequest.ContentChannel.ContentChannelTypeId, 
-                                                      dpTargetPromoDate.SelectedDate.HasValue ? dpTargetPromoDate.SelectedDate.Value : DateTime.Now, 
-                                                      CurrentPersonAliasId, 
-                                                      eventItem.EventItem.Name,
-                                                      BuildPromoContent( eventItem ),
-                                                      Rock.SystemGuid.FieldType.CAMPUSES,
-                                                      campusGuids,
-                                                      promoRequest.Id );
-
-            mdCampusSelect.Hide();
-            BindGrid( );
-
         }
 
         string BuildPromoContent( EventItemOccurrence eventItem )
@@ -422,7 +441,10 @@ namespace RockWeb.Plugins.church_ccv.Promotions
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         private void gPromotions_GridRebind( object sender, EventArgs e )
         {
-            BindGrid();
+            using ( RockContext rockContext = new RockContext( ) )
+            {
+                BindGrid( rockContext );
+            }
         }
 
         #endregion
@@ -432,29 +454,47 @@ namespace RockWeb.Plugins.church_ccv.Promotions
         /// <summary>
         /// Binds the grid.
         /// </summary>
-        private void BindGrid()
+        private void BindGrid( RockContext rockContext )
         {
             if( dpTargetPromoDate.SelectedDate.HasValue && drpFutureWeeks.LowerValue.HasValue && drpFutureWeeks.UpperValue.HasValue )
             {
                 // get the event item occurrence service
-                RockContext rockContext = new RockContext();
                 EventItemOccurrenceService eventService = new EventItemOccurrenceService( rockContext );
 
                 // get the all promotion requests
-                PromotionsContext promoContext = new PromotionsContext();
-                PromotionsService<PromotionRequest> promoService = new PromotionsService<PromotionRequest>( promoContext );
-                
+                PromotionsService<PromotionRequest> promoService = new PromotionsService<PromotionRequest>( rockContext );
+
                 // get all active requests. (If a request is active, but its Event Item Occurrence was deleted, we won't end up showing it, because
                 // the lazy load of EventOccurrence will fail, so that's a good thing.)
-                var promoRequestQuery = promoService.Queryable().Where( pr => pr.IsActive == true );
+                var promoRequestQuery = promoService.Queryable().AsNoTracking( ).Where( pr => pr.IsActive == true )
+                                                    .Select( pr => new
+                                                    {
+                                                        Id = pr.Id,
+                                                        Guid = pr.Guid,
+                                                        ContentChannelId = pr.ContentChannelId,
+                                                        ContentChannel_IconCssClass = pr.ContentChannel.IconCssClass,
+                                                        ContentChannel_Name = pr.ContentChannel.Name,
+                                                        EventItemOccurrenceId = pr.EventItemOccurrenceId,
+                                                        EventItemOccurrence_CampusId = pr.EventItemOccurrence.CampusId,
+                                                        EventItemOccurrence_CampusName = pr.EventItemOccurrence.Campus != null ? pr.EventItemOccurrence.Campus.Name : "All Campuses",
+                                                        EventItemOccurrence_EventItem_Name = pr.EventItemOccurrence.EventItem.Name
+                                                    } );
 
                 // Now, we need to REMOVE any request where:
                 // For the selected working date
                 // For the selected campus
                 // For the given content channel type
                 // If there's a Promotion Occurrence that matches these 3 things, hide it.
-                PromotionsService<PromotionOccurrence> promoOccurrenceService = new PromotionsService<PromotionOccurrence>( promoContext );
-                var promoOccurrenceQuery = promoOccurrenceService.Queryable( );
+                PromotionsService<PromotionOccurrence> promoOccurrenceService = new PromotionsService<PromotionOccurrence>( rockContext );
+                var promoOccurrenceQuery = promoOccurrenceService.Queryable( ).AsNoTracking( )
+                                                                    .Select( po => new
+                                                                    {
+                                                                        PromotionRequestId = po.PromotionRequestId,
+                                                                        ContentChannelItemId = po.ContentChannelItem.Id,
+                                                                        ContentChannelItem_StartDateTime = po.ContentChannelItem.StartDateTime,
+                                                                        ContentChannelItem_ExpireDateTime = po.ContentChannelItem.ExpireDateTime,
+                                                                        ContentChannelItem_ContentChannelId = po.ContentChannelItem.ContentChannelId
+                                                                    } );
 
                 // get the guid of the selected campus
                 Guid selectedCampusGuid = CampusCache.Read( ddlCampus.SelectedValue.AsInteger( ) ).Guid;
@@ -489,7 +529,7 @@ namespace RockWeb.Plugins.church_ccv.Promotions
                 // Then this event WOULD NOT show up.
                 // If you changed the campus selection to East Valley (not one of the checked campuses in the above example occurrence), it WOULD show up.
 
-                
+
                 /////////////////////////
                 // now lets actually do the query.
                 // First, join the Request and Occurrence tables on the Request's ID
@@ -500,52 +540,52 @@ namespace RockWeb.Plugins.church_ccv.Promotions
                     .Where( prpo => 
                     
                         // If there's only a start date, then it needs to be the target date selected.
-                        (prpo.PromotionOccurrence.ContentChannelItem.ExpireDateTime.HasValue == false && 
-                        prpo.PromotionOccurrence.ContentChannelItem.StartDateTime == dpTargetPromoDate.SelectedDate.Value) ||
+                        (prpo.PromotionOccurrence.ContentChannelItem_ExpireDateTime.HasValue == false &&
+                            prpo.PromotionOccurrence.ContentChannelItem_StartDateTime == dpTargetPromoDate.SelectedDate.Value) ||
 
                         // otherwise, if there's an expire date, then the target needs to be inbetween start & end
-                        (prpo.PromotionOccurrence.ContentChannelItem.ExpireDateTime.HasValue == true &&
-                        prpo.PromotionOccurrence.ContentChannelItem.StartDateTime <= dpTargetPromoDate.SelectedDate.Value &&
-                        prpo.PromotionOccurrence.ContentChannelItem.ExpireDateTime >= dpTargetPromoDate.SelectedDate.Value) &&
-                    
-                        prpo.PromotionOccurrence.ContentChannelItem.ContentChannelId == prpo.PromotionRequest.ContentChannelId ).ToList( );
-                
+                        (prpo.PromotionOccurrence.ContentChannelItem_ExpireDateTime.HasValue == true &&
+                            prpo.PromotionOccurrence.ContentChannelItem_StartDateTime <= dpTargetPromoDate.SelectedDate.Value &&
+                            prpo.PromotionOccurrence.ContentChannelItem_ExpireDateTime >= dpTargetPromoDate.SelectedDate.Value) &&
+
+                            prpo.PromotionOccurrence.ContentChannelItem_ContentChannelId == prpo.PromotionRequest.ContentChannelId );
+
                 // build single campus content items that should be excluded
-                var campusAttribValList = new AttributeValueService( rockContext ).Queryable( ).Where( av => av.Attribute.FieldType.Guid == new Guid( Rock.SystemGuid.FieldType.CAMPUS ) ).ToList( );
-                var excludedCampusPromotionRequestIds = excludedPromotionRequestsQuery.Join( campusAttribValList, 
-                    
-                    pr => pr.PromotionOccurrence.ContentChannelItem.Id, ca=> ca.EntityId, ( pr, ca ) => new { Promotion = pr, Campus = ca } )
-                    
-                    .Where( pr => string.IsNullOrWhiteSpace( pr.Campus.Value ) == false && selectedCampusGuid == Guid.Parse( pr.Campus.Value ) )
-                    
+                var campusAttribValList = new AttributeValueService( rockContext ).Queryable( ).AsNoTracking( ).Where( av => av.Attribute.FieldType.Guid == new Guid( Rock.SystemGuid.FieldType.CAMPUS ) );
+                var excludedCampusPromotionRequestIds = excludedPromotionRequestsQuery.Join( campusAttribValList,
+
+                    pr => pr.PromotionOccurrence.ContentChannelItemId, ca=> ca.EntityId, ( pr, ca ) => new { Promotion = pr, Campus = ca } )
+
+                    .Where( pr => (pr.Campus.Value == null || pr.Campus.Value == "") == false && selectedCampusGuid.ToString( ).ToLower( ) == pr.Campus.Value.ToLower( ) )
+
                     .Select( pr => pr.Promotion.PromotionRequest.Id );
 
                 promoRequestQuery = promoRequestQuery.Where( pr => excludedCampusPromotionRequestIds.Contains( pr.Id ) == false );
 
 
                 // build MULTI-campus content items that should be excluded
-                var campusesAttribValList = new AttributeValueService( rockContext ).Queryable( ).Where( av => av.Attribute.FieldType.Guid == new Guid( Rock.SystemGuid.FieldType.CAMPUSES ) ).ToList( );
-                var excludedCampusesPromotionRequestIds = excludedPromotionRequestsQuery.Join( campusesAttribValList, 
+                var campusesAttribValList = new AttributeValueService( rockContext ).Queryable( ).AsNoTracking( ).Where( av => av.Attribute.FieldType.Guid == new Guid( Rock.SystemGuid.FieldType.CAMPUSES ) );
+                var excludedCampusesPromotionRequestIds = excludedPromotionRequestsQuery.Join( campusesAttribValList,
 
-                    pr => pr.PromotionOccurrence.ContentChannelItem.Id, ca=> ca.EntityId, ( pr, ca ) => new { Promotion = pr, Campuses = ca } )
+                    pr => pr.PromotionOccurrence.ContentChannelItemId, ca=> ca.EntityId, ( pr, ca ) => new { Promotion = pr, Campuses = ca } )
                     
                     // Exclude the item IF it has a blank "campuses" value (since that means ALL campuses), OR if it has a checked campus that matches our selected one.
-                    .Where( pr => string.IsNullOrWhiteSpace( pr.Campuses.Value ) == true || pr.Campuses.Value.Contains( selectedCampusGuid.ToString( ) ) )
+                    .Where( pr => (pr.Campuses.Value == null || pr.Campuses.Value == "") || pr.Campuses.Value.Contains( selectedCampusGuid.ToString( ) ) )
                     
                     // Take just the IDs
                     .Select( pr => pr.Promotion.PromotionRequest.Id );
-                
+
                 // if it's not in either campus exclusion list, it may stay.
                 promoRequestQuery = promoRequestQuery.Where( pr => excludedCampusesPromotionRequestIds.Contains( pr.Id ) == false );
                 /////////////////////
-                
+
                 // Apply Working Campus
                 int selectedCampusId = ddlCampus.SelectedValue.AsInteger( );
-                promoRequestQuery = promoRequestQuery.Where( a => a.EventItemOccurrence.CampusId == null || (a.EventItemOccurrence.CampusId.HasValue && selectedCampusId == a.EventItemOccurrence.CampusId.Value ) );
+                promoRequestQuery = promoRequestQuery.Where( a => a.EventItemOccurrence_CampusId == null || ( a.EventItemOccurrence_CampusId.HasValue && selectedCampusId == a.EventItemOccurrence_CampusId.Value ) );
 
 
                 // Apply Future Weeks Date
-                
+
                 // convert to a list in memory so we can filter the dates
                 var promoItems = promoRequestQuery.ToList( );
 
@@ -559,25 +599,25 @@ namespace RockWeb.Plugins.church_ccv.Promotions
                 promoItems = promoItems.Where( pr => eventService.Get( pr.EventItemOccurrenceId ).NextStartDateTime <= drpFutureWeeks.UpperValue.Value ).ToList( );
 
                 // put it back to a query
-                promoRequestQuery = promoItems.AsQueryable( );
+                promoRequestQuery = promoItems.AsQueryable( ).AsNoTracking( );
 
 
                 // ---- Apply Filters ----
                 // Title
                 if ( string.IsNullOrWhiteSpace( tbTitle.Text ) == false )
                 {
-                    promoRequestQuery = promoRequestQuery.Where( pr => pr.EventItemOccurrence.EventItem.Name.ToLower( ).Contains( tbTitle.Text.ToLower( ) ) );
+                    promoRequestQuery = promoRequestQuery.Where( pr => pr.EventItemOccurrence_EventItem_Name.ToLower( ).Contains( tbTitle.Text.ToLower( ) ) );
                 }
 
                 // Content Channel Type (Promo Type)
                 ListItem promoItem = ddlPromoType.Items[ ddlPromoType.SelectedIndex ];
-                if( string.IsNullOrEmpty( promoItem.Value ) == false )
+                if ( string.IsNullOrEmpty( promoItem.Value ) == false )
                 {
                     int filteredChannelId = promoItem.Value.AsInteger( );
                     promoRequestQuery = promoRequestQuery.Where( pr => pr.ContentChannelId == filteredChannelId );
                 }
                 // -----
-            
+
                 // Sort
                 /*SortProperty sortProperty = gPromotions.SortProperty;
                 if ( sortProperty != null )
@@ -591,24 +631,24 @@ namespace RockWeb.Plugins.church_ccv.Promotions
 
                 // Done Filtering
                 var promoRequestList = promoRequestQuery.ToList( );
-            
+
                 gPromotions.DataSource = promoRequestList.Select( i => new
                 {
                     Id = i.Id,
                     Guid = i.Guid,
-                    Title = i.EventItemOccurrence.EventItem.Name,
-                    Campus = i.EventItemOccurrence.Campus != null ? i.EventItemOccurrence.Campus.Name : "All Campuses",
-                    EventDate = GetDate( eventService, i ),
-                    PromoType = string.Format( "<span class='{0}'></span> {1}", i.ContentChannel.IconCssClass, i.ContentChannel.Name )
-                }).OrderBy( a => a.EventDate ).ToList( );
+                    Title = i.EventItemOccurrence_EventItem_Name,
+                    Campus = i.EventItemOccurrence_CampusName,
+                    EventDate = GetDate( eventService, i.EventItemOccurrenceId ),
+                    PromoType = string.Format( "<span class='{0}'></span> {1}", i.ContentChannel_IconCssClass, i.ContentChannel_Name )
+                } ).OrderBy( a => a.EventDate ).ToList( );
             }
 
             gPromotions.DataBind();
         }
 
-        string GetDate( EventItemOccurrenceService eventService, PromotionRequest promoRequest )
+        string GetDate( EventItemOccurrenceService eventService, int eventItemOccurrenceId )
         {
-            var eventItem = eventService.Get( promoRequest.EventItemOccurrenceId );
+            var eventItem = eventService.Get( eventItemOccurrenceId );
 
             // sanity check for the 
             if( eventItem.NextStartDateTime.HasValue )

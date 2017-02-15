@@ -16,6 +16,8 @@
 //
 using System.Linq;
 using church.ccv.Promotions.Model;
+using System.Data.Entity;
+using Rock.Data;
 
 namespace church.ccv.Promotions.Data
 {
@@ -29,10 +31,10 @@ namespace church.ccv.Promotions.Data
         /// Initializes a new instance of the <see cref="PromotionsService{T}"/> class.
         /// </summary>
         /// <param name="promotionsContext">The promotion context.</param>
-        public PromotionsService( PromotionsContext promotionsContext )
-            : base( promotionsContext )
+        public PromotionsService( RockContext rockContext )
+            : base( rockContext )
         {
-            PromotionsContext = promotionsContext;
+            //PromotionsContext = promotionsContext;
         }
 
         /// <summary>
@@ -41,6 +43,9 @@ namespace church.ccv.Promotions.Data
         /// <value>
         /// The promotion context.
         /// </value>
-        public PromotionsContext PromotionsContext { get; private set; }
+        //public PromotionsContext PromotionsContext { get; private set; }
+
+        //public DbSet<PromotionOccurrence> PromotionOccurrence { get; set; }
+        //public DbSet<PromotionRequest> PromotionRequest { get; set; }
     }
 }
