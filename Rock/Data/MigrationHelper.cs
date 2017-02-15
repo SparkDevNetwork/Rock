@@ -962,14 +962,44 @@ namespace Rock.Data
                 DECLARE @EntityTypeId int
                 SET @EntityTypeId = (SELECT [Id] FROM [EntityType] WHERE [Name] = 'Rock.Model.Block')
 
-                IF EXISTS (
-                    SELECT [Id]
-                    FROM [Attribute]
+                -- Find first and last attribute with this entitytype/key combination
+                DECLARE @FirstAttributeId int
+                DECLARE @LastAttributeId int
+
+                SELECT 
+                    @FirstAttributeId = MIN([Id]),  
+                    @LastAttributeId = MAX([Id])
+                FROM [Attribute]
+                WHERE [EntityTypeId] = @EntityTypeId
+                AND [EntityTypeQualifierColumn] = 'BlockTypeId'
+                AND [EntityTypeQualifierValue] = CAST(@BlockTypeId as varchar)
+                AND [Key] = '{2}' 
+
+                IF @FirstAttributeId IS NOT NULL AND @FirstAttributeId <> @LastAttributeId
+                BEGIN
+                    -- We have duplicate attributes, update values for the duplicates to point to first attribute
+                    UPDATE V SET [AttributeId] = @FirstAttributeId
+                    FROM [Attribute] A
+                    INNER JOIN [AttributeValue] V 
+                        ON V.[AttributeId] = A.[Id]
+                    WHERE A.[EntityTypeId] = @EntityTypeId
+                    AND A.[EntityTypeQualifierColumn] = 'BlockTypeId'
+                    AND A.[EntityTypeQualifierValue] = CAST(@BlockTypeId as varchar)
+                    AND A.[Key] = '{2}' 
+                    AND A.[Id] <> @FirstAttributeId
+
+                    -- Delete the duplicate attributes
+                    DELETE [Attribute]
                     WHERE [EntityTypeId] = @EntityTypeId
                     AND [EntityTypeQualifierColumn] = 'BlockTypeId'
                     AND [EntityTypeQualifierValue] = CAST(@BlockTypeId as varchar)
-                    AND [Key] = '{2}' )
-                BEGIN
+                    AND [Key] = '{2}' 
+                    AND [Id] <> @FirstAttributeId
+				END
+
+				IF @FirstAttributeId IS NOT NULL
+				BEGIN
+                    -- Update the primary attribute
                     UPDATE [Attribute] SET
                         [IsSystem] = 1,
                         [Name] = '{3}',
@@ -977,13 +1007,12 @@ namespace Rock.Data
                         [Order] = {5},
                         [DefaultValue] = '{6}',
                         [Guid] = '{7}'
-                    WHERE [EntityTypeId] = @EntityTypeId
-                    AND [EntityTypeQualifierColumn] = 'BlockTypeId'
-                    AND [EntityTypeQualifierValue] = CAST(@BlockTypeId as varchar)
-                    AND [Key] = '{2}'
+                    WHERE [Id] = @FirstAttributeId
+
                 END
                 ELSE
                 BEGIN
+
                     INSERT INTO [Attribute] (
                         [IsSystem],[FieldTypeId],[EntityTypeId],[EntityTypeQualifierColumn],[EntityTypeQualifierValue],
                         [Key],[Name],[Description],
