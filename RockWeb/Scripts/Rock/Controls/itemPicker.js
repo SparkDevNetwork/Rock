@@ -22,6 +22,7 @@
                         restUrl: this.options.restUrl,
                         restParams: this.options.restParams,
                         expandedIds: this.options.expandedIds,
+                        showSelectChildren: this.options.showSelectChildren,
                         id: this.options.startingId
                     },
                     $hfItemIds = $control.find('.js-item-id-value'),
@@ -120,6 +121,7 @@
                     $control.find('.picker-select-none').show();
 
                     $spanNames.text(selectedNames.join(', '));
+                    $spanNames.attr('title', $spanNames.text());
 
                     $(this).closest('.picker-menu').slideUp(function () {
                         self.updateScrollbar();
@@ -148,6 +150,7 @@
                     $control.siblings('.js-hide-on-select-none').hide();
 
                     $spanNames.text(self.options.defaultText);
+                    $spanNames.attr('title', $spanNames.text());
                 });
             },
             updateScrollbar: function (sPosition) {
@@ -201,7 +204,8 @@
                 allowMultiSelect: false,
                 defaultText: '',
                 selectedIds: null,
-                expandedIds: null
+                expandedIds: null,
+                showSelectChildren: false
             },
             controls: {},
             initialize: function (options) {
