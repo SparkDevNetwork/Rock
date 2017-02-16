@@ -793,7 +793,10 @@ namespace RockWeb.Blocks.WorkFlow
                     }
                     else
                     {
-                        ShowMessage( NotificationBoxType.Success, string.Empty, responseText, ( _action == null || _action.Id != previousActionId ) );
+                        if ( lSummary.Text.IsNullOrWhiteSpace() )
+                        {
+                            ShowMessage( NotificationBoxType.Success, string.Empty, responseText, ( _action == null || _action.Id != previousActionId ) );
+                        }
                     }
                 }
                 else
