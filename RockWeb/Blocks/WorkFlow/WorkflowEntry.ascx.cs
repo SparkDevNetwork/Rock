@@ -797,6 +797,10 @@ namespace RockWeb.Blocks.WorkFlow
                         {
                             ShowMessage( NotificationBoxType.Success, string.Empty, responseText, ( _action == null || _action.Id != previousActionId ) );
                         }
+                        else
+                        {
+                            pnlForm.Visible = false;
+                        }
                     }
                 }
                 else
