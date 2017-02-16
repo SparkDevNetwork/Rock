@@ -22,6 +22,9 @@ GO
 -- TURN OFF SSL FOR ALL PAGES
 UPDATE [Page] SET [RequiresEncryption] = 0
 
+-- TURN OFF SSL FOR ALL SITES
+UPDATE [Site] SET [RequiresEncryption] = 0
+
 -- INACTIVATE JOBS
 UPDATE [ServiceJob] SET [IsActive] = 0
 

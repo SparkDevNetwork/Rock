@@ -17,6 +17,7 @@
 using System;
 using System.ComponentModel;
 using System.Collections.Generic;
+using System.Data.Entity;
 using System.Linq;
 using System.Runtime.Caching;
 using System.Text;
@@ -84,8 +85,8 @@ namespace RockWeb.Blocks.Communication
             gCancelled.GridRebind += gRecipients_GridRebind;
             gOpened.GridRebind += gRecipients_GridRebind;
 
-            gActivity.DataKeyNames = new string[] { "Id" };
-            gActivity.GridRebind += gActivity_GridRebind;
+            gInteractions.DataKeyNames = new string[] { "Id" };
+            gInteractions.GridRebind += gInteractions_GridRebind;
 
             string script = string.Format( @"
     function showRecipients( recipientDiv, show )
@@ -234,9 +235,9 @@ namespace RockWeb.Blocks.Communication
             BindRecipients();
         }
 
-        void gActivity_GridRebind( object sender, EventArgs e )
+        void gInteractions_GridRebind( object sender, EventArgs e )
         {
-            BindActivity();
+            BindInteractions();
         }
 
         protected void btnEdit_Click( object sender, EventArgs e )
@@ -491,7 +492,7 @@ namespace RockWeb.Blocks.Communication
 
             BindRecipients();
 
-            BindActivity();
+            BindInteractions();
 
             ShowActions( communication );
         }
@@ -523,7 +524,7 @@ namespace RockWeb.Blocks.Communication
             {
                 var rockContext = new RockContext();
                 var recipients = new CommunicationRecipientService( rockContext )
-                    .Queryable( "PersonAlias.Person,Activities" )
+                    .Queryable( "PersonAlias.Person" )
                     .Where( r => r.CommunicationId == CommunicationId.Value );
                 
                 SetRecipients( pnlPending, aPending, lPending, gPending,
@@ -577,27 +578,29 @@ namespace RockWeb.Blocks.Communication
             grid.DataBind();
         }
 
-        private void BindActivity()
+        private void BindInteractions()
         {
             if ( CommunicationId.HasValue )
             {
                 var rockContext = new RockContext();
-                var activity = new CommunicationRecipientActivityService( rockContext )
-                    .Queryable( "CommunicationRecipient.PersonAlias.Person" )
-                    .Where( r => r.CommunicationRecipient.CommunicationId == CommunicationId.Value );
+                Guid interactionChannelGuid = Rock.SystemGuid.InteractionChannel.COMMUNICATION.AsGuid();
+                var interactions = new InteractionService( rockContext )
+                    .Queryable()
+                    .Include( a => a.PersonAlias.Person)
+                    .Where( r => r.InteractionComponent.Channel.Guid == interactionChannelGuid && r.InteractionComponent.EntityId == CommunicationId.Value );
 
-                var sortProperty = gActivity.SortProperty;
+                var sortProperty = gInteractions.SortProperty;
                 if ( sortProperty != null )
                 {
-                    activity = activity.Sort( sortProperty );
+                    interactions = interactions.Sort( sortProperty );
                 }
                 else
                 {
-                    activity = activity.OrderBy( a => a.ActivityDateTime );
+                    interactions = interactions.OrderBy( a => a.InteractionDateTime );
                 }
 
-                gActivity.SetLinqDataSource( activity );
-                gActivity.DataBind();
+                gInteractions.SetLinqDataSource( interactions );
+                gInteractions.DataBind();
             }
         }
 
@@ -719,5 +722,18 @@ namespace RockWeb.Blocks.Communication
 
         #endregion
 
+
+        protected void gInteractions_RowDataBound( object sender, GridViewRowEventArgs e )
+        {
+            Interaction interaction = e.Row.DataItem as Interaction;
+            if (interaction != null)
+            {
+                Literal lActivityDetails = e.Row.FindControl( "lActivityDetails" ) as Literal;
+                if (lActivityDetails != null)
+                {
+                    lActivityDetails.Text = interaction.GetInteractionDetails();
+                }
+            }
+        }
     }
 }

@@ -283,7 +283,7 @@ namespace Rock.Web.UI.Controls
             Controls.Add( _lbAdd );
             _lbAdd.ID = "lbAdd";
             _lbAdd.CssClass = "btn-add btn btn-default btn-sm";
-            _lbAdd.ToolTip = "Add";
+            _lbAdd.ToolTip = "Alt+N";
             _lbAdd.Click += lbAdd_Click;
             _lbAdd.CausesValidation = false;
             _lbAdd.PreRender += lb_PreRender;

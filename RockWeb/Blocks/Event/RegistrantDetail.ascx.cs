@@ -427,6 +427,23 @@ namespace RockWeb.Blocks.Event
                                 newRockContext.SaveChanges();
                             }
                         }
+
+                        // Record this to the Person's History...
+                        if ( reloadedRegistrant != null && reloadedRegistrant.Registration != null )
+                        { 
+                            var changes = new List<string> { "Registered for" };
+                            HistoryService.SaveChanges(
+                                rockContext,
+                                typeof( Person ),
+                                Rock.SystemGuid.Category.HISTORY_PERSON_REGISTRATION.AsGuid(),
+                                ppPerson.PersonId.Value,
+                                changes,
+                                reloadedRegistrant.Registration.RegistrationInstance.Name,
+                                typeof( Registration ),
+                                reloadedRegistrant.Registration.Id,
+                                true,
+                                CurrentPersonAliasId );
+                        }
                     }
                 }
 

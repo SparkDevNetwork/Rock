@@ -31,10 +31,6 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="CSLibrary, Version=2.0.2.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\CudaSign.2.0.5\lib\CSLibrary.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
     <Reference Include="Newtonsoft.Json, Version=9.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <HintPath>..\packages\Newtonsoft.Json.9.0.1\lib\net45\Newtonsoft.Json.dll</HintPath>
       <Private>True</Private>
@@ -66,6 +62,10 @@
     <ProjectReference Include="..\Rock\Rock.csproj">
       <Project>{185a31d7-3037-4dae-8797-0459849a84bd}</Project>
       <Name>Rock</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\SignNowSDK\SignNowSDK.csproj">
+      <Project>{69ac175c-3997-4514-8c9e-5d24811928c2}</Project>
+      <Name>SignNowSDK</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

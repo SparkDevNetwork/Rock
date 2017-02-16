@@ -48,7 +48,6 @@
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\Category.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\Communication.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\CommunicationRecipient.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\CommunicationRecipientActivity.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\CommunicationTemplate.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\ConnectionActivityType.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\ConnectionOpportunity.cs" />
@@ -56,7 +55,6 @@
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\ConnectionOpportunityConnectorGroup.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\ConnectionOpportunityGroup.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\ConnectionOpportunityGroupConfig.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\ConnectionOpportunityPlacementGroup.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\ConnectionRequest.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\ConnectionRequestActivity.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\ConnectionRequestWorkflow.cs" />
@@ -141,9 +139,6 @@
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\Page.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\PageContext.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\PageRoute.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\PageView.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\PageViewSession.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\PageViewUserAgent.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\Person.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\PersonAlias.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\PersonBadge.cs" />
@@ -172,7 +167,6 @@
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\ServiceLog.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\SignatureDocument.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\SignatureDocumentTemplate.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\SignatureDocumentType.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\Site.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\SiteDomain.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\SystemEmail.cs" />

@@ -70,7 +70,9 @@ namespace Rock.Client.SystemGuid
     /// </summary>
     public class BlockType
     {
+        public const string CONTENT_CHANNEL_VIEW = "143A2345-3E26-4ED0-A2FE-42AAF11B4C0F";
         public const string HTML_CONTENT = "19B61D65-37E3-459F-A44F-DEF0089118A3";
+        public const string PAGE_MENU = "CACB9D1A-A820-4587-986A-D66A69EE9948";
         public const string PLUGIN_MANAGER = "F80268E6-2625-4565-AA2E-790C5E40A119";
     }
 
@@ -422,6 +424,13 @@ namespace Rock.Client.SystemGuid
         public const string GROUPTYPE_SMALL_GROUP = "50FCFB30-F51A-49DF-86F4-2B176EA1820B";
         public const string GROUPTYPE_SMALL_GROUP_SECTION = "FAB75EC6-0402-456A-BE34-252097DE4F20";
         public const string GROUPTYPE_WEEKLY_SERVICE_CHECKIN_AREA = "FEDD389A-616F-4A53-906C-63D8255631C5";
+    }
+
+    /// <summary>
+    /// </summary>
+    public class InteractionChannel
+    {
+        public const string COMMUNICATION = "C88A187F-0343-4E7C-AF3F-79A8989DFA65";
     }
 
     /// <summary>
