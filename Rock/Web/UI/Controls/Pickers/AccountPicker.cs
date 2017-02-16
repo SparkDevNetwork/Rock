@@ -33,6 +33,14 @@ namespace Rock.Web.UI.Controls
         private HyperLink _btnSelectChildAccounts;
 
         /// <summary>
+        /// Initializes a new instance of the <see cref="AccountPicker"/> class.
+        /// </summary>
+        public AccountPicker(): base()
+        {
+            this.ShowSelectChildren = true;
+        }
+
+        /// <summary>
         /// Gets or sets a value indicating whether [display active only].
         /// </summary>
         /// <value>
@@ -170,92 +178,6 @@ namespace Rock.Web.UI.Controls
         public override string ItemRestUrl
         {
             get { return "~/api/financialaccounts/getchildren/"; }
-        }
-
-        /// <summary>
-        /// Render any additional picker actions
-        /// </summary>
-        /// <param name="writer">The writer.</param>
-        public override void RenderCustomPickerActions( HtmlTextWriter writer )
-        {
-            base.RenderCustomPickerActions( writer );
-
-            if ( this.AllowMultiSelect )
-            {
-                _hfLastSelectedAccountId.RenderControl( writer );
-                _btnSelectChildAccounts.RenderControl( writer );
-
-                var script = $@"
-$('#{this.ClientID}').on('rockTree:selected', function(a,id){{
-    $('#{_hfLastSelectedAccountId.ClientID}').val(id);    
-}});
-
-$('#{_btnSelectChildAccounts.ClientID}').on('click', function(a){{
-    var $btn = $('#{_btnSelectChildAccounts.ClientID}');
-    var $rockTree = $btn.closest('.account-picker').find('.rocktree');    
-
-    var lastId = $('#{_hfLastSelectedAccountId.ClientID}').val();
-    if (!lastId || lastId == '') {{
-        return;
-    }}
-
-    var $lastSelectedItemNode = $rockTree.find('[data-id=' + lastId + ']');
-    var $lastSelectedNameNode = $lastSelectedItemNode.find('.rocktree-name');
-    
-    if (!$lastSelectedNameNode.hasClass('selected') || $lastSelectedNameNode.length == 0){{
-        // dont do anything if the name node isnt selected
-        return;
-    }}
-
-    // first set all the child nodes as NOT selected so that we can call 'click' on them to make them selected
-    // NOTE: it will only select nodes that are visible
-    var $childNameNodes = $lastSelectedItemNode.find('.rocktree-name').filter(':visible').not($lastSelectedNameNode[0]);
-
-    var allChildNodesAlreadySelected = true;
-    $childNameNodes.each(function(a) {{
-        if (!$(this).hasClass('selected')) {{
-            allChildNodesAlreadySelected = false;
-        }}
-    }});
-    
-    if (!allChildNodesAlreadySelected) {{
-        // mark them all as unselected (just in case some are selected already), then click them to select them 
-        $childNameNodes.removeClass('selected');        
-        $childNameNodes.click();
-    }} else {{
-        // if all where already selected, toggle them to unselected
-        $childNameNodes.removeClass('selected');        
-    }}
-
-    // set the hidden field value back to the original selection since the child ones probably overwrote it 
-    $('#{_hfLastSelectedAccountId.ClientID}').val(lastId);
-}});
-                ";
-
-                ScriptManager.RegisterStartupScript( this, this.GetType(), "rememberLastSelectedAccount", script, true );
-            }
-        }
-
-        /// <summary>
-        /// Called by the ASP.NET page framework to notify server controls that use composition-based implementation to create any child controls they contain in preparation for posting back or rendering.
-        /// </summary>
-        protected override void CreateChildControls()
-        {
-            base.CreateChildControls();
-
-            if ( this.AllowMultiSelect )
-            {
-                _hfLastSelectedAccountId = new HiddenField();
-                _hfLastSelectedAccountId.ID = this.ID + "_hfLastSelectedAccountId";
-                Controls.Add( _hfLastSelectedAccountId );
-
-                _btnSelectChildAccounts = new HyperLink();
-                _btnSelectChildAccounts.ID = this.ID + "_btnSelectChildAccounts";
-                _btnSelectChildAccounts.CssClass = "btn btn-xs btn-link pull-right js-selectchildaccounts";
-                _btnSelectChildAccounts.Text = "<i class='fa fa-list-ul'></i>";
-                _btnSelectChildAccounts.ToolTip = "Select Child Accounts";
-                Controls.Add( _btnSelectChildAccounts );
-            }
         }
     }
 }

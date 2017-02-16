@@ -85,6 +85,13 @@ namespace Rock.Rest.Controllers
             {
                 int accountId = int.Parse( accountItem.Id );
                 accountItem.HasChildren = qryHasChildren.Any( f => f == accountId );
+                if ( accountItem.HasChildren )
+                {
+                    // since there usually aren't that many accounts, go ahead and fetch all the children so that they don't need to be lazy loaded.
+                    // this will also help the "Select Children" btn in the AccountPicker work better
+                    accountItem.Children = this.GetChildren( accountId, activeOnly ).ToList();
+                }
+
                 accountItem.IconCssClass = "fa fa-file-o";
             }
 
