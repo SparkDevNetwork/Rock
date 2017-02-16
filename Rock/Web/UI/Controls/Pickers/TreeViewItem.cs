@@ -14,6 +14,8 @@
 // limitations under the License.
 // </copyright>
 //
+using System.Collections.Generic;
+
 namespace Rock.Web.UI.Controls
 {
     /// <summary>
@@ -105,5 +107,13 @@ namespace Rock.Web.UI.Controls
         /// The count information.
         /// </value>
         public int? CountInfo { get; set; }
+
+        /// <summary>
+        /// Gets or sets the children (leave this null to have rockTree.js lazy load the children as needed)
+        /// </summary>
+        /// <value>
+        /// The children.
+        /// </value>
+        public List<TreeViewItem> Children { get; set; }
     }
 }

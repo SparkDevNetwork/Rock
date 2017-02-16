@@ -37,6 +37,9 @@ namespace Rock.Field.Types
 
         #region Configuration
 
+        private const string VALUES_KEY = "values";
+        private const string FIELDTYPE_KEY = "fieldtype";
+
         /// <summary>
         /// Returns a list of the configuration keys
         /// </summary>
@@ -44,8 +47,8 @@ namespace Rock.Field.Types
         public override List<string> ConfigurationKeys()
         {
             List<string> configKeys = new List<string>();
-            configKeys.Add( "values" );
-            configKeys.Add( "fieldtype" );
+            configKeys.Add( VALUES_KEY );
+            configKeys.Add( FIELDTYPE_KEY );
             return configKeys;
         }
 
@@ -69,11 +72,13 @@ namespace Rock.Field.Types
             var ddl = new RockDropDownList();
             controls.Add( ddl );
             ddl.Items.Add( new ListItem( "Drop Down List", "ddl" ) );
+            ddl.Items.Add( new ListItem( "Drop Down List (Enhanced for Long Lists)", "ddl_enhanced" ) );
             ddl.Items.Add( new ListItem( "Radio Buttons", "rb" ) );
             ddl.AutoPostBack = true;
             ddl.SelectedIndexChanged += OnQualifierUpdated;
             ddl.Label = "Control Type";
             ddl.Help = "The type of control to use for selecting a single value from the list.";
+
             return controls;
         }
 
@@ -85,19 +90,22 @@ namespace Rock.Field.Types
         public override Dictionary<string, ConfigurationValue> ConfigurationValues( List<Control> controls )
         {
             Dictionary<string, ConfigurationValue> configurationValues = new Dictionary<string, ConfigurationValue>();
-            configurationValues.Add( "values", new ConfigurationValue( "Values",
+            configurationValues.Add( VALUES_KEY, new ConfigurationValue( "Values",
                 "The source of the values to display in a list.  Format is either 'value1,value2,value3,...', 'value1^text1,value2^text2,value3^text3,...', or a SQL Select statement that returns result set with a 'Value' and 'Text' column <span class='tip tip-lava'></span>.", "" ) );
-            configurationValues.Add( "fieldtype", new ConfigurationValue( "Control Type", 
+            configurationValues.Add( FIELDTYPE_KEY, new ConfigurationValue( "Control Type", 
                 "The type of control to use for selecting a single value from the list.", "ddl" ) );
 
-            if ( controls != null && controls.Count == 2 )
+            if ( controls != null )
             {
-                if ( controls[0] != null && controls[0] is TextBox )
-                    configurationValues["values"].Value = ( ( TextBox )controls[0] ).Text;
+                if ( controls.Count > 0 && controls[0] != null && controls[0] is TextBox )
+                {
+                    configurationValues[VALUES_KEY].Value = ( (TextBox)controls[0] ).Text;
+                }
 
-                if ( controls[1] != null && controls[1] is DropDownList )
-                    if ( ( ( DropDownList )controls[1] ).SelectedValue == "rb" )
-                        configurationValues["fieldtype"].Value = "rb";
+                if ( controls.Count > 1 && controls[1] != null && controls[1] is DropDownList )
+                {
+                    configurationValues[FIELDTYPE_KEY].Value = ( (DropDownList)controls[1] ).SelectedValue;
+                }
             }
 
             return configurationValues;
@@ -110,13 +118,17 @@ namespace Rock.Field.Types
         /// <param name="configurationValues"></param>
         public override void SetConfigurationValues( List<Control> controls, Dictionary<string, ConfigurationValue> configurationValues )
         {
-            if ( controls != null && controls.Count == 2 && configurationValues != null)
+            if ( controls != null && configurationValues != null)
             {
-                if ( controls[0] != null && controls[0] is TextBox && configurationValues.ContainsKey("values"))
-                    ( ( TextBox )controls[0] ).Text = configurationValues["values"].Value;
+                if ( controls.Count > 0 && controls[0] != null && controls[0] is TextBox && configurationValues.ContainsKey( VALUES_KEY ) )
+                {
+                    ( (TextBox)controls[0] ).Text = configurationValues[VALUES_KEY].Value;
+                }
 
-                if ( controls[1] != null && controls[1] is DropDownList && configurationValues.ContainsKey("fieldtype") )
-                    ( ( DropDownList )controls[1] ).SelectedValue = configurationValues["fieldtype"].Value;
+                if ( controls.Count > 1 && controls[1] != null && controls[1] is DropDownList && configurationValues.ContainsKey( FIELDTYPE_KEY ) )
+                {
+                    ( (DropDownList)controls[1] ).SelectedValue = configurationValues[FIELDTYPE_KEY].Value;
+                }
             }
         }
 
@@ -134,7 +146,7 @@ namespace Rock.Field.Types
         /// <returns></returns>
         public override string FormatValue( System.Web.UI.Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
         {
-            if ( !string.IsNullOrWhiteSpace( value ) && configurationValues.ContainsKey( "values" ) )
+            if ( !string.IsNullOrWhiteSpace( value ) && configurationValues.ContainsKey( VALUES_KEY ) )
             {
                 var configuredValues = Helper.GetConfiguredValues( configurationValues );
                 var selectedValues = value.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ).ToList();
@@ -178,7 +190,8 @@ namespace Rock.Field.Types
             {
                 ListControl editControl = null;
 
-                if ( configurationValues.ContainsKey( "fieldtype" ) && configurationValues["fieldtype"].Value == "rb" )
+                string fieldType = configurationValues.ContainsKey( FIELDTYPE_KEY ) ? configurationValues[FIELDTYPE_KEY].Value : "ddl";
+                if ( fieldType == "rb" )
                 {
                     editControl = new RockRadioButtonList { ID = id }; 
                     ( (RadioButtonList)editControl ).RepeatDirection = RepeatDirection.Horizontal;
@@ -186,6 +199,8 @@ namespace Rock.Field.Types
                 else
                 {
                     editControl = new RockDropDownList { ID = id };
+                    ( (RockDropDownList)editControl ).EnhanceForLongLists = fieldType == "ddl_enhanced";
+                    ( (RockDropDownList)editControl ).DisplayEnhancedAsAbsolute = true;
                     editControl.Items.Add( new ListItem() );
                 }
 
@@ -273,7 +288,7 @@ namespace Rock.Field.Types
         /// <returns></returns>
         public override Control FilterValueControl( Dictionary<string, ConfigurationValue> configurationValues, string id, bool required, FilterMode filterMode )
         {
-            if ( configurationValues != null && configurationValues.ContainsKey( "values" ) )
+            if ( configurationValues != null && configurationValues.ContainsKey( VALUES_KEY ) )
             {
                 var cbList = new RockCheckBoxList();
                 cbList.ID = string.Format( "{0}_cbList", id );

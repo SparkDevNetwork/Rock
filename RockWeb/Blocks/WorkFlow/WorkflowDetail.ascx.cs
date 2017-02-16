@@ -710,41 +710,7 @@ namespace RockWeb.Blocks.WorkFlow
                     {
                         var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson );
                         mergeFields.Add( "Workflow", Workflow );
-                        //lSummary.Text = Workflow.WorkflowType.SummaryViewText.ResolveMergeFields( mergeFields, CurrentPerson );
-
-                        string testtext = @"
-<div class='row'>
-    <div class='col-sm-6'>
-        <dl><dt>Started By</dt><dd>{{ Workflow.InitiatorPersonAlias.Person.FullName }}</dd></dl>
-    </div>
-    <div class='col-sm-6'>
-        <dl><dt>Started On</dt><dd>{{ Workflow.ActivatedDateTime | Date:'MM/dd/yyyy' }} at {{ Workflow.ActivatedDateTime | Date:'hh:mm:ss tt' }}</dd></dl>
-    </div>
-</div>
-
-{% assign attributeList = '' %}
-{% for attribute in Workflow.AttributeValues %}
-    {% if attribute.AttributeIsGridColumn %}
-        {% assign attributeValue = attribute.ValueFormatted %}
-        {% if attributeValue != '' %}
-            {% capture item %}<dt>{{ attribute.AttributeName }}</dt><dd>{{ attributeValue }}</dd>{% endcapture %}
-            {% assign attributeList = attributeList | Append:item %}
-        {% endif %}
-    {% endif %}
-{% endfor %}
-
-{% if attributeList != '' %}
-    <div class='row'>
-        <div class='col-sm-6'>
-            <dl>
-                {{ attributeList }}
-            </dl>
-        </div>
-    </div>
-{% endif %}
-
-";
-                        lSummary.Text = testtext.ResolveMergeFields( mergeFields, CurrentPerson );
+                        lSummary.Text = Workflow.WorkflowType.SummaryViewText.ResolveMergeFields( mergeFields, CurrentPerson );
                     }
 
                     tdName.Description = Workflow.Name;

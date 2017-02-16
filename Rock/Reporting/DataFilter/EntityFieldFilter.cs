@@ -145,6 +145,9 @@ namespace Rock.Reporting.DataFilter
             string scriptFormat = @"
     function {0}PropertySelection($content){{
         var selectedFieldName = $('select.entity-property-selection', $content).find(':selected').val();
+        if (!selectedFieldName || selectedFieldName == '') {{
+            selectedFieldName = '0'
+        }}
         var $selectedContent = $('[data-entity-field-name=' + selectedFieldName + ']', $content)
         var result = '';
         switch(selectedFieldName) {{

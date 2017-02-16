@@ -116,6 +116,51 @@ namespace Rock.Model
         #region Virtual Properties
 
         /// <summary>
+        /// Gets the name on card.
+        /// </summary>
+        /// <value>
+        /// The name on card.
+        /// </value>
+        [DataMember]
+        public string NameOnCard
+        {
+            get
+            {
+                return Rock.Security.Encryption.DecryptString( this.NameOnCardEncrypted );
+            }
+        }
+
+        /// <summary>
+        /// Gets the expiration month by decrypting ExpirationMonthEncrypted
+        /// </summary>
+        /// <value>
+        /// The expiration month.
+        /// </value>
+        [DataMember]
+        public int? ExpirationMonth
+        {
+            get
+            {
+                return Rock.Security.Encryption.DecryptString( this.ExpirationMonthEncrypted ).AsIntegerOrNull();
+            }
+        }
+
+        /// <summary>
+        /// Gets the expiration year by decrypting ExpirationYearEncrypted
+        /// </summary>
+        /// <value>
+        /// The expiration year.
+        /// </value>
+        [DataMember]
+        public int? ExpirationYear
+        {
+            get
+            {
+                return Rock.Security.Encryption.DecryptString( this.ExpirationYearEncrypted ).AsIntegerOrNull();
+            }
+        }
+
+        /// <summary>
         /// Gets or sets the currency type <see cref="Rock.Model.DefinedValue"/> indicating the type of currency that was used for this
         /// transaction.
         /// </summary>

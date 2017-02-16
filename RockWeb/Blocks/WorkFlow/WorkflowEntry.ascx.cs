@@ -416,16 +416,30 @@ namespace RockWeb.Blocks.WorkFlow
                         }
                     }
                 }
+
+                var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson );
+                mergeFields.Add( "Action", _action );
+                mergeFields.Add( "Activity", _activity );
+                mergeFields.Add( "Workflow", _workflow );
+
+                ShowNotes( false );
+                ShowMessage( NotificationBoxType.Warning, string.Empty, _workflowType.NoActionMessage.ResolveMergeFields( mergeFields, CurrentPerson ) );
+                return false;
+            }
+            else
+            {
+                var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson );
+                mergeFields.Add( "Action", _action );
+                mergeFields.Add( "Activity", _activity );
+                mergeFields.Add( "Workflow", _workflow );
+
+                lSummary.Text = _workflowType.SummaryViewText.ResolveMergeFields( mergeFields, CurrentPerson );
+                lSummary.Visible = true;
+
+                ShowNotes( false );
+                return false;
             }
 
-            var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson );
-            mergeFields.Add( "Action", _action );
-            mergeFields.Add( "Activity", _activity );
-            mergeFields.Add( "Workflow", _workflow );
-
-            ShowNotes( false );
-            ShowMessage( NotificationBoxType.Warning, string.Empty, _workflowType.NoActionMessage.ResolveMergeFields( mergeFields, CurrentPerson ) );
-            return false;
 
         }
 
@@ -521,6 +535,11 @@ namespace RockWeb.Blocks.WorkFlow
                     if ( _workflow != null && _workflow.AttributeValues.ContainsKey( attribute.Key ) && _workflow.AttributeValues[attribute.Key] != null )
                     {
                         value = _workflow.AttributeValues[attribute.Key].Value;
+                    }
+                    // Now see if the key is in the activity attributes so we can get it's value
+                    else if ( _activity != null && _activity.AttributeValues.ContainsKey( attribute.Key ) && _activity.AttributeValues[attribute.Key] != null )
+                    {
+                        value = _activity.AttributeValues[attribute.Key].Value;
                     }
 
                     if ( !string.IsNullOrWhiteSpace( formAttribute.PreHtml))
@@ -779,7 +798,14 @@ namespace RockWeb.Blocks.WorkFlow
                     }
                     else
                     {
-                        ShowMessage( NotificationBoxType.Success, string.Empty, responseText, ( _action == null || _action.Id != previousActionId ) );
+                        if ( lSummary.Text.IsNullOrWhiteSpace() )
+                        {
+                            ShowMessage( NotificationBoxType.Success, string.Empty, responseText, ( _action == null || _action.Id != previousActionId ) );
+                        }
+                        else
+                        {
+                            pnlForm.Visible = false;
+                        }
                     }
                 }
                 else

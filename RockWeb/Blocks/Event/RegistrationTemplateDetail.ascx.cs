@@ -289,6 +289,7 @@ namespace RockWeb.Blocks.Event
 		<li>{{ registrant.PersonAlias.Person.FullName }}</li>
 	{% endfor %}
 	</ul>
+{% endif %}
 
 {% assign waitlist = Registration.Registrants | Where:'OnWaitList', true %}
 {% assign waitListCount = waitlist | Size %}

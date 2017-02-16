@@ -123,9 +123,6 @@ namespace Rock.Client
         public int? PageNotFoundPageRouteId { get; set; }
 
         /// <summary />
-        public int? PageViewRetentionPeriodDays { get; set; }
-
-        /// <summary />
         public bool RedirectTablets { get; set; }
 
         /// <summary />
@@ -200,7 +197,6 @@ namespace Rock.Client
             this.PageHeaderContent = source.PageHeaderContent;
             this.PageNotFoundPageId = source.PageNotFoundPageId;
             this.PageNotFoundPageRouteId = source.PageNotFoundPageRouteId;
-            this.PageViewRetentionPeriodDays = source.PageViewRetentionPeriodDays;
             this.RedirectTablets = source.RedirectTablets;
             this.RegistrationPageId = source.RegistrationPageId;
             this.RegistrationPageRouteId = source.RegistrationPageRouteId;

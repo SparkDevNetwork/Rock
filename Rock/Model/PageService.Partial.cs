@@ -134,8 +134,10 @@ namespace Rock.Model
         /// Copies the page.
         /// </summary>
         /// <param name="pageId">The page identifier.</param>
+        /// <param name="includeChildPages">if set to <c>true</c> [include child pages].</param>
         /// <param name="currentPersonAliasId">The current person alias identifier.</param>
-        public Guid? CopyPage( int pageId, int? currentPersonAliasId = null )
+        /// <returns></returns>
+        public Guid? CopyPage( int pageId, bool includeChildPages, int? currentPersonAliasId = null )
         {
             var rockContext = new RockContext();
             var pageService = new PageService( rockContext );
@@ -146,7 +148,7 @@ namespace Rock.Model
             {
                 Dictionary<Guid, Guid> pageGuidDictionary = new Dictionary<Guid, Guid>();
                 Dictionary<Guid, Guid> blockGuidDictionary = new Dictionary<Guid, Guid>();
-                var newPage = GeneratePageCopy( page, pageGuidDictionary, blockGuidDictionary, currentPersonAliasId );
+                var newPage = GeneratePageCopy( page, pageGuidDictionary, blockGuidDictionary, includeChildPages, currentPersonAliasId );
 
                 pageService.Add( newPage );
                 rockContext.SaveChanges();
@@ -166,15 +168,27 @@ namespace Rock.Model
         }
 
         /// <summary>
+        /// Copies the page.
+        /// </summary>
+        /// <param name="pageId">The page identifier.</param>
+        /// <param name="currentPersonAliasId">The current person alias identifier.</param>
+        /// <returns></returns>
+        public Guid? CopyPage( int pageId, int? currentPersonAliasId = null )
+        {
+            return CopyPage( pageId, true, currentPersonAliasId );
+        }
+
+        /// <summary>
         /// This method generates a copy of the given page along with any descendant pages, as well as any blocks on
         /// any of those pages.
         /// </summary>
         /// <param name="sourcePage">The source page.</param>
         /// <param name="pageGuidDictionary">The dictionary containing the original page guids and the corresponding copied page guids.</param>
         /// <param name="blockGuidDictionary">The dictionary containing the original block guids and the corresponding copied block guids.</param>
+        /// <param name="includeChildPages">if set to <c>true</c> [include child pages].</param>
         /// <param name="currentPersonAliasId">The current person alias identifier.</param>
         /// <returns></returns>
-        private Rock.Model.Page GeneratePageCopy( Rock.Model.Page sourcePage, Dictionary<Guid, Guid> pageGuidDictionary, Dictionary<Guid, Guid> blockGuidDictionary, int? currentPersonAliasId = null )
+        private Rock.Model.Page GeneratePageCopy( Rock.Model.Page sourcePage, Dictionary<Guid, Guid> pageGuidDictionary, Dictionary<Guid, Guid> blockGuidDictionary, bool includeChildPages, int? currentPersonAliasId = null )
         {
             var targetPage = new Rock.Model.Page();
             targetPage = sourcePage.Clone( false );
@@ -211,9 +225,12 @@ namespace Rock.Model
                 targetPage.Blocks.Add( newBlock );
             }
 
-            foreach ( var oldchildPage in sourcePage.Pages )
+            if ( includeChildPages )
             {
-                targetPage.Pages.Add( GeneratePageCopy( oldchildPage, pageGuidDictionary, blockGuidDictionary ) );
+                foreach ( var oldchildPage in sourcePage.Pages )
+                {
+                    targetPage.Pages.Add( GeneratePageCopy( oldchildPage, pageGuidDictionary, blockGuidDictionary, includeChildPages, currentPersonAliasId ) );
+                }
             }
 
             return targetPage;

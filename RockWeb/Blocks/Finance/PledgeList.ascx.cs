@@ -45,7 +45,7 @@ namespace RockWeb.Blocks.Finance
     [BooleanField( "Show Last Modified Filter", "Allows last modified filter to be hidden.", true, "Display Filters", 3 )]
 
     [ContextAware]
-    public partial class PledgeList : RockBlock
+    public partial class PledgeList : RockBlock, ISecondaryBlock
     {
         #region Properties
 
@@ -471,6 +471,15 @@ namespace RockWeb.Blocks.Finance
                     gPledges.Columns.Add( boundField );
                 }
             }
+        }
+
+        /// Hook so that other blocks can set the visibility of all ISecondaryBlocks on its page
+        /// </summary>
+        /// <param name="visible">if set to <c>true</c> [visible].</param>
+        /// <exception cref="System.NotImplementedException"></exception>
+        public void SetVisible( bool visible )
+        {
+            pnlContent.Visible = visible;
         }
     }
 }
