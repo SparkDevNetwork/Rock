@@ -17,7 +17,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Web.UI;
 using System.Web.UI.WebControls;
 using Rock.Data;
 using Rock.Model;
@@ -29,13 +28,10 @@ namespace Rock.Web.UI.Controls
     /// </summary>
     public class AccountPicker : ItemPicker
     {
-        private HiddenField _hfLastSelectedAccountId;
-        private HyperLink _btnSelectChildAccounts;
-
         /// <summary>
         /// Initializes a new instance of the <see cref="AccountPicker"/> class.
         /// </summary>
-        public AccountPicker(): base()
+        public AccountPicker() : base()
         {
             this.ShowSelectChildren = true;
         }
@@ -48,10 +44,14 @@ namespace Rock.Web.UI.Controls
         /// </value>
         public bool DisplayActiveOnly
         {
-            get { return ViewState["DisplayActiveOnly"] as bool? ?? false; }
-            set 
+            get
             {
-                ViewState["DisplayActiveOnly"] = value;  
+                return ViewState["DisplayActiveOnly"] as bool? ?? false;
+            }
+
+            set
+            {
+                ViewState["DisplayActiveOnly"] = value;
                 this.ItemRestUrlExtraParams = "/" + value.ToString();
             }
         }
@@ -60,14 +60,13 @@ namespace Rock.Web.UI.Controls
         /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
         /// </summary>
         /// <param name="e">An <see cref="T:System.EventArgs" /> object that contains the event data.</param>
-        protected override void OnInit(EventArgs e)
+        protected override void OnInit( EventArgs e )
         {
-            base.OnInit(e);
+            base.OnInit( e );
             this.ItemRestUrlExtraParams = "/" + DisplayActiveOnly.ToString();
             this.IconCssClass = "fa fa-building-o";
         }
-        
-        
+
         /// <summary>
         /// Sets the value.
         /// </summary>
