@@ -798,19 +798,17 @@ namespace Rock.Attribute
         /// </remarks>
         public static void SaveAttributeValues( IHasAttributes model, RockContext rockContext = null )
         {
-            if ( model != null && model.Attributes != null && model.AttributeValues != null )
+            if ( model != null && model.Attributes != null && model.AttributeValues != null && model.Attributes.Any() && model.AttributeValues.Any() )
             {
                 rockContext = rockContext ?? new RockContext();
                 var attributeValueService = new Model.AttributeValueService( rockContext );
                 var attributeService = new Model.AttributeService( rockContext );
-                var entityType = EntityTypeCache.Read( model.GetType() );
 
-                var valueQuery = ( from a in attributeService.GetByEntityTypeId( entityType.Id )
-                                   join v in attributeValueService.GetByEntityId( model.Id ) on a.Id equals v.AttributeId
-                                   select v );
+                var attributeIds = model.Attributes.Select( y => y.Value.Id ).ToList();
+                var valueQuery = attributeValueService.Queryable().Where( x => attributeIds.Contains( x.AttributeId ) && x.EntityId == model.Id );
 
-                var attributeValues = valueQuery.ToDictionary(x => x.AttributeKey);
-                foreach (var attribute in model.Attributes.Values)
+                var attributeValues = valueQuery.ToDictionary( x => x.AttributeKey );
+                foreach ( var attribute in model.Attributes.Values )
                 {
                     if ( model.AttributeValues.ContainsKey( attribute.Key ) )
                     {
