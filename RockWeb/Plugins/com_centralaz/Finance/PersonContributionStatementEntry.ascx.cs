@@ -331,7 +331,7 @@ namespace RockWeb.Plugins.com_centralaz.Finance
                 int year = DateTime.Now.Year;
                 drpDates.DateRangeModeStart = new DateTime( year, 1, 1 );
                 drpDates.DateRangeModeEnd = new DateTime( year, 12, 31 );
-            }          
+            }
 
             if ( !String.IsNullOrWhiteSpace( GetBlockUserPreference( "MergeTemplate" ) ) )
             {
@@ -371,40 +371,51 @@ namespace RockWeb.Plugins.com_centralaz.Finance
             List<TransactionSummary> transactionList = new List<TransactionSummary>();
             List<AddressSummary> addressList = new List<AddressSummary>();
             Dictionary<string, object> parameters = GetSqlParameters();
-            var result = DbService.GetDataSet( "spFinance_GetGivingGroupTransactionsForAPerson", System.Data.CommandType.StoredProcedure, parameters );
-
-            if ( result.Tables.Count > 1 )
+            DataSet result = null;
+            if ( Person.RecordTypeValue.Guid == Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_PERSON.AsGuid() )
             {
-                var transactionDataTable = result.Tables[0];
-                foreach ( var row in transactionDataTable.Rows.OfType<DataRow>().ToList() )
-                {
-                    transactionList.Add( new TransactionSummary
-                    {
-                        GivingId = row.ItemArray[0] as string,
-                        TransactionCode = row.ItemArray[1] as string,
-                        TransactionDateTime = row.ItemArray[2] as DateTime?,
-                        Account1Amount = row.ItemArray[3] as decimal?,
-                        Account2Amount = row.ItemArray[4] as decimal?,
-                        Account3Amount = row.ItemArray[5] as decimal?,
-                        Account4Amount = row.ItemArray[6] as decimal?,
-                        OtherAmount = row.ItemArray[7] as decimal?,
-                        TotalTransactionAmount = row.ItemArray[8] as decimal?
-                    } );
-                }
+                result = DbService.GetDataSet( "spFinance_GetGivingGroupTransactionsForAPerson", System.Data.CommandType.StoredProcedure, parameters );
+            }
+            else if ( Person.RecordTypeValue.Guid == Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_BUSINESS.AsGuid() )
+            {
+                result = DbService.GetDataSet( "spFinance_GetGivingGroupTransactionsForABusiness", System.Data.CommandType.StoredProcedure, parameters );
+            }
 
-                var addressDataTable = result.Tables[01];
-                foreach ( var row in addressDataTable.Rows.OfType<DataRow>().ToList() )
+            if ( result != null )
+            {
+                if ( result.Tables.Count > 1 )
                 {
-                    addressList.Add( new AddressSummary
+                    var transactionDataTable = result.Tables[0];
+                    foreach ( var row in transactionDataTable.Rows.OfType<DataRow>().ToList() )
                     {
-                        GivingId = row.ItemArray[0] as string,
-                        Names = row.ItemArray[1] as string,
-                        Street1 = row.ItemArray[3] as string,
-                        Street2 = row.ItemArray[4] as string,
-                        City = row.ItemArray[5] as string,
-                        State = row.ItemArray[6] as string,
-                        PostalCode = row.ItemArray[7] as string
-                    } );
+                        transactionList.Add( new TransactionSummary
+                        {
+                            GivingId = row.ItemArray[0] as string,
+                            TransactionCode = row.ItemArray[1] as string,
+                            TransactionDateTime = row.ItemArray[2] as DateTime?,
+                            Account1Amount = row.ItemArray[3] as decimal?,
+                            Account2Amount = row.ItemArray[4] as decimal?,
+                            Account3Amount = row.ItemArray[5] as decimal?,
+                            Account4Amount = row.ItemArray[6] as decimal?,
+                            OtherAmount = row.ItemArray[7] as decimal?,
+                            TotalTransactionAmount = row.ItemArray[8] as decimal?
+                        } );
+                    }
+
+                    var addressDataTable = result.Tables[01];
+                    foreach ( var row in addressDataTable.Rows.OfType<DataRow>().ToList() )
+                    {
+                        addressList.Add( new AddressSummary
+                        {
+                            GivingId = row.ItemArray[0] as string,
+                            Names = row.ItemArray[1] as string,
+                            Street1 = row.ItemArray[3] as string,
+                            Street2 = row.ItemArray[4] as string,
+                            City = row.ItemArray[5] as string,
+                            State = row.ItemArray[6] as string,
+                            PostalCode = row.ItemArray[7] as string
+                        } );
+                    }
                 }
             }
 
