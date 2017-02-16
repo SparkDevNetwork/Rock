@@ -37,9 +37,13 @@ namespace RockWeb.Blocks.Prayer
 
     [SecurityAction( Authorization.APPROVE, "The roles and/or users that have access to approve prayer requests and comments." )]
 
-    [LinkedPage( "Detail Page", Order = 0 )]
+    [LinkedPage( "Detail Page", "", false, Order = 0 )]
     [IntegerField( "Expires After (Days)", "Number of days until the request will expire.", false, 14, "", 1, "ExpireDays" )]
     [BooleanField( "Show Prayer Count", "If enabled, the block will show the current prayer count for each request in the list.", false, "", 2 )]
+    [BooleanField( "Show 'Approved' column", "If enabled, the Approved column will be shown with a Yes/No toggle button.", true, "", 3, "ShowApprovedColumn" )]
+    [BooleanField( "Show Grid Filter", "If enabled, the grid filter will be visible.", true, "", 4 )]
+
+    [ContextAware( typeof( Rock.Model.Person ) )]
     public partial class PrayerRequestList : RockBlock
     {
         #region Fields
@@ -90,6 +94,8 @@ namespace RockWeb.Blocks.Prayer
 
             BindFilter();
 
+            gfFilter.Visible = this.GetAttributeValue( "ShowGridFilter" ).AsBooleanOrNull() ?? true;
+
             gPrayerRequests.DataKeyNames = new string[] { "Id" };
             gPrayerRequests.Actions.AddClick += gPrayerRequests_Add;
             gPrayerRequests.GridRebind += gPrayerRequests_GridRebind;
@@ -99,7 +105,13 @@ namespace RockWeb.Blocks.Prayer
             _canAddEditDelete = IsUserAuthorized( Authorization.EDIT );
             gPrayerRequests.Actions.ShowAdd = _canAddEditDelete;
             gPrayerRequests.IsDeleteEnabled = _canAddEditDelete;
-            gPrayerRequests.Columns[4].Visible = GetAttributeValue( "ShowPrayerCount" ).AsBoolean();
+
+            // if there is a Person as the ContextEntity, there is no need to show the Name column
+            gPrayerRequests.Columns.GetColumnByHeaderText( "Name" ).Visible = this.ContextEntity<Rock.Model.Person>() == null;
+
+
+            gPrayerRequests.Columns.GetColumnByHeaderText( "Prayer Count" ).Visible = GetAttributeValue( "ShowPrayerCount" ).AsBoolean();
+            gPrayerRequests.Columns.GetColumnByHeaderText( "Approved?" ).Visible = GetAttributeValue( "ShowApprovedColumn" ).AsBoolean();
         }
 
         /// <summary>
@@ -273,6 +285,7 @@ namespace RockWeb.Blocks.Prayer
                 new
                 {
                     a.Id,
+                    a.RequestedByPersonAlias,
                     FullName = a.FirstName + " " + a.LastName,
                     CategoryName = a.CategoryId.HasValue ? a.Category.Name : null,
                     EnteredDate = a.EnteredDateTime,
@@ -380,6 +393,13 @@ namespace RockWeb.Blocks.Prayer
             if ( !cbShowExpired.Checked )
             {
                 prayerRequests = prayerRequests.Where( a => a.ExpirationDate == null || RockDateTime.Today <= a.ExpirationDate );
+            }
+
+            var personContext = this.ContextEntity<Person>();
+
+            if ( personContext != null )
+            {
+                prayerRequests = prayerRequests.Where( a => a.RequestedByPersonAlias.PersonId == personContext.Id );
             }
 
             if ( sortProperty != null )

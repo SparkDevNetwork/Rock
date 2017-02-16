@@ -24,9 +24,10 @@
                     format: dateFormat,
                     autoclose: true,
                     todayBtn: true,
+                    forceParse: options.forceParse,
                     endDate: options.endDate || new Date(8640000000000000),
-                    startView: options.startView || 'month',
-                    todayHighlight: options.todayHighlight || true
+                    startView: options.startView,
+                    todayHighlight: options.todayHighlight
                 });
 
                 // if the guest clicks the addon select all the text in the input

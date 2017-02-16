@@ -19,7 +19,7 @@
 
                 <div class="btn-group pull-left margin-r-sm">
                     <button type="button" class="btn btn-action btn-xs dropdown-toggle" data-toggle="dropdown">
-                        <i class="fa fa-plus-circle"></i>Add Group <span class="fa fa-caret-down"></span>
+                        <i class="fa fa-plus-circle"></i>&nbsp;Add Group <span class="fa fa-caret-down"></span>
                     </button>
                     <ul class="dropdown-menu" role="menu">
                         <li>

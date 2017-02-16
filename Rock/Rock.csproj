@@ -271,6 +271,7 @@
     <Compile Include="Attribute\ContentChannelFieldAttribute.cs" />
     <Compile Include="Attribute\ContentChannelTypesFieldAttribute.cs" />
     <Compile Include="Attribute\CurrencyFieldAttribute.cs" />
+    <Compile Include="Attribute\CustomEnhancedListFieldAttribute.cs" />
     <Compile Include="Attribute\CustomCheckboxListFieldAttribute.cs" />
     <Compile Include="Attribute\CustomDropdownListFieldAttribute.cs" />
     <Compile Include="Attribute\CustomRadioListFieldAttribute.cs" />
@@ -557,6 +558,7 @@
     <Compile Include="Jobs\CalculateFamilyAnalytics.cs" />
     <Compile Include="Jobs\DatabaseMaintenance.cs" />
     <Compile Include="Jobs\IndexRockSite.cs" />
+    <Compile Include="Jobs\MigrateInteractionsData.cs" />
     <Compile Include="Jobs\ProcessAnalyticsDimPerson.cs" />
     <Compile Include="Jobs\SendCreditCardExpirationNotices.cs" />
     <Compile Include="Jobs\IndexEntities.cs" />
@@ -629,6 +631,7 @@
     <Compile Include="Model\CodeGenerated\AnalyticsFactAttendanceService.cs" />
     <Compile Include="Model\CodeGenerated\AnalyticsSourceAttendanceService.cs" />
     <Compile Include="Model\CodeGenerated\AnalyticsSourceFamilyHistoricalService.cs" />
+    <Compile Include="Model\InteractionService.Partial.cs" />
     <Compile Include="Model\MetricService.Partial.cs" />
     <Compile Include="Model\AttendanceCodeService.Partial.cs" />
     <Compile Include="Model\AttendanceService.Partial.cs" />
@@ -684,7 +687,6 @@
     <Compile Include="Model\CodeGenerated\BlockTypeService.cs" />
     <Compile Include="Model\CodeGenerated\CampusService.cs" />
     <Compile Include="Model\CodeGenerated\CategoryService.cs" />
-    <Compile Include="Model\CodeGenerated\CommunicationRecipientActivityService.cs" />
     <Compile Include="Model\CodeGenerated\CommunicationRecipientService.cs" />
     <Compile Include="Model\CodeGenerated\CommunicationService.cs" />
     <Compile Include="Model\CodeGenerated\CommunicationTemplateService.cs" />
@@ -773,9 +775,6 @@
     <Compile Include="Model\CodeGenerated\PageContextService.cs" />
     <Compile Include="Model\CodeGenerated\PageRouteService.cs" />
     <Compile Include="Model\CodeGenerated\PageService.cs" />
-    <Compile Include="Model\CodeGenerated\PageViewService.cs" />
-    <Compile Include="Model\CodeGenerated\PageViewSessionService.cs" />
-    <Compile Include="Model\CodeGenerated\PageViewUserAgentService.cs" />
     <Compile Include="Model\CodeGenerated\PersonAliasService.cs" />
     <Compile Include="Model\CodeGenerated\PersonBadgeService.cs" />
     <Compile Include="Model\CodeGenerated\PersonDuplicateService.cs" />
@@ -822,7 +821,6 @@
     <Compile Include="Model\CodeGenerated\WorkflowTypeService.cs" />
     <Compile Include="Model\Communication.cs" />
     <Compile Include="Model\CommunicationRecipient.cs" />
-    <Compile Include="Model\CommunicationRecipientActivity.cs" />
     <Compile Include="Model\CommunicationRecipientService.Partial.cs" />
     <Compile Include="Model\CommunicationService.Partial.cs" />
     <Compile Include="Model\CommunicationTemplate.cs" />
@@ -949,10 +947,6 @@
     <Compile Include="Model\PageRoute.cs" />
     <Compile Include="Model\PageRouteService.Partial.cs" />
     <Compile Include="Model\PageService.Partial.cs" />
-    <Compile Include="Model\PageView.cs" />
-    <Compile Include="Model\PageViewService.Partial.cs" />
-    <Compile Include="Model\PageViewSession.cs" />
-    <Compile Include="Model\PageViewUserAgent.cs" />
     <Compile Include="Model\Person.cs" />
     <Compile Include="Model\PersonAlias.cs" />
     <Compile Include="Model\PersonAliasService.Partial.cs" />
@@ -997,13 +991,13 @@
     <Compile Include="Reporting\DataSelect\GroupMember\GroupLinkSelect.cs" />
     <Compile Include="Search\Other\Universal.cs" />
     <Compile Include="Reporting\DataFilter\Person\InRegistrationInstanceFilter.cs" />
+    <Compile Include="SystemGuid\InteractionChannel.cs" />
     <Compile Include="Transactions\DeleteIndexEntityTransaction.cs" />
     <Compile Include="Transactions\IndexEntityTransaction.cs" />
     <Compile Include="Transactions\BulkIndexEntityTypeTransaction.cs" />
     <Compile Include="Transactions\SendPaymentReceipts.cs" />
     <Compile Include="Transactions\SendPaymentReciepts.cs" />
     <Compile Include="UniversalSearch\Crawler\Crawler.cs" />
-    <Compile Include="UniversalSearch\Crawler\LinkParser.cs" />
     <Compile Include="UniversalSearch\Crawler\CrawledPage.cs" />
     <Compile Include="UniversalSearch\Crawler\RobotsTxt\AccessRule.cs" />
     <Compile Include="UniversalSearch\Crawler\RobotsTxt\CrawlDelayRule.cs" />
@@ -1080,6 +1074,8 @@
     <Compile Include="Plugin\HotFixes\012_FixAttendanceAnalyticsScript.cs" />
     <Compile Include="Plugin\HotFixes\011_FixNameProfileChangeRequest.cs" />
     <Compile Include="Plugin\HotFixes\010_FixGetSpouse.cs" />
+    <Compile Include="Plugin\HotFixes\020_FixCommunicationTemplate.cs" />
+    <Compile Include="Plugin\HotFixes\019_FixIpadClientPrinting.cs" />
     <Compile Include="Plugin\HotFixes\018_RestrictGroupRegistrationGroupTypes.cs" />
     <Compile Include="Plugin\Migration.cs" />
     <Compile Include="Plugin\VersionAttribute.cs" />
@@ -1193,6 +1189,7 @@
     <Compile Include="Scripting.native.cs" />
     <Compile Include="Search\Group\Name.cs" />
     <Compile Include="Search\Person\Address.cs" />
+    <Compile Include="Search\Person\BirthDate.cs" />
     <Compile Include="Search\Person\BusinessName.cs" />
     <Compile Include="Security\Authentication\Twitter.cs" />
     <Compile Include="Transactions\SaveCommunicationTransaction.cs" />
@@ -1215,8 +1212,11 @@
     <Compile Include="UniversalSearch\SearchResultModel.cs" />
     <Compile Include="Utility\DebugHelper.cs" />
     <Compile Include="Utility\ExcelHelper.cs" />
+    <Compile Include="Utility\ExtensionMethods\QuartzExtensions.cs" />
     <Compile Include="Utility\FileUtilities.cs" />
+    <Compile Include="Web\UI\Controls\Pickers\DefinedValuesPickerEnhanced.cs" />
     <Compile Include="Web\UI\Controls\Pickers\RegistrationTemplatePicker.cs" />
+    <Compile Include="Web\UI\Controls\RockListBox.cs" />
     <Compile Include="Web\UI\RockTheme.cs" />
     <Compile Include="Web\Cache\AttributeValueCache.cs" />
     <Compile Include="Web\UI\Controls\WarningBlock.cs" />
@@ -1692,8 +1692,10 @@
     <Compile Include="Workflow\Action\People\PersonTagRemove.cs" />
     <Compile Include="Workflow\Action\People\SetPersonAttribute.cs" />
     <Compile Include="Workflow\Action\Utility\LavaRun.cs" />
+    <Compile Include="Workflow\Action\WorkflowControl\Redirect.cs" />
     <Compile Include="Workflow\Action\Utility\RunJob.cs" />
     <Compile Include="Workflow\Action\Utility\RunSQL.cs" />
+    <Compile Include="Workflow\Action\WorkflowControl\ShowHtml.cs" />
     <Compile Include="Workflow\Action\WorkflowAttributes\SetAttributeFromEntity.cs" />
     <Compile Include="Workflow\Action\WorkflowAttributes\SetAttributeFromPerson.cs" />
     <Compile Include="Workflow\Action\WorkflowAttributes\SetAttributeToCurrentPerson.cs" />

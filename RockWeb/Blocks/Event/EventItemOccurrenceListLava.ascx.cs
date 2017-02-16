@@ -192,7 +192,7 @@ namespace RockWeb.Blocks.Event
                 if ( GetAttributeValue( "EnableDebug" ).AsBoolean() && IsUserAuthorized( Authorization.EDIT ) )
                 {
                     lDebug.Visible = true;
-                    lDebug.Text = @"<div class='alert alert-info'>Due to the size of the lava members the debug info for this block has been supressed. Below are high-level details of
+                    lDebug.Text = @"<div class='alert alert-info'>Due to the size of the lava members the debug info for this block has been suppressed. Below are high-level details of
                                     the merge objects available.
                                     <ul>
                                         <li>EventItemOccurrences - A list of EventItemOccurrences. View the EvenItemOccurrence model for these properties.</li>

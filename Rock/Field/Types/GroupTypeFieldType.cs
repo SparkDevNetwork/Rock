@@ -162,6 +162,7 @@ namespace Rock.Field.Types
         public override System.Web.UI.Control EditControl( Dictionary<string, ConfigurationValue> configurationValues, string id )
         {
             var editControl = new GroupTypePicker { ID = id };
+            editControl.EnhanceForLongLists = true;
             var qryGroupTypes = new GroupTypeService( new RockContext() ).Queryable();
             
             if ( configurationValues.ContainsKey( GROUP_TYPE_PURPOSE_VALUE_GUID ) )

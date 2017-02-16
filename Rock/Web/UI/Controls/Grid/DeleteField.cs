@@ -197,34 +197,40 @@ namespace Rock.Web.UI.Controls
             if ( cell != null )
             {
                 DeleteField deleteField = cell.ContainingField as DeleteField;
-                ParentGrid = deleteField.ParentGrid;
-                LinkButton lbDelete = new LinkButton();
-                lbDelete.CausesValidation = false;
-                lbDelete.CssClass =  deleteField.ButtonCssClass;
-                lbDelete.PreRender += ( s, e ) =>
+
+                // only need to do this stuff if the deleteField is actually going to be rendered onto the page
+                if ( deleteField.Visible )
                 {
-                    if ( lbDelete.Enabled && ( !ParentGrid.Enabled || !ParentGrid.IsDeleteEnabled ) )
+                    ParentGrid = deleteField.ParentGrid;
+                    LinkButton lbDelete = new LinkButton();
+                    lbDelete.CausesValidation = false;
+                    lbDelete.CssClass = deleteField.ButtonCssClass;
+                    lbDelete.PreRender += ( s, e ) =>
                     {
-                        lbDelete.AddCssClass( "disabled" );
-                        lbDelete.Enabled = false;
-                    }
-                };
-                
+                        if ( lbDelete.Enabled && ( !ParentGrid.Enabled || !ParentGrid.IsDeleteEnabled ) )
+                        {
+                            lbDelete.AddCssClass( "disabled" );
+                            lbDelete.Enabled = false;
+                        }
+                    };
 
-                lbDelete.ToolTip = deleteField.Tooltip;
+                    lbDelete.ToolTip = deleteField.Tooltip;
 
-                HtmlGenericControl buttonIcon = new HtmlGenericControl( "i" );
-                buttonIcon.Attributes.Add( "class", deleteField.IconCssClass );
-                lbDelete.Controls.Add( buttonIcon );
+                    HtmlGenericControl buttonIcon = new HtmlGenericControl( "i" );
+                    buttonIcon.Attributes.Add( "class", deleteField.IconCssClass );
+                    lbDelete.Controls.Add( buttonIcon );
 
-                lbDelete.Click += lbDelete_Click;
-                lbDelete.DataBinding += lbDelete_DataBinding;
+                    lbDelete.Click += lbDelete_Click;
+                    lbDelete.DataBinding += lbDelete_DataBinding;
 
-                // make sure delete button is registered for async postback (needed just in case the grid was created at runtime)
-                var sm = ScriptManager.GetCurrent( this.ParentGrid.Page );
-                sm.RegisterAsyncPostBackControl( lbDelete );
+                    // make sure delete button is registered for async postback (needed just in case the grid was created at runtime)
+                    var sm = ScriptManager.GetCurrent( this.ParentGrid.Page );
 
-                cell.Controls.Add( lbDelete );
+                    // note: this get's slower and slower when the Grid has lots of rows (for example on an Export), so it would be nice to figure out if this is needed
+                    sm.RegisterAsyncPostBackControl( lbDelete );
+
+                    cell.Controls.Add( lbDelete );
+                }
             }
         }
 
