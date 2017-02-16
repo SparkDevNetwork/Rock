@@ -802,7 +802,14 @@ namespace Rock.Attribute
             {
                 rockContext = rockContext ?? new RockContext();
                 var attributeValueService = new Model.AttributeValueService( rockContext );
-                var attributeValues = attributeValueService.GetByEntityId( model.Id ).ToDictionary(x => x.AttributeKey);
+                var attributeService = new Model.AttributeService( rockContext );
+                var entityType = EntityTypeCache.Read( model.GetType() );
+
+                var valueQuery = ( from a in attributeService.GetByEntityTypeId( entityType.Id )
+                                   join v in attributeValueService.GetByEntityId( model.Id ) on a.Id equals v.AttributeId
+                                   select v );
+
+                var attributeValues = valueQuery.ToDictionary(x => x.AttributeKey);
                 foreach (var attribute in model.Attributes.Values)
                 {
                     if ( model.AttributeValues.ContainsKey( attribute.Key ) )
