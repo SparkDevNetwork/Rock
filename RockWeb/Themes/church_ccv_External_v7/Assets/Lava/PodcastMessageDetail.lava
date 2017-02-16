@@ -71,6 +71,11 @@ REQUIRED VARIABLES
 <hr>
 <div class="row">
   <div class="col-md-8">
+    {{ Message.Attributes.ExtraDetails }}
+  </div>
+</div>
+<div class="row">
+  <div class="col-md-8">
     <p>{{ Message.Description }}</p>
     <h3>Other Messages in this Series</h3>
     <ol>
