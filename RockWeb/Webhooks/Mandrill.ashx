@@ -54,7 +54,9 @@ public class Mandrill : IHttpHandler
             var rockContext = new Rock.Data.RockContext();
 
             CommunicationRecipientService communicationRecipientService = new CommunicationRecipientService( rockContext );
-            CommunicationRecipientActivityService communicationRecipientActivityService = new CommunicationRecipientActivityService( rockContext );
+
+            InteractionComponentService interactionComponentService = new InteractionComponentService( rockContext );
+            InteractionService interactionService = new InteractionService( rockContext );
 
             var payload = JsonConvert.DeserializeObject<IEnumerable<MailEvent>>( postedData );
             int unsavedCommunicationCount = 0;
@@ -70,26 +72,26 @@ public class Mandrill : IHttpHandler
                     if ( item.Msg.Metadata.ContainsKey( "workflow_action_guid" ) )
                     {
                         Guid? actionGuid = item.Msg.Metadata["workflow_action_guid"].AsGuidOrNull();
-                            string status = string.Empty;
-                            switch ( item.EventType )
-                            {
-                                case MandrillEventType.Send: status = SendEmailWithEvents.SENT_STATUS; break;
-                                case MandrillEventType.Opened: status = SendEmailWithEvents.OPENED_STATUS; break;
-                                case MandrillEventType.Clicked: status = SendEmailWithEvents.CLICKED_STATUS; break;
-                                case MandrillEventType.HardBounced: 
-                                case MandrillEventType.Rejected:
-                                case MandrillEventType.SoftBounced:
-                                case MandrillEventType.Spam:
-                                case MandrillEventType.Unsubscribe:
-                                    status = SendEmailWithEvents.FAILED_STATUS; break;
-                            }
-                            
-                        if (actionGuid != null && !string.IsNullOrWhiteSpace( status ) )
+                        string status = string.Empty;
+                        switch ( item.EventType )
+                        {
+                            case MandrillEventType.Send: status = SendEmailWithEvents.SENT_STATUS; break;
+                            case MandrillEventType.Opened: status = SendEmailWithEvents.OPENED_STATUS; break;
+                            case MandrillEventType.Clicked: status = SendEmailWithEvents.CLICKED_STATUS; break;
+                            case MandrillEventType.HardBounced:
+                            case MandrillEventType.Rejected:
+                            case MandrillEventType.SoftBounced:
+                            case MandrillEventType.Spam:
+                            case MandrillEventType.Unsubscribe:
+                                status = SendEmailWithEvents.FAILED_STATUS; break;
+                        }
+
+                        if ( actionGuid != null && !string.IsNullOrWhiteSpace( status ) )
                         {
                             SendEmailWithEvents.UpdateEmailStatus( actionGuid.Value, status, item.EventType.ConvertToString().SplitCase(), rockContext, true );
                         }
                     }
-                    
+
                     // process a communication recipient
                     if ( item.Msg.Metadata.ContainsKey( "communication_recipient_guid" ) )
                     {
@@ -98,11 +100,32 @@ public class Mandrill : IHttpHandler
                         {
                             var communicationRecipient = communicationRecipientService.Get( communicationRecipientGuid );
 
-                            if ( communicationRecipient != null )
+                            if ( communicationRecipient != null && communicationRecipient.Communication != null )
                             {
                                 if ( item.UserAgent == null )
                                 {
                                     item.UserAgent = new UserAgent();
+                                }
+
+                                InteractionComponent interactionComponent = null;
+                                var interactionChannel = new InteractionChannelService( rockContext ).Get( Rock.SystemGuid.InteractionChannel.COMMUNICATION.AsGuid() );
+                                if ( interactionChannel != null )
+                                {
+                                    interactionComponent = interactionComponentService.Queryable()
+                                            .Where( c =>
+                                                c.ChannelId == interactionChannel.Id &&
+                                                c.EntityId == communicationRecipient.CommunicationId )
+                                            .FirstOrDefault();
+                                    if ( interactionComponent == null )
+                                    {
+
+                                        interactionComponent = new InteractionComponent();
+                                        interactionComponent.Name = communicationRecipient.Communication.Subject;
+                                        interactionComponent.EntityId = communicationRecipient.Communication.Id;
+                                        interactionComponent.ChannelId = interactionChannel.Id;
+                                        interactionComponentService.Add( interactionComponent );
+                                        rockContext.SaveChanges();
+                                    }
                                 }
 
                                 switch ( item.EventType )
@@ -111,6 +134,7 @@ public class Mandrill : IHttpHandler
                                         communicationRecipient.Status = CommunicationRecipientStatus.Delivered;
                                         communicationRecipient.StatusNote = String.Format( "Confirmed delivered by Mandrill at {0}", item.EventDateTime.ToString() );
                                         break;
+
                                     case MandrillEventType.Opened:
                                         communicationRecipient.Status = CommunicationRecipientStatus.Opened;
                                         communicationRecipient.OpenedDateTime = item.EventDateTime;
@@ -118,29 +142,39 @@ public class Mandrill : IHttpHandler
                                                                                 item.UserAgent.OperatingSystemName ?? "unknown",
                                                                                 item.UserAgent.UserAgentName ?? "unknown",
                                                                                 item.UserAgent.Type ?? "unknown" );
-                                        CommunicationRecipientActivity openActivity = new CommunicationRecipientActivity();
-                                        openActivity.CommunicationRecipientId = communicationRecipient.Id;
-                                        openActivity.ActivityType = "Opened";
-                                        openActivity.ActivityDateTime = item.EventDateTime;
-                                        openActivity.ActivityDetail = string.Format( "Opened from {0} on {1} ({2})",
-                                                                        item.UserAgent.UserAgentName ?? "unknown",
-                                                                        item.UserAgent.OperatingSystemName ?? "unknown",
-                                                                        item.IpAddress );
-                                        communicationRecipientActivityService.Add( openActivity );
+
+                                        if ( interactionComponent != null )
+                                        {
+                                            Interaction openActivity = new Interaction();
+                                            openActivity.InteractionComponentId = interactionComponent.Id;
+                                            openActivity.EntityId = communicationRecipient.Id;
+                                            openActivity.Operation = "Opened";
+                                            openActivity.InteractionDateTime = item.EventDateTime;
+                                            openActivity.PersonAliasId = communicationRecipient.PersonAliasId;
+
+                                            var openInteractionDeviceType = interactionService.GetInteractionDeviceType( item.UserAgent.UserAgentName, item.UserAgent.OperatingSystemName, item.UserAgent.Type, null );
+                                            var openInteractionSession = interactionService.GetInteractionSession( null, item.IpAddress, openInteractionDeviceType.Id );
+
+                                            openActivity.InteractionSessionId = openInteractionSession.Id;
+                                            interactionService.Add( openActivity );
+                                        }
                                         break;
+
                                     case MandrillEventType.Clicked:
-                                        CommunicationRecipientActivity clickActivity = new CommunicationRecipientActivity();
-                                        clickActivity.CommunicationRecipientId = communicationRecipient.Id;
-                                        clickActivity.ActivityType = "Click";
-                                        clickActivity.ActivityDateTime = item.EventDateTime;
-                                        clickActivity.ActivityDetail = string.Format( "Clicked the address {0} from {1} using {2} {3} {4} ({5})",
-                                                                        item.UrlAddress,
-                                                                        item.IpAddress,
-                                                                        item.UserAgent.OperatingSystemName ?? "unknown",
-                                                                        item.UserAgent.UserAgentFamily ?? "unknown",
-                                                                        item.UserAgent.UserAgentVersion ?? "unknown",
-                                                                        item.UserAgent.Type ?? "unknown" );
-                                        communicationRecipientActivityService.Add( clickActivity );
+                                        if ( interactionComponent != null )
+                                        {
+                                            Interaction clickActivity = new Interaction();
+                                            clickActivity.InteractionComponentId = interactionComponent.Id;
+                                            clickActivity.EntityId = communicationRecipient.Id;
+                                            clickActivity.Operation = "Click";
+                                            clickActivity.InteractionDateTime = item.EventDateTime;
+                                            clickActivity.PersonAliasId = communicationRecipient.PersonAliasId;
+                                            var clickInteractionDeviceType = interactionService.GetInteractionDeviceType( item.UserAgent.UserAgentName, item.UserAgent.OperatingSystemName, item.UserAgent.Type, null );
+                                            var clickInteractionSession = interactionService.GetInteractionSession( null, item.IpAddress, clickInteractionDeviceType.Id );
+
+                                            clickActivity.InteractionSessionId = clickInteractionSession.Id;
+                                            interactionService.Add( clickActivity );
+                                        }
                                         break;
                                 }
                             }

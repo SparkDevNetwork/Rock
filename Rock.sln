@@ -7,7 +7,7 @@ Project("{E24C65DC-7377-472B-9ABA-BC803B73C61A}") = "http://rock.dev", "http://r
 	ProjectSection(WebsiteProperties) = preProject
 		UseIISExpress = "false"
 		TargetFrameworkMoniker = ".NETFramework,Version%3Dv4.5.2"
-		ProjectReferences = "{00edcb8d-ef33-459c-ad62-02876bd24dff}|DotLiquid.dll;{185a31d7-3037-4dae-8797-0459849a84bd}|Rock.dll;{d6b19c0d-da5e-4f75-8001-04ded86b741f}|Rock.Mailgun.dll;{cf8c694a-55a0-434f-bc96-3450b96ec12a}|Rock.Mandrill.dll;{704740d8-b539-4560-9f8c-681670c9d6ad}|Rock.Migrations.dll;{f3692909-952d-4c4a-b2d2-d90d0083cf53}|Rock.NMI.dll;{a005d091-140e-4ec4-bcdf-cf7d42bb702c}|Rock.PayFlowPro.dll;{add1edd0-a4cb-4e82-b6ad-6ad1d556deae}|Rock.Rest.dll;{6fe0930c-6832-4c2f-8a76-d4e4a2d80ddf}|Rock.Version.dll;{1f5956f2-2b0f-49b8-aaf1-2cc28f01426a}|Rock.SignNow.dll;"
+		ProjectReferences = "{00edcb8d-ef33-459c-ad62-02876bd24dff}|DotLiquid.dll;{185a31d7-3037-4dae-8797-0459849a84bd}|Rock.dll;{d6b19c0d-da5e-4f75-8001-04ded86b741f}|Rock.Mailgun.dll;{cf8c694a-55a0-434f-bc96-3450b96ec12a}|Rock.Mandrill.dll;{704740d8-b539-4560-9f8c-681670c9d6ad}|Rock.Migrations.dll;{f3692909-952d-4c4a-b2d2-d90d0083cf53}|Rock.NMI.dll;{a005d091-140e-4ec4-bcdf-cf7d42bb702c}|Rock.PayFlowPro.dll;{add1edd0-a4cb-4e82-b6ad-6ad1d556deae}|Rock.Rest.dll;{6fe0930c-6832-4c2f-8a76-d4e4a2d80ddf}|Rock.Version.dll;{1f5956f2-2b0f-49b8-aaf1-2cc28f01426a}|Rock.SignNow.dll;{69AC175C-3997-4514-8C9E-5D24811928C2}|SignNowSDK.dll;"
 		Debug.AspNetCompiler.VirtualPath = "/rock.dev"
 		Debug.AspNetCompiler.PhysicalPath = "RockWeb\"
 		Debug.AspNetCompiler.TargetPath = "PrecompiledWeb\rock.dev\"
@@ -46,6 +46,8 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rock.SignNow", "Rock.SignNow\Rock.SignNow.csproj", "{1F5956F2-2B0F-49B8-AAF1-2CC28F01426A}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rock.Tests", "Rock.Tests\Rock.Tests.csproj", "{F6BEC5AC-D8E1-48ED-921F-D7D2EB58BF7D}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SignNowSDK", "SignNowSDK\SignNowSDK.csproj", "{69AC175C-3997-4514-8C9E-5D24811928C2}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "com.centralaz.SpiritualGifts", "..\rock-spiritual-gifts\com.centralaz.SpiritualGifts.csproj", "{6879E00D-7EBC-406B-A479-84EF816B10B4}"
 EndProject
@@ -113,6 +115,10 @@ Global
 		{F6BEC5AC-D8E1-48ED-921F-D7D2EB58BF7D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F6BEC5AC-D8E1-48ED-921F-D7D2EB58BF7D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F6BEC5AC-D8E1-48ED-921F-D7D2EB58BF7D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{69AC175C-3997-4514-8C9E-5D24811928C2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{69AC175C-3997-4514-8C9E-5D24811928C2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{69AC175C-3997-4514-8C9E-5D24811928C2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{69AC175C-3997-4514-8C9E-5D24811928C2}.Release|Any CPU.Build.0 = Release|Any CPU
 		{6879E00D-7EBC-406B-A479-84EF816B10B4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{6879E00D-7EBC-406B-A479-84EF816B10B4}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{6879E00D-7EBC-406B-A479-84EF816B10B4}.Release|Any CPU.ActiveCfg = Release|Any CPU

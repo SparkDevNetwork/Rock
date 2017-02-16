@@ -36,6 +36,9 @@ namespace Rock.Field.Types
     {
         #region Configuration
 
+        private const string VALUES_KEY = "values";
+        private const string ENHANCED_SELECTION_KEY = "enhancedselection";
+
         /// <summary>
         /// Returns a list of the configuration keys
         /// </summary>
@@ -43,7 +46,8 @@ namespace Rock.Field.Types
         public override List<string> ConfigurationKeys()
         {
             List<string> configKeys = new List<string>();
-            configKeys.Add( "values" );
+            configKeys.Add( VALUES_KEY );
+            configKeys.Add( ENHANCED_SELECTION_KEY );
             return configKeys;
         }
 
@@ -63,6 +67,16 @@ namespace Rock.Field.Types
             tb.TextChanged += OnQualifierUpdated;
             tb.Label = "Values";
             tb.Help = "The source of the values to display in a list.  Format is either 'value1,value2,value3,...', 'value1^text1,value2^text2,value3^text3,...', or a SQL Select statement that returns result set with a 'Value' and 'Text' column <span class='tip tip-lava'></span>.";
+
+            // option for Displaying an enhanced 'chosen' value picker
+            var cbEnanced = new RockCheckBox();
+            controls.Add( cbEnanced );
+            cbEnanced.AutoPostBack = true;
+            cbEnanced.CheckedChanged += OnQualifierUpdated;
+            cbEnanced.Label = "Enhance For Long Lists";
+            cbEnanced.Text = "Yes";
+            cbEnanced.Help = "When set, will render a searchable selection of options.";
+
             return controls;
         }
 
@@ -74,18 +88,21 @@ namespace Rock.Field.Types
         public override Dictionary<string, ConfigurationValue> ConfigurationValues( List<Control> controls )
         {
             Dictionary<string, ConfigurationValue> configurationValues = new Dictionary<string, ConfigurationValue>();
-            var configurationValue = new ConfigurationValue(
-                "Values",
-                "The source of the values to display in a list.  Format is either 'value1,value2,value3,...', 'value1^text1,value2^text2,value3^text3,...', or a SQL Select statement that returns result set with a 'Value' and 'Text' column <span class='tip tip-lava'></span>.",
-                string.Empty );
+            configurationValues.Add( VALUES_KEY, new ConfigurationValue( "Values", 
+                "The source of the values to display in a list.  Format is either 'value1,value2,value3,...', 'value1^text1,value2^text2,value3^text3,...', or a SQL Select statement that returns result set with a 'Value' and 'Text' column <span class='tip tip-lava'></span>.", string.Empty ) );
+            configurationValues.Add( ENHANCED_SELECTION_KEY, new ConfigurationValue( "Enhance For Long Lists", 
+                "When set, will render a searchable selection of options.", string.Empty ) );
 
-            configurationValues.Add( "values", configurationValue );
-
-            if ( controls != null && controls.Count == 1 )
+            if ( controls != null )
             {
-                if ( controls[0] != null && controls[0] is TextBox )
+                if ( controls.Count > 0 && controls[0] != null && controls[0] is TextBox )
                 {
-                    configurationValues["values"].Value = ( (TextBox)controls[0] ).Text;
+                    configurationValues[VALUES_KEY].Value = ( (TextBox)controls[0] ).Text;
+                }
+
+                if ( controls.Count > 1 && controls[1] != null && controls[1] is CheckBox )
+                {
+                    configurationValues[ENHANCED_SELECTION_KEY].Value = ( (CheckBox)controls[1] ).Checked.ToString();
                 }
             }
 
@@ -99,10 +116,17 @@ namespace Rock.Field.Types
         /// <param name="configurationValues"></param>
         public override void SetConfigurationValues( List<Control> controls, Dictionary<string, ConfigurationValue> configurationValues )
         {
-            if ( controls != null && controls.Count == 1 && configurationValues != null &&
-                controls[0] != null && controls[0] is TextBox && configurationValues.ContainsKey( "values" ) )
+            if ( controls != null && configurationValues != null )
             {
-                ( (TextBox)controls[0] ).Text = configurationValues["values"].Value;
+                if ( controls.Count > 0 && controls[0] != null && controls[0] is TextBox && configurationValues.ContainsKey( VALUES_KEY ) )
+                {
+                    ( (TextBox)controls[0] ).Text = configurationValues[VALUES_KEY].Value;
+                }
+
+                if ( controls.Count > 1 && controls[1] != null && controls[1] is CheckBox && configurationValues.ContainsKey( ENHANCED_SELECTION_KEY ) )
+                {
+                    ( (CheckBox)controls[1] ).Checked = configurationValues[ENHANCED_SELECTION_KEY].Value.AsBoolean();
+                }
             }
         }
 
@@ -120,7 +144,7 @@ namespace Rock.Field.Types
         /// <returns></returns>
         public override string FormatValue( System.Web.UI.Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
         {
-            if ( !string.IsNullOrWhiteSpace( value ) && configurationValues.ContainsKey( "values" ) )
+            if ( !string.IsNullOrWhiteSpace( value ) && configurationValues.ContainsKey( VALUES_KEY ) )
             {
                 var configuredValues = Helper.GetConfiguredValues( configurationValues );
                 var selectedValues = value.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ).ToList();
@@ -150,8 +174,18 @@ namespace Rock.Field.Types
         {
             if ( configurationValues != null )
             {
-                var editControl = new RockCheckBoxList { ID = id };
-                editControl.RepeatDirection = RepeatDirection.Horizontal;
+                ListControl editControl = null;
+
+                if ( configurationValues.ContainsKey( ENHANCED_SELECTION_KEY ) && configurationValues[ENHANCED_SELECTION_KEY].Value.AsBoolean() )
+                {
+                    editControl = new RockListBox { ID = id };
+                    ( (RockListBox)editControl ).DisplayDropAsAbsolute = true;
+                }
+                else
+                {
+                    editControl = new RockCheckBoxList { ID = id };
+                    ( (RockCheckBoxList)editControl ).RepeatDirection = RepeatDirection.Horizontal;
+                }
 
                 foreach( var keyVal in Helper.GetConfiguredValues( configurationValues ))
                 {
@@ -177,9 +211,9 @@ namespace Rock.Field.Types
         {
             List<string> values = new List<string>();
 
-            if ( control != null && control is CheckBoxList )
+            if ( control != null && control is ListControl )
             {
-                CheckBoxList cbl = (CheckBoxList)control;
+                ListControl cbl = (ListControl)control;
                 foreach ( ListItem li in cbl.Items )
                 {
                     if ( li.Selected )
@@ -207,9 +241,9 @@ namespace Rock.Field.Types
                 List<string> values = new List<string>();
                 values.AddRange( value.Split( ',' ) );
 
-                if ( control != null && control is CheckBoxList )
+                if ( control != null && control is ListControl )
                 {
-                    CheckBoxList cbl = (CheckBoxList)control;
+                    ListControl cbl = (ListControl)control;
                     foreach ( ListItem li in cbl.Items )
                     {
                         li.Selected = values.Contains( li.Value );
@@ -246,7 +280,7 @@ namespace Rock.Field.Types
         /// <returns></returns>
         public override Control FilterValueControl( Dictionary<string, ConfigurationValue> configurationValues, string id, bool required, FilterMode filterMode )
         {
-            // call the base which render SelectMulti's CheckBoxList
+            // call the base which render SelectMulti's List
             return base.FilterValueControl( configurationValues, id, required, filterMode );
         }
 
@@ -267,7 +301,7 @@ namespace Rock.Field.Types
         /// <returns></returns>
         public override string GetFilterValueValue( Control control, Dictionary<string, ConfigurationValue> configurationValues )
         {
-            // call the base which will get SelectMulti's CheckBoxList values
+            // call the base which will get SelectMulti's List values
             return base.GetFilterValueValue( control, configurationValues );
         }
 
@@ -279,7 +313,7 @@ namespace Rock.Field.Types
         /// <param name="value">The value.</param>
         public override void SetFilterValueValue( Control control, Dictionary<string, ConfigurationValue> configurationValues, string value )
         {
-            // call the base which will set SelectMulti's CheckBoxList values
+            // call the base which will set SelectMulti's List values
             base.SetFilterValueValue( control, configurationValues, value );
         }
 

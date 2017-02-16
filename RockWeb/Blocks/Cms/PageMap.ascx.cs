@@ -20,13 +20,11 @@ using System.ComponentModel;
 using System.Data.Entity;
 using System.Linq;
 using System.Text;
-using System.Web;
+
 using Rock;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
-using Rock.Security;
-using Rock.Web;
 using Rock.Web.Cache;
 using Rock.Web.UI;
 
@@ -34,7 +32,7 @@ namespace RockWeb.Blocks.Cms
 {
     [DisplayName( "Page Map" )]
     [Category( "CMS" )]
-    [Description( "Displays a site map in a tree view." )]
+    [Description( "Displays a page map in a tree view." )]
     [LinkedPage( "Root Page", "Select the root page to use as a starting point for the tree view. Leaving empty will build a tree of all pages.", false )]
     public partial class PageMap : RockBlock
     {
@@ -47,61 +45,26 @@ namespace RockWeb.Blocks.Cms
             base.OnLoad( e );
 
             List<int> expandedPageIds = new List<int>();
+
             RockContext rockContext = new RockContext();
             PageService pageService = new PageService( rockContext );
 
-            var allPages = pageService.Queryable( "PageContexts, PageRoutes" );
-
-            foreach ( var page in allPages )
-            {
-                PageCache.Read( page );
-            }
-
-            foreach ( var block in new BlockService(rockContext).Queryable() )
-            {
-                BlockCache.Read( block );
-            }
-
-            foreach ( var blockType in new BlockTypeService( rockContext ).Queryable() )
-            {
-                BlockTypeCache.Read( blockType );
-            }
-
             if ( Page.IsPostBack )
             {
-                if ( Request.Form["__EVENTTARGET"] == "CopyPage" )
+                foreach ( int expandedId in hfExpandedIds.Value.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ).AsIntegerList() )
                 {
-                    // Fire event
-                    int? intPageId = Request.Form["__EVENTARGUMENT"].AsIntegerOrNull();
-                    if ( intPageId.HasValue )
+                    if ( expandedId != 0 )
                     {
-                        Guid? pageGuid = pageService.CopyPage( intPageId.Value, CurrentPersonAliasId );
-                        if ( pageGuid.HasValue )
-                        {
-                            NavigateToPage( pageGuid.Value, null );
-                        }
-                        else
-                        {
-                            NavigateToCurrentPage();
-                        }
-                    }
-                }
-
-                foreach ( string expandedId in hfExpandedIds.Value.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ) )
-                {
-                    int id = 0;
-                    if ( expandedId.StartsWith( "p" ) && expandedId.Length > 1 )
-                    {
-                        if ( int.TryParse( expandedId.Substring( 1 ), out id ) )
-                        {
-                            expandedPageIds.Add( id );
-                        }
+                        expandedPageIds.Add( expandedId );
                     }
                 }
             }
             else
             {
                 string pageSearch = this.PageParameter( "pageSearch" );
+
+                // NOTE: using "Page" instead of "PageId" since PageId is already parameter of the current page
+                int? selectedPageId = this.PageParameter( "Page" ).AsIntegerOrNull();
                 if ( !string.IsNullOrWhiteSpace( pageSearch ) )
                 {
                     foreach ( Page page in pageService.Queryable().Where( a => a.InternalName.IndexOf( pageSearch ) >= 0 ) )
@@ -117,26 +80,49 @@ namespace RockWeb.Blocks.Cms
                         }
                     }
                 }
+                else if ( selectedPageId.HasValue )
+                {
+                    expandedPageIds.Add( selectedPageId.Value );
+                    hfSelectedItemId.Value = selectedPageId.ToString();
+                }
+            }
+
+            // also get any additional expanded nodes that were sent in the Post
+            string postedExpandedIds = this.Request.Params["ExpandedIds"];
+            if ( !string.IsNullOrWhiteSpace( postedExpandedIds ) )
+            {
+                var postedExpandedIdList = postedExpandedIds.Split( ',' ).ToList().AsIntegerList();
+                foreach ( var postedId in postedExpandedIdList )
+                {
+                    if ( !expandedPageIds.Contains( postedId ) )
+                    {
+                        expandedPageIds.Add( postedId );
+                    }
+                }
             }
 
             var sb = new StringBuilder();
 
             sb.AppendLine( "<ul id=\"treeview\">" );
-            
-            string rootPage = GetAttributeValue("RootPage");
-            if ( ! string.IsNullOrEmpty( rootPage ) )
+
+            var rootPagesQry = pageService.Queryable().AsNoTracking();
+
+            string rootPage = GetAttributeValue( "RootPage" );
+            if ( !string.IsNullOrEmpty( rootPage ) )
             {
                 Guid pageGuid = rootPage.AsGuid();
-                allPages = allPages.Where( a => a.ParentPage.Guid == pageGuid );
+                rootPagesQry = rootPagesQry.Where( a => a.ParentPage.Guid == pageGuid );
             }
             else
             {
-                allPages = allPages.Where( a => a.ParentPageId == null );
+                rootPagesQry = rootPagesQry.Where( a => a.ParentPageId == null );
             }
 
-            foreach ( var page in allPages.OrderBy( a => a.Order ).ThenBy( a => a.InternalName ).Include(a => a.Blocks).ToList() )
+            var rootPageList = rootPagesQry.OrderBy( a => a.Order ).ThenBy( a => a.InternalName ).Select( a => a.Id ).ToList();
+
+            foreach ( var pageId in rootPageList )
             {
-                sb.Append( PageNode( PageCache.Read( page ), expandedPageIds, rockContext ) );
+                sb.Append( PageNode( PageCache.Read( pageId ), expandedPageIds, rockContext ) );
             }
 
             sb.AppendLine( "</ul>" );
@@ -155,67 +141,26 @@ namespace RockWeb.Blocks.Cms
         {
             var sb = new StringBuilder();
 
-            string pageSearch = this.PageParameter( "pageSearch" );
-            bool isSelected = false;
-            if ( !string.IsNullOrWhiteSpace( pageSearch ) )
-            {
-                isSelected = page.InternalName.IndexOf( pageSearch, StringComparison.OrdinalIgnoreCase ) >= 0;
-            }
-
             bool isExpanded = expandedPageIdList.Contains( page.Id );
 
-            var authRoles = Authorization.AuthRules( EntityTypeCache.Read<Rock.Model.Page>().Id, page.Id, Authorization.VIEW );
-            string authHtml = string.Empty;
-            if (authRoles.Any())
-            {
-                authHtml += string.Format(
-                    "&nbsp<i class=\"fa fa-lock\">&nbsp;</i>{0}",
-                    authRoles.Select( a => "<span class=\"badge badge-" + (a.AllowOrDeny == 'A' ? "success" : "danger")  + "\">" + a.DisplayName + "</span>"  ).ToList().AsDelimited( " " ) );
-            }
-
-            int pageEntityTypeId = EntityTypeCache.Read( "Rock.Model.Page" ).Id;
-
             sb.AppendFormat(
-                "<li data-expanded='{4}' data-model='Page' data-id='p{0}'><span><span class='rollover-container'><i class=\"fa fa-file-o\">&nbsp;</i><a href='{1}'>{2}</a> {6} {7}<span class='js-auth-roles hidden'>{5}</span></span></span>{3}", 
-                page.Id, // 0
-                new PageReference( page.Id ).BuildUrl(), // 1
-                isSelected ? "<strong>" + page.InternalName + "</strong>" : page.InternalName, // 2
-                Environment.NewLine, // 3
-                isExpanded.ToString().ToLower(), // 4
-                authHtml, // 5
-                CreatePageCopyIcon( page ), // 6
-                CreatePageConfigIcon( page ), // 7
-                CreateSecurityIcon( pageEntityTypeId, page.Id, page.InternalName ) // 8
+                @"
+<li {0} data-id='{1}'>
+    <span><i class='fa fa-file-o'></i> {2}</span>
+",
+                isExpanded ? "data-expanded='true'" : string.Empty, // 0
+                page.Id, // 1
+                page.InternalName // 2
             );
 
             var childPages = page.GetPages( rockContext );
-            if ( childPages.Any() || page.Blocks.Any() )
+            if ( childPages.Any() )
             {
                 sb.AppendLine( "<ul>" );
 
                 foreach ( var childPage in childPages.OrderBy( a => a.Order ).ThenBy( a => a.InternalName ) )
                 {
                     sb.Append( PageNode( childPage, expandedPageIdList, rockContext ) );
-                }
-
-                foreach ( var block in page.Blocks.OrderBy( b => b.Order ) )
-                {
-                    string blockName = block.Name;
-                    string blockCacheName = BlockTypeCache.Read( block.BlockTypeId, rockContext ).Name;
-                    if (blockName != blockCacheName)
-                    {
-                        blockName = blockName + " (" + blockCacheName + ")";
-                    }
-
-                    int blockEntityTypeId = EntityTypeCache.Read( "Rock.Model.Block" ).Id;
-
-                    sb.AppendFormat( "<li data-expanded='false' data-model='Block' data-id='b{0}'><span><span class='rollover-container'> <i class='fa fa-th-large'>&nbsp;</i> {2} {1} {4}</span></span></li>{3}", 
-                        block.Id, // 0
-                        CreateConfigIcon( block ), // 1
-                        blockName,  // 2
-                        Environment.NewLine, //3
-                        CreateSecurityIcon( blockEntityTypeId, block.Id, block.Name ) // 4
-                    );
                 }
 
                 sb.AppendLine( "</ul>" );
@@ -227,49 +172,47 @@ namespace RockWeb.Blocks.Cms
         }
 
         /// <summary>
-        /// Creates the copy icon.
+        /// Handles the Click event of the lbAddPageRoot control.
         /// </summary>
-        /// <param name="block">The block.</param>
-        /// <returns></returns>
-        protected string CreatePageCopyIcon( PageCache page )
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void lbAddPageRoot_Click( object sender, EventArgs e )
         {
-            return string.Format(
-                "&nbsp;<span class='rollover-item' onclick=\"javascript: __doPostBack('CopyPage', '{0}'); event.stopImmediatePropagation();\" title=\"Clone Page and Descendants\"><i class=\"fa fa-clone\"></i>&nbsp;</span>",
-                page.Id );
+            // if a rootPage is set, set that as the parentCategory when they select "add top-level"
+            var rootPage = new PageService( new RockContext() ).Get( this.GetAttributeValue( "RootPage" ).AsGuid() );
+            int parentPageId = rootPage != null ? rootPage.Id : 0;
+
+            Dictionary<string, string> qryParams = new Dictionary<string, string>();
+            qryParams.Add( "Page", 0.ToString() );
+            if ( parentPageId > 0 )
+            {
+                qryParams.Add( "ParentPageId", parentPageId.ToString() );
+            }
+
+            qryParams.Add( "ExpandedIds", hfExpandedIds.Value );
+
+            NavigateToPage( this.RockPage.Guid, qryParams );
         }
 
         /// <summary>
-        /// Creates the block config icon.
+        /// Handles the Click event of the lbAddPageChild control.
         /// </summary>
-        /// <param name="block">The block.</param>
-        /// <returns></returns>
-        protected string CreateConfigIcon( BlockCache block )
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void lbAddPageChild_Click( object sender, EventArgs e )
         {
-            var blockPropertyUrl = ResolveUrl( string.Format( "~/BlockProperties/{0}?t=Block Properties", block.Id ) );
+            int? selectedPageId = this.PageParameter( "Page" ).AsIntegerOrNull();
 
-            return string.Format(
-                "<a class='rollover-item' href=\"javascript: Rock.controls.modal.show($(this), '{0}')\" title=\"Block Properties\"><i class=\"fa fa-cog\"></i>&nbsp;</a>",
-                blockPropertyUrl );
-        }
+            Dictionary<string, string> qryParams = new Dictionary<string, string>();
+            qryParams.Add( "Page", 0.ToString() );
+            if ( selectedPageId > 0 )
+            {
+                qryParams.Add( "ParentPageId", selectedPageId.ToString() );
+            }
 
-        protected string CreateSecurityIcon(int entityTypeId, int entityId, string title )
-        {
-            string url = this.Page.ResolveUrl( string.Format( "~/Secure/{0}/{1}?t={2}&pb=&sb=Done", entityTypeId, entityId, HttpUtility.JavaScriptStringEncode( title ) ) );
-            return string.Format( "<span class='rollover-item' onclick=\"javascript: Rock.controls.modal.show($(this), '{0}'); event.stopImmediatePropagation();\" title=\"Security\"><i class=\"fa fa-lock\">&nbsp;</i></span>", url );
-        }
+            qryParams.Add( "ExpandedIds", hfExpandedIds.Value );
 
-        /// <summary>
-        /// Creates the page configuration icon.
-        /// </summary>
-        /// <param name="page">The page.</param>
-        /// <returns></returns>
-        protected string CreatePageConfigIcon( PageCache page )
-        {
-            var pagePropertyUrl = ResolveUrl( string.Format( "~/PageProperties/{0}?t=Page Properties", page.Id ) );
-
-            return string.Format(
-                "&nbsp;<span class='rollover-item' onclick=\"javascript: Rock.controls.modal.show($(this), '{0}'); event.stopImmediatePropagation();\" title=\"Page Properties\"><i class=\"fa fa-cog\"></i>&nbsp;</span>",
-                pagePropertyUrl );
+            NavigateToPage( this.RockPage.Guid, qryParams );
         }
     }
 }

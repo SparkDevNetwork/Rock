@@ -24,7 +24,7 @@ namespace Rock.Web.UI.Controls
     /// <summary>
     /// 
     /// </summary>
-    public class DefinedValuesPicker : RockCheckBoxList
+    public class DefinedValuesPicker : RockCheckBoxList, IDefinedValuePicker
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="DefinedValuesPicker"/> class.
@@ -52,7 +52,7 @@ namespace Rock.Web.UI.Controls
             set
             {
                 _definedTypeId = value;
-                LoadCheckBoxItems();
+                DefinedValuePicker.LoadDropDownItems( this );
             }
         }
 
@@ -69,25 +69,5 @@ namespace Rock.Web.UI.Controls
         /// </value>
         public bool DisplayDescriptions { get; set; }
 
-        /// <summary>
-        /// Loads the CheckBox items.
-        /// </summary>
-        private void LoadCheckBoxItems()
-        {
-            this.Items.Clear();
-
-            if ( _definedTypeId.HasValue )
-            {
-                Rock.Model.DefinedValueService definedValueService = new Model.DefinedValueService( new RockContext() );
-                var definedValues = definedValueService.GetByDefinedTypeId( _definedTypeId.Value );
-                if ( definedValues.Any() )
-                {
-                    foreach ( var definedValue in definedValues )
-                    {
-                        this.Items.Add( new ListItem( this.DisplayDescriptions ? definedValue.Description : definedValue.Value, definedValue.Id.ToString() ) );
-                    }
-                }
-            }
-        }
     }
 }

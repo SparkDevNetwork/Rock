@@ -31,9 +31,10 @@
 
                 <asp:Panel ID="pnlRefineSearch" runat="server" Visible="false">
                     <div class="well margin-t-md">
+                        <h4>Filters</h4>
                         <Rock:RockCheckBoxList ID="cblModelFilter" runat="server" CssClass="js-model-filter" RepeatDirection="Horizontal" Label="Information Types" />
 
-                        <hr />
+                        <hr id="hrSeparator" runat="server" />
                         
                         <div class="row">
                             <asp:PlaceHolder ID="phFilters" runat="server" />  
@@ -66,11 +67,18 @@
                                     <Rock:RockTextBox ID="tbResultsPerPage" runat="server" Label="Results Per Page" CssClass="input-width-sm" />
                                     <Rock:RockCheckBox ID="cbShowRefinedSearch" runat="server" Label="Show Refinded Search Options" />
                                     <Rock:RockCheckBox ID="cbShowScores" runat="server" Label="Show Scores" Help="Enables the display of scores for help with debugging." />
+                                    <Rock:RockCheckBox ID="cbUseCustomResults" runat="server" Label="Use Custom Results Template" Help="Determines if the custom Lava results template should be used." />
                                 </div>
                                 <div class="col-md-6">
                                     <Rock:RockCheckBoxList ID="cblEnabledModels" runat="server" Label="Enabled Models" />
                                     <Rock:RockCheckBox ID="cbShowFilter" runat="server" Label="Show Model Filter" />
-                                    <Rock:RockTextBox ID="tbBaseFieldFilters" runat="server" Label="Base Field Filters" Help="These field filters will always be enabled and will not be changeable by the individual. Uses tha same syntax as the lava command." />
+                                    <Rock:RockTextBox ID="tbBaseFieldFilters" runat="server" Label="Base Field Filters" Help="These field filters will always be enabled and will not be changeable by the individual. Uses the same syntax as the lava command." />
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <Rock:CodeEditor ID="ceCustomResultsTemplate" runat="server" Label="Custom Results Template" EditorMode="Lava" EditorTheme="Rock" />
+                                    <Rock:RockCheckBoxList ID="cblLavaCommands" runat="server" RepeatDirection="Horizontal" Label="Custom Results Lava Commands" />
                                 </div>
                             </div>
                         </ContentTemplate>
