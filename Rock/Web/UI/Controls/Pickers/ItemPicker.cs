@@ -454,6 +454,14 @@ namespace Rock.Web.UI.Controls
         public bool AllowMultiSelect { get; set; }
 
         /// <summary>
+        /// Gets or sets a value indicating whether [show select children].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [show select children]; otherwise, <c>false</c>.
+        /// </value>
+        internal bool ShowSelectChildren { get; set; }
+
+        /// <summary>
         /// Gets or sets the default text.
         /// </summary>
         /// <value>
@@ -535,17 +543,17 @@ namespace Rock.Web.UI.Controls
         /// </summary>
         protected virtual void RegisterJavaScript()
         {
-            string treeViewScriptFormat =
-@"Rock.controls.itemPicker.initialize({{ 
-    controlId: '{0}',
-    restUrl: '{1}',
-    allowMultiSelect: {2},
-    defaultText: '{3}',
-    restParams: $('#{4}').val(),
-    expandedIds: [{5}]
+            string treeViewScript =
+$@"Rock.controls.itemPicker.initialize({{ 
+    controlId: '{this.ClientID}',
+    restUrl: '{this.ResolveUrl( ItemRestUrl )}',
+    allowMultiSelect: {this.AllowMultiSelect.ToString().ToLower()},
+    defaultText: '{this.DefaultText}',
+    restParams: $('#{_hfItemRestUrlExtraParams.ClientID}').val(),
+    expandedIds: [{this.InitialItemParentIds}],
+    showSelectChildren: {this.ShowSelectChildren.ToString().ToLower()}
 }});
 ";
-            string treeViewScript = string.Format( treeViewScriptFormat, this.ClientID, this.ResolveUrl( ItemRestUrl ), this.AllowMultiSelect.ToString().ToLower(), this.DefaultText, _hfItemRestUrlExtraParams.ClientID, this.InitialItemParentIds );
             ScriptManager.RegisterStartupScript( this, this.GetType(), "item_picker-treeviewscript_" + this.ClientID, treeViewScript, true );
         }
 

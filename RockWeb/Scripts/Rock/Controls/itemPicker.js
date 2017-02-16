@@ -22,6 +22,7 @@
                         restUrl: this.options.restUrl,
                         restParams: this.options.restParams,
                         expandedIds: this.options.expandedIds,
+                        showSelectChildren: this.options.showSelectChildren,
                         id: this.options.startingId
                     },
                     $hfItemIds = $control.find('.js-item-id-value'),
@@ -203,7 +204,8 @@
                 allowMultiSelect: false,
                 defaultText: '',
                 selectedIds: null,
-                expandedIds: null
+                expandedIds: null,
+                showSelectChildren: false
             },
             controls: {},
             initialize: function (options) {
