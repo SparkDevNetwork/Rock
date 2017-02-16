@@ -536,6 +536,11 @@ namespace RockWeb.Blocks.WorkFlow
                     {
                         value = _workflow.AttributeValues[attribute.Key].Value;
                     }
+                    // Now see if the key is in the activity attributes so we can get it's value
+                    else if ( _activity != null && _activity.AttributeValues.ContainsKey( attribute.Key ) && _activity.AttributeValues[attribute.Key] != null )
+                    {
+                        value = _activity.AttributeValues[attribute.Key].Value;
+                    }
 
                     if ( !string.IsNullOrWhiteSpace( formAttribute.PreHtml))
                     {
@@ -793,7 +798,14 @@ namespace RockWeb.Blocks.WorkFlow
                     }
                     else
                     {
-                        ShowMessage( NotificationBoxType.Success, string.Empty, responseText, ( _action == null || _action.Id != previousActionId ) );
+                        if ( lSummary.Text.IsNullOrWhiteSpace() )
+                        {
+                            ShowMessage( NotificationBoxType.Success, string.Empty, responseText, ( _action == null || _action.Id != previousActionId ) );
+                        }
+                        else
+                        {
+                            pnlForm.Visible = false;
+                        }
                     }
                 }
                 else
