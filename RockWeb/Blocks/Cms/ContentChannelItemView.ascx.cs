@@ -513,14 +513,24 @@ namespace RockWeb.Blocks.Cms
                 bool isFiltered = false;
                 var items = GetItems( rockContext, selectedChannel, out isFiltered );
 
+                var reorderFieldColumn = gContentChannelItems.ColumnsOfType<ReorderField>().FirstOrDefault();
+
                 if ( selectedChannel.ItemsManuallyOrdered && !isFiltered )
                 {
-                    gContentChannelItems.Columns[0].Visible = true;
+                    if ( reorderFieldColumn != null )
+                    {
+                        reorderFieldColumn.Visible = true;
+                    }
+
                     gContentChannelItems.AllowSorting = false;
                 }
                 else
                 {
-                    gContentChannelItems.Columns[0].Visible = false;
+                    if ( reorderFieldColumn != null )
+                    {
+                        reorderFieldColumn.Visible = false;
+                    }
+
                     gContentChannelItems.AllowSorting = true;
 
                     SortProperty sortProperty = gContentChannelItems.SortProperty;
@@ -537,7 +547,7 @@ namespace RockWeb.Blocks.Cms
                 gContentChannelItems.ObjectList = new Dictionary<string, object>();
                 items.ForEach( i => gContentChannelItems.ObjectList.Add( i.Id.ToString(), i ) );
 
-                gContentChannelItems.DataSource = items.Select( i => new
+                var gridList = items.Select( i => new
                 {
                     i.Id,
                     i.Guid,
@@ -549,6 +559,12 @@ namespace RockWeb.Blocks.Cms
                     Occurrences = i.EventItemOccurrences.Any(),
                     CreatedByPersonName = i.CreatedByPersonAlias != null ? String.Format( "<a href={0}>{1}</a>", ResolveRockUrl( string.Format( "~/Person/{0}", i.CreatedByPersonAlias.PersonId ) ), i.CreatedByPersonName ) : String.Empty
                 } ).ToList();
+
+                // only show the Event Occurrences item if any of the displayed content channel items have any occurrences (and the block setting is enabled)
+                var eventOccurrencesColumn = gContentChannelItems.ColumnsWithDataField( "Occurrences" ).FirstOrDefault();
+                eventOccurrencesColumn.Visible = gridList.Any( a => a.Occurrences == true );
+
+                gContentChannelItems.DataSource = gridList;
                 gContentChannelItems.DataBind();
 
                 lContentChannelItems.Text = selectedChannel.Name + " Items";
@@ -784,14 +800,17 @@ namespace RockWeb.Blocks.Cms
                     }
                 }
 
-                // Priority column
-                var priorityField = new BoundField();
-                priorityField.DataField = "Priority";
-                priorityField.HeaderText = "Priority";
-                priorityField.SortExpression = "Priority";
-                priorityField.DataFormatString = "{0:N0}";
-                priorityField.ItemStyle.HorizontalAlign = HorizontalAlign.Right;
-                gContentChannelItems.Columns.Add( priorityField );
+                if ( !channel.ContentChannelType.DisablePriority )
+                {
+                    // Priority column
+                    var priorityField = new BoundField();
+                    priorityField.DataField = "Priority";
+                    priorityField.HeaderText = "Priority";
+                    priorityField.SortExpression = "Priority";
+                    priorityField.DataFormatString = "{0:N0}";
+                    priorityField.ItemStyle.HorizontalAlign = HorizontalAlign.Right;
+                    gContentChannelItems.Columns.Add( priorityField );
+                }
 
                 // Status column
                 if ( channel.RequiresApproval )

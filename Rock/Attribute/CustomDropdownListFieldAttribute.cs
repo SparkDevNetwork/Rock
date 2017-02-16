@@ -28,6 +28,9 @@ namespace Rock.Attribute
     [AttributeUsage( AttributeTargets.Class, AllowMultiple = true, Inherited = true )]
     public class CustomDropdownListFieldAttribute : FieldAttribute
     {
+        private const string VALUES_KEY = "values";
+        private const string FIELDTYPE_KEY = "fieldtype";
+
         /// <summary>
         /// Initializes a new instance of the <see cref="CustomDropdownListFieldAttribute" /> class.
         /// </summary>
@@ -40,10 +43,27 @@ namespace Rock.Attribute
         /// <param name="order">The order.</param>
         /// <param name="key">The key.</param>
         public CustomDropdownListFieldAttribute( string name, string description, string listSource, bool required = false, string defaultValue = "", string category = "", int order = 0, string key = null )
+            : this( name, description, listSource, false, required, defaultValue, category, order, key )
+        {
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="CustomDropdownListFieldAttribute"/> class.
+        /// </summary>
+        /// <param name="name">The name.</param>
+        /// <param name="description">The description.</param>
+        /// <param name="listSource">The list source.</param>
+        /// <param name="enhanced">if set to <c>true</c> [enhanced].</param>
+        /// <param name="required">if set to <c>true</c> [required].</param>
+        /// <param name="defaultValue">The default value.</param>
+        /// <param name="category">The category.</param>
+        /// <param name="order">The order.</param>
+        /// <param name="key">The key.</param>
+        public CustomDropdownListFieldAttribute( string name, string description, string listSource, bool enhanced, bool required, string defaultValue, string category, int order, string key = null )
             : base( name, description, required, defaultValue, category, order, key, typeof( Rock.Field.Types.SelectSingleFieldType ).FullName )
         {
-            FieldConfigurationValues.Add( "values", new Field.ConfigurationValue( listSource ) );
-            FieldConfigurationValues.Add( "fieldtype", new Field.ConfigurationValue( "ddl" ) );
+            FieldConfigurationValues.Add( VALUES_KEY, new Field.ConfigurationValue( listSource ) );
+            FieldConfigurationValues.Add( FIELDTYPE_KEY, new Field.ConfigurationValue( enhanced ? "ddl_enhanced" : "ddl" ) );
         }
     }
 }

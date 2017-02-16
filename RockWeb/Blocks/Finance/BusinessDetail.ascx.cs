@@ -301,7 +301,7 @@ namespace RockWeb.Blocks.Finance
         protected void lbCancel_Click( object sender, EventArgs e )
         {
             int? businessId = hfBusinessId.Value.AsIntegerOrNull();
-            if ( businessId.HasValue )
+            if ( businessId.HasValue && businessId > 0 )
             {
                 ShowSummary( businessId.Value );
             }
@@ -709,6 +709,7 @@ namespace RockWeb.Blocks.Finance
             pnlEditDetails.Visible = editable;
             fieldsetViewSummary.Visible = !editable;
             gContactList.Visible = !editable;
+            pnlContactList.Visible = !editable;
             this.HideSecondaryBlocks( editable );
         }
 

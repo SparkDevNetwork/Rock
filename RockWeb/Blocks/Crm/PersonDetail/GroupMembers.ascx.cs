@@ -183,7 +183,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                         phMoreGroupAttributes.Controls.Clear();
 
                         group.LoadAttributes();
-                        var attributes = group.Attributes
+                        var attributes = group.GetAuthorizedAttributes( Authorization.VIEW, CurrentPerson )
                             .Select( a => a.Value )
                             .OrderBy( a => a.Order )
                             .ToList();

@@ -281,9 +281,7 @@ namespace RockWeb.Blocks.CheckIn
                 if ( ddlAttendanceType.SelectedGroupTypeId.HasValue )
                 {
                     return new GroupTypeService( _rockContext )
-                        .GetChildGroupTypes( ddlAttendanceType.SelectedGroupTypeId.Value )
-                        .OrderBy( a => a.Order )
-                        .ThenBy( a => a.Name )
+                        .GetAllAssociatedDescendentsOrdered( ddlAttendanceType.SelectedGroupTypeId.Value )
                         .ToList();
                 }
             }

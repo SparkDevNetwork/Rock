@@ -197,12 +197,14 @@ namespace Rock.Reporting
                     }
                     else if ( entityType == typeof( ContentChannelItem ) )
                     {
-                        // in the case of ContentChannelItem, show attributes that are entity global, but also ones that are qualified by ContentChannelTypeId
+                        // in the case of ContentChannelItem, show attributes that are entity global, but also ones that are qualified by ContentChannelTypeId or ContentChannelId
                         qryAttributes = qryAttributes
                             .Where( a =>
                                 a.EntityTypeQualifierColumn == null ||
                                 a.EntityTypeQualifierColumn == string.Empty ||
-                                a.EntityTypeQualifierColumn == "ContentChannelTypeId" );
+                                a.EntityTypeQualifierColumn == "ContentChannelTypeId" ||
+                                a.EntityTypeQualifierColumn == "ContentChannelId"
+                                );
                     }
                     else if ( entityType == typeof( Rock.Model.Workflow ) )
                     {
@@ -358,7 +360,22 @@ namespace Rock.Reporting
                         {
                             // Append the Qualifier to the title
                             entityField.AttributeEntityTypeQualifierName = contentChannelType.Name;
-                            entityField.Title = string.Format( "{0} ({1})", attribute.Name, contentChannelType.Name );
+                            entityField.Title = string.Format( "{0} (ChannelType: {1})", attribute.Name, contentChannelType.Name );
+                        }
+                    }
+                }
+
+                // Special processing for Entity Type "ContentChannelItem" to handle sub-types that are distinguished by ContentChannelId.
+                if ( attribute.EntityTypeId == EntityTypeCache.GetId( typeof( ContentChannelItem ) ) && attribute.EntityTypeQualifierColumn == "ContentChannelId" )
+                {
+                    using ( var rockContext = new RockContext() )
+                    {
+                        var contentChannel = new ContentChannelService( rockContext ).Get( attribute.EntityTypeQualifierValue.AsInteger() );
+                        if ( contentChannel != null )
+                        {
+                            // Append the Qualifier to the title
+                            entityField.AttributeEntityTypeQualifierName = contentChannel.Name;
+                            entityField.Title = string.Format( "{0} (Channel: {1})", attribute.Name, contentChannel.Name );
                         }
                     }
                 }

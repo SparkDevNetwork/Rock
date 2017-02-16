@@ -60,6 +60,12 @@ namespace Rock.Workflow.Action
             if ( valueGuid.HasValue )
             {
                 updateValue = action.GetWorklowAttributeValue( valueGuid.Value );
+
+                // if the value is null no workflow attribute was found for that guid so use the actual guid as the value 
+                if (updateValue == null )
+                {
+                    updateValue = valueGuid.Value.ToString();
+                }
             }
             else
             {

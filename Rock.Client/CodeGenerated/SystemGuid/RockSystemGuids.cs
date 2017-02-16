@@ -70,7 +70,9 @@ namespace Rock.Client.SystemGuid
     /// </summary>
     public class BlockType
     {
+        public const string CONTENT_CHANNEL_VIEW = "143A2345-3E26-4ED0-A2FE-42AAF11B4C0F";
         public const string HTML_CONTENT = "19B61D65-37E3-459F-A44F-DEF0089118A3";
+        public const string PAGE_MENU = "CACB9D1A-A820-4587-986A-D66A69EE9948";
         public const string PLUGIN_MANAGER = "F80268E6-2625-4565-AA2E-790C5E40A119";
     }
 

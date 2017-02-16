@@ -271,6 +271,7 @@
     <Compile Include="Attribute\ContentChannelFieldAttribute.cs" />
     <Compile Include="Attribute\ContentChannelTypesFieldAttribute.cs" />
     <Compile Include="Attribute\CurrencyFieldAttribute.cs" />
+    <Compile Include="Attribute\CustomEnhancedListFieldAttribute.cs" />
     <Compile Include="Attribute\CustomCheckboxListFieldAttribute.cs" />
     <Compile Include="Attribute\CustomDropdownListFieldAttribute.cs" />
     <Compile Include="Attribute\CustomRadioListFieldAttribute.cs" />
@@ -1188,6 +1189,7 @@
     <Compile Include="Scripting.native.cs" />
     <Compile Include="Search\Group\Name.cs" />
     <Compile Include="Search\Person\Address.cs" />
+    <Compile Include="Search\Person\BirthDate.cs" />
     <Compile Include="Search\Person\BusinessName.cs" />
     <Compile Include="Security\Authentication\Twitter.cs" />
     <Compile Include="Transactions\SaveCommunicationTransaction.cs" />
@@ -1212,7 +1214,9 @@
     <Compile Include="Utility\ExcelHelper.cs" />
     <Compile Include="Utility\ExtensionMethods\QuartzExtensions.cs" />
     <Compile Include="Utility\FileUtilities.cs" />
+    <Compile Include="Web\UI\Controls\Pickers\DefinedValuesPickerEnhanced.cs" />
     <Compile Include="Web\UI\Controls\Pickers\RegistrationTemplatePicker.cs" />
+    <Compile Include="Web\UI\Controls\RockListBox.cs" />
     <Compile Include="Web\UI\RockTheme.cs" />
     <Compile Include="Web\Cache\AttributeValueCache.cs" />
     <Compile Include="Web\UI\Controls\WarningBlock.cs" />

@@ -50,6 +50,18 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Gets or sets a value indicating whether this instance is messaging visible.
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if this instance is messaging visible; otherwise, <c>false</c>.
+        /// </value>
+        public bool IsMessagingVisible
+        {
+            get { return ViewState["IsMessagingVisible"] as bool? ?? true; }
+            set { ViewState["IsMessagingVisible"] = value; }
+        }
+
+        /// <summary>
         /// Gets the contact information rows.
         /// </summary>
         /// <value>
@@ -150,10 +162,13 @@ namespace Rock.Web.UI.Controls
             writer.Write( cellPhone != null ? cellPhone.Value.EndsWith( "Phone" ) ? cellPhone.Value : cellPhone.Value + " Phone" : "Cell Phone" );
             writer.RenderEndTag();
 
-            writer.AddAttribute( HtmlTextWriterAttribute.Style, "width:5%" );
-            writer.RenderBeginTag( HtmlTextWriterTag.Th );
-            writer.Write( "SMS" );
-            writer.RenderEndTag();
+            if ( IsMessagingVisible )
+            {
+                writer.AddAttribute( HtmlTextWriterAttribute.Style, "width:5%" );
+                writer.RenderBeginTag( HtmlTextWriterTag.Th );
+                writer.Write( "SMS" );
+                writer.RenderEndTag();
+            }
         }
 
         /// <summary>
