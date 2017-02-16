@@ -728,7 +728,18 @@ namespace RockWeb.Blocks.Connection
 
                         if ( cbClearConnector.Checked )
                         {
-                            connectionRequest.ConnectorPersonAliasId = null;
+                            // Now assign the default connector if one was specified by the new connection opportunity's settings.
+                            var newOpportunity = new ConnectionOpportunityService( rockContext ).Get( newOpportunityId.Value );
+
+                            // newOpportunity should never be null unless someone *just* deleted the opportunity that our user just selected.
+                            if ( newOpportunity != null )
+                            {
+                                connectionRequest.ConnectorPersonAliasId = newOpportunity.GetDefaultConnectorPersonAliasId( connectionRequest.CampusId.Value );
+                            }
+                            else
+                            {
+                                connectionRequest.ConnectorPersonAliasId = null;
+                            }
                         }
 
                         rockContext.SaveChanges();

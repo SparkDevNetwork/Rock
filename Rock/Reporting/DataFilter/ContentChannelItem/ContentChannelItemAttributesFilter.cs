@@ -26,6 +26,7 @@ using Newtonsoft.Json;
 
 using Rock.Data;
 using Rock.Model;
+using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
 namespace Rock.Reporting.DataFilter.ContentChannelItem
@@ -188,7 +189,15 @@ namespace Rock.Reporting.DataFilter.ContentChannelItem
                 if ( control != null )
                 {
                     // Add the field to the dropdown of available fields
-                    ddlProperty.Items.Add( new ListItem( entityField.TitleWithoutQualifier, entityField.Name ) );
+                    if ( AttributeCache.Read( entityField.AttributeGuid.Value )?.EntityTypeQualifierColumn == "ContentChannelTypeId" )
+                    {
+                        ddlProperty.Items.Add( new ListItem( entityField.TitleWithoutQualifier, entityField.Name ) );
+                    }
+                    else
+                    {
+                        ddlProperty.Items.Add( new ListItem( entityField.Title, entityField.Name ) );
+                    }
+
                     containerControl.Controls.Add( control );
                 }
             }
@@ -401,14 +410,29 @@ namespace Rock.Reporting.DataFilter.ContentChannelItem
         private List<EntityField> GetContentChannelItemAttributes( int? contentChannelTypeId )
         {
             List<EntityField> entityAttributeFields = new List<EntityField>();
-
             if ( contentChannelTypeId.HasValue )
             {
-                var fakeContentChannelItem = new Rock.Model.ContentChannelItem { ContentChannelTypeId = contentChannelTypeId.Value };
-                Rock.Attribute.Helper.LoadAttributes( fakeContentChannelItem );
-                foreach ( var attribute in fakeContentChannelItem.Attributes.Select( a => a.Value ) )
+                using ( var rockContext = new RockContext() )
                 {
-                    EntityHelper.AddEntityFieldForAttribute( entityAttributeFields, attribute, true );
+                    var contentChannelService = new ContentChannelService( rockContext );
+                    var allEntityAttributeFields = EntityHelper.GetEntityFields( typeof( Rock.Model.ContentChannelItem ) ).Where( a => a.FieldKind == FieldKind.Attribute );
+                    foreach ( var entityAttributeField in allEntityAttributeFields )
+                    {
+                        var attributeCache = AttributeCache.Read( entityAttributeField.AttributeGuid.Value );
+                        if ( attributeCache.EntityTypeQualifierColumn == "ContentChannelTypeId" && attributeCache.EntityTypeQualifierValue == contentChannelTypeId.ToString() )
+                        {
+                            entityAttributeFields.Add( entityAttributeField );
+                        }
+                        else if ( attributeCache.EntityTypeQualifierColumn == "ContentChannelId" )
+                        {
+                            int contentChannelId = attributeCache.EntityTypeQualifierValue.AsInteger();
+                            var contentChannel = contentChannelService.Queryable().Where( a => a.Id == contentChannelId ).FirstOrDefault();
+                            if ( contentChannel?.ContentChannelTypeId == contentChannelTypeId.Value )
+                            {
+                                entityAttributeFields.Add( entityAttributeField );
+                            }
+                        }
+                    }
                 }
             }
 
