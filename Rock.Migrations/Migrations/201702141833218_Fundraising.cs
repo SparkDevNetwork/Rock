@@ -36,12 +36,16 @@ namespace Rock.Migrations
 
             // TODO: 'Fundraising Opportunity Term' Defined Value
 
-            // TODO: GroupType: Fundraising Opportunity
+            // TODO: GroupType: Fundraising Opportunity 4BE7FC44-332D-40A8-978E-47B7035D7A0C
             // A bunch of group and groupmember Attributes: for Fundraising Opportunity grouptype
+            // Migration for GroupRoles too
+            // * Participant F82DF077-9664-4DA8-A3D9-7379B690124D
+            // * Leader 253973A5-18F2-49B6-B2F1-F8F84294AAB2
 
             // TODO: Add TransactionType of Fundraising
 
             // TODO: Add NoteType 'Fundraising Opportunity Comment' Guid:9BB1A7B6-0E51-4E0E-BFC0-1E42F4F2DA95
+            // NOTE: make sure AllUsers have EDIT auth (the block will control when Edit/Add is allowed)
         }
 
         /// <summary>
