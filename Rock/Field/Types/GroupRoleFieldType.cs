@@ -28,6 +28,7 @@ namespace Rock.Field.Types
 {
     /// <summary>
     /// Field Type to select a single (or null) group role filtered by a selected group type
+    /// Stored as GroupTypeRole.Guid
     /// </summary>
     public class GroupRoleFieldType : FieldType, IEntityFieldType
     {
