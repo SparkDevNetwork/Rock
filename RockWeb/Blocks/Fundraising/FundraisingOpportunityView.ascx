@@ -52,7 +52,7 @@
 
             <%-- NOTE: this is LEFT side of the page (The left sidebar stuff), but declared 2nd so that it ends up at the bottom when the window is narrow --%>
             <div class="col-md-4 col-md-pull-8">
-                <asp:Image ID="imgPhoto" runat="server" CssClass="title-image img-responsive" ImageUrl="#todo#" />
+                <asp:Image ID="imgPhoto" runat="server" CssClass="title-image img-responsive" />
                 <asp:LinkButton ID="btnDonateToParticipant" runat="server" CssClass="btn btn-primary btn-block margin-t-md" Text="Donate to a Participant" OnClick="btnDonateToParticipant_Click" />
                 <asp:LinkButton ID="btnLeaderToolbox" runat="server" CssClass="btn btn-primary btn-block margin-t-md" Text="Leader Toolbox" OnClick="btnLeaderToolbox_Click" />
                 <asp:Literal ID="lSidebarHtml" runat="server" />
