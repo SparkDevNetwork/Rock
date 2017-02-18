@@ -42,6 +42,7 @@ namespace RockWeb.Blocks.WorkFlow
     [Description( "Used to enter information for a workflow form entry action." )]
 
     [WorkflowTypeField( "Workflow Type", "Type of workflow to start." )]
+    [BooleanField( "Show Summary View", "If workflow has been completed, should the summary view be displayed?", false, "", 1)]
     public partial class WorkflowEntry : Rock.Web.UI.RockBlock, IPostBackEventHandler
     {
         #region Fields
@@ -364,6 +365,8 @@ namespace RockWeb.Blocks.WorkFlow
                 return false;
             }
 
+            var canEdit = UserCanEdit || _workflow.IsAuthorized( Authorization.EDIT, CurrentPerson );
+
             if ( _workflow.IsActive )
             {
                 if ( ActionTypeId.HasValue )
@@ -382,8 +385,6 @@ namespace RockWeb.Blocks.WorkFlow
                         }
                     }
                 }
-
-                var canEdit = UserCanEdit || _workflow.IsAuthorized( Authorization.EDIT, CurrentPerson );
 
                 // Find first active action form
                 int personId = CurrentPerson != null ? CurrentPerson.Id : 0;
@@ -422,25 +423,31 @@ namespace RockWeb.Blocks.WorkFlow
                 mergeFields.Add( "Activity", _activity );
                 mergeFields.Add( "Workflow", _workflow );
 
-                ShowNotes( false );
-                ShowMessage( NotificationBoxType.Warning, string.Empty, _workflowType.NoActionMessage.ResolveMergeFields( mergeFields, CurrentPerson ) );
-                return false;
+                if ( _workflowType.NoActionMessage.IsNullOrWhiteSpace() )
+                {
+                    ShowMessage( NotificationBoxType.Warning, string.Empty, "The selected workflow is not in a state that requires you to enter information." );
+                }
+                else
+                {
+                    ShowMessage( NotificationBoxType.Warning, string.Empty, _workflowType.NoActionMessage.ResolveMergeFields( mergeFields, CurrentPerson ) );
+                }
             }
             else
             {
-                var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson );
-                mergeFields.Add( "Action", _action );
-                mergeFields.Add( "Activity", _activity );
-                mergeFields.Add( "Workflow", _workflow );
+                if ( GetAttributeValue("ShowSummaryView").AsBoolean() && !string.IsNullOrWhiteSpace( _workflowType.SummaryViewText ) )
+                {
+                    var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson );
+                    mergeFields.Add( "Action", _action );
+                    mergeFields.Add( "Activity", _activity );
+                    mergeFields.Add( "Workflow", _workflow );
 
-                lSummary.Text = _workflowType.SummaryViewText.ResolveMergeFields( mergeFields, CurrentPerson );
-                lSummary.Visible = true;
-
-                ShowNotes( false );
-                return false;
+                    lSummary.Text = _workflowType.SummaryViewText.ResolveMergeFields( mergeFields, CurrentPerson );
+                    lSummary.Visible = true;
+                }
             }
 
-
+            ShowNotes( false );
+            return false;
         }
 
         private void LoadWorkflowType()
