@@ -134,8 +134,8 @@ namespace Rock.Web.UI.Controls
             _rangeValidator.MaximumValue = this.MaximumValue;
             string dataTypeText = string.Empty;
 
-            int minValue = MinimumValue.AsIntegerOrNull() ?? int.MinValue;
-            int maxValue = MaximumValue.AsIntegerOrNull() ?? int.MaxValue;
+            decimal minValue = MinimumValue.AsDecimalOrNull() ?? decimal.MinValue;
+            decimal maxValue = MaximumValue.AsDecimalOrNull() ?? decimal.MaxValue;
 
             string rangeMessageFormat = null;
 
@@ -149,17 +149,17 @@ namespace Rock.Web.UI.Controls
                 case ValidationDataType.String: rangeMessageFormat = "{0} must be a string"; break;
             }
 
-            if ( minValue > int.MinValue)
+            if ( minValue > decimal.MinValue)
             {
                 rangeMessageFormat = "{0} must be at least " + MinimumValue;
             }
             
-            if ( maxValue < int.MaxValue )
+            if ( maxValue < decimal.MaxValue )
             {
                 rangeMessageFormat = "{0} must be at most " + MaximumValue;
             }
 
-            if ( ( minValue > int.MinValue ) && ( maxValue < int.MaxValue ) )
+            if ( ( minValue > decimal.MinValue ) && ( maxValue < decimal.MaxValue ) )
             {
                 rangeMessageFormat = string.Format( "{{0}} must be between {0} and {1} ", MinimumValue, MaximumValue );
             }
