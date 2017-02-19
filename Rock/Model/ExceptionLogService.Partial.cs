@@ -82,6 +82,21 @@ namespace Rock.Model
             Task.Run( () => LogExceptions( ex, exceptionLog, true ) );
         }
 
+        public static void LogException( Exception ex )
+        {
+            // create a new exception model
+            var exceptionLog = new ExceptionLog();
+            exceptionLog.HasInnerException = ex.InnerException != null;
+            exceptionLog.ExceptionType = ex.GetType().ToString();
+            exceptionLog.Description = ex.Message;
+            exceptionLog.Source = ex.Source;
+            exceptionLog.StackTrace = ex.StackTrace;
+
+            // Spin off a new thread to handle the real logging work so the UI is not blocked whilst
+            // recursively writing to the database.
+            Task.Run( () => LogExceptions( ex, exceptionLog, true ) );
+        }
+
         /// <summary>
         /// Recursively logs exception and any children.
         /// </summary>
