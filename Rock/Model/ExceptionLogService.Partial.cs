@@ -82,6 +82,10 @@ namespace Rock.Model
             Task.Run( () => LogExceptions( ex, exceptionLog, true ) );
         }
 
+        /// <summary>
+        /// Logs the exception.
+        /// </summary>
+        /// <param name="ex">The ex.</param>
         public static void LogException( Exception ex )
         {
             // create a new exception model
