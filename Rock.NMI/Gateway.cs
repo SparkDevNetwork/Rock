@@ -283,10 +283,16 @@ namespace Rock.NMI
 
                 if ( result.GetValueOrNull( "result" ) != "1" )
                 {
-                    errorMessage = GetResultCodeMessage( result );
+                    errorMessage = result.GetValueOrNull( "result-text" );
+
+                    string resultCodeMessage = GetResultCodeMessage( result );
+                    if ( resultCodeMessage.IsNotNullOrWhitespace() )
+                    {
+                        errorMessage += string.Format( " ({0})", resultCodeMessage );
+                    }
 
                     // write result error as an exception
-                    ExceptionLogService.LogException( new Exception( $"Error processing NMI transaction. Error message: {errorMessage}. Result text: {result.GetValueOrNull( "result-text" )}. Card Holder Name: {result.GetValueOrNull( "first-name" )} {result.GetValueOrNull( "last-name" )}. Amount: {result.GetValueOrNull( "total-amount" )}. Transaction id: {result.GetValueOrNull( "transaction-id" )}. Descriptor: {result.GetValueOrNull( "descriptor" )}. Order description: {result.GetValueOrNull( "order-description" )}." ) );
+                    ExceptionLogService.LogException( new Exception( $"Error processing NMI transaction. Result Code:  {result.GetValueOrNull( "result-code" )} ({resultCodeMessage}). Result text: {result.GetValueOrNull( "result-text" )}. Card Holder Name: {result.GetValueOrNull( "first-name" )} {result.GetValueOrNull( "last-name" )}. Amount: {result.GetValueOrNull( "total-amount" )}. Transaction id: {result.GetValueOrNull( "transaction-id" )}. Descriptor: {result.GetValueOrNull( "descriptor" )}. Order description: {result.GetValueOrNull( "order-description" )}." ) );
                     
                     return null;
                 }
@@ -1091,7 +1097,7 @@ namespace Rock.NMI
                     }
             }
 
-            return result.GetValueOrNull( "result-text" );
+            return string.Empty;
         }
 
         /// <summary>
