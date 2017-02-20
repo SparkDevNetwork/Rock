@@ -106,6 +106,10 @@ namespace Rock.Rest.Controllers
             return 0;
         }
 
+        /// <summary>
+        /// Gets the rock semantic version number.
+        /// </summary>
+        /// <returns></returns>
         [System.Web.Http.Route( "api/Utility/GetRockSemanticVersionNumber" )]
         [HttpGet]
         public string GetRockSemanticVersionNumber()
