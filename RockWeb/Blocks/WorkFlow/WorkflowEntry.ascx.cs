@@ -418,19 +418,8 @@ namespace RockWeb.Blocks.WorkFlow
                     }
                 }
 
-                var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson );
-                mergeFields.Add( "Action", _action );
-                mergeFields.Add( "Activity", _activity );
-                mergeFields.Add( "Workflow", _workflow );
+                lSummary.Text = string.Empty;
 
-                if ( _workflowType.NoActionMessage.IsNullOrWhiteSpace() )
-                {
-                    ShowMessage( NotificationBoxType.Warning, string.Empty, "The selected workflow is not in a state that requires you to enter information." );
-                }
-                else
-                {
-                    ShowMessage( NotificationBoxType.Warning, string.Empty, _workflowType.NoActionMessage.ResolveMergeFields( mergeFields, CurrentPerson ) );
-                }
             }
             else
             {
@@ -443,6 +432,22 @@ namespace RockWeb.Blocks.WorkFlow
 
                     lSummary.Text = _workflowType.SummaryViewText.ResolveMergeFields( mergeFields, CurrentPerson );
                     lSummary.Visible = true;
+                }
+            }
+
+            if ( lSummary.Text.IsNullOrWhiteSpace() )
+            {
+                if ( _workflowType.NoActionMessage.IsNullOrWhiteSpace() )
+                {
+                    ShowMessage( NotificationBoxType.Warning, string.Empty, "The selected workflow is not in a state that requires you to enter information." );
+                }
+                else
+                {
+                    var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson );
+                    mergeFields.Add( "Action", _action );
+                    mergeFields.Add( "Activity", _activity );
+                    mergeFields.Add( "Workflow", _workflow );
+                    ShowMessage( NotificationBoxType.Warning, string.Empty, _workflowType.NoActionMessage.ResolveMergeFields( mergeFields, CurrentPerson ) );
                 }
             }
 
