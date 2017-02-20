@@ -302,8 +302,8 @@ namespace Rock.Jobs
 
         /// <summary>
         /// Cleans up workflow logs by removing old logs in batches.
+        /// see http://dba.stackexchange.com/questions/1750/methods-of-speeding-up-a-huge-delete-from-table-with-no-clauses"
         /// </summary>
-        /// <see cref="http://dba.stackexchange.com/questions/1750/methods-of-speeding-up-a-huge-delete-from-table-with-no-clauses)"/>
         private int CleanUpWorkflowLogs( JobDataMap dataMap )
         {
             int totalRowsDeleted = 0;
