@@ -1,7 +1,5 @@
 
-<h4 class="page-header">Previous Weekends</h4>
+<h4 class="page-header">Previous Series</h4>
 {% for item in Items offset:1 limit:3 %}
-    <a href="/page/1325?ContentId={{ item.Id }}" class="btn btn-block btn-default">Week of<br><span class="no-caps"> {{ item.StartDateTime | Date:'M/d/yyyy' }}</span></a>
+    <a href="/page/1329?ContentId={{ item.Id }}" class="btn btn-block btn-default"><span class="no-caps"> {{ item.Title }}</span></a>
 {% endfor %}
-  
-  
