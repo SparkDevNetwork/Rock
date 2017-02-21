@@ -265,7 +265,7 @@
         </tr>
         {% if fullTime %}
         <tr> {% assign employmentPreviousYears = Person | Attribute:'Arena-22-212' | Minus:1 | Ceiling %}
-          <td style="border:1pt solid black;text-align:center;"><p> <b>{{ employmentPreviousYears }}</b></p></td>
+          <td style="border:1pt solid black;text-align:center;"><p> <b>{{ employmentPreviousYears | ToString | NumberToOrdinal }}</b></p></td>
           <td><p> </p></td>
         </tr>
         <tr> {% if employmentPreviousYears == 1 %}{% assign employeePreviousPercent = 0.04 %}{% elseif employmentPreviousYears == 2 %}{% assign employeePreviousPercent = 0.08 %}{% elseif employmentPreviousYears >= 3 %}{% assign employeePreviousPercent = 0.12 %}{% else %}{% assign employeePreviousPercent = 0.00 %}{% endif %}
@@ -322,7 +322,7 @@
         </tr>
         {% if fullTime %}
         <tr> {% assign employmentCurrentYears = Person | Attribute:'Arena-22-212' | Ceiling %}
-          <td style="border:1pt solid black;text-align:center;"><p> <b>{{ employmentCurrentYears }}</b></p></td>
+          <td style="border:1pt solid black;text-align:center;"><p> <b>{{ employmentCurrentYears | ToString | NumberToOrdinal }}</b></p></td>
           <td><p> </p></td>
         </tr>
         <tr> {% if employmentCurrentYears == 1 %}{% assign employeeCurrentPercent = 0.04 %}{% elseif employmentCurrentYears == 2 %}{% assign employeeCurrentPercent = 0.08 %}{% elseif employmentCurrentYears >= 3 %}{% assign employeeCurrentPercent = 0.12 %}{% else %}{% assign employeeCurrentPercent = 0.00 %}{% endif %}
@@ -379,7 +379,7 @@
         </tr>
         {% if fullTime %}
         <tr> {% assign employmentFutureYears = Person | Attribute:'Arena-22-212' | Plus: 1 | Ceiling %}
-          <td style="border:1pt solid black;text-align:center;"><p> <b>{{ employmentFutureYears }}</b></p></td>
+          <td style="border:1pt solid black;text-align:center;"><p> <b>{{ employmentFutureYears | ToString | NumberToOrdinal }}</b></p></td>
           <td><p> </p></td>
         </tr>
         <tr> {% if employmentFutureYears == 1 %}{% assign employeeFuturePercent = 0.04 %}{% elseif employmentFutureYears == 2 %}{% assign employeeFuturePercent = 0.08 %}{% elseif employmentFutureYears >= 3 %}{% assign employeeFuturePercent = 0.12 %}{% else %}{% assign employeeFuturePercent = 0.00 %}{% endif %}
@@ -415,10 +415,10 @@
       </table>
       {% if fullTime %}
       </br>
-      <table width="100%" style="text-align:right;color:darkgray;">
+      <table width="100%">
         <tr>
           <td width="25%"><p> </p></td>
-          <td width="25%"><p>Eligibility</p></td>
+          <td width="25%"><p style="text-align:right;color:darkgray !important;">Eligibility</p></td>
           <td width="25%"><p> </p></td>
           <td width="25%"><p> </p></td>
         </tr>
@@ -427,7 +427,7 @@
           <td width="25%"><p> </p></td>
           <td width="25%"><p> </p></td>
           <td width="25%"><p> </p></td>
-          <td width="25%"><p>1st Year</p></td>
+          <td width="25%"><p style="text-align:right;color:darkgray !important;">1st Year</p></td>
         </tr>
         {% endif %}
         {% if employmentPreviousYears <= 2 %}
@@ -435,7 +435,7 @@
           <td width="25%"><p> </p></td>
           <td width="25%"><p> </p></td>
           <td width="25%"><p> </p></td>
-          <td width="25%"><p>2nd Year</p></td>
+          <td width="25%"><p style="text-align:right;color:darkgray !important;">2nd Year</p></td>
         </tr>
         {% endif %}
         {% if employmentPreviousYears <= 3 %}
@@ -443,7 +443,7 @@
           <td width="25%"><p> </p></td>
           <td width="25%"><p> </p></td>
           <td width="25%"><p> </p></td>
-          <td width="25%"><p>3rd Year</p></td>
+          <td width="25%"><p style="text-align:right;color:darkgray !important;">3rd Year</p></td>
         </tr>
         {% endif %}
         {% if employmentPreviousYears <= 4 %}
@@ -451,7 +451,7 @@
           <td width="25%"><p> </p></td>
           <td width="25%"><p> </p></td>
           <td width="25%"><p> </p></td>
-          <td width="25%"><p>4th Year</p></td>
+          <td width="25%"><p style="text-align:right;color:darkgray !important;">4th Year</p></td>
         </tr>
         {% endif %}
         {% if employmentPreviousYears <= 5 %}
@@ -459,14 +459,14 @@
           <td width="25%"><p> </p></td>
           <td width="25%"><p> </p></td>
           <td width="25%"><p> </p></td>
-          <td width="25%"><p>5th Year</p></td>
+          <td width="25%"><p style="text-align:right;color:darkgray !important;">5th Year</p></td>
         </tr>
         {% endif %}
         <tr>
           <td width="25%"><p> </p></td>
           <td width="25%"><p> </p></td>
           <td width="25%"><p> </p></td>
-          <td width="25%"><p>6th Year</p></td>
+          <td width="25%"><p style="text-align:right;color:darkgray !important;">6th Year</p></td>
         </tr>
       </table>
       {% endif %}
@@ -491,7 +491,7 @@
             {% else %}
               {% assign previousEmployeeAmount = totalPreviousBiWeeklyPay | Times:retirementFund.PreviousEmployeeAmount | DividedBy:100 %}
             {% endif %}
-            <p{% if retirementFund.PreviousFixed != true %} style="color:darkgray;"{% endif %}>{{ previousEmployeeAmount | FormatAsCurrency }}</p>
+            <p{% if retirementFund.PreviousFixed != true %} style="color:darkgray !important;"{% endif %}>{{ previousEmployeeAmount | FormatAsCurrency }}</p>
             {% assign totalPreviousEmployeeAmount = totalPreviousEmployeeAmount | Plus:previousEmployeeAmount %}
           </td>
           <td style="border:1pt solid black;text-align:right;">
@@ -500,7 +500,7 @@
             {% else %}
               {% assign previousEmployeePercent = retirementFund.PreviousEmployeeAmount | DividedBy:100 %}
             {% endif %}
-            <p{% if retirementFund.PreviousFixed %} style="color:darkgray;"{% endif %}>{{previousEmployeePercent | Format:'P' }}</p>
+            <p{% if retirementFund.PreviousFixed %} style="color:darkgray !important;"{% endif %}>{{previousEmployeePercent | Format:'P' }}</p>
             {% assign totalPreviousEmployeePercent = totalPreviousEmployeePercent | Plus:previousEmployeePercent %}
           </td>
           <td style="border:1pt solid black;text-align:right;">
@@ -510,7 +510,7 @@
               {% else %}
                 {% assign previousEmployerAmount = totalPreviousBiWeeklyPay | Times:retirementFund.PreviousEmployerAmount | DividedBy:100 %}
               {% endif %}
-              <p{% if retirementFund.PreviousFixed != true %} style="color:darkgray;"{% endif %}>{{ previousEmployerAmount | FormatAsCurrency }}</p>
+              <p{% if retirementFund.PreviousFixed != true %} style="color:darkgray !important;"{% endif %}>{{ previousEmployerAmount | FormatAsCurrency }}</p>
               {% assign totalPreviousEmployerAmount = totalPreviousEmployerAmount | Plus:previousEmployerAmount %}
             {% endif %}
           </td>
@@ -521,7 +521,7 @@
               {% else %}
                 {% assign previousEmployerPercent = retirementFund.PreviousEmployerAmount | DividedBy:100 %}
               {% endif %}
-              <p{% if retirementFund.PreviousFixed %} style="color:darkgray;"{% endif %}>{{previousEmployerPercent | Format:'P' }}</p>
+              <p{% if retirementFund.PreviousFixed %} style="color:darkgray !important;"{% endif %}>{{previousEmployerPercent | Format:'P' }}</p>
               {% assign totalPreviousEmployerPercent = totalPreviousEmployerPercent | Plus:previousEmployerPercent %}
             {% endif %}
           </td>
@@ -547,50 +547,50 @@
         <td width="25%"><p><b>employer</b></p></td>
       </tr>
       {% if employmentPreviousYears <= 1 %}
-      <tr style="text-align:right;color:{% if employmentPreviousYears == 1 %}black{% else%}darkgray{% endif %};">
+      <tr>
         <td width="25%"><p> </p></td>
-        <td width="25%"><p>4%</p></td>
+        <td width="25%"><p style="text-align:right;color:{% if employmentPreviousYears == 1 %}black{% else%}darkgray !important{% endif %};">4%</p></td>
         <td width="25%"><p> </p></td>
-        <td width="25%"><p>2%</p></td>
+        <td width="25%"><p style="text-align:right;color:{% if employmentPreviousYears == 1 %}black{% else%}darkgray !important{% endif %};">2%</p></td>
       </tr>
       {% endif %}
       {% if employmentPreviousYears <= 2 %}
-      <tr style="text-align:right;color:{% if employmentPreviousYears == 2 %}black{% else%}darkgray{% endif %};">
+      <tr>
         <td width="25%"><p> </p></td>
-        <td width="25%"><p>8%</p></td>
+        <td width="25%"><p style="text-align:right;color:{% if employmentPreviousYears == 2 %}black{% else%}darkgray !important{% endif %};">8%</p></td>
         <td width="25%"><p> </p></td>
-        <td width="25%"><p>4%</p></td>
+        <td width="25%"><p style="text-align:right;color:{% if employmentPreviousYears == 2 %}black{% else%}darkgray !important{% endif %};">4%</p></td>
       </tr>
       {% endif %}
       {% if employmentPreviousYears <= 3 %}
-      <tr style="text-align:right;color:{% if employmentPreviousYears == 3 %}black{% else%}darkgray{% endif %};">
+      <tr>
         <td width="25%"><p> </p></td>
-        <td width="25%"><p>12%</p></td>
+        <td width="25%"><p style="text-align:right;color:{% if employmentPreviousYears == 3 %}black{% else%}darkgray !important{% endif %};">12%</p></td>
         <td width="25%"><p> </p></td>
-        <td width="25%"><p>6%</p></td>
+        <td width="25%"><p style="text-align:right;color:{% if employmentPreviousYears == 3 %}black{% else%}darkgray !important{% endif %};">6%</p></td>
       </tr>
       {% endif %}
       {% if employmentPreviousYears <= 4 %}
-      <tr style="text-align:right;color:{% if employmentPreviousYears == 4 %}black{% else%}darkgray{% endif %};">
+      <tr>
         <td width="25%"><p> </p></td>
-        <td width="25%"><p>12%</p></td>
+        <td width="25%"><p style="text-align:right;color:{% if employmentPreviousYears == 4 %}black{% else%}darkgray !important{% endif %};">12%</p></td>
         <td width="25%"><p> </p></td>
-        <td width="25%"><p>8%</p></td>
+        <td width="25%"><p style="text-align:right;color:{% if employmentPreviousYears == 4 %}black{% else%}darkgray !important{% endif %};">8%</p></td>
       </tr>
       {% endif %}
       {% if employmentPreviousYears <= 5 %}
-      <tr style="text-align:right;color:{% if employmentPreviousYears == 5 %}black{% else%}darkgray{% endif %};">
+      <tr>
         <td width="25%"><p> </p></td>
-        <td width="25%"><p>12%</p></td>
+        <td width="25%"><p style="text-align:right;color:{% if employmentPreviousYears == 5 %}black{% else%}darkgray !important{% endif %};">12%</p></td>
         <td width="25%"><p> </p></td>
-        <td width="25%"><p>10%</p></td>
+        <td width="25%"><p style="text-align:right;color:{% if employmentPreviousYears == 5 %}black{% else%}darkgray !important{% endif %};">10%</p></td>
       </tr>
       {% endif %}
-      <tr style="text-align:right;color:{% if employmentPreviousYears >= 6 %}black{% else%}darkgray{% endif %};">
+      <tr>
         <td width="25%"><p> </p></td>
-        <td width="25%"><p>12%</p></td>
+        <td width="25%"><p style="text-align:right;color:{% if employmentPreviousYears >= 6 %}black{% else%}darkgray !important{% endif %};">12%</p></td>
         <td width="25%"><p> </p></td>
-        <td width="25%"><p>12%</p></td>
+        <td width="25%"><p style="text-align:right;color:{% if employmentPreviousYears >= 6 %}black{% else%}darkgray !important{% endif %};">12%</p></td>
       </tr>
     </table>
     {% endif %}
@@ -615,7 +615,7 @@
             {% else %}
               {% assign CurrentEmployeeAmount = totalCurrentBiWeeklyPay | Times:retirementFund.CurrentEmployeeAmount | DividedBy:100 %}
             {% endif %}
-            <p{% if retirementFund.CurrentFixed != true %} style="color:darkgray;"{% endif %}>{{ CurrentEmployeeAmount | FormatAsCurrency }}</p>
+            <p{% if retirementFund.CurrentFixed != true %} style="color:darkgray !important;"{% endif %}>{{ CurrentEmployeeAmount | FormatAsCurrency }}</p>
             {% assign totalCurrentEmployeeAmount = totalCurrentEmployeeAmount | Plus:CurrentEmployeeAmount %}
           </td>
           <td style="border:1pt solid black;text-align:right;">
@@ -624,7 +624,7 @@
             {% else %}
               {% assign CurrentEmployeePercent = retirementFund.CurrentEmployeeAmount | DividedBy:100 %}
             {% endif %}
-            <p{% if retirementFund.CurrentFixed %} style="color:darkgray;"{% endif %}>{{CurrentEmployeePercent | Format:'P' }}</p>
+            <p{% if retirementFund.CurrentFixed %} style="color:darkgray !important;"{% endif %}>{{CurrentEmployeePercent | Format:'P' }}</p>
             {% assign totalCurrentEmployeePercent = totalCurrentEmployeePercent | Plus:CurrentEmployeePercent %}
           </td>
           <td style="border:1pt solid black;text-align:right;">
@@ -634,7 +634,7 @@
               {% else %}
                 {% assign CurrentEmployerAmount = totalCurrentBiWeeklyPay | Times:retirementFund.CurrentEmployerAmount | DividedBy:100 %}
               {% endif %}
-              <p{% if retirementFund.CurrentFixed != true %} style="color:darkgray;"{% endif %}>{{ CurrentEmployerAmount | FormatAsCurrency }}</p>
+              <p{% if retirementFund.CurrentFixed != true %} style="color:darkgray !important;"{% endif %}>{{ CurrentEmployerAmount | FormatAsCurrency }}</p>
               {% assign totalCurrentEmployerAmount = totalCurrentEmployerAmount | Plus:CurrentEmployerAmount %}
             {% endif %}
           </td>
@@ -645,7 +645,7 @@
               {% else %}
                 {% assign CurrentEmployerPercent = retirementFund.CurrentEmployerAmount | DividedBy:100 %}
               {% endif %}
-              <p{% if retirementFund.CurrentFixed %} style="color:darkgray;"{% endif %}>{{CurrentEmployerPercent | Format:'P' }}</p>
+              <p{% if retirementFund.CurrentFixed %} style="color:darkgray !important;"{% endif %}>{{CurrentEmployerPercent | Format:'P' }}</p>
               {% assign totalCurrentEmployerPercent = totalCurrentEmployerPercent | Plus:CurrentEmployerPercent %}
             {% endif %}
           </td>
@@ -671,50 +671,50 @@
           <td width="25%"><p><b>employer</b></p></td>
         </tr>
         {% if employmentPreviousYears <= 1 %}
-        <tr style="text-align:right;color:{% if employmentCurrentYears == 1 %}black{% else%}darkgray{% endif %};">
+        <tr>
           <td width="25%"><p> </p></td>
-          <td width="25%"><p>4%</p></td>
+          <td width="25%"><p style="text-align:right;color:{% if employmentCurrentYears == 1 %}black{% else%}darkgray !important{% endif %};">4%</p></td>
           <td width="25%"><p> </p></td>
-          <td width="25%"><p>2%</p></td>
+          <td width="25%"><p style="text-align:right;color:{% if employmentCurrentYears == 1 %}black{% else%}darkgray !important{% endif %};">2%</p></td>
         </tr>
         {% endif %}
         {% if employmentPreviousYears <= 2 %}
-        <tr style="text-align:right;color:{% if employmentCurrentYears == 2 %}black{% else%}darkgray{% endif %};">
+        <tr>
           <td width="25%"><p> </p></td>
-          <td width="25%"><p>8%</p></td>
+          <td width="25%"><p style="text-align:right;color:{% if employmentCurrentYears == 2 %}black{% else%}darkgray !important{% endif %};">8%</p></td>
           <td width="25%"><p> </p></td>
-          <td width="25%"><p>4%</p></td>
+          <td width="25%"><p style="text-align:right;color:{% if employmentCurrentYears == 2 %}black{% else%}darkgray !important{% endif %};">4%</p></td>
         </tr>
         {% endif %}
         {% if employmentPreviousYears <= 3 %}
-        <tr style="text-align:right;color:{% if employmentCurrentYears == 3 %}black{% else%}darkgray{% endif %};">
+        <tr>
           <td width="25%"><p> </p></td>
-          <td width="25%"><p>12%</p></td>
+          <td width="25%"><p style="text-align:right;color:{% if employmentCurrentYears == 3 %}black{% else%}darkgray !important{% endif %};">12%</p></td>
           <td width="25%"><p> </p></td>
-          <td width="25%"><p>6%</p></td>
+          <td width="25%"><p style="text-align:right;color:{% if employmentCurrentYears == 3 %}black{% else%}darkgray !important{% endif %};">6%</p></td>
         </tr>
         {% endif %}
         {% if employmentPreviousYears <= 4 %}
-        <tr style="text-align:right;color:{% if employmentCurrentYears == 4 %}black{% else%}darkgray{% endif %};">
+        <tr>
           <td width="25%"><p> </p></td>
-          <td width="25%"><p>12%</p></td>
+          <td width="25%"><p style="text-align:right;color:{% if employmentCurrentYears == 4 %}black{% else%}darkgray !important{% endif %};">12%</p></td>
           <td width="25%"><p> </p></td>
-          <td width="25%"><p>8%</p></td>
+          <td width="25%"><p style="text-align:right;color:{% if employmentCurrentYears == 4 %}black{% else%}darkgray !important{% endif %};">8%</p></td>
         </tr>
         {% endif %}
         {% if employmentPreviousYears <= 5 %}
-        <tr style="text-align:right;color:{% if employmentCurrentYears == 5 %}black{% else%}darkgray{% endif %};">
+        <tr>
           <td width="25%"><p> </p></td>
-          <td width="25%"><p>12%</p></td>
+          <td width="25%"><p style="text-align:right;color:{% if employmentCurrentYears == 5 %}black{% else%}darkgray !important{% endif %};">12%</p></td>
           <td width="25%"><p> </p></td>
-          <td width="25%"><p>10%</p></td>
+          <td width="25%"><p style="text-align:right;color:{% if employmentCurrentYears == 5 %}black{% else%}darkgray !important{% endif %};">10%</p></td>
         </tr>
         {% endif %}
-        <tr style="text-align:right;color:{% if employmentCurrentYears >= 6 %}black{% else%}darkgray{% endif %};">
+        <tr>
           <td width="25%"><p> </p></td>
-          <td width="25%"><p>12%</p></td>
+          <td width="25%"><p style="text-align:right;color:{% if employmentCurrentYears >= 6 %}black{% else%}darkgray !important{% endif %};">12%</p></td>
           <td width="25%"><p> </p></td>
-          <td width="25%"><p>12%</p></td>
+          <td width="25%"><p style="text-align:right;color:{% if employmentCurrentYears >= 6 %}black{% else%}darkgray !important{% endif %};">12%</p></td>
         </tr>
       </table>
       {% endif %}
@@ -739,7 +739,7 @@
             {% else %}
               {% assign CurrentEmployeeAmount = totalFutureBiWeeklyPay | Times:retirementFund.CurrentEmployeeAmount | DividedBy:100 %}
             {% endif %}
-            <p{% if retirementFund.CurrentFixed != true %} style="color:darkgray;"{% endif %}>{{ CurrentEmployeeAmount | FormatAsCurrency }}</p>
+            <p{% if retirementFund.CurrentFixed != true %} style="color:darkgray !important;"{% endif %}>{{ CurrentEmployeeAmount | FormatAsCurrency }}</p>
             {% assign totalCurrentEmployeeAmount = totalCurrentEmployeeAmount | Plus:CurrentEmployeeAmount %}
           </td>
           <td style="border:1pt solid black;text-align:right;">
@@ -748,7 +748,7 @@
             {% else %}
               {% assign CurrentEmployeePercent = retirementFund.CurrentEmployeeAmount | DividedBy:100 %}
             {% endif %}
-            <p{% if retirementFund.CurrentFixed %} style="color:darkgray;"{% endif %}>{{CurrentEmployeePercent | Format:'P' }}</p>
+            <p{% if retirementFund.CurrentFixed %} style="color:darkgray !important;"{% endif %}>{{CurrentEmployeePercent | Format:'P' }}</p>
             {% assign totalCurrentEmployeePercent = totalCurrentEmployeePercent | Plus:CurrentEmployeePercent %}
           </td>
           <td style="border:1pt solid black;text-align:right;">
@@ -758,7 +758,7 @@
               {% else %}
                 {% assign CurrentEmployerAmount = totalFutureBiWeeklyPay | Times:retirementFund.CurrentEmployerAmount | DividedBy:100 %}
               {% endif %}
-              <p{% if retirementFund.CurrentFixed != true %} style="color:darkgray;"{% endif %}>{{ CurrentEmployerAmount | FormatAsCurrency }}</p>
+              <p{% if retirementFund.CurrentFixed != true %} style="color:darkgray !important;"{% endif %}>{{ CurrentEmployerAmount | FormatAsCurrency }}</p>
               {% assign totalCurrentEmployerAmount = totalCurrentEmployerAmount | Plus:CurrentEmployerAmount %}
             {% endif %}
           </td>
@@ -769,7 +769,7 @@
               {% else %}
                 {% assign CurrentEmployerPercent = retirementFund.CurrentEmployerAmount | DividedBy:100 %}
               {% endif %}
-              <p{% if retirementFund.CurrentFixed %} style="color:darkgray;"{% endif %}>{{CurrentEmployerPercent | Format:'P' }}</p>
+              <p{% if retirementFund.CurrentFixed %} style="color:darkgray !important;"{% endif %}>{{CurrentEmployerPercent | Format:'P' }}</p>
               {% assign totalCurrentEmployerPercent = totalCurrentEmployerPercent | Plus:CurrentEmployerPercent %}
             {% endif %}
           </td>
@@ -795,50 +795,50 @@
           <td width="25%"><p><b>employer</b></p></td>
         </tr>
         {% if employmentPreviousYears <= 1 %}
-        <tr style="text-align:right;color:{% if employmentFutureYears == 1 %}black{% else%}darkgray{% endif %};">
+        <tr>
           <td width="25%"><p> </p></td>
-          <td width="25%"><p>4%</p></td>
+          <td width="25%"><p style="text-align:right;color:{% if employmentFutureYears == 1 %}black{% else%}darkgray !important{% endif %};">4%</p></td>
           <td width="25%"><p> </p></td>
-          <td width="25%"><p>2%</p></td>
+          <td width="25%"><p style="text-align:right;color:{% if employmentFutureYears == 1 %}black{% else%}darkgray !important{% endif %};">2%</p></td>
         </tr>
         {% endif %}
         {% if employmentPreviousYears <= 2 %}
-        <tr style="text-align:right;color:{% if employmentFutureYears == 2 %}black{% else%}darkgray{% endif %};">
+        <tr>
           <td width="25%"><p> </p></td>
-          <td width="25%"><p>8%</p></td>
+          <td width="25%"><p style="text-align:right;color:{% if employmentFutureYears == 2 %}black{% else%}darkgray !important{% endif %};">8%</p></td>
           <td width="25%"><p> </p></td>
-          <td width="25%"><p>4%</p></td>
+          <td width="25%"><p style="text-align:right;color:{% if employmentFutureYears == 2 %}black{% else%}darkgray !important{% endif %};">4%</p></td>
         </tr>
         {% endif %}
         {% if employmentPreviousYears <= 3 %}
-        <tr style="text-align:right;color:{% if employmentFutureYears == 3 %}black{% else%}darkgray{% endif %};">
+        <tr>
           <td width="25%"><p> </p></td>
-          <td width="25%"><p>12%</p></td>
+          <td width="25%"><p style="text-align:right;color:{% if employmentFutureYears == 3 %}black{% else%}darkgray !important{% endif %};">12%</p></td>
           <td width="25%"><p> </p></td>
-          <td width="25%"><p>6%</p></td>
+          <td width="25%"><p style="text-align:right;color:{% if employmentFutureYears == 3 %}black{% else%}darkgray !important{% endif %};">6%</p></td>
         </tr>
         {% endif %}
         {% if employmentPreviousYears <= 4 %}
-        <tr style="text-align:right;color:{% if employmentFutureYears == 4 %}black{% else%}darkgray{% endif %};">
+        <tr>
           <td width="25%"><p> </p></td>
-          <td width="25%"><p>12%</p></td>
+          <td width="25%"><p style="text-align:right;color:{% if employmentFutureYears == 4 %}black{% else%}darkgray !important{% endif %};">12%</p></td>
           <td width="25%"><p> </p></td>
-          <td width="25%"><p>8%</p></td>
+          <td width="25%"><p style="text-align:right;color:{% if employmentFutureYears == 4 %}black{% else%}darkgray !important{% endif %};">8%</p></td>
         </tr>
         {% endif %}
         {% if employmentPreviousYears <= 5 %}
-        <tr style="text-align:right;color:{% if employmentFutureYears == 5 %}black{% else%}darkgray{% endif %};">
+        <tr>
           <td width="25%"><p> </p></td>
-          <td width="25%"><p>12%</p></td>
+          <td width="25%"><p style="text-align:right;color:{% if employmentFutureYears == 5 %}black{% else%}darkgray !important{% endif %};">12%</p></td>
           <td width="25%"><p> </p></td>
-          <td width="25%"><p>10%</p></td>
+          <td width="25%"><p style="text-align:right;color:{% if employmentFutureYears == 5 %}black{% else%}darkgray !important{% endif %};">10%</p></td>
         </tr>
         {% endif %}
-        <tr style="text-align:right;color:{% if employmentFutureYears >= 6 %}black{% else%}darkgray{% endif %};">
+        <tr>
           <td width="25%"><p> </p></td>
-          <td width="25%"><p>12%</p></td>
+          <td width="25%"><p style="text-align:right;color:{% if employmentFutureYears >= 6 %}black{% else%}darkgray !important{% endif %};">12%</p></td>
           <td width="25%"><p> </p></td>
-          <td width="25%"><p>12%</p></td>
+          <td width="25%"><p style="text-align:right;color:{% if employmentFutureYears >= 6 %}black{% else%}darkgray !important{% endif %};">12%</p></td>
         </tr>
       </table>
       {% endif %}
@@ -1068,7 +1068,7 @@
           {% else %}
             {% assign previousAmount = totalPreviousBiWeeklyPay | Times:contribution.PreviousAmount | DividedBy:100 %}
           {% endif %}
-          <p{% if contribution.PreviousFixed != true %} style="color:darkgray;"{% endif %}>{{ previousAmount | FormatAsCurrency }}</p>
+          <p{% if contribution.PreviousFixed != true %} style="color:darkgray !important;"{% endif %}>{{ previousAmount | FormatAsCurrency }}</p>
           {% assign totalPreviousAmount = totalPreviousAmount | Plus:previousAmount %}
         </td>
         <td style="border:1pt solid black;text-align:right;">
@@ -1077,7 +1077,7 @@
           {% else %}
             {% assign previousPercent = contribution.PreviousAmount | DividedBy:100 %}
           {% endif %}
-          <p{% if contribution.PreviousFixed %} style="color:darkgray;"{% endif %}>{{previousPercent | Format:'P' }}</p>
+          <p{% if contribution.PreviousFixed %} style="color:darkgray !important;"{% endif %}>{{previousPercent | Format:'P' }}</p>
           {% assign totalPreviousPercent = totalPreviousPercent | Plus:previousPercent %}
         </td>
       </tr>
@@ -1111,7 +1111,7 @@
         {% else %}
           {% assign CurrentAmount = totalCurrentBiWeeklyPay | Times:contribution.CurrentAmount | DividedBy:100 %}
         {% endif %}
-        <p{% if contribution.CurrentFixed != true %} style="color:darkgray;"{% endif %}>{{ CurrentAmount | FormatAsCurrency }}</p>
+        <p{% if contribution.CurrentFixed != true %} style="color:darkgray !important;"{% endif %}>{{ CurrentAmount | FormatAsCurrency }}</p>
         {% assign totalCurrentAmount = totalCurrentAmount | Plus:CurrentAmount %}
       </td>
       <td style="border:1pt solid black;text-align:right;">
@@ -1120,7 +1120,7 @@
         {% else %}
           {% assign CurrentPercent = contribution.CurrentAmount | DividedBy:100 %}
         {% endif %}
-        <p{% if contribution.CurrentFixed %} style="color:darkgray;"{% endif %}>{{CurrentPercent | Format:'P' }}</p>
+        <p{% if contribution.CurrentFixed %} style="color:darkgray !important;"{% endif %}>{{CurrentPercent | Format:'P' }}</p>
         {% assign totalCurrentPercent = totalCurrentPercent | Plus:CurrentPercent %}
       </td>
     </tr>
@@ -1154,7 +1154,7 @@
         {% else %}
           {% assign CurrentAmount = totalFutureBiWeeklyPay | Times:contribution.CurrentAmount | DividedBy:100 %}
         {% endif %}
-        <p{% if contribution.CurrentFixed != true %} style="color:darkgray;"{% endif %}>{{ CurrentAmount | FormatAsCurrency }}</p>
+        <p{% if contribution.CurrentFixed != true %} style="color:darkgray !important;"{% endif %}>{{ CurrentAmount | FormatAsCurrency }}</p>
         {% assign totalCurrentAmount = totalCurrentAmount | Plus:CurrentAmount %}
       </td>
       <td style="border:1pt solid black;text-align:right;">
@@ -1163,7 +1163,7 @@
         {% else %}
           {% assign CurrentPercent = contribution.CurrentAmount | DividedBy:100 %}
         {% endif %}
-        <p{% if contribution.CurrentFixed %} style="color:darkgray;"{% endif %}>{{CurrentPercent | Format:'P' }}</p>
+        <p{% if contribution.CurrentFixed %} style="color:darkgray !important;"{% endif %}>{{CurrentPercent | Format:'P' }}</p>
         {% assign totalCurrentPercent = totalCurrentPercent | Plus:CurrentPercent %}
       </td>
     </tr>
