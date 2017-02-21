@@ -18,13 +18,14 @@ using System.Linq;
 using System.Web.UI.WebControls;
 
 using Rock.Data;
+using Rock.Web.Cache;
 
 namespace Rock.Web.UI.Controls
 {
     /// <summary>
     /// 
     /// </summary>
-    public class DefinedValuePicker : RockDropDownList
+    public class DefinedValuePicker : RockDropDownList, IDefinedValuePicker
     {
         /// <summary>
         /// Gets or sets the defined type identifier ( Required )
@@ -42,7 +43,7 @@ namespace Rock.Web.UI.Controls
             set
             {
                 _definedTypeId = value;
-                LoadDropDownItems();
+                DefinedValuePicker.LoadDropDownItems( this );
             }
         }
 
@@ -62,25 +63,60 @@ namespace Rock.Web.UI.Controls
         /// <summary>
         /// Loads the drop down items.
         /// </summary>
-        private void LoadDropDownItems()
+        internal static void LoadDropDownItems( IDefinedValuePicker picker )
         {
-            this.Items.Clear();
+            var selectedItems = picker.Items.Cast<ListItem>()
+                .Where( i => i.Selected )
+                .Select( i => i.Value ).AsIntegerList();
 
-            if ( _definedTypeId.HasValue )
+            picker.Items.Clear();
+
+            if ( picker.DefinedTypeId.HasValue )
             {
                 // add Empty option first
-                this.Items.Add( new ListItem() );
+                picker.Items.Add( new ListItem() );
 
-                Rock.Model.DefinedValueService definedValueService = new Model.DefinedValueService( new RockContext() );
-                var definedValues = definedValueService.GetByDefinedTypeId( _definedTypeId.Value );
-                if ( definedValues.Any() )
+                var dt = DefinedTypeCache.Read( picker.DefinedTypeId.Value );
+                if ( dt.DefinedValues.Any() )
                 {
-                    foreach ( var definedValue in definedValues )
+                    foreach ( var definedValue in dt.DefinedValues.OrderBy( v => v.Order ).ThenBy( v => v.Value ) )
                     {
-                        this.Items.Add( new ListItem( this.DisplayDescriptions ? definedValue.Description : definedValue.Value, definedValue.Id.ToString() ) );
+                        var li = new ListItem( picker.DisplayDescriptions ? definedValue.Description : definedValue.Value, definedValue.Id.ToString() );
+                        li.Selected = selectedItems.Contains( definedValue.Id );
+                        picker.Items.Add( li );
                     }
                 }
             }
         }
+    }
+
+    /// <summary>
+    /// Interface used by defined value pickers
+    /// </summary>
+    public interface IDefinedValuePicker 
+    {
+        /// <summary>
+        /// Gets or sets the defined type identifier.
+        /// </summary>
+        /// <value>
+        /// The defined type identifier.
+        /// </value>
+        int? DefinedTypeId { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether [display descriptions].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [display descriptions]; otherwise, <c>false</c>.
+        /// </value>
+        bool DisplayDescriptions { get; set; }
+
+        /// <summary>
+        /// Gets the items.
+        /// </summary>
+        /// <value>
+        /// The items.
+        /// </value>
+        ListItemCollection Items { get; }
     }
 }

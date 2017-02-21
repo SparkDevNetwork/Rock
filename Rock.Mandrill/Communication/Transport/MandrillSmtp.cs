@@ -63,7 +63,7 @@ namespace Rock.Communication.Transport
         {
             get
             {
-                return String.Format( "Email was recieved for delivery by Mandrill ({0})", RockDateTime.Now );
+                return String.Format( "Email was received for delivery by Mandrill ({0})", RockDateTime.Now );
             }
         }
 

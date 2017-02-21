@@ -1,4 +1,20 @@
-﻿using System;
+﻿// <copyright>
+// Copyright by the Spark Development Network
+//
+// Licensed under the Rock Community License (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.rockrms.com/license
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+// </copyright>
+//
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
@@ -50,16 +66,7 @@ namespace Rock.UniversalSearch.IndexComponents
                     ConnectToServer();
                 }
 
-                if ( _client != null )
-                {
-                    var results = _client.ClusterState();
-
-                    if ( results != null )
-                    {
-                        return results.IsValid;
-                    }
-                }
-                return false;
+                return (_client.Ping().IsValid);
             }
         }
 
@@ -97,6 +104,21 @@ namespace Rock.UniversalSearch.IndexComponents
         public Elasticsearch()
         {
             ConnectToServer();
+        }
+
+        /// <summary>
+        /// Method that is called when attribute values are updated. Components can
+        /// override this to perform any needed setup/validation based on current attribute
+        /// values.
+        /// </summary>
+        /// <param name="errorMessage">The error message.</param>
+        /// <returns></returns>
+        public override bool ValidateAttributeValues( out string errorMessage )
+        {
+            // reset the connection when the component settings are changed
+            ConnectToServer();
+
+            return base.ValidateAttributeValues( out errorMessage );
         }
 
         /// <summary>
@@ -201,8 +223,9 @@ namespace Rock.UniversalSearch.IndexComponents
                 createIndexRequest.Mappings = new Mappings();
 
                 var typeMapping = new TypeMapping();
+                typeMapping.Dynamic = DynamicMapping.Allow;
                 typeMapping.Properties = new Properties();
-
+                
                 createIndexRequest.Mappings.Add( indexName, typeMapping );
 
                 var model = (IndexModelBase)instance;
@@ -217,8 +240,6 @@ namespace Rock.UniversalSearch.IndexComponents
                     if ( indexAttribute.Length > 0 )
                     {
                         var attribute = (RockIndexField)indexAttribute[0];
-
-                        
 
                         var propertyName = Char.ToLowerInvariant( property.Name[0] ) + property.Name.Substring( 1 );
 
@@ -497,7 +518,7 @@ namespace Rock.UniversalSearch.IndexComponents
                             if ( hit.Source != null )
                             {
 
-                                Type indexModelType = Type.GetType( (string)((JObject)hit.Source)["indexModelType"] );
+                                Type indexModelType = Type.GetType( $"{ ((string)((JObject)hit.Source)["indexModelType"])}, { ((string)((JObject)hit.Source)["indexModelAssembly"])}" );
 
                                 if ( indexModelType != null )
                                 {

@@ -23,6 +23,8 @@ using System.Data.Entity.ModelConfiguration;
 using System.Linq;
 using System.Runtime.Serialization;
 using Rock.Data;
+using Rock.UniversalSearch;
+using Rock.UniversalSearch.IndexModels;
 
 namespace Rock.Model
 {
@@ -513,6 +515,32 @@ namespace Rock.Model
             {
                 ChildGroupTypes.Clear();
             }
+
+            // clean up the index
+            if ( state == System.Data.Entity.EntityState.Deleted && IsIndexEnabled )
+            {
+                this.DeleteIndexedDocumentsByGroupType( this.Id );
+            }
+            else if ( state == System.Data.Entity.EntityState.Modified )
+            {
+                // check if indexing is enabled
+                var changeEntry = dbContext.ChangeTracker.Entries<GroupType>().Where( a => a.Entity == this ).FirstOrDefault();
+                if ( changeEntry != null )
+                {
+                    var originalIndexState = (bool)changeEntry.OriginalValues["IsIndexEnabled"];
+
+                    if ( originalIndexState == true && IsIndexEnabled == false )
+                    {
+                        // clear out index items
+                        this.DeleteIndexedDocumentsByGroupType( Id );
+                    }
+                    else if ( IsIndexEnabled == true )
+                    {
+                        // if indexing is enabled then bulk index - needed as an attribute could have changed from IsIndexed
+                        BulkIndexDocumentsByGroupType( Id );
+                    }
+                }
+            }
         }
 
         /// <summary>
@@ -526,6 +554,48 @@ namespace Rock.Model
             return this.Name;
         }
 
+        #endregion
+
+        #region Index Methods
+        /// <summary>
+        /// Deletes the indexed documents by group type.
+        /// </summary>
+        /// <param name="groupTypeId">The group type identifier.</param>
+        public void DeleteIndexedDocumentsByGroupType( int groupTypeId )
+        {
+            var groups = new GroupService( new RockContext() ).Queryable()
+                                    .Where( i => i.GroupTypeId == groupTypeId );
+
+            foreach ( var group in groups )
+            {
+                var indexableGroup = GroupIndex.LoadByModel( group );
+                IndexContainer.DeleteDocument<GroupIndex>( indexableGroup );
+            }
+        }
+
+        /// <summary>
+        /// Bulks the index documents by content channel.
+        /// </summary>
+        /// <param name="groupTypeId">The content channel identifier.</param>
+        public void BulkIndexDocumentsByGroupType( int groupTypeId )
+        {
+            List<GroupIndex> indexableGroups = new List<GroupIndex>();
+
+            // return all approved content channel items that are in content channels that should be indexed
+            RockContext rockContext = new RockContext();
+            var groups = new GroupService( rockContext ).Queryable()
+                                            .Where( g =>
+                                                g.GroupTypeId == groupTypeId
+                                                && g.IsActive);
+
+            foreach ( var group in groups )
+            {
+                var indexableChannelItem = GroupIndex.LoadByModel( group );
+                indexableGroups.Add( indexableChannelItem );
+            }
+
+            IndexContainer.IndexDocuments( indexableGroups );
+        }
         #endregion
     }
 

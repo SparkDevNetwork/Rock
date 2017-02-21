@@ -58,6 +58,7 @@
                                     </ItemTemplate>
                                 </Rock:RockTemplateField>
                                 <Rock:RockBoundField DataField="TransactionCode" HeaderText="Transaction Code" SortExpression="TransactionCode" ColumnPriority="DesktopSmall" />                
+                                <Rock:RockLiteralField ID="lBatchId" HeaderText="Batch Id" SortExpression="BatchId" ColumnPriority="DesktopSmall" ItemStyle-HorizontalAlign="Right" ExcelExportBehavior="NeverInclude"  />                
                                 <Rock:RockTemplateField HeaderText="Accounts" >
                                     <ItemTemplate><%# GetAccounts( Container.DataItem ) %></ItemTemplate>
                                 </Rock:RockTemplateField>
@@ -111,7 +112,7 @@
             SaveButtonText="Reassign" OnSaveClick="dlgReassign_SaveClick" OnCancelScript="clearActiveDialog();" >
             <Content>
 
-                <Rock:PersonPicker ID="ppReassign" runat="server" Label="Reassign Selected Transactions To" Required="true" ValidationGroup="Reassign" />
+                <Rock:PersonPicker ID="ppReassign" runat="server" Label="Reassign Selected Transactions To" Required="true" ValidationGroup="Reassign" IncludeBusinesses="true" />
 
             </Content>
         </Rock:ModalDialog>

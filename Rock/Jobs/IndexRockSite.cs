@@ -1,11 +1,11 @@
 ﻿// <copyright>
 // Copyright by the Spark Development Network
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
+// Licensed under the Rock Community License (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-// http://www.apache.org/licenses/LICENSE-2.0
+// http://www.rockrms.com/license
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -84,7 +84,7 @@ namespace Rock.Jobs
                         // release the crawler, like the kraken... but not...
                         var pages = new Crawler().CrawlSite( _site );
 
-                        context.Result = string.Format( "Crawler found {0} pages, {1} pages sent to be indexed.", pages, _indexedPageCount );
+                        context.Result = string.Format( "Crawler indexed {0} pages.", pages, _indexedPageCount );
                     }
                     else
                     {
@@ -102,36 +102,6 @@ namespace Rock.Jobs
             }
 
             
-        }
-
-        /// <summary>
-        /// This method will be called each time a page is found by the crawler.
-        /// </summary>
-        /// <param name="page">The page.</param>
-        /// <returns></returns>
-        public bool PageCallback( CrawledPage page)
-        {
-            if ( page.AllowsIndex )
-            {
-                // clean up the page title a bit by removing  the site name off it
-                var pageTitle = page.Title.Substring( 0, (page.Title.IndexOf( '|' ) - 1) ).Trim();
-
-                SitePageIndex sitePage = new SitePageIndex();
-                sitePage.Id = page.Url.MakeInt64HashCode();
-                sitePage.Content = page.Text;
-                sitePage.PageTitle = pageTitle;
-                sitePage.SiteName = _site.Name;
-                sitePage.SiteId = _site.Id;
-                sitePage.Url = page.Url;
-                sitePage.LastIndexedDateTime = RockDateTime.Now;
-
-                IndexContainer.IndexDocument( sitePage );
-
-                _indexedPageCount++;
-                return true;
-            }
-
-            return false;
         }
     }
 }

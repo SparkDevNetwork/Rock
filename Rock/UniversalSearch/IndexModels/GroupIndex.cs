@@ -45,7 +45,7 @@ namespace Rock.UniversalSearch.IndexModels
         /// <value>
         /// The name of the group type.
         /// </value>
-        [RockIndexField]
+        [RockIndexField( Boost = 4)]
         public string GroupTypeName { get; set; }
 
         /// <summary>
@@ -151,26 +151,6 @@ namespace Rock.UniversalSearch.IndexModels
         }
 
         /// <summary>
-        /// Gets the document URL.
-        /// </summary>
-        /// <param name="displayOptions"></param>
-        /// <returns></returns>
-        public override string GetDocumentUrl( Dictionary<string, object> displayOptions = null )
-        {
-            string url = "/Group/";
-
-            if ( displayOptions != null )
-            {
-                if ( displayOptions.ContainsKey( "Group.Url" ) )
-                {
-                    url = displayOptions["Group.Url"].ToString();
-                }
-            }
-
-            return url + this.Id;
-        }
-
-        /// <summary>
         /// Formats the search result.
         /// </summary>
         /// <param name="person">The person.</param>
@@ -178,18 +158,20 @@ namespace Rock.UniversalSearch.IndexModels
         /// <returns></returns>
         public override FormattedSearchResult FormatSearchResult( Person person, Dictionary<string, object> displayOptions = null )
         {
-            return new FormattedSearchResult() {
-                IsViewAllowed = true,
-                FormattedResult = $@"
-                        <div class='row model-cannavigate' data-href='/Group/{this.Id}'>
-                            <div class='col-sm-1 text-center'>
-                                <i class='{this.IconCssClass} fa-2x'></i>
-                            </div>
-                            <div class='col-sm-11'>
-                                {this.Name} <small>({this.GroupTypeName})</small>
-                                {(this.Description != "" ? "<br />" + this.Description : "")}
-                            </div>
-                        </div>" };
+            var result = base.FormatSearchResult( person, displayOptions );
+
+            // check security on the group
+            var group = new GroupService(new Data.RockContext()).Get( (int)this.Id );
+            if ( group != null )
+            {
+                result.IsViewAllowed = group.IsAuthorized( Rock.Security.Authorization.VIEW, person );
+            }
+            else
+            {
+                result.IsViewAllowed = false;
+            }
+
+            return result;
         }
     }
 }

@@ -29,6 +29,14 @@ namespace Rock.Security
     public abstract class DigitalSignatureComponent : Component
     {
         /// <summary>
+        /// Gets the Cookie Initialization URL. If specified, Rock will first redirect user to this url in order to set a cookie prior to submitting any requests.
+        /// </summary>
+        /// <value>
+        /// The set cookie URL.
+        /// </value>
+        public abstract string CookieInitializationUrl { get; }
+
+        /// <summary>
         /// Gets the templates.
         /// </summary>
         /// <param name="errors">The errors.</param>

@@ -46,6 +46,8 @@ namespace RockWeb.Blocks.Finance
     [BooleanField( "Show Options", "Show an Options button in the title panel for showing images or summary.", false, order: 3 )]
     [IntegerField( "Image Height", "If the Show Images option is selected, the image height", false, 200, order: 4 )]
     [DefinedValueField( Rock.SystemGuid.DefinedType.FINANCIAL_TRANSACTION_TYPE, "Transaction Types", "Optional list of transation types to limit the list to (if none are selected all types will be included).", false, true, "", "", 5 )]
+
+    [LinkedPage( "Batch Page", order: 6 )]
     public partial class TransactionList : Rock.Web.UI.RockBlock, ISecondaryBlock, IPostBackEventHandler
     {
         private bool _isExporting = false;
@@ -65,6 +67,8 @@ namespace RockWeb.Blocks.Finance
         // Dictionaries to cache values for databinding performance
         private Dictionary<int, string> _currencyTypes;
         private Dictionary<int, string> _creditCardTypes;
+
+        private string _batchPageRoute = null;
 
         #endregion Fields
 
@@ -92,6 +96,8 @@ namespace RockWeb.Blocks.Finance
             gTransactions.GridRebind += gTransactions_GridRebind;
             gTransactions.RowDataBound += gTransactions_RowDataBound;
             gTransactions.IsDeleteEnabled = _canEdit;
+
+            this._batchPageRoute = LinkedPageRoute( "BatchPage" );
 
             // enable delete transaction
             gTransactions.Columns[gTransactions.Columns.Count - 1].Visible = true;
@@ -429,12 +435,18 @@ namespace RockWeb.Blocks.Finance
             BindGrid();
         }
 
+        /// <summary>
+        /// Handles the RowDataBound event of the gTransactions control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="GridViewRowEventArgs"/> instance containing the event data.</param>
         protected void gTransactions_RowDataBound( object sender, GridViewRowEventArgs e )
         {
             if ( e.Row.RowType == DataControlRowType.DataRow )
             {
                 var txn = e.Row.DataItem as FinancialTransaction;
                 var lCurrencyType = e.Row.FindControl( "lCurrencyType" ) as Literal;
+                
                 if ( txn != null && lCurrencyType != null )
                 {
                     string currencyType = string.Empty;
@@ -484,6 +496,21 @@ namespace RockWeb.Blocks.Finance
                         {
                             string imageSrc = string.Format( "~/GetImage.ashx?id={0}&height={1}", firstImage.BinaryFileId, _imageHeight );
                             lTransactionImage.Text = string.Format( "<image src='{0}' />", this.ResolveUrl( imageSrc ) );
+                        }
+                    }
+
+                    var lBatchId = e.Row.FindControl( "lBatchId" ) as Literal;
+                    if (lBatchId != null)
+                    {
+                        if ( _batchPageRoute.IsNotNullOrWhitespace() && txn.BatchId.HasValue )
+                        {
+                            var cell = e.Row.Cells.OfType<DataControlFieldCell>().Where( a => a == lBatchId.FirstParentControlOfType<DataControlFieldCell>() ).First();
+                            cell.RemoveCssClass( "grid-select-cell" );
+                            lBatchId.Text = string.Format( "<a href='{0}?BatchId={1}'>{1}</a>",  _batchPageRoute, txn.BatchId);
+                        }
+                        else
+                        {
+                            lBatchId.Text = txn.BatchId.ToString();
                         }
                     }
                 }
