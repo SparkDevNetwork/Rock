@@ -31,7 +31,7 @@
                 </asp:Repeater>
                 
                 <div class="actions margin-b-md">
-                    <asp:LinkButton ID="btnSave" runat="server" AccessKey="s" Text="Save" CssClass="btn btn-primary" OnClick="btnSave_Click" />
+                    <asp:LinkButton ID="btnSave" runat="server" AccessKey="s" ToolTip="Alt+s" Text="Save" CssClass="btn btn-primary" OnClick="btnSave_Click" />
                 </div>
 
                 <Rock:NotificationBox ID="nbSaved" runat="server" NotificationBoxType="Success" Text="Your settings have been saved." Dismissable="true" Visible="false" />

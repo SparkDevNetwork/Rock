@@ -34,8 +34,8 @@
             <asp:Literal ID="lFooter" runat="server" />
 
             <div class="actions">
-                <asp:LinkButton ID="lbPrev" runat="server" AccessKey="p" Text="Previous" CssClass="btn btn-default" CausesValidation="false" OnClick="lbPrev_Click" />
-                <Rock:BootstrapButton ID="lbNext" runat="server" AccessKey="n" Text="Next" DataLoadingText="Next" CssClass="btn btn-primary pull-right" CausesValidation="true" OnClick="lbNext_Click" />
+                <asp:LinkButton ID="lbPrev" runat="server" AccessKey="p" ToolTip="Alt+p" Text="Previous" CssClass="btn btn-default" CausesValidation="false" OnClick="lbPrev_Click" />
+                <Rock:BootstrapButton ID="lbNext" runat="server" AccessKey="n" ToolTip="Alt+n" Text="Next" DataLoadingText="Next" CssClass="btn btn-primary pull-right" CausesValidation="true" OnClick="lbNext_Click" />
             </div>
 
         </asp:Panel>
