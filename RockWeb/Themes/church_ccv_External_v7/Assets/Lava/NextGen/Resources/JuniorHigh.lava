@@ -43,7 +43,12 @@
 
 <div class="label label-default">Junior High</div>
 
-<h4 class="page-header">{{ viewedItem.Title }} <span class="no-caps"> <small> Series starting on {{ viewedItem.StartDateTime | Date:'M/d/yyyy' }}</span></small></h4>
+{% if count > 0 %}
+	<h4 class="page-header">{{ viewedItem.Title }} <span class="no-caps"> <small> Series starting on {{ viewedItem.StartDateTime | Date:'M/d/yyyy' }}</span></small></h4>
+{% else %}
+	<h4 class="page-header">{{ viewedItem.Title }} <span class="no-caps"> <small> Current Series </span></small></h4>
+{% endif %}
+
 <p>{{ viewedItem | Attribute:'Summary' }}</p>
 <p>{{ viewedItem.Content }}</p>
 
