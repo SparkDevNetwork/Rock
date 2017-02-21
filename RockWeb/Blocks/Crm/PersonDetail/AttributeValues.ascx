@@ -18,8 +18,8 @@
             <asp:ValidationSummary ID="valSummaryTop" runat="server"  HeaderText="Please Correct the Following" CssClass="alert alert-danger" />
             <fieldset id="fsAttributes" runat="server" class="attribute-values"></fieldset>
             <asp:Panel ID="pnlActions" runat="server" CssClass="actions" Visible="false">
-                <asp:LinkButton ID="btnSave" runat="server" AccessKey="s" Text="Save" CssClass="btn btn-primary btn-xs" OnClick="btnSave_Click" ValidationGroup="vgAttributeValues" />
-                <asp:LinkButton ID="btnCancel" runat="server" AccessKey="c" Text="Cancel" CssClass="btn btn-xs btn-link" OnClick="btnCancel_Click" CausesValidation="false" />
+                <asp:LinkButton ID="btnSave" runat="server" AccessKey="s" ToolTip="Alt+s" Text="Save" CssClass="btn btn-primary btn-xs" OnClick="btnSave_Click" ValidationGroup="vgAttributeValues" />
+                <asp:LinkButton ID="btnCancel" runat="server" AccessKey="c" ToolTip="Alt+c" Text="Cancel" CssClass="btn btn-xs btn-link" OnClick="btnCancel_Click" CausesValidation="false" />
             </asp:Panel>
         </div>
     </section>

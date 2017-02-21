@@ -44,7 +44,7 @@
                             </fieldset>
                         </div>
                         <div class="col-md-4">
-                            <asp:LinkButton ID="lbSave" runat="server" AccessKey="s" Text="Save Request" OnClick="btnSave_Click" CssClass="btn btn-primary btn-kiosk btn-kiosk-lg" CausesValidation="True"/>
+                            <asp:LinkButton ID="lbSave" runat="server" AccessKey="s" ToolTip="Alt+s" Text="Save Request" OnClick="btnSave_Click" CssClass="btn btn-primary btn-kiosk btn-kiosk-lg" CausesValidation="True"/>
                         </div>
                     </div>
                 </main>
