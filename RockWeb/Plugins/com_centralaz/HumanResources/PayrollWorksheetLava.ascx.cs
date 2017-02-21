@@ -105,14 +105,67 @@ namespace RockWeb.Plugins.com_centralaz.HumanResources
                             mergeFields.Add( "Person", person );
                             mergeFields.Add( "Year", year );
 
+                            DateTime yearStart = new DateTime( year.Value, 8, 1 );
+                            DateTime defaultTime = new DateTime( 1900, 1, 1 );
+
                             var salaries = new SalaryService( rockContext ).Queryable().Where( s => s.PersonAlias.PersonId == person.Id ).OrderBy( s => s.EffectiveDate ).ToList();
-                            mergeFields.Add( "Salaries", salaries );
+                            Salary previousSalary = salaries.Where( s => s.EffectiveDate >= yearStart.AddYears( -1 ) && s.EffectiveDate < yearStart ).OrderByDescending( s => s.EffectiveDate ).FirstOrDefault();
+                            Salary currentSalary = salaries.Where( s => s.EffectiveDate >= yearStart && s.EffectiveDate < yearStart.AddYears( 1 ) ).OrderByDescending( s => s.EffectiveDate ).FirstOrDefault();
+                            Salary futureSalary = salaries.Where( s => s.EffectiveDate >= yearStart && s.EffectiveDate < yearStart.AddYears( 2 ) ).OrderByDescending( s => s.EffectiveDate ).FirstOrDefault();
+                            mergeFields.Add( "PreviousSalary", previousSalary );
+                            mergeFields.Add( "CurrentSalary", currentSalary );
+                            mergeFields.Add( "FutureSalary", futureSalary );
 
-                            var contributions = new ContributionElectionService( rockContext ).Queryable().Where( c => c.PersonAlias.PersonId == person.Id ).OrderBy( c => c.ActiveDate ).ToList();
-                            mergeFields.Add( "Contributions", contributions );
+                            var contributions = new ContributionElectionService( rockContext ).Queryable().Where( c =>
+                            c.PersonAlias.PersonId == person.Id ).ToList().Where( c =>
+                              c.ActiveDate < yearStart.AddYears( 2 ) &&
+                              c.ActiveDate >= defaultTime &&
+                              ( c.InactiveDate == null || c.InactiveDate == defaultTime || c.InactiveDate >= yearStart.AddYears( -1 ) ) )
+                            .OrderBy( c => c.ActiveDate ).ToList();
+                            var previousContributions = contributions.Where( c => c.ActiveDate >= defaultTime && c.ActiveDate < yearStart ).ToList();
+                            var currentContributions = contributions.Where( c => c.ActiveDate >= defaultTime && c.ActiveDate < yearStart.AddYears( 1 ) && ( c.InactiveDate == null || c.InactiveDate == defaultTime || c.InactiveDate >= DateTime.Now ) ).ToList();
+                            var lavaContributions = contributions.GroupJoin( previousContributions, c => c.FinancialAccountId, pc => pc.FinancialAccountId, ( c, pc ) => new { c, pc } )
+                                .GroupJoin( currentContributions, x => x.c.FinancialAccountId, cc => cc.FinancialAccountId, ( x, cc ) => new { x.c, x.pc, cc } )
+                                .Select( lc => new
+                                {
+                                    FinancialAccount = lc.c.FinancialAccount.Name,
+                                    Order = lc.c.FinancialAccount.Order,
+                                    CurrentActiveDate = lc.cc.OrderByDescending( cc => cc.ActiveDate ).FirstOrDefault() != null ? lc.cc.OrderByDescending( cc => cc.ActiveDate ).FirstOrDefault().ActiveDate : (DateTime?)null,
+                                    CurrentFixed = lc.cc.OrderByDescending( cc => cc.ActiveDate ).FirstOrDefault() != null ? lc.cc.OrderByDescending( cc => cc.ActiveDate ).FirstOrDefault().IsFixedAmount : (bool?)null,
+                                    CurrentAmount = lc.cc.OrderByDescending( cc => cc.ActiveDate ).FirstOrDefault() != null ? lc.cc.OrderByDescending( cc => cc.ActiveDate ).FirstOrDefault().Amount : (double?)null,
+                                    PreviousActiveDate = lc.pc.OrderByDescending( pc => pc.ActiveDate ).FirstOrDefault() != null ? lc.pc.OrderByDescending( pc => pc.ActiveDate ).FirstOrDefault().ActiveDate : (DateTime?)null,
+                                    PreviousFixed = lc.pc.OrderByDescending( pc => pc.ActiveDate ).FirstOrDefault() != null ? lc.pc.OrderByDescending( pc => pc.ActiveDate ).FirstOrDefault().IsFixedAmount : (bool?)null,
+                                    PreviousAmount = lc.pc.OrderByDescending( pc => pc.ActiveDate ).FirstOrDefault() != null ? lc.pc.OrderByDescending( pc => pc.ActiveDate ).FirstOrDefault().Amount : (double?)null
+                                } )
+                                .OrderBy( lc => lc.Order )
+                                .ToList();
+                            mergeFields.Add( "Contributions", lavaContributions );
 
-                            var retirementFunds = new RetirementFundService( rockContext ).Queryable().Where( r => r.PersonAlias.PersonId == person.Id ).OrderBy( r => r.ActiveDate ).ToList();
-                            mergeFields.Add( "RetirementFunds", retirementFunds );
+                            var retirementFunds = new RetirementFundService( rockContext ).Queryable().Where( r => r.PersonAlias.PersonId == person.Id ).ToList().Where( r =>
+                              r.ActiveDate < yearStart.AddYears( 2 ) &&
+                              r.ActiveDate >= defaultTime &&
+                              ( r.InactiveDate == null || r.InactiveDate == defaultTime || r.InactiveDate >= yearStart.AddYears( -1 ) ) )
+                            .OrderBy( r => r.ActiveDate ).ToList();
+                            var previousRetirementFunds = retirementFunds.Where( r => r.ActiveDate >= defaultTime && r.ActiveDate < yearStart ).ToList();
+                            var rurrentRetirementFunds = retirementFunds.Where( r => r.ActiveDate >= defaultTime && r.ActiveDate < yearStart.AddYears( 1 ) && ( r.InactiveDate == null || r.InactiveDate == defaultTime || r.InactiveDate >= DateTime.Now ) ).ToList();
+                            var lavaRetirementFunds = retirementFunds.GroupJoin( previousRetirementFunds, r => r.FundValueId, pc => pc.FundValueId, ( r, pr ) => new { r, pr } )
+                                .GroupJoin( rurrentRetirementFunds, x => x.r.FundValueId, cr => cr.FundValueId, ( x, cr ) => new { x.r, x.pr, cr } )
+                                .Select( lr => new
+                                {
+                                    FinancialAccount = lr.r.FundValue.Value,
+                                    Order = lr.r.FundValue.Order,
+                                    CurrentActiveDate = lr.cr.OrderByDescending( cr => cr.ActiveDate ).FirstOrDefault() != null ? lr.cr.OrderByDescending( cr => cr.ActiveDate ).FirstOrDefault().ActiveDate : (DateTime?)null,
+                                    CurrentFixed = lr.cr.OrderByDescending( cr => cr.ActiveDate ).FirstOrDefault() != null ? lr.cr.OrderByDescending( cr => cr.ActiveDate ).FirstOrDefault().IsFixedAmount : false,
+                                    CurrentEmployeeAmount = lr.cr.OrderByDescending( cr => cr.ActiveDate ).FirstOrDefault() != null ? lr.cr.OrderByDescending( cr => cr.ActiveDate ).FirstOrDefault().EmployeeAmount : 0,
+                                    CurrentEmployerAmount = lr.cr.OrderByDescending( cr => cr.ActiveDate ).FirstOrDefault() != null ? lr.cr.OrderByDescending( cr => cr.ActiveDate ).FirstOrDefault().EmployerAmount : 0,
+                                    PreviousActiveDate = lr.pr.OrderByDescending( pr => pr.ActiveDate ).FirstOrDefault() != null ? lr.pr.OrderByDescending( pr => pr.ActiveDate ).FirstOrDefault().ActiveDate : (DateTime?)null,
+                                    PreviousFixed = lr.pr.OrderByDescending( pr => pr.ActiveDate ).FirstOrDefault() != null ? lr.pr.OrderByDescending( pr => pr.ActiveDate ).FirstOrDefault().IsFixedAmount : false,
+                                    PreviousEmployeeAmount = lr.pr.OrderByDescending( pr => pr.ActiveDate ).FirstOrDefault() != null ? lr.pr.OrderByDescending( pr => pr.ActiveDate ).FirstOrDefault().EmployeeAmount : 0,
+                                    PreviousEmployerAmount = lr.pr.OrderByDescending( pr => pr.ActiveDate ).FirstOrDefault() != null ? lr.pr.OrderByDescending( pr => pr.ActiveDate ).FirstOrDefault().EmployerAmount : 0
+                                } )
+                                .OrderBy( lc => lc.Order )
+                                .ToList();
+                            mergeFields.Add( "RetirementFunds", lavaRetirementFunds );
 
                             lContent.Text = string.Empty;
                             if ( GetAttributeValue( "EnableDebug" ).AsBooleanOrNull().GetValueOrDefault( false ) )

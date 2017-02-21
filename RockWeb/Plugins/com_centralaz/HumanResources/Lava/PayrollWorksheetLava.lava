@@ -3,11 +3,11 @@
     <title>{{ 'Now' | Date:'MMddyyyy' }}_ContributionStatements_Chapter_{{ ChapterNumber }}_of_{{ ChapterSize }}.html</title>
     <link rel="stylesheet" type="text/css" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
       <link rel="stylesheet" type="text/css" media="print" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
-</head>
+  </head>
   <body>
     <style>
-      th {
-      border-bottom: 1pt solid black;
+      p {
+        white-space: pre;
       }
 
       #printOnly {
@@ -20,8 +20,1183 @@
       }
       }
     </style>
-    <div class="container">
+    <!-- Global Variable assignment section -->
+    {% assign employmentStatus = Person | Attribute:'HREmploymentStatus' %}
+  {% if employmentStatus contains "Full-time" %}
+    {% assign fullTime = true %}
+  {% else %}
+    {% assign fullTime = false %}
+  {% endif %}
 
+  {% if employmentStatus contains "Hourly" %}
+    {% assign hourly = true %}
+  {% else %}
+    {% assign hourly = false %}
+  {% endif %}
+
+  {% assign approvedHours = Person | Attribute:'Arena-7-240' %}
+    <!-- Global Variable assignment section -->
+    <div class="container">
+		<div class="row"> <!-- Header / Attribute Row -->
+			<div class="col-xs-6"> <!-- Header Column -->
+			<div class="row">
+        <div class="col-xs-12">
+  				<h2>
+  					Central Christian Church </br>
+  					{% if !fulltime %}PT {%endif%}{% if hourly %}(Hourly) {%endif%} Employee Payroll Information </br>
+  					Deduction Authorization Sheet </br>
+  				</h2>
+        </div>
+			</div>
+			<div class="row">
+				<div class="col-xs-6">
+          <p style="border-bottom:1pt solid black" width="100%">{{Person.LastName}}, {{Person.FirstName}}</p>
+          <b> Employee Name </b>
+				</div>
+        <div class="col-xs-6">
+          <div class="row">
+    				<div class="col-xs-4">
+              Department:
+            </div>
+            <div class="col-xs-8">
+              <p style="border-bottom:1pt solid black" width="100%">{{ Person | Attribute:'HRDepartment'}}</p> <!-- Department Attribute -->
+            </div>
+          </div>
+          <div class="row">
+      				<div class="col-xs-4">
+                Title:
+              </div>
+              <div class="col-xs-8">
+                <p style="border-bottom:1pt solid black" width="100%">{{Person | Attribute:'HRJobTitle'}}</p> <!-- Job Title Attribute -->
+              </div>
+            </div>
+          </div>
+        </div>
+			</div> <!-- Header Column -->
+			<div class="col-xs-6" style="border:2pt solid black"> <!-- Attribute Column -->
+        <div class="row"><!-- Attribute Row 1 -->
+          <div class="col-xs-2">
+            Start Date:
+          </div>
+          <div class="col-xs-4">
+            <p style="border-bottom:1pt solid black" width="100%">{{Person | Attribute:'HRHireDate'}} </p> <!-- Start Date Attribute -->
+          </div>
+          <div class="col-xs-2">
+            Birth Date:
+          </div>
+          <div class="col-xs-4">
+            <p style="border-bottom:1pt solid black" width="100%">{{Person.BirthDate | Date:'M/d/yyyy'}} </p> <!-- Birth Date Attribute -->
+          </div>
+        </div><!-- Attribute Row 1 -->
+        <div class="row"><!-- Attribute Row 2 -->
+          <div class="col-xs-4">
+            Federal Filing Status:
+        </div>
+        <div class="col-xs-8">
+          <p style="border-bottom:1pt solid black" width="100%">{{Person | Attribute:'Arena-23-213'}}</p> <!-- Federal Filing Status Attribute -->
+        </div>
+      </div> <!-- Attribute Row 2 -->
+      <div class="row"> <!-- Attribute Row 3 -->
+        <div class="col-xs-2">
+          Exemptions:
+        </div>
+        <div class="col-xs-2">
+            <p style="border-bottom:1pt solid black" width="100%">{{Person | Attribute:'Arena-23-214'}} </p> <!-- Federal Exemptions Attribute -->
+        </div>
+        <div class="col-xs-2">
+          Exempt:
+        </div>
+        <div class="col-xs-2">
+            <p style="border-bottom:1pt solid black" width="100%">{{Person | Attribute:'Arena-23-215'}} </p> <!-- Federal Exempt Attribute -->
+        </div>
+        <div class="col-xs-2">
+          Add'l $
+        </div>
+        <div class="col-xs-2">
+            <p style="border-bottom:1pt solid black" width="100%">{{Person | Attribute:'Arena-23-216'}} </p> <!-- Federal Additional $ Attribute -->
+        </div>
+      </div><!-- Attribute Row 3 -->
+      <div class="row"><!-- Attribute Row 4 -->
+        <div class="col-xs-2">
+          <p style="font-size:10pt;">State W/H:</p>
+        </div>
+        <div class="col-xs-2">
+            <p style="border-bottom:1pt solid black" width="100%">{{Person | Attribute:'Arena-23-217' | Format:'#0.0000' }} </p> <!-- State Withholding Attribute -->
+        </div>
+        <div class="col-xs-2">
+          Exempt:
+        </div>
+        <div class="col-xs-2">
+            <p style="border-bottom:1pt solid black" width="100%">{{Person | Attribute:'Arena-23-218'}} </p> <!-- State Exempt Attribute -->
+        </div>
+        <div class="col-xs-2">
+          Add'l $
+        </div>
+        <div class="col-xs-2">
+            <p style="border-bottom:1pt solid black" width="100%">{{Person | Attribute:'Arena-23-219'}} </p> <!-- State Additional $ Attribute -->
+        </div>
+      </div><!-- Attribute Row 4 -->
+      <div class="row"><!-- Attribute Row 5 -->
+        <div class="col-xs-3">
+          <p style="font-size:10pt;">Vacation Days/Hrs:</p>
+        </div>
+        <div class="col-xs-3">
+          <p style="border-bottom:1pt solid black" width="100%">{{Person | Attribute:'Arena-24-220' | Format:'#0.0000' }} </p> <!-- Vacation Hours Attribute -->
+        </div>
+        <div class="col-xs-3">
+          Sick Days/Hrs:
+        </div>
+        <div class="col-xs-3">
+          <p style="border-bottom:1pt solid black" width="100%">{{Person | Attribute:'Arena-24-221' | Format:'#0.0000' }} </p> <!-- Sick Hours Attribute -->
+        </div>
+      </div><!-- Attribute Row 5 -->
+      <div class="row"><!-- Attribute Row 6 -->
+        <div class="col-xs-4">
+          Health Coverage Type:
+        </div>
+        <div class="col-xs-8">
+          <p style="border-bottom:1pt solid black" width="100%">{{Person | Attribute:'Arena-7-207'}} </p> <!-- Health Coverage Type Attribute -->
+        </div>
+      </div><!-- Attribute Row 6 -->
+      <div class="row"><!-- Attribute Row 7 -->
+        <div class="col-xs-4">
+          Dental Coverage Type:
+        </div>
+        <div class="col-xs-8">
+          <p style="border-bottom:1pt solid black" width="100%">{{Person | Attribute:'Arena-7-206'}} </p> <!-- Dental Coverage Type Attribute -->
+        </div>
+      </div><!-- Attribute Row 7 -->
+		</div> <!-- Attribute Column -->
+	</div> <!-- Header / Attribute Row -->
+  <div class="row"> <!-- Wages Row -->
+    <div class="col-xs-3"> <!-- Wages legend column -->
+      <table style="width:100%;font-weight:bold;">
+        <tr>
+          <td width="50%"><p> </p></td>
+          <td width="50%"><p> </p></td>
+        </tr>
+        <tr>
+          <td>Wage</td>
+          <td><p> </p></td>
+        </tr>
+        {% if hourly == false %}
+        <tr>
+          <td>Housing</td>
+          <td><p> </p></td>
+        </tr>
+        {% endif %}
+        {% if hourly %}
+        <tr>
+          <td>Hours approved to work per p/p</td>
+          <td><p> </p></td>
+        </tr>
+        {% endif %}
+        <tr>
+          <td>Total</td>
+          <td><p> </p></td>
+        </tr>
+        <tr>
+          <td>Bi-Weekly Pay</td>
+          <td><p> </p></td>
+        </tr>
+        <tr>
+          <td><p> </p></td>
+          <td><p> </p></td>
+        </tr>
+        {% if fullTime %}
+        <tr>
+          <td>403 b Plan Year</td>
+          <td><p> </p></td>
+        </tr>
+        <tr>
+          <td><p>Eligible 403b %</p></td>
+          <td>Employee</td>
+        </tr>
+        <tr>
+          <td><p> </p></td>
+          <td>Employer</td>
+        </tr>
+        {% endif %}
+      </table>
+      {% if fullTime %}
+      (Wage x % divided by 26 pay periods)
+      {% endif %}
+    </div> <!-- Wages legend column -->
+    <div class="col-xs-3"> <!-- Wages Last Year column -->
+      <table style="width:100%">
+        <tr>
+          <td width="50%"><b>{{Year | Minus:1 }}/{{Year}}</td>
+            <td width="50%"><p> </p></td>
+        </tr>
+        <tr>
+          <td style="border:1pt solid black;text-align:right;"><p> {{PreviousSalary.Amount | FormatAsCurrency }}</p></td>
+          <td><p> </p></td>
+        </tr>
+        {% if hourly == false %}
+        <tr>
+          <td style="border:1pt solid black;text-align:right;"><p> {{PreviousSalary.HousingAllowance | FormatAsCurrency }}</p></td>
+          <td><p> </p></td>
+        </tr>
+        {% endif %}
+        {% if hourly %}
+        <tr>
+          <td>{{ approvedHours }}</td> <!-- Hours approved to work per p/p attribute -->
+          <td><p> </p></td>
+        </tr>
+        {% endif %}
+        <tr>
+          <td style="border:2pt solid black;text-align:right;">
+            {% if hourly %}
+              {% assign previousTotalAmount = PreviousSalary.Amount | Times:approvedHours | Times:26 %}
+            {% else %}
+              {% assign previousTotalAmount = PreviousSalary.Amount | Plus:PreviousSalary.HousingAllowance  %}
+            {% endif %}
+            <p>{{ previousTotalAmount | FormatAsCurrency}}</p>
+          </td>
+          <td><p> </p></td>
+        </tr>
+        <tr>{% assign totalPreviousBiWeeklyPay = previousTotalAmount | DividedBy:26 %}
+          <td style="border:1pt solid black;text-align:right;"><p> {{ totalPreviousBiWeeklyPay | FormatAsCurrency }}</p></td>
+          <td><p> </p></td>
+        </tr>
+        <tr>
+          <td><p> </p></td>
+          <td><p> </p></td>
+        </tr>
+        {% if fullTime %}
+        <tr> {% assign employmentPreviousYears = Person | Attribute:'Arena-22-212' | Minus:1 | Ceiling %}
+          <td style="border:1pt solid black;text-align:center;"><p> <b>{{ employmentPreviousYears }}</b></p></td>
+          <td><p> </p></td>
+        </tr>
+        <tr> {% if employmentPreviousYears == 1 %}{% assign employeePreviousPercent = 0.04 %}{% elseif employmentPreviousYears == 2 %}{% assign employeePreviousPercent = 0.08 %}{% elseif employmentPreviousYears >= 3 %}{% assign employeePreviousPercent = 0.12 %}{% else %}{% assign employeePreviousPercent = 0.00 %}{% endif %}
+          <td style="border:1pt solid black;text-align:right;"><p> {{ totalPreviousBiWeeklyPay | Times:employeePreviousPercent | FormatAsCurrency }}</p></td>
+          <td style="border:1pt solid black;text-align:right;"><p> {{employeePreviousPercent | Format:"P"}}</p></td>
+        </tr>
+        <tr> {% if employmentPreviousYears == 1 %}{% assign employerPreviousPercent = 0.02 %}{% elseif employmentPreviousYears == 2 %}{% assign employerPreviousPercent = 0.04 %}{% elseif employmentPreviousYears == 3 %}{% assign employerPreviousPercent = 0.06 %}{% elseif employmentPreviousYears == 4 %}{% assign employerPreviousPercent = 0.08 %}{% elseif employmentPreviousYears == 5 %}{% assign employerPreviousPercent = 0.10 %}{% elseif employmentPreviousYears >= 6 %}{% assign employerPreviousPercent = 0.12 %}{% else %}{% assign employerPreviousPercent = 0.00 %}{% endif %}
+          <td style="border:1pt solid black;text-align:right;"><p> {{ totalPreviousBiWeeklyPay | Times:employerPreviousPercent | FormatAsCurrency }}</p></td>
+          <td style="border:1pt solid black;text-align:right;"><p> {{employerPreviousPercent | Format:"P"}}</p></td>
+        </tr>
+        {%endif%}
+      </table>
+    </div> <!-- Wages Last Year column -->
+    <div class="col-xs-3"> <!-- Wages Current Year column -->
+      <table style="width:100%">
+        <tr>
+          <td width="50%"><b>{{ Year }}/{{Year | Plus:1 }}</td>
+            <td width="50%"><p> </p></td>
+        </tr>
+        <tr>
+          <td style="border:1pt solid black;text-align:right;"><p> {{CurrentSalary.Amount | FormatAsCurrency }}</p></td>
+          <td><p> </p></td>
+        </tr>
+        {% if hourly == false %}
+        <tr>
+          <td style="border:1pt solid black;text-align:right;"><p> {{CurrentSalary.HousingAllowance | FormatAsCurrency }}</p></td>
+          <td><p> </p></td>
+        </tr>
+        {% endif %}
+        {% if hourly %}
+        <tr>
+          <td>{{ approvedHours }}</td> <!-- Hours approved to work per p/p attribute -->
+          <td><p> </p></td>
+        </tr>
+        {% endif %}
+        <tr>
+          <td style="border:2pt solid black;text-align:right;">
+            {% if hourly %}
+              {% assign currentTotalAmount = CurrentSalary.Amount | Times:approvedHours | Times:26 %}
+            {% else %}
+              {% assign currentTotalAmount = CurrentSalary.Amount | Plus:CurrentSalary.HousingAllowance  %}
+            {% endif %}
+            <p>{{ currentTotalAmount | FormatAsCurrency}}</p>
+          </td>
+          <td><p> </p></td>
+        </tr>
+        <tr>{% assign totalCurrentBiWeeklyPay = currentTotalAmount | DividedBy:26 %}
+          <td style="border:1pt solid black;text-align:right;"><p> {{ totalCurrentBiWeeklyPay | FormatAsCurrency }}</p></td>
+          <td><p> </p></td>
+        </tr>
+        <tr>
+          <td><p> </p></td>
+          <td><p> </p></td>
+        </tr>
+        {% if fullTime %}
+        <tr> {% assign employmentCurrentYears = Person | Attribute:'Arena-22-212' | Ceiling %}
+          <td style="border:1pt solid black;text-align:center;"><p> <b>{{ employmentCurrentYears }}</b></p></td>
+          <td><p> </p></td>
+        </tr>
+        <tr> {% if employmentCurrentYears == 1 %}{% assign employeeCurrentPercent = 0.04 %}{% elseif employmentCurrentYears == 2 %}{% assign employeeCurrentPercent = 0.08 %}{% elseif employmentCurrentYears >= 3 %}{% assign employeeCurrentPercent = 0.12 %}{% else %}{% assign employeeCurrentPercent = 0.00 %}{% endif %}
+          <td style="border:1pt solid black;text-align:right;"><p> {{ totalCurrentBiWeeklyPay | Times:employeeCurrentPercent | FormatAsCurrency }}</p></td>
+          <td style="border:1pt solid black;text-align:right;"><p> {{employeeCurrentPercent | Format:"P"}}</p></td>
+        </tr>
+        <tr> {% if employmentCurrentYears == 1 %}{% assign employerCurrentPercent = 0.02 %}{% elseif employmentCurrentYears == 2 %}{% assign employerCurrentPercent = 0.04 %}{% elseif employmentCurrentYears == 3 %}{% assign employerCurrentPercent = 0.06 %}{% elseif employmentCurrentYears == 4 %}{% assign employerCurrentPercent = 0.08 %}{% elseif employmentCurrentYears == 5 %}{% assign employerCurrentPercent = 0.10 %}{% elseif employmentCurrentYears >= 6 %}{% assign employerCurrentPercent = 0.12 %}{% else %}{% assign employerCurrentPercent = 0.00 %}{% endif %}
+          <td style="border:1pt solid black;text-align:right;"><p> {{ totalCurrentBiWeeklyPay | Times:employerCurrentPercent | FormatAsCurrency }}</p></td>
+          <td style="border:1pt solid black;text-align:right;"><p> {{employerCurrentPercent | Format:"P"}}</p></td>
+        </tr>
+        {%endif%}
+      </table>
+    </div> <!-- Wages Current Year column -->
+    <div class="col-xs-3"> <!-- Wages Future Year column -->
+      <table style="width:100%">
+        <tr>
+          <td width="50%"><b>{{ Year | Plus:1 }}/{{Year | Plus:2 }}</td>
+            <td width="50%"><p> </p></td>
+        </tr>
+        <tr>
+          <td style="border:1pt solid black;text-align:right;"><p> {{FutureSalary.Amount | FormatAsCurrency }}</p></td>
+          <td><p> </p></td>
+        </tr>
+        {% if hourly == false %}
+        <tr>
+          <td style="border:1pt solid black;text-align:right;"><p> {{FutureSalary.HousingAllowance | FormatAsCurrency }}</p></td>
+          <td><p> </p></td>
+        </tr>
+        {% endif %}
+        {% if hourly %}
+        <tr>
+          <td>{{ approvedHours }}</td> <!-- Hours approved to work per p/p attribute -->
+          <td><p> </p></td>
+        </tr>
+        {% endif %}
+        <tr>
+          <td style="border:2pt solid black;text-align:right;">
+            {% if hourly %}
+              {% assign futureTotalAmount = FutureSalary.Amount | Times:approvedHours | Times:26 %}
+            {% else %}
+              {% assign futureTotalAmount = FutureSalary.Amount | Plus:FutureSalary.HousingAllowance %}
+            {% endif %}
+            <p>{{ futureTotalAmount | FormatAsCurrency}}</p>
+          </td>
+          <td><p> </p></td>
+        </tr>
+        <tr>{% assign totalFutureBiWeeklyPay = futureTotalAmount | DividedBy:26 %}
+          <td style="border:1pt solid black;text-align:right;"><p> {{ totalFutureBiWeeklyPay | FormatAsCurrency }}</p></td>
+          <td><p> </p></td>
+        </tr>
+        <tr>
+          <td><p> </p></td>
+          <td><p> </p></td>
+        </tr>
+        {% if fullTime %}
+        <tr> {% assign employmentFutureYears = Person | Attribute:'Arena-22-212' | Plus: 1 | Ceiling %}
+          <td style="border:1pt solid black;text-align:center;"><p> <b>{{ employmentFutureYears }}</b></p></td>
+          <td><p> </p></td>
+        </tr>
+        <tr> {% if employmentFutureYears == 1 %}{% assign employeeFuturePercent = 0.04 %}{% elseif employmentFutureYears == 2 %}{% assign employeeFuturePercent = 0.08 %}{% elseif employmentFutureYears >= 3 %}{% assign employeeFuturePercent = 0.12 %}{% else %}{% assign employeeFuturePercent = 0.00 %}{% endif %}
+          <td style="border:1pt solid black;text-align:right;"><p> {{ totalFutureBiWeeklyPay | Times:employeeFuturePercent | FormatAsCurrency }}</p></td>
+          <td style="border:1pt solid black;text-align:right;"><p> {{employeeFuturePercent | Format:"P"}}</p></td>
+        </tr>
+        <tr> {% if employmentFutureYears == 1 %}{% assign employerFuturePercent = 0.02 %}{% elseif employmentFutureYears == 2 %}{% assign employerFuturePercent = 0.04 %}{% elseif employmentFutureYears == 3 %}{% assign employerFuturePercent = 0.06 %}{% elseif employmentFutureYears == 4 %}{% assign employerFuturePercent = 0.08 %}{% elseif employmentFutureYears == 5 %}{% assign employerFuturePercent = 0.10 %}{% elseif employmentFutureYears >= 6 %}{% assign employerFuturePercent = 0.12 %}{% else %}{% assign employerFuturePercent = 0.00 %}{% endif %}
+          <td style="border:1pt solid black;text-align:right;"><p> {{ totalFutureBiWeeklyPay | Times:employerFuturePercent | FormatAsCurrency }}</p></td>
+          <td style="border:1pt solid black;text-align:right;"><p> {{employerFuturePercent | Format:"P"}}</p></td>
+        </tr>
+        {% endif %}
+      </table>
+    </div> <!-- Wages Future Year column -->
+  </div><!-- Wages Row -->
+  <h3 width="100%" style="border-bottom: 1pt solid black;"> Employee 403b Bi-Weekly Deduction Election </h3>
+  <div class="row"> <!-- Actual Retirement Deduction Row -->
+    <div class="col-xs-3">
+      <table width="100%">
+        <tr>
+          <td><p > </p></td>
+        </tr>
+        {% for retirementFund in RetirementFunds %}
+        <tr>
+          <td><p><b> {{retirementFund.FinancialAccount}}</b></p></td>
+        </tr>
+        {% endfor %}
+        </table>
+      </br>
+      <table>
+        <tr>
+          <td ><p><b>Total</b></p></td>
+        </tr>
+      </table>
+      {% if fullTime %}
+      </br>
+      <table width="100%" style="text-align:right;color:darkgray;">
+        <tr>
+          <td width="25%"><p> </p></td>
+          <td width="25%"><p>Eligibility</p></td>
+          <td width="25%"><p> </p></td>
+          <td width="25%"><p> </p></td>
+        </tr>
+        {% if employmentPreviousYears <= 1 %}
+        <tr>
+          <td width="25%"><p> </p></td>
+          <td width="25%"><p> </p></td>
+          <td width="25%"><p> </p></td>
+          <td width="25%"><p>1st Year</p></td>
+        </tr>
+        {% endif %}
+        {% if employmentPreviousYears <= 2 %}
+        <tr>
+          <td width="25%"><p> </p></td>
+          <td width="25%"><p> </p></td>
+          <td width="25%"><p> </p></td>
+          <td width="25%"><p>2nd Year</p></td>
+        </tr>
+        {% endif %}
+        {% if employmentPreviousYears <= 3 %}
+        <tr>
+          <td width="25%"><p> </p></td>
+          <td width="25%"><p> </p></td>
+          <td width="25%"><p> </p></td>
+          <td width="25%"><p>3rd Year</p></td>
+        </tr>
+        {% endif %}
+        {% if employmentPreviousYears <= 4 %}
+        <tr>
+          <td width="25%"><p> </p></td>
+          <td width="25%"><p> </p></td>
+          <td width="25%"><p> </p></td>
+          <td width="25%"><p>4th Year</p></td>
+        </tr>
+        {% endif %}
+        {% if employmentPreviousYears <= 5 %}
+        <tr>
+          <td width="25%"><p> </p></td>
+          <td width="25%"><p> </p></td>
+          <td width="25%"><p> </p></td>
+          <td width="25%"><p>5th Year</p></td>
+        </tr>
+        {% endif %}
+        <tr>
+          <td width="25%"><p> </p></td>
+          <td width="25%"><p> </p></td>
+          <td width="25%"><p> </p></td>
+          <td width="25%"><p>6th Year</p></td>
+        </tr>
+      </table>
+      {% endif %}
     </div>
-  </body>
+    <div class="col-xs-3"> <!-- Previous Year Retirement Deduction -->
+      {% assign totalPreviousEmployeeAmount = 0 %}
+      {% assign totalPreviousEmployeePercent = 0 %}
+      {% assign totalPreviousEmployerAmount = 0 %}
+      {% assign totalPreviousEmployerPercent = 0 %}
+      <table width="100%">
+        <tr>
+          <td style="border:1pt solid black;text-align:center;" width="25%"><p style="font-size:10pt;"> Employee</p></td>
+          <td style="border:1pt solid black;text-align:center;" width="25%"><p>%</p></td>
+          <td style="border:1pt solid black;text-align:center;" width="25%"><p style="font-size:10pt;"> {% if fullTime %}Employer{% endif %}</p></td>
+          <td style="border:1pt solid black;text-align:center;" width="25%"><p> {% if fullTime %}%{% endif %}</p></td>
+        </tr>
+        {% for retirementFund in RetirementFunds %}
+        <tr>
+          <td style="border:1pt solid black;text-align:right;">
+            {% if retirementFund.PreviousFixed %}
+              {% assign previousEmployeeAmount = retirementFund.PreviousEmployeeAmount %}
+            {% else %}
+              {% assign previousEmployeeAmount = totalPreviousBiWeeklyPay | Times:retirementFund.PreviousEmployeeAmount | DividedBy:100 %}
+            {% endif %}
+            <p{% if retirementFund.PreviousFixed != true %} style="color:darkgray;"{% endif %}>{{ previousEmployeeAmount | FormatAsCurrency }}</p>
+            {% assign totalPreviousEmployeeAmount = totalPreviousEmployeeAmount | Plus:previousEmployeeAmount %}
+          </td>
+          <td style="border:1pt solid black;text-align:right;">
+            {% if retirementFund.PreviousFixed %}
+              {% assign previousEmployeePercent = retirementFund.PreviousEmployeeAmount | DividedBy:totalPreviousBiWeeklyPay %}
+            {% else %}
+              {% assign previousEmployeePercent = retirementFund.PreviousEmployeeAmount | DividedBy:100 %}
+            {% endif %}
+            <p{% if retirementFund.PreviousFixed %} style="color:darkgray;"{% endif %}>{{previousEmployeePercent | Format:'P' }}</p>
+            {% assign totalPreviousEmployeePercent = totalPreviousEmployeePercent | Plus:previousEmployeePercent %}
+          </td>
+          <td style="border:1pt solid black;text-align:right;">
+            {% if fullTime %}
+              {% if retirementFund.PreviousFixed %}
+                {% assign previousEmployerAmount = retirementFund.PreviousEmployerAmount %}
+              {% else %}
+                {% assign previousEmployerAmount = totalPreviousBiWeeklyPay | Times:retirementFund.PreviousEmployerAmount | DividedBy:100 %}
+              {% endif %}
+              <p{% if retirementFund.PreviousFixed != true %} style="color:darkgray;"{% endif %}>{{ previousEmployerAmount | FormatAsCurrency }}</p>
+              {% assign totalPreviousEmployerAmount = totalPreviousEmployerAmount | Plus:previousEmployerAmount %}
+            {% endif %}
+          </td>
+          <td style="border:1pt solid black;text-align:right;">
+            {% if fullTime %}
+              {% if retirementFund.PreviousFixed %}
+                {% assign previousEmployerPercent = retirementFund.PreviousEmployerAmount | DividedBy:totalPreviousBiWeeklyPay %}
+              {% else %}
+                {% assign previousEmployerPercent = retirementFund.PreviousEmployerAmount | DividedBy:100 %}
+              {% endif %}
+              <p{% if retirementFund.PreviousFixed %} style="color:darkgray;"{% endif %}>{{previousEmployerPercent | Format:'P' }}</p>
+              {% assign totalPreviousEmployerPercent = totalPreviousEmployerPercent | Plus:previousEmployerPercent %}
+            {% endif %}
+          </td>
+        </tr>
+        {% endfor %}
+      </table>
+    </br>
+      <table width="100%">
+        <tr>
+          <td style="border:1pt solid black;text-align:right;" width="25%"><p>{{ totalPreviousEmployeeAmount | FormatAsCurrency }}</p></td>
+          <td style="border:1pt solid black;text-align:right;" width="25%"><p>{{totalPreviousEmployeePercent | Format:'P' }}</p></td>
+          <td style="border:1pt solid black;text-align:right;" width="25%">{% if fullTime %}<p>{{ totalPreviousEmployerAmount | FormatAsCurrency }}{% endif %}</p></td>
+          <td style="border:1pt solid black;text-align:right;" width="25%">{% if fullTime %}<p>{{totalPreviousEmployerPercent | Format:'P' }}{% endif %}</p></td>
+        </tr>
+      </table>
+    {% if fullTime %}
+    </br>
+    <table width="100%">
+      <tr>
+        <td width="25%"><p> </p></td>
+        <td width="25%"><p>employee</p></td>
+        <td width="25%"><p> </p></td>
+        <td width="25%"><p><b>employer</b></p></td>
+      </tr>
+      {% if employmentPreviousYears <= 1 %}
+      <tr style="text-align:right;color:{% if employmentPreviousYears == 1 %}black{% else%}darkgray{% endif %};">
+        <td width="25%"><p> </p></td>
+        <td width="25%"><p>4%</p></td>
+        <td width="25%"><p> </p></td>
+        <td width="25%"><p>2%</p></td>
+      </tr>
+      {% endif %}
+      {% if employmentPreviousYears <= 2 %}
+      <tr style="text-align:right;color:{% if employmentPreviousYears == 2 %}black{% else%}darkgray{% endif %};">
+        <td width="25%"><p> </p></td>
+        <td width="25%"><p>8%</p></td>
+        <td width="25%"><p> </p></td>
+        <td width="25%"><p>4%</p></td>
+      </tr>
+      {% endif %}
+      {% if employmentPreviousYears <= 3 %}
+      <tr style="text-align:right;color:{% if employmentPreviousYears == 3 %}black{% else%}darkgray{% endif %};">
+        <td width="25%"><p> </p></td>
+        <td width="25%"><p>12%</p></td>
+        <td width="25%"><p> </p></td>
+        <td width="25%"><p>6%</p></td>
+      </tr>
+      {% endif %}
+      {% if employmentPreviousYears <= 4 %}
+      <tr style="text-align:right;color:{% if employmentPreviousYears == 4 %}black{% else%}darkgray{% endif %};">
+        <td width="25%"><p> </p></td>
+        <td width="25%"><p>12%</p></td>
+        <td width="25%"><p> </p></td>
+        <td width="25%"><p>8%</p></td>
+      </tr>
+      {% endif %}
+      {% if employmentPreviousYears <= 5 %}
+      <tr style="text-align:right;color:{% if employmentPreviousYears == 5 %}black{% else%}darkgray{% endif %};">
+        <td width="25%"><p> </p></td>
+        <td width="25%"><p>12%</p></td>
+        <td width="25%"><p> </p></td>
+        <td width="25%"><p>10%</p></td>
+      </tr>
+      {% endif %}
+      <tr style="text-align:right;color:{% if employmentPreviousYears >= 6 %}black{% else%}darkgray{% endif %};">
+        <td width="25%"><p> </p></td>
+        <td width="25%"><p>12%</p></td>
+        <td width="25%"><p> </p></td>
+        <td width="25%"><p>12%</p></td>
+      </tr>
+    </table>
+    {% endif %}
+    </div> <!-- Previous Year Retirement Deduction -->
+    <div class="col-xs-3"> <!-- Current Year Retirement Deduction -->
+      {% assign totalCurrentEmployeeAmount = 0 %}
+      {% assign totalCurrentEmployeePercent = 0 %}
+      {% assign totalCurrentEmployerAmount = 0 %}
+      {% assign totalCurrentEmployerPercent = 0 %}
+      <table width="100%">
+        <tr>
+          <td style="border:1pt solid black;text-align:center;" width="25%"><p style="font-size:10pt;"> Employee</p></td>
+          <td style="border:1pt solid black;text-align:center;" width="25%"><p>%</p></td>
+          <td style="border:1pt solid black;text-align:center;" width="25%"><p style="font-size:10pt;"> {% if fullTime %}Employer{% endif %}</p></td>
+          <td style="border:1pt solid black;text-align:center;" width="25%"><p> {% if fullTime %}%{% endif %}</p></td>
+        </tr>
+        {% for retirementFund in RetirementFunds %}
+        <tr>
+          <td style="border:1pt solid black;text-align:right;">
+            {% if retirementFund.CurrentFixed %}
+              {% assign CurrentEmployeeAmount = retirementFund.CurrentEmployeeAmount %}
+            {% else %}
+              {% assign CurrentEmployeeAmount = totalCurrentBiWeeklyPay | Times:retirementFund.CurrentEmployeeAmount | DividedBy:100 %}
+            {% endif %}
+            <p{% if retirementFund.CurrentFixed != true %} style="color:darkgray;"{% endif %}>{{ CurrentEmployeeAmount | FormatAsCurrency }}</p>
+            {% assign totalCurrentEmployeeAmount = totalCurrentEmployeeAmount | Plus:CurrentEmployeeAmount %}
+          </td>
+          <td style="border:1pt solid black;text-align:right;">
+            {% if retirementFund.CurrentFixed %}
+              {% assign CurrentEmployeePercent = retirementFund.CurrentEmployeeAmount | DividedBy:totalCurrentBiWeeklyPay %}
+            {% else %}
+              {% assign CurrentEmployeePercent = retirementFund.CurrentEmployeeAmount | DividedBy:100 %}
+            {% endif %}
+            <p{% if retirementFund.CurrentFixed %} style="color:darkgray;"{% endif %}>{{CurrentEmployeePercent | Format:'P' }}</p>
+            {% assign totalCurrentEmployeePercent = totalCurrentEmployeePercent | Plus:CurrentEmployeePercent %}
+          </td>
+          <td style="border:1pt solid black;text-align:right;">
+            {% if fullTime %}
+              {% if retirementFund.CurrentFixed %}
+                {% assign CurrentEmployerAmount = retirementFund.CurrentEmployerAmount %}
+              {% else %}
+                {% assign CurrentEmployerAmount = totalCurrentBiWeeklyPay | Times:retirementFund.CurrentEmployerAmount | DividedBy:100 %}
+              {% endif %}
+              <p{% if retirementFund.CurrentFixed != true %} style="color:darkgray;"{% endif %}>{{ CurrentEmployerAmount | FormatAsCurrency }}</p>
+              {% assign totalCurrentEmployerAmount = totalCurrentEmployerAmount | Plus:CurrentEmployerAmount %}
+            {% endif %}
+          </td>
+          <td style="border:1pt solid black;text-align:right;">
+            {% if fullTime %}
+              {% if retirementFund.CurrentFixed %}
+                {% assign CurrentEmployerPercent = retirementFund.CurrentEmployerAmount | DividedBy:totalCurrentBiWeeklyPay %}
+              {% else %}
+                {% assign CurrentEmployerPercent = retirementFund.CurrentEmployerAmount | DividedBy:100 %}
+              {% endif %}
+              <p{% if retirementFund.CurrentFixed %} style="color:darkgray;"{% endif %}>{{CurrentEmployerPercent | Format:'P' }}</p>
+              {% assign totalCurrentEmployerPercent = totalCurrentEmployerPercent | Plus:CurrentEmployerPercent %}
+            {% endif %}
+          </td>
+        </tr>
+        {% endfor %}
+      </table>
+    </br>
+      <table width="100%">
+        <tr>
+          <td style="border:1pt solid black;text-align:right;" width="25%"><p>{{ totalCurrentEmployeeAmount | FormatAsCurrency }}</p></td>
+          <td style="border:1pt solid black;text-align:right;" width="25%"><p>{{totalCurrentEmployeePercent | Format:'P' }}</p></td>
+          <td style="border:1pt solid black;text-align:right;" width="25%">{% if fullTime %}<p>{{ totalCurrentEmployerAmount | FormatAsCurrency }}{% endif %}</p></td>
+          <td style="border:1pt solid black;text-align:right;" width="25%">{% if fullTime %}<p>{{totalCurrentEmployerPercent | Format:'P' }}{% endif %}</p></td>
+        </tr>
+      </table>
+      {% if fullTime %}
+      </br>
+      <table width="100%">
+        <tr>
+          <td width="25%"><p> </p></td>
+          <td width="25%"><p>employee</p></td>
+          <td width="25%"><p> </p></td>
+          <td width="25%"><p><b>employer</b></p></td>
+        </tr>
+        {% if employmentPreviousYears <= 1 %}
+        <tr style="text-align:right;color:{% if employmentCurrentYears == 1 %}black{% else%}darkgray{% endif %};">
+          <td width="25%"><p> </p></td>
+          <td width="25%"><p>4%</p></td>
+          <td width="25%"><p> </p></td>
+          <td width="25%"><p>2%</p></td>
+        </tr>
+        {% endif %}
+        {% if employmentPreviousYears <= 2 %}
+        <tr style="text-align:right;color:{% if employmentCurrentYears == 2 %}black{% else%}darkgray{% endif %};">
+          <td width="25%"><p> </p></td>
+          <td width="25%"><p>8%</p></td>
+          <td width="25%"><p> </p></td>
+          <td width="25%"><p>4%</p></td>
+        </tr>
+        {% endif %}
+        {% if employmentPreviousYears <= 3 %}
+        <tr style="text-align:right;color:{% if employmentCurrentYears == 3 %}black{% else%}darkgray{% endif %};">
+          <td width="25%"><p> </p></td>
+          <td width="25%"><p>12%</p></td>
+          <td width="25%"><p> </p></td>
+          <td width="25%"><p>6%</p></td>
+        </tr>
+        {% endif %}
+        {% if employmentPreviousYears <= 4 %}
+        <tr style="text-align:right;color:{% if employmentCurrentYears == 4 %}black{% else%}darkgray{% endif %};">
+          <td width="25%"><p> </p></td>
+          <td width="25%"><p>12%</p></td>
+          <td width="25%"><p> </p></td>
+          <td width="25%"><p>8%</p></td>
+        </tr>
+        {% endif %}
+        {% if employmentPreviousYears <= 5 %}
+        <tr style="text-align:right;color:{% if employmentCurrentYears == 5 %}black{% else%}darkgray{% endif %};">
+          <td width="25%"><p> </p></td>
+          <td width="25%"><p>12%</p></td>
+          <td width="25%"><p> </p></td>
+          <td width="25%"><p>10%</p></td>
+        </tr>
+        {% endif %}
+        <tr style="text-align:right;color:{% if employmentCurrentYears >= 6 %}black{% else%}darkgray{% endif %};">
+          <td width="25%"><p> </p></td>
+          <td width="25%"><p>12%</p></td>
+          <td width="25%"><p> </p></td>
+          <td width="25%"><p>12%</p></td>
+        </tr>
+      </table>
+      {% endif %}
+    </div> <!-- Current Year Retirement Deduction -->
+    <div class="col-xs-3"> <!-- Future Year Retirement Deduction -->
+      {% assign totalCurrentEmployeeAmount = 0 %}
+      {% assign totalCurrentEmployeePercent = 0 %}
+      {% assign totalCurrentEmployerAmount = 0 %}
+      {% assign totalCurrentEmployerPercent = 0 %}
+      <table width="100%">
+        <tr>
+          <td style="border:1pt solid black;text-align:center;" width="25%"><p style="font-size:10pt;"> Employee</p></td>
+          <td style="border:1pt solid black;text-align:center;" width="25%"><p>%</p></td>
+          <td style="border:1pt solid black;text-align:center;" width="25%"><p style="font-size:10pt;"> {% if fullTime %}Employer{% endif %}</p></td>
+          <td style="border:1pt solid black;text-align:center;" width="25%"><p> {% if fullTime %}%{% endif %}</p></td>
+        </tr>
+        {% for retirementFund in RetirementFunds %}
+        <tr>
+          <td style="border:1pt solid black;text-align:right;">
+            {% if retirementFund.CurrentFixed %}
+              {% assign CurrentEmployeeAmount = retirementFund.CurrentEmployeeAmount %}
+            {% else %}
+              {% assign CurrentEmployeeAmount = totalFutureBiWeeklyPay | Times:retirementFund.CurrentEmployeeAmount | DividedBy:100 %}
+            {% endif %}
+            <p{% if retirementFund.CurrentFixed != true %} style="color:darkgray;"{% endif %}>{{ CurrentEmployeeAmount | FormatAsCurrency }}</p>
+            {% assign totalCurrentEmployeeAmount = totalCurrentEmployeeAmount | Plus:CurrentEmployeeAmount %}
+          </td>
+          <td style="border:1pt solid black;text-align:right;">
+            {% if retirementFund.CurrentFixed %}
+              {% assign CurrentEmployeePercent = retirementFund.CurrentEmployeeAmount | DividedBy:totalFutureBiWeeklyPay %}
+            {% else %}
+              {% assign CurrentEmployeePercent = retirementFund.CurrentEmployeeAmount | DividedBy:100 %}
+            {% endif %}
+            <p{% if retirementFund.CurrentFixed %} style="color:darkgray;"{% endif %}>{{CurrentEmployeePercent | Format:'P' }}</p>
+            {% assign totalCurrentEmployeePercent = totalCurrentEmployeePercent | Plus:CurrentEmployeePercent %}
+          </td>
+          <td style="border:1pt solid black;text-align:right;">
+            {% if fullTime %}
+              {% if retirementFund.CurrentFixed %}
+                {% assign CurrentEmployerAmount = retirementFund.CurrentEmployerAmount %}
+              {% else %}
+                {% assign CurrentEmployerAmount = totalFutureBiWeeklyPay | Times:retirementFund.CurrentEmployerAmount | DividedBy:100 %}
+              {% endif %}
+              <p{% if retirementFund.CurrentFixed != true %} style="color:darkgray;"{% endif %}>{{ CurrentEmployerAmount | FormatAsCurrency }}</p>
+              {% assign totalCurrentEmployerAmount = totalCurrentEmployerAmount | Plus:CurrentEmployerAmount %}
+            {% endif %}
+          </td>
+          <td style="border:1pt solid black;text-align:right;">
+            {% if fullTime %}
+              {% if retirementFund.CurrentFixed %}
+                {% assign CurrentEmployerPercent = retirementFund.CurrentEmployerAmount | DividedBy:totalFutureBiWeeklyPay %}
+              {% else %}
+                {% assign CurrentEmployerPercent = retirementFund.CurrentEmployerAmount | DividedBy:100 %}
+              {% endif %}
+              <p{% if retirementFund.CurrentFixed %} style="color:darkgray;"{% endif %}>{{CurrentEmployerPercent | Format:'P' }}</p>
+              {% assign totalCurrentEmployerPercent = totalCurrentEmployerPercent | Plus:CurrentEmployerPercent %}
+            {% endif %}
+          </td>
+        </tr>
+        {% endfor %}
+      </table>
+    </br>
+      <table width="100%">
+        <tr>
+          <td style="border:1pt solid black;text-align:right;" width="25%"><p>{{ totalCurrentEmployeeAmount | FormatAsCurrency }}</p></td>
+          <td style="border:1pt solid black;text-align:right;" width="25%"><p>{{totalCurrentEmployeePercent | Format:'P' }}</p></td>
+          <td style="border:1pt solid black;text-align:right;" width="25%">{% if fullTime %}<p>{{ totalCurrentEmployerAmount | FormatAsCurrency }}{% endif %}</p></td>
+          <td style="border:1pt solid black;text-align:right;" width="25%">{% if fullTime %}<p>{{totalCurrentEmployerPercent | Format:'P' }}{% endif %}</p></td>
+        </tr>
+      </table>
+      {% if fullTime %}
+      </br>
+      <table width="100%">
+        <tr>
+          <td width="25%"><p> </p></td>
+          <td width="25%"><p>employee</p></td>
+          <td width="25%"><p> </p></td>
+          <td width="25%"><p><b>employer</b></p></td>
+        </tr>
+        {% if employmentPreviousYears <= 1 %}
+        <tr style="text-align:right;color:{% if employmentFutureYears == 1 %}black{% else%}darkgray{% endif %};">
+          <td width="25%"><p> </p></td>
+          <td width="25%"><p>4%</p></td>
+          <td width="25%"><p> </p></td>
+          <td width="25%"><p>2%</p></td>
+        </tr>
+        {% endif %}
+        {% if employmentPreviousYears <= 2 %}
+        <tr style="text-align:right;color:{% if employmentFutureYears == 2 %}black{% else%}darkgray{% endif %};">
+          <td width="25%"><p> </p></td>
+          <td width="25%"><p>8%</p></td>
+          <td width="25%"><p> </p></td>
+          <td width="25%"><p>4%</p></td>
+        </tr>
+        {% endif %}
+        {% if employmentPreviousYears <= 3 %}
+        <tr style="text-align:right;color:{% if employmentFutureYears == 3 %}black{% else%}darkgray{% endif %};">
+          <td width="25%"><p> </p></td>
+          <td width="25%"><p>12%</p></td>
+          <td width="25%"><p> </p></td>
+          <td width="25%"><p>6%</p></td>
+        </tr>
+        {% endif %}
+        {% if employmentPreviousYears <= 4 %}
+        <tr style="text-align:right;color:{% if employmentFutureYears == 4 %}black{% else%}darkgray{% endif %};">
+          <td width="25%"><p> </p></td>
+          <td width="25%"><p>12%</p></td>
+          <td width="25%"><p> </p></td>
+          <td width="25%"><p>8%</p></td>
+        </tr>
+        {% endif %}
+        {% if employmentPreviousYears <= 5 %}
+        <tr style="text-align:right;color:{% if employmentFutureYears == 5 %}black{% else%}darkgray{% endif %};">
+          <td width="25%"><p> </p></td>
+          <td width="25%"><p>12%</p></td>
+          <td width="25%"><p> </p></td>
+          <td width="25%"><p>10%</p></td>
+        </tr>
+        {% endif %}
+        <tr style="text-align:right;color:{% if employmentFutureYears >= 6 %}black{% else%}darkgray{% endif %};">
+          <td width="25%"><p> </p></td>
+          <td width="25%"><p>12%</p></td>
+          <td width="25%"><p> </p></td>
+          <td width="25%"><p>12%</p></td>
+        </tr>
+      </table>
+      {% endif %}
+    </div> <!-- Future Year Retirement Deduction -->
+  </div> <!-- Actual Retirement Deduction Row -->
+  <h3 width="100%" style="border-bottom: 1pt solid black;"> Other Deductions </h3>
+  <div> <!-- Other Deductions Row -->
+  {% assign medical = Person | Attribute:'Arena-21-208' %} <!-- Medical Row -->
+  {% if medical != empty %}
+  <div class="row">
+    <div class="col-xs-3" style="text-align:left">
+      <b>Medical</b>
+    </div>
+    <div class="col-xs-3" style="text-align:right">
+      {{medical | FormatAsCurrency }}
+    </div>
+    {% assign medicalDate = Person | Attribute:'Arena-21-223' %}
+    {% if medicalDate != ''%}
+    <div class="col-xs-3" style="text-align:right">
+      <b>Medical Effective Date</b>
+    </div>
+    <div class="col-xs-3" style="text-align:left">
+      {{medicalDate | Date:'MM/dd/yy'}}
+    </div>
+    {% endif %}
+  </div>
+  {% endif %}<!-- Medical Row -->
+  {% assign childSupport = Person | Attribute:'Arena-21-209' %} <!-- Child Support Row -->
+  {% if childSupport != empty %}
+  <div class="row">
+    <div class="col-xs-3" style="text-align:left">
+      <b>Child Support</b>
+    </div>
+    <div class="col-xs-3" style="text-align:right">
+      {{childSupport | FormatAsCurrency }}
+    </div>
+    {% assign childSupportDate = Person | Attribute:'Arena-21-224' %}
+    {% if childSupportDate != ''%}
+    <div class="col-xs-3" style="text-align:right">
+      <b>Child Support Effective Date</b>
+    </div>
+    <div class="col-xs-3" style="text-align:left">
+      {{childSupportDate | Date:'MM/dd/yy'}}
+    </div>
+    {% endif %}
+  </div>
+  {% endif %}<!-- Child Support Row -->
+  {% assign libertyMutual = Person | Attribute:'Arena-21-210' %} <!-- Liberty Mutual Row -->
+  {% if libertyMutual != empty %}
+  <div class="row">
+    <div class="col-xs-3" style="text-align:left">
+      <b>Liberty Mutual</b>
+    </div>
+    <div class="col-xs-3" style="text-align:right">
+      {{libertyMutual | FormatAsCurrency }}
+    </div>
+    {% assign libertyMutualDate = Person | Attribute:'Arena-21-225' %}
+    {% if libertyMutualDate != ''%}
+    <div class="col-xs-3" style="text-align:right">
+      <b>Lib. M. Effective Date</b>
+    </div>
+    <div class="col-xs-3" style="text-align:left">
+      {{libertyMutualDate | Date:'MM/dd/yy'}}
+    </div>
+    {% endif %}
+  </div>
+  {% endif %}<!-- Liberty Mutual Row -->
+  {% assign nationWide = Person | Attribute:'Arena-21-211' %} <!-- Nationwide Loan Row -->
+  {% if nationWide != empty %}
+  <div class="row">
+    <div class="col-xs-3" style="text-align:left">
+      <b>Nationwide Loan</b>
+    </div>
+    <div class="col-xs-3" style="text-align:right">
+      {{nationWide | FormatAsCurrency }}
+    </div>
+    {% assign nationWideDate = Person | Attribute:'Arena-21-226' %}
+    {% if nationWideDate != ''%}
+    <div class="col-xs-3" style="text-align:right">
+      <b>Nationwide Effective Date</b>
+    </div>
+    <div class="col-xs-3" style="text-align:left">
+      {{nationWideDate | Date:'MM/dd/yy'}}
+    </div>
+    {% endif %}
+  </div>
+  {% endif %}<!-- Nationwide Loan Row -->
+  {% assign medicalDentalLTDLife = Person | Attribute:'Arena-21-227' %} <!-- Medical/Dental/LTD/Life Benefit Row -->
+  {% if medicalDentalLTDLife != empty %}
+  <div class="row">
+    <div class="col-xs-3" style="text-align:left">
+      <b>Medical/Dental/LTD/Life Benefit</b>
+    </div>
+    <div class="col-xs-3" style="text-align:right">
+      {{medicalDentalLTDLife | FormatAsCurrency }}
+    </div>
+    {% assign medicalDentalLTDLifeDate = Person | Attribute:'Arena-21-228' %}
+    {% if medicalDentalLTDLifeDate != ''%}
+    <div class="col-xs-3" style="text-align:right">
+      <b>Medical/Dental/LTD/Life Benefit Effective Date</b>
+    </div>
+    <div class="col-xs-3" style="text-align:left">
+      {{medicalDentalLTDLifeDate | Date:'MM/dd/yy'}}
+    </div>
+    {% endif %}
+  </div>
+  {% endif %}<!-- Medical/Dental/LTD/Life Benefit Row -->
+  {% assign dental = Person | Attribute:'Arena-21-250' %} <!-- Dental Row -->
+  {% if dental != empty %}
+  <div class="row">
+    <div class="col-xs-3" style="text-align:left">
+      <b>Dental</b>
+    </div>
+    <div class="col-xs-3" style="text-align:right">
+      {{dental | FormatAsCurrency }}
+    </div>
+    {% assign dentalDate = Person | Attribute:'Arena-21-251' %}
+    {% if dentalDate != ''%}
+    <div class="col-xs-3" style="text-align:right">
+      <b>Dental Effective Date</b>
+    </div>
+    <div class="col-xs-3" style="text-align:left">
+      {{dentalDate | Date:'MM/dd/yy'}}
+    </div>
+    {% endif %}
+  </div>
+  {% endif %}<!-- Medical Row -->
+  {% assign employeeHsa = Person | Attribute:'Arena-21-252' %} <!-- Employee HSA Row -->
+  {% if employeeHsa != empty %}
+  <div class="row">
+    <div class="col-xs-3" style="text-align:left">
+      <b>Employee HSA</b>
+    </div>
+    <div class="col-xs-3" style="text-align:right">
+      {{employeeHsa | FormatAsCurrency }}
+    </div>
+    {% assign employeeHsaDate = Person | Attribute:'Arena-21-253' %}
+    {% if employeeHsaDate != ''%}
+    <div class="col-xs-3" style="text-align:right">
+      <b>Employee HSA Effective Date</b>
+    </div>
+    <div class="col-xs-3" style="text-align:left">
+      {{employeeHsaDate | Date:'MM/dd/yy'}}
+    </div>
+    {% endif %}
+  </div>
+  {% endif %}<!-- Employee HSA Row -->
+  {% assign employerHsa = Person | Attribute:'Arena-21-254' %} <!-- Employer HSA Row -->
+  {% if employerHsa != empty %}
+  <div class="row">
+    <div class="col-xs-3" style="text-align:left">
+      <b>Employer HSA</b>
+    </div>
+    <div class="col-xs-3" style="text-align:right">
+      {{employerHsa | FormatAsCurrency }}
+    </div>
+    {% assign employerHsaDate = Person | Attribute:'Arena-21-255' %}
+    {% if employerHsaDate != ''%}
+    <div class="col-xs-3" style="text-align:right">
+      <b>Employer HSA Effective Date</b>
+    </div>
+    <div class="col-xs-3" style="text-align:left">
+      {{employerHsaDate | Date:'MM/dd/yy'}}
+    </div>
+    {% endif %}
+  </div>
+  {% endif %}<!-- Employer HSA Row -->
+  {% assign fidelity = Person | Attribute:'Arena-21-258' %} <!-- Fidelity Loan Row -->
+  {% if fidelity != empty %}
+  <div class="row">
+    <div class="col-xs-3" style="text-align:left">
+      <b>Fidelity Loan</b>
+    </div>
+    <div class="col-xs-3" style="text-align:right">
+      {{fidelity | FormatAsCurrency }}
+    </div>
+    {% assign fidelityDate = Person | Attribute:'Arena-21-259' %}
+    {% if fidelityDate != ''%}
+    <div class="col-xs-3" style="text-align:right">
+      <b>Fidelity Effective Date</b>
+    </div>
+    <div class="col-xs-3" style="text-align:left">
+      {{fidelityDate | Date:'MM/dd/yy'}}
+    </div>
+    {% endif %}
+  </div>
+  {% endif %}<!-- Fidelity Loan Row -->
+</br>
+  </div><!-- Other Deductions Row -->
+  <h3 width="100%" style="border-bottom: 1pt solid black;"> Employee Bi-Weekly Contribution Election </h3>
+  <div class="row"> <!-- Contribution Row -->
+  </br>
+  <div class="col-xs-3"><!-- Contribution Legend -->
+    <table width="100%">
+      <tr>
+        <td><p > </p></td>
+      </tr>
+      {% for contribution in Contributions %}
+      <tr>
+        <td><p><b> {{contribution.FinancialAccount}}</b></p></td>
+      </tr>
+      {% endfor %}
+      <tr>
+        <td><p>Total contributions elected per pay period</p></td>
+      </tr>
+      </table>
+    </br>
+    <table>
+      <tr>
+        <td><p style="text-align:right;"><b>Total Bi-weekly Wage x 10%</b></p></td>
+      </tr>
+    </table>
+  </div><!-- Contribution Legend -->
+  <div class="col-xs-3"> <!-- Previous Year Contribution -->
+    {% assign totalPreviousAmount = 0 %}
+    {% assign totalPreviousPercent = 0 %}
+    <table width="100%">
+      <tr>
+        <td style="text-align:center;" width="50%"><p style="font-size:10pt;"> Fixed</p></td>
+        <td style="text-align:center;" width="50%"><p style="font-size:10pt;"> % of Gross</p></td>
+      </tr>
+      {% for contribution in Contributions %}
+      <tr>
+        <td style="border:1pt solid black;text-align:right;">
+          {% if contribution.PreviousFixed %}
+            {% assign previousAmount = contribution.PreviousAmount %}
+          {% else %}
+            {% assign previousAmount = totalPreviousBiWeeklyPay | Times:contribution.PreviousAmount | DividedBy:100 %}
+          {% endif %}
+          <p{% if contribution.PreviousFixed != true %} style="color:darkgray;"{% endif %}>{{ previousAmount | FormatAsCurrency }}</p>
+          {% assign totalPreviousAmount = totalPreviousAmount | Plus:previousAmount %}
+        </td>
+        <td style="border:1pt solid black;text-align:right;">
+          {% if contribution.PreviousFixed %}
+            {% assign previousPercent = contribution.PreviousAmount | DividedBy:totalPreviousBiWeeklyPay %}
+          {% else %}
+            {% assign previousPercent = contribution.PreviousAmount | DividedBy:100 %}
+          {% endif %}
+          <p{% if contribution.PreviousFixed %} style="color:darkgray;"{% endif %}>{{previousPercent | Format:'P' }}</p>
+          {% assign totalPreviousPercent = totalPreviousPercent | Plus:previousPercent %}
+        </td>
+      </tr>
+      {% endfor %}
+      <tr>
+        <td style="border:2pt solid black;text-align:right;"><p>{{ totalPreviousAmount | FormatAsCurrency }}</p></td>
+        <td style="border:2pt solid black;text-align:right;"><p>{{totalPreviousPercent | Format:'P' }}</p></td>
+      </tr>
+    </table>
+  </br>
+    <table width="100%">
+      <tr>
+        <td style="text-align:right;" width="50%"><p>{{ totalPreviousBiWeeklyPay | DividedBy:10 | FormatAsCurrency }}</p></td>
+        <td style="text-align:right;" width="50%"><p> </p></td>
+      </tr>
+    </table>
+</div> <!-- Previous Year Contribution -->
+<div class="col-xs-3"> <!-- Current Year Contribution -->
+  {% assign totalCurrentAmount = 0 %}
+  {% assign totalCurrentPercent = 0 %}
+  <table width="100%">
+    <tr>
+      <td style="text-align:center;" width="50%"><p style="font-size:10pt;"> Fixed</p></td>
+      <td style="text-align:center;" width="50%"><p style="font-size:10pt;"> % of Gross</p></td>
+    </tr>
+    {% for contribution in Contributions %}
+    <tr>
+      <td style="border:1pt solid black;text-align:right;">
+        {% if contribution.CurrentFixed %}
+          {% assign CurrentAmount = contribution.CurrentAmount %}
+        {% else %}
+          {% assign CurrentAmount = totalCurrentBiWeeklyPay | Times:contribution.CurrentAmount | DividedBy:100 %}
+        {% endif %}
+        <p{% if contribution.CurrentFixed != true %} style="color:darkgray;"{% endif %}>{{ CurrentAmount | FormatAsCurrency }}</p>
+        {% assign totalCurrentAmount = totalCurrentAmount | Plus:CurrentAmount %}
+      </td>
+      <td style="border:1pt solid black;text-align:right;">
+        {% if contribution.CurrentFixed %}
+          {% assign CurrentPercent = contribution.CurrentAmount | DividedBy:totalCurrentBiWeeklyPay %}
+        {% else %}
+          {% assign CurrentPercent = contribution.CurrentAmount | DividedBy:100 %}
+        {% endif %}
+        <p{% if contribution.CurrentFixed %} style="color:darkgray;"{% endif %}>{{CurrentPercent | Format:'P' }}</p>
+        {% assign totalCurrentPercent = totalCurrentPercent | Plus:CurrentPercent %}
+      </td>
+    </tr>
+    {% endfor %}
+    <tr>
+      <td style="border:2pt solid black;text-align:right;"><p>{{ totalCurrentAmount | FormatAsCurrency }}</p></td>
+      <td style="border:2pt solid black;text-align:right;"><p>{{totalCurrentPercent | Format:'P' }}</p></td>
+    </tr>
+  </table>
+</br>
+  <table width="100%">
+    <tr>
+      <td style="text-align:right;" width="50%"><p>{{ totalCurrentBiWeeklyPay | DividedBy:10 | FormatAsCurrency }}</p></td>
+      <td style="text-align:right;" width="50%"><p> </p></td>
+    </tr>
+  </table>
+</div> <!-- Current Year Contribution -->
+<div class="col-xs-3"> <!-- Current Year Contribution -->
+  {% assign totalCurrentAmount = 0 %}
+  {% assign totalCurrentPercent = 0 %}
+  <table width="100%">
+    <tr>
+      <td style="text-align:center;" width="50%"><p style="font-size:10pt;"> Fixed</p></td>
+      <td style="text-align:center;" width="50%"><p style="font-size:10pt;"> % of Gross</p></td>
+    </tr>
+    {% for contribution in Contributions %}
+    <tr>
+      <td style="border:1pt solid black;text-align:right;">
+        {% if contribution.CurrentFixed %}
+          {% assign CurrentAmount = contribution.CurrentAmount %}
+        {% else %}
+          {% assign CurrentAmount = totalFutureBiWeeklyPay | Times:contribution.CurrentAmount | DividedBy:100 %}
+        {% endif %}
+        <p{% if contribution.CurrentFixed != true %} style="color:darkgray;"{% endif %}>{{ CurrentAmount | FormatAsCurrency }}</p>
+        {% assign totalCurrentAmount = totalCurrentAmount | Plus:CurrentAmount %}
+      </td>
+      <td style="border:1pt solid black;text-align:right;">
+        {% if contribution.CurrentFixed %}
+          {% assign CurrentPercent = contribution.CurrentAmount | DividedBy:totalFutureBiWeeklyPay %}
+        {% else %}
+          {% assign CurrentPercent = contribution.CurrentAmount | DividedBy:100 %}
+        {% endif %}
+        <p{% if contribution.CurrentFixed %} style="color:darkgray;"{% endif %}>{{CurrentPercent | Format:'P' }}</p>
+        {% assign totalCurrentPercent = totalCurrentPercent | Plus:CurrentPercent %}
+      </td>
+    </tr>
+    {% endfor %}
+    <tr>
+      <td style="border:2pt solid black;text-align:right;"><p>{{ totalCurrentAmount | FormatAsCurrency }}</p></td>
+      <td style="border:2pt solid black;text-align:right;"><p>{{totalCurrentPercent | Format:'P' }}</p></td>
+    </tr>
+  </table>
+</br>
+  <table width="100%">
+    <tr>
+      <td style="text-align:right;" width="50%"><p>{{ totalFutureBiWeeklyPay | DividedBy:10 | FormatAsCurrency }}</p></td>
+      <td style="text-align:right;" width="50%"><p> </p></td>
+    </tr>
+  </table>
+</div> <!-- Current Year Contribution -->
+  </div>  <!-- Contribution Row -->
+</br>
+</br>
+  <div class="row"> <!-- Signature Row -->
+    <div class="col-xs-5">
+      <p style="border-bottom:1pt solid black" width="100%"> </p>
+      <b> Employee Signature, Date </b>
+    </div>
+    <div class="col-xs-2">
+    </div>
+    <div class="col-xs-5">
+      <p style="border-bottom:1pt solid black" width="100%"> </p>
+      <b> Processed By, Date</b>
+    </div>
+  </div> <!-- Signature Row -->
+<p>This employee payroll deduction sheet shall not be construed as a contract.  Central Christian Church, Arizona reserves the right to make changes as it deems appropriate.</p>
+</div>
+</body>
 </html>
