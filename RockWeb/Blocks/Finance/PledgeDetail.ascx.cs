@@ -46,10 +46,22 @@ namespace RockWeb.Blocks.Finance
         {
             base.OnLoad( e );
 
+            var pledgeId = PageParameter( "pledgeId" ).AsInteger();
             if ( !IsPostBack )
             {
-                ShowDetail( PageParameter( "pledgeId" ).AsInteger() );
+                ShowDetail( pledgeId );
             }
+
+            // Add any attribute controls. 
+            // This must be done here regardless of whether it is a postback so that the attribute values will get saved.
+            var pledge = new FinancialPledgeService( new RockContext() ).Get( pledgeId );
+            if ( pledge == null )
+            {
+                pledge = new FinancialPledge();
+            }
+            pledge.LoadAttributes();
+            phAttributes.Controls.Clear();
+            Helper.AddEditControls( pledge, phAttributes, true, BlockValidationGroup );
         }
 
         /// <summary>
@@ -95,6 +107,9 @@ namespace RockWeb.Blocks.Finance
 
             pledge.PledgeFrequencyValueId = ddlFrequencyType.SelectedValue.AsIntegerOrNull();
 
+            pledge.LoadAttributes( rockContext );
+            Rock.Attribute.Helper.GetEditValues( phAttributes, pledge );
+
             if ( !pledge.IsValid )
             {
                 // Controls will render the error messages
@@ -102,6 +117,7 @@ namespace RockWeb.Blocks.Finance
             }
 
             rockContext.SaveChanges();
+            pledge.SaveAttributeValues( rockContext );
 
             NavigateToParentPage();
         }

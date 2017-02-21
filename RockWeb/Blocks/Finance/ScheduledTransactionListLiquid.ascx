@@ -11,7 +11,7 @@
                         <asp:HiddenField ID="hfScheduledTransactionId" runat="server"></asp:HiddenField>
                         <asp:HiddenField ID="hfTransfer" runat="server"></asp:HiddenField>
                         <div class="actions">
-                            <asp:Button ID="btnEdit" runat="server" AccessKey="m" Text="Edit" OnClick="btnEdit_Click" CssClass="btn btn-default" />
+                            <asp:Button ID="btnEdit" runat="server" AccessKey="m" ToolTip="Alt+m" Text="Edit" OnClick="btnEdit_Click" CssClass="btn btn-default" />
                             <Rock:BootstrapButton ID="bbtnDelete" runat="server" OnClick="bbtnDelete_Click" Text="Delete" CssClass="btn btn-danger" />
                         </div>
                     </div>

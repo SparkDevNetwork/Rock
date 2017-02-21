@@ -41,6 +41,7 @@ namespace RockWeb.Blocks.Core
     [TextField( "Clear Selection Text", "The text displayed when a group can be unselected. This will not display when the text is empty.", true, "", order: 3 )]
     [BooleanField( "Display Query Strings", "Select to always display query strings. Default behavior will only display the query string when it's passed to the page.", false, "", order: 4 )]
     [BooleanField( "Include GroupType Children", "Include all children of the grouptype selected", false, "", order: 5 )]
+    [BooleanField( "Respect Campus Context", "Filter groups by the Campus Context block if it exists", false, "", order: 6 )]
     public partial class GroupContextSetter : RockBlock
     {
         #region Base Control Methods
@@ -139,6 +140,16 @@ namespace RockWeb.Blocks.Core
                 else
                 {
                     qryGroups = groupService.Queryable().Where( a => a.GroupType.Guid == groupTypeGuid.Value );
+                }
+            }
+
+            if ( GetAttributeValue( "RespectCampusContext" ).AsBoolean() )
+            {
+                var campusContext = RockPage.GetCurrentContext( EntityTypeCache.Read( typeof( Campus ) ) );
+
+                if ( campusContext != null )
+                {
+                    qryGroups = qryGroups.Where( g => g.CampusId == campusContext.Id );
                 }
             }
 
