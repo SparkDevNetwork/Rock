@@ -132,7 +132,7 @@ namespace Rock.Reporting.DataFilter
 
                 if ( clientFormatSelection != string.Empty )
                 {
-                    sb.AppendFormat( lineFormat, entityField.Name, clientFormatSelection );
+                    sb.AppendFormat( lineFormat, entityField.UniqueName, clientFormatSelection );
                 }
 
                 fieldIndex++;
@@ -175,11 +175,12 @@ namespace Rock.Reporting.DataFilter
         {
             if ( values.Count > 0 && ddlProperty != null )
             {
-                // Prior to v1.1 attribute.Name was used instead of attribute.Key, because of that, strip spaces to attempt matching key
-                var entityField = entityFields.FirstOrDefault( f => f.Name == values[0].Replace( " ", "" ) );
+                var fieldSelection = values[0];
+                var entityField = entityFields.FindFromFilterSelection( fieldSelection );
+                
                 if ( entityField != null )
                 {
-                    string selectedProperty = entityField.Name;
+                    string selectedProperty = entityField.UniqueName;
                     if ( ddlProperty.Items.OfType<ListItem>().Any( a => a.Value == selectedProperty ) )
                     {
                         ddlProperty.SelectedValue = selectedProperty;
@@ -187,11 +188,11 @@ namespace Rock.Reporting.DataFilter
                     else
                     {
                         // if this EntityField is not available for the current person, but this dataview filter already has it configured, let them keep it
-                        ddlProperty.Items.Add( new ListItem( entityField.Title, entityField.Name ) );
+                        ddlProperty.Items.Add( new ListItem( entityField.Title, entityField.UniqueName ) );
                         ddlProperty.SelectedValue = selectedProperty;
                     }
 
-                    var control = controls.ToList().FirstOrDefault( c => c.ID.EndsWith( "_" + entityField.Name ) );
+                    var control = controls.ToList().FirstOrDefault( c => c.ID.EndsWith( "_" + entityField.UniqueName ) );
                     if ( control != null )
                     {
                         if ( values.Count > 1 && setFilterValues )

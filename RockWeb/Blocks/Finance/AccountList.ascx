@@ -44,7 +44,6 @@
                             <Rock:BoolField DataField="IsTaxDeductible" HeaderText="Tax Deductible" SortExpression="IsTaxDeductible" />
                             <Rock:RockBoundField DataField="StartDate" HeaderText="Starts On" SortExpression="StartDate" DataFormatString="{0:d}" />
                             <Rock:RockBoundField DataField="EndDate" HeaderText="Ends On" SortExpression="EndDate" DataFormatString="{0:d}" />
-                            <Rock:DeleteField OnClick="rGridAccount_Delete" />
                         </Columns>
                     </Rock:Grid>
                 </div>

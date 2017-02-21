@@ -160,6 +160,21 @@
   }
 }
 
+.picker.picker-lg {
+    @media @sm {
+      position: relative;
+      width: 350px; // needed when floated right to keep the picker from shifting when the (x) appears to allow delete
+    }
+
+    .picker-label {
+      width: 325px;
+
+      span {
+        width: 240px;
+      }
+    }
+}
+
 #dialog .scroll-container-picker {
   width: 360px;
 

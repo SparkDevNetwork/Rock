@@ -48,7 +48,7 @@
                 <Rock:RockTextBox ID="tbComments" runat="server" Label="Comments" TextMode="MultiLine" Rows="4" />
 
                 <div class="actions">
-                    <asp:LinkButton ID="btnConnect" runat="server" AccessKey="m" Text="Connect" CssClass="btn btn-primary" OnClick="btnConnect_Click" />
+                    <asp:LinkButton ID="btnConnect" runat="server" AccessKey="m" ToolTip="Alt+m" Text="Connect" CssClass="btn btn-primary" OnClick="btnConnect_Click" />
                 </div>
             </div>
 

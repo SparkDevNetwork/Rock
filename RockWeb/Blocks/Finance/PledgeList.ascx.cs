@@ -77,6 +77,12 @@ namespace RockWeb.Blocks.Finance
             gPledges.Actions.ShowAdd = canAddEditDelete;
             gPledges.IsDeleteEnabled = canAddEditDelete;
 
+            AddAttributeColumns();
+
+            var deleteField = new DeleteField();
+            gPledges.Columns.Add( deleteField );
+            deleteField.Click += gPledges_Delete;
+
             if ( GetAttributeValue( "LimitPledgesToCurrentPerson" ).AsBoolean() )
             {
                 TargetPerson = this.CurrentPerson;
@@ -428,6 +434,45 @@ namespace RockWeb.Blocks.Finance
         }
 
         /// <summary>
+        /// Adds columns for any Pledge attributes marked as Show In Grid
+        /// </summary>
+        protected void AddAttributeColumns()
+        {
+            // Remove attribute columns
+            foreach ( var column in gPledges.Columns.OfType<AttributeField>().ToList() )
+            {
+                gPledges.Columns.Remove( column );
+            }
+
+            int entityTypeId = new FinancialPledge().TypeId;
+            foreach ( var attribute in new AttributeService( new RockContext() ).Queryable()
+                .Where( a =>
+                    a.EntityTypeId == entityTypeId &&
+                    a.IsGridColumn
+                   )
+                .OrderBy( a => a.Order )
+                .ThenBy( a => a.Name ) )
+            {
+                string dataFieldExpression = attribute.Key;
+                bool columnExists = gPledges.Columns.OfType<AttributeField>().FirstOrDefault( a => a.DataField.Equals( dataFieldExpression ) ) != null;
+                if ( !columnExists )
+                {
+                    AttributeField boundField = new AttributeField();
+                    boundField.DataField = dataFieldExpression;
+                    boundField.AttributeId = attribute.Id;
+                    boundField.HeaderText = attribute.Name;
+
+                    var attributeCache = Rock.Web.Cache.AttributeCache.Read( attribute.Id );
+                    if ( attributeCache != null )
+                    {
+                        boundField.ItemStyle.HorizontalAlign = attributeCache.FieldType.Field.AlignValue;
+                    }
+
+                    gPledges.Columns.Add( boundField );
+                }
+            }
+        }
+
         /// Hook so that other blocks can set the visibility of all ISecondaryBlocks on its page
         /// </summary>
         /// <param name="visible">if set to <c>true</c> [visible].</param>

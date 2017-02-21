@@ -67,6 +67,12 @@ namespace RockWeb.Blocks.Finance
             rGridAccount.GridReorder += rGridAccount_GridReorder;
             rGridAccount.GridRebind += rGridAccounts_GridRebind;
             rGridAccount.IsDeleteEnabled = canEdit;
+
+            AddAttributeColumns();
+
+            var deleteField = new DeleteField();
+            rGridAccount.Columns.Add( deleteField );
+            deleteField.Click += rGridAccount_Delete;
         }
 
         /// <summary>
@@ -282,6 +288,46 @@ namespace RockWeb.Blocks.Finance
             ddlIsActive.SelectedValue = rAccountFilter.GetUserPreference( "Active" );
             ddlIsPublic.SelectedValue = rAccountFilter.GetUserPreference( "Public" );
             ddlIsTaxDeductible.SelectedValue = rAccountFilter.GetUserPreference( "Tax Deductible" );
+        }
+
+        /// <summary>
+        /// Adds columns for any Account attributes marked as Show In Grid
+        /// </summary>
+        protected void AddAttributeColumns()
+        {
+            // Remove attribute columns
+            foreach ( var column in rGridAccount.Columns.OfType<AttributeField>().ToList() )
+            {
+                rGridAccount.Columns.Remove( column );
+            }
+
+            int entityTypeId = new FinancialAccount().TypeId;
+            foreach ( var attribute in new AttributeService( new RockContext() ).Queryable()
+                .Where( a =>
+                    a.EntityTypeId == entityTypeId &&
+                    a.IsGridColumn
+                   )
+                .OrderBy( a => a.Order )
+                .ThenBy( a => a.Name ) )
+            {
+                string dataFieldExpression = attribute.Key;
+                bool columnExists = rGridAccount.Columns.OfType<AttributeField>().FirstOrDefault( a => a.DataField.Equals( dataFieldExpression ) ) != null;
+                if ( !columnExists )
+                {
+                    AttributeField boundField = new AttributeField();
+                    boundField.DataField = dataFieldExpression;
+                    boundField.AttributeId = attribute.Id;
+                    boundField.HeaderText = attribute.Name;
+
+                    var attributeCache = Rock.Web.Cache.AttributeCache.Read( attribute.Id );
+                    if ( attributeCache != null )
+                    {
+                        boundField.ItemStyle.HorizontalAlign = attributeCache.FieldType.Field.AlignValue;
+                    }
+
+                    rGridAccount.Columns.Add( boundField );
+                }
+            }
         }
 
         #endregion
