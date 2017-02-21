@@ -20,6 +20,7 @@
             var includeBusinesses = $('#' + controlId).find('.js-include-businesses').val() == '1' ? 'true' : 'false';
 
             var promise = null;
+            var lastSelectedPersonId = null;
 
             $('#' + controlId + '_personPicker').autocomplete({
                 source: function (request, response) {
@@ -73,24 +74,21 @@
                 e.stopPropagation();
 
                 var $selectedItem = $(this).closest('.picker-select-item');
+                var $itemDetails = $selectedItem.find('.picker-select-item-details');
 
                 var selectedPersonId = $selectedItem.attr('data-person-id');
-                var alreadySelected = $selectedItem.find('.picker-select-item-details').is(':visible');
-                if (alreadySelected) {
-                    $('#' + controlId + '_btnSelect').get(0).click();
+
+                if ($itemDetails.is(':visible')) {
+                    
+                    if (selectedPersonId == lastSelectedPersonId ) {
+                        // if they are clicking the same person twice in a row, assume that's the one they want to pick
+                        $('#' + controlId + '_btnSelect').get(0).click();
+                    } else {
+                        // if it is already visible but isn't the same one twice, just leave it open
+                    }
                 }
 
-                // hide other open details
-                $('#' + controlId + ' .picker-select-item-details').each(function () {
-                    var $el = $(this),
-                       currentPersonId = $el.closest('.picker-select-item').attr('data-person-id');
-
-                    if (currentPersonId != selectedPersonId) {
-                        $el.slideUp();
-                    }
-                });
-
-                var $itemDetails = $selectedItem.find('.picker-select-item-details');
+                lastSelectedPersonId = selectedPersonId;
 
                 if ($itemDetails.attr('data-has-details') == 'false') {
                     // add a spinner in case we have to wait on the server for a little bit
@@ -185,6 +183,13 @@
         };
 
         PersonPicker.prototype.updateScrollbar = function () {
+            // first, update this control's scrollbar, then the modal's
+            var $container = $('#' + this.controlId).find('.scroll-container')
+
+            if ($container.is(':visible')) {
+                $container.tinyscrollbar_update('relative');
+            }
+
             // update the outer modal scrollbar
             Rock.dialogs.updateModalScrollBar(this.controlId);
         }
@@ -205,7 +210,7 @@
                         var $div = $('<div/>').attr('class', 'radio'),
 
                             $label = $('<label/>')
-                                .html(item.Name + inactiveWarning +  ' <i class="fa fa-refresh fa-spin margin-l-md loading-notification" style="display: none; opacity: .4;"></i>')
+                                .html(item.Name + inactiveWarning + ' <i class="fa fa-refresh fa-spin margin-l-md loading-notification" style="display: none; opacity: .4;"></i>')
                                 .prependTo($div),
 
                             $radio = $('<input type="radio" name="person-id" />')
@@ -246,6 +251,9 @@
                     }
                 }
             });
+
+            var $control = $('#' + this.controlId);
+            $control.find('.scroll-container').tinyscrollbar({ size: 120, sizethumb: 20 });
 
             this.initializeEventHandlers();
         };

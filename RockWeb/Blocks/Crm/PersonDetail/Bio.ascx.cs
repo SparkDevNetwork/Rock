@@ -55,6 +55,7 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
     [CodeEditorField( "Custom Content", "Custom Content will be rendered after the person's demographic information <span class='tip tip-lava'></span>.",
         Rock.Web.UI.Controls.CodeEditorMode.Lava, Rock.Web.UI.Controls.CodeEditorTheme.Rock, 200, false, "", "", 6, "CustomContent" )]
     [BooleanField( "Allow Following", "Should people be able to follow a person by selecting the star on the person's photo?", true, "", 7)]
+    [BooleanField( "Display Tags", "Should tags be displayed?", true, "", 8 )]
     public partial class Bio : PersonBlock
     {
         #region Base Control Methods
@@ -194,9 +195,17 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
 
                     lEmail.Text = Person.GetEmailTag( ResolveRockUrl( "/" ) );
 
-                    taglPersonTags.EntityTypeId = Person.TypeId;
-                    taglPersonTags.EntityGuid = Person.Guid;
-                    taglPersonTags.GetTagValues( CurrentPersonId );
+                    if ( GetAttributeValue( "DisplayTags" ).AsBoolean( true ) )
+                    {
+                        taglPersonTags.Visible = true;
+                        taglPersonTags.EntityTypeId = Person.TypeId;
+                        taglPersonTags.EntityGuid = Person.Guid;
+                        taglPersonTags.GetTagValues( CurrentPersonId );
+                    }
+                    else
+                    {
+                        taglPersonTags.Visible = false;
+                    }
 
                     StringBuilder sbActions = new StringBuilder();
                     var workflowActions = GetAttributeValue( "WorkflowActions" );

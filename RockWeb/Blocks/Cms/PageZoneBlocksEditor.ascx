@@ -5,12 +5,16 @@
 
         <asp:Panel ID="pnlDetails" CssClass="panel panel-block" runat="server">
             <div class="panel-heading">
-                <h1 class="panel-title">
+                <div class="pull-left">
+                    <h1 class="panel-title">
                     <asp:Literal ID="lZoneIcon" runat="server" />
                     <asp:Literal ID="lZoneTitle" runat="server" /></h1>
+                </div>
 
                 <div class="pull-right">
-                    <Rock:RockDropDownList ID="ddlZones" runat="server" Label="" AutoPostBack="true" OnSelectedIndexChanged="ddlZones_SelectedIndexChanged" />
+                    <div class="input-group input-group-sm">
+                        <Rock:RockDropDownList ID="ddlZones" runat="server" Label="" AutoPostBack="true" OnSelectedIndexChanged="ddlZones_SelectedIndexChanged" />
+                    </div>
                 </div>
             </div>
             <div class="panel-body">

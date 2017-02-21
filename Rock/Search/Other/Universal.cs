@@ -100,6 +100,7 @@ namespace Rock.Search.Other
             var client = IndexContainer.GetActiveComponent();
             var results = client.Search( searchterm, SearchType.Wildcard, entityIds, fieldCriteria );
 
+            // NOTE: Put a bunch of whitespace before and after it so that the Search box shows blank instead of stringified html
             return results.Select( r => $"                                                                       <data return-type='{r.IndexModelType}' return-id={r.Id}></data><i class='{ r.IconCssClass}'></i> {r.DocumentName}                                                                               " ).ToList().AsQueryable();
         }
     }

@@ -16,6 +16,9 @@
 @import "./FontAwesome/mixins.less";
 @import "./FontAwesome/variables.less";
 @import "./JCrop/jcrop.less";
+@import "./chosen/bootstrap-chosen-variables.less";
+@import "./chosen/bootstrap-chosen.less";
+
 
 // import as less files so they are concatenated properly
 @import (less) "./summernote/summernote.css";
@@ -307,9 +310,14 @@ th[align=center] {
       }
     }
 
+    .panel-toggle {
+        margin-top: -2px;
+        margin-bottom: -2px;
+    }
+
     .panel-options {
       float: right;
-      margin: -10px -15px;
+      margin: -10px -15px -10px 10px;
 
       button {
         padding: 9px 12px 10px;

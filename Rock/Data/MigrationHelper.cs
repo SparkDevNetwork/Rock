@@ -1037,7 +1037,8 @@ namespace Rock.Data
         }
 
         /// <summary>
-        /// Adds a new BlockType Attribute for the given blocktype and key.
+        /// Adds (or Deletes then Adds) a new BlockType Attribute for the given blocktype and key.
+        /// NOTE: This deletes the Attribute first if it already exists, so be careful. You migth want to use UpdateBlockTypeAttribute instead.
         /// </summary>
         /// <param name="blockTypeGuid">The block GUID.</param>
         /// <param name="fieldTypeGuid">The field type GUID.</param>

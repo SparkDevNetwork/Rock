@@ -43,7 +43,7 @@ namespace Rock.Web.UI.Controls
             set
             {
                 _definedTypeId = value;
-                DefinedValuePicker.LoadDropDownItems( this );
+                DefinedValuePicker.LoadDropDownItems( this, true );
             }
         }
 
@@ -63,7 +63,9 @@ namespace Rock.Web.UI.Controls
         /// <summary>
         /// Loads the drop down items.
         /// </summary>
-        internal static void LoadDropDownItems( IDefinedValuePicker picker )
+        /// <param name="picker">The picker.</param>
+        /// <param name="includeEmptyOption">if set to <c>true</c> [include empty option].</param>
+        internal static void LoadDropDownItems( IDefinedValuePicker picker, bool includeEmptyOption )
         {
             var selectedItems = picker.Items.Cast<ListItem>()
                 .Where( i => i.Selected )
@@ -73,8 +75,11 @@ namespace Rock.Web.UI.Controls
 
             if ( picker.DefinedTypeId.HasValue )
             {
-                // add Empty option first
-                picker.Items.Add( new ListItem() );
+                if ( includeEmptyOption )
+                {
+                    // add Empty option first
+                    picker.Items.Add( new ListItem() );
+                }
 
                 var dt = DefinedTypeCache.Read( picker.DefinedTypeId.Value );
                 if ( dt.DefinedValues.Any() )

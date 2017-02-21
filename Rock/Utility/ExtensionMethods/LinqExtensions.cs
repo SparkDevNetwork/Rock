@@ -446,6 +446,27 @@ namespace Rock
         }
 
         /// <summary>
+        /// Filters a Query to rows that have matching attribute values that meet the condition
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="source">The source.</param>
+        /// <param name="rockContext">The rock context.</param>
+        /// <param name="predicate">The predicate.</param>
+        /// <returns></returns>
+        public static IQueryable<T> WhereAttributeValue<T>( this IQueryable<T> source, RockContext rockContext, Expression<Func<AttributeValue, bool>> predicate ) where T : Rock.Data.Model<T>, new()
+        {
+            int entityTypeId = Rock.Web.Cache.EntityTypeCache.GetId( typeof( T ) ) ?? 0;
+
+            var avs = new AttributeValueService( rockContext ).Queryable()
+                .Where( a => a.Attribute.EntityTypeId == entityTypeId )
+                .Where( predicate )
+                .Select( a => a.EntityId );
+
+            var result = source.Where( a => avs.Contains( ( a as T ).Id ) );
+            return result;
+        }
+
+        /// <summary>
         /// Forces an Inner Join to the Person table using the specified key selector expression.
         /// Handy for optimizing a query that would have normally done an outer join 
         /// </summary>

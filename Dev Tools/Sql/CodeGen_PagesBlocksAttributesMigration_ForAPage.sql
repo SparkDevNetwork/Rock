@@ -99,7 +99,7 @@ create table #codeTable (
 
     insert into #codeTable
     SELECT 
-        '            RockMigrationHelper.AddBlockTypeAttribute("'+ 
+        '            RockMigrationHelper.UpdateBlockTypeAttribute("'+ 
         CONVERT(nvarchar(50), bt.Guid)+ '","'+   
         CONVERT(nvarchar(50), ft.Guid)+ '","'+     
         a.Name+ '","'+  

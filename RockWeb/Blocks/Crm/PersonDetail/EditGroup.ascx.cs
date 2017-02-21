@@ -40,6 +40,9 @@ namespace RockWeb.Blocks.Crm.PersonDetail
     [Category( "CRM > Person Detail" )]
     [Description( "Allows you to edit a group that person belongs to." )]
 
+    [DefinedValueField( Rock.SystemGuid.DefinedType.PERSON_CONNECTION_STATUS, "Default Connection Status",
+        "The connection status that should be set by default", false, false, Rock.SystemGuid.DefinedValue.PERSON_CONNECTION_STATUS_VISITOR, "", 0 )]
+    [BooleanField( "Require Campus", "Determines if a campus is required.", true, "", 1 )]
     public partial class EditGroup : PersonBlock
     {
         private GroupTypeCache _groupType = null;
@@ -159,7 +162,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 
             if ( _isFamilyGroupType )
             {
-                cpCampus.Required = true;
+                cpCampus.Required = GetAttributeValue( "RequireCampus" ).AsBoolean( true );
 
                 ddlRecordStatus.Visible = true;
                 ddlRecordStatus.BindToDefinedType( DefinedTypeCache.Read( Rock.SystemGuid.DefinedType.PERSON_RECORD_STATUS.AsGuid() ), true );
@@ -570,6 +573,15 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             rblNewPersonRole.Required = true;
             rblNewPersonGender.Required = true;
             ddlNewPersonConnectionStatus.Required = true;
+            var connectionStatusGuid = GetAttributeValue( "DefaultConnectionStatus" ).AsGuidOrNull();
+            if ( connectionStatusGuid.HasValue )
+            {
+                var defaultConnectionStatus = DefinedValueCache.Read( connectionStatusGuid.Value );
+                if ( defaultConnectionStatus != null )
+                {
+                    ddlNewPersonConnectionStatus.SetValue( defaultConnectionStatus.Id );
+                }
+            }
 
             hfActiveTab.Value = "New";
             SetActiveTab();
