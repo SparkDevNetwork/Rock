@@ -260,6 +260,26 @@ namespace RockWeb.Blocks.Crm
                             people = personService.Queryable().Where( p => p.Email.Contains( term ) );
                             break;
                         }
+                    case ( "birthdate" ):
+                        {
+                            DateTime? birthDate = Request.QueryString["birthdate"].AsDateTime();
+                            int? personId = Request.QueryString["person-id"].AsIntegerOrNull();
+                            if (birthDate == null)
+                            {
+                                birthDate = term.AsDateTime();
+                            }
+
+                            if ( personId.HasValue )
+                            {
+                                people = personService.Queryable().Where(a => a.Id == personId.Value );
+                            }
+                            else
+                            {
+                                people = personService.Queryable().Where( p => p.BirthDate.HasValue && birthDate.HasValue && p.BirthDate == birthDate.Value );
+                            }
+                            
+                            break;
+                        }
                 }
 
                 IEnumerable<int> personIdList = people.Select( p => p.Id );

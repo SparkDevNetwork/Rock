@@ -2,10 +2,10 @@
 
 <asp:UpdatePanel ID="upnlContent" runat="server">
     <ContentTemplate>
+        <asp:Panel ID="pnlContent" runat="server">
+            <asp:Literal ID="lResults" runat="server" />
 
-        <asp:Literal ID="lResults" runat="server" />
-
-        <asp:Literal ID="lDebug" runat="server" />
-
+            <asp:Literal ID="lDebug" runat="server" />
+        </asp:Panel>
     </ContentTemplate>
 </asp:UpdatePanel>

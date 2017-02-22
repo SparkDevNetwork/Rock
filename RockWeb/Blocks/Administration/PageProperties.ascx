@@ -224,14 +224,14 @@
                         <Rock:ModalAlert ID="mdDeleteWarning" runat="server" />
                         <asp:LinkButton ID="btnDelete" runat="server" Text="Delete" CssClass="btn btn-link" OnClick="btnDelete_Click" />
                         <div class="pull-right">
-                            <asp:LinkButton ID="btnChildPageOrder" runat="server" ToolTip="Child Page Order" CssClass="btn btn-default btn-sm page-child-pages fa fa-sitemap" OnClick="btnChildPageOrder_Click" />
+                            <asp:LinkButton ID="btnChildPageOrder" runat="server" ToolTip="Child Page Order" CssClass="btn btn-default btn-sm page-child-pages fa fa-list-ol" OnClick="btnChildPageOrder_Click" />
                             <asp:LinkButton ID="btnCopy" runat="server" Tooltip="Copy Page" CssClass="btn btn-default btn-sm fa fa-clone" OnClick="btnCopy_Click" />
                             <Rock:SecurityButton ID="btnSecurity" runat="server" class="btn btn-sm btn-security" />
                         </div>
                     </asp:Panel>
                 </fieldset>
 
-                <Rock:ModalDialog ID="mdCopyPage" runat="server" ValidationGroup="vgCopyPage" Title="Copy Page" OnSaveClick="mdCopyPage_SaveClick" Visible="false">
+                <Rock:ModalDialog ID="mdCopyPage" runat="server" ValidationGroup="vgCopyPage" Title="Copy Page" OnSaveClick="mdCopyPage_SaveClick" SaveButtonText="Copy" Visible="false">
                     <Content>
                         <Rock:RockCheckBox ID="cbCopyPageIncludeChildPages" runat="server" Text="Include Child Pages" Checked="true" />
                     </Content>
