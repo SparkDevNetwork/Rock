@@ -1289,10 +1289,17 @@ namespace Rock.Lava
                 return input;
             }
 
+            int intInput = -1;
+            int intOperand = -1;
             decimal iInput = -1;
             decimal iOperand = -1;
 
-            if ( decimal.TryParse( input.ToString(), out iInput ) && decimal.TryParse( operand.ToString(), out iOperand ) )
+            // If both input and operand are INTs keep the return an int.
+            if ( int.TryParse( input.ToString(), out intInput ) && int.TryParse( operand.ToString(), out intOperand ) )
+            {
+                return intInput + intOperand;
+            }
+            else if ( decimal.TryParse( input.ToString(), out iInput ) && decimal.TryParse( operand.ToString(), out iOperand ) )
             {
                 return iInput + iOperand;
             }
@@ -1315,13 +1322,15 @@ namespace Rock.Lava
                 return input;
             }
 
+            int intInput = -1;
+            int intOperand = -1;
             decimal iInput = -1;
             decimal iOperand = -1;
 
             // If both input and operand are INTs keep the return an int.
-            if ( input is int && operand is int )
+            if ( int.TryParse( input.ToString(), out intInput ) && int.TryParse( operand.ToString(), out intOperand ) )
             {
-                return (int)input - (int)operand;
+                return intInput - intOperand;
             }
             else if ( decimal.TryParse( input.ToString(), out iInput ) && decimal.TryParse( operand.ToString(), out iOperand ) )
             {
@@ -1334,7 +1343,7 @@ namespace Rock.Lava
         }
 
         /// <summary>
-        /// Times - Overriding this to change the logic. This one does the math if the input can be parsed as a int
+        /// Times - Overriding this to change the logic. This one does the math if the input can be parsed as a int or decimal.
         /// </summary>
         /// <param name="input"></param>
         /// <param name="operand"></param>
@@ -1346,10 +1355,17 @@ namespace Rock.Lava
                 return input;
             }
 
+            int intInput = -1;
+            int intOperand = -1;
             decimal iInput = -1;
             decimal iOperand = -1;
 
-            if ( decimal.TryParse( input.ToString(), out iInput ) && decimal.TryParse( operand.ToString(), out iOperand ) )
+            // If both input and operand are INTs keep the return an int.
+            if ( int.TryParse( input.ToString(), out intInput ) && int.TryParse( operand.ToString(), out intOperand ) )
+            {
+                return intInput * intOperand;
+            }
+            else if ( decimal.TryParse( input.ToString(), out iInput ) && decimal.TryParse( operand.ToString(), out iOperand ) )
             {
                 return iInput * iOperand;
             }
