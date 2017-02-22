@@ -121,7 +121,7 @@ namespace Rock.Transactions
                 }
 
                 // get user agent info
-                var clientType = PageViewUserAgent.GetClientType( userAgent );
+                var clientType = InteractionDeviceType.GetClientType( userAgent );
 
                 // don't log visits from crawlers
                 if ( clientType != "Crawler" )
@@ -137,41 +137,11 @@ namespace Rock.Transactions
                     var clientBrowser = client.UserAgent.ToString();
 
                     // lookup the interactionDeviceType, and create it if it doesn't exist
-                    var interactionDeviceType = interactionDeviceTypeService.Queryable().Where( a => a.Application == clientBrowser
-                                                && a.OperatingSystem == clientOs && a.ClientType == clientType ).FirstOrDefault();
-
-                    if ( interactionDeviceType == null )
-                    {
-                        interactionDeviceType = new InteractionDeviceType();
-                        interactionDeviceType.DeviceTypeData = userAgent;
-                        interactionDeviceType.ClientType = clientType;
-                        interactionDeviceType.OperatingSystem = clientOs;
-                        interactionDeviceType.Application = clientBrowser;
-                        interactionDeviceType.Name = string.Format( "{0} - {1}", clientOs, clientBrowser );
-                        interactionDeviceTypeService.Add( interactionDeviceType );
-                        rockContext.SaveChanges();
-                    }
+                    var interactionDeviceType = interactionService.GetInteractionDeviceType( clientBrowser, clientOs, clientType, userAgent );
 
                     // lookup interactionSession, and create it if it doesn't exist
                     Guid sessionId = this.SessionId.AsGuid();
-                    int? interactionSessionId = interactionSessionService.Queryable()
-                                                    .Where( 
-                                                        a => a.DeviceTypeId == interactionDeviceType.Id 
-                                                        && a.Guid == sessionId )
-                                                    .Select( a => (int?)a.Id )
-                                                    .FirstOrDefault();
-
-
-                    if ( !interactionSessionId.HasValue )
-                    {
-                        var interactionSession = new InteractionSession();
-                        interactionSession.DeviceTypeId = interactionDeviceType.Id;
-                        interactionSession.IpAddress = this.IPAddress;
-                        interactionSession.Guid = sessionId;
-                        interactionSessionService.Add( interactionSession );
-                        rockContext.SaveChanges();
-                        interactionSessionId = interactionSession.Id;
-                    }
+                    InteractionSession interactionSession = interactionService.GetInteractionSession( sessionId, this.IPAddress, interactionDeviceType.Id );
 
                     int componentEntityTypeId = EntityTypeCache.Read<Rock.Model.Page>().Id;
                     string siteName = SiteCache.Read( SiteId ?? 1 ).Name;
@@ -224,7 +194,7 @@ namespace Rock.Transactions
                     interaction.Operation = "View";
                     interaction.PersonAliasId = this.PersonAliasId;
                     interaction.InteractionDateTime = this.DateViewed;
-                    interaction.InteractionSessionId = interactionSessionId;
+                    interaction.InteractionSessionId = interactionSession.Id;
                     interaction.InteractionComponentId = interactionComponent.Id;
                     rockContext.SaveChanges();
                 }

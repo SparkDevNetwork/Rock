@@ -56,6 +56,22 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="CodeGenerated\AnalyticsDimAttendanceLocation.cs" />
+    <Compile Include="CodeGenerated\AnalyticsDimDate.cs" />
+    <Compile Include="CodeGenerated\AnalyticsDimFamilyCurrent.cs" />
+    <Compile Include="CodeGenerated\AnalyticsDimFamilyHeadOfHousehold.cs" />
+    <Compile Include="CodeGenerated\AnalyticsDimFamilyHistorical.cs" />
+    <Compile Include="CodeGenerated\AnalyticsDimFinancialAccount.cs" />
+    <Compile Include="CodeGenerated\AnalyticsDimFinancialBatch.cs" />
+    <Compile Include="CodeGenerated\AnalyticsDimFinancialTransactionType.cs" />
+    <Compile Include="CodeGenerated\AnalyticsDimPersonCurrent.cs" />
+    <Compile Include="CodeGenerated\AnalyticsDimPersonHistorical.cs" />
+    <Compile Include="CodeGenerated\AnalyticsFactAttendance.cs" />
+    <Compile Include="CodeGenerated\AnalyticsFactFinancialTransaction.cs" />
+    <Compile Include="CodeGenerated\AnalyticsSourceAttendance.cs" />
+    <Compile Include="CodeGenerated\AnalyticsSourceFamilyHistorical.cs" />
+    <Compile Include="CodeGenerated\AnalyticsSourceFinancialTransaction.cs" />
+    <Compile Include="CodeGenerated\AnalyticsSourcePersonHistorical.cs" />
     <Compile Include="CodeGenerated\Attendance.cs" />
     <Compile Include="CodeGenerated\AttendanceCode.cs" />
     <Compile Include="CodeGenerated\Attribute.cs" />
@@ -77,7 +93,6 @@
     <Compile Include="CodeGenerated\Category.cs" />
     <Compile Include="CodeGenerated\Communication.cs" />
     <Compile Include="CodeGenerated\CommunicationRecipient.cs" />
-    <Compile Include="CodeGenerated\CommunicationRecipientActivity.cs" />
     <Compile Include="CodeGenerated\CommunicationTemplate.cs" />
     <Compile Include="CodeGenerated\ConnectionActivityType.cs" />
     <Compile Include="CodeGenerated\ConnectionOpportunity.cs" />
@@ -85,7 +100,6 @@
     <Compile Include="CodeGenerated\ConnectionOpportunityConnectorGroup.cs" />
     <Compile Include="CodeGenerated\ConnectionOpportunityGroup.cs" />
     <Compile Include="CodeGenerated\ConnectionOpportunityGroupConfig.cs" />
-    <Compile Include="CodeGenerated\ConnectionOpportunityPlacementGroup.cs" />
     <Compile Include="CodeGenerated\ConnectionRequest.cs" />
     <Compile Include="CodeGenerated\ConnectionRequestActivity.cs" />
     <Compile Include="CodeGenerated\ConnectionRequestWorkflow.cs" />
@@ -170,9 +184,6 @@
     <Compile Include="CodeGenerated\Page.cs" />
     <Compile Include="CodeGenerated\PageContext.cs" />
     <Compile Include="CodeGenerated\PageRoute.cs" />
-    <Compile Include="CodeGenerated\PageView.cs" />
-    <Compile Include="CodeGenerated\PageViewSession.cs" />
-    <Compile Include="CodeGenerated\PageViewUserAgent.cs" />
     <Compile Include="CodeGenerated\Person.cs" />
     <Compile Include="CodeGenerated\PersonAlias.cs" />
     <Compile Include="CodeGenerated\PersonBadge.cs" />
@@ -196,11 +207,11 @@
     <Compile Include="CodeGenerated\RestAction.cs" />
     <Compile Include="CodeGenerated\RestController.cs" />
     <Compile Include="CodeGenerated\Schedule.cs" />
+    <Compile Include="CodeGenerated\ScheduleCategoryExclusion.cs" />
     <Compile Include="CodeGenerated\ServiceJob.cs" />
     <Compile Include="CodeGenerated\ServiceLog.cs" />
     <Compile Include="CodeGenerated\SignatureDocument.cs" />
     <Compile Include="CodeGenerated\SignatureDocumentTemplate.cs" />
-    <Compile Include="CodeGenerated\SignatureDocumentType.cs" />
     <Compile Include="CodeGenerated\Site.cs" />
     <Compile Include="CodeGenerated\SiteDomain.cs" />
     <Compile Include="CodeGenerated\SystemEmail.cs" />
@@ -220,9 +231,6 @@
     <Compile Include="CodeGenerated\WorkflowTrigger.cs" />
     <Compile Include="CodeGenerated\WorkflowType.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="packages.config" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

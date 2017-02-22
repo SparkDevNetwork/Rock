@@ -47,6 +47,12 @@ namespace Rock.Client
         public string FriendlyName { get; set; }
 
         /// <summary />
+        public string IndexDocumentUrl { get; set; }
+
+        /// <summary />
+        public string IndexResultTemplate { get; set; }
+
+        /// <summary />
         public bool IsCommon { get; set; }
 
         /// <summary />
@@ -84,6 +90,8 @@ namespace Rock.Client
             this.ForeignGuid = source.ForeignGuid;
             this.ForeignKey = source.ForeignKey;
             this.FriendlyName = source.FriendlyName;
+            this.IndexDocumentUrl = source.IndexDocumentUrl;
+            this.IndexResultTemplate = source.IndexResultTemplate;
             this.IsCommon = source.IsCommon;
             this.IsEntity = source.IsEntity;
             this.IsIndexingEnabled = source.IsIndexingEnabled;

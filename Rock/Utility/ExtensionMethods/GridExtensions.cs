@@ -23,7 +23,7 @@ namespace Rock
         #region Grid Extensions
 
         /// <summary>
-        /// Gets the grid column that matches the header text.
+        /// Gets the first grid column that matches the header text.
         /// </summary>
         /// <param name="dataControlFieldCollection">The data control field collection.</param>
         /// <see href="http://stackoverflow.com/a/22005731/1853867" />
@@ -40,6 +40,17 @@ namespace Rock
             }
 
             return null;
+        }
+
+        /// <summary>
+        /// Gets the first grid column that matches the header text.
+        /// </summary>
+        /// <param name="grid">The grid.</param>
+        /// <param name="headerText">The header text.</param>
+        /// <returns></returns>
+        public static DataControlField GetColumnByHeaderText( this GridView grid, string headerText )
+        {
+            return grid.Columns.GetColumnByHeaderText( headerText );
         }
 
         /// <summary>

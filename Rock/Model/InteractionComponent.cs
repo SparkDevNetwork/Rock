@@ -62,10 +62,10 @@ namespace Rock.Model
         public int? EntityId { get; set; }
 
         /// <summary>
-        /// Gets or sets the Id of the <see cref="Rock.Model.InteractionChannel"/> service that that is associated with this Component.
+        /// Gets or sets the Id of the <see cref="Rock.Model.InteractionChannel"/> channel that that is associated with this Component.
         /// </summary>
         /// <value>
-        /// An <see cref="System.Int32"/> representing the Id of the <see cref="Rock.Model.InteractionChannel"/> service that this Component is associated with.
+        /// An <see cref="System.Int32"/> representing the Id of the <see cref="Rock.Model.InteractionChannel"/> channel that this Component is associated with.
         /// </value>
         [DataMember( IsRequired = true )]
         [Required]

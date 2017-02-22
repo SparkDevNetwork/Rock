@@ -25,8 +25,10 @@
                 </div>
 
                 <div class="actions">
+                    <!--
                     <asp:LinkButton ID="lbClearIndex" runat="server" CssClass="btn btn-default"><i class="fa fa-refresh"></i> Clear Index</asp:LinkButton>
                     <asp:LinkButton ID="lbBulkLoad" runat="server" CssClass="btn btn-default"><i class="fa fa-download"></i> Bulk Load Entities</asp:LinkButton>
+                    -->
                 </div>
             </div>
         

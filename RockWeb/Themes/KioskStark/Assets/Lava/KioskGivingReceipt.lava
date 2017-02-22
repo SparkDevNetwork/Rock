@@ -4,7 +4,7 @@
 		<strong>
       {{ FirstNames }}, thank you for your contribution.
 
-      {% if {{ReceiptEmailed == 'True'}} %}
+      {% if {{ ReceiptEmailed == 'True' }} %}
       A receipt has been emailed to {{ ReceiptEmail | ObfuscateEmail }}.
       {% endif %}
 

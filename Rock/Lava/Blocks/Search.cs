@@ -1,4 +1,20 @@
-﻿using System;
+﻿// <copyright>
+// Copyright by the Spark Development Network
+//
+// Licensed under the Rock Community License (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.rockrms.com/license
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+// </copyright>
+//
+using System;
 using System.Collections.Generic;
 using System.Data;
 using System.IO;
@@ -70,9 +86,22 @@ namespace Rock.Lava.Blocks
             List<int> entityIds = new List<int>();
             string query = string.Empty;
 
+            int limit = 50;
+            int offset = 0;
+
             if (parms.Any( p => p.Key == "query" ) )
             {
                 query = parms["query"];
+            }
+
+            if ( parms.Any( p => p.Key == "limit" ) )
+            {
+                Int32.TryParse( parms["limit"], out limit );
+            }
+
+            if ( parms.Any( p => p.Key == "offset" ) )
+            {
+                Int32.TryParse( parms["offset"], out offset );
             }
 
             if ( parms.Any( p => p.Key == "fieldcriteria" ) )
@@ -84,8 +113,9 @@ namespace Rock.Lava.Blocks
 
                     foreach ( var value in values )
                     {
-
-                        fieldCriteria.FieldValues.Add( new FieldValue { Field = queryString.Key, Value = value } );
+                        // the first letter of the field name should be lowercase
+                        string fieldName = Char.ToLowerInvariant( queryString.Key[0] ) + queryString.Key.Substring( 1 );
+                        fieldCriteria.FieldValues.Add( new FieldValue { Field = fieldName, Value = value } );
                     }
                 }
             }
@@ -128,7 +158,7 @@ namespace Rock.Lava.Blocks
                 {
                     foreach(var entityType in EntityTypeCache.All() )
                     {
-                        if (entityType.FriendlyName.ToLower() == entity )
+                        if (entityType.FriendlyName?.ToLower() == entity )
                         {
                             entityIds.Add( entityType.Id );
                         }
@@ -137,7 +167,7 @@ namespace Rock.Lava.Blocks
             }
 
             var client = IndexContainer.GetActiveComponent();
-            var results = client.Search( query, searchType, entityIds, fieldCriteria );
+            var results = client.Search( query, searchType, entityIds, fieldCriteria, limit, offset );
 
             context.Scopes.Last()[parms["iterator"]] = results;
 
@@ -177,6 +207,7 @@ namespace Rock.Lava.Blocks
 
             var parms = new Dictionary<string, string>();
             parms.Add( "iterator", "results" );
+            parms.Add( "searchtype", "exactmatch" );
 
             var markupItems = Regex.Matches( resolvedMarkup, "(.*?:'[^']+')" )
                 .Cast<Match>()
