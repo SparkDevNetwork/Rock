@@ -464,9 +464,15 @@ namespace RockWeb.Plugins.church_ccv.Promotions
                 // get the all promotion requests
                 PromotionsService<PromotionRequest> promoService = new PromotionsService<PromotionRequest>( rockContext );
 
-                // get all active requests. (If a request is active, but its Event Item Occurrence was deleted, we won't end up showing it, because
+                // get the selected campus
+                int selectedCampusId = ddlCampus.SelectedValue.AsInteger( );
+
+                // get all active requests where the campus matches. (If a request is active, but its Event Item Occurrence was deleted, we won't end up showing it, because
                 // the lazy load of EventOccurrence will fail, so that's a good thing.)
-                var promoRequestQuery = promoService.Queryable().AsNoTracking( ).Where( pr => pr.IsActive == true )
+                var promoRequestQuery = promoService.Queryable().AsNoTracking( )
+                                                    //.Where( pr => pr.IsActive == true )
+                                                    .Where( pr => pr.IsActive == true &&
+                                                    (pr.EventItemOccurrence.CampusId == null || ( pr.EventItemOccurrence.CampusId.HasValue && selectedCampusId == pr.EventItemOccurrence.CampusId.Value ) ) )
                                                     .Select( pr => new
                                                     {
                                                         Id = pr.Id,
@@ -475,11 +481,10 @@ namespace RockWeb.Plugins.church_ccv.Promotions
                                                         ContentChannel_IconCssClass = pr.ContentChannel.IconCssClass,
                                                         ContentChannel_Name = pr.ContentChannel.Name,
                                                         EventItemOccurrenceId = pr.EventItemOccurrenceId,
-                                                        EventItemOccurrence_CampusId = pr.EventItemOccurrence.CampusId,
                                                         EventItemOccurrence_CampusName = pr.EventItemOccurrence.Campus != null ? pr.EventItemOccurrence.Campus.Name : "All Campuses",
                                                         EventItemOccurrence_EventItem_Name = pr.EventItemOccurrence.EventItem.Name
                                                     } );
-
+                
                 // Now, we need to REMOVE any request where:
                 // For the selected working date
                 // For the selected campus
@@ -579,28 +584,6 @@ namespace RockWeb.Plugins.church_ccv.Promotions
                 promoRequestQuery = promoRequestQuery.Where( pr => excludedCampusesPromotionRequestIds.Contains( pr.Id ) == false );
                 /////////////////////
 
-                // Apply Working Campus
-                int selectedCampusId = ddlCampus.SelectedValue.AsInteger( );
-                promoRequestQuery = promoRequestQuery.Where( a => a.EventItemOccurrence_CampusId == null || ( a.EventItemOccurrence_CampusId.HasValue && selectedCampusId == a.EventItemOccurrence_CampusId.Value ) );
-
-
-                // Apply Future Weeks Date
-
-                // convert to a list in memory so we can filter the dates
-                var promoItems = promoRequestQuery.ToList( );
-
-                // target range (remove any events that are before our target promotion date) (we do this in case the "Lower Range" is before the target weekend. That would be a mistake but we want to help them.)
-                promoItems = promoItems.Where( pr => eventService.Get( pr.EventItemOccurrenceId ).NextStartDateTime >= dpTargetPromoDate.SelectedDate.Value ).ToList( );
-
-                // lower range
-                promoItems = promoItems.Where( pr => eventService.Get( pr.EventItemOccurrenceId ).NextStartDateTime >= drpFutureWeeks.LowerValue.Value ).ToList( );
-
-                // upper range
-                promoItems = promoItems.Where( pr => eventService.Get( pr.EventItemOccurrenceId ).NextStartDateTime <= drpFutureWeeks.UpperValue.Value ).ToList( );
-
-                // put it back to a query
-                promoRequestQuery = promoItems.AsQueryable( ).AsNoTracking( );
-
 
                 // ---- Apply Filters ----
                 // Title
@@ -618,21 +601,24 @@ namespace RockWeb.Plugins.church_ccv.Promotions
                 }
                 // -----
 
-                // Sort
-                /*SortProperty sortProperty = gPromotions.SortProperty;
-                if ( sortProperty != null )
-                {
-                    promoRequestQuery = promoRequestQuery.Sort( sortProperty );
-                }
-                else
-                {
-                    promoRequestQuery = promoRequestQuery.OrderBy( pr => pr.EventItemOccurrence.EventItem.Name );
-                }*/
+
+                // Apply Future Weeks Date
+
+                // convert to a list in memory so we can filter the dates
+                var promoItems = promoRequestQuery.ToList( );
+
+                // target range (remove any events that are before our target promotion date) (we do this in case the "Lower Range" is before the target weekend. That would be a mistake but we want to help them.)
+                promoItems = promoItems.Where( pr => eventService.Get( pr.EventItemOccurrenceId ).NextStartDateTime >= dpTargetPromoDate.SelectedDate.Value ).ToList( );
+
+                // lower range
+                promoItems = promoItems.Where( pr => eventService.Get( pr.EventItemOccurrenceId ).NextStartDateTime >= drpFutureWeeks.LowerValue.Value ).ToList( );
+
+                // upper range
+                promoItems = promoItems.Where( pr => eventService.Get( pr.EventItemOccurrenceId ).NextStartDateTime <= drpFutureWeeks.UpperValue.Value ).ToList( );
+                
 
                 // Done Filtering
-                var promoRequestList = promoRequestQuery.ToList( );
-
-                gPromotions.DataSource = promoRequestList.Select( i => new
+                gPromotions.DataSource = promoItems.Select( i => new
                 {
                     Id = i.Id,
                     Guid = i.Guid,
