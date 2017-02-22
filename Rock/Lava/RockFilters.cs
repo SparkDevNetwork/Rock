@@ -1318,7 +1318,12 @@ namespace Rock.Lava
             decimal iInput = -1;
             decimal iOperand = -1;
 
-            if ( decimal.TryParse( input.ToString(), out iInput ) && decimal.TryParse( operand.ToString(), out iOperand ) )
+            // If both input and operand are INTs keep the return an int.
+            if ( input is int && operand is int )
+            {
+                return (int)input - (int)operand;
+            }
+            else if ( decimal.TryParse( input.ToString(), out iInput ) && decimal.TryParse( operand.ToString(), out iOperand ) )
             {
                 return iInput - iOperand;
             }
