@@ -1216,6 +1216,7 @@
     <Compile Include="Web\UI\Controls\Pickers\DefinedValuesPickerEnhanced.cs" />
     <Compile Include="Web\UI\Controls\Pickers\RegistrationTemplatePicker.cs" />
     <Compile Include="Web\UI\Controls\RockListBox.cs" />
+    <Compile Include="Web\UI\IDynamicAttributesBlock.cs" />
     <Compile Include="Web\UI\RockTheme.cs" />
     <Compile Include="Web\Cache\AttributeValueCache.cs" />
     <Compile Include="Web\UI\Controls\WarningBlock.cs" />
