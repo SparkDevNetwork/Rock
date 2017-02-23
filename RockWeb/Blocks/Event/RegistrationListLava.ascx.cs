@@ -114,25 +114,25 @@ namespace RockWeb.Blocks.Event
             // bring into a list so we can filter on non-database columns
             var registrationList  = qryRegistrations.ToList();
             
-            List<Registration> hasDates = registrationList.Where(a => a.RegistrationInstance.Linkages.Any(x => x.EventItemOccurrenceId.HasValue && x.EventItemOccurrence.NextStartDateTime.HasValue)).ToList();
-            List<Registration> noDates = registrationList.Where( a => !hasDates.Any( d => d.Id == a.Id ) ).OrderBy( x => x.RegistrationInstance.Name ).ToList();
+            List<Registration> hasFutureDates = registrationList.Where(a => a.RegistrationInstance.Linkages.Any(x => x.EventItemOccurrenceId.HasValue && x.EventItemOccurrence.NextStartDateTime.HasValue)).ToList();
+            List<Registration> noOrPastDates = registrationList.Where( a => !a.RegistrationInstance.Linkages.Any( x => x.EventItemOccurrenceId.HasValue ) && !hasFutureDates.Any( d => d.Id == a.Id ) ).OrderBy( x => x.RegistrationInstance.Name ).ToList();
             
-            hasDates = hasDates.OrderBy(a => a.RegistrationInstance.Linkages.OrderBy(b => b.EventItemOccurrence.NextStartDateTime).FirstOrDefault().EventItemOccurrence.NextStartDateTime).ToList();
+            hasFutureDates = hasFutureDates.OrderBy(a => a.RegistrationInstance.Linkages.OrderBy(b => b.EventItemOccurrence.NextStartDateTime).FirstOrDefault().EventItemOccurrence.NextStartDateTime).ToList();
 
             // filter by date range
             var requestDateRange = SlidingDateRangePicker.CalculateDateRangeFromDelimitedValues( GetAttributeValue( "DateRange" ) ?? "-1||" );
             if ( requestDateRange.Start.HasValue )
             {
-                hasDates = hasDates.Where( a => a.RegistrationInstance.Linkages.OrderBy( b => b.EventItemOccurrence.NextStartDateTime ).FirstOrDefault().EventItemOccurrence.NextStartDateTime >= requestDateRange.Start ).ToList();
+                hasFutureDates = hasFutureDates.Where( a => a.RegistrationInstance.Linkages.OrderBy( b => b.EventItemOccurrence.NextStartDateTime ).FirstOrDefault().EventItemOccurrence.NextStartDateTime >= requestDateRange.Start ).ToList();
             }
 
             if ( requestDateRange.End.HasValue )
             {
-                hasDates = hasDates.Where( a => a.RegistrationInstance.Linkages.OrderBy( b => b.EventItemOccurrence.NextStartDateTime ).FirstOrDefault().EventItemOccurrence.NextStartDateTime < requestDateRange.End ).ToList();
+                hasFutureDates = hasFutureDates.Where( a => a.RegistrationInstance.Linkages.OrderBy( b => b.EventItemOccurrence.NextStartDateTime ).FirstOrDefault().EventItemOccurrence.NextStartDateTime < requestDateRange.End ).ToList();
             }
             
-            registrationList = hasDates;
-            registrationList.AddRange(noDates);
+            registrationList = hasFutureDates;
+            registrationList.AddRange(noOrPastDates);
 
             if ( this.GetAttributeValue( "LimitToOwed" ).AsBooleanOrNull() ?? true )
             {
