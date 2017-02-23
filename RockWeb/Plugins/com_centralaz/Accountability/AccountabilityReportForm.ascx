@@ -29,8 +29,7 @@
                     </div>
 
                     <asp:PlaceHolder ID="phQuestions" runat="server" />
-
-                    <Rock:RockTextBox ID="tbComments" Label="Comments (4000 chars max)" SourceTypeName="com.centralaz.Accountability.Model.ResponseSet, com.centralaz.Accountability" PropertyName="Comments" TextMode="MultiLine" Rows="5" runat="server" />
+                    <Rock:RockTextBox ID="tbComments" Label="Comments (250 chars max)" SourceTypeName="com.centralaz.Accountability.Model.ResponseSet, com.centralaz.Accountability" PropertyName="Comments" TextMode="MultiLine" Rows="5" runat="server" />
                     <asp:LinkButton ID="lbSubmit" class="btn btn-primary" Text="Submit" runat="server" OnClick="lbSubmit_OnClick" />
                     <asp:LinkButton ID="lbCancel" class="btn btn-link" Text="Cancel" runat="server" OnClick="lbCancel_OnClick" />
 
@@ -40,3 +39,12 @@
 
     </ContentTemplate>
 </asp:UpdatePanel>
+    <script type="text/javascript">
+        $(function () {
+            var limit = '<%= GetAttributeValue( "MaximumCommentLength" )%>';
+            $('textarea[id$=tbComments]').keyup(function() {
+                    var len = $(this).val().length;
+                    if (len > limit) {this.value = this.value.substring(0, limit);}
+            })
+        });
+</script>

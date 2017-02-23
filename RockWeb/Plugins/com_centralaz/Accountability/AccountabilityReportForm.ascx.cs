@@ -44,6 +44,7 @@ namespace RockWeb.Plugins.com_centralaz.Accountability
     [Category( "com_centralaz > Accountability" )]
     [Description( "Block for accountability group members to fill out and submit reports" )]
     [EmailField( "Safe Sender From", "The email address to use in the From field if the sender is not allowed (not a safe sender).", false, "" )]
+    [IntegerField( "Maximum Comment Length", "Maximum number of characters allowed in comments section.", false, 250 )]
     public partial class AccountabilityReportForm : Rock.Web.UI.RockBlock
     {
         #region Fields
@@ -99,6 +100,7 @@ namespace RockWeb.Plugins.com_centralaz.Accountability
         {
             base.OnLoad( e );
 
+            tbComments.Label = string.Format( "Comments ({0} chars max)", GetAttributeValue( "MaximumCommentLength" ) );
             if ( !Page.IsPostBack )
             {
                 AssignReportDateOptions();
