@@ -1,11 +1,27 @@
-﻿using System;
+﻿// <copyright>
+// Copyright by the Spark Development Network
+//
+// Licensed under the Rock Community License (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.rockrms.com/license
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+// </copyright>
+//
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data.Entity;
 using System.Linq;
-using System.Web;
 using System.Web.UI;
 using System.Web.UI.WebControls;
+
 using Rock;
 using Rock.Attribute;
 using Rock.Data;
@@ -91,12 +107,13 @@ namespace RockWeb.Blocks.Fundraising
             {
                 int? groupId = this.PageParameter( "GroupId" ).AsIntegerOrNull();
 
-                // DEBUG
-                groupId = 292389;
-
                 if ( groupId.HasValue )
                 {
                     ShowView( groupId.Value );
+                }
+                else
+                {
+                    pnlView.Visible = false;
                 }
             }
         }
@@ -111,12 +128,14 @@ namespace RockWeb.Blocks.Fundraising
         /// <param name="groupId">The group identifier.</param>
         protected void ShowView( int groupId )
         {
+            pnlView.Visible = true;
             hfGroupId.Value = groupId.ToString();
             var rockContext = new RockContext();
 
             var group = new GroupService( rockContext ).Get( groupId );
             if ( group == null )
             {
+                pnlView.Visible = false;
                 return;
             }
 
@@ -126,7 +145,7 @@ namespace RockWeb.Blocks.Fundraising
 
             // Left Sidebar
             var photoGuid = group.GetAttributeValue( "OpportunityPhoto" );
-            imgPhoto.ImageUrl = string.Format( "~/GetImage.ashx?Guid={0}", photoGuid );
+            imgOpportunityPhoto.ImageUrl = string.Format( "~/GetImage.ashx?Guid={0}", photoGuid );
 
             var registrationInstanceId = group.GetAttributeValue( "RegistrationInstance" ).AsIntegerOrNull();
             if ( registrationInstanceId.HasValue )
@@ -147,36 +166,46 @@ namespace RockWeb.Blocks.Fundraising
             // only show the leader toolbox link of the currentperson has a leader role in the group
             btnLeaderToolbox.Visible = group.Members.Any( a => a.PersonId == this.CurrentPersonId && a.GroupRole.IsLeader );
 
-            // Participant Actions 
-
-            // only show visible if the current person is a participant
+            //// Participant Actions 
+            // only show if the current person is a participant
             var groupTypeRolePartipantGuid = "F82DF077-9664-4DA8-A3D9-7379B690124D".AsGuid();
-            pnlParticipantActions.Visible = group.Members.Any( a => a.PersonId == this.CurrentPersonId && a.GroupRole.Guid == groupTypeRolePartipantGuid );
-            imgParticipant.ImageUrl = Person.GetPersonPhotoUrl( this.CurrentPerson, 100, 100 );
+            var groupMember = group.Members.FirstOrDefault( a => a.PersonId == this.CurrentPersonId && a.GroupRole.Guid == groupTypeRolePartipantGuid );
+            if ( groupMember != null )
+            {
+                hfGroupMemberId.Value = groupMember.Id.ToString();
+                pnlParticipantActions.Visible = true;
+                imgParticipant.ImageUrl = Person.GetPersonPhotoUrl( groupMember.Person, 100, 100 );
+            }
+            else
+            {
+                hfGroupMemberId.Value = null;
+                pnlParticipantActions.Visible = false;
+                imgParticipant.ImageUrl = null;
+            }
 
             // TODO, make this work for realz
             lFundraisingAmountLeftText.Text = "$320 left";
             lFundraisingProgressTitle.Text = "Fundraising Progress";
-            lFundraisingProgressBar.Text = string.Format( @"
-<div class='progress'>
-  <div class='progress-bar' role='progressbar' aria-valuenow='{0}' aria-valuemin='0' aria-valuemax='100' style='width: {0}%;'>
-    <span class='sr-only'>{0}% Complete</span>
-  </div>
-</div>
-", 60 );
+            lFundraisingProgressBar.Text = string.Format( 
+                @"<div class='progress'>
+                    <div class='progress-bar' role='progressbar' aria-valuenow='{0}' aria-valuemin='0' aria-valuemax='100' style='width: {0}%;'>
+                        <span class='sr-only'>{0}% Complete</span>
+                    </div>
+                 </div>", 
+                60 );
 
             // Tab:Details
             lDetailsHtml.Text = group.GetAttributeValue( "OpportunityDetails" );
 
             // Tab:Updates
-            btnDetailsTab.Visible = false;
+            btnUpdatesTab.Visible = false;
             var updatesContentChannelGuid = group.GetAttributeValue( "UpdateContentChannel" ).AsGuidOrNull();
             if ( updatesContentChannelGuid.HasValue )
             {
                 var contentChannel = new ContentChannelService( rockContext ).Get( updatesContentChannelGuid.Value );
                 if ( contentChannel != null )
                 {
-                    btnDetailsTab.Visible = true;
+                    btnUpdatesTab.Visible = true;
                     string updatesLavaTemplate = this.GetAttributeValue( "UpdatesLavaTemplate" );
                     var contentChannelItems = new ContentChannelItemService( rockContext ).Queryable().Where( a => a.ContentChannelId == contentChannel.Id ).AsNoTracking().ToList();
 
@@ -277,6 +306,7 @@ namespace RockWeb.Blocks.Fundraising
         {
             var queryParams = new Dictionary<string, string>();
             queryParams.Add( "GroupId", hfGroupId.Value );
+            queryParams.Add( "GroupMemberId", hfGroupMemberId.Value );
             NavigateToLinkedPage( "ParticipantPage", queryParams );
         }
 

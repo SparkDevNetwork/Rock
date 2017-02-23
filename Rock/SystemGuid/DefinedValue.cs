@@ -121,6 +121,11 @@ namespace Rock.SystemGuid
         /// </summary>
         public const string TRANSACTION_TYPE_EVENT_REGISTRATION = "33CB96DD-8752-4BEE-A142-88DB7DE538F0";
 
+        /// <summary>
+        /// A Fundraising Donation
+        /// </summary>
+        public const string TRANSACTION_TYPE_FUNDRAISING = "142EA7C8-04E5-4708-9E29-9C89127061C7";
+
         #endregion
 
         #region Financial Source
