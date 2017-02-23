@@ -191,11 +191,11 @@ namespace Rock.Reporting.DataFilter.ContentChannelItem
                     // Add the field to the dropdown of available fields
                     if ( AttributeCache.Read( entityField.AttributeGuid.Value )?.EntityTypeQualifierColumn == "ContentChannelTypeId" )
                     {
-                        ddlProperty.Items.Add( new ListItem( entityField.TitleWithoutQualifier, entityField.Name ) );
+                        ddlProperty.Items.Add( new ListItem( entityField.TitleWithoutQualifier, entityField.UniqueName ) );
                     }
                     else
                     {
-                        ddlProperty.Items.Add( new ListItem( entityField.Title, entityField.Name ) );
+                        ddlProperty.Items.Add( new ListItem( entityField.Title, entityField.UniqueName ) );
                     }
 
                     containerControl.Controls.Add( control );
