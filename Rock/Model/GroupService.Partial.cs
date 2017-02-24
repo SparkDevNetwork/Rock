@@ -501,18 +501,21 @@ namespace Rock.Model
                     statuses.Add( status, occuranceDate );
                 }
 
+                //JHM 2-23-17: We don't want this, because it causes a person failing a requirement for their actual role
+                // to be reported as failing all requirements for ALL roles.
+
                 // also add any groupRequirements that they don't have statuses for (and therefore haven't met)
-                foreach (var groupRequirement in qryGroupRequirements)
-                {
-                    if ( !statuses.Any( x => x.Key.GroupRequirement.Id == groupRequirement.Id) )
-                    {
-                        PersonGroupRequirementStatus status = new PersonGroupRequirementStatus();
-                        status.GroupRequirement = groupRequirement;
-                        status.PersonId = groupMemberWithIssues.GroupMember.PersonId;
-                        status.MeetsGroupRequirement = MeetsGroupRequirement.NotMet;
-                        statuses.Add( status, currentDateTime );
-                    }
-                }
+                //foreach (var groupRequirement in qryGroupRequirements)
+                //{
+                //    if ( !statuses.Any( x => x.Key.GroupRequirement.Id == groupRequirement.Id) )
+                //    {
+                //        PersonGroupRequirementStatus status = new PersonGroupRequirementStatus();
+                //        status.GroupRequirement = groupRequirement;
+                //        status.PersonId = groupMemberWithIssues.GroupMember.PersonId;
+                //        status.MeetsGroupRequirement = MeetsGroupRequirement.NotMet;
+                //        statuses.Add( status, currentDateTime );
+                //    }
+                //}
 
                 var statusesWithIssues = statuses.Where( a => a.Key.MeetsGroupRequirement != MeetsGroupRequirement.Meets ).ToDictionary( k => k.Key, v => v.Value );
 

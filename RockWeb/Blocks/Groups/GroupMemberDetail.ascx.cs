@@ -252,6 +252,7 @@ namespace RockWeb.Blocks.Groups
                     {
                         int groupRequirementId = checkboxItem.Value.AsInteger();
                         var groupMemberRequirement = groupMember.GroupMemberRequirements.FirstOrDefault( a => a.GroupRequirementId == groupRequirementId );
+
                         bool metRequirement = checkboxItem.Selected;
                         if ( metRequirement )
                         {
@@ -366,6 +367,10 @@ namespace RockWeb.Blocks.Groups
                     rockContext.SaveChanges();
                     groupMember.SaveAttributeValues( rockContext );
                 } );
+                
+                // remove any group requirements that are for roles this person no longer has.
+                var unusedGroupRequirements = groupMember.GroupMemberRequirements.Where( gmr => gmr.GroupRequirement.GroupRoleId != groupMember.GroupRoleId ).ToList( );
+                groupMemberRequirementService.DeleteRange( unusedGroupRequirements );
 
                 groupMember.CalculateRequirements( rockContext, true );
 
