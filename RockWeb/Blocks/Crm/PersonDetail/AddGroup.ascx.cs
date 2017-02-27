@@ -110,6 +110,14 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         /// </value>
         protected Dictionary<Guid, List<Person>> Duplicates { get; set; }
 
+        /// <summary>
+        /// Gets or sets any possible matching addresses for each group member
+        /// </summary>
+        /// <value>
+        /// The people with matching addresses.
+        /// </value>
+        protected Dictionary<Guid, List<Person>> MatchingAddresses { get; set; }
+
         #endregion
 
         #region Base Control Methods
@@ -142,6 +150,16 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             else
             {
                 Duplicates = JsonConvert.DeserializeObject<Dictionary<Guid, List<Person>>>( json );
+            }
+
+            json = ViewState["MatchingAddresses"] as string;
+            if ( string.IsNullOrWhiteSpace( json ) )
+            {
+                MatchingAddresses = new Dictionary<Guid, List<Person>>();
+            }
+            else
+            {
+                MatchingAddresses = JsonConvert.DeserializeObject<Dictionary<Guid, List<Person>>>( json );
             }
 
             _verifiedLocations = ViewState["VerifiedLocations"] as Dictionary<string, int?>;
@@ -268,6 +286,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             {
                 GroupMembers = new List<GroupMember>();
                 Duplicates = new Dictionary<Guid, List<Person>>();
+                MatchingAddresses = new Dictionary<Guid, List<Person>>();
                 _verifiedLocations = new Dictionary<string, int?>();
                 AddGroupMember();
                 CreateControls( true );
@@ -295,6 +314,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             ViewState["CurrentPageIndex"] = CurrentPageIndex;
             ViewState["GroupMembers"] = JsonConvert.SerializeObject( GroupMembers, Formatting.None, jsonSetting );
             ViewState["Duplicates"] = JsonConvert.SerializeObject( Duplicates, Formatting.None, jsonSetting );
+            ViewState["MatchingAddresses"] = JsonConvert.SerializeObject( MatchingAddresses, Formatting.None, jsonSetting );
             ViewState["VerifiedLocations"] = _verifiedLocations;
 
             return base.SaveViewState();
@@ -462,7 +482,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                     {
                         if ( GroupMembers.Any() )
                         {
-                            if ( CurrentPageIndex == ( attributeControls.Count + 1 ) && FindDuplicates() )
+                            if ( CurrentPageIndex == ( attributeControls.Count + 1 ) && ( FindDuplicates() | FindMatchingAddresses() ) )
                             {
                                 CurrentPageIndex++;
                                 CreateControls( true );
@@ -517,6 +537,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             attributeControls.Clear();
             pnlAttributes.Controls.Clear();
             phDuplicates.Controls.Clear();
+            phMatchingAddresses.Controls.Clear();
 
             var rockContext = new RockContext();
             var attributeService = new AttributeService( rockContext );
@@ -648,15 +669,16 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                     }
                 }
 
-                if ( Duplicates.ContainsKey( groupMember.Person.Guid ) )
+                if ( Duplicates.ContainsKey( groupMember.Person.Guid ) | MatchingAddresses.ContainsKey( groupMember.Person.Guid ) )
                 {
+                    // matching new record column
                     var dupRow = new HtmlGenericControl( "div" );
                     dupRow.AddCssClass( "row row-duplicate" );
                     dupRow.ID = string.Format( "dupRow_{0}", groupMemberGuidString );
                     phDuplicates.Controls.Add( dupRow );
 
                     var newPersonCol = new HtmlGenericControl( "div" );
-                    newPersonCol.AddCssClass( "col-md-6" );
+                    newPersonCol.AddCssClass( "col-md-3" );
                     newPersonCol.ID = string.Format( "newPersonCol_{0}", groupMemberGuidString );
                     dupRow.Controls.Add( newPersonCol );
 
@@ -674,41 +696,86 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                     lbRemoveMember.Click += lbRemoveMember_Click;
                     newPersonCol.Controls.Add( lbRemoveMember );
 
-                    var dupPersonCol = new HtmlGenericControl( "div" );
-                    dupPersonCol.AddCssClass( "col-md-6" );
-                    dupPersonCol.ID = string.Format( "dupPersonCol_{0}", groupMemberGuidString );
-                    dupRow.Controls.Add( dupPersonCol );
-
-                    var duplicateHeader = new HtmlGenericControl( "h4" );
-                    duplicateHeader.InnerText = "Possible Duplicate Records";
-                    dupPersonCol.Controls.Add( duplicateHeader );
-
-                    foreach ( var duplicate in Duplicates[groupMember.Person.Guid] )
+                    // duplicate records column
+                    if ( Duplicates.ContainsKey( groupMember.Person.Guid ) )
                     {
-                        GroupTypeRole groupTypeRole = null;
-                        Location duplocation = null;
+                        var dupPersonCol = new HtmlGenericControl( "div" );
+                        dupPersonCol.AddCssClass( "col-md-3" );
+                        dupPersonCol.ID = string.Format( "dupPersonCol_{0}", groupMemberGuidString );
+                        dupRow.Controls.Add( dupPersonCol );
 
-                        var dupGroupMember = groupMemberService.Queryable()
-                            .Where( a => a.PersonId == duplicate.Id )
-                            .Where( a => a.Group.GroupTypeId == _groupType.Id )
-                            .Select( s => new
-                            {
-                                s.GroupRole,
-                                GroupLocation = s.Group.GroupLocations.Where( a => a.GroupLocationTypeValue.Guid.Equals( _locationType.Guid ) ).Select( a => a.Location ).FirstOrDefault()
-                            } )
-                            .FirstOrDefault();
-                        if ( dupGroupMember != null )
+                        var duplicateHeader = new HtmlGenericControl( "h4" );
+                        duplicateHeader.InnerText = "Possible Duplicate Records";
+                        dupPersonCol.Controls.Add( duplicateHeader );
+
+                        foreach ( var duplicate in Duplicates[groupMember.Person.Guid] )
                         {
-                            groupTypeRole = dupGroupMember.GroupRole;
-                            duplocation = dupGroupMember.GroupLocation;
-                        }
+                            GroupTypeRole groupTypeRole = null;
+                            Location duplocation = null;
 
-                        dupPersonCol.Controls.Add( PersonHtmlPanel(
-                            groupMemberGuidString,
-                            duplicate,
-                            groupTypeRole,
-                            duplocation,
-                            rockContext ) );
+                            var dupGroupMember = groupMemberService.Queryable()
+                                .Where( a => a.PersonId == duplicate.Id )
+                                .Where( a => a.Group.GroupTypeId == _groupType.Id )
+                                .Select( s => new
+                                {
+                                    s.GroupRole,
+                                    GroupLocation = s.Group.GroupLocations.Where( a => a.GroupLocationTypeValue.Guid.Equals( _locationType.Guid ) ).Select( a => a.Location ).FirstOrDefault()
+                                } )
+                                .FirstOrDefault();
+                            if ( dupGroupMember != null )
+                            {
+                                groupTypeRole = dupGroupMember.GroupRole;
+                                duplocation = dupGroupMember.GroupLocation;
+                            }
+
+                            dupPersonCol.Controls.Add( PersonHtmlPanel(
+                                groupMemberGuidString,
+                                duplicate,
+                                groupTypeRole,
+                                duplocation,
+                                rockContext ) );
+                        }
+                    }
+
+                    // duplicate addresses
+                    if ( MatchingAddresses.ContainsKey( groupMember.Person.Guid ) )
+                    {
+                        var matchAddressCol = new HtmlGenericControl( "div" );
+                        matchAddressCol.AddCssClass( "col-md-3" );
+                        matchAddressCol.ID = string.Format( "matchAddressCol_{0}", groupMemberGuidString );
+                        dupRow.Controls.Add( matchAddressCol );
+
+                        var matchAddressHeader = new HtmlGenericControl( "h4" );
+                        matchAddressHeader.InnerText = "Duplicate Addresses";
+                        matchAddressCol.Controls.Add( matchAddressHeader );
+
+                        foreach ( var duplicate in MatchingAddresses[groupMember.Person.Guid] )
+                        {
+                            GroupTypeRole groupTypeRole = null;
+                            Location duplocation = null;
+
+                            var dupGroupMember = groupMemberService.Queryable()
+                                .Where( a => a.PersonId == duplicate.Id )
+                                .Where( a => a.Group.GroupTypeId == _groupType.Id )
+                                .Select( s => new
+                                {
+                                    s.GroupRole,
+                                    GroupLocation = s.Group.GroupLocations.Where( a => a.GroupLocationTypeValue.Guid.Equals( _locationType.Guid ) ).Select( a => a.Location ).FirstOrDefault()
+                                } )
+                                .FirstOrDefault();
+                            if ( dupGroupMember != null )
+                            {
+                                groupTypeRole = dupGroupMember.GroupRole;
+                                duplocation = dupGroupMember.GroupLocation;
+                            }
+
+                            matchAddressCol.Controls.Add( PersonHtmlPanel(
+                                groupMemberGuidString,
+                                duplicate,
+                                groupTypeRole,
+                                duplocation,
+                                rockContext ) );
+                        }
                     }
                 }
             }
@@ -724,6 +791,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             {
                 GroupMembers.Remove( groupMember );
                 Duplicates.Remove( personGuid );
+                MatchingAddresses.Remove( personGuid );
                 if ( !GroupMembers.Any() )
                 {
                     AddGroupMember();
@@ -1034,30 +1102,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             var groupService = new GroupService( rockContext );
             var personService = new PersonService( rockContext );
 
-            // Find any other group members (any group) that have same location
-            var othersAtAddress = new List<int>();
-
-            string locationKey = GetLocationKey();
-            if ( !string.IsNullOrWhiteSpace( locationKey ) && _verifiedLocations.ContainsKey( locationKey ) )
-            {
-                int? locationId = _verifiedLocations[locationKey];
-                if ( locationId.HasValue )
-                {
-                    var location = locationService.Get( locationId.Value );
-                    if ( location != null )
-                    {
-                        othersAtAddress = groupService
-                            .Queryable().AsNoTracking()
-                            .Where( g =>
-                                g.GroupTypeId == _groupType.Id &&
-                                g.GroupLocations.Any( l => l.LocationId == location.Id && 
-                                                           l.GroupLocationTypeValueId == _locationType.Id ) )
-                            .SelectMany( g => g.Members )
-                            .Select( m => m.PersonId )
-                            .ToList();
-                    }
-                }
-            }
+            var othersThatMatch = new List<int>();
 
             foreach ( var person in GroupMembers
                 .Where( m =>
@@ -1072,10 +1117,10 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                         p.FirstName == person.FirstName ||
                         p.NickName == person.FirstName );
 
-                if ( othersAtAddress.Any() )
+                if ( othersThatMatch.Any() )
                 {
                     personQry = personQry
-                        .Where( p => othersAtAddress.Contains( p.Id ) );
+                        .Where( p => othersThatMatch.Contains( p.Id ) );
                 }
 
                 if ( person.BirthDate.HasValue )
@@ -1146,6 +1191,60 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         }
 
         /// <summary>
+        /// Finds the matching addresses
+        /// </summary>
+        /// <returns></returns>
+        public bool FindMatchingAddresses()
+        {
+            MatchingAddresses = new Dictionary<Guid, List<Person>>();
+
+            var rockContext = new RockContext();
+            var locationService = new LocationService( rockContext );
+            var groupService = new GroupService( rockContext );
+            var personService = new PersonService( rockContext );
+
+            // Find any other group members (any group) that have same location
+            IQueryable<Group> othersAtAddress = null;
+
+            string locationKey = GetLocationKey();
+            if ( !string.IsNullOrWhiteSpace( locationKey ) && _verifiedLocations.ContainsKey( locationKey ) )
+            {
+                int? locationId = _verifiedLocations[locationKey];
+                if ( locationId.HasValue )
+                {
+                    var location = locationService.Get( locationId.Value );
+                    if ( location != null )
+                    {
+                        othersAtAddress = groupService
+                            .Queryable().AsNoTracking()
+                            .Where( g =>
+                                g.GroupTypeId == _groupType.Id &&
+                                g.GroupLocations.Any( l => l.LocationId == location.Id &&
+                                                           l.GroupLocationTypeValueId == _locationType.Id ) )
+                            .AsQueryable();
+                    }
+                }
+            }
+
+            // since addresses are one per family, only show the head of household
+            var dups = othersAtAddress.HeadOfHouseholds().ToList();
+
+            foreach ( var person in GroupMembers
+                .Where( m =>
+                    m.Person != null &&
+                    m.Person.FirstName != "" )
+                .Select( m => m.Person ) )
+            {
+                if ( othersAtAddress.Any() )
+                {
+                    MatchingAddresses.Add( person.Guid, dups );
+                }
+            }
+
+            return MatchingAddresses.Any();
+        }
+
+        /// <summary>
         /// Shows the page.
         /// </summary>
         private void ShowPage()
@@ -1154,7 +1253,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             pnlContactInfo.Visible = CurrentPageIndex == 1;
             pnlAttributes.Visible = CurrentPageIndex > 1 && CurrentPageIndex <= attributeControls.Count + 1;
 
-            bool showDuplicates = (CurrentPageIndex > attributeControls.Count + 1) && phDuplicates.Controls.Count > 0;
+            bool showDuplicates = (CurrentPageIndex > attributeControls.Count + 1) && ( phDuplicates.Controls.Count > 0 || phMatchingAddresses.Controls.Count > 0 );
 
             pnlDuplicateWarning.Visible = showDuplicates;
 

@@ -62,6 +62,7 @@
                         Text="<p>One or more of the people you are adding may already exist. Please confirm that none of the existing people below are the same person as someone that you are adding." />
                     <div>
                         <asp:PlaceHolder ID="phDuplicates" runat="server" />
+                        <asp:PlaceHolder ID="phMatchingAddresses" runat="server" />
                     </div>
                 </asp:Panel>
 
