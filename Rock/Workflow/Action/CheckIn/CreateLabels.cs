@@ -83,8 +83,10 @@ namespace Rock.Workflow.Action.CheckIn
 
                             var PrinterIPs = new Dictionary<int, string>();
 
-                            foreach ( var labelCache in groupTypeLabels )
+                            foreach ( var labelCache in groupTypeLabels.OrderBy( l => l.LabelType ).ThenBy( l => l.Order ) )
                             {
+                                person.SetOptions( labelCache );
+
                                 foreach ( var group in groupType.GetGroups( true ) )
                                 {
                                     foreach ( var location in group.GetLocations( true ) )
@@ -106,7 +108,6 @@ namespace Rock.Workflow.Action.CheckIn
                                             if ( personLabels.Contains( labelCache.Guid ) )
                                             {
                                                 break;
-
                                             }
                                             else
                                             {
@@ -133,7 +134,8 @@ namespace Rock.Workflow.Action.CheckIn
                                             .ToList();
                                         mergeObjects.Add( "GroupMembers", groupMembers );
 
-                                        var label = new CheckInLabel( labelCache, mergeObjects );
+                                        //string debugInfo = mergeObjects.lavaDebugInfo();
+                                        var label = new CheckInLabel( labelCache, mergeObjects, person.Person.Id );
                                         label.FileGuid = labelCache.Guid;
                                         label.PrintFrom = checkInState.Kiosk.Device.PrintFrom;
                                         label.PrintTo = checkInState.Kiosk.Device.PrintToOverride;
