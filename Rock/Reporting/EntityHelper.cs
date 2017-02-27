@@ -692,6 +692,13 @@ namespace Rock.Reporting
                     // Prior to v1.1 attribute.Name was used instead of attribute.Key, because of that, strip spaces to attempt matching key
                     entityField = entityFields.FirstOrDefault( a => a.LegacyName.Equals( filterFieldSelection.Replace( " ", "" ), StringComparison.OrdinalIgnoreCase) );
                 }
+
+                if ( entityField == null )
+                {
+                    // if STILL not found, it could be that this is an attribute qualified by ContentChannelId, 
+                    // which would NOT work if you had duplicate Attribute Keys and hadn't narrowed it down to ContentChannelId, but WOULD work if you had already narrowed down the keys to a specific ContentChannelId
+                    entityField = entityFields.FirstOrDefault( a => a.Name == filterFieldSelection );
+                }
             }
 
             return entityField;

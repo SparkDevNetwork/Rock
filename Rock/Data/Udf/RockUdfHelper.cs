@@ -82,7 +82,17 @@ namespace Rock.Data
             /// <summary>
             /// Country
             /// </summary>
-            Country = 6
+            Country = 6,
+
+            /// <summary>
+            /// The GeoPoint Latitude
+            /// </summary>
+            Latitude = 7,
+
+            /// <summary>
+            /// The GeoPoint Longitude
+            /// </summary>
+            Longitude = 8
         }
 
         /// <summary>

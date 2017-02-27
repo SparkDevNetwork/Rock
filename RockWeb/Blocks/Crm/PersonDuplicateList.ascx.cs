@@ -39,7 +39,8 @@ namespace RockWeb.Blocks.Crm
     [DecimalField( "Confidence Score High", "The minimum confidence score required to be considered a likely match", true, 80.00, order: 0 )]
     [DecimalField( "Confidence Score Low", "The maximum confidence score required to be considered an unlikely match. Values lower than this will not be shown in the grid.", true, 60.00, order: 1 )]
     [BooleanField( "Include Inactive", "Set to true to also include potential matches when both records are inactive.", false, order: 2 )]
-    [LinkedPage( "Detail Page", order: 3 )]
+    [BooleanField( "Include Businesses", "Set to true to also include potential matches when either record is a Business.", false, order: 3 )]
+    [LinkedPage( "Detail Page", order: 4 )]
     public partial class PersonDuplicateList : RockBlock
     {
         /// <summary>
@@ -139,6 +140,7 @@ namespace RockWeb.Blocks.Crm
             RockContext rockContext = new RockContext();
             var personDuplicateService = new PersonDuplicateService( rockContext );
             int recordStatusInactiveId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_INACTIVE.AsGuid() ).Id;
+            int recordTypeBusinessId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_BUSINESS.AsGuid() ).Id;
 
             // list duplicates that:
             // - aren't confirmed as NotDuplicate and aren't IgnoreUntilScoreChanges,
@@ -152,6 +154,11 @@ namespace RockWeb.Blocks.Crm
             if ( this.GetAttributeValue( "IncludeInactive" ).AsBoolean() == false )
             {
                 personDuplicateQry = personDuplicateQry.Where( a => !( a.PersonAlias.Person.RecordStatusValueId == recordStatusInactiveId && a.DuplicatePersonAlias.Person.RecordStatusValueId == recordStatusInactiveId ) );
+            }
+
+            if ( this.GetAttributeValue( "IncludeBusinesses" ).AsBoolean() == false )
+            {
+                personDuplicateQry = personDuplicateQry.Where( a => !( a.PersonAlias.Person.RecordTypeValueId == recordTypeBusinessId || a.DuplicatePersonAlias.Person.RecordTypeValueId == recordTypeBusinessId ) );
             }
 
             double? confidenceScoreLow = GetAttributeValue( "ConfidenceScoreLow" ).AsDoubleOrNull();

@@ -451,9 +451,10 @@ GO
             public string Column { get; set; }
             public bool IsPartOfPrimaryKey { get; set; }
             public bool Ignore { get; set; }
+            public bool HasEntityModel { get; set; }
             public override string ToString()
             {
-                return string.Format( "{0} | {1} {2} {3}", Table, Column, IsPartOfPrimaryKey ? "| PrimaryKey" : null, Ignore ? "| Ignored" : null );
+                return string.Format( "{0} | {1} {2} {3} {4}", Table, Column, IsPartOfPrimaryKey ? "| PrimaryKey" : null, Ignore ? "| Ignored" : null, HasEntityModel ? null : " | No Entity Model" );
             }
         }
 
@@ -517,6 +518,7 @@ order by [parentTable], [columnName]
                 string columnName = reader["columnName"] as string;
                 bool isPrimaryKey = (int)reader["IsPrimaryKey"] == 1;
                 bool ignoreCanDelete = false;
+                bool hasEntityModel = true;
 
                 Type parentEntityType = Type.GetType( string.Format( "Rock.Model.{0}, {1}", parentTable, type.Assembly.FullName ) );
                 if ( parentEntityType != null )
@@ -530,8 +532,13 @@ order by [parentTable], [columnName]
                         }
                     }
                 }
+                else
+                {
+                    hasEntityModel = false;
+                }
 
-                parentTableColumnNameList.Add( new TableColumnInfo { Table = parentTable, Column = columnName, IsPartOfPrimaryKey = isPrimaryKey, Ignore = ignoreCanDelete } );
+
+                parentTableColumnNameList.Add( new TableColumnInfo { Table = parentTable, Column = columnName, IsPartOfPrimaryKey = isPrimaryKey, Ignore = ignoreCanDelete, HasEntityModel = hasEntityModel } );
             }
 
             parentTableColumnNameList = parentTableColumnNameList.OrderBy( a => a.Table ).ThenBy( a => a.Column ).ToList();
@@ -561,12 +568,19 @@ order by [parentTable], [columnName]
                 }
 
                 // detect associative table where the foreign key column is also part of the primary key.  EF will automatically take care of it on the DELETE
-                if ( item.IsPartOfPrimaryKey || item.Ignore )
+                if ( item.IsPartOfPrimaryKey || item.Ignore)
                 {
                     canDeleteMiddle += string.Format(
 @"            
             // ignoring {0},{1} 
 ", item.Table, item.Column );
+                    continue;
+                }
+
+                if ( !item.HasEntityModel )
+                {
+                    // if the table is in the database, but isn't a Rock Entity, skip it
+                    canDeleteMiddle += "";
                     continue;
                 }
 
