@@ -121,7 +121,11 @@ namespace RockWeb.Blocks.CheckIn
                         if ( printFromClient.Any() )
                         {
                             var urlRoot = string.Format( "{0}://{1}", Request.Url.Scheme, Request.Url.Authority );
-                            printFromClient.OrderBy( l => l.Order ).ToList().ForEach( l => l.LabelFile = urlRoot + l.LabelFile );
+                            printFromClient
+                                .OrderBy( l => l.PersonId )
+                                .ThenBy( l => l.Order )
+                                .ToList()
+                                .ForEach( l => l.LabelFile = urlRoot + l.LabelFile );
                             AddLabelScript( printFromClient.ToJson() );
                         }
 
@@ -130,7 +134,9 @@ namespace RockWeb.Blocks.CheckIn
                             Socket socket = null;
                             string currentIp = string.Empty;
 
-                            foreach ( var label in printFromServer.OrderBy( l => l.Order ) )
+                            foreach ( var label in printFromServer
+                                .OrderBy( l => l.PersonId )
+                                .ThenBy( l => l.Order ) )
                             {
                                 var labelCache = KioskLabel.Read( label.FileGuid );
                                 if ( labelCache != null )

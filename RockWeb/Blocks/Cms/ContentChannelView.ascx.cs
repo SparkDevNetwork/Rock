@@ -999,10 +999,18 @@ $(document).ready(function() {
                             f.AttributeGuid.HasValue )
                         .ToList() )
                     {
+                        // remove EntityFields that aren't attributes for this ContentChannelType or ChannelChannel (to avoid duplicate Attribute Keys)
                         var attribute = AttributeCache.Read( entityField.AttributeGuid.Value );
                         if ( attribute != null && 
                             attribute.EntityTypeQualifierColumn == "ContentChannelTypeId" && 
                             attribute.EntityTypeQualifierValue.AsInteger() != channel.ContentChannelTypeId )
+                        {
+                            entityFields.Remove( entityField );
+                        }
+
+                        if ( attribute != null &&
+                            attribute.EntityTypeQualifierColumn == "ContentChannelId" &&
+                            attribute.EntityTypeQualifierValue.AsInteger() != channel.Id )
                         {
                             entityFields.Remove( entityField );
                         }
