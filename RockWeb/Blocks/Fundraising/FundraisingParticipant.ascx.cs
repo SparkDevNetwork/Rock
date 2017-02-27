@@ -444,12 +444,15 @@ namespace RockWeb.Blocks.Fundraising
             string profileLavaTemplate = this.GetAttributeValue( "ProfileLavaTemplate" );
             if ( !groupMember.Person.PhotoId.HasValue || groupMember.GetAttributeValue( "PersonalTripIntroduction" ).IsNullOrWhiteSpace() )
             {
-                nbProfileWarning.Visible = true;
+                // show a warning about missing Photo or Intro if the current person is viewing their own profile
+                nbProfileWarning.Visible = groupMember.PersonId == this.CurrentPersonId;
             }
             else
             {
                 nbProfileWarning.Visible = false;
             }
+
+            btnEditPreferences.Visible = groupMember.PersonId == this.CurrentPersonId;
 
             lMainTopContentHtml.Text = profileLavaTemplate.ResolveMergeFields( mergeFields );
 
