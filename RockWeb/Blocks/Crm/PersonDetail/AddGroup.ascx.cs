@@ -687,6 +687,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                         groupMember.Person,
                         groupMember.GroupRole,
                         location,
+                        "newPersonPnl",
                         rockContext ) );
 
                     LinkButton lbRemoveMember = new LinkButton();
@@ -733,6 +734,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                                 duplicate,
                                 groupTypeRole,
                                 duplocation,
+                                "dupPersonPnl",
                                 rockContext ) );
                         }
                     }
@@ -774,6 +776,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                                 duplicate,
                                 groupTypeRole,
                                 duplocation,
+                                "matchAddressPnl",
                                 rockContext ) );
                         }
                     }
@@ -816,6 +819,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             Person person,
             GroupTypeRole groupTypeRole,
             Location location,
+            string controlIdPrefix,
             RockContext rockContext )
         {
             var personInfoHtml = new StringBuilder();
@@ -901,7 +905,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             personInfoHtml.Append( "</div>" );
 
             var dupPersonPnl = new Panel();
-            dupPersonPnl.ID = string.Format( "dupPersonPnl_{0}_{1}", groupMemberGuidString, person.Id );
+            dupPersonPnl.ID = string.Format( "{0}_{1}_{2}", controlIdPrefix, groupMemberGuidString, person.Id );
             dupPersonPnl.Controls.Add( new LiteralControl( personInfoHtml.ToString() ) );
 
             return dupPersonPnl;
