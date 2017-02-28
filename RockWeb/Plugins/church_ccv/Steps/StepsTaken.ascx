@@ -375,6 +375,7 @@
                                 <asp:BoundField DataField="FullName" HeaderText="Name" />
                                 <asp:BoundField DataField="Campus" HeaderText="Campus" />
                                 <asp:BoundField DataField="Address" HeaderText="Address" />
+                                <asp:BoundField DataField="Age" HeaderText="Age" />
                             </Columns>
                         </Rock:Grid>
                     </div>

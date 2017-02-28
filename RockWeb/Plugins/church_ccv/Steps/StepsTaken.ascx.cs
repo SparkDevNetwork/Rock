@@ -1050,7 +1050,7 @@ namespace RockWeb.Plugins.church_ccv.Steps
                                               s => s.PersonAlias.PersonId, 
                                               dp => dp.PersonId, 
                                               ( s, dp ) => new { Step = s, DatamartPerson = dp } )
-                                        .SelectMany( x => x.DatamartPerson.DefaultIfEmpty(), ( g, u ) => new { Step = g.Step, Address = u.Address } );
+                                        .SelectMany( x => x.DatamartPerson.DefaultIfEmpty(), ( g, u ) => new { Step = g.Step, Address = u.Address, Age = u.Age } );
                 
 
                 var results = joinedQuery.Select( s =>
@@ -1062,7 +1062,8 @@ namespace RockWeb.Plugins.church_ccv.Steps
                                         PersonId = s.Step.PersonAlias.PersonId,
                                         FullName = s.Step.PersonAlias.Person.LastName + ", " + s.Step.PersonAlias.Person.NickName,
                                         Campus = s.Step.Campus.Name,
-                                        Address = s.Address
+                                        Address = s.Address,
+                                        Age = s.Age
                                     }
                 );
                 
