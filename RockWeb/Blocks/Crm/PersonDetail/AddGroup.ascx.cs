@@ -678,7 +678,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                     phDuplicates.Controls.Add( dupRow );
 
                     var newPersonCol = new HtmlGenericControl( "div" );
-                    newPersonCol.AddCssClass( "col-md-3" );
+                    newPersonCol.AddCssClass( "col-md-4" );
                     newPersonCol.ID = string.Format( "newPersonCol_{0}", groupMemberGuidString );
                     dupRow.Controls.Add( newPersonCol );
 
@@ -700,7 +700,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                     if ( Duplicates.ContainsKey( groupMember.Person.Guid ) )
                     {
                         var dupPersonCol = new HtmlGenericControl( "div" );
-                        dupPersonCol.AddCssClass( "col-md-3" );
+                        dupPersonCol.AddCssClass( "col-md-4" );
                         dupPersonCol.ID = string.Format( "dupPersonCol_{0}", groupMemberGuidString );
                         dupRow.Controls.Add( dupPersonCol );
 
@@ -741,7 +741,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                     if ( MatchingAddresses.ContainsKey( groupMember.Person.Guid ) )
                     {
                         var matchAddressCol = new HtmlGenericControl( "div" );
-                        matchAddressCol.AddCssClass( "col-md-3" );
+                        matchAddressCol.AddCssClass( "col-md-4" );
                         matchAddressCol.ID = string.Format( "matchAddressCol_{0}", groupMemberGuidString );
                         dupRow.Controls.Add( matchAddressCol );
 
