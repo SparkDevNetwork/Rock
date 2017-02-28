@@ -950,7 +950,7 @@
   {% if employeeHsa != empty %}
   <div class="row">
     <div class="col-xs-3" style="text-align:left">
-      <b>Employee HSA per quarter</b>
+      <b>Employee HSA</b>
     </div>
     <div class="col-xs-3" style="text-align:right">
       {{employeeHsa | DividedBy:1 | FormatAsCurrency }}
@@ -970,7 +970,7 @@
   {% if employerHsa != empty %}
   <div class="row">
     <div class="col-xs-3" style="text-align:left">
-      <b>Employer HSA per quarter</b>
+      <b>Employer Paid HSA per quarter</b>
     </div>
     <div class="col-xs-3" style="text-align:right">
       {{employerHsa | DividedBy:1 | FormatAsCurrency }}
