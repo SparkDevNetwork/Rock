@@ -240,7 +240,7 @@
         {% endif %}
         {% if hourly %}
         <tr>
-          <td style="border:1pt solid black;text-align:right;">>{{ approvedHours }}</td> <!-- Hours approved to work per p/p attribute -->
+          <td style="border:1pt solid black;text-align:right;">{{ approvedHours }}</td> <!-- Hours approved to work per p/p attribute -->
           <td><p> </p></td>
         </tr>
         {% endif %}
