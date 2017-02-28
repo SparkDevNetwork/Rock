@@ -22,7 +22,7 @@ namespace Rock.Migrations
     /// <summary>
     ///
     /// </summary>
-    public partial class AddPersonDevices : Rock.Migrations.RockMigration
+    public partial class AddPersonalDevices : Rock.Migrations.RockMigration
     {
         /// <summary>
         /// Operations to be performed during the upgrade process.
@@ -37,6 +37,7 @@ namespace Rock.Migrations
                         PersonAliasId = c.Int(nullable: false),
                         DeviceRegistrationId = c.String(),
                         PersonalDeviceTypeId = c.Int(nullable: false),
+                        NotificationsEnabled = c.Boolean(nullable: false),
                         CreatedDateTime = c.DateTime(),
                         ModifiedDateTime = c.DateTime(),
                         CreatedByPersonAliasId = c.Int(),
@@ -58,9 +59,12 @@ namespace Rock.Migrations
                 .Index(t => t.Guid, unique: true);
 
             RockMigrationHelper.AddDefinedType( "Global", "Personal Device Type", "Device type for notifications", SystemGuid.DefinedType.PERSONAL_DEVICE_TYPE );
+            RockMigrationHelper.AddDefinedTypeAttribute( SystemGuid.DefinedType.PERSONAL_DEVICE_TYPE, "1EDAFDED-DFE6-4334-B019-6EECBA89E05A", "Supports Notifications", "SupportsNotifications", "Does this personal device type support notifications", 0, "true", "D098823B-C6D6-44F4-9248-5F1971EE4009" );
+            RockMigrationHelper.AddAttributeQualifier( "D098823B-C6D6-44F4-9248-5F1971EE4009", "SupportsNotificationsTrueText", "Yes", "51A181F4-9A3A-4356-B466-164BFDE0C5A5" );
+            RockMigrationHelper.AddAttributeQualifier( "D098823B-C6D6-44F4-9248-5F1971EE4009", "SupportsNotificationsFalseText", "No", "B6AD7267-E54D-4660-B1B4-1B6DB0DF3402" );
             RockMigrationHelper.AddDefinedValue( SystemGuid.DefinedType.PERSONAL_DEVICE_TYPE, "Mobile", "Personal Device Type Mobile", SystemGuid.DefinedValue.PERSONAL_DEVICE_TYPE_MOBILE );
         }
-
+        
         /// <summary>
         /// Operations to be performed during the downgrade process.
         /// </summary>
@@ -78,6 +82,7 @@ namespace Rock.Migrations
             DropTable("dbo.PersonalDevice");
             RockMigrationHelper.DeleteDefinedType( SystemGuid.DefinedType.PERSONAL_DEVICE_TYPE ); // Personal Device Type
             RockMigrationHelper.DeleteDefinedValue( SystemGuid.DefinedValue.PERSONAL_DEVICE_TYPE_MOBILE ); // Personal Device Type Mobile
+            RockMigrationHelper.DeleteAttribute( "D098823B-C6D6-44F4-9248-5F1971EE4009" );
         }
     }
 }

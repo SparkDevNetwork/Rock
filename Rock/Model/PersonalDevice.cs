@@ -61,6 +61,15 @@ namespace Rock.Model
         [DefinedValue( SystemGuid.DefinedType.PERSONAL_DEVICE_TYPE )]
         public int PersonalDeviceTypeId { get; set; }
 
+        /// <summary>
+        /// Gets or sets whether or not notifications are enabled for this device.
+        /// </summary>
+        /// <value>
+        /// True or false based on whether or not notifications are enabled.
+        /// </value>
+        [DataMember]
+        public bool NotificationsEnabled { get; set; }
+
         #endregion
 
         #region Virtual Properties
