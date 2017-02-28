@@ -240,7 +240,7 @@
         {% endif %}
         {% if hourly %}
         <tr>
-          <td>{{ approvedHours }}</td> <!-- Hours approved to work per p/p attribute -->
+          <td style="border:1pt solid black;text-align:left;">>{{ approvedHours }}</td> <!-- Hours approved to work per p/p attribute -->
           <td><p> </p></td>
         </tr>
         {% endif %}
@@ -297,7 +297,7 @@
         {% endif %}
         {% if hourly %}
         <tr>
-          <td>{{ approvedHours }}</td> <!-- Hours approved to work per p/p attribute -->
+          <td style="border:1pt solid black;text-align:left;">{{ approvedHours }}</td> <!-- Hours approved to work per p/p attribute -->
           <td><p> </p></td>
         </tr>
         {% endif %}
@@ -354,7 +354,7 @@
         {% endif %}
         {% if hourly %}
         <tr>
-          <td>{{ approvedHours }}</td> <!-- Hours approved to work per p/p attribute -->
+          <td style="border:1pt solid black;text-align:left;">{{ approvedHours }}</td> <!-- Hours approved to work per p/p attribute -->
           <td><p> </p></td>
         </tr>
         {% endif %}
@@ -926,26 +926,6 @@
     {% endif %}
   </div>
   {% endif %}<!-- Nationwide Loan Row -->
-  {% assign medicalDentalLTDLife = Person | Attribute:'Arena-21-227' %} <!-- Medical/Dental/LTD/Life Benefit Row -->
-  {% if medicalDentalLTDLife != empty %}
-  <div class="row">
-    <div class="col-xs-3" style="text-align:left">
-      <b>Central Paid Benefit</b>
-    </div>
-    <div class="col-xs-3" style="text-align:right">
-      {{medicalDentalLTDLife | DividedBy:1 | FormatAsCurrency }}
-    </div>
-    {% assign medicalDentalLTDLifeDate = Person | Attribute:'Arena-21-228' %}
-    {% if medicalDentalLTDLifeDate != ''%}
-    <div class="col-xs-3" style="text-align:right">
-      <b>Central Paid Benefit Effective Date</b>
-    </div>
-    <div class="col-xs-3" style="text-align:left">
-      {{medicalDentalLTDLifeDate | Date:'MM/dd/yy'}}
-    </div>
-    {% endif %}
-  </div>
-  {% endif %}<!-- Medical/Dental/LTD/Life Benefit Row -->
   {% assign dental = Person | Attribute:'Arena-21-250' %} <!-- Dental Row -->
   {% if dental != empty %}
   <div class="row">
@@ -965,7 +945,7 @@
     </div>
     {% endif %}
   </div>
-  {% endif %}<!-- Medical Row -->
+  {% endif %}<!-- Dental Row -->
   {% assign employeeHsa = Person | Attribute:'Arena-21-252' %} <!-- Employee HSA Row -->
   {% if employeeHsa != empty %}
   <div class="row">
@@ -1026,6 +1006,26 @@
     {% endif %}
   </div>
   {% endif %}<!-- Fidelity Loan Row -->
+  {% assign medicalDentalLTDLife = Person | Attribute:'Arena-21-227' %} <!-- Medical/Dental/LTD/Life Benefit Row -->
+  {% if medicalDentalLTDLife != empty %}
+  <div class="row">
+    <div class="col-xs-3" style="text-align:left">
+      <b>Central Paid Benefit</b>
+    </div>
+    <div class="col-xs-3" style="text-align:right">
+      {{medicalDentalLTDLife | DividedBy:1 | FormatAsCurrency }}
+    </div>
+    {% assign medicalDentalLTDLifeDate = Person | Attribute:'Arena-21-228' %}
+    {% if medicalDentalLTDLifeDate != ''%}
+    <div class="col-xs-3" style="text-align:right">
+      <b>Central Paid Benefit Effective Date</b>
+    </div>
+    <div class="col-xs-3" style="text-align:left">
+      {{medicalDentalLTDLifeDate | Date:'MM/dd/yy'}}
+    </div>
+    {% endif %}
+  </div>
+  {% endif %}<!-- Medical/Dental/LTD/Life Benefit Row -->
 </br>
   </div><!-- Other Deductions Row -->
   <h3 width="100%" style="border-bottom: 1pt solid black;"> Employee Bi-Weekly Contribution Election </h3>
