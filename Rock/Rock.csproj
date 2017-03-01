@@ -642,6 +642,7 @@
     <Compile Include="Model\CodeGenerated\AnalyticsFactAttendanceService.cs" />
     <Compile Include="Model\CodeGenerated\AnalyticsSourceAttendanceService.cs" />
     <Compile Include="Model\CodeGenerated\AnalyticsSourceFamilyHistoricalService.cs" />
+    <Compile Include="Model\CodeGenerated\PersonalDeviceService.cs" />
     <Compile Include="Model\InteractionService.Partial.cs" />
     <Compile Include="Model\MetricService.Partial.cs" />
     <Compile Include="Model\AttendanceCodeService.Partial.cs" />
