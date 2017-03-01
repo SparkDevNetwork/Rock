@@ -167,9 +167,8 @@ namespace RockWeb.Blocks.Fundraising
             btnLeaderToolbox.Visible = group.Members.Any( a => a.PersonId == this.CurrentPersonId && a.GroupRole.IsLeader );
 
             //// Participant Actions 
-            // only show if the current person is a participant
-            var groupTypeRolePartipantGuid = "F82DF077-9664-4DA8-A3D9-7379B690124D".AsGuid();
-            var groupMember = group.Members.FirstOrDefault( a => a.PersonId == this.CurrentPersonId && a.GroupRole.Guid == groupTypeRolePartipantGuid );
+            // only show if the current person is a group member
+            var groupMember = group.Members.FirstOrDefault( a => a.PersonId == this.CurrentPersonId );
             if ( groupMember != null )
             {
                 hfGroupMemberId.Value = groupMember.Id.ToString();
@@ -183,16 +182,45 @@ namespace RockWeb.Blocks.Fundraising
                 imgParticipant.ImageUrl = null;
             }
 
-            // TODO, make this work for realz
-            lFundraisingAmountLeftText.Text = "$320 left";
-            lFundraisingProgressTitle.Text = "Fundraising Progress";
-            lFundraisingProgressBar.Text = string.Format( 
-                @"<div class='progress'>
-                    <div class='progress-bar' role='progressbar' aria-valuenow='{0}' aria-valuemin='0' aria-valuemax='100' style='width: {0}%;'>
-                        <span class='sr-only'>{0}% Complete</span>
+            // Progress
+            if ( groupMember != null && pnlParticipantActions.Visible )
+            {
+                var transactionTypeFundraisingValueId = DefinedValueCache.Read( "142EA7C8-04E5-4708-9E29-9C89127061C7" ).Id;
+                var entityTypeIdGroupMember = EntityTypeCache.GetId<Rock.Model.GroupMember>();
+
+                var contributionTotal = new FinancialTransactionDetailService( rockContext ).Queryable()
+                            .Where( d => d.Transaction.TransactionTypeValueId == transactionTypeFundraisingValueId
+                                    && d.EntityTypeId == entityTypeIdGroupMember
+                                    && d.EntityId == groupMember.Id )
+                            .Sum( a => (decimal?)a.Amount ) ?? 0.00M;
+
+                var individualFundraisingGoal = groupMember.GetAttributeValue( "IndividualFundraisingGoal" ).AsDecimalOrNull();
+                if ( !individualFundraisingGoal.HasValue )
+                {
+                    individualFundraisingGoal = group.GetAttributeValue( "IndividualFundraisingGoal" ).AsDecimalOrNull();
+                }
+
+                var amountLeft = individualFundraisingGoal - contributionTotal;
+                var percentMet = individualFundraisingGoal > 0 ? contributionTotal * 100 / individualFundraisingGoal : 100;
+                if ( amountLeft >= 0 )
+                {
+                    lFundraisingAmountLeftText.Text = string.Format( "{0} left", amountLeft.FormatAsCurrency() );
+                }
+                else
+                {
+                    // over 100% of the goal, so display percent
+                    lFundraisingAmountLeftText.Text = string.Format( "{0}%", Math.Round( percentMet ?? 0 ) );
+                }
+
+                lFundraisingProgressTitle.Text = "Fundraising Progress";
+                lFundraisingProgressBar.Text = string.Format(
+                    @"<div class='progress'>
+                    <div class='progress-bar' role='progressbar' aria-valuenow='{0}' aria-valuemin='0' aria-valuemax='100' style='width: {1}%;'>
+                    <span class='sr-only'>{0}% Complete</span>
                     </div>
-                 </div>", 
-                60 );
+                 </div>",
+                    Math.Round( percentMet ?? 0, 2 ), percentMet > 100 ? 100 : percentMet );
+            }
 
             // Tab:Details
             lDetailsHtml.Text = group.GetAttributeValue( "OpportunityDetails" );
@@ -319,8 +347,8 @@ namespace RockWeb.Blocks.Fundraising
         {
             var queryParams = new Dictionary<string, string>();
             queryParams.Add( "GroupId", hfGroupId.Value );
-            queryParams.Add( "PersonId", CurrentPersonId.ToString() );
-            NavigateToLinkedPage( "Donation Page", queryParams );
+            queryParams.Add( "GroupMemberId", hfGroupMemberId.Value );
+            NavigateToLinkedPage( "DonationPage", queryParams );
         }
 
         /// <summary>

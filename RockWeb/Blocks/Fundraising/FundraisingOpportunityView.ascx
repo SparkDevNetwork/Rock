@@ -27,7 +27,7 @@
                         <div class="well margin-t-md">
                             <div class="row">
                                 <div class="col-md-9">
-                                    <asp:Image ID="imgParticipant" runat="server" CssClass="pull-left" />
+                                    <asp:Image ID="imgParticipant" runat="server" CssClass="pull-left margin-all-sm" />
                                     <label>
                                         <asp:Literal ID="lFundraisingProgressTitle" runat="server" Text="Fundraising Progress" />
                                     </label>

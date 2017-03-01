@@ -46,6 +46,15 @@ namespace Rock.Migrations
 
             // TODO: Add NoteType 'Fundraising Opportunity Comment' Guid:9BB1A7B6-0E51-4E0E-BFC0-1E42F4F2DA95
             // NOTE: make sure AllUsers have EDIT auth (the block will control when Edit/Add is allowed)
+
+            //// TODO: Pages and Blocks migration
+            // the TransactionEntry block for Fundraising will need a bunch of attributes set
+            //  + Disable Business Giving
+            //  + Turn off the 'Additional Accounts' option
+            //  + Set the TransactionEntityType and EntityIdParam attributes to GroupMember, GroupMemberId
+            //  + Set the various Lava Templates Options
+            //  + (sweep for others)
+            
         }
 
         /// <summary>

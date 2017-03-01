@@ -26,6 +26,7 @@ using Rock.Attribute;
 using Rock.Data;
 using Rock.Lava;
 using Rock.Model;
+using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
@@ -135,7 +136,6 @@ namespace RockWeb.Blocks.Fundraising
             group.LoadAttributes( rockContext );
             var mergeFields = LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson, new CommonMergeFieldsOptions { GetLegacyGlobalMergeFields = false } );
             mergeFields.Add( "Group", group );
-            var groupTypeRolePartipantGuid = "F82DF077-9664-4DA8-A3D9-7379B690124D".AsGuid();
 
             // Left Top Sidebar
             var photoGuid = group.GetAttributeValue( "OpportunityPhoto" );
@@ -163,19 +163,45 @@ namespace RockWeb.Blocks.Fundraising
 
             groupMembersQuery = groupMembersQuery.Sort( gGroupMembers.SortProperty ?? new SortProperty { Property = "Person.LastName, Person.NickName" } );
 
+            var transactionTypeFundraisingValueId = DefinedValueCache.Read( "142EA7C8-04E5-4708-9E29-9C89127061C7" ).Id;
+            var entityTypeIdGroupMember = EntityTypeCache.GetId<Rock.Model.GroupMember>();
+
             var groupMemberList = groupMembersQuery.ToList().Select( a =>
             {
-                a.LoadAttributes( rockContext );
-                var fundRaisingGoal = a.GetAttributeValue( "IndividualFundraisingGoal" ).AsDecimalOrNull() ?? defaultIndividualFundRaisingGoal;
+                var groupMember = a;
+                groupMember.LoadAttributes( rockContext );
+
+                var contributionTotal = new FinancialTransactionDetailService( rockContext ).Queryable()
+                            .Where( d => d.Transaction.TransactionTypeValueId == transactionTypeFundraisingValueId
+                                    && d.EntityTypeId == entityTypeIdGroupMember
+                                    && d.EntityId == groupMember.Id )
+                            .Sum( d => (decimal?)d.Amount ) ?? 0.00M;
+
+                var individualFundraisingGoal = groupMember.GetAttributeValue( "IndividualFundraisingGoal" ).AsDecimalOrNull();
+                bool disablePublicContributionRequests = groupMember.GetAttributeValue( "DisablePublicContributionRequests" ).AsBoolean();
+                if ( !individualFundraisingGoal.HasValue )
+                {
+                    individualFundraisingGoal = group.GetAttributeValue( "IndividualFundraisingGoal" ).AsDecimalOrNull();
+                }
+
+                var fundingRequired = individualFundraisingGoal - contributionTotal;
+                if ( disablePublicContributionRequests )
+                {
+                    fundingRequired = null;
+                }
+                else if ( fundingRequired < 0 )
+                {
+                    fundingRequired = 0.00M;
+                }
 
                 return new
                 {
-                    a.Id,
-                    PersonId = a.PersonId,
-                    DateTimeAdded = a.DateTimeAdded,
-                    a.Person.FullName,
-                    a.Person.Gender,
-                    FundraisingGoal = fundRaisingGoal,
+                    groupMember.Id,
+                    PersonId = groupMember.PersonId,
+                    DateTimeAdded = groupMember.DateTimeAdded,
+                    groupMember.Person.FullName,
+                    groupMember.Person.Gender,
+                    FundingRequired = fundingRequired,
                     GroupRoleName = a.GroupRole.Name
                 };
             } ).ToList();
