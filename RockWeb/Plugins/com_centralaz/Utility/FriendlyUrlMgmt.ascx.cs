@@ -239,13 +239,16 @@ namespace RockWeb.Plugins.com_centralaz.Utility
 
         private void LoadFriendlyUrlDdl( DataTable dtVirtualDirectories )
         {
-            ddlFriendlyUrls.Items.Clear();
-            ListItem i = new ListItem( "<add new>", "new" );
-            ddlFriendlyUrls.Items.Add( i );
-            ddlFriendlyUrls.DataSource = dtVirtualDirectories;
-            ddlFriendlyUrls.DataTextField = dtVirtualDirectories.Columns["FriendlyURL"].ToString();
-            ddlFriendlyUrls.DataBind();
-            ddlFriendlyUrls.SelectedValue = "new";
+            if ( dtVirtualDirectories != null && dtVirtualDirectories.Rows.Count > 0 )
+            {
+                ddlFriendlyUrls.Items.Clear();
+                ListItem i = new ListItem( "<add new>", "new" );
+                ddlFriendlyUrls.Items.Add( i );
+                ddlFriendlyUrls.DataSource = dtVirtualDirectories;
+                ddlFriendlyUrls.DataTextField = dtVirtualDirectories.Columns["FriendlyURL"].ToString();
+                ddlFriendlyUrls.DataBind();
+                ddlFriendlyUrls.SelectedValue = "new";
+            }
         }
 
         private void ClearForm()
@@ -312,59 +315,78 @@ namespace RockWeb.Plugins.com_centralaz.Utility
 
         private DataTable GetVirtualDirectories()
         {
-            DataTable dtFriendlyURLS;
-
-            if ( Cache["dtFriendlyURLS"] == null )
+            var webSiteName = GetAttributeValue( "IISWebsiteName" );
+            DataTable dtFriendlyURLS = new DataTable();
+            string name = string.Empty;
+            try
             {
-                ServerManager serverManager = new ServerManager();
-                Application app = serverManager.Sites[GetAttributeValue( "IISWebsiteName" )].Applications["/"];
-
-                dtFriendlyURLS = new DataTable();
-                dtFriendlyURLS.Columns.Add( new DataColumn( "FriendlyURL", typeof( System.String ) ) );
-                dtFriendlyURLS.Columns.Add( new DataColumn( "Destination", typeof( System.String ) ) );
-                dtFriendlyURLS.Columns.Add( new DataColumn( "ExactDestination", typeof( System.Boolean ) ) );
-                dtFriendlyURLS.Columns.Add( new DataColumn( "ChildOnly", typeof( System.Boolean ) ) );
-                dtFriendlyURLS.Columns.Add( new DataColumn( "HttpResponseStatus", typeof( System.String ) ) );
-
-                var vDs = ( from vDir in app.VirtualDirectories
-                            where vDir.Path != "/"
-                            orderby vDir.Path
-                            select vDir );
-
-                foreach ( VirtualDirectory vD in vDs )
+                if ( Cache["dtFriendlyURLS"] == null )
                 {
-                    Configuration config = serverManager.GetWebConfiguration( GetAttributeValue( "IISWebsiteName" ) + vD.Path );
-                    ConfigurationSection httpRedirectSection = config.GetSection( "system.webServer/httpRedirect" );
+                    ServerManager serverManager = new ServerManager();
 
-                    DataRow dRow = dtFriendlyURLS.NewRow();
-                    char[] charsToTrim = { '/' };
-                    dRow["FriendlyURL"] = vD.Path.ToString().Trim( charsToTrim );
-                    dRow["Destination"] = httpRedirectSection["destination"].ToString();
-                    dRow["ExactDestination"] = (bool)httpRedirectSection["exactDestination"];
-                    dRow["ChildOnly"] = (bool)httpRedirectSection["childOnly"];
-                    switch ( httpRedirectSection["httpResponseStatus"].ToString() )
+                    var site = serverManager.Sites[webSiteName];
+                    if ( site != null )
                     {
-                        case "301":
-                            dRow["HttpResponseStatus"] = "Permanent";
-                            break;
-                        case "302":
-                            dRow["HttpResponseStatus"] = "Found";
-                            break;
-                        case "307":
-                            dRow["HttpResponseStatus"] = "Temporary";
-                            break;
+                        Application app = site.Applications["/"];
+
+                        dtFriendlyURLS = new DataTable();
+                        dtFriendlyURLS.Columns.Add( new DataColumn( "FriendlyURL", typeof( System.String ) ) );
+                        dtFriendlyURLS.Columns.Add( new DataColumn( "Destination", typeof( System.String ) ) );
+                        dtFriendlyURLS.Columns.Add( new DataColumn( "ExactDestination", typeof( System.Boolean ) ) );
+                        dtFriendlyURLS.Columns.Add( new DataColumn( "ChildOnly", typeof( System.Boolean ) ) );
+                        dtFriendlyURLS.Columns.Add( new DataColumn( "HttpResponseStatus", typeof( System.String ) ) );
+
+                        var vDs = ( from vDir in app.VirtualDirectories
+                                    where vDir.Path != "/"
+                                    orderby vDir.Path
+                                    select vDir );
+
+                        foreach ( VirtualDirectory vD in vDs )
+                        {
+                            name = vD.Path;
+                            Configuration config = serverManager.GetWebConfiguration( webSiteName, vD.Path );
+                            ConfigurationSection httpRedirectSection = config.GetSection( "system.webServer/httpRedirect" );
+
+                            DataRow dRow = dtFriendlyURLS.NewRow();
+                            char[] charsToTrim = { '/' };
+                            dRow["FriendlyURL"] = vD.Path.ToString().Trim( charsToTrim );
+                            dRow["Destination"] = httpRedirectSection["destination"].ToString();
+                            dRow["ExactDestination"] = ( bool ) httpRedirectSection["exactDestination"];
+                            dRow["ChildOnly"] = ( bool ) httpRedirectSection["childOnly"];
+                            switch ( httpRedirectSection["httpResponseStatus"].ToString() )
+                            {
+                                case "301":
+                                    dRow["HttpResponseStatus"] = "Permanent";
+                                    break;
+                                case "302":
+                                    dRow["HttpResponseStatus"] = "Found";
+                                    break;
+                                case "307":
+                                    dRow["HttpResponseStatus"] = "Temporary";
+                                    break;
+                            }
+
+                            dtFriendlyURLS.Rows.Add( dRow );
+                        }
+
+                        Cache.Add( "dtFriendlyURLS", dtFriendlyURLS, null, DateTime.Now.AddMinutes( 3 ), System.Web.Caching.Cache.NoSlidingExpiration, System.Web.Caching.CacheItemPriority.Default, null );
                     }
-
-                    dtFriendlyURLS.Rows.Add( dRow );
+                    else
+                    {
+                        nbMessage.Visible = true;
+                        nbMessage.Text = string.Format( "Warning: No IIS site named '{0}' was found.  Have you configured these block's settings correctly?", webSiteName );
+                    }
                 }
-
-                Cache.Add( "dtFriendlyURLS", dtFriendlyURLS, null, DateTime.Now.AddMinutes( 3 ), System.Web.Caching.Cache.NoSlidingExpiration, System.Web.Caching.CacheItemPriority.Default, null );
+                else
+                {
+                    dtFriendlyURLS = ( DataTable ) Cache["dtFriendlyURLS"];
+                }
             }
-            else
+            catch ( Exception ex )
             {
-                dtFriendlyURLS = (DataTable)Cache["dtFriendlyURLS"];
+                nbMessage.Visible = true;
+                nbMessage.Text = string.Format( "<h2>{2}: Woah! That wasn't supposed to happen.</h2><h3>{0}</h3><pre>{1}</pre>", ex.Message, ex.StackTrace, name );
             }
-
             return dtFriendlyURLS;
         }
 

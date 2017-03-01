@@ -2,6 +2,9 @@
 
 <asp:UpdatePanel ID="upnlContent" runat="server">
     <ContentTemplate>
+
+        <Rock:NotificationBox id="nbMessage" runat="server" Visible="false" NotificationBoxType="Danger"></Rock:NotificationBox>
+
         <asp:Panel ID="pnlEdit" runat="server" CssClass="panel panel-block">
             <div class="panel-heading">
                 <h1 class="panel-title"><i class="fa fa-desktop"></i>Add/Edit a Friendly Url</h1>
