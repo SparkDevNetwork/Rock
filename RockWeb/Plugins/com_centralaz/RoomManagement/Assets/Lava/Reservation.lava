@@ -1,0 +1,77 @@
+  {% assign reservationCount = ReservationSummaries | Size %}
+
+  {% if reservationCount == 0 %}
+  <div class="panel panel-default margin-t-md">
+    <div class="margin-all-md"> There are no reservations in this time frame.</div>
+  </div>
+  {% endif %}
+
+  {% for reservationDate in ReservationSummaries %}
+  {% assign firstReservation = reservationDate | First %}
+  <div class="panel panel-default margin-t-md">
+    <div class="panel-heading clearfix">
+		<h2 class="panel-title pull-left">
+			{{ firstReservation.CalendarDate }}
+		</h2>
+    </div>
+    <div class="panel-body">
+		<div class="row">
+			<div class="col-md-2">
+				<b>Name</b>
+			</div>
+			<div class="col-md-2">       
+				<b>Event Time</b>
+			</div>
+			<div class="col-md-2">
+				 <b>Reservation Time</b>
+			</div>
+			<div class="col-md-2">
+			  <b>Locations</b>
+			</div>
+			<div class="col-md-2">
+			  <b>Resources</b>
+			</div>
+			<div class="col-md-1">
+			  <b>Status</b>
+			</div>
+			<div class="col-md-1">
+			  <b>Edit</b>
+			</div>
+		</div>
+		{% for reservationSummary in reservationDate %}
+		<div class="row">
+			<div class="col-md-2">
+				{{ reservationSummary.ReservationName }}
+			</div>
+			<div class="col-md-2">       
+				{{ reservationSummary.EventDateTimeDescription }}
+			</div>
+			<div class="col-md-2">
+				 {{ reservationSummary.ReservationDateTimeDescription }}
+			</div>
+			<div class="col-md-2">
+			  {{ reservationSummary.Locations }}
+			</div>
+			<div class="col-md-2">
+			  {{ reservationSummary.Resources }}
+			</div>
+			<div class="col-md-1">
+			  {{ reservationSummary.Status }}
+			</div>
+			<div class="col-md-1">
+			  <a href="{{ DetailsPage }}?ReservationId={{ reservationSummary.Id }}"><i class="fa fa-edit"></i></a>
+			</div>
+		</div>
+		<br/>
+		{% endfor %}
+    </div>
+  </div>
+  {% endfor %}
+
+<script type="text/javascript">
+
+  $( document ).ready(function() {
+  $('.js-group-item').tooltip();
+  });
+
+</script>
