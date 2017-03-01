@@ -1,0 +1,63 @@
+<div class="panel panel-default">
+    <div class="panel-heading">Teams</div>
+    <ul class="list-group list-group-panel">
+        {% for group in Groups %}
+            <li class="list-group-item">
+                {% assign color = group.Group | Attribute:'Color' %}
+                {% assign practLocation = group.Group | Attribute:'PracticeLocation' %}
+                {% assign practiceDays = group.Group | Attribute:'PracticeDays' %}
+                {% assign practiceTime = group.Group | Attribute:'PracticeTime' %}
+                {% if group.Group.IsPublic and group.IsLeader %}
+                    <a href="{{ LinkedPages.DetailPage }}?GroupId={{group.Group.Id}}" class="js-group-item" data-toggle="tooltip" data-placement="top" title="{{ group.GroupType }}">
+                        <h4>{{ CurrentPerson.NickName }} {{ CurrentPerson.LastName }} <small>({{ group.Role }})</small></h4>
+                    </a>
+                {% else %}
+                        <h4>{{ CurrentPerson.NickName }} {{ CurrentPerson.LastName }} <small>({{ group.Role }})</small></h4>
+                {% endif %}
+                <p><b>Team:</b> {{ group.Group.Name }}</p>
+                <ul class="margin-b-md">
+                    {% if color != "" and color %}<li><b>Color:</b> {{ group.Group | Attribute:'Color' }}</li> {% endif %}
+                    {% if practiceLocation != "" and practiceLocation %}<li><b>Practice Location:</b> {{ group.Group | Attribute:'PracticeLocation' }}</li> {% endif %}
+                    {% if practiceDays != "" and practiceDays %}<li><b>Practice Days:</b> {{ group.Group | Attribute:'PracticeDays' }}</li> {% endif %}
+                    {% if practiceTime != "" and practiceTime %}<li><b>Practice Time:</b> {{ group.Group | Attribute:'PracticeTime' }}</li> {% endif %}
+                </ul>
+            </li>
+        {% endfor %}
+        
+        {% assign children = CurrentPerson | Children %}
+        {% for child in children %}
+            {% assign childGroups = child | Groups:'73','Active' %}
+            
+            {% for group in childGroups %}
+            <li class="list-group-item">
+                {% assign color = group.Group | Attribute:'Color' %}
+                {% assign practLocation = group.Group | Attribute:'PracticeLocation' %}
+                {% assign practiceDays = group.Group | Attribute:'PracticeDays' %}
+                {% assign practiceTime = group.Group | Attribute:'PracticeTime' %}
+                <h4>{{ child.NickName }} {{ child.LastName }} <small>(Player)</small></h4>
+                <p><b>Team:</b> {{ group.Group.Name }}</p>
+                <ul class="margin-b-md">
+                    {% if color != "" and color %}<li><b>Color:</b> {{ group.Group | Attribute:'Color' }}</li> {% endif %}
+                    {% if practiceLocation != "" and practiceLocation %}<li><b>Practice Location:</b> {{ group.Group | Attribute:'PracticeLocation' }}</li> {% endif %}
+                    {% if practiceDays != "" and practiceDays %}<li><b>Practice Days:</b> {{ group.Group | Attribute:'PracticeDays' }}</li> {% endif %}
+                    {% if practiceTime != "" and practiceTime %}<li><b>Practice Time:</b> {{ group.Group | Attribute:'PracticeTime' }}</li> {% endif %}
+                </ul>
+            </li>
+            {% endfor %}
+        {% endfor %}
+        
+        {% assign adultGroupCount = Groups | Size %}
+        {% assign childGroupCount = childGroups | Size %}
+        {% if adultGroupCount == 0 and childGroupCount == 0 %}
+            <div class="margin-all-md"> Currently not on a team</div>
+        {% endif %}
+    </ul>
+</div>
+
+<script type="text/javascript">
+
+  $( document ).ready(function() {
+  $('.js-group-item').tooltip();
+  });
+
+</script>
