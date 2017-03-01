@@ -22,30 +22,34 @@
                         <asp:Literal ID="lMainTopContentHtml" runat="server" />
                     </div>
                 </div>
-                <div class="well margin-t-md">
-                    <div class="row">
-                        <div class="col-md-12">
-                            <label>
-                                <asp:Literal ID="lFundraisingProgressTitle" runat="server" Text="Fundraising Progress" />
-                            </label>
-                            <label class='pull-right'>
-                                <asp:Literal ID="lFundraisingAmountLeftText" runat="server" Text="$320 left" />
-                            </label>
-                            <asp:Literal ID="lFundraisingProgressBar" runat="server" />
+
+                <asp:Panel ID="pnlFundraising" runat="server">
+                    <div class="well margin-t-md">
+                        <div class="row">
+                            <div class="col-md-12">
+
+                                <label>
+                                    <asp:Literal ID="lFundraisingProgressTitle" runat="server" Text="Fundraising Progress" />
+                                </label>
+                                <label class='pull-right'>
+                                    <asp:Literal ID="lFundraisingAmountLeftText" runat="server" Text="$320 left" />
+                                </label>
+                                <asp:Literal ID="lFundraisingProgressBar" runat="server" />
+                            </div>
                         </div>
-                    </div>
-                    <div class="row">
-                        <div class="col-md-12">
-                            <div class="actions pull-right">
-                                <asp:LinkButton ID="btnMakeDonation" runat="server" CssClass="btn btn-primary" Text="Contribute to..." OnClick="btnMakeDonation_Click" />
+                        <div class="row">
+                            <div class="col-md-12">
+                                <div class="actions pull-right">
+                                    <asp:LinkButton ID="btnMakeDonation" runat="server" CssClass="btn btn-primary" Text="Contribute to..." OnClick="btnMakeDonation_Click" />
+                                </div>
                             </div>
                         </div>
                     </div>
-                </div>
+                </asp:Panel>
 
 
 
-                <div class="row">
+                <div class="row margin-t-md">
                     <div class="col-md-8">
                         <div class="btn-group">
                             <asp:LinkButton ID="btnUpdatesTab" runat="server" Text="Updates" CssClass="btn btn-default" OnClick="btnUpdatesTab_Click" />
@@ -55,12 +59,12 @@
                             <asp:Literal ID="lUpdatesContentItemsHtml" runat="server" />
                         </asp:Panel>
                         <asp:Panel ID="pnlContributions" runat="server">
-                            <Rock:Grid ID="gContributions" runat="server" DisplayType="Light">
+                            <Rock:Grid ID="gContributions" runat="server" DisplayType="Light" OnRowDataBound="gContributions_RowDataBound">
                                 <Columns>
-                                    <asp:BoundField DataField="PersonFullName" HeaderText="Name" />
+                                    <asp:BoundField DataField="AuthorizedPersonAlias.Person.FullName" HeaderText="Name" />
                                     <Rock:RockLiteralField ID="lAddress" HeaderText="Address" />
-                                    <Rock:DateTimeField DataField="DateTime" HeaderText="Date" />
-                                    <Rock:CurrencyField DataField="Amount" HeaderText="Amount" />
+                                    <Rock:DateTimeField DataField="TransactionDateTime" HeaderText="Date" />
+                                    <Rock:CurrencyField DataField="TotalAmount" HeaderText="Amount" />
                                 </Columns>
                             </Rock:Grid>
                         </asp:Panel>

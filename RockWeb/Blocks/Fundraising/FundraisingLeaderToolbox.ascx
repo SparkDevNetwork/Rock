@@ -28,7 +28,7 @@
                         <asp:BoundField DataField="FullName" HeaderText="Name" SortExpression="Person.LastName,Person.NickName" />
                         <Rock:EnumField DataField="Gender" HeaderText="Gender" SortExpression="Person.Gender" />
 
-                        <Rock:CurrencyField DataField="FundraisingGoal" HeaderText="Funding Required" />
+                        <Rock:CurrencyField DataField="FundingRequired" HeaderText="Funding Required" NullDisplayText=""/>
                         <asp:BoundField DataField="GroupRoleName" HeaderText="Role" SortExpression="GroupRole.Name" />
                     </Columns>
                 </Rock:Grid>

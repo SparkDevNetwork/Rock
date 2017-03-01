@@ -429,7 +429,6 @@ namespace RockWeb.Blocks.Fundraising
             group.LoadAttributes( rockContext );
             var mergeFields = LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson, new CommonMergeFieldsOptions { GetLegacyGlobalMergeFields = false } );
             mergeFields.Add( "Group", group );
-            var groupTypeRolePartipantGuid = "F82DF077-9664-4DA8-A3D9-7379B690124D".AsGuid();
 
             groupMember.LoadAttributes( rockContext );
             mergeFields.Add( "GroupMember", groupMember );
@@ -456,17 +455,49 @@ namespace RockWeb.Blocks.Fundraising
 
             lMainTopContentHtml.Text = profileLavaTemplate.ResolveMergeFields( mergeFields );
 
+            bool disablePublicContributionRequests = groupMember.GetAttributeValue( "DisablePublicContributionRequests" ).AsBoolean();
+
+            // only show Contribution stuff for Participants that haven't disabled contributions
+            pnlFundraising.Visible = !disablePublicContributionRequests;
+            pnlContributions.Visible = !disablePublicContributionRequests;
+            btnContributionsTab.Visible = !disablePublicContributionRequests;
+
             // Progress
-            // TODO, make this work for realz
-            lFundraisingAmountLeftText.Text = "$320 left";
+            var transactionTypeFundraisingValueId = DefinedValueCache.Read( "142EA7C8-04E5-4708-9E29-9C89127061C7" ).Id;
+            var entityTypeIdGroupMember = EntityTypeCache.GetId<Rock.Model.GroupMember>();
+
+            var contributionTotal = new FinancialTransactionDetailService( rockContext ).Queryable()
+                        .Where( d => d.Transaction.TransactionTypeValueId == transactionTypeFundraisingValueId
+                                && d.EntityTypeId == entityTypeIdGroupMember
+                                && d.EntityId == groupMemberId )
+                        .Sum( a => (decimal?)a.Amount ) ?? 0.00M;
+
+            var individualFundraisingGoal = groupMember.GetAttributeValue( "IndividualFundraisingGoal" ).AsDecimalOrNull();
+            if ( !individualFundraisingGoal.HasValue )
+            {
+                individualFundraisingGoal = group.GetAttributeValue( "IndividualFundraisingGoal" ).AsDecimalOrNull();
+            }
+
+            var amountLeft = individualFundraisingGoal - contributionTotal;
+            var percentMet = individualFundraisingGoal > 0 ? contributionTotal * 100 / individualFundraisingGoal : 100;
+            if ( amountLeft >= 0 )
+            {
+                lFundraisingAmountLeftText.Text = string.Format( "{0} left", amountLeft.FormatAsCurrency() );
+            }
+            else
+            {
+                // over 100% of the goal, so display percent
+                lFundraisingAmountLeftText.Text = string.Format( "{0}%", Math.Round( percentMet ?? 0 ) );
+            }
+
             lFundraisingProgressTitle.Text = "Fundraising Progress";
             lFundraisingProgressBar.Text = string.Format(
                 @"<div class='progress'>
-                    <div class='progress-bar' role='progressbar' aria-valuenow='{0}' aria-valuemin='0' aria-valuemax='100' style='width: {0}%;'>
+                    <div class='progress-bar' role='progressbar' aria-valuenow='{0}' aria-valuemin='0' aria-valuemax='100' style='width: {1}%;'>
                     <span class='sr-only'>{0}% Complete</span>
                     </div>
                  </div>",
-                60 );
+                Math.Round( percentMet ?? 0, 2 ), percentMet > 100 ? 100 : percentMet );
 
             // Tab:Updates
             btnUpdatesTab.Visible = false;
@@ -476,7 +507,9 @@ namespace RockWeb.Blocks.Fundraising
                 var contentChannel = new ContentChannelService( rockContext ).Get( updatesContentChannelGuid.Value );
                 if ( contentChannel != null )
                 {
-                    btnUpdatesTab.Visible = true;
+                    // only show the UpdatesTab if there is another Tab option
+                    btnUpdatesTab.Visible = btnContributionsTab.Visible;
+
                     string updatesLavaTemplate = this.GetAttributeValue( "UpdatesLavaTemplate" );
                     var contentChannelItems = new ContentChannelItemService( rockContext ).Queryable().Where( a => a.ContentChannelId == contentChannel.Id ).AsNoTracking().ToList();
 
@@ -529,6 +562,22 @@ namespace RockWeb.Blocks.Fundraising
 
             gContributions.SetLinqDataSource( financialTransactionQry );
             gContributions.DataBind();
+        }
+
+        /// <summary>
+        /// Handles the RowDataBound event of the gContributions control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="GridViewRowEventArgs"/> instance containing the event data.</param>
+        protected void gContributions_RowDataBound( object sender, GridViewRowEventArgs e )
+        {
+            FinancialTransaction financialTransaction = e.Row.DataItem as FinancialTransaction;
+            Literal lAddress = e.Row.FindControl( "lAddress" ) as Literal;
+            if ( financialTransaction != null && lAddress != null )
+            {
+                var personAddress = financialTransaction.AuthorizedPersonAlias.Person.GetHomeLocation();
+                lAddress.Text = personAddress.GetFullStreetAddress();
+            }
         }
 
         /// <summary>
