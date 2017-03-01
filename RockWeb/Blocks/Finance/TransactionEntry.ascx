@@ -196,10 +196,8 @@
             <Rock:NotificationBox ID="nbSelectionMessage" runat="server" Visible="false"></Rock:NotificationBox>
 
             <div class="actions clearfix margin-b-lg">
-                <div class="pull-right">
-                    <a id="lHistoryBackButton" runat="server" class="btn btn-default" href="javascript: window.history.back();" >Back</a>
-                    <asp:LinkButton ID="btnPaymentInfoNext" runat="server" Text="Next" CssClass="btn btn-primary" OnClick="btnPaymentInfoNext_Click" />
-                </div>
+                <a id="lHistoryBackButton" runat="server" class="btn btn-link" href="javascript: window.history.back();" >Previous</a>
+                <asp:LinkButton ID="btnPaymentInfoNext" runat="server" Text="Next" CssClass="btn btn-primary pull-right" OnClick="btnPaymentInfoNext_Click" />
                 <asp:LinkButton ID="btnStep2PaymentPrev" runat="server" Text="Previous" CssClass="btn btn-link" OnClick="btnStep2PaymentPrev_Click" />
                 <asp:Label ID="aStep2Submit" runat="server" ClientIDMode="Static" CssClass="btn btn-primary pull-right" Text="Next" />
             </div>

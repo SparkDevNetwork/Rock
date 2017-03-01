@@ -308,8 +308,6 @@ TransactionAcountDetails: [
             lSuccessHeader.Text = GetAttributeValue( "SuccessHeader" ).ResolveMergeFields( mergeFields );
             lSuccessFooter.Text = GetAttributeValue( "SuccessFooter" ).ResolveMergeFields( mergeFields );
 
-            lHistoryBackButton.Visible = GetAttributeValue( "EnableInitialBackbutton" ).AsBoolean();
-
             RegisterScript();
         }
                 
@@ -354,6 +352,14 @@ TransactionAcountDetails: [
             if ( !Page.IsPostBack )
             {
                 hfTransactionGuid.Value = Guid.NewGuid().ToString();
+                if ( this.Request.UrlReferrer != null )
+                {
+                    lHistoryBackButton.HRef = this.Request.UrlReferrer.ToString();
+                }
+                else
+                {
+                    lHistoryBackButton.HRef = "#";
+                }
 
                 SetControlOptions();
 
@@ -2823,6 +2829,9 @@ TransactionAcountDetails: [
             divNewPayment.Visible = ( page == 1 && !_using3StepGateway ) || ( page == 2 && !usingSavedAccount );
             pnlPayment.Visible = rblSavedAccount.Visible || divNewPayment.Visible;
 
+
+            // only show the History back button if the previous URL was able to be determined and they have the EnableInitialBackbutton enabled;
+            lHistoryBackButton.Visible = GetAttributeValue( "EnableInitialBackbutton" ).AsBoolean() && lHistoryBackButton.HRef != "#" && page == 1;
             btnPaymentInfoNext.Visible = page == 1;
             btnStep2PaymentPrev.Visible = page == 2 && !usingSavedAccount;
             aStep2Submit.Visible = page == 2 && !usingSavedAccount;
