@@ -27,6 +27,8 @@ using System.Web.Routing;
 using Rock.Rest.Filters;
 using Rock.Security;
 using Rock.Data;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace chuch.ccv.MobileApp.Rest
 {
@@ -90,7 +92,7 @@ namespace chuch.ccv.MobileApp.Rest
                 if( loginParameters == null ) break;
 
                 // verify their user login
-                var userLoginService = new UserLoginService( new Rock.Data.RockContext() );
+                var userLoginService = new UserLoginService( rockContext );
                 var userLogin = userLoginService.GetByUserName( loginParameters.Username );
 
                 if ( userLogin == null || userLogin.EntityType == null ) { statusCode = HttpStatusCode.Unauthorized; break; }
@@ -109,6 +111,52 @@ namespace chuch.ccv.MobileApp.Rest
                 // if this account hasn't been confirmed yet, do not let them login. This prevents someone from
                 // trying to do a password reset on a stolen email address.
                 if( userLogin.IsConfirmed == false ) { statusCode = HttpStatusCode.Unauthorized; break; }
+                
+                // all good! build and return the response
+                statusCode = HttpStatusCode.OK;
+            }
+            while( false );
+            
+            // build and return the response
+            HttpResponseMessage response = new HttpResponseMessage( ) { StatusCode = statusCode, Content = httpContent };
+            return response;
+        }
+
+        [System.Web.Http.HttpPost]
+        [System.Web.Http.Route( "api/MobileApp/RegisterNewUser" )]
+        [Authenticate, Secured]
+        public HttpResponseMessage RegisterNewUser( [FromBody]RegAccountData regAccountData )
+        {
+            // default to an internal error
+            HttpStatusCode statusCode = HttpStatusCode.InternalServerError;
+            HttpContent httpContent = null;
+
+            do
+            {
+                RockContext rockContext = new RockContext( );
+
+                // require reg parameters
+                if( regAccountData == null ) break;
+
+                // make sure this person doesn't already exist. If they do, we need to deny
+                // this registration so we don't end up with duplicates (they can deal with this using the website)
+                PersonService personService = new PersonService( rockContext );
+                IEnumerable<Person> personList = personService.GetByMatch( regAccountData.FirstName, regAccountData.LastName, regAccountData.Email );
+                if( personList.Count( ) > 0 ) { statusCode = HttpStatusCode.Conflict; break; }
+
+                // since we know they don't exist, we can now make sure their username isn't already taken
+                // if it is, we'll call it a conflict so the mobile app knows
+                UserLoginService userLoginService = new UserLoginService( rockContext );
+                UserLogin userLogin = userLoginService.GetByUserName( regAccountData.Username );
+                if( userLogin != null ) { statusCode = HttpStatusCode.Unauthorized; break; }
+
+
+                // we know we can create the person. So first, begin tracking who made these changes, and then
+                // create the person with their login
+                System.Web.HttpContext.Current.Items.Add( "CurrentPerson", GetPerson() );
+                statusCode = Util.RegisterNewPerson( regAccountData );
+                if( statusCode != HttpStatusCode.Created ) break;
+                
                 
                 // all good! build and return the response
                 statusCode = HttpStatusCode.OK;

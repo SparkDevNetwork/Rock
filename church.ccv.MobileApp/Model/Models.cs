@@ -55,6 +55,19 @@ namespace church.ccv.MobileApp.Models
     }
 
     [Serializable]
+    public class RegAccountData
+    {
+        public string FirstName;
+        public string LastName;
+        public string Email;
+
+        public string CellPhoneNumber;
+
+        public string Username;
+        public string Password;
+    }
+
+    [Serializable]
     public class GroupInfo
     {
         public string Description { get; set; }
