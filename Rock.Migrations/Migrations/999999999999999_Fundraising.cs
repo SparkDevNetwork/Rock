@@ -38,6 +38,7 @@ namespace Rock.Migrations
 
             // TODO: GroupType: Fundraising Opportunity 4BE7FC44-332D-40A8-978E-47B7035D7A0C
             // A bunch of group and groupmember Attributes: for Fundraising Opportunity grouptype
+            // NOTE: Make sure the Group Attributes security is set to All Users! (this can be done in Home > SystemSettings > Entity Attributes )
             // Migration for GroupRoles too
             // * Participant F82DF077-9664-4DA8-A3D9-7379B690124D
             // * Leader 253973A5-18F2-49B6-B2F1-F8F84294AAB2
