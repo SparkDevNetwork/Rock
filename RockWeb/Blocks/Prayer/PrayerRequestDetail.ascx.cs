@@ -15,6 +15,7 @@
 // </copyright>
 //
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Web.UI;
@@ -323,7 +324,17 @@ namespace RockWeb.Blocks.Prayer
             }
             else
             {
-                ppRequestor.SetValue( null );
+                if ( !string.IsNullOrWhiteSpace(PageParameter( "PersonId" ) ) )
+                {
+                    var requestor = new PersonService( new RockContext() ).Get( PageParameter( "PersonId" ).AsInteger() );
+                    ppRequestor.SetValue( requestor );
+                    tbFirstName.Text = requestor.NickName;
+                    tbLastName.Text = requestor.LastName;
+                }
+                else
+                {
+                    ppRequestor.SetValue( null );
+                }
             }
 
             // If no expiration date is set, then use the default setting.
@@ -520,7 +531,13 @@ namespace RockWeb.Blocks.Prayer
 
             rockContext.SaveChanges();
 
-            NavigateToParentPage();
+            var queryParms = new Dictionary<string, string>();
+            if ( !string.IsNullOrWhiteSpace( PageParameter( "PersonId" ) ) )
+            {
+                queryParms.Add( "PersonId", PageParameter( "PersonId" ) );
+            }
+
+            NavigateToParentPage( queryParms );
         }
 
         #endregion
