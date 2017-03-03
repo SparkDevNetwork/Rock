@@ -1,15 +1,44 @@
-﻿using Rock;
+﻿using System.Collections.Generic;
+using System.Linq;
+using System;
+
+using Rock;
 using Rock.Lava;
 using Rock.Model;
-using System.Collections.Generic;
 using Xunit;
-using System.Linq;
+
 
 namespace Rock.Tests.Rock.Lava
 {
     public class RockFiltersTest
     {
         static readonly Dictionary<string, object> mergeObjects = new Dictionary<string, object>();
+        static readonly string iCalStringSaturday430 = @"BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//ddaysoftware.com//NONSGML DDay.iCal 1.0//EN
+BEGIN:VEVENT
+DTEND:20130501T173000
+DTSTAMP:20170303T203737Z
+DTSTART:20130501T163000
+RRULE:FREQ=WEEKLY;BYDAY=SA
+SEQUENCE:0
+UID:d74561ac-c0f9-4dce-a610-c39ca14b0d6e
+END:VEVENT
+END:VCALENDAR";
+
+        // First Saturday of month until 2018; ends on 12/7/2019 - 8:00 AM to 10:00 AM
+        static readonly string iCalStringFirstSaturdayOfMonthTil2020 = @"BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//ddaysoftware.com//NONSGML DDay.iCal 1.0//EN
+BEGIN:VEVENT
+DTEND:20170101T100000
+DTSTAMP:20170303T215639Z
+DTSTART:20170101T080000
+RRULE:FREQ=MONTHLY;UNTIL=20200101T000000;BYDAY=1SA
+SEQUENCE:0
+UID:517d77dd-6fe8-493b-925f-f266aa2d852c
+END:VEVENT
+END:VCALENDAR";
 
         #region Minus
         /// <summary>
@@ -44,7 +73,7 @@ namespace Rock.Tests.Rock.Lava
         public void MinusTwoStringInts()
         {
             var output = RockFilters.Minus( "3", "2" );
-            Assert.Equal( 1, output ); 
+            Assert.Equal( 1, output );
         }
 
         /// <summary>
@@ -194,5 +223,71 @@ namespace Rock.Tests.Rock.Lava
         }
 
         #endregion
+
+        /// <summary>
+        /// For use in Lava -- should return next occurrence for Rock's standard Saturday 4:30PM service datetime.
+        /// </summary>
+        [Fact]
+        public void DatesFromICal_OneNextSaturday()
+        {
+            DateTime today = RockDateTime.Today;
+            int daysUntilSaturday = ( ( int ) DayOfWeek.Saturday - ( int ) today.DayOfWeek + 7 ) % 7;
+            DateTime nextSaturday = today.AddDays( daysUntilSaturday );
+
+            List<DateTime> expected = new List<DateTime>() { DateTime.Parse( nextSaturday.ToShortDateString() + " 4:30:00 PM" ) };
+
+            var output = RockFilters.DatesFromICal( iCalStringSaturday430, 1 );
+            Assert.Equal( expected, output );
+        }
+
+
+        /// <summary>
+        /// For use in Lava -- should return the current Saturday for next year's occurrence for Rock's standard Saturday 4:30PM service datetime.
+        /// </summary>
+        [Fact]
+        public void DatesFromICal_NextYearSaturday()
+        {
+            // 51 Saturday's from today...
+            DateTime nextYear = RockDateTime.Today.AddDays( 7 * 51 );
+            int daysUntilSaturday = ( ( int ) DayOfWeek.Saturday - ( int ) nextYear.DayOfWeek + 7 ) % 7;
+            DateTime nextYearSaturday = nextYear.AddDays( daysUntilSaturday );
+
+            DateTime expected = DateTime.Parse( nextYearSaturday.ToShortDateString() + " 4:30:00 PM" );
+
+            var output = RockFilters.DatesFromICal( iCalStringSaturday430, 100 ).LastOrDefault();
+            Assert.Equal( expected, output );
+        }
+
+        /// <summary>
+        /// For use in Lava -- should return the end datetime for the next occurrence for Rock's standard Saturday 4:30PM service datetime (which ends at 5:30PM).
+        /// </summary>
+        [Fact]
+        public void EndDatesFromICal_NextOccurrenceSaturday()
+        {
+            DateTime today = RockDateTime.Today;
+            int daysUntilSaturday = ( ( int ) DayOfWeek.Saturday - ( int ) today.DayOfWeek + 7 ) % 7;
+            DateTime nextSaturday = today.AddDays( daysUntilSaturday );
+
+            List<DateTime> expected = new List<DateTime>() { DateTime.Parse( nextSaturday.ToShortDateString() + " 5:30:00 PM" ) };
+
+            var output = RockFilters.EndDatesFromICal( iCalStringSaturday430 );
+            Assert.Equal( expected, output );
+        }
+
+        /// <summary>
+        /// For use in Lava -- should find the end datetime (10 AM) occurrence for the fictitious, first Saturday of the month event for Saturday a year from today.
+        /// </summary>
+        [Fact]
+        public void EndDatesFromICal_NextYearsOccurrenceSaturday()
+        {
+            DateTime todayNextYear = RockDateTime.Today.AddYears( 1 );
+            int daysUntilSaturday = ( ( int ) DayOfWeek.Saturday - ( int ) todayNextYear.DayOfWeek + 7 ) % 7;
+            DateTime nextYearSaturday = todayNextYear.AddDays( daysUntilSaturday );
+
+            DateTime expected = DateTime.Parse( nextYearSaturday.ToShortDateString() + " 10:00:00 AM" );
+
+            var output = RockFilters.EndDatesFromICal( iCalStringFirstSaturdayOfMonthTil2020, 13 ).LastOrDefault();
+            Assert.Equal( expected, output );
+        }
     }
 }
