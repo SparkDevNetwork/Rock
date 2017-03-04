@@ -769,81 +769,24 @@ namespace Rock.Lava
         }
 
         /// <summary>
-        /// Dates from i cal.
+        /// Returns the occurrence Dates from an iCal string or list.
         /// </summary>
-        /// <param name="input">The input.</param>
-        /// <param name="option">The option.</param>
-        /// <returns></returns>
+        /// <param name="input">The input is either an iCal string or a list of iCal strings.</param>
+        /// <param name="option">The quantity option (either an integer or "all").</param>
+        /// <returns>a list of datetimes</returns>
         public static List<DateTime> DatesFromICal( object input, object option = null )
         {
-            // if no option was specified, default to returning just 1 (to preserve previous behavior)
-            option = option ?? 1;
-
-            int returnCount = 1;
-            if ( option.GetType() == typeof( int ) )
-            {
-                returnCount = (int)option;
-            }
-            else if ( option.GetType() == typeof( string ) )
-            {
-                // if a string of "all" is specified for the option, return all of the dates
-                if ( string.Equals( (string)option, "all", StringComparison.OrdinalIgnoreCase ) )
-                {
-                    returnCount = int.MaxValue;
-                }
-            }
-
-            List<DateTime> nextOccurrences = new List<DateTime>();
-
-            if ( input is string )
-            {
-                nextOccurrences = GetOccurrenceDates( (string)input, returnCount );
-            }
-            else if ( input is IList )
-            {
-                foreach ( var item in input as IList )
-                {
-                    if ( item is string )
-                    {
-                        nextOccurrences.AddRange( GetOccurrenceDates( (string)item, returnCount ) );
-                    }
-                }
-            }
-
-            nextOccurrences.Sort( ( a, b ) => a.CompareTo( b ) );
-
-            return nextOccurrences.Take( returnCount ).ToList();
+            return DatesFromICal( input, option, endDateTimeOption: null );
         }
 
         /// <summary>
-        /// Gets the occurrence dates.
+        /// Returns the occurrence Dates from an iCal string or list.
         /// </summary>
-        /// <param name="iCalString">The i cal string.</param>
-        /// <param name="returnCount">The return count.</param>
-        /// <returns></returns>
-        private static List<DateTime> GetOccurrenceDates( string iCalString, int returnCount )
-        {
-            iCalendar calendar = iCalendar.LoadFromStream( new StringReader( iCalString ) ).First() as iCalendar;
-            DDay.iCal.Event calendarEvent = calendar.Events[0] as Event;
-
-            if ( calendarEvent.DTStart != null )
-            {
-                List<Occurrence> dates = calendar.GetOccurrences( RockDateTime.Now, RockDateTime.Now.AddYears( 1 ) ).Take( returnCount ).ToList();
-                return dates.Select( d => d.Period.StartTime.Value ).ToList();
-            }
-            else
-            {
-                return new List<DateTime>();
-            }
-        }
-
-        /// <summary>
-        /// End dates from i cal.
-        /// </summary>
-        /// <param name="input">The input.</param>
-        /// <param name="option">The option.</param>
-        /// <returns></returns>
-        public static List<DateTime> EndDatesFromICal( object input, object option = null )
+        /// <param name="input">The input is either an iCal string or a list of iCal strings.</param>
+        /// <param name="option">The quantity option (either an integer or "all").</param>
+        /// <param name="endDateTimeOption">The 'enddatetime' option if supplied will return the ending datetime of the occurrence; otherwise the start datetime is returned.</param>
+        /// <returns>a list of datetimes</returns>
+        public static List<DateTime> DatesFromICal( object input, object option = null, object endDateTimeOption = null )
         {
             // if no option was specified, default to returning just 1 (to preserve previous behavior)
             option = option ?? 1;
@@ -862,11 +805,13 @@ namespace Rock.Lava
                 }
             }
 
+            bool useEndDateTime = ( endDateTimeOption is string && ( string ) endDateTimeOption == "enddatetime" );
+
             List<DateTime> nextOccurrences = new List<DateTime>();
 
             if ( input is string )
             {
-                nextOccurrences = GetOccurrenceEndDates( ( string )input, returnCount );
+                nextOccurrences = GetOccurrenceDates( ( string )input, returnCount, useEndDateTime );
             }
             else if ( input is IList )
             {
@@ -874,7 +819,7 @@ namespace Rock.Lava
                 {
                     if ( item is string )
                     {
-                        nextOccurrences.AddRange( GetOccurrenceEndDates( ( string )item, returnCount ) );
+                        nextOccurrences.AddRange( GetOccurrenceDates( ( string )item, returnCount, useEndDateTime ) );
                     }
                 }
             }
@@ -889,13 +834,19 @@ namespace Rock.Lava
         /// </summary>
         /// <param name="iCalString">The i cal string.</param>
         /// <param name="returnCount">The return count.</param>
-        /// <returns></returns>
-        private static List<DateTime> GetOccurrenceEndDates( string iCalString, int returnCount )
+        /// <param name="useEndDateTime">if set to <c>true</c> uses the EndTime in the returned dates; otherwise it uses the StartTime.</param>
+        /// <returns>a list of datetimes</returns>
+        private static List<DateTime> GetOccurrenceDates( string iCalString, int returnCount, bool useEndDateTime = false )
         {
             iCalendar calendar = iCalendar.LoadFromStream( new StringReader( iCalString ) ).First() as iCalendar;
             DDay.iCal.Event calendarEvent = calendar.Events[0] as Event;
 
-            if ( calendarEvent.DTEnd != null )
+            if ( ! useEndDateTime && calendarEvent.DTStart != null )
+            {
+                List<Occurrence> dates = calendar.GetOccurrences( RockDateTime.Now, RockDateTime.Now.AddYears( 1 ) ).Take( returnCount ).ToList();
+                return dates.Select( d => d.Period.StartTime.Value ).ToList();
+            }
+            else if ( useEndDateTime && calendarEvent.DTEnd != null )
             {
                 List<Occurrence> dates = calendar.GetOccurrences( RockDateTime.Now, RockDateTime.Now.AddYears( 1 ) ).Take( returnCount ).ToList();
                 return dates.Select( d => d.Period.EndTime.Value ).ToList();
