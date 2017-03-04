@@ -15,20 +15,17 @@
 // </copyright>
 //
 using System;
-using System.Collections.Generic;
 using System.ComponentModel;
-using System.IO;
 using System.Linq;
 using System.Web.UI;
-using System.Web.UI.WebControls;
 
 using Rock;
+using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
-using Rock.Web.Cache;
-using Rock.Web.UI.Controls;
-using Rock.Attribute;
+using Rock.Security;
 using Rock.Web.UI;
+using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.Core
 {
@@ -38,6 +35,8 @@ namespace RockWeb.Blocks.Core
     [DisplayName( "Attribute Matrix Template List" )]
     [Category( "Core" )]
     [Description( "Shows a list of all attribute matrix templates" )]
+
+    [LinkedPage( "Detail Page" )]
     public partial class AttributeMatrixTemplateList : RockBlock
     {
         #region Base Control Methods
@@ -49,13 +48,21 @@ namespace RockWeb.Blocks.Core
         protected override void OnInit( EventArgs e )
         {
             base.OnInit( e );
-            gList.GridRebind += gList_GridRebind;          
 
             // this event gets fired after block settings are updated. it's nice to repaint the screen if these settings would alter it
             this.BlockUpdated += Block_BlockUpdated;
             this.AddConfigurationUpdateTrigger( upnlContent );
+
+            gList.DataKeyNames = new string[] { "Id" };
+            gList.Actions.AddClick += gList_AddClick;
+            gList.GridRebind += gList_GridRebind;
+
+            // Block Security and special attributes (RockPage takes care of View)
+            bool canAddEditDelete = IsUserAuthorized( Authorization.EDIT );
+            gList.Actions.ShowAdd = canAddEditDelete;
+            gList.IsDeleteEnabled = canAddEditDelete;
         }
-                   
+
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Load" /> event.
         /// </summary>
@@ -81,7 +88,7 @@ namespace RockWeb.Blocks.Core
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void Block_BlockUpdated( object sender, EventArgs e )
         {
-            //
+            BindGrid();
         }
 
         /// <summary>
@@ -91,6 +98,52 @@ namespace RockWeb.Blocks.Core
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         private void gList_GridRebind( object sender, EventArgs e )
         {
+            BindGrid();
+        }
+
+        /// <summary>
+        /// Handles the AddClick event of the gList control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void gList_AddClick( object sender, EventArgs e )
+        {
+            NavigateToLinkedPage( "DetailPage", "AttributeMatrixTemplateId", 0 );
+        }
+
+        /// <summary>
+        /// Handles the RowSelected event of the gList control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="RowEventArgs"/> instance containing the event data.</param>
+        protected void gList_RowSelected( object sender, RowEventArgs e )
+        {
+            NavigateToLinkedPage( "DetailPage", "AttributeMatrixTemplateId", e.RowKeyId );
+        }
+
+        /// <summary>
+        /// Handles the DeleteClick event of the gList control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="RowEventArgs"/> instance containing the event data.</param>
+        protected void gList_DeleteClick( object sender, RowEventArgs e )
+        {
+            var rockContext = new RockContext();
+            AttributeMatrixTemplateService attributeMatrixTemplateService = new AttributeMatrixTemplateService( rockContext );
+            AttributeMatrixTemplate attributeMatrixTemplate = attributeMatrixTemplateService.Get( e.RowKeyId );
+            if ( attributeMatrixTemplate != null )
+            {
+                string errorMessage;
+                if ( !attributeMatrixTemplateService.CanDelete( attributeMatrixTemplate, out errorMessage ) )
+                {
+                    mdGridWarning.Show( errorMessage, ModalAlertType.Information );
+                    return;
+                }
+
+                attributeMatrixTemplateService.Delete( attributeMatrixTemplate );
+                rockContext.SaveChanges();
+            }
+
             BindGrid();
         }
 
@@ -106,7 +159,15 @@ namespace RockWeb.Blocks.Core
             RockContext rockContext = new RockContext();
             AttributeMatrixTemplateService attributeMatrixTemplateService = new AttributeMatrixTemplateService( rockContext );
 
-            var qry = attributeMatrixTemplateService.Queryable().Sort( gList.SortProperty ?? new SortProperty { Property = "Name" } );
+            var qry = attributeMatrixTemplateService.Queryable()
+                .Select( a => new
+                {
+                    a.Id,
+                    a.Name,
+                    a.Description,
+                    a.IsActive,
+                    InstanceCount = a.AttributeMatrices.Count()
+                } ).Sort( gList.SortProperty ?? new SortProperty { Property = "Name" } );
 
             gList.SetLinqDataSource( qry );
             gList.DataBind();

@@ -14,6 +14,8 @@
 // limitations under the License.
 // </copyright>
 //
+using System.Collections;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
@@ -93,7 +95,7 @@ namespace Rock.Model
         public int? MaximumRows { get; set; }
 
         /// <summary>
-        /// Gets or sets the lava template for what is shown for 
+        /// The lava template for what is shown when displaying the Matrix Attribute formatted value 
         /// </summary>
         /// <value>
         /// The formatted lava.
@@ -102,6 +104,13 @@ namespace Rock.Model
         public string FormattedLava { get; set; }
 
         #endregion
+
+        #region Virtual Properties
+
+        [DataMember]
+        public ICollection<AttributeMatrix> AttributeMatrices { get; set; }
+
+        #endregion 
     }
 
     #region Entity Configuration

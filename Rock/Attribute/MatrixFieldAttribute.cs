@@ -18,6 +18,7 @@ namespace Rock.Attribute
 {
     /// <summary>
     /// Field Type to select a Matrix 
+    /// Value stored as AttributeMatrix.Guid
     /// </summary>
     public class MatrixFieldAttribute : FieldAttribute
     {
