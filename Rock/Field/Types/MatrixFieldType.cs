@@ -15,21 +15,25 @@
 // </copyright>
 //
 using System.Collections.Generic;
+using System.Linq;
 using System.Web.UI;
+using System.Web.UI.WebControls;
+using Rock.Data;
+using Rock.Model;
 using Rock.Web.UI.Controls;
 
 namespace Rock.Field.Types
 {
     /// <summary>
-    /// 
+    ///  Matrix Field Type
+    ///  Value stored as AttributeMatrix.Guid
     /// </summary>
-    /// <seealso cref="Rock.Field.FieldType" />
     public class MatrixFieldType : FieldType
     {
         #region Configuration
 
         /// <summary>
-        /// The attribute matrix template
+        /// The attribute matrix template Id
         /// </summary>
         private const string ATTRIBUTE_MATRIX_TEMPLATE = "attributematrixtemplate";
 
@@ -58,7 +62,19 @@ namespace Rock.Field.Types
             ddlMatrixTemplate.Label = "Attribute Matrix Template";
             ddlMatrixTemplate.Help = "The Attribute Matrix Template that defines this matrix attribute";
 
-            // TODO, get the matrix templates from the database
+            var list = new AttributeMatrixTemplateService( new RockContext() ).Queryable().OrderBy( a => a.Name ).Select( a => new
+            {
+                a.Id,
+                a.Name
+            } ).ToList();
+
+            ddlMatrixTemplate.Items.Clear();
+            ddlMatrixTemplate.Items.Add( new ListItem() );
+
+            foreach ( var item in list )
+            {
+                ddlMatrixTemplate.Items.Add( new ListItem( item.Name, item.Id.ToString() ) );
+            }
 
             return controls;
         }
@@ -116,5 +132,66 @@ namespace Rock.Field.Types
         }
 
         #endregion
+
+        /// <summary>
+        /// Creates the control(s) necessary for prompting user for a new value
+        /// </summary>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="id">The id.</param>
+        /// <returns>
+        /// The control
+        /// </returns>
+        public override Control EditControl( Dictionary<string, ConfigurationValue> configurationValues, string id )
+        {
+            if ( configurationValues.ContainsKey( ATTRIBUTE_MATRIX_TEMPLATE ) )
+            {
+                int? attributeMatrixTemplateId = configurationValues[ATTRIBUTE_MATRIX_TEMPLATE]?.Value.AsIntegerOrNull();
+                if ( attributeMatrixTemplateId.HasValue )
+                {
+                    var rockContext = new RockContext();
+                    var attributeMatrixTemplate = new AttributeMatrixTemplateService( rockContext ).Get( attributeMatrixTemplateId.Value );
+                    if ( attributeMatrixTemplate != null )
+                    {
+                        attributeMatrixTemplate.LoadAttributes( rockContext );
+                        var phAttributes = new PlaceHolder { ID = $"phAttributes_{id}" };
+                        Rock.Attribute.Helper.AddEditControls( attributeMatrixTemplate, phAttributes, false );
+                        phAttributes.Controls.Add( new HiddenField { ID = "hfAttributeMatrixId" } );
+
+                        return phAttributes;
+                    }
+                }
+
+            }
+
+            return null;
+
+        }
+
+        public override string GetEditValue( Control control, Dictionary<string, ConfigurationValue> configurationValues )
+        {
+            PlaceHolder phAttributes = control as PlaceHolder;
+
+            if ( phAttributes != null && configurationValues.ContainsKey( ATTRIBUTE_MATRIX_TEMPLATE ) )
+            {
+                int? attributeMatrixTemplateId = configurationValues[ATTRIBUTE_MATRIX_TEMPLATE]?.Value.AsIntegerOrNull();
+                if ( attributeMatrixTemplateId.HasValue )
+                {
+                    var attributeMatrix = new AttributeMatrix();
+                    attributeMatrix.AttributeMatrixTemplateId = attributeMatrixTemplateId.Value;
+                    attributeMatrix.LoadAttributes();
+                    Rock.Attribute.Helper.GetEditValues( phAttributes, attributeMatrix );
+                    HiddenField hfAttributeMatrixGuid = phAttributes.FindControl( "hfAttributeMatrixGuid" ) as HiddenField;
+                    return hfAttributeMatrixGuid.Value;
+                }
+            }
+
+            return null;
+        }
+
+        public override void SetEditValue( Control control, Dictionary<string, ConfigurationValue> configurationValues, string value )
+        {
+            //TODO base.SetEditValue( control, configurationValues, value );
+        }
+
     }
 }

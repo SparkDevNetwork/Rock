@@ -4,18 +4,21 @@
     <ContentTemplate>
 
         <asp:Panel ID="pnlView" runat="server" CssClass="panel panel-block">
+            <Rock:ModalAlert ID="mdGridWarning" runat="server" />
         
             <div class="panel-heading">
-                <h1 class="panel-title"><i class="fa fa-star"></i> Blank List Block</h1>
+                <h1 class="panel-title"><i class="fa fa-list-alt"></i>&nbsp;Attribute Matrix Template List</h1>
             </div>
             <div class="panel-body">
 
                 <div class="grid grid-panel">
-                    <Rock:Grid ID="gList" runat="server" AllowSorting="true">
+                    <Rock:Grid ID="gList" runat="server" AllowSorting="true" OnRowSelected="gList_RowSelected" RowItemText="Matrix Template">
                         <Columns>
-                            <Rock:RockBoundField DataField="FullName" HeaderText="Name" SortExpression="FullName" />
-                            <Rock:RockBoundField DataField="Gender" HeaderText="Gender" SortExpression="Gender" />
-                            <Rock:RockBoundField DataField="Email" HeaderText="Email" SortExpression="Email" />
+                            <Rock:RockBoundField DataField="Name" HeaderText="Name" SortExpression="Name" />
+                            <Rock:RockBoundField DataField="Description" HeaderText="Description" SortExpression="Description" />
+                            <Rock:RockBoundField DataField="InstanceCount" HeaderText="Instance Count" SortExpression="InstanceCount" />
+                            <Rock:BoolField DataField="IsActive" HeaderText="Active" SortExpression="IsActive" />
+                            <Rock:DeleteField OnClick="gList_DeleteClick" />
                         </Columns>
                     </Rock:Grid>
                 </div>
