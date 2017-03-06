@@ -55,7 +55,8 @@ public class BundleConfig
             "~/Scripts/jcrop.min.js",
             "~/Scripts/ResizeSensor.js",       
             "~/Scripts/ion.rangeSlider/js/ion-rangeSlider/ion.rangeSlider.min.js",
-            "~/Scripts/Rock/Extensions/*.js" ) );
+            "~/Scripts/Rock/Extensions/*.js",
+            "~/Scripts/React/shim.js" ) );
 
         bundles.Add( new ScriptBundle( "~/Scripts/Bundles/RockUi" ).Include(
             "~/Scripts/Rock/dialogs.js",
