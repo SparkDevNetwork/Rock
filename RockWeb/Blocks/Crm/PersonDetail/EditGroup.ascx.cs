@@ -43,6 +43,10 @@ namespace RockWeb.Blocks.Crm.PersonDetail
     [DefinedValueField( Rock.SystemGuid.DefinedType.PERSON_CONNECTION_STATUS, "Default Connection Status",
         "The connection status that should be set by default", false, false, Rock.SystemGuid.DefinedValue.PERSON_CONNECTION_STATUS_VISITOR, "", 0 )]
     [BooleanField( "Require Campus", "Determines if a campus is required.", true, "", 1 )]
+    [BooleanField( "Require Birthdate", "Determines if a birthdate should be required.", false, "", 2 )]
+    [BooleanField( "Hide Title", "Should Title field be hidden when entering new people?.", false, "", 3 )]
+    [BooleanField( "Hide Suffix", "Should Suffix field be hidden when entering new people?.", false, "", 4 )]
+    [BooleanField( "Hide Grade", "Should Grade field be hidden when entering new people?.", false, "", 5 )]
     public partial class EditGroup : PersonBlock
     {
         private GroupTypeCache _groupType = null;
@@ -217,6 +221,8 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         protected override void OnLoad( EventArgs e )
         {
             base.OnLoad( e );
+
+            nbAddPerson.Visible = false;
 
             if ( Page.IsPostBack )
             {
@@ -589,6 +595,8 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             ppPerson.SetValue( null );
 
             ddlNewPersonTitle.SelectedIndex = 0;
+            ddlNewPersonTitle.Visible = !GetAttributeValue( "HideTitle" ).AsBoolean();
+
             tbNewPersonFirstName.Text = string.Empty;
 
             // default the last name of the new family member to the lastname of the existing adults in the family (if all the adults have the same last name)
@@ -603,6 +611,8 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             }
 
             ddlNewPersonSuffix.SelectedIndex = 0;
+            ddlNewPersonSuffix.Visible = !GetAttributeValue( "HideSuffix" ).AsBoolean();
+
             foreach ( ListItem li in rblNewPersonRole.Items )
             {
                 li.Selected = false;
@@ -615,7 +625,10 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             }
 
             dpNewPersonBirthDate.SelectedDate = null;
+            dpNewPersonBirthDate.Required = GetAttributeValue( "RequireBirthdate" ).AsBoolean( true );
+
             ddlGradePicker.SelectedIndex = 0;
+            ddlGradePicker.Visible = !GetAttributeValue( "HideGrade" ).AsBoolean();
 
             modalAddPerson.Show();
         }
@@ -626,6 +639,22 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void modalAddPerson_SaveClick( object sender, EventArgs e )
+        {
+            var validationMessages = new List<string>();
+
+            if ( hfActiveTab.Value == "Existing" )
+            {
+            }
+            else
+            {
+                DateTime? birthdate = dpNewPersonBirthDate.SelectedDate;
+                if ( dpNewPersonBirthDate.IsValid && !birthdate.HasValue && GetAttributeValue( "RequireBirthdate" ).AsBoolean() )
+                {
+                    validationMessages.Add( "Birthdate is Required." );
+                }
+            }
+
+            if ( Page.IsValid && !validationMessages.Any() )
         {
             if ( hfActiveTab.Value == "Existing" )
             {
@@ -717,6 +746,15 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             modalAddPerson.Hide();
 
             BindMembers();
+        }
+            else
+            {
+                if ( validationMessages.Any() )
+                {
+                    nbAddPerson.Text = "<ul><li>" + validationMessages.AsDelimited( "</li><li>" ) + "</li></lu>";
+                    nbAddPerson.Visible = true;
+                }
+            }
         }
 
         #endregion
@@ -1517,7 +1555,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                 if ( attributes.Any() )
                 {
                     pnlAttributes.Visible = true;
-                    Helper.AddEditControls( string.Empty, attributes.Select( a => a.Key ).ToList(),
+                    Helper.AddEditControls( string.Empty, attributes.OrderBy( a => a.Value.Order ).Select( a => a.Key ).ToList(),
                         _group, phGroupAttributes, BlockValidationGroup, setValues, new List<string>(), 3);
                 }
                 else
