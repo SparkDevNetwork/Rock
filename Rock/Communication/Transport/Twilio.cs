@@ -85,6 +85,17 @@ namespace Rock.Communication.Transport
 
                     var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( null );
 
+                    // get message template
+                    string message = communication.GetMediumDataValue( "Message" );
+
+                    // convert any special microsoft word characters to normal chars so they don't look funny (for example "Hey â€œdouble-quotesâ€ from â€˜single quoteâ€™")
+                    message = message.ReplaceWordChars();
+
+                    // determine callback address
+                    var globalAttributes = Rock.Web.Cache.GlobalAttributesCache.Read();
+                    string callbackUrl = globalAttributes.GetValue( "PublicApplicationRoot" ) + "Webhooks/Twilio.ashx";
+
+
                     bool recipientFound = true;
                     while ( recipientFound )
                     {
@@ -101,11 +112,8 @@ namespace Rock.Communication.Transport
                                 {
                                     // Create merge field dictionary
                                     var mergeObjects = recipient.CommunicationMergeValues( mergeFields );
-                                    string message = communication.GetMediumDataValue( "Message" );
-
-                                    // convert any special microsoft word characters to normal chars so they don't look funny (for example "Hey â€œdouble-quotesâ€ from â€˜single quoteâ€™")
-                                    message = message.ReplaceWordChars();
-                                    message = message.ResolveMergeFields( mergeObjects, communication.EnabledLavaCommands );
+                                    
+                                    var resolvedMessage = message.ResolveMergeFields( mergeObjects, communication.EnabledLavaCommands );
  
                                     string twilioNumber = phoneNumber.Number;
                                     if ( !string.IsNullOrWhiteSpace( phoneNumber.CountryCode ) )
@@ -113,13 +121,10 @@ namespace Rock.Communication.Transport
                                         twilioNumber = "+" + phoneNumber.CountryCode + phoneNumber.Number;
                                     }
 
-                                    var globalAttributes = Rock.Web.Cache.GlobalAttributesCache.Read();
-                                    string callbackUrl = globalAttributes.GetValue( "PublicApplicationRoot" ) + "Webhooks/Twilio.ashx";
-
                                     var response = await MessageResource.CreateAsync(
                                         from: new TwilioTypes.PhoneNumber(fromPhone),
                                         to: new TwilioTypes.PhoneNumber(twilioNumber),
-                                        body: message,
+                                        body: resolvedMessage,
                                         statusCallback: new System.Uri(callbackUrl)
                                     );
 
