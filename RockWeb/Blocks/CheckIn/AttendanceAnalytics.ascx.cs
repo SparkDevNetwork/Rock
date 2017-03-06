@@ -529,6 +529,7 @@ function(item) {
             string keyPrefix = string.Format( "attendance-reporting-{0}-", this.BlockId );
 
             ddlAttendanceType.SelectedGroupTypeId = GetSetting( keyPrefix, "TemplateGroupTypeId" ).AsIntegerOrNull();
+            cbIncludeGroupsWithoutSchedule.Checked = this.GetBlockUserPreference( "IncludeGroupsWithoutSchedule" ).AsBooleanOrNull() ?? true;
             BuildGroupTypesUI();
 
             string slidingDateRangeSettings = GetSetting( keyPrefix, "SlidingDateRange" );
@@ -1814,7 +1815,7 @@ function(item) {
 
                     var groupService = new GroupService( _rockContext );
 
-                    var cblGroupTypeGroups = new RockCheckBoxList { ID = "cblGroupTypeGroups" + groupType.Id };
+                    var cblGroupTypeGroups = new RockCheckBoxList { ID = "cblGroupTypeGroups" + groupType.Id, FormGroupCssClass= "js-groups-container" };
 
                     cblGroupTypeGroups.Label = groupType.Name;
                     cblGroupTypeGroups.Items.Clear();
@@ -1860,13 +1861,13 @@ function(item) {
         /// <param name="showGroupAncestry">if set to <c>true</c> [show group ancestry].</param>
         private void AddGroupControls( Group group, RockCheckBoxList checkBoxList, GroupService service, bool showGroupAncestry )
         {
-            // Only show groups that actually have a schedule
+            // Only show groups that actually have a schedule, unless they choose IncludeGroupsWithoutSchedule
             if ( group != null )
             {
                 if ( !_addedGroupIds.Contains( group.Id ) )
                 {
                     _addedGroupIds.Add( group.Id );
-                    if ( group.ScheduleId.HasValue || group.GroupLocations.Any( l => l.Schedules.Any() ) )
+                    if ( cbIncludeGroupsWithoutSchedule.Checked || group.ScheduleId.HasValue || group.GroupLocations.Any( l => l.Schedules.Any() ) )
                     {
                         string displayName = showGroupAncestry ? service.GroupAncestorPathName( group.Id ) : group.Name;
                         checkBoxList.Items.Add( new ListItem( displayName, group.Id.ToString() ) );
@@ -2139,6 +2140,17 @@ function(item) {
             public int? LocationId { get; set; }
 
             public string LocationName { get; set; }
+        }
+
+        /// <summary>
+        /// Handles the CheckedChanged event of the cbIncludeGroupsWithoutSchedule control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void cbIncludeGroupsWithoutSchedule_CheckedChanged( object sender, EventArgs e )
+        {
+            // NOTE: OnLoad already rebuilt the GroupTypes UI with the changed value of cbIncludeGroupsWithoutSchedule , so we just need to set it as a preference
+            this.SetBlockUserPreference( "IncludeGroupsWithoutSchedule", cbIncludeGroupsWithoutSchedule.Checked.ToTrueFalse() );
         }
     }
 }
