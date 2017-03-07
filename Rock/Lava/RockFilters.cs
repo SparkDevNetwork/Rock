@@ -3148,7 +3148,7 @@ namespace Rock.Lava
                 return null;
             }
 
-            return input.ToString().AsIntegerOrNull();
+            return input.ToString().AsDecimalOrNull();
         }
 
         /// <summary>
