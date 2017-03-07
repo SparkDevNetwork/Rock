@@ -17,19 +17,18 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.IO;
 using System.Data.Entity;
 using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
 using Rock;
+using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
-using Rock.Web.UI.Controls;
-using Rock.Attribute;
 using Rock.Web.UI;
+using Rock.Web.UI.Controls;
 
 /// <summary>
 /// 
@@ -47,7 +46,6 @@ namespace RockWeb.Blocks.Finance
     public partial class TransactionEntityMatching : RockBlockCustomSettings
     {
         private EntityTypeCache _transactionEntityType = null;
-        private List<ListItem> _groupListItems = null;
 
         #region Base Control Methods
 
@@ -65,11 +63,19 @@ namespace RockWeb.Blocks.Finance
                 _transactionEntityType = EntityTypeCache.Read( entityTypeId.Value );
             }
 
-            gTransactionDetails.GridRebind += GTransactionDetails_GridRebind;
-
             // this event gets fired after block settings are updated. it's nice to repaint the screen if these settings would alter it
             this.BlockUpdated += Block_BlockUpdated;
             this.AddConfigurationUpdateTrigger( upnlContent );
+
+            if ( Page.IsPostBack )
+            {
+                // rebuild the Table Controls (unless this is postback from ddlBatch)
+                if ( this.Request.Params["__EVENTTARGET"] != ddlBatch.UniqueID )
+                {
+                    // Bind the Grid so that the dynamic controls for the Entity get created on every postback
+                    CreateTableControls( this.Request.Form[hfBatchId.UniqueID].AsIntegerOrNull() );
+                }
+            }
         }
 
         /// <summary>
@@ -80,20 +86,16 @@ namespace RockWeb.Blocks.Finance
         {
             base.OnLoad( e );
 
-            BindGrid(false);
-
-            var ddls= gTransactionDetails.ControlsOfTypeRecursive<RockDropDownList>();
-
             if ( !Page.IsPostBack )
             {
-                LoadDropDowns();
-                
-            }
-        }
+                if ( _transactionEntityType != null )
+                {
+                    lEntityHeaderText.Text = _transactionEntityType.FriendlyName;
+                }
 
-        private void GTransactionDetails_GridRebind( object sender, GridRebindEventArgs e )
-        {
-            BindGrid(true);
+                LoadDropDowns();
+                CreateTableControls( null );
+            }
         }
 
         /// <summary>
@@ -115,8 +117,48 @@ namespace RockWeb.Blocks.Finance
             {
                 ddlBatch.Items.Add( new ListItem( batch.Name, batch.Id.ToString() ) );
             }
+        }
 
-            _groupListItems = new List<ListItem>();
+        /// <summary>
+        /// Loads the group drop downs.
+        /// </summary>
+        private void LoadGroupDropDowns()
+        {
+            int? groupTypeId = this.GetAttributeValue( "EntityTypeQualifierValue" ).AsIntegerOrNull();
+            var rockContext = new RockContext();
+
+            List<Group> groupList = null;
+            if ( groupTypeId.HasValue && _transactionEntityType != null && _transactionEntityType.Guid == Rock.SystemGuid.EntityType.GROUP_MEMBER.AsGuid() )
+            {
+                groupList = new GroupService( new RockContext() ).Queryable().Where( a => a.GroupTypeId == groupTypeId.Value && a.Members.Any() ).OrderBy( a => a.Order ).ThenBy( a => a.Name ).AsNoTracking().ToList();
+
+                foreach ( var ddlGroup in phTableRows.ControlsOfTypeRecursive<RockDropDownList>().Where( a => a.ID.StartsWith( "ddlGroup_" ) ) )
+                {
+                    ddlGroup.Items.Clear();
+                    ddlGroup.Items.Add( new ListItem() );
+                    foreach ( var group in groupList )
+                    {
+                        ddlGroup.Items.Add( new ListItem( group.Name, group.Id.ToString() ) );
+                    }
+
+                    var financialTransactionDetailId = ddlGroup.ID.Replace( "ddlGroup_", string.Empty ).AsInteger();
+                    var ddlGroupMember = phTableRows.ControlsOfTypeRecursive<RockDropDownList>().Where( a => a.ID == "ddlGroupMember_" + financialTransactionDetailId.ToString() ).FirstOrDefault() as RockDropDownList;
+
+                    var groupMemberId = new FinancialTransactionDetailService( rockContext ).Queryable().Where( a => a.Id == financialTransactionDetailId ).Select( a => (int?)a.EntityId ).FirstOrDefault();
+                    if ( groupMemberId.HasValue )
+                    {
+                        var groupMember = new GroupMemberService( rockContext ).Get( groupMemberId.Value );
+                        if ( groupMember != null )
+                        {
+                            ddlGroup.SetValue( groupMember.GroupId.ToString() );
+                            LoadGroupMembersDropDown( ddlGroup );
+                            ddlGroupMember.SetValue( groupMember.Id );
+                        }
+                    }
+
+                    ddlGroupMember.Visible = ddlGroup.SelectedValue.AsIntegerOrNull().HasValue;
+                }
+            }
         }
 
         #endregion
@@ -130,7 +172,7 @@ namespace RockWeb.Blocks.Finance
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void Block_BlockUpdated( object sender, EventArgs e )
         {
-            BindGrid(true);
+            // intentionally blank
         }
 
         /// <summary>
@@ -140,7 +182,10 @@ namespace RockWeb.Blocks.Finance
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void ddlBatch_SelectedIndexChanged( object sender, EventArgs e )
         {
-            BindGrid(true);
+            hfBatchId.Value = ddlBatch.SelectedValue;
+            CreateTableControls( hfBatchId.Value.AsIntegerOrNull() );
+
+            LoadGroupDropDowns();
         }
 
         #endregion
@@ -148,83 +193,99 @@ namespace RockWeb.Blocks.Finance
         #region Methods
 
         /// <summary>
-        /// Binds the grid.
+        /// Creates the table controls.
         /// </summary>
-        private void BindGrid(bool update)
+        /// <param name="batchId">The batch identifier.</param>
+        private void CreateTableControls( int? batchId )
         {
             RockContext rockContext = new RockContext();
 
-            int? batchId = ddlBatch.SelectedValue.AsIntegerOrNull();
             if ( batchId.HasValue )
             {
                 var financialTransactionDetailQuery = new FinancialTransactionDetailService( rockContext ).Queryable();
 
-                financialTransactionDetailQuery = financialTransactionDetailQuery.Where( a => a.Transaction.BatchId == batchId.Value ).OrderByDescending( a => a.Transaction.TransactionDateTime );
+                var financialTransactionDetailList = financialTransactionDetailQuery.Where( a => a.Transaction.BatchId == batchId.Value ).OrderByDescending( a => a.Transaction.TransactionDateTime ).ToList();
+                phTableRows.Controls.Clear();
+                foreach ( var financialTransactionDetail in financialTransactionDetailList )
+                {
+                    var tr = new HtmlGenericContainer( "tr" );
+                    tr.Controls.Add( new LiteralControl { Text = string.Format( "<td>{0}</td>", financialTransactionDetail.Transaction.AuthorizedPersonAlias ) } );
+                    tr.Controls.Add( new LiteralControl { Text = string.Format( "<td>{0}</td>", financialTransactionDetail.Amount.FormatAsCurrency() ) } );
+                    tr.Controls.Add( new LiteralControl { Text = string.Format( "<td>{0}</td>", financialTransactionDetail.Account ) } );
+                    tr.Controls.Add( new LiteralControl
+                    {
+                        ID = "lTransactionType_" + financialTransactionDetail.Id.ToString(),
+                        Text = string.Format( "<td>{0}</td>", financialTransactionDetail.Transaction.TransactionTypeValue )
+                    } );
 
-                gTransactionDetails.DataSource = financialTransactionDetailQuery.ToList();
-                gTransactionDetails.DataBind();
+                    var tdEntityControls = new HtmlGenericContainer( "td" ) { ID = "pnlEntityControls_" + financialTransactionDetail.Id.ToString() };
+
+                    if ( _transactionEntityType != null && _transactionEntityType.Guid == Rock.SystemGuid.EntityType.GROUP_MEMBER.AsGuid() )
+                    {
+                        var ddlGroup = new RockDropDownList { ID = "ddlGroup_" + financialTransactionDetail.Id.ToString() };
+                        ddlGroup.Label = "Group";
+                        ddlGroup.AutoPostBack = true;
+                        ddlGroup.SelectedIndexChanged += ddlGroup_SelectedIndexChanged;
+                        tdEntityControls.Controls.Add( ddlGroup );
+                        var ddlGroupMember = new RockDropDownList { ID = "ddlGroupMember_" + financialTransactionDetail.Id.ToString(), Visible = false };
+                        ddlGroupMember.Label = "Group Member";
+                        ddlGroupMember.AutoPostBack = true;
+                        ddlGroupMember.SelectedIndexChanged += ddlGroupMember_SelectedIndexChanged;
+                        tdEntityControls.Controls.Add( ddlGroupMember );
+                        tr.Controls.Add( tdEntityControls );
+                        phTableRows.Controls.Add( tr );
+                    }
+
+                    pnlTransactions.Visible = true;
+                }
             }
             else
             {
-                gTransactionDetails.DataSource = null;
-                gTransactionDetails.DataBind();
-            }
-
-            if (update)
-            {
-                upnlContent.Update();
+                pnlTransactions.Visible = false;
             }
         }
 
         /// <summary>
-        /// Handles the RowDataBound event of the gTransactionDetails control.
+        /// Handles the SelectedIndexChanged event of the ddlGroupMember control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="GridViewRowEventArgs"/> instance containing the event data.</param>
-        protected void gTransactionDetails_RowDataBound( object sender, GridViewRowEventArgs e )
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        private void ddlGroupMember_SelectedIndexChanged( object sender, EventArgs e )
         {
-            FinancialTransactionDetail financialTransactionDetail = e.Row.DataItem as FinancialTransactionDetail;
-            if ( financialTransactionDetail != null )
+            var ddlGroupMember = sender as RockDropDownList;
+
+            // remember the selected group member so that we can set it again after items get rebuilt in the ddlGroup_SelectedIndexChanged event
+            var groupMemberId = ddlGroupMember.SelectedValue.AsIntegerOrNull();
+
+            var financialTransactionDetailId = ddlGroupMember.ID.Replace( "ddlGroupMember_", string.Empty ).AsIntegerOrNull();
+            AssignGroupMemberToEntity( groupMemberId, financialTransactionDetailId );
+        }
+
+        /// <summary>
+        /// Assigns the group member to entity.
+        /// </summary>
+        /// <param name="groupMemberId">The group member identifier.</param>
+        /// <param name="financialTransactionDetailId">The financial transaction detail identifier.</param>
+        private void AssignGroupMemberToEntity( int? groupMemberId, int? financialTransactionDetailId )
+        {
+            if ( financialTransactionDetailId.HasValue )
             {
-                var lPersonName = e.Row.FindControl( "lPersonName" ) as Literal;
-                var lAmount = e.Row.FindControl( "lAmount" ) as Literal;
-                var lAccount = e.Row.FindControl( "lAccount" ) as Literal;
-                var upEntity = e.Row.FindControl( "upEntity" ) as UpdatePanel;
-                if ( financialTransactionDetail.Transaction.AuthorizedPersonAliasId.HasValue )
+                var rockContext = new RockContext();
+                var financialTransactionDetail = new FinancialTransactionDetailService( rockContext ).Get( financialTransactionDetailId.Value );
+                financialTransactionDetail.EntityTypeId = _transactionEntityType.Id;
+                financialTransactionDetail.EntityId = groupMemberId;
+                int? blockTransactionTypeId = this.GetAttributeValue( "TransactionTypeId" ).AsIntegerOrNull();
+                if ( blockTransactionTypeId.HasValue && blockTransactionTypeId != financialTransactionDetail.Transaction.TransactionTypeValueId )
                 {
-                    lPersonName.Text = financialTransactionDetail.Transaction.AuthorizedPersonAlias.ToString();
-                }
-                lAmount.Text = financialTransactionDetail.Amount.FormatAsCurrency();
-                lAccount.Text = financialTransactionDetail.Account.Name;
-
-                if ( _transactionEntityType != null && _transactionEntityType.Guid == Rock.SystemGuid.EntityType.GROUP_MEMBER.AsGuid() )
-                {
-                    var ddlGroup = new RockDropDownList();
-                    ddlGroup.ID = "ddlGroup_" + financialTransactionDetail.Id.ToString();
-                    ddlGroup.AutoPostBack = true;
-                    ddlGroup.SelectedIndexChanged += ddlGroup_SelectedIndexChanged;
-                    if ( _groupListItems == null )
+                    financialTransactionDetail.Transaction.TransactionTypeValueId = blockTransactionTypeId.Value;
+                    var lTransactionType = phTableRows.ControlsOfTypeRecursive<LiteralControl>().Where( a => a.ID == "lTransactionType_" + financialTransactionDetail.Id.ToString() ).FirstOrDefault();
+                    if ( lTransactionType != null )
                     {
-                        int? groupTypeId = this.GetAttributeValue( "EntityTypeQualifierValue" ).AsIntegerOrNull();
-                        if ( groupTypeId.HasValue )
-                        {
-                            _groupListItems = new GroupService( new RockContext() ).Queryable().Where( a => a.GroupTypeId == groupTypeId.Value && a.Members.Any() ).OrderBy( a => a.Order ).ThenBy( a => a.Name ).Select( a => new
-                            {
-                                a.Id,
-                                a.Name
-                            } ).ToList().Select( a => new ListItem( a.Name, a.Id.ToString() ) ).ToList();
-                        }
+                        lTransactionType.Text = string.Format( "<td>{0}</td>", DefinedValueCache.Read( financialTransactionDetail.Transaction.TransactionTypeValueId ) );
                     }
-
-                    ddlGroup.Items.Add( new ListItem() );
-                    ddlGroup.Items.AddRange( _groupListItems.ToArray() );
-                    var ddlGroupMember = new RockDropDownList();
-                    ddlGroupMember.ID = "ddlGroupMember";
-
-                    //upEntity.ContentTemplateContainer.Controls.Clear();
-                    upEntity.ContentTemplateContainer.Controls.Add( ddlGroup );
-                    upEntity.ContentTemplateContainer.Controls.Add( ddlGroupMember );
                 }
+
+                rockContext.SaveChanges();
             }
         }
 
@@ -238,29 +299,42 @@ namespace RockWeb.Blocks.Finance
             var ddlGroup = sender as RockDropDownList;
             if ( ddlGroup != null )
             {
-                var groupId = this.Request.Form[ddlGroup.UniqueID].AsIntegerOrNull();
-                var ddlGroupMember = ddlGroup.Parent.FindControl( "ddlGroupMember" ) as RockDropDownList;
-                ddlGroup.SetValue( groupId );
-                if ( ddlGroupMember != null )
-                {
-                    ddlGroupMember.Items.Clear();
-                    ddlGroupMember.Items.Add(new ListItem());
-                    if ( groupId.HasValue )
-                    {
-                        var groupMemberListItems = new GroupMemberService( new RockContext() ).Queryable().Where( a => a.GroupId == groupId.Value )
-                            .OrderBy( a => a.Person.FirstName ).ThenBy( a => a.Person.LastName )
-                            .Select( a => new
-                            {
-                                a.Id,
-                                a.Person.SuffixValueId,
-                                a.Person.NickName,
-                                a.Person.LastName
-                            } ).ToList().Select( a => new ListItem( Person.FormatFullName( a.NickName, a.LastName, a.SuffixValueId ), a.Id.ToString() ) );
+                LoadGroupMembersDropDown( ddlGroup );
 
-                        ddlGroupMember.Items.AddRange( groupMemberListItems.ToArray() );
-                        ddlGroupMember.ParentUpdatePanel().Update();
-                    }
+                var financialTransactionDetailId = ddlGroup.ID.Replace( "ddlGroup_", string.Empty ).AsIntegerOrNull();
+                AssignGroupMemberToEntity( null, financialTransactionDetailId );
+            }
+        }
+
+        /// <summary>
+        /// Loads the group members drop down.
+        /// </summary>
+        /// <param name="ddlGroup">The DDL group.</param>
+        /// <param name="groupId">The group identifier.</param>
+        private void LoadGroupMembersDropDown( RockDropDownList ddlGroup )
+        {
+            var ddlGroupMember = ddlGroup.Parent.ControlsOfTypeRecursive<RockDropDownList>().FirstOrDefault( a => a.ID.StartsWith( "ddlGroupMember_" ) ) as RockDropDownList;
+            if ( ddlGroupMember != null )
+            {
+                int? groupId = ddlGroup.SelectedValue.AsIntegerOrNull();
+                ddlGroupMember.Items.Clear();
+                ddlGroupMember.Items.Add( new ListItem() );
+                if ( groupId.HasValue )
+                {
+                    var groupMemberListItems = new GroupMemberService( new RockContext() ).Queryable().Where( a => a.GroupId == groupId.Value )
+                        .OrderBy( a => a.Person.FirstName ).ThenBy( a => a.Person.LastName )
+                        .Select( a => new
+                        {
+                            a.Id,
+                            a.Person.SuffixValueId,
+                            a.Person.NickName,
+                            a.Person.LastName
+                        } ).ToList().Select( a => new ListItem( Person.FormatFullName( a.NickName, a.LastName, a.SuffixValueId ), a.Id.ToString() ) );
+
+                    ddlGroupMember.Items.AddRange( groupMemberListItems.ToArray() );
                 }
+
+                ddlGroupMember.Visible = groupId.HasValue;
             }
         }
 
@@ -395,12 +469,5 @@ namespace RockWeb.Blocks.Finance
         }
 
         #endregion
-
-
-
-        protected void gTransactionDetails_RowCommand( object sender, GridViewCommandEventArgs e )
-        {
-
-        }
     }
 }
