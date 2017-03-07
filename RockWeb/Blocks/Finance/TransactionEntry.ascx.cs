@@ -314,6 +314,7 @@ TransactionAcountDetails: [
                     var transactionEntityTransactionsTotal = transactionEntityTransactions.SelectMany( d => d.TransactionDetails ).Sum( d => (decimal?)d.Amount );
                     mergeFields.Add( "TransactionEntityTransactions", transactionEntityTransactions );
                     mergeFields.Add( "TransactionEntityTransactionsTotal", transactionEntityTransactionsTotal );
+                    mergeFields.Add( "AmountLimit", this.PageParameter("AmountLimit").AsDecimalOrNull() );
                 }
 
                 lTransactionHeader.Text = GetAttributeValue( "TransactionHeader" ).ResolveMergeFields( mergeFields );
@@ -1891,6 +1892,12 @@ TransactionAcountDetails: [
             if ( SelectedAccounts.Sum( a => a.Amount ) <= 0 )
             {
                 errorMessages.Add( "Make sure you've entered an amount for at least one account" );
+            }
+
+            var amountLimit = this.PageParameter( "AmountLimit" ).AsDecimalOrNull();
+            if ( amountLimit.HasValue && SelectedAccounts.Sum( a => a.Amount ) > amountLimit.Value )
+            {
+                errorMessages.Add( string.Format( "The maximum amount it limited to {0}", amountLimit.FormatAsCurrency() ) );
             }
 
             // Validate that no negative amounts were entered
