@@ -240,7 +240,6 @@ END:VCALENDAR";
             Assert.Equal( expected, output );
         }
 
-
         /// <summary>
         /// For use in Lava -- should return the current Saturday for next year's occurrence for Rock's standard Saturday 4:30PM service datetime.
         /// </summary>
@@ -248,13 +247,14 @@ END:VCALENDAR";
         public void DatesFromICal_NextYearSaturday()
         {
             // Next year's Saturday (from right now)
-            DateTime nextYear = RockDateTime.Now.AddYears( 1 );
-            int daysUntilSaturday = ( ( int ) DayOfWeek.Saturday - ( int ) nextYear.DayOfWeek + 7 ) % 7;
-            DateTime nextYearSaturday = nextYear.AddDays( daysUntilSaturday );
-
+            DateTime today = RockDateTime.Today;
+            int daysUntilSaturday = ( ( int ) DayOfWeek.Saturday - ( int ) today.DayOfWeek + 7 ) % 7;
+            DateTime nextSaturday = today.AddDays( daysUntilSaturday );
+            DateTime nextYearSaturday = nextSaturday.AddDays( 7 * 51 );
+            
             DateTime expected = DateTime.Parse( nextYearSaturday.ToShortDateString() + " 4:30:00 PM" );
 
-            var output = RockFilters.DatesFromICal( iCalStringSaturday430, 100 ).LastOrDefault();
+            var output = RockFilters.DatesFromICal( iCalStringSaturday430, 53 ).LastOrDefault();
             Assert.Equal( expected, output );
         }
 
@@ -280,9 +280,11 @@ END:VCALENDAR";
         [Fact]
         public void DatesFromICal_NextYearsEndOccurrenceSaturday()
         {
-            DateTime todayNextYear = RockDateTime.Today.AddYears( 1 );
-            int daysUntilSaturday = ( ( int ) DayOfWeek.Saturday - ( int ) todayNextYear.DayOfWeek + 7 ) % 7;
-            DateTime nextYearSaturday = todayNextYear.AddDays( daysUntilSaturday );
+            // Next year's Saturday (from right now)
+            DateTime today = RockDateTime.Today;
+            int daysUntilSaturday = ( ( int ) DayOfWeek.Saturday - ( int ) today.DayOfWeek + 7 ) % 7;
+            DateTime nextSaturday = today.AddDays( daysUntilSaturday );
+            DateTime nextYearSaturday = nextSaturday.AddDays( 7 * 51 );
 
             DateTime expected = DateTime.Parse( nextYearSaturday.ToShortDateString() + " 10:00:00 AM" );
 
