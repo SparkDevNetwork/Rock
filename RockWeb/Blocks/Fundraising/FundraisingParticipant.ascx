@@ -70,8 +70,8 @@
                         </asp:Panel>
                     </div>
                     <div class="col-md-4">
-                        <label>Comments</label>
                         <asp:Panel ID="pnlComments" runat="server">
+                            <label>Comments</label>
                             <Rock:NoteContainer ID="notesCommentsTimeline" runat="server" UsePersonIcon="true" AddAllowed="true" DisplayType="Full" />
                         </asp:Panel>
                     </div>

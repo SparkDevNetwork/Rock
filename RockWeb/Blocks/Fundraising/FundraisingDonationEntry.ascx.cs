@@ -26,6 +26,7 @@ using Rock;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
+using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
@@ -194,9 +195,39 @@ namespace RockWeb.Blocks.Fundraising
             var groupMemberId = ddlParticipant.SelectedValue.AsIntegerOrNull();
             if ( groupMemberId.HasValue )
             {
-                var queryParams = new Dictionary<string, string>();
-                queryParams.Add( "GroupMemberId", groupMemberId.ToString() );
-                NavigateToLinkedPage( "TransactionEntryPage", queryParams );
+                var rockContext = new RockContext();
+                var groupMember = new GroupMemberService( rockContext ).Get( groupMemberId.Value );
+                if ( groupMember != null )
+                {
+                    var queryParams = new Dictionary<string, string>();
+                    queryParams.Add( "GroupMemberId", groupMemberId.ToString() );
+
+                    groupMember.LoadAttributes( rockContext );
+                    groupMember.Group.LoadAttributes( rockContext );
+
+                    if ( groupMember.Group.GetAttributeValue( "CapFundraisingAmount" ).AsBoolean() )
+                    {
+                        var transactionTypeFundraisingValueId = DefinedValueCache.Read( "142EA7C8-04E5-4708-9E29-9C89127061C7" ).Id;
+                        var entityTypeIdGroupMember = EntityTypeCache.GetId<Rock.Model.GroupMember>();
+
+                        var contributionTotal = new FinancialTransactionDetailService( rockContext ).Queryable()
+                                    .Where( d => d.Transaction.TransactionTypeValueId == transactionTypeFundraisingValueId
+                                            && d.EntityTypeId == entityTypeIdGroupMember
+                                            && d.EntityId == groupMemberId )
+                                    .Sum( a => (decimal?)a.Amount ) ?? 0.00M;
+
+                        var individualFundraisingGoal = groupMember.GetAttributeValue( "IndividualFundraisingGoal" ).AsDecimalOrNull();
+                        if ( !individualFundraisingGoal.HasValue )
+                        {
+                            individualFundraisingGoal = groupMember.Group.GetAttributeValue( "IndividualFundraisingGoal" ).AsDecimalOrNull();
+                        }
+
+                        var amountLeft = individualFundraisingGoal - contributionTotal;
+                        queryParams.Add( "AmountLimit", amountLeft.ToString() );
+                    }
+                    
+                    NavigateToLinkedPage( "TransactionEntryPage", queryParams );
+                }
             }
         }
 

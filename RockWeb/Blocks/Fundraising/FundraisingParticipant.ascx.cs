@@ -499,6 +499,9 @@ namespace RockWeb.Blocks.Fundraising
                  </div>",
                 Math.Round( percentMet ?? 0, 2 ), percentMet > 100 ? 100 : percentMet );
 
+
+            var opportunityTerm = DefinedValueCache.Read( group.GetAttributeValue( "OpportunityTerm" ).AsGuid() );
+
             // Tab:Updates
             btnUpdatesTab.Visible = false;
             var updatesContentChannelGuid = group.GetAttributeValue( "UpdateContentChannel" ).AsGuidOrNull();
@@ -515,8 +518,11 @@ namespace RockWeb.Blocks.Fundraising
 
                     mergeFields.Add( "ContentChannelItems", contentChannelItems );
                     lUpdatesContentItemsHtml.Text = updatesLavaTemplate.ResolveMergeFields( mergeFields );
+                    btnUpdatesTab.Text = string.Format( "{0} Updates ({1})", opportunityTerm, contentChannelItems.Count() );
                 }
             }
+
+            btnMakeDonation.Text = string.Format( "Contribute to {0} {1}", RockFilters.Possessive( groupMember.Person.NickName ), opportunityTerm );
 
             // Tab: Contributions
             BindContributionsGrid();
@@ -534,6 +540,9 @@ namespace RockWeb.Blocks.Fundraising
             notesCommentsTimeline.AddAllowed = group.Members.Any( a => a.PersonId == this.CurrentPersonId );
 
             notesCommentsTimeline.RebuildNotes( true );
+
+            notesCommentsTimeline.Visible = group.GetAttributeValue( "EnableCommenting" ).AsBoolean();
+            pnlComments.Visible = group.GetAttributeValue( "EnableCommenting" ).AsBoolean();
 
             // Lava Debug
             if ( this.GetAttributeValue( "EnableDebug" ).AsBoolean() )
@@ -573,7 +582,7 @@ namespace RockWeb.Blocks.Fundraising
         {
             FinancialTransaction financialTransaction = e.Row.DataItem as FinancialTransaction;
             Literal lAddress = e.Row.FindControl( "lAddress" ) as Literal;
-            if ( financialTransaction != null && lAddress != null )
+            if ( financialTransaction != null && lAddress != null && financialTransaction.AuthorizedPersonAliasId.HasValue )
             {
                 var personAddress = financialTransaction.AuthorizedPersonAlias.Person.GetHomeLocation();
                 lAddress.Text = personAddress.GetFullStreetAddress();
