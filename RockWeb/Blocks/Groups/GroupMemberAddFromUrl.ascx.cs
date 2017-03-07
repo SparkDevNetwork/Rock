@@ -49,6 +49,7 @@ namespace RockWeb.Blocks.Groups
     [BooleanField("Enable Debug", "Shows the Lava variables availabled for this block")]
     [EnumField("Group Member Status", "The status to use when adding a person to the group.", typeof(GroupMemberStatus), true, "Active")]
     [GroupTypesField( "Limit Group Type", "To ensure that people cannot modify the URL and try adding themselves to standard Rock security groups with known Id numbers you can limit which Group Type that are considered valid during add.", false )]
+    [BooleanField( "Enable Passing Group Id", "If enabled, allows the ability to pass in a group's Id (GroupId=) instead of the Guid.", true, "" )]
     public partial class GroupMemberAddFromUrl : Rock.Web.UI.RockBlock
     {
         #region Fields
@@ -91,25 +92,34 @@ namespace RockWeb.Blocks.Groups
             if ( !Page.IsPostBack )
             {
                 RockContext rockContext = new RockContext();
+                var groupService = new GroupService( rockContext );
                 
                 Group group = null;
                 Guid personGuid = Guid.Empty;
                 GroupTypeRole groupMemberRole = null;
-                
+
                 // get group id from url
-                if ( Request["GroupId"] != null )
+                Guid? groupGuid = PageParameter( "GroupGuid" ).AsGuidOrNull();
+                if ( groupGuid.HasValue )
                 {
-                    int groupId = 0;
-                    if ( Int32.TryParse( Request["GroupId"], out groupId ) )
+                    group = groupService.Queryable( "GroupType,GroupType.Roles" ).Where( g => g.Guid == groupGuid.Value ).FirstOrDefault();
+                }
+
+                if ( group == null && GetAttributeValue( "EnablePassingGroupId" ).AsBoolean( true ) )
+                {
+                    int? groupId = PageParameter( "GroupId" ).AsIntegerOrNull();
+                    if ( groupId.HasValue )
                     {
-                        group = new GroupService( rockContext ).Queryable("GroupType,GroupType.Roles").Where(g => g.Id == groupId ).FirstOrDefault();
+                        group = groupService.Queryable( "GroupType,GroupType.Roles" ).Where( g => g.Id == groupId ).FirstOrDefault();
                     }
                 }
-                else
+
+                if ( group == null )
                 {
-                    Guid groupGuid = Guid.Empty;
-                    if ( Guid.TryParse( GetAttributeValue( "DefaultGroup" ), out groupGuid ) ) {
-                        group = new GroupService( rockContext ).Queryable( "GroupType,GroupType.Roles" ).Where( g => g.Guid == groupGuid ).FirstOrDefault(); ;
+                    groupGuid = GetAttributeValue( "DefaultGroup" ).AsGuidOrNull();
+                    if ( groupGuid.HasValue )
+                    {
+                        group = groupService.Queryable( "GroupType,GroupType.Roles" ).Where( g => g.Guid == groupGuid.Value ).FirstOrDefault();
                     }
                 }
 
