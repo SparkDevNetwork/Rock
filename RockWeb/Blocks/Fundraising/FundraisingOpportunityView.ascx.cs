@@ -224,6 +224,8 @@ namespace RockWeb.Blocks.Fundraising
 
             // Tab:Details
             lDetailsHtml.Text = group.GetAttributeValue( "OpportunityDetails" );
+            var opportunityTerm = DefinedValueCache.Read( group.GetAttributeValue( "OpportunityTerm" ).AsGuid() );
+            btnDetailsTab.Text = string.Format( "{0} Details", opportunityTerm );
 
             // Tab:Updates
             btnUpdatesTab.Visible = false;
@@ -239,6 +241,8 @@ namespace RockWeb.Blocks.Fundraising
 
                     mergeFields.Add( "ContentChannelItems", contentChannelItems );
                     lUpdatesContentItemsHtml.Text = updatesLavaTemplate.ResolveMergeFields( mergeFields );
+
+                    btnUpdatesTab.Text = string.Format( "{0} Updates ({1})", opportunityTerm, contentChannelItems.Count() );
                 }
             }
 
@@ -255,6 +259,10 @@ namespace RockWeb.Blocks.Fundraising
             notesCommentsTimeline.AddAllowed = group.Members.Any( a => a.PersonId == this.CurrentPersonId );
 
             notesCommentsTimeline.RebuildNotes( true );
+
+            notesCommentsTimeline.Visible = group.GetAttributeValue( "EnableCommenting" ).AsBoolean();
+            btnCommentsTab.Visible = group.GetAttributeValue( "EnableCommenting" ).AsBoolean();
+            btnCommentsTab.Text = string.Format( "Comments ({0})", notesCommentsTimeline.NoteCount );
 
             if ( this.GetAttributeValue( "EnableDebug" ).AsBoolean() )
             {
