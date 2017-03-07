@@ -1,37 +1,36 @@
 ﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="TransactionEntityMatching.ascx.cs" Inherits="RockWeb.Blocks.Finance.TransactionEntityMatching" %>
 
-<asp:UpdatePanel ID="upnlContent" runat="server" UpdateMode="Conditional" ChildrenAsTriggers="false">
+<asp:UpdatePanel ID="upnlContent" runat="server" >
     <ContentTemplate>
 
         <asp:Panel ID="pnlView" runat="server" CssClass="panel panel-block">
+            <asp:HiddenField ID="hfBatchId" runat="server" />
 
             <div class="panel-heading">
                 <h1 class="panel-title"><i class="fa fa-star"></i>Blank List Block</h1>
             </div>
             <div class="panel-body">
                 <div class="row">
-                        <div class="col-md-4">
-                            <Rock:RockDropDownList ID="ddlBatch" runat="server" Label="Open Batches" AutoPostBack="true" OnSelectedIndexChanged="ddlBatch_SelectedIndexChanged" />
-                        </div>
+                    <div class="col-md-4">
+                        <Rock:RockDropDownList ID="ddlBatch" runat="server" Label="Open Batches" AutoPostBack="true" OnSelectedIndexChanged="ddlBatch_SelectedIndexChanged" />
                     </div>
+                </div>
                 <div class="grid grid-panel">
-                    
-                    <Rock:Grid ID="gTransactionDetails" runat="server" OnRowDataBound="gTransactionDetails_RowDataBound" OnRowCommand="gTransactionDetails_RowCommand" >
-                        <Columns>
-                            <Rock:RockLiteralField ID="lPersonName" HeaderText="Person" />
-                            <Rock:RockLiteralField ID="lAmount" HeaderText="Amount" />
-                            <Rock:RockLiteralField ID="lAccount" HeaderText="Account" />
-                            <Rock:RockTemplateField HeaderText="#TODO#" >
-                                <ItemTemplate>
-                                    <asp:UpdatePanel ID="upEntity" runat="server" UpdateMode="Conditional" ChildrenAsTriggers="false" >
-                                        <ContentTemplate>
-                                                                    
-                                        </ContentTemplate>
-                                    </asp:UpdatePanel>
-                                </ItemTemplate>
-                            </Rock:RockTemplateField>
-                        </Columns>
-                    </Rock:Grid>
+                    <asp:Panel ID="pnlTransactions" runat="server">
+                        <table class="grid-table table table-striped">
+                            <thead>
+                                <th>Person</th>
+                                <th>Amount</th>
+                                <th>Account</th>
+                                <th>Transaction Type</th>
+                                <th>
+                                    <asp:Literal ID="lEntityHeaderText" runat="server" /></th>
+                            </thead>
+                            <tbody>
+                                <asp:PlaceHolder ID="phTableRows" runat="server" />
+                            </tbody>
+                        </table>
+                    </asp:Panel>
                 </div>
 
             </div>
