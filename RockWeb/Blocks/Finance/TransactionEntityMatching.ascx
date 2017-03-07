@@ -7,7 +7,7 @@
             <asp:HiddenField ID="hfBatchId" runat="server" />
 
             <div class="panel-heading">
-                <h1 class="panel-title"><i class="fa fa-star"></i>Blank List Block</h1>
+                <h1 class="panel-title"><i class="fa fa-check-square-o"></i>&nbsp;Transaction Entity Matching</h1>
             </div>
             <div class="panel-body">
                 <div class="row">
