@@ -105,6 +105,7 @@ namespace Rock.Communication.Transport
                     bool recipientFound = true;
                     while ( recipientFound )
                     {
+                        rockContext = new RockContext();
                         var recipient = Rock.Model.Communication.GetNextPending( communication.Id, rockContext );
                         if ( recipient != null )
                         {
