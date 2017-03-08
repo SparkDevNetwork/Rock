@@ -1797,7 +1797,7 @@ namespace Rock.Data
         #region DefinedType Methods
 
         /// <summary>
-        /// Adds a new DefinedType.
+        /// Adds a new DefinedType, or Updates it if it already exists
         /// </summary>
         /// <param name="category">The category.</param>
         /// <param name="name">The name.</param>
@@ -2220,6 +2220,110 @@ namespace Rock.Data
                     value.Replace( "'", "''" )
                 )
             );
+        }
+
+        #endregion
+
+        #region NoteType methods
+
+        /// <summary>
+        /// Adds or Updates a NoteType
+        /// </summary>
+        /// <param name="name">The name.</param>
+        /// <param name="entityTypeName">Name of the entity type.</param>
+        /// <param name="guid">The unique identifier.</param>
+        /// <param name="IsSystem">if set to <c>true</c> [is system].</param>
+        public void UpdateNoteType( string name, string entityTypeName, string guid, bool IsSystem = true )
+        {
+            EnsureEntityTypeExists( entityTypeName );
+
+            Migration.Sql( $@"
+
+                DECLARE @EntityTypeId int = (SELECT top 1 [Id] FROM [EntityType] WHERE [Name] = '{entityTypeName}')
+
+                DECLARE @Id int = (SELECT [Id] FROM [NoteType] WHERE [Name] = '{name}' AND [EntityTypeId] = @EntityTypeId')
+
+                IF @Id IS NULL
+                BEGIN
+                    INSERT INTO [NoteType] (
+                        [Name],[EntityTypeId],[Guid],[IsSystem])
+                    VALUES(
+                        '{name}',@EntityTypeId,'{guid}',{IsSystem.Bit()})
+                END
+                ELSE
+                BEGIN
+                    UPDATE [NoteType] SET
+                        [Name] = '{name}',
+                        [EntityTypeId] = @EntityTypeId,
+                        [Guid] = '{guid}',
+                        [IsSystem] = {IsSystem.Bit()}
+                    WHERE Id = @Id;
+                END" );
+                    
+        }
+
+        /// <summary>
+        /// Adds or Updates the security auth for the specified NoteType
+        /// </summary>
+        /// <param name="noteTypeGuid">The note type unique identifier.</param>
+        /// <param name="order">The order.</param>
+        /// <param name="action">The action.</param>
+        /// <param name="allow">if set to <c>true</c> [allow].</param>
+        /// <param name="groupGuid">The group unique identifier.</param>
+        /// <param name="specialRole">The special role.</param>
+        /// <param name="authGuid">The authentication unique identifier.</param>
+        public void AddSecurityAuthForNoteType( string noteTypeGuid, int order, string action, bool allow, string groupGuid, int specialRole, string authGuid )
+        {
+            if ( string.IsNullOrWhiteSpace( groupGuid ) )
+            {
+                groupGuid = Guid.Empty.ToString();
+            }
+
+            string entityTypeName = "Rock.Model.NoteType";
+            EnsureEntityTypeExists( entityTypeName );
+
+            string sql = @"
+DECLARE @groupId int
+SET @groupId = (SELECT [Id] FROM [Group] WHERE [Guid] = '{0}')
+
+DECLARE @entityTypeId int
+SET @entityTypeId = (SELECT [Id] FROM [EntityType] WHERE [name] = '{1}')
+
+DECLARE @noteTypeId int
+SET @noteTypeId = (SELECT [Id] FROM [NoteType] WHERE [Guid] = '{2}')
+
+IF NOT EXISTS (
+    SELECT [Id] FROM [Auth]
+    WHERE [EntityTypeId] = @entityTypeId
+    AND [EntityId] = @noteTypeId
+    AND [Action] = '{3}'
+    AND [SpecialRole] = {4}
+    AND [GroupId] = @groupId
+)
+BEGIN
+    INSERT INTO [dbo].[Auth]
+               ([EntityTypeId]
+               ,[EntityId]
+               ,[Order]
+               ,[Action]
+               ,[AllowOrDeny]
+               ,[SpecialRole]
+               ,[GroupId]
+               ,[Guid])
+         VALUES
+               (@entityTypeId
+               ,@noteTypeId
+               ,{6}
+               ,'{3}'
+               ,'{7}'
+               ,{4}
+               ,@groupId
+               ,'{5}')
+END
+
+";
+            Migration.Sql( string.Format( sql, groupGuid ?? Guid.Empty.ToString(), entityTypeName, noteTypeGuid, action, specialRole, authGuid, order,
+                ( allow ? "A" : "D" ) ) );
         }
 
         #endregion
@@ -3462,7 +3566,7 @@ END
         }
 
         /// <summary>
-        /// Adds a new GroupType "Group Attribute" for the given GroupType using the given values.
+        /// Adds (or Updates) a new GroupType "Group Attribute" for the given GroupType using the given values.
         /// </summary>
         /// <param name="groupTypeGuid"></param>
         /// <param name="fieldTypeGuid"></param>
@@ -3473,65 +3577,105 @@ END
         /// <param name="guid"></param>
         public void AddGroupTypeGroupAttribute( string groupTypeGuid, string fieldTypeGuid, string name, string description, int order, string defaultValue, string guid )
         {
-            Migration.Sql( string.Format( @"
+            AddGroupTypeAttribute( "Rock.Model.Group", groupTypeGuid, fieldTypeGuid, name, description, order, defaultValue, guid );
+        }
+
+        /// <summary>
+        /// Adds (or Updates) a new GroupType "Member Attribute" for the given GroupType using the given values.
+        /// </summary>
+        /// <param name="groupTypeGuid">The group type unique identifier.</param>
+        /// <param name="fieldTypeGuid">The field type unique identifier.</param>
+        /// <param name="name">The name.</param>
+        /// <param name="description">The description.</param>
+        /// <param name="order">The order.</param>
+        /// <param name="defaultValue">The default value.</param>
+        /// <param name="guid">The unique identifier.</param>
+        public void AddGroupTypeGroupMemberAttribute( string groupTypeGuid, string fieldTypeGuid, string name, string description, int order, string defaultValue, string guid )
+        {
+            AddGroupTypeAttribute( "Rock.Model.GroupMember", groupTypeGuid, fieldTypeGuid, name, description, order, defaultValue, guid );
+        }
+
+        /// <summary>
+        /// Adds (or Updates) the group type attribute
+        /// </summary>
+        /// <param name="entityTypeName">Name of the entity type.</param>
+        /// <param name="groupTypeGuid">The group type unique identifier.</param>
+        /// <param name="fieldTypeGuid">The field type unique identifier.</param>
+        /// <param name="name">The name.</param>
+        /// <param name="description">The description.</param>
+        /// <param name="order">The order.</param>
+        /// <param name="defaultValue">The default value.</param>
+        /// <param name="guid">The unique identifier.</param>
+        private void AddGroupTypeAttribute( string entityTypeName, string groupTypeGuid, string fieldTypeGuid, string name, string description, int order, string defaultValue, string guid )
+        {
+            string defaultValueDbParam = ( defaultValue == null ) ? "NULL" : "'" + defaultValue + "'";
+            string attributeKey = name.RemoveSpaces();
+
+            Migration.Sql( $@"
 
                 DECLARE @EntityTypeId int
-                SET @EntityTypeId = (SELECT [Id] FROM [EntityType] WHERE [Name] = 'Rock.Model.Group')
+                SET @EntityTypeId = (SELECT [Id] FROM [EntityType] WHERE [Name] = '{entityTypeName}')
 
                 DECLARE @GroupTypeId int
-                SET @GroupTypeId = (SELECT [Id] FROM [GroupType] WHERE [Guid] = '{0}')
+                SET @GroupTypeId = (SELECT [Id] FROM [GroupType] WHERE [Guid] = '{groupTypeGuid}')
 
                 DECLARE @FieldTypeId int
-                SET @FieldTypeId = (SELECT [Id] FROM [FieldType] WHERE [Guid] = '{1}')
+                SET @FieldTypeId = (SELECT [Id] FROM [FieldType] WHERE [Guid] = '{fieldTypeGuid}')
 
-                -- Delete existing attribute first (might have been created by Rock system)
-                DELETE [Attribute]
-                WHERE
-                    [EntityTypeId] = @EntityTypeId
-                    AND [Key] = '{2}'
+                IF EXISTS (
+                    SELECT [Id]
+                    FROM [Attribute]
+                    WHERE [EntityTypeId] = @EntityTypeId
+                    AND [EntityTypeQualifierColumn] = 'GroupTypeId'
+                    AND [EntityTypeQualifierValue] = GroupTypeId
+                    AND [Key] = '{attributeKey}' )
+                BEGIN
+                    UPDATE [Attribute] SET
+                        [FieldTypeId] = @FieldTypeId,
+                        [Name] = '{name}',
+                        [Description] = '{description.Replace( "'", "''" )}',
+                        [Order] = {order},
+                        [DefaultValue] = {defaultValueDbParam},
+                        [Guid] = '{guid}'
+                    WHERE [EntityTypeId] = @EntityTypeId
                     AND [EntityTypeQualifierColumn] = 'GroupTypeId'
                     AND [EntityTypeQualifierValue] = @GroupTypeId
-
-                INSERT INTO [Attribute]
-                    ([IsSystem]
-                    ,[FieldTypeId]
-                    ,[EntityTypeId]
-                    ,[EntityTypeQualifierColumn]
-                    ,[EntityTypeQualifierValue]
-                    ,[Key]
-                    ,[Name]
-                    ,[Description]
-                    ,[Order]
-                    ,[IsGridColumn]
-                    ,[DefaultValue]
-                    ,[IsMultiValue]
-                    ,[IsRequired]
-                    ,[Guid])
-                VALUES
-                    (1
-                    ,@FieldTypeId
-                    ,@EntityTypeId
-                    ,'GroupTypeId'
-                    ,@GroupTypeId
-                    ,'{2}'
-                    ,'{3}'
-                    ,'{4}'
-                    ,{5}
-                    ,0
-                    ,{6}
-                    ,0
-                    ,0
-                    ,'{7}')
-",
-                    groupTypeGuid,
-                    fieldTypeGuid,
-                    name.Replace( " ", string.Empty ),
-                    name,
-                    description.Replace( "'", "''" ),
-                    order,
-                    ( defaultValue == null ) ? "NULL" : "'" + defaultValue + "'",
-                    guid )
-            );
+                    AND [Key] = '{attributeKey}'
+                END
+                ELSE
+                BEGIN
+                    INSERT INTO [Attribute]
+                        ([IsSystem]
+                        ,[FieldTypeId]
+                        ,[EntityTypeId]
+                        ,[EntityTypeQualifierColumn]
+                        ,[EntityTypeQualifierValue]
+                        ,[Key]
+                        ,[Name]
+                        ,[Description]
+                        ,[Order]
+                        ,[IsGridColumn]
+                        ,[DefaultValue]
+                        ,[IsMultiValue]
+                        ,[IsRequired]
+                        ,[Guid])
+                    VALUES
+                        (1
+                        ,@FieldTypeId
+                        ,@EntityTypeId
+                        ,'GroupTypeId'
+                        ,@GroupTypeId
+                        ,'{attributeKey}'
+                        ,'{name}'
+                        ,'{description.Replace( "'", "''" )}'
+                        ,{order}
+                        ,0
+                        ,{defaultValueDbParam}
+                        ,0
+                        ,0
+                        ,'{guid}')
+                END
+                ");
         }
 
         /// <summary>
