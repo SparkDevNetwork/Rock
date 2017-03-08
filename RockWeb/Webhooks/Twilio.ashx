@@ -207,7 +207,7 @@ class TwilioResponseAsync : IAsyncResult
 
     private void WriteToLog( string message )
     {
-        string logFile = _context.Current.Server.MapPath( "~/App_Data/Logs/TwilioLog.txt" );
+        string logFile = HttpContext.Current.Server.MapPath( "~/App_Data/Logs/TwilioLog.txt" );
 
         // Write to the log, but if an ioexception occurs wait a couple seconds and then try again (up to 3 times).
         var maxRetry = 3;
