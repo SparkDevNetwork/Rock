@@ -30,6 +30,8 @@ using Rock.Model;
 using Rock.Web.Cache;
 
 using Twilio;
+using TwilioTypes = Twilio.Types;
+using Twilio.Rest.Api.V2010.Account;
 
 namespace Rock.Communication.Transport
 {
@@ -48,7 +50,7 @@ namespace Rock.Communication.Transport
         /// </summary>
         /// <param name="communication">The communication.</param>
         /// <exception cref="System.NotImplementedException"></exception>
-        public override void Send( Rock.Model.Communication communication )
+        public override async void Send( Rock.Model.Communication communication )
         {
             var rockContext = new RockContext();
 
@@ -72,7 +74,7 @@ namespace Rock.Communication.Transport
                 {
                     string accountSid = GetAttributeValue( "SID" );
                     string authToken = GetAttributeValue( "Token" );
-                    var twilio = new TwilioRestClient( accountSid, authToken );
+                    TwilioClient.Init( accountSid, authToken );
 
                     var historyService = new HistoryService( rockContext );
                     var recipientService = new CommunicationRecipientService( rockContext );
@@ -83,9 +85,21 @@ namespace Rock.Communication.Transport
 
                     var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( null );
 
+                    // get message template
+                    string message = communication.GetMediumDataValue( "Message" );
+
+                    // convert any special microsoft word characters to normal chars so they don't look funny (for example "Hey â€œdouble-quotesâ€ from â€˜single quoteâ€™")
+                    message = message.ReplaceWordChars();
+
+                    // determine callback address
+                    var globalAttributes = Rock.Web.Cache.GlobalAttributesCache.Read();
+                    string callbackUrl = globalAttributes.GetValue( "PublicApplicationRoot" ) + "Webhooks/Twilio.ashx";
+
+
                     bool recipientFound = true;
                     while ( recipientFound )
                     {
+                        rockContext = new RockContext();
                         var recipient = Rock.Model.Communication.GetNextPending( communication.Id, rockContext );
                         if ( recipient != null )
                         {
@@ -99,11 +113,8 @@ namespace Rock.Communication.Transport
                                 {
                                     // Create merge field dictionary
                                     var mergeObjects = recipient.CommunicationMergeValues( mergeFields );
-                                    string message = communication.GetMediumDataValue( "Message" );
-
-                                    // convert any special microsoft word characters to normal chars so they don't look funny (for example "Hey â€œdouble-quotesâ€ from â€˜single quoteâ€™")
-                                    message = message.ReplaceWordChars();
-                                    message = message.ResolveMergeFields( mergeObjects, communication.EnabledLavaCommands );
+                                    
+                                    var resolvedMessage = message.ResolveMergeFields( mergeObjects, communication.EnabledLavaCommands );
  
                                     string twilioNumber = phoneNumber.Number;
                                     if ( !string.IsNullOrWhiteSpace( phoneNumber.CountryCode ) )
@@ -111,10 +122,12 @@ namespace Rock.Communication.Transport
                                         twilioNumber = "+" + phoneNumber.CountryCode + phoneNumber.Number;
                                     }
 
-                                    var globalAttributes = Rock.Web.Cache.GlobalAttributesCache.Read();
-                                    string callbackUrl = globalAttributes.GetValue( "PublicApplicationRoot" ) + "Webhooks/Twilio.ashx";
-
-                                    var response = twilio.SendMessage( fromPhone, twilioNumber, message, callbackUrl );
+                                    var response = await MessageResource.CreateAsync(
+                                        from: new TwilioTypes.PhoneNumber(fromPhone),
+                                        to: new TwilioTypes.PhoneNumber(twilioNumber),
+                                        body: resolvedMessage,
+                                        statusCallback: new System.Uri(callbackUrl)
+                                    );
 
                                     recipient.Status = CommunicationRecipientStatus.Delivered;
                                     recipient.TransportEntityTypeName = this.GetType().FullName;
@@ -184,7 +197,7 @@ namespace Rock.Communication.Transport
         /// <param name="appRoot">The application root.</param>
         /// <param name="themeRoot">The theme root.</param>
         /// <exception cref="System.NotImplementedException"></exception>
-        public override void Send(Dictionary<string, string> mediumData, List<string> recipients, string appRoot, string themeRoot)
+        public override async void Send(Dictionary<string, string> mediumData, List<string> recipients, string appRoot, string themeRoot)
         {
             try
             {
@@ -200,7 +213,7 @@ namespace Rock.Communication.Transport
                     {
                         string accountSid = GetAttributeValue( "SID" );
                         string authToken = GetAttributeValue( "Token" );
-                        var twilio = new TwilioRestClient( accountSid, authToken );
+                        TwilioClient.Init( accountSid, authToken );
 
                         string message = string.Empty;
                         mediumData.TryGetValue( "Message", out message );
@@ -219,7 +232,11 @@ namespace Rock.Communication.Transport
 
                         foreach (var recipient in recipients)
                         {
-                            var response = twilio.SendMessage( fromPhone, recipient, message );
+                            var response = await MessageResource.CreateAsync(
+                                from: new TwilioTypes.PhoneNumber(fromPhone),
+                                to: new TwilioTypes.PhoneNumber(recipient),
+                                body: message
+                            );
                         }
                     }
                 }
@@ -241,7 +258,7 @@ namespace Rock.Communication.Transport
         /// <param name="appRoot">The application root.</param>
         /// <param name="themeRoot">The theme root.</param>
         /// <exception cref="System.NotImplementedException"></exception>
-        public override void Send( List<string> recipients, string from, string subject, string body, string appRoot = null, string themeRoot = null )
+        public override async void Send( List<string> recipients, string from, string subject, string body, string appRoot = null, string themeRoot = null )
         {
             try
             {
@@ -252,7 +269,7 @@ namespace Rock.Communication.Transport
                 {
                     string accountSid = GetAttributeValue( "SID" );
                     string authToken = GetAttributeValue( "Token" );
-                    var twilio = new TwilioRestClient( accountSid, authToken );
+                    TwilioClient.Init( accountSid, authToken );
 
                     string message = body;
                     if ( !string.IsNullOrWhiteSpace( themeRoot ) )
@@ -269,7 +286,11 @@ namespace Rock.Communication.Transport
 
                     foreach ( var recipient in recipients )
                     {
-                        var response = twilio.SendMessage( fromPhone, recipient, message );
+                        var response = await MessageResource.CreateAsync(
+                            from: new TwilioTypes.PhoneNumber(fromPhone),
+                            to: new TwilioTypes.PhoneNumber(recipient),
+                            body: message
+                        );
                     }
                 }
             }
@@ -291,7 +312,7 @@ namespace Rock.Communication.Transport
         /// <param name="themeRoot">The theme root.</param>
         /// <param name="attachments">Attachments.</param>
         /// <exception cref="System.NotImplementedException"></exception>
-        public override void Send(List<string> recipients, string from, string subject, string body, string appRoot = null, string themeRoot = null, List<Attachment> attachments = null)
+        public override async void Send(List<string> recipients, string from, string subject, string body, string appRoot = null, string themeRoot = null, List<Attachment> attachments = null)
         {
             throw new NotImplementedException();
         }
@@ -308,7 +329,7 @@ namespace Rock.Communication.Transport
         /// <param name="themeRoot">The theme root.</param>
         /// <param name="attachments">The attachments.</param>
         /// <exception cref="System.NotImplementedException"></exception>
-        public override void Send( List<string> recipients, string from, string fromName, string subject, string body, string appRoot = null, string themeRoot = null, List<Attachment> attachments = null )
+        public override async void Send( List<string> recipients, string from, string fromName, string subject, string body, string appRoot = null, string themeRoot = null, List<Attachment> attachments = null )
         {
             throw new NotImplementedException();
         }
