@@ -29,10 +29,10 @@ namespace Rock.Web.UI.Controls.Communication
     {
         #region UI Controls
 
-        private RockDropDownList ddlFrom;
         private RockControlWrapper rcwMessage;
         private MergeFieldPicker mfpMessage;
         private RockTextBox tbMessage;
+        private RockTextBox tbTitle;
 
         #endregion
 
@@ -50,7 +50,7 @@ namespace Rock.Web.UI.Controls.Communication
             {
                 EnsureChildControls();
                 var data = new Dictionary<string, string>();
-                data.Add( "Title", string.Empty );
+                data.Add( "Title", tbTitle.Text );
                 data.Add( "Message", tbMessage.Text );
                 return data;
             }
@@ -58,7 +58,8 @@ namespace Rock.Web.UI.Controls.Communication
             set
             {
                 EnsureChildControls();
-                tbMessage.Text = GetDataValue( value, "Title" );
+                tbMessage.Text = GetDataValue( value, "Message" );
+                tbTitle.Text = GetDataValue( value, "Title" );
             }
         }
 
@@ -73,6 +74,13 @@ namespace Rock.Web.UI.Controls.Communication
         {
             base.CreateChildControls();
             Controls.Clear();
+
+            tbTitle = new RockTextBox();
+            tbTitle.ID = string.Format("tbTextTitle_{0}", this.ID);
+            tbTitle.TextMode = TextBoxMode.SingleLine;
+            tbTitle.Required = false;
+            tbTitle.Label = "Title";
+            Controls.Add(tbTitle);
             
             rcwMessage = new RockControlWrapper();
             rcwMessage.ID = string.Format( "rcwMessage_{0}", this.ID );
@@ -115,6 +123,7 @@ namespace Rock.Web.UI.Controls.Communication
                 EnsureChildControls();
                 mfpMessage.ValidationGroup = value;
                 tbMessage.ValidationGroup = value;
+                tbTitle.ValidationGroup = value;
             }
         }
 
@@ -133,7 +142,19 @@ namespace Rock.Web.UI.Controls.Communication
         /// <param name="writer">The <see cref="T:System.Web.UI.HtmlTextWriter" /> object that receives the control content.</param>
         public override void RenderControl( HtmlTextWriter writer )
         {
-            ddlFrom.RenderControl( writer );
+
+            writer.AddAttribute( HtmlTextWriterAttribute.Class, "row" );
+            writer.RenderBeginTag( HtmlTextWriterTag.Div );
+
+            writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-md-6" );
+            writer.RenderBeginTag( HtmlTextWriterTag.Div );
+
+            tbTitle.RenderControl( writer );
+
+            writer.RenderEndTag();
+            writer.RenderEndTag();
+
+
             rcwMessage.RenderControl( writer );
         }
 

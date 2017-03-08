@@ -27,14 +27,17 @@ using Rock.Web.UI.Controls.Communication;
 
 namespace Rock.Communication.Medium
 {
+
     /// <summary>
     /// A push notification communication
     /// </summary>
     [Description( "A push notification communication" )]
     [Export( typeof( MediumComponent ))]
-    [ExportMetadata( "ComponentName", "SMS")]
+    [ExportMetadata( "ComponentName", "Push Notification")]
     class PushNotification : MediumComponent
     {
+        const int TOKEN_REUSE_DURATION = 30; // number of days between token reuse
+
         /// <summary>
         /// Gets the control.
         /// </summary>
@@ -42,7 +45,7 @@ namespace Rock.Communication.Medium
         /// <returns></returns>
         public override MediumControl GetControl( bool useSimpleMode )
         {
-            return new Rock.Web.UI.Controls.Communication.Sms();
+            return new Rock.Web.UI.Controls.Communication.PushNotification();
         }
 
         /// <summary>
@@ -97,6 +100,15 @@ namespace Rock.Communication.Medium
 
             return sb.ToString();
         }
+        private void AppendMediumData( Model.Communication communication, StringBuilder sb, string key )
+        {
+            string value = communication.GetMediumDataValue( key );
+            if ( !string.IsNullOrWhiteSpace( value ) )
+            {
+                AppendMediumData( sb, key, value );
+            }
+        }
+
         private void AppendMediumData( StringBuilder sb, string key, string value )
         {
             sb.AppendFormat( "<div class='form-group'><label class='control-label'>{0}</label><p class='form-control-static'>{1}</p></div>",
