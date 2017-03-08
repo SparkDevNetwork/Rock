@@ -32,7 +32,7 @@ namespace Rock.Migrations
             // NOTE: There needs to be a SQL script that does the equivalent of this migration so that it can be run on 1.6.x versions of Rock
 
             // Fundraising Public | Group
-            RockMigrationHelper.UpdateCategory( Rock.SystemGuid.EntityType.GROUP, "Fundraising Public", "fa fa-money", "", "91B43FBD-F924-4934-9CCE-7990513275CF" );
+            RockMigrationHelper.UpdateGroupAttributeCategory ( "Fundraising Public", "fa fa-money", "", "91B43FBD-F924-4934-9CCE-7990513275CF" );
 
             // 'Fundraising Opportunity Term' Defined Values
             RockMigrationHelper.AddDefinedType( "Group", "Fundraising Opportunity Term", "This is what a fundraising opportunity is described as, such as Trip, Internship, Project, etc", "53C8FFF6-3022-4A2D-9BAE-FD3435BEA43D" );
@@ -40,13 +40,10 @@ namespace Rock.Migrations
             RockMigrationHelper.AddDefinedValue( "53C8FFF6-3022-4A2D-9BAE-FD3435BEA43D", "Internship", "", "DB378B20-525E-40E6-B7E3-80ACBD2AE8A0", false );
             RockMigrationHelper.AddDefinedValue( "53C8FFF6-3022-4A2D-9BAE-FD3435BEA43D", "Project", "", "DFF45DA6-6077-4651-A804-BCBE9CD68375", false );
 
-
             // GroupType: Fundraising Opportunity 4BE7FC44-332D-40A8-978E-47B7035D7A0C
             RockMigrationHelper.AddGroupType( "Fundraising Opportunity", "A group that can be used to manage a fundraising opportunity such as a mission trip or internship", "Group", "Member", false, true, true, "fa fa-money", 0, null, 0, null, "4BE7FC44-332D-40A8-978E-47B7035D7A0C" );
 
             // Group Type Group Attributes
-            RockMigrationHelper.AddGroupTypeGroupAttribute( "4BE7FC44-332D-40A8-978E-47B7035D7A0C", "9C204CD0-1233-41C5-818A-C5DA439445AA", "Opportunity Title", @"The public name of the fundraising opportunity so the group name could be used for internal 
-use.", 0, "", "F3338652-D1A2-4778-82A7-D56B9F4CFD7F" );
             RockMigrationHelper.AddGroupTypeGroupAttribute( "4BE7FC44-332D-40A8-978E-47B7035D7A0C", "9C204CD0-1233-41C5-818A-C5DA439445AA", "Opportunity Title", @"The public name of the fundraising opportunity so the group name could be used for internal 
 use.", 0, "", "F3338652-D1A2-4778-82A7-D56B9F4CFD7F" );
             RockMigrationHelper.AddGroupTypeGroupAttribute( "4BE7FC44-332D-40A8-978E-47B7035D7A0C", "9C7D431C-875C-4792-9E76-93F3A32BB850", "Opportunity Date Range", @"Used to display start and end date", 1, "", "237463F7-A206-4B43-AFDD-84E422527E87" );
@@ -62,11 +59,35 @@ use.", 0, "", "F3338652-D1A2-4778-82A7-D56B9F4CFD7F" );
             RockMigrationHelper.AddGroupTypeGroupAttribute( "4BE7FC44-332D-40A8-978E-47B7035D7A0C", "1EDAFDED-DFE6-4334-B019-6EECBA89E05A", "Allow Individual Disabling of Contribution Requests", @"Determines if individuals should be allowed to disable their contribution requests.", 11, "True", "9BEA4F1C-E2FD-4669-B2CD-1269D4DCB97A" );
             RockMigrationHelper.AddGroupTypeGroupAttribute( "4BE7FC44-332D-40A8-978E-47B7035D7A0C", "1EDAFDED-DFE6-4334-B019-6EECBA89E05A", "Cap Fundraising Amount", @"If this is set to 'Yes', the individual won't be able to fundraise for more than the Individual Fundraising Goal amount", 12, "False", "49012757-0ADE-419A-981C-384417D2E543" );
             RockMigrationHelper.AddGroupTypeGroupAttribute( "4BE7FC44-332D-40A8-978E-47B7035D7A0C", "434D7B6F-F8DD-45B7-8C3E-C76EF10BE56A", "Financial Account", @"The financial account that the donations should be tied to.", 13, "", "7C6FF01B-F68E-4A83-A96D-85071A92AAF1" );
-            RockMigrationHelper.AddGroupTypeGroupAttribute( "4BE7FC44-332D-40A8-978E-47B7035D7A0C", "9C204CD0-1233-41C5-818A-C5DA439445AA", "IS This secured", @"", 14, "", "2039F657-1CA0-4444-8FDA-C82F80CDD131" );
             RockMigrationHelper.AddGroupTypeGroupMemberAttribute( "4BE7FC44-332D-40A8-978E-47B7035D7A0C", "3EE69CBC-35CE-4496-88CC-8327A447603F", "Individual Fundraising Goal", @"Optional override of the default individual fund raising goal.  This is configurable only in internal group member editor. An individual could not adjust this themselves.", 0, "", "EABAE672-0886-450B-9296-2BADC56A0137" );
             RockMigrationHelper.AddGroupTypeGroupMemberAttribute( "4BE7FC44-332D-40A8-978E-47B7035D7A0C", "C28C7BF3-A552-4D77-9408-DEDCF760CED0", "Personal Trip Introduction", @"A personal note to display on the individual's fundraising participant page.", 1, "", "018B201C-D9C2-4EDE-9FC9-B52E2F799325" );
             RockMigrationHelper.AddGroupTypeGroupMemberAttribute( "4BE7FC44-332D-40A8-978E-47B7035D7A0C", "1EDAFDED-DFE6-4334-B019-6EECBA89E05A", "Disable Public Contribution Requests", @"Set this to Yes to hide both the fundraising progress and request for donations on the profile page.", 2, "False", "2805298E-E21A-4679-B5CA-69D6FF4EAD31" );
-            
+
+            // set Category of some of the Attributes to 'Fundraising Public'
+            Sql( @"
+-- Opportunity Title
+INSERT INTO AttributeCategory (AttributeId, CategoryId) SELECT a.Id, c.Id FROM Attribute a, Category c WHERE a.[Guid] = 'F3338652-D1A2-4778-82A7-D56B9F4CFD7F' AND c.[Guid] = '91B43FBD-F924-4934-9CCE-7990513275CF' AND NOT EXISTS (SELECT AttributeId, CategoryId FROM AttributeCategory ac WHERE AttributeId = a.Id AND CategoryId = c.Id)
+
+-- Opportunity Date Range
+INSERT INTO AttributeCategory (AttributeId, CategoryId) SELECT a.Id, c.Id FROM Attribute a, Category c WHERE a.[Guid] = '237463F7-A206-4B43-AFDD-84E422527E87' AND c.[Guid] = '91B43FBD-F924-4934-9CCE-7990513275CF' AND NOT EXISTS (SELECT AttributeId, CategoryId FROM AttributeCategory ac WHERE AttributeId = a.Id AND CategoryId = c.Id)
+
+-- Opportunity Location
+INSERT INTO AttributeCategory (AttributeId, CategoryId) SELECT a.Id, c.Id FROM Attribute a, Category c WHERE a.[Guid] = '2339847F-2746-41D9-8CB5-2410FC8358D2' AND c.[Guid] = '91B43FBD-F924-4934-9CCE-7990513275CF' AND NOT EXISTS (SELECT AttributeId, CategoryId FROM AttributeCategory ac WHERE AttributeId = a.Id AND CategoryId = c.Id)
+
+-- Opportunity Summary
+INSERT INTO AttributeCategory (AttributeId, CategoryId) SELECT a.Id, c.Id FROM Attribute a, Category c WHERE a.[Guid] = '697FDCF1-CA91-4DB5-9306-CD4835108613' AND c.[Guid] = '91B43FBD-F924-4934-9CCE-7990513275CF' AND NOT EXISTS (SELECT AttributeId, CategoryId FROM AttributeCategory ac WHERE AttributeId = a.Id AND CategoryId = c.Id)
+
+-- Opportunity Photo
+INSERT INTO AttributeCategory (AttributeId, CategoryId) SELECT a.Id, c.Id FROM Attribute a, Category c WHERE a.[Guid] = '125F7AAC-F01D-4527-AA5E-5C8345AC3F66' AND c.[Guid] = '91B43FBD-F924-4934-9CCE-7990513275CF' AND NOT EXISTS (SELECT AttributeId, CategoryId FROM AttributeCategory ac WHERE AttributeId = a.Id AND CategoryId = c.Id)
+
+-- Opportunity Details
+INSERT INTO AttributeCategory (AttributeId, CategoryId) SELECT a.Id, c.Id FROM Attribute a, Category c WHERE a.[Guid] = '1E2F1416-2C4C-44DF-BE19-7D8FA9523115' AND c.[Guid] = '91B43FBD-F924-4934-9CCE-7990513275CF' AND NOT EXISTS (SELECT AttributeId, CategoryId FROM AttributeCategory ac WHERE AttributeId = a.Id AND CategoryId = c.Id)
+
+-- Personal Trip Introduction
+INSERT INTO AttributeCategory (AttributeId, CategoryId) SELECT a.Id, c.Id FROM Attribute a, Category c WHERE a.[Guid] = '018B201C-D9C2-4EDE-9FC9-B52E2F799325' AND c.[Guid] = '91B43FBD-F924-4934-9CCE-7990513275CF' AND NOT EXISTS (SELECT AttributeId, CategoryId FROM AttributeCategory ac WHERE AttributeId = a.Id AND CategoryId = c.Id)
+" );
+
+
             RockMigrationHelper.AddSecurityAuthForAttribute( "F3338652-D1A2-4778-82A7-D56B9F4CFD7F", 0, Rock.Security.Authorization.VIEW, true, null, (int)Model.SpecialRole.AllUsers, Guid.NewGuid().ToString() );
             RockMigrationHelper.AddSecurityAuthForAttribute( "237463F7-A206-4B43-AFDD-84E422527E87", 0, Rock.Security.Authorization.VIEW, true, null, (int)Model.SpecialRole.AllUsers, Guid.NewGuid().ToString() );
             RockMigrationHelper.AddSecurityAuthForAttribute( "2339847F-2746-41D9-8CB5-2410FC8358D2", 0, Rock.Security.Authorization.VIEW, true, null, (int)Model.SpecialRole.AllUsers, Guid.NewGuid().ToString() );
@@ -86,8 +107,8 @@ use.", 0, "", "F3338652-D1A2-4778-82A7-D56B9F4CFD7F" );
             RockMigrationHelper.AddSecurityAuthForAttribute( "018B201C-D9C2-4EDE-9FC9-B52E2F799325", 0, Rock.Security.Authorization.VIEW, true, null, (int)Model.SpecialRole.AllUsers, Guid.NewGuid().ToString() );
             RockMigrationHelper.AddSecurityAuthForAttribute( "2805298E-E21A-4679-B5CA-69D6FF4EAD31", 0, Rock.Security.Authorization.VIEW, true, null, (int)Model.SpecialRole.AllUsers, Guid.NewGuid().ToString() );
 
-            RockMigrationHelper.AddGroupTypeRole( "4BE7FC44-332D-40A8-978E-47B7035D7A0C", "Participant", null, 1, null, null, "F82DF077-9664-4DA8-A3D9-7379B690124D", true, false, true );
-            RockMigrationHelper.AddGroupTypeRole( "4BE7FC44-332D-40A8-978E-47B7035D7A0C", "Leader", null, 0, null, null, "253973A5-18F2-49B6-B2F1-F8F84294AAB2", true, true, false );
+            RockMigrationHelper.AddGroupTypeRole( "4BE7FC44-332D-40A8-978E-47B7035D7A0C", "Participant", string.Empty, 1, null, null, "F82DF077-9664-4DA8-A3D9-7379B690124D", true, false, true );
+            RockMigrationHelper.AddGroupTypeRole( "4BE7FC44-332D-40A8-978E-47B7035D7A0C", "Leader", string.Empty, 0, null, null, "253973A5-18F2-49B6-B2F1-F8F84294AAB2", true, true, false );
 
 
             // Add TransactionType of Fundraising 142EA7C8-04E5-4708-9E29-9C89127061C7
