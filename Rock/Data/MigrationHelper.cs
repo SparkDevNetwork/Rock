@@ -2241,7 +2241,7 @@ namespace Rock.Data
 
                 DECLARE @EntityTypeId int = (SELECT top 1 [Id] FROM [EntityType] WHERE [Name] = '{entityTypeName}')
 
-                DECLARE @Id int = (SELECT [Id] FROM [NoteType] WHERE [Name] = '{name}' AND [EntityTypeId] = @EntityTypeId')
+                DECLARE @Id int = (SELECT [Id] FROM [NoteType] WHERE [Name] = '{name}' AND [EntityTypeId] = @EntityTypeId)
 
                 IF @Id IS NULL
                 BEGIN
@@ -3627,7 +3627,7 @@ END
                     FROM [Attribute]
                     WHERE [EntityTypeId] = @EntityTypeId
                     AND [EntityTypeQualifierColumn] = 'GroupTypeId'
-                    AND [EntityTypeQualifierValue] = GroupTypeId
+                    AND [EntityTypeQualifierValue] = @GroupTypeId
                     AND [Key] = '{attributeKey}' )
                 BEGIN
                     UPDATE [Attribute] SET
@@ -3828,7 +3828,7 @@ END
         #region PersonAttribute
 
         /// <summary>
-        /// Updates the person attribute category.
+        /// Adds or Updates the person attribute category.
         /// </summary>
         /// <param name="name">The name.</param>
         /// <param name="iconCssClass">The icon CSS class.</param>
@@ -3837,38 +3837,57 @@ END
         /// <param name="order">The order.</param>
         public void UpdatePersonAttributeCategory( string name, string iconCssClass, string description, string guid, int order = 0 )
         {
-            Migration.Sql( string.Format( @"
+            UpdateEntityAttributeCategory( "Rock.Model.Person", name, iconCssClass, description, guid, order );
+        }
+
+        /// <summary>
+        /// Adds or Updates the group attribute category.
+        /// </summary>
+        /// <param name="name">The name.</param>
+        /// <param name="iconCssClass">The icon CSS class.</param>
+        /// <param name="description">The description.</param>
+        /// <param name="guid">The unique identifier.</param>
+        /// <param name="order">The order.</param>
+        public void UpdateGroupAttributeCategory( string name, string iconCssClass, string description, string guid, int order = 0 )
+        {
+            UpdateEntityAttributeCategory( "Rock.Model.Group", name, iconCssClass, description, guid, order );
+        }
+
+        /// <summary>
+        /// Updates the person attribute category.
+        /// </summary>
+        /// <param name="name">The name.</param>
+        /// <param name="iconCssClass">The icon CSS class.</param>
+        /// <param name="description">The description.</param>
+        /// <param name="guid">The unique identifier.</param>
+        /// <param name="order">The order.</param>
+        private void UpdateEntityAttributeCategory( string entityTypeName, string name, string iconCssClass, string description, string guid, int order = 0 )
+        {
+            Migration.Sql( $@"
 
                 DECLARE @AttributeEntityTypeId int
                 SET @AttributeEntityTypeId = (SELECT [Id] FROM [EntityType] WHERE [Guid] = '5997C8D3-8840-4591-99A5-552919F90CBD')
 
-                DECLARE @PersonEntityTypeId int
-                SET @PersonEntityTypeId = (SELECT [Id] FROM [EntityType] WHERE [Guid] = '72657ED8-D16E-492E-AC12-144C5E7567E7')
+                DECLARE @EntityEntityTypeId int
+                SET @EntityEntityTypeId = (SELECT [Id] FROM [EntityType] WHERE [Name] = '{entityTypeName}')
 
                 IF EXISTS (
                     SELECT [Id]
                     FROM [Category]
-                    WHERE [Guid] = '{3}' )
+                    WHERE [Guid] = '{guid}' )
                 BEGIN
                     UPDATE [Category] SET
-                        [Name] = '{0}',
-                        [IconCssClass] = '{1}',
-                        [Description] = '{2}',
-                        [Order] = {4}
-                    WHERE [Guid] = '{3}'
+                        [Name] = '{name}',
+                        [IconCssClass] = '{iconCssClass}',
+                        [Description] = '{description.Replace( "'", "''" )}',
+                        [Order] = {order}
+                    WHERE [Guid] = '{guid}'
                 END
                 ELSE
                 BEGIN
                     INSERT INTO [Category] ( [IsSystem],[EntityTypeId],[EntityTypeQualifierColumn],[EntityTypeQualifierValue],[Name],[IconCssClass],[Description],[Order],[Guid] )
-                    VALUES( 1,@AttributeEntityTypeId,'EntityTypeId',CAST(@PersonEntityTypeId as varchar),'{0}','{1}','{2}',{4},'{3}' )
-                END
-",
-                    name,
-                    iconCssClass,
-                    description.Replace( "'", "''" ),
-                    guid,
-                    order )
-            );
+                    VALUES( 1,@AttributeEntityTypeId,'EntityTypeId',CAST(@EntityEntityTypeId as varchar),'{name}','{iconCssClass}','{description.Replace( "'", "''" )}',{order},'{guid}' )
+                END" );
         }
 
         /// <summary>
