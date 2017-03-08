@@ -144,6 +144,12 @@ TransactionAcountDetails: [
     [BooleanField( "Enable Comment Entry", "Allows the guest to enter the the value that's put into the comment field (will be appended to the 'Payment Comment' setting)", false, "", 29 )]
     [TextField( "Comment Entry Label", "The label to use on the comment edit field (e.g. Trip Name to give to a specific trip).", false, "Comment", "", 30 )]
     [BooleanField( "Enable Business Giving", "Should the option to give as as a business be displayed", true, "", 31 )]
+    [BooleanField( "Allow Accounts In URL", "Should the option to display accounts via URL param be enabled.  Valid URL Param are AccountIds=1,2,3 or AccountGlCodes=40100,40110", false, "Advanced", 1 )]
+    [BooleanField( "Only Public Accounts In URL", "Should the accounts via URL only display Accounts which are public", true, "Advanced", 2 )]
+    [CodeEditorField( "Invalid Account Message", "Display this text (HTML) as an error alert if an invalid 'account' or 'glaccount' is passed through the URL.",
+        CodeEditorMode.Html, CodeEditorTheme.Rock, 200, false, "", "Advanced", 3 )]
+    [CustomDropdownListField( "Account Campus Context", "Should any context be applied to the Account List", "-1^No Account Campus Context Filter Applied,0^Only Accounts with Current Campus Context,1^Accounts with No Campus and Current Campus Context", false, "-1", "Advanced", 4 )]
+    [AttributeField( Rock.SystemGuid.EntityType.FINANCIAL_TRANSACTION, "Allowed Transaction Attributes From URL", "Specify any Transaction Attributes that can be populated from the URL.  The URL should be formatted like: ?Attribute_AttributeKey1=hello&Attribute_AttributeKey2=world", false, true, "", "Advanced", 5 )]
 
     #endregion
 
@@ -161,6 +167,14 @@ TransactionAcountDetails: [
         private string _ccSavedAccountFreqSupported = "both";
         private string _achSavedAccountFreqSupported = "both";
         protected bool FluidLayout = false;
+        private List<int> _accountParameter;
+        private List<string> _glAccountParameter;
+        private List<FinancialAccount> _parameterAccounts = new List<FinancialAccount>();
+        private List<string> _accountAttributeKeys = new List<string>();
+        private bool _allowAccountsInUrl = false;
+        private bool _onlyPublicAccountsInUrl = true;
+        private int _accountCampusContextFilter = -1;
+        private int _currentCampusContextId = -1;
 
         /// <summary>
         /// The scheduled transaction to be transferred.  This will get set if the
@@ -270,6 +284,14 @@ TransactionAcountDetails: [
         {
             base.OnInit( e );
 
+            _allowAccountsInUrl = GetAttributeValue( "AllowAccountsInURL" ).AsBoolean( false );
+            _onlyPublicAccountsInUrl = GetAttributeValue( "OnlyPublicAccountsInURL" ).AsBoolean( true );
+
+            foreach ( Guid transactionAttributeGuid in GetAttributeValue( "AllowedTransactionAttributesFromURL" ).Split( ',' ).AsGuidList() )
+            {
+                _accountAttributeKeys.Add( AttributeCache.Read( transactionAttributeGuid ).Key );
+            }
+
             // Add handler for page navigation
             RockPage page = Page as RockPage;
             if ( page != null )
@@ -291,6 +313,17 @@ TransactionAcountDetails: [
             lSuccessHeader.Text = GetAttributeValue( "SuccessHeader" ).ResolveMergeFields( configValues );
             lSuccessFooter.Text = GetAttributeValue( "SuccessFooter" ).ResolveMergeFields( configValues );
 
+            // Determine account campus context mode
+            _accountCampusContextFilter = GetAttributeValue( "AccountCampusContext" ).AsType<int>();
+            if ( _accountCampusContextFilter > -1 )
+            {
+                var campusEntity = RockPage.GetCurrentContext( EntityTypeCache.Read( typeof( Campus ) ) );
+                if ( campusEntity != null )
+                {
+                    _currentCampusContextId = campusEntity.Id;
+                }
+            }
+
             RegisterScript();
         }
 
@@ -311,6 +344,60 @@ TransactionAcountDetails: [
 
             pnlDupWarning.Visible = false;
             nbSaveAccount.Visible = false;
+
+            if ( _allowAccountsInUrl )
+            {
+                string accountParameterType = string.Empty;
+                using ( var rockContext = new RockContext() )
+                {
+                    if ( !string.IsNullOrWhiteSpace( PageParameter( "AccountIds" ) ) )
+                    {
+                        var accountIds = Server.UrlDecode( PageParameter( "AccountIds" ) );
+
+                        List<int> accountParameter = new List<int>();
+                        accountParameterType = "invalid";
+
+                        foreach ( int accountId in accountIds.Split( ',' ).AsIntegerList() )
+                        {
+                            accountParameter.Add( accountId );
+                        }
+
+                        _parameterAccounts = new FinancialAccountService( rockContext ).Queryable()
+                            .Where( a =>
+                            accountParameter.Contains( a.Id ) &&
+                            a.IsActive &&
+                            ( _onlyPublicAccountsInUrl ? ( a.IsPublic ?? false ) : true )  &&
+                            ( a.StartDate == null || a.StartDate <= RockDateTime.Today ) &&
+                            ( a.EndDate == null || a.EndDate >= RockDateTime.Today ) ).ToList();
+                        if ( _parameterAccounts.Count > 0 )
+                        {
+                            accountParameterType = "valid";
+                        }
+                    }
+                    if ( !string.IsNullOrWhiteSpace( PageParameter( "AccountGlCodes" ) ) )
+                    {
+                        List<string> glAccountParameter = PageParameter( "AccountGlCodes" ).Split( ',' ).ToList();
+                        _parameterAccounts.AddRange( new FinancialAccountService( rockContext ).Queryable()
+                            .Where( a =>
+                            glAccountParameter.Contains( a.GlCode ) &&
+                            a.IsActive &&
+                            ( _onlyPublicAccountsInUrl ? ( a.IsPublic ?? false ) : true ) &&
+                            ( a.StartDate == null || a.StartDate <= RockDateTime.Today ) &&
+                            ( a.EndDate == null || a.EndDate >= RockDateTime.Today ) ).ToList() );
+                        if ( _parameterAccounts.Count > 0 )
+                        {
+                            accountParameterType = "valid";
+                        }
+                    }
+                }
+
+                if ( accountParameterType == "invalid" && !string.IsNullOrEmpty( GetAttributeValue( "InvalidAccountMessage" ) ) )
+                {
+                    SetPage( 0 );
+                    ShowMessage( NotificationBoxType.Danger, "Invalid Account Provided", GetAttributeValue( "InvalidAccountMessage" ) );
+                    return;
+                }
+            }
 
             if ( _ccGateway == null && _achGateway == null )
             {
@@ -1124,33 +1211,45 @@ TransactionAcountDetails: [
             SelectedAccounts = new List<AccountItem>();
             AvailableAccounts = new List<AccountItem>();
 
-            // Enumerate through all active accounts that are public
-            foreach ( var account in new FinancialAccountService( rockContext ).Queryable()
+            // Limit selections to accounts passed through URL
+            if ( _allowAccountsInUrl && _parameterAccounts.Count > 0 )
+            {
+                foreach ( var acct in _parameterAccounts )
+                {
+                    var accountItem = new AccountItem( acct.Id, acct.Order, acct.Name, acct.CampusId, acct.PublicName );
+                    SelectedAccounts.Add( accountItem );
+                }
+            }
+            else
+            {
+                // Enumerate through all active accounts that are public
+                foreach ( var account in new FinancialAccountService( rockContext ).Queryable()
                 .Where( f =>
                     f.IsActive &&
                     f.IsPublic.HasValue &&
                     f.IsPublic.Value &&
-                    ( f.StartDate == null || f.StartDate <= RockDateTime.Today ) &&
-                    ( f.EndDate == null || f.EndDate >= RockDateTime.Today ) )
+                    (f.StartDate == null || f.StartDate <= RockDateTime.Today) &&
+                    (f.EndDate == null || f.EndDate >= RockDateTime.Today) )
                 .OrderBy( f => f.Order ) )
-            {
-                var accountItem = new AccountItem( account.Id, account.Order, account.Name, account.CampusId, account.PublicName );
+                {
+                    var accountItem = new AccountItem( account.Id, account.Order, account.Name, account.CampusId, account.PublicName );
 
-                if ( showAll )
-                {
-                    SelectedAccounts.Add( accountItem );
-                }
-                else
-                {
-                    if ( selectedGuids.Contains( account.Guid ) )
+                    if ( showAll )
                     {
                         SelectedAccounts.Add( accountItem );
                     }
                     else
                     {
-                        if ( additionalAccounts )
+                        if ( selectedGuids.Contains( account.Guid ) )
                         {
-                            AvailableAccounts.Add( accountItem );
+                            SelectedAccounts.Add( accountItem );
+                        }
+                        else
+                        {
+                            if ( additionalAccounts )
+                            {
+                                AvailableAccounts.Add( accountItem );
+                            }
                         }
                     }
                 }
@@ -1191,9 +1290,17 @@ TransactionAcountDetails: [
         /// </summary>
         private void BindAccounts()
         {
+            if ( _currentCampusContextId > -1 )
+            {
+                SelectedAccounts.RemoveAll( a => ( _accountCampusContextFilter == 0 && a.CampusId != _currentCampusContextId ) || ( _accountCampusContextFilter == 1 && ( a.CampusId != null && a.CampusId != _currentCampusContextId ) ) );
+            }
             rptAccountList.DataSource = SelectedAccounts.ToList();
             rptAccountList.DataBind();
 
+            if ( _currentCampusContextId > -1 )
+            {
+                AvailableAccounts.RemoveAll( a => ( _accountCampusContextFilter == 0 && a.CampusId != _currentCampusContextId ) || ( _accountCampusContextFilter == 1 && ( a.CampusId != null && a.CampusId != _currentCampusContextId ) ) );
+            }
             btnAddAccount.Visible = AvailableAccounts.Any();
             btnAddAccount.DataSource = AvailableAccounts;
             btnAddAccount.DataBind();
@@ -2653,9 +2760,18 @@ TransactionAcountDetails: [
             batch.ControlAmount = newControlAmount;
 
             transaction.BatchId = batch.Id;
+            transaction.LoadAttributes( rockContext );
+            foreach ( KeyValuePair<string, AttributeValueCache> attr in transaction.AttributeValues )
+            {
+                if ( PageParameters().ContainsKey( "Attribute_" + attr.Key ) && _accountAttributeKeys.Contains( attr.Key ) )
+                {
+                    attr.Value.Value = Server.UrlDecode( PageParameter( "Attribute_" + attr.Key ) );
+                }
+            }
             batch.Transactions.Add( transaction );
 
             rockContext.SaveChanges();
+            transaction.SaveAttributeValues();
 
             HistoryService.SaveChanges(
                 rockContext,
