@@ -177,10 +177,7 @@ TransactionAcountDetails: [
         private string _ccSavedAccountFreqSupported = "both";
         private string _achSavedAccountFreqSupported = "both";
         protected bool FluidLayout = false;
-        private List<int> _accountParameter;
-        private List<string> _glAccountParameter;
         private List<FinancialAccount> _parameterAccounts = new List<FinancialAccount>();
-        private List<string> _accountAttributeKeys = new List<string>();
         private bool _allowAccountsInUrl = false;
         private bool _onlyPublicAccountsInUrl = true;
         private int _accountCampusContextFilter = -1;
@@ -297,11 +294,6 @@ TransactionAcountDetails: [
             _allowAccountsInUrl = GetAttributeValue( "AllowAccountsInURL" ).AsBoolean( false );
             _onlyPublicAccountsInUrl = GetAttributeValue( "OnlyPublicAccountsInURL" ).AsBoolean( true );
 
-            foreach ( Guid transactionAttributeGuid in GetAttributeValue( "AllowedTransactionAttributesFromURL" ).Split( ',' ).AsGuidList() )
-            {
-                _accountAttributeKeys.Add( AttributeCache.Read( transactionAttributeGuid ).Key );
-            }
-
             // Add handler for page navigation
             RockPage page = Page as RockPage;
             if ( page != null )
@@ -344,6 +336,17 @@ TransactionAcountDetails: [
                 lConfirmationFooter.Text = GetAttributeValue( "ConfirmationFooter" ).ResolveMergeFields( mergeFields );
                 lSuccessHeader.Text = GetAttributeValue( "SuccessHeader" ).ResolveMergeFields( mergeFields );
                 lSuccessFooter.Text = GetAttributeValue( "SuccessFooter" ).ResolveMergeFields( mergeFields );
+            }
+
+            // Determine account campus context mode
+            _accountCampusContextFilter = GetAttributeValue( "AccountCampusContext" ).AsType<int>();
+            if ( _accountCampusContextFilter > -1 )
+            {
+                var campusEntity = RockPage.GetCurrentContext( EntityTypeCache.Read( typeof( Campus ) ) );
+                if ( campusEntity != null )
+                {
+                    _currentCampusContextId = campusEntity.Id;
+                }
             }
 
             // Determine account campus context mode
@@ -407,6 +410,7 @@ TransactionAcountDetails: [
                             accountParameterType = "valid";
                         }
                     }
+
                     if ( !string.IsNullOrWhiteSpace( PageParameter( "AccountGlCodes" ) ) )
                     {
                         List<string> glAccountParameter = PageParameter( "AccountGlCodes" ).Split( ',' ).ToList();
@@ -2848,13 +2852,17 @@ TransactionAcountDetails: [
 
             transaction.BatchId = batch.Id;
             transaction.LoadAttributes( rockContext );
+
+            var allowedTransactionAttributes = GetAttributeValue( "AllowedTransactionAttributesFromURL" ).Split( ',' ).AsGuidList().Select(x => AttributeCache.Read( x ).Key );
+
             foreach ( KeyValuePair<string, AttributeValueCache> attr in transaction.AttributeValues )
             {
-                if ( PageParameters().ContainsKey( "Attribute_" + attr.Key ) && _accountAttributeKeys.Contains( attr.Key ) )
+                if ( PageParameters().ContainsKey( "Attribute_" + attr.Key ) && allowedTransactionAttributes.Contains( attr.Key ) )
                 {
                     attr.Value.Value = Server.UrlDecode( PageParameter( "Attribute_" + attr.Key ) );
                 }
             }
+
             batch.Transactions.Add( transaction );
 
             rockContext.SaveChanges();
