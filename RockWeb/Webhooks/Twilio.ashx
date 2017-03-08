@@ -92,35 +92,37 @@ class TwilioResponseAsync : IAsyncResult
 
         response.ContentType = "text/plain";
 
-        if ( request.HttpMethod != "POST" )
+        if (request.HttpMethod != "POST")
         {
-            response.Write( "Invalid request type." );
-            return;
-        }
-
-        // determine if we should log
-        if ( ( !string.IsNullOrEmpty( request.QueryString["Log"] ) && request.QueryString["Log"] == "true" ) || ENABLE_LOGGING )
-        {
-            WriteToLog();
-        }
-
-        if ( request.Form["SmsStatus"] != null )
-        {
-            switch ( request.Form["SmsStatus"] )
-            {
-                case "received":
-                    MessageRecieved();
-                    break;
-                case "undelivered":
-                    MessageUndelivered();
-                    break;
-            }
-
-            response.StatusCode = 200;
+            response.Write("Invalid request type.");
         }
         else
         {
-            response.StatusCode = 500;
+
+            // determine if we should log
+            if ((!string.IsNullOrEmpty(request.QueryString["Log"]) && request.QueryString["Log"] == "true") || ENABLE_LOGGING)
+            {
+                WriteToLog();
+            }
+
+            if (request.Form["SmsStatus"] != null)
+            {
+                switch (request.Form["SmsStatus"])
+                {
+                    case "received":
+                        MessageRecieved();
+                        break;
+                    case "undelivered":
+                        MessageUndelivered();
+                        break;
+                }
+
+                response.StatusCode = 200;
+            }
+            else
+            {
+                response.StatusCode = 500;
+            }
         }
 
         _completed = true;
