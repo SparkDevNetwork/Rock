@@ -57,6 +57,11 @@ namespace Rock.SystemGuid
         public const string COMMUNICATION_MEDIUM_EMAIL = "5A653EBE-6803-44B4-85D2-FB7B8146D55D";
 
         /// <summary>
+        /// The guid for the push notification communication medium
+        /// </summary>
+        public const string COMMUNICATION_MEDIUM_PUSH_NOTIFICATION = "F8909867-D447-4946-B490-61D8F7937A33";
+
+        /// <summary>
         /// The guid for the email communication medium
         /// </summary>
         public const string COMMUNICATION_MEDIUM_SMS = "4BC02764-512A-4A10-ACDE-586F71D8A8BD";
