@@ -81,6 +81,9 @@ namespace Rock.Communication.Transport
                 // get message title
                 string title = communication.GetMediumDataValue("Title");
 
+                // get sound preference
+                string sound = communication.GetMediumDataValue("Sound");
+
                 // convert any special microsoft word characters to normal chars so they don't look funny (for example "Hey â€œdouble-quotesâ€ from â€˜single quoteâ€™")
                 message = message.ReplaceWordChars();
 
@@ -119,7 +122,7 @@ namespace Rock.Communication.Transport
                                     {
                                         Title = title,
                                         Body = resolvedMessage,
-                                        Sound = "default",
+                                        Sound = sound,
                                     }
                                 };
                                 

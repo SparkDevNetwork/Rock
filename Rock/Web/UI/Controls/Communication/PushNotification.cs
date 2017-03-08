@@ -33,6 +33,7 @@ namespace Rock.Web.UI.Controls.Communication
         private MergeFieldPicker mfpMessage;
         private RockTextBox tbMessage;
         private RockTextBox tbTitle;
+        private RockCheckBox tbSound;
 
         #endregion
 
@@ -50,8 +51,10 @@ namespace Rock.Web.UI.Controls.Communication
             {
                 EnsureChildControls();
                 var data = new Dictionary<string, string>();
+                var sound = tbSound.Checked.ToTrueFalse() == "True" ? "default" : ""; 
                 data.Add( "Title", tbTitle.Text );
                 data.Add( "Message", tbMessage.Text );
+                data.Add( "Sound", sound);
                 return data;
             }
 
@@ -60,6 +63,7 @@ namespace Rock.Web.UI.Controls.Communication
                 EnsureChildControls();
                 tbMessage.Text = GetDataValue( value, "Message" );
                 tbTitle.Text = GetDataValue( value, "Title" );
+                tbSound.Checked = GetDataValue( value, "Sound" ).AsBoolean();
             }
         }
 
@@ -81,6 +85,12 @@ namespace Rock.Web.UI.Controls.Communication
             tbTitle.Required = false;
             tbTitle.Label = "Title";
             Controls.Add(tbTitle);
+
+
+            tbSound = new RockCheckBox();
+            tbSound.ID = string.Format("tbSound_{0}", this.ID);
+            tbSound.Label = "Should make sound";
+            Controls.Add(tbSound);
             
             rcwMessage = new RockControlWrapper();
             rcwMessage.ID = string.Format( "rcwMessage_{0}", this.ID );
@@ -124,6 +134,7 @@ namespace Rock.Web.UI.Controls.Communication
                 mfpMessage.ValidationGroup = value;
                 tbMessage.ValidationGroup = value;
                 tbTitle.ValidationGroup = value;
+                tbSound.ValidationGroup = value;
             }
         }
 
@@ -148,12 +159,15 @@ namespace Rock.Web.UI.Controls.Communication
 
             writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-md-6" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
-
             tbTitle.RenderControl( writer );
-
-            writer.RenderEndTag();
             writer.RenderEndTag();
 
+            writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-md-6" );
+            writer.RenderBeginTag( HtmlTextWriterTag.Div );
+            tbSound.RenderControl( writer );
+            writer.RenderEndTag();
+
+            writer.RenderEndTag();
 
             rcwMessage.RenderControl( writer );
         }
