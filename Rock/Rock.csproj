@@ -383,6 +383,7 @@
     <Compile Include="Communication\MediumComponent.cs" />
     <Compile Include="Communication\MediumContainer.cs" />
     <Compile Include="Communication\Medium\Email.cs" />
+    <Compile Include="Communication\Medium\PushNotification.cs" />
     <Compile Include="Communication\Medium\Sms.cs" />
     <Compile Include="Communication\RecipientData.cs" />
     <Compile Include="Communication\SMTPComponent.cs" />
@@ -1229,6 +1230,7 @@
     <Compile Include="Utility\ExcelHelper.cs" />
     <Compile Include="Utility\ExtensionMethods\QuartzExtensions.cs" />
     <Compile Include="Utility\FileUtilities.cs" />
+    <Compile Include="Web\UI\Controls\Communication\PushNotification.cs" />
     <Compile Include="Web\UI\Controls\Pickers\DefinedValuesPickerEnhanced.cs" />
     <Compile Include="Web\UI\Controls\Pickers\RegistrationTemplatePicker.cs" />
     <Compile Include="Web\UI\Controls\RockListBox.cs" />
