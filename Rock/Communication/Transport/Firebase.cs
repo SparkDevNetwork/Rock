@@ -119,9 +119,10 @@ namespace Rock.Communication.Transport
                                     {
                                         Title = title,
                                         Body = resolvedMessage,
+                                        Sound = "default",
                                     }
                                 };
-
+                                
                                 var response = await sender.SendAsync(notification);
 
                                 var status = (response.MessageResponse.Failure > 0) ? CommunicationRecipientStatus.Failed : CommunicationRecipientStatus.Delivered;
