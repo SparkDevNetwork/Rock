@@ -182,6 +182,10 @@
     <Compile Include="Migrations\201702202308080_UniversalSearchJob-Rollup.Designer.cs">
       <DependentUpon>201702202308080_UniversalSearchJob-Rollup.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\999999999999999_Fundraising.cs" />
+    <Compile Include="Migrations\999999999999999_Fundraising.Designer.cs">
+      <DependentUpon>999999999999999_Fundraising.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 6.0\Version 1.6.0\201609282147388_WaitList.cs" />
     <Compile Include="Migrations\Version 6.0\Version 1.6.0\201609282147388_WaitList.Designer.cs">
       <DependentUpon>201609282147388_WaitList.cs</DependentUpon>
@@ -2468,6 +2472,10 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201702202308080_UniversalSearchJob-Rollup.resx">
       <DependentUpon>201702202308080_UniversalSearchJob-Rollup.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\999999999999999_Fundraising.resx">
+      <DependentUpon>999999999999999_Fundraising.cs</DependentUpon>
+      <SubType>Designer</SubType>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 6.0\Version 1.6.0\201609282147388_WaitList.resx">
       <DependentUpon>201609282147388_WaitList.cs</DependentUpon>
