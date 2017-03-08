@@ -334,10 +334,11 @@ namespace RockWeb.Blocks.Communication
             {
                 if ( !Recipients.Any( r => r.PersonId == ppAddPerson.PersonId.Value ) )
                 {
-                    var Person = new PersonService( new RockContext() ).Get( ppAddPerson.PersonId.Value );
+                    var context = new RockContext();
+                    var Person = new PersonService( context ).Get( ppAddPerson.PersonId.Value );
                     if ( Person != null )
                     {
-                        var HasPersonalDevice = new PersonalDeviceService( new RockContext() ).Queryable()
+                        var HasPersonalDevice = new PersonalDeviceService( context ).Queryable()
                             .Where( pd => pd.PersonAliasId == Person.PrimaryAliasId && pd.NotificationsEnabled).Any();
                         Recipients.Add( new Recipient( Person, Person.PhoneNumbers.Any(a => a.IsMessagingEnabled), HasPersonalDevice, CommunicationRecipientStatus.Pending ) );
                         ShowAllRecipients = true;
@@ -695,14 +696,15 @@ namespace RockWeb.Blocks.Communication
             {
                 this.AdditionalMergeFields = communication.AdditionalMergeFields.ToList();
                 lTitle.Text = ( communication.Subject ?? "New Communication" ).FormatAsHtmlTitle();
-                var recipientList = new CommunicationRecipientService( new RockContext() )
+                var context = new RockContext();
+                var recipientList = new CommunicationRecipientService( context )
                     .Queryable()
                     //.Include()
                     .Where( r => r.CommunicationId == communication.Id )
                     .Select(a => new {
                         a.PersonAlias.Person,
                         PersonHasSMS = a.PersonAlias.Person.PhoneNumbers.Any( p => p.IsMessagingEnabled ),
-                        HasPersonalDevice = new PersonalDeviceService( new RockContext() ).Queryable()
+                        HasPersonalDevice = new PersonalDeviceService( context ).Queryable()
                             .Where( pd => pd.PersonAliasId == a.PersonAlias.Person.PrimaryAliasId && pd.NotificationsEnabled ).Any(),
                         a.Status,
                         a.StatusNote,
@@ -723,10 +725,11 @@ namespace RockWeb.Blocks.Communication
                 if ( personId.HasValue )
                 {
                     communication.IsBulkCommunication = false;
-                    var person = new PersonService( new RockContext() ).Get( personId.Value );
+                    var context = new RockContext();
+                    var person = new PersonService( context ).Get( personId.Value );
                     if ( person != null )
                     {
-                        var HasPersonalDevice = new PersonalDeviceService( new RockContext() ).Queryable()
+                        var HasPersonalDevice = new PersonalDeviceService( context ).Queryable()
                             .Where( pd => pd.PersonAliasId == person.PrimaryAliasId && pd.NotificationsEnabled ).Any();
                         Recipients.Add( new Recipient( person, person.PhoneNumbers.Any(p => p.IsMessagingEnabled), HasPersonalDevice, CommunicationRecipientStatus.Pending, string.Empty, string.Empty, null ) );
                     }
