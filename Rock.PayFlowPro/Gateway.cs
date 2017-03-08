@@ -210,7 +210,14 @@ namespace Rock.PayFlowPro
                     }
                     else
                     {
-                        errorMessage = string.Format( "[{0}] {1}", txnResponse.Result, txnResponse.RespMsg );
+                        if ( txnResponse.Result != 19 )
+                        {
+                            errorMessage = string.Format( "[{0}] {1}", txnResponse.Result, txnResponse.RespMsg );
+                        }
+                        else
+                        {
+                            errorMessage = @"Please note: Due to a processing error, you will need to re-enter your payment method in order to complete your transaction. You can do this by choosing the option 'Use a different payment method' and re-entering your credit card information. We apologize for the inconvenience. Thank you.";
+                        }
                     }
                 }
                 else
