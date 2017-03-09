@@ -212,7 +212,7 @@ namespace Rock.Communication.Transport
         /// <param name="appRoot">The application root.</param>
         /// <param name="themeRoot">The theme root.</param>
         /// <exception cref="System.NotImplementedException"></exception>
-        public override async void Send(Dictionary<string, string> mediumData, List<string> recipients, string appRoot, string themeRoot)
+        public override void Send(Dictionary<string, string> mediumData, List<string> recipients, string appRoot, string themeRoot)
         {
             try
             {
@@ -247,7 +247,7 @@ namespace Rock.Communication.Transport
 
                         foreach (var recipient in recipients)
                         {
-                            var response = await MessageResource.CreateAsync(
+                            var response = MessageResource.Create(
                                 from: new TwilioTypes.PhoneNumber(fromPhone),
                                 to: new TwilioTypes.PhoneNumber(recipient),
                                 body: message
