@@ -116,90 +116,90 @@ namespace church.ccv.Steps
             // get our contexts
             using ( RockContext rockContext = new RockContext( ) )
             {
-                using ( ActionsContext actionsContext = new ActionsContext( ) )
+                // some of these queries join large amounts of data and can take > 30 seconds, so give two minutes.
+                rockContext.Database.CommandTimeout = 120;
+
+                Service<ActionsHistory_Adult_Person> adultActionsService = new Service<ActionsHistory_Adult_Person>( rockContext );
+
+                // get our most recent history date, and the date closest to when this job last ran
+                DateTime? lastProcessedHistoryDate = null;
+                DateTime? latestHistoryDate = null;
+
+                try
                 {
-                    ActionsService<ActionsHistory_Adult_Person> adultActionsService = new ActionsService<ActionsHistory_Adult_Person>( actionsContext );
+                    latestHistoryDate = adultActionsService.Queryable( ).AsNoTracking( ).Where( ah => ah.Date <= RockDateTime.Now ).Max( ah => ah.Date );
+                    lastProcessedHistoryDate = adultActionsService.Queryable( ).AsNoTracking( ).Where( ah => ah.Date <= lastProcessedDate ).Max( ah => ah.Date );
+                }
+                catch
+                {
+                    // don't worry about catching, we'll just fail below
+                }
 
-                    // get our most recent history date, and the date closest to when this job last ran
-                    DateTime? lastProcessedHistoryDate = null;
-                    DateTime? latestHistoryDate = null;
+                if ( latestHistoryDate.HasValue )
+                {
+                    if( lastProcessedHistoryDate.HasValue )
+                    {
+                        // First, get everyone we've recorded as having taken a step over the past year.
+                        // We'll filter out anyone in this list so that we don't count them having taken any single step more than once a year.
+                        DateTime oneYearAgo = new DateTime( RockDateTime.Now.Year - 1, RockDateTime.Now.Month, RockDateTime.Now.Day );
+                        StepTakenService stepTakenService = new StepTakenService( rockContext );
+                        IQueryable<StepTaken> pastYearStepsQuery = stepTakenService.Queryable( ).AsNoTracking( ).Where( s => s.DateTaken >= oneYearAgo );
+                        
+                        // Most of these require the history when we last processed, and the most recent history.
+                        // we then compare those to see if anything went from 'false' to 'true', meaning they began one of the steps.
+                        
+                        // Note - this means that if this isn't run for a month, and someone started giving within that month, THIS JOB will consider
+                        // their start date for giving to be NOW, because we're not grabbing the history date for exactly when they started giving.
+                        // However, this job is designed to be run once a week, so it shouldn't matter
+                        IQueryable<ActionsHistory_Adult_Person> lastProcessedHistory = adultActionsService.Queryable( ).Where( ah => ah.Date == lastProcessedHistoryDate ).AsNoTracking( );
+                        IQueryable<ActionsHistory_Adult_Person> latestHistory = adultActionsService.Queryable( ).Where( ah => ah.Date == latestHistoryDate ).AsNoTracking( );
 
-                    try
-                    {
-                        latestHistoryDate = adultActionsService.Queryable( ).AsNoTracking( ).Where( ah => ah.Date <= RockDateTime.Now ).Max( ah => ah.Date );
-                        lastProcessedHistoryDate = adultActionsService.Queryable( ).AsNoTracking( ).Where( ah => ah.Date <= lastProcessedDate ).Max( ah => ah.Date );
-                    }
-                    catch
-                    {
-                        // don't worry about catching, we'll just fail below
-                    }
+                        // Baptisms and Membership have actual dates that they occurred, so we can simply pass in the latest history
+                        ProcessBaptisms( pastYearStepsQuery, latestHistory );
+                        ProcessMembership( pastYearStepsQuery, latestHistory );
+                        
+                        ProcessWorship( pastYearStepsQuery, lastProcessedHistory, latestHistory );
+                        ProcessGiving( pastYearStepsQuery, lastProcessedHistory, latestHistory );
+                        ProcessServing( pastYearStepsQuery, lastProcessedHistory, latestHistory );
+                        ProcessCoaching( pastYearStepsQuery, lastProcessedHistory, latestHistory );
+                        ProcessConnected( pastYearStepsQuery, lastProcessedHistory, latestHistory );
+                        
+                        // delete any duplicate steps (this can occur if the job failed mid-course in the past)
+                        var dedupe = @"DELETE FROM [_church_ccv_Steps_StepTaken] WHERE [Id] IN(
+                                        SELECT MIN(Id) FROM [_church_ccv_Steps_StepTaken] st
+                                        INNER JOIN
+	                                        (SELECT PersonAliasId, stepmeasureid FROM (
+		                                        SELECT PersonAliasId, stepmeasureid, count(*) AS DUPECOUNT
+		                                            FROM [_church_ccv_Steps_StepTaken]
+		                                            group by PersonAliasId, stepmeasureid
+		                                            ) rs
+		                                WHERE rs.DUPECOUNT > 1) i ON i.PersonAliasId = st.PersonAliasId AND i.StepMeasureId = st.StepMeasureId
+                                        GROUP BY st.PersonAliasId, st.stepmeasureid)";
 
-                    if ( latestHistoryDate.HasValue )
-                    {
-                        if( lastProcessedHistoryDate.HasValue )
+                        new RockContext( ).Database.ExecuteSqlCommand( dedupe );
+                        
+                        if ( _resultMessages.Length > 0 )
                         {
-                            // First, get everyone we've recorded as having taken a step over the past year.
-                            // We'll filter out anyone in this list so that we don't count them having taken any single step more than once a year.
-                            DateTime oneYearAgo = new DateTime( RockDateTime.Now.Year - 1, RockDateTime.Now.Month, RockDateTime.Now.Day );
-                            StepTakenService stepTakenService = new StepTakenService( rockContext );
-                            IQueryable<StepTaken> pastYearStepsQuery = stepTakenService.Queryable( ).AsNoTracking( ).Where( s => s.DateTaken >= oneYearAgo );
-                        
-                            // Most of these require the history when we last processed, and the most recent history.
-                            // we then compare those to see if anything went from 'false' to 'true', meaning they began one of the steps.
-                        
-                            // Note - this means that if this isn't run for a month, and someone started giving within that month, THIS JOB will consider
-                            // their start date for giving to be NOW, because we're not grabbing the history date for exactly when they started giving.
-                            // However, this job is designed to be run once a week, so it shouldn't matter
-                            IQueryable<ActionsHistory_Adult_Person> lastProcessedHistory = adultActionsService.Queryable( ).Where( ah => ah.Date == lastProcessedHistoryDate ).AsNoTracking( );
-                            IQueryable<ActionsHistory_Adult_Person> latestHistory = adultActionsService.Queryable( ).Where( ah => ah.Date == latestHistoryDate ).AsNoTracking( );
-
-                            // Baptisms and Membership have actual dates that they occurred, so we can simply pass in the latest history
-                            ProcessBaptisms( pastYearStepsQuery, latestHistory );
-                            ProcessMembership( pastYearStepsQuery, latestHistory );
-                        
-                            ProcessWorship( pastYearStepsQuery, lastProcessedHistory, latestHistory );
-                            ProcessGiving( pastYearStepsQuery, lastProcessedHistory, latestHistory );
-                            ProcessServing( pastYearStepsQuery, lastProcessedHistory, latestHistory );
-                            ProcessCoaching( pastYearStepsQuery, lastProcessedHistory, latestHistory );
-                            ProcessConnected( pastYearStepsQuery, lastProcessedHistory, latestHistory );
-                        
-                            // delete any duplicate steps (this can occur if the job failed mid-course in the past)
-                            var dedupe = @"DELETE FROM [_church_ccv_Steps_StepTaken] WHERE [Id] IN(
-                                           SELECT MIN(Id) FROM [_church_ccv_Steps_StepTaken] st
-                                           INNER JOIN
-	                                           (SELECT PersonAliasId, stepmeasureid FROM (
-		                                           SELECT PersonAliasId, stepmeasureid, count(*) AS DUPECOUNT
-		                                             FROM [_church_ccv_Steps_StepTaken]
-		                                             group by PersonAliasId, stepmeasureid
-		                                             ) rs
-		                                   WHERE rs.DUPECOUNT > 1) i ON i.PersonAliasId = st.PersonAliasId AND i.StepMeasureId = st.StepMeasureId
-                                           GROUP BY st.PersonAliasId, st.stepmeasureid)";
-
-                            new RockContext( ).Database.ExecuteSqlCommand( dedupe );
-                        
-                            if ( _resultMessages.Length > 0 )
-                            {
-                                context.Result = _resultMessages.ToString( ).ReplaceLastOccurrence( ",", "" );
-                            }
-                            else
-                            {
-                                context.Result = "Up to date. No new steps taken.";
-                            }
+                            context.Result = _resultMessages.ToString( ).ReplaceLastOccurrence( ",", "" );
                         }
                         else
                         {
-                            context.Result = "Not enough Actions History available. Ensure history is available on or before today, and try again.";
+                            context.Result = "Up to date. No new steps taken.";
                         }
-
-                        // Always set the last update to the latest history date. That way, if there was no "prior history" available,
-                        // the current history will be treated as "prior history" the next time we run.
-                        Rock.Web.SystemSettings.SetValue( "church_ccv_StepsTakenLastUpdate", latestHistoryDate.Value.ToString( ) );
                     }
                     else
                     {
-                        // if there's no history whatsoever for today or in the past, let them know. (This should NEVER happen)
-                        context.Result = "No Actions History available. Ensure history is available on or before today, and try again.";
+                        context.Result = "Not enough Actions History available. Ensure history is available on or before today, and try again.";
                     }
+
+                    // Always set the last update to the latest history date. That way, if there was no "prior history" available,
+                    // the current history will be treated as "prior history" the next time we run.
+                    Rock.Web.SystemSettings.SetValue( "church_ccv_StepsTakenLastUpdate", latestHistoryDate.Value.ToString( ) );
+                }
+                else
+                {
+                    // if there's no history whatsoever for today or in the past, let them know. (This should NEVER happen)
+                    context.Result = "No Actions History available. Ensure history is available on or before today, and try again.";
                 }
             }
         }
@@ -207,7 +207,7 @@ namespace church.ccv.Steps
         private void ProcessBaptisms( IQueryable<StepTaken> pastYearStepsQuery, IQueryable<ActionsHistory_Adult_Person> adultActions )
         {            
             // get baptisms in the past year
-            List<int> baptismStepPersonAliasIds = pastYearStepsQuery.Where( s => s.StepMeasureId == _baptismMeasureId ).Select( s => s.PersonAlias.Id ).ToList( );
+            IQueryable<int> baptismStepPersonAliasIds = pastYearStepsQuery.Where( s => s.StepMeasureId == _baptismMeasureId ).Select( s => s.PersonAlias.Id );
 
             // find all people who have had a baptism within the timeframe and are not already in our list.
             var baptismSearchDate = RockDateTime.Now.AddDays( _searchDateSpan * -1 );
@@ -235,7 +235,7 @@ namespace church.ccv.Steps
         private void ProcessMembership( IQueryable<StepTaken> pastYearStepsQuery, IQueryable<ActionsHistory_Adult_Person> adultActions )
         {
             // get a list of members in the past year
-            List<int> membershipStepPersonAliasIds = pastYearStepsQuery.Where( s => s.StepMeasureId == _membershipMeasureId ).Select( s => s.PersonAlias.Id ).ToList( );
+            IQueryable<int> membershipStepPersonAliasIds = pastYearStepsQuery.Where( s => s.StepMeasureId == _membershipMeasureId ).Select( s => s.PersonAlias.Id );
 
             // find all people who have become members within the timeframe and are not already in our list.
             var membershipSearchDate = RockDateTime.Now.AddDays( _searchDateSpan * -1 );
@@ -262,7 +262,7 @@ namespace church.ccv.Steps
         private void ProcessWorship( IQueryable<StepTaken> pastYearStepsQuery, IQueryable<ActionsHistory_Adult_Person> prevRunHistory, IQueryable<ActionsHistory_Adult_Person> latestHistory )
         {
             // get a list of ERAs in the past year
-            List<int> worshipStepPersonAliasIds = pastYearStepsQuery.Where( s => s.StepMeasureId == _attendingMeasureId ).Select( s => s.PersonAlias.Id ).ToList( );
+            IQueryable<int> worshipStepPersonAliasIds = pastYearStepsQuery.Where( s => s.StepMeasureId == _attendingMeasureId ).Select( s => s.PersonAlias.Id );
 
             // find all people who weren't an ERA when we last ran, but now are.
             var newSteps = latestHistory.Join( prevRunHistory, ah => ah.PersonAliasId, ph => ph.PersonAliasId, ( ah, ph ) => 
@@ -294,7 +294,7 @@ namespace church.ccv.Steps
         private void ProcessGiving( IQueryable<StepTaken> pastYearStepsQuery, IQueryable<ActionsHistory_Adult_Person> prevRunHistory, IQueryable<ActionsHistory_Adult_Person> latestHistory )
         {
             // get a list of givers in the past year
-            List<int> giveStepPersonAliasIds = pastYearStepsQuery.Where( s => s.StepMeasureId == _givingMeasureId ).Select( s => s.PersonAlias.Id ).ToList( );
+            IQueryable<int> giveStepPersonAliasIds = pastYearStepsQuery.Where( s => s.StepMeasureId == _givingMeasureId ).Select( s => s.PersonAlias.Id );
                                 
             // find all people who weren't givers when we last ran, but now are.
             var newSteps = latestHistory.Join( prevRunHistory, ah => ah.PersonAliasId, ph => ph.PersonAliasId, ( ah, ph ) => 
@@ -326,7 +326,7 @@ namespace church.ccv.Steps
         private void ProcessServing( IQueryable<StepTaken> pastYearStepsQuery, IQueryable<ActionsHistory_Adult_Person> prevRunHistory, IQueryable<ActionsHistory_Adult_Person> latestHistory )
         {
             // get a list of people serving in the past year
-            List<int> servingStepPersonAliasIds = pastYearStepsQuery.Where( s => s.StepMeasureId == _servingMeasureId ).Select( s => s.PersonAlias.Id ).ToList( );
+            IQueryable<int> servingStepPersonAliasIds = pastYearStepsQuery.Where( s => s.StepMeasureId == _servingMeasureId ).Select( s => s.PersonAlias.Id );
                                 
             // find all people who weren't serving when we last ran, but now are.
             var newSteps = latestHistory.Join( prevRunHistory, ah => ah.PersonAliasId, ph => ph.PersonAliasId, ( ah, ph ) => 
@@ -360,7 +360,7 @@ namespace church.ccv.Steps
             // note - Coaching is the name of the Next Step, but the action driving it is called "Teaching"
 
             // get a list of people teaching in the past year
-            List<int> coachingStepPersonAliasIds = pastYearStepsQuery.Where( s => s.StepMeasureId == _coachingMeasureId ).Select( s => s.PersonAlias.Id ).ToList( );
+            IQueryable<int> coachingStepPersonAliasIds = pastYearStepsQuery.Where( s => s.StepMeasureId == _coachingMeasureId ).Select( s => s.PersonAlias.Id );
                                 
             // find all people who weren't teaching when we last ran, but now are.
             var newSteps = latestHistory.Join( prevRunHistory, ah => ah.PersonAliasId, ph => ph.PersonAliasId, ( ah, ph ) => 
@@ -394,7 +394,7 @@ namespace church.ccv.Steps
             // note - Connected is the name of the Next Step, but the action driving it is called "Peer Learning"
 
             // get a list of people connected in the past year
-            List<int> connectedStepPersonAliasIds = pastYearStepsQuery.Where( s => s.StepMeasureId == _connectionMeasureId).Select( s => s.PersonAlias.Id ).ToList( );
+            IQueryable<int> connectedStepPersonAliasIds = pastYearStepsQuery.Where( s => s.StepMeasureId == _connectionMeasureId).Select( s => s.PersonAlias.Id );
                                 
             // find all people who weren't peer learning when we last ran, but now are.
             var newSteps = latestHistory.Join( prevRunHistory, ah => ah.PersonAliasId, ph => ph.PersonAliasId, ( ah, ph ) => 
