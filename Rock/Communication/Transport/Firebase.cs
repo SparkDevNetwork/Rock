@@ -185,7 +185,7 @@ namespace Rock.Communication.Transport
             }
         }
 
-        public override async void Send(Dictionary<string, string> mediumData, List<string> recipients, string appRoot, string themeRoot)
+        public override void Send(Dictionary<string, string> mediumData, List<string> recipients, string appRoot, string themeRoot)
         {
             try
             {
@@ -224,7 +224,7 @@ namespace Rock.Communication.Transport
                     }
                 };
 
-                await sender.SendAsync(notification);
+                sender.SendAsync(notification).Wait();
             }
 
             catch ( Exception ex )
