@@ -185,9 +185,52 @@ namespace Rock.Communication.Transport
             }
         }
 
-        public override void Send(Dictionary<string, string> mediumData, List<string> recipients, string appRoot, string themeRoot)
+        public override async void Send(Dictionary<string, string> mediumData, List<string> recipients, string appRoot, string themeRoot)
         {
-            throw new NotImplementedException();
+            try
+            {
+                var globalAttributes = GlobalAttributesCache.Read();
+
+                string senderId = GetAttributeValue( "SenderId" );
+                string serverKey = GetAttributeValue( "ServerKey" );
+                var sender = new Sender(serverKey);
+
+                string message = string.Empty;
+                mediumData.TryGetValue( "Message", out message );
+
+                var title = mediumData.GetValueOrNull("Title");
+                var sound = mediumData.GetValueOrNull("Sound");
+
+                if ( !string.IsNullOrWhiteSpace( themeRoot ) )
+                {
+                    message = message.Replace( "~~/", themeRoot );
+                }
+
+                if ( !string.IsNullOrWhiteSpace( appRoot ) )
+                {
+                    message = message.Replace( "~/", appRoot );
+                    message = message.Replace( @" src=""/", @" src=""" + appRoot );
+                    message = message.Replace( @" href=""/", @" href=""" + appRoot );
+                }
+
+                var notification = new Message
+                {
+                    RegistrationIds = recipients,
+                    Notification = new FCM.Net.Notification
+                    {
+                        Title = title,
+                        Body = message,
+                        Sound = sound,
+                    }
+                };
+
+                await sender.SendAsync(notification);
+            }
+
+            catch ( Exception ex )
+            {
+                ExceptionLogService.LogException( ex, null );
+            }
         }
 
         public override void Send(SystemEmail template, List<RecipientData> recipients, string appRoot, string themeRoot)
