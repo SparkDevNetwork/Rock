@@ -18,13 +18,10 @@ using System;
 using System.ComponentModel;
 using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.Caching;
 using System.Text;
 using System.Web;
 using System.Web.UI;
 using System.Web.UI.WebControls;
-using System.Xml.Linq;
-using System.Xml.Xsl;
 
 using Rock;
 using Rock.Attribute;
@@ -697,6 +694,7 @@ namespace RockWeb.Blocks.Communication
                 this.AdditionalMergeFields = communication.AdditionalMergeFields.ToList();
                 lTitle.Text = ( communication.Subject ?? "New Communication" ).FormatAsHtmlTitle();
                 var context = new RockContext();
+                var personalDeviceService = new PersonalDeviceService(context).Queryable();
                 var recipientList = new CommunicationRecipientService( context )
                     .Queryable()
                     //.Include()
@@ -704,8 +702,7 @@ namespace RockWeb.Blocks.Communication
                     .Select(a => new {
                         a.PersonAlias.Person,
                         PersonHasSMS = a.PersonAlias.Person.PhoneNumbers.Any( p => p.IsMessagingEnabled ),
-                        HasPersonalDevice = new PersonalDeviceService( context ).Queryable()
-                            .Where( pd => pd.PersonAliasId == a.PersonAlias.Person.PrimaryAliasId && pd.NotificationsEnabled ).Any(),
+                        HasPersonalDevice = personalDeviceService.Where( pd => pd.PersonAliasId == a.PersonAlias.Person.PrimaryAliasId && pd.NotificationsEnabled ).Any(),
                         a.Status,
                         a.StatusNote,
                         a.OpenedClient,

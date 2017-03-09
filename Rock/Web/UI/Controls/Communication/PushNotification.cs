@@ -89,7 +89,7 @@ namespace Rock.Web.UI.Controls.Communication
 
             tbSound = new RockCheckBox();
             tbSound.ID = string.Format("tbSound_{0}", this.ID);
-            tbSound.Label = "Should make sound";
+            tbSound.Label = "Should make sound?";
             Controls.Add(tbSound);
             
             rcwMessage = new RockControlWrapper();

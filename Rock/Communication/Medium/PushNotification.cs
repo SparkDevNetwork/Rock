@@ -19,7 +19,6 @@ using System.ComponentModel;
 using System.ComponentModel.Composition;
 using System.Linq;
 using System.Text;
-using System.Text.RegularExpressions;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
@@ -97,9 +96,11 @@ namespace Rock.Communication.Medium
 
             AppendMediumData( communication, sb, "Title" );
             AppendMediumData( communication, sb, "Message" );
+            AppendMediumData( communication, sb, "Sound" );
 
             return sb.ToString();
         }
+
         private void AppendMediumData( Model.Communication communication, StringBuilder sb, string key )
         {
             string value = communication.GetMediumDataValue( key );
@@ -161,9 +162,10 @@ namespace Rock.Communication.Medium
         /// <param name="toPersonAliasId">To person alias identifier.</param>
         /// <param name="message">The message to send.</param>
         /// <param name="title">The title of the notification</param>
+        /// <param name="sound">If this notifications should play a sound</param>
         /// <param name="responseCode">The reponseCode to use for tracking the conversation.</param>
         /// <param name="rockContext">A context to use for database calls.</param>
-        private void CreateCommunication( int fromPersonAliasId, string fromPersonName, int toPersonAliasId, string message, string title, string responseCode, Rock.Data.RockContext rockContext )
+        private void CreateCommunication( int fromPersonAliasId, string fromPersonName, int toPersonAliasId, string message, string title, string sound, string responseCode, Rock.Data.RockContext rockContext )
         {
 
             // add communication for reply
@@ -175,6 +177,7 @@ namespace Rock.Communication.Medium
 
             communication.SetMediumDataValue( "Message", message );
             communication.SetMediumDataValue( "Title", title );
+            communication.SetMediumDataValue( "Sound", sound );
 
             communication.MediumEntityTypeId = EntityTypeCache.Read( "Rock.Communication.Medium.PushNotification" ).Id;
 

@@ -18,11 +18,8 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
-using System.IO;
 using System.Linq;
 using System.Net.Mail;
-using System.Text;
-using System.Threading.Tasks;
 
 using Rock.Attribute;
 using Rock.Data;
@@ -60,7 +57,6 @@ namespace Rock.Communication.Transport
                 communication.HasPendingRecipients(rockContext) &&
                 ( !communication.FutureSendDateTime.HasValue || communication.FutureSendDateTime.Value.CompareTo( RockDateTime.Now ) <= 0 ) )
             {
-                string deviceRegistrationId = string.Empty;
 
                 string senderId = GetAttributeValue( "SenderId" );
                 string serverKey = GetAttributeValue( "ServerKey" );
@@ -86,11 +82,6 @@ namespace Rock.Communication.Transport
 
                 // convert any special microsoft word characters to normal chars so they don't look funny (for example "Hey â€œdouble-quotesâ€ from â€˜single quoteâ€™")
                 message = message.ReplaceWordChars();
-
-                // determine callback address
-                var globalAttributes = Rock.Web.Cache.GlobalAttributesCache.Read();
-                string callbackUrl = globalAttributes.GetValue( "PublicApplicationRoot" ) + "Webhooks/Twilio.ashx";
-
 
                 bool recipientFound = true;
                 while ( recipientFound )
