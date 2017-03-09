@@ -694,15 +694,18 @@ namespace RockWeb.Blocks.Communication
                 this.AdditionalMergeFields = communication.AdditionalMergeFields.ToList();
                 lTitle.Text = ( communication.Subject ?? "New Communication" ).FormatAsHtmlTitle();
                 var context = new RockContext();
-                var personalDeviceService = new PersonalDeviceService(context).Queryable();
+                var personalDeviceService = new PersonalDeviceService( context ).Queryable();
                 var recipientList = new CommunicationRecipientService( context )
                     .Queryable()
-                    //.Include()
                     .Where( r => r.CommunicationId == communication.Id )
                     .Select(a => new {
                         a.PersonAlias.Person,
                         PersonHasSMS = a.PersonAlias.Person.PhoneNumbers.Any( p => p.IsMessagingEnabled ),
-                        HasPersonalDevice = personalDeviceService.Where( pd => pd.PersonAliasId == a.PersonAlias.Person.PrimaryAliasId && pd.NotificationsEnabled ).Any(),
+                        HasPersonalDevice = (
+                            personalDeviceService
+                                .Where( pd => pd.PersonAliasId == a.PersonAliasId)
+                                .Any( pd => pd.NotificationsEnabled )
+                        ),
                         a.Status,
                         a.StatusNote,
                         a.OpenedClient,
