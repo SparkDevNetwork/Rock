@@ -109,6 +109,10 @@ namespace Rock.Communication.Transport
                         var recipient = Rock.Model.Communication.GetNextPending( communication.Id, rockContext );
                         if ( recipient != null )
                         {
+                            // this prevents duplicate messages from being sent during the wait time from twilio
+                            recipient.Status = CommunicationRecipientStatus.Delivered;
+                            rockContext.SaveChanges();
+
                             try
                             {
                                 var phoneNumber = recipient.PersonAlias.Person.PhoneNumbers
@@ -141,7 +145,7 @@ namespace Rock.Communication.Transport
                                         statusCallback: new System.Uri(callbackUrl)
                                     );
 
-                                    recipient.Status = CommunicationRecipientStatus.Delivered;
+                                    
                                     recipient.TransportEntityTypeName = this.GetType().FullName;
                                     recipient.UniqueMessageId = response.Sid;
 
@@ -209,7 +213,7 @@ namespace Rock.Communication.Transport
         /// <param name="appRoot">The application root.</param>
         /// <param name="themeRoot">The theme root.</param>
         /// <exception cref="System.NotImplementedException"></exception>
-        public override async void Send(Dictionary<string, string> mediumData, List<string> recipients, string appRoot, string themeRoot)
+        public override void Send(Dictionary<string, string> mediumData, List<string> recipients, string appRoot, string themeRoot)
         {
             try
             {
@@ -244,7 +248,7 @@ namespace Rock.Communication.Transport
 
                         foreach (var recipient in recipients)
                         {
-                            var response = await MessageResource.CreateAsync(
+                            var response = MessageResource.Create(
                                 from: new TwilioTypes.PhoneNumber(fromPhone),
                                 to: new TwilioTypes.PhoneNumber(recipient),
                                 body: message
