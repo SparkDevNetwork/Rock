@@ -1690,8 +1690,10 @@
     <Compile Include="Workflow\Action\People\PersonTagRemove.cs" />
     <Compile Include="Workflow\Action\People\SetPersonAttribute.cs" />
     <Compile Include="Workflow\Action\Utility\LavaRun.cs" />
+    <Compile Include="Workflow\Action\WorkflowControl\Redirect.cs" />
     <Compile Include="Workflow\Action\Utility\RunJob.cs" />
     <Compile Include="Workflow\Action\Utility\RunSQL.cs" />
+    <Compile Include="Workflow\Action\WorkflowControl\ShowHtml.cs" />
     <Compile Include="Workflow\Action\WorkflowAttributes\SetAttributeFromEntity.cs" />
     <Compile Include="Workflow\Action\WorkflowAttributes\SetAttributeFromPerson.cs" />
     <Compile Include="Workflow\Action\WorkflowAttributes\SetAttributeToCurrentPerson.cs" />
