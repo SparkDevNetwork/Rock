@@ -26,6 +26,7 @@ using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
 using FCM.Net;
+using System.Threading.Tasks;
 
 namespace Rock.Communication.Transport
 {
@@ -39,13 +40,19 @@ namespace Rock.Communication.Transport
     [TextField( "ServerKey", "The server key for your firebase account", true, "", "", 1 )]
     class Firebase : TransportComponent
     {
+        public override bool IsAsync {
+            get
+            {
+                 return true;
+            }
+        }
 
         /// <summary>
         /// Sends the specified communication.
         /// </summary>
         /// <param name="communication">The communication.</param>
         /// <exception cref="System.NotImplementedException"></exception>
-        public override async void Send( Rock.Model.Communication communication )
+        public override async Task SendAsync( Rock.Model.Communication communication )
         {
             var rockContext = new RockContext();
 
@@ -90,6 +97,10 @@ namespace Rock.Communication.Transport
                     var recipient = Rock.Model.Communication.GetNextPending( communication.Id, rockContext );
                     if ( recipient != null )
                     {
+                        // this prevents duplicate messages from being sent during the wait time from firebase
+                        recipient.Status = CommunicationRecipientStatus.Delivered;
+                        rockContext.SaveChanges();
+
                         try
                         {
                             var service = new PersonalDeviceService( rockContext );
@@ -119,8 +130,14 @@ namespace Rock.Communication.Transport
                                 
                                 var response = await sender.SendAsync(notification);
 
-                                var status = (response.MessageResponse.Failure > 0) ? CommunicationRecipientStatus.Failed : CommunicationRecipientStatus.Delivered;
+                                bool failed = response.MessageResponse.Failure == devices.Count;
+                                var status = failed ? CommunicationRecipientStatus.Failed : CommunicationRecipientStatus.Delivered;
 
+                                if (failed)
+                                {
+                                    recipient.StatusNote = "Firebase failed to notify devices";
+                                }
+                                
                                 recipient.Status = status;
                                 recipient.TransportEntityTypeName = this.GetType().FullName;
                                 recipient.UniqueMessageId = response.MessageResponse.MulticastId;
@@ -189,6 +206,11 @@ namespace Rock.Communication.Transport
         }
 
         public override void Send(List<string> recipients, string from, string fromName, string subject, string body, string appRoot = null, string themeRoot = null, List<Attachment> attachments = null)
+        {
+            throw new NotImplementedException();
+        }
+
+        public override void Send(Model.Communication communication)
         {
             throw new NotImplementedException();
         }
