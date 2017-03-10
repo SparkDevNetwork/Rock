@@ -172,7 +172,7 @@ namespace RockWeb.Blocks.Core
 
                 /* Save Attributes */
 
-                var entityTypeIdAttributeMatrix = EntityTypeCache.GetId<AttributeMatrix>();
+                var entityTypeIdAttributeMatrix = EntityTypeCache.GetId<AttributeMatrixItem>();
 
                 // Get the existing attributes for this entity type and qualifier value
                 var attributeService = new AttributeService( rockContext );
@@ -238,6 +238,8 @@ namespace RockWeb.Blocks.Core
             if ( attributeMatrixTemplate == null )
             {
                 attributeMatrixTemplate = new AttributeMatrixTemplate { Id = 0 };
+                attributeMatrixTemplate.FormattedLava = AttributeMatrixTemplate.FormattedLavaDefault;
+
                 lActionTitle.Text = ActionTitle.Add( AttributeMatrixTemplate.FriendlyTypeName ).FormatAsHtmlTitle();
                 
                 // hide the panel drawer that show created and last modified dates
@@ -253,7 +255,7 @@ namespace RockWeb.Blocks.Core
             ceFormattedLava.Text = attributeMatrixTemplate.FormattedLava;
 
             var attributeService = new AttributeService( rockContext );
-            AttributesState = attributeService.Get( new AttributeMatrix().TypeId, "AttributeMatrixTemplateId", attributeMatrixTemplate.Id.ToString() ).AsQueryable()
+            AttributesState = attributeService.Get( new AttributeMatrixItem().TypeId, "AttributeMatrixTemplateId", attributeMatrixTemplate.Id.ToString() ).AsQueryable()
                 .OrderBy( a => a.Order )
                 .ThenBy( a => a.Name )
                 .ToList();
