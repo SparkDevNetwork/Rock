@@ -51,11 +51,18 @@
 <p>{{ viewedItem | Attribute:'Summary' }}</p>
 <p>{{ viewedItem.Content }}</p>
 
+{% assign introvideo = viewedItem | Attribute: 'IntroVideo' %}
 {% assign message1 = viewedItem | Attribute: 'Message1' %}
 {% assign message2 = viewedItem | Attribute: 'Message2' %}
 {% assign message3 = viewedItem | Attribute: 'Message3' %}
 {% assign message4 = viewedItem | Attribute: 'Message4' %}
 
+{% if introvideo != '' %}
+  <div class="embed-responsive embed-responsive-16by9">
+    <iframe class="embed-responsive-item" src="https://player.vimeo.com/video/{{ introvideo }}" width="320" height="180" frameborder="0" webkitallowfullscreen mozallowfullscreen allowfullscreen></iframe>
+  </div>
+	<br/>
+{% endif %}
 {% if message1 != '' %}
   <div class="embed-responsive embed-responsive-16by9">
     <iframe class="embed-responsive-item" src="https://player.vimeo.com/video/{{ message1 }}" width="320" height="180" frameborder="0" webkitallowfullscreen mozallowfullscreen allowfullscreen></iframe>
