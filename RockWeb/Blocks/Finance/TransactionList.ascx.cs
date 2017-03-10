@@ -152,8 +152,6 @@ namespace RockWeb.Blocks.Finance
 
             this.BlockUpdated += Block_BlockUpdated;
             this.AddConfigurationUpdateTrigger( upTransactions );
-
-            SetupGridActionControls();
         }
 
         /// <summary>
@@ -219,6 +217,8 @@ namespace RockWeb.Blocks.Finance
                 }
 
             }
+
+            SetupGridActionControls();
 
             if ( !Page.IsPostBack )
             {
@@ -464,11 +464,11 @@ namespace RockWeb.Blocks.Finance
                     string currencyType = string.Empty;
                     string creditCardType = string.Empty;
 
-                    if ( lPersonFullNameReversed != null )
+                    if ( lPersonFullNameReversed != null && txn.AuthorizedPersonAliasId.HasValue )
                     {
-                        if ( _personFullNameReversedLookupByAliasId.ContainsKey( txn.AuthorizedPersonAliasId ) )
+                        if ( _personFullNameReversedLookupByAliasId.ContainsKey( txn.AuthorizedPersonAliasId.Value ) )
                         {
-                            lPersonFullNameReversed.Text = _personFullNameReversedLookupByAliasId[txn.AuthorizedPersonAliasId];
+                            lPersonFullNameReversed.Text = _personFullNameReversedLookupByAliasId[txn.AuthorizedPersonAliasId.Value];
                         }
                     }
 
@@ -1008,14 +1008,14 @@ namespace RockWeb.Blocks.Finance
                 }
 
                 qry = financialTransactionDetailQry
-                    .Where( a => a.Transaction.AuthorizedPersonAliasId.HasValue && a.Transaction.TransactionDateTime.HasValue )
+                    .Where( a => a.Transaction.TransactionDateTime.HasValue )
                     .Select( a => new FinancialTransactionRow
                     {
                         Id = a.TransactionId,
                         BatchId = a.Transaction.BatchId,
                         TransactionTypeValueId = a.Transaction.TransactionTypeValueId,
                         ScheduledTransactionId = a.Transaction.ScheduledTransactionId,
-                        AuthorizedPersonAliasId = a.Transaction.AuthorizedPersonAliasId.Value,
+                        AuthorizedPersonAliasId = a.Transaction.AuthorizedPersonAliasId,
                         TransactionDateTime = a.Transaction.TransactionDateTime.Value,
                         SourceTypeValueId = a.Transaction.SourceTypeValueId,
                         TotalAmount = a.Amount,
@@ -1046,14 +1046,14 @@ namespace RockWeb.Blocks.Finance
                 }
 
                 qry = financialTransactionQry
-                    .Where( a => a.AuthorizedPersonAliasId.HasValue && a.TransactionDateTime.HasValue )
+                    .Where( a => a.TransactionDateTime.HasValue )
                     .Select( a => new FinancialTransactionRow
                     {
                         Id = a.Id,
                         BatchId = a.BatchId,
                         TransactionTypeValueId = a.TransactionTypeValueId,
                         ScheduledTransactionId = a.ScheduledTransactionId,
-                        AuthorizedPersonAliasId = a.AuthorizedPersonAliasId.Value,
+                        AuthorizedPersonAliasId = a.AuthorizedPersonAliasId,
                         TransactionDateTime = a.TransactionDateTime.Value,
                         TransactionDetails = a.TransactionDetails.Select( d => new DetailInfo { AccountId = d.AccountId, Amount = d.Amount, EntityId = d.EntityId, EntityTypeId = d.EntityTypeId } ),
                         SourceTypeValueId = a.SourceTypeValueId,
@@ -1127,7 +1127,7 @@ namespace RockWeb.Blocks.Finance
                     var personAliasIds = new PersonAliasService( rockContext ).Queryable().Where( a => a.Person.GivingId == _person.GivingId ).Select( a => a.Id ).ToList();
 
                     // get the transactions for the person or all the members in the person's giving group (Family)
-                    qry = qry.Where( t => personAliasIds.Contains( t.AuthorizedPersonAliasId ) );
+                    qry = qry.Where( t => t.AuthorizedPersonAliasId.HasValue && personAliasIds.Contains( t.AuthorizedPersonAliasId.Value ) );
                 }
 
                 // Date Range
@@ -1236,7 +1236,7 @@ namespace RockWeb.Blocks.Finance
                             var personAliasIds = new PersonAliasService( rockContext ).Queryable().Where( a => a.Person.GivingId == filterPerson.GivingId ).Select( a => a.Id ).ToList();
 
                             // get the transactions for the person or all the members in the person's giving group (Family)
-                            qry = qry.Where( t => personAliasIds.Contains( t.AuthorizedPersonAliasId ) );
+                            qry = qry.Where( t => t.AuthorizedPersonAliasId.HasValue && personAliasIds.Contains( t.AuthorizedPersonAliasId.Value ) );
                         }
                     }
                 }
@@ -1281,7 +1281,7 @@ namespace RockWeb.Blocks.Finance
             _isExporting = isExporting;
 
             var qryPersonAlias = new PersonAliasService( rockContext ).Queryable();
-            _personFullNameReversedLookupByAliasId = qryPersonAlias.Where( a => qry.Any( q => q.AuthorizedPersonAliasId == a.Id ) ).Select( a => new
+            _personFullNameReversedLookupByAliasId = qryPersonAlias.Where( a => qry.Any( q => q.AuthorizedPersonAliasId.HasValue && q.AuthorizedPersonAliasId == a.Id ) ).Select( a => new
             {
                 a.Id,
                 a.Person.LastName,
@@ -1526,7 +1526,7 @@ namespace RockWeb.Blocks.Finance
         private class FinancialTransactionRow
         {
             public int Id { get; set; }
-            public int AuthorizedPersonAliasId { get; internal set; }
+            public int? AuthorizedPersonAliasId { get; internal set; }
             public int? BatchId { get; internal set; }
             public int? ScheduledTransactionId { get; internal set; }
             public DateTime TransactionDateTime { get; internal set; }
