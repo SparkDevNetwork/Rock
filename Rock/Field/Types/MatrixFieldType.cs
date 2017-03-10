@@ -222,6 +222,9 @@ namespace Rock.Field.Types
             gMatrixItems.Actions.AddClick += gMatrixItems_AddClick;
             gMatrixItems.Actions.ShowAdd = true;
             gMatrixItems.IsDeleteEnabled = true;
+            gMatrixItems.GridReorder += gMatrixItems_GridReorder;
+
+            gMatrixItems.Columns.Add( new ReorderField() );
 
             foreach ( var attribute in tempAttributeMatrixItem.Attributes.Select( a => a.Value ) )
             {
@@ -339,6 +342,8 @@ namespace Rock.Field.Types
         {
             Grid gMatrixItems = sender as Grid;
             int matrixItemId = e.RowKeyId;
+
+            EditMatrixItem( gMatrixItems, matrixItemId );
         }
 
         /// <summary>
@@ -482,6 +487,28 @@ namespace Rock.Field.Types
 
                 BindMatrixItemsGrid( gMatrixItems, attributeMatrix );
             }
+        }
+
+        /// <summary>
+        /// Handles the GridReorder event of the gMatrixItems control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="GridReorderEventArgs"/> instance containing the event data.</param>
+        private void gMatrixItems_GridReorder( object sender, GridReorderEventArgs e )
+        {
+            Grid gMatrixItems = sender as Grid;
+            Panel pnlMatrixEdit = gMatrixItems.Parent as Panel;
+            HiddenField hfAttributeMatrixGuid = pnlMatrixEdit.FindControl( "hfAttributeMatrixGuid" ) as HiddenField;
+            Guid attributeMatrixGuid = hfAttributeMatrixGuid.Value.AsGuid();
+
+            var rockContext = new RockContext();
+            var attributeMatrix = new AttributeMatrixService( rockContext ).Get( attributeMatrixGuid );
+            var service = new AttributeMatrixItemService( rockContext );
+            var items = service.Queryable().Where(a => a.AttributeMatrixId == attributeMatrix.Id).OrderBy( i => i.Order ).ToList();
+            service.Reorder( items, e.OldIndex, e.NewIndex );
+            rockContext.SaveChanges();
+
+            BindMatrixItemsGrid( gMatrixItems, attributeMatrix );
         }
 
         #endregion MatrixItemsGrid
