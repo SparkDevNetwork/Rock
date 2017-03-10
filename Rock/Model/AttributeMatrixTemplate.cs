@@ -103,6 +103,26 @@ namespace Rock.Model
         [DataMember]
         public string FormattedLava { get; set; }
 
+        public const string FormattedLavaDefault = @"
+<table class='grid-table table table-condensed table-light'>
+<thead>
+<tr>
+{% for itemAttribute in ItemAttributes %}
+    <th>{{ itemAttribute.Name }}</th>
+{% endfor %}
+</tr>
+</thead>
+<tbody>
+{% for attributeMatrixItem in AttributeMatrixItems %}
+<tr>
+    {% for itemAttribute in ItemAttributes %}
+        <td>{{ attributeMatrixItem | Attribute:itemAttribute.Key }}</td>
+    {% endfor %}
+</tr>
+{% endfor %}
+</tbody>
+</table>";
+
         #endregion
 
         #region Virtual Properties

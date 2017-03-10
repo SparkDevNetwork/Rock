@@ -39,7 +39,7 @@
                         </div>
                     </div>
 
-                    <Rock:CodeEditor ID="ceFormattedLava" runat="server" Label="Formatted Lava" Help="This will determine how the Matrix Attribute Field will display its formatted value" EditorMode="Lava" />
+                    <Rock:CodeEditor ID="ceFormattedLava" runat="server" Label="Formatted Lava" Help="This will determine how the Matrix Attribute Field will display its formatted value. HINT: MergeField is 'AttributeMatrixItems'" EditorMode="Lava" />
 
                     <div class="grid">
                         <Rock:Grid ID="gAttributes" runat="server" AllowPaging="false" DisplayType="Light" RowItemText="Matrix Attribute">

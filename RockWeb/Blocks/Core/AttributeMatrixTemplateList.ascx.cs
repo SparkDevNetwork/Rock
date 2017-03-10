@@ -22,8 +22,10 @@ using System.Web.UI;
 using Rock;
 using Rock.Attribute;
 using Rock.Data;
+using Rock.Field.Types;
 using Rock.Model;
 using Rock.Security;
+using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
@@ -158,6 +160,21 @@ namespace RockWeb.Blocks.Core
         {
             RockContext rockContext = new RockContext();
             AttributeMatrixTemplateService attributeMatrixTemplateService = new AttributeMatrixTemplateService( rockContext );
+            AttributeMatrixService attributeMatrixService = new AttributeMatrixService( rockContext );
+
+            var matrixFieldTypeId = FieldTypeCache.All().First( a => a.Class == typeof( MatrixFieldType ).FullName ).Id;
+
+            // get a list of attribute Matrix Guids that are actually in use so that only could the ones are that used in the InstanceCount
+            var usedAttributeMatrices = new AttributeValueService( rockContext ).Queryable().Where( a => a.Attribute.FieldTypeId == matrixFieldTypeId ).Select( a => a.Value );
+
+            // clean up any orphaned attribute matrices
+            var dayAgo = RockDateTime.Now.AddDays( -1 );
+            var orphanedAttributeMatrices = attributeMatrixService.Queryable().Where( a => ( a.CreatedDateTime < dayAgo ) && !usedAttributeMatrices.Contains( a.Guid.ToString() ) ).ToList();
+            if ( orphanedAttributeMatrices.Any() )
+            {
+                attributeMatrixService.DeleteRange( orphanedAttributeMatrices );
+                rockContext.SaveChanges();
+            }
 
             var qry = attributeMatrixTemplateService.Queryable()
                 .Select( a => new
@@ -166,7 +183,7 @@ namespace RockWeb.Blocks.Core
                     a.Name,
                     a.Description,
                     a.IsActive,
-                    InstanceCount = a.AttributeMatrices.Count()
+                    InstanceCount = a.AttributeMatrices.Where( m => usedAttributeMatrices.Contains( m.Guid.ToString() ) ).Count()
                 } ).Sort( gList.SortProperty ?? new SortProperty { Property = "Name" } );
 
             gList.SetLinqDataSource( qry );

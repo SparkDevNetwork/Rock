@@ -1065,7 +1065,7 @@ namespace Rock.Attribute
             }
 
             HtmlGenericControl fieldSet;
-            if ( parentControl is DynamicControlsPanel )
+            if ( parentControl is DynamicControlsPanel || parentControl is DynamicPlaceholder )
             {
                 fieldSet = new DynamicControlsHtmlGenericControl( "fieldset" );
             }

@@ -53,6 +53,14 @@ namespace Rock.Model
         #region Virtual Properties
 
         /// <summary>
+        /// Gets the attribute matrix template identifier (Need this so that Attributes can be qualified on AttributeMatrix's AttributeMatrixTempleId)
+        /// </summary>
+        /// <value>
+        /// The attribute matrix template identifier.
+        /// </value>
+        public virtual int AttributeMatrixTemplateId => AttributeMatrix.AttributeMatrixTemplateId;
+
+        /// <summary>
         /// Gets or sets the attribute matrix.
         /// </summary>
         /// <value>
@@ -76,7 +84,7 @@ namespace Rock.Model
         /// </summary>
         public AttributeMatrixItemConfiguration()
         {
-            this.HasRequired( p => p.AttributeMatrix ).WithMany().HasForeignKey( p => p.AttributeMatrixId ).WillCascadeOnDelete( false );
+            this.HasRequired( p => p.AttributeMatrix ).WithMany( p => p.AttributeMatrixItems ).HasForeignKey( p => p.AttributeMatrixId ).WillCascadeOnDelete( false );
         }
     }
 

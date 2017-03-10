@@ -24,6 +24,8 @@ using Rock.Attribute;
 using Rock.Model;
 using Rock.Data;
 using System.Data.Entity;
+using Rock.Web.Cache;
+using Rock.Field.Types;
 
 namespace Rock.Jobs
 {
@@ -64,11 +66,11 @@ namespace Rock.Jobs
 
             List<Exception> rockCleanupExceptions = new List<Exception>();
 
-            int databaseRowsDeleted = 0;
+            Dictionary<string, int> databaseRowsDeleted = new Dictionary<string, int>();
 
             try
             {
-                databaseRowsDeleted += PurgeExceptionLog( dataMap );
+                databaseRowsDeleted.Add( "Exception Log", PurgeExceptionLog( dataMap ) );
             }
             catch ( Exception ex )
             {
@@ -77,7 +79,7 @@ namespace Rock.Jobs
 
             try
             {
-                databaseRowsDeleted += CleanupExpiredEntitySets( dataMap );
+                databaseRowsDeleted.Add( "Expired Entity Set", CleanupExpiredEntitySets( dataMap ));
             }
             catch ( Exception ex )
             {
@@ -86,7 +88,7 @@ namespace Rock.Jobs
 
             try
             {
-                databaseRowsDeleted += CleanupInteractions( dataMap );
+                databaseRowsDeleted.Add( "Old Interaction", CleanupInteractions( dataMap ));
             }
             catch ( Exception ex )
             {
@@ -95,7 +97,7 @@ namespace Rock.Jobs
 
             try
             {
-                databaseRowsDeleted += PurgeAuditLog( dataMap );
+                databaseRowsDeleted.Add( "Audit Log", PurgeAuditLog( dataMap ) );
             }
             catch ( Exception ex )
             {
@@ -132,7 +134,7 @@ namespace Rock.Jobs
 
             try
             {
-                databaseRowsDeleted += CleanUpTemporaryRegistrations();
+                databaseRowsDeleted.Add( "Temporary Registration", CleanUpTemporaryRegistrations());
             }
             catch ( Exception ex )
             {
@@ -141,7 +143,7 @@ namespace Rock.Jobs
 
             try
             {
-                databaseRowsDeleted += CleanUpWorkflows( dataMap );
+                databaseRowsDeleted.Add( "Workflow", CleanUpWorkflows( dataMap ));
             }
             catch ( Exception ex )
             {
@@ -150,14 +152,30 @@ namespace Rock.Jobs
 
             try
             {
-                databaseRowsDeleted += CleanUpWorkflowLogs( dataMap );
+                databaseRowsDeleted.Add( "Workflow Log", CleanUpWorkflowLogs( dataMap ));
             }
             catch ( Exception ex )
             {
                 rockCleanupExceptions.Add( new Exception( "Exception in CleanUpWorkflowLogs", ex ) );
             }
 
-            context.Result = string.Format( "Rock Cleanup cleaned up {0} database rows", databaseRowsDeleted );
+            try
+            {
+                databaseRowsDeleted.Add( "Orphaned Attribute Value", CleanupOrphanedAttributes( dataMap ));
+            }
+            catch ( Exception ex )
+            {
+                rockCleanupExceptions.Add( new Exception( "Exception in CleanupOrphanedAttributes", ex ) );
+            }
+
+            if ( databaseRowsDeleted.Any( a => a.Value > 0 ) )
+            {
+                context.Result = string.Format( "Rock Cleanup cleaned up {0}", databaseRowsDeleted.Where( a => a.Value > 0 ).Select( a => $"{a.Value} {a.Key.PluralizeIf( a.Value != 1 )}" ).ToList().AsDelimited( ", ", " and " ) );
+            }
+            else
+            {
+                context.Result = "Rock Cleanup completed";
+            }
 
             if ( rockCleanupExceptions.Count > 0 )
             {
@@ -553,6 +571,44 @@ WHERE ic.ChannelId = @channelId
 
             return totalRowsDeleted;
         }
+
+        /// <summary>
+        /// Cleanups the orphaned attributes.
+        /// </summary>
+        /// <param name="dataMap">The data map.</param>
+        /// <returns></returns>
+        private int CleanupOrphanedAttributes( JobDataMap dataMap )
+        {
+            int recordsDeleted = 0;
+
+            // Cleanup AttributeMatrix records that are no longer associated with an attribute value
+            using ( RockContext rockContext = new RockContext() )
+            {
+                AttributeMatrixService attributeMatrixService = new AttributeMatrixService( rockContext );
+
+                var matrixFieldTypeId = FieldTypeCache.All().First( a => a.Class == typeof( MatrixFieldType ).FullName ).Id;
+                // get a list of attribute Matrix Guids that are actually in use
+                var usedAttributeMatrices = new AttributeValueService( rockContext ).Queryable().Where( a => a.Attribute.FieldTypeId == matrixFieldTypeId ).Select( a => a.Value );
+
+                // clean up any orphaned attribute matrices
+                var dayAgo = RockDateTime.Now.AddDays( 0 );
+                var orphanedAttributeMatrices = attributeMatrixService.Queryable().Where( a => ( a.CreatedDateTime < dayAgo ) && !usedAttributeMatrices.Contains( a.Guid.ToString() ) ).ToList();
+                if ( orphanedAttributeMatrices.Any() )
+                {
+                    recordsDeleted += orphanedAttributeMatrices.Count;
+                    attributeMatrixService.DeleteRange( orphanedAttributeMatrices );
+                    rockContext.SaveChanges();
+                }
+            }
+
+            using ( RockContext rockContext = new RockContext() )
+            {
+                // TODO, find other AttributeValue records that have an EntityId that points nowhere
+            }
+
+            return recordsDeleted;
+        }
+
 
         /// <summary>
         /// Cleans expired cached files from the cache folder

@@ -95,7 +95,7 @@
             <Content>
                 <asp:HiddenField ID="hfIdValues" runat="server" />
                 <asp:ValidationSummary ID="ValidationSummaryValue" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" ValidationGroup="AttributeValue" />
-                <asp:PlaceHolder ID="phEditControls" runat="server" EnableViewState="false" />
+                <Rock:DynamicPlaceholder ID="phEditControls" runat="server" />
             </Content>
         </Rock:ModalDialog>
 

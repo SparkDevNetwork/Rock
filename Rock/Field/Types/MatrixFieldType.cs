@@ -14,10 +14,12 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
+
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.UI.Controls;
@@ -125,13 +127,49 @@ namespace Rock.Field.Types
 
         #region Formatting
 
+        /// <summary>
+        /// Returns the field's current value(s)
+        /// </summary>
+        /// <param name="parentControl">The parent control.</param>
+        /// <param name="value">Information about the value</param>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="condensed">Flag indicating if the value should be condensed (i.e. for use in a grid column)</param>
+        /// <returns></returns>
         public override string FormatValue( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
         {
-            // TODO
+            var rockContext = new RockContext();
+            var attributeMatrixService = new AttributeMatrixService( rockContext );
+            AttributeMatrix attributeMatrix = null;
+            Guid? attributeMatrixGuid = value.AsGuidOrNull();
+            if ( attributeMatrixGuid.HasValue )
+            {
+                attributeMatrix = attributeMatrixService.Get( attributeMatrixGuid.Value );
+
+                // make a temp attributeMatrixItem to see what Attributes they have
+                AttributeMatrixItem tempAttributeMatrixItem = new AttributeMatrixItem();
+                tempAttributeMatrixItem.AttributeMatrix = attributeMatrix;
+                tempAttributeMatrixItem.LoadAttributes();
+
+                var lavaTemplate = attributeMatrix.AttributeMatrixTemplate.FormattedLava;
+                Dictionary<string, object> mergeFields = Lava.LavaHelper.GetCommonMergeFields( parentControl?.RockBlock()?.RockPage, null, new Lava.CommonMergeFieldsOptions { GetLegacyGlobalMergeFields = false } );
+                mergeFields.Add( "AttributeMatrix", attributeMatrix );
+                mergeFields.Add( "ItemAttributes", tempAttributeMatrixItem.Attributes.Select( a => a.Value ).OrderBy( a => a.Order ).ThenBy( a => a.Name ) );
+                mergeFields.Add( "AttributeMatrixItems", attributeMatrix.AttributeMatrixItems.OrderBy( a => a.Order ) );
+                return lavaTemplate.ResolveMergeFields( mergeFields );
+            }
+
             return base.FormatValue( parentControl, value, configurationValues, condensed );
         }
 
         #endregion
+
+        /// <summary>
+        /// Gets a value indicating whether this field has a control to configure the default value
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if this instance has default control; otherwise, <c>false</c>.
+        /// </value>
+        public override bool HasDefaultControl => false;
 
         /// <summary>
         /// Creates the control(s) necessary for prompting user for a new value
@@ -143,55 +181,309 @@ namespace Rock.Field.Types
         /// </returns>
         public override Control EditControl( Dictionary<string, ConfigurationValue> configurationValues, string id )
         {
-            if ( configurationValues.ContainsKey( ATTRIBUTE_MATRIX_TEMPLATE ) )
+            if ( !configurationValues.ContainsKey( ATTRIBUTE_MATRIX_TEMPLATE ) )
+            {
+                return null;
+            }
+
+            var pnlMatrixEdit = new Panel { ID = id };
+
+            int attributeMatrixTemplateId = configurationValues[ATTRIBUTE_MATRIX_TEMPLATE].Value.AsInteger();
+
+            // Edit Panel
+            var pnlEditMatrixItem = new Panel { ID = "pnlEditMatrixItem", Visible = false, CssClass = "well" };
+            HiddenField hfMatrixItemId = new HiddenField { ID = "hfMatrixItemId" };
+            pnlEditMatrixItem.Controls.Add( hfMatrixItemId );
+
+            DynamicPlaceholder phMatrixItemAttributes = new DynamicPlaceholder { ID = "phMatrixItemAttributes" };
+            pnlEditMatrixItem.Controls.Add( phMatrixItemAttributes );
+
+            // make a temp attributeMatrixItem to see what Attributes they have
+            AttributeMatrixItem tempAttributeMatrixItem = new AttributeMatrixItem();
+            tempAttributeMatrixItem.AttributeMatrix = new AttributeMatrix { AttributeMatrixTemplateId = attributeMatrixTemplateId };
+            tempAttributeMatrixItem.LoadAttributes();
+
+            Rock.Attribute.Helper.AddEditControls( tempAttributeMatrixItem, phMatrixItemAttributes, false );
+
+            LinkButton btnSaveMatrixItem = new LinkButton { ID = "btnSaveMatrixItem", CssClass = "btn btn-primary", Text = "Save Matrix Item" };
+            btnSaveMatrixItem.Click += btnSaveMatrixItem_Click;
+            pnlEditMatrixItem.Controls.Add( btnSaveMatrixItem );
+
+            LinkButton btnCancelMatrixItem = new LinkButton { ID = "btnCancelMatrixItem", CssClass = "btn btn-link", Text = "Cancel" };
+            btnCancelMatrixItem.Click += btnCancelMatrixItem_Click;
+            pnlEditMatrixItem.Controls.Add( btnCancelMatrixItem );
+
+            pnlMatrixEdit.Controls.Add( pnlEditMatrixItem );
+
+            // Grid with view of MatrixItems
+            var gMatrixItems = new Grid { ID = "gMatrixItems", DisplayType = GridDisplayType.Light };
+            pnlMatrixEdit.Controls.Add( gMatrixItems );
+            gMatrixItems.DataKeyNames = new string[] { "Id" };
+            gMatrixItems.Actions.AddClick += gMatrixItems_AddClick;
+            gMatrixItems.Actions.ShowAdd = true;
+            gMatrixItems.IsDeleteEnabled = true;
+
+            foreach ( var attribute in tempAttributeMatrixItem.Attributes.Select( a => a.Value ) )
+            {
+                gMatrixItems.Columns.Add( new AttributeField { DataField = attribute.Key, HeaderText = attribute.Name } );
+            }
+
+            var deleteField = new DeleteField();
+            deleteField.Click += gMatrixItems_DeleteClick;
+            gMatrixItems.Columns.Add( deleteField );
+
+            gMatrixItems.RowSelected += gMatrixItems_RowSelected;
+
+            // HiddenField to store which AttributeMatrix record we are editing
+            HiddenField hfAttributeMatrixGuid = new HiddenField { ID = "hfAttributeMatrixGuid" };
+            pnlMatrixEdit.Controls.Add( hfAttributeMatrixGuid );
+
+            return pnlMatrixEdit;
+        }
+
+        /// <summary>
+        /// Reads new values entered by the user for the field
+        /// </summary>
+        /// <param name="control">Parent control that controls were added to in the CreateEditControl() method</param>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <returns></returns>
+        public override string GetEditValue( Control control, Dictionary<string, ConfigurationValue> configurationValues )
+        {
+            Panel pnlMatrixEdit = control as Panel;
+
+            if ( pnlMatrixEdit != null && configurationValues.ContainsKey( ATTRIBUTE_MATRIX_TEMPLATE ) )
             {
                 int? attributeMatrixTemplateId = configurationValues[ATTRIBUTE_MATRIX_TEMPLATE]?.Value.AsIntegerOrNull();
                 if ( attributeMatrixTemplateId.HasValue )
                 {
                     var rockContext = new RockContext();
-                    var attributeMatrixTemplate = new AttributeMatrixTemplateService( rockContext ).Get( attributeMatrixTemplateId.Value );
-                    if ( attributeMatrixTemplate != null )
+                    HiddenField hfAttributeMatrixGuid = pnlMatrixEdit.FindControl( "hfAttributeMatrixGuid" ) as HiddenField;
+                    Guid? attributeMatrixGuid = hfAttributeMatrixGuid.Value.AsGuidOrNull();
+                    AttributeMatrix attributeMatrix = null;
+                    if ( attributeMatrixGuid.HasValue )
                     {
-                        attributeMatrixTemplate.LoadAttributes( rockContext );
-                        var phAttributes = new PlaceHolder { ID = $"phAttributes_{id}" };
-                        Rock.Attribute.Helper.AddEditControls( attributeMatrixTemplate, phAttributes, false );
-                        phAttributes.Controls.Add( new HiddenField { ID = "hfAttributeMatrixId" } );
-
-                        return phAttributes;
+                        attributeMatrix = new AttributeMatrixService( rockContext ).Get( attributeMatrixGuid.Value );
+                        return attributeMatrix.Guid.ToString();
                     }
                 }
-
             }
 
             return null;
-
         }
 
-        public override string GetEditValue( Control control, Dictionary<string, ConfigurationValue> configurationValues )
+        /// <summary>
+        /// Sets the value.
+        /// </summary>
+        /// <param name="control">The control.</param>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="value">The value.</param>
+        public override void SetEditValue( Control control, Dictionary<string, ConfigurationValue> configurationValues, string value )
         {
-            PlaceHolder phAttributes = control as PlaceHolder;
-
-            if ( phAttributes != null && configurationValues.ContainsKey( ATTRIBUTE_MATRIX_TEMPLATE ) )
+            Panel pnlMatrixEdit = control as Panel;
+            if ( pnlMatrixEdit != null && configurationValues.ContainsKey( ATTRIBUTE_MATRIX_TEMPLATE ) )
             {
                 int? attributeMatrixTemplateId = configurationValues[ATTRIBUTE_MATRIX_TEMPLATE]?.Value.AsIntegerOrNull();
                 if ( attributeMatrixTemplateId.HasValue )
                 {
-                    var attributeMatrix = new AttributeMatrix();
-                    attributeMatrix.AttributeMatrixTemplateId = attributeMatrixTemplateId.Value;
-                    attributeMatrix.LoadAttributes();
-                    Rock.Attribute.Helper.GetEditValues( phAttributes, attributeMatrix );
-                    HiddenField hfAttributeMatrixGuid = phAttributes.FindControl( "hfAttributeMatrixGuid" ) as HiddenField;
-                    return hfAttributeMatrixGuid.Value;
+                    Grid gMatrixItems = pnlMatrixEdit.FindControl( "gMatrixItems" ) as Grid;
+                    HiddenField hfAttributeMatrixGuid = pnlMatrixEdit.FindControl( "hfAttributeMatrixGuid" ) as HiddenField;
+
+                    var rockContext = new RockContext();
+                    var attributeMatrixService = new AttributeMatrixService( rockContext );
+                    AttributeMatrix attributeMatrix = null;
+                    Guid? attributeMatrixGuid = value.AsGuidOrNull();
+                    if ( attributeMatrixGuid.HasValue )
+                    {
+                        attributeMatrix = attributeMatrixService.Get( attributeMatrixGuid.Value );
+                    }
+
+                    if ( attributeMatrix == null )
+                    {
+                        // Create the AttributeMatrix now and save it even though they haven't hit save yet. We'll need the AttributeMatrix record to exist so that we can add AttributeMatrixItems to it
+                        // If this ends up creating an orphan, we can clean up it up later
+                        attributeMatrix = new AttributeMatrix { Guid = Guid.NewGuid() };
+                        attributeMatrix.AttributeMatrixTemplateId = attributeMatrixTemplateId.Value;
+                        attributeMatrix.AttributeMatrixItems = new List<AttributeMatrixItem>();
+                        attributeMatrixService.Add( attributeMatrix );
+                        rockContext.SaveChanges();
+                    }
+
+                    hfAttributeMatrixGuid.Value = attributeMatrix.Guid.ToString();
+
+                    BindMatrixItemsGrid( gMatrixItems, attributeMatrix );
                 }
             }
-
-            return null;
         }
 
-        public override void SetEditValue( Control control, Dictionary<string, ConfigurationValue> configurationValues, string value )
+        #region EditMatrixItem
+
+        /// <summary>
+        /// Handles the AddClick event of the gMatrixItems control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        private void gMatrixItems_AddClick( object sender, EventArgs e )
         {
-            //TODO base.SetEditValue( control, configurationValues, value );
+            LinkButton lbAdd = sender as LinkButton;
+            Grid gMatrixItems = lbAdd.FirstParentControlOfType<Grid>();
+
+            EditMatrixItem( gMatrixItems, 0 );
         }
 
+        /// <summary>
+        /// Handles the RowSelected event of the gMatrixItems control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="RowEventArgs"/> instance containing the event data.</param>
+        private void gMatrixItems_RowSelected( object sender, RowEventArgs e )
+        {
+            Grid gMatrixItems = sender as Grid;
+            int matrixItemId = e.RowKeyId;
+        }
+
+        /// <summary>
+        /// Edits the matrix item.
+        /// </summary>
+        /// <param name="gMatrixItems">The g matrix items.</param>
+        /// <param name="matrixItemId">The matrix item identifier.</param>
+        private void EditMatrixItem( Grid gMatrixItems, int matrixItemId )
+        {
+            Panel pnlMatrixEdit = gMatrixItems.Parent as Panel;
+            Panel pnlEditMatrixItem = pnlMatrixEdit.FindControl( "pnlEditMatrixItem" ) as Panel;
+            HiddenField hfMatrixItemId = pnlMatrixEdit.FindControl( "hfMatrixItemId" ) as HiddenField;
+            HiddenField hfAttributeMatrixGuid = pnlMatrixEdit.FindControl( "hfAttributeMatrixGuid" ) as HiddenField;
+            hfMatrixItemId.Value = matrixItemId.ToString();
+
+            PlaceHolder phMatrixItemAttributes = pnlMatrixEdit.FindControl( "phMatrixItemAttributes" ) as PlaceHolder;
+
+            // make a temp attributeMatrixItem to see what Attributes they have
+            AttributeMatrixItem attributeMatrixItem = null;
+
+            if ( matrixItemId > 0 )
+            {
+                attributeMatrixItem = new AttributeMatrixItemService( new RockContext() ).Get( matrixItemId );
+            }
+
+            if ( attributeMatrixItem == null )
+            {
+                attributeMatrixItem = new AttributeMatrixItem();
+                attributeMatrixItem.AttributeMatrix = new AttributeMatrixService( new RockContext() ).Get( hfAttributeMatrixGuid.Value.AsGuid() );
+            }
+
+            attributeMatrixItem.LoadAttributes();
+
+            phMatrixItemAttributes.Controls.Clear();
+            Rock.Attribute.Helper.AddEditControls( attributeMatrixItem, phMatrixItemAttributes, true );
+
+            gMatrixItems.Visible = false;
+            pnlEditMatrixItem.Visible = true;
+        }
+
+        /// <summary>
+        /// Handles the Click event of the btnSaveMatrixItem control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        private void btnSaveMatrixItem_Click( object sender, EventArgs e )
+        {
+            LinkButton btnSaveMatrixItem = sender as LinkButton;
+            Panel pnlEditMatrixItem = btnSaveMatrixItem.Parent as Panel;
+            Panel pnlMatrixEdit = pnlEditMatrixItem.Parent as Panel;
+            HiddenField hfMatrixItemId = pnlMatrixEdit.FindControl( "hfMatrixItemId" ) as HiddenField;
+            Grid gMatrixItems = pnlMatrixEdit.FindControl( "gMatrixItems" ) as Grid;
+            PlaceHolder phMatrixItemAttributes = pnlMatrixEdit.FindControl( "phMatrixItemAttributes" ) as PlaceHolder;
+            HiddenField hfAttributeMatrixGuid = pnlMatrixEdit.FindControl( "hfAttributeMatrixGuid" ) as HiddenField;
+            Guid attributeMatrixGuid = hfAttributeMatrixGuid.Value.AsGuid();
+
+            var rockContext = new RockContext();
+            var attributeMatrixItemService = new AttributeMatrixItemService( rockContext );
+            AttributeMatrixItem attributeMatrixItem = null;
+            int attributeMatrixItemId = hfMatrixItemId.Value.AsInteger();
+
+            if ( attributeMatrixItemId > 0 )
+            {
+                attributeMatrixItem = attributeMatrixItemService.Get( attributeMatrixItemId );
+            }
+
+            if ( attributeMatrixItem == null )
+            {
+                attributeMatrixItem = new AttributeMatrixItem();
+                attributeMatrixItem.AttributeMatrix = new AttributeMatrixService( rockContext ).Get( attributeMatrixGuid );
+                attributeMatrixItemService.Add( attributeMatrixItem );
+            }
+
+            attributeMatrixItem.LoadAttributes( rockContext );
+            Rock.Attribute.Helper.GetEditValues( phMatrixItemAttributes, attributeMatrixItem );
+            rockContext.SaveChanges();
+            attributeMatrixItem.SaveAttributeValues( rockContext );
+
+            gMatrixItems.Visible = true;
+            pnlEditMatrixItem.Visible = false;
+
+            BindMatrixItemsGrid( gMatrixItems, attributeMatrixItem.AttributeMatrix );
+        }
+
+        /// <summary>
+        /// Handles the Click event of the btnCancelMatrixItem control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        private void btnCancelMatrixItem_Click( object sender, EventArgs e )
+        {
+            LinkButton btnCancelMatrixItem = sender as LinkButton;
+            Panel pnlEditMatrixItem = btnCancelMatrixItem.Parent as Panel;
+            Panel pnlMatrixEdit = pnlEditMatrixItem.Parent as Panel;
+
+            Grid gMatrixItems = pnlMatrixEdit.FindControl( "gMatrixItems" ) as Grid;
+
+            gMatrixItems.Visible = true;
+            pnlEditMatrixItem.Visible = false;
+        }
+
+        #endregion EditMatrixItem
+
+        #region MatrixItemsGrid
+
+        /// <summary>
+        /// Binds the matrix items grid.
+        /// </summary>
+        /// <param name="gMatrixItems">The g matrix attributes view.</param>
+        /// <param name="attributeMatrix">The attribute matrix.</param>
+        private void BindMatrixItemsGrid( Grid gMatrixItems, AttributeMatrix attributeMatrix )
+        {
+            foreach ( var attributeMatrixItem in attributeMatrix.AttributeMatrixItems )
+            {
+                attributeMatrixItem.LoadAttributes();
+            }
+
+            gMatrixItems.DataSource = attributeMatrix.AttributeMatrixItems.ToList();
+            gMatrixItems.DataBind();
+        }
+
+        /// <summary>
+        /// Handles the Click event of the deleteField control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="RowEventArgs"/> instance containing the event data.</param>
+        private void gMatrixItems_DeleteClick( object sender, RowEventArgs e )
+        {
+            DeleteField deleteField = sender as DeleteField;
+            Grid gMatrixItems = deleteField.ParentGrid;
+
+            int attributeMatrixItemId = e.RowKeyId;
+            var rockContext = new RockContext();
+            AttributeMatrixItemService attributeMatrixItemService = new AttributeMatrixItemService( rockContext );
+            AttributeMatrixItem attributeMatrixItem = attributeMatrixItemService.Get( attributeMatrixItemId );
+            if ( attributeMatrixItem != null )
+            {
+                var attributeMatrix = attributeMatrixItem.AttributeMatrix;
+                attributeMatrixItemService.Delete( attributeMatrixItem );
+                rockContext.SaveChanges();
+
+                BindMatrixItemsGrid( gMatrixItems, attributeMatrix );
+            }
+        }
+
+        #endregion MatrixItemsGrid
     }
 }

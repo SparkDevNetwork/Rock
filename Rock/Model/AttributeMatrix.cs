@@ -14,6 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
@@ -51,6 +52,15 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public virtual AttributeMatrixTemplate AttributeMatrixTemplate { get; set; }
+
+        /// <summary>
+        /// Gets or sets the attribute matrix items.
+        /// </summary>
+        /// <value>
+        /// The attribute matrix items.
+        /// </value>
+        [DataMember]
+        public virtual ICollection<AttributeMatrixItem> AttributeMatrixItems { get; set; }
 
         #endregion
     }
