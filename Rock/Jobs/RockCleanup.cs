@@ -585,8 +585,9 @@ WHERE ic.ChannelId = @channelId
             using ( RockContext rockContext = new RockContext() )
             {
                 AttributeMatrixService attributeMatrixService = new AttributeMatrixService( rockContext );
+                AttributeMatrixItemService attributeMatrixItemService = new AttributeMatrixItemService( rockContext );
 
-                var matrixFieldTypeId = FieldTypeCache.All().First( a => a.Class == typeof( MatrixFieldType ).FullName ).Id;
+                var matrixFieldTypeId = FieldTypeCache.Read<MatrixFieldType>().Id;
                 // get a list of attribute Matrix Guids that are actually in use
                 var usedAttributeMatrices = new AttributeValueService( rockContext ).Queryable().Where( a => a.Attribute.FieldTypeId == matrixFieldTypeId ).Select( a => a.Value );
 
@@ -596,19 +597,45 @@ WHERE ic.ChannelId = @channelId
                 if ( orphanedAttributeMatrices.Any() )
                 {
                     recordsDeleted += orphanedAttributeMatrices.Count;
+                    attributeMatrixItemService.DeleteRange( orphanedAttributeMatrices.SelectMany(a => a.AttributeMatrixItems) );
                     attributeMatrixService.DeleteRange( orphanedAttributeMatrices );
                     rockContext.SaveChanges();
                 }
             }
 
-            using ( RockContext rockContext = new RockContext() )
-            {
-                // TODO, find other AttributeValue records that have an EntityId that points nowhere
-            }
+            recordsDeleted += CleanupOrphanedAttributeValuesForEntityType<AttributeMatrixItem>();
+            recordsDeleted += CleanupOrphanedAttributeValuesForEntityType<Block>();
+
+            // TODO: More CleanupOrphanedAttributeValuesForEntityType<> can be added
 
             return recordsDeleted;
         }
 
+        /// <summary>
+        /// Cleanups the orphaned attribute values for entity type
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <returns></returns>
+        private int CleanupOrphanedAttributeValuesForEntityType<T>() where T:Rock.Data.Entity<T>, IHasAttributes, new()
+        {
+            int recordsDeleted = 0;
+
+            using ( RockContext rockContext = new RockContext() )
+            {
+                var attributeValueService = new AttributeValueService( rockContext );
+                int? entityTypeId = EntityTypeCache.GetId<T>();
+                var entityIdsQuery = new Service<T>( rockContext ).Queryable().Select( a => a.Id );
+                var orphanedAttributeValues = attributeValueService.Queryable().Where( a => a.EntityId.HasValue && a.Attribute.EntityTypeId == entityTypeId.Value && !entityIdsQuery.Contains( a.EntityId.Value ) ).ToList();
+                if ( orphanedAttributeValues.Any() )
+                {
+                    recordsDeleted += orphanedAttributeValues.Count;
+                    attributeValueService.DeleteRange( orphanedAttributeValues );
+                    rockContext.SaveChanges();
+                }
+            }
+
+            return recordsDeleted;
+        }
 
         /// <summary>
         /// Cleans expired cached files from the cache folder
