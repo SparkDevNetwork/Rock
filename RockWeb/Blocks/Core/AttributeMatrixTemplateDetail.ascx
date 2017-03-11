@@ -21,7 +21,7 @@
 
                     <div class="row">
                         <div class="col-md-6">
-                            <Rock:RockTextBox ID="tbName" runat="server" Label="Name" />
+                            <Rock:RockTextBox ID="tbName" runat="server" Label="Name" Required="true"/>
                         </div>
                         <div class="col-md-6">
                             <Rock:RockCheckBox ID="cbIsActive" runat="server" Label="Active" />
@@ -30,17 +30,9 @@
 
                     <Rock:RockTextBox ID="tbDescription" runat="server" TextMode="MultiLine" Label="Description" Rows="4" />
 
-                    <div class="row">
-                        <div class="col-md-6">
-                            <Rock:NumberBox ID="tbMinimumRows" runat="server" Label="Minimum Rows" />
-                        </div>
-                        <div class="col-md-6">
-                            <Rock:NumberBox ID="tbMaximumRows" runat="server" Label="Maximum Rows" />
-                        </div>
-                    </div>
-
-                    <Rock:CodeEditor ID="ceFormattedLava" runat="server" Label="Formatted Lava" Help="This will determine how the Matrix Attribute Field will display its formatted value. HINT: MergeField is 'AttributeMatrixItems'" EditorMode="Lava" />
-
+                    <label>Item Attributes</label>
+                    <Rock:NotificationBox ID="nbAttributeCountWarning" runat="server" NotificationBoxType="Warning" Text="At least one item attribute needs to be defined" Visible="false" />
+                    <Rock:HelpBlock ID="hAttributes" runat="server" Text="Item Attributes define the columns that each item row has" />
                     <div class="grid">
                         <Rock:Grid ID="gAttributes" runat="server" AllowPaging="false" DisplayType="Light" RowItemText="Matrix Attribute">
                             <Columns>
@@ -53,6 +45,19 @@
                             </Columns>
                         </Rock:Grid>
                     </div>
+
+                    <Rock:PanelWidget ID="pwAdvanced" runat="server" Title="Advanced" Expanded="false">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <Rock:NumberBox ID="tbMinimumRows" runat="server" Label="Minimum Rows" />
+                            </div>
+                            <div class="col-md-6">
+                                <Rock:NumberBox ID="tbMaximumRows" runat="server" Label="Maximum Rows" />
+                            </div>
+                        </div>
+
+                        <Rock:CodeEditor ID="ceFormattedLava" runat="server" Label="Formatted Lava" EditorHeight="400" Help="This will determine how the Matrix Attribute Field will display its formatted value." EditorMode="Lava" />
+                    </Rock:PanelWidget>
 
                 </fieldset>
 
@@ -67,7 +72,7 @@
 
         <Rock:ModalDialog ID="dlgAttribute" runat="server" Title="Matrix Template Attributes" OnSaveClick="dlgAttribute_SaveClick" OnCancelScript="" ValidationGroup="MatrixTemplateAttributes">
             <Content>
-                <Rock:AttributeEditor ID="edtAttributes" runat="server" ShowActions="false" ValidationGroup="MatrixTemplateAttributes" />
+                <Rock:AttributeEditor ID="edtAttributes" runat="server" ShowActions="false" ValidationGroup="MatrixTemplateAttributes" ShowInGridVisible="false" />
             </Content>
         </Rock:ModalDialog>
 

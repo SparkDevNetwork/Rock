@@ -103,7 +103,12 @@ namespace Rock.Model
         [DataMember]
         public string FormattedLava { get; set; }
 
+        /// <summary>
+        /// The formatted lava default
+        /// </summary>
         public const string FormattedLavaDefault = @"
+{% if AttributeMatrixItems != empty %}
+
 <table class='grid-table table table-condensed table-light'>
 <thead>
 <tr>
@@ -121,12 +126,20 @@ namespace Rock.Model
 </tr>
 {% endfor %}
 </tbody>
-</table>";
+</table>
+
+{% endif %}";
 
         #endregion
 
         #region Virtual Properties
 
+        /// <summary>
+        /// Gets or sets the attribute matrices.
+        /// </summary>
+        /// <value>
+        /// The attribute matrices.
+        /// </value>
         [DataMember]
         public ICollection<AttributeMatrix> AttributeMatrices { get; set; }
 
