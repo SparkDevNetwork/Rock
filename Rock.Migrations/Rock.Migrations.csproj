@@ -182,9 +182,9 @@
     <Compile Include="Migrations\201702202308080_UniversalSearchJob-Rollup.Designer.cs">
       <DependentUpon>201702202308080_UniversalSearchJob-Rollup.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201703022216480_AttributeMatrix.cs" />
-    <Compile Include="Migrations\201703022216480_AttributeMatrix.Designer.cs">
-      <DependentUpon>201703022216480_AttributeMatrix.cs</DependentUpon>
+    <Compile Include="Migrations\201703110022350_AttributeMatrix.cs" />
+    <Compile Include="Migrations\201703110022350_AttributeMatrix.Designer.cs">
+      <DependentUpon>201703110022350_AttributeMatrix.cs</DependentUpon>
     </Compile>
     <Compile Include="Migrations\Version 6.0\Version 1.6.0\201609282147388_WaitList.cs" />
     <Compile Include="Migrations\Version 6.0\Version 1.6.0\201609282147388_WaitList.Designer.cs">
@@ -2473,8 +2473,8 @@
     <EmbeddedResource Include="Migrations\201702202308080_UniversalSearchJob-Rollup.resx">
       <DependentUpon>201702202308080_UniversalSearchJob-Rollup.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201703022216480_AttributeMatrix.resx">
-      <DependentUpon>201703022216480_AttributeMatrix.cs</DependentUpon>
+    <EmbeddedResource Include="Migrations\201703110022350_AttributeMatrix.resx">
+      <DependentUpon>201703110022350_AttributeMatrix.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 6.0\Version 1.6.0\201609282147388_WaitList.resx">
       <DependentUpon>201609282147388_WaitList.cs</DependentUpon>

@@ -45,10 +45,35 @@ namespace Rock.Migrations
                         ForeignKey = c.String(maxLength: 100),
                     })
                 .PrimaryKey(t => t.Id)
-                .ForeignKey("dbo.AttributeMatrixTemplate", t => t.AttributeMatrixTemplateId)
+                .ForeignKey("dbo.AttributeMatrixTemplate", t => t.AttributeMatrixTemplateId, cascadeDelete: true)
                 .ForeignKey("dbo.PersonAlias", t => t.CreatedByPersonAliasId)
                 .ForeignKey("dbo.PersonAlias", t => t.ModifiedByPersonAliasId)
                 .Index(t => t.AttributeMatrixTemplateId)
+                .Index(t => t.CreatedByPersonAliasId)
+                .Index(t => t.ModifiedByPersonAliasId)
+                .Index(t => t.Guid, unique: true);
+            
+            CreateTable(
+                "dbo.AttributeMatrixItem",
+                c => new
+                    {
+                        Id = c.Int(nullable: false, identity: true),
+                        AttributeMatrixId = c.Int(nullable: false),
+                        Order = c.Int(nullable: false),
+                        CreatedDateTime = c.DateTime(),
+                        ModifiedDateTime = c.DateTime(),
+                        CreatedByPersonAliasId = c.Int(),
+                        ModifiedByPersonAliasId = c.Int(),
+                        Guid = c.Guid(nullable: false),
+                        ForeignId = c.Int(),
+                        ForeignGuid = c.Guid(),
+                        ForeignKey = c.String(maxLength: 100),
+                    })
+                .PrimaryKey(t => t.Id)
+                .ForeignKey("dbo.AttributeMatrix", t => t.AttributeMatrixId)
+                .ForeignKey("dbo.PersonAlias", t => t.CreatedByPersonAliasId)
+                .ForeignKey("dbo.PersonAlias", t => t.ModifiedByPersonAliasId)
+                .Index(t => t.AttributeMatrixId)
                 .Index(t => t.CreatedByPersonAliasId)
                 .Index(t => t.ModifiedByPersonAliasId)
                 .Index(t => t.Guid, unique: true);
@@ -80,31 +105,6 @@ namespace Rock.Migrations
                 .Index(t => t.ModifiedByPersonAliasId)
                 .Index(t => t.Guid, unique: true);
             
-            CreateTable(
-                "dbo.AttributeMatrixItem",
-                c => new
-                    {
-                        Id = c.Int(nullable: false, identity: true),
-                        AttributeMatrixId = c.Int(nullable: false),
-                        Order = c.Int(nullable: false),
-                        CreatedDateTime = c.DateTime(),
-                        ModifiedDateTime = c.DateTime(),
-                        CreatedByPersonAliasId = c.Int(),
-                        ModifiedByPersonAliasId = c.Int(),
-                        Guid = c.Guid(nullable: false),
-                        ForeignId = c.Int(),
-                        ForeignGuid = c.Guid(),
-                        ForeignKey = c.String(maxLength: 100),
-                    })
-                .PrimaryKey(t => t.Id)
-                .ForeignKey("dbo.AttributeMatrix", t => t.AttributeMatrixId)
-                .ForeignKey("dbo.PersonAlias", t => t.CreatedByPersonAliasId)
-                .ForeignKey("dbo.PersonAlias", t => t.ModifiedByPersonAliasId)
-                .Index(t => t.AttributeMatrixId)
-                .Index(t => t.CreatedByPersonAliasId)
-                .Index(t => t.ModifiedByPersonAliasId)
-                .Index(t => t.Guid, unique: true);
-            
         }
         
         /// <summary>
@@ -112,27 +112,27 @@ namespace Rock.Migrations
         /// </summary>
         public override void Down()
         {
-            DropForeignKey("dbo.AttributeMatrixItem", "ModifiedByPersonAliasId", "dbo.PersonAlias");
-            DropForeignKey("dbo.AttributeMatrixItem", "CreatedByPersonAliasId", "dbo.PersonAlias");
-            DropForeignKey("dbo.AttributeMatrixItem", "AttributeMatrixId", "dbo.AttributeMatrix");
             DropForeignKey("dbo.AttributeMatrix", "ModifiedByPersonAliasId", "dbo.PersonAlias");
             DropForeignKey("dbo.AttributeMatrix", "CreatedByPersonAliasId", "dbo.PersonAlias");
             DropForeignKey("dbo.AttributeMatrix", "AttributeMatrixTemplateId", "dbo.AttributeMatrixTemplate");
             DropForeignKey("dbo.AttributeMatrixTemplate", "ModifiedByPersonAliasId", "dbo.PersonAlias");
             DropForeignKey("dbo.AttributeMatrixTemplate", "CreatedByPersonAliasId", "dbo.PersonAlias");
+            DropForeignKey("dbo.AttributeMatrixItem", "ModifiedByPersonAliasId", "dbo.PersonAlias");
+            DropForeignKey("dbo.AttributeMatrixItem", "CreatedByPersonAliasId", "dbo.PersonAlias");
+            DropForeignKey("dbo.AttributeMatrixItem", "AttributeMatrixId", "dbo.AttributeMatrix");
+            DropIndex("dbo.AttributeMatrixTemplate", new[] { "Guid" });
+            DropIndex("dbo.AttributeMatrixTemplate", new[] { "ModifiedByPersonAliasId" });
+            DropIndex("dbo.AttributeMatrixTemplate", new[] { "CreatedByPersonAliasId" });
             DropIndex("dbo.AttributeMatrixItem", new[] { "Guid" });
             DropIndex("dbo.AttributeMatrixItem", new[] { "ModifiedByPersonAliasId" });
             DropIndex("dbo.AttributeMatrixItem", new[] { "CreatedByPersonAliasId" });
             DropIndex("dbo.AttributeMatrixItem", new[] { "AttributeMatrixId" });
-            DropIndex("dbo.AttributeMatrixTemplate", new[] { "Guid" });
-            DropIndex("dbo.AttributeMatrixTemplate", new[] { "ModifiedByPersonAliasId" });
-            DropIndex("dbo.AttributeMatrixTemplate", new[] { "CreatedByPersonAliasId" });
             DropIndex("dbo.AttributeMatrix", new[] { "Guid" });
             DropIndex("dbo.AttributeMatrix", new[] { "ModifiedByPersonAliasId" });
             DropIndex("dbo.AttributeMatrix", new[] { "CreatedByPersonAliasId" });
             DropIndex("dbo.AttributeMatrix", new[] { "AttributeMatrixTemplateId" });
-            DropTable("dbo.AttributeMatrixItem");
             DropTable("dbo.AttributeMatrixTemplate");
+            DropTable("dbo.AttributeMatrixItem");
             DropTable("dbo.AttributeMatrix");
         }
     }
