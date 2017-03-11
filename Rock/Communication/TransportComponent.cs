@@ -44,15 +44,6 @@ namespace Rock.Communication
             }
         }
 
-        public virtual bool IsAsync
-        {
-            get
-            {
-                return false;
-            }
-        }
-
-
         /// <summary>
         /// Sends the specified communication.
         /// </summary>
