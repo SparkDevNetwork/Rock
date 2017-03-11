@@ -18,11 +18,8 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
-using System.IO;
 using System.Linq;
 using System.Net.Mail;
-using System.Text;
-using System.Threading.Tasks;
 
 using Rock.Attribute;
 using Rock.Data;
@@ -45,29 +42,12 @@ namespace Rock.Communication.Transport
     [TextField( "Token", "Your Twilio Account Token", true, "", "", 1 )]
     public class Twilio : TransportComponent
     {
-        
-        public override bool IsAsync {
-            get
-            {
-                return true;
-            }
-        }
         /// <summary>
         /// Sends the specified communication.
         /// </summary>
         /// <param name="communication">The communication.</param>
         /// <exception cref="System.NotImplementedException"></exception>
-        public override void Send(Rock.Model.Communication communication)
-        {
-            throw new NotImplementedException();
-        }
-
-        /// <summary>
-        /// Sends the specified communication.
-        /// </summary>
-        /// <param name="communication">The communication.</param>
-        /// <exception cref="System.NotImplementedException"></exception>
-        public override async Task SendAsync( Rock.Model.Communication communication )
+        public override void Send( Rock.Model.Communication communication )
         {
             var rockContext = new RockContext();
 
@@ -109,6 +89,7 @@ namespace Rock.Communication.Transport
                         var recipient = Rock.Model.Communication.GetNextPending( communication.Id, rockContext );
                         if ( recipient != null )
                         {
+
                             try
                             {
                                 var phoneNumber = recipient.PersonAlias.Person.PhoneNumbers
@@ -134,13 +115,13 @@ namespace Rock.Communication.Transport
                                     var globalAttributes = Rock.Web.Cache.GlobalAttributesCache.Read();
                                     string callbackUrl = globalAttributes.GetValue( "PublicApplicationRoot" ) + "Webhooks/Twilio.ashx";
 
-                                    var response = await MessageResource.CreateAsync(
+                                    var response = MessageResource.Create(
                                         from: new TwilioTypes.PhoneNumber(fromPhone),
                                         to: new TwilioTypes.PhoneNumber(twilioNumber),
                                         body: message,
                                         statusCallback: new System.Uri(callbackUrl)
                                     );
-
+                                    
                                     recipient.Status = CommunicationRecipientStatus.Delivered;
                                     recipient.TransportEntityTypeName = this.GetType().FullName;
                                     recipient.UniqueMessageId = response.Sid;
@@ -209,7 +190,7 @@ namespace Rock.Communication.Transport
         /// <param name="appRoot">The application root.</param>
         /// <param name="themeRoot">The theme root.</param>
         /// <exception cref="System.NotImplementedException"></exception>
-        public override async void Send(Dictionary<string, string> mediumData, List<string> recipients, string appRoot, string themeRoot)
+        public override void Send(Dictionary<string, string> mediumData, List<string> recipients, string appRoot, string themeRoot)
         {
             try
             {
@@ -244,7 +225,7 @@ namespace Rock.Communication.Transport
 
                         foreach (var recipient in recipients)
                         {
-                            var response = await MessageResource.CreateAsync(
+                            var response = MessageResource.Create(
                                 from: new TwilioTypes.PhoneNumber(fromPhone),
                                 to: new TwilioTypes.PhoneNumber(recipient),
                                 body: message
@@ -270,7 +251,7 @@ namespace Rock.Communication.Transport
         /// <param name="appRoot">The application root.</param>
         /// <param name="themeRoot">The theme root.</param>
         /// <exception cref="System.NotImplementedException"></exception>
-        public override async void Send( List<string> recipients, string from, string subject, string body, string appRoot = null, string themeRoot = null )
+        public override void Send( List<string> recipients, string from, string subject, string body, string appRoot = null, string themeRoot = null )
         {
             try
             {
@@ -298,7 +279,7 @@ namespace Rock.Communication.Transport
 
                     foreach ( var recipient in recipients )
                     {
-                        var response = await MessageResource.CreateAsync(
+                        var response = MessageResource.Create(
                             from: new TwilioTypes.PhoneNumber(fromPhone),
                             to: new TwilioTypes.PhoneNumber(recipient),
                             body: message
@@ -324,7 +305,7 @@ namespace Rock.Communication.Transport
         /// <param name="themeRoot">The theme root.</param>
         /// <param name="attachments">Attachments.</param>
         /// <exception cref="System.NotImplementedException"></exception>
-        public override async void Send(List<string> recipients, string from, string subject, string body, string appRoot = null, string themeRoot = null, List<Attachment> attachments = null)
+        public override void Send(List<string> recipients, string from, string subject, string body, string appRoot = null, string themeRoot = null, List<Attachment> attachments = null)
         {
             throw new NotImplementedException();
         }
@@ -341,7 +322,7 @@ namespace Rock.Communication.Transport
         /// <param name="themeRoot">The theme root.</param>
         /// <param name="attachments">The attachments.</param>
         /// <exception cref="System.NotImplementedException"></exception>
-        public override async void Send( List<string> recipients, string from, string fromName, string subject, string body, string appRoot = null, string themeRoot = null, List<Attachment> attachments = null )
+        public override void Send( List<string> recipients, string from, string fromName, string subject, string body, string appRoot = null, string themeRoot = null, List<Attachment> attachments = null )
         {
             throw new NotImplementedException();
         }
