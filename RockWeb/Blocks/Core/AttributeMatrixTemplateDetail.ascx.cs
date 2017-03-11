@@ -24,6 +24,7 @@ using Rock;
 using Rock.Attribute;
 using Rock.Constants;
 using Rock.Data;
+using Rock.Field.Types;
 using Rock.Model;
 using Rock.Security;
 using Rock.Web.Cache;
@@ -241,7 +242,7 @@ namespace RockWeb.Blocks.Core
                 attributeMatrixTemplate.FormattedLava = AttributeMatrixTemplate.FormattedLavaDefault;
 
                 lActionTitle.Text = ActionTitle.Add( AttributeMatrixTemplate.FriendlyTypeName ).FormatAsHtmlTitle();
-                
+
                 // hide the panel drawer that show created and last modified dates
                 pdAuditDetails.Visible = false;
             }
@@ -335,6 +336,7 @@ namespace RockWeb.Blocks.Core
             AttributesState.Where( a => !a.Guid.Equals( attributeGuid ) ).Select( a => a.Key ).ToList().ForEach( a => reservedKeyNames.Add( a ) );
             edtAttributes.ReservedKeyNames = reservedKeyNames.ToList();
 
+            edtAttributes.ExcludedFieldTypes = new FieldTypeCache[] { FieldTypeCache.Read<MatrixFieldType>() };
             edtAttributes.SetAttributeProperties( attribute, typeof( AttributeMatrixTemplate ) );
 
             dlgAttribute.Show();
@@ -454,6 +456,8 @@ namespace RockWeb.Blocks.Core
         /// </summary>
         private void BindAttributesGrid()
         {
+            nbAttributeCountWarning.Visible = hfAttributeMatrixTemplateId.Value.AsInteger() != 0 && !AttributesState.Any();
+
             gAttributes.AddCssClass( "attribute-grid" );
             SetAttributeListOrder( AttributesState );
             gAttributes.DataSource = AttributesState.OrderBy( a => a.Order ).ThenBy( a => a.Name ).ToList();

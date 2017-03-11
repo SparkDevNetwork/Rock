@@ -167,15 +167,6 @@ namespace RockWeb.Blocks.Core
             // get a list of attribute Matrix Guids that are actually in use so that only could the ones are that used in the InstanceCount
             var usedAttributeMatrices = new AttributeValueService( rockContext ).Queryable().Where( a => a.Attribute.FieldTypeId == matrixFieldTypeId ).Select( a => a.Value );
 
-            // clean up any orphaned attribute matrices
-            var dayAgo = RockDateTime.Now.AddDays( -1 );
-            var orphanedAttributeMatrices = attributeMatrixService.Queryable().Where( a => ( a.CreatedDateTime < dayAgo ) && !usedAttributeMatrices.Contains( a.Guid.ToString() ) ).ToList();
-            if ( orphanedAttributeMatrices.Any() )
-            {
-                attributeMatrixService.DeleteRange( orphanedAttributeMatrices );
-                rockContext.SaveChanges();
-            }
-
             var qry = attributeMatrixTemplateService.Queryable()
                 .Select( a => new
                 {
