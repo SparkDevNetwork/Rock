@@ -77,7 +77,7 @@ namespace Rock.Model
         /// </summary>
         public AttributeMatrixConfiguration()
         {
-            this.HasRequired( p => p.AttributeMatrixTemplate ).WithMany( p => p.AttributeMatrices ).HasForeignKey( p => p.AttributeMatrixTemplateId ).WillCascadeOnDelete( false );
+            this.HasRequired( p => p.AttributeMatrixTemplate ).WithMany( p => p.AttributeMatrices ).HasForeignKey( p => p.AttributeMatrixTemplateId ).WillCascadeOnDelete( true );
         }
     }
 
