@@ -107,7 +107,14 @@ namespace Rock.Communication
             var transport = Transport;
             if ( transport != null && transport.IsActive )
             {
-                transport.Send( communication );
+                if (transport.IsAsync)
+                {
+                    transport.SendAsync( communication );
+                }
+                else
+                {
+                    transport.Send( communication );
+                }
             }
         }
     }
