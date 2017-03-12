@@ -29,6 +29,7 @@ using Rock.Web.Cache;
 using Twilio;
 using TwilioTypes = Twilio.Types;
 using Twilio.Rest.Api.V2010.Account;
+using System.Threading.Tasks;
 
 namespace Rock.Communication.Transport
 {
@@ -42,12 +43,20 @@ namespace Rock.Communication.Transport
     [TextField( "Token", "Your Twilio Account Token", true, "", "", 1 )]
     public class Twilio : TransportComponent
     {
+        public override bool IsAsync
+        {
+            get
+            {
+                return true;
+            }
+        }
+
         /// <summary>
         /// Sends the specified communication.
         /// </summary>
         /// <param name="communication">The communication.</param>
         /// <exception cref="System.NotImplementedException"></exception>
-        public override void Send( Rock.Model.Communication communication )
+        public override async Task SendAsync( Rock.Model.Communication communication )
         {
             var rockContext = new RockContext();
 
@@ -115,7 +124,7 @@ namespace Rock.Communication.Transport
                                     var globalAttributes = Rock.Web.Cache.GlobalAttributesCache.Read();
                                     string callbackUrl = globalAttributes.GetValue( "PublicApplicationRoot" ) + "Webhooks/Twilio.ashx";
 
-                                    var response = MessageResource.Create(
+                                    var response = await MessageResource.CreateAsync(
                                         from: new TwilioTypes.PhoneNumber(fromPhone),
                                         to: new TwilioTypes.PhoneNumber(twilioNumber),
                                         body: message,
@@ -323,6 +332,11 @@ namespace Rock.Communication.Transport
         /// <param name="attachments">The attachments.</param>
         /// <exception cref="System.NotImplementedException"></exception>
         public override void Send( List<string> recipients, string from, string fromName, string subject, string body, string appRoot = null, string themeRoot = null, List<Attachment> attachments = null )
+        {
+            throw new NotImplementedException();
+        }
+
+        public override void Send(Model.Communication communication)
         {
             throw new NotImplementedException();
         }
