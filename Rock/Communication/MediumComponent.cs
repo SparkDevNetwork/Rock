@@ -110,11 +110,12 @@ namespace Rock.Communication
                 if (transport.IsAsync)
                 {
                     transport.SendAsync( communication );
-                } else
+                }
+                else
                 {
                     transport.Send( communication );
                 }
-           }
+            }
         }
     }
 
