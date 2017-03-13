@@ -104,7 +104,7 @@ namespace Rock.Communication.Transport
                     {
                         var loopContext = new RockContext();
                         var historyService = new HistoryService( loopContext );
-                        var recipient = Rock.Model.Communication.GetNextPending( communication.Id, rockContext );
+                        var recipient = Rock.Model.Communication.GetNextPending( communication.Id, loopContext );
                         if ( recipient != null )
                         {
                             try
