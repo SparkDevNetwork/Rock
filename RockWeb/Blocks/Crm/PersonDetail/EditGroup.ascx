@@ -47,7 +47,7 @@
                                         <div class="clearfix">
                                             <div class="person-image" id="divPersonImage" runat="server"></div>
                                             <div class="member-information">
-                                                <h4><%# Eval("NickName") %> <%# Eval("LastName") %></h4>
+                                                <h4><%# Eval("NickName") %> <%# Eval("LastName") %><asp:Literal ID="lFamilyMemberAge" runat="server" /></h4>
                                             
                                                   <asp:RadioButtonList ID="rblRole" runat="server" DataValueField="Id" DataTextField="Name" />
                                             
