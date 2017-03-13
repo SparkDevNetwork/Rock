@@ -82,9 +82,6 @@ namespace Rock.Communication.Transport
                     string authToken = GetAttributeValue( "Token" );
                     TwilioClient.Init( accountSid, authToken );
 
-                    var historyService = new HistoryService( rockContext );
-                    var recipientService = new CommunicationRecipientService( rockContext );
-
                     var personEntityTypeId = EntityTypeCache.Read( "Rock.Model.Person" ).Id;
                     var communicationEntityTypeId = EntityTypeCache.Read( "Rock.Model.Communication" ).Id;
                     var communicationCategoryId = CategoryCache.Read( Rock.SystemGuid.Category.HISTORY_PERSON_COMMUNICATIONS.AsGuid(), rockContext ).Id;
@@ -105,7 +102,8 @@ namespace Rock.Communication.Transport
                     bool recipientFound = true;
                     while ( recipientFound )
                     {
-                        rockContext = new RockContext();
+                        var loopContext = new RockContext();
+                        var historyService = new HistoryService( loopContext );
                         var recipient = Rock.Model.Communication.GetNextPending( communication.Id, rockContext );
                         if ( recipient != null )
                         {
@@ -171,7 +169,7 @@ namespace Rock.Communication.Transport
                                 recipient.StatusNote = "Twilio Exception: " + ex.Message;
                             }
 
-                            rockContext.SaveChanges();
+                            loopContext.SaveChanges();
                         }
                         else
                         {
