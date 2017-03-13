@@ -309,11 +309,13 @@ namespace Rock.Web.UI.Controls
             var homePhone = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_HOME );
             _pnbHomePhone.Placeholder = homePhone != null ? homePhone.Value.EndsWith("Phone") ? homePhone.Value : homePhone.Value + " Phone" : "Home Phone";
             _pnbHomePhone.Required = false;
+            _pnbHomePhone.Attributes.Add( "autocomplete", "off" );
 
             var cellPhone = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE );
             _pnbCellPhone.Placeholder = cellPhone != null ? cellPhone.Value.EndsWith( "Phone" ) ? cellPhone.Value : cellPhone.Value + " Phone" : "Cell Phone";
             _pnbCellPhone.Required = false;
-           
+            _pnbCellPhone.Attributes.Add( "autocomplete", "off" );
+
             _ebEmail.Placeholder = "Email";
             _ebEmail.Required = false;
         }
