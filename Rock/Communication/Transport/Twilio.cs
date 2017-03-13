@@ -312,7 +312,7 @@ namespace Rock.Communication.Transport
         /// <param name="themeRoot">The theme root.</param>
         /// <param name="attachments">Attachments.</param>
         /// <exception cref="System.NotImplementedException"></exception>
-        public override async void Send(List<string> recipients, string from, string subject, string body, string appRoot = null, string themeRoot = null, List<Attachment> attachments = null)
+        public override void Send(List<string> recipients, string from, string subject, string body, string appRoot = null, string themeRoot = null, List<Attachment> attachments = null)
         {
             throw new NotImplementedException();
         }
@@ -329,7 +329,7 @@ namespace Rock.Communication.Transport
         /// <param name="themeRoot">The theme root.</param>
         /// <param name="attachments">The attachments.</param>
         /// <exception cref="System.NotImplementedException"></exception>
-        public override async void Send( List<string> recipients, string from, string fromName, string subject, string body, string appRoot = null, string themeRoot = null, List<Attachment> attachments = null )
+        public override void Send( List<string> recipients, string from, string fromName, string subject, string body, string appRoot = null, string themeRoot = null, List<Attachment> attachments = null )
         {
             throw new NotImplementedException();
         }
