@@ -1057,7 +1057,7 @@ namespace RockWeb.Blocks.Finance
                         TransactionDateTime = a.TransactionDateTime.Value,
                         TransactionDetails = a.TransactionDetails.Select( d => new DetailInfo { AccountId = d.AccountId, Amount = d.Amount, EntityId = d.EntityId, EntityTypeId = d.EntityTypeId } ),
                         SourceTypeValueId = a.SourceTypeValueId,
-                        TotalAmount = a.TransactionDetails.Sum( d => d.Amount ),
+                        TotalAmount = a.TransactionDetails.Sum( d => (decimal?)d.Amount ),
                         TransactionCode = a.TransactionCode,
                         Summary = a.Summary,
                         FinancialPaymentDetail = new PaymentDetailInfo { CreditCardTypeValueId = a.FinancialPaymentDetail.CreditCardTypeValueId, CurrencyTypeValueId = a.FinancialPaymentDetail.CurrencyTypeValueId }
@@ -1534,7 +1534,7 @@ namespace RockWeb.Blocks.Finance
             public PaymentDetailInfo FinancialPaymentDetail { get; internal set; }
             public string TransactionCode { get; internal set; }
             public int? SourceTypeValueId { get; internal set; }
-            public decimal TotalAmount { get; set; }
+            public decimal? TotalAmount { get; set; }
             public string Summary { get; set; }
 
             /// <summary>
