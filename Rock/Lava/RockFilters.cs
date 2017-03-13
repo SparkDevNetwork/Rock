@@ -693,6 +693,55 @@ namespace Rock.Lava
             return input.Substring(start, length);
         }
 
+        /// <summary>
+        /// Clears the response buffer and writes the input to the response stream then ends
+        /// the request.
+        /// </summary>
+        /// <param name="input">The input value to be sent to the client in raw form.</param>
+        /// <param name="contentType">The Content-Type value to be used if provided.</param>
+        /// <returns>A formatted string to display if the response write did not happen.</returns>
+        public static object ResponseWrite( object input, string contentType = null )
+        {
+            if ( input == null )
+            {
+                return null;
+            }
+
+            var context = HttpContext.Current;
+            if ( context == null )
+            {
+                return null;
+            }
+
+            var responseWrite = context.Request.QueryString["ResponseWrite"];
+            var rockPage = context.Handler as RockPage;
+
+            /* Allow the filter to be disabled by the query string for disaster recover. */
+            if ( !string.IsNullOrEmpty( responseWrite ) && responseWrite.AsBoolean() == false )
+            {
+                return string.Format( "<p class='alert alert-warning'>Without the ResponseWrite query string parameter you would have seen only the following:</p><pre class='alert alert-info'>{0}</pre>",
+                    HttpUtility.HtmlEncode( input.ToString() ) );
+            }
+
+            /* Filter is only valid if there is a valid rock page and it is not a postback. */
+            if ( rockPage == null || rockPage.IsPostBack )
+            {
+                return string.Format( "<p class='alert alert-warning'>Without the postback you would have seen only the following:</p><pre class='alert alert-info'>{0}</pre>",
+                    HttpUtility.HtmlEncode( input.ToString() ) );
+            }
+
+            context.Response.Clear();
+            if ( !string.IsNullOrWhiteSpace( contentType ) )
+            {
+                context.Response.ContentType = contentType;
+            }
+            context.Response.Write( input.ToString() );
+            context.Response.End();
+
+            return string.Format( "<p class='alert alert-warning'>Something strange happened and the following was not sent as expected:</p><pre class='alert alert-info'>{0}</pre>",
+                HttpUtility.HtmlEncode( input.ToString() ) );
+        }
+
         #endregion
 
         #region DateTime Filters
