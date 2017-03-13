@@ -1426,8 +1426,8 @@ namespace RockWeb.Blocks.Event
                             .SelectMany( f => f.Fields )
                             .Where( f => 
                                 ( f.PersonFieldType == RegistrationPersonFieldType.FirstName ||
-                                f.PersonFieldType == RegistrationPersonFieldType.LastName ) 
-                                && f.Attribute == null ) )
+                                f.PersonFieldType == RegistrationPersonFieldType.LastName ) &&
+                                f.FieldSource == RegistrationFieldSource.PersonField ) )
                         {
                             registrant.FieldValues.AddOrReplace( field.Id, 
                                 new FieldValueObject( field, field.PersonFieldType == RegistrationPersonFieldType.FirstName ? CurrentPerson.NickName : CurrentPerson.LastName ) );
@@ -4738,8 +4738,8 @@ namespace RockWeb.Blocks.Event
 
                             if ( field.ShowCurrentValue ||
                                 ( ( field.PersonFieldType == RegistrationPersonFieldType.FirstName || 
-                                field.PersonFieldType == RegistrationPersonFieldType.LastName ) && 
-                                field.Attribute == null ) )
+                                field.PersonFieldType == RegistrationPersonFieldType.LastName ) &&
+                                field.FieldSource == RegistrationFieldSource.PersonField ) )
                             {
                                 dbValue = registrant.GetRegistrantValue( null, person, family, field, rockContext );
                             }
