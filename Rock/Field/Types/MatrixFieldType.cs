@@ -37,7 +37,7 @@ namespace Rock.Field.Types
         /// <summary>
         /// The attribute matrix template Id
         /// </summary>
-        private const string ATTRIBUTE_MATRIX_TEMPLATE = "attributematrixtemplate";
+        public const string ATTRIBUTE_MATRIX_TEMPLATE = "attributematrixtemplate";
 
         /// <summary>
         /// Returns a list of the configuration keys
