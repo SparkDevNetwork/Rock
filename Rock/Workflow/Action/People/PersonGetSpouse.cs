@@ -62,27 +62,23 @@ namespace Rock.Workflow.Action
             var person = GetPersonAliasFromActionAttribute("Person", rockContext, action, errorMessages);
             if (person != null)
             {
-                string spouseAttributeValue = GetAttributeValue( action, "SpouseAttribute" );
-                Guid? spouseGuid = spouseAttributeValue.AsGuidOrNull();
-                if ( spouseGuid.HasValue )
+                var spouse = person.GetSpouse( rockContext );
+                if ( spouse != null )
                 {
-                    var spouseAttribute = AttributeCache.Read( spouseGuid.Value, rockContext );
-                    if ( spouseAttribute != null )
+                    var spouseAttr = SetWorkflowAttributeValue( action, "SpouseAttribute", spouse.PrimaryAlias.Guid );
+                    if ( spouseAttr != null )
                     {
-
-                        var spouse = person.GetSpouse( rockContext );
-
-                        if ( spouse != null )
-                        {
-                            action.Activity.Workflow.SetAttributeValue( spouseAttribute.Key, spouse.PrimaryAlias.Guid.ToString() );
-                            action.AddLogEntry( string.Format( "Set spouse attribute '{0}' attribute to '{1}'.", spouseAttribute.Name, spouse.FullName ) );
-                            return true;
-                        }
-                        else
-                        {
-                            action.AddLogEntry( string.Format( "No spouse found for {0}.", person.FullName ) );
-                        }
+                        action.AddLogEntry( string.Format( "Set spouse attribute '{0}' attribute to '{1}'.", spouseAttr.Name, spouse.FullName ) );
+                        return true;
                     }
+                    else
+                    {
+                        errorMessages.Add( "Could not find Spouse Attribute." );
+                    }
+                }
+                else
+                {
+                    action.AddLogEntry( string.Format( "No spouse found for {0}.", person.FullName ) );
                 }
             }
             else

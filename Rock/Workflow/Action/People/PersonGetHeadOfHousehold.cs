@@ -58,25 +58,23 @@ namespace Rock.Workflow.Action
             var person = GetPersonAliasFromActionAttribute( "Person", rockContext, action, errorMessages );
             if ( person != null )
             {
-                string HeadOfHouseholdAttributeValue = GetAttributeValue( action, "HeadOfHouseholdAttribute" );
-                Guid? headOfHouseholdGuid = HeadOfHouseholdAttributeValue.AsGuidOrNull();
-                if ( headOfHouseholdGuid.HasValue )
+                var headOfHousehold = person.GetHeadOfHousehold( rockContext );
+                if ( headOfHousehold != null )
                 {
-                    var headofHouseholdAttribute = AttributeCache.Read( headOfHouseholdGuid.Value, rockContext );
+                    var headofHouseholdAttribute = SetWorkflowAttributeValue( action, "HeadOfHouseholdAttribute", headOfHousehold.PrimaryAlias.Guid );
                     if ( headofHouseholdAttribute != null )
                     {
-                        var headOfHousehold = person.GetHeadOfHousehold( rockContext );
-                        if ( headOfHousehold != null )
-                        {
-                            action.Activity.Workflow.SetAttributeValue( headofHouseholdAttribute.Key, headOfHousehold.PrimaryAlias.Guid.ToString() );
-                            action.AddLogEntry( string.Format( "Set Head Of Household attribute '{0}' attribute to '{1}'.", headofHouseholdAttribute.Name, headOfHousehold.FullName ) );
-                            return true;
-                        }
-                        else
-                        {
-                            action.AddLogEntry( string.Format( "No head of Household found for {0}.", person.FullName ) );
-                        }
+                        action.AddLogEntry( string.Format( "Set Head Of Household attribute '{0}' attribute to '{1}'.", headofHouseholdAttribute.Name, headOfHousehold.FullName ) );
+                        return true;
                     }
+                    else
+                    {
+                        errorMessages.Add( "Could not find HeadOfHousehold Attribute." );
+                    }
+                }
+                else
+                {
+                    action.AddLogEntry( string.Format( "No head of Household found for {0}.", person.FullName ) );
                 }
             }
             else
