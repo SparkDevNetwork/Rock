@@ -64,86 +64,78 @@ namespace Rock.Workflow.Action
         {
             errorMessages = new List<string>();
 
-            string attributeValue = GetAttributeValue( action, "PersonAttribute" );
-            Guid? guid = attributeValue.AsGuidOrNull();
-            if (guid.HasValue)
+            var attribute = AttributeCache.Read( GetAttributeValue( action, "PersonAttribute" ).AsGuid(), rockContext );
+            if ( attribute != null )
             {
-                var attribute = AttributeCache.Read( guid.Value, rockContext );
-                if ( attribute != null )
+                var mergeFields = GetMergeFields( action );
+                string firstName = GetAttributeValue( action, "FirstName", true ).ResolveMergeFields( mergeFields );
+                string lastName = GetAttributeValue( action, "LastName", true ).ResolveMergeFields( mergeFields );
+                string email = GetAttributeValue( action, "Email", true ).ResolveMergeFields( mergeFields );
+
+                if ( string.IsNullOrWhiteSpace( firstName ) ||
+                    string.IsNullOrWhiteSpace( lastName ) ||
+                    string.IsNullOrWhiteSpace( email ) )
                 {
-                    string firstName = GetAttributeValue( action, "FirstName", true );
-                    string lastName = GetAttributeValue( action, "LastName", true );
-                    string email = GetAttributeValue( action, "Email", true );
-
-                    if ( string.IsNullOrWhiteSpace( firstName ) ||
-                        string.IsNullOrWhiteSpace( lastName ) ||
-                        string.IsNullOrWhiteSpace( email ) )
-                    {
-                        errorMessages.Add( "First Name, Last Name, and Email are required. One or more of these values was not provided!" );
-                    }
-                    else
-                    { 
-                        Person person = null;
-                        PersonAlias personAlias = null;
-                        var personService = new PersonService( rockContext );
-                        var people = personService.GetByMatch( firstName, lastName, email ).ToList();
-                        if ( people.Count == 1 )
-                        {
-                            person = people.First();
-                            personAlias = person.PrimaryAlias;
-                        }
-                        else
-                        {
-                            // Add New Person
-                            person = new Person();
-                            person.FirstName = firstName;
-                            person.LastName = lastName;
-                            person.IsEmailActive = true;
-                            person.Email = email;
-                            person.EmailPreference = EmailPreference.EmailAllowed;
-                            person.RecordTypeValueId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_PERSON.AsGuid() ).Id;
-
-                            var defaultConnectionStatus = DefinedValueCache.Read( GetAttributeValue( action, "DefaultConnectionStatus" ).AsGuid() );
-                            if ( defaultConnectionStatus != null )
-                            {
-                                person.ConnectionStatusValueId = defaultConnectionStatus.Id;
-                            }
-
-                            var defaultRecordStatus = DefinedValueCache.Read( GetAttributeValue( action, "DefaultRecordStatus" ).AsGuid() );
-                            if ( defaultRecordStatus != null )
-                            {
-                                person.RecordStatusValueId = defaultRecordStatus.Id;
-                            }
-
-                            var defaultCampus = CampusCache.Read( GetAttributeValue( action, "DefaultCampus", true ).AsGuid() );
-                            var familyGroup = PersonService.SaveNewPerson( person, rockContext, ( defaultCampus != null ? defaultCampus.Id : (int?)null ), false );
-                            if ( familyGroup != null && familyGroup.Members.Any() )
-                            {
-                                person = familyGroup.Members.Select( m => m.Person ).First();
-                                personAlias = person.PrimaryAlias;
-                            }
-                        }
-
-                        if ( person != null && personAlias != null )
-                        {
-                            action.Activity.Workflow.SetAttributeValue( attribute.Key, personAlias.Guid.ToString() );
-                            action.AddLogEntry( string.Format( "Set '{0}' attribute to '{1}'.", attribute.Name, person.FullName ) );
-                            return true;
-                        }
-                        else
-                        {
-                            errorMessages.Add( "Person or Primary Alias could not be determined!" );
-                        }
-                    }
+                    errorMessages.Add( "First Name, Last Name, and Email are required. One or more of these values was not provided!" );
                 }
                 else
                 {
-                    errorMessages.Add( string.Format( "Person Attribute could not be found for selected attribute value ('{0}')!", guid.Value.ToString() ) );
+                    Person person = null;
+                    PersonAlias personAlias = null;
+                    var personService = new PersonService( rockContext );
+                    var people = personService.GetByMatch( firstName, lastName, email ).ToList();
+                    if ( people.Count == 1 )
+                    {
+                        person = people.First();
+                        personAlias = person.PrimaryAlias;
+                    }
+                    else
+                    {
+                        // Add New Person
+                        person = new Person();
+                        person.FirstName = firstName;
+                        person.LastName = lastName;
+                        person.IsEmailActive = true;
+                        person.Email = email;
+                        person.EmailPreference = EmailPreference.EmailAllowed;
+                        person.RecordTypeValueId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_PERSON.AsGuid() ).Id;
+
+                        var defaultConnectionStatus = DefinedValueCache.Read( GetAttributeValue( action, "DefaultConnectionStatus" ).AsGuid() );
+                        if ( defaultConnectionStatus != null )
+                        {
+                            person.ConnectionStatusValueId = defaultConnectionStatus.Id;
+                        }
+
+                        var defaultRecordStatus = DefinedValueCache.Read( GetAttributeValue( action, "DefaultRecordStatus" ).AsGuid() );
+                        if ( defaultRecordStatus != null )
+                        {
+                            person.RecordStatusValueId = defaultRecordStatus.Id;
+                        }
+
+                        var defaultCampus = CampusCache.Read( GetAttributeValue( action, "DefaultCampus", true ).AsGuid() );
+                        var familyGroup = PersonService.SaveNewPerson( person, rockContext, ( defaultCampus != null ? defaultCampus.Id : (int?)null ), false );
+                        if ( familyGroup != null && familyGroup.Members.Any() )
+                        {
+                            person = familyGroup.Members.Select( m => m.Person ).First();
+                            personAlias = person.PrimaryAlias;
+                        }
+                    }
+
+                    if ( person != null && personAlias != null )
+                    {
+                        SetWorkflowAttributeValue( action, attribute.Guid, personAlias.Guid.ToString() );
+                        action.AddLogEntry( string.Format( "Set '{0}' attribute to '{1}'.", attribute.Name, person.FullName ) );
+                        return true;
+                    }
+                    else
+                    {
+                        errorMessages.Add( "Person or Primary Alias could not be determined!" );
+                    }
                 }
             }
             else
             {
-                errorMessages.Add( string.Format( "Selected Person Attribute value ('{0}') was not a valid Guid!", attributeValue ) );
+                errorMessages.Add( "Person Attribute could not be found!" );
             }
 
             if ( errorMessages.Any() )
