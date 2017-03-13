@@ -47,12 +47,14 @@ namespace RockWeb.Blocks.Crm.PersonDetail
     [BooleanField( "Hide Title", "Should Title field be hidden when entering new people?.", false, "", 3 )]
     [BooleanField( "Hide Suffix", "Should Suffix field be hidden when entering new people?.", false, "", 4 )]
     [BooleanField( "Hide Grade", "Should Grade field be hidden when entering new people?.", false, "", 5 )]
+    [BooleanField( "Show Age", "Should Age of Family Members be displayed?.", false, "", 6 )]
     public partial class EditGroup : PersonBlock
     {
         private GroupTypeCache _groupType = null;
         private bool _isFamilyGroupType = false;
         private Group _group = null;
         private bool _canEdit = false;
+        private bool _showAge = false;
 
         protected string basePersonUrl { get; set; }
         protected string GroupTypeName { get; set; }
@@ -109,6 +111,8 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         protected override void OnInit( EventArgs e )
         {
             base.OnInit( e );
+
+            _showAge = GetAttributeValue( "ShowAge" ).AsBoolean();
 
             var rockContext = new RockContext();
 
@@ -381,6 +385,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             enableRequiredField( '{4}', false );
             enableRequiredField( '{5}', false );
             enableRequiredField( '{6}_rfv', false );
+            enableRequiredField( '{10}_rfv', false );
         }} else {{
             enableRequiredField('{1}', false)
             enableRequiredField('{2}_rfv', true);
@@ -388,6 +393,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             enableRequiredField('{4}', true);
             enableRequiredField('{5}', true);
             enableRequiredField('{6}_rfv', true);
+            enableRequiredField('{10}_rfv', true);
         }}
 
         // update the scrollbar since our validation box could show
@@ -421,7 +427,8 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                     ddlNewPersonConnectionStatus.ClientID,                          // {6}
                     valSummaryAddPerson.ClientID,                                   // {7}
                     divExistingPerson.ClientID,                                     // {8}
-                    hfActiveTab.ClientID                                            // {9}
+                    hfActiveTab.ClientID,                                           // {9}
+                    dpNewPersonBirthDate.ClientID                                   // {10}
                 );
 
                 ScriptManager.RegisterStartupScript( modalAddPerson, modalAddPerson.GetType(), "modaldialog-validation", script, true );
@@ -529,6 +536,12 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                     {
                         lbRemoveMember.ToolTip = string.Format( "Remove from {0}", _groupType.Name );
                         lbRemoveMember.Visible = _canEdit && ( !groupMember.ExistingGroupMember || groupMember.IsInOtherGroups ) && members > 1;
+                    }
+
+                    var lFamilyMemberAge = e.Item.FindControl( "lFamilyMemberAge" ) as Literal;
+                    if ( lFamilyMemberAge != null )
+                    {
+                        lFamilyMemberAge.Text = ( _showAge && groupMember.Age.HasValue ) ? string.Format( " ({0})", groupMember.Age ) : string.Empty;
                     }
                 }
             }
@@ -642,19 +655,25 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         {
             var validationMessages = new List<string>();
 
+            bool isValid = true;
             if ( hfActiveTab.Value == "Existing" )
             {
             }
             else
             {
                 DateTime? birthdate = dpNewPersonBirthDate.SelectedDate;
-                if ( dpNewPersonBirthDate.IsValid && !birthdate.HasValue && GetAttributeValue( "RequireBirthdate" ).AsBoolean() )
+                if ( !dpNewPersonBirthDate.IsValid )
+                {
+                    isValid = false;
+                }
+                else if ( dpNewPersonBirthDate.IsValid && !birthdate.HasValue && GetAttributeValue( "RequireBirthdate" ).AsBoolean() )
                 {
                     validationMessages.Add( "Birthdate is Required." );
+                    isValid = false;
                 }
             }
 
-            if ( Page.IsValid && !validationMessages.Any() )
+            if ( isValid )
         {
             if ( hfActiveTab.Value == "Existing" )
             {
