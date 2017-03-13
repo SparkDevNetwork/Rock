@@ -150,23 +150,7 @@ namespace Rock.Workflow.Action
 
             rockContext.SaveChanges();
 
-            Guid? attrGuid = GetAttributeValue( action, "BenevolenceRequest" ).AsGuidOrNull();
-            if ( attrGuid != null )
-            {
-                var activityEntityTypeId = EntityTypeCache.Read( typeof( Rock.Model.WorkflowActivity ) ).Id;
-                var attr = AttributeCache.Read( attrGuid.Value );
-                if ( attr != null )
-                {
-                    if ( attr.EntityTypeId == activityEntityTypeId )
-                    {
-                        action.Activity.SetAttributeValue( attr.Key, request.Guid );
-                    }
-                    else
-                    {
-                        action.Activity.Workflow.SetAttributeValue( attr.Key, request.Guid );
-                    }
-                }
-            }
+            SetWorkflowAttributeValue( action, "BenevolenceRequest", request.Guid );
 
             action.AddLogEntry( $"Set 'Benevolence Request' attribute to '{request.Guid}'." );
             return true;
