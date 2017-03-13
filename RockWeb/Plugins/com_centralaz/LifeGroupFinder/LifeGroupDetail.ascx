@@ -38,7 +38,7 @@
         </asp:Panel>
         <asp:Panel ID="pnlSignup" runat="server" Visible="true">
             <div class="lifegroupdetail-validationdiv">
-                <asp:ValidationSummary ID="valSummary" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" />
+                <asp:ValidationSummary ID="valSummary" runat="server" HeaderText="Please correct the following" CssClass="alert alert-danger" />
             </div>
             <div class="lifegroupdetail-errordiv">
                 <Rock:NotificationBox ID="nbErrorMessage" runat="server" NotificationBoxType="Danger" />
@@ -48,25 +48,25 @@
                 <div class="form-group">
                     <label for="tbFirstName" class="col-md-2 control-label">First Name</label>
                     <div class="col-md-10">
-                        <Rock:RockTextBox ID="tbFirstName" runat="server" Placeholder="First Name" Required="true"></Rock:RockTextBox>
+                        <Rock:RockTextBox ID="tbFirstName" runat="server" Placeholder="First Name" Required="true" RequiredErrorMessage="First Name is required"></Rock:RockTextBox>
                     </div>
                 </div>
                 <div class="form-group">
                     <label for="tbLastName" class="col-md-2 control-label">Last Name</label>
                     <div class="col-md-10">
-                        <Rock:RockTextBox ID="tbLastName" runat="server" Placeholder="Last Name" Required="true"></Rock:RockTextBox>
+                        <Rock:RockTextBox ID="tbLastName" runat="server" Placeholder="Last Name" Required="true" RequiredErrorMessage="Last Name is required"></Rock:RockTextBox>
                     </div>
                 </div>
                 <div class="form-group">
                     <label id="lblHome" runat="server" for="pnHome" class="col-md-2 control-label">Home Phone</label>
                     <div class="col-md-10">
-                        <Rock:PhoneNumberBox ID="pnHome" runat="server" Placeholder="Home Phone" />
+                        <Rock:PhoneNumberBox ID="pnHome" runat="server" Placeholder="Home Phone" Required="true" RequiredErrorMessage="Phone Number is required"/>
                     </div>
                 </div>
                 <div class="form-group">
                     <label for="tbLastName" class="col-md-2 control-label">Email</label>
                     <div class="col-md-10">
-                        <Rock:EmailBox ID="tbEmail" runat="server" Placeholder="Email" Required="true"></Rock:EmailBox>
+                        <Rock:EmailBox ID="tbEmail" runat="server" Placeholder="Email" Required="true" RequiredErrorMessage="Email is required"></Rock:EmailBox>
                     </div>
                 </div>
                 <div class="form-group">
@@ -84,13 +84,13 @@
                     <div class="form-group">
                         <label for="tbSecondFirstName" class="col-md-2 control-label">First Name</label>
                         <div class="col-md-10">
-                            <Rock:RockTextBox ID="tbSecondFirstName" runat="server" Placeholder="First Name" Required="true"></Rock:RockTextBox>
+                            <Rock:RockTextBox ID="tbSecondFirstName" runat="server" Placeholder="First Name" Required="true" RequiredErrorMessage="Additional person's First Name is required"></Rock:RockTextBox>
                         </div>
                     </div>
                     <div class="form-group">
                         <label for="tbSecondLastName" class="col-md-2 control-label">Last Name</label>
                         <div class="col-md-10">
-                            <Rock:RockTextBox ID="tbSecondLastName" runat="server" Placeholder="Last Name" Required="true"></Rock:RockTextBox>
+                            <Rock:RockTextBox ID="tbSecondLastName" runat="server" Placeholder="Last Name" Required="true" RequiredErrorMessage="Additional person's Last Name is required"></Rock:RockTextBox>
                         </div>
                     </div>
                     <div class="form-group">
@@ -102,7 +102,7 @@
                     <div class="form-group">
                         <label for="tbSecondEmail" class="col-md-2 control-label">Email</label>
                         <div class="col-md-10">
-                            <Rock:EmailBox ID="tbSecondEmail" runat="server" Placeholder="Email" Required="true"></Rock:EmailBox>
+                            <Rock:EmailBox ID="tbSecondEmail" runat="server" Placeholder="Email" Required="true" RequiredErrorMessage="Additional person's Email is required"></Rock:EmailBox>
                         </div>
                     </div>
                 </div>
