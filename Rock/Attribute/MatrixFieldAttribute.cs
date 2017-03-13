@@ -14,6 +14,9 @@
 // limitations under the License.
 // </copyright>
 //
+using Rock.Field.Types;
+using Rock.Model;
+
 namespace Rock.Attribute
 {
     /// <summary>
@@ -23,17 +26,23 @@ namespace Rock.Attribute
     public class MatrixFieldAttribute : FieldAttribute
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="MatrixFieldAttribute"/> class.
+        /// Initializes a new instance of the <see cref="MatrixFieldAttribute" /> class.
         /// </summary>
+        /// <param name="attributeMatrixTemplateGuid">The attribute matrix template unique identifier.</param>
         /// <param name="name">The name.</param>
         /// <param name="description">The description.</param>
         /// <param name="required">if set to <c>true</c> [required].</param>
         /// <param name="category">The category.</param>
         /// <param name="order">The order.</param>
         /// <param name="key">The key.</param>
-        public MatrixFieldAttribute( string name, string description = "", bool required = true, string category = "", int order = 0, string key = null )
-            : base( name, description, required, null, category, order, key, typeof( Rock.Field.Types.MatrixFieldType ).FullName )
+        public MatrixFieldAttribute( string attributeMatrixTemplateGuid, string name, string description = "", bool required = true, string category = "", int order = 0, string key = null )
+            : base( name, description, required, null, category, order, key, typeof( MatrixFieldType ).FullName )
         {
+            var attributeMatrixTemplate = new AttributeMatrixTemplateService( new Data.RockContext() ).Get( attributeMatrixTemplateGuid.AsGuid() );
+            if ( attributeMatrixTemplate != null )
+            {
+                FieldConfigurationValues.Add( MatrixFieldType.ATTRIBUTE_MATRIX_TEMPLATE, new Field.ConfigurationValue( attributeMatrixTemplate.Id.ToString() ) );
+            }
         }
     }
 }
