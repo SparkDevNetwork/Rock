@@ -31,12 +31,14 @@ namespace Rock.Web.UI.Controls
     [ToolboxData( "<{0}:CheckinGroupRow runat=server></{0}:CheckinGroupRow>" )]
     public class CheckinGroupRow : CompositeControl
     {
+        private Group _group;
         private HiddenFieldWithClass _hfExpanded;
         private HiddenField _hfGroupGuid;
 
         private Label _lblGroupRowName;
 
         private LinkButton _lbAddGroup;
+        private LinkButton _lbReactivateGroup;
         private LinkButton _lblDeleteGroup;
 
         /// <summary>
@@ -143,11 +145,16 @@ $('.checkin-group a.checkin-group-add-group').click(function (event) {
         /// <param name="group">Type of the group.</param>
         public void SetGroup( Group group )
         {
-            EnsureChildControls();
             if ( group != null )
             {
+                _group = group;
+                EnsureChildControls();
                 _hfGroupGuid.Value = group.Guid.ToString();
                 _lblGroupRowName.Text = group.Name;
+                if ( !group.IsActive )
+                {
+                    _lblGroupRowName.Text += " (Inactive)";
+                }
             }
         }
 
@@ -166,31 +173,51 @@ $('.checkin-group a.checkin-group-add-group').click(function (event) {
 
             _hfGroupGuid = new HiddenField();
             _hfGroupGuid.ID = this.ID + "_hfGroupGuid";
+            Controls.Add( _hfGroupGuid );
 
             _lblGroupRowName = new Label();
             _lblGroupRowName.ClientIDMode = ClientIDMode.Static;
             _lblGroupRowName.ID = this.ID + "_lblGroupRowName";
-
-            _lbAddGroup = new LinkButton();
-            _lbAddGroup.ID = this.ID + "_lbAddGroup";
-            _lbAddGroup.CssClass = "btn btn-xs btn-default checkin-group-add-group";
-            _lbAddGroup.Click += lbAddGroup_Click;
-            _lbAddGroup.CausesValidation = false;
-            _lbAddGroup.Controls.Add( new LiteralControl { Text = "<i class='fa fa-plus'></i> <i class='fa fa-check-circle'></i>" } );
-
-            _lblDeleteGroup = new LinkButton();
-            _lblDeleteGroup.CausesValidation = false;
-            _lblDeleteGroup.ID = this.ID + "_lblDeleteGroup";
-            _lblDeleteGroup.CssClass = "btn btn-xs btn-danger";
-            _lblDeleteGroup.Click += lblDeleteGroup_Click;
-            _lblDeleteGroup.Controls.Add( new LiteralControl { Text = "<i class='fa fa-times'></i>" } );
-            _lblDeleteGroup.Attributes["onclick"] = string.Format( "javascript: return Rock.dialogs.confirmDelete(event, '{0}', '{1}');", "check-in group", "Once saved, you will lose all attendance data." );
-
-            Controls.Add( _hfGroupGuid );
             Controls.Add( _lblGroupRowName );
 
-            Controls.Add( _lbAddGroup );
-            Controls.Add( _lblDeleteGroup );
+            if ( _group != null && _group.IsActive )
+            {
+                _lbAddGroup = new LinkButton();
+                _lbAddGroup.ID = this.ID + "_lbAddGroup";
+                _lbAddGroup.CssClass = "btn btn-xs btn-default checkin-group-add-group";
+                _lbAddGroup.Click += lbAddGroup_Click;
+                _lbAddGroup.CausesValidation = false;
+                _lbAddGroup.Controls.Add( new LiteralControl { Text = "<i class='fa fa-plus'></i> <i class='fa fa-check-circle'></i>" } );
+                Controls.Add( _lbAddGroup );
+
+                _lblDeleteGroup = new LinkButton();
+                _lblDeleteGroup.CausesValidation = false;
+                _lblDeleteGroup.ID = this.ID + "_lblDeleteGroup";
+                _lblDeleteGroup.CssClass = "btn btn-xs btn-danger";
+                _lblDeleteGroup.Click += lblDeleteGroup_Click;
+                _lblDeleteGroup.Controls.Add( new LiteralControl { Text = "<i class='fa fa-times'></i>" } );
+                _lblDeleteGroup.Attributes["onclick"] = string.Format( "javascript: return Rock.dialogs.confirmPreventOnCancel(event, '{0}');", "Are you sure you wish to remove this group? Note: if the group has attendance records, it will be deactivated instead of deleted." );
+                Controls.Add( _lblDeleteGroup );
+            }
+            else
+            {
+                _lbReactivateGroup = new LinkButton();
+                _lbReactivateGroup.ID = this.ID + "_lbReactivateGroup";
+                _lbReactivateGroup.CssClass = "btn btn-xs btn-default checkin-reactivate-group";
+                _lbReactivateGroup.Click += lbReactivateGroup_Click;
+                _lbReactivateGroup.CausesValidation = false;
+                _lbReactivateGroup.Controls.Add( new LiteralControl { Text = "Reactivate" } );
+                Controls.Add( _lbReactivateGroup );
+
+                _lblDeleteGroup = new LinkButton();
+                _lblDeleteGroup.CausesValidation = false;
+                _lblDeleteGroup.ID = this.ID + "_lblDeleteGroup";
+                _lblDeleteGroup.CssClass = "btn btn-xs btn-danger";
+                _lblDeleteGroup.Click += lblDeleteGroup_Click;
+                _lblDeleteGroup.Controls.Add( new LiteralControl { Text = "<i class='fa fa-times'></i>" } );
+                _lblDeleteGroup.Attributes["onclick"] = string.Format( "javascript: return Rock.dialogs.confirmDelete(event, '{0}', '{1}');", "check-in group", "Once completed, you will lose all attendance data." );
+                Controls.Add( _lblDeleteGroup );
+            }
         }
 
         /// <summary>
@@ -217,9 +244,21 @@ $('.checkin-group a.checkin-group-add-group').click(function (event) {
             writer.AddAttribute( HtmlTextWriterAttribute.Class, "pull-right checkin-item-actions rollover-item" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
-            _lbAddGroup.RenderControl( writer );
-            writer.Write( " " );
-            _lblDeleteGroup.RenderControl( writer );
+            if ( _lbAddGroup != null )
+            {
+                _lbAddGroup.RenderControl( writer );
+                writer.Write( " " );
+            }
+
+            if ( _lbReactivateGroup != null )
+            {
+                _lbReactivateGroup.RenderControl( writer );
+            }
+
+            if ( _lblDeleteGroup != null )
+            {
+                _lblDeleteGroup.RenderControl( writer );
+            }
 
             writer.RenderEndTag();  // Div
             writer.RenderEndTag();  // Section
@@ -235,7 +274,7 @@ $('.checkin-group a.checkin-group-add-group').click(function (event) {
             {
                 writer.AddAttribute( HtmlTextWriterAttribute.Class, "checkin-list js-checkin-group-list" );
                 writer.RenderBeginTag( HtmlTextWriterTag.Ul );
-                foreach( var groupRow in groupRows )
+                foreach ( var groupRow in groupRows )
                 {
                     groupRow.RenderControl( writer );
                 }
@@ -246,7 +285,7 @@ $('.checkin-group a.checkin-group-add-group').click(function (event) {
 
             writer.RenderEndTag();  // Li
         }
-      
+
         /// <summary>
         /// Handles the Click event of the lbAddGroup control.
         /// </summary>
@@ -257,6 +296,19 @@ $('.checkin-group a.checkin-group-add-group').click(function (event) {
             if ( AddGroupClick != null )
             {
                 AddGroupClick( this, e );
+            }
+        }
+
+        /// <summary>
+        /// Handles the Click event of the lbAddGroup control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void lbReactivateGroup_Click( object sender, EventArgs e )
+        {
+            if ( ReactivateGroupClick != null )
+            {
+                ReactivateGroupClick( this, e );
             }
         }
 
@@ -277,6 +329,11 @@ $('.checkin-group a.checkin-group-add-group').click(function (event) {
         /// Occurs when [add group click].
         /// </summary>
         public event EventHandler AddGroupClick;
+
+        /// <summary>
+        /// Occurs when [undelete group click].
+        /// </summary>
+        public event EventHandler ReactivateGroupClick;
 
         /// <summary>
         /// Occurs when [delete group click].
