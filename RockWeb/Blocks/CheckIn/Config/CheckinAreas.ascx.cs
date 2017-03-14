@@ -81,6 +81,8 @@ namespace RockWeb.Blocks.CheckIn.Config
         {
             base.OnInit( e );
 
+            cbShowInactive.Checked = GetUserPreference( BlockCache.Guid.ToString() + "_showInactive" ).AsBoolean();
+
             BuildRows( !Page.IsPostBack );
 
             RegisterScript();
@@ -374,12 +376,52 @@ namespace RockWeb.Blocks.CheckIn.Config
                         return;
                     }
 
-                    groupService.Delete( group );
+                    if ( !group.IsActive )
+                    {
+                        groupService.Delete( group ); //Delete if group isn't active
+                    }
+                    else
+                    {
+                        var attendanceQry = new AttendanceService( rockContext ).Queryable();
+                        var didAttend = attendanceQry.Where( a => a.GroupId == group.Id ).Any();
+
+                        if ( !didAttend )
+                        {
+                            groupService.Delete( group ); //Delete if no attendance
+                        }
+                        else
+                        {
+                            group.IsActive = false; //Inactivate if attendance
+                        }
+                    }
                     rockContext.SaveChanges();
 
                     Rock.CheckIn.KioskDevice.FlushAll();
 
                     SelectGroup( null );
+                }
+            }
+
+            BuildRows();
+        }
+        private void CheckinGroupRow_UndeleteGroupClick( object sender, EventArgs e )
+        {
+            var row = sender as CheckinGroupRow;
+
+            using ( var rockContext = new RockContext() )
+            {
+                var groupService = new GroupService( rockContext );
+                var group = groupService.Get( row.GroupGuid );
+                if ( group != null )
+                {
+
+                    group.IsActive = true;
+
+                    rockContext.SaveChanges();
+
+                    Rock.CheckIn.KioskDevice.FlushAll();
+
+                    SelectGroup( group.Guid );
                 }
             }
 
@@ -544,6 +586,7 @@ namespace RockWeb.Blocks.CheckIn.Config
                     var groupType = groupTypeService.Get( checkinArea.GroupTypeGuid );
                     if ( groupType != null )
                     {
+                        groupType.LoadAttributes( rockContext );
                         checkinArea.GetGroupTypeValues( groupType );
 
                         if ( groupType.IsValid )
@@ -670,6 +713,17 @@ namespace RockWeb.Blocks.CheckIn.Config
             hfIsDirty.Value = "false";
         }
 
+        /// <summary>
+        /// Handles the the Check Changed event of the Show Inactive button.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void cbShowInactive_CheckedChanged( object sender, EventArgs e )
+        {
+            SetUserPreference( BlockCache.Guid.ToString() + "_showInactive", cbShowInactive.Checked.ToString() );
+            BuildRows( true );
+        }
+
         private void ShowInvalidResults( List<ValidationResult> validationResults )
         {
             nbInvalid.Text = string.Format( "Please correct the following:<ul><li>{0}</li></ul>", validationResults.AsDelimited( "</li><li>" ) );
@@ -755,12 +809,20 @@ namespace RockWeb.Blocks.CheckIn.Config
 
                 // Find the groups of this type, who's parent is null, or another group type ( "root" groups ).
                 var allGroupIds = groupType.Groups.Select( g => g.Id ).ToList();
-                foreach ( var childGroup in groupType.Groups
+                IEnumerable<Group> childGroups = groupType.Groups
                     .Where( g =>
-                        !g.ParentGroupId.HasValue ||
-                        !allGroupIds.Contains( g.ParentGroupId.Value ) )
+                         !g.ParentGroupId.HasValue ||
+                        !allGroupIds.Contains( g.ParentGroupId.Value ) );
+
+                if ( !GetUserPreference( BlockCache.Guid.ToString() + "_showInactive" ).AsBoolean() )
+                {
+                    childGroups = childGroups.Where( g => g.IsActive );
+                }
+                childGroups = childGroups
                     .OrderBy( a => a.Order )
-                    .ThenBy( a => a.Name ) )
+                    .ThenBy( a => a.Name );
+
+                foreach ( var childGroup in childGroups )
                 {
                     BuildCheckinGroupRow( childGroup, checkinAreaRow, setValues );
                 }
@@ -777,6 +839,7 @@ namespace RockWeb.Blocks.CheckIn.Config
                 checkinGroupRow.SetGroup( group );
                 checkinGroupRow.AddGroupClick += CheckinGroupRow_AddGroupClick;
                 checkinGroupRow.DeleteGroupClick += CheckinGroupRow_DeleteGroupClick;
+                checkinGroupRow.ReactivateGroupClick += CheckinGroupRow_UndeleteGroupClick;
                 parentControl.Controls.Add( checkinGroupRow );
 
                 if ( setValues )
@@ -785,15 +848,23 @@ namespace RockWeb.Blocks.CheckIn.Config
                     checkinGroupRow.Selected = checkinGroup.Visible && _currentGroupGuid.HasValue && group.Guid.Equals( _currentGroupGuid.Value );
                 }
 
-                foreach ( var childGroup in group.Groups
-                    .Where( g => g.GroupTypeId == group.GroupTypeId )
-                    .OrderBy( a => a.Order )
-                    .ThenBy( a => a.Name ) )
+                IEnumerable<Group> childGroups = group.Groups
+                    .Where( g => g.GroupTypeId == group.GroupTypeId );
+
+                if ( !cbShowInactive.Checked )
                 {
-                    BuildCheckinGroupRow( childGroup, checkinGroupRow, setValues );
+                    childGroups = childGroups.Where( g => g.IsActive );
                 }
+
+                childGroups = childGroups
+                    .OrderBy( a => a.Order )
+                    .ThenBy( a => a.Name );
+
+                foreach ( var childGroup in childGroups )
+                    BuildCheckinGroupRow( childGroup, checkinGroupRow, setValues );
             }
         }
+
 
         private void SortRows( string eventParam, string[] values )
         {
@@ -868,7 +939,7 @@ namespace RockWeb.Blocks.CheckIn.Config
                 rockContext.SaveChanges();
             }
 
-            foreach( int id in groupTypeIds )
+            foreach ( int id in groupTypeIds )
             {
                 GroupTypeCache.Flush( id );
             }
@@ -882,11 +953,11 @@ namespace RockWeb.Blocks.CheckIn.Config
         {
             if ( groupRow.Parent is CheckinGroupRow )
             {
-                ( (CheckinGroupRow)groupRow.Parent ).Expanded = true;
+                ( ( CheckinGroupRow ) groupRow.Parent ).Expanded = true;
             }
             else if ( groupRow.Parent is CheckinAreaRow )
             {
-                ( (CheckinAreaRow)groupRow.Parent ).Expanded = true;
+                ( ( CheckinAreaRow ) groupRow.Parent ).Expanded = true;
             }
         }
 
