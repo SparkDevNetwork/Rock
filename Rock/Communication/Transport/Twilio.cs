@@ -335,10 +335,5 @@ namespace Rock.Communication.Transport
         {
             throw new NotImplementedException();
         }
-
-        public override void Send(Model.Communication communication)
-        {
-            throw new NotImplementedException();
-        }
     }
 }
