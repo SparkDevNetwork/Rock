@@ -91,9 +91,9 @@ namespace Rock.Communication.Transport
                     bool recipientFound = true;
                     while ( recipientFound )
                     {
-                        var loopContext = new RockContext();
-                        var historyService = new HistoryService( loopContext );
-                        var recipient = Rock.Model.Communication.GetNextPending( communication.Id, loopContext );
+                        rockContext = new RockContext();
+                        var historyService = new HistoryService( rockContext );
+                        var recipient = Rock.Model.Communication.GetNextPending( communication.Id, rockContext );
                         if ( recipient != null )
                         {
 
@@ -165,7 +165,7 @@ namespace Rock.Communication.Transport
                                 recipient.StatusNote = "Twilio Exception: " + ex.Message;
                             }
 
-                            loopContext.SaveChanges();
+                            rockContext.SaveChanges();
                         }
                         else
                         {
