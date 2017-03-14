@@ -47,7 +47,7 @@ namespace Rock.Communication.Transport
         {
             get
             {
-                return true;
+                return false;
             }
         }
 
@@ -56,7 +56,7 @@ namespace Rock.Communication.Transport
         /// </summary>
         /// <param name="communication">The communication.</param>
         /// <exception cref="System.NotImplementedException"></exception>
-        public override async Task SendAsync( Rock.Model.Communication communication )
+        public override void Send( Rock.Model.Communication communication )
         {
             var rockContext = new RockContext();
 
@@ -124,7 +124,7 @@ namespace Rock.Communication.Transport
                                     var globalAttributes = Rock.Web.Cache.GlobalAttributesCache.Read();
                                     string callbackUrl = globalAttributes.GetValue( "PublicApplicationRoot" ) + "Webhooks/Twilio.ashx";
 
-                                    var response = await MessageResource.CreateAsync(
+                                    var response = MessageResource.Create(
                                         from: new TwilioTypes.PhoneNumber(fromPhone),
                                         to: new TwilioTypes.PhoneNumber(twilioNumber),
                                         body: message,
