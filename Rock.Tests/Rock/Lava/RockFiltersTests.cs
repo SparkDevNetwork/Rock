@@ -679,7 +679,7 @@ END:VCALENDAR";
         /// <summary>
         /// For use in Lava -- should find the end datetime (10 AM) occurrence for the fictitious, first Saturday of the month event for Saturday a year from today.
         /// </summary>
-        [Fact]
+        [Fact( Skip = "Needs a rewrite.  This slides back and fourth one day after Saturday occurs." )]
         public void DatesFromICal_NextYearsEndOccurrenceSaturday()
         {
             // Next year's Saturday (from right now)
