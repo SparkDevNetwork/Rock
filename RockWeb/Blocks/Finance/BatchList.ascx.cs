@@ -44,6 +44,9 @@ namespace RockWeb.Blocks.Finance
         private RockDropDownList ddlAction;
         public List<AttributeCache> AvailableAttributes { get; set; }
 
+        // Dictionaries to cache values for performance
+        private static Dictionary<int, FinancialAccount> _financialAccountLookup;
+
         #endregion
 
         #region Base Control Methods
@@ -598,7 +601,10 @@ namespace RockWeb.Blocks.Finance
 
             try
             {
-                var financialBatchQry = GetQuery().AsNoTracking();
+                var rockContext = new RockContext();
+                _financialAccountLookup = new FinancialAccountService( rockContext ).Queryable().AsNoTracking().ToList().ToDictionary( k => k.Id, v => v );
+
+                var financialBatchQry = GetQuery( rockContext ).AsNoTracking();
 
                 var batchRowQry = financialBatchQry.Select( b => new BatchRow
                 {
@@ -607,7 +613,6 @@ namespace RockWeb.Blocks.Finance
                     Name = b.Name,
                     AccountingSystemCode = b.AccountingSystemCode,
                     TransactionCount = b.Transactions.Count(),
-                    TransactionAmount = b.Transactions.Sum( t => (decimal?)( t.TransactionDetails.Sum( d => (decimal?)d.Amount ) ?? 0.0M ) ) ?? 0.0M,
                     ControlAmount = b.ControlAmount,
                     CampusName = b.Campus != null ? b.Campus.Name : "",
                     Status = b.Status,
@@ -619,11 +624,8 @@ namespace RockWeb.Blocks.Finance
                         .Select( s => new BatchAccountSummary
                         {
                             AccountId = s.Key,
-                            AccountOrder = s.Max( d => d.Account.Order ),
-                            AccountName = s.Max( d => d.Account.Name ),
                             Amount = s.Sum( d => (decimal?)d.Amount ) ?? 0.0M
                         } )
-                        .OrderBy( s => s.AccountOrder )
                         .ToList()
                 } );
 
@@ -661,10 +663,10 @@ namespace RockWeb.Blocks.Finance
         /// has not set any filters and they've imported N years worth of
         /// batch data into Rock.
         /// </summary>
+        /// <param name="rockContext">The rock context.</param>
         /// <returns></returns>
-        private IOrderedQueryable<FinancialBatch> GetQuery()
+        private IOrderedQueryable<FinancialBatch> GetQuery( RockContext rockContext )
         {
-            var rockContext = new RockContext();
             var batchService = new FinancialBatchService( rockContext );
             rockContext.Database.CommandTimeout = 90;
             var qry = batchService.Queryable()
@@ -812,9 +814,24 @@ namespace RockWeb.Blocks.Finance
         public class BatchAccountSummary
         {
             public int AccountId { get; set; }
-            public int AccountOrder { get; set; }
-            public string AccountName { get; set; }
+            public int AccountOrder
+            {
+                get
+                {
+                    return _financialAccountLookup[this.AccountId].Order;
+                }
+            }
+
+            public string AccountName
+            {
+                get
+                {
+                    return _financialAccountLookup[this.AccountId].Name;
+                }
+            }
+
             public decimal Amount { get; set; }
+
             public override string ToString()
             {
                 return string.Format( "{0}: {1}", AccountName, Amount.FormatAsCurrency() );
@@ -828,9 +845,29 @@ namespace RockWeb.Blocks.Finance
             public string Name { get; set; }
             public string AccountingSystemCode { get; set; }
             public int TransactionCount { get; set; }
-            public decimal TransactionAmount { get; set; }
+
+            public decimal TransactionAmount
+            {
+                get
+                {
+                    return AccountSummaryList.Select( a => a.Amount ).Sum();
+                }
+            }
+
             public decimal ControlAmount { get; set; }
-            public List<BatchAccountSummary> AccountSummaryList { get; set; }
+            public List<BatchAccountSummary> AccountSummaryList
+            {
+                get
+                {
+                    return _accountSummaryList.OrderBy( a => a.AccountOrder ).ToList();
+                }
+                set
+                {
+                    _accountSummaryList = value;
+                }
+            }
+
+            private List<BatchAccountSummary> _accountSummaryList;
             public string CampusName { get; set; }
             public BatchStatus Status { get; set; }
             public bool UnMatchedTxns { get; set; }
