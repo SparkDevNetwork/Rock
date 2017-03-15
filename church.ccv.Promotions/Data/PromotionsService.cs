@@ -34,18 +34,6 @@ namespace church.ccv.Promotions.Data
         public PromotionsService( RockContext rockContext )
             : base( rockContext )
         {
-            //PromotionsContext = promotionsContext;
         }
-
-        /// <summary>
-        /// Gets the promotion context.
-        /// </summary>
-        /// <value>
-        /// The promotion context.
-        /// </value>
-        //public PromotionsContext PromotionsContext { get; private set; }
-
-        //public DbSet<PromotionOccurrence> PromotionOccurrence { get; set; }
-        //public DbSet<PromotionRequest> PromotionRequest { get; set; }
     }
 }

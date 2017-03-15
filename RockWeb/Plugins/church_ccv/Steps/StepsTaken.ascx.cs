@@ -565,7 +565,7 @@ namespace RockWeb.Plugins.church_ccv.Steps
         {
             using ( RockContext rockContext = new RockContext() ) {
 
-                var measureTypes = new StepMeasureService( rockContext ).Queryable()
+                var measureTypes = new StepMeasureService( rockContext ).Queryable().AsNoTracking( )
                                     .Where( m => m.IsActive && !m.IsTbd )
                                     .Select( m => new { m.Id, m.Title } )
                                     .OrderBy( m => m.Title);
@@ -690,7 +690,7 @@ namespace RockWeb.Plugins.church_ccv.Steps
 
                 StepMeasureValueService stepMeasureValueService = new StepMeasureValueService( rockContext );
 
-                var latestMeasureDate = stepMeasureValueService.Queryable().Max( m => m.SundayDate );
+                var latestMeasureDate = stepMeasureValueService.Queryable().AsNoTracking( ).Max( m => m.SundayDate );
 
                 var pastors = datamartNeighborhoodService.Queryable().AsNoTracking()
                                     .Where(n => n.NeighborhoodPastorId != null)
@@ -1016,6 +1016,9 @@ namespace RockWeb.Plugins.church_ccv.Steps
 
             using (RockContext rockContext = new RockContext() )
             {
+                // this can be a slow query, so give it 2 minutes
+                rockContext.Database.CommandTimeout = 120;
+
                 StepTakenService stepTakenService = new StepTakenService( rockContext );
 
                 var query = stepTakenService.Queryable("StepMeasure").AsNoTracking();
@@ -1094,8 +1097,8 @@ namespace RockWeb.Plugins.church_ccv.Steps
                 showPreviousYear = true;
             }
 
-            var currentData = new StepTakenService( rockContext ).Queryable();
-            var previousYearData = new StepTakenService( rockContext ).Queryable();
+            var currentData = new StepTakenService( rockContext ).Queryable().AsNoTracking( );
+            var previousYearData = new StepTakenService( rockContext ).Queryable().AsNoTracking( );
 
             if ( dateRange.Start.HasValue )
             {
@@ -1127,7 +1130,7 @@ namespace RockWeb.Plugins.church_ccv.Steps
             if ( pastorId.HasValue )
             {
                 // let the unholiness begin as we join to the datamart person and datamart neighborhood tables to find the pastor
-                var datamartNeighborhoodQry = new DatamartNeighborhoodService( rockContext ).Queryable();
+                var datamartNeighborhoodQry = new DatamartNeighborhoodService( rockContext ).Queryable().AsNoTracking( );
                 var datamartPersonQry = new DatamartPersonService( rockContext ).Queryable().AsNoTracking()
                                             .Join( datamartNeighborhoodQry,
                                                     x => x.NeighborhoodId,
@@ -1230,7 +1233,7 @@ namespace RockWeb.Plugins.church_ccv.Steps
                 rockContext = new RockContext();
             }
 
-            var currentData = new StepTakenService( rockContext ).Queryable();
+            var currentData = new StepTakenService( rockContext ).Queryable().AsNoTracking( );
 
             if ( dateRange.Start.HasValue )
             {
