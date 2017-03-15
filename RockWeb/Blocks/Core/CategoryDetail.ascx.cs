@@ -136,18 +136,10 @@ namespace RockWeb.Blocks.Core
             if ( hfCategoryId.Value.Equals( "0" ) )
             {
                 int? parentCategoryId = PageParameter( "ParentCategoryId" ).AsIntegerOrNull();
-                if ( parentCategoryId.HasValue )
-                {
-                    // Cancelling on Add, and we know the parentCategoryId, so we are probably in treeview mode, so navigate to the current page
-                    var qryParams = new Dictionary<string, string>();
-                    qryParams["CategoryId"] = parentCategoryId.ToString();
-                    NavigateToPage( RockPage.Guid, qryParams );
-                }
-                else
-                {
-                    // Cancelling on Add.  Return to Grid
-                    NavigateToParentPage();
-                }
+                // Cancelling on Add, and we know the parentCategoryId, so we are probably in treeview mode, so navigate to the current page
+                var qryParams = new Dictionary<string, string>();
+                qryParams["CategoryId"] = parentCategoryId.ToString();
+                NavigateToPage( RockPage.Guid, qryParams );
             }
             else
             {
