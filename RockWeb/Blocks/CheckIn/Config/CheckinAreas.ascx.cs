@@ -278,50 +278,6 @@ namespace RockWeb.Blocks.CheckIn.Config
             BuildRows();
         }
 
-        private void CheckinAreaRow_DeleteAreaClick( object sender, EventArgs e )
-        {
-            var row = sender as CheckinAreaRow;
-
-            using ( var rockContext = new RockContext() )
-            {
-                var groupTypeService = new GroupTypeService( rockContext );
-                var groupType = groupTypeService.Get( row.GroupTypeGuid );
-                if ( groupType != null )
-                {
-                    // Warn if this GroupType or any of its child grouptypes (recursive) is being used as an Inherited Group Type. Probably shouldn't happen, but just in case
-                    if ( IsInheritedGroupTypeRecursive( groupType, groupTypeService ) )
-                    {
-                        nbDeleteWarning.Text = "WARNING - Cannot delete. This group type or one of its child group types is assigned as an inherited group type.";
-                        nbDeleteWarning.Visible = true;
-                        return;
-                    }
-
-                    string errorMessage;
-                    if ( !groupTypeService.CanDelete( groupType, out errorMessage ) )
-                    {
-                        nbDeleteWarning.Text = "WARNING - Cannot Delete: " + errorMessage;
-                        nbDeleteWarning.Visible = true;
-                        return;
-                    }
-
-                    int id = groupType.Id;
-
-                    groupType.ParentGroupTypes.Clear();
-                    groupType.ChildGroupTypes.Clear();
-
-                    groupTypeService.Delete( groupType );
-                    rockContext.SaveChanges();
-
-                    GroupTypeCache.Flush( id );
-                    Rock.CheckIn.KioskDevice.FlushAll();
-
-                    SelectArea( null );
-                }
-            }
-
-            BuildRows();
-        }
-
         private void CheckinGroupRow_AddGroupClick( object sender, EventArgs e )
         {
             var parentRow = sender as CheckinGroupRow;
@@ -399,29 +355,6 @@ namespace RockWeb.Blocks.CheckIn.Config
                     Rock.CheckIn.KioskDevice.FlushAll();
 
                     SelectGroup( null );
-                }
-            }
-
-            BuildRows();
-        }
-        private void CheckinGroupRow_UndeleteGroupClick( object sender, EventArgs e )
-        {
-            var row = sender as CheckinGroupRow;
-
-            using ( var rockContext = new RockContext() )
-            {
-                var groupService = new GroupService( rockContext );
-                var group = groupService.Get( row.GroupGuid );
-                if ( group != null )
-                {
-
-                    group.IsActive = true;
-
-                    rockContext.SaveChanges();
-
-                    Rock.CheckIn.KioskDevice.FlushAll();
-
-                    SelectGroup( group.Guid );
                 }
             }
 
@@ -714,7 +647,76 @@ namespace RockWeb.Blocks.CheckIn.Config
         }
 
         /// <summary>
-        /// Handles the the Check Changed event of the Show Inactive button.
+        /// Handels the Delete button click
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        protected void btnDelete_Click( object sender, EventArgs e )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                if ( checkinArea.Visible )
+                {
+                    GroupTypeService groupTypeService = new GroupTypeService( rockContext );
+                    GroupType groupType = groupTypeService.Get( checkinArea.GroupTypeGuid );
+                    if ( groupType != null )
+                    {
+                        if ( IsInheritedGroupTypeRecursive( groupType, groupTypeService ) )
+                        {
+                            nbDeleteWarning.Text = "WARNING - Cannot delete. This group type or one of its child group types is assigned as an inherited group type.";
+                            nbDeleteWarning.Visible = true;
+                            return;
+                        }
+
+                        string errorMessage;
+                        if ( !groupTypeService.CanDelete( groupType, out errorMessage ) )
+                        {
+                            nbDeleteWarning.Text = "WARNING - Cannot Delete: " + errorMessage;
+                            nbDeleteWarning.Visible = true;
+                            return;
+                        }
+
+                        int id = groupType.Id;
+
+                        groupType.ParentGroupTypes.Clear();
+                        groupType.ChildGroupTypes.Clear();
+                        groupTypeService.Delete( groupType );
+                        rockContext.SaveChanges();
+                        GroupTypeCache.Flush( id );
+                        Rock.CheckIn.KioskDevice.FlushAll();
+
+                    }
+                    SelectArea( null );
+                }
+
+                if ( checkinGroup.Visible )
+                {
+                    GroupService groupService = new GroupService( rockContext );
+                    Group group = groupService.Get( checkinGroup.GroupGuid );
+                    if ( group != null )
+                    {
+                        string errorMessage;
+                        if ( !groupService.CanDelete( group, out errorMessage ) )
+                        {
+                            nbDeleteWarning.Text = "WARNING - Cannot Delete: " + errorMessage;
+                            nbDeleteWarning.Visible = true;
+                            return;
+                        }
+
+
+                        groupService.Delete( group ); //Delete if group isn't active
+                        rockContext.SaveChanges();
+                        Rock.CheckIn.KioskDevice.FlushAll();
+                        SelectGroup( null );
+                    }
+                }
+
+            }
+            BuildRows();
+        }
+
+        /// <summary>
+        /// Handels the the Check Changed event of the Show Inactive button.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
@@ -790,7 +792,6 @@ namespace RockWeb.Blocks.CheckIn.Config
                 checkinAreaRow.SetGroupType( groupType );
                 checkinAreaRow.AddAreaClick += CheckinAreaRow_AddAreaClick;
                 checkinAreaRow.AddGroupClick += CheckinAreaRow_AddGroupClick;
-                checkinAreaRow.DeleteAreaClick += CheckinAreaRow_DeleteAreaClick;
                 parentControl.Controls.Add( checkinAreaRow );
 
                 if ( setValues )
@@ -839,7 +840,6 @@ namespace RockWeb.Blocks.CheckIn.Config
                 checkinGroupRow.SetGroup( group );
                 checkinGroupRow.AddGroupClick += CheckinGroupRow_AddGroupClick;
                 checkinGroupRow.DeleteGroupClick += CheckinGroupRow_DeleteGroupClick;
-                checkinGroupRow.ReactivateGroupClick += CheckinGroupRow_UndeleteGroupClick;
                 parentControl.Controls.Add( checkinGroupRow );
 
                 if ( setValues )
@@ -999,6 +999,7 @@ namespace RockWeb.Blocks.CheckIn.Config
             checkinArea.Visible = false;
             checkinGroup.Visible = false;
             btnSave.Visible = false;
+            btnDelete.Visible = false;
 
             if ( groupTypeGuid.HasValue )
             {
@@ -1032,6 +1033,8 @@ namespace RockWeb.Blocks.CheckIn.Config
 
                         checkinArea.Visible = true;
                         btnSave.Visible = true;
+                        btnDelete.Visible = true;
+                        btnDelete.Attributes["onclick"] = string.Format( "javascript: return Rock.dialogs.confirmDelete(event, '{0}', '{1}');", "check-in area", "This action cannot be undone." );
 
                     }
                     else
@@ -1056,6 +1059,7 @@ namespace RockWeb.Blocks.CheckIn.Config
             checkinArea.Visible = false;
             checkinGroup.Visible = false;
             btnSave.Visible = false;
+            btnDelete.Visible = false;
 
             if ( groupGuid.HasValue )
             {
@@ -1096,6 +1100,8 @@ namespace RockWeb.Blocks.CheckIn.Config
 
                         checkinGroup.Visible = true;
                         btnSave.Visible = true;
+                        btnDelete.Visible = true;
+                        btnDelete.Attributes["onclick"] = string.Format( "javascript: return Rock.dialogs.confirmDelete(event, '{0}', '{1}');", "check-in group", "<br>Any attendance records connected with this group will be lost. This action cannot be undone." );
                     }
                     else
                     {

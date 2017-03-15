@@ -34,10 +34,6 @@
     .checkin-area {
         border-top-color: #5593a4;
     }
-
-    .checkin-reactivate-group{
-        margin-right:4px;
-    }
 </style>
 
 <asp:UpdatePanel ID="upDetail" runat="server">
@@ -60,7 +56,7 @@
                             <asp:PlaceHolder ID="phRows" runat="server" />
                         </ul>
                         <div class="pull-right checkin-item-actions">
-                            <asp:LinkButton ID="lbAddArea" runat="server" CssClass="btn btn-xs btn-default" OnClick="lbAddArea_Click"><i class="fa fa-plus"></i> <i class="fa fa-folder-open"></i></asp:LinkButton>
+                            <asp:LinkButton ID="lbAddArea" runat="server" ToolTip="Add New Area" CssClass="btn btn-xs btn-default" OnClick="lbAddArea_Click"><i class="fa fa-plus"></i> <i class="fa fa-folder-open"></i></asp:LinkButton>
                         </div>
                     </div>
                     <div class="col-md-6 js-area-group-details">
@@ -76,6 +72,8 @@
 
                         <div class="actions margin-t-md">
                             <asp:LinkButton ID="btnSave" runat="server" AccessKey="s" ToolTip="Alt+s" Text="Save" CssClass="btn btn-primary" OnClick="btnSave_Click" Visible="false" />
+                            <asp:LinkButton ID="btnDelete" runat="server" Text="Delete" CssClass="btn btn-link" OnClick="btnDelete_Click" Visible="false" />
+                            
                         </div>
 
                     </div>
