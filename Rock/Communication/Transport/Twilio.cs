@@ -43,20 +43,12 @@ namespace Rock.Communication.Transport
     [TextField( "Token", "Your Twilio Account Token", true, "", "", 1 )]
     public class Twilio : TransportComponent
     {
-        public override bool IsAsync
-        {
-            get
-            {
-                return true;
-            }
-        }
-
         /// <summary>
         /// Sends the specified communication.
         /// </summary>
         /// <param name="communication">The communication.</param>
         /// <exception cref="System.NotImplementedException"></exception>
-        public override async Task SendAsync( Rock.Model.Communication communication )
+        public override void Send( Rock.Model.Communication communication )
         {
             var rockContext = new RockContext();
 
@@ -122,7 +114,7 @@ namespace Rock.Communication.Transport
                                     var globalAttributes = Rock.Web.Cache.GlobalAttributesCache.Read();
                                     string callbackUrl = globalAttributes.GetValue( "PublicApplicationRoot" ) + "Webhooks/Twilio.ashx";
 
-                                    var response = await MessageResource.CreateAsync(
+                                    var response = MessageResource.Create(
                                         from: new TwilioTypes.PhoneNumber(fromPhone),
                                         to: new TwilioTypes.PhoneNumber(twilioNumber),
                                         body: message,
@@ -184,7 +176,7 @@ namespace Rock.Communication.Transport
         /// <param name="appRoot">The application root.</param>
         /// <param name="themeRoot">The theme root.</param>
         /// <exception cref="System.NotImplementedException"></exception>
-        public override async void Send( SystemEmail template, List<RecipientData> recipients, string appRoot, string themeRoot )
+        public override void Send( SystemEmail template, List<RecipientData> recipients, string appRoot, string themeRoot )
         {
             throw new NotImplementedException();
         }
@@ -334,9 +326,5 @@ namespace Rock.Communication.Transport
             throw new NotImplementedException();
         }
 
-        public override void Send(Model.Communication communication)
-        {
-            throw new NotImplementedException();
-        }
     }
 }
