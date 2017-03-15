@@ -75,8 +75,8 @@ CREATE TABLE [dbo]._church_ccv_Actions_History_Adult_Person(
   
   CreatedDateTime datetime,
   ModifiedDateTime datetime,
-  CreatedByPersonAliasId datetime,
-  ModifiedByPersonAliasId datetime,
+  CreatedByPersonAliasId int NULL,
+  ModifiedByPersonAliasId int NULL,
   [Guid] uniqueidentifier NOT NULL,
   ForeignId int,
   ForeignGuid uniqueidentifier,
