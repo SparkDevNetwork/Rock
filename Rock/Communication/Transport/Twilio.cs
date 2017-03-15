@@ -43,20 +43,12 @@ namespace Rock.Communication.Transport
     [TextField( "Token", "Your Twilio Account Token", true, "", "", 1 )]
     public class Twilio : TransportComponent
     {
-        public override bool IsAsync
-        {
-            get
-            {
-                return true;
-            }
-        }
-
         /// <summary>
         /// Sends the specified communication.
         /// </summary>
         /// <param name="communication">The communication.</param>
         /// <exception cref="System.NotImplementedException"></exception>
-        public override async Task SendAsync( Rock.Model.Communication communication )
+        public override void Send( Rock.Model.Communication communication )
         {
             var rockContext = new RockContext();
 
@@ -338,9 +330,5 @@ namespace Rock.Communication.Transport
             throw new NotImplementedException();
         }
 
-        public override void Send(Model.Communication communication)
-        {
-            throw new NotImplementedException();
-        }
     }
 }
