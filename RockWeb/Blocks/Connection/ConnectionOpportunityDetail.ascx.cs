@@ -1790,7 +1790,7 @@ namespace RockWeb.Blocks.Connection
                 }
                 else
                 {
-                    CampusName = "all";
+                    CampusName = "All";
                 }
             }
         }
