@@ -1240,6 +1240,7 @@
     <Compile Include="UniversalSearch\SearchFieldCriteria.cs" />
     <Compile Include="UniversalSearch\ModelFieldFilterConfig.cs" />
     <Compile Include="UniversalSearch\SearchResultModel.cs" />
+    <Compile Include="Utility\Async.cs" />
     <Compile Include="Utility\DebugHelper.cs" />
     <Compile Include="Utility\ExcelHelper.cs" />
     <Compile Include="Utility\ExtensionMethods\QuartzExtensions.cs" />

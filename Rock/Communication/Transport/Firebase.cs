@@ -115,9 +115,7 @@ namespace Rock.Communication.Transport
                                     }
                                 };
 
-                                Task<ResponseContent> result = sender.SendAsync(notification);
-                                result.Wait();
-                                ResponseContent response = result.Result;
+                                ResponseContent response = Utility.AsyncHelpers.RunSync(() => sender.SendAsync(notification));
                                 
                                 bool failed = response.MessageResponse.Failure == devices.Count;
                                 var status = failed ? CommunicationRecipientStatus.Failed : CommunicationRecipientStatus.Delivered;
@@ -213,7 +211,7 @@ namespace Rock.Communication.Transport
                     }
                 };
 
-                sender.SendAsync(notification).Wait();
+                Utility.AsyncHelpers.RunSync(() => sender.SendAsync(notification));
             }
 
             catch ( Exception ex )

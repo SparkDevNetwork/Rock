@@ -39,7 +39,7 @@ namespace Rock.Workflow.Action
     [WorkflowTextOrAttribute("Recipient", "Attribute Value", "An attribute that contains the person should be sent to. <span class='tip tip-lava'></span>", true, "", "", 1, "To",
         new string[] { "Rock.Field.Types.PersonFieldType", "Rock.Field.Types.GroupFieldType", "Rock.Field.Types.SecurityRoleFieldType" })]
     [WorkflowTextOrAttribute("Title", "Attribute Value", "The title or an attribute that contains the title that should be sent.", false, "", "", 2, "Title", new string[] { "Rock.Field.Types.TextFieldType" })]
-    [WorkflowTextOrAttribute("Sound", "Attribute Value", "The choice of sound or an attribute that contains the the choice of sound that should be sent.", false, "True", "", 2, "Sound", new string[] { "Rock.Field.Types.TextFieldType" })]
+    [WorkflowAttribute("Sound", "The choice of sound or an attribute that contains the the choice of sound that should be sent.", false, "True", "", 2, "Sound", new string[] { "Rock.Field.Types.BooleanFieldType" })]
     [WorkflowTextOrAttribute("Message", "Attribute Value", "The message or an attribute that contains the message that should be sent. <span class='tip tip-lava'></span>", true, "", "", 3, "Message",
         new string[] { "Rock.Field.Types.TextFieldType" })]
     public class SendPushNotification : ActionComponent
@@ -84,9 +84,9 @@ namespace Rock.Workflow.Action
 
                                         string deviceIds = String.Join(",", devices);
 
-                                        if ( !deviceIds.AsBoolean() )
+                                        if ( devices.Count == 0 )
                                         {
-                                            action.AddLogEntry( "Invalid Recipient: Person doesn not have devices that support notifications", true );
+                                            action.AddLogEntry( "Invalid Recipient: Person does not have devices that support notifications", true );
                                         }
                                         else
                                         {
@@ -208,16 +208,16 @@ namespace Rock.Workflow.Action
                     string soundAttributeValue = action.GetWorklowAttributeValue( soundGuid );
                     if ( !string.IsNullOrWhiteSpace( soundAttributeValue ) )
                     {
-                        if ( attribute.FieldType.Class == "Rock.Field.Types.TextFieldType" )
+                        if ( attribute.FieldType.Class == "Rock.Field.Types.BooleanFieldType" )
                         {
                             sound = soundAttributeValue;
                         }
                     }
                 }
             }
-            sound = sound == "True" ? "default" : "";
+            sound = sound.AsBoolean() ? "default" : "";
 
-            if ( recipients.Any() && !string.IsNullOrWhiteSpace( message ) )
+            if ( recipients.Any() && !string.IsNullOrWhiteSpace(message) )
             {
                 var mediumEntity = EntityTypeCache.Read( Rock.SystemGuid.EntityType.COMMUNICATION_MEDIUM_PUSH_NOTIFICATION.AsGuid(), rockContext );
                 if ( mediumEntity != null )
