@@ -760,7 +760,8 @@ namespace Rock.Model
         /// <param name="country">The country.</param>
         /// <param name="moveExistingToPrevious">if set to <c>true</c> [move existing to previous].</param>
         public static void AddNewGroupAddress( RockContext rockContext, Group group, string locationTypeGuid,
-            string street1, string street2, string city, string state, string postalCode, string country, bool moveExistingToPrevious = false )
+            string street1, string street2, string city, string state, string postalCode, string country, bool moveExistingToPrevious = false,
+            string modifiedBy = "", bool isMailingLocation = true, bool isMappedLocation = true )
         {
             if ( !String.IsNullOrWhiteSpace( street1 ) ||
                  !String.IsNullOrWhiteSpace( street2 ) ||
@@ -769,7 +770,7 @@ namespace Rock.Model
                  !string.IsNullOrWhiteSpace( country ) )
             {
                 var location = new LocationService( rockContext ).Get( street1, street2, city, state, postalCode, country );
-                AddNewGroupAddress( rockContext, group, locationTypeGuid, location, moveExistingToPrevious );
+                AddNewGroupAddress( rockContext, group, locationTypeGuid, location, moveExistingToPrevious, modifiedBy, isMailingLocation, isMappedLocation );
             }
         }
 
@@ -797,12 +798,13 @@ namespace Rock.Model
         /// <param name="locationId">The location identifier.</param>
         /// <param name="moveExistingToPrevious">if set to <c>true</c> [move existing to previous].</param>
         public static void AddNewGroupAddress( RockContext rockContext, Group group, string locationTypeGuid, 
-            int? locationId, bool moveExistingToPrevious = false )
+            int? locationId, bool moveExistingToPrevious = false,
+            string modifiedBy = "", bool isMailingLocation = true, bool isMappedLocation = true )
         {
             if ( locationId.HasValue )
             {
                 var location = new LocationService( rockContext ).Get( locationId.Value );
-                AddNewGroupAddress( rockContext, group, locationTypeGuid, location, moveExistingToPrevious );
+                AddNewGroupAddress( rockContext, group, locationTypeGuid, location, moveExistingToPrevious, modifiedBy, isMailingLocation, isMappedLocation );
             }
         }
 
@@ -830,7 +832,7 @@ namespace Rock.Model
         /// <param name="location">The location.</param>
         /// <param name="moveExistingToPrevious">if set to <c>true</c> [move existing to previous].</param>
         public static void AddNewGroupAddress( RockContext rockContext, Group group, string locationTypeGuid,
-            Location location, bool moveExistingToPrevious = false )
+            Location location, bool moveExistingToPrevious = false, string modifiedBy = "", bool isMailingLocation = true, bool isMappedLocation = true )
         {
             if ( location != null )
             {
@@ -879,8 +881,8 @@ namespace Rock.Model
                             {
                                 groupLocation = new GroupLocation();
                                 groupLocation.Location = location;
-                                groupLocation.IsMailingLocation = true;
-                                groupLocation.IsMappedLocation = true;
+                                groupLocation.IsMailingLocation = isMailingLocation;
+                                groupLocation.IsMappedLocation = isMappedLocation;
                                 group.GroupLocations.Add( groupLocation );
                             }
                             groupLocation.GroupLocationTypeValueId = locationType.Id;
@@ -888,6 +890,11 @@ namespace Rock.Model
                             History.EvaluateChange( familyChanges, addressChangeField, string.Empty, groupLocation.Location.ToString() );
                             History.EvaluateChange( familyChanges, addressChangeField + " Is Mailing", string.Empty, groupLocation.IsMailingLocation.ToString() );
                             History.EvaluateChange( familyChanges, addressChangeField + " Is Map Location", string.Empty, groupLocation.IsMappedLocation.ToString() );
+                            if ( modifiedBy != "" )
+                            {
+                                familyChanges.Add( $"<em>(Updated by {modifiedBy})</em>" );
+                            }
+
 
                             rockContext.SaveChanges();
 
