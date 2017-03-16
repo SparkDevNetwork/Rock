@@ -118,7 +118,7 @@ namespace Rock.Communication.Transport
                                         twilioNumber = "+" + phoneNumber.CountryCode + phoneNumber.Number;
                                     }
 
-                                    var response = await MessageResource.CreateAsync(
+                                    var response = MessageResource.Create(
                                         from: new TwilioTypes.PhoneNumber(fromPhone),
                                         to: new TwilioTypes.PhoneNumber(twilioNumber),
                                         body: resolvedMessage,
