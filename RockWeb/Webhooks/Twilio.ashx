@@ -1,4 +1,4 @@
-﻿<%@ WebHandler Language="C#" Class="Twilio" %>
+﻿<%@ WebHandler Language="C#" Class="TwilioAsync" %>
 // <copyright>
 // Copyright 2013 by the Spark Development Network
 //
@@ -21,23 +21,74 @@ using System.Web;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Linq;
+using System.Threading;
 using Newtonsoft.Json;
 using Rock;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
 
-public class Twilio : IHttpHandler
-{    
+public class TwilioAsync : IHttpAsyncHandler
+{
     private HttpRequest request;
     private HttpResponse response;
 
-    private const bool ENABLE_LOGGING = true;
-    
-    public void ProcessRequest( HttpContext context )
+    public IAsyncResult BeginProcessRequest(HttpContext context, AsyncCallback cb, Object extraData)
     {
-        request = context.Request;
-        response = context.Response;
+        TwilioResponseAsync twilioAsync = new TwilioResponseAsync(cb, context, extraData);
+        twilioAsync.StartAsyncWork();
+        return twilioAsync;
+    }
+
+    public void EndProcessRequest(IAsyncResult result)
+    {
+    }
+
+    public void ProcessRequest(HttpContext context)
+    {
+        throw new InvalidOperationException();
+    }
+
+    public bool IsReusable
+    {
+        get
+        {
+            return false;
+        }
+    }
+}
+
+class TwilioResponseAsync : IAsyncResult
+{
+    private bool _completed;
+    private Object _state;
+    private AsyncCallback _callback;
+    private HttpContext _context;
+
+    bool IAsyncResult.IsCompleted { get { return _completed; } }
+    WaitHandle IAsyncResult.AsyncWaitHandle { get { return null; } }
+    Object IAsyncResult.AsyncState { get { return _state; } }
+    bool IAsyncResult.CompletedSynchronously { get { return false; } }
+
+    private const bool ENABLE_LOGGING = true;
+
+    public TwilioResponseAsync(AsyncCallback callback, HttpContext context, Object state)
+    {
+        _callback = callback;
+        _context = context;
+        _state = state;
+        _completed = false;
+    }
+
+    public void StartAsyncWork()
+    {
+        ThreadPool.QueueUserWorkItem(new WaitCallback(StartAsyncTask), null);
+    }
+
+    private void StartAsyncTask(Object workItemState)
+    {
+        var request = _context.Request;
+        var response = _context.Response;
 
         response.ContentType = "text/plain";
 
@@ -74,16 +125,20 @@ public class Twilio : IHttpHandler
             }
         }
 
+        _completed = true;
+        _callback(this);
     }
 
     private void MessageUndelivered()
     {
+
+        var request = _context.Request;
         string messageSid = string.Empty;
-        
+
         if ( !string.IsNullOrEmpty( request.Form["MessageSid"] ) )
         {
             messageSid = request.Form["MessageSid"];
-            
+
             // get communication from the message side
             RockContext rockContext = new RockContext();
             CommunicationRecipientService recipientService = new CommunicationRecipientService(rockContext);
@@ -101,27 +156,30 @@ public class Twilio : IHttpHandler
             }
         }
     }
-    
+
     private void MessageRecieved()
     {
+
+        var request = _context.Request;
+        var response = _context.Response;
         string fromPhone = string.Empty;
         string toPhone = string.Empty;
         string body = string.Empty;
-        
+
         if ( !string.IsNullOrEmpty( request.Form["To"] ) ) {
             toPhone = request.Form["To"];
         }
-        
+
         if ( !string.IsNullOrEmpty( request.Form["From"] ) )
         {
             fromPhone = request.Form["From"];
         }
-        
+
         if ( !string.IsNullOrEmpty( request.Form["Body"] ) )
         {
             body = request.Form["Body"];
         }
-        
+
         if ( !(string.IsNullOrWhiteSpace(toPhone)) && !(string.IsNullOrWhiteSpace(fromPhone)) )
         {
             string errorMessage = string.Empty;
@@ -135,8 +193,9 @@ public class Twilio : IHttpHandler
         }
     }
 
-    private void WriteToLog () 
+    private void WriteToLog ()
     {
+        var request = _context.Request;
         var formValues = new List<string>();
         foreach ( string name in request.Form.AllKeys )
         {
@@ -145,7 +204,7 @@ public class Twilio : IHttpHandler
 
         WriteToLog( formValues.AsDelimited( ", " ) );
     }
-    
+
     private void WriteToLog( string message )
     {
         string logFile = _context.Server.MapPath( "~/App_Data/Logs/TwilioLog.txt" );
@@ -172,15 +231,7 @@ public class Twilio : IHttpHandler
                 }
             }
         }
-               
+
     }
-    
-    
-    public bool IsReusable
-    {
-        get
-        {
-            return false;
-        }
-    }
+
 }
