@@ -21,7 +21,6 @@ using System.Net.Mail;
 using Rock.Extension;
 using Rock.Model;
 using Rock.Web.Cache;
-using System.Threading.Tasks;
 
 namespace Rock.Communication
 {
@@ -42,15 +41,6 @@ namespace Rock.Communication
             {
                 return false;
             }
-        }
-
-        /// <summary>
-        /// Sends the specified communication.
-        /// </summary>
-        /// <param name="communication">The communication.</param>
-        public virtual Task SendAsync(Rock.Model.Communication communication)
-        {
-            throw new NotImplementedException();
         }
 
         /// <summary>
