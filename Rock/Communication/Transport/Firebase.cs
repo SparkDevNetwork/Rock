@@ -40,19 +40,12 @@ namespace Rock.Communication.Transport
     [TextField( "ServerKey", "The server key for your firebase account", true, "", "", 1 )]
     class Firebase : TransportComponent
     {
-        public override bool IsAsync {
-            get
-            {
-                 return true;
-            }
-        }
-
         /// <summary>
         /// Sends the specified communication.
         /// </summary>
         /// <param name="communication">The communication.</param>
         /// <exception cref="System.NotImplementedException"></exception>
-        public override async Task SendAsync( Rock.Model.Communication communication )
+        public override void Send( Rock.Model.Communication communication )
         {
             var rockContext = new RockContext();
 
@@ -68,9 +61,6 @@ namespace Rock.Communication.Transport
                 string senderId = GetAttributeValue( "SenderId" );
                 string serverKey = GetAttributeValue( "ServerKey" );
                 var sender = new Sender(serverKey);
-
-                var historyService = new HistoryService( rockContext );
-                var recipientService = new CommunicationRecipientService( rockContext );
 
                 var personEntityTypeId = EntityTypeCache.Read( "Rock.Model.Person" ).Id;
                 var communicationEntityTypeId = EntityTypeCache.Read( "Rock.Model.Communication" ).Id;
@@ -93,14 +83,11 @@ namespace Rock.Communication.Transport
                 bool recipientFound = true;
                 while ( recipientFound )
                 {
-                    rockContext = new RockContext();
-                    var recipient = Rock.Model.Communication.GetNextPending( communication.Id, rockContext );
+                    var loopContext = new RockContext();
+                    var recipient = Rock.Model.Communication.GetNextPending( communication.Id, loopContext );
+                    var historyService = new HistoryService( loopContext );
                     if ( recipient != null )
                     {
-                        // this prevents duplicate messages from being sent during the wait time from firebase
-                        recipient.Status = CommunicationRecipientStatus.Delivered;
-                        rockContext.SaveChanges();
-
                         try
                         {
                             var service = new PersonalDeviceService( rockContext );
@@ -127,9 +114,11 @@ namespace Rock.Communication.Transport
                                         Sound = sound,
                                     }
                                 };
-                                
-                                var response = await sender.SendAsync(notification);
 
+                                Task<ResponseContent> result = sender.SendAsync(notification);
+                                result.Wait();
+                                ResponseContent response = result.Result;
+                                
                                 bool failed = response.MessageResponse.Failure == devices.Count;
                                 var status = failed ? CommunicationRecipientStatus.Failed : CommunicationRecipientStatus.Delivered;
 
@@ -175,7 +164,7 @@ namespace Rock.Communication.Transport
                             recipient.StatusNote = "Firebase Exception: " + ex.Message;
                         }
 
-                        rockContext.SaveChanges();
+                        loopContext.SaveChanges();
                     }
                     else
                     {
@@ -253,9 +242,5 @@ namespace Rock.Communication.Transport
             throw new NotImplementedException();
         }
 
-        public override void Send(Model.Communication communication)
-        {
-            throw new NotImplementedException();
-        }
     }
 }
