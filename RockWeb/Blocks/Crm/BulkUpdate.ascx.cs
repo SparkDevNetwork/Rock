@@ -91,7 +91,7 @@ namespace RockWeb.Blocks.Crm
                                                         && (t.OwnerPersonAliasId == null || currentPersonAliasIds.Contains( t.OwnerPersonAliasId.Value )) )
                                             .Select( t => new   {
                                                                     Id = t.Id,
-                                                                    Type = t.OwnerPersonAliasId == null ? "Personal Tags" : "Organization Tags",
+                                                                    Type = t.OwnerPersonAliasId == null ? "Organization Tags" : "Personal Tags",
                                                                     Name = t.Name
                                                                 } )
                                             .OrderByDescending(t => t.Type)
