@@ -1459,6 +1459,16 @@ This {{ Workflow.WorkflowType.WorkTerm }} does not currently require your attent
                 hlType.Visible = false;
             }
 
+            if ( workflowType.Id != 0 )
+            {
+                hlType.Visible = true;
+                hlType.Text = string.Format( "Id: {0}", workflowType.Id );
+            }
+            else
+            {
+                hlType.Visible = false;
+            }
+
             lWorkflowTypeDescription.Text = workflowType.Description;
 
             if ( workflowType.ActivityTypes.Count > 0 )
