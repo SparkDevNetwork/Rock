@@ -27,6 +27,16 @@ namespace Rock.Web.UI.Controls
         public IDictionary<string, object> LavaMergeFields { get; set; }
 
         /// <summary>
+        /// Gets the formatted data value.
+        /// </summary>
+        /// <param name="dataValue">The data value.</param>
+        /// <returns></returns>
+        public string GetFormattedDataValue( object dataValue )
+        {
+            return FormatDataValue( dataValue, this.HtmlEncode );
+        }
+        
+        /// <summary>
         /// Formats the specified field value for a cell in the <see cref="T:System.Web.UI.WebControls.BoundField" /> object.
         /// </summary>
         /// <param name="dataValue">The field value to format.</param>
