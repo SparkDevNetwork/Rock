@@ -104,6 +104,10 @@ namespace Rock.Lava.Blocks
             string parmWorkflowId = null;
             string parmActivityType = null;
 
+            bool doReturn = false;
+            if ( doReturn )
+                return;
+
             /* Parse the markup text to pull out configuration parameters. */
             var parms = ParseMarkup( _markup, context );
             foreach ( var p in parms )
@@ -242,16 +246,25 @@ namespace Rock.Lava.Blocks
                                         }
                                     }
 
-                                    List<string> errorMessages;
-                                    workflowService.Process( workflow, out errorMessages );
-
-                                    if ( errorMessages.Any() )
+                                    /* Stack overflow recursion results in calling Process on a workflow that
+                                     * is already being processed. */
+                                    if ( !workflow.IsProcessing )
                                     {
-                                        context["Error"] = string.Join( "; ", errorMessages.ToArray() );
-                                    }
+                                        List<string> errorMessages;
+                                        workflowService.Process( workflow, out errorMessages );
 
-                                    context["Workflow"] = workflow;
-                                    context["Activity"] = activity;
+                                        if ( errorMessages.Any() )
+                                        {
+                                            context["Error"] = string.Join( "; ", errorMessages.ToArray() );
+                                        }
+
+                                        context["Workflow"] = workflow;
+                                        context["Activity"] = activity;
+                                    }
+                                    else
+                                    {
+                                        context["Error"] = "Cannot activate activity on workflow that is currently being processed.";
+                                    }
                                 }
                                 else
                                 {
