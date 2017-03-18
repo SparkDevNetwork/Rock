@@ -82,6 +82,12 @@ namespace RockWeb.Blocks.Core
 
                 modalValue.SaveClick += btnSaveValue_Click;
                 modalValue.OnCancelScript = string.Format( "$('#{0}').val('');", hfDefinedValueId.ClientID );
+
+                lTitle.Text = _definedType.Name;
+            }
+            else
+            {
+                lTitle.Text = "Values";
             }
         }
 
