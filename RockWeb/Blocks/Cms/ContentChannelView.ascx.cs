@@ -574,13 +574,13 @@ $(document).ready(function() {
 
             var template = GetTemplate();
 
-            if ( template.InstanceAssigns.ContainsKey( "EnabledCommands" ) )
+            if ( template.Registers.ContainsKey( "EnabledCommands" ) )
             {
-                template.InstanceAssigns["EnabledCommands"] = GetAttributeValue( "EnabledLavaCommands" );
+                template.Registers["EnabledCommands"] = GetAttributeValue( "EnabledLavaCommands" );
             }
             else // this should never happen
             {
-                template.InstanceAssigns.Add( "EnabledCommands", GetAttributeValue( "EnabledLavaCommands" ) );
+                template.Registers.Add( "EnabledCommands", GetAttributeValue( "EnabledLavaCommands" ) );
             }
             
             phContent.Controls.Add( new LiteralControl( template.Render( Hash.FromDictionary( mergeFields ) ) ) );

@@ -475,7 +475,7 @@ namespace Rock
                 }
 
                 Template template = Template.Parse( content );
-                template.InstanceAssigns.Add( "EnabledCommands", enabledLavaCommands );
+                template.Registers.Add( "EnabledCommands", enabledLavaCommands );
                 template.InstanceAssigns.Add( "CurrentPerson", currentPersonOverride );
                 return template.Render( Hash.FromDictionary( mergeObjects ) );
             }
@@ -546,7 +546,7 @@ namespace Rock
                 }
 
                 Template template = Template.Parse( content );
-                template.InstanceAssigns.Add( "EnabledCommands", enabledLavaCommands );
+                template.Registers.Add( "EnabledCommands", enabledLavaCommands );
 
                 if ( encodeStrings )
                 {
