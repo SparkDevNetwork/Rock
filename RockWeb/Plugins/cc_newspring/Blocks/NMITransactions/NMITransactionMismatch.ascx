@@ -28,7 +28,6 @@
                                 <Rock:RockBoundField DataField="EmailAddress" HeaderText="Email Address" SortExpression="EmalAddress" />
                                 <Rock:RockBoundField DataField="TransactionDateTime" HeaderText="Date / Time" SortExpression="TransactionDateTime" />
                                 <Rock:CurrencyField DataField="Amount" HeaderText="Amount" SortExpression="Amount" />
-                                <Rock:CurrencyField DataField="TotalAmount" HeaderText="Total Amount" SortExpression="TotalAmount" />
                                 <Rock:RockBoundField DataField="TransactionCode" HeaderText="Transaction Code" SortExpression="TransactionCode" ColumnPriority="DesktopSmall" />
                                 <Rock:RockBoundField DataField="Status" HeaderText="Transaction Status"
                                 SortExpression="Status" />

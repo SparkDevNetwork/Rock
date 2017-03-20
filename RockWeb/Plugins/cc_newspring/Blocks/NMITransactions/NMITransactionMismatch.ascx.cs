@@ -193,7 +193,6 @@ namespace RockWeb.Plugins.cc_newspring.Blocks.NMITransactions
                     EmailAddress = t.CheckMicrEncrypted,
                     t.TransactionDateTime,
                     Amount = t.TransactionDetails.Select( d => d.Amount ).FirstOrDefault(),
-                    TotalAmount = t.TotalAmount,
                     t.TransactionCode,
                     t.Status
                 } ).ToList();
