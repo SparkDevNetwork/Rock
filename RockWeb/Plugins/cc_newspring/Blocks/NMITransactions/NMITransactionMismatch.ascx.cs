@@ -184,7 +184,8 @@ namespace RockWeb.Plugins.cc_newspring.Blocks.NMITransactions
                     t.TransactionDateTime,
                     Amount = t.TransactionDetails.Select( d => d.Amount ).FirstOrDefault(),
                     t.TransactionCode,
-                    t.Status
+                    t.Status,
+                    t.StatusMessage
                 } ).ToList();
                 gTransactions.DataBind();
             }
@@ -236,9 +237,8 @@ namespace RockWeb.Plugins.cc_newspring.Blocks.NMITransactions
                                     {
                                         FinancialTransaction transaction = null;
                                         var statusMessage = new StringBuilder();
-                                        var xAction = xTxn.Elements( "action" ).Last();
-                                        //foreach ( var xAction in xTxn.Elements( "action" ) )
-                                        //{
+                                        foreach ( var xAction in xTxn.Elements( "action" ) )
+                                        {
                                             DateTime? actionDate = ParseDateValue( GetXElementValue( xAction, "date" ) );
                                             string actionType = GetXElementValue( xAction, "action_type" );
                                             string responseText = GetXElementValue( xAction, "response_text" );
@@ -249,9 +249,10 @@ namespace RockWeb.Plugins.cc_newspring.Blocks.NMITransactions
                                                     actionType.FixCase(), responseText );
                                                 statusMessage.AppendLine();
                                             }
-                                            if ( transaction == null && actionType == "sale" )
+                                            if ( transaction == null && actionType == "settle" )
                                             {
-                                                decimal? txnAmount = GetXElementValue( xAction, "amount" ).AsDecimalOrNull();
+                                                var xLastAction = xTxn.Elements( "action" ).Last();
+                                                decimal? txnAmount = GetXElementValue( xLastAction, "amount" ).AsDecimalOrNull();
                                                 if ( txnAmount.HasValue && actionDate.HasValue )
                                                 {
                                                     transaction = new FinancialTransaction();
@@ -268,10 +269,9 @@ namespace RockWeb.Plugins.cc_newspring.Blocks.NMITransactions
                                                     transaction.ForeignKey = GetXElementValue( xTxn, "first_name" ) + " " + GetXElementValue( xTxn, "last_name" );
                                                     // this will hold the email
                                                     transaction.CheckMicrEncrypted = GetXElementValue( xTxn, "email" );
-
                                                 }
                                             }
-                                        //}
+                                        }
                                         if ( transaction != null )
                                         {
                                             transaction.StatusMessage = statusMessage.ToString();
