@@ -42,6 +42,9 @@ namespace Rock.Field.Types
         /// </summary>
         protected const string IMG_TAG_TEMPLATE = "img_tag_template";
 
+        /// <summary>
+        /// The default image tag template
+        /// </summary>
         protected const string DefaultImageTagTemplate = "<img src='{{ ImageUrl }}' class='img-responsive' />";
 
         /// <summary>
