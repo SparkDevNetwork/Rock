@@ -130,39 +130,72 @@ namespace RockWeb.Plugins.cc_newspring.Blocks.NMITransactions
 
             if ( financialGateway != null )
             {
-                var transactions = new List<Payment>();
-                transactions = GetTransactions( financialGateway, startDate, endDate, out errorMessage );
+                // var transactionsFromNMI = new List<Payment>();
+                // transactionsFromNMI = GetTransactions( financialGateway, startDate, endDate, out errorMessage );
 
-                // Just a couple test payments since I can't get real ones yet
-                var newPayment = new Payment();
-                newPayment.TransactionCode = "123";
-                newPayment.Amount = 5;
-                newPayment.TransactionDateTime = DateTime.Now;
-                transactions.Add( newPayment );
-                var newPayment2 = new Payment();
-                newPayment2.TransactionCode = "456";
-                newPayment2.Amount = 5000;
-                newPayment2.TransactionDateTime = DateTime.Now;
-                transactions.Add( newPayment2 );
+                var transactionsFromNMI = new List<FinancialTransaction>();
+                transactionsFromNMI = GetTransactions( financialGateway, startDate, endDate, out errorMessage );
 
-                transactions.ToList();
+                var newTransactionOne = new FinancialTransaction();
+                newTransactionOne.Status = "Success";
+                newTransactionOne.StatusMessage = "SUCCESS";
+                var transactionOneDetails = new FinancialTransactionDetail();
+                transactionOneDetails.Amount = 300;
+                newTransactionOne.TransactionDetails.Add( transactionOneDetails );
+                newTransactionOne.TransactionDateTime = DateTime.Now;
+                newTransactionOne.TransactionCode = "123";
+                newTransactionOne.ForeignKey = "Richard Dubay";
+                newTransactionOne.CheckMicrEncrypted = "richard.dubay@newspring.cc";
+                transactionsFromNMI.Add( newTransactionOne );
+
+                var newTransactionTwo = new FinancialTransaction();
+                newTransactionTwo.Status = "Success";
+                newTransactionTwo.StatusMessage = "SUCCESS";
+                var transactionTwoDetails = new FinancialTransactionDetail();
+                transactionTwoDetails.Amount = 5000;
+                newTransactionTwo.TransactionDetails.Add( transactionTwoDetails );
+                newTransactionTwo.TransactionDateTime = DateTime.Now;
+                newTransactionTwo.TransactionCode = "456";
+                newTransactionTwo.ForeignKey = "James Baxley";
+                newTransactionTwo.CheckMicrEncrypted = "james.baxley@newspring.cc";
+                transactionsFromNMI.Add( newTransactionTwo );
+
+                transactionsFromNMI.ToList();
 
                 
                 // Get a list of the transactions in Rock for the time frame specified.
-                var transactionService = new FinancialTransactionService(rockContext);
+                FinancialTransactionService transactionService = new FinancialTransactionService(rockContext);
                 var transactionsInRock = transactionService.Queryable();
-                
-                // You have a list of all the transactions from NMI for the time period requested.
-                // You also have a list of all the transactions in Rock.
-                // Next you need to filter out the transactions based on if they are in Rock or not.
-                var result = transactions.Where( t => !transactionsInRock.Any( t2 => t2.TransactionCode == t.TransactionCode ) ).ToList();
+                FinancialTransactionDetailService transactionDetailService = new FinancialTransactionDetailService( rockContext );
+                var transactionDetailsInRock = transactionDetailService.Queryable();
+
+                // You have a list of all the transactions from NMI for the time period requested (transactionFromNMI).
+                // You also have a list of all the transactions in Rock (transactionsInRock).
+                // Next you need to filter out the transactions in transactionFromNMI based on if they are in transactionsInRock or not.
+                var result = transactionsFromNMI.Where( tn => 
+                    ( !transactionsInRock.Any( tr => tr.TransactionCode == tn.TransactionCode ) )
+                    ).ToList();
+
+                // Get the transactions from NMI that do not have matching amount values in Rock.
+                var result2 = transactionsFromNMI.Where( tn =>
+                    ( transactionDetailsInRock.Where( td =>
+                        td.TransactionId == transactionsInRock.Select( tr => tr.Id ).FirstOrDefault() )
+                        .Sum( td => td.Amount )
+                    ) != tn.TransactionDetails.Select( d => d.Amount ).FirstOrDefault() ).ToList();
+
+                //result.AddRange( result2 );
+                var result3 = result.Union( result2 );
 
                 // Show the transactions that are left after the filtering in the grid.
-                gTransactions.DataSource = result.Select( t => new
+                gTransactions.DataSource = result3.Select( t => new
                 {
+                    Name = t.ForeignKey,
+                    EmailAddress = t.CheckMicrEncrypted,
                     t.TransactionDateTime,
-                    t.Amount,
-                    t.TransactionCode
+                    Amount = t.TransactionDetails.Select( d => d.Amount ).FirstOrDefault(),
+                    TotalAmount = t.TotalAmount,
+                    t.TransactionCode,
+                    t.Status
                 } ).ToList();
                 gTransactions.DataBind();
             }
@@ -176,11 +209,11 @@ namespace RockWeb.Plugins.cc_newspring.Blocks.NMITransactions
         /// <param name="endDate">The end date.</param>
         /// <param name="errorMessage">The error message.</param>
         /// <returns></returns>
-        public List<Payment> GetTransactions( FinancialGateway financialGateway, DateTime startDate, DateTime endDate, out string errorMessage )
+        public List<FinancialTransaction> GetTransactions( FinancialGateway financialGateway, DateTime startDate, DateTime endDate, out string errorMessage )
         {
             errorMessage = string.Empty;
 
-            var txns = new List<Payment>();
+            var txns = new List<FinancialTransaction>();
 
             var restClient = new RestClient( GetAttributeValue( financialGateway, "QueryUrl" ) );
             var restRequest = new RestRequest( Method.GET );
@@ -212,10 +245,11 @@ namespace RockWeb.Plugins.cc_newspring.Blocks.NMITransactions
                                     string subscriptionId = GetXElementValue( xTxn, "original_transaction_id" ).Trim();
                                     if ( !string.IsNullOrWhiteSpace( subscriptionId ) )
                                     {
-                                        Payment payment = null;
+                                        FinancialTransaction transaction = null;
                                         var statusMessage = new StringBuilder();
-                                        foreach ( var xAction in xTxn.Elements( "action" ) )
-                                        {
+                                        var xAction = xTxn.Elements( "action" ).Last();
+                                        //foreach ( var xAction in xTxn.Elements( "action" ) )
+                                        //{
                                             DateTime? actionDate = ParseDateValue( GetXElementValue( xAction, "date" ) );
                                             string actionType = GetXElementValue( xAction, "action_type" );
                                             string responseText = GetXElementValue( xAction, "response_text" );
@@ -226,26 +260,33 @@ namespace RockWeb.Plugins.cc_newspring.Blocks.NMITransactions
                                                     actionType.FixCase(), responseText );
                                                 statusMessage.AppendLine();
                                             }
-                                            if ( payment == null && actionType == "sale" && GetXElementValue( xAction, "source" ) == "recurring" )
+                                            if ( transaction == null && actionType == "sale" )
                                             {
                                                 decimal? txnAmount = GetXElementValue( xAction, "amount" ).AsDecimalOrNull();
                                                 if ( txnAmount.HasValue && actionDate.HasValue )
                                                 {
-                                                    payment = new Payment();
-                                                    payment.Status = GetXElementValue( xTxn, "condition" ).FixCase();
-                                                    payment.IsFailure = payment.Status == "Failed";
-                                                    payment.StatusMessage = GetXElementValue( xTxn, "response_text" );
-                                                    payment.Amount = txnAmount.Value;
-                                                    payment.TransactionDateTime = actionDate.Value;
-                                                    payment.TransactionCode = GetXElementValue( xTxn, "transaction_id" );
-                                                    payment.GatewayScheduleId = subscriptionId;
+                                                    transaction = new FinancialTransaction();
+                                                    transaction.Status = GetXElementValue( xTxn, "condition" ).FixCase();
+                                                    //transaction.IsFailure = payment.Status == "Failed";
+                                                    transaction.StatusMessage = GetXElementValue( xTxn, "response_text" );
+                                                    // this will hold the transaction amount
+                                                    var transactionDetails = new FinancialTransactionDetail();
+                                                    transactionDetails.Amount = txnAmount.Value;
+                                                    transaction.TransactionDetails.Add(transactionDetails);
+                                                    transaction.TransactionDateTime = actionDate.Value;
+                                                    transaction.TransactionCode = GetXElementValue( xTxn, "transaction_id" );
+                                                    // this will hold the name
+                                                    transaction.ForeignKey = GetXElementValue( xTxn, "first_name" ) + " " + GetXElementValue( xTxn, "last_name" );
+                                                    // this will hold the email
+                                                    transaction.CheckMicrEncrypted = GetXElementValue( xTxn, "email" );
+
                                                 }
                                             }
-                                        }
-                                        if ( payment != null )
+                                        //}
+                                        if ( transaction != null )
                                         {
-                                            payment.StatusMessage = statusMessage.ToString();
-                                            txns.Add( payment );
+                                            transaction.StatusMessage = statusMessage.ToString();
+                                            txns.Add( transaction );
                                         }
                                     }
                                 }
