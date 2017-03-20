@@ -135,31 +135,6 @@ namespace RockWeb.Plugins.cc_newspring.Blocks.NMITransactions
 
                 var transactionsFromNMI = new List<FinancialTransaction>();
                 transactionsFromNMI = GetTransactions( financialGateway, startDate, endDate, out errorMessage );
-
-                var newTransactionOne = new FinancialTransaction();
-                newTransactionOne.Status = "Success";
-                newTransactionOne.StatusMessage = "SUCCESS";
-                var transactionOneDetails = new FinancialTransactionDetail();
-                transactionOneDetails.Amount = 300;
-                newTransactionOne.TransactionDetails.Add( transactionOneDetails );
-                newTransactionOne.TransactionDateTime = DateTime.Now;
-                newTransactionOne.TransactionCode = "123";
-                newTransactionOne.ForeignKey = "Richard Dubay";
-                newTransactionOne.CheckMicrEncrypted = "richard.dubay@newspring.cc";
-                transactionsFromNMI.Add( newTransactionOne );
-
-                var newTransactionTwo = new FinancialTransaction();
-                newTransactionTwo.Status = "Success";
-                newTransactionTwo.StatusMessage = "SUCCESS";
-                var transactionTwoDetails = new FinancialTransactionDetail();
-                transactionTwoDetails.Amount = 5000;
-                newTransactionTwo.TransactionDetails.Add( transactionTwoDetails );
-                newTransactionTwo.TransactionDateTime = DateTime.Now;
-                newTransactionTwo.TransactionCode = "456";
-                newTransactionTwo.ForeignKey = "James Baxley";
-                newTransactionTwo.CheckMicrEncrypted = "james.baxley@newspring.cc";
-                transactionsFromNMI.Add( newTransactionTwo );
-
                 transactionsFromNMI.ToList();
 
                 
@@ -169,25 +144,40 @@ namespace RockWeb.Plugins.cc_newspring.Blocks.NMITransactions
                 FinancialTransactionDetailService transactionDetailService = new FinancialTransactionDetailService( rockContext );
                 var transactionDetailsInRock = transactionDetailService.Queryable();
 
-                // You have a list of all the transactions from NMI for the time period requested (transactionFromNMI).
-                // You also have a list of all the transactions in Rock (transactionsInRock).
-                // Next you need to filter out the transactions in transactionFromNMI based on if they are in transactionsInRock or not.
-                var result = transactionsFromNMI.Where( tn => 
+                // Get a list of all transactions from NMI that do not have a matching transaction
+                // code in Rock.
+                List<FinancialTransaction> missing = transactionsFromNMI.Where( tn => 
                     ( !transactionsInRock.Any( tr => tr.TransactionCode == tn.TransactionCode ) )
                     ).ToList();
 
-                // Get the transactions from NMI that do not have matching amount values in Rock.
-                var result2 = transactionsFromNMI.Where( tn =>
-                    ( transactionDetailsInRock.Where( td =>
-                        td.TransactionId == transactionsInRock.Select( tr => tr.Id ).FirstOrDefault() )
-                        .Sum( td => td.Amount )
-                    ) != tn.TransactionDetails.Select( d => d.Amount ).FirstOrDefault() ).ToList();
+                // This is another way to do the transactions from NMI that are in Rock but do not
+                // have matching amounts. We think the way below is probably faster.
+                // List<FinancialTransaction> notMissing = transactionsInRock.AsEnumerable().Where( tr =>
+                //     ( transactionsFromNMI.Any( tn => tn.TransactionCode == tr.TransactionCode ) ) )
+                //     .ToList();
 
-                //result.AddRange( result2 );
-                var result3 = result.Union( result2 );
+                // Get a list of all transactions from NMI that are in Rock but do not have matching amounts.
+                // Step 1: List of all the transaction codes from the NMI extract.
+                List<String> codes = transactionsFromNMI.Select( t => t.TransactionCode ).ToList();
+
+                // Step 2: Get a list of all the transactions from Rock that match the codes from Step 1.
+                List<FinancialTransaction> notMissing = transactionsInRock.Where( tr =>
+                    codes.Contains( tr.TransactionCode )
+                ).ToList();
+
+                // Step 3: Create a list of all transactions in Rock that do not match amounts.
+                List<FinancialTransaction> wrongAmount = notMissing.Where( nm =>
+                    ( transactionDetailsInRock.Where( td =>
+                        td.TransactionId == nm.Id ).Sum( td => td.Amount )
+                    ) != nm.TotalAmount
+                ).ToList();
+
+                // Combine the missing codes list with the non-matching amount list to create a list to
+                // display in the block grid.
+                List<FinancialTransaction> transactionsToList = missing.Union( wrongAmount ).ToList();
 
                 // Show the transactions that are left after the filtering in the grid.
-                gTransactions.DataSource = result3.Select( t => new
+                gTransactions.DataSource = transactionsToList.Select( t => new
                 {
                     Name = t.ForeignKey,
                     EmailAddress = t.CheckMicrEncrypted,
