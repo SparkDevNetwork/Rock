@@ -55,8 +55,6 @@
                                         Help="When enabled will update the page title with the channel's name unless there is a item id in the query string then it will display the item's title." />
                                 </div>
                                 <div class="col-md-6">
-                                    <Rock:RockCheckBox ID="cbDebug" runat="server" Label="Enable Debug" Text="Yes"
-                                        Help="Enabling debug will display the fields of the first 5 items to help show you whats available for your template." />
                                     <Rock:RockCheckBox ID="cbMergeContent" runat="server" Label="Merge Content" Text="Yes"
                                         Help="Enabling will result in the content data and attribute values to be merged using the liquid template engine." />
                                     <Rock:PagePicker ID="ppDetailPage" runat="server" Label="Detail Page" />

@@ -46,7 +46,6 @@ namespace RockWeb.Blocks.Groups
     [CodeEditorField( "Already In Group Message", "Lava template to display when person is already in the group with that role.", CodeEditorMode.Lava, CodeEditorTheme.Rock, 300, true, @"<div class='alert alert-warning'>
     {{ Person.NickName }} is already in the group '{{ Group.Name }}' with the role of {{ Role.Name }}.
 </div>" )]
-    [BooleanField("Enable Debug", "Shows the Lava variables availabled for this block")]
     [EnumField("Group Member Status", "The status to use when adding a person to the group.", typeof(GroupMemberStatus), true, "Active")]
     public partial class GroupMemberAddFromUrl : Rock.Web.UI.RockBlock
     {
@@ -183,14 +182,6 @@ namespace RockWeb.Blocks.Groups
                 mergeFields.Add( "Person", person );
                 mergeFields.Add( "Role", groupMemberRole );
                 mergeFields.Add( "CurrentPerson", CurrentPerson );
-
-                // show debug info?
-                bool enableDebug = GetAttributeValue( "EnableDebug" ).AsBoolean();
-                if ( enableDebug && IsUserAuthorized( Authorization.EDIT ) )
-                {
-                    lDebug.Visible = true;
-                    lDebug.Text = mergeFields.lavaDebugInfo();
-                }
 
                 // ensure that the person is not already in the group
                 if ( group.Members.Where( m => m.PersonId == person.Id && m.GroupRoleId == groupMemberRole.Id ).Count() != 0 )

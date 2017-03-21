@@ -47,7 +47,6 @@ namespace RockWeb.Blocks.Event
     [IntegerField( "Max Occurrences", "The maximum number of occurrences to show.", false, 100, order: 5 )]
 
     [CodeEditorField( "Lava Template", "The lava template to use for the results", CodeEditorMode.Lava, CodeEditorTheme.Rock, defaultValue: "{% include '~~/Assets/Lava/EventItemList.lava' %}", order: 6 )]
-    [BooleanField( "Enable Debug", "Show the lava merge fields.", order: 7 )]
     public partial class EventItemListLava : RockBlock
     {
         #region Properties
@@ -222,17 +221,6 @@ namespace RockWeb.Blocks.Event
 
             lContent.Text = GetAttributeValue( "LavaTemplate" ).ResolveMergeFields( mergeFields );
 
-            // show debug info
-            if ( GetAttributeValue( "EnableDebug" ).AsBoolean() && IsUserAuthorized( Authorization.EDIT ) )
-            {
-                lDebug.Visible = true;
-                lDebug.Text = mergeFields.lavaDebugInfo();
-            }
-            else
-            {
-                lDebug.Visible = false;
-                lDebug.Text = string.Empty;
-            }
         }
 
         #endregion
