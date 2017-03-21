@@ -59,7 +59,6 @@ namespace RockWeb.Blocks.Prayer
 
     [CodeEditorField( "Save Success Text", "Text to display upon successful save. (Only applies if not navigating to parent page on save.) <span class='tip tip-lava'></span><span class='tip tip-html'></span>", CodeEditorMode.Html, CodeEditorTheme.Rock, 200, false, "<p>Thank you for allowing us to pray for you.</p>", "On Save Behavior", 13 )]
     [WorkflowTypeField( "Workflow", "An optional workflow to start when prayer request is created. The PrayerRequest will be set as the workflow 'Entity' attribute when processing is started.", false, false, "", "On Save Behavior", 14 )]
-    [BooleanField( "Enable Debug", "Outputs the object graph to help create your liquid syntax.", false, "On Save Behavior", 15 )]
 
     [ContextAware(typeof(Rock.Model.Person))]
     public partial class PrayerRequestEntry : RockBlock
@@ -297,11 +296,6 @@ namespace RockWeb.Blocks.Prayer
                 string themeRoot = ResolveRockUrl( "~~/" );
                 nbMessage.Text = nbMessage.Text.Replace( "~~/", themeRoot ).Replace( "~/", appRoot );
 
-                // show liquid help for debug
-                if ( GetAttributeValue( "EnableDebug" ).AsBoolean() && IsUserAuthorized( Authorization.EDIT ) )
-                {
-                    nbMessage.Text += mergeFields.lavaDebugInfo();
-                }
             }
         }
 

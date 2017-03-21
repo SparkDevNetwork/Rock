@@ -55,7 +55,6 @@ namespace RockWeb.Blocks.Event
     [DefinedValueField( Rock.SystemGuid.DefinedType.FINANCIAL_SOURCE_TYPE, "Source", "The Financial Source Type to use when creating transactions", false, false, Rock.SystemGuid.DefinedValue.FINANCIAL_SOURCE_TYPE_WEBSITE, "", 2 )]
     [TextField( "Batch Name Prefix", "The batch prefix name to use when creating a new batch", false, "Event Registration", "", 3 )]
     [BooleanField( "Display Progress Bar", "Display a progress bar for the registration.", true, "", 4 )]
-    [BooleanField( "Enable Debug", "Display the merge fields that are available for lava ( Success Page ).", false, "", 5 )]
     [BooleanField( "Allow InLine Digital Signature Documents", "Should inline digital documents be allowed? This requires that the registration template is configured to display the document inline", true, "", 6, "SignInline" )]
     [SystemEmailField( "Confirm Account Template", "Confirm Account Email Template", false, Rock.SystemGuid.SystemEmail.SECURITY_CONFIRM_ACCOUNT, "", 7 )]
     public partial class RegistrationEntry : RockBlock
@@ -3538,13 +3537,6 @@ namespace RockWeb.Blocks.Event
                     else
                     {
                         lSuccess.Text = "You have successfully completed this " + RegistrationTerm.ToLower();
-                    }
-
-                    // show debug info
-                    if ( GetAttributeValue( "EnableDebug" ).AsBoolean() && UserCanEdit )
-                    {
-                        lSuccessDebug.Visible = true;
-                        lSuccessDebug.Text = mergeFields.lavaDebugInfo();
                     }
 
                 }
