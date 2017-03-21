@@ -1,5 +1,5 @@
 ﻿// <copyright>
-// Copyright by the Central Christian Church
+// Copyright by Central Christian Church
 //
 // Licensed under the Rock Community License (the "License");
 // you may not use this file except in compliance with the License.
@@ -19,11 +19,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
+
 using com.centralaz.RoomManagement.Model;
+
 using Rock.Data;
 using Rock.Model;
-using Rock.Rest;
-using Rock.Rest.Controllers;
 using Rock.Rest.Filters;
 using Rock.Security;
 using Rock.Web.Cache;

@@ -17,16 +17,14 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.ComponentModel;
-using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using System.Linq;
 using System.Runtime.Serialization;
+
 using Rock;
 using Rock.Data;
 using Rock.Model;
-using DDay.iCal;
 namespace com.centralaz.RoomManagement.Model
 {
     /// <summary>
@@ -85,6 +83,7 @@ namespace com.centralaz.RoomManagement.Model
 
         public virtual ReservationMinistry ReservationMinistry { get; set; }
 
+        [LavaInclude]
         public virtual ReservationStatus ReservationStatus { get; set; }
 
         public virtual PersonAlias RequesterAlias { get; set; }

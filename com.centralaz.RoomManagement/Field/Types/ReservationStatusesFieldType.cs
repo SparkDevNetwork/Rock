@@ -1,5 +1,5 @@
 ﻿// <copyright>
-// Copyright by the Spark Development Network
+// Copyright by Central Christian Church
 //
 // Licensed under the Rock Community License (the "License");
 // you may not use this file except in compliance with the License.
@@ -14,20 +14,20 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
-using Rock;
-using Rock.Field;
-using Rock.Field.Types;
-using Rock.Data;
-using Rock.Web.Cache;
+
 using com.centralaz.RoomManagement.Model;
-using Rock.Web.UI.Controls;
-using System;
+
+using Rock;
+using Rock.Data;
+using Rock.Field;
 using Rock.Model;
 using Rock.Reporting;
+using Rock.Web.UI.Controls;
 
 namespace com.centralaz.RoomManagement.Field.Types
 {

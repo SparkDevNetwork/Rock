@@ -19,16 +19,14 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Web.UI;
+using System.Web.UI.WebControls;
+using com.centralaz.RoomManagement.Model;
 using Rock;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
-using Rock.Security;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
-
-using com.centralaz.RoomManagement.Model;
-using System.Web.UI.WebControls;
 
 namespace RockWeb.Plugins.com_centralaz.RoomManagement
 {

@@ -14,13 +14,8 @@
 // limitations under the License.
 // </copyright>
 //
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
 using Rock.Plugin;
+
 namespace com.centralaz.RoomManagement.Migrations
 {
     [MigrationNumber( 1, "1.4.5" )]
@@ -386,10 +381,11 @@ namespace com.centralaz.RoomManagement.Migrations
             RockMigrationHelper.UpdateEntityType( "com.centralaz.RoomManagement.Model.Resource", "35584736-8FE2-48DA-9121-3AFD07A2DA8D", true, true );
 
             RockMigrationHelper.UpdateFieldType( "ReservationStatuses", "", "com.centralaz.RoomManagement", "com.centralaz.RoomManagement.Field.Types.ReservationStatusesFieldType", "335E190C-88FE-4BE2-BE36-3F8B85AF39F2" );
-
         }
         public override void Down()
         {
+            RockMigrationHelper.DeleteFieldType( "335E190C-88FE-4BE2-BE36-3F8B85AF39F2" );
+
             RockMigrationHelper.DeleteEntityType( "839768A3-10D6-446C-A65B-B8F9EFD7808F" );
             RockMigrationHelper.DeleteEntityType( "07084E96-2907-4741-80DF-016AB5981D12" );
             RockMigrationHelper.DeleteEntityType( "5DFCA44E-7090-455C-8C7B-D02CF6331A0F" );

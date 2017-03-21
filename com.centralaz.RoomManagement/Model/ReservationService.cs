@@ -17,11 +17,9 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+
 using Rock;
 using Rock.Data;
-using Rock.Model;
 
 namespace com.centralaz.RoomManagement.Model
 {

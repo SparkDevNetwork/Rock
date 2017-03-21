@@ -14,13 +14,8 @@
 // limitations under the License.
 // </copyright>
 //
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
 using Rock.Plugin;
+
 namespace com.centralaz.RoomManagement.Migrations
 {
     [MigrationNumber( 2, "1.4.5" )]

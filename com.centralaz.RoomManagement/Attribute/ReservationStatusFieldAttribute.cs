@@ -21,46 +21,48 @@ using Rock.Attribute;
 namespace com.centralaz.RoomManagement.Attribute
 {
     /// <summary>
-    /// Field Attribute to select 0 or more ReservationStatuses stored as a comma-delimited list of ReservationStatus.Guid
+    /// Field Attribute to select 0 or 1 ReservationStatus
     /// </summary>
     [AttributeUsage( AttributeTargets.Class, AllowMultiple = true, Inherited = true )]
-    public class ReservationStatusesFieldAttribute : FieldAttribute
+    public class ReservationStatusFieldAttribute : FieldAttribute
     {
         private const string INCLUDE_INACTIVE_KEY = "includeInactive";
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="ReservationStatusesFieldAttribute" /> class.
+        /// Initializes a new instance of the <see cref="ReservationStatusFieldAttribute" /> class.
         /// </summary>
         /// <param name="name">The name.</param>
         /// <param name="description">The description.</param>
         /// <param name="required">if set to <c>true</c> [required].</param>
-        /// <param name="defaultReservationStatusGuids">The default reservation status guids.</param>
+        /// <param name="defaultReservationStatusId">The default reservationStatus id.</param>
         /// <param name="category">The category.</param>
         /// <param name="order">The order.</param>
         /// <param name="key">The key.</param>
-        public ReservationStatusesFieldAttribute( string name = "ReservationStatuses", string description = "", bool required = true, string defaultReservationStatusGuids = "", string category = "", int order = 0, string key = null, string fieldTypeAssembly = "com.centralaz.RoomManagement")
-            : base( name, description, required, defaultReservationStatusGuids, category, order, key, typeof( com.centralaz.RoomManagement.Field.Types.ReservationStatusesFieldType ).FullName, fieldTypeAssembly )
+        public ReservationStatusFieldAttribute( string name = "ReservationStatus", string description = "", bool required = true, string defaultReservationStatusId = "", string category = "", int order = 0, string key = null, string fieldTypeAssembly = "com.centralaz.RoomManagement" )
+            : base( name, description, required, defaultReservationStatusId, category, order, key, typeof( com.centralaz.RoomManagement.Field.Types.ReservationStatusFieldType ).FullName )
         {
             var includeInactiveConfigValue = new Rock.Field.ConfigurationValue( "False" );
             FieldConfigurationValues.Add( INCLUDE_INACTIVE_KEY, includeInactiveConfigValue );
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="ReservationStatusesFieldAttribute" /> class.
+        /// Initializes a new instance of the <see cref="ReservationStatusFieldAttribute"/> class.
         /// </summary>
         /// <param name="name">The name.</param>
         /// <param name="description">The description.</param>
         /// <param name="required">if set to <c>true</c> [required].</param>
-        /// <param name="defaultReservationStatusGuids">The default reservation status guids.</param>
+        /// <param name="defaultReservationStatusId">The default reservationStatus identifier.</param>
         /// <param name="includeInactive">if set to <c>true</c> [include inactive].</param>
         /// <param name="category">The category.</param>
         /// <param name="order">The order.</param>
         /// <param name="key">The key.</param>
-        public ReservationStatusesFieldAttribute( string name = "ReservationStatuses", string description = "", bool required = true, string defaultReservationStatusGuids = "", bool includeInactive = false, string category = "", int order = 0, string key = null, string fieldTypeAssembly = "com.centralaz.RoomManagement" )
-            : base( name, description, required, defaultReservationStatusGuids, category, order, key, typeof( com.centralaz.RoomManagement.Field.Types.ReservationStatusesFieldType ).FullName, fieldTypeAssembly )
+        public ReservationStatusFieldAttribute( string name = "ReservationStatus", string description = "", bool required = true, string defaultReservationStatusId = "", bool includeInactive = false, string category = "", int order = 0, string key = null, string fieldTypeAssembly = "com.centralaz.RoomManagement" )
+            : base( name, description, required, defaultReservationStatusId, category, order, key, typeof( com.centralaz.RoomManagement.Field.Types.ReservationStatusFieldType ).FullName )
         {
             var includeInactiveConfigValue = new Rock.Field.ConfigurationValue( includeInactive.ToString() );
             FieldConfigurationValues.Add( INCLUDE_INACTIVE_KEY, includeInactiveConfigValue );
         }
+
+
     }
 }

@@ -17,21 +17,16 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Web;
-using System.IO;
+
+using com.centralaz.RoomManagement.Attribute;
+using com.centralaz.RoomManagement.Model;
 
 using Quartz;
 
 using Rock;
 using Rock.Attribute;
-using Rock.Model;
 using Rock.Data;
-using Rock.Web.Cache;
-using com.centralaz.RoomManagement.Model;
-using com.centralaz.RoomManagement.Attribute;
-using Rock.Web;
-using Rock.Web.UI;
-using Rock.Communication;
+using Rock.Model;
 using Rock.Web.UI.Controls;
 
 namespace com.centralaz.RoomManagement.Jobs
@@ -117,7 +112,7 @@ namespace com.centralaz.RoomManagement.Jobs
                     try
                     {
                         var workflowService = new WorkflowService( rockContext );
-                        var workflow = Workflow.Activate( workflowType, reservation.Name );
+                        var workflow = Rock.Model.Workflow.Activate( workflowType, reservation.Name );
                         workflow.LoadAttributes();
                         workflow.SetAttributeValue( "ReservationId", reservation.Id.ToString() );
                         List<string> workflowErrors;

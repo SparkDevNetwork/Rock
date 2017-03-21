@@ -23,14 +23,13 @@ using System.Linq.Expressions;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
-using Rock;
-using Rock.Data;
-using Rock.Model;
-using Rock.Reporting;
-using Rock.Web.UI.Controls;
-
 using com.centralaz.RoomManagement.Model;
 using com.centralaz.RoomManagement.Web.UI.Controls;
+
+using Rock;
+using Rock.Data;
+using Rock.Reporting;
+using Rock.Web.UI.Controls;
 
 namespace com.centralaz.RoomManagement.DataFilter.Reservation
 {

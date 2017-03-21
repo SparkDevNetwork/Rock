@@ -75,12 +75,18 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Attribute\ReservationFieldAttribute.cs" />
+    <Compile Include="Attribute\ReservationStatusFieldAttribute.cs" />
     <Compile Include="Attribute\ReservationStatusesFieldAttribute.cs" />
     <Compile Include="Controllers\ScheduledLocationsController.Partial.cs" />
     <Compile Include="Controllers\ScheduledResourcesController.Partial.cs" />
     <Compile Include="DataFilter\Reservation\ReservationInDateRangeFilter.cs" />
+    <Compile Include="Field\Types\ReservationStatusFieldType.cs" />
+    <Compile Include="Field\Types\ReservationFieldType.cs" />
     <Compile Include="Field\Types\ReservationStatusesFieldType.cs" />
     <Compile Include="Jobs\FireWorkflowFromReservationInDateRange.cs" />
+    <Compile Include="Migrations\005_ ReservationUpdate.cs" />
+    <Compile Include="Migrations\004_Workflow.cs" />
     <Compile Include="Migrations\003_SampleData.cs" />
     <Compile Include="Migrations\002_Pages.cs" />
     <Compile Include="Migrations\001_CreateDb.cs" />
@@ -106,6 +112,8 @@
     <Compile Include="SystemGuid\ReservationStatus.cs" />
     <Compile Include="Transactions\ReservationChangeTransaction.cs" />
     <Compile Include="Web\Cache\ReservationMinistryCache.cs" />
+    <Compile Include="Web\UI\Controls\Pickers\ReservationStatusPicker.cs" />
+    <Compile Include="Web\UI\Controls\Pickers\ReservationPicker.cs" />
     <Compile Include="Web\UI\Controls\Pickers\ReservationStatusesPicker.cs" />
     <Compile Include="Web\UI\Controls\Pickers\ScheduledLocationItemPicker.cs" />
     <Compile Include="Web\UI\Controls\Pickers\ScheduledResourcePicker.cs" />

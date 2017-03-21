@@ -19,7 +19,6 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
-using Rock.Model;
 
 namespace com.centralaz.RoomManagement.Model
 {
@@ -108,7 +107,7 @@ namespace com.centralaz.RoomManagement.Model
         /// <value>
         /// The workflow.
         /// </value>
-        public virtual Workflow Workflow { get; set; }
+        public virtual Rock.Model.Workflow Workflow { get; set; }
 
         #endregion
 
@@ -126,7 +125,7 @@ namespace com.centralaz.RoomManagement.Model
         {
             this.HasRequired( p => p.ReservationWorkflowTrigger ).WithMany().HasForeignKey( p => p.ReservationWorkflowTriggerId ).WillCascadeOnDelete( false );
             this.HasRequired( p => p.Reservation ).WithMany( p => p.ReservationWorkflows ).HasForeignKey( p => p.ReservationId ).WillCascadeOnDelete( true );
-            this.HasRequired( p => p.Workflow ).WithMany().HasForeignKey( p => p.WorkflowId ).WillCascadeOnDelete( false );
+            this.HasRequired( p => p.Workflow ).WithMany().HasForeignKey( p => p.WorkflowId ).WillCascadeOnDelete( true );
         }
     }
 

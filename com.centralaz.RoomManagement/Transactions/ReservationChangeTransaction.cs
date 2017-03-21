@@ -28,7 +28,7 @@ using Rock.Transactions;
 namespace com.centralaz.RoomManagement.Transactions
 {
     /// <summary>
-    /// Launches a connection request change workflow
+    /// Launches a reservation change workflow
     /// </summary>
     public class ReservationChangeTransaction : ITransaction
     {
@@ -43,14 +43,14 @@ namespace com.centralaz.RoomManagement.Transactions
         /// <param name="entry">The entry.</param>
         public ReservationChangeTransaction( DbEntityEntry entry )
         {
-            // If entity was a connection request, save the values
+            // If entity was a reservation, save the values
             var reservation = entry.Entity as Reservation;
             if ( reservation != null )
             {
                 State = entry.State;
                 ReservationStatusId = reservation.ReservationStatusId;
 
-                // If this isn't a new connection request, get the previous state and role values
+                // If this isn't a new reservation, get the previous state and role values
                 if ( State != EntityState.Added )
                 {
                     var dbStatusProperty = entry.Property( "ReservationStatusId" );
@@ -60,7 +60,7 @@ namespace com.centralaz.RoomManagement.Transactions
                     }
                 }
 
-                // If this isn't a deleted connection request, get the connection request guid
+                // If this isn't a deleted reservation, get the reservation guid
                 if ( State != EntityState.Deleted )
                 {
                     ReservationGuid = reservation.Guid;

@@ -18,7 +18,7 @@ using System;
 using System.Collections.Generic;
 using System.Data.Entity;
 using System.Runtime.Caching;
-using com.centralaz.RoomManagement.Model;
+
 using Rock.Data;
 using Rock.Web.Cache;
 
