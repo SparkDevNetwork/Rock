@@ -55,6 +55,8 @@ namespace RockWeb.Plugins.cc_newspring.Blocks.NMITransactions
             gfTransactions.ApplyFilterClick += gfTransactions_ApplyFilterClick;
             gfTransactions.ClearFilterClick += gfTransactions_ClearFilterClick;
             gfTransactions.DisplayFilterValue += gfTransactions_DisplayFilterValue;
+            gTransactions.GridRebind += gTransactions_GridRebind;
+            gTransactions.GridReorder += gTransactions_GridReorder;
             if ( !Page.IsPostBack)
             {
                 string title = GetAttributeValue( "Title" );
@@ -67,6 +69,16 @@ namespace RockWeb.Plugins.cc_newspring.Blocks.NMITransactions
                 BindFilter();
                 BindGrid();
             }
+        }
+
+        private void gTransactions_GridReorder( object sender, GridReorderEventArgs e )
+        {
+            //BindGrid();
+        }
+
+        private void gTransactions_GridRebind( object sender, GridRebindEventArgs e )
+        {
+            BindGrid();
         }
 
         private void gfTransactions_DisplayFilterValue( object sender, GridFilter.DisplayFilterValueArgs e )
@@ -143,6 +155,7 @@ namespace RockWeb.Plugins.cc_newspring.Blocks.NMITransactions
                 var transactionsInRock = transactionService.Queryable();
                 FinancialTransactionDetailService transactionDetailService = new FinancialTransactionDetailService( rockContext );
                 var transactionDetailsInRock = transactionDetailService.Queryable();
+                SortProperty sort = gTransactions.SortProperty;
 
                 // Get a list of all transactions from NMI that do not have a matching transaction
                 // code in Rock.
@@ -176,6 +189,16 @@ namespace RockWeb.Plugins.cc_newspring.Blocks.NMITransactions
                 // display in the block grid.
                 List<FinancialTransaction> transactionsToList = missing.Union( wrongAmount ).ToList();
 
+                SortProperty sortProperty = gTransactions.SortProperty;
+                if ( sortProperty != null)
+                {
+                    transactionsToList.AsQueryable().Sort( sortProperty );
+                }
+                else
+                {
+                    transactionsToList.OrderByDescending( t => t.TransactionDateTime ).ThenByDescending( t => t.TransactionCode );
+                }
+
                 // Show the transactions that are left after the filtering in the grid.
                 gTransactions.DataSource = transactionsToList.Select( t => new
                 {
@@ -187,6 +210,7 @@ namespace RockWeb.Plugins.cc_newspring.Blocks.NMITransactions
                     t.Status,
                     t.StatusMessage
                 } ).ToList();
+
                 gTransactions.DataBind();
             }
         }
