@@ -554,6 +554,7 @@
     <Compile Include="Financial\CreditCardPaymentInfo.cs" />
     <Compile Include="Financial\GatewayComponent.cs" />
     <Compile Include="Financial\GatewayContainer.cs" />
+    <Compile Include="Financial\ITransactionDetail.cs" />
     <Compile Include="Financial\Payment.cs" />
     <Compile Include="Financial\PaymentInfo.cs" />
     <Compile Include="Financial\PaymentSchedule.cs" />
