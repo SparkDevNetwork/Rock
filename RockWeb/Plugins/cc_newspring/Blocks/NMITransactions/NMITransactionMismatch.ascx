@@ -22,15 +22,14 @@
                         <Rock:ModalAlert ID="mdGridWarning" runat="server" />
 
                         <Rock:Grid ID="gTransactions" runat="server" EmptyDataText="No Transactions Found" 
-                            RowItemText="Transaction" AllowSorting="true" ExportSource="ColumnOutput" >
+                            RowItemText="Transaction" ExportSource="ColumnOutput" AllowSorting="true" >
                             <Columns>
                                 <Rock:RockBoundField DataField="Name" HeaderText="Name" SortExpression="Name" />
-                                <Rock:RockBoundField DataField="EmailAddress" HeaderText="Email Address" SortExpression="EmalAddress" />
+                                <Rock:RockBoundField DataField="EmailAddress" HeaderText="Email Address" SortExpression="EmailAddress" />
                                 <Rock:RockBoundField DataField="TransactionDateTime" HeaderText="Date / Time" SortExpression="TransactionDateTime" />
                                 <Rock:CurrencyField DataField="Amount" HeaderText="Amount" SortExpression="Amount" />
                                 <Rock:RockBoundField DataField="TransactionCode" HeaderText="Transaction Code" SortExpression="TransactionCode" ColumnPriority="DesktopSmall" />
-                                <Rock:RockBoundField DataField="Status" HeaderText="Transaction Status"
-                                SortExpression="Status" />
+                                <Rock:RockBoundField DataField="Status" HeaderText="Transaction Status" SortExpression="Status" />
                                 <Rock:RockBoundField DataField="StatusMessage" HeaderText="Status Message" SortExpression="StatusMessage" />
                             </Columns>
                         </Rock:Grid>
