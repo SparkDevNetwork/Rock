@@ -119,12 +119,11 @@ namespace RockWeb.Plugins.com_centralaz.ChurchMetrics
                     campusName = CampusCache.Read( campusId.Value ).Name;
                 }
 
-                lTitle.Text = String.Format( "{0} Weekend Metrics for {1} - {2}", campusName, mondayDate.ToString( "M/d" ), sundayDate.Value.ToString("M/d") );
-
                 var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson );
-                mergeFields.Add( "SundayDate", sundayDate.Value.ToShortDateString().EncodeHtml() );
+                mergeFields.Add( "SundayDate", sundayDate );
+                mergeFields.Add( "MondayDate", mondayDate );
+                mergeFields.Add( "CampusName", campusName );
                 lOutput.Text = GetAttributeValue( "LavaTemplate" ).ResolveMergeFields( mergeFields );
-
             }
             else
             {
@@ -178,7 +177,11 @@ namespace RockWeb.Plugins.com_centralaz.ChurchMetrics
                 }
                 else
                 {
-                    lTitle.Text = "No Metrics Available";
+                    var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson );
+                    mergeFields.Add( "SundayDate", null );
+                    mergeFields.Add( "MondayDate", null );
+                    mergeFields.Add( "CampusName", null );
+                    lOutput.Text = GetAttributeValue( "LavaTemplate" ).ResolveMergeFields( mergeFields );
                 }
 
             }

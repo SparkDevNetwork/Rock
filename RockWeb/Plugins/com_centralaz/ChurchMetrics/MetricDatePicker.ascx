@@ -4,23 +4,23 @@
     <ContentTemplate>
 
         <asp:Panel ID="pnlView" runat="server">
-            <div class="col-md-10">
-                <h1>
-                    <asp:Literal ID="lTitle" runat="server" /></h1>
-                <asp:Literal ID="lOutput" runat="server" />
-            </div>
-            <div class="col-md-2">
-                <div class="pull-right">
-                    <asp:Calendar ID="calCalendar" runat="server" DayNameFormat="FirstLetter" SelectionMode="Day" BorderStyle="Double"
-                        TitleStyle-BackColor="#ffffff" NextPrevStyle-ForeColor="#333333" FirstDayOfWeek="Sunday" Width="100%" CssClass="calendar-month" OnSelectionChanged="calCalendar_SelectionChanged">
-                        <DayStyle CssClass="calendar-day" />
-                        <TodayDayStyle CssClass="calendar-today" />
-                        <SelectedDayStyle CssClass="calendar-selected" BackColor="Transparent" />
-                        <OtherMonthDayStyle CssClass="calendar-last-month" />
-                        <DayHeaderStyle CssClass="calendar-day-header" />
-                        <NextPrevStyle CssClass="calendar-next-prev" />
-                        <TitleStyle CssClass="calendar-title" />
+            <div class="row">
+                <div class="col-md-10">
+                    <asp:Literal ID="lOutput" runat="server" />
+                </div>
+                <div class="col-md-2">
+                    <div class="pull-right">
+                        <asp:Calendar ID="calCalendar" runat="server" DayNameFormat="FirstLetter" SelectionMode="Day" BorderStyle="Double"
+                            TitleStyle-BackColor="#ffffff" NextPrevStyle-ForeColor="#333333" FirstDayOfWeek="Sunday" Width="100%" CssClass="calendar-month" OnSelectionChanged="calCalendar_SelectionChanged">
+                            <DayStyle CssClass="calendar-day" />
+                            <TodayDayStyle CssClass="calendar-today" />
+                            <SelectedDayStyle CssClass="calendar-selected" BackColor="Transparent" />
+                            <OtherMonthDayStyle CssClass="calendar-last-month" />
+                            <DayHeaderStyle CssClass="calendar-day-header" />
+                            <NextPrevStyle CssClass="calendar-next-prev" />
+                            <TitleStyle CssClass="calendar-title" />
                         </asp:Calendar>
+                    </div>
                 </div>
             </div>
         </asp:Panel>
