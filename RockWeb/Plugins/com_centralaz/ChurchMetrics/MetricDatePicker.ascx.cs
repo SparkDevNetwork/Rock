@@ -123,6 +123,8 @@ namespace RockWeb.Plugins.com_centralaz.ChurchMetrics
                 mergeFields.Add( "SundayDate", sundayDate );
                 mergeFields.Add( "MondayDate", mondayDate );
                 mergeFields.Add( "CampusName", campusName );
+                mergeFields.Add( "WeekOfYear", sundayDate.Value.GetWeekOfYear(System.Globalization.CalendarWeekRule.FirstDay, DayOfWeek.Monday) );
+                mergeFields.Add( "WeekOfMonth", sundayDate.Value.GetWeekOfMonth( DayOfWeek.Monday ) );
                 lOutput.Text = GetAttributeValue( "LavaTemplate" ).ResolveMergeFields( mergeFields );
             }
             else
