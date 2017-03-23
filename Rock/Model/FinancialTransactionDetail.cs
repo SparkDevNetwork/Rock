@@ -19,7 +19,9 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
+
 using Rock.Data;
+using Rock.Financial;
 
 namespace Rock.Model
 {
@@ -28,7 +30,7 @@ namespace Rock.Model
     /// </summary>
     [Table( "FinancialTransactionDetail" )]
     [DataContract]
-    public partial class FinancialTransactionDetail : Model<FinancialTransactionDetail>
+    public partial class FinancialTransactionDetail : Model<FinancialTransactionDetail>, ITransactionDetail
     {
         #region Entity Properties
 
