@@ -58,14 +58,26 @@ namespace Rock.Rest
             var principal = ControllerContext.Request.GetUserPrincipal();
             if ( principal != null && principal.Identity != null )
             {
-                var userLoginService = new Rock.Model.UserLoginService( new RockContext() );
-                var userLogin = userLoginService.GetByUserName( principal.Identity.Name );
-
-                if ( userLogin != null )
+                if ( principal.Identity.Name.StartsWith( "rckipid=" ) )
                 {
-                    var person = userLogin.Person;
-                    Request.Properties.Add( "Person", person );
-                    return userLogin.Person;
+                    var personService = new Model.PersonService( new RockContext() );
+                    var impersonatedPerson = personService.GetByEncryptedKey( principal.Identity.Name.Substring( 8 ) );
+                    if ( impersonatedPerson != null )
+                    {
+                        return impersonatedPerson;
+                    }
+                }
+                else
+                {
+                    var userLoginService = new Rock.Model.UserLoginService( new RockContext() );
+                    var userLogin = userLoginService.GetByUserName( principal.Identity.Name );
+
+                    if ( userLogin != null )
+                    {
+                        var person = userLogin.Person;
+                        Request.Properties.Add( "Person", person );
+                        return userLogin.Person;
+                    }
                 }
             }
 
