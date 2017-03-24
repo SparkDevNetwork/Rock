@@ -385,6 +385,7 @@ namespace Rock.Web.UI.Controls.Communication
             htmlMessage.MergeFields.Add( "Rock.Model.Person" );
             if ( !UseSimpleMode )
             {
+                htmlMessage.MergeFields.Add( "Communication.Subject|Subject" );
                 htmlMessage.MergeFields.Add( "Communication.MediumData.FromName|From Name" );
                 htmlMessage.MergeFields.Add( "Communication.MediumData.FromAddress|From Address" );
                 htmlMessage.MergeFields.Add( "Communication.MediumData.ReplyTo|Reply To" );
