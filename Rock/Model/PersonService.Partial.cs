@@ -1646,7 +1646,7 @@ namespace Rock.Model
                 rockContext,
                 typeof( Person ),
                 Rock.SystemGuid.Category.HISTORY_PERSON_DEMOGRAPHIC_CHANGES.AsGuid(),
-                groupMember.Id,
+                groupMember.Person.Id,
                 demographicChanges );
 
             if ( isFamilyGroup )
@@ -1655,7 +1655,7 @@ namespace Rock.Model
                     rockContext,
                     typeof( Person ),
                     Rock.SystemGuid.Category.HISTORY_PERSON_FAMILY_CHANGES.AsGuid(),
-                    groupMember.Id,
+                    groupMember.Person.Id,
                     memberChanges,
                     group.Name,
                     typeof( Group ),

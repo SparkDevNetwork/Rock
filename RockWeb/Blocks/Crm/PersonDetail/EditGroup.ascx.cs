@@ -1067,9 +1067,6 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 
                     foreach ( var groupMemberInfo in GroupMembers )
                     {
-                        var memberChanges = new List<string>();
-                        var demographicChanges = new List<string>();
-
                         var role = _groupType.Roles.Where( r => r.Guid.Equals( groupMemberInfo.RoleGuid ) ).FirstOrDefault();
                         if ( role == null )
                         {
@@ -1084,9 +1081,6 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                             Person person = null;
                             if ( groupMemberInfo.Id == -1 )
                             {
-                                // added new person
-                                demographicChanges.Add( "Created" );
-
                                 person = new Person();
 
                                 person.TitleValueId = groupMemberInfo.TitleValueId;
@@ -1132,25 +1126,14 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                                 return;
                             }
 
-                            if ( _isFamilyGroupType )
-                            {
-                                if ( person.RecordStatusValueId != recordStatusValueID )
-                                {
-                                    History.EvaluateChange( demographicChanges, "Record Status", DefinedValueCache.GetName( person.RecordStatusValueId ), DefinedValueCache.GetName( recordStatusValueID ) );
-                                    person.RecordStatusValueId = recordStatusValueID;
-                                }
-
-                                if ( person.RecordStatusReasonValueId != reasonValueId )
-                                {
-                                    History.EvaluateChange( demographicChanges, "Record Status Reason", DefinedValueCache.GetName( person.RecordStatusReasonValueId ), DefinedValueCache.GetName( reasonValueId ) );
-                                    person.RecordStatusReasonValueId = reasonValueId;
-                                }
-                            }
-
                             PersonService.AddPersonToGroup( person, person.Id == 0, _group.Id, role.Id, rockContext );
+                            groupMemberInfo.Id = person.Id;
                         }
                         else
                         {
+                            var memberChanges = new List<string>();
+                            var demographicChanges = new List<string>();
+
                             // existing group members
                             var groupMember = groupMemberService.Queryable( "Person", true ).Where( m =>
                                 m.PersonId == groupMemberInfo.Id &&
@@ -1246,19 +1229,19 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                                     }
                                 }
                             }
+
+                            HistoryService.SaveChanges( rockContext, typeof( Person ), Rock.SystemGuid.Category.HISTORY_PERSON_DEMOGRAPHIC_CHANGES.AsGuid(), groupMemberInfo.Id, demographicChanges );
+
+                            if ( _isFamilyGroupType )
+                            {
+                                HistoryService.SaveChanges( rockContext, typeof( Person ), Rock.SystemGuid.Category.HISTORY_PERSON_FAMILY_CHANGES.AsGuid(), groupMemberInfo.Id, memberChanges, _group.Name, typeof( Group ), _group.Id );
+                            }
                         }
 
                         // Remove anyone that was moved from another family
                         if ( groupMemberInfo.RemoveFromOtherGroups )
                         {
                             PersonService.RemovePersonFromOtherFamilies( _group.Id, groupMemberInfo.Id, rockContext );
-                        }
-
-                        HistoryService.SaveChanges( rockContext, typeof( Person ), Rock.SystemGuid.Category.HISTORY_PERSON_DEMOGRAPHIC_CHANGES.AsGuid(), groupMemberInfo.Id, demographicChanges );
-
-                        if ( _isFamilyGroupType )
-                        {
-                            HistoryService.SaveChanges( rockContext, typeof( Person ), Rock.SystemGuid.Category.HISTORY_PERSON_FAMILY_CHANGES.AsGuid(), groupMemberInfo.Id, memberChanges, _group.Name, typeof( Group ), _group.Id );
                         }
                     }
 
