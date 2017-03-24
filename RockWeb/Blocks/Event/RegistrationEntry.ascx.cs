@@ -392,7 +392,7 @@ namespace RockWeb.Blocks.Event
             divSaveAccount.Style[HtmlTextWriterStyle.Display] = cbSaveAccount.Checked ? "block" : "none";
 
             // Change the labels for the family member radio buttons
-            rblFamilyOptions.Label = "Individual is in the same " + GetAttributeValue("FamilyTerm") + " as";
+            rblFamilyOptions.Label = "Individual is in the same " + GetAttributeValue( "FamilyTerm" ) + " as";
             rblRegistrarFamilyOptions.Label = "You are in the same " + GetAttributeValue( "FamilyTerm" ) + " as";
 
             if ( !Page.IsPostBack )
@@ -4833,11 +4833,12 @@ namespace RockWeb.Blocks.Event
                 }
 
                 rblRegistrarFamilyOptions.Label = string.IsNullOrWhiteSpace( tbYourFirstName.Text ) ?
-                    "You are in the same " + GetAttributeValue( "FamilyTerm") + " as" :
-                    tbYourFirstName.Text + " is in the same " + GetAttributeValue( "FamilyTerm") + " as";
+                    "You are in the same " + GetAttributeValue( "FamilyTerm" ) + " as" :
+                    tbYourFirstName.Text + " is in the same " + GetAttributeValue( "FamilyTerm" ) + " as";
 
-                cbUpdateEmail.Visible = CurrentPerson != null && !string.IsNullOrWhiteSpace( CurrentPerson.Email ) && !(GetAttributeValue("ForceEmailUpdate").AsBoolean());
-				if (CurrentPerson != null && GetAttributeValue("ForceEmailUpdate").AsBoolean()) {
+                cbUpdateEmail.Visible = CurrentPerson != null && !string.IsNullOrWhiteSpace( CurrentPerson.Email ) && !( GetAttributeValue( "ForceEmailUpdate" ).AsBoolean() );
+				if ( CurrentPerson != null && GetAttributeValue( "ForceEmailUpdate" ).AsBoolean() )
+                {
 					lUpdateEmailWarning.Visible = true;
 				}
 
