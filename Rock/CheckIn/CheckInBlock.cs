@@ -272,7 +272,7 @@ namespace Rock.CheckIn
                         .Where( w => w.Guid.Equals( guid.Value ) )
                         .FirstOrDefault();
 
-                    if ( workflowType != null )
+                    if ( workflowType != null && ( workflowType.IsActive ?? true ) )
                     {
                         if ( CurrentWorkflow == null )
                         {

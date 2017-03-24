@@ -599,7 +599,7 @@ namespace Rock.Model
 
         private void LaunchWorkflow( WorkflowType workflowType, FinancialTransaction transaction )
         {
-            if ( workflowType != null )
+            if ( workflowType != null && ( workflowType.IsActive ?? true ) )
             {
                 using ( var rockContext = new RockContext() )
                 {
