@@ -347,10 +347,17 @@ namespace RockWeb.Blocks.Security
                                     Guid? addressTypeGuid = GetAttributeValue("LocationType").AsGuidOrNull();
                                     if ( addressTypeGuid.HasValue )
                                     {
+                                        // get the address types we'll need (home and previousLocation)
+                                        var dvHomeAddressType = DefinedValueCache.Read( addressTypeGuid.Value );
+                                        var previousAddressValue = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_PREVIOUS.AsGuid() );
+
                                         var groupLocationService = new GroupLocationService( rockContext );
 
-                                        var dvHomeAddressType = DefinedValueCache.Read( addressTypeGuid.Value );
-                                        var familyAddress = groupLocationService.Queryable().Where( l => l.GroupId == familyGroup.Id && l.GroupLocationTypeValueId == dvHomeAddressType.Id ).FirstOrDefault();
+                                        // get all locations tied to the family
+                                        var familyAddressList = groupLocationService.Queryable().Where( l => l.GroupId == familyGroup.Id );
+
+                                        // try to get their current home address
+                                        var familyAddress = familyAddressList.Where( l => l.GroupLocationTypeValueId == dvHomeAddressType.Id ).FirstOrDefault();
                                         if ( familyAddress != null && string.IsNullOrWhiteSpace( acAddress.Street1 ) )
                                         {
                                             // delete the current address
@@ -360,6 +367,7 @@ namespace RockWeb.Blocks.Security
                                         }
                                         else
                                         {
+                                            // updating / adding home address
                                             if ( !string.IsNullOrWhiteSpace( acAddress.Street1 ) )
                                             {
                                                 if ( familyAddress == null )
@@ -371,13 +379,12 @@ namespace RockWeb.Blocks.Security
                                                     familyAddress.IsMailingLocation = true;
                                                     familyAddress.IsMappedLocation = true;
                                                 }
-                                                else if ( hfStreet1.Value != string.Empty ) {
-                                                    
+                                                else if ( hfStreet1.Value != string.Empty )
+                                                {    
                                                     // user clicked move so create a previous address
                                                     var previousAddress = new GroupLocation();
                                                     groupLocationService.Add( previousAddress );
-
-                                                    var previousAddressValue = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_PREVIOUS.AsGuid() );
+                                                    
                                                     if ( previousAddressValue  != null )
                                                     {
                                                         previousAddress.GroupLocationTypeValueId = previousAddressValue.Id;
@@ -397,6 +404,20 @@ namespace RockWeb.Blocks.Security
 
                                                 familyAddress.IsMailingLocation = cbIsMailingAddress.Checked;
                                                 familyAddress.IsMappedLocation = cbIsPhysicalAddress.Checked;
+
+                                                // if this new address' IsMappedLocation is true, we need to turn that off for all previous addresses
+                                                if( familyAddress.IsMappedLocation )
+                                                {
+                                                    var previousFamilyAddresses = familyAddressList.Where( l => l.GroupLocationTypeValueId == previousAddressValue.Id ).ToList( );
+                                                    foreach( GroupLocation groupLocation in previousFamilyAddresses )
+                                                    {
+                                                        if( groupLocation.IsMappedLocation == true )
+                                                        {
+                                                            groupLocation.IsMappedLocation = false;
+                                                            History.EvaluateChange( changes, previousAddressValue.Value + " Is Map Location", "True", "False" );
+                                                        }
+                                                    }
+                                                }
 
                                                 var updatedHomeAddress = new Location();
                                                 acAddress.GetValues( updatedHomeAddress );
