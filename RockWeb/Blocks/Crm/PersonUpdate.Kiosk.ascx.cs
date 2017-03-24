@@ -369,7 +369,7 @@ namespace RockWeb.Blocks.Crm
                 var workflowService = new WorkflowService( rockContext );
                 var workflowType = workflowTypeService.Get( new Guid( GetAttributeValue( "WorkflowType" ) ) );
 
-                if ( workflowType != null )
+                if ( workflowType != null && ( workflowType.IsActive ?? true ) )
                 {
                     var workflow = Rock.Model.Workflow.Activate( workflowType, "Kiosk Update Info" );
 

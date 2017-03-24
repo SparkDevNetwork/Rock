@@ -576,7 +576,7 @@ namespace RockWeb.Blocks.Groups
 
                 }
 
-                if ( groupMember != null && workflowType != null )
+                if ( groupMember != null && workflowType != null && ( workflowType.IsActive ?? true ) )
                 {
                     try
                     {

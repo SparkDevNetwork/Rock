@@ -2260,7 +2260,7 @@ namespace RockWeb.Blocks.Connection
         /// <param name="name">The name.</param>
         private void LaunchWorkflow( RockContext rockContext, ConnectionRequest connectionRequest, ConnectionWorkflow connectionWorkflow )
         {
-            if ( connectionRequest != null && connectionWorkflow != null && connectionWorkflow.WorkflowType != null )
+            if ( connectionRequest != null && connectionWorkflow != null && connectionWorkflow.WorkflowType != null && ( connectionWorkflow.WorkflowType.IsActive ?? true ) )
             {
                 var workflow = Rock.Model.Workflow.Activate( connectionWorkflow.WorkflowType, connectionWorkflow.WorkflowType.WorkTerm, rockContext );
                 if ( workflow != null )
