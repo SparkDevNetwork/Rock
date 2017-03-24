@@ -11,7 +11,9 @@
             if ($(this).val() == '1') {
                 $('.js-current-family-members').slideDown();
             } else {
-                $('.js-current-family-members').slideUp();
+                var $div = $('.js-current-family-members');
+                $div.find('input:checkbox').prop('checked', false);
+                $div.slideUp();
             }
         });
     });
