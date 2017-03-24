@@ -285,12 +285,25 @@ namespace Rock.Model
                 if ( formList.Count > 0 )
                 {
                     formItems.Append( "<table class=\"form-items exception-table\">" );
-
                     foreach ( string formItem in formList )
                     {
-                        formItems.Append( "<tr><td><b>" + formItem + "</b></td><td>" + formList[formItem].EncodeHtml() + "</td></tr>" );
+                        if ( formItem.IsNotNullOrWhitespace() )
+                        {
+                            string formValue = formList[formItem].EncodeHtml();
+                            string lc = formItem.ToLower();
+                            if ( lc.Contains( "nolog" ) ||
+                                lc.Contains( "creditcard" ) ||
+                                lc.Contains( "cc-number" ) ||
+                                lc.Contains( "cvv" ) ||
+                                lc.Contains( "ssn" ) ||
+                                lc.Contains( "accountnumber" ) ||
+                                lc.Contains( "account-number" ) )
+                            {
+                                formValue = "***obfuscated***";
+                            }
+                            formItems.Append( "<tr><td><b>" + formItem + "</b></td><td>" + formValue + "</td></tr>" );
+                        }
                     }
-
                     formItems.Append( "</table>" );
                 }
 
