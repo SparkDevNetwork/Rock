@@ -81,7 +81,7 @@ namespace Rock.Lava.Blocks
 
             SearchFieldCriteria fieldCriteria = new SearchFieldCriteria();
 
-            SearchType searchType = SearchType.Wildcard;
+            SearchType searchType = SearchType.ExactMatch;
 
             List<int> entityIds = new List<int>();
             string query = string.Empty;

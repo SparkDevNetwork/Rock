@@ -213,28 +213,10 @@ namespace Rock.Field.Types
                         control.DefinedTypeId = definedTypeId;
                     }
                 }
+
                 if ( configurationValues.ContainsKey( "customvalues" ) )
                 {
-                    string listSource = configurationValues["customvalues"].Value;
-                    var keyValues = listSource.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries );
-                    if ( keyValues.Length > 0 )
-                    {
-                        control.CustomValues = new Dictionary<string, string>();
-                        foreach ( string keyvalue in keyValues )
-                        {
-                            var keyValueArray = keyvalue.Split( new char[] { ':' }, StringSplitOptions.RemoveEmptyEntries );
-                            if ( keyValueArray.Length > 0 )
-                            {
-                                string key = keyValueArray[0];
-                                string name = keyValueArray.Length > 1 ? keyValueArray[1] : keyValueArray[0];
-
-                                if ( !control.CustomValues.ContainsKey( key ) )
-                                {
-                                    control.CustomValues.Add( key, name );
-                                }
-                            }
-                        }
-                    }
+                    control.CustomValues = Helper.GetConfiguredValues( configurationValues, "customvalues");
                 }
             }
 

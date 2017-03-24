@@ -113,7 +113,7 @@ namespace Rock.UniversalSearch.IndexModels
         /// <value>
         /// The leader list.
         /// </value>
-        [RockIndexField]
+        [RockIndexField( Boost = 2 )]
         public string LeaderList { get; set; }
 
         /// <summary>
