@@ -1593,6 +1593,7 @@ namespace Rock.Model
                 person.LastName = person.LastName.FixCase();
 
                 // new person that hasn't be saved to database yet
+                demographicChanges.Add( "Created" );
                 History.EvaluateChange( demographicChanges, "Title", string.Empty, DefinedValueCache.GetName( person.TitleValueId ) );
                 History.EvaluateChange( demographicChanges, "First Name", string.Empty, person.FirstName );
                 History.EvaluateChange( demographicChanges, "Last Name", string.Empty, person.LastName );
