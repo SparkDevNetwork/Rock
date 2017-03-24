@@ -151,7 +151,7 @@ $('.checkin-group a.checkin-group-add-group').click(function (event) {
                 _lblGroupRowName.Text = group.Name;
                 if ( !group.IsActive )
                 {
-                    _lblGroupRowName.Text += " (Inactive)";
+                    _lblGroupRowName.Text += " <small>(Inactive)</small>";
                 }
             }
         }
@@ -198,7 +198,7 @@ $('.checkin-group a.checkin-group-add-group').click(function (event) {
             writer.AddAttribute( "data-key", _hfGroupGuid.Value );
             writer.RenderBeginTag( HtmlTextWriterTag.Li );
 
-            writer.AddAttribute( HtmlTextWriterAttribute.Class, string.Format( "checkin-item{0} checkin-group rollover-container", Selected ? " checkin-item-selected" : "" ) );
+            writer.AddAttribute( HtmlTextWriterAttribute.Class, string.Format( "checkin-item{0} checkin-group rollover-container {1}", Selected ? " checkin-item-selected" : "", !_group.IsActive ? " is-inactive" : "" ) );
             writer.AddAttribute( HtmlTextWriterAttribute.Id, this.ID + "_section" );
             writer.RenderBeginTag( "section" );
 
