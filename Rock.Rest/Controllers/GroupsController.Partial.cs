@@ -48,6 +48,8 @@ namespace Rock.Rest.Controllers
         /// <param name="excludedGroupTypeIds">The excluded group type ids.</param>
         /// <param name="includeInactiveGroups">if set to <c>true</c> [include inactive groups].</param>
         /// <param name="includeCounts">if set to <c>true</c> [include counts].</param>
+        /// <param name="campusId">if set it will filter groups based on campus</param>
+        /// <param name="includeNoCampus">if campus set and set to <c>true</c> [include groups with no campus].</param>
         /// <returns></returns>
         [Authenticate, Secured]
         [System.Web.Http.Route( "api/Groups/GetChildren/{id}" )]
@@ -58,7 +60,9 @@ namespace Rock.Rest.Controllers
             string includedGroupTypeIds = "",
             string excludedGroupTypeIds = "",
             bool includeInactiveGroups = false,
-            TreeViewItem.GetCountsType countsType = TreeViewItem.GetCountsType.None )
+            TreeViewItem.GetCountsType countsType = TreeViewItem.GetCountsType.None,
+            int campusId = 0,
+            bool includeNoCampus = false )
         {
             // Enable proxy creation since security is being checked and need to navigate parent authorities
             SetProxyCreation( true );
@@ -71,7 +75,7 @@ namespace Rock.Rest.Controllers
             // if specific group types are specified, show the groups regardless of ShowInNavigation
             bool limitToShowInNavigation = !includedGroupTypeIdList.Any();
 
-            var qry = groupService.GetChildren( id, rootGroupId, limitToSecurityRoleGroups, includedGroupTypeIdList, excludedGroupTypeIdList, includeInactiveGroups, limitToShowInNavigation );
+            var qry = groupService.GetChildren( id, rootGroupId, limitToSecurityRoleGroups, includedGroupTypeIdList, excludedGroupTypeIdList, includeInactiveGroups, limitToShowInNavigation, campusId, includeNoCampus );
 
             List<Group> groupList = new List<Group>();
             List<TreeViewItem> groupNameList = new List<TreeViewItem>();
