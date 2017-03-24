@@ -232,7 +232,7 @@ namespace RockWeb.Blocks.Cms
                 string layoutFilter = gPagesFilter.GetUserPreference( "Layout" );
                 if ( !string.IsNullOrWhiteSpace( layoutFilter ) && layoutFilter != Rock.Constants.All.Text )
                 {
-                    qry = qry.Where( a => a.Layout.ToString() == layoutFilter );
+                    qry = qry.ToList().Where( a => a.Layout.ToString() == layoutFilter ).AsQueryable();
                 }
 
                 SortProperty sortProperty = gPages.SortProperty;
