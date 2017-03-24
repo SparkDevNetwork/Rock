@@ -30,14 +30,14 @@ using Rock.Web.Cache;
 namespace Rock.Workflow.Action
 {
     /// <summary>
-    /// Sets boolean based on if person is in dataview.
+    /// Sets a workflow attribute True or False depending on if the person is in selected Data View.
     /// </summary>
     [ActionCategory( "People" )]
-    [Description( "Sets an attribute True or False depending on if the person is in selected dataview." )]
+    [Description( "Sets a workflow attribute True or False depending on if the person is in selected Data View." )]
     [Export( typeof( ActionComponent ) )]
-    [ExportMetadata( "ComponentName", "Person In DataView" )]
+    [ExportMetadata( "ComponentName", "Person In Data View" )]
 
-    [WorkflowAttribute( "Person", "Workflow attribute that contains the person to add the note to.", true, "", "", 0, null, new string[] { "Rock.Field.Types.PersonFieldType" } )]
+    [WorkflowAttribute( "Person", "Workflow attribute that contains the person to find in the selected Data View.", true, "", "", 0, null, new string[] { "Rock.Field.Types.PersonFieldType" } )]
     [DataViewField( "DataView", "DataView to check.", true, "", "Rock.Model.Person", order: 1 )]
     [IntegerField( "Timeout", "Number of seconds to wait before timing out.", false, 30, order: 2 )]
     [WorkflowAttribute( "Boolean", "Workflow attribute to set True or False.", true, "", "", 3, null, new string[] { "Rock.Field.Types.BooleanFieldType" } )]
