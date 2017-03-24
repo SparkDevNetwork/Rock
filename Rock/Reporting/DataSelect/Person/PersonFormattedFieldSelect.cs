@@ -20,12 +20,12 @@ using System.ComponentModel.Composition;
 namespace Rock.Reporting.DataSelect.Person
 {
     /// <summary>
-    /// Select a property of the entity and process through Lava.
+    /// Select a field of the entity and format through Lava.
     /// </summary>
-    [Description( "Select a property of the entity and process through Lava" )]
+    [Description( "Select a field of the entity and format through Lava" )]
     [Export( typeof( DataSelectComponent ) )]
-    [ExportMetadata( "ComponentName", "Person Lava Property" )]
-    public class PersonLavaPropertySelect : LavaPropertySelect<Rock.Model.Person>
+    [ExportMetadata( "ComponentName", "Person Formatted Field" )]
+    public class PersonFormattedFieldSelect : FormattedFieldSelect<Rock.Model.Person>
     {
     }
 }

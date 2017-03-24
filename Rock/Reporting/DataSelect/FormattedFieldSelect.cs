@@ -34,13 +34,13 @@ using Newtonsoft.Json;
 namespace Rock.Reporting.DataSelect
 {
     /// <summary>
-    /// Generic implementation of a Lava Property DataSelect component that
+    /// Generic implementation of a Formatted Field DataSelect component that
     /// uses the TargetEntityType to give the user a drop down list of all
     /// available properties to report on. The value is parsed through a
-    /// Lava
+    /// Lava filter to allow the user to format it how they wish.
     /// </summary>
     /// <typeparam name="TargetEntityType"></typeparam>
-    public abstract class LavaPropertySelect<TargetEntityType> : DataSelectComponent where TargetEntityType : IEntity
+    public abstract class FormattedFieldSelect<TargetEntityType> : DataSelectComponent where TargetEntityType : IEntity
     {
         #region Properties
 
@@ -83,7 +83,7 @@ namespace Rock.Reporting.DataSelect
         {
             get
             {
-                return "LavaProperty";
+                return "FormattedField";
             }
         }
 
@@ -111,7 +111,7 @@ namespace Rock.Reporting.DataSelect
         {
             get
             {
-                return "Lava Property";
+                return "Formatted Field";
             }
         }
 
@@ -129,9 +129,16 @@ namespace Rock.Reporting.DataSelect
         /// </value>
         public override string GetTitle( Type entityType )
         {
-            return "Lava Property";
+            return "Formatted Field";
         }
 
+        /// <summary>
+        /// Comma-delimited list of the Entity properties that should be used for Sorting. Normally, you should leave this as null which will make it sort on the returned field 
+        /// To disable sorting for this field, return string.Empty;
+        /// </summary>
+        /// <value>
+        /// The sort expression.
+        /// </value>
         public override string SortProperties( string selection )
         {
             SelectionData data = DeserializeSelectionData( selection );

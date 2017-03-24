@@ -17,12 +17,12 @@ using System.ComponentModel.Composition;
 namespace Rock.Reporting.DataSelect.Group
 {
     /// <summary>
-    /// Select a property of the entity and process through Lava.
+    /// Select a field of the entity and format through Lava.
     /// </summary>
-    [Description( "Select a property of the entity and process through Lava" )]
+    [Description( "Select a field of the entity and format through Lava" )]
     [Export( typeof( DataSelectComponent ) )]
-    [ExportMetadata( "ComponentName", "Group Lava Property" )]
-    public class GroupLavaPropertySelect : LavaPropertySelect<Rock.Model.Group>
+    [ExportMetadata( "ComponentName", "Group Formatted Field" )]
+    public class GroupFormattedFieldSelect : FormattedFieldSelect<Rock.Model.Group>
     {
     }
 }
