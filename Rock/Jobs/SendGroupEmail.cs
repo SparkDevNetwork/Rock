@@ -33,7 +33,7 @@ using Rock.Communication;
 namespace Rock.Jobs
 {
     /// <summary>
-    /// This job will send a specified email template to all active group members of the specified group, with the option to also send it to members of descendant groups. If a person is a member of multiple groups in the tree they will recieve an email for each group.
+    /// This job will send a specified email template to all active group members of the specified group, with the option to also send it to members of descendant groups. If a person is a member of multiple groups in the tree they will receive an email for each group.
     /// </summary>
     [SystemEmailField( "System Email", "The email template that will be sent.", true, "" )]
     [GroupField( "Group", "The group the email will be sent to." )]
@@ -83,7 +83,7 @@ namespace Rock.Jobs
                     recipients.Add( new RecipientData( groupMember.Person.Email, mergeFields ) );
                 }
 
-                var appRoot = Rock.Web.Cache.GlobalAttributesCache.Read( rockContext ).GetValue( "ExternalApplicationRoot" );
+                var appRoot = Rock.Web.Cache.GlobalAttributesCache.Read( rockContext ).GetValue( "PublicApplicationRoot" );
                 Email.Send( emailTemplateGuid, recipients, appRoot );
                 context.Result = string.Format( "{0} emails sent", recipients.Count() );
             }

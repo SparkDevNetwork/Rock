@@ -335,7 +335,23 @@ namespace RockWeb.Blocks.Reporting
 
                     if ( schemaOnly )
                     {
-                        return DbService.GetDataSetSchema( query, GetAttributeValue( "StoredProcedure" ).AsBoolean( false ) ? CommandType.StoredProcedure : CommandType.Text, parameters, timeout );
+                        try
+                        {
+                            // GetDataSetSchema won't work in some cases, for example, if the SQL references a TEMP table.  So, fall back to use the regular GetDataSet if there is an exception or the schema does not return any tables
+                            var dataSet = DbService.GetDataSetSchema( query, GetAttributeValue( "StoredProcedure" ).AsBoolean( false ) ? CommandType.StoredProcedure : CommandType.Text, parameters, timeout );
+                            if ( dataSet != null && dataSet.Tables != null && dataSet.Tables.Count > 0 )
+                            {
+                                return dataSet;
+                            }
+                            else
+                            {
+                                return DbService.GetDataSet( query, GetAttributeValue( "StoredProcedure" ).AsBoolean( false ) ? CommandType.StoredProcedure : CommandType.Text, parameters, timeout );
+                            }
+                        }
+                        catch
+                        {
+                            return DbService.GetDataSet( query, GetAttributeValue( "StoredProcedure" ).AsBoolean( false ) ? CommandType.StoredProcedure : CommandType.Text, parameters, timeout );
+                        }
                     }
                     else
                     {

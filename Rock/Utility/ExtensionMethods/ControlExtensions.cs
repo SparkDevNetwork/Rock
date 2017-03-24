@@ -166,15 +166,26 @@ namespace Rock
         /// <param name="className">Name of the class.</param>
         public static WebControl AddCssClass( this WebControl webControl, string className )
         {
-            string match = @"(^|\s+)" + className + @"($|\s+)";
-            string css = webControl.CssClass;
-
-            if ( !Regex.IsMatch( css, match, RegexOptions.IgnoreCase ) )
+            // if the className is blank, don't do anything
+            if ( className.IsNotNullOrWhitespace() )
             {
-                css += " " + className;
-            }
+                // if the webControl doesn't have a CssClass yet, simply set it to the className
+                if ( webControl.CssClass.IsNullOrWhiteSpace() )
+                {
+                    webControl.CssClass = className;
+                }
+                else
+                {
+                    string css = webControl.CssClass;
+                    string match = @"(^|\s+)" + className + @"($|\s+)";
+                    if ( !Regex.IsMatch( css, match, RegexOptions.IgnoreCase ) )
+                    {
+                        css += " " + className;
+                    }
 
-            webControl.CssClass = css.Trim();
+                    webControl.CssClass = css.Trim();
+                }
+            }
 
             return webControl;
         }
@@ -186,6 +197,12 @@ namespace Rock
         /// <param name="className">Name of the class.</param>
         public static WebControl RemoveCssClass( this WebControl webControl, string className )
         {
+            if (className.IsNullOrWhiteSpace() || webControl.CssClass.IsNullOrWhiteSpace())
+            {
+                // either the className is blank, or the webControl doesn't have a CssClass, so there is nothing to remove
+                return webControl;
+            }
+
             string match = @"(^|\s+)" + className + @"($|\s+)";
             string css = webControl.CssClass;
 
@@ -232,6 +249,37 @@ namespace Rock
         }
 
         #endregion HtmlControl Extensions
+
+        #region ListBox Extensions
+
+        /// <summary>
+        /// Sets the Selected property of each item to true for each given matching string values.
+        /// </summary>
+        /// <param name="listBox">The list box.</param>
+        /// <param name="values">The values.</param>
+        public static void SetValues( this ListBox listBox, IEnumerable<string> values )
+        {
+            foreach ( ListItem item in listBox.Items )
+            {
+                item.Selected = values.Contains( item.Value, StringComparer.OrdinalIgnoreCase );
+            }
+        }
+
+        /// <summary>
+        /// Sets the Selected property of each item to true for each given matching int values.
+        /// </summary>
+        /// <param name="listBox">The list box.</param>
+        /// <param name="values">The values.</param>
+        public static void SetValues( this ListBox listBox, IEnumerable<int> values )
+        {
+            foreach ( ListItem item in listBox.Items )
+            {
+                int numValue = int.MinValue;
+                item.Selected = int.TryParse( item.Value, out numValue ) && values.Contains( numValue );
+            }
+        }
+
+        #endregion ListBox Extensions
 
         #region CheckBoxList Extensions
 

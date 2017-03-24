@@ -289,14 +289,27 @@
             var self = this,
 				$ul = $('<ul/>'),
 				renderNode = function ($list, node) {
+				    var hasChildren = false;
+				    if (node.hasChildren) {
+				        hasChildren = true;
+				        // we know it has children, but they might not be loaded yet (children === undefined)
+				        // but if they are loaded there may actually be NO active children, so in that case,
+				        // we'll consider them as NOT having children
+				        if ( node.children === undefined ) {
+				          hasChildren = true;
+				        } else if (node.children !== undefined && node.children.length == 0  ) {
+				          hasChildren = false;
+				        }
+				    }
+
 				    var $li = $('<li/>'),
 						$childUl,
 						includeAttrs = self.options.mapping.include,
-				        folderCssClass = node.isOpen ? self.options.iconClasses.branchOpen : self.options.iconClasses.branchClosed,
+				        folderCssClass = hasChildren ? ( node.isOpen ? self.options.iconClasses.branchOpen : self.options.iconClasses.branchClosed ) : "",
 				        leafCssClass = node.iconCssClass || self.options.iconClasses.leaf;
 
 				    $li.addClass('rocktree-item')
-						.addClass(node.hasChildren ? 'rocktree-folder' : 'rocktree-leaf')
+						.addClass(hasChildren ? 'rocktree-folder' : 'rocktree-leaf')
                         .addClass( ( !node.hasOwnProperty('isActive') || node.isActive )? '' : 'is-inactive')
 						.attr('data-id', node.id)
 						.attr('data-parent-id', node.parentId);
@@ -317,23 +330,28 @@
 				    }
 
 				    $li.append('<span class="rocktree-name" title="' + nodeText.trim() + '"> ' + node.name + countInfoHtml + '</span>');
+				    var $rockTreeNameNode = $li.find('.rocktree-name');
 				    
 				    for (var i = 0; i < self.selectedNodes.length; i++) {
 				        if (self.selectedNodes[i].id == node.id) {
-				            $li.find('.rocktree-name').addClass('selected');
+				            $rockTreeNameNode.addClass('selected');
 				            break;
 				        }
 				    }
 
-				    if (node.hasChildren) {
+				    if (hasChildren) {
 				        $li.prepend('<i class="rocktree-icon icon-fw ' + folderCssClass + '"></i>');
 
 				        if (node.iconCssClass) {
-				            $li.find('.rocktree-name').prepend('<i class="icon-fw ' + node.iconCssClass + '"></i>');
+				            $rockTreeNameNode.prepend('<i class="icon-fw ' + node.iconCssClass + '"></i>');
+				        }
+
+				        if (self.options.showSelectChildren && self.options.multiselect) {
+				            $li.append('<i class="fa fa-angle-double-down icon-fw clickable select-children js-select-children" title="Select Children"></i>');
 				        }
 				    } else {
 				        if (leafCssClass) {
-				            $li.find('.rocktree-name').prepend('<i class="icon-fw ' + leafCssClass + '"></i>');
+				            $rockTreeNameNode.prepend('<i class="icon-fw ' + leafCssClass + '"></i>');
 				        }
 				    }
 
@@ -505,6 +523,32 @@
                     $(document).trigger(onSelected[i], id);
                 }
             });
+
+            // clicking on the 'select children' icon
+            this.$el.on('click', '.js-select-children', function (e) {
+                e.preventDefault();
+                e.stopPropagation();
+
+                var $itemNode = $(this).parent('li')
+
+                var $childNameNodes = $itemNode.find('.rocktree-children').find('.rocktree-name');
+
+                var allChildNodesAlreadySelected = true;
+                $childNameNodes.each(function (a) {
+                    if (!$(this).hasClass('selected')) {
+                            allChildNodesAlreadySelected = false;
+                    }
+                });
+
+                if (!allChildNodesAlreadySelected) {
+                    // mark them all as unselected (just in case some are selected already), then click them to select them 
+                    $childNameNodes.removeClass('selected');
+                    $childNameNodes.click();
+                } else {
+                    // if all where already selected, toggle them to unselected
+                    $childNameNodes.removeClass('selected');
+                }
+            });
         }
     };
 
@@ -546,6 +590,7 @@
         restParams: null,
         local: null,
         multiselect: false,
+        showSelectChildren: false,
         loadingHtml: '<span class="rocktree-loading"><i class="fa fa-refresh fa-spin"></i></span>',
         iconClasses: {
             branchOpen: 'fa fa-fw fa-caret-down',

@@ -41,7 +41,6 @@ namespace RockWeb.Blocks.Store
     [Category( "Store" )]
     [Description( "Lists categories for Rock Store pages." )]
     [CodeEditorField( "Lava Template", "Lava template to use to display the categories", CodeEditorMode.Lava, CodeEditorTheme.Rock, 400, true, @"{% include '~/Assets/Lava/Store/PackageCategoryListSidebar.lava' %}", "", 2 )]
-    [BooleanField("Enable Debug", "Display a list of merge fields available for lava.", false, "", 3)]
     [LinkedPage( "Detail Page", "Page reference to use for the detail page.", false, "", "", 4 )]
     public partial class PackageCategoryListLava : Rock.Web.UI.RockBlock
     {
@@ -128,12 +127,6 @@ namespace RockWeb.Blocks.Store
 
             lOutput.Text = GetAttributeValue( "LavaTemplate" ).ResolveMergeFields( mergeFields );
 
-            // show debug info
-            if ( GetAttributeValue( "EnableDebug" ).AsBoolean() && IsUserAuthorized( Authorization.EDIT ) )
-            {
-                lDebug.Visible = true;
-                lDebug.Text = mergeFields.lavaDebugInfo();
-            }
         }
 
         private void ErrorCheck( string errorResponse )

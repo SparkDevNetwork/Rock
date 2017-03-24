@@ -109,8 +109,29 @@
     <Compile Include="Controllers\AttributesController.Partial.cs" />
     <Compile Include="Controllers\AuthController.cs" />
     <Compile Include="Controllers\BinaryFilesController.Partial.cs" />
+    <Compile Include="Controllers\CodeGenerated\AnalyticsDimFamilyCurrentsController.cs" />
+    <Compile Include="Controllers\CodeGenerated\AnalyticsDimFamilyHeadOfHouseholdsController.cs" />
+    <Compile Include="Controllers\CodeGenerated\AnalyticsDimFamilyHistoricalsController.cs" />
+    <Compile Include="Controllers\CodeGenerated\AnalyticsDimFinancialAccountsController.cs" />
+    <Compile Include="Controllers\CodeGenerated\AnalyticsDimFinancialBatchesController.cs" />
+    <Compile Include="Controllers\CodeGenerated\AnalyticsDimPersonCurrentsController.cs" />
+    <Compile Include="Controllers\CodeGenerated\AnalyticsDimPersonHistoricalsController.cs" />
+    <Compile Include="Controllers\CodeGenerated\AnalyticsFactAttendancesController.cs" />
+    <Compile Include="Controllers\CodeGenerated\AnalyticsFactFinancialTransactionsController.cs" />
+    <Compile Include="Controllers\CodeGenerated\AnalyticsSourceAttendancesController.cs" />
+    <Compile Include="Controllers\CodeGenerated\AnalyticsSourceFamilyHistoricalsController.cs" />
+    <Compile Include="Controllers\CodeGenerated\AnalyticsSourceFinancialTransactionsController.cs" />
+    <Compile Include="Controllers\CodeGenerated\AnalyticsSourcePersonHistoricalsController.cs" />
+    <Compile Include="Controllers\CodeGenerated\CommunicationRecipientsController.cs" />
+    <Compile Include="Controllers\CodeGenerated\ConnectionOpportunityGroupConfigsController.cs" />
+    <Compile Include="Controllers\CodeGenerated\InteractionChannelsController.cs" />
+    <Compile Include="Controllers\CodeGenerated\InteractionComponentsController.cs" />
+    <Compile Include="Controllers\CodeGenerated\InteractionDeviceTypesController.cs" />
+    <Compile Include="Controllers\CodeGenerated\InteractionsController.cs" />
+    <Compile Include="Controllers\CodeGenerated\InteractionSessionsController.cs" />
     <Compile Include="Controllers\CodeGenerated\NotificationRecipientsController.cs" />
     <Compile Include="Controllers\CodeGenerated\NotificationsController.cs" />
+    <Compile Include="Controllers\CodeGenerated\ScheduleCategoryExclusionsController.cs" />
     <Compile Include="Controllers\CodeGenerated\SignatureDocumentsController.cs" />
     <Compile Include="Controllers\CodeGenerated\SignatureDocumentTemplatesController.cs" />
     <Compile Include="Controllers\BlocksController.Partial.cs" />
@@ -134,8 +155,6 @@
     <Compile Include="Controllers\CodeGenerated\BlockTypesController.cs" />
     <Compile Include="Controllers\CodeGenerated\CampusesController.cs" />
     <Compile Include="Controllers\CodeGenerated\CategoriesController.cs" />
-    <Compile Include="Controllers\CodeGenerated\CommunicationRecipientActivitiesController.cs" />
-    <Compile Include="Controllers\CodeGenerated\CommunicationRecipientsController.cs" />
     <Compile Include="Controllers\CodeGenerated\CommunicationsController.cs" />
     <Compile Include="Controllers\CodeGenerated\CommunicationTemplatesController.cs" />
     <Compile Include="Controllers\CodeGenerated\ConnectionActivityTypesController.cs" />
@@ -215,9 +234,6 @@
     <Compile Include="Controllers\CodeGenerated\PageContextsController.cs" />
     <Compile Include="Controllers\CodeGenerated\PageRoutesController.cs" />
     <Compile Include="Controllers\CodeGenerated\PagesController.cs" />
-    <Compile Include="Controllers\CodeGenerated\PageViewsController.cs" />
-    <Compile Include="Controllers\CodeGenerated\PageViewSessionsController.cs" />
-    <Compile Include="Controllers\CodeGenerated\PageViewUserAgentsController.cs" />
     <Compile Include="Controllers\CodeGenerated\PeopleController.cs" />
     <Compile Include="Controllers\CodeGenerated\PersonAliasController.cs" />
     <Compile Include="Controllers\CodeGenerated\PersonBadgesController.cs" />
@@ -263,10 +279,12 @@
     <Compile Include="Controllers\ExceptionLogsController.Partial.cs" />
     <Compile Include="Controllers\FileBrowserController.cs" />
     <Compile Include="Controllers\FinancialAccountsController.Partial.cs" />
+    <Compile Include="Controllers\FinancialScheduledTransactionsController.Partial.cs" />
     <Compile Include="Controllers\FinancialTransactionsController.Partial.cs" />
     <Compile Include="Controllers\FollowingsController.Partial.cs" />
     <Compile Include="Controllers\GroupMembersController.Partial.cs" />
     <Compile Include="Controllers\GroupsController.Partial.cs" />
+    <Compile Include="Controllers\HtmlContentsController.Partial.cs" />
     <Compile Include="Controllers\LavaController.cs" />
     <Compile Include="Controllers\LocationsController.Partial.cs" />
     <Compile Include="Controllers\MergeFieldsController.cs" />
@@ -299,6 +317,10 @@
     <ProjectReference Include="..\DotLiquid\DotLiquid.csproj">
       <Project>{00edcb8d-ef33-459c-ad62-02876bd24dff}</Project>
       <Name>DotLiquid</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Rock.Version\Rock.Version.csproj">
+      <Project>{6fe0930c-6832-4c2f-8a76-d4e4a2d80ddf}</Project>
+      <Name>Rock.Version</Name>
     </ProjectReference>
     <ProjectReference Include="..\Rock\Rock.csproj">
       <Project>{185a31d7-3037-4dae-8797-0459849a84bd}</Project>

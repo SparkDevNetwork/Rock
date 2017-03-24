@@ -521,6 +521,31 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Gets or sets the text content of the <see cref="T:System.Web.UI.WebControls.TextBox" /> control.
+        /// </summary>
+        public override string Text
+        {
+            get
+            {
+                EnsureChildControls();
+                if ( _hfInCodeEditorMode.Value.AsBoolean() )
+                {
+                    return _ceEditor.Text;
+                }
+                else
+                {
+                    return base.Text;
+                }
+            }
+
+            set
+            {
+                base.Text = value;
+            }
+        }
+
+
+        /// <summary>
         /// Called by the ASP.NET page framework to notify server controls that use composition-based implementation to create any child controls they contain in preparation for posting back or rendering.
         /// </summary>
         protected override void CreateChildControls()

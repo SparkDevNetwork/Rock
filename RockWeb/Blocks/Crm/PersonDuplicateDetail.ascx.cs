@@ -32,7 +32,7 @@ using Rock.Web.UI.Controls;
 namespace RockWeb.Blocks.Crm
 {
     /// <summary>
-    /// Template block for developers to use to start a new block.
+    /// 
     /// </summary>
     [DisplayName( "Person Duplicate Detail" )]
     [Category( "CRM" )]
@@ -40,6 +40,7 @@ namespace RockWeb.Blocks.Crm
     [DecimalField( "Confidence Score High", "The minimum confidence score required to be considered a likely match", true, 80.00, order: 0 )]
     [DecimalField( "Confidence Score Low", "The maximum confidence score required to be considered an unlikely match. Values lower than this will not be shown in the grid.", true, 40.00, order: 1 )]
     [BooleanField( "Include Inactive", "Set to true to also include potential matches when both records are inactive.", false, order: 2 )]
+    [BooleanField( "Include Businesses", "Set to true to also include potential matches when either record is a Business.", false, order: 3 )]
     public partial class PersonDuplicateDetail : RockBlock
     {
         #region Base Control Methods
@@ -174,6 +175,7 @@ namespace RockWeb.Blocks.Crm
             var personService = new PersonService( rockContext );
             int personId = this.PageParameter( "PersonId" ).AsInteger();
             int recordStatusInactiveId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_INACTIVE.AsGuid() ).Id;
+            int recordTypeBusinessId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_BUSINESS.AsGuid() ).Id;
 
             //// select person duplicate records
             //// list duplicates that aren't confirmed as NotDuplicate and aren't IgnoreUntilScoreChanges. Also, don't include records where both the Person and Duplicate are inactive
@@ -184,7 +186,12 @@ namespace RockWeb.Blocks.Crm
             {
                 qryPersonDuplicates = qryPersonDuplicates.Where( a => !( a.PersonAlias.Person.RecordStatusValueId == recordStatusInactiveId && a.DuplicatePersonAlias.Person.RecordStatusValueId == recordStatusInactiveId ) );
             }
-                    
+
+            if ( this.GetAttributeValue( "IncludeBusinesses" ).AsBoolean() == false )
+            {
+                qryPersonDuplicates = qryPersonDuplicates.Where( a => !( a.PersonAlias.Person.RecordTypeValueId == recordTypeBusinessId || a.DuplicatePersonAlias.Person.RecordTypeValueId == recordTypeBusinessId ) );
+            }
+
             var qry = qryPersonDuplicates.Select( s => new
                 {
                     PersonId = s.DuplicatePersonAlias.Person.Id, // PersonId has to be the key field in the grid for the Merge button to work
@@ -206,21 +213,28 @@ namespace RockWeb.Blocks.Crm
 
             // put the person we are comparing the duplicates to at the top of the list
             var person = personService.Get( personId );
-            gridList.Insert(
-                0,
-                new
-                {
-                    PersonId = person.Id, // PersonId has to be the key field in the grid for the Merge button to work
+            if ( person != null )
+            {
+                gridList.Insert(
+                    0,
+                    new
+                    {
+                        PersonId = person.Id, // PersonId has to be the key field in the grid for the Merge button to work
                     PersonDuplicateId = 0,
-                    DuplicatePerson = person,
-                    ConfidenceScore = (double?)null,
-                    IsComparePerson = false
-                } );
+                        DuplicatePerson = person,
+                        ConfidenceScore = ( double? ) null,
+                        IsComparePerson = false
+                    } );
 
-            nbNoDuplicatesMessage.Visible = gridList.Count == 1;
+                nbNoDuplicatesMessage.Visible = gridList.Count == 1;
 
-            gList.DataSource = gridList;
-            gList.DataBind();
+                gList.DataSource = gridList;
+                gList.DataBind();
+            }
+            else
+            {
+                ScriptManager.RegisterStartupScript( this, this.GetType(), "goBack", "history.go(-1);", true );
+            }
         }
 
         #endregion

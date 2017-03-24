@@ -23,7 +23,7 @@ namespace Rock
         #region Grid Extensions
 
         /// <summary>
-        /// Gets the grid column that matches the header text.
+        /// Gets the first grid column that matches the header text.
         /// </summary>
         /// <param name="dataControlFieldCollection">The data control field collection.</param>
         /// <see href="http://stackoverflow.com/a/22005731/1853867" />
@@ -36,6 +36,39 @@ namespace Rock
                 if ( column.HeaderText == headerText )
                 {
                     return column;
+                }
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Gets the first grid column that matches the header text.
+        /// </summary>
+        /// <param name="grid">The grid.</param>
+        /// <param name="headerText">The header text.</param>
+        /// <returns></returns>
+        public static DataControlField GetColumnByHeaderText( this GridView grid, string headerText )
+        {
+            return grid.Columns.GetColumnByHeaderText( headerText );
+        }
+
+        /// <summary>
+        /// Gets the index of the grid's first column that contains the specified type.  This is 
+        /// very useful when you're looking for for the column that has the DeleteField or EditField.
+        /// Use like so:
+        /// int? index  = gFields.GetColumnIndexByFieldType( typeof( DeleteField ) );
+        /// </summary>
+        /// <param name="grid">The grid.</param>
+        /// <param name="type">The type.</param>
+        /// <returns></returns>
+        public static int? GetColumnIndexByFieldType( this GridView grid, System.Type type )
+        {
+            foreach ( DataControlField col in grid.Columns )
+            {
+                if ( col.GetType() == type )
+                {
+                    return grid.Columns.IndexOf( col );
                 }
             }
 

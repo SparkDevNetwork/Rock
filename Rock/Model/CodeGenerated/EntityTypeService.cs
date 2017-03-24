@@ -166,6 +166,18 @@ namespace Rock.Model
                 return false;
             }  
  
+            if ( new Service<InteractionChannel>( Context ).Queryable().Any( a => a.ComponentEntityTypeId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", EntityType.FriendlyTypeName, InteractionChannel.FriendlyTypeName );
+                return false;
+            }  
+ 
+            if ( new Service<InteractionChannel>( Context ).Queryable().Any( a => a.InteractionEntityTypeId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", EntityType.FriendlyTypeName, InteractionChannel.FriendlyTypeName );
+                return false;
+            }  
+ 
             if ( new Service<MergeTemplate>( Context ).Queryable().Any( a => a.MergeTemplateTypeEntityTypeId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", EntityType.FriendlyTypeName, MergeTemplate.FriendlyTypeName );
@@ -260,6 +272,8 @@ namespace Rock.Model
             target.ForeignGuid = source.ForeignGuid;
             target.ForeignKey = source.ForeignKey;
             target.FriendlyName = source.FriendlyName;
+            target.IndexDocumentUrl = source.IndexDocumentUrl;
+            target.IndexResultTemplate = source.IndexResultTemplate;
             target.IsCommon = source.IsCommon;
             target.IsEntity = source.IsEntity;
             target.IsIndexingEnabled = source.IsIndexingEnabled;

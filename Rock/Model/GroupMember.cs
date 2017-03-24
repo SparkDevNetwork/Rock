@@ -25,6 +25,7 @@ using System.Linq;
 using System.Runtime.Serialization;
 using Humanizer;
 using Rock.Data;
+using Rock.Transactions;
 using Rock.Web.Cache;
 
 namespace Rock.Model
@@ -69,7 +70,7 @@ namespace Rock.Model
         public int PersonId { get; set; }
 
         /// <summary>
-        /// Gets or sets the Id of the GroupMember's <see cref="GroupRole"/> in the <see cref="Rock.Model.Group"/>. This property is required.
+        /// Gets or sets the Id of the GroupMember's <see cref="Rock.Model.GroupMember.GroupRole"/> in the <see cref="Rock.Model.Group"/>. This property is required.
         /// </summary>
         /// <value>
         /// An <see cref="System.Int32"/> representing the Id of the <see cref="Rock.Model.GroupTypeRole"/> that the Group Member is in.
@@ -88,7 +89,7 @@ namespace Rock.Model
         public string Note { get; set; }
 
         /// <summary>
-        /// Gets or sets the GroupMember's status in the Group. This value is required.
+        /// Gets or sets the GroupMember's status (<see cref="Rock.Model.GroupMemberStatus"/>) in the Group. This value is required.
         /// </summary>
         /// <value>
         /// A <see cref="Rock.Model.GroupMemberStatus"/> enum value that represents the GroupMember's status in the group.  A <c>GroupMemberStatus.Active</c> indicates that the GroupMember is active,
@@ -155,7 +156,7 @@ namespace Rock.Model
         public virtual Group Group { get; set; }
 
         /// <summary>
-        /// Gets or sets the the GroupMember's role in the <see cref="Rock.Model.Group"/>.
+        /// Gets or sets the the GroupMember's role (<see cref="Rock.Model.GroupTypeRole"/>) in the <see cref="Rock.Model.Group"/>.
         /// </summary>
         /// <value>
         /// A <see cref="Rock.Model.GroupTypeRole"/> representing the GroupMember's <see cref="Rock.Model.GroupTypeRole"/> in the <see cref="Rock.Model.Group"/>.
@@ -273,6 +274,31 @@ namespace Rock.Model
                 {
                     verb = "DELETE";
                     action = "Removed from group.";
+                }
+
+                // process universal search indexing if required
+                if ( group == null )
+                {
+                    group = this.Group;
+                }
+                if ( group == null )
+                {
+                    group = new GroupService( rockContext ).Get( this.GroupId );
+                }
+                if ( group != null )
+                {
+                    var groupType = GroupTypeCache.Read( group.GroupTypeId );
+                    if ( groupType != null )
+                    {
+                        if ( groupType.IsIndexEnabled )
+                        {
+                            IndexEntityTransaction transaction = new IndexEntityTransaction();
+                            transaction.EntityTypeId = groupType.Id;
+                            transaction.EntityId = group.Id;
+
+                            RockQueue.TransactionQueue.Enqueue( transaction );
+                        }
+                    }
                 }
 
                 if ( !string.IsNullOrWhiteSpace( action ) )

@@ -48,8 +48,8 @@
                                     <asp:ListItem Text="24 dpmm (600 dpi)" Value="24"></asp:ListItem>
                                 </Rock:RockDropDownList>
                                 <Rock:RockControlWrapper ID="rcwLabelSize" runat="server" Label="Label Size" FormGroupCssClass="margin-l-md">
-                                    <Rock:NumberBox ID="nbLabelWidth" runat="server" CssClass="input-width-xs" Text="4" NumberType="Integer"></Rock:NumberBox> X
-                                    <Rock:NumberBox ID="nbLabelHeight" runat="server" CssClass="input-width-xs" Text="2" NumberType="Integer"></Rock:NumberBox>
+                                    <Rock:NumberBox ID="nbLabelWidth" runat="server" CssClass="input-width-xs" Text="4" NumberType="Double"></Rock:NumberBox> X
+                                    <Rock:NumberBox ID="nbLabelHeight" runat="server" CssClass="input-width-xs" Text="2" NumberType="Double"></Rock:NumberBox>
                                 </Rock:RockControlWrapper>
                                 <Rock:RockControlWrapper ID="rcwShowLabel" runat="server" Label="Show Label" Help="(0 = first label, 1 = second label, etc.)" FormGroupCssClass="margin-l-md">
                                     <Rock:NumberBox ID="nbShowLabel" runat="server" CssClass="input-width-xs" Text="0" NumberType="Integer" ></Rock:NumberBox> 

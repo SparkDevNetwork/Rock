@@ -33,7 +33,7 @@ namespace EnsureCopyrightHeader
             updatedFileCount += FixupCopyrightHeaders( rockDirectory + "Rock.Migrations\\" );
             updatedFileCount += FixupCopyrightHeaders( rockDirectory + "Rock.PayFlowPro\\" );
             updatedFileCount += FixupCopyrightHeaders( rockDirectory + "Rock.Rest\\" );
-            updatedFileCount += FixupCopyrightHeaders( rockDirectory + "Rock.Tests\\" );
+            //updatedFileCount += FixupCopyrightHeaders( rockDirectory + "Rock.Tests\\" );
             updatedFileCount += FixupCopyrightHeaders( rockDirectory + "Rock.Version\\" );
 
             updatedFileCount += FixupCopyrightHeaders( rockDirectory + "RockJobSchedulerService\\" );

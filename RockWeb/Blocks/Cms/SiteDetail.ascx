@@ -17,6 +17,9 @@
             <div class="panel-heading">
                 <h1 class="panel-title"><i class="fa fa-desktop"></i>
                     <asp:Literal ID="lReadOnlyTitle" runat="server" /></h1>
+                <div class="panel-labels">
+                    <asp:Literal ID="lVisitSite" runat="server" />
+                </div>
             </div>
             <Rock:PanelDrawer ID="pdAuditDetails" runat="server"></Rock:PanelDrawer>
             <div class="panel-body">
@@ -60,6 +63,23 @@
                         </div>
                     </div>
 
+                    <Rock:PanelWidget ID="wpPageAttributes" runat="server" Title="Page Attributes" CssClass="site-page-attribute-panel">
+                        <Rock:NotificationBox ID="NotificationBox1" runat="server" NotificationBoxType="Info" 
+                            Text="Page Attributes apply to all of the pages of this site. Each page will have its own value for these attributes" />
+                        <div class="grid">
+                            <Rock:Grid ID="gPageAttributes" runat="server" AllowPaging="false" DisplayType="Light" RowItemText="Page Attribute">
+                                <Columns>
+                                    <Rock:ReorderField />
+                                    <Rock:RockBoundField DataField="Name" HeaderText="Attribute" />
+                                    <Rock:RockBoundField DataField="Description" HeaderText="Description" />
+                                    <Rock:BoolField DataField="IsRequired" HeaderText="Required" />
+                                    <Rock:EditField OnClick="gPageAttributes_Edit" />
+                                    <Rock:DeleteField OnClick="gPageAttributes_Delete" />
+                                </Columns>
+                            </Rock:Grid>
+                        </div>
+                    </Rock:PanelWidget>
+
                     <Rock:PanelWidget ID="wpAdvancedSettings" runat="server" Title="Advanced Settings">
                         <div class="row">
                             <div class="col-md-6">
@@ -85,8 +105,8 @@
                     </Rock:PanelWidget>
 
                     <div class="actions">
-                        <asp:LinkButton ID="btnSave" runat="server" AccessKey="s" Text="Save" CssClass="btn btn-primary" OnClick="btnSave_Click" />
-                        <asp:LinkButton ID="btnCancel" runat="server" AccessKey="c" Text="Cancel" CssClass="btn btn-link" CausesValidation="false" OnClick="btnCancel_Click" />
+                        <asp:LinkButton ID="btnSave" runat="server" AccessKey="s" ToolTip="Alt+s" Text="Save" CssClass="btn btn-primary" OnClick="btnSave_Click" />
+                        <asp:LinkButton ID="btnCancel" runat="server" AccessKey="c" ToolTip="Alt+c" Text="Cancel" CssClass="btn btn-link" CausesValidation="false" OnClick="btnCancel_Click" />
                     </div>
 
                 </div>
@@ -105,7 +125,7 @@
                     </div>
 
                     <div class="actions">
-                        <asp:LinkButton ID="btnEdit" runat="server" AccessKey="m" Text="Edit" CssClass="btn btn-primary" CausesValidation="false" OnClick="btnEdit_Click" />
+                        <asp:LinkButton ID="btnEdit" runat="server" AccessKey="m" ToolTip="Alt+m" Text="Edit" CssClass="btn btn-primary" CausesValidation="false" OnClick="btnEdit_Click" />
                         <Rock:ModalAlert ID="mdDeleteWarning" runat="server" />
                         <asp:LinkButton ID="btnDelete" runat="server" Text="Delete" CssClass="btn btn-link" CausesValidation="false" OnClick="btnDelete_Click" />
 
@@ -118,6 +138,12 @@
             </div>
 
         </asp:Panel>
+
+        <Rock:ModalDialog ID="dlgPageAttribute" runat="server" Title="Page Attributes" OnSaveClick="dlgPageAttribute_SaveClick" ValidationGroup="PageAttributes" Visible="false">
+            <Content>
+                <Rock:AttributeEditor ID="edtPageAttributes" runat="server" ShowActions="false" ValidationGroup="PageAttributes" />
+            </Content>
+        </Rock:ModalDialog>
 
     </ContentTemplate>
 </asp:UpdatePanel>

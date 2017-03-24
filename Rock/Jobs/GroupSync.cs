@@ -172,7 +172,7 @@ namespace Rock.Jobs
                     resultMessage = string.Format( "{0} groups were sync'ed", groupsSynced );
                 }
 
-                resultMessage += string.Format( " and {0} groups where changed", groupsChanged );
+                resultMessage += string.Format( " and {0} groups were changed", groupsChanged );
 
                 context.Result = resultMessage;
             }
@@ -237,7 +237,7 @@ namespace Rock.Jobs
                         mergeFields.Add( "CreateLogin", createLogin );
                         recipients.Add( new RecipientData( recipient.Email, mergeFields ) );
 
-                        var appRoot = Rock.Web.Cache.GlobalAttributesCache.Read( rockContext ).GetValue( "ExternalApplicationRoot" );
+                        var appRoot = Rock.Web.Cache.GlobalAttributesCache.Read( rockContext ).GetValue( "PublicApplicationRoot" );
                         Email.Send( systemEmail.Guid, recipients, appRoot );
                     }
                 }
@@ -268,7 +268,7 @@ namespace Rock.Jobs
                         mergeFields.Add( "Person", recipient );
                         recipients.Add( new RecipientData( recipient.Email, mergeFields ) );
 
-                        var appRoot = Rock.Web.Cache.GlobalAttributesCache.Read( rockContext ).GetValue( "ExternalApplicationRoot" );
+                        var appRoot = Rock.Web.Cache.GlobalAttributesCache.Read( rockContext ).GetValue( "PublicApplicationRoot" );
                         Email.Send( systemEmail.Guid, recipients, appRoot );
                     }
                 }

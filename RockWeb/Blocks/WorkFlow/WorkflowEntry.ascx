@@ -20,6 +20,8 @@
                     </div>
                     <div class="panel-body">
 
+                        <asp:Literal ID="lSummary" runat="server" Visible="false" />
+
                         <asp:Panel ID="pnlForm" CssClass="workflow-entry-panel" runat="server">
 
                             <asp:ValidationSummary ID="vsDetails" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" />

@@ -42,7 +42,7 @@ ___ 8. Delete the following files from the RockWeb directory
         * Settings.StyleCop
         * .editorconfig
 
-___ 9. Zip up the RockWeb directory
+___ 9. Zip up the RockWeb directory (so that all it's subfolders are the root of the zip)
 
 ___ 10. Rename zip file 'rock-install-latest.zip'
 
@@ -80,22 +80,25 @@ ___ 8. Click the 'Advanced' button and change the setting for 'Types of data to 
 ___ 9. Click 'Next' then 'Finished'
 
 ___ 10. Open the SQL file and make the following edits:
-         * delete from the start of the file to the beginning of the first comment of the first stored proc
-         * remove the follow four lines from the end of the script
+     ___ * delete from the start of the file to the beginning of the first comment of the first stored proc
+     ___ * remove the following six lines from the end of the script
               USE [master]
               GO
               ALTER DATABASE [RockRMS_NewDbName] SET  READ_WRITE 
               GO
-         * Remove the following strings from the file in the order below:
+              USE [RockRMS_NewDbName]
+              GO
+              
+     ___ * Remove the following strings from the file in the order below:
             'TEXTIMAGE_ON [PRIMARY]'
             'ON [PRIMARY]'
 
-         * The script will have issues inserting into the [AttributeValue] table wiht its persisted
+         * The script will have issues inserting into the [AttributeValue] table with its persisted
            computed column so:
-           1. Remove the line from the create table for [AttributeValue] that is SIMILAR TO this (copy it for later):
+       ___ 1. Remove the line from the create table for [AttributeValue] that is SIMILAR TO this (copy it for later):
                 [ValueAsNumeric]  AS (case when len([value])<(100) then case when isnumeric([value])=(1) AND NOT [value] like '%[^0-9.]%' then TRY_CAST([value] AS [numeric](38,10))  end  end) PERSISTED;
 
-           2. Search for the lines
+       ___ 2. Search for the lines
               SET IDENTITY_INSERT [dbo].[AttributeValue] OFF
               SET ANSI_PADDING OFF
          
@@ -109,7 +112,7 @@ ___ 10. Open the SQL file and make the following edits:
               ALTER TABLE [AttributeValue] ADD
              		[ValueAsNumeric]  AS (case when len([value])<(100) then case when isnumeric([value])=(1) AND NOT [value] like '%[^0-9.]%' then TRY_CAST([value] AS [numeric](38,10))  end  end) PERSISTED;
 
-           3. Remove the following "WITH" options from any "CREATE SPATIAL INDEX" statements (to avoid problems with Azure SQL V2):
+       ___ 3. Remove the following "WITH" options from any "CREATE SPATIAL INDEX" statements (to avoid problems with Azure SQL V2):
               PAD_INDEX = OFF,
               SORT_IN_TEMPDB = OFF,
               ALLOW_ROW_LOCKS = ON,
@@ -124,3 +127,5 @@ ___ 13. Overwrite with snapshot zip file to Azure Blog storage
         (rockrms/install/<version>/Data)
 
 ___ 14. Test a brand new install on various web hosting providers.
+
+___ 15. Commit the additions made to ./Installers/RockInstaller/Install Versions/vX.Y.Z/ into the develop branch.

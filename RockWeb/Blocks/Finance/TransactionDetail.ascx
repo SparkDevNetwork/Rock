@@ -76,6 +76,7 @@
                             <Rock:RockDropDownList ID="ddlSourceType" runat="server" Label="Source" />
                             <Rock:RockDropDownList ID="ddlCurrencyType" runat="server" Label="Currency Type" AutoPostBack="true" OnSelectedIndexChanged="ddlCurrencyType_SelectedIndexChanged" />
                             <Rock:RockDropDownList ID="ddlCreditCardType" runat="server" Label="Credit Card Type" />
+                            <asp:PlaceHolder ID="phPaymentAttributeEdits" runat="server" EnableViewState="false"></asp:PlaceHolder>
                             <Rock:FinancialGatewayPicker ID="gpPaymentGateway" runat="server" Label="Payment Gateway" ShowAll="true" />
                             <Rock:DataTextBox ID="tbTransactionCode" runat="server" Label="Transaction Code"
                                 SourceTypeName="Rock.Model.FinancialTransaction, Rock" PropertyName="TransactionCode" />
@@ -100,8 +101,8 @@
                         SourceTypeName="Rock.Model.FinancialTransaction, Rock" PropertyName="Summary" />
 
                     <div class="actions">
-                        <asp:LinkButton ID="lbSave" runat="server" Text="Save" AccessKey="s" CssClass="btn btn-primary" OnClick="lbSave_Click" />
-                        <asp:LinkButton ID="lbCancel" runat="server" Text="Cancel" AccessKey="c" CssClass="btn btn-link" CausesValidation="false" OnClick="lbCancel_Click" />
+                        <asp:LinkButton ID="lbSave" runat="server" Text="Save" AccessKey="s" ToolTip="Alt+s" CssClass="btn btn-primary" OnClick="lbSave_Click" />
+                        <asp:LinkButton ID="lbCancel" runat="server" Text="Cancel" AccessKey="c" ToolTip="Alt+c" CssClass="btn btn-link" CausesValidation="false" OnClick="lbCancel_Click" />
                     </div>
                 </div>
 
@@ -162,11 +163,11 @@
                     </div>
 
                     <div class="actions">
-                        <asp:LinkButton ID="lbEdit" runat="server" Text="Edit" AccessKey="m" CssClass="btn btn-primary" CausesValidation="false" OnClick="lbEdit_Click" />
+                        <asp:LinkButton ID="lbEdit" runat="server" Text="Edit" AccessKey="m" ToolTip="Alt+m" CssClass="btn btn-primary" CausesValidation="false" OnClick="lbEdit_Click" />
                         <div class="pull-right">
-                            <asp:LinkButton ID="lbRefund" runat="server" Text="Refund" AccessKey="a" CssClass="btn btn-default margin-r-sm" CausesValidation="false" OnClick="lbRefundTransaction_Click" />
-                            <asp:LinkButton ID="lbAddTransaction" runat="server" Text="Add New Transaction" AccessKey="a" CssClass="btn btn-default margin-r-sm" CausesValidation="false" OnClick="lbAddTransaction_Click" />
-                            <asp:HyperLink ID="lbNext" runat="server" AccessKey="n" CssClass="btn btn-default margin-r-sm">Next <i class="fa fa-chevron-right"></i></asp:HyperLink>
+                            <asp:LinkButton ID="lbRefund" runat="server" Text="Refund" AccessKey="r" ToolTip="Alt+r" CssClass="btn btn-default margin-r-sm" CausesValidation="false" OnClick="lbRefundTransaction_Click" />
+                            <asp:LinkButton ID="lbAddTransaction" runat="server" Text="Add New Transaction" AccessKey="a" ToolTip="Alt+a" CssClass="btn btn-default margin-r-sm" CausesValidation="false" OnClick="lbAddTransaction_Click" />
+                            <asp:HyperLink ID="lbNext" runat="server" AccessKey="n" ToolTip="Alt+n" CssClass="btn btn-default margin-r-sm">Next <i class="fa fa-chevron-right"></i></asp:HyperLink>
                         </div>
                     </div>
 
@@ -191,6 +192,9 @@
                     </div>
                     <div class="col-md-6">
                         <Rock:RockTextBox ID="tbAccountSummary" runat="server" Label="Summary" TextMode="MultiLine" Rows="3" ValidationGroup="Account" />
+                        <div class="attributes">
+                            <asp:PlaceHolder ID="phAccountAttributeEdits" runat="server" EnableViewState="false"></asp:PlaceHolder>
+                        </div>
                     </div>
                 </div>
             </Content>

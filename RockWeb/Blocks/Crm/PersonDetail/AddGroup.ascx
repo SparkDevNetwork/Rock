@@ -11,6 +11,7 @@
             <div class="panel-body">
 
                 <asp:ValidationSummary ID="valSummaryTop" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" />
+                <Rock:NotificationBox ID="nbValidation" runat="server" Heading="Please Correct the Following" NotificationBoxType="Danger" />
 
                 <asp:Panel ID="pnlGroupData" runat="server">
 
@@ -43,6 +44,7 @@
 
                         <div class="col-md-8">
                             <Rock:AddressControl ID="acAddress" Label="Address" runat="server" UseStateAbbreviation="false" UseCountryAbbreviation="false" />
+                            <Rock:RockCheckBox ID="cbHomeless" runat="server" Text="Family is Homeless" Visible="false" />
                         </div>
                     </div>
 
@@ -56,10 +58,14 @@
                 </asp:Panel>
 
                 <asp:Panel ID="pnlDuplicateWarning" runat="server" Visible="false">
-                    <Rock:NotificationBox ID="nbDuplicateWarning" runat="server" NotificationBoxType="Warning" Title="Possible Duplicates!"
-                        Text="<p>One ore more of the people you are adding may already exist! Please confirm that none of the existing people below are the same person as someone that you are adding." />
-                    <asp:PlaceHolder ID="phDuplicates" runat="server" />
+                    <Rock:NotificationBox ID="nbDuplicateWarning" runat="server" NotificationBoxType="Warning" Title="Possible Duplicates"
+                        Text="<p>One or more of the people you are adding may already exist. Please confirm that none of the existing people below are the same person as someone that you are adding." />
+                    <div>
+                        <asp:PlaceHolder ID="phDuplicates" runat="server" />
+                    </div>
                 </asp:Panel>
+
+                <Rock:NotificationBox ID="nbMessages" runat="server"></Rock:NotificationBox>
 
                 <div class="actions">
                     <asp:LinkButton ID="btnPrevious" runat="server" Text="Previous" CssClass="btn btn-link" OnClick="btnPrevious_Click" Visible="false" CausesValidation="false" />

@@ -19,6 +19,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Data.Entity;
 using System.Data.Entity.ModelConfiguration;
 using System.Linq;
 using System.Runtime.Serialization;
@@ -277,7 +278,7 @@ namespace Rock.Model
         public bool RedirectTablets { get; set; }
 
         /// <summary>
-        /// Gets or sets a value indicating whether to log Page Views for pages in this site
+        /// Gets or sets a value indicating whether to log Page Views into the Interaction tables for pages in this site
         /// </summary>
         /// <value>
         ///   <c>true</c> if [enable page views]; otherwise, <c>false</c>.
@@ -290,15 +291,6 @@ namespace Rock.Model
             set { _enablePageViews = value; }
         }
         private bool _enablePageViews = true;
-
-        /// <summary>
-        /// Gets or sets the number of days to keep Page Views for pages in this site
-        /// </summary>
-        /// <value>
-        /// The page view retention period days.
-        /// </value>
-        [DataMember]
-        public int? PageViewRetentionPeriodDays { get; set; }
 
         /// <summary>
         /// Gets or sets the content of the page header.
@@ -554,6 +546,29 @@ namespace Rock.Model
         public void DeleteIndexedDocument( int id )
         {
             return;
+        }
+
+        /// <summary>
+        /// Gets the index filter values.
+        /// </summary>
+        /// <returns></returns>
+        public ModelFieldFilterConfig GetIndexFilterConfig()
+        {
+            ModelFieldFilterConfig filterConfig = new ModelFieldFilterConfig();
+            filterConfig.FilterValues = new SiteService( new RockContext() ).Queryable().AsNoTracking().Where( s => s.IsIndexEnabled ).Select( s => s.Name ).ToList();
+            filterConfig.FilterLabel = "Sites";
+            filterConfig.FilterField = "siteName";
+
+            return filterConfig;
+        }
+
+        /// <summary>
+        /// Gets the index filter field.
+        /// </summary>
+        /// <returns></returns>
+        public bool SupportsIndexFieldFiltering()
+        {
+            return true;
         }
 
         /// <summary>

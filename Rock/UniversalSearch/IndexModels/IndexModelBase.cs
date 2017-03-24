@@ -1,4 +1,20 @@
-﻿using System;
+﻿// <copyright>
+// Copyright by the Spark Development Network
+//
+// Licensed under the Rock Community License (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.rockrms.com/license
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+// </copyright>
+//
+using System;
 using System.Collections.Generic;
 using System.Dynamic;
 using System.Linq;
@@ -9,6 +25,8 @@ using Rock.Attribute;
 using Rock.Model;
 using Rock.Web.Cache;
 using Rock.UniversalSearch.IndexModels.Attributes;
+using Rock.Data;
+using Newtonsoft.Json;
 
 namespace Rock.UniversalSearch.IndexModels
 {
@@ -16,7 +34,7 @@ namespace Rock.UniversalSearch.IndexModels
     /// Base Index Model
     /// </summary>
     /// <seealso cref="System.Dynamic.DynamicObject" />
-    public class IndexModelBase : DynamicObject
+    public class IndexModelBase : DynamicObject, Lava.ILiquidizable
     {
         private Dictionary<string, object> _members = new Dictionary<string, object>();
         object Instance;
@@ -41,7 +59,7 @@ namespace Rock.UniversalSearch.IndexModels
         /// <value>
         /// The identifier.
         /// </value>
-        [RockIndexField( Type = IndexFieldType.Number )]
+        [RockIndexField( Index = IndexType.NotIndexed )]
         public Int64 Id { get; set; }
 
         /// <summary>
@@ -52,6 +70,15 @@ namespace Rock.UniversalSearch.IndexModels
         /// </value>
         [RockIndexField( Index = IndexType.NotIndexed )]
         public string SourceIndexModel { get; set; }
+
+        /// <summary>
+        /// Gets or sets the model configuration. This is used to set various configuration options for the model that can be queried for in searches.
+        /// For instance models that do not have filters will use this field to report that fact ('nofilters') to help when searching with field filters.
+        /// </summary>
+        /// <value>
+        /// The model configuration.
+        /// </value>
+        public string ModelConfiguration { get; set; }
 
         /// <summary>
         /// Gets the type of the index model.
@@ -68,6 +95,21 @@ namespace Rock.UniversalSearch.IndexModels
         }
 
         /// <summary>
+        /// Gets the index model assembly.
+        /// </summary>
+        /// <value>
+        /// The index model assembly.
+        /// </value>
+        [RockIndexField( Index = IndexType.NotIndexed )]
+        public string IndexModelAssembly
+        {
+            get
+            {
+                return InstanceType.Assembly.FullName;
+            }
+        }
+
+        /// <summary>
         /// Formats the search result.
         /// </summary>
         /// <param name="person">The person.</param>
@@ -77,19 +119,50 @@ namespace Rock.UniversalSearch.IndexModels
         {
             string result = string.Empty;
 
-            // try returning some common properties
-            if ( this["Name"] != null )
-            {
-                result = this.GetPropertyValue( "Name" ).ToString();
+            // get template from entity type
+            var sourceModelEntity = EntityTypeCache.All().Where( e => e.Name == this.SourceIndexModel ).FirstOrDefault();
+
+            if ( sourceModelEntity != null ) {
+                var template = sourceModelEntity.IndexResultTemplate;
+
+                if ( template.IsNotNullOrWhitespace() )
+                {
+                    var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( null, person );
+                    mergeFields.Add( "IndexDocument", this );
+                    mergeFields.Add( "DisplayOptions", displayOptions );
+
+                    return new FormattedSearchResult() { IsViewAllowed = true, FormattedResult = template.ResolveMergeFields( mergeFields ) };
+                }
             }
 
-            if ( this["Title"] != null )
-            {
-                result = this.GetPropertyValue( "Title" ).ToString();
-            }
-
-            // otherwise return not implemented
+            // otherwise return not implemented (blank)
             return new FormattedSearchResult() { IsViewAllowed = true, FormattedResult = result};
+        }
+
+        /// <summary>
+        /// Gets the document URL.
+        /// </summary>
+        /// <returns></returns>
+        public virtual string GetDocumentUrl( Dictionary<string, object> displayOptions = null )
+        {
+            // get template from entity type
+            var sourceModelEntity = EntityTypeCache.All().Where( e => e.Name == this.SourceIndexModel ).FirstOrDefault();
+
+            if ( sourceModelEntity != null )
+            {
+                var template = sourceModelEntity.IndexDocumentUrl;
+
+                if ( template.IsNotNullOrWhitespace() )
+                {
+                    var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( null, null );
+                    mergeFields.Add( "IndexDocument", this );
+                    mergeFields.Add( "DisplayOptions", displayOptions );
+
+                    return template.ResolveMergeFields( mergeFields ).Trim();
+                }
+            }
+
+            return string.Empty;;
         }
 
         /// <summary>
@@ -102,24 +175,40 @@ namespace Rock.UniversalSearch.IndexModels
         }
 
         /// <summary>
+        /// Gets or sets the name.
+        /// </summary>
+        /// <value>
+        /// The name.
+        /// </value>
+        [RockIndexField( Index = IndexType.NotIndexed )]
+        public string DocumentName { get; set; }
+
+        /// <summary>
         /// Gets or sets the icon CSS class.
         /// </summary>
         /// <value>
         /// The icon CSS class.
         /// </value>
         [RockIndexField( Index = IndexType.NotIndexed )]
-        public virtual string IconCssClass
-        {
-            get
-            {
-                return iconCssClass;
-            }
-            set
-            {
-                iconCssClass = value;
-            }
-        }
-        private string iconCssClass = "fa fa-file";
+        public virtual string IconCssClass { get; set; } = "fa fa-file";
+
+        /// <summary>
+        /// Gets or sets the score.
+        /// </summary>
+        /// <value>
+        /// The score.
+        /// </value>
+        [RockIndexField( Index = IndexType.NotIndexed )]
+        public double Score { get; set; }
+
+        /// <summary>
+        /// Gets or sets the model order.
+        /// </summary>
+        /// <value>
+        /// Used to give preference to certain model types when scores match.
+        /// </value>
+        [RockIndexField( Index = IndexType.NotIndexed )]
+        public int ModelOrder { get; set; } = 1;
 
         /// <summary>
         /// Adds the indexable attributes.
@@ -209,7 +298,9 @@ namespace Rock.UniversalSearch.IndexModels
             }
 
             // no match - set or add to dictionary
-            _members[binder.Name] = value;
+            // ensure name is starts with an upper case 
+            var name = char.ToUpper( binder.Name[0] ) + binder.Name.Substring( 1 );
+            _members[name] = value;
             return true;
         }
 
@@ -252,14 +343,17 @@ namespace Rock.UniversalSearch.IndexModels
             if ( instance == null )
                 instance = this;
 
-            var miArray = InstanceType.GetMember( name, BindingFlags.Public | BindingFlags.SetProperty | BindingFlags.Instance );
-            if ( miArray != null && miArray.Length > 0 )
+            if ( name != null )
             {
-                var mi = miArray[0];
-                if ( mi.MemberType == MemberTypes.Property )
+                var miArray = InstanceType.GetMember( name, BindingFlags.Public | BindingFlags.SetProperty | BindingFlags.Instance );
+                if ( miArray != null && miArray.Length > 0 )
                 {
-                    ((PropertyInfo)mi).SetValue( Instance, value, null );
-                    return true;
+                    var mi = miArray[0];
+                    if ( mi.MemberType == MemberTypes.Property )
+                    {
+                        ((PropertyInfo)mi).SetValue( Instance, value, null );
+                        return true;
+                    }
                 }
             }
             return false;
@@ -295,18 +389,25 @@ namespace Rock.UniversalSearch.IndexModels
             }
             set
             {
-                if ( _members.ContainsKey( key ) )
+                if ( key != null )
                 {
-                    _members[key] = value;
-                    return;
-                }
+                    if ( _members.ContainsKey( key ) )
+                    {
+                        _members[key] = value;
+                        return;
+                    }
 
-                // check instance for existance of type first
-                var miArray = InstanceType.GetMember( key, BindingFlags.Public | BindingFlags.GetProperty );
-                if ( miArray != null && miArray.Length > 0 )
-                    SetProperty( Instance, key, value );
-                else
-                    _members[key] = value;
+                    // check instance for existance of type first
+                    var miArray = InstanceType.GetMember( key, BindingFlags.Public | BindingFlags.GetProperty );
+                    if ( miArray != null && miArray.Length > 0 )
+                    {
+                        SetProperty( Instance, key, value );
+                    }
+                    else
+                    {
+                        _members[key] = value;
+                    }
+                }
             }
         }
 
@@ -348,7 +449,44 @@ namespace Rock.UniversalSearch.IndexModels
                 propertyNames.Add( key );
             }
 
+            propertyNames.Remove( "AvailableKeys" );
+            propertyNames.Remove( "availableKeys" );
+
             return propertyNames;
+        }
+
+
+        #region ILiquid Implementation
+        /// <summary>
+        /// Gets the available keys (for debuging info).
+        /// </summary>
+        /// <value>
+        /// The available keys.
+        /// </value>
+        [LavaIgnore]
+        public List<string> AvailableKeys
+        {
+            get
+            {
+                return GetDynamicMemberNames().ToList();
+            }
+        }
+
+        /// <summary>
+        /// Gets the <see cref="System.Object"/> with the specified key.
+        /// </summary>
+        /// <value>
+        /// The <see cref="System.Object"/>.
+        /// </value>
+        /// <param name="key">The key.</param>
+        /// <returns></returns>
+        public object this[object key]
+        {
+            get
+            {
+                var propertyKey = key.ToStringSafe();
+                return this[propertyKey];
+            }
         }
 
         /// <summary>
@@ -375,7 +513,24 @@ namespace Rock.UniversalSearch.IndexModels
             return false;
         }
 
-        #region Static Methods
+        /// <summary>
+        /// Returns liquid for the object
+        /// </summary>
+        /// <returns></returns>
+        public object ToLiquid()
+        {
+            return this;
+        }
+
+        /// <summary>
+        /// Determines whether the specified key contains key.
+        /// </summary>
+        /// <param name="key">The key.</param>
+        /// <returns></returns>
+        public bool ContainsKey( object key )
+        {
+            return this.GetDynamicMemberNames().Contains( key.ToString() );
+        }
 
         #endregion
     }

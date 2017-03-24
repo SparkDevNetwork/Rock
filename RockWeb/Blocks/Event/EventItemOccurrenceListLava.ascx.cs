@@ -47,7 +47,6 @@ namespace RockWeb.Blocks.Event
     [IntegerField("Max Occurrences", "The maximum number of occurrences to show.", false, 100, order: 4)]
     [LinkedPage( "Registration Page", "The page to use for registrations.", order: 5 )]
     [CodeEditorField("Lava Template", "The lava template to use for the results", CodeEditorMode.Lava, CodeEditorTheme.Rock, defaultValue:"{% include '~~/Assets/Lava/EventItemOccurrenceList.lava' %}", order:6)]
-    [BooleanField("Enable Debug", "Show the lava merge fields.", order: 7)]
     public partial class EventItemOccurrenceListLava : Rock.Web.UI.RockBlock
     {
         #region Fields
@@ -188,25 +187,6 @@ namespace RockWeb.Blocks.Event
 
                 lContent.Text = GetAttributeValue( "LavaTemplate" ).ResolveMergeFields( mergeFields );
 
-                // show debug info
-                if ( GetAttributeValue( "EnableDebug" ).AsBoolean() && IsUserAuthorized( Authorization.EDIT ) )
-                {
-                    lDebug.Visible = true;
-                    lDebug.Text = @"<div class='alert alert-info'>Due to the size of the lava members the debug info for this block has been supressed. Below are high-level details of
-                                    the merge objects available.
-                                    <ul>
-                                        <li>EventItemOccurrences - A list of EventItemOccurrences. View the EvenItemOccurrence model for these properties.</li>
-                                        <li>EventItem - The EventItem that was selected. View the EvenItem model for these properties.</li>
-                                        <li>RegistrationPage  - String that contains the relative path to the registration page.</li>
-                                        <li>Global Attribute  - Access to the Global Attributes.</li>
-                                    </ul>
-                                    </div>";
-                }
-                else
-                {
-                    lDebug.Visible = false;
-                    lDebug.Text = string.Empty;
-                }
             }
             else
             {

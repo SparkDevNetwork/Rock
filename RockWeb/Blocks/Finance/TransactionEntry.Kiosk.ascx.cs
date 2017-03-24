@@ -59,7 +59,6 @@ namespace RockWeb.Blocks.Finance
     [IntegerField( "Maximum Phone Number Length", "Maximum length for phone number searches (defaults to 10).", false, 10, "", 7 )]
     [TextField( "Search Regex", "Regular Expression to run the search input through before searching. Useful for stripping off characters.", false, "", "", 8 )]
     [CodeEditorField( "Receipt Lava", "Lava to display for the receipt panel.", CodeEditorMode.Lava, CodeEditorTheme.Rock, 300, true, "{% include '~~/Assets/Lava/KioskGivingReceipt.lava' %}", "", 9 )]
-    [BooleanField( "Enable Debug", "Shows the fields available to merge in lava.", false, "", 10 )]
     [SystemEmailField( "Receipt Email", "The system email to use to send the receipt.", false, "", "", 11 )]
     [TextField( "Payment Comment", "The comment to include with the payment transaction when sending to Gateway", false, "Kiosk", "", 12 )]
     #endregion
@@ -567,7 +566,7 @@ namespace RockWeb.Blocks.Finance
             if ( receiptEmail != null )
             {
                 var givingUnit = new PersonAliasService( rockContext ).Get( this.SelectedGivingUnit.PersonAliasId ).Person;
-                var appRoot = Rock.Web.Cache.GlobalAttributesCache.Read( rockContext ).GetValue( "ExternalApplicationRoot" );
+                var appRoot = Rock.Web.Cache.GlobalAttributesCache.Read( rockContext ).GetValue( "PublicApplicationRoot" );
 
                 var recipients = new List<RecipientData>();
                 recipients.Add( new RecipientData( givingUnit.Email, GetMergeFields( givingUnit ) ) );
@@ -767,14 +766,6 @@ namespace RockWeb.Blocks.Finance
             var mergeFields = GetMergeFields(null);
 
             string template = GetAttributeValue( "ReceiptLava" );
-
-            // show debug info
-            bool enableDebug = GetAttributeValue( "EnableDebug" ).AsBoolean();
-            if ( enableDebug && IsUserAuthorized( Authorization.EDIT ) )
-            {
-                lDebug.Visible = true;
-                lDebug.Text = mergeFields.lavaDebugInfo();
-            }
 
             lReceiptContent.Text = template.ResolveMergeFields( mergeFields );
             pnlReceipt.Visible = true;

@@ -281,9 +281,7 @@ namespace RockWeb.Blocks.CheckIn
                 if ( ddlAttendanceType.SelectedGroupTypeId.HasValue )
                 {
                     return new GroupTypeService( _rockContext )
-                        .GetChildGroupTypes( ddlAttendanceType.SelectedGroupTypeId.Value )
-                        .OrderBy( a => a.Order )
-                        .ThenBy( a => a.Name )
+                        .GetAllAssociatedDescendentsOrdered( ddlAttendanceType.SelectedGroupTypeId.Value )
                         .ToList();
                 }
             }
@@ -531,6 +529,7 @@ function(item) {
             string keyPrefix = string.Format( "attendance-reporting-{0}-", this.BlockId );
 
             ddlAttendanceType.SelectedGroupTypeId = GetSetting( keyPrefix, "TemplateGroupTypeId" ).AsIntegerOrNull();
+            cbIncludeGroupsWithoutSchedule.Checked = this.GetBlockUserPreference( "IncludeGroupsWithoutSchedule" ).AsBooleanOrNull() ?? true;
             BuildGroupTypesUI();
 
             string slidingDateRangeSettings = GetSetting( keyPrefix, "SlidingDateRange" );
@@ -1800,23 +1799,29 @@ function(item) {
             {
                 _addedGroupTypeIds.Add( groupType.Id );
 
-                if ( groupType.Groups.Any() )
+                var groups = groupType.Groups
+                    .Where( g => 
+                        g.IsActive &&
+                        ( !g.ParentGroupId.HasValue || ( g.ParentGroup.GroupTypeId != groupType.Id ) ) )
+                    .OrderBy( a => a.Order )
+                    .ThenBy( a => a.Name )
+                    .ToList();
+
+                var childGroupTypes = groupType.ChildGroupTypes.OrderBy( a => a.Order ).ThenBy( a => a.Name ).ToList();
+
+                if ( groups.Any() )
                 {
                     bool showGroupAncestry = GetAttributeValue( "ShowGroupAncestry" ).AsBoolean( true );
 
                     var groupService = new GroupService( _rockContext );
 
-                    var cblGroupTypeGroups = new RockCheckBoxList { ID = "cblGroupTypeGroups" + groupType.Id };
+                    var cblGroupTypeGroups = new RockCheckBoxList { ID = "cblGroupTypeGroups" + groupType.Id, FormGroupCssClass= "js-groups-container" };
 
                     cblGroupTypeGroups.Label = groupType.Name;
                     cblGroupTypeGroups.Items.Clear();
 
                     // limit to Groups that don't have a Parent, or the ParentGroup is a different grouptype so we don't end up with infinite recursion
-                    foreach ( var group in groupType.Groups
-                        .Where( g => !g.ParentGroupId.HasValue || ( g.ParentGroup.GroupTypeId != groupType.Id ) )
-                        .OrderBy( a => a.Order )
-                        .ThenBy( a => a.Name )
-                        .ToList() )
+                    foreach ( var group in groups )
                     {
                         AddGroupControls( group, cblGroupTypeGroups, groupService, showGroupAncestry );
                     }
@@ -1825,18 +1830,18 @@ function(item) {
                 }
                 else
                 {
-                    if ( groupType.ChildGroupTypes.Any() )
+                    if ( childGroupTypes.Any() )
                     {
                         liGroupTypeItem.Controls.Add( new Label { Text = groupType.Name, ID = "lbl" + groupType.Name } );
                     }
                 }
 
-                if ( groupType.ChildGroupTypes.Any() )
+                if ( childGroupTypes.Any() )
                 {
                     var ulGroupTypeList = new HtmlGenericContainer( "ul", "list-unstyled" );
 
                     liGroupTypeItem.Controls.Add( ulGroupTypeList );
-                    foreach ( var childGroupType in groupType.ChildGroupTypes.OrderBy( a => a.Order ).ThenBy( a => a.Name ) )
+                    foreach ( var childGroupType in childGroupTypes )
                     {
                         var liChildGroupTypeItem = new HtmlGenericContainer( "li" );
                         liChildGroupTypeItem.ID = "liGroupTypeItem" + childGroupType.Id;
@@ -1856,13 +1861,13 @@ function(item) {
         /// <param name="showGroupAncestry">if set to <c>true</c> [show group ancestry].</param>
         private void AddGroupControls( Group group, RockCheckBoxList checkBoxList, GroupService service, bool showGroupAncestry )
         {
-            // Only show groups that actually have a schedule
+            // Only show groups that actually have a schedule, unless they choose IncludeGroupsWithoutSchedule
             if ( group != null )
             {
                 if ( !_addedGroupIds.Contains( group.Id ) )
                 {
                     _addedGroupIds.Add( group.Id );
-                    if ( group.ScheduleId.HasValue || group.GroupLocations.Any( l => l.Schedules.Any() ) )
+                    if ( cbIncludeGroupsWithoutSchedule.Checked || group.ScheduleId.HasValue || group.GroupLocations.Any( l => l.Schedules.Any() ) )
                     {
                         string displayName = showGroupAncestry ? service.GroupAncestorPathName( group.Id ) : group.Name;
                         checkBoxList.Items.Add( new ListItem( displayName, group.Id.ToString() ) );
@@ -2135,6 +2140,17 @@ function(item) {
             public int? LocationId { get; set; }
 
             public string LocationName { get; set; }
+        }
+
+        /// <summary>
+        /// Handles the CheckedChanged event of the cbIncludeGroupsWithoutSchedule control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void cbIncludeGroupsWithoutSchedule_CheckedChanged( object sender, EventArgs e )
+        {
+            // NOTE: OnLoad already rebuilt the GroupTypes UI with the changed value of cbIncludeGroupsWithoutSchedule , so we just need to set it as a preference
+            this.SetBlockUserPreference( "IncludeGroupsWithoutSchedule", cbIncludeGroupsWithoutSchedule.Checked.ToTrueFalse() );
         }
     }
 }

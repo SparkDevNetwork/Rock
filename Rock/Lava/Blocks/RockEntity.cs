@@ -1,4 +1,20 @@
-﻿ using System;
+﻿// <copyright>
+// Copyright by the Spark Development Network
+//
+// Licensed under the Rock Community License (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.rockrms.com/license
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+// </copyright>
+//
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -315,24 +331,12 @@ namespace Rock.Lava.Blocks
                         var items = queryResult.ToList();
                         var itemsSecured = new List<IEntity>();
 
-                        Person person = null;
-                        var principal = HttpContext.Current.User;
+                        Person person = GetCurrentPerson( context );
 
-                        if ( principal != null && principal.Identity != null )
-                        {
-                            var userLoginService = new Rock.Model.UserLoginService( new RockContext() );
-                            var userLogin = userLoginService.GetByUserName( principal.Identity.Name );
-
-                            if ( userLogin != null )
-                            {
-                                person = userLogin.Person;
-                            }
-                        }
-
-                        foreach (IEntity item in items )
+                        foreach ( IEntity item in items )
                         {
                             ISecured itemSecured = item as ISecured;
-                            if ( itemSecured == null || itemSecured.IsAuthorized(Authorization.VIEW,  person))
+                            if ( itemSecured == null || itemSecured.IsAuthorized( Authorization.VIEW, person ) )
                             {
                                 itemsSecured.Add( item );
                             }
@@ -489,6 +493,39 @@ namespace Rock.Lava.Blocks
 
                 Template.RegisterTag<Rock.Lava.Blocks.RockEntity>( entityName );
             }
+        }
+
+        /// <summary>
+        /// Gets the current person.
+        /// </summary>
+        /// <param name="context">The context.</param>
+        /// <returns></returns>
+        private static Person GetCurrentPerson( DotLiquid.Context context )
+        {
+            Person currentPerson = null;
+
+            // First check for a person override value included in lava context
+            if ( context.Scopes != null )
+            {
+                foreach ( var scopeHash in context.Scopes )
+                {
+                    if ( scopeHash.ContainsKey( "CurrentPerson" ) )
+                    {
+                        currentPerson = scopeHash["CurrentPerson"] as Person;
+                    }
+                }
+            }
+
+            if ( currentPerson == null )
+            {
+                var httpContext = System.Web.HttpContext.Current;
+                if ( httpContext != null && httpContext.Items.Contains( "CurrentPerson" ) )
+                {
+                    currentPerson = httpContext.Items["CurrentPerson"] as Person;
+                }
+            }
+
+            return currentPerson;
         }
 
         /// <summary>
@@ -735,7 +772,7 @@ namespace Rock.Lava.Blocks
             if ( !string.IsNullOrWhiteSpace( dynamicFilter ) && !string.IsNullOrWhiteSpace( dynamicFilterValue ) )
             {
                 var entityFields = EntityHelper.GetEntityFields( type );
-                var entityField = entityFields.FirstOrDefault( f => f.Name.Equals( dynamicFilter, StringComparison.OrdinalIgnoreCase ) );
+                var entityField = entityFields.FindFromFilterSelection( dynamicFilter );
                 if ( entityField != null )
                 {
                     var values = new List<string>();

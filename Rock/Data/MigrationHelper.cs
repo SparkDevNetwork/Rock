@@ -91,9 +91,9 @@ namespace Rock.Data
         {
             Migration.Sql( string.Format( @"
 
-                DECLARE @Id int
-                SET @Id = (SELECT [Id] FROM [EntityType] WHERE [Name] = '{0}')
-                IF @Id IS NULL
+                DECLARE @Guid uniqueidentifier
+                SET @Guid = (SELECT [Guid] FROM [EntityType] WHERE [Name] = '{0}')
+                IF @Guid IS NULL
                 BEGIN
                     INSERT INTO [EntityType] (
                         [Name],[FriendlyName],[AssemblyName],[IsEntity],[IsSecured],[IsCommon],[Guid])
@@ -102,6 +102,7 @@ namespace Rock.Data
                 END
                 ELSE
                 BEGIN
+
                     UPDATE [EntityType] SET
                         [FriendlyName] = '{1}',
                         [AssemblyName] = '{2}',
@@ -109,6 +110,18 @@ namespace Rock.Data
                         [IsSecured] = {4},
                         [Guid] = '{5}'
                     WHERE [Name] = '{0}'
+
+                    -- Update any attribute values that might have been using entity's old guid value
+	                DECLARE @EntityTypeFieldTypeId int = ( SELECT TOP 1 [Id] FROM [FieldType] WHERE [Class] = 'Rock.Field.Types.EntityTypeFieldType' )
+	                DECLARE @ComponentFieldTypeId int = ( SELECT TOP 1 [Id] FROM [FieldType] WHERE [Class] = 'Rock.Field.Types.ComponentFieldType' )
+	                DECLARE @ComponentsFieldTypeId int = ( SELECT TOP 1 [Id] FROM [FieldType] WHERE [Class] = 'Rock.Field.Types.ComponentsFieldType' )
+
+                    UPDATE V SET [Value] = REPLACE( LOWER([Value]), LOWER(CAST(@Guid AS varchar(50))), LOWER('{5}') )
+	                FROM [AttributeValue] V
+	                INNER JOIN [Attribute] A ON A.[Id] = V.[AttributeId]
+	                WHERE ( A.[FieldTypeId] = @EntityTypeFieldTypeId OR A.[FieldTypeId] = @ComponentFieldTypeId	OR A.[FieldTypeId] = @ComponentsFieldTypeId )
+                    OPTION (RECOMPILE)
+
                 END
 ",
                     name.Replace( "'", "''" ),
@@ -557,16 +570,12 @@ namespace Rock.Data
         }
 
         /// <summary>
-        /// Deletes the Page and any PageViews that use the page.
+        /// Deletes the Page 
         /// </summary>
         /// <param name="guid">The GUID.</param>
         public void DeletePage( string guid )
         {
             Migration.Sql( string.Format( @"
-
-                DELETE PV
-                FROM [PageView] PV
-                INNER JOIN [Page] P ON P.[Id] = PV.[PageId] AND P.[Guid] = '{0}'
 
                 DELETE [Page] WHERE [Guid] = '{0}'
 ",
@@ -939,7 +948,7 @@ namespace Rock.Data
         {
             if ( !string.IsNullOrWhiteSpace( category ) )
             {
-                throw new Exception( "Attribute Category no longer supported by this helper function. You'll have to write special migration code yourself. Sorry!" );
+                throw new Exception( "Attribute Category no longer supported by this helper function. You'll have to write special migration code yourself." );
             }
 
             Migration.Sql( string.Format( @"
@@ -953,14 +962,44 @@ namespace Rock.Data
                 DECLARE @EntityTypeId int
                 SET @EntityTypeId = (SELECT [Id] FROM [EntityType] WHERE [Name] = 'Rock.Model.Block')
 
-                IF EXISTS (
-                    SELECT [Id]
-                    FROM [Attribute]
+                -- Find first and last attribute with this entitytype/key combination
+                DECLARE @FirstAttributeId int
+                DECLARE @LastAttributeId int
+
+                SELECT 
+                    @FirstAttributeId = MIN([Id]),  
+                    @LastAttributeId = MAX([Id])
+                FROM [Attribute]
+                WHERE [EntityTypeId] = @EntityTypeId
+                AND [EntityTypeQualifierColumn] = 'BlockTypeId'
+                AND [EntityTypeQualifierValue] = CAST(@BlockTypeId as varchar)
+                AND [Key] = '{2}' 
+
+                IF @FirstAttributeId IS NOT NULL AND @FirstAttributeId <> @LastAttributeId
+                BEGIN
+                    -- We have duplicate attributes, update values for the duplicates to point to first attribute
+                    UPDATE V SET [AttributeId] = @FirstAttributeId
+                    FROM [Attribute] A
+                    INNER JOIN [AttributeValue] V 
+                        ON V.[AttributeId] = A.[Id]
+                    WHERE A.[EntityTypeId] = @EntityTypeId
+                    AND A.[EntityTypeQualifierColumn] = 'BlockTypeId'
+                    AND A.[EntityTypeQualifierValue] = CAST(@BlockTypeId as varchar)
+                    AND A.[Key] = '{2}' 
+                    AND A.[Id] <> @FirstAttributeId
+
+                    -- Delete the duplicate attributes
+                    DELETE [Attribute]
                     WHERE [EntityTypeId] = @EntityTypeId
                     AND [EntityTypeQualifierColumn] = 'BlockTypeId'
                     AND [EntityTypeQualifierValue] = CAST(@BlockTypeId as varchar)
-                    AND [Key] = '{2}' )
-                BEGIN
+                    AND [Key] = '{2}' 
+                    AND [Id] <> @FirstAttributeId
+				END
+
+				IF @FirstAttributeId IS NOT NULL
+				BEGIN
+                    -- Update the primary attribute
                     UPDATE [Attribute] SET
                         [IsSystem] = 1,
                         [Name] = '{3}',
@@ -968,13 +1007,12 @@ namespace Rock.Data
                         [Order] = {5},
                         [DefaultValue] = '{6}',
                         [Guid] = '{7}'
-                    WHERE [EntityTypeId] = @EntityTypeId
-                    AND [EntityTypeQualifierColumn] = 'BlockTypeId'
-                    AND [EntityTypeQualifierValue] = CAST(@BlockTypeId as varchar)
-                    AND [Key] = '{2}'
+                    WHERE [Id] = @FirstAttributeId
+
                 END
                 ELSE
                 BEGIN
+
                     INSERT INTO [Attribute] (
                         [IsSystem],[FieldTypeId],[EntityTypeId],[EntityTypeQualifierColumn],[EntityTypeQualifierValue],
                         [Key],[Name],[Description],
@@ -999,7 +1037,8 @@ namespace Rock.Data
         }
 
         /// <summary>
-        /// Adds a new BlockType Attribute for the given blocktype and key.
+        /// Adds (or Deletes then Adds) a new BlockType Attribute for the given blocktype and key.
+        /// NOTE: This deletes the Attribute first if it already exists, so be careful. You migth want to use UpdateBlockTypeAttribute instead.
         /// </summary>
         /// <param name="blockTypeGuid">The block GUID.</param>
         /// <param name="fieldTypeGuid">The field type GUID.</param>
@@ -1016,7 +1055,7 @@ namespace Rock.Data
         {
             if ( !string.IsNullOrWhiteSpace( category ) )
             {
-                throw new Exception( "Attribute Category no longer supported by this helper function. You'll have to write special migration code yourself. Sorry!" );
+                throw new Exception( "Attribute Category no longer supported by this helper function. You'll have to write special migration code yourself." );
             }
 
             Migration.Sql( string.Format( @"
@@ -1087,7 +1126,7 @@ namespace Rock.Data
         {
             if ( !string.IsNullOrWhiteSpace( category ) )
             {
-                throw new Exception( "Attribute Category no longer supported by this helper function. You'll have to write special migration code yourself. Sorry!" );
+                throw new Exception( "Attribute Category no longer supported by this helper function. You'll have to write special migration code yourself." );
             }
 
             if ( string.IsNullOrWhiteSpace( key ) )
@@ -4140,6 +4179,24 @@ END
         /// <param name="guid">The unique identifier.</param>
         public void UpdateWorkflowTypeAttribute( string workflowTypeGuid, string fieldTypeGuid, string name, string key, string description, int order, string defaultValue, string guid )
         {
+            UpdateWorkflowTypeAttribute( workflowTypeGuid, fieldTypeGuid, name, key, description, order, defaultValue, guid, false );
+        }
+
+
+        /// <summary>
+        /// Updates the workflow type attribute.
+        /// </summary>
+        /// <param name="workflowTypeGuid">The workflow type unique identifier.</param>
+        /// <param name="fieldTypeGuid">The field type unique identifier.</param>
+        /// <param name="name">The name.</param>
+        /// <param name="key">The key.</param>
+        /// <param name="description">The description.</param>
+        /// <param name="order">The order.</param>
+        /// <param name="defaultValue">The default value.</param>
+        /// <param name="guid">The unique identifier.</param>
+        /// <param name="isGridColumn">if set to <c>true</c> [is grid column].</param>
+        public void UpdateWorkflowTypeAttribute( string workflowTypeGuid, string fieldTypeGuid, string name, string key, string description, int order, string defaultValue, string guid, bool isGridColumn )
+        {
             Migration.Sql( string.Format( @"
 
                 DECLARE @WorkflowTypeId int = (SELECT [Id] FROM [WorkflowType] WHERE [Guid] = '{0}')
@@ -4162,6 +4219,7 @@ END
                             [Name] = '{3}',
                             [Description] = '{4}',
                             [Order] = {5},
+                            [IsGridColumn] = {8},
                             [DefaultValue] = '{6}',
                             [Guid] = '{7}'
                         WHERE [EntityTypeId] = @EntityTypeId
@@ -4179,7 +4237,7 @@ END
                         VALUES(
                             1,@FieldTypeId, @EntityTypeId,'WorkflowTypeId',CAST(@WorkflowTypeId as varchar),
                             '{2}','{3}','{4}',
-                            {5},0,'{6}',0,0,
+                            {5},{8},'{6}',0,0,
                             '{7}')
                     END
 
@@ -4192,7 +4250,8 @@ END
                     description.Replace( "'", "''" ),
                     order,
                     defaultValue.Replace( "'", "''" ),
-                    guid )
+                    guid,
+                    ( isGridColumn ? "1" : "0" ) )
             );
         }
 

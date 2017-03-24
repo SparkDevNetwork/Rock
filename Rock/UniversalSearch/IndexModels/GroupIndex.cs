@@ -1,4 +1,20 @@
-﻿using System;
+﻿// <copyright>
+// Copyright by the Spark Development Network
+//
+// Licensed under the Rock Community License (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.rockrms.com/license
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+// </copyright>
+//
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -29,7 +45,7 @@ namespace Rock.UniversalSearch.IndexModels
         /// <value>
         /// The name of the group type.
         /// </value>
-        [RockIndexField( )]
+        [RockIndexField]
         public string GroupTypeName { get; set; }
 
         /// <summary>
@@ -38,6 +54,7 @@ namespace Rock.UniversalSearch.IndexModels
         /// <value>
         /// The parent group identifier.
         /// </value>
+        [RockIndexField( Index = IndexType.NotIndexed )]
         public int ParentGroupId { get; set; }
 
         /// <summary>
@@ -69,7 +86,7 @@ namespace Rock.UniversalSearch.IndexModels
         /// <value>
         /// The name.
         /// </value>
-        [RockIndexField( Boost = 4 )]
+        [RockIndexField( Boost = 3 )]
         public string Name { get; set; }
 
         /// <summary>
@@ -78,7 +95,7 @@ namespace Rock.UniversalSearch.IndexModels
         /// <value>
         /// The description.
         /// </value>
-        [RockIndexField( Boost = 3 )]
+        [RockIndexField]
         public string Description { get; set; }
 
         /// <summary>
@@ -87,7 +104,7 @@ namespace Rock.UniversalSearch.IndexModels
         /// <value>
         /// The member list.
         /// </value>
-        [RockIndexField()]
+        [RockIndexField]
         public string MemberList { get; set; }
 
         /// <summary>
@@ -113,6 +130,9 @@ namespace Rock.UniversalSearch.IndexModels
             groupIndex.Name = group.Name;
             groupIndex.Description = group.Description;
             groupIndex.GroupTypeId = group.GroupTypeId;
+            groupIndex.DocumentName = group.Name;
+
+            groupIndex.ModelOrder = 5;
 
             if ( group.GroupType != null )
             {
@@ -139,7 +159,20 @@ namespace Rock.UniversalSearch.IndexModels
         /// <returns></returns>
         public override FormattedSearchResult FormatSearchResult( Person person, Dictionary<string, object> displayOptions = null )
         {
-            return new FormattedSearchResult() { IsViewAllowed = true, FormattedResult = string.Format( "<a href='/Group/{0}'>{1} <small>({2})</small></a>", this.Id, this.Name, this.GroupTypeName ) };
+            var result = base.FormatSearchResult( person, displayOptions );
+
+            // check security on the group
+            var group = new GroupService(new Data.RockContext()).Get( (int)this.Id );
+            if ( group != null )
+            {
+                result.IsViewAllowed = group.IsAuthorized( Rock.Security.Authorization.VIEW, person );
+            }
+            else
+            {
+                result.IsViewAllowed = false;
+            }
+
+            return result;
         }
     }
 }

@@ -260,9 +260,35 @@ namespace RockWeb.Blocks.Crm
                             people = personService.Queryable().Where( p => p.Email.Contains( term ) );
                             break;
                         }
+                    case ( "birthdate" ):
+                        {
+                            DateTime? birthDate = Request.QueryString["birthdate"].AsDateTime();
+                            int? personId = Request.QueryString["person-id"].AsIntegerOrNull();
+                            if (birthDate == null)
+                            {
+                                birthDate = term.AsDateTime();
+                            }
+
+                            if ( personId.HasValue )
+                            {
+                                people = personService.Queryable().Where(a => a.Id == personId.Value );
+                            }
+                            else
+                            {
+                                people = personService.Queryable().Where( p => p.BirthDate.HasValue && birthDate.HasValue && p.BirthDate == birthDate.Value );
+                            }
+                            
+                            break;
+                        }
                 }
 
-                var personIdList = people.Select( p => p.Id ).ToList();
+                IEnumerable<int> personIdList = people.Select( p => p.Id );
+
+                // just leave the personIdList as a Queryable if it is over 10000 so that we don't throw a SQL exception due to the big list of ids
+                if (people.Count() < 10000)
+                {
+                    personIdList = personIdList.ToList();
+                }
 
                 people = personService.Queryable(true).Where( p => personIdList.Contains( p.Id ) );
 				
@@ -276,8 +302,11 @@ namespace RockWeb.Blocks.Crm
                     people = people.OrderBy( p => p.LastName ).ThenBy( p => p.FirstName );
                 }
 
-                Guid familyGuid = new Guid( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY );
-                Guid homeAddressTypeGuid = new Guid( Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME );
+                var familyGroupType = GroupTypeCache.GetFamilyGroupType();
+                int familyGroupTypeId = familyGroupType != null ? familyGroupType.Id : 0;
+
+                var groupLocationTypeHome = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME.AsGuid() );
+                int homeAddressTypeId = groupLocationTypeHome != null ? groupLocationTypeHome.Id : 0;
 
                 var personList = people.Select( p => new PersonSearchResult
                 {
@@ -299,14 +328,14 @@ namespace RockWeb.Blocks.Crm
                     PhotoId = p.PhotoId,
                     CampusIds = p.Members
                         .Where( m =>
-                            m.Group.GroupType.Guid.Equals( familyGuid ) &&
+                            m.Group.GroupTypeId == familyGroupTypeId &&
                             m.Group.CampusId.HasValue )
                         .Select( m => m.Group.CampusId.Value )
                         .ToList(),
                     HomeAddresses = p.Members
-                        .Where( m => m.Group.GroupType.Guid == familyGuid )
+                        .Where( m => m.Group.GroupTypeId == familyGroupTypeId )
                         .SelectMany( m => m.Group.GroupLocations )
-                        .Where( gl => gl.GroupLocationTypeValue.Guid.Equals( homeAddressTypeGuid ) )
+                        .Where( gl => gl.GroupLocationTypeValueId == homeAddressTypeId )
                         .Select( gl => gl.Location )
                 } ).ToList();
 

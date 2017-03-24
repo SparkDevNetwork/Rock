@@ -26,7 +26,7 @@
                     <Rock:RockDropDownList ID="ddlFrequency" runat="server" Label="Gift Frequency" />
 
                     <div class="actions">
-                        <asp:LinkButton ID="btnSave" AccessKey="s" runat="server" Text="Save" OnClick="btnSave_Click" CssClass="btn btn-primary" />
+                        <asp:LinkButton ID="btnSave" AccessKey="s" runat="server" ToolTip="Alt+s" Text="Save" OnClick="btnSave_Click" CssClass="btn btn-primary" />
                     </div>
 
                     <Rock:RockLiteral ID="lNote" runat="server" />

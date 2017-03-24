@@ -81,7 +81,6 @@ namespace Rock.Data
         /// <value>
         /// The foreign identifier.
         /// </value>
-        [Index]
         [DataMember]
         [HideFromReporting]
         public int? ForeignId { get; set; }
@@ -92,7 +91,6 @@ namespace Rock.Data
         /// <value>
         /// The foreign identifier.
         /// </value>
-        [Index]
         [DataMember]
         [HideFromReporting]
         public Guid? ForeignGuid { get; set; }
@@ -104,7 +102,6 @@ namespace Rock.Data
         /// The foreign identifier.
         /// </value>
         [MaxLength( 100 )]
-        [Index]
         [DataMember]
         [HideFromReporting]
         public string ForeignKey { get; set; }
@@ -287,7 +284,7 @@ namespace Rock.Data
 
             foreach ( var propInfo in this.GetType().GetProperties() )
             {
-                if ( !propInfo.GetGetMethod().IsVirtual || propInfo.Name == "Id" || propInfo.Name == "Guid" || propInfo.Name == "Order" )
+                if ( !propInfo.GetGetMethod().IsVirtual || propInfo.Name == "Id" || propInfo.Name == "Guid" || propInfo.Name == "Order" || propInfo.Name == "IsActive" )
                 {
                     dictionary.Add( propInfo.Name, propInfo.GetValue( this, null ) );
                 }
@@ -535,6 +532,17 @@ namespace Rock.Data
         public static List<T> FromJsonAsList( string json )
         {
             return JsonConvert.DeserializeObject<List<T>>( json ); ;
+        }
+
+        /// <summary>
+        /// Gets the index result template.
+        /// </summary>
+        /// <value>
+        /// The index result template.
+        /// </value>
+        public static string GetIndexResultTemplate()
+        {
+            return Rock.Web.Cache.EntityTypeCache.Read( typeof( T ) ).IndexResultTemplate;
         }
 
         #endregion

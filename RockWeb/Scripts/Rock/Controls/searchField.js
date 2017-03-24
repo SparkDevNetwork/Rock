@@ -42,12 +42,52 @@
             initializeEventHandlers: function () {
                 var self = this,
                     search = function (term) {
-                        var keyVal = self.$el.parents('.smartsearch').find('input:hidden').val(),
-                            $li = self.$el.parents('.smartsearch').find('li[data-key="' + keyVal + '"]'),
-                            targetUrl = $li.attr('data-target'),
-                            url = Rock.settings.get('baseUrl') + targetUrl.replace('{0}', encodeURIComponent(term.trim()));
 
-                        window.location = url;
+                        // search for data elements in the search term
+                        var $dataEl = $("<p>" + term + "</p>").find("data:first");
+
+                        // see if this is a universal search by looking for return-type and return-id data params
+                        var returnType = $dataEl.attr("return-type");
+                        var returnId = $dataEl.attr("return-id");
+
+                        if (returnType == null || returnId == null) {
+                            var otherParams = '';
+
+                            // take any data attributes and add them as query parameters to the url
+                            $dataEl.each(function () {
+                                $.each(this.attributes, function () {
+                                    if (this) {
+                                        otherParams += '&' + this.name + '=' + encodeURIComponent(this.value);
+                                    }
+                                });
+                            });
+
+                            // remove any html from the search term before putting it in the url
+                            var targetTerm = $("<div/>").html(term).text().trim();
+
+                            var keyVal = self.$el.parents('.smartsearch').find('input:hidden').val(),
+                                $li = self.$el.parents('.smartsearch').find('li[data-key="' + keyVal + '"]'),
+                                targetUrl = $li.attr('data-target'),
+                                url = Rock.settings.get('baseUrl') + targetUrl.replace('{0}', encodeURIComponent(targetTerm));
+
+                            if (otherParams != '') {
+                                if (url.indexOf('?') > -1) {
+                                    url += otherParams
+                                } else {
+                                    url += otherParams.replace(/^&/, '?')
+                                }
+                            }
+
+                            window.location = url;
+                        } else {
+                            // universal search uses returnType and returnId, so build the url for that
+                            var keyVal = self.$el.parents('.smartsearch').find('input:hidden').val(),
+                                $li = self.$el.parents('.smartsearch').find('li[data-key="' + keyVal + '"]'),
+                                targetUrl = $li.attr('data-target'),
+                                url = Rock.settings.get('baseUrl') + targetUrl.replace('{0}', encodeURIComponent(returnType) + "/" + encodeURIComponent(returnId));
+
+                            window.location = url;
+                        }
                     };
 
                 // Listen for typeahead's custom events and trigger search when hit

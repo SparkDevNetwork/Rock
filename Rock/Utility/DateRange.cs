@@ -179,5 +179,24 @@ namespace Rock
 
             return string.Empty;
         }
+
+        /// <summary>
+        /// Calculates the date range from delimited values.
+        /// </summary>
+        /// <param name="delimitedValues">The delimited values.</param>
+        /// <returns></returns>
+        public static DateRange FromDelimitedValues( string delimitedValues )
+        {
+            if ( !string.IsNullOrWhiteSpace( delimitedValues ) && delimitedValues.Contains( "," ) )
+            {
+                var dates = delimitedValues.Split( ',' );
+                if ( dates.Length == 2 )
+                {
+                    return new DateRange( dates[0].AsDateTime(), dates[1].AsDateTime() );
+                }
+            }
+
+            return new DateRange( null, null );
+        }
     }
 }

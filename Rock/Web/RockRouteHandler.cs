@@ -75,10 +75,24 @@ namespace Rock.Web
                         // Then check to see if any can be matched by site
                         if ( pageAndRouteIds.Count > 1 )
                         {
-                            SiteCache site = SiteCache.GetSiteByDomain( requestContext.HttpContext.Request.Url.Host );
+                            SiteCache site = null;
+
+                            // First check to see if site was specified in querystring
+                            int? siteId = requestContext.HttpContext.Request.QueryString["SiteId"].AsIntegerOrNull();
+                            if ( siteId.HasValue )
+                            {
+                                site = SiteCache.Read( siteId.Value );
+                            }
+
+                            // Then check to see if site can be determined by domain
                             if ( site == null )
                             {
-                                // Use last site
+                                site = SiteCache.GetSiteByDomain( requestContext.HttpContext.Request.Url.Host );
+                            }
+
+                            // Then check the last site
+                            if ( site == null )
+                            {
                                 if ( siteCookie != null && siteCookie.Value != null )
                                 {
                                     site = SiteCache.Read( siteCookie.Value.AsInteger() );
@@ -136,7 +150,7 @@ namespace Rock.Web
                             // get the device type
                             string u = requestContext.HttpContext.Request.UserAgent;
 
-                            var clientType = PageViewUserAgent.GetClientType( u );
+                            var clientType = InteractionDeviceType.GetClientType( u );
 
                             // first check if device is a mobile device
                             if ( clientType == "Mobile" )

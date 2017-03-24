@@ -42,6 +42,16 @@ namespace Rock.SystemGuid
         public const string BLOCK = "D89555CA-9AE4-4D62-8AF1-E5E463C1EF65";
 
         /// <summary>
+        /// The content channel type
+        /// </summary>
+        public const string CONTENT_CHANNEL = "44484685-477E-4668-89A6-84F29739EB68";
+
+        /// <summary>
+        /// The content channel item type
+        /// </summary>
+        public const string CONTENT_CHANNEL_ITEM = "BF12AE64-21FB-433B-A8A4-E40E8C426DDA";
+
+        /// <summary>
         /// The guid for the email communication medium
         /// </summary>
         public const string COMMUNICATION_MEDIUM_EMAIL = "5A653EBE-6803-44B4-85D2-FB7B8146D55D";
@@ -103,6 +113,26 @@ namespace Rock.SystemGuid
         public const string DATAVIEW = "57F8FA29-DCF1-4F74-8553-87E90F234139";
 
         /// <summary>
+        /// The guid for the Rock.Model.FinancialAccount entity.
+        /// </summary>
+        public const string FINANCIAL_ACCOUNT = "798BCE48-6AA7-4983-9214-F9BCEFB4521D";
+
+        /// <summary>
+        /// The guid for the Rock.Model.FinancialBatch entity.
+        /// </summary>
+        public const string FINANCIAL_BATCH = "BDD09C8E-2C52-4D08-9062-BE7D52D190C2";
+
+        /// <summary>
+        /// The guid for the Rock.Model.FinancialTransaction entity.
+        /// </summary>
+        public const string FINANCIAL_TRANSACTION = "2C1CB26B-AB22-42D0-8164-AEDEE0DAE667";
+
+        /// <summary>
+        /// The guid for the Rock.Model.FinancialTransactionDetail entity.
+        /// </summary>
+        public const string FINANCIAL_TRANSACTION_DETAIL = "AC4AC28B-8E7E-4D7E-85DB-DFFB4F3ADCCE";
+
+        /// <summary>
         /// The guid for the Rock.Model.Group entity.
         /// </summary>
         public const string GROUP = "9BBFDA11-0D22-40D5-902F-60ADFBC88987";
@@ -141,6 +171,11 @@ namespace Rock.SystemGuid
         /// The guid for the Rock.Model.PersonAlias entity
         /// </summary>
         public const string PERSON_ALIAS = "90F5E87B-F0D5-4617-8AE9-EB57E673F36F";
+
+        /// <summary>
+        /// The guid for the Rock.Model.RegistrationTemplate entity
+        /// </summary>
+        public const string REGISTRATION_TEMPLATE = "A01E3E99-A8AD-4C6C-BAAC-98795738BA70";
 
         /// <summary>
         /// The LiquidSelect DataSelect field for Reporting

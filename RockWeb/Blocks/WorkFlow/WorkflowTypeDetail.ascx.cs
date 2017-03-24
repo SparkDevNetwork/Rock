@@ -41,8 +41,40 @@ namespace RockWeb.Blocks.WorkFlow
     [Category( "WorkFlow" )]
     [Description( "Displays the details of the given workflow type." )]
 
-    [LinkedPage("Workflow Launch Page", "Page used to launch a workflow.")]
-    [LinkedPage( "Manage Workflows Page", "Page used to manage workflows." )]
+    [LinkedPage( "Workflow Launch Page", "Page used to launch a workflow.", true, "", "", 0 )]
+    [LinkedPage( "Manage Workflows Page", "Page used to manage workflows.", true, "", "", 1 )]
+    [CodeEditorField( "Default No Action Message", "The default No Action Message.", CodeEditorMode.Lava, CodeEditorTheme.Rock, 100, false, @"
+This {{ Workflow.WorkflowType.WorkTerm }} does not currently require your attention.", "", 2 )]
+    [CodeEditorField( "Default Summary View Text", "The default Summary View Text.", CodeEditorMode.Lava, CodeEditorTheme.Rock, 500, false, @"
+<div class='row'>
+    <div class='col-sm-6'>
+        <dl><dt>Started By</dt><dd>{{ Workflow.InitiatorPersonAlias.Person.FullName }}</dd></dl>
+    </div>
+    <div class='col-sm-6'>
+        <dl><dt>Started On</dt><dd>{{ Workflow.ActivatedDateTime | Date:'MM/dd/yyyy' }} at {{ Workflow.ActivatedDateTime | Date:'hh:mm:ss tt' }}</dd></dl>
+    </div>
+</div>
+
+{% assign attributeList = '' %}
+{% for attribute in Workflow.AttributeValues %}
+    {% if attribute.AttributeIsGridColumn %}
+        {% assign attributeValue = attribute.ValueFormatted %}
+        {% if attributeValue != '' %}
+            {% capture item %}<dt>{{ attribute.AttributeName }}</dt><dd>{{ attributeValue }}</dd>{% endcapture %}
+            {% assign attributeList = attributeList | Append:item %}
+        {% endif %}
+    {% endif %}
+{% endfor %}
+
+{% if attributeList != '' %}
+    <div class='row'>
+        <div class='col-sm-6'>
+            <dl>
+                {{ attributeList }}
+            </dl>
+        </div>
+    </div>
+{% endif %}", "", 3 )]
     public partial class WorkflowTypeDetail : RockBlock
     {
         #region Properties
@@ -97,7 +129,7 @@ namespace RockWeb.Blocks.WorkFlow
             }
 
             ExpandedActivities = ViewState["ExpandedActivities"] as List<Guid>;
-            if (ExpandedActivities == null)
+            if ( ExpandedActivities == null )
             {
                 ExpandedActivities = new List<Guid>();
             }
@@ -220,15 +252,15 @@ namespace RockWeb.Blocks.WorkFlow
 
         #endregion
 
-            #region Events
+        #region Events
 
-            #region Edit  events
+        #region Edit  events
 
-            /// <summary>
-            /// Handles the Click event of the btnEdit control.
-            /// </summary>
-            /// <param name="sender">The source of the event.</param>
-            /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
+        /// <summary>
+        /// Handles the Click event of the btnEdit control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void btnEdit_Click( object sender, EventArgs e )
         {
             var rockContext = new RockContext();
@@ -328,7 +360,7 @@ namespace RockWeb.Blocks.WorkFlow
                 }
 
                 // Create new guids for all the existing activity types
-                foreach (var activityType in ActivityTypesState)
+                foreach ( var activityType in ActivityTypesState )
                 {
                     guidXref.Add( activityType.Guid, Guid.NewGuid() );
                 }
@@ -399,12 +431,12 @@ namespace RockWeb.Blocks.WorkFlow
                                 if ( details.Length > 2 )
                                 {
                                     Guid oldGuid = details[2].AsGuid();
-                                    if (!oldGuid.IsEmpty() && guidXref.ContainsKey(oldGuid))
+                                    if ( !oldGuid.IsEmpty() && guidXref.ContainsKey( oldGuid ) )
                                     {
                                         details[2] = guidXref[oldGuid].ToString();
                                     }
                                 }
-                                newActionButtons.Add( details.ToList().AsDelimited("^") );
+                                newActionButtons.Add( details.ToList().AsDelimited( "^" ) );
                             }
                             newWorkflowForm.Actions = newActionButtons.AsDelimited( "|" );
 
@@ -426,10 +458,10 @@ namespace RockWeb.Blocks.WorkFlow
                                     newFormAttribute.AttributeId = 0;
 
                                     newFormAttribute.Attribute = new Rock.Model.Attribute
-                                        {
-                                            Guid = guidXref[formAttribute.Attribute.Guid],
-                                            Name = formAttribute.Attribute.Name
-                                        };
+                                    {
+                                        Guid = guidXref[formAttribute.Attribute.Guid],
+                                        Name = formAttribute.Attribute.Name
+                                    };
                                     newWorkflowForm.FormAttributes.Add( newFormAttribute );
                                 }
                             }
@@ -556,9 +588,13 @@ namespace RockWeb.Blocks.WorkFlow
                 workflowType.ProcessingIntervalSeconds = null;
             }
 
+            workflowType.LogRetentionPeriod = tbLogRetention.Text.AsIntegerOrNull();
+            workflowType.CompletedWorkflowRetentionPeriod = tbCompletedRetention.Text.AsIntegerOrNull();
             workflowType.IsPersisted = cbIsPersisted.Checked;
             workflowType.LoggingLevel = ddlLoggingLevel.SelectedValueAsEnum<WorkflowLoggingLevel>();
             workflowType.IconCssClass = tbIconCssClass.Text;
+            workflowType.SummaryViewText = ceSummaryViewText.Text;
+            workflowType.NoActionMessage = ceNoActionMessage.Text;
 
             if ( validationErrors.Any() )
             {
@@ -574,13 +610,13 @@ namespace RockWeb.Blocks.WorkFlow
                 return;
             }
 
-            foreach(var activityType in ActivityTypesState)
+            foreach ( var activityType in ActivityTypesState )
             {
-                if (!activityType.IsValid)
+                if ( !activityType.IsValid )
                 {
                     return;
                 }
-                foreach(var actionType in activityType.ActionTypes)
+                foreach ( var actionType in activityType.ActionTypes )
                 {
                     if ( !actionType.IsValid )
                     {
@@ -645,7 +681,7 @@ namespace RockWeb.Blocks.WorkFlow
                     rockContext.SaveChanges();
 
                     workflowActionTypeService.Delete( actionType );
-                } 
+                }
                 rockContext.SaveChanges();
 
                 // delete WorkflowActivityTypes that aren't assigned in the UI anymore
@@ -670,7 +706,7 @@ namespace RockWeb.Blocks.WorkFlow
                     rockContext.SaveChanges();
 
                     workflowActivityTypeService.Delete( activityType );
-                } 
+                }
                 rockContext.SaveChanges();
 
                 // add or update WorkflowActivityTypes(and Actions) that are assigned in the UI
@@ -943,7 +979,7 @@ namespace RockWeb.Blocks.WorkFlow
 
             HideDialog();
 
-            BuildControls(true );
+            BuildControls( true );
         }
 
         #endregion
@@ -966,7 +1002,7 @@ namespace RockWeb.Blocks.WorkFlow
             ActivityTypesState.Add( workflowActivityType );
 
             ActivityAttributesState.Add( workflowActivityType.Guid, new List<Attribute>() );
-            
+
             ExpandedActivities.Add( workflowActivityType.Guid );
 
             BuildControls( true, workflowActivityType.Guid );
@@ -988,7 +1024,7 @@ namespace RockWeb.Blocks.WorkFlow
                 var activityType = ActivityTypesState.Where( a => a.Guid == workflowActivityTypeEditor.ActivityTypeGuid ).FirstOrDefault();
                 if ( activityType != null )
                 {
-                    if (ExpandedActivities.Contains(activityType.Guid))
+                    if ( ExpandedActivities.Contains( activityType.Guid ) )
                     {
                         ExpandedActivities.Remove( activityType.Guid );
                     }
@@ -1224,6 +1260,8 @@ namespace RockWeb.Blocks.WorkFlow
                 workflowType.ActivityTypes.Add( new WorkflowActivityType { Name = "Start", Guid = Guid.NewGuid(), IsActive = true, IsActivatedWithWorkflow = true } );
                 workflowType.WorkTerm = "Work";
                 workflowType.ProcessingIntervalSeconds = 28800; // Default to every 8 hours
+                workflowType.SummaryViewText = GetAttributeValue( "DefaultSummaryViewText" );
+                workflowType.NoActionMessage = GetAttributeValue( "DefaultNoActionMessage" );
                 // hide the panel drawer that show created and last modified dates
                 pdAuditDetails.Visible = false;
             }
@@ -1279,7 +1317,7 @@ namespace RockWeb.Blocks.WorkFlow
                 }
                 else
                 {
-                    LoadStateDetails(workflowType, rockContext);
+                    LoadStateDetails( workflowType, rockContext );
                     ShowEditDetails( workflowType, rockContext );
                 }
             }
@@ -1348,7 +1386,7 @@ namespace RockWeb.Blocks.WorkFlow
             if ( workflowType.Id == 0 )
             {
                 lReadOnlyTitle.Text = ActionTitle.Add( WorkflowType.FriendlyTypeName ).FormatAsHtmlTitle();
-                foreach( var activity in workflowType.ActivityTypes)
+                foreach ( var activity in workflowType.ActivityTypes )
                 {
                     ExpandedActivities.Add( activity.Guid );
                 }
@@ -1377,9 +1415,14 @@ namespace RockWeb.Blocks.WorkFlow
             {
                 tbProcessingInterval.Text = string.Empty;
             }
+
+            tbLogRetention.Text = workflowType.LogRetentionPeriod.ToStringSafe();
+            tbCompletedRetention.Text = workflowType.CompletedWorkflowRetentionPeriod.ToStringSafe();
             cbIsPersisted.Checked = workflowType.IsPersisted;
             ddlLoggingLevel.SetValue( (int)workflowType.LoggingLevel );
             tbIconCssClass.Text = workflowType.IconCssClass;
+            ceSummaryViewText.Text = workflowType.SummaryViewText;
+            ceNoActionMessage.Text = workflowType.NoActionMessage;
 
             BindAttributesGrid();
 
@@ -1593,8 +1636,8 @@ namespace RockWeb.Blocks.WorkFlow
         /// <param name="actionType">Type of the action.</param>
         /// <param name="activeWorkflowActionTypeGuid">The active workflow action type unique identifier.</param>
         /// <returns></returns>
-        private WorkflowActionTypeEditor BuildActionControl( Control parentControl, bool setValues, WorkflowActionType actionType, 
-            Dictionary<Guid, Attribute> attributes, Dictionary<string, string> activities, Guid? activeWorkflowActionTypeGuid = null, 
+        private WorkflowActionTypeEditor BuildActionControl( Control parentControl, bool setValues, WorkflowActionType actionType,
+            Dictionary<Guid, Attribute> attributes, Dictionary<string, string> activities, Guid? activeWorkflowActionTypeGuid = null,
                 bool showInvalid = false )
         {
             var control = new WorkflowActionTypeEditor();
@@ -1607,21 +1650,21 @@ namespace RockWeb.Blocks.WorkFlow
 
             control.WorkflowActivities = activities;
 
-            if (actionType.WorkflowForm != null)
+            if ( actionType.WorkflowForm != null )
             {
                 var formAttributes = actionType.WorkflowForm.FormAttributes;
 
                 // Remove any fields that were removed
                 foreach ( var formAttribute in formAttributes.ToList() )
                 {
-                    if (!attributes.ContainsKey(formAttribute.Attribute.Guid))
+                    if ( !attributes.ContainsKey( formAttribute.Attribute.Guid ) )
                     {
                         formAttributes.Remove( formAttribute );
                     }
                 }
 
                 // Add any new attributes
-                foreach(var attribute in attributes)
+                foreach ( var attribute in attributes )
                 {
                     if ( !formAttributes.Select( a => a.Attribute.Guid ).Contains( attribute.Key ) )
                     {
@@ -1684,13 +1727,13 @@ namespace RockWeb.Blocks.WorkFlow
 
                 ActivityTypesState.Add( workflowActivityType );
 
-                if (activityEditor.Expanded)
+                if ( activityEditor.Expanded )
                 {
                     ExpandedActivities.Add( workflowActivityType.Guid );
                     ExpandedActions.AddRange( activityEditor.ExpandedActions );
                 }
 
-                if (activityEditor.AttributesExpanded)
+                if ( activityEditor.AttributesExpanded )
                 {
                     ExpandedActivityAttributes.Add( workflowActivityType.Guid );
                 }
@@ -1910,7 +1953,7 @@ namespace RockWeb.Blocks.WorkFlow
                     a.Name,
                     a.Description,
                     a.Key,
-                    FieldType = FieldTypeCache.GetName(a.FieldTypeId),
+                    FieldType = FieldTypeCache.GetName( a.FieldTypeId ),
                     a.IsRequired
                 } )
                 .ToList();
@@ -2069,6 +2112,6 @@ namespace RockWeb.Blocks.WorkFlow
         #endregion
 
         #endregion
-    
+
     }
 }

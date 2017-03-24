@@ -19,8 +19,19 @@ BEGIN
 END
 GO
 
+/* Recreate RockUser so it points to the current server's Logins */
+DROP USER [RockUser]
+GO
+CREATE USER [RockUser] FOR LOGIN [RockUser]
+GO
+ALTER ROLE [db_owner] ADD MEMBER [RockUser]
+GO
+
 -- TURN OFF SSL FOR ALL PAGES
 UPDATE [Page] SET [RequiresEncryption] = 0
+
+-- TURN OFF SSL FOR ALL SITES
+UPDATE [Site] SET [RequiresEncryption] = 0
 
 -- INACTIVATE JOBS
 UPDATE [ServiceJob] SET [IsActive] = 0

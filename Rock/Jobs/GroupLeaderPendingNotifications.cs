@@ -148,7 +148,7 @@ namespace Rock.Jobs
                         // get list of leaders
                         var groupLeaders = group.Members.Where( m => m.GroupRole.IsLeader == true );
 
-                        var appRoot = Rock.Web.Cache.GlobalAttributesCache.Read( rockContext ).GetValue( "ExternalApplicationRoot" );
+                        var appRoot = Rock.Web.Cache.GlobalAttributesCache.Read( rockContext ).GetValue( "PublicApplicationRoot" );
 
                         var recipients = new List<RecipientData>();
                         foreach ( var leader in groupLeaders )

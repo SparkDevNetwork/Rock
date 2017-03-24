@@ -1,4 +1,20 @@
-﻿using System;
+﻿// <copyright>
+// Copyright by the Spark Development Network
+//
+// Licensed under the Rock Community License (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.rockrms.com/license
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+// </copyright>
+//
+using System;
 using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
@@ -55,9 +71,13 @@ namespace Rock.UniversalSearch.IndexModels
         {
             var businessIndex = new BusinessIndex();
             businessIndex.SourceIndexModel = "Rock.Model.Person";
+            businessIndex.ModelConfiguration = "nofilters";
+
+            businessIndex.ModelOrder = 6;
 
             businessIndex.Id = business.Id;
             businessIndex.Name = business.LastName;
+            businessIndex.DocumentName = business.LastName;
             
             // do not currently index business attributes since they are shared with people
             //AddIndexableAttributes( businessIndex, person );
@@ -85,32 +105,11 @@ namespace Rock.UniversalSearch.IndexModels
 
                 if ( contacts != null )
                 {
-                    businessIndex.Contacts = string.Join( " ", contacts );
+                    businessIndex.Contacts = string.Join( ", ", contacts );
                 }
             }
 
             return businessIndex;
-        }
-
-        /// <summary>
-        /// Formats the search result.
-        /// </summary>
-        /// <param name="person"></param>
-        /// <param name="displayOptions"></param>
-        /// <returns></returns>
-        public override FormattedSearchResult FormatSearchResult( Person person, Dictionary<string, object> displayOptions = null )
-        {
-            string url = "/Business/";
-
-            if (displayOptions != null )
-            {
-                if ( displayOptions.ContainsKey( "Business.Url" ) )
-                {
-                    url = displayOptions["Business.Url"].ToString();
-                }
-            }
-
-            return new FormattedSearchResult() { IsViewAllowed = true, FormattedResult = string.Format( "<a href='{0}{1}'>{2} <small>(Business)</small></a>", url, this.Id, this.Name ) };
         }
     }
 }

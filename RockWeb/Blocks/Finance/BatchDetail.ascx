@@ -43,6 +43,14 @@
                         </div>
                     </div>
 
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="attributes">
+                                <asp:PlaceHolder ID="phAttributes" runat="server" EnableViewState="false"></asp:PlaceHolder>
+                            </div>
+                        </div>
+                    </div>
+
                     <div class="actions">
                         <asp:LinkButton ID="lbSave" runat="server" Text="Save" CssClass="btn btn-primary" OnClick="lbSave_Click" />
                         <asp:LinkButton ID="lbCancel" runat="server" Text="Cancel" CssClass="btn btn-link" CausesValidation="false" OnClick="lbCancel_Click" />
@@ -54,6 +62,7 @@
                     <div class="row">
                         <div class="col-sm-6">
                             <asp:Literal ID="lDetails" runat="server" />
+                            <asp:PlaceHolder ID="phReadonlyAttributes" runat="server"></asp:PlaceHolder>
                         </div>
                         <div class="col-sm-6">
                             <div class="grid">

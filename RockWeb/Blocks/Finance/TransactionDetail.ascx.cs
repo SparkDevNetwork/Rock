@@ -193,13 +193,44 @@ namespace RockWeb.Blocks.Finance
 
                 if ( pnlEditDetails.Visible )
                 {
-                    var txn = new FinancialTransaction();
+                    // Add Transaction and Payment Detail attribute controls
+
+                    FinancialTransaction txn;
+                    var txnId = hfTransactionId.Value.AsIntegerOrNull();
+                    if (txnId == 0) txnId = null;
+
+                    // Get the current transaction if there is one
+                    if (txnId.HasValue)
+                    {
+                        using (var rockContext = new RockContext())
+                        {
+                            txn = GetTransaction(hfTransactionId.Value.AsInteger(), rockContext);
+                        }
+                    }
+                    else
+                    {
+                        txn = new FinancialTransaction();
+                        txn.FinancialPaymentDetail = new FinancialPaymentDetail();
+                    }
+
+                    // Update the transaction's properties to match what is currently selected on the screen
+                    // This allows the shown attributes to change during AutoPostBack events, based on any Qualifiers specified in the attributes
+                    txn.FinancialPaymentDetail.CurrencyTypeValueId = ddlCurrencyType.SelectedValueAsInt();
+
                     txn.LoadAttributes();
+                    txn.FinancialPaymentDetail.LoadAttributes();
 
                     phAttributeEdits.Controls.Clear();
-                    Rock.Attribute.Helper.AddEditControls( txn, phAttributeEdits, false, BlockValidationGroup );
+                    Helper.AddEditControls(txn, phAttributeEdits, false);
+                    phPaymentAttributeEdits.Controls.Clear();
+                    Helper.AddEditControls(txn.FinancialPaymentDetail, phPaymentAttributeEdits, false);
                 }
             }
+
+            var txnDetail = new FinancialTransactionDetail();
+            txnDetail.LoadAttributes();
+            phAccountAttributeEdits.Controls.Clear();
+            Helper.AddEditControls( txnDetail, phAccountAttributeEdits, true, mdAccount.ValidationGroup );
         }
 
         /// <summary>
@@ -254,6 +285,7 @@ namespace RockWeb.Blocks.Finance
             if ( txn != null )
             {
                 txn.LoadAttributes( rockContext );
+                txn.FinancialPaymentDetail.LoadAttributes(rockContext);
                 ShowEditDetails( txn, rockContext );
             }
         }
@@ -439,6 +471,14 @@ namespace RockWeb.Blocks.Finance
                         txnDetail.AccountId = editorTxnDetail.AccountId;
                         txnDetail.Amount = newAmount;
                         txnDetail.Summary = editorTxnDetail.Summary;
+
+                        if ( editorTxnDetail.AttributeValues != null )
+                        {
+                            txnDetail.LoadAttributes();
+                            txnDetail.AttributeValues = editorTxnDetail.AttributeValues;
+                            rockContext.SaveChanges();
+                            txnDetail.SaveAttributeValues( rockContext );
+                        }
                     }
 
                     // Delete any transaction images that were removed
@@ -493,7 +533,9 @@ namespace RockWeb.Blocks.Finance
 
                     // Update any attributes
                     txn.LoadAttributes(rockContext);
-                    Rock.Attribute.Helper.GetEditValues(phAttributeEdits, txn);
+                    txn.FinancialPaymentDetail.LoadAttributes(rockContext);
+                    Helper.GetEditValues(phAttributeEdits, txn);
+                    Helper.GetEditValues(phPaymentAttributeEdits, txn.FinancialPaymentDetail);
 
                     // If the transaction is associated with a batch, update that batch's history
                     if ( batchId.HasValue )
@@ -512,7 +554,7 @@ namespace RockWeb.Blocks.Finance
 
                     rockContext.SaveChanges();
                     txn.SaveAttributeValues(rockContext);
-
+                    txn.FinancialPaymentDetail.SaveAttributeValues(rockContext);
                 } );
 
                 // Save selected options to session state in order to prefill values for next added txn
@@ -536,6 +578,7 @@ namespace RockWeb.Blocks.Finance
                 if ( savedTxn != null )
                 {
                     savedTxn.LoadAttributes();
+                    savedTxn.FinancialPaymentDetail.LoadAttributes();
                     ShowReadOnlyDetails( savedTxn );
                 }
             }
@@ -555,6 +598,7 @@ namespace RockWeb.Blocks.Finance
                 if ( txn != null )
                 {
                     txn.LoadAttributes();
+                    txn.FinancialPaymentDetail.LoadAttributes();
                     ShowReadOnlyDetails( txn );
                 }
             }
@@ -758,6 +802,13 @@ namespace RockWeb.Blocks.Finance
                 txnDetail.Amount = tbAccountAmount.Text.AsDecimal();
                 txnDetail.Summary = tbAccountSummary.Text;
 
+                txnDetail.LoadAttributes();
+                Rock.Attribute.Helper.GetEditValues( phAccountAttributeEdits, txnDetail );
+                foreach ( var attributeValue in txnDetail.AttributeValues )
+                {
+                    txnDetail.SetAttributeValue( attributeValue.Key, attributeValue.Value.Value );
+                }
+                
                 BindAccounts();
             }
 
@@ -914,6 +965,7 @@ namespace RockWeb.Blocks.Finance
                             if ( updatedTxn != null )
                             {
                                 updatedTxn.LoadAttributes( rockContext );
+                                updatedTxn.FinancialPaymentDetail.LoadAttributes(rockContext);
                                 ShowReadOnlyDetails( updatedTxn );
                             }
                         }
@@ -921,6 +973,7 @@ namespace RockWeb.Blocks.Finance
                         {
                             nbRefundError.Title = "Transaction Error";
                             nbRefundError.Text = "<p>Existing transaction does not hava a valid batch.</p>";
+                            nbRefundError.Visible = true;
                             return;
                         }
 
@@ -1152,6 +1205,7 @@ namespace RockWeb.Blocks.Finance
             }
 
             txn.LoadAttributes( rockContext );
+            txn.FinancialPaymentDetail.LoadAttributes(rockContext);
 
             if ( readOnly )
             {
@@ -1384,6 +1438,7 @@ namespace RockWeb.Blocks.Finance
                             .Queryable().AsNoTracking()
                             .Where( t =>
                                 t.TransactionCode == txn.TransactionCode &&
+                                t.AuthorizedPersonAliasId == txn.AuthorizedPersonAliasId &&
                                 t.Id != txn.Id &&
                                 t.TransactionDateTime.HasValue )
                             .OrderBy( t => t.TransactionDateTime.Value )
@@ -1411,7 +1466,7 @@ namespace RockWeb.Blocks.Finance
                 }
 
                 Helper.AddDisplayControls(txn, Helper.GetAttributeCategories(txn, false, false), phAttributes, null, false);
-
+                Helper.AddDisplayControls(txn.FinancialPaymentDetail, Helper.GetAttributeCategories(txn.FinancialPaymentDetail, false, false), phAttributes, null, false);
             }
             else
             {
@@ -1496,7 +1551,9 @@ namespace RockWeb.Blocks.Finance
                 BindImages();
 
                 phAttributeEdits.Controls.Clear();
-                Rock.Attribute.Helper.AddEditControls( txn, phAttributeEdits, true, BlockValidationGroup );
+                Helper.AddEditControls(txn, phAttributeEdits, true);
+                phPaymentAttributeEdits.Controls.Clear();
+                Helper.AddEditControls(txn.FinancialPaymentDetail, phPaymentAttributeEdits, true);
             }
         }
 
@@ -1609,13 +1666,24 @@ namespace RockWeb.Blocks.Finance
                 apAccount.SetValue( txnDetail.AccountId );
                 tbAccountAmount.Text = txnDetail.Amount.ToString( "N2" );
                 tbAccountSummary.Text = txnDetail.Summary;
+
+                if ( txnDetail.Attributes == null )
+                {
+                    txnDetail.LoadAttributes();
+                }
             }
             else
             {
                 apAccount.SetValue( null );
                 tbAccountAmount.Text = string.Empty;
                 tbAccountSummary.Text = string.Empty;
+
+                txnDetail = new FinancialTransactionDetail();
+                txnDetail.LoadAttributes();
             }
+
+            phAccountAttributeEdits.Controls.Clear();
+            Helper.AddEditControls( txnDetail, phAccountAttributeEdits, true, mdAccount.ValidationGroup );
 
             ShowDialog( "ACCOUNT" );
 

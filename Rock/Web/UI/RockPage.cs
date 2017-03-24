@@ -410,7 +410,7 @@ namespace Rock.Web.UI
             {
                 if ( _clientType == null )
                 {
-                    _clientType = PageViewUserAgent.GetClientType( Request.UserAgent ?? "" );
+                    _clientType = InteractionDeviceType.GetClientType( Request.UserAgent ?? "" );
                 }
                 return _clientType;
             }
@@ -1275,7 +1275,7 @@ namespace Rock.Web.UI
             if ( !ClientScript.IsStartupScriptRegistered( "googleMapsApiScript" ) )
             {
                 string script = string.Format( @"Rock.controls.util.loadGoogleMapsApi('{0}');", scriptUrl );
-                ClientScript.RegisterStartupScript( this.Page.GetType(), "googleMapsApiScript", script, true );
+                ScriptManager.RegisterStartupScript( this.Page, this.Page.GetType(), "googleMapsApiScript", script, true );
             }
         }
 

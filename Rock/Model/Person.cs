@@ -40,7 +40,7 @@ namespace Rock.Model
     /// </summary>
     [Table( "Person" )]
     [DataContract]
-    public partial class Person : Model<Person>, IRockIndexable
+    public partial class Person : Model<Person>, IRockIndexable, IAnalyticHistorical
     {
         #region Constants
 
@@ -1031,6 +1031,10 @@ namespace Rock.Model
                 {
                     return age + (age == 1 ? " yr old " : " yrs old ");
                 }
+                else if ( age < -1 )
+                {
+                    return string.Empty;
+                }
             }
 
             var today = RockDateTime.Today;
@@ -1567,6 +1571,134 @@ namespace Rock.Model
         #endregion
 
         #region Static Helper Methods
+
+        /// <summary>
+        /// Gets the family salutation.
+        /// </summary>
+        /// <param name="person">The person.</param>
+        /// <param name="includeChildren">if set to <c>true</c> [include children].</param>
+        /// <param name="includeInactive">if set to <c>true</c> [include inactive].</param>
+        /// <param name="useFormalNames">if set to <c>true</c> [use formal name].</param>
+        /// <param name="finalSeparator">The final separator.</param>
+        /// <param name="separator">The separator.</param>
+        /// <returns></returns>
+        public static string GetFamilySalutation( Person person, bool includeChildren = false, bool includeInactive = true, bool useFormalNames = false, string finalSeparator = "&", string separator = ","  )
+        {
+            var _familyType = GroupTypeCache.Read( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY.AsGuid() );
+            var _adultRole = _familyType.Roles.FirstOrDefault( r => r.Guid.Equals( Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_ADULT.AsGuid() ) );
+            var _childRole = _familyType.Roles.FirstOrDefault( r => r.Guid.Equals( Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_CHILD.AsGuid() ) );
+            var _deceased = DefinedValueCache.Read( SystemGuid.DefinedValue.PERSON_RECORD_STATUS_REASON_DECEASED ).Id;
+
+            // clean up the separators
+            finalSeparator = $" {finalSeparator} "; // add spaces before and after
+            if (separator == "," )
+            {
+                separator = $"{separator} "; // add space after
+            }
+            else
+            {
+                separator = $" {separator} "; // add spaces before and after
+            }
+
+            List<string> familyMemberNames = new List<string>();
+            string primaryLastName = string.Empty;
+
+            var familyMembers = person.GetFamilyMembers( true ).Where( f => f.Person.RecordStatusReasonValueId != _deceased ).ToList();
+
+            // filter for inactive
+            if ( !includeInactive )
+            {
+                var activeRecordStatusId = DefinedValueCache.Read( SystemGuid.DefinedValue.PERSON_RECORD_STATUS_ACTIVE ).Id;
+                familyMembers = familyMembers.Where( f => f.Person.RecordStatusValueId == activeRecordStatusId ).ToList();
+            }
+
+            // check that a family even existed if not return their name
+            if ( familyMembers.Count > 0 )
+            {
+                // filter out kids if not needed
+                if ( !includeChildren )
+                {
+                    familyMembers = familyMembers.Where( f => f.GroupRoleId == _adultRole.Id ).ToList();
+                }
+
+                // determine if more than one last name is at play
+                var multipleLastNamesExist = familyMembers.Select( f => f.Person.LastName ).Distinct().Count() > 1;
+
+                // add adults and children separately as adults need to be sorted by gender and children by age
+
+                // adults
+                var adults = familyMembers.Where( f => f.GroupRoleId == _adultRole.Id ).OrderBy( f => f.Person.Gender );
+
+                if ( adults.Count() > 0 )
+                {
+                    primaryLastName = adults.First().Person.LastName;
+
+                    foreach ( var adult in adults.Select( f => f.Person ) )
+                    {
+                        var firstName = adult.NickName;
+
+                        if ( useFormalNames )
+                        {
+                            firstName = adult.FirstName;
+                        }
+
+                        if ( !multipleLastNamesExist )
+                        {
+                            familyMemberNames.Add( firstName );
+                        }
+                        else
+                        {
+                            familyMemberNames.Add( $"{firstName} {adult.LastName}" );
+                        }
+                    }
+                }
+
+                // children
+                if ( includeChildren )
+                {
+                    var children = familyMembers.Where( f => f.GroupRoleId == _childRole.Id ).OrderByDescending( f => f.Person.Age );
+
+                    if ( primaryLastName.IsNullOrWhiteSpace() )
+                    {
+                        primaryLastName = children.First().Person.LastName;
+                    }
+
+                    if ( children.Count() > 0 )
+                    {
+                        foreach ( var child in children.Select( f => f.Person ) )
+                        {
+                            var firstName = child.NickName;
+
+                            if ( useFormalNames )
+                            {
+                                firstName = child.FirstName;
+                            }
+
+                            if ( !multipleLastNamesExist )
+                            {
+                                familyMemberNames.Add( firstName );
+                            }
+                            else
+                            {
+                                familyMemberNames.Add( $"{firstName} {child.LastName}" );
+                            }
+                        }
+                    }
+                }
+
+                var familySalutation = string.Join( separator, familyMemberNames ).ReplaceLastOccurrence( separator, finalSeparator );
+
+                if ( !multipleLastNamesExist )
+                {
+                    familySalutation = familySalutation + " " + primaryLastName;
+                }
+
+                return familySalutation;
+      
+            }
+
+            return $"{(useFormalNames ? person.FirstName : person.NickName)} {person.LastName}";
+        }
 
         /// <summary>
         /// Gets the photo URL.
@@ -2459,9 +2591,7 @@ namespace Rock.Model
 
             // return people
             var people = new PersonService( rockContext ).Queryable().AsNoTracking()
-                                .Where( p =>
-                                     p.IsSystem == false
-                                     && p.RecordTypeValueId == recordTypePersonId );
+                                .Where( p => p.RecordTypeValueId == recordTypePersonId );
 
             int recordCounter = 0;
 
@@ -2564,6 +2694,24 @@ namespace Rock.Model
                     IndexContainer.DeleteDocumentById( indexType, id );
                 }
             }
+        }
+
+        /// <summary>
+        /// Gets the index filter values.
+        /// </summary>
+        /// <returns></returns>
+        public ModelFieldFilterConfig GetIndexFilterConfig()
+        {
+            return new ModelFieldFilterConfig() { FilterLabel = "", FilterField = "" };
+        }
+
+        /// <summary>
+        /// Gets the index filter field.
+        /// </summary>
+        /// <returns></returns>
+        public bool SupportsIndexFieldFiltering()
+        {
+            return false;
         }
         #endregion
     }
@@ -2702,6 +2850,68 @@ namespace Rock.Model
         }
 
         /// <summary>
+        /// Returns the most ideal mailing location from among this person's families
+        /// </summary>
+        /// <param name="person">The person to find a mailing address for</param>
+        /// <param name="rockContext"></param>
+        /// <returns></returns>
+        public static Location GetMailingLocation( this Person person, RockContext rockContext = null )
+        {
+            // Get the mailing address from this person's giving group if there is one
+            if ( person.GivingGroup != null )
+            {
+                var mailingLocation = person.GivingGroup.GetBestMailingLocation();
+                if ( mailingLocation != null )
+                {
+                    return mailingLocation;
+                }
+            }
+
+            return person.GetFamilies( rockContext ).GetBestMailingLocation();
+        }
+
+        /// <summary>
+        /// Returns the most ideal mailing location from a single family
+        /// </summary>
+        /// <param name="group">The family to find addresses on</param>
+        /// <returns></returns>
+        private static Location GetBestMailingLocation( this Group group )
+        {
+            return GetBestMailingLocation( new List<Group> { group } );
+        }
+
+        /// <summary>
+        /// Returns the most ideal mailing location from among the selected family groups
+        /// </summary>
+        /// <param name="groups">The families to find addresses on</param>
+        /// <returns></returns>
+        private static Location GetBestMailingLocation( this IEnumerable<Group> groups )
+        {
+            if ( groups.Any() )
+            {
+                var homeAddressGuid = Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME.AsGuidOrNull();
+                var workAddressGuid = Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_WORK.AsGuidOrNull();
+                if ( homeAddressGuid.HasValue && workAddressGuid.HasValue )
+                {
+                    var homeAddressDv = DefinedValueCache.Read( homeAddressGuid.Value );
+                    var workAddressDv = DefinedValueCache.Read( workAddressGuid.Value );
+                    if ( homeAddressDv != null && workAddressDv != null )
+                    {
+                        // Get all available mailing locations, prioritizing mapped locations then home locations
+                        var mailingLocations = groups.SelectMany( x => x.GroupLocations )
+                            .Where( l => l.IsMailingLocation )
+                            .Where( l => l.GroupLocationTypeValueId == homeAddressDv.Id || l.GroupLocationTypeValueId == workAddressDv.Id )
+                            .OrderBy( l => l.IsMappedLocation ? 0 : 1 )
+                            .ThenBy( l => l.GroupLocationTypeValueId == homeAddressDv.Id ? 0 : 1 );
+
+                        return mailingLocations.Select( l => l.Location ).FirstOrDefault();
+                    }
+                }
+            }
+            return null;
+        }
+
+        /// <summary>
         /// Updates, adds or removes a PhoneNumber of the given type.
         /// </summary>
         public static void UpdatePhoneNumber( this Person person, int numberTypeValueId, string phoneCountryCode, string phoneNumber, bool? isMessagingEnabled, bool? isUnlisted, RockContext rockContext )
@@ -2795,6 +3005,7 @@ namespace Rock.Model
         {
             return new PersonService( rockContext ?? new RockContext() ).GetGroupMembers( groupTypeId, person != null ? person.Id : 0, includeSelf );
         }
+        
         /// <summary>
         /// Gets any previous last names for this person sorted alphabetically by LastName
         /// </summary>
@@ -2820,6 +3031,35 @@ namespace Rock.Model
         }
 
         /// <summary>
+        /// Gets the <see cref="Rock.Model.Person" /> entity of the provided Person's head of household.
+        /// </summary>
+        /// <param name="person">The <see cref="Rock.Model.Person" /> entity of the Person to retrieve the head of household of.</param>
+        /// <param name="rockContext">The rock context.</param>
+        /// <returns>
+        /// The <see cref="Rock.Model.Person" /> entity containing the provided Person's head of household. If the provided Person's head of houseold is not found, this value will be null.
+        /// </returns>
+        public static Person GetHeadOfHousehold( this Person person, RockContext rockContext = null )
+        {
+            return new PersonService( rockContext ?? new RockContext() ).GetHeadOfHousehold( person );
+        }
+
+        /// <summary>
+        /// Gets the family role (adult or child).
+        /// </summary>
+        /// <param name="person">The person.</param>
+        /// <param name="rockContext">The rock context.</param>
+        /// <returns></returns>
+        public static GroupTypeRole GetFamilyRole(this Person person, RockContext rockContext = null )
+        {
+            if (rockContext == null )
+            {
+                rockContext = new RockContext();
+            }
+
+            return new PersonService( rockContext ).GetFamilyRole(person, rockContext);
+        }
+
+        /// <summary>
         /// Gets a Person's spouse with a selector that lets you only fetch the properties that you need
         /// </summary>
         /// <typeparam name="TResult">The type of the result.</typeparam>
@@ -2832,6 +3072,17 @@ namespace Rock.Model
         public static TResult GetSpouse<TResult>( this Person person, System.Linq.Expressions.Expression<Func<GroupMember, TResult>> selector, RockContext rockContext = null )
         {
             return new PersonService( rockContext ?? new RockContext() ).GetSpouse( person, selector );
+        }
+
+        /// <summary>
+        /// Gets the businesses.
+        /// </summary>
+        /// <param name="person">The person.</param>
+        /// <param name="rockContext">The rock context.</param>
+        /// <returns></returns>
+        public static IQueryable<Person> GetBusinesses( this Person person, RockContext rockContext = null )
+        {
+            return new PersonService( rockContext ?? new RockContext() ).GetBusinesses( person.Id );
         }
 
         /// <summary>

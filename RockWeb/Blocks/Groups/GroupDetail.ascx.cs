@@ -44,7 +44,6 @@ namespace RockWeb.Blocks.Groups
     [Description( "Displays the details of the given group." )]
     [GroupTypesField( "Group Types Include", "Select group types to show in this block.  Leave all unchecked to show all but the excluded group types.", false, key: "GroupTypes", order: 0 )]
     [GroupTypesField( "Group Types Exclude", "Select group types to exclude from this block.", false, key: "GroupTypesExclude", order: 1 )]
-    [BooleanField( "Show Edit", "", true, "", 2 )]
     [BooleanField( "Limit to Security Role Groups", "", false, "", 3 )]
     [BooleanField( "Limit to Group Types that are shown in navigation", "", false, "", 4, "LimitToShowInNavigationGroupTypes" )]
     [DefinedValueField( Rock.SystemGuid.DefinedType.MAP_STYLES, "Map Style", "The style of maps to use", false, false, Rock.SystemGuid.DefinedValue.MAP_STYLE_ROCK, "", 5 )]
@@ -388,7 +387,12 @@ namespace RockWeb.Blocks.Groups
                     var schedule = scheduleService.Get( group.ScheduleId.Value );
                     if ( schedule != null && schedule.ScheduleType != ScheduleType.Named )
                     {
-                        scheduleService.Delete( schedule );
+
+                        // Make sure this is the only group trying to use this schedule.
+                        if ( !groupService.Queryable().Where( g => g.ScheduleId == schedule.Id && g.Id != group.Id ).Any() )
+                        {
+                            scheduleService.Delete( schedule );
+                        }
                     }
                 }
 
@@ -619,7 +623,11 @@ namespace RockWeb.Blocks.Groups
                     var schedule = scheduleService.Get( oldScheduleId.Value );
                     if ( schedule != null && string.IsNullOrEmpty( schedule.Name ) )
                     {
-                        scheduleService.Delete( schedule );
+                        // Make sure this is the only group trying to use this schedule.
+                        if ( !groupService.Queryable().Where( g => g.ScheduleId == schedule.Id && g.Id != group.Id ).Any() )
+                        {
+                            scheduleService.Delete( schedule );
+                        }
                     }
                 }
 
@@ -684,7 +692,7 @@ namespace RockWeb.Blocks.Groups
                 return;
             }
             
-            // use WrapTransaction since SaveAttributeValues does it's own RockContext.SaveChanges()
+            // use WrapTransaction since SaveAttributeValues does its own RockContext.SaveChanges()
             rockContext.WrapTransaction( () =>
             {
                 var adding = group.Id.Equals( 0 );

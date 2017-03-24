@@ -64,7 +64,6 @@ namespace RockWeb.Blocks.Crm
                                 <li>MobilePhone (Text)</li>
                                 <li>OtherUpdates (Memo)</li>
                             </ul>", false, false, "", "", 12)]
-    [BooleanField( "Enable Debug", "Shows the fields available to merge in lava.", false, "", 13 )]
     public partial class PersonUpdateKiosk : Rock.Web.UI.RockBlock
     {
         #region Fields
@@ -354,7 +353,7 @@ namespace RockWeb.Blocks.Crm
 
                 if ( receiptEmail != null )
                 {
-                    var appRoot = Rock.Web.Cache.GlobalAttributesCache.Read( rockContext ).GetValue( "ExternalApplicationRoot" );
+                    var appRoot = Rock.Web.Cache.GlobalAttributesCache.Read( rockContext ).GetValue( "PublicApplicationRoot" );
 
                     var recipients = new List<RecipientData>();
                     recipients.Add( new RecipientData( null, mergeFields ) );
@@ -400,12 +399,6 @@ namespace RockWeb.Blocks.Crm
 
             lCompleteMessage.Text = GetAttributeValue( "CompleteMessageLava" ).ResolveMergeFields( mergeFields );
 
-            bool enableDebug = GetAttributeValue( "EnableDebug" ).AsBoolean();
-            if ( enableDebug && IsUserAuthorized( Authorization.EDIT ) )
-            {
-                lDebug.Visible = true;
-                lDebug.Text = mergeFields.lavaDebugInfo();
-            }
         }
 
         #endregion

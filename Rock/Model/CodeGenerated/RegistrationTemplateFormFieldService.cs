@@ -102,6 +102,7 @@ namespace Rock.Model
             target.PreText = source.PreText;
             target.RegistrationTemplateFormId = source.RegistrationTemplateFormId;
             target.ShowCurrentValue = source.ShowCurrentValue;
+            target.ShowOnWaitlist = source.ShowOnWaitlist;
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;
             target.CreatedByPersonAliasId = source.CreatedByPersonAliasId;
