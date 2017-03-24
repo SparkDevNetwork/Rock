@@ -371,7 +371,7 @@ namespace RockWeb.Blocks.Prayer
             {
                 var workflowTypeService = new WorkflowTypeService( rockContext );
                 workflowType = workflowTypeService.Get( workflowTypeGuid.Value );
-                if ( workflowType != null )
+                if ( workflowType != null && ( workflowType.IsActive ?? true ) )
                 {
                     try
                     {

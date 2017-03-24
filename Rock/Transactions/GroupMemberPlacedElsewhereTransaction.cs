@@ -77,7 +77,7 @@ namespace Rock.Transactions
         {
             var workflowTypeService = new WorkflowTypeService( rockContext );
             var workflowType = workflowTypeService.Get( workflowTypeId );
-            if ( workflowType != null )
+            if ( workflowType != null && ( workflowType.IsActive ?? true ) )
             {
                 var workflow = Rock.Model.Workflow.Activate( workflowType, name );
 
