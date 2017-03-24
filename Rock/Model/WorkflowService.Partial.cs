@@ -77,15 +77,13 @@ namespace Rock.Model
                         Add( workflow );
                     }
 
-                    rockContext.WrapTransaction( () =>
+                    rockContext.SaveChanges();
+
+                    workflow.SaveAttributeValues( rockContext );
+                    foreach ( var activity in workflow.Activities )
                     {
-                        rockContext.SaveChanges();
-                        workflow.SaveAttributeValues( rockContext );
-                        foreach ( var activity in workflow.Activities )
-                        {
-                            activity.SaveAttributeValues( rockContext );
-                        }
-                    } );
+                        activity.SaveAttributeValues( rockContext );
+                    }
 
                     workflow.IsProcessing = false;
                     rockContext.SaveChanges();
