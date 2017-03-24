@@ -776,13 +776,13 @@ namespace Rock.Model
         public static void AddNewGroupAddress( RockContext rockContext, Group group, string locationTypeGuid,
             string street1, string street2, string city, string state, string postalCode, string country, bool moveExistingToPrevious = false )
         {
-            if ( !String.IsNullOrWhiteSpace( street1 ) ||
-                 !String.IsNullOrWhiteSpace( street2 ) ||
-                 !String.IsNullOrWhiteSpace( city ) ||
-                 !String.IsNullOrWhiteSpace( postalCode ) ||
+            if ( !string.IsNullOrWhiteSpace( street1 ) ||
+                 !string.IsNullOrWhiteSpace( street2 ) ||
+                 !string.IsNullOrWhiteSpace( city ) ||
+                 !string.IsNullOrWhiteSpace( postalCode ) ||
                  !string.IsNullOrWhiteSpace( country ) )
             {
-                var location = new LocationService( rockContext ).Get( street1, street2, city, state, postalCode, country );
+                var location = new LocationService( rockContext ).Get( street1, street2, city, state, postalCode, country, group, true );
                 AddNewGroupAddress( rockContext, group, locationTypeGuid, location, moveExistingToPrevious );
             }
         }
