@@ -1510,8 +1510,11 @@ namespace Rock.Model
                 }
             }
 
-            var transaction = new Rock.Transactions.SaveMetaphoneTransaction( this );
-            Rock.Transactions.RockQueue.TransactionQueue.Enqueue( transaction );
+            if ( this.IsValid )
+            {
+                var transaction = new Rock.Transactions.SaveMetaphoneTransaction( this );
+                Rock.Transactions.RockQueue.TransactionQueue.Enqueue( transaction );
+            }
         }
 
         /// <summary>
