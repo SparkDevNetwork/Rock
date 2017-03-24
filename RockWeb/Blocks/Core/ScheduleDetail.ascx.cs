@@ -237,7 +237,7 @@ namespace RockWeb.Blocks.Core
         {
             var fakeSchedule = new Rock.Model.Schedule();
             fakeSchedule.iCalendarContent = sbSchedule.iCalendarContent;
-            sbSchedule.ToolTip = fakeSchedule.ToFriendlyScheduleText();
+            sbSchedule.ToolTip = fakeSchedule.ToFriendlyScheduleText( true );
 
             hbSchedulePreview.Text = @"<strong>iCalendar Content</strong>
 <div style='white-space: pre' Font-Names='Consolas' Font-Size='9'><br />" + sbSchedule.iCalendarContent + "</div>";
