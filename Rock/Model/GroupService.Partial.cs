@@ -768,7 +768,7 @@ namespace Rock.Model
                  !string.IsNullOrWhiteSpace( postalCode ) ||
                  !string.IsNullOrWhiteSpace( country ) )
             {
-                var location = new LocationService( rockContext ).Get( street1, street2, city, state, postalCode, country, true, group );
+                var location = new LocationService( rockContext ).Get( street1, street2, city, state, postalCode, country, group, true );
                 AddNewGroupAddress( rockContext, group, locationTypeGuid, location, moveExistingToPrevious );
             }
         }
