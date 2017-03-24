@@ -1783,6 +1783,11 @@ namespace Rock.Web.UI.Controls
                                     propValue = ( dataField as CallbackField ).GetFormattedDataValue( propValue );
                                 }
 
+                                if ( dataField is LavaBoundField )
+                                {
+                                    propValue = ( dataField as LavaBoundField ).GetFormattedDataValue( propValue );
+                                }
+
                                 var definedValueAttribute = prop.GetCustomAttributes( typeof( DefinedValueAttribute ), true ).FirstOrDefault();
 
                                 bool isDefinedValue = ( definedValueAttribute != null || definedValueFields.Any( f => f.DataField == prop.Name ) );
