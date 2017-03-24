@@ -20,6 +20,7 @@ using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
 
 using Rock.Data;
+using Rock.Financial;
 
 namespace Rock.Model
 {
@@ -29,7 +30,7 @@ namespace Rock.Model
     /// </summary>
     [Table( "FinancialScheduledTransactionDetail" )]
     [DataContract]
-    public partial class FinancialScheduledTransactionDetail : Model<FinancialScheduledTransactionDetail>
+    public partial class FinancialScheduledTransactionDetail : Model<FinancialScheduledTransactionDetail>, ITransactionDetail
     {
         #region Entity Properties
 

@@ -538,16 +538,7 @@ $('#{3}').find('.input-group-upper .input-group-addon').on('click', function () 
         /// <returns></returns>
         public static DateRange CalculateDateRangeFromDelimitedValues( string delimitedValues )
         {
-            if ( !string.IsNullOrWhiteSpace( delimitedValues ) && delimitedValues.Contains( "," ) )
-            {
-                var dates = delimitedValues.Split( ',' );
-                if ( dates.Length == 2 )
-                {
-                    return new DateRange( dates[0].AsDateTime(), dates[1].AsDateTime() );
-                }
-            }
-
-            return new DateRange( null, null );
+            return DateRange.FromDelimitedValues( delimitedValues );
         }
     }
 }

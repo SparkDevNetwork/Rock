@@ -73,7 +73,6 @@ namespace RockWeb.Blocks.Cms
         </div>
     </div>
 {% endif %}" )]
-    [BooleanField( "Enable Debug", "Show merge data to help you see what's available to you.", order: 4 )]
     public partial class ContentChannelItemPersonalListLava : Rock.Web.UI.RockBlock
     {
         #region Base Control Methods
@@ -150,12 +149,6 @@ namespace RockWeb.Blocks.Cms
 
             lContent.Text = template.ResolveMergeFields( mergeFields );
 
-            // show debug info
-            if ( GetAttributeValue( "EnableDebug" ).AsBoolean() && IsUserAuthorized( Authorization.EDIT ) )
-            {
-                lDebug.Visible = true;
-                lDebug.Text = mergeFields.lavaDebugInfo();
-            }
         }
 
         #endregion
