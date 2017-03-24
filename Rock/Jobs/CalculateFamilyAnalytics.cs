@@ -169,7 +169,7 @@ namespace Rock.Jobs
 
                     if ( family != null )
                     {
-                        foreach ( var person in family.Members.Select( m => m.Person ) )
+                        foreach ( var person in family.Members.Where( m => ! m.Person.IsDeceased ).Select( m => m.Person ) )
                         {
                             // set era attribute to true
                             var eraAttributeValue = attributeValueService.Queryable().Where( v => v.AttributeId == eraAttribute.Id && v.EntityId == person.Id ).FirstOrDefault();
