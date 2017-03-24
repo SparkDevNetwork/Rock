@@ -42,9 +42,12 @@
                     prompted to reconfirm their logins using the email address you select, you may wish to manually confirm the validity of the request before
                     completing this merge." />
 
+                    <Rock:NotificationBox ID="nbError" runat="server" NotificationBoxType="Danger" Visible ="false" />
+
                     <div class="actions pull-right">
                         <asp:LinkButton ID="lbMerge" runat="server" Text="Merge Records" CssClass="btn btn-primary" OnClick="lbMerge_Click" />
                     </div>
+
                 </asp:Panel>
             </div>
         </div>
