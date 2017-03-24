@@ -167,7 +167,7 @@ namespace RockWeb.Blocks.Groups
                 // Show inactive entries in a lighter font.
                 if (!groupInfo.IsActive)
                 {
-                    e.Row.AddCssClass( "inactive" );
+                    e.Row.AddCssClass( "is-inactive" );
                 }
             }
         }
