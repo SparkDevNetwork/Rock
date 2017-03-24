@@ -361,7 +361,7 @@ namespace Rock.Jobs
                 {
                     var workflowTypeService = new WorkflowTypeService( rockContext );
                     var workflowType = workflowTypeService.Get( workflowTypeGuid );
-                    if ( workflowType != null )
+                    if ( workflowType != null && ( workflowType.IsActive ?? true ) )
                     {
                         var workflowService = new WorkflowService( rockContext );
                         var workflow = Rock.Model.Workflow.Activate( workflowType, headOfHouse.Person.FullName, rockContext );
