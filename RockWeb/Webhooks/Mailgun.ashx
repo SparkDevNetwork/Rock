@@ -87,7 +87,8 @@ public class Mailgun : IHttpHandler
                     case "delivered": status = SendEmailWithEvents.SENT_STATUS; break;
                     case "clicked": status = SendEmailWithEvents.CLICKED_STATUS; break;
                     case "opened": status = SendEmailWithEvents.OPENED_STATUS; break;
-                    case "dropped": 
+                    case "dropped":
+                    case "suppress-bounce":
                     case "bounced": 
                         status = SendEmailWithEvents.FAILED_STATUS; break;
                 }                
