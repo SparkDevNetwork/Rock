@@ -1773,7 +1773,9 @@ namespace Rock.Web.UI.Controls
                         var boundField = dataField as BoundField;
                         if ( boundField != null )
                         {
+                            var cell = worksheet.Cells[rowCounter, columnCounter];
                             var prop = props.FirstOrDefault( p => boundField.DataField == p.Name || boundField.DataField.StartsWith( p.Name + "." ) );
+                            object exportValue = null;
                             if ( prop != null )
                             {
                                 object propValue = prop.GetValue( item, null );
@@ -1783,17 +1785,29 @@ namespace Rock.Web.UI.Controls
                                     propValue = ( dataField as CallbackField ).GetFormattedDataValue( propValue );
                                 }
 
+                                if ( dataField is LavaBoundField )
+                                {
+                                    propValue = ( dataField as LavaBoundField ).GetFormattedDataValue( propValue );
+                                }
+
                                 var definedValueAttribute = prop.GetCustomAttributes( typeof( DefinedValueAttribute ), true ).FirstOrDefault();
 
                                 bool isDefinedValue = ( definedValueAttribute != null || definedValueFields.Any( f => f.DataField == prop.Name ) );
+                                exportValue = GetExportValue( prop, propValue, isDefinedValue, cell ).ReverseCurrencyFormatting();
+                            }
+                            else if ( boundField is PersonField )
+                            {
+                                exportValue = item.GetPropertyValue( boundField.DataField );
+                            }
 
-                                var cell = worksheet.Cells[rowCounter, columnCounter];
-                                var exportValue = GetExportValue( prop, propValue, isDefinedValue, cell ).ReverseCurrencyFormatting();
+                            if ( exportValue != null )
+                            {
                                 ExcelHelper.SetExcelValue( cell, exportValue );
 
                                 // Update column formatting based on data
                                 worksheet.Column( columnCounter ).Style.Numberformat.Format = ExcelHelper.FinalColumnFormat( exportValue, worksheet.Column( columnCounter ).Style.Numberformat.Format );
                             }
+                            
                             continue;
                         }
 

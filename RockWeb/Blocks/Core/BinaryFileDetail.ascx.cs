@@ -124,7 +124,7 @@ namespace RockWeb.Blocks.Core
                     var workflowRockContext = new RockContext();
                     var workflowTypeService = new WorkflowTypeService( workflowRockContext );
                     var workflowType = workflowTypeService.Get( workflowTypeGuid );
-                    if ( workflowType != null )
+                    if ( workflowType != null && ( workflowType.IsActive ?? true ) )
                     {
                         var workflow = Workflow.Activate( workflowType, binaryFile.FileName );
 

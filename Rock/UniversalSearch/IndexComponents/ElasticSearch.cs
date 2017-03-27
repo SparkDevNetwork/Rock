@@ -39,9 +39,9 @@ namespace Rock.UniversalSearch.IndexComponents
     /// Elastic Search Index Provider
     /// </summary>
     /// <seealso cref="Rock.UniversalSearch.IndexComponent" />
-    [Description( "Elasticsearch Universal Search Index" )]
+    [Description( "Elasticsearch Universal Search Index (v2.x)" )]
     [Export( typeof( IndexComponent ) )]
-    [ExportMetadata( "ComponentName", "Elasticsearch" )]
+    [ExportMetadata( "ComponentName", "Elasticsearch 2.x" )]
 
     [TextField( "Node URL", "The URL of the ElasticSearch node (http://myserver:9200)", true, key: "NodeUrl" )]
     public class Elasticsearch : IndexComponent
@@ -393,7 +393,7 @@ namespace Rock.UniversalSearch.IndexComponents
                         }
                         else
                         {
-                            matchQuery &= new MatchQuery { Field = match.Field, Query = match.Value, Boost = match.Boost };
+                            matchQuery &= new MatchQuery { Field = match.Field, Query = match.Value };
                         }
                     }
                 }
@@ -416,8 +416,11 @@ namespace Rock.UniversalSearch.IndexComponents
                             // special logic to support phone search
                             if ( query.IsDigitsOnly() )
                             {
-                                queryContainer |= new QueryStringQuery { Query = "phoneNumbers:*" + query + "*", AnalyzeWildcard = true };
+                                queryContainer |= new QueryStringQuery { Query = "phone:*" + query + "*", AnalyzeWildcard = true };
                             }
+
+                            // add a search for all the words as one single search term
+                            queryContainer |= new QueryStringQuery { Query = query, AnalyzeWildcard = true, PhraseSlop = 0 };
 
                             if ( matchQuery != null )
                             {

@@ -17,6 +17,7 @@
 using System;
 using System.Collections.Generic;
 using System.Data.Entity;
+using System.Data.Entity.SqlServer;
 using System.Linq;
 using System.Runtime.Serialization;
 using Newtonsoft.Json;
@@ -93,7 +94,10 @@ namespace Rock.Rest.Controllers
                     if ( lastMetricValue != null )
                     {
                         metricYTDData.LastValueDate = lastMetricValue.MetricValueDateTime.HasValue ? lastMetricValue.MetricValueDateTime.Value.Date : DateTime.MinValue;
-                        var lastMetricCumulativeValues = qryMeasureValues.Where( a => a.MetricValueDateTime == metricYTDData.LastValueDate );
+
+                        // get a sum of the values that for whole 24 hour day of the last Date
+                        DateTime lastValueDateEnd = metricYTDData.LastValueDate.AddDays( 1 );
+                        var lastMetricCumulativeValues = qryMeasureValues.Where( a => a.MetricValueDateTime.HasValue && a.MetricValueDateTime.Value >= metricYTDData.LastValueDate && a.MetricValueDateTime.Value < lastValueDateEnd );
                         metricYTDData.LastValue = lastMetricCumulativeValues.Sum( a => a.YValue ).HasValue ? Math.Round( lastMetricCumulativeValues.Sum( a => a.YValue ).Value, roundYValues ? 0 : 2 ) : (decimal?)null;
                     }
 

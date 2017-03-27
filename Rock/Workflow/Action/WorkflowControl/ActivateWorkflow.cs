@@ -53,8 +53,22 @@ namespace Rock.Workflow.Action
             var workflowTypeGuid = GetAttributeValue(action, "WorkflowType").AsGuidOrNull();
             var workflowName = GetAttributeValue(action, "WorkflowName");
 
-            if (workflowTypeGuid.HasValue &&  !string.IsNullOrEmpty(workflowName))
+            WorkflowType workflowType = null;
+
+            if ( workflowTypeGuid.HasValue )
             {
+                var workflowTypeService = new WorkflowTypeService( rockContext );
+                workflowType = workflowTypeService.Get( workflowTypeGuid.Value );
+            }
+
+            if ( workflowType != null && !string.IsNullOrEmpty(workflowName))
+            {
+                if ( !( workflowType.IsActive ?? true ) )
+                {
+                    errorMessages.Add( string.Format( "Workflow type {0} is not active", workflowType ) );
+                    return true;
+                }
+
                 var sourceKeyMap = new Dictionary<string, string>();
                 var workflowAttributeKeys = GetAttributeValue(action, "WorkflowAttributeKey");
 
@@ -62,8 +76,8 @@ namespace Rock.Workflow.Action
                 {
                     //TODO Find a way upstream to stop an additional being appended to the value
                     sourceKeyMap = workflowAttributeKeys.AsDictionaryOrNull();     
-                    var workflowTypeService = new WorkflowTypeService(rockContext);       
-                    var workflow = Rock.Model.Workflow.Activate(workflowTypeService.Get(workflowTypeGuid.Value), workflowName);
+                    
+                    var workflow = Rock.Model.Workflow.Activate( workflowType, workflowName );
                     workflow.LoadAttributes(rockContext);
                     foreach (var keyPair in sourceKeyMap)
                     {

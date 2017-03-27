@@ -274,6 +274,24 @@ namespace Rock.Model
         /// <returns></returns>
         public IQueryable<Group> GetChildren( int id, int rootGroupId, bool limitToSecurityRoleGroups, List<int> groupTypeIncludedIds, List<int> groupTypeExcludedIds, bool includeInactiveGroups, bool limitToShowInNavigation )
         {
+            return this.GetChildren( id, rootGroupId, limitToSecurityRoleGroups, groupTypeIncludedIds, groupTypeExcludedIds, includeInactiveGroups, limitToShowInNavigation, 0, false );
+        }
+
+        /// <summary>
+        /// Gets immediate children of a group (id) or a rootGroupId. Specify 0 for both Id and rootGroupId to get top level groups limited
+        /// </summary>
+        /// <param name="id">The ID of the Group to get the children of (or 0 to use rootGroupId)</param>
+        /// <param name="rootGroupId">The root group ID</param>
+        /// <param name="limitToSecurityRoleGroups">if set to <c>true</c> [limit to security role groups].</param>
+        /// <param name="groupTypeIncludedIds">The group type included ids.</param>
+        /// <param name="groupTypeExcludedIds">The group type excluded ids.</param>
+        /// <param name="includeInactiveGroups">if set to <c>true</c> [include inactive groups].</param>
+        /// <param name="limitToShowInNavigation">if set to <c>true</c> [limit to show in navigation].</param>
+        /// <param name="campusId">if set it will filter groups based on campus</param>
+        /// <param name="includeNoCampus">if campus set and set to <c>true</c> [include groups with no campus].</param>
+        /// <returns></returns>
+        public IQueryable<Group> GetChildren( int id, int rootGroupId, bool limitToSecurityRoleGroups, List<int> groupTypeIncludedIds, List<int> groupTypeExcludedIds, bool includeInactiveGroups, bool limitToShowInNavigation, int campusId, bool includeNoCampus)
+        {
             var qry = Queryable();
 
             if ( id == 0 )
@@ -300,6 +318,18 @@ namespace Rock.Model
             if ( limitToSecurityRoleGroups )
             {
                 qry = qry.Where( a => a.IsSecurityRole );
+            }
+
+            if ( campusId > 0 )
+            {
+                if ( includeNoCampus )
+                {
+                    qry = qry.Where( a => a.CampusId == campusId || a.Campus == null );
+                }
+                else
+                {
+                    qry = qry.Where( a => a.CampusId == campusId );
+                }
             }
 
             if ( groupTypeIncludedIds.Any() )
@@ -804,13 +834,13 @@ namespace Rock.Model
             string street1, string street2, string city, string state, string postalCode, string country, bool moveExistingToPrevious,
             string modifiedBy, bool isMailingLocation, bool isMappedLocation )
         {
-            if ( !String.IsNullOrWhiteSpace( street1 ) ||
-                 !String.IsNullOrWhiteSpace( street2 ) ||
-                 !String.IsNullOrWhiteSpace( city ) ||
-                 !String.IsNullOrWhiteSpace( postalCode ) ||
+            if ( !string.IsNullOrWhiteSpace( street1 ) ||
+                 !string.IsNullOrWhiteSpace( street2 ) ||
+                 !string.IsNullOrWhiteSpace( city ) ||
+                 !string.IsNullOrWhiteSpace( postalCode ) ||
                  !string.IsNullOrWhiteSpace( country ) )
             {
-                var location = new LocationService( rockContext ).Get( street1, street2, city, state, postalCode, country );
+                var location = new LocationService( rockContext ).Get( street1, street2, city, state, postalCode, country, group, true );
                 AddNewGroupAddress( rockContext, group, locationTypeGuid, location, moveExistingToPrevious, modifiedBy, isMailingLocation, isMappedLocation );
             }
         }
