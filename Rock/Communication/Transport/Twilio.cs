@@ -120,7 +120,7 @@ namespace Rock.Communication.Transport
                                         body: message,
                                         statusCallback: new System.Uri( callbackUrl )
                                     );
-
+                                    
                                     recipient.Status = CommunicationRecipientStatus.Delivered;
                                     recipient.TransportEntityTypeName = this.GetType().FullName;
                                     recipient.UniqueMessageId = response.Sid;
