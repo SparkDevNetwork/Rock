@@ -32,12 +32,36 @@ namespace Rock.Web.UI
         /// </summary>
         public class Props
         {
+            /// <summary>
+            /// Gets or sets the path.
+            /// </summary>
+            /// <value>
+            /// The path.
+            /// </value>
             public string path { get; set; }
+
+            /// <summary>
+            /// Gets or sets the identifier.
+            /// </summary>
+            /// <value>
+            /// The identifier.
+            /// </value>
             public string id { get; set; }
         }
 
+        /// <summary>
+        /// The component
+        /// </summary>
         protected string Component = "";
+
+        /// <summary>
+        /// The path
+        /// </summary>
         protected string Path = "";
+
+        /// <summary>
+        /// The identifier
+        /// </summary>
         protected string Id = "";
 
         #endregion
