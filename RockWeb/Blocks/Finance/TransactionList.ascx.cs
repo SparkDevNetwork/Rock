@@ -1020,6 +1020,9 @@ namespace RockWeb.Blocks.Finance
                         SourceTypeValueId = a.Transaction.SourceTypeValueId,
                         TotalAmount = a.Amount,
                         TransactionCode = a.Transaction.TransactionCode,
+                        Status = a.Transaction.Status,
+                        SettledDate = a.Transaction.SettledDate,
+                        SettledGroupId = a.Transaction.SettledGroupId,
                         TransactionDetail = new DetailInfo { AccountId = a.AccountId, Amount = a.Amount, EntityId = a.EntityId, EntityTypeId = a.EntityId },
                         Summary = a.Transaction.Summary,
                         FinancialPaymentDetail = new PaymentDetailInfo { CreditCardTypeValueId = a.Transaction.FinancialPaymentDetail.CreditCardTypeValueId, CurrencyTypeValueId = a.Transaction.FinancialPaymentDetail.CurrencyTypeValueId }
@@ -1059,6 +1062,9 @@ namespace RockWeb.Blocks.Finance
                         SourceTypeValueId = a.SourceTypeValueId,
                         TotalAmount = a.TransactionDetails.Sum( d => (decimal?)d.Amount ),
                         TransactionCode = a.TransactionCode,
+                        Status = a.Status,
+                        SettledDate = a.SettledDate,
+                        SettledGroupId = a.SettledGroupId,
                         Summary = a.Summary,
                         FinancialPaymentDetail = new PaymentDetailInfo { CreditCardTypeValueId = a.FinancialPaymentDetail.CreditCardTypeValueId, CurrencyTypeValueId = a.FinancialPaymentDetail.CurrencyTypeValueId }
                     } );
@@ -1536,6 +1542,9 @@ namespace RockWeb.Blocks.Finance
             public int? SourceTypeValueId { get; internal set; }
             public decimal? TotalAmount { get; set; }
             public string Summary { get; set; }
+            public string Status { get; set; }
+            public DateTime? SettledDate { get; set; }
+            public string SettledGroupId { get; set; }
 
             /// <summary>
             /// NOTE: This will only be used in "Transaction Details" mode

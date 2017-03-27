@@ -302,6 +302,9 @@ namespace Rock.Model
                             transaction.TransactionCode = payment.TransactionCode;
                             transaction.TransactionDateTime = payment.TransactionDateTime;
                             transaction.Status = payment.Status;
+                            transaction.IsSettled = payment.IsSettled;
+                            transaction.SettledGroupId = payment.SettledGroupId;
+                            transaction.SettledDate = payment.SettledDate;
                             transaction.StatusMessage = payment.StatusMessage;
                             transaction.FinancialPaymentDetail = new FinancialPaymentDetail();
 
@@ -492,15 +495,25 @@ namespace Rock.Model
                         totalAlreadyDownloaded++;
                     }
 
-                    foreach ( var txn in txns.Where( t => t.Status != payment.Status || t.StatusMessage != payment.StatusMessage ) )
+                    foreach ( var txn in txns
+                        .Where( t => 
+                            t.Status != payment.Status || 
+                            t.StatusMessage != payment.StatusMessage ||
+                            t.IsSettled != payment.IsSettled ||
+                            t.SettledGroupId != payment.SettledGroupId ||
+                            t.SettledDate != payment.SettledDate ) )
                     {
+                        txn.IsSettled = payment.IsSettled;
+                        txn.SettledGroupId = payment.SettledGroupId;
+                        txn.SettledDate = payment.SettledDate;
                         txn.Status = payment.Status;
                         txn.StatusMessage = payment.StatusMessage;
                         totalStatusChanges++;
                     }
+
+                    rockContext.SaveChanges();
                 }
 
-                rockContext.SaveChanges();
 
                 if ( transactionsWithAttributes.Count > 0 )
                 { 
