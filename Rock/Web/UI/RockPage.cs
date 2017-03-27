@@ -51,6 +51,8 @@ namespace Rock.Web.UI
 
         private string _clientType = null;
 
+
+        private PageStatePersister _PageStatePersister = null;
         #endregion
 
         #region Protected Variables
@@ -431,7 +433,48 @@ namespace Rock.Web.UI
             }
         }
 
-        #endregion
+        /// <summary>
+        /// Gets the size of the view state.
+        /// </summary>
+        /// <value>
+        /// The size of the view state.
+        /// </value>
+        public int ViewStateSize { get; private set; }
+
+
+        /// <summary>
+        /// Gets the view state size compressed.
+        /// </summary>
+        /// <value>
+        /// The view state size compressed.
+        /// </value>
+        public int ViewStateSizeCompressed { get; private set; }
+
+        /// <summary>
+        /// Gets the view state value.
+        /// </summary>
+        /// <value>
+        /// The view state value.
+        /// </value>
+        public string ViewStateValue { get; private set; }
+
+        /// <summary>
+        /// Gets a value indicating whether [view state is compressed].
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if [view state is compressed]; otherwise, <c>false</c>.
+        /// </value>
+        public bool ViewStateIsCompressed { get; private set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether [enable view state inspection].
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if [enable view state inspection]; otherwise, <c>false</c>.
+        /// </value>
+        public bool EnableViewStateInspection { get; set; }
+
+    #endregion
 
         #region Overridden Properties
 
@@ -440,7 +483,13 @@ namespace Rock.Web.UI
         /// </summary>
         protected override PageStatePersister PageStatePersister
         {
-            get { return new CompressedHiddenFieldPageStatePersister( this, 102400 ); }
+            get {
+                if ( _PageStatePersister == null )
+                {
+                    _PageStatePersister = new RockHiddenFieldPageStatePersister( this, RockHiddenFieldPageStatePersister.ViewStateCompressionThreshold );
+                }
+                return _PageStatePersister;
+            }   
         }
 
         #endregion
@@ -489,7 +538,44 @@ namespace Rock.Web.UI
 
         #endregion
 
+        #region Custom Events
+        /// <summary>
+        /// Occurs when view state persisted.
+        /// </summary>
+        public event EventHandler ViewStatePersisted;
+
+        /// <summary>
+        /// Called when [view state persisted].
+        /// </summary>
+        protected void OnViewStatePersisted()
+        {
+            if ( this.ViewStatePersisted != null )
+            {
+                ViewStatePersisted( this, EventArgs.Empty );
+            }
+        }
+
+        #endregion
+
         #region Overridden Methods
+
+        /// <summary>
+        /// Saves any view-state and control-state information for the page.
+        /// </summary>
+        /// <param name="state">An <see cref="T:System.Object" /> in which to store the view-state information.</param>
+        protected override void SavePageStateToPersistenceMedium( object state )
+        {
+            base.SavePageStateToPersistenceMedium( state );
+ 
+            var customPersister = this.PageStatePersister as RockHiddenFieldPageStatePersister;
+ 
+            if (customPersister != null )
+            {
+                this.ViewStateValue = customPersister.ViewStateValue;
+            }
+
+            OnViewStatePersisted();
+        }
 
         /// <summary>
         /// Initializes the page's culture to use the culture specified by the browser ("auto")
@@ -1346,6 +1432,15 @@ namespace Rock.Web.UI
                         int total = cacheHits.Count();
                         hitPercent = total > 0 ? ( (double)hits / (double)total ) : 0D;
                     }
+                }
+
+                var customPersister = this.PageStatePersister as RockHiddenFieldPageStatePersister;
+
+                if ( customPersister != null )
+                {
+                    this.ViewStateSize = customPersister.ViewStateSize;
+                    this.ViewStateSizeCompressed = customPersister.ViewStateSizeCompressed;
+                    this.ViewStateIsCompressed = customPersister.ViewStateIsCompressed;
                 }
 
                 phLoadStats.Controls.Add( new LiteralControl( string.Format(
