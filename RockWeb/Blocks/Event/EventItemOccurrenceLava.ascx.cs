@@ -130,6 +130,7 @@ namespace RockWeb.Blocks.Event
             {
                 eventItemOccurrenceId = Convert.ToInt32( PageParameter( "EventOccurrenceId" ) );
             }
+
             if ( eventItemOccurrenceId > 0 )
             {                                                              
                 var eventItemOccurrenceService = new EventItemOccurrenceService( rockContext );
@@ -139,61 +140,68 @@ namespace RockWeb.Blocks.Event
 
                 var eventItemOccurrence = qry.FirstOrDefault();
 
-                var mergeFields = new Dictionary<string, object>();
-                mergeFields.Add( "RegistrationPage", LinkedPageRoute( "RegistrationPage" ) );
-
-                var campusEntityType = EntityTypeCache.Read( "Rock.Model.Campus" );
-                var contextCampus = RockPage.GetCurrentContext( campusEntityType ) as Campus;
-
-                if ( contextCampus != null )
+                if ( eventItemOccurrence != null )
                 {
-                    mergeFields.Add( "CampusContext", contextCampus );
-                }
+                    var mergeFields = new Dictionary<string, object>();
+                    mergeFields.Add( "RegistrationPage", LinkedPageRoute( "RegistrationPage" ) );
 
-                // determine if the registration is full
-                var maxRegistrantCount = 0;
-                var currentRegistrationCount = 0;
-                var linkage = eventItemOccurrence.Linkages.FirstOrDefault();
-                if (linkage != null )
-                {
-                    if (linkage.RegistrationInstance != null )
+                    var campusEntityType = EntityTypeCache.Read( "Rock.Model.Campus" );
+                    var contextCampus = RockPage.GetCurrentContext( campusEntityType ) as Campus;
+
+                    if ( contextCampus != null )
                     {
-                        if ( linkage.RegistrationInstance.MaxAttendees != 0 )
+                        mergeFields.Add( "CampusContext", contextCampus );
+                    }
+
+                    // determine if the registration is full
+                    var maxRegistrantCount = 0;
+                    var currentRegistrationCount = 0;
+                    var linkage = eventItemOccurrence.Linkages.FirstOrDefault();
+                    if ( linkage != null )
+                    {
+                        if ( linkage.RegistrationInstance != null )
                         {
-                            maxRegistrantCount = linkage.RegistrationInstance.MaxAttendees;
+                            if ( linkage.RegistrationInstance.MaxAttendees != 0 )
+                            {
+                                maxRegistrantCount = linkage.RegistrationInstance.MaxAttendees;
+                            }
+                        }
+
+                        if ( maxRegistrantCount != 0 )
+                        {
+                            currentRegistrationCount = new RegistrationRegistrantService( rockContext ).Queryable().AsNoTracking()
+                                                            .Where( r =>
+                                                                r.Registration.RegistrationInstanceId == linkage.RegistrationInstanceId
+                                                                && r.OnWaitList == false )
+                                                            .Count();
                         }
                     }
 
-                    if ( maxRegistrantCount != 0 )
+                    mergeFields.Add( "RegistrationStatusLabel", ( maxRegistrantCount - currentRegistrationCount > 0 ) ? "Register" : "Join Wait List" );
+                    mergeFields.Add( "EventItemOccurrence", eventItemOccurrence );
+                    mergeFields.Add( "Event", eventItemOccurrence != null ? eventItemOccurrence.EventItem : null );
+                    mergeFields.Add( "CurrentPerson", CurrentPerson );
+
+                    lOutput.Text = GetAttributeValue( "LavaTemplate" ).ResolveMergeFields( mergeFields );
+
+                    if ( GetAttributeValue( "SetPageTitle" ).AsBoolean() )
                     {
-                        currentRegistrationCount = new RegistrationRegistrantService( rockContext ).Queryable().AsNoTracking()
-                                                        .Where( r =>
-                                                            r.Registration.RegistrationInstanceId == linkage.RegistrationInstanceId
-                                                            && r.OnWaitList == false )
-                                                        .Count();
+                        string pageTitle = eventItemOccurrence != null ? eventItemOccurrence.EventItem.Name : "Event";
+                        RockPage.PageTitle = pageTitle;
+                        RockPage.BrowserTitle = String.Format( "{0} | {1}", pageTitle, RockPage.Site.Name );
+                        RockPage.Header.Title = String.Format( "{0} | {1}", pageTitle, RockPage.Site.Name );
+                    }
+
+                    // show debug info
+                    if ( GetAttributeValue( "EnableDebug" ).AsBoolean() && IsUserAuthorized( Authorization.EDIT ) )
+                    {
+                        lDebug.Visible = true;
+                        lDebug.Text = mergeFields.lavaDebugInfo();
                     }
                 }
-
-                mergeFields.Add( "RegistrationStatusLabel", (maxRegistrantCount - currentRegistrationCount > 0) ? "Register" :  "Join Wait List");
-                mergeFields.Add( "EventItemOccurrence", eventItemOccurrence );
-                mergeFields.Add( "Event", eventItemOccurrence != null ? eventItemOccurrence.EventItem : null );
-                mergeFields.Add( "CurrentPerson", CurrentPerson );
-
-                lOutput.Text = GetAttributeValue( "LavaTemplate" ).ResolveMergeFields( mergeFields );
-
-                if ( GetAttributeValue( "SetPageTitle" ).AsBoolean() )
+                else
                 {
-                    string pageTitle = eventItemOccurrence != null ? eventItemOccurrence.EventItem.Name : "Event";
-                    RockPage.PageTitle = pageTitle;
-                    RockPage.BrowserTitle = String.Format( "{0} | {1}", pageTitle, RockPage.Site.Name );
-                    RockPage.Header.Title = String.Format( "{0} | {1}", pageTitle, RockPage.Site.Name );
-                }
-
-                // show debug info
-                if ( GetAttributeValue( "EnableDebug" ).AsBoolean() && IsUserAuthorized( Authorization.EDIT ) )
-                {
-                    lDebug.Visible = true;
-                    lDebug.Text = mergeFields.lavaDebugInfo();
+                    lOutput.Text = "<div class='alert alert-warning'>We could not find that event.</div>";
                 }
             }
             else

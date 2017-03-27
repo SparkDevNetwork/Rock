@@ -512,6 +512,7 @@ namespace RockWeb.Blocks.Cms
 
                 interactionChannelForSite.Name = site.Name;
                 interactionChannelForSite.RetentionDuration = nbPageViewRetentionPeriodDays.Text.AsIntegerOrNull();
+                interactionChannelForSite.ComponentEntityTypeId = EntityTypeCache.Read<Rock.Model.Page>().Id;
 
                 rockContext.SaveChanges();
 
@@ -689,6 +690,13 @@ namespace RockWeb.Blocks.Cms
                 site.Theme = RockPage.Layout.Site.Theme;
                 // hide the panel drawer that show created and last modified dates
                 pdAuditDetails.Visible = false;
+            }
+            else
+            {
+                if ( site.DefaultPageId.HasValue )
+                {
+                    lVisitSite.Text = string.Format( @"<a href=""{0}{1}"" target=""_blank""><span class=""label label-info"">Visit Site</span></a>", ResolveRockUrl( "~/page/" ), site.DefaultPageId );
+                }
             }
 
             // set theme compile button

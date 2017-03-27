@@ -36,7 +36,6 @@ namespace Rock.Jobs
     [GroupTypesField( "Group Types", "Group types use to check the group requirements on.", order: 1 )]
     [EnumField( "Notify Parent Leaders", "", typeof( NotificationOption ), true, "None", order: 2 )]
     [GroupField( "Accountability Group", "Optional group that will receive a list of all group members that do not meet requirements.", false, order: 3 )]
-    [TextField( "Excluded Group Type Role Id's", "Optional comma delimited list of group type role Id's that should be excluded from the notification.", false, order: 4, key: "ExcludedGroupRoleIds" )]
     [DisallowConcurrentExecution]
     public class SendGroupRequirementsNotification : IJob
     {
@@ -74,12 +73,6 @@ namespace Rock.Jobs
                     selectedGroupTypes = dataMap.GetString( "GroupTypes" ).Split( ',' ).Select( Guid.Parse ).ToList();
                 }
 
-                var excludedGroupRoleIds = new List<int>();
-                if ( !string.IsNullOrWhiteSpace( dataMap.GetString( "ExcludedGroupRoleIds" ) ) )
-                {
-                    excludedGroupRoleIds = dataMap.GetString( "ExcludedGroupRoleIds" ).Split( ',' ).Select( int.Parse ).ToList();
-                }
-
                 var notificationOption = dataMap.GetString( "NotifyParentLeaders" ).ConvertToEnum<NotificationOption>( NotificationOption.None );
 
                 var accountAbilityGroupGuid = dataMap.GetString( "AccountabilityGroup" ).AsGuid();
@@ -111,7 +104,7 @@ namespace Rock.Jobs
 
                         // get list of the group leaders
                         groupMissingRequirements.Leaders = group.Members
-                                                            .Where( m => m.GroupRole.IsLeader == true && !excludedGroupRoleIds.Contains( m.GroupRoleId ) )
+                                                            .Where( m => m.GroupRole.ReceiveRequirementsNotifications )
                                                             .Select( m => new GroupMemberResult
                                                             {
                                                                 Id = m.Id,
@@ -165,7 +158,7 @@ namespace Rock.Jobs
                         _groupsMissingRequriements.Add( groupMissingRequirements );
 
                         // add leaders as people to notify
-                        foreach ( var leader in group.Members.Where( m => m.GroupRole.IsLeader == true && !excludedGroupRoleIds.Contains( m.GroupRoleId ) ) )
+                        foreach ( var leader in group.Members.Where( m => m.GroupRole.ReceiveRequirementsNotifications ) )
                         {
                             NotificationItem notification = new NotificationItem();
                             notification.GroupId = group.Id;
@@ -177,7 +170,7 @@ namespace Rock.Jobs
                         if ( notificationOption != NotificationOption.None )
                         {
                             var parentLeaders = new GroupMemberService( rockContext ).Queryable( "Person" ).AsNoTracking()
-                                                    .Where( m => m.GroupRole.IsLeader && !excludedGroupRoleIds.Contains( m.GroupRoleId ) );
+                                                    .Where( m => m.GroupRole.ReceiveRequirementsNotifications );
 
                             if ( notificationOption == NotificationOption.DirectParent )
                             {

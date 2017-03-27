@@ -113,6 +113,26 @@ namespace Rock.SystemGuid
         public const string DATAVIEW = "57F8FA29-DCF1-4F74-8553-87E90F234139";
 
         /// <summary>
+        /// The guid for the Rock.Model.FinancialAccount entity.
+        /// </summary>
+        public const string FINANCIAL_ACCOUNT = "798BCE48-6AA7-4983-9214-F9BCEFB4521D";
+
+        /// <summary>
+        /// The guid for the Rock.Model.FinancialBatch entity.
+        /// </summary>
+        public const string FINANCIAL_BATCH = "BDD09C8E-2C52-4D08-9062-BE7D52D190C2";
+
+        /// <summary>
+        /// The guid for the Rock.Model.FinancialTransaction entity.
+        /// </summary>
+        public const string FINANCIAL_TRANSACTION = "2C1CB26B-AB22-42D0-8164-AEDEE0DAE667";
+
+        /// <summary>
+        /// The guid for the Rock.Model.FinancialTransactionDetail entity.
+        /// </summary>
+        public const string FINANCIAL_TRANSACTION_DETAIL = "AC4AC28B-8E7E-4D7E-85DB-DFFB4F3ADCCE";
+
+        /// <summary>
         /// The guid for the Rock.Model.Group entity.
         /// </summary>
         public const string GROUP = "9BBFDA11-0D22-40D5-902F-60ADFBC88987";

@@ -60,7 +60,7 @@ namespace RockWeb.Blocks.Finance
     [BooleanField("Use Person Context", "Determines if the person context should be used instead of the CurrentPerson.", false, order: 5)]
 
     [ContextAware]
-    public partial class ContributionStatementListLava : RockBlock
+    public partial class ContributionStatementListLava : RockBlock, ISecondaryBlock
     {
         #region Properties
 
@@ -195,6 +195,15 @@ namespace RockWeb.Blocks.Finance
                 lDebug.Visible = true;
                 lDebug.Text = mergeFields.lavaDebugInfo();
             }
+        }
+
+        /// <summary>
+        /// Hook so that other blocks can set the visibility of all ISecondaryBlocks on its page
+        /// </summary>
+        /// <param name="visible">if set to <c>true</c> [visible].</param>
+        public void SetVisible( bool visible )
+        {
+            pnlContent.Visible = visible;
         }
 
         #endregion

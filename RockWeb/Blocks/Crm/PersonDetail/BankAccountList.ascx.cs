@@ -35,7 +35,7 @@ namespace RockWeb.Blocks.Finance
     [Category( "CRM > Person Detail" )]
     [Description( "Lists bank accounts for a person" )]
 
-    public partial class BankAccountList : PersonBlock
+    public partial class BankAccountList : PersonBlock, ISecondaryBlock
     {
         #region Base Control Methods
 
@@ -138,6 +138,15 @@ namespace RockWeb.Blocks.Finance
 
                 gList.DataBind();
             }
+        }
+
+        /// <summary>
+        /// Hook so that other blocks can set the visibility of all ISecondaryBlocks on its page
+        /// </summary>
+        /// <param name="visible">if set to <c>true</c> [visible].</param>
+        public void SetVisible( bool visible )
+        {
+            pnlContent.Visible = visible;
         }
 
         #endregion

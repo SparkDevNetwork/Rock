@@ -44,7 +44,7 @@ namespace RockWeb.Blocks.Finance
     [LinkedPage( "View Page" )]
     [LinkedPage( "Add Page" )]
     [ContextAware]
-    public partial class ScheduledTransactionList : Rock.Web.UI.RockBlock
+    public partial class ScheduledTransactionList : Rock.Web.UI.RockBlock, ISecondaryBlock
     {
         private bool _isExporting = false;
 
@@ -408,6 +408,15 @@ namespace RockWeb.Blocks.Finance
             parms.Add( "ScheduledTransactionId", id.ToString() );
             parms.Add( "Person", TargetPerson.UrlEncodedKey );
             NavigateToLinkedPage( "DetailPage", parms );
+        }
+
+        /// <summary>
+        /// Hook so that other blocks can set the visibility of all ISecondaryBlocks on its page
+        /// </summary>
+        /// <param name="visible">if set to <c>true</c> [visible].</param>
+        public void SetVisible( bool visible )
+        {
+            pnlContent.Visible = visible;
         }
 
         #endregion

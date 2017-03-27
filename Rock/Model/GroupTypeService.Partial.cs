@@ -93,6 +93,55 @@ namespace Rock.Model
         }
 
         /// <summary>
+        /// Returns an enumerable collection of <see cref="Rock.Model.GroupType">GroupType</see> that are descendants of a specified group type
+        /// and ordered by the group type's Order in the hierarchy.
+        /// WARNING: This will fail (max recursion) if there is a circular reference in the GroupTypeAssociation table.
+        /// </summary>
+        /// <param name="parentGroupTypeId">The parent group type identifier.</param>
+        /// <returns>
+        /// An enumerable collection of <see cref="Rock.Model.GroupType">GroupType</see>.
+        /// </returns>
+        public IEnumerable<GroupType> GetAllAssociatedDescendentsOrdered( int parentGroupTypeId )
+        {
+            // We're basically building a hierarchy ordering path using padded zeros of the GroupType's order
+            // such that the results of the HierarchyOrder looks something like this:
+            //
+            //|000
+            //|000
+            //|001
+            //|002
+            //|002|000
+            //|002|000|000
+            //|002|001
+            //|003
+            //|004
+
+            return this.ExecuteQuery(
+                @"
+                -- Get GroupTypes ordered by their association GroupType's Order
+                WITH CTE (ChildGroupTypeId,GroupTypeId, HierarchyOrder) AS
+                (
+                      SELECT [ChildGroupTypeId], [GroupTypeId], CONVERT(nvarchar(500),'')
+                      FROM   [GroupTypeAssociation] GTA
+		                INNER JOIN [GroupType] GT ON GT.[Id] = GTA.[GroupTypeId]
+                      WHERE  [GroupTypeId] = {0}
+                      UNION ALL 
+                      SELECT
+                            GTA.[ChildGroupTypeId], GTA.[GroupTypeId], CONVERT(nvarchar(500), CTE.HierarchyOrder + '|' + RIGHT(1000 + GT2.[Order], 3)  )
+                      FROM
+                            GroupTypeAssociation GTA
+		                INNER JOIN CTE ON CTE.[ChildGroupTypeId] = GTA.[GroupTypeId]
+		                INNER JOIN [GroupType] GT2 ON GT2.[Id] = GTA.[GroupTypeId]
+                      WHERE CTE.[ChildGroupTypeId] <> CTE.[GroupTypeId]
+                )
+                SELECT GT3.*
+                FROM CTE
+                INNER JOIN [GroupType] GT3 ON GT3.[Id] = CTE.[ChildGroupTypeId]
+				ORDER BY CONVERT(nvarchar(500), CTE.HierarchyOrder + '|' + RIGHT(1000 + GT3.[Order], 3) ) 
+                ", parentGroupTypeId );
+        }
+
+        /// <summary>
         /// Returns an enumerable collection of <see cref="Rock.Model.GroupTypePath">GroupTypePath</see> objects that are
         /// associated descendants of a specified group type.
         /// WARNING: This will fail if there is a circular reference in the GroupTypeAssociation table.

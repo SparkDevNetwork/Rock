@@ -21,6 +21,7 @@
                 </div>
                 <div class="col-md-6">
                     <Rock:RockCheckBox ID="cbIsActive" runat="server" Text="Active" />
+                    <Rock:RockCheckBox ID="cbIsPublic" runat="server" Text="Public" />
                 </div>
             </div>
 
@@ -73,8 +74,8 @@
             </asp:Panel>
 
             <div class="actions">
-                <asp:Button ID="btnSaveGroup" runat="server" AccessKey="s" CssClass="btn btn-primary" Text="Save" OnClick="btnSaveGroup_Click" />
-                <asp:LinkButton id="lbCancelGroup" runat="server" AccessKey="c" CssClass="btn btn-link" OnClick="lbCancelGroup_Click" CausesValidation="false">Cancel</asp:LinkButton>
+                <asp:Button ID="btnSaveGroup" runat="server" AccessKey="s" ToolTip="Alt+s" CssClass="btn btn-primary" Text="Save" OnClick="btnSaveGroup_Click" />
+                <asp:LinkButton id="lbCancelGroup" runat="server" AccessKey="c" ToolTip="Alt+c" CssClass="btn btn-link" OnClick="lbCancelGroup_Click" CausesValidation="false">Cancel</asp:LinkButton>
             </div>
 
             <asp:Literal ID="lGroupEditPostHtml" runat="server" />
@@ -98,17 +99,17 @@
             </div>
 
             <div class="row">
-                <div class="col-md-6">
+                <asp:Panel ID="pnlGroupMemberRole" runat="server" CssClass="col-md-6">
                     <Rock:RockDropDownList runat="server" ID="ddlGroupRole" DataTextField="Name" DataValueField="Id" Label="Role" Required="true" />
-                </div>
-                <div class="col-md-6">
+                </asp:Panel>
+                <asp:Panel ID="pnlGroupMemberAttributes" runat="server" CssClass="col-md-6">
                     <asp:PlaceHolder ID="phGroupMemberAttributes" runat="server" EnableViewState="false"></asp:PlaceHolder>
-                </div>
+                </asp:Panel>
             </div>
 
             <div class="actions">
-                <asp:Button ID="btnSaveGroupMember" runat="server" AccessKey="s" CssClass="btn btn-primary" Text="Save" OnClick="btnSaveGroupMember_Click" />
-                <asp:LinkButton id="btnCancelGroupMember" runat="server" AccessKey="c" CssClass="btn btn-link" OnClick="btnCancelGroupMember_Click" CausesValidation="false">Cancel</asp:LinkButton>
+                <asp:Button ID="btnSaveGroupMember" runat="server" AccessKey="s" ToolTip="Alt+s" CssClass="btn btn-primary" Text="Save" OnClick="btnSaveGroupMember_Click" />
+                <asp:LinkButton id="btnCancelGroupMember" runat="server" AccessKey="c" ToolTip="Alt+c" CssClass="btn btn-link" OnClick="btnCancelGroupMember_Click" CausesValidation="false">Cancel</asp:LinkButton>
             </div>
 
             <asp:Literal ID="lGroupMemberEditPostHtml" runat="server" />

@@ -40,6 +40,8 @@ namespace RockWeb.Blocks.Crm.PersonDetail
     [BooleanField("Auto Create Group", "If person doesn't belong to a group of this type, should one be created for them (default is Yes).", true, "", 1)]
     [LinkedPage("Group Edit Page", "Page used to edit the members of the selected group.", true, "", "", 2)]
     [LinkedPage( "Location Detail Page", "Page used to edit the settings for a particular location.", false, "", "", 3 )]
+    [CodeEditorField( "Group Header Lava", "Lava to put at the top of the block. Merge fields include Page, CurrentPerson, Group (the family) and GroupMembers.", CodeEditorMode.Lava, CodeEditorTheme.Rock, 200, false, order: 4)]
+    [CodeEditorField( "Group Footer Lava", "Lava to put at the bottom of the block. Merge fields include Page, CurrentPerson, Group (the family) and GroupMembers.", CodeEditorMode.Lava, CodeEditorTheme.Rock, 200, false, order: 5 )]
     public partial class GroupMembers : Rock.Web.UI.PersonBlock
     {
         #region Fields
@@ -125,6 +127,17 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                             .OrderBy( m => m.GroupRole.Order )
                             .ToList();
 
+                        // add header and footer information
+                        var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, CurrentPerson );
+                        mergeFields.Add( "Group", group );
+                        mergeFields.Add( "GroupMembers", members );
+
+                        Literal lGroupHeader = e.Item.FindControl( "lGroupHeader" ) as Literal;
+                        Literal lGroupFooter = e.Item.FindControl( "lGroupFooter" ) as Literal;
+
+                        lGroupHeader.Text = GetAttributeValue( "GroupHeaderLava" ).ResolveMergeFields( mergeFields );
+                        lGroupFooter.Text = GetAttributeValue( "GroupFooterLava" ).ResolveMergeFields( mergeFields );
+
                         var orderedMembers = new List<GroupMember>();
 
                         if ( _IsFamilyGroupType )
@@ -183,7 +196,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                         phMoreGroupAttributes.Controls.Clear();
 
                         group.LoadAttributes();
-                        var attributes = group.Attributes
+                        var attributes = group.GetAuthorizedAttributes( Authorization.VIEW, CurrentPerson )
                             .Select( a => a.Value )
                             .OrderBy( a => a.Order )
                             .ToList();

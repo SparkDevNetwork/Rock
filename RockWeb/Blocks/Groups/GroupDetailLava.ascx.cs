@@ -45,15 +45,17 @@ namespace RockWeb.Blocks.Groups
     [LinkedPage( "Attendance Page", "The page to link to to manage the group's attendance.", true, "", "", 3 )]
     [LinkedPage( "Communication Page", "The communication page to use for sending emails to the group members.", true, "", "", 4 )]
     [BooleanField( "Hide the 'Active' Group checkbox", "Set this to true to hide the checkbox for 'Active' for the group.", false, key: "HideActiveGroupCheckbox", order: 5 )]
-    [BooleanField( "Hide Inactive Group Member Status", "Set this to true to hide the radiobox for the 'Inactive' group member status.", false, order: 6 )]
-    [BooleanField( "Hide Group Description Edit", "Set this to true to hide the edit box for group 'Description'.", false, key: "HideGroupDescriptionEdit", order: 7 )]
-    [CodeEditorField( "Lava Template", "The lava template to use to format the group details.", CodeEditorMode.Lava, CodeEditorTheme.Rock, 400, true, "{% include '~~/Assets/Lava/GroupDetail.lava' %}", "", 8 )]
-    [BooleanField( "Enable Location Edit", "Enables changing locations when editing a group.", false, "", 9 )]
-    [BooleanField( "Enable Debug", "Shows the fields available to merge in lava.", false, "", 10 )]
-    [CodeEditorField( "Edit Group Pre-HTML", "HTML to display before the edit group panel.", CodeEditorMode.Html, CodeEditorTheme.Rock, 200, false, "", "HTML Wrappers", 11 )]
-    [CodeEditorField( "Edit Group Post-HTML", "HTML to display after the edit group panel.", CodeEditorMode.Html, CodeEditorTheme.Rock, 200, false, "", "HTML Wrappers", 12 )]
-    [CodeEditorField( "Edit Group Member Pre-HTML", "HTML to display before the edit group member panel.", CodeEditorMode.Html, CodeEditorTheme.Rock, 200, false, "", "HTML Wrappers", 13 )]
-    [CodeEditorField( "Edit Group Member Post-HTML", "HTML to display after the edit group member panel.", CodeEditorMode.Html, CodeEditorTheme.Rock, 200, false, "", "HTML Wrappers", 14 )]
+    [BooleanField( "Hide the 'Public' Group checkbox", "Set this to true to hide the checkbox for 'Public' for the group.", true, key: "HidePublicGroupCheckbox", order: 6 )]
+    [BooleanField( "Hide Inactive Group Member Status", "Set this to true to hide the radiobox for the 'Inactive' group member status.", false, order: 7 )]
+    [BooleanField( "Hide Group Member Role", "Set this to true to hide the drop down list for the 'Role' when editing a group member. If set to 'true' then the default group role will be used when adding a new member.", false, order: 8 )]
+    [BooleanField( "Hide Group Description Edit", "Set this to true to hide the edit box for group 'Description'.", false, key: "HideGroupDescriptionEdit", order: 9 )]
+    [CodeEditorField( "Lava Template", "The lava template to use to format the group details.", CodeEditorMode.Lava, CodeEditorTheme.Rock, 400, true, "{% include '~~/Assets/Lava/GroupDetail.lava' %}", "", 10 )]
+    [BooleanField( "Enable Location Edit", "Enables changing locations when editing a group.", false, "", 11 )]
+    [BooleanField( "Enable Debug", "Shows the fields available to merge in lava.", false, "", 12 )]
+    [CodeEditorField( "Edit Group Pre-HTML", "HTML to display before the edit group panel.", CodeEditorMode.Html, CodeEditorTheme.Rock, 200, false, "", "HTML Wrappers", 13 )]
+    [CodeEditorField( "Edit Group Post-HTML", "HTML to display after the edit group panel.", CodeEditorMode.Html, CodeEditorTheme.Rock, 200, false, "", "HTML Wrappers", 14 )]
+    [CodeEditorField( "Edit Group Member Pre-HTML", "HTML to display before the edit group member panel.", CodeEditorMode.Html, CodeEditorTheme.Rock, 200, false, "", "HTML Wrappers", 15 )]
+    [CodeEditorField( "Edit Group Member Post-HTML", "HTML to display after the edit group member panel.", CodeEditorMode.Html, CodeEditorTheme.Rock, 200, false, "", "HTML Wrappers", 16 )]
     public partial class GroupDetailLava : Rock.Web.UI.RockBlock
     {
         #region Fields
@@ -281,6 +283,7 @@ namespace RockWeb.Blocks.Groups
                 group.Name = tbName.Text;
                 group.Description = tbDescription.Text;
                 group.IsActive = cbIsActive.Checked;
+                group.IsPublic = cbIsPublic.Checked;
 
                 if ( pnlSchedule.Visible )
                 {
@@ -593,6 +596,12 @@ namespace RockWeb.Blocks.Groups
                 cbIsActive.Visible = false;
             }
 
+            bool hidePublicGroupCheckbox = this.GetAttributeValue( "HidePublicGroupCheckbox" ).AsBooleanOrNull() ?? true;
+            if ( hidePublicGroupCheckbox )
+            {
+                cbIsPublic.Visible = false;
+            }
+
             bool hideDescriptionEdit = this.GetAttributeValue( "HideGroupDescriptionEdit" ).AsBooleanOrNull() ?? false;
             if ( hideDescriptionEdit )
             {
@@ -704,6 +713,7 @@ namespace RockWeb.Blocks.Groups
                     tbName.Text = group.Name;
                     tbDescription.Text = group.Description;
                     cbIsActive.Checked = group.IsActive;
+                    cbIsPublic.Checked = group.IsPublic;
 
                     if ( ( group.GroupType.AllowedScheduleTypes & ScheduleType.Weekly ) == ScheduleType.Weekly )
                     {
@@ -981,6 +991,17 @@ namespace RockWeb.Blocks.Groups
                 {
                     rblStatus.Items.Remove( inactiveItem );
                 }
+            }
+            bool hideGroupMemberRole = this.GetAttributeValue( "HideGroupMemberRole" ).AsBooleanOrNull() ?? false;
+            if ( hideGroupMemberRole )
+            {
+                pnlGroupMemberRole.Visible = false;
+                pnlGroupMemberAttributes.AddCssClass( "col-md-12" ).RemoveCssClass( "col-md-6" );
+            }
+            else
+            {
+                pnlGroupMemberRole.Visible = true;
+                pnlGroupMemberAttributes.AddCssClass( "col-md-6" ).RemoveCssClass( "col-md-12" );
             }
 
             // set attributes

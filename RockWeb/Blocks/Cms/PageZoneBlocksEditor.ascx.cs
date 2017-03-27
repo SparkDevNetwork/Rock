@@ -383,11 +383,23 @@ namespace RockWeb.Blocks.Cms
 
             pnlLayoutItem.Controls.Add( pnlAdminButtons );
 
-            RockBlock blockControl = this.Page.TemplateControl.LoadControl( block.BlockType.Path ) as RockBlock;
-            blockControl.SetBlock( block.Page, block, true, true );
-            var adminControls = blockControl.GetAdministrateControls( true, true );
-            string[] baseAdminControlClasses = new string[4] { "properties", "security", "block-move", "block-delete" };
-            var customAdminControls = adminControls.OfType<WebControl>().Where( a => !baseAdminControlClasses.Any( b => a.CssClass.Contains( b ) ) );
+            RockBlock blockControl = null;
+            IEnumerable<WebControl> customAdminControls = new List<WebControl>();
+            try
+            {
+                blockControl = this.Page.TemplateControl.LoadControl( block.BlockType.Path ) as RockBlock;
+                blockControl.SetBlock( block.Page, block, true, true );
+                var adminControls = blockControl.GetAdministrateControls( true, true );
+                string[] baseAdminControlClasses = new string[4] { "properties", "security", "block-move", "block-delete" };
+                customAdminControls = adminControls.OfType<WebControl>().Where( a => !baseAdminControlClasses.Any( b => a.CssClass.Contains( b ) ) );
+            }
+            catch (Exception ex)
+            {
+                // if the block doesn't compile, just ignore it since we are just trying to get the admin controls
+                Literal lblBlockError = new Literal();
+                lblBlockError.Text = string.Format( "<span class='label label-danger'>ERROR: {0}</span>", ex.Message );
+                pnlLayoutItem.Controls.Add( lblBlockError );
+            }
 
             foreach ( var customAdminControl in customAdminControls )
             {
@@ -412,7 +424,7 @@ namespace RockWeb.Blocks.Cms
                 pnlLayoutItem.Controls.Add( customAdminControl );
             }
 
-            if ( customAdminControls.Any() )
+            if ( customAdminControls.Any() && blockControl != null)
             {
                 pnlBlocksHolder.Controls.Add( blockControl );
             }
@@ -549,6 +561,16 @@ namespace RockWeb.Blocks.Cms
             // Load the block types
             using ( var rockContext = new RockContext() )
             {
+                try
+                {
+                    BlockTypeService.RegisterBlockTypes( Request.MapPath( "~" ), Page );
+                }
+                catch
+                {
+                    // ignore
+                }
+
+
                 Rock.Model.BlockTypeService blockTypeService = new Rock.Model.BlockTypeService( rockContext );
                 var blockTypes = blockTypeService.Queryable().AsNoTracking()
                     .Select( b => new { b.Id, b.Name, b.Category, b.Description } )

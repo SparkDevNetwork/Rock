@@ -574,13 +574,13 @@ $(document).ready(function() {
 
             var template = GetTemplate();
 
-            if ( template.InstanceAssigns.ContainsKey( "EnabledCommands" ) )
+            if ( template.Registers.ContainsKey( "EnabledCommands" ) )
             {
-                template.InstanceAssigns["EnabledCommands"] = GetAttributeValue( "EnabledLavaCommands" );
+                template.Registers["EnabledCommands"] = GetAttributeValue( "EnabledLavaCommands" );
             }
             else // this should never happen
             {
-                template.InstanceAssigns.Add( "EnabledCommands", GetAttributeValue( "EnabledLavaCommands" ) );
+                template.Registers.Add( "EnabledCommands", GetAttributeValue( "EnabledLavaCommands" ) );
             }
             
             phContent.Controls.Add( new LiteralControl( template.Render( Hash.FromDictionary( mergeFields ) ) ) );
@@ -999,10 +999,18 @@ $(document).ready(function() {
                             f.AttributeGuid.HasValue )
                         .ToList() )
                     {
+                        // remove EntityFields that aren't attributes for this ContentChannelType or ChannelChannel (to avoid duplicate Attribute Keys)
                         var attribute = AttributeCache.Read( entityField.AttributeGuid.Value );
                         if ( attribute != null && 
                             attribute.EntityTypeQualifierColumn == "ContentChannelTypeId" && 
                             attribute.EntityTypeQualifierValue.AsInteger() != channel.ContentChannelTypeId )
+                        {
+                            entityFields.Remove( entityField );
+                        }
+
+                        if ( attribute != null &&
+                            attribute.EntityTypeQualifierColumn == "ContentChannelId" &&
+                            attribute.EntityTypeQualifierValue.AsInteger() != channel.Id )
                         {
                             entityFields.Remove( entityField );
                         }

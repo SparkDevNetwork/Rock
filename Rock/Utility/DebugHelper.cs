@@ -17,6 +17,7 @@
 using System.Data.Entity.Infrastructure.Interception;
 using System.Diagnostics;
 using System.Linq;
+using System.Text;
 using Rock.Data;
 
 namespace Rock
@@ -48,7 +49,7 @@ namespace Rock
             /// <value>
             /// The rock context.
             /// </value>
-            public RockContext RockContext { get; set; }
+            internal RockContext RockContext { get; set; }
 
             /// <summary>
             /// </summary>
@@ -64,16 +65,18 @@ namespace Rock
 
                 DebugHelper._callCounts++;
 
-                System.Diagnostics.Debug.WriteLine( "\n" );
+                StringBuilder sbDebug = new StringBuilder();
+
+                sbDebug.AppendLine( "\n" );
 
                 StackTrace st = new StackTrace( 1, true );
                 var frames = st.GetFrames().Where( a => a.GetFileName() != null );
-                
 
-                System.Diagnostics.Debug.WriteLine( string.Format( "/* Call# {0}*/", DebugHelper._callCounts ) );
-                System.Diagnostics.Debug.WriteLine( string.Format( "/*\n{0}*/", frames.ToList().AsDelimited( "" ) ) );
+                sbDebug.AppendLine( string.Format( "/* Call# {0}*/", DebugHelper._callCounts ) );
 
-                System.Diagnostics.Debug.WriteLine( "BEGIN\n" );
+                sbDebug.AppendLine( string.Format( "/*\n{0}*/", frames.ToList().AsDelimited( "" ) ) );
+
+                sbDebug.AppendLine( "BEGIN\n" );
 
                 var declares = command.Parameters.OfType<System.Data.SqlClient.SqlParameter>()
                     .Select( p =>
@@ -98,17 +101,19 @@ namespace Rock
 
                 if ( !string.IsNullOrEmpty( declares ) )
                 {
-                    System.Diagnostics.Debug.WriteLine( "DECLARE\n" + declares + "\n\n" );
+                    sbDebug.AppendLine( "DECLARE\n" + declares + "\n\n" );
                 }
 
-                System.Diagnostics.Debug.WriteLine( command.CommandText );
+                sbDebug.AppendLine( command.CommandText );
 
-                System.Diagnostics.Debug.WriteLine( "\nEND\nGO\n\n" );
+                sbDebug.AppendLine( "\nEND\nGO\n\n" );
 
                 if ( interceptionContext.UserState == null )
                 {
                     interceptionContext.UserState = new DebugHelperUserState { CallNumber = DebugHelper._callCounts, Stopwatch = Stopwatch.StartNew() };
                 }
+
+                System.Diagnostics.Debug.Write( sbDebug.ToString() );
             }
 
             /// <summary>
@@ -122,7 +127,7 @@ namespace Rock
                 if ( debugHelperUserState != null )
                 {
                     debugHelperUserState.Stopwatch.Stop();
-                    System.Diagnostics.Debug.WriteLine( string.Format( "\n/* Call# {0}: ElapsedTime [{1}ms]*/\n", debugHelperUserState.CallNumber, debugHelperUserState.Stopwatch.Elapsed.TotalMilliseconds ) );
+                    System.Diagnostics.Debug.Write( string.Format( "\n/* Call# {0}: ElapsedTime [{1}ms]*/\n", debugHelperUserState.CallNumber, debugHelperUserState.Stopwatch.Elapsed.TotalMilliseconds ) );
                 }
             }
         }

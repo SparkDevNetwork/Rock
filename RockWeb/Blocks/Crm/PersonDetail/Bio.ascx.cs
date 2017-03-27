@@ -55,6 +55,9 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
     [CodeEditorField( "Custom Content", "Custom Content will be rendered after the person's demographic information <span class='tip tip-lava'></span>.",
         Rock.Web.UI.Controls.CodeEditorMode.Lava, Rock.Web.UI.Controls.CodeEditorTheme.Rock, 200, false, "", "", 6, "CustomContent" )]
     [BooleanField( "Allow Following", "Should people be able to follow a person by selecting the star on the person's photo?", true, "", 7)]
+    [BooleanField( "Display Tags", "Should tags be displayed?", true, "", 8 )]
+    [BooleanField( "Display Graduation", "Should the Grade/Graduation be displayed", true, "", 9 )]
+    [BooleanField( "Display Anniversary Date", "Should the Anniversary Date be displayed?", true, "", 10 )]
     public partial class Bio : PersonBlock
     {
         #region Base Control Methods
@@ -170,18 +173,20 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
 
                     lGender.Text = Person.Gender.ToString();
 
-                    if ( Person.GraduationYear.HasValue && Person.HasGraduated.HasValue )
+                    if ( GetAttributeValue( "DisplayGraduation" ).AsBoolean() )
                     {
-                        lGraduation.Text = string.Format(
-                            "<small>({0} {1})</small>",
-                            Person.HasGraduated.Value ? "Graduated " : "Graduates ",
-                            Person.GraduationYear.Value );
+                        if ( Person.GraduationYear.HasValue && Person.HasGraduated.HasValue )
+                        {
+                            lGraduation.Text = string.Format(
+                                "<small>({0} {1})</small>",
+                                Person.HasGraduated.Value ? "Graduated " : "Graduates ",
+                                Person.GraduationYear.Value );
+                        }
+                        lGrade.Text = Person.GradeFormatted;
                     }
 
-                    lGrade.Text = Person.GradeFormatted;
-
                     lMaritalStatus.Text = Person.MaritalStatusValueId.DefinedValue();
-                    if ( Person.AnniversaryDate.HasValue )
+                    if ( Person.AnniversaryDate.HasValue && GetAttributeValue("DisplayAnniversaryDate").AsBoolean() )
                     {
                         lAnniversary.Text = string.Format( "{0} yrs <small>({1})</small>", Person.AnniversaryDate.Value.Age(), Person.AnniversaryDate.Value.ToMonthDayString() );
                     }
@@ -194,9 +199,17 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
 
                     lEmail.Text = Person.GetEmailTag( ResolveRockUrl( "/" ) );
 
-                    taglPersonTags.EntityTypeId = Person.TypeId;
-                    taglPersonTags.EntityGuid = Person.Guid;
-                    taglPersonTags.GetTagValues( CurrentPersonId );
+                    if ( GetAttributeValue( "DisplayTags" ).AsBoolean( true ) )
+                    {
+                        taglPersonTags.Visible = true;
+                        taglPersonTags.EntityTypeId = Person.TypeId;
+                        taglPersonTags.EntityGuid = Person.Guid;
+                        taglPersonTags.GetTagValues( CurrentPersonId );
+                    }
+                    else
+                    {
+                        taglPersonTags.Visible = false;
+                    }
 
                     StringBuilder sbActions = new StringBuilder();
                     var workflowActions = GetAttributeValue( "WorkflowActions" );
