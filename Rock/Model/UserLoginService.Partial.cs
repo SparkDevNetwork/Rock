@@ -409,8 +409,10 @@ namespace Rock.Model
                             summary.AppendFormat( "User logged in with <span class='field-name'>{0}</span> username", userLogin.UserName );
                             if ( HttpContext.Current != null && HttpContext.Current.Request != null )
                             {
+                                // when storing login history, truncate the absolute URI to a reasonable length. Otherwise, certain query params cause
+                                // it to run so long it can't be nicely displayed
                                 summary.AppendFormat( ", to <span class='field-value'>{0}</span>, from <span class='field-value'>{1}</span>",
-                                    HttpContext.Current.Request.Url.AbsoluteUri, HttpContext.Current.Request.UserHostAddress );
+                                    HttpContext.Current.Request.Url.AbsoluteUri.Truncate( 256 ), HttpContext.Current.Request.UserHostAddress );
                             }
                             summary.Append( "." );
 
