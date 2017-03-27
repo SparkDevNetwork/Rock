@@ -64,6 +64,21 @@ namespace Rock.Financial
         public bool? ScheduleActive { get; set; }
 
         /// <summary>
+        /// Gets or sets a flag indicating if the transaction has been settled by the processor/gateway.
+        /// </summary>
+        public bool? IsSettled { get; set; }
+
+        /// <summary>
+        /// The group/batch identifier used by the processor/gateway when the transaction has been settled.
+        /// </summary>
+        public string SettledGroupId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the date that the transaction was settled by the processor/gateway.
+        /// </summary>
+        public DateTime? SettledDate { get; set; }
+
+        /// <summary>
         /// Gets or sets the status.
         /// </summary>
         public string Status { get; set; }
