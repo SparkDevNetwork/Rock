@@ -18,11 +18,8 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
-using System.IO;
 using System.Linq;
 using System.Net.Mail;
-using System.Text;
-using System.Threading.Tasks;
 
 using Rock.Attribute;
 using Rock.Data;
@@ -32,6 +29,7 @@ using Rock.Web.Cache;
 using Twilio;
 using TwilioTypes = Twilio.Types;
 using Twilio.Rest.Api.V2010.Account;
+using System.Threading.Tasks;
 
 namespace Rock.Communication.Transport
 {
@@ -76,9 +74,6 @@ namespace Rock.Communication.Transport
                     string authToken = GetAttributeValue( "Token" );
                     TwilioClient.Init( accountSid, authToken );
 
-                    var historyService = new HistoryService( rockContext );
-                    var recipientService = new CommunicationRecipientService( rockContext );
-
                     var personEntityTypeId = EntityTypeCache.Read( "Rock.Model.Person" ).Id;
                     var communicationEntityTypeId = EntityTypeCache.Read( "Rock.Model.Communication" ).Id;
                     var communicationCategoryId = CategoryCache.Read( Rock.SystemGuid.Category.HISTORY_PERSON_COMMUNICATIONS.AsGuid(), rockContext ).Id;
@@ -99,10 +94,12 @@ namespace Rock.Communication.Transport
                     bool recipientFound = true;
                     while ( recipientFound )
                     {
-                        rockContext = new RockContext();
-                        var recipient = Rock.Model.Communication.GetNextPending( communication.Id, rockContext );
+                        var loopContext = new RockContext();
+                        var historyService = new HistoryService( loopContext );
+                        var recipient = Rock.Model.Communication.GetNextPending( communication.Id, loopContext );
                         if ( recipient != null )
                         {
+
                             try
                             {
                                 var phoneNumber = recipient.PersonAlias.Person.PhoneNumbers
@@ -122,13 +119,16 @@ namespace Rock.Communication.Transport
                                         twilioNumber = "+" + phoneNumber.CountryCode + phoneNumber.Number;
                                     }
 
-                                    var response = await MessageResource.CreateAsync(
+                                    var globalAttributes = Rock.Web.Cache.GlobalAttributesCache.Read();
+                                    string callbackUrl = globalAttributes.GetValue( "PublicApplicationRoot" ) + "Webhooks/Twilio.ashx";
+
+                                    var response = MessageResource.Create(
                                         from: new TwilioTypes.PhoneNumber(fromPhone),
                                         to: new TwilioTypes.PhoneNumber(twilioNumber),
-                                        body: resolvedMessage,
+                                        body: message,
                                         statusCallback: new System.Uri(callbackUrl)
                                     );
-
+                                    
                                     recipient.Status = CommunicationRecipientStatus.Delivered;
                                     recipient.TransportEntityTypeName = this.GetType().FullName;
                                     recipient.UniqueMessageId = response.Sid;
@@ -165,7 +165,7 @@ namespace Rock.Communication.Transport
                                 recipient.StatusNote = "Twilio Exception: " + ex.Message;
                             }
 
-                            rockContext.SaveChanges();
+                            loopContext.SaveChanges();
                         }
                         else
                         {
@@ -232,7 +232,7 @@ namespace Rock.Communication.Transport
 
                         foreach (var recipient in recipients)
                         {
-                            var response = await MessageResource.CreateAsync(
+                            var response = MessageResource.Create(
                                 from: new TwilioTypes.PhoneNumber(fromPhone),
                                 to: new TwilioTypes.PhoneNumber(recipient),
                                 body: message
@@ -286,7 +286,7 @@ namespace Rock.Communication.Transport
 
                     foreach ( var recipient in recipients )
                     {
-                        var response = await MessageResource.CreateAsync(
+                        var response = MessageResource.Create(
                             from: new TwilioTypes.PhoneNumber(fromPhone),
                             to: new TwilioTypes.PhoneNumber(recipient),
                             body: message
@@ -333,5 +333,6 @@ namespace Rock.Communication.Transport
         {
             throw new NotImplementedException();
         }
+
     }
 }
