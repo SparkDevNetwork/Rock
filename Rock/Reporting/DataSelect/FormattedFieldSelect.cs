@@ -465,10 +465,28 @@ namespace Rock.Reporting.DataSelect
         /// </summary>
         protected class SelectionData
         {
+            /// <summary>
+            /// Gets or sets the template.
+            /// </summary>
+            /// <value>
+            /// The template.
+            /// </value>
             public string Template { get; set; }
 
+            /// <summary>
+            /// Gets or sets the property.
+            /// </summary>
+            /// <value>
+            /// The property.
+            /// </value>
             public string Property { get; set; }
 
+            /// <summary>
+            /// Gets or sets the sort property.
+            /// </summary>
+            /// <value>
+            /// The sort property.
+            /// </value>
             public string SortProperty { get; set; }
         }
     }
