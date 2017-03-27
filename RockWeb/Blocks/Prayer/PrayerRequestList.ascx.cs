@@ -15,6 +15,7 @@
 // </copyright>
 //
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Web.UI;
@@ -422,7 +423,16 @@ namespace RockWeb.Blocks.Prayer
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void gPrayerRequests_Add( object sender, EventArgs e )
         {
-            NavigateToLinkedPage( "DetailPage", _PrayerRequestKeyParameter, 0 );
+            Dictionary<string, string> queryParms = new Dictionary<string, string>();
+            queryParms.Add( _PrayerRequestKeyParameter, "0" );
+
+            var personContext = this.ContextEntity<Person>();
+            if ( personContext != null )
+            {
+                queryParms.Add( "PersonId", personContext.Id.ToString() );
+            }
+
+            NavigateToLinkedPage( "DetailPage", queryParms );
         }
 
         /// <summary>

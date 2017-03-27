@@ -736,6 +736,14 @@ namespace Rock.Web.UI.Controls
                     this.DateRangeModeStart = splitValues[3].AsDateTime();
                     this.DateRangeModeEnd = splitValues[4].AsDateTime();
                 }
+                else
+                {
+                    this.SlidingDateRangeMode = SlidingDateRangeType.All;
+                    this.NumberOfTimeUnits = 1;
+                    this.TimeUnit = TimeUnitType.Hour;
+                    this.DateRangeModeStart = null;
+                    this.DateRangeModeEnd = null;
+                }
             }
         }
 

@@ -41,8 +41,8 @@ namespace RockWeb.Blocks.WorkFlow
     [Category( "WorkFlow" )]
     [Description( "Displays the details of the given workflow type." )]
 
-    [LinkedPage("Workflow Launch Page", "Page used to launch a workflow.", true, "", "", 0)]
-    [LinkedPage( "Manage Workflows Page", "Page used to manage workflows.", true, "", "", 1)]
+    [LinkedPage( "Workflow Launch Page", "Page used to launch a workflow.", true, "", "", 0 )]
+    [LinkedPage( "Manage Workflows Page", "Page used to manage workflows.", true, "", "", 1 )]
     [CodeEditorField( "Default No Action Message", "The default No Action Message.", CodeEditorMode.Lava, CodeEditorTheme.Rock, 100, false, @"
 This {{ Workflow.WorkflowType.WorkTerm }} does not currently require your attention.", "", 2 )]
     [CodeEditorField( "Default Summary View Text", "The default Summary View Text.", CodeEditorMode.Lava, CodeEditorTheme.Rock, 500, false, @"
@@ -129,7 +129,7 @@ This {{ Workflow.WorkflowType.WorkTerm }} does not currently require your attent
             }
 
             ExpandedActivities = ViewState["ExpandedActivities"] as List<Guid>;
-            if (ExpandedActivities == null)
+            if ( ExpandedActivities == null )
             {
                 ExpandedActivities = new List<Guid>();
             }
@@ -252,15 +252,15 @@ This {{ Workflow.WorkflowType.WorkTerm }} does not currently require your attent
 
         #endregion
 
-            #region Events
+        #region Events
 
-            #region Edit  events
+        #region Edit  events
 
-            /// <summary>
-            /// Handles the Click event of the btnEdit control.
-            /// </summary>
-            /// <param name="sender">The source of the event.</param>
-            /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
+        /// <summary>
+        /// Handles the Click event of the btnEdit control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void btnEdit_Click( object sender, EventArgs e )
         {
             var rockContext = new RockContext();
@@ -360,7 +360,7 @@ This {{ Workflow.WorkflowType.WorkTerm }} does not currently require your attent
                 }
 
                 // Create new guids for all the existing activity types
-                foreach (var activityType in ActivityTypesState)
+                foreach ( var activityType in ActivityTypesState )
                 {
                     guidXref.Add( activityType.Guid, Guid.NewGuid() );
                 }
@@ -431,12 +431,12 @@ This {{ Workflow.WorkflowType.WorkTerm }} does not currently require your attent
                                 if ( details.Length > 2 )
                                 {
                                     Guid oldGuid = details[2].AsGuid();
-                                    if (!oldGuid.IsEmpty() && guidXref.ContainsKey(oldGuid))
+                                    if ( !oldGuid.IsEmpty() && guidXref.ContainsKey( oldGuid ) )
                                     {
                                         details[2] = guidXref[oldGuid].ToString();
                                     }
                                 }
-                                newActionButtons.Add( details.ToList().AsDelimited("^") );
+                                newActionButtons.Add( details.ToList().AsDelimited( "^" ) );
                             }
                             newWorkflowForm.Actions = newActionButtons.AsDelimited( "|" );
 
@@ -458,10 +458,10 @@ This {{ Workflow.WorkflowType.WorkTerm }} does not currently require your attent
                                     newFormAttribute.AttributeId = 0;
 
                                     newFormAttribute.Attribute = new Rock.Model.Attribute
-                                        {
-                                            Guid = guidXref[formAttribute.Attribute.Guid],
-                                            Name = formAttribute.Attribute.Name
-                                        };
+                                    {
+                                        Guid = guidXref[formAttribute.Attribute.Guid],
+                                        Name = formAttribute.Attribute.Name
+                                    };
                                     newWorkflowForm.FormAttributes.Add( newFormAttribute );
                                 }
                             }
@@ -588,6 +588,8 @@ This {{ Workflow.WorkflowType.WorkTerm }} does not currently require your attent
                 workflowType.ProcessingIntervalSeconds = null;
             }
 
+            workflowType.LogRetentionPeriod = tbLogRetention.Text.AsIntegerOrNull();
+            workflowType.CompletedWorkflowRetentionPeriod = tbCompletedRetention.Text.AsIntegerOrNull();
             workflowType.IsPersisted = cbIsPersisted.Checked;
             workflowType.LoggingLevel = ddlLoggingLevel.SelectedValueAsEnum<WorkflowLoggingLevel>();
             workflowType.IconCssClass = tbIconCssClass.Text;
@@ -608,13 +610,13 @@ This {{ Workflow.WorkflowType.WorkTerm }} does not currently require your attent
                 return;
             }
 
-            foreach(var activityType in ActivityTypesState)
+            foreach ( var activityType in ActivityTypesState )
             {
-                if (!activityType.IsValid)
+                if ( !activityType.IsValid )
                 {
                     return;
                 }
-                foreach(var actionType in activityType.ActionTypes)
+                foreach ( var actionType in activityType.ActionTypes )
                 {
                     if ( !actionType.IsValid )
                     {
@@ -679,7 +681,7 @@ This {{ Workflow.WorkflowType.WorkTerm }} does not currently require your attent
                     rockContext.SaveChanges();
 
                     workflowActionTypeService.Delete( actionType );
-                } 
+                }
                 rockContext.SaveChanges();
 
                 // delete WorkflowActivityTypes that aren't assigned in the UI anymore
@@ -704,7 +706,7 @@ This {{ Workflow.WorkflowType.WorkTerm }} does not currently require your attent
                     rockContext.SaveChanges();
 
                     workflowActivityTypeService.Delete( activityType );
-                } 
+                }
                 rockContext.SaveChanges();
 
                 // add or update WorkflowActivityTypes(and Actions) that are assigned in the UI
@@ -977,7 +979,7 @@ This {{ Workflow.WorkflowType.WorkTerm }} does not currently require your attent
 
             HideDialog();
 
-            BuildControls(true );
+            BuildControls( true );
         }
 
         #endregion
@@ -1000,7 +1002,7 @@ This {{ Workflow.WorkflowType.WorkTerm }} does not currently require your attent
             ActivityTypesState.Add( workflowActivityType );
 
             ActivityAttributesState.Add( workflowActivityType.Guid, new List<Attribute>() );
-            
+
             ExpandedActivities.Add( workflowActivityType.Guid );
 
             BuildControls( true, workflowActivityType.Guid );
@@ -1022,7 +1024,7 @@ This {{ Workflow.WorkflowType.WorkTerm }} does not currently require your attent
                 var activityType = ActivityTypesState.Where( a => a.Guid == workflowActivityTypeEditor.ActivityTypeGuid ).FirstOrDefault();
                 if ( activityType != null )
                 {
-                    if (ExpandedActivities.Contains(activityType.Guid))
+                    if ( ExpandedActivities.Contains( activityType.Guid ) )
                     {
                         ExpandedActivities.Remove( activityType.Guid );
                     }
@@ -1315,7 +1317,7 @@ This {{ Workflow.WorkflowType.WorkTerm }} does not currently require your attent
                 }
                 else
                 {
-                    LoadStateDetails(workflowType, rockContext);
+                    LoadStateDetails( workflowType, rockContext );
                     ShowEditDetails( workflowType, rockContext );
                 }
             }
@@ -1384,7 +1386,7 @@ This {{ Workflow.WorkflowType.WorkTerm }} does not currently require your attent
             if ( workflowType.Id == 0 )
             {
                 lReadOnlyTitle.Text = ActionTitle.Add( WorkflowType.FriendlyTypeName ).FormatAsHtmlTitle();
-                foreach( var activity in workflowType.ActivityTypes)
+                foreach ( var activity in workflowType.ActivityTypes )
                 {
                     ExpandedActivities.Add( activity.Guid );
                 }
@@ -1413,6 +1415,9 @@ This {{ Workflow.WorkflowType.WorkTerm }} does not currently require your attent
             {
                 tbProcessingInterval.Text = string.Empty;
             }
+
+            tbLogRetention.Text = workflowType.LogRetentionPeriod.ToStringSafe();
+            tbCompletedRetention.Text = workflowType.CompletedWorkflowRetentionPeriod.ToStringSafe();
             cbIsPersisted.Checked = workflowType.IsPersisted;
             ddlLoggingLevel.SetValue( (int)workflowType.LoggingLevel );
             tbIconCssClass.Text = workflowType.IconCssClass;
@@ -1631,8 +1636,8 @@ This {{ Workflow.WorkflowType.WorkTerm }} does not currently require your attent
         /// <param name="actionType">Type of the action.</param>
         /// <param name="activeWorkflowActionTypeGuid">The active workflow action type unique identifier.</param>
         /// <returns></returns>
-        private WorkflowActionTypeEditor BuildActionControl( Control parentControl, bool setValues, WorkflowActionType actionType, 
-            Dictionary<Guid, Attribute> attributes, Dictionary<string, string> activities, Guid? activeWorkflowActionTypeGuid = null, 
+        private WorkflowActionTypeEditor BuildActionControl( Control parentControl, bool setValues, WorkflowActionType actionType,
+            Dictionary<Guid, Attribute> attributes, Dictionary<string, string> activities, Guid? activeWorkflowActionTypeGuid = null,
                 bool showInvalid = false )
         {
             var control = new WorkflowActionTypeEditor();
@@ -1645,21 +1650,21 @@ This {{ Workflow.WorkflowType.WorkTerm }} does not currently require your attent
 
             control.WorkflowActivities = activities;
 
-            if (actionType.WorkflowForm != null)
+            if ( actionType.WorkflowForm != null )
             {
                 var formAttributes = actionType.WorkflowForm.FormAttributes;
 
                 // Remove any fields that were removed
                 foreach ( var formAttribute in formAttributes.ToList() )
                 {
-                    if (!attributes.ContainsKey(formAttribute.Attribute.Guid))
+                    if ( !attributes.ContainsKey( formAttribute.Attribute.Guid ) )
                     {
                         formAttributes.Remove( formAttribute );
                     }
                 }
 
                 // Add any new attributes
-                foreach(var attribute in attributes)
+                foreach ( var attribute in attributes )
                 {
                     if ( !formAttributes.Select( a => a.Attribute.Guid ).Contains( attribute.Key ) )
                     {
@@ -1722,13 +1727,13 @@ This {{ Workflow.WorkflowType.WorkTerm }} does not currently require your attent
 
                 ActivityTypesState.Add( workflowActivityType );
 
-                if (activityEditor.Expanded)
+                if ( activityEditor.Expanded )
                 {
                     ExpandedActivities.Add( workflowActivityType.Guid );
                     ExpandedActions.AddRange( activityEditor.ExpandedActions );
                 }
 
-                if (activityEditor.AttributesExpanded)
+                if ( activityEditor.AttributesExpanded )
                 {
                     ExpandedActivityAttributes.Add( workflowActivityType.Guid );
                 }
@@ -1948,7 +1953,7 @@ This {{ Workflow.WorkflowType.WorkTerm }} does not currently require your attent
                     a.Name,
                     a.Description,
                     a.Key,
-                    FieldType = FieldTypeCache.GetName(a.FieldTypeId),
+                    FieldType = FieldTypeCache.GetName( a.FieldTypeId ),
                     a.IsRequired
                 } )
                 .ToList();
@@ -2107,6 +2112,6 @@ This {{ Workflow.WorkflowType.WorkTerm }} does not currently require your attent
         #endregion
 
         #endregion
-    
+
     }
 }

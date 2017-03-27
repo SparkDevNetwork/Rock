@@ -165,6 +165,46 @@ namespace Rock.CheckIn
         }
 
         /// <summary>
+        /// Gets the selected options.
+        /// </summary>
+        /// <value>
+        /// The selected options.
+        /// </value>
+        public List<CheckInPersonSummary> SelectedOptions
+        {
+            get
+            {
+                return _selectedOptions;
+            }
+        }
+        private List<CheckInPersonSummary> _selectedOptions = null;
+
+        /// <summary>
+        /// Sets the options.
+        /// </summary>
+        /// <param name="label">The label.</param>
+        public void SetOptions( KioskLabel label )
+        {
+            _selectedOptions = new List<CheckInPersonSummary>();
+            foreach ( var schedule in SelectedSchedules.Where( s => s.StartTime.HasValue ).OrderBy( s => s.StartTime ) )
+            {
+                var groupType = SelectedGroupTypes( schedule ).FirstOrDefault();
+                if ( groupType != null )
+                {
+                    var group = groupType.SelectedGroups( schedule ).FirstOrDefault();
+                    if ( group != null )
+                    {
+                        var location = group.SelectedLocations( schedule ).FirstOrDefault();
+                        if ( location != null )
+                        {
+                            _selectedOptions.Add( new CheckInPersonSummary( label, schedule, groupType, group, location ) );
+                        }
+                    }
+                }
+            }
+        }
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="CheckInPerson" /> class.
         /// </summary>
         public CheckInPerson()
@@ -263,7 +303,7 @@ namespace Rock.CheckIn
         {
             get
             {
-                var availableKeys = new List<string> { "FamilyMember", "LastCheckIn", "FirstTime", "SecurityCode", "GroupTypes" };
+                var availableKeys = new List<string> { "FamilyMember", "LastCheckIn", "FirstTime", "SecurityCode", "GroupTypes", "SelectedOptions" };
                 if ( this.Person != null )
                 {
                     availableKeys.AddRange( this.Person.AvailableKeys );
@@ -292,6 +332,7 @@ namespace Rock.CheckIn
                     case "FirstTime": return FirstTime;
                     case "SecurityCode": return SecurityCode;
                     case "GroupTypes": return GetGroupTypes( true );
+                    case "SelectedOptions": return SelectedOptions;
                     default: return Person[key];
                 }
             }
@@ -304,7 +345,7 @@ namespace Rock.CheckIn
         /// <returns></returns>
         public bool ContainsKey( object key )
         {
-            var additionalKeys = new List<string> { "FamilyMember", "LastCheckIn", "FirstTime", "SecurityCode", "GroupTypes" };
+            var additionalKeys = new List<string> { "FamilyMember", "LastCheckIn", "FirstTime", "SecurityCode", "GroupTypes", "SelectedOptions" };
             if ( additionalKeys.Contains( key.ToStringSafe() ) )
             {
                 return true;
@@ -322,5 +363,92 @@ namespace Rock.CheckIn
         {
             get { return Person; }
         }
+    }
+
+    /// <summary>
+    /// Helper class for summarizing the selected check-in
+    /// </summary>
+    [DotLiquid.LiquidType( "Schedule", "GroupType", "Group", "Location", "GroupTypeConfiguredForLabel" )]
+    public class CheckInPersonSummary
+    {
+        /// <summary>
+        /// Gets or sets the schedule.
+        /// </summary>
+        /// <value>
+        /// The schedule.
+        /// </value>
+        public CheckInSchedule Schedule { get; set; }
+
+        /// <summary>
+        /// Gets or sets the type of the group.
+        /// </summary>
+        /// <value>
+        /// The type of the group.
+        /// </value>
+        public CheckInGroupType GroupType { get; set; }
+
+        /// <summary>
+        /// Gets or sets the group.
+        /// </summary>
+        /// <value>
+        /// The group.
+        /// </value>
+        public CheckInGroup Group { get; set; }
+
+        /// <summary>
+        /// Gets or sets the location.
+        /// </summary>
+        /// <value>
+        /// The location.
+        /// </value>
+        public CheckInLocation Location { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether [group type configured for label].
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if [group type configured for label]; otherwise, <c>false</c>.
+        /// </value>
+        public bool GroupTypeConfiguredForLabel { get; set; }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="CheckInPersonSummary" /> class.
+        /// </summary>
+        /// <param name="label">The label.</param>
+        /// <param name="schedule">The schedule.</param>
+        /// <param name="groupType">Type of the group.</param>
+        /// <param name="group">The group.</param>
+        /// <param name="location">The location.</param>
+        public CheckInPersonSummary( KioskLabel label, CheckInSchedule schedule, CheckInGroupType groupType, CheckInGroup group, CheckInLocation location )
+        {
+            Schedule = schedule;
+            GroupType = groupType;
+            Group = group;
+            Location = location;
+
+            if ( groupType != null && groupType.GroupType != null && label != null )
+            {
+                if ( groupType.GroupType.Attributes == null )
+                {
+                    groupType.GroupType.LoadAttributes();
+                }
+
+                foreach ( var attribute in groupType.GroupType.Attributes.OrderBy( a => a.Value.Order ) )
+                {
+                    if ( attribute.Value.FieldType.Guid == SystemGuid.FieldType.BINARY_FILE.AsGuid() &&
+                        attribute.Value.QualifierValues.ContainsKey( "binaryFileType" ) &&
+                        attribute.Value.QualifierValues["binaryFileType"].Value.Equals( SystemGuid.BinaryFiletype.CHECKIN_LABEL, StringComparison.OrdinalIgnoreCase ) )
+                    {
+                        Guid? binaryFileGuid = groupType.GroupType.GetAttributeValue( attribute.Key ).AsGuidOrNull();
+                        if ( binaryFileGuid.HasValue && binaryFileGuid.Value == label.Guid )
+                        {
+                            GroupTypeConfiguredForLabel = true;
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+
     }
 }

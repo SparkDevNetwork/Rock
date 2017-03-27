@@ -225,10 +225,23 @@ namespace RockWeb.Blocks.Administration
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void rGrid_Copy( object sender, RowEventArgs e )
         {
+            hfPageIdToCopy.Value = e.RowKeyId.ToStringSafe();
+            mdConfirmCopy.Show();
+            mdConfirmCopy.Header.Visible = false;
+        }
+
+        /// <summary>
+        /// Handles the Copy event of the rGrid control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void mdConfirmCopy_Click( object sender, EventArgs e )
+        {
+            mdConfirmCopy.Hide();
             var pageService = new PageService( new RockContext() );
 
             // todo, prompt if childpages should be copied
-            pageService.CopyPage( e.RowKeyId, true, CurrentPersonAliasId );
+            pageService.CopyPage( hfPageIdToCopy.Value.AsInteger(), true, CurrentPersonAliasId );
 
             BindGrid();
         }
@@ -430,5 +443,6 @@ namespace RockWeb.Blocks.Administration
         }
 
         #endregion
+
     }
 }

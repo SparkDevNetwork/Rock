@@ -9,13 +9,14 @@
 
 <asp:UpdatePanel ID="upDetail" runat="server">
     <ContentTemplate>
-              
+
         <asp:Panel ID="pnlDetails" CssClass="panel panel-block" runat="server" >
             <asp:HiddenField ID="hfWorkflowTypeId" runat="server" />
 
             <div class="panel-heading">
-                <h1 class="panel-title"><i class="fa fa-cogs"></i> <asp:Literal ID="lReadOnlyTitle" runat="server" /></h1>
-                
+                <h1 class="panel-title"><i class="fa fa-cogs"></i>
+                    <asp:Literal ID="lReadOnlyTitle" runat="server" /></h1>
+
                 <div class="panel-labels">
                     <Rock:HighlightLabel ID="hlInactive" runat="server" LabelType="Danger" Text="Inactive" />
                     <Rock:HighlightLabel ID="hlType" runat="server" LabelType="Type" />
@@ -56,7 +57,7 @@
                         </div>
                     </Rock:PanelWidget>
 
-                    <Rock:PanelWidget ID="wpAdvancedDetails" runat="server" Title="Advanced Settings" >
+                    <Rock:PanelWidget ID="wpAdvancedDetails" runat="server" Title="Advanced Settings">
                         <div class="row">
                             <div class="col-md-6">
                                 <Rock:RockTextBox ID="tbProcessingInterval" runat="server" Label="Processing Interval (minutes)"
@@ -65,16 +66,26 @@
                             <div class="col-md-6">
                                 <Rock:RockDropDownList ID="ddlLoggingLevel" Help="The level you would like to audit.  Start and stop times can be logged for each workflow, workflow activity, or activity action." runat="server" Label="Logging Level" />
                             </div>
-                        </div>                    
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <Rock:RockTextBox ID="tbCompletedRetention" runat="server" Label="Completed Workflow Retention Period (days)"
+                                    Help="The minimum length of time, in days, that completed workflows should be retained for this workflow.  If blank, completed workflows will never be removed." />
+                            </div>
+                            <div class="col-md-6">
+                                <Rock:RockTextBox ID="tbLogRetention" runat="server" Label="Log Retention Period (days)"
+                                    Help="The minimum length of time, in days, that the logs will be retained for this workflow. If blank, logs will never be removed." />
+                            </div>
+                        </div>
                         <div class="row">
                             <div class="col-md-12">
-                                <Rock:CodeEditor ID="ceNoActionMessage" runat="server" EditorMode="Lava" EditorTheme="Rock" EditorHeight="100" Label="No Action Message" 
+                                <Rock:CodeEditor ID="ceNoActionMessage" runat="server" EditorMode="Lava" EditorTheme="Rock" EditorHeight="100" Label="No Action Message"
                                     Help="The text to be displayed when a workflow of this type is active, but does not have an active user entry form. <span class='tip tip-lava'></span> <span class='tip tip-html'>" />
                             </div>
                         </div>
                         <div class="row">
                             <div class="col-md-12">
-                                <Rock:CodeEditor ID="ceSummaryViewText" runat="server" EditorMode="Lava" EditorTheme="Rock" EditorHeight="500" Label="Summary View" 
+                                <Rock:CodeEditor ID="ceSummaryViewText" runat="server" EditorMode="Lava" EditorTheme="Rock" EditorHeight="500" Label="Summary View"
                                     Help="The summary view text to be displayed when a workflow of this type has no user entry form or the workflow has been completed. <span class='tip tip-lava'></span> <span class='tip tip-html'>" />
                             </div>
                         </div>
@@ -87,7 +98,7 @@
                                     <Rock:ReorderField />
                                     <Rock:RockBoundField DataField="Name" HeaderText="Attribute" />
                                     <Rock:RockBoundField DataField="Description" HeaderText="Description" />
-                                     <Rock:RockBoundField DataField="Key" HeaderText="Key" />
+                                    <Rock:RockBoundField DataField="Key" HeaderText="Key" />
                                     <Rock:RockBoundField DataField="FieldType" HeaderText="Field Type" />
                                     <Rock:BoolField DataField="IsRequired" HeaderText="Required" />
                                     <Rock:EditField OnClick="gAttributes_Edit" />
@@ -100,8 +111,7 @@
                     <div class="workflow-section-activities">
 
                         <fieldset>
-                            <legend>
-                                Activities
+                            <legend>Activities
                                 <span class="pull-right">
                                     <asp:LinkButton ID="lbAddActivityType" runat="server" CssClass="btn btn-action btn-xs" OnClick="lbAddActivityType_Click" CausesValidation="false"><i class="fa fa-plus"></i> Add Activity</asp:LinkButton>
                                 </span>
@@ -113,22 +123,24 @@
                     </div>
 
                     <div class="actions">
-                        <asp:LinkButton ID="btnSave" runat="server" AccessKey="s" Text="Save" CssClass="btn btn-primary" OnClick="btnSave_Click" />
-                        <asp:LinkButton ID="btnCancel" runat="server" AccessKey="c" Text="Cancel" CssClass="btn btn-link" CausesValidation="false" OnClick="btnCancel_Click" />
+                        <asp:LinkButton ID="btnSave" runat="server" AccessKey="s" ToolTip="Alt+s" Text="Save" CssClass="btn btn-primary" OnClick="btnSave_Click" />
+                        <asp:LinkButton ID="btnCancel" runat="server" AccessKey="c" ToolTip="Alt+c" Text="Cancel" CssClass="btn btn-link" CausesValidation="false" OnClick="btnCancel_Click" />
                     </div>
 
                 </div>
 
                 <fieldset id="fieldsetViewDetails" runat="server">
 
-                    <p class="description"><asp:Literal ID="lWorkflowTypeDescription" runat="server" EnableViewState="false"></asp:Literal></p>
+                    <p class="description">
+                        <asp:Literal ID="lWorkflowTypeDescription" runat="server" EnableViewState="false"></asp:Literal>
+                    </p>
 
                     <Rock:NotificationBox ID="nbEditModeMessage" runat="server" NotificationBoxType="Info" EnableViewState="false" />
 
                     <div class="row">
                         <div class="col-md-12">
                             <a class="workflow-activities-readonly-header" href="#" onclick="javascript: toggleReadOnlyActivitiesList();">
-                                <asp:Label ID="lblActivitiesReadonlyHeaderLabel" runat="server" Text="Activities" EnableViewState="false"/>
+                                <asp:Label ID="lblActivitiesReadonlyHeaderLabel" runat="server" Text="Activities" EnableViewState="false" />
                                 <b class="fa fa-caret-down"></b>
                             </a>
 
@@ -139,18 +151,18 @@
                     </div>
 
                     <div class="actions">
-                        <asp:LinkButton ID="btnEdit" runat="server" AccessKey="m" Text="Edit" CssClass="btn btn-primary" OnClick="btnEdit_Click" />
+                        <asp:LinkButton ID="btnEdit" runat="server" AccessKey="m" ToolTip="Alt+m" Text="Edit" CssClass="btn btn-primary" OnClick="btnEdit_Click" />
                         <Rock:ModalAlert ID="mdDeleteWarning" runat="server" />
                         <asp:LinkButton ID="btnDelete" runat="server" Text="Delete" CssClass="btn btn-link" OnClick="btnDelete_Click" CausesValidation="false" />
                         <span class="pull-right">
-                            <asp:LinkButton ID="btnCopy" runat="server" CssClass="btn btn-default btn-sm fa fa-clone" OnClick="btnCopy_Click" ToolTip="Copy Workflow"/>
+                            <asp:LinkButton ID="btnCopy" runat="server" CssClass="btn btn-default btn-sm fa fa-clone" OnClick="btnCopy_Click" ToolTip="Copy Workflow" />
                             <asp:LinkButton ID="lbLaunchWorkflow" runat="server" CssClass="btn btn-sm btn-default" OnClick="btnLaunch_Click" ToolTip="Launch Workflow"><i class="fa fa-play"></i></asp:LinkButton>
                             <asp:LinkButton ID="lbManage" runat="server" CssClass="btn btn-sm btn-default" OnClick="btnManage_Click" ToolTip="Manage Workflows"><i class="fa fa-list"></i></asp:LinkButton>
                             <Rock:SecurityButton ID="btnSecurity" runat="server" class="btn btn-sm btn-security" />
                         </span>
 
                     </div>
-                
+
                 </fieldset>
 
             </div>

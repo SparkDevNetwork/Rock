@@ -23,6 +23,8 @@
 			+ 'State'
 			+ 'PostalCode'
 			+ 'Country'
+			+ 'Latitude'
+			+ 'Longitude'
 
 	</remarks>
 	<code>
@@ -33,6 +35,8 @@
 		SELECT [dbo].[ufnCrm_GetAddress](3, 'Home', 'State')
 		SELECT [dbo].[ufnCrm_GetAddress](3, 'Home', 'PostalCode')
 		SELECT [dbo].[ufnCrm_GetAddress](3, 'Home', 'Country')
+		SELECT [dbo].[ufnCrm_GetAddress](3, 'Home', 'Latitude')
+		SELECT [dbo].[ufnCrm_GetAddress](3, 'Home', 'Longitude')
 	</code>
 </doc>
 */
@@ -87,6 +91,14 @@ BEGIN
 	ELSE IF (@AddressComponent = 'Country')
 		BEGIN
 		RETURN (SELECT [Country] FROM [Location] WHERE [Id] = (SELECT TOP 1 [LocationId] FROM [GroupLocation] WHERE  [GroupLocationTypeValueId] = @AddressTypeId AND  [GroupId] = (SELECT TOP 1 [GroupId] FROM [GroupMember] gm INNER JOIN [Group] g ON g.[Id] = gm.[GroupId] WHERE [PersonId] = @PersonId AND g.[GroupTypeId] = 10))) 
+		END
+	ELSE IF (@AddressComponent = 'Latitude')
+		BEGIN
+		RETURN (SELECT [GeoPoint].[Lat] FROM [Location] WHERE [Id] = (SELECT TOP 1 [LocationId] FROM [GroupLocation] WHERE  [GroupLocationTypeValueId] = @AddressTypeId AND  [GroupId] = (SELECT TOP 1 [GroupId] FROM [GroupMember] gm INNER JOIN [Group] g ON g.[Id] = gm.[GroupId] WHERE [PersonId] = @PersonId AND g.[GroupTypeId] = 10))) 
+		END
+	ELSE IF (@AddressComponent = 'Longitude')
+		BEGIN
+		RETURN (SELECT [GeoPoint].[Long] FROM [Location] WHERE [Id] = (SELECT TOP 1 [LocationId] FROM [GroupLocation] WHERE  [GroupLocationTypeValueId] = @AddressTypeId AND  [GroupId] = (SELECT TOP 1 [GroupId] FROM [GroupMember] gm INNER JOIN [Group] g ON g.[Id] = gm.[GroupId] WHERE [PersonId] = @PersonId AND g.[GroupTypeId] = 10))) 
 		END
 	ELSE 
 		BEGIN
