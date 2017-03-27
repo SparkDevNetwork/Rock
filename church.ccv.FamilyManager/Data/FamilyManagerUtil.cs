@@ -374,7 +374,15 @@ namespace church.ccv.FamilyManager
 
                 // set the phone number (we only support Cell Phone for Family Manager)
                 person.UpdatePhoneNumber( cellPhoneType.Id, updatePersonBody.CellPhoneNumber.CountryCode, updatePersonBody.CellPhoneNumber.Number, null, null, rockContext );
-
+               
+                // now set any new known "Allow Checkin" known relationships (check for null because old versions won't send this up)
+                if ( updatePersonBody.NewAllowCheckinPersonIds != null )
+                {
+                    foreach ( int allowCheckinPersonId in updatePersonBody.NewAllowCheckinPersonIds )
+                    {
+                        Person.CreateCheckinRelationship( allowCheckinPersonId, person.Id, rockContext );
+                    }
+                }
 
                 // jhm todo: consider finishing this so that we can update the profile pic in the same call.
                 // The headache is on the client side, updating the RockAPI layer to let us add the file as

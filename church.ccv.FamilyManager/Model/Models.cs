@@ -80,6 +80,8 @@ namespace church.ccv.FamilyManager.Models
 
         public List<KeyValuePair<string, string>> Attributes;
 
+        public List<int> NewAllowCheckinPersonIds;
+
         //public MemoryStream ProfileImage;
     }
 }
