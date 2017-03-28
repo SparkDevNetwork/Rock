@@ -209,7 +209,8 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
                 }
             }
 
-            Hydrate( ResourcesState, rockContext );
+            var resourceService = new ResourceService( rockContext );
+            var reservationService = new ReservationService( rockContext );
             foreach ( var reservationResourceState in ResourcesState )
             {
                 ReservationResource reservationResource = reservation.ReservationResources.Where( a => a.Guid == reservationResourceState.Guid ).FirstOrDefault();
@@ -225,8 +226,8 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
                 }
 
                 reservationResource.CopyPropertiesFrom( reservationResourceState );
-                reservationResource.Resource = reservationResourceState.Resource;
-                reservationResource.Reservation = reservationResourceState.Reservation;
+                reservationResource.Reservation = reservationService.Get( reservation.Id );
+                reservationResource.Resource = resourceService.Get( reservationResource.ResourceId );
                 reservationResource.ReservationId = reservation.Id;
             }
 
@@ -567,12 +568,6 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
             if ( locationIds.Count > 0 )
             {
                 slpLocation.SetValues( locationIds );
-            }
-
-            var resourceIds = reservation.ReservationResources.Select( rr => rr.ResourceId ).ToList();
-            if ( resourceIds.Count > 0 )
-            {
-                srpResource.SetValues( resourceIds );
             }
 
             rtbName.Text = reservation.Name;
