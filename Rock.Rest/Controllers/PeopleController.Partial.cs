@@ -613,7 +613,7 @@ namespace Rock.Rest.Controllers
             }
 
             // force the link to open a new scrollable,resizable browser window (and make it work in FF, Chrome and IE) http://stackoverflow.com/a/2315916/1755417
-            personInfoHtml += $"<p class='margin-t-sm'><a class=\"btn btn-xs btn-default js-view-person\" onclick=\"javascript: window.open('/person/{person.Id}', '_blank', 'scrollbars=1,resizable=1,toolbar=1'); return false;\" data-toggle=\"tooltip\" title=\"View Profile\">View Profile</a></p>";
+            personInfoHtml += $"<p class='margin-t-sm'><small><a class='cursor-pointer' onclick=\"javascript: window.open('/person/{person.Id}', '_blank', 'scrollbars=1,resizable=1,toolbar=1'); return false;\" data-toggle=\"tooltip\" title=\"View Profile\">View Profile</a></small></p>";
 
             personSearchResult.PickerItemDetailsImageHtml = imageHtml;
             personSearchResult.PickerItemDetailsPersonInfoHtml = personInfoHtml;
