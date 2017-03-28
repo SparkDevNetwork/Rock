@@ -573,8 +573,8 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
             rtbName.Text = reservation.Name;
             rtbNote.Text = reservation.Note;
             nbAttending.Text = reservation.NumberAttending.ToString();
-            nbSetupTime.Text = reservation.SetupTime.ToString();
-            nbCleanupTime.Text = reservation.CleanupTime.ToString();
+            nbSetupTime.Text = reservation.SetupTime.HasValue ? reservation.SetupTime.ToString() : "30";
+            nbCleanupTime.Text = reservation.CleanupTime.HasValue ? reservation.CleanupTime.ToString() : "30";
 
             ResourcesState = reservation.ReservationResources.ToList();
             BindReservationResourcesGrid();
