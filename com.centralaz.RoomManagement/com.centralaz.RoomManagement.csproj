@@ -85,6 +85,7 @@
     <Compile Include="Field\Types\ReservationFieldType.cs" />
     <Compile Include="Field\Types\ReservationStatusesFieldType.cs" />
     <Compile Include="Jobs\FireWorkflowFromReservationInDateRange.cs" />
+    <Compile Include="Migrations\006_ResourceApproval.cs" />
     <Compile Include="Migrations\005_ ReservationUpdate.cs" />
     <Compile Include="Migrations\004_Workflow.cs" />
     <Compile Include="Migrations\003_SampleData.cs" />

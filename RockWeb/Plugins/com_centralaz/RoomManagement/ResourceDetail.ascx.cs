@@ -155,6 +155,7 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
                 resource.CampusId = ddlCampus.SelectedValueAsInt();
                 resource.Quantity = nbQuantity.Text.AsIntegerOrNull() ?? 1;
                 resource.Note = tbNote.Text;
+                resource.ApprovalGroupId = gpApprovalGroup.SelectedValueAsId() ?? null;
 
                 if ( !Page.IsValid )
                 {
@@ -247,6 +248,7 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
             ddlCampus.SelectedValue = resource.CampusId.ToString();
             nbQuantity.Text = resource.Quantity.ToString();
             tbNote.Text = resource.Note;
+            gpApprovalGroup.SetValue( resource.ApprovalGroupId );
         }
 
         private void ClearErrorMessage()

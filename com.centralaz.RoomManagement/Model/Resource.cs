@@ -41,6 +41,9 @@ namespace com.centralaz.RoomManagement.Model
         public int? CampusId { get; set; }
 
         [DataMember]
+        public int? ApprovalGroupId { get; set; }
+
+        [DataMember]
         public int Quantity { get; set; }
 
         [DataMember]
@@ -53,6 +56,8 @@ namespace com.centralaz.RoomManagement.Model
         public virtual Category Category { get; set; }
 
         public virtual Campus Campus { get; set; }
+
+        public virtual Group ApprovalGroup { get; set; }
 
         #endregion
 
@@ -70,6 +75,7 @@ namespace com.centralaz.RoomManagement.Model
         {
             this.HasRequired( r => r.Category ).WithMany().HasForeignKey( r => r.CategoryId ).WillCascadeOnDelete( false );
             this.HasOptional( r => r.Campus ).WithMany().HasForeignKey( r => r.CampusId ).WillCascadeOnDelete( false );
+            this.HasOptional( r => r.ApprovalGroup ).WithMany().HasForeignKey( r => r.ApprovalGroupId ).WillCascadeOnDelete( false );
         }
     }
 

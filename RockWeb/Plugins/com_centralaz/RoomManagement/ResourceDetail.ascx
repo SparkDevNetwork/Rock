@@ -23,8 +23,11 @@
                         <div class="col-md-6">
                             <Rock:RockTextBox ID="tbName" runat="server" Label="Name" Required="true" />
                         </div>
-                        <div class="col-md-6">
+                        <div class="col-md-3">
                             <Rock:CategoryPicker ID="cpCategory" runat="server" Label="Category" EntityTypeName="com.centralaz.RoomManagement.Model.Resource" Required="true" />
+                        </div>
+                        <div class="col-md-3">
+                            <Rock:GroupPicker ID="gpApprovalGroup" runat="server" Label="Approval Group" Help="If this resource requires special approval, select the group in charge of approving it here."/>
                         </div>
                     </div>
 
