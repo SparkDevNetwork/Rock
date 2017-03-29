@@ -39,21 +39,33 @@ namespace com.centralaz.GeneralJobs.Jobs
 {
 
     /// <summary>
-    /// Connects to an Exchange mailbox, reads the emails, finds a matching person and updates the date on the configured date based attribute.
+    /// Connects to an Exchange mailbox, reads the emails, finds a matching person and updates the person's attribute with the value found in the matching Field to Store regular expression.
+    /// The contents of the email message must have a person's name, birthdate, and email address to find a matching person record in Rock.
+    /// 
     /// It will move the messages it processes into one of these four folders:
     ///  * Done - if it able to find a single matching person record and the person passed
     ///  * Pending - if it was unable to find a single matching person record
     ///  * Other - if the message did not have the proper Subject (probably means it's spam)
     ///  * Failed - if the score was below a passing percentage.
     /// </summary>
-    [AttributeField( Rock.SystemGuid.EntityType.PERSON, "Person Date Attribute", "The attribute where you want to store the results of the date provided in the email.", true, false )]
-    [IntegerField( "Passing Percent Score", "the percentage of correctly answered questions necessary to pass the test.", true, 95  )]
-    [TextField( "AutoDiscoverUrl", "Hostname of the mail server." )]
-    [TextField( "Mail Username", "Exchange account to login to." )]
-    [TextField( "Subject Contains", "A String filter that the subject must contain.", true, "Mandated Reporting Quiz Results" )]
-    [TextField( "Mail Password", "Password of the account.", isPassword: true )]
-    [IntegerField( "Message Batch Size", "Max number of e-mails to process with each running of the agent (recommended 30)." )]
-    [BooleanField( "Enable Logging", "Enable logging", false, "", 8 )]
+
+    [TextField( "AutoDiscoverUrl", "Email address of the user on the mail server (Ex: responder@domain.com).", category: "Mail Server Settings", order: 1 )]
+    [TextField( "Mail Username", "Exchange account to login to.", category: "Mail Server Settings", order: 2)]
+    [TextField( "Mail Password", "Password of the account.", isPassword: true, category: "Mail Server Settings", order: 3 )]
+
+    [TextField( "Subject Contains", "A String filter that the subject must contain.", true, "Mandated Reporting Quiz Results", category: "Email Content Settings", order: 1 )]
+    [IntegerField( "Passing Percent Score", "If applicable, the percentage of correctly answered questions necessary to pass the test and record the result in the person's attribute. Leave blank if no score is required to save the results.", false, 95, category: "Email Content Settings", order: 2 )]
+    [TextField( "Score Regex", "The regular expression for the score match. If using the Passing Percent Score, the Regex should have two groups, one for the person's score and the other for the total. (e.g., 78 out of 100)", false, @"Score:[\r\n]*(\d+) out of (\d+)[\r\n]*", category: "Email Content Settings", order: 3 )]
+    [TextField( "Name Regex", "The regular expression for the person name match.", true, @"Name:[\r\n]*(.+)[\r\n]*", category: "Email Content Settings", order: 4 )]
+    [TextField( "Date of Birth Regex", "The regular expression for the person's data of birth match.", true, @"Date of Birth:[\r\n]*[^\d]*(\d+/\d+/\d+)[\r\n]*", category: "Email Content Settings", order: 5 )]
+    [TextField( "Email Regex", "The regular expression for the person's email match.", true, @"Email:[\r\n]*(\S+)[\r\n]*", category: "Email Content Settings", order: 6 )]
+    [TextField( "Field to Store Regex", "The regular expression for the field (value) you wish to match and store in the person attribute. The Regex must contain ONLY ONE grouping.", true, @"Date Completed:[\r\n]*(.+)", category: "Email Content Settings", order: 7 )]
+
+    [AttributeField( Rock.SystemGuid.EntityType.PERSON, "Person Attribute", "The attribute where you want to store the results of the value that matches the 'Field to Store Regex' found in the email.", true, false, category:"Storage", order: 6 )]
+
+    [IntegerField( "Message Batch Size", "Max number of e-mails to process with each running of the agent (recommended 30).", category: "Processing Settings", order: 7 )]
+    [BooleanField( "Enable Logging", "Enable logging", false, category: "Processing Settings", order:8 )]
+
     [DisallowConcurrentExecution]
     public class EmailToAttribute : IJob
     {
@@ -83,7 +95,7 @@ namespace com.centralaz.GeneralJobs.Jobs
             int errors = 0;
 
             int passingPercentage = dataMap.Get( "PassingPercentScore" ).ToString().AsInteger();
-            var personAttributeGuid = dataMap.Get( "PersonDateAttribute" ).ToString().AsGuidOrNull();
+            var personAttributeGuid = dataMap.Get( "PersonAttribute" ).ToString().AsGuidOrNull();
 
             if ( personAttributeGuid != null )
             {
@@ -109,26 +121,31 @@ namespace com.centralaz.GeneralJobs.Jobs
                 PropertySet propSet = new PropertySet( BasePropertySet.IdOnly, ItemSchema.Body, EmailMessageSchema.Body );
                 try
                 {
-                    Regex reScore = new Regex( @"Score:[\r\n]*(\d+) out of (\d+)[\r\n]*", RegexOptions.IgnoreCase );
-                    Regex reFullName = new Regex( @"Name:[\r\n]*(.+)[\r\n]*", RegexOptions.IgnoreCase );
-                    Regex reBirthDate = new Regex( @"Date of Birth:[\r\n]*[^\d]*(\d+/\d+/\d+)[\r\n]*", RegexOptions.IgnoreCase );
-                    Regex reEmailAddress = new Regex( @"Email:[\r\n]*(\S+)[\r\n]*", RegexOptions.IgnoreCase );
-                    Regex reDateCompleted = new Regex( @"Date Completed:[\r\n]*(.+)", RegexOptions.IgnoreCase );
-                    Regex reEmptyLines = new Regex( @"^\s+$[\r\n]*", RegexOptions.Multiline );
-
-                    Match matchFullName;
-                    Match matchBirthDate;
-                    Match matchEmail;
-                    Match matchDateCompleted;
-                    Match matchScore;
-
                     string fullName = string.Empty;
                     string firstName = string.Empty;
                     string lastName = string.Empty;
                     string birthDate = string.Empty;
                     string email = string.Empty;
-                    string dateCompleted = string.Empty;
+                    string fieldValue = string.Empty;
                     string percentScore = string.Empty;
+
+                    Match matchFullName;
+                    Match matchBirthDate;
+                    Match matchEmail;
+                    Match matchFieldToStore;
+                    Match matchScore;
+
+                    Regex reScore = new Regex( dataMap.Get( "ScoreRegex" ).ToString() , RegexOptions.IgnoreCase );
+                    Regex reFullName = new Regex( dataMap.Get( "NameRegex" ).ToString(), RegexOptions.IgnoreCase );
+                    Regex reBirthDate = new Regex( dataMap.Get( "DateofBirthRegex" ).ToString(), RegexOptions.IgnoreCase );
+                    Regex reEmailAddress = new Regex( dataMap.Get( "EmailRegex" ).ToString(), RegexOptions.IgnoreCase );
+                    Regex reFieldToStore = new Regex( dataMap.Get( "FieldtoStoreRegex" ).ToString(), RegexOptions.IgnoreCase );
+
+                    Regex reEmptyLines = new Regex( @"^\s+$[\r\n]*", RegexOptions.Multiline );
+
+                    bool performScoreMatching = ( ! string.IsNullOrEmpty( dataMap.Get( "ScoreRegex" ).ToString() ) );
+                    bool foundScore = false;
+                    bool isScorePass = false;
 
                     ExchangeService service = new ExchangeService( ExchangeVersion.Exchange2010_SP2 );
                     service.Credentials = new WebCredentials( dataMap.Get( "MailUsername" ).ToString(), dataMap.Get( "MailPassword" ).ToString() );
@@ -149,6 +166,8 @@ namespace com.centralaz.GeneralJobs.Jobs
                         {
                             messagesProcessed++;
                             birthDate = string.Empty;
+                            foundScore = false;
+                            isScorePass = false;
 
                             EmailMessage message = EmailMessage.Bind( service, item.Id, propSet );
 
@@ -161,11 +180,29 @@ namespace com.centralaz.GeneralJobs.Jobs
                                 matchFullName = reFullName.Match( body );
                                 matchBirthDate = reBirthDate.Match( body );
                                 matchEmail = reEmailAddress.Match( body );
-                                matchDateCompleted = reDateCompleted.Match( body );
-                                matchScore = reScore.Match( body );
+                                matchFieldToStore = reFieldToStore.Match( body );
+
+                                // Check if we're doing score checking...
+                                if ( performScoreMatching )
+                                {
+                                    matchScore = reScore.Match( body );
+
+                                    if ( matchScore.Success )
+                                    {
+                                        foundScore = true;
+                                        percentScore = matchScore.Groups[1].Value;
+
+                                        // Check their score and set isScorePass true if they passed.
+                                        if ( int.Parse( percentScore ) >= passingPercentage )
+                                        {
+                                            isScorePass = true;
+                                        }
+                                    }
+                                }
 
                                 // If we don't match these things, then it must be moved to the pending folder 
-                                if ( matchFullName.Success && matchEmail.Success && matchDateCompleted.Success && matchScore.Success )
+                                if ( matchFullName.Success && matchEmail.Success && matchFieldToStore.Success && 
+                                    ( ( performScoreMatching && foundScore ) || ! performScoreMatching ) )
                                 {
                                     fullName = matchFullName.Groups[1].Value;
                                     if ( fullName.IndexOf( ' ' ) > 0 )
@@ -175,11 +212,10 @@ namespace com.centralaz.GeneralJobs.Jobs
                                         lastName = nameParts[1];
                                     }
                                     email = matchEmail.Groups[1].Value;
-                                    dateCompleted = matchDateCompleted.Groups[1].Value;
-                                    percentScore = matchScore.Groups[1].Value;
+                                    fieldValue = matchFieldToStore.Groups[1].Value;
 
                                     // Check their score and fail them if they didn't pass.
-                                    if ( int.Parse( percentScore ) <= passingPercentage )
+                                    if ( performScoreMatching && foundScore && ! isScorePass )
                                     {
                                         MoveMessageToFolder( message, failedFolder );
                                         continue;
@@ -194,7 +230,7 @@ namespace com.centralaz.GeneralJobs.Jobs
                                 // now check these optional values -- we only need them in the case of
                                 // multiple matches of the same email, first and last name.
                                 if ( matchFullName.Success && matchEmail.Success &&
-                                    matchBirthDate.Success && matchDateCompleted.Success
+                                    matchBirthDate.Success && matchFieldToStore.Success
                                     )
                                 {
                                     birthDate = matchBirthDate.Groups[1].Value;
@@ -206,7 +242,7 @@ namespace com.centralaz.GeneralJobs.Jobs
                                 Person person = BestMatchingPerson( people, firstName, lastName, birthDate );
                                 if ( person != null )
                                 {
-                                    UpdateDateAttributeOnPersonRecord( person, dateCompleted, dataMap );
+                                    UpdateDateAttributeOnPersonRecord( person, fieldValue, dataMap );
                                     MoveMessageToFolder( message, doneFolder );
                                     recordsUpdated++;
                                 }
@@ -260,25 +296,25 @@ namespace com.centralaz.GeneralJobs.Jobs
         }
 
         /// <summary>
-        /// Updates the given person's person attribute with the given date value.
+        /// Updates the given person's person attribute with the given value.
         /// </summary>
         /// <param name="person"></param>
-        /// <param name="aDate"></param>
+        /// <param name="attribValue">the attribute value</param>
         /// <exception cref="System.ArgumentNullException">If the given date can't be parsed.</exception>
         /// <exception cref="System.FormatException">If the given date can't be parsed.</exception>
-        private void UpdateDateAttributeOnPersonRecord( Person person, string aDate, JobDataMap dataMap )
+        private void UpdateDateAttributeOnPersonRecord( Person person, string attribValue, JobDataMap dataMap )
         {
             var rockContext = new RockContext();
 
             AttributeValue av = new AttributeValueService( rockContext ).GetByAttributeIdAndEntityId( _personAttribute.Id, person.Id );
             if ( av == null )
             {
-                av = new AttributeValue { AttributeId = _personAttribute.Id, EntityId = person.Id, Value = aDate };
+                av = new AttributeValue { AttributeId = _personAttribute.Id, EntityId = person.Id, Value = attribValue };
                 rockContext.AttributeValues.Add( av );
             }
             else
             {
-                av.Value = aDate;
+                av.Value = attribValue;
             }
 
             rockContext.SaveChanges();
