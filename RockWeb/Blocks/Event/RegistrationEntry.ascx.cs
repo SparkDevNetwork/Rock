@@ -699,14 +699,6 @@ namespace RockWeb.Blocks.Event
                 CurrentRegistrantIndex = RegistrationState != null ? RegistrationState.RegistrantCount - 1 : 0;
                 CurrentFormIndex = FormCount - 1;
 
-                tbDiscountCode.Text = string.Empty;
-                nbAmountPaid.Text = string.Empty;
-
-                RegistrationState.DiscountCode = string.Empty;
-                RegistrationState.DiscountPercentage = 0.0M;
-                RegistrationState.DiscountAmount = 0.0M;
-                RegistrationState.PaymentAmount = null;
-
                 ShowRegistrant( false, false );
             }
             else
