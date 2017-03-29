@@ -339,7 +339,7 @@
                 // toggle all group checkboxes
                 $('.js-checkbox-selector, .js-groups-container .rock-check-box-list .control-label').on('click', function (e) {
 
-                    var container = $(this).closest('.js-groups-container');
+                    var container = $(this).parent().parent();
 
                     var isChecked = true;
                     container.find('input:checkbox').each(function (a) {
