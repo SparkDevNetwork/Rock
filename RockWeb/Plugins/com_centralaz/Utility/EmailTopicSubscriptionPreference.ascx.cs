@@ -37,9 +37,10 @@ namespace RockWeb.Plugins.com_centralaz.Utility
     [Category( "com_centralaz > Utility" )]
     [Description( "Displays and or sets the user's email subscriptions" )]
     [AttributeField( Rock.SystemGuid.EntityType.PERSON, "Subscription Preference Attribute", "The person attribute that holds each person's subscribed topics.", required: true, defaultValue: "1E372FF6-93D9-4D42-9107-4FAD1E452218", order: 0 )]
-    [CodeEditorField( "Lava Template", "The lava template to use for the results", CodeEditorMode.Lava, CodeEditorTheme.Rock, defaultValue: "Are you sure you want to unsubscribe to these?", order: 3 )]
-    [TextField( "Popup Text", "The Text that will be displayed as the checkboxlist's label.", true, "Are you sure you want to unsubscribe to these?", order: 0 )]
-    [TextField( "Popup Values", required: false )]
+    [AttributeField( Rock.SystemGuid.EntityType.PERSON, "Disable Auto-Topic Subscription Attribute", "The person attribute that controls whether auto-topic subscription will attempt to subscribe a person to topics.", required: true, key: "DisableAutoTopicSubscriptionAttribute", order: 1 )]
+    [CodeEditorField( "Lava Template", "The lava template to use for the results", CodeEditorMode.Lava, CodeEditorTheme.Rock, defaultValue: "Are you sure you want to unsubscribe to these?", order: 2 )]
+    [TextField( "Popup Text", "The Text that will be displayed as the checkboxlist's label.", true, "Are you sure you want to unsubscribe to these?", order: 3 )]
+    [TextField( "Popup Values", required: false, order: 4 )]
     public partial class EmailTopicSubscriptionPreference : Rock.Web.UI.RockBlockCustomSettings
     {
         #region Fields
@@ -477,6 +478,15 @@ namespace RockWeb.Plugins.com_centralaz.Utility
                 _person = new PersonService( rockContext ).Get( _person.Id );
                 _person.LoadAttributes();
                 _person.SetAttributeValue( hfAttributeKey.Value, cblSubscriptions.Items.OfType<ListItem>().Where( l => l.Selected ).Select( a => a.Value ).ToList().AsDelimited( "," ) );
+
+                // Check the disable auto-topic subscription setting and if it's set, save "true" to the person's attribute. 
+                Guid? theAttributesGuid = GetAttributeValue( "DisableAutoTopicSubscriptionAttribute" ).AsGuidOrNull();
+                if ( theAttributesGuid != null && theAttributesGuid.HasValue )
+                {
+                    var theDisableAutoTopicAttribute = Rock.Web.Cache.AttributeCache.Read( theAttributesGuid.Value );
+                    _person.SetAttributeValue( theDisableAutoTopicAttribute.Key, "True" );
+                }
+
                 _person.SaveAttributeValues();
 
                 if ( radEmailAllowed.Checked )
