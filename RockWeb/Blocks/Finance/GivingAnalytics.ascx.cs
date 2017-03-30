@@ -635,7 +635,7 @@ function(item) {
             }
 
             Uri uri = new Uri( Request.Url.ToString() );
-            hfFilterUrl.Value = uri.Scheme + "://" + uri.GetComponents( UriComponents.HostAndPort, UriFormat.UriEscaped ) + pageReference.BuildUrl();
+            hfFilterUrl.Value = uri.GetLeftPart(UriPartial.Authority) + pageReference.BuildUrl();
             btnCopyToClipboard.Disabled = false;
         }
 
