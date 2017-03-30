@@ -19,6 +19,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
 
+using Rock.Data;
 namespace com.centralaz.RoomManagement.Model
 {
     /// <summary>
@@ -52,8 +53,12 @@ namespace com.centralaz.RoomManagement.Model
 
         public virtual Reservation Reservation { get; set; }
 
+        [LavaInclude]
         public virtual Resource Resource { get; set; }
 
+        #endregion
+
+        #region Methods
         public void CopyPropertiesFrom( ReservationResource source )
         {
             this.Id = source.Id;

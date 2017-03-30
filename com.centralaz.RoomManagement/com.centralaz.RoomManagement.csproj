@@ -110,6 +110,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SystemGuid\DefinedType.cs" />
     <Compile Include="SystemGuid\EntityType.cs" />
+    <Compile Include="SystemGuid\Group.cs" />
     <Compile Include="SystemGuid\ReservationStatus.cs" />
     <Compile Include="Transactions\ReservationChangeTransaction.cs" />
     <Compile Include="Web\Cache\ReservationMinistryCache.cs" />

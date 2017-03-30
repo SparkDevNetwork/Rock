@@ -41,6 +41,7 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
     [DisplayName( "Reservation Detail" )]
     [Category( "com_centralaz > Room Management" )]
     [Description( "Block for viewing a reservation detail" )]
+    [SecurityRoleField( "General Approval Group", "The group that has the power to approve resources and locations that do not have their own approval groups", true, com.centralaz.RoomManagement.SystemGuid.Group.GROUP_RESERVATION_ADMINISTRATORS, "" )]
     public partial class ReservationDetail : Rock.Web.UI.RockBlock
     {
         #region Properties
@@ -52,6 +53,15 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
         /// The state of the resources.
         /// </value>
         private List<ReservationResource> ResourcesState { get; set; }
+
+        /// <summary>
+        /// Gets or sets the state of the locations.
+        /// </summary>
+        /// <value>
+        /// The state of the locations.
+        /// </value>
+        private List<ReservationLocation> LocationsState { get; set; }
+
 
         #endregion
 
@@ -74,6 +84,16 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
             {
                 ResourcesState = JsonConvert.DeserializeObject<List<ReservationResource>>( json );
             }
+
+            json = ViewState["LocationsState"] as string;
+            if ( string.IsNullOrWhiteSpace( json ) )
+            {
+                LocationsState = new List<ReservationLocation>();
+            }
+            else
+            {
+                LocationsState = JsonConvert.DeserializeObject<List<ReservationLocation>>( json );
+            }
         }
 
         /// <summary>
@@ -83,6 +103,11 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
         protected override void OnInit( EventArgs e )
         {
             base.OnInit( e );
+
+            gLocations.DataKeyNames = new string[] { "Guid" };
+            gLocations.Actions.ShowAdd = true;
+            gLocations.Actions.AddClick += gLocations_Add;
+            gLocations.GridRebind += gLocations_GridRebind;
 
             gResources.DataKeyNames = new string[] { "Guid" };
             gResources.Actions.ShowAdd = true;
@@ -121,6 +146,7 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
             };
 
             ViewState["ResourcesState"] = JsonConvert.SerializeObject( ResourcesState, Formatting.None, jsonSetting );
+            ViewState["LocationsState"] = JsonConvert.SerializeObject( LocationsState, Formatting.None, jsonSetting );
 
             return base.SaveViewState();
         }
@@ -172,14 +198,18 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
         protected void btnSave_OnClick( object sender, EventArgs e )
         {
             RockContext rockContext = new RockContext();
-            ReservationService roomReservationService = new ReservationService( rockContext );
+            ResourceService resourceService = new ResourceService( rockContext );
+            LocationService locationService = new LocationService( rockContext );
+            ReservationService reservationService = new ReservationService( rockContext );
             PersonAliasService personAliasService = new PersonAliasService( rockContext );
             ReservationResourceService reservationResourceService = new ReservationResourceService( rockContext );
+            ReservationLocationService reservationLocationService = new ReservationLocationService( rockContext );
+
             Reservation reservation = null;
 
             if ( PageParameter( "ReservationId" ).AsIntegerOrNull() != null )
             {
-                reservation = roomReservationService.Get( PageParameter( "ReservationId" ).AsInteger() );
+                reservation = reservationService.Get( PageParameter( "ReservationId" ).AsInteger() );
             }
 
             if ( reservation == null )
@@ -188,6 +218,13 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
             }
             else
             {
+                var uiLocations = LocationsState.Select( l => l.Guid );
+                foreach ( var reservationLocation in reservation.ReservationLocations.Where( l => !uiLocations.Contains( l.Guid ) ).ToList() )
+                {
+                    reservation.ReservationLocations.Remove( reservationLocation );
+                    reservationLocationService.Delete( reservationLocation );
+                }
+
                 var uiResources = ResourcesState.Select( l => l.Guid );
                 foreach ( var reservationResource in reservation.ReservationResources.Where( l => !uiResources.Contains( l.Guid ) ).ToList() )
                 {
@@ -196,21 +233,26 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
                 }
             }
 
-            var locationIds = slpLocation.SelectedValuesAsInt();
-            foreach ( var locationId in locationIds.Where( l => l != 0 ) )
+            foreach ( var reservationLocationState in LocationsState )
             {
-                ReservationLocation reservationLocation = reservation.ReservationLocations.Where( l => l.LocationId == locationId ).FirstOrDefault();
+                ReservationLocation reservationLocation = reservation.ReservationLocations.Where( a => a.Guid == reservationLocationState.Guid ).FirstOrDefault();
                 if ( reservationLocation == null )
                 {
                     reservationLocation = new ReservationLocation();
-                    reservationLocation.LocationId = locationId;
-                    reservationLocation.ReservationId = reservation.Id;
                     reservation.ReservationLocations.Add( reservationLocation );
                 }
+                else
+                {
+                    reservationLocationState.Id = reservationLocation.Id;
+                    reservationLocationState.Guid = reservationLocation.Guid;
+                }
+
+                reservationLocation.CopyPropertiesFrom( reservationLocationState );
+                reservationLocation.Reservation = reservationService.Get( reservation.Id );
+                reservationLocation.Location = locationService.Get( reservationLocation.LocationId );
+                reservationLocation.ReservationId = reservation.Id;
             }
 
-            var resourceService = new ResourceService( rockContext );
-            var reservationService = new ReservationService( rockContext );
             foreach ( var reservationResourceState in ResourcesState )
             {
                 ReservationResource reservationResource = reservation.ReservationResources.Where( a => a.Guid == reservationResourceState.Guid ).FirstOrDefault();
@@ -269,7 +311,7 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
             bool hasConflict = false;
             StringBuilder sb = new StringBuilder();
             sb.Append( "<b>The Following items are already reserved for the scheduled times:<br><ul>" );
-            var reservedLocationIds = roomReservationService.GetReservedLocationIds( reservation );
+            var reservedLocationIds = reservationService.GetReservedLocationIds( reservation );
             foreach ( var location in reservation.ReservationLocations.Where( l => reservedLocationIds.Contains( l.LocationId ) ) )
             {
                 sb.AppendFormat( "<li>{0}</li>", location.Location.Name );
@@ -296,7 +338,7 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
 
             if ( reservation.Id.Equals( 0 ) )
             {
-                roomReservationService.Add( reservation );
+                reservationService.Add( reservation );
             }
 
             rockContext.SaveChanges();
@@ -312,16 +354,6 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
         protected void btnCancel_OnClick( object sender, EventArgs e )
         {
             ReturnToParentPage();
-        }
-
-        /// <summary>
-        /// Handles the SelectItem event of the slpLocation control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void slpLocation_SelectItem( object sender, EventArgs e )
-        {
-
         }
 
         /// <summary>
@@ -502,13 +534,327 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
                 c.Id,
                 c.Guid,
                 Resource = c.Resource.Name,
-                Quantity = c.Quantity
+                Quantity = c.Quantity,
+                IsApproved = c.IsApproved
             } ).ToList();
             gResources.DataBind();
         }
 
+        protected void gResources_CheckedChanged( object sender, RowEventArgs e )
+        {
+            bool failure = true;
+
+            if ( e.RowKeyValue != null )
+            {
+                var reservationResource = ResourcesState.FirstOrDefault( r => r.Guid.Equals( (Guid)e.RowKeyValue ) );
+                if ( reservationResource != null )
+                {
+                    failure = false;
+
+                    // if it was approved, set it to unapproved... otherwise
+                    if ( reservationResource.IsApproved )
+                    {
+                        reservationResource.IsApproved = false;
+                    }
+                    else
+                    {
+                        reservationResource.IsApproved = true;
+                    }
+
+                    if ( ResourcesState.Any( a => a.Guid.Equals( reservationResource.Guid ) ) )
+                    {
+                        ResourcesState.RemoveEntity( reservationResource.Guid );
+                    }
+
+                    ResourcesState.Add( reservationResource );
+                }
+
+                BindReservationResourcesGrid();
+            }
+
+            if ( failure )
+            {
+                maResourceGridWarning.Show( "Unable to approve that resource", ModalAlertType.Warning );
+            }
+        }
+
+        protected void gResources_RowDataBound( object sender, GridViewRowEventArgs e )
+        {
+            var reservationResource = e.Row.DataItem as ReservationResource;
+            if ( reservationResource != null )
+            {
+                var canApprove = false;
+
+                if ( reservationResource.Resource.ApprovalGroupId != null )
+                {
+                    if ( CurrentPerson.Members.Select( m => m.GroupId ).Distinct().ToList().Contains( reservationResource.Resource.ApprovalGroupId.Value ) )
+                    {
+                        canApprove = true;
+                    }
+                }
+                else
+                {
+                    var securityGroup = new GroupService( new RockContext() ).Get( GetAttributeValue( "GeneralApprovalGroup" ).AsGuid() );
+                    if ( securityGroup != null )
+                    {
+                        if ( CurrentPerson.Members.Select( m => m.GroupId ).Distinct().ToList().Contains( securityGroup.Id ) )
+                        {
+                            canApprove = true;
+                        }
+                    }
+                }
+                if ( canApprove )
+                {
+                    return;
+                }
+
+                if ( e.Row.RowType == DataControlRowType.DataRow )
+                {
+                    foreach ( TableCell cell in e.Row.Cells )
+                    {
+                        foreach ( Control c in cell.Controls )
+                        {
+                            Toggle toggle = c as Toggle;
+                            if ( toggle != null )
+                            {
+                                toggle.Enabled = false;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
         #endregion
 
+        #region ReservationLocation Events
+
+        /// <summary>
+        /// Handles the SelectItem event of the srpLocation control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void slpLocation_SelectItem( object sender, EventArgs e )
+        {
+
+        }
+
+        /// <summary>
+        /// Handles the SaveClick event of the dlgReservationLocation control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void dlgReservationLocation_SaveClick( object sender, EventArgs e )
+        {
+            ReservationLocation reservationLocation = null;
+            Guid guid = hfAddReservationLocationGuid.Value.AsGuid();
+            if ( !guid.IsEmpty() )
+            {
+                reservationLocation = LocationsState.FirstOrDefault( l => l.Guid.Equals( guid ) );
+            }
+
+            if ( reservationLocation == null )
+            {
+                reservationLocation = new ReservationLocation();
+            }
+
+            try
+            {
+                reservationLocation.Location = new LocationService( new RockContext() ).Get( slpLocation.SelectedValueAsId().Value );
+            }
+            catch { }
+
+            reservationLocation.LocationId = slpLocation.SelectedValueAsId().Value;
+            reservationLocation.ReservationId = 0;
+
+            if ( !reservationLocation.IsValid )
+            {
+                return;
+            }
+
+            if ( LocationsState.Any( a => a.Guid.Equals( reservationLocation.Guid ) ) )
+            {
+                LocationsState.RemoveEntity( reservationLocation.Guid );
+            }
+
+            LocationsState.Add( reservationLocation );
+            BindReservationLocationsGrid();
+            dlgReservationLocation.Hide();
+            hfActiveDialog.Value = string.Empty;
+        }
+
+        /// <summary>
+        /// Handles the Delete event of the gLocations control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="RowEventArgs"/> instance containing the event data.</param>
+        protected void gLocations_Delete( object sender, RowEventArgs e )
+        {
+            Guid rowGuid = (Guid)e.RowKeyValue;
+            LocationsState.RemoveEntity( rowGuid );
+
+            BindReservationLocationsGrid();
+        }
+
+        /// <summary>
+        /// Handles the GridRebind event of the gLocations control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        private void gLocations_GridRebind( object sender, EventArgs e )
+        {
+            BindReservationLocationsGrid();
+        }
+
+        /// <summary>
+        /// Handles the Edit event of the gLocations control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="RowEventArgs"/> instance containing the event data.</param>
+        protected void gLocations_Edit( object sender, RowEventArgs e )
+        {
+            Guid reservationLocationGuid = (Guid)e.RowKeyValue;
+            gLocations_ShowEdit( reservationLocationGuid );
+        }
+
+        /// <summary>
+        /// gs the locations_ show edit.
+        /// </summary>
+        /// <param name="reservationLocationGuid">The reservation location unique identifier.</param>
+        protected void gLocations_ShowEdit( Guid reservationLocationGuid )
+        {
+            ReservationLocation reservationLocation = LocationsState.FirstOrDefault( l => l.Guid.Equals( reservationLocationGuid ) );
+            if ( reservationLocation != null )
+            {
+                slpLocation.SetValue( reservationLocation.LocationId );
+            }
+            else
+            {
+                slpLocation.SetValue( null );
+            }
+
+            hfAddReservationLocationGuid.Value = reservationLocationGuid.ToString();
+            hfActiveDialog.Value = "dlgReservationLocation";
+            dlgReservationLocation.Show();
+        }
+
+        /// <summary>
+        /// Handles the Add event of the gLocations control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        private void gLocations_Add( object sender, EventArgs e )
+        {
+            gLocations_ShowEdit( Guid.Empty );
+        }
+
+        /// <summary>
+        /// Binds the reservation locations grid.
+        /// </summary>
+        private void BindReservationLocationsGrid()
+        {
+            Hydrate( LocationsState, new RockContext() );
+
+            gLocations.DataSource = LocationsState.Select( c => new
+            {
+                c.Id,
+                c.Guid,
+                Location = c.Location.Name,
+                IsApproved = c.IsApproved
+            } ).ToList();
+            gLocations.DataBind();
+        }
+
+        protected void gLocations_CheckedChanged( object sender, RowEventArgs e )
+        {
+            bool failure = true;
+
+            if ( e.RowKeyValue != null )
+            {
+                var reservationLocation = LocationsState.FirstOrDefault( r => r.Guid.Equals( (Guid)e.RowKeyValue ) );
+                if ( reservationLocation != null )
+                {
+                    failure = false;
+
+                    // if it was approved, set it to unapproved... otherwise
+                    if ( reservationLocation.IsApproved )
+                    {
+                        reservationLocation.IsApproved = false;
+                    }
+                    else
+                    {
+                        reservationLocation.IsApproved = true;
+                    }
+
+                    if ( LocationsState.Any( a => a.Guid.Equals( reservationLocation.Guid ) ) )
+                    {
+                        LocationsState.RemoveEntity( reservationLocation.Guid );
+                    }
+
+                    LocationsState.Add( reservationLocation );
+                }
+
+                BindReservationLocationsGrid();
+            }
+
+            if ( failure )
+            {
+                maResourceGridWarning.Show( "Unable to approve that location", ModalAlertType.Warning );
+            }
+        }
+
+        protected void gLocations_RowDataBound( object sender, GridViewRowEventArgs e )
+        {
+            var reservationLocation = e.Row.DataItem as ReservationLocation;
+            if ( reservationLocation != null )
+            {
+                var canApprove = false;
+
+                var location = reservationLocation.Location;
+                location.LoadAttributes();
+                var approvalGroupGuid = location.GetAttributeValue( "ApprovalGroup" ).AsGuidOrNull();
+
+                if ( approvalGroupGuid != null )
+                {
+                    if ( CurrentPerson.Members.Select( m => m.Group.Guid ).Distinct().ToList().Contains( approvalGroupGuid.Value ) )
+                    {
+                        canApprove = true;
+                    }
+                }
+                else
+                {
+                    var securityGroup = new GroupService( new RockContext() ).Get( GetAttributeValue( "GeneralApprovalGroup" ).AsGuid() );
+                    if ( securityGroup != null )
+                    {
+                        if ( CurrentPerson.Members.Select( m => m.GroupId ).Distinct().ToList().Contains( securityGroup.Id ) )
+                        {
+                            canApprove = true;
+                        }
+                    }
+                }
+                if ( canApprove )
+                {
+                    return;
+                }
+
+                if ( e.Row.RowType == DataControlRowType.DataRow )
+                {
+                    foreach ( TableCell cell in e.Row.Cells )
+                    {
+                        foreach ( Control c in cell.Controls )
+                        {
+                            Toggle toggle = c as Toggle;
+                            if ( toggle != null )
+                            {
+                                toggle.Enabled = false;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        #endregion
         #endregion
 
         #region Methods
@@ -530,17 +876,20 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
             if ( reservation == null )
             {
                 reservation = new Reservation { Id = 0 };
+
+                if ( PageParameter( "LocationId" ).AsInteger() != 0 )
+                {
+                    ReservationLocation reservationLocation = new ReservationLocation();
+                    reservationLocation.LocationId = PageParameter( "LocationId" ).AsInteger();
+                    reservation.ReservationLocations.Add( reservationLocation );
+                }
+
                 if ( PageParameter( "ResourceId" ).AsInteger() != 0 )
                 {
                     ReservationResource reservationResource = new ReservationResource();
                     reservationResource.ResourceId = PageParameter( "ResourceId" ).AsInteger();
                     reservationResource.Quantity = 1;
                     reservation.ReservationResources.Add( reservationResource );
-                }
-
-                if ( PageParameter( "LocationId" ).AsInteger() != 0 )
-                {
-                    slpLocation.SetValue( PageParameter( "LocationId" ).AsInteger() );
                 }
             }
 
@@ -564,17 +913,14 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
                 }
             }
 
-            var locationIds = reservation.ReservationLocations.Select( rl => rl.LocationId ).ToList();
-            if ( locationIds.Count > 0 )
-            {
-                slpLocation.SetValues( locationIds );
-            }
-
             rtbName.Text = reservation.Name;
             rtbNote.Text = reservation.Note;
             nbAttending.Text = reservation.NumberAttending.ToString();
             nbSetupTime.Text = reservation.SetupTime.HasValue ? reservation.SetupTime.ToString() : "30";
             nbCleanupTime.Text = reservation.CleanupTime.HasValue ? reservation.CleanupTime.ToString() : "30";
+
+            LocationsState = reservation.ReservationLocations.ToList();
+            BindReservationLocationsGrid();
 
             ResourcesState = reservation.ReservationResources.ToList();
             BindReservationResourcesGrid();
@@ -599,12 +945,12 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
 
             rblStatus.Items.Clear();
             var statuses = new ReservationStatusService( rockContext ).Queryable().ToList();
-            foreach(var status in statuses )
+            foreach ( var status in statuses )
             {
                 var authorized = status.IsAuthorized( Authorization.EDIT, CurrentPerson );
                 rblStatus.Items.Add( new ListItem( status.Name, status.Id.ToString(), authorized ) );
             }
-                      
+
             if ( reservation.ReservationStatusId != 0 )
             {
                 rblStatus.SetValue( reservation.ReservationStatusId );
@@ -639,6 +985,17 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
             slpLocation.ItemRestUrlExtraParams += String.Format( "?reservationId={0}&iCalendarContent={1}&setupTime={2}&cleanupTime={3}", reservationId, encodedCalendarContent, nbSetupTime.Text.AsInteger(), nbCleanupTime.Text.AsInteger() );
         }
 
+        private void Hydrate( List<ReservationLocation> locationsState, RockContext rockContext )
+        {
+            var locationService = new LocationService( rockContext );
+            var reservationService = new ReservationService( rockContext );
+            foreach ( var reservationLocation in locationsState )
+            {
+                reservationLocation.Reservation = reservationService.Get( reservationLocation.ReservationId );
+                reservationLocation.Location = locationService.Get( reservationLocation.LocationId );
+            }
+        }
+
         private void Hydrate( List<ReservationResource> resourcesState, RockContext rockContext )
         {
             var resourceService = new ResourceService( rockContext );
@@ -650,6 +1007,6 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
             }
         }
 
-        #endregion        
+        #endregion
     }
 }

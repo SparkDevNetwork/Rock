@@ -26,7 +26,7 @@
                                 <Rock:NumberBox ID="nbAttending" runat="server" NumberType="Integer" MinimumValue="0" Label="Number Attending" Required="false" />
                             </div>
                             <div class="col-md-6">
-                                <Rock:RockRadioButtonList ID="rblStatus" runat="server" Label="Status" Required="true" RepeatDirection="Horizontal" AutoPostBack="true"/>
+                                <Rock:RockRadioButtonList ID="rblStatus" runat="server" Label="Status" Required="true" RepeatDirection="Horizontal" AutoPostBack="true" />
                             </div>
                         </div>
                     </div>
@@ -37,19 +37,37 @@
                                     <Rock:ScheduleBuilder ID="sbSchedule" runat="server" ValidationGroup="Schedule" Required="true" OnSaveSchedule="sbSchedule_SaveSchedule" />
                                     <asp:Literal ID="lScheduleText" runat="server" />
                                 </Rock:RockControlWrapper>
-                                <CentralAZ:ScheduledLocationItemPicker ID="slpLocation" runat="server" Label="Locations" Required="false" AllowMultiSelect="true" OnSelectItem="slpLocation_SelectItem" Enabled="false" />
                             </div>
+                        </div>
+                        <div class="row">
                             <div class="col-md-6">
                                 <Rock:NumberBox ID="nbSetupTime" runat="server" NumberType="Integer" MinimumValue="0" Label="Setup Time" Required="false" OnTextChanged="nbSetupTime_TextChanged" Help="The number of minutes it will take to set up the event." />
+                            </div>
+                            <div class="col-md-6">
                                 <Rock:NumberBox ID="nbCleanupTime" runat="server" NumberType="Integer" MinimumValue="0" Label="Cleanup Time" Required="false" OnTextChanged="nbCleanupTime_TextChanged" Help="The number of minutes it will take to clean up the event." />
                             </div>
                         </div>
+                        <Rock:PanelWidget ID="wpLocations" runat="server" Title="Locations">
+                            <div class="grid">
+                                <Rock:ModalAlert ID="maLocationGridWarning" runat="server" />
+                                <Rock:Grid ID="gLocations" runat="server" AllowPaging="false" DisplayType="Light" RowItemText="Location" ShowConfirmDeleteDialog="false" OnRowDataBound="gLocations_RowDataBound">
+                                    <Columns>
+                                        <Rock:RockBoundField DataField="Location" HeaderText="Location" />
+                                        <Rock:ToggleField DataField="IsApproved" HeaderText="Approved?" ButtonSizeCssClass="btn-xs" Enabled="True" OnCssClass="btn-success" OnText="Yes" OffText="No" SortExpression="IsApproved" OnCheckedChanged="gLocations_CheckedChanged" />
+                                        <Rock:EditField OnClick="gLocations_Edit" />
+                                        <Rock:DeleteField OnClick="gLocations_Delete" />
+                                    </Columns>
+                                </Rock:Grid>
+                            </div>
+                        </Rock:PanelWidget>
                         <Rock:PanelWidget ID="wpResources" runat="server" Title="Resources">
                             <div class="grid">
-                                <Rock:Grid ID="gResources" runat="server" AllowPaging="false" DisplayType="Light" RowItemText="Resource" ShowConfirmDeleteDialog="false">
+                                <Rock:ModalAlert ID="maResourceGridWarning" runat="server" />
+                                <Rock:Grid ID="gResources" runat="server" AllowPaging="false" DisplayType="Light" RowItemText="Resource" ShowConfirmDeleteDialog="false" OnRowDataBound="gResources_RowDataBound">
                                     <Columns>
                                         <Rock:RockBoundField DataField="Resource" HeaderText="Resource" />
                                         <Rock:RockBoundField DataField="Quantity" HeaderText="Quantity" />
+                                        <Rock:ToggleField DataField="IsApproved" HeaderText="Approved?" ButtonSizeCssClass="btn-xs" Enabled="True" OnCssClass="btn-success" OnText="Yes" OffText="No" SortExpression="IsApproved" OnCheckedChanged="gResources_CheckedChanged" />
                                         <Rock:EditField OnClick="gResources_Edit" />
                                         <Rock:DeleteField OnClick="gResources_Delete" />
                                     </Columns>
@@ -66,6 +84,18 @@
         </asp:Panel>
 
         <asp:HiddenField ID="hfActiveDialog" runat="server" />
+
+        <Rock:ModalDialog ID="dlgReservationLocation" runat="server" Title="Select Location" OnSaveClick="dlgReservationLocation_SaveClick" OnCancelScript="clearActiveDialog();" ValidationGroup="ReservationLocation">
+            <Content>
+                <asp:HiddenField ID="hfAddReservationLocationGuid" runat="server" />
+                <asp:ValidationSummary ID="valReservationLocationSummary" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" ValidationGroup="ReservationLocation" />
+                <div class="row">
+                    <div class="col-md-6">
+                        <CentralAZ:ScheduledLocationItemPicker ID="slpLocation" runat="server" Label="Location" Required="false" Enabled="false" AllowMultiSelect="false" OnSelectItem="slpLocation_SelectItem" ValidationGroup="ReservationLocation" />
+                    </div>
+                </div>
+            </Content>
+        </Rock:ModalDialog>
 
         <Rock:ModalDialog ID="dlgReservationResource" runat="server" Title="Select Resource" OnSaveClick="dlgReservationResource_SaveClick" OnCancelScript="clearActiveDialog();" ValidationGroup="ReservationResource">
             <Content>

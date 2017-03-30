@@ -50,10 +50,18 @@
 				 {{ reservationSummary.ReservationDateTimeDescription }}
 			</div>
 			<div class="col-md-2">
-			  {{ reservationSummary.Locations }}
+				<ul>
+				{% for reservationLocation in reservationSummary.Locations %}
+				<li>{{ reservationLocation.Location.Name }}{% if reservationLocation.IsApproved %} <i class="fa fa-check"></i>{% endif %}</li>
+				{% endfor %}
+				</ul>
 			</div>
 			<div class="col-md-2">
-			  {{ reservationSummary.Resources }}
+			  <ul>
+				{% for reservationResource in reservationSummary.Resources %}
+				<li>{{ reservationResource.Resource.Name }}({{reservationResource.Quantity}}) {% if reservationResource.IsApproved %} <i class="fa fa-check"></i>{% endif %}</li>
+				{% endfor %}
+				</ul>
 			</div>
 			<div class="col-md-1">
 			  {{ reservationSummary.Status }}

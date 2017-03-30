@@ -19,6 +19,8 @@ using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
 
 using Rock.Model;
+using Rock.Data;
+
 namespace com.centralaz.RoomManagement.Model
 {
     /// <summary>
@@ -45,11 +47,31 @@ namespace com.centralaz.RoomManagement.Model
         #region Virtual Properties
 
         public virtual Reservation Reservation { get; set; }
-
+        
+        [LavaInclude]
         public virtual Location Location { get; set; }
 
         #endregion
 
+        #region Methods
+
+        public void CopyPropertiesFrom( ReservationLocation source )
+        {
+            this.Id = source.Id;
+            this.ForeignGuid = source.ForeignGuid;
+            this.ForeignKey = source.ForeignKey;
+            this.ReservationId = source.ReservationId;
+            this.LocationId = source.LocationId;
+            this.IsApproved = source.IsApproved;
+            this.CreatedDateTime = source.CreatedDateTime;
+            this.ModifiedDateTime = source.ModifiedDateTime;
+            this.CreatedByPersonAliasId = source.CreatedByPersonAliasId;
+            this.ModifiedByPersonAliasId = source.ModifiedByPersonAliasId;
+            this.Guid = source.Guid;
+            this.ForeignId = source.ForeignId;
+        }
+
+        #endregion
     }
 
     #region Entity Configuration
