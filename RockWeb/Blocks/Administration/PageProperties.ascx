@@ -63,6 +63,10 @@
                                             Help="The description of the page to include as a meta tag for the page" />
                                     </div>
                                 </div>
+
+                                <Rock:PanelWidget ID="wpPageAttributes" runat="server" Title="Page Attribute Values">
+                                    <asp:PlaceHolder ID="phPageAttributes" runat="server" EnableViewState="false"></asp:PlaceHolder>
+                                </Rock:PanelWidget>
                             </asp:Panel>
 
                             <asp:Panel ID="pnlDisplaySettings" runat="server" Visible="false">
@@ -85,10 +89,6 @@
                                     <Rock:RockCheckBox ID="cbBreadCrumbIcon" runat="server" Text="Show Icon in Breadcrumb" Help="Should this page's icon be displayed in the breadcrumb trail when viewing this page or a child page?" />
                                 </fieldset>
                             </asp:Panel>
-
-                            <Rock:PanelWidget ID="wpPageAttributes" runat="server" Title="Page Attribute Values">
-                                <asp:PlaceHolder ID="phPageAttributes" runat="server" EnableViewState="false"></asp:PlaceHolder>
-                            </Rock:PanelWidget>
 
                             <asp:Panel ID="pnlAdvancedSettings" runat="server" Visible="false">
                                 <div class="row">
