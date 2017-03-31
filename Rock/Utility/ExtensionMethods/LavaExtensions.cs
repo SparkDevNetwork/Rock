@@ -268,7 +268,8 @@ namespace Rock
                 {
                     try
                     {
-                        result.Add( keyValue.Key, keyValue.Value.LiquidizeChildren( levelsDeep, rockContext, entityHistory, keyValue.Key ) );
+                        var parentVariable = ( keyValue.Value.GetType().GetInterface( "IList" ) != null ) ? keyValue.Key.ToLower().Singularize() : keyValue.Key;
+                        result.Add( keyValue.Key, keyValue.Value.LiquidizeChildren( levelsDeep, rockContext, entityHistory, parentVariable ) );
                     }
                     catch ( Exception ex )
                     {
@@ -370,7 +371,6 @@ namespace Rock
                         else
                         {
                             // item is a root level object
-
                             string panelId = Guid.NewGuid().ToString();
 
                             sb.Append( "<div class='panel panel-default panel-lavadebug'>" );
