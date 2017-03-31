@@ -41,7 +41,7 @@ namespace Rock.Model
         /// <param name="groupId">A <see cref="System.Int32"/> representing the Id of the <see cref="Rock.Model.Group"/>.</param>
         /// <param name="personId">A <see cref="System.Int32"/> representing the Id of the <see cref="Rock.Model.Person"/></param>
         /// <returns>The first <see cref="Rock.Model.Attendance"/> entity that matches the provided values.</returns>
-        public Attendance Get( DateTime date, int locationId, int scheduleId, int groupId, int personId )
+        public Attendance Get( DateTime date, int? locationId, int? scheduleId, int? groupId, int personId )
         {
             DateTime beginDate = date.Date;
             DateTime endDate = beginDate.AddDays( 1 );
