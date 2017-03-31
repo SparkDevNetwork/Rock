@@ -802,7 +802,15 @@ namespace Rock.Web.UI
                     var body = (HtmlGenericControl)this.Master.FindControl( "body" );
                     if ( body != null )
                     {
-                        body.Attributes.Add( "class", this.BodyCssClass );
+                        // determine if we need to append or add the class
+                        if ( body.Attributes["class"] != null )
+                        {
+                            body.Attributes["class"] += " " + this.BodyCssClass;
+                        }
+                        else
+                        {
+                            body.Attributes.Add( "class", "layout-class" );
+                        }
                     }
                 }
 
