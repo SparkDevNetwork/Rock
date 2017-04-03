@@ -511,7 +511,24 @@ namespace Rock.Data
         /// <param name="insertAfterPageGuid">The insert after page unique identifier.</param>
         public void AddPage( string parentPageGuid, string layoutGuid, string name, string description, string guid, string iconCssClass = "", string insertAfterPageGuid = "" )
         {
-            Migration.Sql( string.Format( @"
+            AddPage( false, parentPageGuid, layoutGuid, name, description, guid, iconCssClass, insertAfterPageGuid );
+        }
+
+        /// <summary>
+        /// Adds a new Page to the given parent page with an option to skip adding if the page already exists (based on Page.Guid).
+        /// If the page is added, the new page will be ordered as last child of the parent page.
+        /// </summary>
+        /// <param name="skipIfAlreadyExists">if set to <c>true</c>, the page will only be added if it doesn't already exist </param>
+        /// <param name="parentPageGuid">The parent page GUID.</param>
+        /// <param name="layoutGuid">The layout GUID.</param>
+        /// <param name="name">The name.</param>
+        /// <param name="description">The description.</param>
+        /// <param name="guid">The GUID.</param>
+        /// <param name="iconCssClass">The icon CSS class.</param>
+        /// <param name="insertAfterPageGuid">The insert after page unique identifier.</param>
+        public void AddPage( bool skipIfAlreadyExists, string parentPageGuid, string layoutGuid, string name, string description, string guid, string iconCssClass = "", string insertAfterPageGuid = "" )
+        {
+            string addPageSQL = string.Format( @"
 
                 DECLARE @ParentPageId int = ( SELECT [Id] FROM [Page] WHERE [Guid] = {0} )
                 DECLARE @LayoutId int = ( SELECT [Id] FROM [Layout] WHERE [Guid] = '{1}' )
@@ -550,7 +567,14 @@ namespace Rock.Data
                     guid,
                     iconCssClass,
                     string.IsNullOrWhiteSpace( insertAfterPageGuid ) ? "NULL" : "'" + insertAfterPageGuid + "'"
-                    ) );
+                    );
+
+            if ( skipIfAlreadyExists )
+            {
+                addPageSQL = $"if not exists (select * from Page where [Guid] = '{guid}') begin\n" + addPageSQL + "\nend";
+            }
+
+            Migration.Sql( addPageSQL );
         }
 
         /// <summary>
@@ -677,6 +701,27 @@ namespace Rock.Data
         /// <param name="guid">The unique identifier.</param>
         public void AddBlock( string pageGuid, string layoutGuid, string blockTypeGuid, string name, string zone, string preHtml, string postHtml, int order, string guid )
         {
+            AddBlock( false, pageGuid, layoutGuid, blockTypeGuid, name, zone, preHtml, postHtml, order, guid );
+        }
+
+        /// <summary>
+        /// Adds a new Block of the given block type to the given page (optional) and layout (optional),
+        /// setting its values with the given parameter values. If only the layout is given,
+        /// edit/configuration authorization will also be inserted into the Auth table
+        /// for the admin role (GroupId 2).
+        /// </summary>
+        /// <param name="skipIfAlreadyExists">if set to <c>true</c>, the block will only be added if it doesn't already exist </param>
+        /// <param name="pageGuid">The page GUID.</param>
+        /// <param name="layoutGuid">The layout GUID.</param>
+        /// <param name="blockTypeGuid">The block type GUID.</param>
+        /// <param name="name">The name.</param>
+        /// <param name="zone">The zone.</param>
+        /// <param name="preHtml">The pre HTML.</param>
+        /// <param name="postHtml">The post HTML.</param>
+        /// <param name="order">The order.</param>
+        /// <param name="guid">The unique identifier.</param>
+        public void AddBlock( bool skipIfAlreadyExists, string pageGuid, string layoutGuid, string blockTypeGuid, string name, string zone, string preHtml, string postHtml, int order, string guid )
+        {
             var sb = new StringBuilder();
             sb.Append( @"
                 DECLARE @PageId int
@@ -734,7 +779,15 @@ namespace Rock.Data
                 INSERT INTO [Auth] ([EntityTypeId],[EntityId],[Order],[Action],[AllowOrDeny],[SpecialRole],[GroupId],[Guid])
                     VALUES(@EntityTypeId,@BlockId,0,'Configure','A',0,2,NEWID())
 " );
-            Migration.Sql( sb.ToString() );
+
+            string addBlockSQL = sb.ToString();
+
+            if ( skipIfAlreadyExists )
+            {
+                addBlockSQL = $"if not exists (select * from [Block] where [Guid] = '{guid}') begin\n" + addBlockSQL + "\nend";
+            }
+
+            Migration.Sql( addBlockSQL );
         }
 
         /// <summary>
@@ -1718,7 +1771,21 @@ namespace Rock.Data
         /// <param name="appendToExisting">if set to <c>true</c> appends the value to the existing value instead of replacing.</param>
         public void AddBlockAttributeValue( string blockGuid, string attributeGuid, string value, bool appendToExisting = false )
         {
-            Migration.Sql( string.Format( @"
+            AddBlockAttributeValue( false, blockGuid, attributeGuid, value, appendToExisting );
+        }
+
+        /// <summary>
+        /// Adds a new block attribute value for the given block guid and attribute guid,
+        /// deleting any previously existing attribute value first.
+        /// </summary>
+        /// <param name="skipIfAlreadyExists">if set to <c>true</c>, the block attribute value will only be set if it doesn't already exist (based on Attribute.Guid and Block.Guid)</param>
+        /// <param name="blockGuid">The block GUID.</param>
+        /// <param name="attributeGuid">The attribute GUID.</param>
+        /// <param name="value">The value.</param>
+        /// <param name="appendToExisting">if set to <c>true</c> appends the value to the existing value instead of replacing.</param>
+        public void AddBlockAttributeValue( bool skipIfAlreadyExists, string blockGuid, string attributeGuid, string value, bool appendToExisting = false )
+        { 
+            var addBlockValueSQL = string.Format( @"
 
                 DECLARE @BlockId int
                 SET @BlockId = (SELECT [Id] FROM [Block] WHERE [Guid] = '{0}')
@@ -1761,8 +1828,23 @@ namespace Rock.Data
                     attributeGuid,
                     value.Replace( "'", "''" ),
                     ( appendToExisting ? "1" : "0" )
-                )
-            );
+                );
+            
+            if ( skipIfAlreadyExists )
+            {
+                addBlockValueSQL = $@"IF NOT EXISTS (
+		SELECT *
+		FROM [AttributeValue] av
+		INNER JOIN [Attribute] a ON av.AttributeId = a.Id
+		INNER JOIN [Block] b ON av.EntityId = b.Id
+		WHERE b.[Guid] = '{blockGuid}'
+			AND a.[Guid] = '{attributeGuid}'
+		)
+BEGIN
+" + addBlockValueSQL + "\nEND";
+            }
+
+            Migration.Sql( addBlockValueSQL );
         }
 
         /// <summary>
@@ -2265,7 +2347,7 @@ namespace Rock.Data
         }
 
         /// <summary>
-        /// Adds or Updates the security auth for the specified NoteType
+        /// Adds or Updates the security auth for the specified NoteType if it doesn't already exist
         /// </summary>
         /// <param name="noteTypeGuid">The note type unique identifier.</param>
         /// <param name="order">The order.</param>
@@ -2874,7 +2956,7 @@ WHERE [EntityTypeId] = @EntityTypeId
         }
 
         /// <summary>
-        /// Adds the attribute security authentication. Set GroupGuid to null when setting to a special role
+        /// Adds the attribute security authentication if it doesn't already exist. Set GroupGuid to null when setting to a special role
         /// </summary>
         /// <param name="attributeGuid">The attribute unique identifier.</param>
         /// <param name="order">The order.</param>
