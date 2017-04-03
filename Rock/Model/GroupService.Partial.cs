@@ -895,6 +895,7 @@ namespace Rock.Model
         /// <param name="locationTypeGuid">The location type unique identifier.</param>
         /// <param name="locationId">The location identifier.</param>
         /// <param name="moveExistingToPrevious">if set to <c>true</c> [move existing to previous].</param>
+        /// <param name="modifiedBy">The modified by.</param>
         /// <param name="isMailingLocation">Sets the Is Mailing option on the new address.</param>
         /// <param name="isMappedLocation">Sets the Is Mapped option on the new address.</param>
         public static void AddNewGroupAddress( RockContext rockContext, Group group, string locationTypeGuid, 

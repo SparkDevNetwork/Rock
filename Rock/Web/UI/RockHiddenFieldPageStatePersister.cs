@@ -88,9 +88,9 @@ namespace Rock.Web.UI
             SizeThreshold = 102400;
         }
 
-        //
-        // Load ViewState and ControlState.
-        //
+        /// <summary>
+        /// Deserializes and loads persisted state information from an <see cref="T:System.Web.HttpRequest" /> object when a <see cref="T:System.Web.UI.Page" /> object initializes its control hierarchy.
+        /// </summary>
         public override void Load()
         {
             string viewState = Page.Request.Form["__CVIEWSTATE"];
@@ -127,9 +127,9 @@ namespace Rock.Web.UI
             ControlState = pair.Second;
         }
 
-        //
-        // Persist any ViewState and ControlState.
-        //
+        /// <summary>
+        /// Serializes any object state contained in the <see cref="P:System.Web.UI.PageStatePersister.ViewState" /> or <see cref="P:System.Web.UI.PageStatePersister.ControlState" /> property and writes the state to the response stream.
+        /// </summary>
         public override void Save()
         {
             // save the viewstate contents so we can read/parse it later
