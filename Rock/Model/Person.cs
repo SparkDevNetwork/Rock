@@ -2694,6 +2694,17 @@ namespace Rock.Model
         }
 
         /// <summary>
+        /// Gets the businesses.
+        /// </summary>
+        /// <param name="person">The person.</param>
+        /// <param name="rockContext">The rock context.</param>
+        /// <returns></returns>
+        public static IQueryable<Person> GetBusinesses( this Person person, RockContext rockContext = null )
+        {
+            return new PersonService( rockContext ?? new RockContext() ).GetBusinesses( person.Id );
+        }
+
+        /// <summary>
         /// limits the PersonQry to people that have an Age that is between MinAge and MaxAge (inclusive)
         /// </summary>
         /// <param name="personQry">The person qry.</param>
