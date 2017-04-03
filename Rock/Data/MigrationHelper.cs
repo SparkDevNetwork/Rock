@@ -801,7 +801,7 @@ namespace Rock.Data
         public void UpdateCategory( string entityTypeGuid, string name, string iconCssClass, string description, string guid, int order = 0, string parentCategoryGuid = "" )
         {
             StringBuilder sql = new StringBuilder();
-
+            
             sql.AppendFormat( @"
 
                 DECLARE @EntityTypeId int = (SELECT [Id] FROM [EntityType] WHERE [Guid] = '{0}')
@@ -810,7 +810,7 @@ namespace Rock.Data
 ", entityTypeGuid );
 
             var parentGuid = parentCategoryGuid.AsGuidOrNull();
-            if ( parentGuid.HasValue )
+            if (parentGuid.HasValue )
             {
                 sql.AppendFormat( @"
                 SET @ParentCategoryId = ( SELECT [Id] FROM [Category] WHERE [Guid] = '{0}' )
@@ -820,7 +820,7 @@ namespace Rock.Data
             {
                 sql.Append( @"
                 SET @ParentCategoryId = NULL
-" );
+");
             }
 
             sql.AppendFormat( @"
@@ -869,7 +869,7 @@ namespace Rock.Data
                     order
             );
 
-            Migration.Sql( sql.ToString() );
+             Migration.Sql( sql.ToString() );
         }
 
         /// <summary>
@@ -1399,7 +1399,7 @@ namespace Rock.Data
         /// <param name="defaultValue">The default value.</param>
         /// <param name="guid">The unique identifier.</param>
         /// <param name="key">The key.</param>
-        public void UpdateEntityAttribute( string modelEntityTypeName, string componentEntityTypeName, string fieldTypeGuid, string name, string description, int order, string defaultValue, string guid, string key = null )
+        public void UpdateEntityAttribute( string modelEntityTypeName, string  componentEntityTypeName, string fieldTypeGuid, string name, string description, int order, string defaultValue, string guid, string key = null )
         {
             EnsureEntityTypeExists( modelEntityTypeName, true, true );
             EnsureEntityTypeExists( componentEntityTypeName, false, true );
@@ -1461,7 +1461,7 @@ namespace Rock.Data
                     description.Replace( "'", "''" ),
                     order,
                     defaultValue,
-                    guid )
+                    guid)
             );
         }
 
@@ -1553,7 +1553,7 @@ namespace Rock.Data
                 end"
                 , entityTypeName
                 , isEntity ? 1 : 0
-                , isSecured ? 1 : 0
+                , isSecured ? 1 : 0 
                 )
             );
         }
@@ -2011,7 +2011,7 @@ namespace Rock.Data
         /// <param name="isSystem">if set to <c>true</c> [is system].</param>
         /// <param name="foreignId">The foreign identifier.</param>
         /// <param name="foreignKey">The foreign key.</param>
-        public void UpdateDefinedValue( string definedTypeGuid, string value, string description, string guid, bool isSystem = true, int? foreignId = null, string foreignKey = "" )
+        public void UpdateDefinedValue( string definedTypeGuid, string value, string description, string guid, bool isSystem = true,  int? foreignId = null, string foreignKey = "")
         {
             Migration.Sql( string.Format( @"
 
@@ -2234,7 +2234,7 @@ namespace Rock.Data
         /// <param name="userSelectable">if set to <c>true</c> [user selectable].</param>
         /// <param name="guid">The unique identifier.</param>
         /// <param name="IsSystem">if set to <c>true</c> [is system].</param>
-        public void UpdateNoteType( string name, string entityTypeName, bool userSelectable, string guid, bool IsSystem = true )
+        public void UpdateNoteType( string name, string entityTypeName, bool userSelectable,  string guid, bool IsSystem = true )
         {
             EnsureEntityTypeExists( entityTypeName );
 
@@ -2261,7 +2261,7 @@ namespace Rock.Data
                         [IsSystem] = {IsSystem.Bit()}
                     WHERE Id = @Id;
                 END" );
-
+                    
         }
 
         /// <summary>
@@ -2576,7 +2576,7 @@ WHERE [EntityTypeId] = @EntityTypeId
             {
                 groupGuid = Guid.Empty.ToString();
             }
-
+            
             string entityTypeName = "Rock.Model.Page";
             EnsureEntityTypeExists( entityTypeName );
 
@@ -2660,7 +2660,7 @@ WHERE [EntityTypeId] = @EntityTypeId
             {
                 groupGuid = Guid.Empty.ToString();
             }
-
+            
             string entityTypeName = "Rock.Model.Block";
             EnsureEntityTypeExists( entityTypeName );
 
@@ -2723,7 +2723,7 @@ END
             {
                 groupGuid = Guid.Empty.ToString();
             }
-
+            
             string entityTypeName = "Rock.Model.BinaryFileType";
             EnsureEntityTypeExists( entityTypeName );
 
@@ -2806,7 +2806,7 @@ WHERE [EntityTypeId] = @EntityTypeId
             {
                 groupGuid = Guid.Empty.ToString();
             }
-
+            
             string entityTypeName = "Rock.Model.GroupType";
             EnsureEntityTypeExists( entityTypeName );
 
@@ -2889,7 +2889,7 @@ WHERE [EntityTypeId] = @EntityTypeId
             {
                 groupGuid = Guid.Empty.ToString();
             }
-
+            
             string entityTypeName = "Rock.Model.Attribute";
             EnsureEntityTypeExists( entityTypeName );
 
@@ -3046,7 +3046,7 @@ WHERE [EntityTypeId] = @EntityTypeId
             {
                 groupGuid = Guid.Empty.ToString();
             }
-
+            
             string entityTypeName = "Rock.Model.Category";
             EnsureEntityTypeExists( entityTypeName );
 
@@ -3118,7 +3118,7 @@ END
             {
                 groupGuid = Guid.Empty.ToString();
             }
-
+            
             string entityTypeName = "Rock.Model.RestController";
             EnsureEntityTypeExists( entityTypeName );
 
@@ -3262,7 +3262,7 @@ END
             {
                 groupGuid = Guid.Empty.ToString();
             }
-
+            
             string entityTypeName = "Rock.Model.RestAction";
             EnsureEntityTypeExists( entityTypeName );
 
@@ -3681,7 +3681,7 @@ END
                         ,{isRequired.Bit()}
                         ,'{guid}')
                 END
-                " );
+                ");
         }
 
         /// <summary>
@@ -4691,7 +4691,7 @@ END
                     ( isReadOnly ? "1" : "0" ),
                     ( isRequired ? "1" : "0" ),
                     ( hideLabel ? "1" : "0" ),
-                    preHtml.Replace( "'", "''" ),
+                    preHtml.Replace("'", "''"),
                     postHtml.Replace( "'", "''" ),
                     guid )
             );
