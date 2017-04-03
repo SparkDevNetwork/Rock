@@ -136,7 +136,7 @@ namespace RockWeb.Blocks.Fundraising
                 if ( RockDateTime.Now <= ( dateRange.End ?? DateTime.MaxValue ) )
                 {
                     var listItem = new ListItem( fundraisingOpportunity.GetAttributeValue( "OpportunityTitle" ), fundraisingOpportunity.Id.ToString() );
-                    if ( listItem.Text.IsNullOrWhiteSpace() )
+                    if ( string.IsNullOrWhiteSpace( listItem.Text ) )
                     {
                         // just in case the OpportunityTitle wasn't set
                         listItem.Text = fundraisingOpportunity.Name;
