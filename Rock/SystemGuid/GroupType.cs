@@ -81,5 +81,9 @@ namespace Rock.SystemGuid
         /// </summary>
         public const string GROUPTYPE_WEEKLY_SERVICE_CHECKIN_AREA = "FEDD389A-616F-4A53-906C-63D8255631C5";
 
+        /// <summary>
+        /// Fundraising Opportunity group type guid
+        /// </summary>
+        public const string GROUPTYPE_FUNDRAISINGOPPORTUNITY = "4BE7FC44-332D-40A8-978E-47B7035D7A0C";
     }
 }
