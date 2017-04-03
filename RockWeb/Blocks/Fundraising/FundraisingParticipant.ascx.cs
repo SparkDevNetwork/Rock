@@ -467,7 +467,7 @@ namespace RockWeb.Blocks.Fundraising
                 {
                     warningItems.Add( "photo" );
                 }
-                if ( groupMember.GetAttributeValue( "PersonalOpportunityIntroduction" ).IsNullOrWhiteSpace())
+                if ( string.IsNullOrWhiteSpace(groupMember.GetAttributeValue( "PersonalOpportunityIntroduction" ) ) )
                 {
                     warningItems.Add( "personal opportunity introduction" );
                 }
