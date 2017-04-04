@@ -77,9 +77,9 @@ namespace Rock.Search.Other
             // get the search type
             var searchType = SearchType.ExactMatch;
 
-            if ( !string.IsNullOrWhiteSpace( Rock.Web.SystemSettings.GetValue( "core_SmartSearchUniversalSearchFieldCriteria" ) ) )
+            if ( !string.IsNullOrWhiteSpace( Rock.Web.SystemSettings.GetValue( "core_SmartSearchUniversalSearchSearchType" ) ) )
             {
-                searchType = (SearchType)Enum.Parse( typeof( SearchType ), Rock.Web.SystemSettings.GetValue( "core_SmartSearchUniversalSearchFieldCriteria" ) );
+                searchType = (SearchType)Enum.Parse( typeof( SearchType ), Rock.Web.SystemSettings.GetValue( "core_SmartSearchUniversalSearchSearchType" ) );
             }
 
             if ( !string.IsNullOrWhiteSpace( fieldCriteriaSetting ) )
