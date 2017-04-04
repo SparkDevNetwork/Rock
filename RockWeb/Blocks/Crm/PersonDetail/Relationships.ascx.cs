@@ -65,12 +65,12 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         protected Guid ownerRoleGuid { get; set; }
 
         /// <summary>
-        /// Gets or sets a value indicating whether this instance is known relationships.
+        /// Gets or sets a value indicating whether this instance is inverse relationships owner.
         /// </summary>
         /// <value>
-        /// <c>true</c> if this instance is known relationships; otherwise, <c>false</c>.
+        /// <c>true</c> if this instance is inverse relationships owner; otherwise, <c>false</c>.
         /// </value>
-        protected bool IsKnownRelationships { get; set; }
+        protected bool IsInverseRelationshipsOwner { get; set; }
 
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
@@ -81,9 +81,19 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             base.OnInit( e );
 
             ownerRoleGuid = GetAttributeValue( "GroupType/RoleFilter" ).AsGuidOrNull() ?? Guid.Empty;
-            IsKnownRelationships = ownerRoleGuid.Equals( Rock.SystemGuid.GroupRole.GROUPROLE_KNOWN_RELATIONSHIPS_OWNER.AsGuid() );
 
-            lbAdd.Visible = IsKnownRelationships;
+            // The 'owner' of the group is determined by built-in KnownRelationshipsOwner role or the role that is marked as IsLeader for the group
+            var ownerRole = new GroupTypeRoleService( new RockContext() ).Get( ownerRoleGuid );
+            if ( ownerRole != null )
+            {
+                ownerRole.LoadAttributes();
+                IsInverseRelationshipsOwner = ownerRole.Attributes.ContainsKey( "InverseRelationship" ) 
+                    && ( ownerRole.Guid.Equals( Rock.SystemGuid.GroupRole.GROUPROLE_KNOWN_RELATIONSHIPS_OWNER.AsGuid() ) || ownerRole.IsLeader );
+            }
+            else
+            {
+                IsInverseRelationshipsOwner = false;
+            }
 
             rGroupMembers.ItemDataBound += rGroupMembers_ItemDataBound;
             rGroupMembers.ItemCommand += rGroupMembers_ItemCommand;
@@ -92,7 +102,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             modalAddPerson.OnCancelScript = string.Format( "$('#{0}').val('');", hfRoleId.ClientID );
 
             CanEdit = IsUserAuthorized( Authorization.EDIT );
-            lbAdd.Visible = CanEdit;
+            lbAdd.Visible = CanEdit && IsInverseRelationshipsOwner;
 
             string script = @"
     $('a.remove-relationship').click(function(){
@@ -184,7 +194,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                         }
                         else if ( e.CommandName == "RemoveRole" )
                         {
-                            if ( IsKnownRelationships )
+                            if ( IsInverseRelationshipsOwner )
                             {
                                 var inverseGroupMember = service.GetInverseRelationship( groupMember, false );
                                 if ( inverseGroupMember != null )
@@ -247,7 +257,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                             }
 
                             GroupMember formerInverseGroupMember = null;
-                            if ( IsKnownRelationships )
+                            if ( IsInverseRelationshipsOwner )
                             {
                                 formerInverseGroupMember = memberService.GetInverseRelationship( groupMember, false );
                             }
@@ -257,7 +267,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 
                             rockContext.SaveChanges();
 
-                            if ( IsKnownRelationships )
+                            if ( IsInverseRelationshipsOwner )
                             {
                                 var inverseGroupMember = memberService.GetInverseRelationship( groupMember, GetAttributeValue( "CreateGroup" ).AsBoolean() );
                                 if ( inverseGroupMember != null )
