@@ -293,6 +293,8 @@ This {{ Workflow.WorkflowType.WorkTerm }} does not currently require your attent
                 service.Delete( workflowType );
 
                 rockContext.SaveChanges();
+
+                WorkflowTypeCache.Flush( workflowType.Id );
             }
 
             // reload page
@@ -832,6 +834,8 @@ This {{ Workflow.WorkflowType.WorkTerm }} does not currently require your attent
                     workflowActionType.SaveAttributeValues( rockContext );
                 }
             }
+
+            WorkflowTypeCache.Flush( workflowType.Id );
 
             var qryParams = new Dictionary<string, string>();
             qryParams["workflowTypeId"] = workflowType.Id.ToString();

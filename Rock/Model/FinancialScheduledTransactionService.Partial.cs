@@ -610,7 +610,7 @@ namespace Rock.Model
             return processedAmount - rockAmount;
         }
 
-        private void LaunchWorkflow( WorkflowType workflowType, FinancialTransaction transaction )
+        private void LaunchWorkflow( WorkflowTypeCache workflowType, FinancialTransaction transaction )
         {
             if ( workflowType != null && ( workflowType.IsActive ?? true ) )
             {

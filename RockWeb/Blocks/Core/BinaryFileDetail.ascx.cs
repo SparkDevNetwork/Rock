@@ -122,8 +122,7 @@ namespace RockWeb.Blocks.Core
 
                     // create a rockContext for the workflow so that it can save it's changes, without 
                     var workflowRockContext = new RockContext();
-                    var workflowTypeService = new WorkflowTypeService( workflowRockContext );
-                    var workflowType = workflowTypeService.Get( workflowTypeGuid );
+                    var workflowType = Rock.Web.Cache.WorkflowTypeCache.Read( workflowTypeGuid );
                     if ( workflowType != null && ( workflowType.IsActive ?? true ) )
                     {
                         var workflow = Workflow.Activate( workflowType, binaryFile.FileName );
