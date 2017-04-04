@@ -30,15 +30,12 @@ using Rock.Web.Cache;
 
 namespace Rock.PersonProfile.Badge
 {
-    // TODO: Update to return actual data
-
     /// <summary>
-    /// FamilyAttendance Badge
+    /// In Group With Purpose Badge
     /// </summary>
     [Description( "Shows badge if the individual is in a group where it's group type has a specified purpose (e.g. Serving)." )]
     [Export( typeof( BadgeComponent ) )]
     [ExportMetadata( "ComponentName", "In Group With Purpose" )]
-    
     
     [DefinedValueField( SystemGuid.DefinedType.GROUPTYPE_PURPOSE, "Group Type Purpose", "The purpose to filter on.")]
     [TextField( "Badge Icon CSS", "The CSS icon to use for the badge.", true, "fa fa-users", key:"BadgeIconCss")]
