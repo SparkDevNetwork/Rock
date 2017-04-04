@@ -954,6 +954,7 @@
     <Compile Include="PersonProfile\Badge\FamilyAttendance.cs" />
     <Compile Include="PersonProfile\Badge\FamilyWeeksAttendedInDuration.cs" />
     <Compile Include="PersonProfile\Badge\GeofencedByGroup.cs" />
+    <Compile Include="PersonProfile\Badge\GroupTypeAttendance.cs" />
     <Compile Include="PersonProfile\Badge\InGroupOfType.cs" />
     <Compile Include="PersonProfile\Badge\InGroupWithPurpose.cs" />
     <Compile Include="PersonProfile\Badge\LastVisitOnSite.cs" />
