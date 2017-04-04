@@ -160,13 +160,14 @@ namespace Rock.Model
         {
             get
             {
-                if ( this.EntityType != null )
+                var entityType = Web.Cache.EntityTypeCache.Read( this.EntityTypeId );
+                if ( entityType != null )
                 {
                     foreach ( var serviceEntry in ActionContainer.Instance.Components )
                     {
                         var component = serviceEntry.Value.Value;
                         string componentName = component.GetType().FullName;
-                        if ( componentName == this.EntityType.Name )
+                        if ( componentName == entityType.Name )
                         {
                             return component;
                         }
