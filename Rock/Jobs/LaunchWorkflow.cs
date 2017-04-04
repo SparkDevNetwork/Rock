@@ -68,15 +68,13 @@ namespace Rock.Jobs
             Guid workflowTypeGuid = Guid.NewGuid();
             if ( Guid.TryParse( workflowName, out workflowTypeGuid ) )
             {
-                var rockContext = new RockContext();
-                var workflowTypeService = new WorkflowTypeService( rockContext );
-                var workflowType = workflowTypeService.Get( workflowTypeGuid );
+                var workflowType = Web.Cache.WorkflowTypeCache.Read( workflowTypeGuid );
                 if ( workflowType != null && ( workflowType.IsActive ?? true ) )
                 {
                     var workflow = Rock.Model.Workflow.Activate( workflowType, workflowName );
 
                     List<string> workflowErrors;
-                    var processed = new Rock.Model.WorkflowService( rockContext ).Process( workflow, out workflowErrors );
+                    var processed = new Rock.Model.WorkflowService( new RockContext() ).Process( workflow, out workflowErrors );
                     context.Result = ( processed ? "Processed " : "Did not process " ) + workflow.ToString();
                 }
             }

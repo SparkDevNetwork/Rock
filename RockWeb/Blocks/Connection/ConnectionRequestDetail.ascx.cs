@@ -2260,52 +2260,56 @@ namespace RockWeb.Blocks.Connection
         /// <param name="name">The name.</param>
         private void LaunchWorkflow( RockContext rockContext, ConnectionRequest connectionRequest, ConnectionWorkflow connectionWorkflow )
         {
-            if ( connectionRequest != null && connectionWorkflow != null && connectionWorkflow.WorkflowType != null && ( connectionWorkflow.WorkflowType.IsActive ?? true ) )
+            if ( connectionRequest != null && connectionWorkflow != null )
             {
-                var workflow = Rock.Model.Workflow.Activate( connectionWorkflow.WorkflowType, connectionWorkflow.WorkflowType.WorkTerm, rockContext );
-                if ( workflow != null )
+                var workflowType = connectionWorkflow.WorkflowTypeCache;
+                if ( workflowType != null && ( workflowType.IsActive ?? true ) )
                 {
-                    var workflowService = new Rock.Model.WorkflowService( rockContext );
-
-                    List<string> workflowErrors;
-                    if ( workflowService.Process( workflow, connectionRequest, out workflowErrors ) )
+                    var workflow = Rock.Model.Workflow.Activate( workflowType, connectionWorkflow.WorkflowType.WorkTerm, rockContext );
+                    if ( workflow != null )
                     {
-                        if ( workflow.Id != 0 )
+                        var workflowService = new Rock.Model.WorkflowService( rockContext );
+
+                        List<string> workflowErrors;
+                        if ( workflowService.Process( workflow, connectionRequest, out workflowErrors ) )
                         {
-                            ConnectionRequestWorkflow connectionRequestWorkflow = new ConnectionRequestWorkflow();
-                            connectionRequestWorkflow.ConnectionRequestId = connectionRequest.Id;
-                            connectionRequestWorkflow.WorkflowId = workflow.Id;
-                            connectionRequestWorkflow.ConnectionWorkflowId = connectionWorkflow.Id;
-                            connectionRequestWorkflow.TriggerType = connectionWorkflow.TriggerType;
-                            connectionRequestWorkflow.TriggerQualifier = connectionWorkflow.QualifierValue;
-                            new ConnectionRequestWorkflowService( rockContext ).Add( connectionRequestWorkflow );
-
-                            rockContext.SaveChanges();
-
-                            if ( workflow.HasActiveEntryForm( CurrentPerson ) )
+                            if ( workflow.Id != 0 )
                             {
-                                var qryParam = new Dictionary<string, string>();
-                                qryParam.Add( "WorkflowTypeId", connectionWorkflow.WorkflowType.Id.ToString() );
-                                qryParam.Add( "WorkflowId", workflow.Id.ToString() );
-                                NavigateToLinkedPage( "WorkflowEntryPage", qryParam );
+                                ConnectionRequestWorkflow connectionRequestWorkflow = new ConnectionRequestWorkflow();
+                                connectionRequestWorkflow.ConnectionRequestId = connectionRequest.Id;
+                                connectionRequestWorkflow.WorkflowId = workflow.Id;
+                                connectionRequestWorkflow.ConnectionWorkflowId = connectionWorkflow.Id;
+                                connectionRequestWorkflow.TriggerType = connectionWorkflow.TriggerType;
+                                connectionRequestWorkflow.TriggerQualifier = connectionWorkflow.QualifierValue;
+                                new ConnectionRequestWorkflowService( rockContext ).Add( connectionRequestWorkflow );
+
+                                rockContext.SaveChanges();
+
+                                if ( workflow.HasActiveEntryForm( CurrentPerson ) )
+                                {
+                                    var qryParam = new Dictionary<string, string>();
+                                    qryParam.Add( "WorkflowTypeId", workflowType.Id.ToString() );
+                                    qryParam.Add( "WorkflowId", workflow.Id.ToString() );
+                                    NavigateToLinkedPage( "WorkflowEntryPage", qryParam );
+                                }
+                                else
+                                {
+                                    mdWorkflowLaunched.Show( string.Format( "A '{0}' workflow has been started.",
+                                        workflowType.Name ), ModalAlertType.Information );
+                                }
+
+                                ShowDetail( PageParameter( "ConnectionRequestId" ).AsInteger(), PageParameter( "ConnectionOpportunityId" ).AsIntegerOrNull() );
                             }
                             else
                             {
-                                mdWorkflowLaunched.Show( string.Format( "A '{0}' workflow has been started.",
-                                    connectionWorkflow.WorkflowType.Name ), ModalAlertType.Information );
+                                mdWorkflowLaunched.Show( string.Format( "A '{0}' workflow was processed (but not persisted).",
+                                    workflowType.Name ), ModalAlertType.Information );
                             }
-
-                            ShowDetail( PageParameter( "ConnectionRequestId" ).AsInteger(), PageParameter( "ConnectionOpportunityId" ).AsIntegerOrNull() );
                         }
                         else
                         {
-                            mdWorkflowLaunched.Show( string.Format( "A '{0}' workflow was processed (but not persisted).",
-                                connectionWorkflow.WorkflowType.Name ), ModalAlertType.Information );
+                            mdWorkflowLaunched.Show( "Workflow Processing Error(s):<ul><li>" + workflowErrors.AsDelimited( "</li><li>" ) + "</li></ul>", ModalAlertType.Information );
                         }
-                    }
-                    else
-                    {
-                        mdWorkflowLaunched.Show( "Workflow Processing Error(s):<ul><li>" + workflowErrors.AsDelimited( "</li><li>" ) + "</li></ul>", ModalAlertType.Information );
                     }
                 }
             }

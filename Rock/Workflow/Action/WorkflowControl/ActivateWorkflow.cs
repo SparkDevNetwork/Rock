@@ -22,6 +22,7 @@ using System.ComponentModel.Composition;
 using Rock.Data;
 using Rock.Model;
 using Rock.Attribute;
+using Rock.Web.Cache;
 
 namespace Rock.Workflow.Action
 {
@@ -53,12 +54,11 @@ namespace Rock.Workflow.Action
             var workflowTypeGuid = GetAttributeValue(action, "WorkflowType").AsGuidOrNull();
             var workflowName = GetAttributeValue(action, "WorkflowName");
 
-            WorkflowType workflowType = null;
+            WorkflowTypeCache workflowType = null;
 
             if ( workflowTypeGuid.HasValue )
             {
-                var workflowTypeService = new WorkflowTypeService( rockContext );
-                workflowType = workflowTypeService.Get( workflowTypeGuid.Value );
+                workflowType = WorkflowTypeCache.Read( workflowTypeGuid.Value );
             }
 
             if ( workflowType != null && !string.IsNullOrEmpty(workflowName))

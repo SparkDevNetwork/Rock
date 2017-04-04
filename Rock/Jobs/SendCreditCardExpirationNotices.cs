@@ -72,13 +72,12 @@ namespace Rock.Jobs
 
             // Fetch the configured Workflow once if one was set, we'll use it later.
             Guid? workflowGuid = dataMap.GetString( "Workflow" ).AsGuidOrNull();
-            WorkflowType workflowType = null;
-            var workflowTypeService = new WorkflowTypeService( rockContext );
+            WorkflowTypeCache workflowType = null;
             var workflowService = new WorkflowService( rockContext );
 
             if ( workflowGuid != null )
             {
-                workflowType = workflowTypeService.Get( workflowGuid.Value );
+                workflowType = WorkflowTypeCache.Read( workflowGuid.Value );
             }
 
             var qry = new FinancialScheduledTransactionService( rockContext )
@@ -155,7 +154,7 @@ namespace Rock.Jobs
         /// <param name="workflowType">Type of the workflow.</param>
         /// <param name="attributes">The attributes.</param>
         /// <param name="workflowNameSuffix">The workflow instance name suffix (the part that is tacked onto the end fo the name to distinguish one instance from another).</param>
-        protected void StartWorkflow( WorkflowService workflowService, WorkflowType workflowType, Dictionary<string, string> attributes, string workflowNameSuffix )
+        protected void StartWorkflow( WorkflowService workflowService, WorkflowTypeCache workflowType, Dictionary<string, string> attributes, string workflowNameSuffix )
         {
             // launch workflow if configured
             if ( workflowType != null && ( workflowType.IsActive ?? true ) )
