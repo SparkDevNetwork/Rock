@@ -27,9 +27,9 @@
                                     Role='<%# ShowRole ? Eval("GroupRole.Name") : "" %>'
                                     PhotoId='<%# Eval("Person.PhotoId") %>' />
                                 <div class="actions pull-right">
-                                    <asp:LinkButton ID="lbEdit" runat="server" CssClass="edit" Text="Edit Relationship" Visible='<%# IsKnownRelationships %>'
+                                    <asp:LinkButton ID="lbEdit" runat="server" CssClass="edit" Text="Edit Relationship" Visible='<%# IsInverseRelationshipsOwner %>'
                                         CommandName="EditRole" CommandArgument='<%# Eval("Id") %>'><i class="fa fa-pencil"></i></asp:LinkButton>
-                                    <asp:LinkButton ID="lbRemove" runat="server" CssClass="edit remove-relationship" Text="Remove Relationship" Visible='<%# IsKnownRelationships %>'
+                                    <asp:LinkButton ID="lbRemove" runat="server" CssClass="edit remove-relationship" Text="Remove Relationship" Visible='<%# IsInverseRelationshipsOwner %>'
                                         CommandName="RemoveRole" CommandArgument='<%# Eval("Id") %>'><i class="fa fa-times"></i></asp:LinkButton>
                                 </div>
                             </li>
