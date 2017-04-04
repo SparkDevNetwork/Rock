@@ -45,6 +45,7 @@ namespace RockWeb.Blocks.WorkFlow
         #region Fields
 
         private bool _canEdit = false;
+        private bool _canView = false;
         private PersonAliasService _personAliasService = null;
         private GroupService _groupService = null;
 
@@ -108,6 +109,7 @@ namespace RockWeb.Blocks.WorkFlow
             }
 
             _canEdit = UserCanEdit || Workflow.IsAuthorized( Rock.Security.Authorization.EDIT, CurrentPerson );
+            _canView = _canEdit || ( Workflow.IsAuthorized( Authorization.VIEW, CurrentPerson ) && Workflow.IsAuthorized( "ViewList", CurrentPerson ) );
         }
 
         /// <summary>
@@ -673,6 +675,7 @@ namespace RockWeb.Blocks.WorkFlow
             pdAuditDetails.SetEntity( Workflow, ResolveRockUrl( "~" ) );
 
             _canEdit = UserCanEdit || Workflow.IsAuthorized( Rock.Security.Authorization.EDIT, CurrentPerson );
+            _canView = _canEdit || ( Workflow.IsAuthorized( Authorization.VIEW, CurrentPerson ) && Workflow.IsAuthorized( "ViewList", CurrentPerson ) );
 
             Workflow.LoadAttributes( rockContext );
             foreach ( var activity in Workflow.Activities )
@@ -702,9 +705,11 @@ namespace RockWeb.Blocks.WorkFlow
         {
             hfMode.Value = "View";
 
+            HideSecondaryBlocks( false );
+
             if ( Workflow != null )
             {
-                if ( _canEdit || Workflow.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
+                if ( _canView )
                 {
                     if ( Workflow.WorkflowType != null )
                     {
@@ -765,10 +770,9 @@ namespace RockWeb.Blocks.WorkFlow
                 {
                     nbNotAuthorized.Visible = true;
                     pnlContent.Visible = false;
+                    HideSecondaryBlocks( true );
                 }
             }
-
-            HideSecondaryBlocks( false );
         }
 
         private void ShowEditDetails()
