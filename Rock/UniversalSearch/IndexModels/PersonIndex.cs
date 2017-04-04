@@ -37,7 +37,7 @@ namespace Rock.UniversalSearch.IndexModels
         /// <value>
         /// The first name.
         /// </value>
-        [RockIndexField( Boost = 1 )]
+        [RockIndexField( Boost = 2 )]
         public string FirstName { get; set; }
 
         /// <summary>
@@ -46,7 +46,7 @@ namespace Rock.UniversalSearch.IndexModels
         /// <value>
         /// The name of the nick.
         /// </value>
-        [RockIndexField( Boost = 1 )]
+        [RockIndexField( Boost = 2 )]
         public string NickName { get; set; }
 
         /// <summary>

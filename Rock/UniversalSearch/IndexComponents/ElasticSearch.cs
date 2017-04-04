@@ -485,6 +485,9 @@ namespace Rock.UniversalSearch.IndexComponents
                                 queryContainer &= wildcardQuery;
                             }
 
+                            // add a search for all the words as one single search term
+                            queryContainer |= new QueryStringQuery { Query = query, AnalyzeWildcard = true, PhraseSlop = 0 };
+
                             if ( matchQuery != null )
                             {
                                 queryContainer &= matchQuery;
