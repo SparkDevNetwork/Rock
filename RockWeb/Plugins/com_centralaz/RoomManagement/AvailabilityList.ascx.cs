@@ -17,6 +17,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Data.Entity;
 using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
@@ -296,7 +297,7 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
             var rockContext = new RockContext();
             var reservationService = new ReservationService( rockContext );
             var deniedGuid = com.centralaz.RoomManagement.SystemGuid.ReservationStatus.DENIED.AsGuid();
-            var qry = reservationService.Queryable().Where( r => r.ReservationStatus.Guid != deniedGuid );
+            var qry = reservationService.Queryable().AsNoTracking().Where( r => r.ReservationStatus.Guid != deniedGuid );
             var locationService = new LocationService( rockContext );
 
             List<int> locationIdList = new List<int>();
@@ -305,7 +306,7 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
             {
                 locationIdList = locationService.GetAllDescendents( lipLocation.SelectedValueAsInt().Value ).Select( l => l.Id ).ToList();
                 locationIdList.Add( lipLocation.SelectedValueAsInt().Value );
-                locationList = locationService.Queryable().Where( l => locationIdList.Contains( l.Id ) ).ToList();
+                locationList = locationService.Queryable().AsNoTracking().Where( l => locationIdList.Contains( l.Id ) ).ToList();
 
                 if ( locationIdList.Any() )
                 {
@@ -314,7 +315,7 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
             }
             else
             {
-                locationList = locationService.Queryable().Where( l=>l.Name != null && l.Name != string.Empty ).ToList();
+                locationList = locationService.Queryable().AsNoTracking().Where( l=>l.Name != null && l.Name != string.Empty ).ToList();
             }
 
             // Filter by Time
@@ -344,15 +345,14 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
             var reservationService = new ReservationService( rockContext );
             var resourceService = new ResourceService( rockContext );
             var deniedGuid = com.centralaz.RoomManagement.SystemGuid.ReservationStatus.DENIED.AsGuid();
-            var qry = reservationService.Queryable().Where( r => r.ReservationStatus.Guid != deniedGuid );
+            var qry = reservationService.Queryable().AsNoTracking().Where( r => r.ReservationStatus.Guid != deniedGuid );
 
-            List<int> resourceIdList = new List<int>();
             List<Resource> resourceList = new List<Resource>();
             if ( cpResource.SelectedValueAsInt().HasValue )
             {
                 int categoryId = cpResource.SelectedValueAsInt().Value;
-                resourceList = resourceService.Queryable().Where( r => r.CategoryId == categoryId ).ToList();
-                resourceIdList = resourceList.Select( r => r.Id ).ToList();
+                resourceList = resourceService.Queryable().AsNoTracking().Where( r => r.CategoryId == categoryId ).ToList();
+                var resourceIdList = resourceList.Select( r => r.Id );
 
                 if ( resourceIdList.Any() )
                 {
@@ -361,7 +361,7 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
             }
             else
             {
-                resourceList = resourceService.Queryable().ToList();
+                resourceList = resourceService.Queryable().AsNoTracking().ToList();
             }
 
             // Filter by Time
