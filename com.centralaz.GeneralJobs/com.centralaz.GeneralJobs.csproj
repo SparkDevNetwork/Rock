@@ -66,6 +66,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Jobs\AutoTopicSubscribe.cs" />
     <Compile Include="Jobs\EmailToAttribute.cs" />
     <Compile Include="Jobs\MatchEmailPreference.cs" />
     <Compile Include="Jobs\EmailToWorkflow.cs" />
