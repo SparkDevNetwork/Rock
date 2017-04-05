@@ -130,21 +130,15 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
                         e.Value = string.Empty;
                         break;
                     }
-                case "Start Time":
-                case "End Time":
-                    {
-                        e.Value = DateRangePicker.FormatDelimitedValues( e.Value );
-                        break;
-                    }
                 case "Resource Category":
                     {
-                        if ( gfSettings.GetUserPreference( "Selected Entity" ) == "Resources" )
+                        if ( gfSettings.GetUserPreference( "Selected Entity" ) == "Resource" )
                         {
-                            var resourceIdList = e.Value.Split( ',' ).AsIntegerList();
-                            if ( resourceIdList.Any() && cpResource.Visible )
+                            var resourceCategoryIdList = e.Value.Split( ',' ).AsIntegerList();
+                            if ( resourceCategoryIdList.Any() )
                             {
-                                var service = new ResourceService( new RockContext() );
-                                var resources = service.GetByIds( resourceIdList );
+                                var service = new CategoryService( new RockContext() );
+                                var resources = service.GetByIds( resourceCategoryIdList );
                                 if ( resources != null && resources.Any() )
                                 {
                                     e.Value = resources.Select( a => a.Name ).ToList().AsDelimited( "," );
@@ -168,12 +162,12 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
                     }
                 case "Parent Location":
                     {
-                        if ( gfSettings.GetUserPreference( "Selected Entity" ) == "Locations" )
+                        if ( gfSettings.GetUserPreference( "Selected Entity" ) == "Location" )
                         {
                             var locationIdList = e.Value.Split( ',' ).AsIntegerList();
                             if ( locationIdList.Any() && lipLocation.Visible )
                             {
-                                var service = new FinancialAccountService( new RockContext() );
+                                var service = new LocationService( new RockContext() );
                                 var locations = service.GetByIds( locationIdList );
                                 if ( locations != null && locations.Any() )
                                 {
@@ -207,8 +201,8 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
         protected void gfSettings_ApplyFilterClick( object sender, EventArgs e )
         {
             gfSettings.SaveUserPreference( "Selected Entity", rblResourceLocation.SelectedValue );
-            gfSettings.SaveUserPreference( "Start Time", dtpStartDateTime.ToString() );
-            gfSettings.SaveUserPreference( "End Time", dtpEndDateTime.ToString() );
+            gfSettings.SaveUserPreference( "Start Time", dtpStartDateTime.SelectedDateTime.ToString() );
+            gfSettings.SaveUserPreference( "End Time", dtpEndDateTime.SelectedDateTime.ToString() );
             gfSettings.SaveUserPreference( "Resource Category", cpResource.SelectedValue.ToString() );
             gfSettings.SaveUserPreference( "Parent Location", lipLocation.SelectedValue.ToString() );
             BindGrid();
@@ -276,14 +270,20 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
         {
             if ( rblResourceLocation.SelectedValue == "Location" )
             {
-                gLocations.Visible = true;
+                cpResource.Visible = false;
                 gResources.Visible = false;
+
+                lipLocation.Visible = true;
+                gLocations.Visible = true;
                 BindLocationsGrid();
             }
             else
             {
-                gLocations.Visible = false;
+                cpResource.Visible = true;
                 gResources.Visible = true;
+
+                lipLocation.Visible = false;
+                gLocations.Visible = false;
                 BindResourcesGrid();
             }
         }
@@ -314,10 +314,8 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
             }
             else
             {
-                locationList = locationService.Queryable().ToList();
+                locationList = locationService.Queryable().Where( l=>l.Name != null && l.Name != string.Empty ).ToList();
             }
-
-            locationList = locationList.Where( l => !String.IsNullOrWhiteSpace( l.Name ) ).ToList();
 
             // Filter by Time
             var today = RockDateTime.Today;
