@@ -585,7 +585,7 @@ namespace RockWeb.Blocks.Cms
                         if ( content.Content.HasMergeFields() || enableDebug )
                         {
                             var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson );
-                            mergeFields.Add( "CurrentPage", Rock.Lava.LavaHelper.GetPagePropertiesMergeObject( this.RockPage ) );
+                            mergeFields.Add( "CurrentPage", this.PageCache );
                             if ( CurrentPerson != null )
                             {
                                 // TODO: When support for "Person" is not supported anymore (should use "CurrentPerson" instead), remove this line
