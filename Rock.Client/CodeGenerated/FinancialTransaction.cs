@@ -62,6 +62,12 @@ namespace Rock.Client
         public string ForeignKey { get; set; }
 
         /// <summary />
+        public bool? IsReconciled { get; set; }
+
+        /// <summary />
+        public bool? IsSettled { get; set; }
+
+        /// <summary />
         public Rock.Client.Enums.MICRStatus? MICRStatus { get; set; }
 
         /// <summary>
@@ -77,6 +83,12 @@ namespace Rock.Client
 
         /// <summary />
         public int? ScheduledTransactionId { get; set; }
+
+        /// <summary />
+        public DateTime? SettledDate { get; set; }
+
+        /// <summary />
+        public string SettledGroupId { get; set; }
 
         /// <summary />
         public int? SourceTypeValueId { get; set; }
@@ -141,11 +153,15 @@ namespace Rock.Client
             this.FinancialPaymentDetailId = source.FinancialPaymentDetailId;
             this.ForeignGuid = source.ForeignGuid;
             this.ForeignKey = source.ForeignKey;
+            this.IsReconciled = source.IsReconciled;
+            this.IsSettled = source.IsSettled;
             this.MICRStatus = source.MICRStatus;
             this.ModifiedAuditValuesAlreadyUpdated = source.ModifiedAuditValuesAlreadyUpdated;
             this.ProcessedByPersonAliasId = source.ProcessedByPersonAliasId;
             this.ProcessedDateTime = source.ProcessedDateTime;
             this.ScheduledTransactionId = source.ScheduledTransactionId;
+            this.SettledDate = source.SettledDate;
+            this.SettledGroupId = source.SettledGroupId;
             this.SourceTypeValueId = source.SourceTypeValueId;
             this.Status = source.Status;
             this.StatusMessage = source.StatusMessage;
