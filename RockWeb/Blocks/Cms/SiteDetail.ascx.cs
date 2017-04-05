@@ -412,6 +412,7 @@ namespace RockWeb.Blocks.Cms
             if ( Page.IsValid )
             {
                 var rockContext = new RockContext();
+                PageService pageService = new PageService( rockContext );
                 SiteService siteService = new SiteService( rockContext );
                 SiteDomainService siteDomainService = new SiteDomainService( rockContext );
                 bool newSite = false;
@@ -506,7 +507,12 @@ namespace RockWeb.Blocks.Cms
                     }
                 } );
 
-                
+                foreach ( int pageId in pageService.GetBySiteId( site.Id )
+                    .Select( p => p.Id )
+                    .ToList() )
+                {
+                    PageCache.Flush( pageId );
+                }
                 SiteCache.Flush( site.Id );
                 AttributeCache.FlushEntityAttributes();
 
@@ -528,7 +534,6 @@ namespace RockWeb.Blocks.Cms
 
                     if ( layout != null )
                     {
-                        var pageService = new PageService( rockContext );
                         var page = new Page();
                         page.LayoutId = layout.Id;
                         page.PageTitle = siteCache.Name + " Home Page";
