@@ -37,7 +37,7 @@ namespace RockWeb.Blocks.Event
     [Category( "Event" )]
     [Description( "Block that shows details of a specific event with a search for occurrences of the event" )]
 
-    [CodeEditorField( "Event Lava Template", "The lava template for display details of the Event", CodeEditorMode.Lava, CodeEditorTheme.Rock, order: 1, required:false, defaultValue: @"
+    [CodeEditorField( "Event Lava Template", "The lava template for display details of the Event", CodeEditorMode.Lava, CodeEditorTheme.Rock, order: 1, required: false, defaultValue: @"
 <h1>{{ Event.Name }}</h1>
 <p>{{ Event.Description }}</p>
 {% if Event.Photo.Guid %}
@@ -47,7 +47,7 @@ namespace RockWeb.Blocks.Event
 {% endif %}
 " )]
 
-    [CodeEditorField( "Results Lava Template", "The lava template for display the results of the search", CodeEditorMode.Lava, CodeEditorTheme.Rock, order: 2, required:false, defaultValue: @"
+    [CodeEditorField( "Results Lava Template", "The lava template for display the results of the search", CodeEditorMode.Lava, CodeEditorTheme.Rock, order: 2, required: false, defaultValue: @"
 {% for occurrence in EventItemOccurrences %}
         
     <div class='row margin-b-lg'>
@@ -66,7 +66,7 @@ namespace RockWeb.Blocks.Event
     [SlidingDateRangeField( "Default Date Range", "The Default date range selection", false, "Next|10|Week||", enabledSlidingDateRangeTypes: "Next,Upcoming,Current", order: 3 )]
 
     [LinkedPage( "Event Detail Page", "The page to use for showing event details.", required: false, order: 4 )]
-    [BooleanField( "Use Campus Context", "Set this to true to set the campus filter based on the campus context.", defaultValue:false, order:5)]
+    [BooleanField( "Use Campus Context", "Set this to true to set the campus filter based on the campus context.", defaultValue: false, order: 5 )]
     public partial class EventDetailWithOccurrencesSearchLava : RockBlock
     {
         #region Base Control Methods
@@ -78,8 +78,6 @@ namespace RockWeb.Blocks.Event
         protected override void OnInit( EventArgs e )
         {
             base.OnInit( e );
-
-            
 
             // this event gets fired after block settings are updated. it's nice to repaint the screen if these settings would alter it
             this.BlockUpdated += Block_BlockUpdated;
@@ -247,7 +245,20 @@ namespace RockWeb.Blocks.Event
         /// </summary>
         private class SearchSettings
         {
+            /// <summary>
+            /// Gets or sets the campus identifier.
+            /// </summary>
+            /// <value>
+            /// The campus identifier.
+            /// </value>
             public int? CampusId { get; set; }
+
+            /// <summary>
+            /// Gets or sets the date range.
+            /// </summary>
+            /// <value>
+            /// The date range.
+            /// </value>
             public DateRange DateRange { get; set; }
         }
 
