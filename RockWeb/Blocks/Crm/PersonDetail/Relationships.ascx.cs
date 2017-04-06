@@ -38,6 +38,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
     [GroupRoleField( "", "Group Type/Role Filter", "The Group Type and role to display other members from.", false, "" )]
     [BooleanField( "Show Role", "Should the member's role be displayed with their name" )]
     [BooleanField( "Create Group", "Should group be created if a group/role cannot be found for the current person.", true )]
+    [IntegerField( "Max Relationships To Display", "", false, 50 )]
     public partial class Relationships : Rock.Web.UI.PersonBlock
     {
         /// <summary>
@@ -335,32 +336,35 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                         if ( group != null )
                         {
                             lGroupName.Text = group.Name.Pluralize();
+                            lGroupTypeIcon.Text = string.Format( "<i class='{0}'></i>", group.GroupType.IconCssClass );
+                            lGroupTypeIcon.Visible = group.GroupType.IconCssClass.IsNotNullOrWhitespace();
                             phEditActions.Visible = group.IsAuthorized( Authorization.EDIT, CurrentPerson );
 
                             if ( group.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
                             {
-                                phGroupTypeIcon.Controls.Clear();
-                                if ( !string.IsNullOrWhiteSpace( group.GroupType.IconCssClass ) )
-                                {
-                                    phGroupTypeIcon.Controls.Add(
-                                        new LiteralControl(
-                                            string.Format( "<i class='{0}'></i>", group.GroupType.IconCssClass ) ) );
-                                }
+                                int? maxRelationshipsToDisplay = this.GetAttributeValue( "MaxRelationshipsToDisplay" ).AsIntegerOrNull();
 
-                                // TODO: How many implied relationships should be displayed
-
-                                rGroupMembers.DataSource = new GroupMemberService( rockContext ).GetByGroupId( group.Id, true )
+                                IQueryable<GroupMember> qryGroupMembers = new GroupMemberService( rockContext ).GetByGroupId( group.Id, true )
                                     .Where( m => m.PersonId != Person.Id )
                                     .OrderBy( m => m.Person.LastName )
-                                    .ThenBy( m => m.Person.FirstName )
-                                    .Take( 50 )
-                                    .ToList();
+                                    .ThenBy( m => m.Person.FirstName );
+
+                                if ( maxRelationshipsToDisplay.HasValue )
+                                {
+                                    qryGroupMembers = qryGroupMembers.Take( maxRelationshipsToDisplay.Value );
+                                }
+
+                                rGroupMembers.DataSource = qryGroupMembers.ToList();
                                 rGroupMembers.DataBind();
+                            }
+                            else
+                            {
+                                lAccessWarning.Text = string.Format( "<div class='alert alert-info'>You do not have security rights to view {0}.", group.Name.Pluralize() );
                             }
                         }
                         else
                         {
-                            lAccessWarning.Text = string.Format( "<div class='alert alert-info'>You do not have security rights to view {0}.", group.Name.Pluralize() );
+                            lGroupName.Text = this.BlockCache.Name;
                         }
                     }
                 }
