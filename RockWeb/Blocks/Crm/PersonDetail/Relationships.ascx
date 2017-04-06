@@ -6,7 +6,7 @@
 
             <div class="panel-heading rollover-container clearfix">
                 <h3 class="panel-title pull-left">
-                    <asp:PlaceHolder ID="phGroupTypeIcon" runat="server"></asp:PlaceHolder>
+                    <asp:Literal ID="lGroupTypeIcon" runat="server"></asp:Literal>
                     <asp:Literal ID="lGroupName" runat="server"></asp:Literal></h3>
                 <asp:PlaceHolder ID="phEditActions" runat="server">
                     <div class="actions rollover-item pull-right">
