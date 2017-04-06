@@ -43,7 +43,7 @@ namespace RockWeb.Blocks.Event
     [TextField("List Title", "The title to make available in the lava.", false, "Upcoming Events", order: 0)]
     [DefinedValueField(Rock.SystemGuid.DefinedType.MARKETING_CAMPAIGN_AUDIENCE_TYPE, "Audience", "The audience to show calendar items for.", order: 0)]
     [EventCalendarField("Calendar", "Filters the events by a specific calendar.", false, order: 1)]
-    [CampusesField("Campuses", "List of which campuses to show occurrences for. This setting will be ignored in the 'Use Campus Context' is enabled.", required: false, order:2, includeInactive:true)]
+    [CampusesField("Campuses", "List of which campuses to show occurrences for. This setting will be ignored if 'Use Campus Context' is enabled.", required: false, order:2, includeInactive:true)]
     [BooleanField("Use Campus Context", "Determine if the campus should be read from the campus context of the page.", order: 3)]
     [SlidingDateRangeField("Date Range", "Optional date range to filter the occurrences on.", false, enabledSlidingDateRangeTypes: "Next,Upcoming,Current", order:4)]
     [IntegerField("Max Occurrences", "The maximum number of occurrences to show.", false, 100, order: 5)]
