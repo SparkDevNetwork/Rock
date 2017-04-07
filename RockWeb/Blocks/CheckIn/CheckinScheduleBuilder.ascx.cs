@@ -68,15 +68,23 @@ namespace RockWeb.Blocks.CheckIn
             string script = string.Format( @"
     Sys.Application.add_load(function () {{
         var $table = $('#{0}');
-        $table.find('thead > tr > th').each(function (columnIndex) {{
-            if ($(this).find('a.fa').length > 0) {{
-                columnIndex += 1;
-                var $cbs = $table.find('tbody > tr > td:nth-child(' + columnIndex + ') input');
-                if ($cbs.length == $cbs.filter(':checked').length) {{
-                    $(this).find('a.fa').addClass('fa-check-square-o').removeClass('fa-square-o');
+        function updateHeaderCheckboxes()
+        {{
+            $table.find('thead > tr > th').each(function (columnIndex) {{
+                if ($(this).find('a.fa').length > 0) {{
+                    columnIndex += 1;
+                    var $cbs = $table.find('tbody > tr > td:nth-child(' + columnIndex + ') input');
+                    if ($cbs.length == $cbs.filter(':checked').length) {{
+                        $(this).find('a.fa').addClass('fa-check-square-o').removeClass('fa-square-o');
+                    }}
+                    else {{
+                        $(this).find('a.fa').addClass('fa-square-o').removeClass('fa-check-square-o');
+                    }}
                 }}
-            }}
-        }});
+            }});
+        }}
+        updateHeaderCheckboxes();
+        $table.find('tbody > tr > td input[type=""checkbox""]').click(function () {{ updateHeaderCheckboxes(); }});
         $('.js-sched-select-all').click(function (e) {{
             e.preventDefault();
             var $th = $(this).closest('th');
