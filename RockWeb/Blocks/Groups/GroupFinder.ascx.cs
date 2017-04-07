@@ -1019,7 +1019,7 @@ namespace RockWeb.Blocks.Groups
                 }
 
                 // if not sorting by ColumnClick and SortByDistance, then sort the groups by distance
-                if ( gGroups.SortProperty == null && GetAttributeValue( "SortByDistance" ).AsBoolean() )
+                if ( gGroups.SortProperty == null && showProximity && GetAttributeValue( "SortByDistance" ).AsBoolean() )
                 {
                     // only show groups with a known location, and sort those by distance
                     groups = groups.Where( a => distances.Select( b => b.Key ).Contains( a.Id ) ).ToList();
