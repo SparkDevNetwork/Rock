@@ -820,15 +820,38 @@ namespace Rock.Attribute
         /// </remarks>
         public static void SaveAttributeValues( IHasAttributes model, RockContext rockContext = null )
         {
-            if ( model != null && model.Attributes != null && model.AttributeValues != null )
+            if ( model != null && model.Attributes != null && model.AttributeValues != null && model.Attributes.Any() && model.AttributeValues.Any() )
             {
-                foreach ( var attribute in model.Attributes )
+                rockContext = rockContext ?? new RockContext();
+                var attributeValueService = new Model.AttributeValueService( rockContext );
+                var attributeService = new Model.AttributeService( rockContext );
+
+                var attributeIds = model.Attributes.Select( y => y.Value.Id ).ToList();
+                var valueQuery = attributeValueService.Queryable().Where( x => attributeIds.Contains( x.AttributeId ) && x.EntityId == model.Id );
+
+                var attributeValues = valueQuery.ToDictionary( x => x.AttributeKey );
+                foreach ( var attribute in model.Attributes.Values )
                 {
                     if ( model.AttributeValues.ContainsKey( attribute.Key ) )
                     {
-                        SaveAttributeValue( model, attribute.Value, model.AttributeValues[attribute.Key].Value, rockContext );
+                        if ( attributeValues.ContainsKey( attribute.Key ) )
+                        {
+                            if ( attributeValues[attribute.Key].Value != model.AttributeValues[attribute.Key].Value )
+                            {
+                                attributeValues[attribute.Key].Value = model.AttributeValues[attribute.Key].Value;
+                            }
+                        }
+                        else
+                        {
+                            var attributeValue = new AttributeValue();
+                            attributeValue.AttributeId = attribute.Id;
+                            attributeValue.EntityId = model.Id;
+                            attributeValue.Value = model.AttributeValues[attribute.Key].Value ?? string.Empty;
+                            attributeValueService.Add( attributeValue );
+                        }
                     }
                 }
+                rockContext.SaveChanges();
             }
         }
 
