@@ -164,7 +164,7 @@ namespace Rock.Web.UI.Controls
                 _cbIncludeActions.Checked = true;
                 _ceHeaderText.Text = string.Empty;
                 _ceFooterText.Text = string.Empty;
-                _falActions.Value = "Submit^^^Your information has been submitted successfully.";
+                _falActions.Value = "Submit^^^Your information has been submitted successfully.^false";
                 _ddlNotificationSystemEmail.SelectedIndex = 0;
                 _cbAllowNotes.Checked = false;
             }

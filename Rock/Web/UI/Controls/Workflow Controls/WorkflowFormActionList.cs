@@ -39,6 +39,7 @@ namespace Rock.Web.UI.Controls
         private List<RockDropDownList> _buttonHtmlControls;
         private List<RockDropDownList> _activityControls;
         private List<RockTextBox> _responseControls;
+        private List<RockCheckBox> _ignoreRequiredControls;
 
         #endregion
 
@@ -95,6 +96,7 @@ namespace Rock.Web.UI.Controls
             _buttonHtmlControls = new List<RockDropDownList>();
             _activityControls = new List<RockDropDownList>();
             _responseControls = new List<RockTextBox>();
+            _ignoreRequiredControls = new List<RockCheckBox>();
 
             string[] nameValues = this.Value.Split( new char[] { '|' }, StringSplitOptions.RemoveEmptyEntries );
             for ( int i = 0; i < nameValues.Length; i++ )
@@ -154,6 +156,22 @@ namespace Rock.Web.UI.Controls
                 tbResponse.AddCssClass( "js-form-action-input" );
                 tbResponse.Text = nameValueResponse.Length > 3 ? nameValueResponse[3] : string.Empty;
                 _responseControls.Add( tbResponse );
+
+                var cbignoreRequired = new RockCheckBox();
+                cbignoreRequired.ID = this.ID + "_cbignoreRequired" + i.ToString();
+                Controls.Add( cbignoreRequired );
+                cbignoreRequired.AddCssClass( "form-action-cb" );
+                cbignoreRequired.AddCssClass( "js-form-action-input" );
+
+                if( nameValueResponse.Length > 4 )
+                {
+                    cbignoreRequired.Checked = nameValueResponse [ 4 ] == "true" ? true : false;
+                }
+                else
+                {
+                    cbignoreRequired.Checked = false;
+                }
+                _ignoreRequiredControls.Add( cbignoreRequired );
             }
 
         }
@@ -184,7 +202,8 @@ namespace Rock.Web.UI.Controls
                 valueHtml.AppendFormat( @"<option value=""{0}"">{1}</option>", activity.Key, activity.Value );
             }
             valueHtml.Append( @"</select></div>" );
-            valueHtml.Append( @"<div class=""col-sm-4""><input class=""form-action-response form-control js-form-action-input"" type=""text"" placeholder=""Response Text""></input></div>" );
+            valueHtml.Append( @"<div class=""col-sm-2""><input class=""form-action-response form-control js-form-action-input"" type=""text"" placeholder=""Response Text""></input></div>" );
+            valueHtml.Append( @"<div class=""col-sm-2""><input class=""form-action-cb js-form-action-input"" type=""checkbox""></input></div>" );
             valueHtml.Append( @"<div class=""col-sm-1""><a href=""#"" class=""btn btn-sm btn-danger form-action-remove""><i class=""fa fa-minus-circle""></i></a></div></div>" );
 
             var hfValueHtml = new HtmlInputHidden();
@@ -224,11 +243,20 @@ namespace Rock.Web.UI.Controls
             writer.RenderEndTag();
 
             // Write Response
-            writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-sm-4" );
+            writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-sm-2" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
             writer.AddAttribute( HtmlTextWriterAttribute.Class, "control-label" );
             writer.RenderBeginTag( HtmlTextWriterTag.Label );
             writer.Write( "Response Text" );
+            writer.RenderEndTag();
+            writer.RenderEndTag();
+
+            // Write Ignore Required
+            writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-sm-2" );
+            writer.RenderBeginTag( HtmlTextWriterTag.Div );
+            writer.AddAttribute( HtmlTextWriterAttribute.Class, "control-label" );
+            writer.RenderBeginTag( HtmlTextWriterTag.Label );
+            writer.Write( "Ignore Required" );
             writer.RenderEndTag();
             writer.RenderEndTag();
 
@@ -267,10 +295,14 @@ namespace Rock.Web.UI.Controls
                 writer.RenderEndTag();  
 
                 // Write Response
-                writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-sm-4" );
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-sm-2" );
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
                 _responseControls[i].RenderControl( writer );
                 writer.RenderEndTag();  
+
+                // Write Ignore Required Fields (Don't add Div tags, it causes the checkbox to take too much space)
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-sm-2" );
+                _ignoreRequiredControls[i].RenderControl( writer );
 
                 // Write Remove Button
                 writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-sm-1" );
@@ -320,7 +352,8 @@ namespace Rock.Web.UI.Controls
                 $(this).find('.form-action-key:first').val() + '^' + 
                 $(this).find('.form-action-button:first').val() + '^' + 
                 $(this).find('.form-action-value:first').val() + '^' + 
-                $(this).find('.form-action-response:first').val() + '|'
+                $(this).find('.form-action-response:first').val() + '^' +
+                $(this).find('.form-action-cb:first').is("":checked"") + '|'
         });
         $actionList.children('input:first').val(newValue);            
     }

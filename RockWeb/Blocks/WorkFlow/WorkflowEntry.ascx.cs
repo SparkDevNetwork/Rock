@@ -631,9 +631,22 @@ namespace RockWeb.Blocks.WorkFlow
 
                     var buttonMergeFields = new Dictionary<string, object>();
                     buttonMergeFields.Add( "ButtonText", details[0].EscapeQuotes() );
-                    buttonMergeFields.Add( "ButtonClick",
-                            string.Format( "if ( Page_ClientValidate('{0}') ) {{ $(this).button('loading'); return true; }} else {{ return false; }}",
-                            BlockValidationGroup ) );
+                    
+                    // the last detail is whether the button should respect required fields or not.
+                    // (Example - if a button is used as 'back' or 'cancel', you wouldn't want that)
+                    string buttonJs = string.Empty;
+                    if( details.Length > 4 && details[4] == "true" )
+                    {
+                        // turn off page validation, and allow the button click to go thru
+                        buttonJs = "Page_ValidationActive = false; $(this).button('loading'); return true;";
+                    }
+                    else
+                    {
+                        // now add the standard JS button handling
+                        buttonJs = string.Format( "if ( Page_ClientValidate('{0}') ) {{ $(this).button('loading'); return true; }} else {{ return false; }}", BlockValidationGroup );
+                    }
+                    buttonMergeFields.Add( "ButtonClick", buttonJs );
+
                     buttonMergeFields.Add( "ButtonLink", Page.ClientScript.GetPostBackClientHyperlink( this, details[0] ) );
 
                     buttonHtml = buttonHtml.ResolveMergeFields( buttonMergeFields );
