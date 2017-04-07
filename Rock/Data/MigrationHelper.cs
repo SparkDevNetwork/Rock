@@ -3862,6 +3862,7 @@ END
         /// <summary>
         /// Updates the person attribute category.
         /// </summary>
+        /// <param name="entityTypeName">The fully qualified entity name as found in the EntityType table.</param>
         /// <param name="name">The name.</param>
         /// <param name="iconCssClass">The icon CSS class.</param>
         /// <param name="description">The description.</param>

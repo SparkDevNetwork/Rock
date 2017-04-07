@@ -18,6 +18,10 @@ using System;
 
 namespace Rock.Plugin.HotFixes
 {
+    /// <summary>
+    /// Migration to add the Fundraising feature data bits.
+    /// </summary>
+    /// <seealso cref="Rock.Plugin.Migration" />
     [MigrationNumber( 22, "1.6.2" )]
     public class Fundraising : Migration
     {
