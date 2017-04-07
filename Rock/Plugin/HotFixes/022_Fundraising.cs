@@ -569,6 +569,61 @@ WHERE AttributeId = (
             RockMigrationHelper.AddBlockAttributeValue( "59786A7C-8AFE-4DB2-988A-F72B82D6FD5C", "98CE1B2F-F478-443E-9217-E864B3799D79", @"f7ca6e0f-c319-47ab-9a6d-247c5716d846" );
             // Attrib Value for Block:Fundraising Opportunity View, Attribute:Max Occurrences Page: Fundraising Opportunity View, Site: External Website
             RockMigrationHelper.AddBlockAttributeValue( "59786A7C-8AFE-4DB2-988A-F72B82D6FD5C", "4FAB5601-E142-456A-A081-3E1D05694FA5", @"100" );
+
+
+            // 1.6.3 Migration Rollups
+            // JE: Fix Payment Details Block Setting
+            RockMigrationHelper.UpdateBlockTypeAttribute( "91354899-304E-44C7-BD0D-55F42E6505D3", "1D0D3794-C210-48A8-8C68-3FBEC08A6BA5", "Default Payment Reminder Email", "DefaultPaymentReminderEmail", "", "The default Payment Reminder Email Template value to use for a new template", 3, @"{{ 'Global' | Attribute:'EmailHeader' }}
+{% capture currencySymbol %}{{ 'Global' | Attribute:'CurrencySymbol' }}{% endcapture %}
+{% capture externalSite %}{{ 'Global' | Attribute:'PublicApplicationRoot' }}{% endcapture %}
+
+<h1>{{ RegistrationInstance.RegistrationTemplate.RegistrationTerm }} Payment Reminder</h1>
+
+<p>
+    This {{ RegistrationInstance.RegistrationTemplate.RegistrationTerm | Downcase  }} for {{ RegistrationInstance.Name }} has a remaining balance 
+    of {{ currencySymbol }}{{ Registration.BalanceDue | Format:'#,##0.00' }}. The 
+    {{ RegistrationInstance.RegistrationTemplate.RegistrantTerm | Downcase | Pluralize  }} for this 
+    {{ RegistrationInstance.RegistrationTemplate.RegistrationTerm }} are below.
+</p>
+
+{% assign registrants = Registration.Registrants | Where:'OnWaitList', false %}
+{% assign registrantCount = registrants | Size %}
+{% if registrantCount > 0 %}
+	<ul>
+	{% for registrant in registrants %}
+		<li>{{ registrant.PersonAlias.Person.FullName }}</li>
+	{% endfor %}
+	</ul>
+{% endif %}
+
+{% assign waitlist = Registration.Registrants | Where:'OnWaitList', true %}
+{% assign waitListCount = waitlist | Size %}
+{% if waitListCount > 0 %}
+    <p>
+        The following {{ RegistrationInstance.RegistrationTemplate.RegistrantTerm | PluralizeForQuantity:registrantCount | Downcase }}
+		{% if waitListCount > 1 %}are{% else %}is{% endif %} still on the wait list:
+   </p>
+    
+    <ul>
+    {% for registrant in waitlist %}
+        <li>
+            <strong>{{ registrant.PersonAlias.Person.FullName }}</strong>
+        </li>
+    {% endfor %}
+    </ul>
+{% endif %}
+
+<p>
+    You can complete the payment for this {{ RegistrationInstance.RegistrationTemplate.RegistrationTerm | Downcase }}
+    using our <a href='{{ externalSite }}Registration?RegistrationId={{ Registration.Id }}&rckipid={{ Registration.PersonAlias.Person.UrlEncodedKey }}'>
+    online registration page</a>.
+</p>
+
+<p>
+    If you have any questions please contact {{ RegistrationInstance.ContactName }} at {{ RegistrationInstance.ContactEmail }}.
+</p>
+
+{{ 'Global' | Attribute:'EmailFooter' }}", "C8AB59C0-3074-418E-8493-2BCED16D5034" );
         }
 
         /// <summary>
