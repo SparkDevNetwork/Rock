@@ -518,7 +518,6 @@ namespace RockWeb.Blocks.Groups
             {
                 cbIsNotified.Checked = groupMember.IsNotified;
                 cbIsNotified.Visible = true;
-                cbIsNotified.Help = "If this box is unchecked and a <a href=\"http://www.rockrms.com/Rock/BookContent/7/#servicejobsrelatingtogroups\">group leader notification job</a> is enabled then a notification will be sent to the group's leaders when this group member is saved.";
             }
             else
             {
