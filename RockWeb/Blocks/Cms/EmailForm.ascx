@@ -9,10 +9,10 @@
             <asp:Literal ID="lEmailForm" runat="server" />
 
             <div class="emailform-messages"></div>
-
-            <div class="actions">
-                <asp:Button ID="btnSubmit" CssClass="btn btn-primary" runat="server" Text="Submit" OnClientClick="return validateForm();" OnClick="btnSubmit_Click" />
-            </div>
+			
+			<div id="divButtonWrap" runat="server">
+				<asp:Button ID="btnSubmit" CssClass="btn btn-primary" runat="server" Text="Submit" OnClientClick="return validateForm();" OnClick="btnSubmit_Click" />
+			</div>
         </asp:Panel>
 
         <asp:Literal ID="lDebug" runat="server" />
@@ -20,7 +20,7 @@
 
         <script>
 
-            Sys.Application.add_load( function () {
+            Sys.Application.add_load(function () {
                 var checkFindings = '';
                 var controlCount = 0;
 
@@ -37,6 +37,18 @@
             function validateForm() {
 
                 var responseText = '';
+                var i = 0;
+                var n = $("input:checked").length; //number of checked 
+
+                $(".emailform :radio").each(function () {
+                    if ($(this).attr("required")) {
+                        // only add to the response text for the radio group not each item
+                        i++;
+                        if (n < i && i < 2) {
+                            responseText += 'Please make a selection for ' + $(this).attr("name") + '\n';
+                        }
+                    }
+                });
 
                 $(".emailform :text").each(function () {
                     if ($(this).attr("required") != null) {
