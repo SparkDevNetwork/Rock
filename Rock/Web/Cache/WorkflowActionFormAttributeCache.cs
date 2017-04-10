@@ -27,7 +27,6 @@ namespace Rock.Web.Cache
     /// <summary>
     /// Cached WorkflowActionFormAttribute
     /// </summary>
-    /// <seealso cref="Rock.Web.Cache.CachedModel{Rock.Model.WorkflowActionFormAttribute}" />
     [Serializable]
     public class WorkflowActionFormAttributeCache : CachedModel<WorkflowActionFormAttribute>
     {
