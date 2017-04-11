@@ -963,7 +963,7 @@ order by [parentTable], [columnName]
                 }
             }
 
-            sb.AppendLine( "    #pragma warning retore CS1591" );
+            sb.AppendLine( "    #pragma warning restore CS1591" );
             sb.AppendLine( "}" );
 
             var file = new FileInfo( Path.Combine( rootFolder, "CodeGenerated\\Enums", "RockEnums.cs" ) );
