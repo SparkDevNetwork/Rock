@@ -20,7 +20,7 @@
 		{% if groupLocation.Location.GeoPoint != '' %}
 
 		<div class="packagesummary-image"
-			 style="background: url('https://maps.googleapis.com/maps/api/staticmap?size=1400x400&zoom=13&maptype=roadmap&markers={{ groupLocation.Location.GeoPoint }}&scale=2') no-repeat center;
+			 style="background: url('https://maps.googleapis.com/maps/api/staticmap?size=1400x400&zoom=13&maptype=roadmap&markers={{ groupLocation.Location.GeoPoint }}&scale=2&key={{ 'Global' | Attribute:'GoogleAPIKey' }}') no-repeat center;
 					width: 100%;
 					height: 200px;">
 		</div>
