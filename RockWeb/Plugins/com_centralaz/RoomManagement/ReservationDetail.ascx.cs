@@ -34,6 +34,7 @@ using Rock.Web.UI;
 using Newtonsoft.Json;
 using Rock.Web.UI.Controls;
 using Rock.Security;
+using Rock.Communication;
 
 namespace RockWeb.Plugins.com_centralaz.RoomManagement
 {
@@ -41,7 +42,10 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
     [DisplayName( "Reservation Detail" )]
     [Category( "com_centralaz > Room Management" )]
     [Description( "Block for viewing a reservation detail" )]
-    [SecurityRoleField( "General Approval Group", "The group that has the power to approve resources and locations that do not have their own approval groups", true, com.centralaz.RoomManagement.SystemGuid.Group.GROUP_RESERVATION_ADMINISTRATORS, "" )]
+    [SecurityRoleField( "Super Admin Group", "The superadmin group that can force an approve / deny status on reservations, i.e. a facilities team.", true, com.centralaz.RoomManagement.SystemGuid.Group.GROUP_RESERVATION_ADMINISTRATORS, "" )]
+    [SecurityRoleField( "Final Approval Group", "An optional group that provides final approval for a reservation. If used, this should be the same group as in the Reservation Approval Workflow.", true, "", "" )]
+    [SystemEmailField( "System Email", "A system email to send.", true, "", "", 0 )]
+    [BooleanField( "Save Communication History", "Should a record of this communication be saved to the recipient's profile", false, "", 2 )]
     public partial class ReservationDetail : Rock.Web.UI.RockBlock
     {
         #region Fields
@@ -661,12 +665,23 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
                 }
                 else
                 {
-                    var securityGroup = new GroupService( new RockContext() ).Get( GetAttributeValue( "GeneralApprovalGroup" ).AsGuid() );
-                    if ( securityGroup != null )
+                    var superAdminGroup = new GroupService( new RockContext() ).Get( GetAttributeValue( "SuperAdminGroup" ).AsGuid() );
+                    if ( superAdminGroup != null )
                     {
-                        if ( CurrentPerson.Members.Select( m => m.GroupId ).Distinct().ToList().Contains( securityGroup.Id ) )
+                        if ( CurrentPerson.Members.Select( m => m.GroupId ).Distinct().ToList().Contains( superAdminGroup.Id ) )
                         {
                             canApprove = true;
+                        }
+                        else
+                        {
+                            var finalApprovalGroup = new GroupService( new RockContext() ).Get( GetAttributeValue( "FinalApprovalGroup" ).AsGuid() );
+                            if ( finalApprovalGroup != null )
+                            {
+                                if ( CurrentPerson.Members.Select( m => m.GroupId ).Distinct().ToList().Contains( finalApprovalGroup.Id ) )
+                                {
+                                    canApprove = true;
+                                }
+                            }
                         }
                     }
                 }
@@ -898,12 +913,23 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
                 }
                 else
                 {
-                    var securityGroup = new GroupService( new RockContext() ).Get( GetAttributeValue( "GeneralApprovalGroup" ).AsGuid() );
-                    if ( securityGroup != null )
+                    var superAdminGroup = new GroupService( new RockContext() ).Get( GetAttributeValue( "SuperAdminGroup" ).AsGuid() );
+                    if ( superAdminGroup != null )
                     {
-                        if ( CurrentPerson.Members.Select( m => m.GroupId ).Distinct().ToList().Contains( securityGroup.Id ) )
+                        if ( CurrentPerson.Members.Select( m => m.GroupId ).Distinct().ToList().Contains( superAdminGroup.Id ) )
                         {
                             canApprove = true;
+                        }
+                        else
+                        {
+                            var finalApprovalGroup = new GroupService( new RockContext() ).Get( GetAttributeValue( "FinalApprovalGroup" ).AsGuid() );
+                            if ( finalApprovalGroup != null )
+                            {
+                                if ( CurrentPerson.Members.Select( m => m.GroupId ).Distinct().ToList().Contains( finalApprovalGroup.Id ) )
+                                {
+                                    canApprove = true;
+                                }
+                            }
                         }
                     }
                 }
@@ -1017,19 +1043,30 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
             }
             ddlMinistry.SetValue( reservation.ReservationMinistryId );
 
-            bool inGeneralApprovalGroup = false;
-            var securityGroup = new GroupService( new RockContext() ).Get( GetAttributeValue( "GeneralApprovalGroup" ).AsGuid() );
-            if ( securityGroup != null )
+            bool canApprove = false;
+            var superAdminGroup = new GroupService( new RockContext() ).Get( GetAttributeValue( "SuperAdminGroup" ).AsGuid() );
+            if ( superAdminGroup != null )
             {
-                if ( CurrentPerson.Members.Select( m => m.GroupId ).Distinct().ToList().Contains( securityGroup.Id ) )
+                if ( CurrentPerson.Members.Select( m => m.GroupId ).Distinct().ToList().Contains( superAdminGroup.Id ) )
                 {
-                    inGeneralApprovalGroup = true;
+                    canApprove = true;
+                }
+                else
+                {
+                    var finalApprovalGroup = new GroupService( new RockContext() ).Get( GetAttributeValue( "FinalApprovalGroup" ).AsGuid() );
+                    if ( finalApprovalGroup != null )
+                    {
+                        if ( CurrentPerson.Members.Select( m => m.GroupId ).Distinct().ToList().Contains( finalApprovalGroup.Id ) )
+                        {
+                            canApprove = true;
+                        }
+                    }
                 }
             }
 
             if ( reservation.Id != 0 )
             {
-                if ( inGeneralApprovalGroup )
+                if ( canApprove )
                 {
                     pnlEditApprovalState.Visible = true;
                     pnlReadApprovalState.Visible = false;
@@ -1080,13 +1117,24 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
         {
             List<Guid> groupGuidList = new List<Guid>();
 
-            bool inGeneralApprovalGroup = false;
-            var securityGroup = new GroupService( new RockContext() ).Get( GetAttributeValue( "GeneralApprovalGroup" ).AsGuid() );
-            if ( securityGroup != null )
+            bool inApprovalGroups = false;
+            var superAdminGroup = new GroupService( new RockContext() ).Get( GetAttributeValue( "SuperAdminGroup" ).AsGuid() );
+            if ( superAdminGroup != null )
             {
-                if ( CurrentPerson.Members.Select( m => m.GroupId ).Distinct().ToList().Contains( securityGroup.Id ) )
+                if ( CurrentPerson.Members.Select( m => m.GroupId ).Distinct().ToList().Contains( superAdminGroup.Id ) )
                 {
-                    inGeneralApprovalGroup = true;
+                    inApprovalGroups = true;
+                }
+                else
+                {
+                    var finalApprovalGroup = new GroupService( new RockContext() ).Get( GetAttributeValue( "FinalApprovalGroup" ).AsGuid() );
+                    if ( finalApprovalGroup != null )
+                    {
+                        if ( CurrentPerson.Members.Select( m => m.GroupId ).Distinct().ToList().Contains( finalApprovalGroup.Id ) )
+                        {
+                            inApprovalGroups = true;
+                        }
+                    }
                 }
             }
 
@@ -1106,7 +1154,7 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
                     }
                     else
                     {
-                        if ( inGeneralApprovalGroup )
+                        if ( inApprovalGroups )
                         {
                             canApprove = true;
                         }
@@ -1144,7 +1192,7 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
                     }
                     else
                     {
-                        if ( inGeneralApprovalGroup )
+                        if ( inApprovalGroups )
                         {
                             canApprove = true;
                         }
@@ -1181,7 +1229,27 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
                     var groups = new GroupService( rockContext ).GetByGuids( groupGuidList.Distinct().ToList() );
                     foreach ( var group in groups )
                     {
-                        // Email Group
+                        var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( null );
+                        var recipients = new List<RecipientData>();
+
+                        foreach ( var person in group.Members
+                                           .Where( m => m.GroupMemberStatus == GroupMemberStatus.Active )
+                                           .Select( m => m.Person ) )
+                        {
+                            if ( person.IsEmailActive &&
+                                person.EmailPreference != EmailPreference.DoNotEmail &&
+                                !string.IsNullOrWhiteSpace( person.Email ) )
+                            {
+                                var personDict = new Dictionary<string, object>( mergeFields );
+                                personDict.Add( "Person", person );
+                                recipients.Add( new RecipientData( person.Email, personDict ) );
+                            }
+                        }
+
+                        if ( recipients.Any() )
+                        {
+                            Email.Send( GetAttributeValue( "SystemEmail" ).AsGuid(), recipients, string.Empty, string.Empty, GetAttributeValue( "SaveCommunicationHistory" ).AsBoolean() );
+                        }
                     }
                 }
             }
