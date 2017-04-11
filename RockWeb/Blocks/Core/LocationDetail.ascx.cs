@@ -647,12 +647,14 @@ namespace RockWeb.Blocks.Core
 
             phMaps.Controls.Clear();
             var mapStyleValue = DefinedValueCache.Read( GetAttributeValue( "MapStyle" ) );
+            var googleAPIKey = GlobalAttributesCache.Read().GetValue( "GoogleAPIKey" );
+
             if ( mapStyleValue == null )
             {
                 mapStyleValue = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.MAP_STYLE_ROCK );
             }
 
-            if ( mapStyleValue != null )
+            if ( mapStyleValue != null && ! string.IsNullOrWhiteSpace( googleAPIKey ) )
             {
                 string mapStyle = mapStyleValue.GetAttributeValue( "StaticMapStyle" );
 
@@ -663,7 +665,7 @@ namespace RockWeb.Blocks.Core
                         string markerPoints = string.Format( "{0},{1}", location.GeoPoint.Latitude, location.GeoPoint.Longitude );
                         string mapLink = System.Text.RegularExpressions.Regex.Replace( mapStyle, @"\{\s*MarkerPoints\s*\}", markerPoints );
                         mapLink = System.Text.RegularExpressions.Regex.Replace( mapLink, @"\{\s*PolygonPoints\s*\}", string.Empty );
-                        mapLink += "&sensor=false&size=350x200&zoom=13&format=png";
+                        mapLink += "&sensor=false&size=350x200&zoom=13&format=png&key=" + googleAPIKey;
                         phMaps.Controls.Add( new LiteralControl ( string.Format( "<div class='group-location-map'><img class='img-thumbnail' src='{0}'/></div>", mapLink ) ) );
                     }
 
@@ -672,7 +674,7 @@ namespace RockWeb.Blocks.Core
                         string polygonPoints = "enc:" + location.EncodeGooglePolygon();
                         string mapLink = System.Text.RegularExpressions.Regex.Replace( mapStyle, @"\{\s*MarkerPoints\s*\}", string.Empty );
                         mapLink = System.Text.RegularExpressions.Regex.Replace( mapLink, @"\{\s*PolygonPoints\s*\}", polygonPoints );
-                        mapLink += "&sensor=false&size=350x200&format=png";
+                        mapLink += "&sensor=false&size=350x200&format=png&key=" + googleAPIKey;
                         phMaps.Controls.Add( new LiteralControl( string.Format( "<div class='group-location-map'><img class='img-thumbnail' src='{0}'/></div>", mapLink ) ) );
                     }
                 }
