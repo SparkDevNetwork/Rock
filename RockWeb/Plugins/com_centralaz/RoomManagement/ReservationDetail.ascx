@@ -26,7 +26,26 @@
                                 <Rock:NumberBox ID="nbAttending" runat="server" NumberType="Integer" MinimumValue="0" Label="Number Attending" Required="false" />
                             </div>
                             <div class="col-md-6">
-                                <Rock:RockRadioButtonList ID="rblStatus" runat="server" Label="Status" Required="true" RepeatDirection="Horizontal" AutoPostBack="true" />
+                                <div class="form-group" id="divStatus" runat="server">
+                                    <div class="form-control-static">
+                                        <asp:HiddenField ID="hfApprovalState" runat="server" OnValueChanged="hfApprovalState_ValueChanged" />
+                                        <asp:Panel ID="pnlEditApprovalState" runat="server" Visible="false">
+                                            <label class="control-label">Status</label>
+
+                                            <div class="toggle-container">
+                                                <div class="btn-group btn-toggle">
+                                                    <a class="btn btn-xs <%=PendingCss%>" data-status="1" data-active-css="btn-warning">Unapproved</a>
+                                                    <a class="btn btn-xs <%=ApprovedCss%>" data-status="2" data-active-css="btn-success">Approved</a>
+                                                    <a class="btn btn-xs <%=DeniedCss%>" data-status="3" data-active-css="btn-danger">Denied</a>
+                                                </div>
+                                            </div>
+                                        </asp:Panel>
+                                        <asp:Panel ID="pnlReadApprovalState" runat="server" Visible="false">
+                                            <label class="control-label">Status</label>
+                                            <asp:Literal ID="lApprovalState" runat="server" />
+                                        </asp:Panel>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -53,7 +72,9 @@
                                 <Rock:Grid ID="gLocations" runat="server" AllowPaging="false" DisplayType="Light" RowItemText="Location" ShowConfirmDeleteDialog="false" OnRowDataBound="gLocations_RowDataBound">
                                     <Columns>
                                         <Rock:RockBoundField DataField="Location" HeaderText="Location" />
-                                        <Rock:ToggleField DataField="IsApproved" HeaderText="Approved?" ButtonSizeCssClass="btn-xs" Enabled="True" OnCssClass="btn-success" OnText="Yes" OffText="No" SortExpression="IsApproved" OnCheckedChanged="gLocations_CheckedChanged" />
+                                        <Rock:RockBoundField DataField="ApprovalState" HeaderText="Approved?" />
+                                        <Rock:LinkButtonField CssClass="btn btn-success btn-sm" OnClick="gLocations_ApproveClick" Text="Approve" Visible="true" />
+                                        <Rock:LinkButtonField CssClass="btn btn-danger btn-sm" OnClick="gLocations_DenyClick" Text="Deny" Visible="true" />
                                         <Rock:EditField OnClick="gLocations_Edit" />
                                         <Rock:DeleteField OnClick="gLocations_Delete" />
                                     </Columns>
@@ -65,9 +86,11 @@
                                 <Rock:ModalAlert ID="maResourceGridWarning" runat="server" />
                                 <Rock:Grid ID="gResources" runat="server" AllowPaging="false" DisplayType="Light" RowItemText="Resource" ShowConfirmDeleteDialog="false" OnRowDataBound="gResources_RowDataBound">
                                     <Columns>
-                                        <Rock:RockBoundField DataField="Resource" HeaderText="Resource" />
+                                        <Rock:RockBoundField DataField="Resource.Name" HeaderText="Resource" />
                                         <Rock:RockBoundField DataField="Quantity" HeaderText="Quantity" />
-                                        <Rock:ToggleField DataField="IsApproved" HeaderText="Approved?" ButtonSizeCssClass="btn-xs" Enabled="True" OnCssClass="btn-success" OnText="Yes" OffText="No" SortExpression="IsApproved" OnCheckedChanged="gResources_CheckedChanged" />
+                                        <Rock:RockBoundField DataField="ApprovalState" HeaderText="Approved?" />
+                                        <Rock:LinkButtonField CssClass="btn btn-success" OnClick="gResources_ApproveClick" Text="Approve" Visible="true" />
+                                        <Rock:LinkButtonField CssClass="btn btn-danger" OnClick="gResources_DenyClick" Text="Deny" Visible="true" />
                                         <Rock:EditField OnClick="gResources_Edit" />
                                         <Rock:DeleteField OnClick="gResources_Delete" />
                                     </Columns>

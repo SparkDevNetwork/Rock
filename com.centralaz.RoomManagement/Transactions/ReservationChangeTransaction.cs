@@ -34,8 +34,8 @@ namespace com.centralaz.RoomManagement.Transactions
     {
         private EntityState State;
         private Guid? ReservationGuid;
-        private int ReservationStatusId;
-        private int PreviousReservationStatusId;
+        private ReservationApprovalState ApprovalState;
+        private ReservationApprovalState PreviousApprovalState;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ReservationChangeTransaction"/> class.
@@ -48,15 +48,15 @@ namespace com.centralaz.RoomManagement.Transactions
             if ( reservation != null )
             {
                 State = entry.State;
-                ReservationStatusId = reservation.ReservationStatusId;
+                ApprovalState = reservation.ApprovalState;
 
                 // If this isn't a new reservation, get the previous state and role values
                 if ( State != EntityState.Added )
                 {
-                    var dbStatusProperty = entry.Property( "ReservationStatusId" );
+                    var dbStatusProperty = entry.Property( "ApprovalState" );
                     if ( dbStatusProperty != null )
                     {
-                        PreviousReservationStatusId = (int)dbStatusProperty.OriginalValue;
+                        PreviousApprovalState = (ReservationApprovalState)dbStatusProperty.OriginalValue;
                     }
                 }
 
@@ -93,7 +93,7 @@ namespace com.centralaz.RoomManagement.Transactions
                             {
                                 case ReservationWorkflowTriggerType.ReservationCreated:
                                     {
-                                        if ( State == EntityState.Added && QualifiersMatch( rockContext, reservationWorkflowTrigger, ReservationStatusId, ReservationStatusId ) )
+                                        if ( State == EntityState.Added && QualifiersMatch( rockContext, reservationWorkflowTrigger, ApprovalState, ApprovalState ) )
                                         {
                                             LaunchWorkflow( rockContext, reservationWorkflowTrigger, "Reservation Created" );
                                         }
@@ -107,9 +107,9 @@ namespace com.centralaz.RoomManagement.Transactions
                                         }
                                         break;
                                     }
-                                case ReservationWorkflowTriggerType.StatusChanged:
+                                case ReservationWorkflowTriggerType.StateChanged:
                                     {
-                                        if ( State == EntityState.Modified && QualifiersMatch( rockContext, reservationWorkflowTrigger, PreviousReservationStatusId, ReservationStatusId ) )
+                                        if ( State == EntityState.Modified && QualifiersMatch( rockContext, reservationWorkflowTrigger, PreviousApprovalState, ApprovalState ) )
                                         {
                                             LaunchWorkflow( rockContext, reservationWorkflowTrigger, "Status Changed" );
                                         }
@@ -122,7 +122,7 @@ namespace com.centralaz.RoomManagement.Transactions
             }
         }
 
-        private bool QualifiersMatch( RockContext rockContext, ReservationWorkflowTrigger reservationWorkflowTrigger, int prevStatusId, int statusId )
+        private bool QualifiersMatch( RockContext rockContext, ReservationWorkflowTrigger reservationWorkflowTrigger, ReservationApprovalState prevState, ReservationApprovalState state )
         {
             var qualifierParts = ( reservationWorkflowTrigger.QualifierValue ?? "" ).Split( new char[] { '|' } );
 
@@ -130,10 +130,10 @@ namespace com.centralaz.RoomManagement.Transactions
 
             if ( matches && qualifierParts.Length > 1 && !string.IsNullOrWhiteSpace( qualifierParts[1] ) )
             {
-                var qualifierRoleId = qualifierParts[1].AsIntegerOrNull();
-                if ( qualifierRoleId.HasValue )
+                var qualifierRole = qualifierParts[1].ConvertToEnumOrNull<ReservationApprovalState>();
+                if ( qualifierRole.HasValue )
                 {
-                    matches = qualifierRoleId != 0 && qualifierRoleId == statusId;
+                    matches = qualifierRole != 0 && qualifierRole == state;
                 }
                 else
                 {
@@ -143,10 +143,10 @@ namespace com.centralaz.RoomManagement.Transactions
 
             if ( matches && qualifierParts.Length > 3 && !string.IsNullOrWhiteSpace( qualifierParts[3] ) )
             {
-                var qualifierRoleId = qualifierParts[3].AsIntegerOrNull();
-                if ( qualifierRoleId.HasValue )
+                var qualifierRole = qualifierParts[3].ConvertToEnumOrNull<ReservationApprovalState>();
+                if ( qualifierRole.HasValue )
                 {
-                    matches = qualifierRoleId != 0 && qualifierRoleId == prevStatusId;
+                    matches = qualifierRole != 0 && qualifierRole == prevState;
                 }
                 else
                 {

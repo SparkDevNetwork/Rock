@@ -110,9 +110,9 @@ public enum ReservationWorkflowTriggerType
     ReservationUpdated = 1,
 
     /// <summary>
-    /// The status changed
+    /// The state changed
     /// </summary>
-    StatusChanged = 2,
+    StateChanged = 2,
 
     /// <summary>
     /// The manual

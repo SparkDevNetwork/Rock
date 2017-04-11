@@ -238,12 +238,7 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
                 ddlMinistry.SetValue( gfSettings.GetUserPreference( "Ministry" ) );
             }
 
-            var statuses = new ReservationStatusService( rockContext ).Queryable().ToList();
-            ddlStatus.Items.Insert( 0, new ListItem( string.Empty, string.Empty ) );
-            foreach ( var status in statuses )
-            {
-                ddlStatus.Items.Add( new ListItem( status.Name, status.Id.ToString() ) );
-            }
+            ddlStatus.BindToEnum<ReservationApprovalState>( true );
             if ( !string.IsNullOrWhiteSpace( gfSettings.GetUserPreference( "Status" ) ) )
             {
                 ddlStatus.SetValue( gfSettings.GetUserPreference( "Status" ) );
@@ -307,10 +302,10 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
             }
 
             // Filter by Status
-            var statusValueId = ddlStatus.SelectedValueAsInt();
-            if ( statusValueId.HasValue )
+            var approvalState = ddlStatus.SelectedValueAsEnumOrNull<ReservationApprovalState>();
+            if ( approvalState.HasValue )
             {
-                qry = qry.Where( r => r.ReservationStatusId == statusValueId );
+                qry = qry.Where( r => r.ApprovalState == approvalState );
             }
 
             // Filter by Creator

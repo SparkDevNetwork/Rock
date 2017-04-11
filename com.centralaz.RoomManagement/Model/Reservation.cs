@@ -50,7 +50,7 @@ namespace com.centralaz.RoomManagement.Model
         public int? ReservationMinistryId { get; set; }
 
         [DataMember]
-        public int ReservationStatusId { get; set; }
+        public ReservationApprovalState ApprovalState { get; set; }
 
         [DataMember]
         public int? RequesterAliasId { get; set; }
@@ -68,9 +68,6 @@ namespace com.centralaz.RoomManagement.Model
         public int? NumberAttending { get; set; }
 
         [DataMember]
-        public bool IsApproved { get; set; }
-
-        [DataMember]
         public string Note { get; set; }
 
         #endregion
@@ -82,9 +79,6 @@ namespace com.centralaz.RoomManagement.Model
         public virtual Campus Campus { get; set; }
 
         public virtual ReservationMinistry ReservationMinistry { get; set; }
-
-        [LavaInclude]
-        public virtual ReservationStatus ReservationStatus { get; set; }
 
         public virtual PersonAlias RequesterAlias { get; set; }
 
@@ -188,7 +182,6 @@ namespace com.centralaz.RoomManagement.Model
         {
             this.HasRequired( r => r.Campus ).WithMany().HasForeignKey( r => r.CampusId ).WillCascadeOnDelete( false );
             this.HasRequired( r => r.ReservationMinistry ).WithMany().HasForeignKey( r => r.ReservationMinistryId ).WillCascadeOnDelete( false );
-            this.HasRequired( r => r.ReservationStatus ).WithMany().HasForeignKey( r => r.ReservationStatusId ).WillCascadeOnDelete( false );
             this.HasRequired( r => r.Schedule ).WithMany().HasForeignKey( r => r.ScheduleId ).WillCascadeOnDelete( false );
             this.HasRequired( r => r.RequesterAlias ).WithMany().HasForeignKey( r => r.RequesterAliasId ).WillCascadeOnDelete( false );
             this.HasRequired( r => r.ApproverAlias ).WithMany().HasForeignKey( r => r.ApproverAliasId ).WillCascadeOnDelete( false );
@@ -197,10 +190,29 @@ namespace com.centralaz.RoomManagement.Model
 
     #endregion
 
+    #region Enumerations
+    public enum ReservationApprovalState
+    {
+        Unapproved = 1,
+
+        Approved = 2,
+
+        Denied = 3,
+
+        ChangesNeeded = 4,
+
+        PendingReview = 5
+    }
+
+    #endregion
+
+    #region Helper Classes
     public class ReservationDateTime
     {
         public DateTime StartDateTime { get; set; }
         public DateTime EndDateTime { get; set; }
     }
+
+#endregion
 
 }

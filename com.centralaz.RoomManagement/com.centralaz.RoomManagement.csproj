@@ -76,14 +76,10 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Attribute\ReservationFieldAttribute.cs" />
-    <Compile Include="Attribute\ReservationStatusFieldAttribute.cs" />
-    <Compile Include="Attribute\ReservationStatusesFieldAttribute.cs" />
     <Compile Include="Controllers\ScheduledLocationsController.Partial.cs" />
     <Compile Include="Controllers\ScheduledResourcesController.Partial.cs" />
     <Compile Include="DataFilter\Reservation\ReservationInDateRangeFilter.cs" />
-    <Compile Include="Field\Types\ReservationStatusFieldType.cs" />
     <Compile Include="Field\Types\ReservationFieldType.cs" />
-    <Compile Include="Field\Types\ReservationStatusesFieldType.cs" />
     <Compile Include="Jobs\FireWorkflowFromReservationInDateRange.cs" />
     <Compile Include="Migrations\006_ResourceApproval.cs" />
     <Compile Include="Migrations\005_ ReservationUpdate.cs" />
@@ -93,12 +89,10 @@
     <Compile Include="Migrations\001_CreateDb.cs" />
     <Compile Include="Model\ReservationWorkflowService.cs" />
     <Compile Include="Model\ReservationWorkflowTriggerService.cs" />
-    <Compile Include="Model\ReservationStatusService.cs" />
     <Compile Include="Model\ReservationMinistryService.cs" />
     <Compile Include="Model\ReservationMinistry.cs" />
     <Compile Include="Model\ReservationWorkflow.cs" />
     <Compile Include="Model\ReservationWorkflowTrigger.cs" />
-    <Compile Include="Model\ReservationStatus.cs" />
     <Compile Include="Model\ReservationLocation.cs" />
     <Compile Include="Model\ReservationResource.cs" />
     <Compile Include="Model\ReservationLocationService.cs" />
@@ -111,12 +105,9 @@
     <Compile Include="SystemGuid\DefinedType.cs" />
     <Compile Include="SystemGuid\EntityType.cs" />
     <Compile Include="SystemGuid\Group.cs" />
-    <Compile Include="SystemGuid\ReservationStatus.cs" />
     <Compile Include="Transactions\ReservationChangeTransaction.cs" />
     <Compile Include="Web\Cache\ReservationMinistryCache.cs" />
-    <Compile Include="Web\UI\Controls\Pickers\ReservationStatusPicker.cs" />
     <Compile Include="Web\UI\Controls\Pickers\ReservationPicker.cs" />
-    <Compile Include="Web\UI\Controls\Pickers\ReservationStatusesPicker.cs" />
     <Compile Include="Web\UI\Controls\Pickers\ScheduledLocationItemPicker.cs" />
     <Compile Include="Web\UI\Controls\Pickers\ScheduledResourcePicker.cs" />
     <Compile Include="Web\UI\Controls\Pickers\ResourcePicker.cs" />

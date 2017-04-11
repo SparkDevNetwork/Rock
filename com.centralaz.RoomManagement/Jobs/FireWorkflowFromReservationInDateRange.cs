@@ -34,7 +34,7 @@ namespace com.centralaz.RoomManagement.Jobs
     [SlidingDateRangeField( "Date Range", "The range of reservations to fire a workflow for.", required: true )]
     [BooleanField( "Include only reservations that start in date range", key: "StartsInDateRange" )]
     [WorkflowTypeField( "Workflow Type", "The workflow type to fire for eligible reservations", required: true )]
-    [ReservationStatusesField( "Reservation Statuses", "The reservation statuses to filter by", false, "", "")]
+    [EnumsField( "Reservation Statuses", "The reservation statuses to filter by", typeof( ReservationApprovalState ), false, "", "" )]
     [DisallowConcurrentExecution]
     public class FireWorkflowFromReservationInDateRange : IJob
     {
@@ -55,7 +55,18 @@ namespace com.centralaz.RoomManagement.Jobs
             JobDataMap dataMap = context.JobDetail.JobDataMap;
             var dateRange = SlidingDateRangePicker.CalculateDateRangeFromDelimitedValues( dataMap.Get( "DateRange" ) != null ? dataMap.Get( "DateRange" ).ToString() : "-1||" );
             var startsInDateRange = dataMap.Get( "StartsInDateRange" ).ToString().AsBoolean();
-            var reservationStatusGuidList = ( dataMap.Get( "ReservationStatuses" ) != null ? dataMap.Get( "ReservationStatuses" ).ToString() : String.Empty ).Split( ',' ).AsGuidList();
+
+            // Check for the configured states and limit query to those
+            var states = new List<ReservationApprovalState>();
+
+            foreach ( string stateVal in ( dataMap.Get( "Status" ).ToString() ?? "2" ).Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ) )
+            {
+                var state = stateVal.ConvertToEnumOrNull<ReservationApprovalState>();
+                if ( state != null )
+                {
+                    states.Add( state.Value );
+                }
+            }
 
             var rockContext = new RockContext();
             WorkflowType workflowType = null;
@@ -72,9 +83,9 @@ namespace com.centralaz.RoomManagement.Jobs
                 var reservationQuery = reservationService.Queryable();
                 var reservationList = new List<Reservation>();
 
-                if ( reservationStatusGuidList.Any() )
+                if ( states.Any() )
                 {
-                    reservationQuery = reservationQuery.Where( r => reservationStatusGuidList.Contains( r.ReservationStatus.Guid ) );
+                    reservationQuery = reservationQuery.Where( r => states.Contains( r.ApprovalState ) );
                 }
 
                 var reservations = reservationQuery.ToList();

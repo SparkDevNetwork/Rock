@@ -40,7 +40,7 @@ namespace com.centralaz.RoomManagement.Model
         public int LocationId { get; set; }
 
         [DataMember]
-        public bool IsApproved { get; set; }
+        public ReservationLocationApprovalState ApprovalState { get; set; }
 
         #endregion
 
@@ -62,7 +62,7 @@ namespace com.centralaz.RoomManagement.Model
             this.ForeignKey = source.ForeignKey;
             this.ReservationId = source.ReservationId;
             this.LocationId = source.LocationId;
-            this.IsApproved = source.IsApproved;
+            this.ApprovalState = source.ApprovalState;
             this.CreatedDateTime = source.CreatedDateTime;
             this.ModifiedDateTime = source.ModifiedDateTime;
             this.CreatedByPersonAliasId = source.CreatedByPersonAliasId;
@@ -91,4 +91,29 @@ namespace com.centralaz.RoomManagement.Model
 
     #endregion
 
+    #region Enumerations
+
+    /// <summary>
+    /// An enum that represents when a Job notification status should be sent.
+    /// </summary>
+    public enum ReservationLocationApprovalState
+    {
+        /// <summary>
+        /// Notifications should be sent when a job completes with any notification status.
+        /// </summary>
+        Unapproved = 1,
+
+        /// <summary>
+        /// Notification should be sent when the job has completed successfully.
+        /// </summary>
+        /// 
+        Approved = 2,
+
+        /// <summary>
+        /// Notification should be sent when the job has completed with an error status.
+        /// </summary>
+        Denied = 3
+    }
+
+    #endregion
 }

@@ -41,7 +41,6 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
         #region Properties
 
         private List<ReservationMinistry> MinistriesState { get; set; }
-        private List<ReservationStatus> StatusesState { get; set; }
         private List<ReservationWorkflowTrigger> WorkflowTriggersState { get; set; }
 
         #endregion
@@ -66,15 +65,6 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
                 MinistriesState = JsonConvert.DeserializeObject<List<ReservationMinistry>>( json );
             }
 
-            json = ViewState["StatusesState"] as string;
-            if ( string.IsNullOrWhiteSpace( json ) )
-            {
-                StatusesState = new List<ReservationStatus>();
-            }
-            else
-            {
-                StatusesState = JsonConvert.DeserializeObject<List<ReservationStatus>>( json );
-            }
 
             json = ViewState["WorkflowTriggersState"] as string;
             if ( string.IsNullOrWhiteSpace( json ) )
@@ -95,18 +85,10 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
         {
             base.OnInit( e );
 
-            SecurityField securityField = gStatuses.Columns[2] as SecurityField;
-            securityField.EntityTypeId = EntityTypeCache.Read( typeof( com.centralaz.RoomManagement.Model.ReservationStatus ) ).Id;
-
             gMinistries.DataKeyNames = new string[] { "Guid" };
             gMinistries.Actions.ShowAdd = true;
             gMinistries.Actions.AddClick += gMinistries_Add;
             gMinistries.GridRebind += gMinistries_GridRebind;
-
-            gStatuses.DataKeyNames = new string[] { "Guid" };
-            gStatuses.Actions.ShowAdd = true;
-            gStatuses.Actions.AddClick += gStatuses_Add;
-            gStatuses.GridRebind += gStatuses_GridRebind;
 
             gWorkflowTriggers.DataKeyNames = new string[] { "Guid" };
             gWorkflowTriggers.Actions.ShowAdd = true;
@@ -146,7 +128,6 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
             };
 
             ViewState["MinistriesState"] = JsonConvert.SerializeObject( MinistriesState, Formatting.None, jsonSetting );
-            ViewState["StatusesState"] = JsonConvert.SerializeObject( StatusesState, Formatting.None, jsonSetting );
             ViewState["WorkflowTriggersState"] = JsonConvert.SerializeObject( WorkflowTriggersState, Formatting.None, jsonSetting );
 
             return base.SaveViewState();
@@ -167,85 +148,59 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
         {
             using ( var rockContext = new RockContext() )
             {
-                if ( StatusesState.Any( s => s.IsDefault ) )
+                ReservationMinistryService reservationMinistryService = new ReservationMinistryService( rockContext );
+                ReservationWorkflowTriggerService reservationWorkflowTriggerService = new ReservationWorkflowTriggerService( rockContext );
+
+                var reservationMinistries = reservationMinistryService.Queryable().ToList();
+                var reservationWorkflowTriggers = reservationWorkflowTriggerService.Queryable().ToList();
+
+                var uiWorkflows = WorkflowTriggersState.Select( l => l.Guid );
+                foreach ( var reservationWorkflowTrigger in reservationWorkflowTriggers.Where( l => !uiWorkflows.Contains( l.Guid ) ).ToList() )
                 {
-                    ReservationMinistryService reservationMinistryService = new ReservationMinistryService( rockContext );
-                    ReservationStatusService reservationStatusService = new ReservationStatusService( rockContext );
-                    ReservationWorkflowTriggerService reservationWorkflowTriggerService = new ReservationWorkflowTriggerService( rockContext );
-
-                    var reservationMinistries = reservationMinistryService.Queryable().ToList();
-                    var reservationStatuses = reservationStatusService.Queryable().ToList();
-                    var reservationWorkflowTriggers = reservationWorkflowTriggerService.Queryable().ToList();
-
-                    var uiWorkflows = WorkflowTriggersState.Select( l => l.Guid );
-                    foreach ( var reservationWorkflowTrigger in reservationWorkflowTriggers.Where( l => !uiWorkflows.Contains( l.Guid ) ).ToList() )
-                    {
-                        reservationWorkflowTriggerService.Delete( reservationWorkflowTrigger );
-                    }
-
-                    var uiActivityTypes = MinistriesState.Select( r => r.Guid );
-                    foreach ( var reservationMinistry in reservationMinistries.Where( r => !uiActivityTypes.Contains( r.Guid ) ).ToList() )
-                    {
-                        reservationMinistryService.Delete( reservationMinistry );
-                    }
-
-                    var uiStatuses = StatusesState.Select( r => r.Guid );
-                    foreach ( var reservationStatus in reservationStatuses.Where( r => !uiStatuses.Contains( r.Guid ) ).ToList() )
-                    {
-                        reservationStatusService.Delete( reservationStatus );
-                    }
-
-                    foreach ( var reservationMinistryState in MinistriesState )
-                    {
-                        ReservationMinistry reservationMinistry = reservationMinistries.Where( a => a.Guid == reservationMinistryState.Guid ).FirstOrDefault();
-                        if ( reservationMinistry == null )
-                        {
-                            reservationMinistry = new ReservationMinistry();
-                            reservationMinistryService.Add( reservationMinistry );
-                        }
-
-                        reservationMinistry.CopyPropertiesFrom( reservationMinistryState );
-                    }
-
-                    foreach ( var reservationStatusState in StatusesState )
-                    {
-                        ReservationStatus reservationStatus = reservationStatuses.Where( a => a.Guid == reservationStatusState.Guid ).FirstOrDefault();
-                        if ( reservationStatus == null )
-                        {
-                            reservationStatus = new ReservationStatus();
-                            reservationStatusService.Add( reservationStatus );
-                        }
-
-                        reservationStatus.CopyPropertiesFrom( reservationStatusState );
-                    }
-
-                    foreach ( ReservationWorkflowTrigger reservationWorkflowTriggerState in WorkflowTriggersState )
-                    {
-                        ReservationWorkflowTrigger reservationWorkflowTrigger = reservationWorkflowTriggers.Where( a => a.Guid == reservationWorkflowTriggerState.Guid ).FirstOrDefault();
-                        if ( reservationWorkflowTrigger == null )
-                        {
-                            reservationWorkflowTrigger = new ReservationWorkflowTrigger();
-                            reservationWorkflowTriggerService.Add( reservationWorkflowTrigger );
-                        }
-                        else
-                        {
-                            reservationWorkflowTriggerState.Id = reservationWorkflowTrigger.Id;
-                            reservationWorkflowTriggerState.Guid = reservationWorkflowTrigger.Guid;
-                        }
-
-                        reservationWorkflowTrigger.CopyPropertiesFrom( reservationWorkflowTriggerState );
-                    }
-
-                    rockContext.SaveChanges();
-
-                    ReservationWorkflowTriggerService.FlushCachedTriggers();
-
-                    NavigateToParentPage();
+                    reservationWorkflowTriggerService.Delete( reservationWorkflowTrigger );
                 }
-                else
+
+                var uiActivityTypes = MinistriesState.Select( r => r.Guid );
+                foreach ( var reservationMinistry in reservationMinistries.Where( r => !uiActivityTypes.Contains( r.Guid ) ).ToList() )
                 {
-                    nbRequired.Visible = true;
+                    reservationMinistryService.Delete( reservationMinistry );
                 }
+
+                foreach ( var reservationMinistryState in MinistriesState )
+                {
+                    ReservationMinistry reservationMinistry = reservationMinistries.Where( a => a.Guid == reservationMinistryState.Guid ).FirstOrDefault();
+                    if ( reservationMinistry == null )
+                    {
+                        reservationMinistry = new ReservationMinistry();
+                        reservationMinistryService.Add( reservationMinistry );
+                    }
+
+                    reservationMinistry.CopyPropertiesFrom( reservationMinistryState );
+                }
+
+                foreach ( ReservationWorkflowTrigger reservationWorkflowTriggerState in WorkflowTriggersState )
+                {
+                    ReservationWorkflowTrigger reservationWorkflowTrigger = reservationWorkflowTriggers.Where( a => a.Guid == reservationWorkflowTriggerState.Guid ).FirstOrDefault();
+                    if ( reservationWorkflowTrigger == null )
+                    {
+                        reservationWorkflowTrigger = new ReservationWorkflowTrigger();
+                        reservationWorkflowTriggerService.Add( reservationWorkflowTrigger );
+                    }
+                    else
+                    {
+                        reservationWorkflowTriggerState.Id = reservationWorkflowTrigger.Id;
+                        reservationWorkflowTriggerState.Guid = reservationWorkflowTrigger.Guid;
+                    }
+
+                    reservationWorkflowTrigger.CopyPropertiesFrom( reservationWorkflowTriggerState );
+                }
+
+                rockContext.SaveChanges();
+
+                ReservationWorkflowTriggerService.FlushCachedTriggers();
+
+                NavigateToParentPage();
+
             }
         }
 
@@ -391,156 +346,6 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
                 if ( reservationMinistryList.Any() )
                 {
                     reservationMinistryList.OrderBy( a => a.Name ).ToList();
-                }
-            }
-        }
-
-        #endregion
-
-        #region ReservationStatus Events
-
-        /// <summary>
-        /// Handles the Delete event of the gStatuses control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="RowEventArgs"/> instance containing the event data.</param>
-        protected void gStatuses_Delete( object sender, RowEventArgs e )
-        {
-            Guid rowGuid = (Guid)e.RowKeyValue;
-            StatusesState.RemoveEntity( rowGuid );
-            BindReservationStatusesGrid();
-        }
-
-        /// <summary>
-        /// Handles the Click event of the btnAddReservationStatus control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void btnAddStatus_Click( object sender, EventArgs e )
-        {
-            ReservationStatus reservationStatus = null;
-            Guid guid = hfAddStatusGuid.Value.AsGuid();
-            if ( !guid.IsEmpty() )
-            {
-                reservationStatus = StatusesState.FirstOrDefault( l => l.Guid.Equals( guid ) );
-            }
-
-            if ( reservationStatus == null )
-            {
-                reservationStatus = new ReservationStatus();
-            }
-            reservationStatus.Name = tbStatusName.Text;
-            reservationStatus.Description = tbStatusDescription.Text;
-            if ( cbIsDefault.Checked == true )
-            {
-                foreach ( var reservationStatusState in StatusesState )
-                {
-                    reservationStatusState.IsDefault = false;
-                }
-            }
-
-            reservationStatus.IsActive = cbIsActive.Checked;
-            reservationStatus.IsDefault = cbIsDefault.Checked;
-            reservationStatus.IsCritical = cbIsCritical.Checked;
-            if ( !reservationStatus.IsValid )
-            {
-                return;
-            }
-
-            if ( StatusesState.Any( a => a.Guid.Equals( reservationStatus.Guid ) ) )
-            {
-                StatusesState.RemoveEntity( reservationStatus.Guid );
-            }
-
-            StatusesState.Add( reservationStatus );
-            BindReservationStatusesGrid();
-            HideDialog();
-        }
-
-        /// <summary>
-        /// Handles the GridRebind event of the gStatuses control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        private void gStatuses_GridRebind( object sender, EventArgs e )
-        {
-            BindReservationStatusesGrid();
-        }
-
-        /// <summar>ymod
-        /// Handles the Add event of the gStatuses control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        private void gStatuses_Add( object sender, EventArgs e )
-        {
-            gStatuses_ShowEdit( Guid.Empty );
-        }
-
-        /// <summary>
-        /// Handles the Edit event of the gStatuses control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="RowEventArgs"/> instance containing the event data.</param>
-        protected void gStatuses_Edit( object sender, RowEventArgs e )
-        {
-            Guid reservationStatusGuid = (Guid)e.RowKeyValue;
-            gStatuses_ShowEdit( reservationStatusGuid );
-        }
-
-        /// <summary>
-        /// gs the statuses_ show edit.
-        /// </summary>
-        /// <param name="reservationStatusGuid">The connection status unique identifier.</param>
-        protected void gStatuses_ShowEdit( Guid reservationStatusGuid )
-        {
-            ReservationStatus reservationStatus = StatusesState.FirstOrDefault( l => l.Guid.Equals( reservationStatusGuid ) );
-            if ( reservationStatus != null )
-            {
-                tbStatusName.Text = reservationStatus.Name;
-                tbStatusDescription.Text = reservationStatus.Description;
-                cbIsActive.Checked = reservationStatus.IsActive;
-                cbIsDefault.Checked = reservationStatus.IsDefault;
-                cbIsCritical.Checked = reservationStatus.IsCritical;
-            }
-            else
-            {
-                using ( var rockContext = new RockContext() )
-                {
-                    tbStatusName.Text = string.Empty;
-                    tbStatusDescription.Text = string.Empty;
-                    cbIsActive.Checked = true;
-                    cbIsDefault.Checked = false;
-                    cbIsCritical.Checked = false;
-                }
-            }
-            hfAddStatusGuid.Value = reservationStatusGuid.ToString();
-            ShowDialog( "ReservationStatuses", true );
-        }
-
-        /// <summary>
-        /// Binds the connection statuses grid.
-        /// </summary>
-        private void BindReservationStatusesGrid()
-        {
-            SetReservationStatusListOrder( StatusesState );
-            gStatuses.DataSource = StatusesState.OrderBy( a => a.Name ).ToList();
-            gStatuses.EntityTypeId = EntityTypeCache.Read<com.centralaz.RoomManagement.Model.ReservationStatus>().Id;
-            gStatuses.DataBind();
-
-        }
-
-        /// <summary>
-        /// Sets the attribute list order.
-        /// </summary>
-        /// <param name="attributeList">The attribute list.</param>
-        private void SetReservationStatusListOrder( List<ReservationStatus> reservationStatusList )
-        {
-            if ( reservationStatusList != null )
-            {
-                if ( reservationStatusList.Any() )
-                {
-                    reservationStatusList.OrderBy( a => a.Name ).ToList();
                 }
             }
         }
@@ -721,24 +526,15 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
                         ddlSecondaryQualifier.Items.Clear();
                         break;
 
-                    case ReservationWorkflowTriggerType.StatusChanged:
-                        var statusList = new ReservationStatusService( rockContext ).Queryable().ToList();
+                    case ReservationWorkflowTriggerType.StateChanged:
                         ddlPrimaryQualifier.Label = "From";
                         ddlPrimaryQualifier.Visible = true;
-                        ddlPrimaryQualifier.Items.Clear();
-                        ddlPrimaryQualifier.Items.Add( new ListItem( string.Empty, string.Empty ) );
-                        foreach ( var status in statusList )
-                        {
-                            ddlPrimaryQualifier.Items.Add( new ListItem( status.Name, status.Id.ToString().ToUpper() ) );
-                        }
+                        ddlPrimaryQualifier.BindToEnum<ReservationApprovalState>( true );
+
                         ddlSecondaryQualifier.Label = "To";
                         ddlSecondaryQualifier.Visible = true;
-                        ddlSecondaryQualifier.Items.Clear();
-                        ddlSecondaryQualifier.Items.Add( new ListItem( string.Empty, string.Empty ) );
-                        foreach ( var status in statusList )
-                        {
-                            ddlSecondaryQualifier.Items.Add( new ListItem( status.Name, status.Id.ToString().ToUpper() ) );
-                        }
+                        ddlSecondaryQualifier.BindToEnum<ReservationApprovalState>( true );
+
                         break;
 
                     case ReservationWorkflowTriggerType.ReservationUpdated:
@@ -849,11 +645,9 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
 
             MinistriesState = new ReservationMinistryService( rockContext ).Queryable().ToList();
             WorkflowTriggersState = new ReservationWorkflowTriggerService( rockContext ).Queryable().ToList();
-            StatusesState = new ReservationStatusService( rockContext ).Queryable().ToList();
 
             BindReservationMinistrysGrid();
             BindReservationWorkflowTriggersGrid();
-            BindReservationStatusesGrid();
         }
 
         /// <summary>
@@ -866,8 +660,6 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
 
             MinistriesState = null;
             WorkflowTriggersState = null;
-            StatusesState = null;
-
         }
 
         /// <summary>
@@ -903,9 +695,6 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
                 case "RESERVATIONMINISTRIES":
                     dlgMinistries.Show();
                     break;
-                case "RESERVATIONSTATUSES":
-                    dlgStatuses.Show();
-                    break;
                 case "RESERVATIONWORKFLOWTRIGGERS":
                     dlgWorkflowTrigger.Show();
                     break;
@@ -921,9 +710,6 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
             {
                 case "RESERVATIONMINISTRIES":
                     dlgMinistries.Hide();
-                    break;
-                case "RESERVATIONSTATUSES":
-                    dlgStatuses.Hide();
                     break;
                 case "RESERVATIONWORKFLOWTRIGGERS":
                     dlgWorkflowTrigger.Hide();

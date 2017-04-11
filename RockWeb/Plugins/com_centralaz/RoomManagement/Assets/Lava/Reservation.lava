@@ -52,19 +52,19 @@
 			<div class="col-md-2">
 				<ul>
 				{% for reservationLocation in reservationSummary.Locations %}
-				<li>{{ reservationLocation.Location.Name }}{% if reservationLocation.IsApproved %} <i class="fa fa-check"></i>{% endif %}</li>
+				<li>{{ reservationLocation.Location.Name }}{% if reservationLocation.ApprovalState == 2 %} <i class="fa fa-check"></i>{% endif %}</li>
 				{% endfor %}
 				</ul>
 			</div>
 			<div class="col-md-2">
 			  <ul>
 				{% for reservationResource in reservationSummary.Resources %}
-				<li>{{ reservationResource.Resource.Name }}({{reservationResource.Quantity}}) {% if reservationResource.IsApproved %} <i class="fa fa-check"></i>{% endif %}</li>
+				<li>{{ reservationResource.Resource.Name }}({{reservationResource.Quantity}}) {% if reservationResource.ApprovalState == 2 %} <i class="fa fa-check"></i>{% endif %}</li>
 				{% endfor %}
 				</ul>
 			</div>
 			<div class="col-md-1">
-			  {{ reservationSummary.Status }}
+			  {{ reservationSummary.ApprovalState }}
 			</div>
 			<div class="col-md-1">
 			  <a href="{{ DetailsPage }}?ReservationId={{ reservationSummary.Id }}"><i class="fa fa-edit"></i></a>

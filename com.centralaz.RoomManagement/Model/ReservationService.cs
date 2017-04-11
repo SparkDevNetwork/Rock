@@ -71,7 +71,7 @@ namespace com.centralaz.RoomManagement.Model
                         {
                             Id = reservation.Id,
                             //Status = reservation.ReservationStatus!= null ? reservation.ReservationStatus.Name : reservation.IsApproved ? "Approved" : "Needs Approval",
-                            ReservationStatus = reservation.ReservationStatus,
+                            ApprovalState = reservation.ApprovalState,
                             ReservationName = reservation.Name,
                             ReservationLocations = reservation.ReservationLocations.ToList(),
                             ReservationResources = reservation.ReservationResources.ToList(),
@@ -92,13 +92,12 @@ namespace com.centralaz.RoomManagement.Model
 
         public List<int> GetReservedLocationIds( Reservation newReservation )
         {
-            var deniedGuid = SystemGuid.ReservationStatus.DENIED.AsGuid();
-            var newReservationSummaries = GetReservationSummaries( new List<Reservation>() { newReservation }.AsQueryable(), RockDateTime.Now.AddMonths(-1), RockDateTime.Now.AddYears( 1 ) );
-            var reservedLocationIds = GetReservationSummaries( Queryable().Where( r => r.Id != newReservation.Id && r.ReservationStatus.Guid != deniedGuid ), RockDateTime.Now.AddMonths( -1 ), RockDateTime.Now.AddYears( 1 ) )
+            var newReservationSummaries = GetReservationSummaries( new List<Reservation>() { newReservation }.AsQueryable(), RockDateTime.Now.AddMonths( -1 ), RockDateTime.Now.AddYears( 1 ) );
+            var reservedLocationIds = GetReservationSummaries( Queryable().Where( r => r.Id != newReservation.Id && r.ApprovalState != ReservationApprovalState.Denied ), RockDateTime.Now.AddMonths( -1 ), RockDateTime.Now.AddYears( 1 ) )
                 .Where( currentReservationSummary => newReservationSummaries.Any( newReservationSummary =>
                  ( currentReservationSummary.ReservationStartDateTime > newReservationSummary.ReservationStartDateTime || currentReservationSummary.ReservationEndDateTime > newReservationSummary.ReservationStartDateTime ) &&
                  ( currentReservationSummary.ReservationStartDateTime < newReservationSummary.ReservationEndDateTime || currentReservationSummary.ReservationEndDateTime < newReservationSummary.ReservationEndDateTime )
-                 ) ).SelectMany( currentReservationSummary => currentReservationSummary.ReservationLocations.Select( rl => rl.LocationId ) )
+                 ) ).SelectMany( currentReservationSummary => currentReservationSummary.ReservationLocations.Where( rl => rl.ApprovalState != ReservationLocationApprovalState.Denied ).Select( rl => rl.LocationId ) )
                  .Distinct()
                  .ToList();
             return reservedLocationIds;
@@ -126,7 +125,7 @@ namespace com.centralaz.RoomManagement.Model
         public class ReservationSummary
         {
             public int Id { get; set; }
-            public ReservationStatus ReservationStatus { get; set; }
+            public ReservationApprovalState ApprovalState { get; set; }
             public String ReservationName { get; set; }
             public String EventDateTimeDescription { get; set; }
             public String EventTimeDescription { get; set; }

@@ -15,7 +15,6 @@
             </div>
             <div class="panel-body">
                 <Rock:NotificationBox ID="nbEditModeMessage" runat="server" NotificationBoxType="Info" />
-                <Rock:NotificationBox ID="nbRequired" runat="server" NotificationBoxType="Danger" Text="A default reservation status is required." Visible="false" />
                 <asp:ValidationSummary ID="valDetail" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" />
 
                 <div id="pnlEditDetails" runat="server">
@@ -26,20 +25,6 @@
                                     <Rock:RockBoundField DataField="Name" HeaderText="Ministries" />
                                     <Rock:EditField OnClick="gMinistries_Edit" />
                                     <Rock:DeleteField OnClick="gMinistries_Delete" />
-                                </Columns>
-                            </Rock:Grid>
-                        </div>
-                    </Rock:PanelWidget>
-
-                    <Rock:PanelWidget ID="wpStatuses" runat="server" Title="Statuses">
-                        <div class="grid">
-                            <Rock:Grid ID="gStatuses" runat="server" AllowPaging="false" DisplayType="Light" RowItemText="Status" ShowConfirmDeleteDialog="false">
-                                <Columns>
-                                    <Rock:RockBoundField DataField="Name" HeaderText="Name" />
-                                    <Rock:RockBoundField DataField="Description" HeaderText="Description" />
-                                    <Rock:SecurityField />
-                                    <Rock:EditField OnClick="gStatuses_Edit" />
-                                    <Rock:DeleteField OnClick="gStatuses_Delete" />
                                 </Columns>
                             </Rock:Grid>
                         </div>
@@ -74,29 +59,6 @@
             <Content>
                 <asp:HiddenField ID="hfAddMinistryGuid" runat="server" />
                 <Rock:DataTextBox ID="tbMinistryName" SourceTypeName="com.centralaz.RoomManagement.Model.ReservationMinistry, com.centralaz.RoomManagement" PropertyName="Name" Label="Ministry Name" runat="server" ValidationGroup="Ministry" />
-            </Content>
-        </Rock:ModalDialog>
-
-        <Rock:ModalDialog ID="dlgStatuses" runat="server" ScrollbarEnabled="false" SaveButtonText="Add" OnSaveClick="btnAddStatus_Click" Title="Create Status" ValidationGroup="Status">
-            <Content>
-                <asp:HiddenField ID="hfAddStatusGuid" runat="server" />
-                <div class="row">
-                    <div class="col-md-6">
-                        <Rock:DataTextBox ID="tbStatusName" SourceTypeName="com.centralaz.RoomManagement.Model.ReservationStatus, com.centralaz.RoomManagement" PropertyName="Name" Label="Name" runat="server" ValidationGroup="Status" />
-                    </div>
-                    <div class="col-md-6">
-                        <Rock:RockCheckBox ID="cbIsActive" runat="server" Label="Is Active" ValidationGroup="Status" />
-                    </div>
-                </div>
-                <Rock:DataTextBox ID="tbStatusDescription" SourceTypeName="com.centralaz.RoomManagement.Model.ReservationStatus, com.centralaz.RoomManagement" PropertyName="Description" Label="Description" runat="server" ValidationGroup="Status" TextMode="MultiLine" Rows="3" />
-                <div class="row">
-                    <div class="col-md-6">
-                        <Rock:RockCheckBox ID="cbIsCritical" runat="server" Label="Is Critical" ValidationGroup="Status" Help="Requires immediate action." />
-                    </div>
-                    <div class="col-md-6">
-                        <Rock:RockCheckBox ID="cbIsDefault" runat="server" Label="Is Default" ValidationGroup="Status" />
-                    </div>
-                </div>
             </Content>
         </Rock:ModalDialog>
 

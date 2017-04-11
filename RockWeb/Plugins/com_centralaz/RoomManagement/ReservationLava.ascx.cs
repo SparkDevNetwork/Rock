@@ -270,7 +270,6 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
 
         private void BindData()
         {
-            var deniedGuid = com.centralaz.RoomManagement.SystemGuid.ReservationStatus.DENIED.AsGuid();
             var rockContext = new RockContext();
             var reservationService = new ReservationService( rockContext );
             var qry = reservationService.Queryable();
@@ -306,7 +305,7 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
             {
                 Id = r.Id,
                 ReservationName = r.ReservationName,
-                Status = r.ReservationStatus.Name,
+                ApprovalState = r.ApprovalState.ConvertToString(),
                 Locations = r.ReservationLocations.ToList(),
                 Resources = r.ReservationResources.ToList(),
                 CalendarDate = r.EventStartDateTime.ToLongDateString(),

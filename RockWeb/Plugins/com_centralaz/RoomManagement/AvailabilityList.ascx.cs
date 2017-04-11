@@ -17,7 +17,6 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Data.Entity;
 using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
@@ -131,15 +130,21 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
                         e.Value = string.Empty;
                         break;
                     }
+                case "Start Time":
+                case "End Time":
+                    {
+                        e.Value = DateRangePicker.FormatDelimitedValues( e.Value );
+                        break;
+                    }
                 case "Resource Category":
                     {
-                        if ( gfSettings.GetUserPreference( "Selected Entity" ) == "Resource" )
+                        if ( gfSettings.GetUserPreference( "Selected Entity" ) == "Resources" )
                         {
-                            var resourceCategoryIdList = e.Value.Split( ',' ).AsIntegerList();
-                            if ( resourceCategoryIdList.Any() )
+                            var resourceIdList = e.Value.Split( ',' ).AsIntegerList();
+                            if ( resourceIdList.Any() && cpResource.Visible )
                             {
-                                var service = new CategoryService( new RockContext() );
-                                var resources = service.GetByIds( resourceCategoryIdList );
+                                var service = new ResourceService( new RockContext() );
+                                var resources = service.GetByIds( resourceIdList );
                                 if ( resources != null && resources.Any() )
                                 {
                                     e.Value = resources.Select( a => a.Name ).ToList().AsDelimited( "," );
@@ -163,12 +168,12 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
                     }
                 case "Parent Location":
                     {
-                        if ( gfSettings.GetUserPreference( "Selected Entity" ) == "Location" )
+                        if ( gfSettings.GetUserPreference( "Selected Entity" ) == "Locations" )
                         {
                             var locationIdList = e.Value.Split( ',' ).AsIntegerList();
                             if ( locationIdList.Any() && lipLocation.Visible )
                             {
-                                var service = new LocationService( new RockContext() );
+                                var service = new FinancialAccountService( new RockContext() );
                                 var locations = service.GetByIds( locationIdList );
                                 if ( locations != null && locations.Any() )
                                 {
@@ -202,8 +207,8 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
         protected void gfSettings_ApplyFilterClick( object sender, EventArgs e )
         {
             gfSettings.SaveUserPreference( "Selected Entity", rblResourceLocation.SelectedValue );
-            gfSettings.SaveUserPreference( "Start Time", dtpStartDateTime.SelectedDateTime.ToString() );
-            gfSettings.SaveUserPreference( "End Time", dtpEndDateTime.SelectedDateTime.ToString() );
+            gfSettings.SaveUserPreference( "Start Time", dtpStartDateTime.ToString() );
+            gfSettings.SaveUserPreference( "End Time", dtpEndDateTime.ToString() );
             gfSettings.SaveUserPreference( "Resource Category", cpResource.SelectedValue.ToString() );
             gfSettings.SaveUserPreference( "Parent Location", lipLocation.SelectedValue.ToString() );
             BindGrid();
@@ -271,20 +276,14 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
         {
             if ( rblResourceLocation.SelectedValue == "Location" )
             {
-                cpResource.Visible = false;
-                gResources.Visible = false;
-
-                lipLocation.Visible = true;
                 gLocations.Visible = true;
+                gResources.Visible = false;
                 BindLocationsGrid();
             }
             else
             {
-                cpResource.Visible = true;
-                gResources.Visible = true;
-
-                lipLocation.Visible = false;
                 gLocations.Visible = false;
+                gResources.Visible = true;
                 BindResourcesGrid();
             }
         }
@@ -296,8 +295,7 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
         {
             var rockContext = new RockContext();
             var reservationService = new ReservationService( rockContext );
-            var deniedGuid = com.centralaz.RoomManagement.SystemGuid.ReservationStatus.DENIED.AsGuid();
-            var qry = reservationService.Queryable().AsNoTracking().Where( r => r.ReservationStatus.Guid != deniedGuid );
+            var qry = reservationService.Queryable().Where( r => r.ApprovalState != ReservationApprovalState.Denied );
             var locationService = new LocationService( rockContext );
 
             List<int> locationIdList = new List<int>();
@@ -306,17 +304,19 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
             {
                 locationIdList = locationService.GetAllDescendents( lipLocation.SelectedValueAsInt().Value ).Select( l => l.Id ).ToList();
                 locationIdList.Add( lipLocation.SelectedValueAsInt().Value );
-                locationList = locationService.Queryable().AsNoTracking().Where( l => locationIdList.Contains( l.Id ) ).ToList();
+                locationList = locationService.Queryable().Where( l => locationIdList.Contains( l.Id ) ).ToList();
 
                 if ( locationIdList.Any() )
                 {
-                    qry = qry.Where( r => r.ReservationLocations.Any( rr => locationIdList.Contains( rr.LocationId ) ) );
+                    qry = qry.Where( r => r.ReservationLocations.Any( rr => rr.ApprovalState != ReservationLocationApprovalState.Denied && locationIdList.Contains( rr.LocationId ) ) );
                 }
             }
             else
             {
-                locationList = locationService.Queryable().AsNoTracking().Where( l=>l.Name != null && l.Name != string.Empty ).ToList();
+                locationList = locationService.Queryable().ToList();
             }
+
+            locationList = locationList.Where( l => !String.IsNullOrWhiteSpace( l.Name ) ).ToList();
 
             // Filter by Time
             var today = RockDateTime.Today;
@@ -329,8 +329,8 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
             {
                 Id = l.Id,
                 Name = l.Name,
-                IsAvailable = !reservationSummaryList.Any( r => r.ReservationLocations.Any( rl => rl.LocationId == l.Id ) ),
-                Availability = reservationSummaryList.Any( r => r.ReservationLocations.Any( rl => rl.LocationId == l.Id ) ) ? reservationSummaryList.Where( r => r.ReservationLocations.Any( rl => rl.LocationId == l.Id ) ).Select( r => r.ReservationName + "</br>" + r.ReservationDateTimeDescription ).ToList().AsDelimited( "</br></br>" ) : "Available"
+                IsAvailable = !reservationSummaryList.Any( r => r.ReservationLocations.Any( rl => rl.ApprovalState != ReservationLocationApprovalState.Denied && rl.LocationId == l.Id ) ),
+                Availability = reservationSummaryList.Any( r => r.ReservationLocations.Any( rl => rl.ApprovalState != ReservationLocationApprovalState.Denied && rl.LocationId == l.Id ) ) ? reservationSummaryList.Where( r => r.ReservationLocations.Any( rl => rl.ApprovalState != ReservationLocationApprovalState.Denied && rl.LocationId == l.Id ) ).Select( r => r.ReservationName + "</br>" + r.ReservationDateTimeDescription ).ToList().AsDelimited( "</br></br>" ) : "Available"
             } ).OrderBy( l => l.Name ).ToList();
             gLocations.EntityTypeId = EntityTypeCache.Read<Location>().Id;
             gLocations.DataBind();
@@ -344,24 +344,24 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
             var rockContext = new RockContext();
             var reservationService = new ReservationService( rockContext );
             var resourceService = new ResourceService( rockContext );
-            var deniedGuid = com.centralaz.RoomManagement.SystemGuid.ReservationStatus.DENIED.AsGuid();
-            var qry = reservationService.Queryable().AsNoTracking().Where( r => r.ReservationStatus.Guid != deniedGuid );
+            var qry = reservationService.Queryable().Where( r => r.ApprovalState != ReservationApprovalState.Denied );
 
+            List<int> resourceIdList = new List<int>();
             List<Resource> resourceList = new List<Resource>();
             if ( cpResource.SelectedValueAsInt().HasValue )
             {
                 int categoryId = cpResource.SelectedValueAsInt().Value;
-                resourceList = resourceService.Queryable().AsNoTracking().Where( r => r.CategoryId == categoryId ).ToList();
-                var resourceIdList = resourceList.Select( r => r.Id );
+                resourceList = resourceService.Queryable().Where( r => r.CategoryId == categoryId ).ToList();
+                resourceIdList = resourceList.Select( r => r.Id ).ToList();
 
                 if ( resourceIdList.Any() )
                 {
-                    qry = qry.Where( r => r.ReservationResources.Any( rr => resourceIdList.Contains( rr.ResourceId ) ) );
+                    qry = qry.Where( r => r.ReservationResources.Any( rr => rr.ApprovalState != ReservationResourceApprovalState.Denied && resourceIdList.Contains( rr.ResourceId ) ) );
                 }
             }
             else
             {
-                resourceList = resourceService.Queryable().AsNoTracking().ToList();
+                resourceList = resourceService.Queryable().ToList();
             }
 
             // Filter by Time
@@ -376,13 +376,13 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
                 var reservedResources = reservationSummaryList.Where( reservationSummary =>
                      ( reservationSummary.ReservationStartDateTime > filterStartDateTime || reservationSummary.ReservationEndDateTime > filterStartDateTime ) &&
                      ( reservationSummary.ReservationStartDateTime < filterEndDateTime || reservationSummary.ReservationEndDateTime < filterEndDateTime )
-                    ).DistinctBy( reservationSummary => reservationSummary.Id ).Sum( reservationSummary => reservationSummary.ReservationResources.Where( rr => rr.ResourceId == resource.Id ).Sum( rr => rr.Quantity ) );
+                    ).DistinctBy( reservationSummary => reservationSummary.Id ).Sum( reservationSummary => reservationSummary.ReservationResources.Where( rr => rr.ApprovalState != ReservationResourceApprovalState.Denied && rr.ResourceId == resource.Id ).Sum( rr => rr.Quantity ) );
                 return new
                 {
                     Id = resource.Id,
                     Name = resource.Name,
                     IsAvailable = resource.Quantity - reservedResources > 0,
-                    Availability = resource.Quantity - reservedResources > 0 ? String.Format( "{0} Available", resource.Quantity - reservedResources ) : reservationSummaryList.Where( reservation => reservation.ReservationResources.Any( rr => rr.ResourceId == resource.Id ) ).Select( reservation => reservation.ReservationName + "</br>" + reservation.ReservationDateTimeDescription ).ToList().AsDelimited( "</br></br>" )
+                    Availability = resource.Quantity - reservedResources > 0 ? String.Format( "{0} Available", resource.Quantity - reservedResources ) : reservationSummaryList.Where( reservation => reservation.ReservationResources.Any( rr => rr.ApprovalState != ReservationResourceApprovalState.Denied && rr.ResourceId == resource.Id ) ).Select( reservation => reservation.ReservationName + "</br>" + reservation.ReservationDateTimeDescription ).ToList().AsDelimited( "</br></br>" )
                 };
             } ).OrderBy( l => l.Name ).ToList();
             gResources.EntityTypeId = EntityTypeCache.Read<Reservation>().Id;

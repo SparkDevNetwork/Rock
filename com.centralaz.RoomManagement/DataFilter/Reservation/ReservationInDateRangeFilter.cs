@@ -98,8 +98,8 @@ namespace com.centralaz.RoomManagement.DataFilter.Reservation
 function() {
     
     var dateRangeText = $('.js-slidingdaterange-text-value', $content).val()
-    var statusPicker = $('.js-status-picker', $content);
-    var statusNames = statusPicker.find('.selected-names').text() 
+    var cblStates = $('.js-status-picker', $content);
+    var statusNames = cblStates.find('.selected-names').text() 
 
    return 'Reservations with statuses ' + statusNames  + ' in DateRange: ' + dateRangeText; 
 }
@@ -142,13 +142,12 @@ function() {
                     includeOnlyStarting = selectionValues[4].AsBoolean();
                 }
 
-                string statusNames = string.Empty;
-                var statusGuids = selectionValues[2].Split( ',' ).Select( a => a.AsGuid() ).ToList();
-                statusNames = new ReservationStatusService( new RockContext() ).GetByGuids( statusGuids ).Select( a => a.Name ).ToList().AsDelimited( "," );
+                var statesValues = selectionValues[2].Split( ',' ).ToList();
+                var statesNames = statesValues.AsDelimited( "," );
 
                 result = string.Format(
                     "Reservations{0} {1}in Date Range: {2}",
-                    !string.IsNullOrWhiteSpace( statusNames ) ? " with statuses:" + statusNames : string.Empty,
+                    !string.IsNullOrWhiteSpace( statesNames ) ? " with approval states:" + statesNames : string.Empty,
                     includeOnlyStarting ? "Starting " : String.Empty,
                     SlidingDateRangePicker.FormatDelimitedValues( fakeSlidingDateRangePicker.DelimitedValues )
                     )
@@ -164,13 +163,13 @@ function() {
         /// <returns></returns>
         public override Control[] CreateChildControls( Type entityType, FilterField filterControl )
         {
-            ReservationStatusesPicker statusPicker = new ReservationStatusesPicker();
-            statusPicker.ReservationStatuses = new ReservationStatusService( new RockContext() ).Queryable().ToList();
-            statusPicker.ID = filterControl.ID + "_statusPicker";
-            statusPicker.AddCssClass( "js-status-picker" );
-            statusPicker.Label = "Reservation Statuses";
-            statusPicker.Help = "The statuses that will be included in the filter.";
-            filterControl.Controls.Add( statusPicker );
+            RockCheckBoxList cblStates = new RockCheckBoxList();
+            cblStates.BindToEnum<ReservationApprovalState>();
+            cblStates.ID = filterControl.ID + "_cblStates";
+            cblStates.AddCssClass( "js-status-picker" );
+            cblStates.Label = "Reservation Approval States";
+            cblStates.Help = "The approval states that will be included in the filter.";
+            filterControl.Controls.Add( cblStates );
 
             SlidingDateRangePicker slidingDateRangePicker = new SlidingDateRangePicker();
             slidingDateRangePicker.ID = filterControl.ID + "_slidingDateRangePicker";
@@ -187,7 +186,7 @@ function() {
             checkbox.Required = true;
             filterControl.Controls.Add( checkbox );
 
-            var controls = new Control[3] { statusPicker, slidingDateRangePicker, checkbox };
+            var controls = new Control[3] { cblStates, slidingDateRangePicker, checkbox };
 
             return controls;
         }
@@ -212,13 +211,7 @@ function() {
         /// <returns></returns>
         public override string GetSelection( Type entityType, Control[] controls )
         {
-            var statusIdList = ( controls[0] as ReservationStatusesPicker ).SelectedValuesAsInt.ToList();
-            string statusGuids = string.Empty;
-            var statuses = new ReservationStatusService( new RockContext() ).GetByIds( statusIdList );
-            if ( statuses != null && statuses.Any() )
-            {
-                statusGuids = statuses.Select( a => a.Guid ).ToList().AsDelimited( "," );
-            }
+            var cblStatus = controls[0] as RockCheckBoxList;
 
             SlidingDateRangePicker slidingDateRangePicker = controls[1] as SlidingDateRangePicker;
 
@@ -228,7 +221,7 @@ function() {
             var delimitedValues = slidingDateRangePicker.DelimitedValues.Replace( "|", "," );
 
             // {1} and {2} used to store the DateRange before, but now we using the SlidingDateRangePicker
-            return string.Format( "{0}|{1}|{2}|{3}|{4}", string.Empty, string.Empty, statusGuids, delimitedValues, checkbox.Checked );
+            return string.Format( "{0}|{1}|{2}|{3}|{4}", string.Empty, string.Empty, cblStatus.SelectedValues.AsDelimited( "," ), delimitedValues, checkbox.Checked );
         }
 
         /// <summary>
@@ -242,8 +235,8 @@ function() {
             string[] selectionValues = selection.Split( '|' );
             if ( selectionValues.Length >= 3 )
             {
-                var statusPicker = controls[0] as ReservationStatusesPicker;
-                statusPicker.ReservationStatuses = new ReservationStatusService( new RockContext() ).Queryable().ToList();
+                RockCheckBoxList cblStates = new RockCheckBoxList();
+                cblStates.BindToEnum<ReservationApprovalState>();
                 var slidingDateRangePicker = controls[1] as SlidingDateRangePicker;
                 var checkbox = controls[2] as CheckBox;
 
@@ -267,11 +260,10 @@ function() {
                     checkbox.Checked = selectionValues[4].AsBoolean();
                 }
 
-                var statusGuids = selectionValues[2].Split( ',' ).Select( a => a.AsGuid() ).ToList();
-                var statuses = new ReservationStatusService( new RockContext() ).GetByGuids( statusGuids ).Select( rs => rs.Id ).ToList();
-                if ( statuses != null && statuses.Any() )
+                var states = ( selectionValues[2] ?? "2" ).Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries );
+                if ( states.Any() )
                 {
-                    statusPicker.SetValues( statuses );
+                    cblStates.SetValues( states );
                 }
             }
         }
@@ -321,22 +313,22 @@ function() {
                 includeOnlyStarting = selectionValues[4].AsBoolean();
             }
 
-            var statusGuids = selectionValues[2].Split( ',' ).Select( a => a.AsGuid() ).ToList();
-            var statusIdList = new ReservationStatusService( new RockContext() ).GetByGuids( statusGuids ).Select( rs => rs.Id ).ToList();
+            var states = new List<ReservationApprovalState>();
+
+            foreach ( string stateVal in ( selectionValues[2] ?? "2" ).Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ) )
+            {
+                var state = stateVal.ConvertToEnumOrNull<ReservationApprovalState>();
+                if ( state != null )
+                {
+                    states.Add( state.Value );
+                }
+            }
 
             var reservationQry = new ReservationService( rockContext ).Queryable();
 
-            if ( statusIdList.Any() )
+            if ( states.Any() )
             {
-                if ( statusIdList.Count == 1 )
-                {
-                    int statusId = statusIdList.First();
-                    reservationQry = reservationQry.Where( xx => xx.ReservationStatusId == statusId );
-                }
-                else
-                {
-                    reservationQry = reservationQry.Where( xx => statusIdList.Contains( xx.ReservationStatusId ) );
-                }
+                reservationQry = reservationQry.Where( xx => states.Contains( xx.ApprovalState ) );
             }
 
             var reservationIdList = new List<int>();
