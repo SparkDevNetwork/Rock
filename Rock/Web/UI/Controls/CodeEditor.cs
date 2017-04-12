@@ -256,10 +256,15 @@ namespace Rock.Web.UI.Controls
             {
                 var height = ViewState["EditorHeight"] as string;
                 var heightPixels = ( height ?? string.Empty ).AsIntegerOrNull() ?? 0;
-
-                // ensure a minimum height of 50 pixels
-                if ( heightPixels < 50 )
+                
+                if ( heightPixels <= 0)
                 {
+                    // if height is not specified or is zero or less, default it to 200
+                    height = "200";
+                }
+                else if ( heightPixels < 50 )
+                {
+                    // ensure a minimum height of 50 pixels
                     height = "50";
                 }
 

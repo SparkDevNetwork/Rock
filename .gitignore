@@ -8,8 +8,6 @@ _ReSharper.*
 *.v11.suo
 *.user
 *.suo
-*.dll
-*.pdb
 #*.Framework.XML
 
 #specific files
@@ -27,11 +25,10 @@ StyleCop.Cache
 RockWeb/Cache/*
 RockWeb/App_Data/PackageStaging
 /scaffolding.config
-/Build/*
 *.sln.GhostDoc.xml
-/packages
-node_modules
-/PrecompiledWeb
-.remote
 
 Packages/*
+
+# javascript deps
+node_modules
+*.map

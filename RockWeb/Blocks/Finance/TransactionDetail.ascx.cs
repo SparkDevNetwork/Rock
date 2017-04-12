@@ -318,10 +318,20 @@ namespace RockWeb.Blocks.Finance
 
             if ( txn == null )
             {
-                txn = new FinancialTransaction();
-                txnService.Add( txn );
-                txn.BatchId = batchId;
-                changes.Add( "Created transaction" );
+                if ( batchId.HasValue )
+                {
+                    txn = new FinancialTransaction();
+                    txnService.Add( txn );
+                    txn.BatchId = batchId;
+                    changes.Add( "Created transaction" );
+                }
+                else
+                {
+                    nbErrorMessage.Title = "Missing Batch Information";
+                    nbErrorMessage.Text = "<p>New transactions can only be added to an existing batch. Make sure you have navigated to this page by viewing the details of an existing batch.</p>";
+                    nbErrorMessage.Visible = true;
+                    return;
+                }
             }
 
             if ( txn != null )

@@ -532,7 +532,11 @@ namespace Rock.Web.UI.Controls
             {
                 if ( value != null )
                 {
-                    if ( value.StartsWith( "," ) )
+                    if ( value == "," )
+                    {
+                        return string.Empty;
+                    }
+                    else if ( value.StartsWith( "," ) )
                     {
                         string upperValue = decimal.Parse( value.Substring( 1 ) ).ToString(format);
                         return string.Format( "through {0}", upperValue );

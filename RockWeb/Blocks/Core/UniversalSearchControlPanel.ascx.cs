@@ -128,7 +128,7 @@ namespace RockWeb.Blocks.Core
 
             tbSmartSearchFieldCrieria.Text = Rock.Web.SystemSettings.GetValue( "core_SmartSearchUniversalSearchFieldCriteria" );
 
-            var searchType = ((int)SearchType.Wildcard).ToString();
+            var searchType = ((int)SearchType.ExactMatch).ToString();
 
             if ( !string.IsNullOrWhiteSpace( Rock.Web.SystemSettings.GetValue( "core_SmartSearchUniversalSearchSearchType" ) ) )
             {
@@ -199,6 +199,12 @@ namespace RockWeb.Blocks.Core
                 if ( cbEnabledIndexing.Checked )
                 {
                     IndexContainer.CreateIndex( entityType.IndexModelType );
+
+                    // call for bulk indexing
+                    BulkIndexEntityTypeTransaction bulkIndexTransaction = new BulkIndexEntityTypeTransaction();
+                    bulkIndexTransaction.EntityTypeId = entityType.Id;
+
+                    RockQueue.TransactionQueue.Enqueue( bulkIndexTransaction );
                 }
                 else
                 {
@@ -243,7 +249,7 @@ namespace RockWeb.Blocks.Core
                 {
                     e.Row.Cells[2].Controls[0].Visible = false;
                     e.Row.Cells[3].Controls[0].Visible = false;
-                    e.Row.Cells[4].Controls[0].Visible = false;
+                    //e.Row.Cells[4].Controls[0].Visible = false;
                 }
             }
         }
@@ -356,7 +362,7 @@ namespace RockWeb.Blocks.Core
             }
             lSmartSearchFilterCriteria.Text = Rock.Web.SystemSettings.GetValue( "core_SmartSearchUniversalSearchFieldCriteria" );
 
-            var searchType = Rock.Web.SystemSettings.GetValue( "core_SmartSearchUniversalSearchSearchType" ).ConvertToEnumOrNull<SearchType>() ?? SearchType.Wildcard;
+            var searchType = Rock.Web.SystemSettings.GetValue( "core_SmartSearchUniversalSearchSearchType" ).ConvertToEnumOrNull<SearchType>() ?? SearchType.ExactMatch;
             lSearchType.Text = searchType.ToString();
         }
 

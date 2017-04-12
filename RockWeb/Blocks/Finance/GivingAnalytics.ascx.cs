@@ -74,7 +74,7 @@ namespace RockWeb.Blocks.Finance
 
             _campusAccounts = ViewState["CampusAccounts"] as Dictionary<int, Dictionary<int, string>>;
 
-            BuildDynamicControls();
+            BuildDynamicControls( false );
         }
 
         /// <summary>
@@ -141,7 +141,7 @@ namespace RockWeb.Blocks.Finance
 
             if ( !Page.IsPostBack )
             {
-                BuildDynamicControls();
+                BuildDynamicControls( false );
 
                 LoadDropDowns();
                 try
@@ -174,6 +174,15 @@ namespace RockWeb.Blocks.Finance
             return base.SaveViewState();
         }
 
+        protected override void OnPreRender( EventArgs e )
+        {
+            bool advancedOptionsVisible = hfAdvancedVisible.Value.AsBoolean();
+            lblAdvancedOptions.Text = string.Format( "Advanced Options <i class='fa fa-caret-{0}'></i>", advancedOptionsVisible ? "up" : "down" );
+            divAdvancedSettings.Style["display"] = advancedOptionsVisible ? "block" : "none";
+
+            base.OnPreRender( e );
+        }
+
         #endregion
 
         #region Events
@@ -187,12 +196,22 @@ namespace RockWeb.Blocks.Finance
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void Block_BlockUpdated( object sender, EventArgs e )
         {
-            BuildDynamicControls();
-
+            BuildDynamicControls( true );
             if ( pnlResults.Visible )
             {
                 LoadChartAndGrids();
             }
+        }
+
+        /// <summary>
+        /// Handles the CheckedChanged event of the tglAccounts control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void tglAccounts_CheckedChanged( object sender, EventArgs e )
+        {
+            _campusAccounts = null;
+            BuildDynamicControls( true );
         }
 
         /// <summary>
@@ -340,17 +359,31 @@ namespace RockWeb.Blocks.Finance
 
         #region Methods
 
-        private void BuildDynamicControls()
+        private void BuildDynamicControls( bool setValues )
         {
+            var accountIds = new List<int>();
+            if ( setValues )
+            {
+                foreach ( var cblAccounts in phAccounts.Controls.OfType<RockCheckBoxList>() )
+                {
+                    accountIds.AddRange( cblAccounts.SelectedValuesAsInt );
+                }
+            }
+
             // Get all the accounts grouped by campus
             if ( _campusAccounts == null )
             {
                 using ( var rockContext = new RockContext() )
                 {
                     _campusAccounts = new Dictionary<int, Dictionary<int, string>>();
+                    bool activeOnly = tglInactive.Checked;
+                    bool taxDeductibleOnly = tglTaxDeductible.Checked;
+
                     foreach ( var campusAccounts in new FinancialAccountService( rockContext )
                         .Queryable().AsNoTracking()
-                        .Where( a => a.IsActive && a.IsTaxDeductible )
+                        .Where( a =>
+                            ( !activeOnly || a.IsActive ) &&
+                            ( !taxDeductibleOnly || a.IsTaxDeductible ) )
                         .GroupBy( a => a.CampusId ?? 0 )
                         .Select( c => new
                         {
@@ -389,6 +422,11 @@ namespace RockWeb.Blocks.Finance
                 cbList.DataTextField = "Value";
                 cbList.DataSource = campusId.Value;
                 cbList.DataBind();
+
+                if ( setValues )
+                {
+                    cbList.SetValues( accountIds );
+                }
 
                 phAccounts.Controls.Add( cbList );
             }
@@ -597,7 +635,7 @@ function(item) {
             }
 
             Uri uri = new Uri( Request.Url.ToString() );
-            hfFilterUrl.Value = uri.Scheme + "://" + uri.GetComponents( UriComponents.HostAndPort, UriFormat.UriEscaped ) + pageReference.BuildUrl();
+            hfFilterUrl.Value = uri.GetLeftPart(UriPartial.Authority) + pageReference.BuildUrl();
             btnCopyToClipboard.Disabled = false;
         }
 
@@ -1430,7 +1468,10 @@ function(item) {
                                 d.Transaction.TransactionDateTime.HasValue &&
                                 d.Transaction.TransactionDateTime.Value >= missedStart.Value &&
                                 d.Transaction.TransactionDateTime.Value < missedEnd.Value &&
-                                ( accountIds.Any() && accountIds.Contains( d.AccountId ) || d.Account.IsTaxDeductible ) &&
+                                ( 
+                                    ( accountIds.Any() && accountIds.Contains( d.AccountId ) ) || 
+                                    ( !accountIds.Any() && d.Account.IsTaxDeductible ) 
+                                ) &&
                                 d.Amount != 0.0M )
                             .Select( d => d.Transaction.AuthorizedPersonAlias.Person.GivingId )
                             .ToList();

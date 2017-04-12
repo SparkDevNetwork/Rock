@@ -278,7 +278,7 @@ namespace RockWeb.Blocks.CheckIn
             var groupService = new GroupService( rockContext );
 
             var groupPaths = new List<GroupTypePath>();
-            var groupLocationQry = groupLocationService.Queryable();
+            var groupLocationQry = groupLocationService.Queryable().Where(gl => gl.Group.IsActive);
             int groupTypeId;
 
             // if this page has a PageParam for groupTypeId use that to limit which groupTypeId to see. Otherwise, use the groupTypeId specified in the filter

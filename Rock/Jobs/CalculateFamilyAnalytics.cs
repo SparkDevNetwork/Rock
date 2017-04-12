@@ -169,7 +169,7 @@ namespace Rock.Jobs
 
                     if ( family != null )
                     {
-                        foreach ( var person in family.Members.Select( m => m.Person ) )
+                        foreach ( var person in family.Members.Where( m => ! m.Person.IsDeceased ).Select( m => m.Person ) )
                         {
                             // set era attribute to true
                             var eraAttributeValue = attributeValueService.Queryable().Where( v => v.AttributeId == eraAttribute.Id && v.EntityId == person.Id ).FirstOrDefault();
@@ -361,7 +361,7 @@ namespace Rock.Jobs
                 {
                     var workflowTypeService = new WorkflowTypeService( rockContext );
                     var workflowType = workflowTypeService.Get( workflowTypeGuid );
-                    if ( workflowType != null )
+                    if ( workflowType != null && ( workflowType.IsActive ?? true ) )
                     {
                         var workflowService = new WorkflowService( rockContext );
                         var workflow = Rock.Model.Workflow.Activate( workflowType, headOfHouse.Person.FullName, rockContext );

@@ -55,7 +55,12 @@ namespace RockWeb.Blocks.Communication
     [IntegerField( "Display Count", "The initial number of recipients to display prior to expanding list", false, 0, "", 4  )]
     [BooleanField( "Send When Approved", "Should communication be sent once it's approved (vs. just being queued for scheduled job to send)?", true, "", 5 )]
     [CustomDropdownListField("Mode", "The mode to use ( 'Simple' mode will prevent uers from searching/adding new people to communication).", "Full,Simple", true, "Full", "", 6)]
-	[BooleanField( "Show Attachment Uploader", "Should the attachment uploader be shown for email communications.", true, "", 7 )]
+    [BooleanField( "Allow CC/Bcc", "Allow CC and Bcc addresses to be entered for email communications?", false, "", 7, "AllowCcBcc" )]
+    [BooleanField( "Show Attachment Uploader", "Should the attachment uploader be shown for email communications.", true, "", 8 )]
+
+    [TextField( "Document Root Folder", "The folder to use as the root when browsing or uploading documents.", false, "~/Content", "", 0, Category = "HTML Editor Settings" )]
+    [TextField( "Image Root Folder", "The folder to use as the root when browsing or uploading images.", false, "~/Content", "", 1, Category = "HTML Editor Settings" )]
+    [BooleanField( "User Specific Folders", "Should the root folders be specific to current user?", false, "", 2, Category = "HTML Editor Settings" )]
     public partial class CommunicationEntry : RockBlock
     {
 
@@ -914,6 +919,10 @@ namespace RockWeb.Blocks.Communication
             if (component != null)
             {
                 var mediumControl = component.GetControl( !_fullMode );
+                if (mediumControl is Rock.Web.UI.Controls.Communication.Email  )
+                {
+                    ( ( Rock.Web.UI.Controls.Communication.Email ) mediumControl ).AllowCcBcc = GetAttributeValue( "AllowCcBcc" ).AsBoolean();
+                }
                 mediumControl.ID = "commControl";
                 mediumControl.IsTemplate = false;
                 mediumControl.AdditionalMergeFields = this.AdditionalMergeFields.ToList();
@@ -924,6 +933,30 @@ namespace RockWeb.Blocks.Communication
                     if ( fuAttachments != null )
                     {
                         fuAttachments.Visible = false;
+                    }
+                }
+
+                // if this is an email with an HTML control and there are block settings to provide updated content directories set them
+                if (mediumControl is Rock.Web.UI.Controls.Communication.Email )
+                {
+                    var htmlControl = ( HtmlEditor ) mediumControl.FindControl( "htmlMessage_commControl" );
+
+                    if (htmlControl != null )
+                    {
+                        if (GetAttributeValue( "DocumentRootFolder" ).IsNotNullOrWhitespace() )
+                        {
+                            htmlControl.DocumentFolderRoot = GetAttributeValue( "DocumentRootFolder" );
+                        }
+
+                        if ( GetAttributeValue( "ImageRootFolder" ).IsNotNullOrWhitespace() )
+                        {
+                            htmlControl.ImageFolderRoot = GetAttributeValue( "ImageRootFolder" );
+                        }
+
+                        if ( GetAttributeValue( "UserSpecificFolders" ).AsBooleanOrNull().HasValue )
+                        {
+                            htmlControl.UserSpecificRoot = GetAttributeValue( "UserSpecificFolders" ).AsBoolean();
+                        }
                     }
                 }
 

@@ -217,7 +217,7 @@ WHERE Id = @pageMapBlockId and [Zone] != 'Sidebar1'" );
             // Attrib Value for Block:Transaction Links, Attribute:Enabled Lava Commands Page: Business Detail, Site: Rock RMS
             RockMigrationHelper.AddBlockAttributeValue( "84F800D3-C32E-4A16-9F84-081F8CB4DCBF", "7146AC24-9250-4FC4-9DF2-9803B9A84299", @"" );
             // Attrib Value for Block:Transaction Links, Attribute:Cache Duration Page: Business Detail, Site: Rock RMS
-            RockMigrationHelper.AddBlockAttributeValue( "84F800D3-C32E-4A16-9F84-081F8CB4DCBF", "4DFDB295-6D0F-40A1-BEF9-7B70C56F66C4", @"3600" );
+            RockMigrationHelper.AddBlockAttributeValue( "84F800D3-C32E-4A16-9F84-081F8CB4DCBF", "4DFDB295-6D0F-40A1-BEF9-7B70C56F66C4", @"0" );
             // Attrib Value for Block:Transaction Links, Attribute:Require Approval Page: Business Detail, Site: Rock RMS
             RockMigrationHelper.AddBlockAttributeValue( "84F800D3-C32E-4A16-9F84-081F8CB4DCBF", "EC2B701B-4C1D-4F3F-9C77-A73C75D7FF7A", @"False" );
             // Attrib Value for Block:Transaction Links, Attribute:Enable Versioning Page: Business Detail, Site: Rock RMS

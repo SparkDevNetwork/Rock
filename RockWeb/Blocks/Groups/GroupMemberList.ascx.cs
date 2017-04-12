@@ -890,6 +890,13 @@ namespace RockWeb.Blocks.Groups
                         // create a transaction for the selected trigger
                         var transaction = new Rock.Transactions.GroupMemberPlacedElsewhereTransaction( groupMember, tbPlaceElsewhereNote.Text, trigger );
 
+                        // Un-link any registrant records that point to this group member.
+                        foreach ( var registrant in new RegistrationRegistrantService( rockContext ).Queryable()
+                            .Where( r => r.GroupMemberId == groupMember.Id ) )
+                        {
+                            registrant.GroupMemberId = null;
+                        }
+
                         // delete the group member from the current group
                         groupMemberService.Delete( groupMember );
 

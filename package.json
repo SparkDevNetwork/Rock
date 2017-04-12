@@ -1,19 +1,88 @@
 {
-  "name": "Rock",
-  "version": "0.1.5",
-  "description": "",
+  "name": "rock",
+  "version": "1.6.1",
+  "description": "An open source CMS, Relationship Managment System (RMS) and Church Managment System (ChMS) all rolled into one http://rockrms.com",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "jest",
+    "build": "cross-env NODE_ENV=production webpack --config ./RockWeb/webpack.config.js",
+    "start": "cross-env NODE_ENV=development webpack-dev-server --config ./RockWeb/webpack.config.js --progress --colors",
+    "flow": "flow check || exit 0",
+    "flow:stop": "flow stop",
+    "lint": "eslint ./RockWeb/Scripts/React ./RockWeb/Blocks ./RockWeb/Plugins",
+    "lint:fix": "npm run lint -- --fix"
   },
-  "author": "",
-  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/SparkDevNetwork/Rock.git"
+  },
+  "author": "SparkDevNetwork",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/SparkDevNetwork/Rock/issues"
+  },
+  "homepage": "https://github.com/SparkDevNetwork/Rock#readme",
   "dependencies": {
-    "norma-bower": "^0.3.7",
-    "norma-copy": "newspring/norma-copy#feature-base-name",
-    "normajs": "^1.7.10"
+    "lodash": "^4.17.4",
+    "preact": "^7.1.0",
+    "preact-compat": "^3.9.4",
+    "react": "^15.4.2",
+    "react-dom": "^15.4.2",
+    "react-hot-loader": "^3.0.0-beta.6",
+    "react-redux": "^5.0.2",
+    "redux": "^3.6.0",
+    "redux-injectable-store": "^1.0.0",
+    "whatwg-fetch": "^2.0.1"
   },
   "devDependencies": {
-    "norma-browser-sync": "^0.4.4"
+    "babel-core": "^6.21.0",
+    "babel-eslint": "^7.1.1",
+    "babel-jest": "^18.0.0",
+    "babel-loader": "^6.2.10",
+    "babel-plugin-lodash": "^3.2.11",
+    "babel-plugin-react-require": "^3.0.0",
+    "babel-plugin-transform-async-to-generator": "^6.16.0",
+    "babel-plugin-transform-flow-strip-types": "^6.21.0",
+    "babel-plugin-transform-runtime": "^6.15.0",
+    "babel-polyfill": "^6.20.0",
+    "babel-preset-es2015": "^6.18.0",
+    "babel-preset-react": "^6.16.0",
+    "babel-preset-stage-0": "^6.16.0",
+    "cross-env": "^3.1.4",
+    "enzyme": "^2.7.0",
+    "enzyme-to-json": "^1.4.5",
+    "eslint": "^3.13.0",
+    "eslint-config-airbnb": "^13.0.0",
+    "eslint-loader": "^1.6.1",
+    "eslint-plugin-compat": "^0.1.3",
+    "eslint-plugin-import": "^2.2.0",
+    "eslint-plugin-jsx-a11y": "^2.2.2",
+    "eslint-plugin-react": "^6.8.0",
+    "expose-loader": "^0.7.1",
+    "flow-bin": "^0.37.4",
+    "jest": "^18.1.0",
+    "lodash-webpack-plugin": "^0.10.7",
+    "npm-install-webpack-plugin": "^4.0.4",
+    "react-addons-test-utils": "^15.4.2",
+    "react-test-renderer": "^15.4.2",
+    "webpack": "^2.2.0",
+    "webpack-bundle-analyzer": "^2.2.1",
+    "webpack-config-utils": "^2.3.0",
+    "webpack-dev-server": "^2.2.0-rc.0"
+  },
+  "jest": {
+    "coverageDirectory": "./.coverage",
+    "coveragePathIgnorePatterns": [
+      "__stories__/",
+      "__mocks__/",
+      "Bin/",
+      "dist/",
+      "<rootDir>/RockWeb/webpack.*"
+    ],
+    "testPathDirs": [
+      "<rootDir>/RockWeb/Scripts/React/",
+      "<rootDir>/RockWeb/Blocks/"
+    ],
+    "browser": true
   }
 }

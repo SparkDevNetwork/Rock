@@ -40,7 +40,6 @@ namespace RockWeb.Blocks.Event
     [Category( "Event" )]
     [Description( "Renders a particular calendar event item occurrence using Lava." )]
     [CodeEditorField( "Lava Template", "Lava template to use to display the list of events.", CodeEditorMode.Lava, CodeEditorTheme.Rock, 400, true, @"{% include '~~/Assets/Lava/CalendarItem.lava' %}", "", 2 )]
-    [BooleanField( "Enable Debug", "Display a list of merge fields available for lava.", false, "", 3 )]
     [BooleanField( "Set Page Title", "Determines if the block should set the page title with the calendar item name.", false )]
     [LinkedPage( "Registration Page", "Registration page for events" )]
     public partial class EventItemOccurrenceLava : Rock.Web.UI.RockBlock
@@ -192,12 +191,6 @@ namespace RockWeb.Blocks.Event
                         RockPage.Header.Title = String.Format( "{0} | {1}", pageTitle, RockPage.Site.Name );
                     }
 
-                    // show debug info
-                    if ( GetAttributeValue( "EnableDebug" ).AsBoolean() && IsUserAuthorized( Authorization.EDIT ) )
-                    {
-                        lDebug.Visible = true;
-                        lDebug.Text = mergeFields.lavaDebugInfo();
-                    }
                 }
                 else
                 {
