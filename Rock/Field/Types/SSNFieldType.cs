@@ -1,0 +1,236 @@
+﻿// <copyright>
+// Copyright by the Spark Development Network
+//
+// Licensed under the Rock Community License (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.rockrms.com/license
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+// </copyright>
+//
+using System;
+using System.Collections.Generic;
+using System.Linq.Expressions;
+using System.Text.RegularExpressions;
+using System.Web.UI;
+using Rock.Model;
+using Rock.Reporting;
+using Rock.Web.UI.Controls;
+
+namespace Rock.Field.Types
+{
+    /// <summary>
+    /// Field used to save and display a social security number
+    /// </summary>
+    [Serializable]
+    public class SSNFieldType : FieldType
+    {
+
+        #region Formatting
+
+        /// <summary>
+        /// Returns the field's current value(s)
+        /// </summary>
+        /// <param name="parentControl">The parent control.</param>
+        /// <param name="value">Information about the value</param>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="condensed">Flag indicating if the value should be condensed (i.e. for use in a grid column)</param>
+        /// <returns></returns>
+        public override string FormatValue( System.Web.UI.Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
+        {
+            string formattedValue = string.Empty;
+
+            if ( value.IsNotNullOrWhitespace() )
+            {
+                string ssn = Rock.Security.Encryption.DecryptString( value );
+                if ( !string.IsNullOrEmpty( ssn ) )
+                {
+                    Regex digitsOnly = new Regex( @"[^\d]" );
+                    ssn = digitsOnly.Replace( ssn, string.Empty );
+                }
+
+                if ( ssn.Length == 9 )
+                {
+                    formattedValue = string.Format( "xxx-xx-{0}", ssn.Substring( 5, 4 ) );
+                }
+            }
+
+            return base.FormatValue( parentControl, formattedValue, configurationValues, condensed );
+        }
+
+        /// <summary>
+        /// Setting to determine whether the value from this control is sensitive.  This is used for determining
+        /// whether or not the value of this attribute is logged when changed.
+        /// </summary>
+        /// <returns>
+        ///   <c>false</c> By default, any field is not sensitive.
+        /// </returns>
+        public override bool IsSensitive()
+        {
+            return true;
+        }
+
+        #endregion
+
+        #region Edit Control
+
+        /// <summary>
+        /// Creates the control(s) necessary for prompting user for a new value
+        /// </summary>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="id"></param>
+        /// <returns>
+        /// The control
+        /// </returns>
+        public override System.Web.UI.Control EditControl( System.Collections.Generic.Dictionary<string, ConfigurationValue> configurationValues, string id )
+        {
+            return new SSNBox { ID = id };
+        }
+
+        /// <summary>
+        /// Reads new values entered by the user for the field
+        /// </summary>
+        /// <param name="control">Parent control that controls were added to in the CreateEditControl() method</param>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <returns></returns>
+        public override string GetEditValue( Control control, Dictionary<string, ConfigurationValue> configurationValues )
+        {
+            if ( control != null && control is SSNBox )
+            {
+                return ( (SSNBox)control ).TextEncrypted;
+            }
+
+            return null;
+        }
+        
+        /// <summary>
+        /// Sets the value.
+        /// </summary>
+        /// <param name="control">The control.</param>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="value">The value.</param>
+        public override void SetEditValue( Control control, Dictionary<string, ConfigurationValue> configurationValues, string value )
+        {
+            if ( control != null && control is SSNBox )
+            {
+                ( (SSNBox)control ).TextEncrypted = value;
+            }
+        }
+
+        /// <summary>
+        /// Tests the value to ensure that it is a valid value.  If not, message will indicate why
+        /// </summary>
+        /// <param name="value"></param>
+        /// <param name="required"></param>
+        /// <param name="message"></param>
+        /// <returns></returns>
+        public override bool IsValid( string value, bool required, out string message )
+        {
+            string ssn = UnencryptAndClean( value );
+            if ( ssn.Length == 9 )
+            {
+                message = string.Empty;
+                return true;
+            }
+
+            message = "The input provided is not a valid SSN number.";
+            return true;
+        }
+
+        #endregion
+
+        #region Filter Control
+
+        /// <summary>
+        /// Gets the type of the filter comparison.
+        /// </summary>
+        /// <value>
+        /// The type of the filter comparison.
+        /// </value>
+        public override ComparisonType FilterComparisonType
+        {
+            get { return ComparisonHelper.NumericFilterComparisonTypes; }
+        }
+
+        /// <summary>
+        /// Gets a filter expression for an attribute value.
+        /// </summary>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="filterValues">The filter values.</param>
+        /// <param name="parameterExpression">The parameter expression.</param>
+        /// <returns></returns>
+        public override Expression AttributeFilterExpression( Dictionary<string, ConfigurationValue> configurationValues, List<string> filterValues, ParameterExpression parameterExpression )
+        {
+            if ( filterValues.Count == 1 )
+            {
+                MemberExpression propertyExpression = Expression.Property( parameterExpression, "ValueAsNumeric" );
+                ComparisonType comparisonType = ComparisonType.EqualTo;
+                return ComparisonHelper.ComparisonExpression( comparisonType, propertyExpression, AttributeConstantExpression( filterValues[0] ) );
+            }
+
+            return base.AttributeFilterExpression( configurationValues, filterValues, parameterExpression );
+        }
+
+        /// <summary>
+        /// Gets the name of the attribute value field that should be bound to (Value, ValueAsDateTime, ValueAsBoolean, or ValueAsNumeric)
+        /// </summary>
+        /// <value>
+        /// The name of the attribute value field.
+        /// </value>
+        public override string AttributeValueFieldName
+        {
+            get
+            {
+                return "ValueAsNumeric";
+            }
+        }
+
+        /// <summary>
+        /// Attributes the constant expression.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
+        public override ConstantExpression AttributeConstantExpression( string value )
+        {
+            return Expression.Constant( value.AsDecimal(), typeof( decimal ) );
+        }
+
+        /// <summary>
+        /// Gets the type of the attribute value field.
+        /// </summary>
+        /// <value>
+        /// The type of the attribute value field.
+        /// </value>
+        public override Type AttributeValueFieldType
+        {
+            get
+            {
+                return typeof( decimal? );
+            }
+        }
+
+        #endregion
+
+        private string UnencryptAndClean( string encryptedValue )
+        {
+            if ( encryptedValue.IsNotNullOrWhitespace() )
+            {
+                string ssn = Rock.Security.Encryption.DecryptString( encryptedValue );
+                if ( !string.IsNullOrEmpty( ssn ) )
+                {
+                    Regex digitsOnly = new Regex( @"[^\d]" );
+                    ssn = digitsOnly.Replace( ssn, string.Empty );
+                    return ssn;
+                }
+            }
+
+            return string.Empty;
+        }
+    }
+}
