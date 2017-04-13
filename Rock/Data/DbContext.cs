@@ -412,7 +412,7 @@ namespace Rock.Data
                         {
                             var workflowType = workflowTypeService.Get( trigger.WorkflowTypeId );
 
-                            if ( workflowType != null )
+                            if ( workflowType != null && ( workflowType.IsActive ?? true ) )
                             {
                                 var workflow = Rock.Model.Workflow.Activate( workflowType, trigger.WorkflowName );
 

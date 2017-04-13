@@ -935,6 +935,7 @@ order by [parentTable], [columnName]
 
             sb.AppendLine( "namespace Rock.Client.Enums" );
             sb.AppendLine( "{" );
+            sb.AppendLine( "    #pragma warning disable CS1591" );
 
             foreach ( var enumType in rockAssembly.GetTypes().Where( a => a.IsEnum ).OrderBy( a => a.Name ) )
             {
@@ -962,7 +963,7 @@ order by [parentTable], [columnName]
                 }
             }
 
-
+            sb.AppendLine( "    #pragma warning retore CS1591" );
             sb.AppendLine( "}" );
 
             var file = new FileInfo( Path.Combine( rootFolder, "CodeGenerated\\Enums", "RockEnums.cs" ) );
@@ -1005,6 +1006,7 @@ order by [parentTable], [columnName]
 
             sb.AppendLine( "namespace Rock.Client.SystemGuid" );
             sb.AppendLine( "{" );
+            sb.AppendLine( "    #pragma warning disable CS1591" );
 
             foreach ( var systemGuidType in rockAssembly.GetTypes().Where( a => a.Namespace == "Rock.SystemGuid" ).OrderBy( a => a.Name ) )
             {
@@ -1022,7 +1024,7 @@ order by [parentTable], [columnName]
                 sb.AppendLine( "" );
             }
 
-
+            sb.AppendLine( "    #pragma warning restore CS1591" );
             sb.AppendLine( "}" );
 
             var file = new FileInfo( Path.Combine( rootFolder, "CodeGenerated\\SystemGuid", "RockSystemGuids.cs" ) );

@@ -51,7 +51,6 @@ namespace RockWeb.Blocks.Groups
     [BooleanField( "Hide Group Description Edit", "Set this to true to hide the edit box for group 'Description'.", false, key: "HideGroupDescriptionEdit", order: 9 )]
     [CodeEditorField( "Lava Template", "The lava template to use to format the group details.", CodeEditorMode.Lava, CodeEditorTheme.Rock, 400, true, "{% include '~~/Assets/Lava/GroupDetail.lava' %}", "", 10 )]
     [BooleanField( "Enable Location Edit", "Enables changing locations when editing a group.", false, "", 11 )]
-    [BooleanField( "Enable Debug", "Shows the fields available to merge in lava.", false, "", 12 )]
     [CodeEditorField( "Edit Group Pre-HTML", "HTML to display before the edit group panel.", CodeEditorMode.Html, CodeEditorTheme.Rock, 200, false, "", "HTML Wrappers", 13 )]
     [CodeEditorField( "Edit Group Post-HTML", "HTML to display after the edit group panel.", CodeEditorMode.Html, CodeEditorTheme.Rock, 200, false, "", "HTML Wrappers", 14 )]
     [CodeEditorField( "Edit Group Member Pre-HTML", "HTML to display before the edit group member panel.", CodeEditorMode.Html, CodeEditorTheme.Rock, 200, false, "", "HTML Wrappers", 15 )]
@@ -622,16 +621,11 @@ namespace RockWeb.Blocks.Groups
                 RockContext rockContext = new RockContext();
                 GroupService groupService = new GroupService( rockContext );
 
-                bool enableDebug = GetAttributeValue( "EnableDebug" ).AsBoolean();
-
                 var qry = groupService
                     .Queryable( "GroupLocations,Members,Members.Person,Members.Person.PhoneNumbers,GroupType" )
                     .Where( g => g.Id == _groupId );
 
-                if ( !enableDebug )
-                {
-                    qry = qry.AsNoTracking();
-                }
+                qry = qry.AsNoTracking();
 
                 var group = qry.FirstOrDefault();
 
@@ -665,22 +659,6 @@ namespace RockWeb.Blocks.Groups
                 mergeFields.Add( "CurrentPage", currentPageProperties );
 
                 string template = GetAttributeValue( "LavaTemplate" );
-
-                // show debug info
-                if ( enableDebug && IsUserAuthorized( Authorization.EDIT ) )
-                {
-                    string postbackCommands = @"<h5>Available Postback Commands</h5>
-                                                <ul>
-                                                    <li><strong>EditGroup:</strong> Shows a panel for modifing group info. Expects a group id. <code>{{ Group.Id | Postback:'EditGroup' }}</code></li>
-                                                    <li><strong>AddGroupMember:</strong> Shows a panel for adding group info. Does not require input. <code>{{ '' | Postback:'AddGroupMember' }}</code></li>
-                                                    <li><strong>EditGroupMember:</strong> Shows a panel for modifing group info. Expects a group member id. <code>{{ member.Id | Postback:'EditGroupMember' }}</code></li>
-                                                    <li><strong>DeleteGroupMember:</strong> Deletes a group member. Expects a group member id. <code>{{ member.Id | Postback:'DeleteGroupMember' }}</code></li>
-                                                    <li><strong>SendCommunication:</strong> Sends a communication to all group members on behalf of the Current User. This will redirect them to the communication page where they can author their email. <code>{{ '' | Postback:'SendCommunication' }}</code></li>
-                                                </ul>";
-
-                    lDebug.Visible = true;
-                    lDebug.Text = mergeFields.lavaDebugInfo( null, string.Empty, postbackCommands );
-                }
 
                 lContent.Text = template.ResolveMergeFields( mergeFields ).ResolveClientIds( upnlContent.ClientID );
             }

@@ -48,7 +48,6 @@ namespace RockWeb.Blocks.Groups
     [DefinedValueField( "2E6540EA-63F0-40FE-BE50-F2A84735E600", "Connection Status", "The connection status to use for new individuals (default: 'Web Prospect'.)", true, false, "368DD475-242C-49C4-A42C-7278BE690CC2", "", 3 )]
     [DefinedValueField( "8522BADD-2871-45A5-81DD-C76DA07E2E7E", "Record Status", "The record status to use for new individuals (default: 'Pending'.)", true, false, "283999EC-7346-42E3-B807-BCE9B2BABB49", "", 4 )]
     [WorkflowTypeField( "Workflow", "An optional workflow to start when registration is created. The GroupMember will set as the workflow 'Entity' when processing is started.", false, false, "", "", 5 )]
-    [BooleanField( "Enable Debug", "Shows the fields available to merge in lava.", false, "", 6 )]
     [CodeEditorField( "Lava Template", "The lava template to use to format the group details.", CodeEditorMode.Lava, CodeEditorTheme.Rock, 400, true, @"
 ", "", 7 )]
     [LinkedPage("Result Page", "An optional page to redirect user to after they have been registered for the group.", false, "", "", 8)]
@@ -388,13 +387,6 @@ namespace RockWeb.Blocks.Groups
                 mergeFields.Add( "Group", _group );
                 mergeFields.Add( "GroupMembers", newGroupMembers );
 
-                bool showDebug = UserCanEdit && GetAttributeValue( "EnableDebug" ).AsBoolean();
-                lResultDebug.Visible = showDebug;
-                if ( showDebug )
-                {
-                    lResultDebug.Text = mergeFields.lavaDebugInfo( _rockContext );
-                }
-
                 string template = GetAttributeValue( "ResultLavaTemplate" );
                 lResult.Text = template.ResolveMergeFields( mergeFields );
 
@@ -419,13 +411,6 @@ namespace RockWeb.Blocks.Groups
                 // Show lava content
                 var mergeFields = new Dictionary<string, object>();
                 mergeFields.Add( "Group", _group );
-
-                bool showDebug = UserCanEdit && GetAttributeValue( "EnableDebug" ).AsBoolean();
-                lLavaOutputDebug.Visible = showDebug;
-                if ( showDebug )
-                {
-                    lLavaOutputDebug.Text = mergeFields.lavaDebugInfo( _rockContext );
-                }
 
                 string template = GetAttributeValue( "LavaTemplate" );
                 lLavaOverview.Text = template.ResolveMergeFields( mergeFields );
@@ -591,7 +576,7 @@ namespace RockWeb.Blocks.Groups
 
                 }
 
-                if ( groupMember != null && workflowType != null )
+                if ( groupMember != null && workflowType != null && ( workflowType.IsActive ?? true ) )
                 {
                     try
                     {

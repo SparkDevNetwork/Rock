@@ -266,6 +266,13 @@ namespace RockWeb.Blocks.WorkFlow
                 return false;
             }
 
+            if ( !(_workflowType.IsActive ?? true) )
+            {
+                ShowNotes( false );
+                ShowMessage( NotificationBoxType.Warning, "Sorry", "This type of workflow is not active." );
+                return false;
+            }
+
             // If operating against an existing workflow, get the workflow and load attributes
             if ( !WorkflowId.HasValue )
             {

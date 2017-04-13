@@ -721,46 +721,58 @@ namespace Rock.NMI
                             {
                                 foreach ( var xTxn in xdocResult.Root.Elements( "transaction" ) )
                                 {
-                                    string subscriptionId = GetXElementValue( xTxn, "original_transaction_id" ).Trim();
-                                    if ( !string.IsNullOrWhiteSpace( subscriptionId ) )
+                                    Payment payment = new Payment();
+                                    payment.TransactionCode = GetXElementValue( xTxn, "transaction_id" );
+                                    payment.Status = GetXElementValue( xTxn, "condition" ).FixCase();
+                                    payment.IsFailure = payment.Status == "Failed";
+                                    payment.TransactionCode = GetXElementValue( xTxn, "transaction_id" );
+                                    payment.GatewayScheduleId = GetXElementValue( xTxn, "original_transaction_id" ).Trim();
+
+                                    var statusMessage = new StringBuilder();
+                                    DateTime? txnDateTime = null;
+
+                                    foreach ( var xAction in xTxn.Elements( "action" ) )
                                     {
-                                        Payment payment = null;
-                                        var statusMessage = new StringBuilder();
-                                        foreach ( var xAction in xTxn.Elements( "action" ) )
+                                        DateTime? actionDate = ParseDateValue( GetXElementValue( xAction, "date" ) );
+                                        string actionType = GetXElementValue( xAction, "action_type" );
+                                        string responseText = GetXElementValue( xAction, "response_text" );
+
+                                        if ( actionDate.HasValue )
                                         {
-                                            DateTime? actionDate = ParseDateValue( GetXElementValue( xAction, "date" ) );
-                                            string actionType = GetXElementValue( xAction, "action_type" );
-                                            string responseText = GetXElementValue( xAction, "response_text" );
-                                            if ( actionDate.HasValue )
-                                            {
-                                                statusMessage.AppendFormat( "{0} {1}: {2}; Status: {3}",
-                                                    actionDate.Value.ToShortDateString(), actionDate.Value.ToShortTimeString(),
-                                                    actionType.FixCase(), responseText );
-                                                statusMessage.AppendLine();
-                                            }
-                                            if ( payment == null && actionType == "sale" && GetXElementValue( xAction, "source" ) == "recurring" )
-                                            {
-                                                decimal? txnAmount = GetXElementValue( xAction, "amount" ).AsDecimalOrNull();
-                                                if ( txnAmount.HasValue && actionDate.HasValue )
-                                                {
-                                                    payment = new Payment();
-                                                    payment.Status = GetXElementValue( xTxn, "condition" ).FixCase();
-                                                    payment.IsFailure = payment.Status == "Failed";
-                                                    payment.StatusMessage = GetXElementValue( xTxn, "response_text" );
-                                                    payment.Amount = txnAmount.Value;
-                                                    payment.TransactionDateTime = actionDate.Value;
-                                                    payment.TransactionCode = GetXElementValue( xTxn, "transaction_id" );
-                                                    payment.GatewayScheduleId = subscriptionId;
-                                                }
-                                            }
+                                            statusMessage.AppendFormat( "{0} {1}: {2}; Status: {3}",
+                                                actionDate.Value.ToShortDateString(), actionDate.Value.ToShortTimeString(),
+                                                actionType.FixCase(), responseText );
+                                            statusMessage.AppendLine();
                                         }
-                                        if ( payment != null )
+
+                                        decimal? txnAmount = GetXElementValue( xAction, "amount" ).AsDecimalOrNull();
+                                        if ( txnAmount.HasValue && actionDate.HasValue )
                                         {
-                                            payment.StatusMessage = statusMessage.ToString();
-                                            txns.Add( payment );
+                                            payment.Amount = txnAmount.Value;
+                                        }
+
+                                        if ( actionType == "sale" )
+                                        {
+                                            txnDateTime = actionDate.Value;
+                                        }
+
+                                        if ( actionType == "settle")
+                                        {
+                                            payment.IsSettled = true;
+                                            payment.SettledGroupId = GetXElementValue( xAction, "processor_batch_id" ).Trim();
+                                            payment.SettledDate = actionDate;
+                                            txnDateTime = txnDateTime.HasValue ? txnDateTime.Value : actionDate.Value;
                                         }
                                     }
+
+                                    if ( txnDateTime.HasValue )
+                                    {
+                                        payment.TransactionDateTime = txnDateTime.Value;
+                                        payment.StatusMessage = statusMessage.ToString();
+                                        txns.Add( payment );
+                                    }
                                 }
+
                             }
                         }
                         else

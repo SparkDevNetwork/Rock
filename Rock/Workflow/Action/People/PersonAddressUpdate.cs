@@ -46,6 +46,7 @@ namespace Rock.Workflow.Action
         new string[] { "Rock.Field.Types.LocationFieldType", "Rock.Field.Types.AddressFieldType" } )]
     [WorkflowTextOrAttribute( "Is Mailing Location", "Attribute Value", "The value or attribute value to indicate if the location is the mailing address. Only valid values are 'True' or 'False' any other value will be ignored. <span class='tip tip-lava'></span>", false, "", "", 5, "IsMailing" )]
     [WorkflowTextOrAttribute( "Is Mapped Location", "Attribute Value", "The value or attribute value to indicate if the location should be mapped location. Only valid values are 'True' or 'False' any other value will be ignored. <span class='tip tip-lava'></span>", false, "", "", 6, "IsMapped" )]
+    [BooleanField( "Save Current Address as Previous Address", "Determines whether this will overwrite an existing address of the specified type or change its type to Previous and add a new address.", order: 7, key: "SavePreviousAddress" )]
     public class PersonAddressUpdate : ActionComponent
     {
         /// <summary>
@@ -164,51 +165,73 @@ namespace Rock.Workflow.Action
             }
             bool? mapped = mappedValue.AsBooleanOrNull();
 
+            var savePreviousAddress = GetAttributeValue( action, "SavePreviousAddress" ).AsBoolean();
+
+            var locationService = new LocationService( rockContext );
+            locationService.Verify( location, false );
+
             var groupLocationService = new GroupLocationService( rockContext );
             foreach ( var family in person.GetFamilies( rockContext ).ToList() )
             {
-                var groupLocation = family.GroupLocations.FirstOrDefault( l => l.GroupLocationTypeValueId == locationType.Id );
-                string oldValue = string.Empty;
-                if ( groupLocation == null )
+                var groupChanges = new List<string>();
+
+                if ( savePreviousAddress )
                 {
-                    groupLocation = new GroupLocation();
-                    groupLocation.GroupId = family.Id;
-                    groupLocation.GroupLocationTypeValueId = locationType.Id;
-                    groupLocationService.Add( groupLocation );
+                    // Get all existing addresses of the specified type
+                    var groupLocations = family.GroupLocations.Where( l => l.GroupLocationTypeValueId == locationType.Id ).ToList();
+
+                    // Create a new address of the specified type, saving all existing addresses of that type as Previous Addresses
+                    // Use the specified Is Mailing and Is Mapped values from the action's parameters if they are set,
+                    // otherwise set them to true if any of the existing addresses of that type have those values set to true
+                    GroupService.AddNewGroupAddress( rockContext, family, locationType.Guid.ToString(), location.Id, true,
+                        $"the {action.ActionType.ActivityType.WorkflowType.Name} workflow",
+                        mailing ?? groupLocations.Any( x => x.IsMailingLocation ),
+                        mapped ?? groupLocations.Any( x => x.IsMappedLocation ) );
                 }
                 else
                 {
-                    oldValue = groupLocation.Location.ToString();
-                }
+                    var groupLocation = family.GroupLocations.FirstOrDefault( l => l.GroupLocationTypeValueId == locationType.Id );
+                    string oldValue = string.Empty;
+                    if ( groupLocation == null )
+                    {
+                        groupLocation = new GroupLocation();
+                        groupLocation.GroupId = family.Id;
+                        groupLocation.GroupLocationTypeValueId = locationType.Id;
+                        groupLocationService.Add( groupLocation );
+                    }
+                    else
+                    {
+                        oldValue = groupLocation.Location.ToString();
+                    }
 
-                var groupChanges = new List<string>();
 
-                History.EvaluateChange(
-                    groupChanges,
-                    locationType.Value + " Location",
-                    oldValue,
-                    location.ToString() );
-
-                groupLocation.Location = location;
-
-                if ( mailing.HasValue )
-                {
                     History.EvaluateChange(
                         groupChanges,
-                        locationType.Value + " Is Mailing",
-                        groupLocation.IsMailingLocation.ToString(),
-                        mailing.Value.ToString() );
-                    groupLocation.IsMailingLocation = mailing.Value;
-                }
+                        locationType.Value + " Location",
+                        oldValue,
+                        location.ToString() );
 
-                if ( mapped.HasValue )
-                {
-                    History.EvaluateChange(
-                        groupChanges,
-                        locationType.Value + " Is Map Location",
-                        groupLocation.IsMappedLocation.ToString(),
-                        mapped.Value.ToString() );
-                    groupLocation.IsMappedLocation = mapped.Value;
+                    groupLocation.Location = location;
+
+                    if ( mailing.HasValue )
+                    {
+                        History.EvaluateChange(
+                            groupChanges,
+                            locationType.Value + " Is Mailing",
+                            ( oldValue == string.Empty ) ? null : groupLocation.IsMailingLocation.ToString(),
+                            mailing.Value.ToString() );
+                        groupLocation.IsMailingLocation = mailing.Value;
+                    }
+
+                    if ( mapped.HasValue )
+                    {
+                        History.EvaluateChange(
+                            groupChanges,
+                            locationType.Value + " Is Map Location",
+                            ( oldValue == string.Empty ) ? null : groupLocation.IsMappedLocation.ToString(),
+                            mapped.Value.ToString() );
+                        groupLocation.IsMappedLocation = mapped.Value;
+                    }
                 }
 
                 if ( groupChanges.Any() )

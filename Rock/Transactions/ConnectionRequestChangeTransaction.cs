@@ -307,7 +307,7 @@ namespace Rock.Transactions
         {
             var workflowTypeService = new WorkflowTypeService( rockContext );
             var workflowType = workflowTypeService.Get( connectionWorkflow.WorkflowTypeId.Value );
-            if ( workflowType != null )
+            if ( workflowType != null && ( workflowType.IsActive ?? true ) )
             {
                 ConnectionRequest connectionRequest = null;
                 if ( ConnectionRequestGuid.HasValue )

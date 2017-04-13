@@ -1019,6 +1019,13 @@ namespace RockWeb.Blocks.Groups
                 }
             }
 
+            // Un-link any registrant records that point to this group member.
+            foreach( var registrant in new RegistrationRegistrantService( rockContext ).Queryable()
+                .Where( r => r.GroupMemberId == groupMember.Id ) )
+            {
+                registrant.GroupMemberId = null;
+            }
+
             rockContext.WrapTransaction( () =>
             {
                 groupMemberService.Add( destGroupMember );

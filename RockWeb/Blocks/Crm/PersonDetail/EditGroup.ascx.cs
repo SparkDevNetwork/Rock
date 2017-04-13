@@ -1190,6 +1190,14 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                                         }
 
                                         groupMember.Group = newGroup;
+                                        
+                                        // If this person is 18 or older, create them as an Adult in their new group
+                                        if ((groupMember.Person.Age ?? 0) >= 18)
+                                        {
+                                            var familyGroupType = GroupTypeCache.Read( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY.AsGuid() );
+                                            groupMember.GroupRoleId = familyGroupType.Roles.First( a => a.Guid == Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_ADULT.AsGuid() ).Id;
+                                        }
+
                                         rockContext.SaveChanges();
 
                                         var newMemberChanges = new List<string>();

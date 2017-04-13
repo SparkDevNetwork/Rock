@@ -1,4 +1,4 @@
-﻿<%@ WebHandler Language="C#" Class="TwilioAsync" %>
+<%@ WebHandler Language="C#" Class="TwilioAsync" %>
 // <copyright>
 // Copyright 2013 by the Spark Development Network
 //
@@ -30,9 +30,6 @@ using Rock.Web.Cache;
 
 public class TwilioAsync : IHttpAsyncHandler
 {
-    private HttpRequest request;
-    private HttpResponse response;
-
     public IAsyncResult BeginProcessRequest(HttpContext context, AsyncCallback cb, Object extraData)
     {
         TwilioResponseAsync twilioAsync = new TwilioResponseAsync(cb, context, extraData);

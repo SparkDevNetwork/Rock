@@ -571,6 +571,8 @@ namespace RockWeb.Blocks.Cms
                                             Rock.SystemGuid.Category.HISTORY_PERSON_DEMOGRAPHIC_CHANGES.AsGuid(),
                                             person.Id,
                                             changes );
+
+                                        changes.Clear();
                                     }
 
                                     if ( orphanedPhotoId.HasValue )
