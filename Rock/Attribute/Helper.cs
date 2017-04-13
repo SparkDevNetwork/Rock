@@ -824,8 +824,7 @@ namespace Rock.Attribute
             {
                 rockContext = rockContext ?? new RockContext();
                 var attributeValueService = new Model.AttributeValueService( rockContext );
-                var attributeService = new Model.AttributeService( rockContext );
-
+                
                 var attributeIds = model.Attributes.Select( y => y.Value.Id ).ToList();
                 var valueQuery = attributeValueService.Queryable().Where( x => attributeIds.Contains( x.AttributeId ) && x.EntityId == model.Id );
 
