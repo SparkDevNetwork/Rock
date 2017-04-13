@@ -39,7 +39,7 @@ namespace com.centralaz.RoomManagement.Attribute
         /// <param name="order">The order.</param>
         /// <param name="key">The key.</param>
         public ReservationFieldAttribute( string name = "Reservation", string description = "", bool required = true, string defaultReservationId = "", string category = "", int order = 0, string key = null, string fieldTypeAssembly = "com.centralaz.RoomManagement" )
-            : base( name, description, required, defaultReservationId, category, order, key, typeof( com.centralaz.RoomManagement.Field.Types.ReservationFieldType ).FullName )
+            : base( name, description, required, defaultReservationId, category, order, key, typeof( com.centralaz.RoomManagement.Field.Types.ReservationFieldType ).FullName, fieldTypeAssembly )
         {
             var includeInactiveConfigValue = new Rock.Field.ConfigurationValue( "False" );
             FieldConfigurationValues.Add( INCLUDE_INACTIVE_KEY, includeInactiveConfigValue );

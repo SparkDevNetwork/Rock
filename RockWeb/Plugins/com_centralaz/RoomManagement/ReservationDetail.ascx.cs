@@ -205,6 +205,8 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
                 {
                     breadCrumbs.Add( new BreadCrumb( reservation.Name, pageReference ) );
                     lPanelTitle.Text = reservation.Name;
+                    RockPage.Title = "Reservation Detail";
+                    RockPage.BrowserTitle = reservation.Name;
                 }
                 else
                 {
@@ -251,6 +253,7 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
             {
                 reservation = new Reservation { Id = 0 };
                 reservation.ApprovalState = ReservationApprovalState.Unapproved;
+                reservation.RequesterAliasId = CurrentPersonAliasId;
             }
             else
             {
@@ -313,9 +316,7 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
             {
                 reservation.Schedule = new Schedule();
                 reservation.Schedule.iCalendarContent = sbSchedule.iCalendarContent;
-            }
-
-            reservation.RequesterAliasId = CurrentPersonAliasId;
+            }            
 
             if ( ddlCampus.SelectedValueAsId().HasValue )
             {

@@ -75,15 +75,16 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Attribute\ReservationApprovalStateFieldAttribute.cs" />
     <Compile Include="Attribute\ReservationFieldAttribute.cs" />
     <Compile Include="Controllers\ScheduledLocationsController.Partial.cs" />
     <Compile Include="Controllers\ScheduledResourcesController.Partial.cs" />
     <Compile Include="DataFilter\Reservation\ReservationInDateRangeFilter.cs" />
+    <Compile Include="Field\Types\ReservationApprovalStateFieldType.cs" />
     <Compile Include="Field\Types\ReservationFieldType.cs" />
     <Compile Include="Jobs\FireWorkflowFromReservationInDateRange.cs" />
-    <Compile Include="Migrations\006_ResourceApproval.cs" />
-    <Compile Include="Migrations\005_ ReservationUpdate.cs" />
-    <Compile Include="Migrations\004_Workflow.cs" />
+    <Compile Include="Migrations\005_ResourceApproval.cs" />
+    <Compile Include="Migrations\004_UpdateFieldType.cs" />
     <Compile Include="Migrations\003_SampleData.cs" />
     <Compile Include="Migrations\002_Pages.cs" />
     <Compile Include="Migrations\001_CreateDb.cs" />
@@ -111,6 +112,7 @@
     <Compile Include="Web\UI\Controls\Pickers\ScheduledLocationItemPicker.cs" />
     <Compile Include="Web\UI\Controls\Pickers\ScheduledResourcePicker.cs" />
     <Compile Include="Web\UI\Controls\Pickers\ResourcePicker.cs" />
+    <Compile Include="Workflow\Action\Reservations\SetReservationApprovalState.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\DotLiquid\DotLiquid.csproj">

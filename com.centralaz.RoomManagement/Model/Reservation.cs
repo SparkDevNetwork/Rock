@@ -74,16 +74,22 @@ namespace com.centralaz.RoomManagement.Model
 
         #region Virtual Properties
 
+        [LavaInclude]
         public virtual Schedule Schedule { get; set; }
 
+        [LavaInclude]
         public virtual Campus Campus { get; set; }
 
+        [LavaInclude]
         public virtual ReservationMinistry ReservationMinistry { get; set; }
 
+        [LavaInclude]
         public virtual PersonAlias RequesterAlias { get; set; }
 
+        [LavaInclude]
         public virtual PersonAlias ApproverAlias { get; set; }
 
+        [LavaInclude]
         public virtual ICollection<ReservationWorkflow> ReservationWorkflows
         {
             get { return _reservationWorkflows; }
@@ -91,6 +97,7 @@ namespace com.centralaz.RoomManagement.Model
         }
         private ICollection<ReservationWorkflow> _reservationWorkflows;
 
+        [LavaInclude]
         public virtual ICollection<ReservationResource> ReservationResources
         {
             get { return _reservationResources ?? ( _reservationResources = new Collection<ReservationResource>() ); }
@@ -98,6 +105,7 @@ namespace com.centralaz.RoomManagement.Model
         }
         private ICollection<ReservationResource> _reservationResources;
 
+        [LavaInclude]
         public virtual ICollection<ReservationLocation> ReservationLocations
         {
             get { return _reservationLocations ?? ( _reservationLocations = new Collection<ReservationLocation>() ); }
@@ -157,7 +165,7 @@ namespace com.centralaz.RoomManagement.Model
         /// <param name="entry">The entry.</param>
         public override void PreSaveChanges( DbContext dbContext, System.Data.Entity.Infrastructure.DbEntityEntry entry )
         {
-            if ( entry.State == System.Data.Entity.EntityState.Added )
+            if ( entry.State == System.Data.Entity.EntityState.Added || entry.State == System.Data.Entity.EntityState.Modified )
             {
                 var transaction = new com.centralaz.RoomManagement.Transactions.ReservationChangeTransaction( entry );
                 Rock.Transactions.RockQueue.TransactionQueue.Enqueue( transaction );
@@ -213,6 +221,6 @@ namespace com.centralaz.RoomManagement.Model
         public DateTime EndDateTime { get; set; }
     }
 
-#endregion
+    #endregion
 
 }
