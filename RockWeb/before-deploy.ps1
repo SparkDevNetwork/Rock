@@ -15,10 +15,10 @@ Write-Output "Running script as: $env:userdomain\$env:username"
 $ErrorActionPreference = "Stop"
 
 # backup web.config file
-If (Test-Path "$webroot\web.config"){
-	Write-Host "Moving web.config to temp dir"
-	Copy-Item "$webroot\web.config" "$rootfolder\temp" -force
-}
+# If (Test-Path "$webroot\web.config"){
+# 	Write-Host "Moving web.config to temp dir"
+# 	Copy-Item "$webroot\web.config" "$rootfolder\temp" -force
+# }
 
 # backup connection string file
 If (Test-Path "$webroot\web.connectionstrings.config"){
