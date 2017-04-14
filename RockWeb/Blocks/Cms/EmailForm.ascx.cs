@@ -114,10 +114,11 @@ namespace RockWeb.Blocks.Cms
 </div>", "", 6 )]
     [LinkedPage( "Response Page", "The page the use will be taken to after submitting the form. Use the 'Response Message' field if you just need a simple message.", false, "", "", 7 )]
     [TextField( "Submit Button Text", "The text to display for the submit button.", true, "Submit", "", 8 )]
-    [TextField( "Submit Button Wrap CSS Class", "CSS class to add to the div wrapping the button.", true, "", "", 9, key: "SubmitButtonWrapCssClass" )]
-    [TextField( "Submit Button CSS Class", "The CSS class add to the submit button.", true, "btn btn-primary", "", 10, key: "SubmitButtonCssClass" )]
+    [TextField( "Submit Button Wrap CSS Class", "CSS class to add to the div wrapping the button.", false, "", "", 9, key: "SubmitButtonWrapCssClass" )]
+    [TextField( "Submit Button CSS Class", "The CSS class add to the submit button.", false, "btn btn-primary", "", 10, key: "SubmitButtonCssClass" )]
     [BooleanField( "Enable Debug", "Shows the fields available to merge in lava.", false, "", 11 )]
     [BooleanField( "Save Communication History", "Should a record of this communication be saved to the recipient's profile", false, "", 12 )]
+    [LavaCommandsField( "Enabled Lava Commands", "The Lava commands that should be enabled for this HTML block.", false, order: 13 )]
 
     public partial class EmailForm : Rock.Web.UI.RockBlock
     {
@@ -238,7 +239,7 @@ namespace RockWeb.Blocks.Cms
         {
             var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson );
 
-            lEmailForm.Text = GetAttributeValue( "HTMLForm" ).ResolveMergeFields( mergeFields );
+            lEmailForm.Text = GetAttributeValue( "HTMLForm" ).ResolveMergeFields( mergeFields, GetAttributeValue( "EnabledLavaCommands" ) );
         }
 
         private void SendEmail()
@@ -306,12 +307,12 @@ namespace RockWeb.Blocks.Cms
                 List<string> recipients = GetAttributeValue( "RecipientEmail" ).Split( ',' ).ToList();
                 for ( var i = 0; i < recipients.Count; i++ )
                 {
-                    recipients[i] = recipients[i].ResolveMergeFields( mergeFields );
+                    recipients[i] = recipients[i].ResolveMergeFields( mergeFields, GetAttributeValue( "EnabledLavaCommands" ) );
                 }
-                string message = GetAttributeValue( "MessageBody" ).ResolveMergeFields( mergeFields );
-                string fromEmail = GetAttributeValue( "FromEmail" ).ResolveMergeFields( mergeFields );
-                string fromName = GetAttributeValue( "FromName" ).ResolveMergeFields( mergeFields );
-                string subject = GetAttributeValue( "Subject" ).ResolveMergeFields( mergeFields );
+                string message = GetAttributeValue( "MessageBody" ).ResolveMergeFields( mergeFields, GetAttributeValue( "EnabledLavaCommands" ) );
+                string fromEmail = GetAttributeValue( "FromEmail" ).ResolveMergeFields( mergeFields, GetAttributeValue( "EnabledLavaCommands" ) );
+                string fromName = GetAttributeValue( "FromName" ).ResolveMergeFields( mergeFields, GetAttributeValue( "EnabledLavaCommands" ) );
+                string subject = GetAttributeValue( "Subject" ).ResolveMergeFields( mergeFields, GetAttributeValue( "EnabledLavaCommands" ) );
 
                 Email.Send( fromEmail, fromName, subject, recipients, message, ResolveRockUrl( "~/" ), ResolveRockUrl( "~~/" ), attachments, GetAttributeValue( "SaveCommunicationHistory" ).AsBoolean() );
 
@@ -324,7 +325,7 @@ namespace RockWeb.Blocks.Cms
                 // display response message
                 lResponse.Visible = true;
                 lEmailForm.Visible = false;
-                lResponse.Text = GetAttributeValue( "ResponseMessage" ).ResolveMergeFields( mergeFields );
+                lResponse.Text = GetAttributeValue( "ResponseMessage" ).ResolveMergeFields( mergeFields, GetAttributeValue( "EnabledLavaCommands" ) );
 
                 // show debug info
                 if ( GetAttributeValue( "EnableDebug" ).AsBoolean() && IsUserAuthorized( Authorization.EDIT ) )
