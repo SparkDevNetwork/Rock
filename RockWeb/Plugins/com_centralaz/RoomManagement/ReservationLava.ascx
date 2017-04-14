@@ -76,6 +76,32 @@
                 </div>
                 <% } %>
 
+                <% if ( ApprovalPanelOpen || ApprovalPanelClosed )
+                   { %>
+                <div class="panel panel-default">
+                    <div class="panel-heading">
+                        <a role="button" data-toggle="collapse" href="#collapseThree">
+                            <h4 class="panel-title">Statuses                            
+                            </h4>
+                        </a>
+                    </div>
+                    <div id="collapseThree" class='<%= ApprovalPanelOpen ? "panel-collapse collapse in" : "panel-collapse collapse out" %>'>
+                        <div class="panel-body">
+                            <% } %>
+
+                            <Rock:RockControlWrapper ID="rcwApproval" runat="server" Label="Filter by Approval State">
+                                <div class="controls">
+                                    <asp:CheckBoxList ID="cblApproval" RepeatDirection="Vertical" runat="server" OnSelectedIndexChanged="cblApproval_SelectedIndexChanged" AutoPostBack="true" />
+                                </div>
+                            </Rock:RockControlWrapper>
+
+                            <% if ( ApprovalPanelOpen || ApprovalPanelClosed )
+                               { %>
+                        </div>
+                    </div>
+                </div>
+                <% } %>
+
                 <Rock:DateRangePicker ID="drpDateRange" runat="server" Label="Select Range" />
                 <asp:LinkButton ID="lbDateRangeRefresh" runat="server" CssClass="btn btn-default btn-sm" Text="Refresh" OnClick="lbDateRangeRefresh_Click" />
 

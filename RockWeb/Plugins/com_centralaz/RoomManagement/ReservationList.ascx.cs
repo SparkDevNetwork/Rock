@@ -107,7 +107,6 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
             switch ( e.Key )
             {
                 case "Ministry":
-                case "Status":
                     {
                         int definedValueId = 0;
                         if ( int.TryParse( e.Value, out definedValueId ) )
@@ -118,6 +117,22 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
                                 e.Value = definedValue.Value;
                             }
                         }
+                        break;
+                    }
+                case "Approval State":
+                    {
+                        var approvalValues = e.Value.Split( ',' ).Select( a => a.ConvertToEnum<ReservationApprovalState>() );
+                        if ( approvalValues.Any() )
+                        {
+
+                            e.Value = approvalValues.Select( a => a.ConvertToString() ).ToList().AsDelimited( "," );
+
+                        }
+                        else
+                        {
+                            e.Value = string.Empty;
+                        }
+
                         break;
                     }
 
@@ -199,7 +214,7 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
         {
             gfSettings.SaveUserPreference( "Reservation Name", tbName.Text );
             gfSettings.SaveUserPreference( "Ministry", ddlMinistry.SelectedValue );
-            gfSettings.SaveUserPreference( "Status", ddlStatus.SelectedValue );
+            gfSettings.SaveUserPreference( "Approval State", cblApproval.SelectedValues.AsDelimited( "," ) );
 
             int personId = ppCreator.PersonId ?? 0;
             gfSettings.SaveUserPreference( "Created By", UserCanAdministrate ? personId.ToString() : "" );
@@ -238,10 +253,10 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
                 ddlMinistry.SetValue( gfSettings.GetUserPreference( "Ministry" ) );
             }
 
-            ddlStatus.BindToEnum<ReservationApprovalState>( true );
-            if ( !string.IsNullOrWhiteSpace( gfSettings.GetUserPreference( "Status" ) ) )
+            cblApproval.BindToEnum<ReservationApprovalState>( );
+            if ( !string.IsNullOrWhiteSpace( gfSettings.GetUserPreference( "Approval State" ) ) )
             {
-                ddlStatus.SetValue( gfSettings.GetUserPreference( "Status" ) );
+                cblApproval.SetValues( gfSettings.GetUserPreference( "Approval State" ).SplitDelimitedValues() );
             }
 
             if ( !string.IsNullOrWhiteSpace( gfSettings.GetUserPreference( "Created By" ) ) )
@@ -301,11 +316,13 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
                 qry = qry.Where( r => r.ReservationMinistryId == ministryValueId );
             }
 
-            // Filter by Status
-            var approvalState = ddlStatus.SelectedValueAsEnumOrNull<ReservationApprovalState>();
-            if ( approvalState.HasValue )
+            // Filter by Approval
+            List<ReservationApprovalState> approvalValues = cblApproval.Items.OfType<ListItem>().Where( l => l.Selected ).Select( a => a.Value.ConvertToEnum<ReservationApprovalState>() ).Where( a => a != null ).ToList();
+            if ( approvalValues.Any() )
             {
-                qry = qry.Where( r => r.ApprovalState == approvalState );
+                qry = qry
+                    .Where( r =>
+                        approvalValues.Contains( r.ApprovalState ) );
             }
 
             // Filter by Creator
@@ -349,7 +366,8 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
                 ReservationStartDateTime = r.ReservationStartDateTime,
                 ReservationEndDateTime = r.ReservationEndDateTime,
                 EventDateTimeDescription = r.EventDateTimeDescription,
-                ReservationDateTimeDescription = r.ReservationDateTimeDescription
+                ReservationDateTimeDescription = r.ReservationDateTimeDescription,
+                ApprovalState = r.ApprovalState.ConvertToString()
             } )
             .OrderBy( r => r.ReservationStartDateTime ).ToList();
             gReservations.EntityTypeId = EntityTypeCache.Read<Reservation>().Id;

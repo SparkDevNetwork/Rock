@@ -14,7 +14,7 @@
                     <Rock:GridFilter ID="gfSettings" runat="server">
                         <Rock:RockTextBox ID="tbName" runat="server" Label="Reservation Name" />
                         <Rock:RockDropDownList ID="ddlMinistry" runat="server" Label="Ministry" DataTextField="Name" DataValueField="Id" />
-                        <Rock:RockDropDownList ID="ddlStatus" runat="server" Label="Status" DataTextField="Name" DataValueField="Id" />
+                        <Rock:RockCheckBoxList ID="cblApproval" runat="server" Label="Approval Status" />
                         <Rock:DateTimePicker ID="dtpStartDateTime" runat="server" Label="Start Date" />
                         <Rock:DateTimePicker ID="dtpEndDateTime" runat="server" Label="End Date" />
                         <Rock:PersonPicker ID="ppCreator" runat="server" Label="Created By" />
@@ -29,6 +29,7 @@
                             <Rock:RockBoundField DataField="ReservationDateTimeDescription" HeaderText="Reservation Time" />
                             <Rock:RockBoundField DataField="Locations" HeaderText="Locations" />
                             <Rock:RockBoundField DataField="Resources" HeaderText="Resources" />
+                            <Rock:RockBoundField DataField="ApprovalState" HeaderText="Approval State" />
                         </Columns>
                     </Rock:Grid>
                 </div>
