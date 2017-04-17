@@ -36,12 +36,20 @@ namespace RockWeb.Blocks.Finance
     [DisplayName( "Benevolence Request Detail" )]
     [Category( "Finance" )]
     [Description( "Block for users to create, edit, and view benevolence requests." )]
-    [SecurityRoleField( "Case Worker Role", "The security role to draw case workers from", true, Rock.SystemGuid.Group.GROUP_BENEVOLENCE )]
+    [SecurityRoleField( "Case Worker Role", "The security role to draw case workers from", false, "", "", 0 )]
     [LinkedPage("Benevolence Request Statement Page", "The page which summarises a benevolence request for printing", true)]
     public partial class BenevolenceRequestDetail : Rock.Web.UI.RockBlock
     {
+        #region Fields 
+
+        private Guid? _caseWorkerGroupGuid = null;
+
+        #endregion
+
         #region Properties
+
         private List<int> DocumentsState { get; set; }
+
         #endregion
 
         #region ViewState and Dynamic Controls
@@ -123,6 +131,9 @@ namespace RockWeb.Blocks.Finance
             }
 
             dlDocuments.ItemDataBound += DlDocuments_ItemDataBound;
+
+            _caseWorkerGroupGuid = GetAttributeValue( "CaseWorkerRole" ).AsGuidOrNull();
+
         }
 
         /// <summary>
@@ -352,7 +363,16 @@ namespace RockWeb.Blocks.Finance
                 }
 
                 benevolenceRequest.RequestedByPersonAliasId = ppPerson.PersonAliasId;
-                benevolenceRequest.CaseWorkerPersonAliasId = ddlCaseWorker.SelectedValue.AsIntegerOrNull();
+
+                if ( _caseWorkerGroupGuid.HasValue )
+                {
+                    benevolenceRequest.CaseWorkerPersonAliasId = ddlCaseWorker.SelectedValue.AsIntegerOrNull();
+                }
+                else
+                {
+                    benevolenceRequest.CaseWorkerPersonAliasId = ppCaseWorker.PersonAliasId;
+                }
+
                 benevolenceRequest.RequestStatusValueId = ddlRequestStatus.SelectedValue.AsIntegerOrNull();
                 benevolenceRequest.ConnectionStatusValueId = ddlConnectionStatus.SelectedValue.AsIntegerOrNull();
 
@@ -745,7 +765,21 @@ namespace RockWeb.Blocks.Finance
                 ddlConnectionStatus.SetValue( benevolenceRequest.ConnectionStatusValueId );
             }
 
-            ddlCaseWorker.SetValue( benevolenceRequest.CaseWorkerPersonAliasId );
+            if ( _caseWorkerGroupGuid.HasValue )
+            {
+                ddlCaseWorker.SetValue( benevolenceRequest.CaseWorkerPersonAliasId );
+            }
+            else
+            { 
+                if ( benevolenceRequest.CaseWorkerPersonAlias != null )
+                {
+                    ppCaseWorker.SetValue( benevolenceRequest.CaseWorkerPersonAlias.Person );
+                }
+                else
+                {
+                    ppCaseWorker.SetValue( null );
+                }
+            }
 
             BindGridFromViewState();
 
@@ -779,26 +813,36 @@ namespace RockWeb.Blocks.Finance
             ddlRequestStatus.BindToDefinedType( DefinedTypeCache.Read( new Guid( Rock.SystemGuid.DefinedType.BENEVOLENCE_REQUEST_STATUS ) ), false );
             ddlConnectionStatus.BindToDefinedType( DefinedTypeCache.Read( new Guid( Rock.SystemGuid.DefinedType.PERSON_CONNECTION_STATUS ) ), true );
 
-            Guid groupGuid = GetAttributeValue( "CaseWorkerRole" ).AsGuid();
-            var personList = new GroupMemberService( new RockContext() )
-                .Queryable( "Person, Group" )
-                .Where( gm => gm.Group.Guid == groupGuid )
-                .Select( gm => gm.Person )
-                .ToList();
-
-            string caseWorkerPersonAliasValue = benevolenceRequest.CaseWorkerPersonAliasId.ToString();
-            if ( benevolenceRequest.CaseWorkerPersonAlias != null && 
-                benevolenceRequest.CaseWorkerPersonAlias.Person != null &&
-                !personList.Select( p => p.Id ).ToList().Contains( benevolenceRequest.CaseWorkerPersonAlias.Person.Id ) )
+            if ( _caseWorkerGroupGuid.HasValue )
             {
-                personList.Add( benevolenceRequest.CaseWorkerPersonAlias.Person );
-            }
+                var personList = new GroupMemberService( new RockContext() )
+                    .Queryable( "Person, Group" )
+                    .Where( gm => gm.Group.Guid == _caseWorkerGroupGuid.Value )
+                    .Select( gm => gm.Person )
+                    .ToList();
 
-            ddlCaseWorker.DataSource = personList.OrderBy( p => p.NickName ).ThenBy( p => p.LastName ).ToList();
-            ddlCaseWorker.DataTextField = "FullName";
-            ddlCaseWorker.DataValueField = "PrimaryAliasId";
-            ddlCaseWorker.DataBind();
-            ddlCaseWorker.Items.Insert( 0, new ListItem() );
+                string caseWorkerPersonAliasValue = benevolenceRequest.CaseWorkerPersonAliasId.ToString();
+                if ( benevolenceRequest.CaseWorkerPersonAlias != null &&
+                    benevolenceRequest.CaseWorkerPersonAlias.Person != null &&
+                    !personList.Select( p => p.Id ).ToList().Contains( benevolenceRequest.CaseWorkerPersonAlias.Person.Id ) )
+                {
+                    personList.Add( benevolenceRequest.CaseWorkerPersonAlias.Person );
+                }
+
+                ddlCaseWorker.DataSource = personList.OrderBy( p => p.NickName ).ThenBy( p => p.LastName ).ToList();
+                ddlCaseWorker.DataTextField = "FullName";
+                ddlCaseWorker.DataValueField = "PrimaryAliasId";
+                ddlCaseWorker.DataBind();
+                ddlCaseWorker.Items.Insert( 0, new ListItem() );
+
+                ppCaseWorker.Visible = false;
+                ddlCaseWorker.Visible = true;
+            }
+            else
+            {
+                ppCaseWorker.Visible = true;
+                ddlCaseWorker.Visible = false;
+            }
         }
 
         #endregion
