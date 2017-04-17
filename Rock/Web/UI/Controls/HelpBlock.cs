@@ -96,7 +96,7 @@ $(document).ready(function() {
                 writer.AddAttribute( "style", "display:none" );
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
                 writer.RenderBeginTag( HtmlTextWriterTag.Small );
-                writer.Write( this.Text.Trim() );
+                writer.Write( this.Text.ConvertCrLfToHtmlBr().Trim() );
                 writer.RenderEndTag();
                 writer.RenderEndTag();
             }
