@@ -3095,7 +3095,6 @@ namespace Rock.Lava
                     }
             }
 
-            return "";
         }
 
         /// <summary>

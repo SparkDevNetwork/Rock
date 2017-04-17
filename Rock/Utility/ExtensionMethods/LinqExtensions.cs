@@ -553,7 +553,6 @@ namespace Rock
         /// Gets the value or null.
         /// </summary>
         /// <typeparam name="TKey">The type of the key.</typeparam>
-        /// <typeparam name="TValue">The type of the value.</typeparam>
         /// <param name="dictionary">The dictionary.</param>
         /// <param name="key">The key.</param>
         /// <returns></returns>
@@ -573,7 +572,6 @@ namespace Rock
         /// Gets the value or null.
         /// </summary>
         /// <typeparam name="TKey">The type of the key.</typeparam>
-        /// <typeparam name="TValue">The type of the value.</typeparam>
         /// <param name="dictionary">The dictionary.</param>
         /// <param name="key">The key.</param>
         /// <returns></returns>
@@ -593,7 +591,6 @@ namespace Rock
         /// Gets the value or null.
         /// </summary>
         /// <typeparam name="TKey">The type of the key.</typeparam>
-        /// <typeparam name="TValue">The type of the value.</typeparam>
         /// <param name="dictionary">The dictionary.</param>
         /// <param name="key">The key.</param>
         /// <returns></returns>
@@ -613,7 +610,6 @@ namespace Rock
         /// Gets the value or null.
         /// </summary>
         /// <typeparam name="TKey">The type of the key.</typeparam>
-        /// <typeparam name="TValue">The type of the value.</typeparam>
         /// <param name="dictionary">The dictionary.</param>
         /// <param name="key">The key.</param>
         /// <returns></returns>
