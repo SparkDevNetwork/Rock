@@ -302,7 +302,7 @@ namespace Rock.Web.UI.Controls
         public SortProperty SortProperty
         {
             get { return ViewState["SortProperty"] as SortProperty; }
-            private set { ViewState["SortProperty"] = value; }
+            set { ViewState["SortProperty"] = value; }
         }
 
         /// <summary>
