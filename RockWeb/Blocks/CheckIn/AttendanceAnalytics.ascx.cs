@@ -533,6 +533,7 @@ function(item) {
             string keyPrefix = string.Format( "attendance-reporting-{0}-", this.BlockId );
 
             ddlAttendanceType.SelectedGroupTypeId = GetSetting( keyPrefix, "TemplateGroupTypeId" ).AsIntegerOrNull();
+            cbIncludeGroupsWithoutSchedule.Checked = this.GetBlockUserPreference( "IncludeGroupsWithoutSchedule" ).AsBooleanOrNull() ?? true;
             BuildGroupTypesUI();
 
             string slidingDateRangeSettings = GetSetting( keyPrefix, "SlidingDateRange" );
@@ -1883,13 +1884,13 @@ function(item) {
         /// <param name="showGroupAncestry">if set to <c>true</c> [show group ancestry].</param>
         private void AddGroupControls( Group group, RockCheckBoxList checkBoxList, GroupService service, bool showGroupAncestry )
         {
-            // Only show groups that actually have a schedule
+            // Only show groups that actually have a schedule, unless they choose IncludeGroupsWithoutSchedule
             if ( group != null )
             {
                 if ( !_addedGroupIds.Contains( group.Id ) )
                 {
                     _addedGroupIds.Add( group.Id );
-                    if ( group.ScheduleId.HasValue || group.GroupLocations.Any( l => l.Schedules.Any() ) )
+                    if ( cbIncludeGroupsWithoutSchedule.Checked || group.ScheduleId.HasValue || group.GroupLocations.Any( l => l.Schedules.Any() ) )
                     {
                         string displayName = showGroupAncestry ? service.GroupAncestorPathName( group.Id ) : group.Name;
                         checkBoxList.Items.Add( new ListItem( displayName, group.Id.ToString() ) );
