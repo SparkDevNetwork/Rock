@@ -64,7 +64,7 @@ namespace Rock.Model
                 Rock.Model.Communication communication = new Rock.Model.Communication();
                 communication.Status = CommunicationStatus.Approved;
                 communication.SenderPersonAliasId = senderPersonAliasId;
-                communication.Subject = subject;
+                communication.Subject = subject.Left(100);
                 Add( communication );
 
                 communication.IsBulkCommunication = bulkCommunication;

@@ -550,10 +550,10 @@ namespace RockWeb.Blocks.WorkFlow
                 var gridActions = e.Item.FindControl("gridActions") as Grid;
                 if ( gridActions != null )
                 {
-                    gridActions.DataSource = activity.Actions.OrderBy( a => a.ActionType.Order )
+                    gridActions.DataSource = activity.Actions.OrderBy( a => a.ActionTypeCache.Order )
                         .Select( a => new
                         {
-                            Name = a.ActionType.Name,
+                            Name = a.ActionTypeCache.Name,
                             LastProcessed = a.LastProcessedDateTime.HasValue ?
                                 string.Format( "{0} {1} ({2})",
                                     a.LastProcessedDateTime.Value.ToShortDateString(),

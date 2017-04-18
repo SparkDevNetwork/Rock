@@ -164,7 +164,7 @@ namespace Rock.Workflow.Action
             string oldValue = string.Empty;
             if ( phoneNumber == null )
             {
-                phoneNumber = new PhoneNumber { NumberTypeValueId = phoneType.Id };
+                phoneNumber = new PhoneNumber { NumberTypeValueId = phoneType.Id, PersonId = personId.Value };
                 phoneNumberService.Add( phoneNumber );
                 updated = true;
             }
