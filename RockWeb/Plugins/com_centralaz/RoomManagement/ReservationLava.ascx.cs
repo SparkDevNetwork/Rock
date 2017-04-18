@@ -112,10 +112,10 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
 
             CampusPanelOpen = GetAttributeValue( "CampusFilterDisplayMode" ) == "3";
             CampusPanelClosed = GetAttributeValue( "CampusFilterDisplayMode" ) == "4";
-            MinistryPanelOpen =  GetAttributeValue( "MinistryFilterDisplayMode" ) == "3";
+            MinistryPanelOpen = GetAttributeValue( "MinistryFilterDisplayMode" ) == "3";
             MinistryPanelClosed = GetAttributeValue( "MinistryFilterDisplayMode" ) == "4";
-            ApprovalPanelOpen =  GetAttributeValue( "ApprovalFilterDisplayMode" ) == "3";
-            ApprovalPanelClosed =  GetAttributeValue( "ApprovalFilterDisplayMode" ) == "4";
+            ApprovalPanelOpen = GetAttributeValue( "ApprovalFilterDisplayMode" ) == "3";
+            ApprovalPanelClosed = GetAttributeValue( "ApprovalFilterDisplayMode" ) == "4";
 
             // this event gets fired after block settings are updated. it's nice to repaint the screen if these settings would alter it
             this.BlockUpdated += Block_BlockUpdated;
@@ -238,6 +238,7 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void cblCampus_SelectedIndexChanged( object sender, EventArgs e )
         {
+            this.SetUserPreference( "Campuses", cblCampus.Items.OfType<ListItem>().Where( l => l.Selected ).Select( a => a.Value.AsInteger() ).ToList().AsDelimited( "," ) );
             BindData();
         }
 
@@ -248,6 +249,7 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void cblMinistry_SelectedIndexChanged( object sender, EventArgs e )
         {
+            this.SetUserPreference( "Ministries", cblMinistry.Items.OfType<ListItem>().Where( l => l.Selected ).Select( a => a.Value.AsInteger() ).ToList().AsDelimited( "," ) );
             BindData();
         }
 
@@ -258,6 +260,7 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void cblApproval_SelectedIndexChanged( object sender, EventArgs e )
         {
+            this.SetUserPreference( "Approval State", cblApproval.Items.OfType<ListItem>().Where( l => l.Selected ).Select( a => a.Value.ConvertToEnum<ReservationApprovalState>().ConvertToInt() ).Where( a => a != null ).ToList().AsDelimited( "," ) );
             BindData();
         }
 
@@ -407,12 +410,19 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
             rcwCampus.Visible = GetAttributeValue( "CampusFilterDisplayMode" ).AsInteger() > 1;
             cblCampus.DataSource = CampusCache.All();
             cblCampus.DataBind();
-            if ( GetAttributeValue( "EnableCampusContext" ).AsBoolean() )
+            if ( !string.IsNullOrWhiteSpace( this.GetUserPreference( "Campuses" ) ) )
             {
-                var contextCampus = RockPage.GetCurrentContext( EntityTypeCache.Read( "Rock.Model.Campus" ) ) as Campus;
-                if ( contextCampus != null )
+                cblCampus.SetValues( this.GetUserPreference( "Campuses" ).SplitDelimitedValues() );
+            }
+            else
+            {
+                if ( GetAttributeValue( "EnableCampusContext" ).AsBoolean() )
                 {
-                    cblCampus.SetValue( contextCampus.Id );
+                    var contextCampus = RockPage.GetCurrentContext( EntityTypeCache.Read( "Rock.Model.Campus" ) ) as Campus;
+                    if ( contextCampus != null )
+                    {
+                        cblCampus.SetValue( contextCampus.Id );
+                    }
                 }
             }
 
@@ -421,9 +431,19 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
             cblMinistry.DataSource = ReservationMinistryCache.All();
             cblMinistry.DataBind();
 
+            if ( !string.IsNullOrWhiteSpace( this.GetUserPreference( "Ministries" ) ) )
+            {
+                cblMinistry.SetValues( this.GetUserPreference( "Ministries" ).SplitDelimitedValues() );
+            }
+
             // Setup Approval Filter
             rcwApproval.Visible = GetAttributeValue( "ApprovalFilterDisplayMode" ).AsInteger() > 1;
-            cblApproval.BindToEnum<ReservationApprovalState>( );
+            cblApproval.BindToEnum<ReservationApprovalState>();
+
+            if ( !string.IsNullOrWhiteSpace( this.GetUserPreference( "Approval State" ) ) )
+            {
+                cblApproval.SetValues( this.GetUserPreference( "Approval State" ).SplitDelimitedValues() );
+            }
 
             // Date Range Filter
             drpDateRange.Visible = GetAttributeValue( "ShowDateRangeFilter" ).AsBoolean();
@@ -437,6 +457,7 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
                 GetAttributeValue( "ShowWeekView" ).AsBoolean(),
                 GetAttributeValue( "ShowMonthView" ).AsBoolean()
             };
+
             var howManyVisible = viewsVisible.Where( v => v ).Count();
             btnDay.Visible = howManyVisible > 1 && viewsVisible[0];
             btnWeek.Visible = howManyVisible > 1 && viewsVisible[1];
