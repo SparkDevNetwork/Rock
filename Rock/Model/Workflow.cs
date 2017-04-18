@@ -304,6 +304,27 @@ namespace Rock.Model
         }
         private bool _isPersisted = false;
 
+        /// <summary>
+        /// Gets the <see cref="System.Object"/> with the specified key.
+        /// </summary>
+        /// <value>
+        /// The <see cref="System.Object"/>.
+        /// </value>
+        /// <param name="key">The key.</param>
+        /// <returns></returns>
+        public override object this[object key]
+        {
+            get
+            {
+                string propertyKey = key.ToStringSafe();
+                if( propertyKey == "WorkflowType" )
+                {
+                    return WorkflowTypeCache;
+                }
+                return base[key];
+            }
+        }
+
         #endregion
 
         #region Public Methods
