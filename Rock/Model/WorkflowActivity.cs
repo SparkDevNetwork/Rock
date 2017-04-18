@@ -147,6 +147,10 @@ namespace Rock.Model
                 {
                     return WorkflowActivityTypeCache.Read( ActivityTypeId );
                 }
+                else if ( ActivityType != null )
+                {
+                    return WorkflowActivityTypeCache.Read( ActivityType.Id );
+                }
                 return null;
             }
         }
