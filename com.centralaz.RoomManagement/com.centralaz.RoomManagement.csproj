@@ -83,6 +83,7 @@
     <Compile Include="Field\Types\ReservationApprovalStateFieldType.cs" />
     <Compile Include="Field\Types\ReservationFieldType.cs" />
     <Compile Include="Jobs\FireWorkflowFromReservationInDateRange.cs" />
+    <Compile Include="Migrations\006_OptionalResourceLocation.cs" />
     <Compile Include="Migrations\005_ResourceApproval.cs" />
     <Compile Include="Migrations\004_UpdateFieldType.cs" />
     <Compile Include="Migrations\003_SampleData.cs" />
