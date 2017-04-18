@@ -176,6 +176,10 @@ namespace Rock.Model
                 {
                     return WorkflowTypeCache.Read( WorkflowTypeId );
                 }
+                else if ( WorkflowType != null )
+                {
+                    return WorkflowTypeCache.Read( WorkflowType.Id );
+                }
                 return null;
             }
         }
