@@ -40,15 +40,22 @@ namespace RockWeb.Blocks.Crm
     [Description( "Displays list of people that match a given search type and term." )]
 
     [LinkedPage("Person Detail Page", order: 0 )]
-    [BooleanField( "Show Birthdate", "Should a birthdate column be displayed?", false, "", 1 )]
-    [BooleanField("Show Performance", "Displays how long the search took.", false, "", 2 )]
+    [DefinedValueField( Rock.SystemGuid.DefinedType.PERSON_PHONE_TYPE, "Phone Number Types", "Types of phone numbers to include with person detail", false, true, "", "", 1)]
+    [BooleanField( "Show Birthdate", "Should a birthdate column be displayed?", false, "", 2 )]
+    [BooleanField( "Show Age", "Should an age column be displayed?", true, "", 3 )]
+    [BooleanField( "Show Gender", "Should a gender column be displayed?", false, "", 4 )]
+    [BooleanField( "Show Spouse", "Should a spouse column be displayed?", false, "", 5 )]
+    [BooleanField("Show Performance", "Displays how long the search took.", false, "", 6 )]
     public partial class PersonSearch : Rock.Web.UI.RockBlock
     {
         #region Fields
 
+        private List<Guid> _phoneTypeGuids = new List<Guid>();
+        private bool _showSpouse = false;
         private DefinedValueCache _inactiveStatus = null;
         private Stopwatch _sw = new Stopwatch();
         private Literal _lPerf = new Literal();
+
         #endregion
 
         #region Base Control Methods
@@ -71,6 +78,13 @@ namespace RockWeb.Blocks.Crm
             {
                 gPeople.Actions.AddCustomActionControl( _lPerf );
             }
+
+            _phoneTypeGuids = GetAttributeValue( "PhoneNumberTypes" ).SplitDelimitedValues().AsGuidList();
+            _showSpouse = GetAttributeValue( "ShowSpouse" ).AsBoolean();
+
+            // this event gets fired after block settings are updated. it's nice to repaint the screen if these settings would alter it
+            this.BlockUpdated += Block_BlockUpdated;
+            this.AddConfigurationUpdateTrigger( upnlContent );
         }
 
         protected override void OnPreRender( EventArgs e )
@@ -96,6 +110,16 @@ namespace RockWeb.Blocks.Crm
         #endregion
 
         #region Events
+
+        /// <summary>
+        /// Handles the BlockUpdated event of the control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void Block_BlockUpdated( object sender, EventArgs e )
+        {
+            BindGrid();
+        }
 
         void gPeople_GridRebind( object sender, EventArgs e )
         {
@@ -155,6 +179,20 @@ namespace RockWeb.Blocks.Crm
                         sbPersonDetails.Append( string.Format( "<small class=\"hidden-sm hidden-md hidden-lg\"><br>{0}</br></small>", delimitedCampuses ) );
                         sbPersonDetails.Append( string.Format( "<small class=\"hidden-sm hidden-md hidden-lg\">{0}</small>", DefinedValueCache.GetName( person.ConnectionStatusValueId ) ) );
                         sbPersonDetails.Append(string.Format(" <small class=\"hidden-md hidden-lg\">{0}</small>", person.AgeFormatted));
+
+                        foreach( Guid phGuid in _phoneTypeGuids )
+                        {
+                            var dv = DefinedValueCache.Read( phGuid );
+                            if ( dv != null )
+                            {
+                                var pn = person.PhoneNumbers.FirstOrDefault( n => n.NumberTypeValueId == dv.Id );
+                                if ( pn != null )
+                                {
+                                    sbPersonDetails.Append( string.Format( "<br/><small>{0}: {1}</small>", dv.Value.Left( 1 ).ToUpper(), pn.Number ) );
+                                }
+                            }
+                        }
+
                         if (!string.IsNullOrWhiteSpace(person.Email)){
                             sbPersonDetails.Append(string.Format("<br/><small>{0}</small>", person.Email));
                         }
@@ -194,6 +232,23 @@ namespace RockWeb.Blocks.Crm
                         sbPersonDetails.Append("</div>");
 
                         lPerson.Text = sbPersonDetails.ToString();
+
+                        if ( _showSpouse )
+                        {
+                            using ( var rockContext = new RockContext() )
+                            {
+                                var personRec = new PersonService( rockContext ).Get( person.Id );
+                                if ( personRec != null )
+                                {
+                                    var lSpouse = e.Row.FindControl( "lSpouse" ) as Literal;
+                                    var spouse = personRec.GetSpouse( rockContext );
+                                    if ( lSpouse != null && spouse != null )
+                                    {
+                                        lSpouse.Text = spouse.FullName;
+                                    }
+                                }
+                            }
+                        }
                     }
                     else
                     {
@@ -215,7 +270,14 @@ namespace RockWeb.Blocks.Crm
         private void BindGrid()
         {
             var birthDateCol = gPeople.ColumnsOfType<DateField>().First( c => c.DataField == "BirthDate" );
+            var ageCol = gPeople.ColumnsOfType<RockBoundField>().First( c => c.DataField == "Age" );
+            var genderCol = gPeople.ColumnsOfType<RockBoundField>().First( c => c.DataField == "Gender" );
+            var spouseCol = gPeople.ColumnsOfType<RockTemplateField>().First( c => c.HeaderText == "Spouse" );
+
             birthDateCol.Visible = GetAttributeValue( "ShowBirthdate" ).AsBoolean();
+            ageCol.Visible = GetAttributeValue( "ShowAge" ).AsBoolean();
+            genderCol.Visible = GetAttributeValue( "ShowGender" ).AsBoolean();
+            spouseCol.Visible = _showSpouse;
 
             string type = PageParameter( "SearchType" );
             string term = PageParameter( "SearchTerm" );
@@ -327,7 +389,15 @@ namespace RockWeb.Blocks.Crm
                         .Where( m => m.Group.GroupType.Guid == familyGuid )
                         .SelectMany( m => m.Group.GroupLocations )
                         .Where( gl => gl.GroupLocationTypeValue.Guid.Equals( homeAddressTypeGuid ) )
-                        .Select( gl => gl.Location )
+                        .Select( gl => gl.Location ),
+                    PhoneNumbers = p.PhoneNumbers
+                        .Where( n => n.NumberTypeValueId.HasValue )
+                        .Select( n => new PersonSearchResultPhone
+                        {
+                            NumberTypeValueId = n.NumberTypeValueId.Value,
+                            Number = n.NumberFormatted
+                        } )
+                        .ToList()
                 } ).ToList();
 
                 if ( personList.Count == 1 )
@@ -649,6 +719,38 @@ namespace RockWeb.Blocks.Crm
         /// The picker item details HTML.
         /// </value>
         public string PickerItemDetailsHtml { get; set; }
+
+        /// <summary>
+        /// Gets or sets the phone numbers.
+        /// </summary>
+        /// <value>
+        /// The phone numbers.
+        /// </value>
+        public List<PersonSearchResultPhone> PhoneNumbers { get; set; }
     }
-#endregion
+
+    /// <summary>
+    /// 
+    /// </summary>
+    public class PersonSearchResultPhone
+    {
+        /// <summary>
+        /// Gets or sets the number type value identifier.
+        /// </summary>
+        /// <value>
+        /// The number type value identifier.
+        /// </value>
+        public int NumberTypeValueId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the number.
+        /// </summary>
+        /// <value>
+        /// The number.
+        /// </value>
+        public string Number { get; set; }
+    }
+
+    #endregion
+
 }
