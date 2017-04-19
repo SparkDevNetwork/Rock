@@ -47,6 +47,15 @@ namespace Rock.Model
         public int? AuthorizedPersonAliasId { get; set; }
 
         /// <summary>
+        /// Gets or sets a value indicating whether to show the transaction as anonymous when displayed publicly, for example on a list of fundraising contributors
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [show as anonymous]; otherwise, <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool ShowAsAnonymous { get; set; }
+
+        /// <summary>
         /// Gets or sets BatchId of the <see cref="Rock.Model.FinancialBatch"/> that contains this transaction.
         /// </summary>
         /// <value>
