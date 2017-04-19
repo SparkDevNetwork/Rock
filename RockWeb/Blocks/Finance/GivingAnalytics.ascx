@@ -1,5 +1,17 @@
 ﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="GivingAnalytics.ascx.cs" Inherits="RockWeb.Blocks.Finance.GivingAnalytics" %>
 
+<script>
+    Sys.Application.add_load(function () {
+        $(".js-advanced").on("click", function (event) {
+            var $parent = $(this).closest('.filter-options');
+            var $icon = $(this).find("i")
+            $icon.toggleClass("fa-caret-up").toggleClass("fa-caret-down");
+            $parent.find(".js-advanced-visible").val($icon.hasClass('fa-caret-up'));
+            $parent.find(".js-advanced-settings").slideToggle(500);
+        });
+    });
+</script>
+
 <style>
     .filter-options .rock-check-box-list label {
         cursor: pointer;
@@ -17,11 +29,10 @@
                     <a href="#" onclick="$('.js-slidingdaterange-help').toggle()">
                         <i class='fa fa-question-circle'></i>
                     </a>
-                    <button id="btnCopyToClipboard" runat="server" disabled="disabled" 
-                        data-toggle="tooltip" data-placement="top" data-title="Copy Report Link to Clipboard" 
-                        class="btn btn-link btn-copy-to-clipboard padding-all-none " 
-                        onmouseover="$(this).tooltip('hide').attr('data-original-title','Copy Report Link to Clipboard').tooltip('fixTitle').tooltip('show');"
-                        onclick="$(this).tooltip('hide').attr('data-original-title','Copied').tooltip('fixTitle').tooltip('show');return false;">
+                    <button id="btnCopyToClipboard" runat="server" disabled="disabled"
+                        data-toggle="tooltip" data-placement="top" data-trigger="hover" data-delay="250" title="Copy Report Link to Clipboard"
+                        class="btn btn-link padding-all-none btn-copy-to-clipboard"
+                        onclick="$(this).attr('data-original-title', 'Copied').tooltip('show').attr('data-original-title', 'Copy Link to Clipboard');return false;">
                         <i class='fa fa-clipboard'></i>
                     </button>
                 </div>
@@ -41,8 +52,24 @@
                         <asp:HiddenField ID="hfFilterUrl" runat="server" />
 
                         <Rock:SlidingDateRangePicker ID="drpSlidingDateRange" runat="server" Label="Date Range" EnabledSlidingDateRangeTypes="Previous, Last, Current, DateRange"/>
-                        <Rock:NumberRangeEditor ID="nreAmount" runat="server" CssClass="input-width-sm" NumberType="Currency" Label="Total Amount" />
-                        <Rock:DataViewPicker ID="dvpDataView" runat="server" Label="Limit by DataView" AutoPostBack="true" OnSelectedIndexChanged="dvpDataView_SelectedIndexChanged" />
+                        <div class="clearfix">
+                            <asp:Label ID="lblAdvancedOptions" runat="server" CssClass="js-advanced btn pull-right btn-default btn-xs">Advanced Options <i class="fa fa-caret-down"></i></asp:Label>
+                        </div>
+                        <Rock:HiddenFieldWithClass ID="hfAdvancedVisible" runat="server" CssClass="js-advanced-visible" Value="false" />
+                        <div id="divAdvancedSettings" runat="server" class="js-advanced-settings clearfix" >
+                            <Rock:NumberRangeEditor ID="nreAmount" runat="server" CssClass="input-width-sm" NumberType="Currency" Label="Total Amount" />
+                            <Rock:DataViewPicker ID="dvpDataView" runat="server" Label="Limit by DataView" AutoPostBack="true" OnSelectedIndexChanged="dvpDataView_SelectedIndexChanged" />
+                            <Rock:RockControlWrapper ID="rcwAccounts" runat="server" Label="Available Accounts">
+                            <div class="row">
+                                <div class="col-sm-5">
+                                    <Rock:Toggle ID="tglInactive" runat="server" OnText="Active" OffText="All" Checked="true" ButtonSizeCssClass="btn-xs" OnCheckedChanged="tglAccounts_CheckedChanged" />
+                                </div>
+                                <div class="col-sm-7">
+                                    <Rock:Toggle ID="tglTaxDeductible" runat="server" OnText="Tax-Deductible" OffText="All" Checked="true" ButtonSizeCssClass="btn-xs" OnCheckedChanged="tglAccounts_CheckedChanged"/>
+                                </div>
+                            </div>
+                            </Rock:RockControlWrapper>
+                        </div>
                         <Rock:RockCheckBoxList ID="cblCurrencyTypes" runat="server" FormGroupCssClass="currency-list js-currency-list" Label="Currency Types" RepeatDirection="Vertical" />
                         <Rock:RockCheckBoxList ID="cblTransactionSource" runat="server" FormGroupCssClass="source-list js-source-list" Label="Transaction Source" RepeatDirection="Vertical" />
                         <asp:PlaceHolder ID="phAccounts" runat="server" />

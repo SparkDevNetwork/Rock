@@ -113,17 +113,25 @@ namespace RockWeb.Blocks.Administration
                     var blockContexts = new Dictionary<string, string>();
                     foreach ( var block in pageCache.Blocks )
                     {
-                        var blockControl = TemplateControl.LoadControl( block.BlockType.Path ) as RockBlock;
-                        if ( blockControl != null )
+
+                        try
                         {
-                            blockControl.SetBlock( pageCache, block );
-                            foreach ( var context in blockControl.ContextTypesRequired )
+                            var blockControl = TemplateControl.LoadControl( block.BlockType.Path ) as RockBlock;
+                            if ( blockControl != null )
                             {
-                                if ( !blockContexts.ContainsKey( context.Name ) )
+                                blockControl.SetBlock( pageCache, block );
+                                foreach ( var context in blockControl.ContextTypesRequired )
                                 {
-                                    blockContexts.Add( context.Name, context.FriendlyName );
+                                    if ( !blockContexts.ContainsKey( context.Name ) )
+                                    {
+                                        blockContexts.Add( context.Name, context.FriendlyName );
+                                    }
                                 }
                             }
+                        }
+                        catch
+                        {
+                            // if the blocktype can't compile, just ignore it since we are just trying to find out if it had a blockContext
                         }
                     }
 

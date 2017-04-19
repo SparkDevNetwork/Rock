@@ -37,6 +37,38 @@ namespace RockWeb.Plugins.cc_newspring.Blocks.AllStaffLive
         {
             base.OnLoad( e );
 
+            // Add Styles and scripts
+            HtmlGenericContainer ooyalaStyles = new HtmlGenericContainer( "link" );
+            ooyalaStyles.Attributes["rel"] = "stylesheet";
+            ooyalaStyles.Attributes["href"] = "//s3.amazonaws.com/ns.assets/newspring/ooyalaPlayer.css";
+            Page.Header.Controls.Add( ooyalaStyles );
+
+
+            HtmlGenericContainer ooyalaCore = new HtmlGenericContainer( "script" );
+            ooyalaCore.Attributes["type"] = "text/javascript";
+            ooyalaCore.Attributes["src"] = "//player.ooyala.com/static/v4/stable/4.8.5/core.min.js";
+            Page.Header.Controls.Add( ooyalaCore );
+
+            HtmlGenericContainer ooyalaHtml = new HtmlGenericContainer( "script" );
+            ooyalaHtml.Attributes["type"] = "text/javascript";
+            ooyalaHtml.Attributes["src"] = "//player.ooyala.com/static/v4/stable/4.8.5/video-plugin/main_html5.min.js";
+            Page.Header.Controls.Add( ooyalaHtml );
+
+            HtmlGenericContainer ooyalaBitWrapper = new HtmlGenericContainer( "script" );
+            ooyalaBitWrapper.Attributes["type"] = "text/javascript";
+            ooyalaBitWrapper.Attributes["src"] = "//player.ooyala.com/static/v4/stable/4.8.5/video-plugin/bit_wrapper.min.js";
+            Page.Header.Controls.Add( ooyalaBitWrapper );
+
+            HtmlGenericContainer ooyalaFlash = new HtmlGenericContainer( "script" );
+            ooyalaFlash.Attributes["type"] = "text/javascript";
+            ooyalaFlash.Attributes["src"] = "//player.ooyala.com/static/v4/stable/4.8.5/video-plugin/osmf_flash.min.js";
+            Page.Header.Controls.Add( ooyalaFlash );
+
+            HtmlGenericContainer ooyalaSkin = new HtmlGenericContainer( "script" );
+            ooyalaSkin.Attributes["type"] = "text/javascript";
+            ooyalaSkin.Attributes["src"] = "//player.ooyala.com/static/v4/stable/4.8.5/skin-plugin/html5-skin.js";
+            Page.Header.Controls.Add( ooyalaSkin );
+
             var scheduleGuids = GetAttributeValue( "LiveSchedule" );
 
             // Check to make sure that scheduleGuids is not null
@@ -107,5 +139,7 @@ namespace RockWeb.Plugins.cc_newspring.Blocks.AllStaffLive
 
             return ip;
         }
+
+
     }
 }

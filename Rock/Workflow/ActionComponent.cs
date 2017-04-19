@@ -189,27 +189,78 @@ namespace Rock.Workflow
             return string.Empty;
         }
 
+
+        /// <summary>
+        /// Sets the workflow attribute value.
+        /// </summary>
+        /// <param name="action">The action.</param>
+        /// <param name="key">The key.</param>
+        /// <param name="value">The value.</param>
+        protected AttributeCache SetWorkflowAttributeValue( WorkflowAction action, string key, int? value )
+        {
+            return SetWorkflowAttributeValue( action, key, value.ToString() );
+        }
+
+        /// <summary>
+        /// Sets the workflow attribute value.
+        /// </summary>
+        /// <param name="action">The action.</param>
+        /// <param name="key">The key.</param>
+        /// <param name="value">The value.</param>
+        protected AttributeCache SetWorkflowAttributeValue( WorkflowAction action, string key, decimal? value )
+        {
+            return SetWorkflowAttributeValue( action, key, value.ToString() );
+        }
+
+        /// <summary>
+        /// Sets the workflow attribute value.
+        /// </summary>
+        /// <param name="action">The action.</param>
+        /// <param name="key">The key.</param>
+        /// <param name="value">The value.</param>
+        protected AttributeCache SetWorkflowAttributeValue( WorkflowAction action, string key, Guid? value )
+        {
+            return SetWorkflowAttributeValue( action, key, value.ToString() );
+        }
+
+        /// <summary>
+        /// Sets the workflow attribute value.
+        /// </summary>
+        /// <param name="action">The action.</param>
+        /// <param name="key">The key.</param>
+        /// <param name="value">The value.</param>
+        protected AttributeCache SetWorkflowAttributeValue( WorkflowAction action, string key, string value )
+        {
+            Guid? attrGuid = GetAttributeValue( action, key ).AsGuidOrNull();
+            if ( attrGuid.HasValue )
+            {
+                return SetWorkflowAttributeValue( action, attrGuid.Value, value );
+            }
+            return null;
+        }
+
         /// <summary>
         /// Sets the workflow attribute value.
         /// </summary>
         /// <param name="action">The action.</param>
         /// <param name="guid">The unique identifier.</param>
         /// <param name="value">The value.</param>
-        protected void SetWorkflowAttributeValue( WorkflowAction action, Guid guid, string value )
+        protected AttributeCache SetWorkflowAttributeValue( WorkflowAction action, Guid guid, string value )
         {
-            var testAttribute = AttributeCache.Read( guid );
-            if ( testAttribute != null )
+            var attr = AttributeCache.Read( guid );
+            if ( attr != null )
             {
-                string testAttributeValue = string.Empty;
-                if ( testAttribute.EntityTypeId == new Rock.Model.Workflow().TypeId )
+                if ( attr.EntityTypeId == new Rock.Model.Workflow().TypeId )
                 {
-                    action.Activity.Workflow.SetAttributeValue( testAttribute.Key, value );
+                    action.Activity.Workflow.SetAttributeValue( attr.Key, value );
                 }
-                else if ( testAttribute.EntityTypeId == new Rock.Model.WorkflowActivity().TypeId )
+                else if ( attr.EntityTypeId == new Rock.Model.WorkflowActivity().TypeId )
                 {
-                    action.Activity.SetAttributeValue( testAttribute.Key, value );
+                    action.Activity.SetAttributeValue( attr.Key, value );
                 }
             }
+
+            return attr;
         }
 
         /// <summary>

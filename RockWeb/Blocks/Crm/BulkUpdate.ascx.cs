@@ -91,7 +91,7 @@ namespace RockWeb.Blocks.Crm
                                                         && (t.OwnerPersonAliasId == null || currentPersonAliasIds.Contains( t.OwnerPersonAliasId.Value )) )
                                             .Select( t => new   {
                                                                     Id = t.Id,
-                                                                    Type = t.OwnerPersonAliasId == null ? "Personal Tags" : "Organization Tags",
+                                                                    Type = t.OwnerPersonAliasId == null ? "Organization Tags" : "Personal Tags",
                                                                     Name = t.Name
                                                                 } )
                                             .OrderByDescending(t => t.Type)
@@ -130,6 +130,9 @@ namespace RockWeb.Blocks.Crm
 ";
             ScriptManager.RegisterStartupScript( lbRemoveAllIndividuals, lbRemoveAllIndividuals.GetType(), "confirm-remove-all-" + BlockId.ToString(), script, true );
 
+            // This will cause this script to be injected upon each partial-postback because the script is
+            // needed due to the fact that the controls are dynamically changing (added/removed) during each
+            // partial postback.  Don't try to 'fix' this unless you're going to re-engineer this section. :)
             script = string.Format( @"
 
     // Add the 'bulk-item-selected' class to form-group of any item selected after postback
@@ -152,13 +155,14 @@ namespace RockWeb.Blocks.Crm
         selectIcon.toggleClass('fa-circle-o', !enabled);
 
         // Checkboxes needs special handling
-        var checkboxes = formGroup.find('.checkboxlist-group');
+        var checkboxes = formGroup.find(':checkbox');
         if ( checkboxes.length ) {{
-            $( checkboxes[0].children ).each(function() {{
-                if ( this.children[0].nodeName === 'INPUT' ) {{
-                    $( this.children[0] ).toggleClass('aspNetDisabled', !enabled);
-                    $( this.children[0] ).prop('disabled', !enabled);
-                    $( this.children[0] ).closest('.form-group').toggleClass('bulk-item-selected', enabled);
+            $(checkboxes).each(function() {{
+                if (this.nodeName === 'INPUT' ) {{
+                    $(this).toggleClass('aspNetDisabled', !enabled);
+                    $(this).prop('disabled', !enabled);
+                    $(this).closest('label').toggleClass('text-muted', !enabled);
+                    $(this).closest('.form-group').toggleClass('bulk-item-selected', enabled);
                 }}
             }});
         }}
@@ -1594,6 +1598,7 @@ namespace RockWeb.Blocks.Crm
 
                     Control control = attributeCache.AddControl( phAttributes.Controls, attributeCache.DefaultValue, string.Empty, setValues, true, attributeCache.IsRequired, labelText );
 
+                    // Q: Why don't we enable if the control is a RockCheckBox?
                     if ( action == "Update" && !( control is RockCheckBox ) )
                     {
                         var webControl = control as WebControl;

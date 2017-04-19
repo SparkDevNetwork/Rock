@@ -318,7 +318,9 @@ namespace Rock.Web.UI.Controls
             var script = new System.Text.StringBuilder();
             script.AppendFormat( @"
     $('#{0}').chosen({{
-        width: '100%'
+        width: '100%',
+        placeholder_text_multiple: ' ',
+        placeholder_text_single: ' '
     }});
 ", this.ClientID );
 
@@ -396,8 +398,7 @@ namespace Rock.Web.UI.Controls
         protected override void OnInit( EventArgs e )
         {
             base.OnInit( e );
-            RockPage.AddCSSLink( this.Page, "~/Scripts/chosen_v1.6.2/chosen.min.css" );
-            RockPage.AddScriptLink( this.Page, "~/Scripts/chosen_v1.6.2/chosen.jquery.min.js" );
+            RockPage.AddScriptLink( this.Page, "~/Scripts/chosen.jquery.min.js" );
         }
 
         /// <summary>

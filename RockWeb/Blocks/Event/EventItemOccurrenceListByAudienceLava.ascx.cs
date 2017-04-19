@@ -50,7 +50,6 @@ namespace RockWeb.Blocks.Event
     [LinkedPage( "Event Detail Page", "The page to use for showing event details.", order: 6 )]
     [LinkedPage( "Registration Page", "The page to use for registrations.", order: 7 )]
     [CodeEditorField( "Lava Template", "The lava template to use for the results", CodeEditorMode.Lava, CodeEditorTheme.Rock, defaultValue: "{% include '~~/Assets/Lava/EventItemOccurrenceListByAudience.lava' %}", order: 8 )]
-    [BooleanField("Enable Debug", "Show the lava merge fields.", order: 9)]
     public partial class EventItemOccurrenceListByAudienceLava : Rock.Web.UI.RockBlock
     {
         #region Fields
@@ -206,26 +205,6 @@ namespace RockWeb.Blocks.Event
                
                 lContent.Text = GetAttributeValue( "LavaTemplate" ).ResolveMergeFields( mergeFields );
 
-                // show debug info
-                if ( GetAttributeValue( "EnableDebug" ).AsBoolean() && IsUserAuthorized( Authorization.EDIT ) )
-                {
-                    lDebug.Visible = true;
-                    lDebug.Text = @"<div class='alert alert-info'>Due to the size of the lava members the debug info for this block has been supressed. Below are high-level details of
-                                    the merge objects available.
-                                    <ul>
-                                        <li>List Title - The title to pass to lava.
-                                        <li>EventItemOccurrences - A list of EventItemOccurrences. View the EvenItemOccurrence model for these properties.</li>
-                                        <li>RegistrationPage  - String that contains the relative path to the registration page.</li>
-                                        <li>EventDetailPage  - String that contains the relative path to the event detail page.</li>
-                                        <li>Global Attribute  - Access to the Global Attributes.</li>
-                                    </ul>
-                                    </div>";
-                }
-                else
-                {
-                    lDebug.Visible = false;
-                    lDebug.Text = string.Empty;
-                }
             }
             else
             {

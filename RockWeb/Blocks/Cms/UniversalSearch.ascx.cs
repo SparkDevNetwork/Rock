@@ -50,7 +50,7 @@ namespace RockWeb.Blocks.Cms
     [BooleanField( "Show Filters", "Toggles the display of the model filter which allows the user to select which models to search on.", true, "CustomSetting" )]
     [TextField( "Enabled Models", "The models that should be enabled for searching.", true,  category: "CustomSetting" )]
     [IntegerField("Results Per Page", "The number of results to show per page.", true, 20, category: "CustomSetting" )]
-    [EnumField("Search Type", "The type of search to perform.", typeof(SearchType), true, "2", category: "CustomSetting" )]
+    [EnumField("Search Type", "The type of search to perform.", typeof(SearchType), true, "0", category: "CustomSetting" )]
     [TextField("Base Field Filters", "These field filters will always be enabled and will not be changeable by the individual. Uses tha same syntax as the lava command.", false, category: "CustomSetting" )]
     [BooleanField("Show Refined Search", "Determines whether the refinded search should be shown.", true, category: "CustomSetting" )]
     [BooleanField("Show Scores", "Enables the display of scores for help with debugging.", category: "CustomSetting" )]
@@ -59,6 +59,8 @@ namespace RockWeb.Blocks.Cms
 {% endfor %}</ul>" )]
     [BooleanField("Use Custom Results", "Determines if the custom results should be displayed.", category: "CustomSetting" )]
     [LavaCommandsField("Custom Results Commands", "The custom Lava fields to allow.", category: "CustomSetting" )]
+    [CodeEditorField( "Search Input Pre-HTML", "Custom Lava to place before the search input (for styling).", CodeEditorMode.Lava, category: "CustomSetting", key: "PreHtml" )]
+    [CodeEditorField( "Search Input Post-HTML", "Custom Lava to place after the search input (for styling).", CodeEditorMode.Lava, category: "CustomSetting", key: "PostHtml" )]
     public partial class UniversalSearch : RockBlockCustomSettings
     {
         #region Fields
@@ -87,6 +89,8 @@ namespace RockWeb.Blocks.Cms
         protected override void OnInit( EventArgs e )
         {
             base.OnInit( e );
+
+            RockPage.AddScriptLink( ResolveRockUrl( "~/Scripts/jquery.lazyload.min.js" ) );
 
             // this event gets fired after block settings are updated. it's nice to repaint the screen if these settings would alter it
             this.BlockUpdated += Block_BlockUpdated;
@@ -123,6 +127,17 @@ namespace RockWeb.Blocks.Cms
                 {
                     tbSearch.Text = PageParameter( "Q" );
                     Search();
+                }
+
+                // add pre/post html
+                var preHtml = GetAttributeValue( "PreHtml" );
+                var postHtml = GetAttributeValue( "PostHtml" );
+
+                if (preHtml.IsNotNullOrWhitespace() || postHtml.IsNotNullOrWhitespace() )
+                {
+                    var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( null );
+                    lPreHtml.Text = preHtml.ResolveMergeFields( mergeFields );
+                    lPostHtml.Text = postHtml.ResolveMergeFields( mergeFields );
                 }
             }
         }
@@ -165,6 +180,10 @@ namespace RockWeb.Blocks.Cms
             SetAttributeValue( "UseCustomResults", cbUseCustomResults.Checked.ToString() );
 
             SetAttributeValue( "LavaResultTemplate", ceCustomResultsTemplate.Text );
+
+            SetAttributeValue( "PreHtml", cePreHtml.Text );
+
+            SetAttributeValue( "PostHtml", cePostHtml.Text );
 
             SetAttributeValue( "CustomResultsCommands", string.Join( ",", cblLavaCommands.SelectedValues ) );
 
@@ -343,7 +362,7 @@ namespace RockWeb.Blocks.Cms
 
                 for ( int i = startPage; i <= endPage; i++ )
                 {
-                    if ( _currentPageNum == i )
+                    if ( (_currentPageNum + 1) == i )
                     {
                         pagination.Append( string.Format( "<li class='active'><span>{0} </span></li>", i ) );
                     }
@@ -546,7 +565,7 @@ namespace RockWeb.Blocks.Cms
 
             if (_currentPageNum != 0 || pageOffset != 0 )
             {
-                pageReference.Parameters.AddOrReplace( "CurrentPage", (( _currentPageNum + 1 ) + pageOffset).ToString() );
+                pageReference.Parameters.AddOrReplace( "CurrentPage", ( ( _currentPageNum + 1)  + pageOffset ).ToString() );
             }
 
             if( !string.IsNullOrWhiteSpace( PageParameter( "SearchType" ) ) )
@@ -620,7 +639,13 @@ namespace RockWeb.Blocks.Cms
             }
 
             var entities = EntityTypeCache.All();
-            var indexableEntities = entities.Where( i => i.IsIndexingSupported == true &&  enabledModelIds.Contains( i.Id )).ToList();
+            var indexableEntities = entities.Where( i => i.IsIndexingEnabled == true ).ToList();
+
+            // if enabled entities setting is set further filter by those
+            if ( enabledModelIds.Count > 0 )
+            {
+                indexableEntities = indexableEntities.Where( i => enabledModelIds.Contains( i.Id ) ).ToList();
+            }
 
             cblModelFilter.DataTextField = "FriendlyName";
             cblModelFilter.DataValueField = "Id";
@@ -671,7 +696,7 @@ namespace RockWeb.Blocks.Cms
 
             if ( !string.IsNullOrWhiteSpace( PageParameter( "CurrentPage" ) ) )
             {
-                _currentPageNum = PageParameter( "CurrentPage" ).AsInteger();
+                _currentPageNum = PageParameter( "CurrentPage" ).AsInteger() -1;
             }
 
             if ( !string.IsNullOrWhiteSpace( PageParameter( "RefinedSearch" ) ) )
@@ -699,9 +724,15 @@ namespace RockWeb.Blocks.Cms
             }
 
             var entities = EntityTypeCache.All();
-            var indexableEntities = entities.Where( i => i.IsIndexingSupported == true && enabledModelIds.Contains( i.Id ) ).ToList();
+            var indexableEntities = entities.Where( i => i.IsIndexingEnabled == true ).ToList();
 
-            foreach ( var entity in indexableEntities )
+            // if select entities are configured further filter by them
+            if ( enabledModelIds.Count > 0 )
+            {
+                indexableEntities = indexableEntities.Where( i => enabledModelIds.Contains( i.Id ) ).ToList();
+            }
+
+                foreach ( var entity in indexableEntities )
             {
                 var entityType = entity.GetEntityType();
 
@@ -715,7 +746,7 @@ namespace RockWeb.Blocks.Cms
                     filterConfig.RepeatDirection = RepeatDirection.Horizontal;
                     filterConfig.Attributes.Add( "entity-id", entity.Id.ToString() );
                     filterConfig.Attributes.Add( "entity-filter-field", filterOptions.FilterField );
-                    filterConfig.DataSource = filterOptions.FilterValues;
+                    filterConfig.DataSource = filterOptions.FilterValues.Where( i => i != null );
                     filterConfig.DataBind();
 
                     // set any selected values from the query string
@@ -809,6 +840,9 @@ namespace RockWeb.Blocks.Cms
 
             cbUseCustomResults.Checked = GetAttributeValue( "UseCustomResults" ).AsBoolean();
             ceCustomResultsTemplate.Text = GetAttributeValue( "LavaResultTemplate" );
+
+            cePreHtml.Text = GetAttributeValue( "PreHtml" );
+            cePostHtml.Text = GetAttributeValue( "PostHtml" );
 
             tbBaseFieldFilters.Text = GetAttributeValue( "BaseFieldFilters" );
 

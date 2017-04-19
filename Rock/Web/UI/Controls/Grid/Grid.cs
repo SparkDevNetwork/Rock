@@ -31,6 +31,7 @@ using Rock.Data;
 using Rock.Web.Cache;
 using Rock;
 using Rock.Utility;
+using EntityFramework.Utilities;
 
 namespace Rock.Web.UI.Controls
 {
@@ -1392,7 +1393,7 @@ namespace Rock.Web.UI.Controls
         {
             // disable paging if no specific keys where selected (or if no select option is shown)
             bool selectAll = !SelectedKeys.Any();
-            RebindGrid( e, selectAll );
+            RebindGrid( e, selectAll, true );
             int? entitySetId = GetEntitySetFromGrid( e );
             if ( entitySetId.HasValue )
             {
@@ -1561,7 +1562,9 @@ namespace Rock.Web.UI.Controls
                         }
 
                         // Update column formatting based on data
-                        worksheet.Column( columnCounter ).Style.Numberformat.Format = ExcelHelper.FinalColumnFormat( exportValue, worksheet.Column( columnCounter ).Style.Numberformat.Format );
+                        var format = worksheet.Column( columnCounter ).Style.Numberformat.Format;
+
+                        format = ExcelHelper.FinalColumnFormat( exportValue, format );
                     }
                 }
             }
@@ -1770,7 +1773,9 @@ namespace Rock.Web.UI.Controls
                         var boundField = dataField as BoundField;
                         if ( boundField != null )
                         {
+                            var cell = worksheet.Cells[rowCounter, columnCounter];
                             var prop = props.FirstOrDefault( p => boundField.DataField == p.Name || boundField.DataField.StartsWith( p.Name + "." ) );
+                            object exportValue = null;
                             if ( prop != null )
                             {
                                 object propValue = prop.GetValue( item, null );
@@ -1780,17 +1785,29 @@ namespace Rock.Web.UI.Controls
                                     propValue = ( dataField as CallbackField ).GetFormattedDataValue( propValue );
                                 }
 
+                                if ( dataField is LavaBoundField )
+                                {
+                                    propValue = ( dataField as LavaBoundField ).GetFormattedDataValue( propValue );
+                                }
+
                                 var definedValueAttribute = prop.GetCustomAttributes( typeof( DefinedValueAttribute ), true ).FirstOrDefault();
 
                                 bool isDefinedValue = ( definedValueAttribute != null || definedValueFields.Any( f => f.DataField == prop.Name ) );
+                                exportValue = GetExportValue( prop, propValue, isDefinedValue, cell ).ReverseCurrencyFormatting();
+                            }
+                            else if ( boundField is PersonField )
+                            {
+                                exportValue = item.GetPropertyValue( boundField.DataField );
+                            }
 
-                                var cell = worksheet.Cells[rowCounter, columnCounter];
-                                var exportValue = GetExportValue( prop, propValue, isDefinedValue, cell ).ReverseCurrencyFormatting();
+                            if ( exportValue != null )
+                            {
                                 ExcelHelper.SetExcelValue( cell, exportValue );
 
                                 // Update column formatting based on data
                                 worksheet.Column( columnCounter ).Style.Numberformat.Format = ExcelHelper.FinalColumnFormat( exportValue, worksheet.Column( columnCounter ).Style.Numberformat.Format );
                             }
+                            
                             continue;
                         }
 
@@ -2494,18 +2511,18 @@ namespace Rock.Web.UI.Controls
             }
 
             // first try to get the SelectedKeys from the SelectField (if there is one)
-            var selectedKeys = this.SelectedKeys.Select( a => a as int? ).Where( a => a.HasValue ).Select( a => a.Value ).Distinct().ToList();
+            HashSet<int> selectedKeys = new HashSet<int>( this.SelectedKeys.Select( a => a as int? ).Where( a => a.HasValue ).Select( a => a.Value ).Distinct().ToList() );
             if ( selectedKeys == null || !selectedKeys.Any() )
             {
                 if ( entityTypeId.HasValue && dataSourceObjectType is IEntity )
                 {
                     // we know this is an IEntity Type so the datakey is Id
-                    selectedKeys = this.DataSourceAsList.OfType<IEntity>().Select( a => a.Id ).Distinct().ToList();
+                    selectedKeys = new HashSet<int>( this.DataSourceAsList.OfType<IEntity>().Select( a => a.Id ).Distinct().ToList() );
                 }
                 else
                 {
                     // this is something else, so try to figure it out from dataKeyColumn
-                    selectedKeys = new List<int>();
+                    selectedKeys = new HashSet<int>();
 
                     foreach ( var item in this.DataSourceAsList )
                     {
@@ -2553,25 +2570,31 @@ namespace Rock.Web.UI.Controls
 
             var gridDataFields = this.Columns.OfType<BoundField>().ToList();
 
-            Dictionary<int, Dictionary<string, object>> itemMergeFieldsList = new Dictionary<int, Dictionary<string, object>>();
+            Dictionary<int, Dictionary<string, object>> itemMergeFieldsList = new Dictionary<int, Dictionary<string, object>>( this.DataSourceAsList.Count );
+            bool? useHeaderNamesIfAvailable = null;
             if ( additionalMergeProperties != null && additionalMergeProperties.Any() && idProp != null )
             {
                 foreach ( var item in this.DataSourceAsList )
                 {
                     // since Reporting fieldnames are dynamic and can have special internal names, use the header text instead of the datafield name
-                    bool useHeaderNamesIfAvailable = item.GetType().Assembly.IsDynamic;
+                    useHeaderNamesIfAvailable = useHeaderNamesIfAvailable ?? item.GetType().Assembly.IsDynamic;
 
                     var idVal = idProp.GetValue( item ) as int?;
-                    if ( idVal.HasValue && selectedKeys.Contains( idVal.Value ) && !itemMergeFieldsList.Keys.Contains( idVal.Value ) )
+                    if ( idVal.HasValue && selectedKeys.Contains( idVal.Value ) && !itemMergeFieldsList.ContainsKey( idVal.Value ) )
                     {
                         var mergeFields = new Dictionary<string, object>();
                         foreach ( var mergeProperty in additionalMergeProperties )
                         {
                             var objValue = mergeProperty.GetValue( item );
 
-                            var boundField = gridDataFields.FirstOrDefault( a => a.DataField == mergeProperty.Name );
+                            BoundField boundField = null;
+                            if ( useHeaderNamesIfAvailable.Value )
+                            {
+                                boundField = gridDataFields.FirstOrDefault( a => a.DataField == mergeProperty.Name );
+                            }
+
                             string mergeFieldKey;
-                            if ( useHeaderNamesIfAvailable && boundField != null && !string.IsNullOrWhiteSpace( boundField.HeaderText ) )
+                            if ( useHeaderNamesIfAvailable.Value && boundField != null && !string.IsNullOrWhiteSpace( boundField.HeaderText ) )
                             {
                                 mergeFieldKey = boundField.HeaderText.RemoveSpecialCharacters().Replace( " ", "_" );
                             }
@@ -2600,6 +2623,7 @@ namespace Rock.Web.UI.Controls
             }
 
             entitySet.ExpireDateTime = RockDateTime.Now.AddMinutes( 5 );
+            List<Rock.Model.EntitySetItem> entitySetItems = new List<Rock.Model.EntitySetItem>();
 
             int itemOrder = 0;
             foreach ( var key in selectedKeys )
@@ -2614,7 +2638,7 @@ namespace Rock.Web.UI.Controls
                         item.AdditionalMergeValues = itemMergeFieldsList[key];
                     }
 
-                    entitySet.Items.Add( item );
+                    entitySetItems.Add( item );
                 }
                 catch
                 {
@@ -2622,12 +2646,19 @@ namespace Rock.Web.UI.Controls
                 }
             }
 
-            if ( entitySet.Items.Any() )
+            if ( entitySetItems.Any() )
             {
                 var rockContext = new RockContext();
                 var service = new Rock.Model.EntitySetService( rockContext );
                 service.Add( entitySet );
                 rockContext.SaveChanges();
+                entitySetItems.ForEach( a =>
+                 {
+                     a.EntitySetId = entitySet.Id;
+                 } );
+
+                EFBatchOperation.For( rockContext, rockContext.EntitySetItems ).InsertAll( entitySetItems );
+
                 return entitySet.Id;
             }
 

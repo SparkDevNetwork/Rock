@@ -279,6 +279,11 @@ namespace Rock.SystemGuid
         /// </summary>
         public const string PERSON_MARITAL_STATUS_SINGLE = "F19FC180-FE8F-4B72-A59C-8013E3B0EB0D";
 
+        /// <summary>
+        /// Marital Status of Divorced
+        /// </summary>
+        public const string PERSON_MARITAL_STATUS_DIVORCED = "3B689240-24C2-434B-A7B9-A4A6CBA7928C";
+
         #endregion
 
         #region Person Phone Type

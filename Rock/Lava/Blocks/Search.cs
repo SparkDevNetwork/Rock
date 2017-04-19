@@ -81,14 +81,27 @@ namespace Rock.Lava.Blocks
 
             SearchFieldCriteria fieldCriteria = new SearchFieldCriteria();
 
-            SearchType searchType = SearchType.Wildcard;
+            SearchType searchType = SearchType.ExactMatch;
 
             List<int> entityIds = new List<int>();
             string query = string.Empty;
 
+            int limit = 50;
+            int offset = 0;
+
             if (parms.Any( p => p.Key == "query" ) )
             {
                 query = parms["query"];
+            }
+
+            if ( parms.Any( p => p.Key == "limit" ) )
+            {
+                Int32.TryParse( parms["limit"], out limit );
+            }
+
+            if ( parms.Any( p => p.Key == "offset" ) )
+            {
+                Int32.TryParse( parms["offset"], out offset );
             }
 
             if ( parms.Any( p => p.Key == "fieldcriteria" ) )
@@ -100,8 +113,9 @@ namespace Rock.Lava.Blocks
 
                     foreach ( var value in values )
                     {
-
-                        fieldCriteria.FieldValues.Add( new FieldValue { Field = queryString.Key, Value = value } );
+                        // the first letter of the field name should be lowercase
+                        string fieldName = Char.ToLowerInvariant( queryString.Key[0] ) + queryString.Key.Substring( 1 );
+                        fieldCriteria.FieldValues.Add( new FieldValue { Field = fieldName, Value = value } );
                     }
                 }
             }
@@ -144,7 +158,7 @@ namespace Rock.Lava.Blocks
                 {
                     foreach(var entityType in EntityTypeCache.All() )
                     {
-                        if (entityType.FriendlyName.ToLower() == entity )
+                        if (entityType.FriendlyName?.ToLower() == entity )
                         {
                             entityIds.Add( entityType.Id );
                         }
@@ -153,7 +167,7 @@ namespace Rock.Lava.Blocks
             }
 
             var client = IndexContainer.GetActiveComponent();
-            var results = client.Search( query, searchType, entityIds, fieldCriteria );
+            var results = client.Search( query, searchType, entityIds, fieldCriteria, limit, offset );
 
             context.Scopes.Last()[parms["iterator"]] = results;
 
@@ -193,6 +207,7 @@ namespace Rock.Lava.Blocks
 
             var parms = new Dictionary<string, string>();
             parms.Add( "iterator", "results" );
+            parms.Add( "searchtype", "exactmatch" );
 
             var markupItems = Regex.Matches( resolvedMarkup, "(.*?:'[^']+')" )
                 .Cast<Match>()

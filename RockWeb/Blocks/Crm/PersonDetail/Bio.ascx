@@ -25,7 +25,7 @@
                 </li>
             </ul>
 
-            <asp:LinkButton ID="lbEditPerson" runat="server" AccessKey="I" CssClass="action" OnClick="lbEditPerson_Click"><i class="fa fa-pencil"></i></asp:LinkButton>
+            <asp:LinkButton ID="lbEditPerson" runat="server" AccessKey="I" ToolTip="Alt+I" CssClass="action" OnClick="lbEditPerson_Click"><i class="fa fa-pencil"></i></asp:LinkButton>
         </div>
 
         <div class="row">

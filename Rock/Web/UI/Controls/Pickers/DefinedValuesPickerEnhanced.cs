@@ -42,7 +42,7 @@ namespace Rock.Web.UI.Controls
             set
             {
                 _definedTypeId = value;
-                DefinedValuePicker.LoadDropDownItems( this );
+                DefinedValuePicker.LoadDropDownItems( this, false );
             }
         }
 

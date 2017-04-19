@@ -51,6 +51,8 @@ namespace Rock.Web.UI
 
         private string _clientType = null;
 
+
+        private PageStatePersister _PageStatePersister = null;
         #endregion
 
         #region Protected Variables
@@ -435,6 +437,65 @@ namespace Rock.Web.UI
             }
         }
 
+        /// <summary>
+        /// Gets the size of the view state.
+        /// </summary>
+        /// <value>
+        /// The size of the view state.
+        /// </value>
+        public int ViewStateSize { get; private set; }
+
+
+        /// <summary>
+        /// Gets the view state size compressed.
+        /// </summary>
+        /// <value>
+        /// The view state size compressed.
+        /// </value>
+        public int ViewStateSizeCompressed { get; private set; }
+
+        /// <summary>
+        /// Gets the view state value.
+        /// </summary>
+        /// <value>
+        /// The view state value.
+        /// </value>
+        public string ViewStateValue { get; private set; }
+
+        /// <summary>
+        /// Gets a value indicating whether [view state is compressed].
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if [view state is compressed]; otherwise, <c>false</c>.
+        /// </value>
+        public bool ViewStateIsCompressed { get; private set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether [enable view state inspection].
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if [enable view state inspection]; otherwise, <c>false</c>.
+        /// </value>
+        public bool EnableViewStateInspection { get; set; }
+
+    #endregion
+
+        #region Overridden Properties
+
+        /// <summary>
+        /// Gets the PageStatePersister object associated with the page.
+        /// </summary>
+        protected override PageStatePersister PageStatePersister
+        {
+            get {
+                if ( _PageStatePersister == null )
+                {
+                    _PageStatePersister = new RockHiddenFieldPageStatePersister( this, RockHiddenFieldPageStatePersister.ViewStateCompressionThreshold );
+                }
+                return _PageStatePersister;
+            }   
+        }
+
         #endregion
 
         #region Protected Methods
@@ -481,7 +542,44 @@ namespace Rock.Web.UI
 
         #endregion
 
+        #region Custom Events
+        /// <summary>
+        /// Occurs when view state persisted.
+        /// </summary>
+        public event EventHandler ViewStatePersisted;
+
+        /// <summary>
+        /// Called when [view state persisted].
+        /// </summary>
+        protected void OnViewStatePersisted()
+        {
+            if ( this.ViewStatePersisted != null )
+            {
+                ViewStatePersisted( this, EventArgs.Empty );
+            }
+        }
+
+        #endregion
+
         #region Overridden Methods
+
+        /// <summary>
+        /// Saves any view-state and control-state information for the page.
+        /// </summary>
+        /// <param name="state">An <see cref="T:System.Object" /> in which to store the view-state information.</param>
+        protected override void SavePageStateToPersistenceMedium( object state )
+        {
+            base.SavePageStateToPersistenceMedium( state );
+ 
+            var customPersister = this.PageStatePersister as RockHiddenFieldPageStatePersister;
+ 
+            if (customPersister != null )
+            {
+                this.ViewStateValue = customPersister.ViewStateValue;
+            }
+
+            OnViewStatePersisted();
+        }
 
         /// <summary>
         /// Initializes the page's culture to use the culture specified by the browser ("auto")
@@ -708,7 +806,15 @@ namespace Rock.Web.UI
                     var body = (HtmlGenericControl)this.Master.FindControl( "body" );
                     if ( body != null )
                     {
-                        body.Attributes.Add( "class", this.BodyCssClass );
+                        // determine if we need to append or add the class
+                        if ( body.Attributes["class"] != null )
+                        {
+                            body.Attributes["class"] += " " + this.BodyCssClass;
+                        }
+                        else
+                        {
+                            body.Attributes.Add( "class", "layout-class" );
+                        }
                     }
                 }
 
@@ -1335,6 +1441,15 @@ namespace Rock.Web.UI
                     }
                 }
 
+                var customPersister = this.PageStatePersister as RockHiddenFieldPageStatePersister;
+
+                if ( customPersister != null )
+                {
+                    this.ViewStateSize = customPersister.ViewStateSize;
+                    this.ViewStateSizeCompressed = customPersister.ViewStateSizeCompressed;
+                    this.ViewStateIsCompressed = customPersister.ViewStateIsCompressed;
+                }
+
                 phLoadStats.Controls.Add( new LiteralControl( string.Format(
                     "<span>Page Load Time: {0:N2}s </span><span class='margin-l-lg'>Cache Hit Rate: {1:P2} </span> <span class='margin-l-lg js-view-state-stats'></span> <span class='margin-l-lg js-html-size-stats'></span>", tsDuration.TotalSeconds, hitPercent ) ) );
 
@@ -1342,7 +1457,11 @@ namespace Rock.Web.UI
                 {
                     string script = @"
 Sys.Application.add_load(function () {
-    $('.js-view-state-stats').html('ViewState Size: ' + ($('#__VIEWSTATE').val().length / 1024).toFixed(0) + ' KB');
+    if ($('#__CVIEWSTATESIZE').length > 0 && $('#__CVIEWSTATESIZE').val() != '0') {
+        $('.js-view-state-stats').html('ViewState Size: ' + ($('#__CVIEWSTATESIZE').val() / 1024).toFixed(0) + ' KB (' + ($('#__CVIEWSTATE').val().length / 1024).toFixed(0) + ' KB Compressed)');
+    } else {
+        $('.js-view-state-stats').html('ViewState Size: ' + ($('#__CVIEWSTATE').val().length / 1024).toFixed(0) + ' KB');
+    }
     $('.js-html-size-stats').html('Html Size: ' + ($('html').html().length / 1024).toFixed(0) + ' KB');
 });
 ";

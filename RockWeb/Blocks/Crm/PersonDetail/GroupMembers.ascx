@@ -4,6 +4,7 @@
     <ContentTemplate>
 
         <div class="persondetails-grouplist">
+            
             <asp:Repeater ID="rptrGroups" runat="server" >
             <ItemTemplate>
 
@@ -13,9 +14,11 @@
 
                         <div class="action-wrapper">
                             <asp:HyperLink ID="hlShowMoreAttributes" runat="server" CssClass="action js-show-more-family-attributes"><i class="fa fa-chevron-down"></i></asp:HyperLink>
-                            <asp:HyperLink ID="hlEditGroup" runat="server" AccessKey="O" CssClass="action"><i class="fa fa-pencil"></i></asp:HyperLink>
+                            <asp:HyperLink ID="hlEditGroup" runat="server" AccessKey="O" ToolTip="Alt+O" CssClass="action"><i class="fa fa-pencil"></i></asp:HyperLink>
                         </div>              
                     </header>
+
+                    <asp:Literal ID="lGroupHeader" runat="server" />
 
                     <div class="row group-details">
                         <div class="col-md-8 clearfix">
@@ -73,10 +76,13 @@
                         </div>
                     </asp:panel>
 
+                    <asp:Literal ID="lGroupFooter" runat="server" />
+
                 </div>
 
             </ItemTemplate>
         </asp:Repeater>
+            
         </div>
 
     </ContentTemplate>

@@ -40,12 +40,21 @@ namespace RockWeb.Blocks.Crm.PersonDetail
     [Category( "CRM > Person Detail" )]
     [Description( "Allows you to edit a group that person belongs to." )]
 
+    [DefinedValueField( Rock.SystemGuid.DefinedType.PERSON_CONNECTION_STATUS, "Default Connection Status",
+        "The connection status that should be set by default", false, false, Rock.SystemGuid.DefinedValue.PERSON_CONNECTION_STATUS_VISITOR, "", 0 )]
+    [BooleanField( "Require Campus", "Determines if a campus is required.", true, "", 1 )]
+    [BooleanField( "Require Birthdate", "Determines if a birthdate should be required.", false, "", 2 )]
+    [BooleanField( "Hide Title", "Should Title field be hidden when entering new people?.", false, "", 3 )]
+    [BooleanField( "Hide Suffix", "Should Suffix field be hidden when entering new people?.", false, "", 4 )]
+    [BooleanField( "Hide Grade", "Should Grade field be hidden when entering new people?.", false, "", 5 )]
+    [BooleanField( "Show Age", "Should Age of Family Members be displayed?.", false, "", 6 )]
     public partial class EditGroup : PersonBlock
     {
         private GroupTypeCache _groupType = null;
         private bool _isFamilyGroupType = false;
         private Group _group = null;
         private bool _canEdit = false;
+        private bool _showAge = false;
 
         protected string basePersonUrl { get; set; }
         protected string GroupTypeName { get; set; }
@@ -103,6 +112,8 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         {
             base.OnInit( e );
 
+            _showAge = GetAttributeValue( "ShowAge" ).AsBoolean();
+
             var rockContext = new RockContext();
 
             int groupId = int.MinValue;
@@ -159,7 +170,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 
             if ( _isFamilyGroupType )
             {
-                cpCampus.Required = true;
+                cpCampus.Required = GetAttributeValue( "RequireCampus" ).AsBoolean( true );
 
                 ddlRecordStatus.Visible = true;
                 ddlRecordStatus.BindToDefinedType( DefinedTypeCache.Read( Rock.SystemGuid.DefinedType.PERSON_RECORD_STATUS.AsGuid() ), true );
@@ -214,6 +225,8 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         protected override void OnLoad( EventArgs e )
         {
             base.OnLoad( e );
+
+            nbAddPerson.Visible = false;
 
             if ( Page.IsPostBack )
             {
@@ -372,6 +385,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             enableRequiredField( '{4}', false );
             enableRequiredField( '{5}', false );
             enableRequiredField( '{6}_rfv', false );
+            enableRequiredField( '{10}_rfv', false );
         }} else {{
             enableRequiredField('{1}', false)
             enableRequiredField('{2}_rfv', true);
@@ -379,6 +393,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             enableRequiredField('{4}', true);
             enableRequiredField('{5}', true);
             enableRequiredField('{6}_rfv', true);
+            enableRequiredField('{10}_rfv', true);
         }}
 
         // update the scrollbar since our validation box could show
@@ -412,7 +427,8 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                     ddlNewPersonConnectionStatus.ClientID,                          // {6}
                     valSummaryAddPerson.ClientID,                                   // {7}
                     divExistingPerson.ClientID,                                     // {8}
-                    hfActiveTab.ClientID                                            // {9}
+                    hfActiveTab.ClientID,                                           // {9}
+                    dpNewPersonBirthDate.ClientID                                   // {10}
                 );
 
                 ScriptManager.RegisterStartupScript( modalAddPerson, modalAddPerson.GetType(), "modaldialog-validation", script, true );
@@ -521,6 +537,12 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                         lbRemoveMember.ToolTip = string.Format( "Remove from {0}", _groupType.Name );
                         lbRemoveMember.Visible = _canEdit && ( !groupMember.ExistingGroupMember || groupMember.IsInOtherGroups ) && members > 1;
                     }
+
+                    var lFamilyMemberAge = e.Item.FindControl( "lFamilyMemberAge" ) as Literal;
+                    if ( lFamilyMemberAge != null )
+                    {
+                        lFamilyMemberAge.Text = ( _showAge && groupMember.Age.HasValue ) ? string.Format( " ({0})", groupMember.Age ) : string.Empty;
+                    }
                 }
             }
         }
@@ -570,6 +592,15 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             rblNewPersonRole.Required = true;
             rblNewPersonGender.Required = true;
             ddlNewPersonConnectionStatus.Required = true;
+            var connectionStatusGuid = GetAttributeValue( "DefaultConnectionStatus" ).AsGuidOrNull();
+            if ( connectionStatusGuid.HasValue )
+            {
+                var defaultConnectionStatus = DefinedValueCache.Read( connectionStatusGuid.Value );
+                if ( defaultConnectionStatus != null )
+                {
+                    ddlNewPersonConnectionStatus.SetValue( defaultConnectionStatus.Id );
+                }
+            }
 
             hfActiveTab.Value = "New";
             SetActiveTab();
@@ -577,6 +608,8 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             ppPerson.SetValue( null );
 
             ddlNewPersonTitle.SelectedIndex = 0;
+            ddlNewPersonTitle.Visible = !GetAttributeValue( "HideTitle" ).AsBoolean();
+
             tbNewPersonFirstName.Text = string.Empty;
 
             // default the last name of the new family member to the lastname of the existing adults in the family (if all the adults have the same last name)
@@ -591,6 +624,8 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             }
 
             ddlNewPersonSuffix.SelectedIndex = 0;
+            ddlNewPersonSuffix.Visible = !GetAttributeValue( "HideSuffix" ).AsBoolean();
+
             foreach ( ListItem li in rblNewPersonRole.Items )
             {
                 li.Selected = false;
@@ -603,7 +638,10 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             }
 
             dpNewPersonBirthDate.SelectedDate = null;
+            dpNewPersonBirthDate.Required = GetAttributeValue( "RequireBirthdate" ).AsBoolean( true );
+
             ddlGradePicker.SelectedIndex = 0;
+            ddlGradePicker.Visible = !GetAttributeValue( "HideGrade" ).AsBoolean();
 
             modalAddPerson.Show();
         }
@@ -614,6 +652,28 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void modalAddPerson_SaveClick( object sender, EventArgs e )
+        {
+            var validationMessages = new List<string>();
+
+            bool isValid = true;
+            if ( hfActiveTab.Value == "Existing" )
+            {
+            }
+            else
+            {
+                DateTime? birthdate = dpNewPersonBirthDate.SelectedDate;
+                if ( !dpNewPersonBirthDate.IsValid )
+                {
+                    isValid = false;
+                }
+                else if ( dpNewPersonBirthDate.IsValid && !birthdate.HasValue && GetAttributeValue( "RequireBirthdate" ).AsBoolean() )
+                {
+                    validationMessages.Add( "Birthdate is Required." );
+                    isValid = false;
+                }
+            }
+
+            if ( isValid )
         {
             if ( hfActiveTab.Value == "Existing" )
             {
@@ -705,6 +765,15 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             modalAddPerson.Hide();
 
             BindMembers();
+        }
+            else
+            {
+                if ( validationMessages.Any() )
+                {
+                    nbAddPerson.Text = "<ul><li>" + validationMessages.AsDelimited( "</li><li>" ) + "</li></lu>";
+                    nbAddPerson.Visible = true;
+                }
+            }
         }
 
         #endregion
@@ -1121,6 +1190,14 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                                         }
 
                                         groupMember.Group = newGroup;
+                                        
+                                        // If this person is 18 or older, create them as an Adult in their new group
+                                        if ((groupMember.Person.Age ?? 0) >= 18)
+                                        {
+                                            var familyGroupType = GroupTypeCache.Read( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY.AsGuid() );
+                                            groupMember.GroupRoleId = familyGroupType.Roles.First( a => a.Guid == Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_ADULT.AsGuid() ).Id;
+                                        }
+
                                         rockContext.SaveChanges();
 
                                         var newMemberChanges = new List<string>();
@@ -1500,10 +1577,13 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             {
                 phGroupAttributes.Controls.Clear();
                 _group.LoadAttributes();
-                if ( _group.Attributes != null && _group.Attributes.Any() )
+
+                var attributes = _group.GetAuthorizedAttributes( Authorization.EDIT, CurrentPerson );
+                if ( attributes.Any() )
                 {
                     pnlAttributes.Visible = true;
-                    Rock.Attribute.Helper.AddEditControls( _group, phGroupAttributes, setValues, BlockValidationGroup );
+                    Helper.AddEditControls( string.Empty, attributes.OrderBy( a => a.Value.Order ).Select( a => a.Key ).ToList(),
+                        _group, phGroupAttributes, BlockValidationGroup, setValues, new List<string>(), 3);
                 }
                 else
                 {

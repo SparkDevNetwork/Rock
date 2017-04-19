@@ -1,13 +1,13 @@
-﻿/*
+/*
     Used to manage styles related to the person details page
-    
+
     1. Page Styles
     2. Header
     3. Badge Bar
     4. Family Bar
     5. Page Tabs
-    6. Styles to Tab Pages
-    7. Edit Family Page
+    6. Edit Group Page
+    7. Styles for Page Tabs
     8. Add Family Page
     9. Fluidbox
     10. Responsive Overrides
@@ -91,6 +91,10 @@
     .full-name, .previous-names {
       display: none;
       font-size: 18px;
+    }
+
+    .firstname {
+      font-size: .6em;
     }
   }
 
@@ -769,21 +773,151 @@ span.field-value {
   border-radius: 4px;
 }
 
-// 8. Add Groups
+// 8. Add Family Page
 // -------------------------
 
 .table-groupmembers .radio:first-child {
   margin-top: 0;
 }
 
+
+@media (max-width: @screen-sm) {
+  /* Force table to not be like tables anymore */
+  table.table-groupmembers,
+  .table-groupmembers thead,
+  .table-groupmembers tbody,
+  .table-groupmembers th,
+  .table-groupmembers td,
+  .table-groupmembers tr {
+    display: block;
+  }
+
+  .table-groupmembers {
+    /* Hide table headers (but not display: none;, for accessibility) */
+    thead tr {
+      position: absolute;
+      top: -9999px;
+      left: -9999px;
+    }
+
+    > thead > tr >th,
+    > tbody > tr >th,
+    > tfoot > tr >th,
+    > thead > tr >td,
+    > tbody > tr >td,
+    > tfoot > tr > td {
+      border: none;
+    }
+
+    > tbody > tr > td {
+      position: relative;
+      padding-left: 35%;
+      /* Behave  like a "row" */
+      border: none;
+      border-bottom: 1px solid @gray-lighter;
+    }
+
+    td:before {
+      /* Now like a table header */
+      position: absolute;
+      /* Top/left values mimic padding */
+      top: 8px;
+      left: 6px;
+      width: 35%;
+      padding-right: 10px;
+      font-weight: @grid-column-header-font-weight;
+    }
+
+    > tbody > tr {
+      counter-increment: rowNumber;
+      &:before {
+        /* Now like a table header */
+        position: relative;
+        display: block;
+        width: 100%;
+        padding: 6px;
+        /* Top/left values mimic padding */
+        font-size: @grid-column-header-font-size;
+        font-weight: @grid-column-header-font-weight;
+        color: @grid-column-header-text-color;
+        background-color: @grid-column-header-bg;
+        border-bottom: 2px solid @grid-column-header-border-color;
+        content: "Person #" counter(rowNumber);
+      }
+    }
+
+    /* Label the data */
+    tbody {
+      td:nth-of-type(1):before {
+        content: "Role";
+      }
+      td:nth-of-type(2):before {
+        content: "Title";
+      }
+      td:nth-of-type(3):before {
+        content: "Name";
+      }
+      td:nth-of-type(4):before {
+        content: "Suffix";
+      }
+      td:nth-of-type(5):before {
+        content: "Connection Status";
+      }
+      td:nth-of-type(6):before {
+        content: "Gender";
+      }
+      td:nth-of-type(7):before {
+        content: "Birthdate";
+      }
+      td:nth-of-type(8):empty {
+        display: none;
+      }
+      td:nth-of-type(8):before {
+        content: "Grade";
+      }
+      td:nth-of-type(9):before {
+        content: "Cancel";
+      }
+    }
+
+    > tfoot, > tfoot > tr > td {
+      display: block;
+      width: 100%;
+      padding: 0;
+    }
+
+    > tfoot > tr > td > .btn-action {
+      .button-size(@padding-base-vertical; @padding-base-horizontal; @font-size-base; @line-height-base; @btn-border-radius-base);
+      display: block;
+      width: 100%;
+      margin: 8px 0 16px;
+    }
+
+    > tbody > tr > td>.form-group{
+      &:last-of-type {
+        margin-bottom: 0;
+      }
+      .radio:last-of-type {
+        margin-bottom: 0;
+      }
+    }
+
+  }
+}
+
+
+
+// 8. Add Groups
+// -------------------------
+
 .row-duplicate {
-    border-top: 1px solid @panel-border;
-    padding-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid @panel-border;
 }
 
 .row-duplicate:first-child {
-    border-top: 0;
-    padding-top: 0;
+  padding-top: 0;
+  border-top: 0;
 }
 
 // 9. Fluidbox

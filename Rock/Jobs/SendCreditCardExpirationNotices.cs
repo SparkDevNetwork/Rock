@@ -158,7 +158,7 @@ namespace Rock.Jobs
         protected void StartWorkflow( WorkflowService workflowService, WorkflowType workflowType, Dictionary<string, string> attributes, string workflowNameSuffix )
         {
             // launch workflow if configured
-            if ( workflowType != null )
+            if ( workflowType != null && ( workflowType.IsActive ?? true ) )
             {
                 var workflow = Rock.Model.Workflow.Activate( workflowType, "SendCreditCardExpiration " + workflowNameSuffix );
 

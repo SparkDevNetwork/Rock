@@ -45,7 +45,7 @@ namespace Rock.UniversalSearch.IndexModels
         /// <value>
         /// The name of the group type.
         /// </value>
-        [RockIndexField( Boost = 4)]
+        [RockIndexField]
         public string GroupTypeName { get; set; }
 
         /// <summary>
@@ -54,6 +54,7 @@ namespace Rock.UniversalSearch.IndexModels
         /// <value>
         /// The parent group identifier.
         /// </value>
+        [RockIndexField( Index = IndexType.NotIndexed )]
         public int ParentGroupId { get; set; }
 
         /// <summary>
@@ -85,7 +86,7 @@ namespace Rock.UniversalSearch.IndexModels
         /// <value>
         /// The name.
         /// </value>
-        [RockIndexField( Boost = 4 )]
+        [RockIndexField( Boost = 3 )]
         public string Name { get; set; }
 
         /// <summary>
@@ -94,7 +95,7 @@ namespace Rock.UniversalSearch.IndexModels
         /// <value>
         /// The description.
         /// </value>
-        [RockIndexField( Boost = 2 )]
+        [RockIndexField]
         public string Description { get; set; }
 
         /// <summary>
@@ -103,7 +104,7 @@ namespace Rock.UniversalSearch.IndexModels
         /// <value>
         /// The member list.
         /// </value>
-        [RockIndexField()]
+        [RockIndexField]
         public string MemberList { get; set; }
 
         /// <summary>
@@ -112,7 +113,7 @@ namespace Rock.UniversalSearch.IndexModels
         /// <value>
         /// The leader list.
         /// </value>
-        [RockIndexField( Boost = 3 )]
+        [RockIndexField( Boost = 2 )]
         public string LeaderList { get; set; }
 
         /// <summary>

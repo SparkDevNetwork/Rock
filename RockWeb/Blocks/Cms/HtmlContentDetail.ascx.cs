@@ -55,10 +55,11 @@ namespace RockWeb.Blocks.Cms
     [TextField( "Context Name", "Name to use to further 'personalize' content.  Blocks with the same name, and referenced with the same context parameter will share html values.", false, "", "", 7 )]
     [BooleanField( "Enable Versioning", "If checked, previous versions of the content will be preserved. Versioning is required if you want to require approval.", false, "", 8, "SupportVersions" )]
     [BooleanField( "Require Approval", "Require that content be approved?", false, "", 9 )]
-    [BooleanField( "Enable Debug", "Show lava merge fields.", false, "", 10 )]
     [CustomDropdownListField( "Quick Edit", "Allow quick editing of HTML contents.", "AIREDIT^In Place Editing,DBLCLICK^Double-Click For Edit Dialog", false, "", "", 11, "QuickEdit")]
+
+    [BooleanField( "Is Secondary Block", "Flag indicating whether this block is considered secondary and should be hidden when other secondary blocks are hidden.", false, "", 12 )]
     [ContextAware]
-    public partial class HtmlContentDetail : RockBlockCustomSettings
+    public partial class HtmlContentDetail : RockBlockCustomSettings, ISecondaryBlock
     {
 
         #region Properties
@@ -652,9 +653,7 @@ namespace RockWeb.Blocks.Cms
 
                     if ( content != null )
                     {
-                        bool enableDebug = GetAttributeValue( "EnableDebug" ).AsBoolean();
-
-                        if ( content.Content.HasMergeFields() || enableDebug )
+                        if ( content.Content.HasMergeFields() )
                         {
                             var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson );
                             mergeFields.Add( "CurrentPage", this.PageCache );
@@ -670,15 +669,7 @@ namespace RockWeb.Blocks.Cms
                             mergeFields.Add( "CurrentPersonCanAdministrate", IsUserAuthorized( Authorization.ADMINISTRATE ) );
 
                             html = content.Content.ResolveMergeFields( mergeFields, GetAttributeValue("EnabledLavaCommands") );
-
-                            // show merge fields if enable debug true
-                            if ( enableDebug && IsUserAuthorized( Authorization.EDIT ) )
-                            {
-                                // TODO: When support for "Person" is not supported anymore (should use "CurrentPerson" instead), remove this line
-                                mergeFields.Remove( "Person" );
-                                html += mergeFields.lavaDebugInfo();
-                            }
-                        }
+                         }
                         else
                         {
                             html = content.Content;
@@ -732,6 +723,24 @@ namespace RockWeb.Blocks.Cms
             }
 
             return entityValue;
+        }
+
+        /// <summary>
+        /// Hook so that other blocks can set the visibility of all ISecondaryBlocks on its page
+        /// </summary>
+        /// <param name="visible">if set to <c>true</c> [visible].</param>
+        public void SetVisible( bool visible )
+        {
+            if ( this.GetAttributeValue("IsSecondaryBlock").AsBooleanOrNull() ?? false )
+            {
+                if ( lHtmlContent.Visible != visible )
+                {
+                    lHtmlContent.Visible = visible;
+
+                    // upnlHtmlContent has UpdateMode=Conditional so tell it to update if Visible changed 
+                    upnlHtmlContent.Update();
+                }
+            }
         }
 
         #endregion

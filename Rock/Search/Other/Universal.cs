@@ -75,11 +75,11 @@ namespace Rock.Search.Other
             SearchFieldCriteria fieldCriteria = new SearchFieldCriteria();
 
             // get the search type
-            var searchType = SearchType.Wildcard;
+            var searchType = SearchType.ExactMatch;
 
-            if ( !string.IsNullOrWhiteSpace( Rock.Web.SystemSettings.GetValue( "core_SmartSearchUniversalSearchFieldCriteria" ) ) )
+            if ( !string.IsNullOrWhiteSpace( Rock.Web.SystemSettings.GetValue( "core_SmartSearchUniversalSearchSearchType" ) ) )
             {
-                searchType = (SearchType)Enum.Parse( typeof( SearchType ), Rock.Web.SystemSettings.GetValue( "core_SmartSearchUniversalSearchFieldCriteria" ) );
+                searchType = (SearchType)Enum.Parse( typeof( SearchType ), Rock.Web.SystemSettings.GetValue( "core_SmartSearchUniversalSearchSearchType" ) );
             }
 
             if ( !string.IsNullOrWhiteSpace( fieldCriteriaSetting ) )
@@ -98,8 +98,9 @@ namespace Rock.Search.Other
             }
 
             var client = IndexContainer.GetActiveComponent();
-            var results = client.Search( searchterm, SearchType.Wildcard, entityIds, fieldCriteria );
+            var results = client.Search( searchterm, searchType, entityIds, fieldCriteria );
 
+            // NOTE: Put a bunch of whitespace before and after it so that the Search box shows blank instead of stringified html
             return results.Select( r => $"                                                                       <data return-type='{r.IndexModelType}' return-id={r.Id}></data><i class='{ r.IconCssClass}'></i> {r.DocumentName}                                                                               " ).ToList().AsQueryable();
         }
     }

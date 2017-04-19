@@ -29,20 +29,39 @@ namespace Rock.Model
     {
         /// <summary>
         /// Returns the first
-        /// <see cref="Rock.Model.Location" /> where the address matches the provided address.  If no address is found with the provided values,
-        /// the address will be standardized. If there is still not a match, the address will be saved as a new location.
+        /// <see cref="Rock.Model.Location" /> where the address matches the provided address, otherwise the address will be saved as a new location.
         /// </summary>
-        /// <param name="street1">A <see cref="System.String" /> representing the Address Line 1 to search by.</param>
-        /// <param name="street2">A <see cref="System.String" /> representing the Address Line 2 to search by.</param>
-        /// <param name="city">A <see cref="System.String" /> representing the City to search by.</param>
-        /// <param name="state">A <see cref="System.String" /> representing the State to search by.</param>
-        /// <param name="postalCode">A <see cref="System.String" /> representing the Zip/Postal code to search by</param>
-        /// <param name="country">The country.</param>
+        /// <param name="street1">A <see cref="string" /> representing the Address Line 1 to search by.</param>
+        /// <param name="street2">A <see cref="string" /> representing the Address Line 2 to search by.</param>
+        /// <param name="city">A <see cref="string" /> representing the City to search by.</param>
+        /// <param name="state">A <see cref="string" /> representing the State to search by.</param>
+        /// <param name="postalCode">A <see cref="string" /> representing the Zip/Postal code to search by</param>
+        /// <param name="country">A <see cref="string" /> representing the Country to search by</param>
         /// <param name="verifyLocation">if set to <c>true</c> [verify location].</param>
         /// <returns>
         /// The first <see cref="Rock.Model.Location" /> where an address match is found, if no match is found a new <see cref="Rock.Model.Location" /> is created and returned.
         /// </returns>
         public Location Get( string street1, string street2, string city, string state, string postalCode, string country, bool verifyLocation = true )
+        {
+            return Get( street1, street2, city, state, postalCode, country, null, verifyLocation );
+        }
+
+        /// <summary>
+        /// Returns the first
+        /// <see cref="Rock.Model.Location" /> where the address matches the provided address, otherwise the address will be saved as a new location.
+        /// </summary>
+        /// <param name="street1">A <see cref="string" /> representing the Address Line 1 to search by.</param>
+        /// <param name="street2">A <see cref="string" /> representing the Address Line 2 to search by.</param>
+        /// <param name="city">A <see cref="string" /> representing the City to search by.</param>
+        /// <param name="state">A <see cref="string" /> representing the State to search by.</param>
+        /// <param name="postalCode">A <see cref="string" /> representing the Zip/Postal code to search by</param>
+        /// <param name="country">A <see cref="string" /> representing the Country to search by</param>
+        /// <param name="group">The <see cref="Group"/> (usually a Family) that should be searched first</param>
+        /// <param name="verifyLocation">if set to <c>true</c> [verify location].</param>
+        /// <returns>
+        /// The first <see cref="Rock.Model.Location" /> where an address match is found, if no match is found a new <see cref="Rock.Model.Location" /> is created and returned.
+        /// </returns>
+        public Location Get( string street1, string street2, string city, string state, string postalCode, string country, Group group, bool verifyLocation = true )
         {
             // Make sure it's not an empty address
             if ( string.IsNullOrWhiteSpace( street1 ) )
@@ -50,21 +69,14 @@ namespace Rock.Model
                 return null;
             }
 
-            // First check if a location exists with the entered values
-            Location existingLocation = Queryable().FirstOrDefault( t =>
-                ( t.Street1 == street1 || ( ( street1 == null || street1 == "" ) && ( t.Street1 == null || t.Street1 == "" ) ) ) &&
-                ( t.Street2 == street2 || ( ( street2 == null || street2 == "" ) && ( t.Street2 == null || t.Street2 == "" ) ) ) &&
-                ( t.City == city || ( ( city == null || city == "" ) && ( t.City == null || t.City == "" ) ) ) &&
-                ( t.State == state || ( ( state == null || state == "" ) && ( t.State == null || t.State == "" ) ) ) &&
-                ( t.PostalCode == postalCode || ( ( postalCode == null || postalCode == "" ) && ( t.PostalCode == null || t.PostalCode == "" ) ) ) &&
-                ( t.Country == country || ( ( country == null || country == "" ) && ( t.Country == null || t.Country == "" ) ) ) );
-            if ( existingLocation != null )
+            // Try to find a location that matches the values exactly as entered
+            var foundLocation = Search( new Location { Street1 = street1, Street2 = street2, City = city, State = state, PostalCode = postalCode, Country = country }, group );
+            if (foundLocation != null)
             {
-                return existingLocation;
+                return foundLocation;
             }
 
-            // If existing location wasn't found with entered values, try standardizing the values, and
-            // search for an existing value again
+            // If existing location wasn't found with entered values, try standardizing the values, and search for an existing value again
             var newLocation = new Location
             {
                 Street1 = street1.FixCase(),
@@ -80,17 +92,10 @@ namespace Rock.Model
                 Verify( newLocation, false );
             }
 
-            existingLocation = Queryable().FirstOrDefault( t =>
-                ( t.Street1 == newLocation.Street1 || ( ( newLocation.Street1 == null || newLocation.Street1 == "" ) && ( t.Street1 == null || t.Street1 == "" ) ) ) &&
-                ( t.Street2 == newLocation.Street2 || ( ( newLocation.Street2 == null || newLocation.Street2 == "" ) && ( t.Street2 == null || t.Street2 == "" ) ) ) &&
-                ( t.City == newLocation.City || ( ( newLocation.City == null || newLocation.City == "" ) && ( t.City == null || t.City == "" ) ) ) &&
-                ( t.State == newLocation.State || ( ( newLocation.State == null || newLocation.State == "" ) && ( t.State == null || t.State == "" ) ) ) &&
-                ( t.PostalCode == newLocation.PostalCode || ( ( newLocation.PostalCode == null || newLocation.PostalCode == "" ) && ( t.PostalCode == null || t.PostalCode == "" ) ) ) &&
-                ( t.Country == newLocation.Country || ( ( newLocation.Country == null || newLocation.Country == "" ) && ( t.Country == null || t.Country == "" ) ) ) );
-
-            if ( existingLocation != null )
+            foundLocation = Search( newLocation, group );
+            if ( foundLocation != null )
             {
-                return existingLocation;
+                return foundLocation;
             }
 
             // Create a new context/service so that save does not affect calling method's context
@@ -101,6 +106,51 @@ namespace Rock.Model
 
             // refetch it from the database to make sure we get a valid .Id
             return Get( newLocation.Guid );
+        }
+
+        /// <summary>
+        /// Searches a group's locations for a match, if one is not found then searches all locations for a match.
+        /// </summary>
+        /// <param name="location">The <see cref="Location"/> to search for</param>
+        /// <param name="group">Search this <see cref="Group"/> first</param>
+        /// <returns>The first <see cref="Rock.Model.Location" /> where an address match is found</returns>
+        /// <remarks>Keep this private as it is part of the public Get method</remarks>
+        private Location Search( Location location, Group group )
+        {
+            Location existingLocation;
+
+            // If the location's target group is known, first attempt to find this location on that group using the values as they were entered
+            if ( group != null && group.GroupLocations.Any() )
+            {
+                existingLocation = group.GroupLocations.Select( x => x.Location ).FirstOrDefault( t =>
+                    ( t.Street1 ?? "" ) == ( location.Street1 ?? "" ) &&
+                    ( t.Street2 ?? "" ) == ( location.Street2 ?? "" ) &&
+                    ( t.City ?? "" ) == ( location.City ?? "" ) &&
+                    ( t.State ?? "" ) == ( location.State ?? "" ) &&
+                    ( t.PostalCode ?? "" ) == ( location.PostalCode ?? "" ) &&
+                    ( t.Country ?? "" ) == ( location.Country ?? "" ) );
+
+                if ( existingLocation != null )
+                {
+                    return existingLocation;
+                }
+            }
+
+            // If this location was not found on the specified group, or no group was specified, search for any instance of this location
+            existingLocation = Queryable().FirstOrDefault( t =>
+                ( t.Street1 ?? "" ) == ( location.Street1 ?? "" ) &&
+                ( t.Street2 ?? "" ) == ( location.Street2 ?? "" ) &&
+                ( t.City ?? "" ) == ( location.City ?? "" ) &&
+                ( t.State ?? "" ) == ( location.State ?? "" ) &&
+                ( t.PostalCode ?? "" ) == ( location.PostalCode ?? "" ) &&
+                ( t.Country ?? "" ) == ( location.Country ?? "" ) );
+
+            if ( existingLocation != null )
+            {
+                return existingLocation;
+            }
+
+            return null;
         }
 
         /// <summary>

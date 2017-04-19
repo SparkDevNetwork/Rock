@@ -37,6 +37,8 @@ namespace Rock.Web.UI.Controls.Communication
         private RockLiteral lFromName;
         private RockLiteral lFromAddress;
         private EmailBox ebReplyToAddress;
+        private EmailBox ebCcAddress;
+        private EmailBox ebBccAddress;
         private RockTextBox tbSubject;
         private HtmlEditor htmlMessage;
         private RockTextBox tbTextMessage;
@@ -59,6 +61,19 @@ namespace Rock.Web.UI.Controls.Communication
             set { ViewState["UseSimpleMode"] = value; }
         }
 
+
+        /// <summary>
+        /// Gets or sets a value indicating whether [allow cc/bcc].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [allow cc/bcc]; otherwise, <c>false</c>.
+        /// </value>
+        public bool AllowCcBcc
+        {
+            get { return ViewState["AllowCcBcc"] as Boolean? ?? false; }
+            set { ViewState["AllowCcBcc"] = value; }
+        }
+
         /// <summary>
         /// Gets or sets the medium data.
         /// </summary>
@@ -78,6 +93,8 @@ namespace Rock.Web.UI.Controls.Communication
                 data.Add( "HtmlMessage", htmlMessage.Text );
                 data.Add( "TextMessage", tbTextMessage.Text );
                 data.Add( "Attachments", hfAttachments.Value );
+                data.Add( "CC", ebCcAddress.Text );
+                data.Add( "BCC", ebBccAddress.Text );
                 return data;
             }
 
@@ -91,6 +108,8 @@ namespace Rock.Web.UI.Controls.Communication
                 htmlMessage.Text = GetDataValue( value, "HtmlMessage" );
                 tbTextMessage.Text = GetDataValue( value, "TextMessage" );
                 hfAttachments.Value = GetDataValue( value, "Attachments" );
+                ebCcAddress.Text = GetDataValue( value, "CC" );
+                ebBccAddress.Text = GetDataValue( value, "BCC" );
             }
         }
 
@@ -145,7 +164,6 @@ namespace Rock.Web.UI.Controls.Communication
         {
             UseSimpleMode = useSimpleMode;
         }
-
         #endregion
 
         #region CompositeControl Methods
@@ -215,6 +233,18 @@ namespace Rock.Web.UI.Controls.Communication
             fuAttachments.Label = "Attachments";
             fuAttachments.FileUploaded += fuAttachments_FileUploaded;
             Controls.Add( fuAttachments );
+
+            ebCcAddress = new EmailBox();
+            ebCcAddress.ID = string.Format( "ebCcAddress_{0}", this.ID );
+            ebCcAddress.Label = "CC Address";
+            ebCcAddress.Help = "Any address in this field will be copied on the email sent to every recipient.  Lava can be used to access recipent data. <span class='tip tip-lava'></span>";
+            Controls.Add( ebCcAddress );
+
+            ebBccAddress = new EmailBox();
+            ebBccAddress.ID = string.Format( "ebBccAddress{0}", this.ID );
+            ebBccAddress.Label = "Bcc Address";
+            ebBccAddress.Help = "Any address in this field will be copied on the email sent to every recipient.  Lava can be used to access recipent data. <span class='tip tip-lava'></span>";
+            Controls.Add( ebBccAddress );
         }
 
         /// <summary>
@@ -330,6 +360,13 @@ namespace Rock.Web.UI.Controls.Communication
             writer.RenderEndTag();  // ul
             writer.RenderEndTag();  // attachment div
 
+
+            if ( !UseSimpleMode && AllowCcBcc)
+            {
+                ebCcAddress.RenderControl( writer );
+                ebBccAddress.RenderControl( writer );
+            }
+
             writer.RenderEndTag();  // span6 div
 
             writer.RenderEndTag();  // row div
@@ -348,6 +385,7 @@ namespace Rock.Web.UI.Controls.Communication
             htmlMessage.MergeFields.Add( "Rock.Model.Person" );
             if ( !UseSimpleMode )
             {
+                htmlMessage.MergeFields.Add( "Communication.Subject|Subject" );
                 htmlMessage.MergeFields.Add( "Communication.MediumData.FromName|From Name" );
                 htmlMessage.MergeFields.Add( "Communication.MediumData.FromAddress|From Address" );
                 htmlMessage.MergeFields.Add( "Communication.MediumData.ReplyTo|Reply To" );

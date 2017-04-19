@@ -61,7 +61,6 @@ namespace RockWeb.Blocks.Event
 
     [DayOfWeekField( "Start of Week Day", "Determines what day is the start of a week.", true, DayOfWeek.Sunday, order: 13 )]
 
-    [BooleanField( "Enable Debug", "Display a list of merge fields available for lava.", false, "", 14 )]
     [BooleanField( "Set Page Title", "Determines if the block should set the page title with the calendar name.", false, order: 15 )]
 
     public partial class CalendarLava : Rock.Web.UI.RockBlock
@@ -418,18 +417,6 @@ namespace RockWeb.Blocks.Event
             mergeFields.Add( "CurrentPerson", CurrentPerson );
 
             lOutput.Text = GetAttributeValue( "LavaTemplate" ).ResolveMergeFields( mergeFields );
-
-            // show debug info
-            if ( GetAttributeValue( "EnableDebug" ).AsBoolean() && IsUserAuthorized( Authorization.EDIT ) )
-            {
-                lDebug.Visible = true;
-                lDebug.Text = mergeFields.lavaDebugInfo();
-            }
-            else
-            {
-                lDebug.Visible = false;
-                lDebug.Text = string.Empty;
-            }
 
         }
 

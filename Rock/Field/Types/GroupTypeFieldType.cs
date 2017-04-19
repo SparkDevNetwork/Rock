@@ -29,6 +29,7 @@ namespace Rock.Field.Types
 {
     /// <summary>
     /// Field Type to select a single (or null) GroupType
+    /// Stored as GroupType.Guid
     /// </summary>
     public class GroupTypeFieldType : FieldType, IEntityFieldType
     {
@@ -199,6 +200,8 @@ namespace Rock.Field.Types
                         return groupType.Guid.ToString();
                     }
                 }
+
+                return string.Empty;
             }
 
             return null;

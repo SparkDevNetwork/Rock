@@ -23,8 +23,11 @@
 using System;
 using System.Collections.Generic;
 
+#pragma warning disable CS1591
+
 namespace Rock.Client.SystemGuid
 {
+    #pragma warning disable CS1591
     /// <summary>
     /// </summary>
     public class Attribute
@@ -70,7 +73,9 @@ namespace Rock.Client.SystemGuid
     /// </summary>
     public class BlockType
     {
+        public const string CONTENT_CHANNEL_VIEW = "143A2345-3E26-4ED0-A2FE-42AAF11B4C0F";
         public const string HTML_CONTENT = "19B61D65-37E3-459F-A44F-DEF0089118A3";
+        public const string PAGE_MENU = "CACB9D1A-A820-4587-986A-D66A69EE9948";
         public const string PLUGIN_MANAGER = "F80268E6-2625-4565-AA2E-790C5E40A119";
     }
 
@@ -206,6 +211,7 @@ namespace Rock.Client.SystemGuid
         public const string PERSON_CONNECTION_STATUS_PARTICIPANT = "8EBC0CEB-474D-4C1B-A6BA-734C3A9AB061";
         public const string PERSON_CONNECTION_STATUS_VISITOR = "B91BA046-BC1E-400C-B85D-638C1F4E0CE2";
         public const string PERSON_CONNECTION_STATUS_WEB_PROSPECT = "368DD475-242C-49C4-A42C-7278BE690CC2";
+        public const string PERSON_MARITAL_STATUS_DIVORCED = "3B689240-24C2-434B-A7B9-A4A6CBA7928C";
         public const string PERSON_MARITAL_STATUS_MARRIED = "5FE5A540-7D9F-433E-B47E-4229D1472248";
         public const string PERSON_MARITAL_STATUS_SINGLE = "F19FC180-FE8F-4B72-A59C-8013E3B0EB0D";
         public const string PERSON_PHONE_TYPE_HOME = "AA8732FB-2CEA-4C76-8D6D-6AAA2C6A4303";
@@ -255,6 +261,10 @@ namespace Rock.Client.SystemGuid
         public const string CONTENT_CHANNEL = "44484685-477E-4668-89A6-84F29739EB68";
         public const string CONTENT_CHANNEL_ITEM = "BF12AE64-21FB-433B-A8A4-E40E8C426DDA";
         public const string DATAVIEW = "57F8FA29-DCF1-4F74-8553-87E90F234139";
+        public const string FINANCIAL_ACCOUNT = "798BCE48-6AA7-4983-9214-F9BCEFB4521D";
+        public const string FINANCIAL_BATCH = "BDD09C8E-2C52-4D08-9062-BE7D52D190C2";
+        public const string FINANCIAL_TRANSACTION = "2C1CB26B-AB22-42D0-8164-AEDEE0DAE667";
+        public const string FINANCIAL_TRANSACTION_DETAIL = "AC4AC28B-8E7E-4D7E-85DB-DFFB4F3ADCCE";
         public const string GROUP = "9BBFDA11-0D22-40D5-902F-60ADFBC88987";
         public const string GROUP_MEMBER = "49668B95-FEDC-43DD-8085-D2B0D6343C48";
         public const string MERGE_TEMPLATE = "CD1DB988-6891-4B0F-8D1B-B0A311A3BC3E";
@@ -737,4 +747,7 @@ namespace Rock.Client.SystemGuid
         public const string WORKFLOW_FORM_NOTIFICATION = "88C7D1CC-3478-4562-A301-AE7D4D7FFF6D";
     }
 
+    #pragma warning restore CS1591
 }
+
+#pragma warning restore CS1591

@@ -23,9 +23,11 @@ using System.Web.UI.WebControls;
 using Newtonsoft.Json;
 
 using Rock;
+using Rock.Attribute;
 using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
+using Rock.Security;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
@@ -42,6 +44,9 @@ namespace RockWeb.Blocks.Crm.PersonDetail
     [DisplayName( "Edit Person" )]
     [Category( "CRM > Person Detail" )]
     [Description( "Allows you to edit a person." )]
+    [SecurityAction( "EditFinancials", "The roles and/or users that can edit financial information for the selected person." )]
+    [BooleanField("Hide Grade", "Should the Grade (and Graduation Year) fields be hidden?", false, "", 0)]
+    [BooleanField("Hide Anniversary Date", "Should the Anniversary Date field be hidden?", false, "", 1)]
     public partial class EditPerson : Rock.Web.UI.PersonBlock
     {
         /// <summary>
@@ -58,6 +63,8 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             ddlConnectionStatus.BindToDefinedType( DefinedTypeCache.Read( new Guid( Rock.SystemGuid.DefinedType.PERSON_CONNECTION_STATUS ) ), true );
             ddlRecordStatus.BindToDefinedType( DefinedTypeCache.Read( new Guid( Rock.SystemGuid.DefinedType.PERSON_RECORD_STATUS ) ) );
             ddlReason.BindToDefinedType( DefinedTypeCache.Read( new Guid( Rock.SystemGuid.DefinedType.PERSON_RECORD_STATUS_REASON ) ), true );
+
+            pnlGivingGroup.Visible = UserCanAdministrate || IsUserAuthorized( "EditFinancials" );
 
             ddlGivingGroup.Items.Clear();
             ddlGivingGroup.Items.Add( new ListItem( None.Text, None.IdValue ) );
@@ -86,6 +93,9 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 
             grdPreviousNames.Actions.ShowAdd = true;
             grdPreviousNames.Actions.AddClick += grdPreviousNames_AddClick;
+
+            pnlGradeGraduation.Visible = !GetAttributeValue( "HideGrade" ).AsBoolean();
+            dpAnniversaryDate.Visible = !GetAttributeValue( "HideAnniversaryDate" ).AsBoolean();
         }
 
         /// <summary>

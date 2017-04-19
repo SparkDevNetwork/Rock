@@ -42,8 +42,8 @@ namespace RockWeb.Blocks.Cms
     [LinkedPage("Detail Page", order:0)]
     [BooleanField("Filter Items For Current User", "Filters the items by those created by the current logged in user.", false, order: 1)]
     [BooleanField("Show Filters", "Allows you to show/hide the grids filters.", true, order: 2)]
-    [BooleanField("Show Event Occurrences Column", "Determines if the column that lists event occurrences should be shown.", true, order: 3)]
-    [BooleanField( "Show Priority Column", "Determines if the column that displays priority should be shown.", true, order: 4 )]
+    [BooleanField("Show Event Occurrences Column", "Determines if the column that lists event occurrences should be shown if any of the items has an event occurrence.", true, order: 3)]
+    [BooleanField( "Show Priority Column", "Determines if the column that displays priority should be shown for content channels that have Priority enabled.", true, order: 4 )]
     [BooleanField( "Show Security Column", "Determines if the security column should be shown.", true, order: 5 )]
     [BooleanField( "Show Expire Column", "Determines if the expire column should be shown.", true, order: 6 )]
     [ContentChannelField("Content Channel", "If set the block will ignore content channel query parameters", false)]
@@ -107,27 +107,42 @@ namespace RockWeb.Blocks.Cms
 
                     _manuallyOrdered = contentChannel.ItemsManuallyOrdered;
 
-                    gItems.Columns[2].HeaderText = startHeading;
-                    gItems.Columns[4].HeaderText = startHeading;
+                    var startDateTimeColumn = gItems.ColumnsWithDataField( "StartDateTime" ).OfType<DateTimeField>().FirstOrDefault();
+                    var expireDateTimeColumn = gItems.ColumnsWithDataField( "ExpireDateTime" ).OfType<DateTimeField>().FirstOrDefault();
+                    var startDateColumn = gItems.ColumnsWithDataField( "StartDateTime" ).OfType<DateField>().FirstOrDefault();
+                    var expireDateColumn = gItems.ColumnsWithDataField( "ExpireDateTime" ).OfType<DateField>().FirstOrDefault();
+                    var priorityColumn = gItems.ColumnsWithDataField( "Priority" ).FirstOrDefault();
+                    
+                    // NOTE: The EventOccurrences Column's visibility is set in GridBind()
+
+                    startDateTimeColumn.HeaderText = startHeading;
+                    startDateColumn.HeaderText = startHeading;
 
                     ddlStatus.Visible = contentChannel.RequiresApproval && !contentChannel.ContentChannelType.DisableStatus;
 
                     if ( contentChannel.ContentChannelType.IncludeTime )
                     {
-                        gItems.Columns[2].Visible = contentChannel.ContentChannelType.DateRangeType != ContentChannelDateType.NoDates;
-                        gItems.Columns[3].Visible = contentChannel.ContentChannelType.DateRangeType == ContentChannelDateType.DateRange && GetAttributeValue( "ShowExpireColumn" ).AsBoolean();
-                        gItems.Columns[4].Visible = false;
-                        gItems.Columns[5].Visible = false;
+                        startDateTimeColumn.Visible = contentChannel.ContentChannelType.DateRangeType != ContentChannelDateType.NoDates;
+                        expireDateTimeColumn.Visible = contentChannel.ContentChannelType.DateRangeType == ContentChannelDateType.DateRange && GetAttributeValue( "ShowExpireColumn" ).AsBoolean();
+                        startDateColumn.Visible = false;
+                        expireDateColumn.Visible = false;
                     }
                     else
                     {
-                        gItems.Columns[2].Visible = false;
-                        gItems.Columns[3].Visible = false;
-                        gItems.Columns[4].Visible = contentChannel.ContentChannelType.DateRangeType != ContentChannelDateType.NoDates;
-                        gItems.Columns[5].Visible = contentChannel.ContentChannelType.DateRangeType == ContentChannelDateType.DateRange && GetAttributeValue( "ShowExpireColumn" ).AsBoolean();
+                        startDateTimeColumn.Visible = false;
+                        expireDateTimeColumn.Visible = false;
+                        startDateColumn.Visible = contentChannel.ContentChannelType.DateRangeType != ContentChannelDateType.NoDates;
+                        expireDateColumn.Visible = contentChannel.ContentChannelType.DateRangeType == ContentChannelDateType.DateRange && GetAttributeValue( "ShowExpireColumn" ).AsBoolean();
                     }
 
-                    gItems.Columns[6].Visible = !contentChannel.ContentChannelType.DisablePriority;
+                    priorityColumn.Visible = !contentChannel.ContentChannelType.DisablePriority && GetAttributeValue( "ShowPriorityColumn" ).AsBoolean();
+
+                    var securityColumn = gItems.Columns.OfType<SecurityField>().FirstOrDefault();
+                    if ( securityColumn != null )
+                    {
+                        securityColumn.Visible = GetAttributeValue( "ShowSecurityColumn" ).AsBoolean();
+                    }
+
                     lContentChannel.Text = contentChannel.Name;
                     _typeId = contentChannel.ContentChannelTypeId;
 
@@ -165,6 +180,7 @@ namespace RockWeb.Blocks.Cms
                     statusField.SortExpression = "Status";
                     statusField.HtmlEncode = false;
                 }
+
                 var securityField = new SecurityField();
                 gItems.Columns.Add( securityField );
                 securityField.TitleField = "Title";
@@ -177,16 +193,6 @@ namespace RockWeb.Blocks.Cms
                 // this event gets fired after block settings are updated. it's nice to repaint the screen if these settings would alter it
                 this.BlockUpdated += Block_BlockUpdated;
                 this.AddConfigurationUpdateTrigger( upnlContent );
-
-                // Show/hide columns based on block settings
-                gItems.Columns[7].Visible = GetAttributeValue( "ShowEventOccurrencesColumn" ).AsBoolean();
-                gItems.Columns[6].Visible = GetAttributeValue( "ShowPriorityColumn" ).AsBoolean();
-                
-                var securityColumn = gItems.Columns.OfType<SecurityField>().FirstOrDefault();
-                if ( securityColumn != null )
-                {
-                    securityColumn.Visible = GetAttributeValue( "ShowSecurityColumn" ).AsBoolean();
-                }
             }
             else
             {
@@ -461,7 +467,7 @@ namespace RockWeb.Blocks.Cms
             gItems.ObjectList = new Dictionary<string, object>();
             items.ForEach( i => gItems.ObjectList.Add( i.Id.ToString(), i ) );
 
-            gItems.DataSource = items.Select( i => new
+            var gridList = items.Select( i => new
             {
                 i.Id,
                 i.Guid,
@@ -472,6 +478,13 @@ namespace RockWeb.Blocks.Cms
                 Status = DisplayStatus( i.Status ),
                 Occurrences = i.EventItemOccurrences.Any()
             } ).ToList();
+
+            // only show the Event Occurrences item if any of the displayed content channel items have any occurrences (and the block setting is enabled)
+            var eventOccurrencesColumn = gItems.ColumnsWithDataField( "Occurrences" ).FirstOrDefault();
+            var showEventOccurrencesColumnBlockSetting = GetAttributeValue( "ShowEventOccurrencesColumn" ).AsBoolean();
+            eventOccurrencesColumn.Visible = showEventOccurrencesColumnBlockSetting && gridList.Any( a => a.Occurrences == true );
+
+            gItems.DataSource = gridList;
             gItems.DataBind();
         }
 

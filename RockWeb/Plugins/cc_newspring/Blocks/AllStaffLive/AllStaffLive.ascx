@@ -7,23 +7,35 @@
 <div class="col-md-12">
 
     <h2>
-        <asp:Literal ID="liveHeading" runat="server" /></h2>
+        <asp:Literal ID="liveHeading" runat="server" />
+    </h2>
 
     <asp:HiddenField ID="localIP" runat="server" />
     <script>var localIP = <%= localIP.Value %></script>
 
-    <div id="main-content">
-        <div class="live_player">
-            <div class="live_player_wrapper">
-                <div id="live_feed" class="live_feed"></div>
-            </div>
-            <div id="live_jw_player"></div>
-            <script src='//player.ooyala.com/v3/d2ac021eb96c49fdb5d58883c017773e?namespace=live_player&tweaks=android-enable-hls'></script>
-        </div>
-    </div>
+    <div id="live_feed" class="live_feed"></div>
 
-    <script type="text/javascript" src="../plugins/cc_newspring/Blocks/AllStaffLive/Scripts/scripts.js"></script>
-    <script type="text/javascript" src="../Plugins/cc_newspring/Blocks/AllStaffLive/Scripts/jwplayer.js"></script>
-    <script type="text/javascript" src="../Plugins/cc_newspring/Blocks/AllStaffLive/Scripts/jwplayer.html5.js"></script>
+    <script>
+        var playerParam = {
+            "pcode": "E1dWM6UGncxhent7MRATc3hmkzUD",
+            "playerBrandingId": "ZmJmNTVlNDk1NjcwYTVkMzAzODkyMjg0",
+            autoplay: false,
+            "skin": {
+                "config": "//s3.amazonaws.com/ns.assets/newspring/skin.new.json"
+            }
+        };
+
+        if (window.OO) {
+            OO.ready(function() {
+                OO.Player.create(
+                    'live_feed',
+                    'ZjeTJwajryMI8LMaVC3hFYS1xs3z3TA8',
+                    playerParam
+                );
+            });
+        } else {
+            setTimeout(firePlayer, 80);
+        }
+    </script>
 </div>
 <% } %>

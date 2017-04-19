@@ -197,12 +197,14 @@ namespace Rock.Reporting
                     }
                     else if ( entityType == typeof( ContentChannelItem ) )
                     {
-                        // in the case of ContentChannelItem, show attributes that are entity global, but also ones that are qualified by ContentChannelTypeId
+                        // in the case of ContentChannelItem, show attributes that are entity global, but also ones that are qualified by ContentChannelTypeId or ContentChannelId
                         qryAttributes = qryAttributes
                             .Where( a =>
                                 a.EntityTypeQualifierColumn == null ||
                                 a.EntityTypeQualifierColumn == string.Empty ||
-                                a.EntityTypeQualifierColumn == "ContentChannelTypeId" );
+                                a.EntityTypeQualifierColumn == "ContentChannelTypeId" ||
+                                a.EntityTypeQualifierColumn == "ContentChannelId"
+                                );
                     }
                     else if ( entityType == typeof( Rock.Model.Workflow ) )
                     {
@@ -294,16 +296,29 @@ namespace Rock.Reporting
             if (entityField == null)
                 return;
 
-            // Ensure that the field name is unique.
-            string fieldName = entityField.Name;
 
-            int i = 1;
-            while ( entityFields.Any( p => p.Name.Equals( fieldName, StringComparison.CurrentCultureIgnoreCase ) ) )
+            var entityType = EntityTypeCache.Read( attribute.EntityTypeId ?? 0 );
+
+            string legacyFieldName = entityField.Name;
+            if ( entityType != null )
             {
-                fieldName = entityField.Name + ( i++ ).ToString();
+                // in the case of ContentChannelItem attribute fields qualified by ContentChannelId, fully qualify the fieldName to ensure that other attributes on this 
+                // that have the exact same Name don't cause a random attribute with the same name to get picked
+                // NOTE: this is an issue with any Qualified Attribute, but since ContentChannelId is new, we don't have to worry about backwards compatibility
+                if ( entityType.Id == EntityTypeCache.GetId<ContentChannelItem>() && attribute.EntityTypeQualifierColumn == "ContentChannelId" )
+                {
+                    legacyFieldName = $"{entityField.Name}_{attribute.EntityTypeQualifierColumn}_{attribute.EntityTypeQualifierValue}";
+                }
             }
 
-            entityField.Name = fieldName;
+            // NOTE: This method of naming the field isn't predictable, but for backwards compability, keep doing it this way so that old datafilter settings will still match up
+            int i = 1;
+            while ( entityFields.Any( p => p.LegacyName.Equals( legacyFieldName, StringComparison.CurrentCultureIgnoreCase ) ) )
+            {
+                legacyFieldName = entityField.LegacyName + ( i++ ).ToString();
+            }
+
+            entityField.LegacyName = legacyFieldName;
 
             entityFields.Add( entityField );
         }
@@ -358,7 +373,22 @@ namespace Rock.Reporting
                         {
                             // Append the Qualifier to the title
                             entityField.AttributeEntityTypeQualifierName = contentChannelType.Name;
-                            entityField.Title = string.Format( "{0} ({1})", attribute.Name, contentChannelType.Name );
+                            entityField.Title = string.Format( "{0} (ChannelType: {1})", attribute.Name, contentChannelType.Name );
+                        }
+                    }
+                }
+
+                // Special processing for Entity Type "ContentChannelItem" to handle sub-types that are distinguished by ContentChannelId.
+                if ( attribute.EntityTypeId == EntityTypeCache.GetId( typeof( ContentChannelItem ) ) && attribute.EntityTypeQualifierColumn == "ContentChannelId" )
+                {
+                    using ( var rockContext = new RockContext() )
+                    {
+                        var contentChannel = new ContentChannelService( rockContext ).Get( attribute.EntityTypeQualifierValue.AsInteger() );
+                        if ( contentChannel != null )
+                        {
+                            // Append the Qualifier to the title
+                            entityField.AttributeEntityTypeQualifierName = contentChannel.Name;
+                            entityField.Title = string.Format( "{0} (Channel: {1})", attribute.Name, contentChannel.Name );
                         }
                     }
                 }
@@ -397,12 +427,52 @@ namespace Rock.Reporting
     public class EntityField
     {
         /// <summary>
-        /// Gets or sets the name.
+        /// Gets the consistantly unique name of the field in the form of "Property: {{ Name }}" for properties and "Attribute:{{ Name }} (Guid:{{ Guid }}})" for attributes
+        /// </summary>
+        /// <value>
+        /// Unique Name
+        /// </value>
+        public string UniqueName
+        {
+            get
+            {
+                if ( this.FieldKind == Reporting.FieldKind.Attribute )
+                {
+                    return string.Format( "Attribute_{0}_{1}", this.Name, this.AttributeGuid.Value.ToString("N"));
+                }
+                else
+                {
+                    return string.Format( "Property_{0}", this.Name );
+                }
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the name which is either the Property Name or the Attribute Key
         /// </summary>
         /// <value>
         /// The name.
         /// </value>
         public string Name { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Pre-v1.7 Name of this field. Use this if looking up this field for a filter that was saved pre-v1.7
+        /// </summary>
+        /// <value>
+        /// The name of the legacy.
+        /// </value>
+        internal string LegacyName
+        {
+            get
+            {
+                return _legacyName ?? Name;
+            }
+            set
+            {
+                _legacyName = value;
+            }
+        }
+        private string _legacyName;
 
         /// <summary>
         /// Gets or sets the title.
@@ -591,6 +661,47 @@ namespace Rock.Reporting
             }
 
             return base.ToString();
+        }
+    }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    public static class EntityFieldExtensions
+    {
+        /// <summary>
+        /// Finds from field selection in a way that is backwards compatible with filters saved using pre-v1.7 and pre-v1.1 versions of Rock
+        /// </summary>
+        /// <param name="entityFields">The entity fields.</param>
+        /// <param name="filterFieldSelection">The filter field selection.</param>
+        /// <returns></returns>
+        public static EntityField FindFromFilterSelection( this List<EntityField> entityFields, string filterFieldSelection )
+        {
+            var entityField = entityFields.FirstOrDefault( a => a.UniqueName == filterFieldSelection );
+
+            if ( entityField == null )
+            {
+                // if not found, try looking it up using the pre-v1.7 way
+                // prior to v1.7, the selection value was just the Name which could cause problems if entity has multiple attributes with the same Attribute.Key
+                // so if we couldn't find it by UniqueName, assume it was stored as just Name instead
+                entityField = entityFields.FirstOrDefault( a => a.LegacyName == filterFieldSelection );
+
+                if ( entityField == null )
+                {
+                    // if not found, try looking it up using the pre-v1.1 way
+                    // Prior to v1.1 attribute.Name was used instead of attribute.Key, because of that, strip spaces to attempt matching key
+                    entityField = entityFields.FirstOrDefault( a => a.LegacyName.Equals( filterFieldSelection.Replace( " ", "" ), StringComparison.OrdinalIgnoreCase) );
+                }
+
+                if ( entityField == null )
+                {
+                    // if STILL not found, it could be that this is an attribute qualified by ContentChannelId, 
+                    // which would NOT work if you had duplicate Attribute Keys and hadn't narrowed it down to ContentChannelId, but WOULD work if you had already narrowed down the keys to a specific ContentChannelId
+                    entityField = entityFields.FirstOrDefault( a => a.Name == filterFieldSelection );
+                }
+            }
+
+            return entityField;
         }
     }
 

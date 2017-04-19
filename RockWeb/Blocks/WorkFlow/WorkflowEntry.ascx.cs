@@ -42,6 +42,7 @@ namespace RockWeb.Blocks.WorkFlow
     [Description( "Used to enter information for a workflow form entry action." )]
 
     [WorkflowTypeField( "Workflow Type", "Type of workflow to start." )]
+    [BooleanField( "Show Summary View", "If workflow has been completed, should the summary view be displayed?", false, "", 1)]
     public partial class WorkflowEntry : Rock.Web.UI.RockBlock, IPostBackEventHandler
     {
         #region Fields
@@ -265,6 +266,13 @@ namespace RockWeb.Blocks.WorkFlow
                 return false;
             }
 
+            if ( !(_workflowType.IsActive ?? true) )
+            {
+                ShowNotes( false );
+                ShowMessage( NotificationBoxType.Warning, "Sorry", "This type of workflow is not active." );
+                return false;
+            }
+
             // If operating against an existing workflow, get the workflow and load attributes
             if ( !WorkflowId.HasValue )
             {
@@ -364,6 +372,8 @@ namespace RockWeb.Blocks.WorkFlow
                 return false;
             }
 
+            var canEdit = UserCanEdit || _workflow.IsAuthorized( Authorization.EDIT, CurrentPerson );
+
             if ( _workflow.IsActive )
             {
                 if ( ActionTypeId.HasValue )
@@ -382,8 +392,6 @@ namespace RockWeb.Blocks.WorkFlow
                         }
                     }
                 }
-
-                var canEdit = UserCanEdit || _workflow.IsAuthorized( Authorization.EDIT, CurrentPerson );
 
                 // Find first active action form
                 int personId = CurrentPerson != null ? CurrentPerson.Id : 0;
@@ -416,17 +424,42 @@ namespace RockWeb.Blocks.WorkFlow
                         }
                     }
                 }
+
+                lSummary.Text = string.Empty;
+
+            }
+            else
+            {
+                if ( GetAttributeValue("ShowSummaryView").AsBoolean() && !string.IsNullOrWhiteSpace( _workflowType.SummaryViewText ) )
+                {
+                    var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson );
+                    mergeFields.Add( "Action", _action );
+                    mergeFields.Add( "Activity", _activity );
+                    mergeFields.Add( "Workflow", _workflow );
+
+                    lSummary.Text = _workflowType.SummaryViewText.ResolveMergeFields( mergeFields, CurrentPerson );
+                    lSummary.Visible = true;
+                }
             }
 
-            var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson );
-            mergeFields.Add( "Action", _action );
-            mergeFields.Add( "Activity", _activity );
-            mergeFields.Add( "Workflow", _workflow );
+            if ( lSummary.Text.IsNullOrWhiteSpace() )
+            {
+                if ( _workflowType.NoActionMessage.IsNullOrWhiteSpace() )
+                {
+                    ShowMessage( NotificationBoxType.Warning, string.Empty, "The selected workflow is not in a state that requires you to enter information." );
+                }
+                else
+                {
+                    var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson );
+                    mergeFields.Add( "Action", _action );
+                    mergeFields.Add( "Activity", _activity );
+                    mergeFields.Add( "Workflow", _workflow );
+                    ShowMessage( NotificationBoxType.Warning, string.Empty, _workflowType.NoActionMessage.ResolveMergeFields( mergeFields, CurrentPerson ) );
+                }
+            }
 
             ShowNotes( false );
-            ShowMessage( NotificationBoxType.Warning, string.Empty, _workflowType.NoActionMessage.ResolveMergeFields( mergeFields, CurrentPerson ) );
             return false;
-
         }
 
         private void LoadWorkflowType()
@@ -521,6 +554,11 @@ namespace RockWeb.Blocks.WorkFlow
                     if ( _workflow != null && _workflow.AttributeValues.ContainsKey( attribute.Key ) && _workflow.AttributeValues[attribute.Key] != null )
                     {
                         value = _workflow.AttributeValues[attribute.Key].Value;
+                    }
+                    // Now see if the key is in the activity attributes so we can get it's value
+                    else if ( _activity != null && _activity.AttributeValues.ContainsKey( attribute.Key ) && _activity.AttributeValues[attribute.Key] != null )
+                    {
+                        value = _activity.AttributeValues[attribute.Key].Value;
                     }
 
                     if ( !string.IsNullOrWhiteSpace( formAttribute.PreHtml))
@@ -779,7 +817,14 @@ namespace RockWeb.Blocks.WorkFlow
                     }
                     else
                     {
-                        ShowMessage( NotificationBoxType.Success, string.Empty, responseText, ( _action == null || _action.Id != previousActionId ) );
+                        if ( lSummary.Text.IsNullOrWhiteSpace() )
+                        {
+                            ShowMessage( NotificationBoxType.Success, string.Empty, responseText, ( _action == null || _action.Id != previousActionId ) );
+                        }
+                        else
+                        {
+                            pnlForm.Visible = false;
+                        }
                     }
                 }
                 else

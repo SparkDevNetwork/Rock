@@ -83,6 +83,25 @@ namespace Rock.Model
         }
 
         /// <summary>
+        /// Logs the exception.
+        /// </summary>
+        /// <param name="ex">The ex.</param>
+        public static void LogException( Exception ex )
+        {
+            // create a new exception model
+            var exceptionLog = new ExceptionLog();
+            exceptionLog.HasInnerException = ex.InnerException != null;
+            exceptionLog.ExceptionType = ex.GetType().ToString();
+            exceptionLog.Description = ex.Message;
+            exceptionLog.Source = ex.Source;
+            exceptionLog.StackTrace = ex.StackTrace;
+
+            // Spin off a new thread to handle the real logging work so the UI is not blocked whilst
+            // recursively writing to the database.
+            Task.Run( () => LogExceptions( ex, exceptionLog, true ) );
+        }
+
+        /// <summary>
         /// Recursively logs exception and any children.
         /// </summary>
         /// <param name="ex">The <see cref="System.Exception"/> to log.</param>
@@ -285,12 +304,25 @@ namespace Rock.Model
                 if ( formList.Count > 0 )
                 {
                     formItems.Append( "<table class=\"form-items exception-table\">" );
-
                     foreach ( string formItem in formList )
                     {
-                        formItems.Append( "<tr><td><b>" + formItem + "</b></td><td>" + formList[formItem].EncodeHtml() + "</td></tr>" );
+                        if ( formItem.IsNotNullOrWhitespace() )
+                        {
+                            string formValue = formList[formItem].EncodeHtml();
+                            string lc = formItem.ToLower();
+                            if ( lc.Contains( "nolog" ) ||
+                                lc.Contains( "creditcard" ) ||
+                                lc.Contains( "cc-number" ) ||
+                                lc.Contains( "cvv" ) ||
+                                lc.Contains( "ssn" ) ||
+                                lc.Contains( "accountnumber" ) ||
+                                lc.Contains( "account-number" ) )
+                            {
+                                formValue = "***obfuscated***";
+                            }
+                            formItems.Append( "<tr><td><b>" + formItem + "</b></td><td>" + formValue + "</td></tr>" );
+                        }
                     }
-
                     formItems.Append( "</table>" );
                 }
 

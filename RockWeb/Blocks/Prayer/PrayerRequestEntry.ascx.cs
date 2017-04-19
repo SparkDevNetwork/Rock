@@ -55,9 +55,12 @@ namespace RockWeb.Blocks.Prayer
     
     // On Save Behavior
     [BooleanField( "Navigate To Parent On Save", "If enabled, on successful save control will redirect back to the parent page.", false, "On Save Behavior", 11 )]
-    [CodeEditorField( "Save Success Text", "Text to display upon successful save. (Only applies if not navigating to parent page on save.) <span class='tip tip-lava'></span><span class='tip tip-html'></span>", CodeEditorMode.Html, CodeEditorTheme.Rock, 200, false, "<p>Thank you for allowing us to pray for you.</p>", "On Save Behavior", 12 )]
-    [WorkflowTypeField( "Workflow", "An optional workflow to start when prayer request is created. The PrayerRequest will be set as the workflow 'Entity' attribute when processing is started.", false, false, "", "On Save Behavior", 13 )]
-    [BooleanField( "Enable Debug", "Outputs the object graph to help create your liquid syntax.", false, "On Save Behavior", 14 )]
+    [BooleanField( "Refresh Page On Save", "If enabled, on successful save control will reload the current page. NOTE: This is ignored if 'Navigate to Parent On Save' is enabled.", false, "On Save Behavior", 12 )]
+
+    [CodeEditorField( "Save Success Text", "Text to display upon successful save. (Only applies if not navigating to parent page on save.) <span class='tip tip-lava'></span><span class='tip tip-html'></span>", CodeEditorMode.Html, CodeEditorTheme.Rock, 200, false, "<p>Thank you for allowing us to pray for you.</p>", "On Save Behavior", 13 )]
+    [WorkflowTypeField( "Workflow", "An optional workflow to start when prayer request is created. The PrayerRequest will be set as the workflow 'Entity' attribute when processing is started.", false, false, "", "On Save Behavior", 14 )]
+
+    [ContextAware(typeof(Rock.Model.Person))]
     public partial class PrayerRequestEntry : RockBlock
     {
         #region Properties
@@ -78,6 +81,8 @@ namespace RockWeb.Blocks.Prayer
         protected override void OnInit( EventArgs e )
         {
             base.OnInit( e );
+
+            pnlRequester.Visible = this.ContextEntity<Rock.Model.Person>() == null;
 
             RockContext rockContext = new RockContext();
 
@@ -209,10 +214,23 @@ namespace RockWeb.Blocks.Prayer
 
             prayerRequest.CategoryId = categoryId;
             prayerRequest.Category = category;
-            prayerRequest.RequestedByPersonAliasId = CurrentPersonAliasId;
-            prayerRequest.FirstName = tbFirstName.Text;
-            prayerRequest.LastName = tbLastName.Text;
-            prayerRequest.Email = tbEmail.Text;
+
+            var personContext = this.ContextEntity<Person>();
+            if ( personContext == null )
+            {
+                prayerRequest.RequestedByPersonAliasId = CurrentPersonAliasId;
+                prayerRequest.FirstName = tbFirstName.Text;
+                prayerRequest.LastName = tbLastName.Text;
+                prayerRequest.Email = tbEmail.Text;
+            }
+            else
+            {
+                prayerRequest.RequestedByPersonAliasId = personContext.PrimaryAliasId;
+                prayerRequest.FirstName = string.IsNullOrEmpty( personContext.NickName ) ? personContext.FirstName : personContext.NickName;
+                prayerRequest.LastName = personContext.LastName;
+                prayerRequest.Email = personContext.Email;
+            }
+
             prayerRequest.Text = dtbRequest.Text;
             
             if ( this.EnableUrgentFlag )
@@ -259,6 +277,10 @@ namespace RockWeb.Blocks.Prayer
             {
                 NavigateToParentPage();
             }
+            else if (GetAttributeValue( "RefreshPageOnSave" ).AsBoolean() )
+            {
+                NavigateToCurrentPage( this.PageParameters().Where(a => a.Value is string).ToDictionary( k => k.Key, v => v.Value.ToString()) );
+            }
             else
             {
                 pnlForm.Visible = false;
@@ -274,11 +296,6 @@ namespace RockWeb.Blocks.Prayer
                 string themeRoot = ResolveRockUrl( "~~/" );
                 nbMessage.Text = nbMessage.Text.Replace( "~~/", themeRoot ).Replace( "~/", appRoot );
 
-                // show liquid help for debug
-                if ( GetAttributeValue( "EnableDebug" ).AsBoolean() && IsUserAuthorized( Authorization.EDIT ) )
-                {
-                    nbMessage.Text += mergeFields.lavaDebugInfo();
-                }
             }
         }
 
@@ -354,7 +371,7 @@ namespace RockWeb.Blocks.Prayer
             {
                 var workflowTypeService = new WorkflowTypeService( rockContext );
                 workflowType = workflowTypeService.Get( workflowTypeGuid.Value );
-                if ( workflowType != null )
+                if ( workflowType != null && ( workflowType.IsActive ?? true ) )
                 {
                     try
                     {

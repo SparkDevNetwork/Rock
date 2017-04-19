@@ -22,6 +22,8 @@ using System.Linq;
 using Quartz;
 using Rock.Attribute;
 using Rock.Model;
+using Rock.Data;
+using System.Data.Entity;
 
 namespace Rock.Jobs
 {
@@ -33,6 +35,7 @@ namespace Rock.Jobs
     [IntegerField( "Days to Keep Cached Files", "The number of days to keep cached files in the cache folder (default is 14 days.)", false, 14, "General", 3, "DaysKeepCachedFiles" )]
     [TextField( "Base Cache Folder", "The base/starting Directory for the file cache (default is ~/Cache.)", false, "~/Cache", "General", 4, "BaseCacheDirectory" )]
     [IntegerField( "Max Metaphone Names", "The maximum number of person names to process metaphone values for each time job is run (only names that have not yet been processed are checked).", false, 500, "General", 5 )]
+    [IntegerField( "Batch Cleanup Amount", "The number of records to delete at a time dependent on infrastructure. Recommended range is 1000 to 10,000.", false, 1000, "General", 6 )]
     [DisallowConcurrentExecution]
     public class RockCleanup : IJob
     {
@@ -136,6 +139,24 @@ namespace Rock.Jobs
                 rockCleanupExceptions.Add( new Exception( "Exception in CleanUpTemporaryRegistrations", ex ) );
             }
 
+            try
+            {
+                databaseRowsDeleted += CleanUpWorkflows( dataMap );
+            }
+            catch ( Exception ex )
+            {
+                rockCleanupExceptions.Add( new Exception( "Exception in CleanUpWorkflows", ex ) );
+            }
+
+            try
+            {
+                databaseRowsDeleted += CleanUpWorkflowLogs( dataMap );
+            }
+            catch ( Exception ex )
+            {
+                rockCleanupExceptions.Add( new Exception( "Exception in CleanUpWorkflowLogs", ex ) );
+            }
+
             context.Result = string.Format( "Rock Cleanup cleaned up {0} database rows", databaseRowsDeleted );
 
             if ( rockCleanupExceptions.Count > 0 )
@@ -165,7 +186,7 @@ namespace Rock.Jobs
             personRockContext.SaveChanges();
 
             // Add any missing metaphones
-            int namesToProcess = dataMap.GetString( "MaxMetaphoneNames" ).AsInteger();
+            int namesToProcess = dataMap.GetString( "MaxMetaphoneNames" ).AsIntegerOrNull() ?? 500;
             if ( namesToProcess > 0 )
             {
                 var firstNameQry = personService.Queryable().Select( p => p.FirstName ).Where( p => p != null );
@@ -249,6 +270,83 @@ namespace Rock.Jobs
         }
 
         /// <summary>
+        /// Cleans up completed workflows.
+        /// </summary>
+        private int CleanUpWorkflows( JobDataMap dataMap )
+        {
+            int totalRowsDeleted = 0;
+            var workflowContext = new RockContext();
+            var workflowService = new WorkflowService( workflowContext );
+
+            var completedWorkflows = workflowService.Queryable()
+                .Where( w => w.WorkflowType.CompletedWorkflowRetentionPeriod.HasValue && w.Status.Equals( "Completed" ) )
+                .ToList();
+
+            foreach ( var workflow in completedWorkflows )
+            {
+                var retentionPeriod = workflow.WorkflowType.CompletedWorkflowRetentionPeriod;
+                if ( retentionPeriod.HasValue && workflow.ModifiedDateTime < RockDateTime.Now.AddDays( -1 * (int)retentionPeriod ) )
+                {
+                    string errorMessage;
+                    if ( workflowService.CanDelete( workflow, out errorMessage ) )
+                    {
+                        workflowService.Delete( workflow );
+                        workflowContext.SaveChanges();
+                        totalRowsDeleted++;
+                    }
+                }
+            }
+
+            return totalRowsDeleted;
+        }
+
+        /// <summary>
+        /// Cleans up workflow logs by removing old logs in batches.
+        /// see http://dba.stackexchange.com/questions/1750/methods-of-speeding-up-a-huge-delete-from-table-with-no-clauses"
+        /// </summary>
+        private int CleanUpWorkflowLogs( JobDataMap dataMap )
+        {
+            int totalRowsDeleted = 0;
+            var workflowContext = new RockContext();
+            var workflowService = new WorkflowService( workflowContext );
+            int? batchAmount = dataMap.GetString( "BatchCleanupAmount" ).AsIntegerOrNull() ?? 1000;
+
+            var workflowsWithExpirationPeriod = workflowService.Queryable()
+                .Where( w => w.WorkflowType.LogRetentionPeriod.HasValue )
+                .ToList();
+
+            foreach ( var workflow in workflowsWithExpirationPeriod )
+            {
+                if ( workflow.ModifiedDateTime < RockDateTime.Now.AddDays( -1 * (int)workflow.WorkflowType.LogRetentionPeriod ) )
+                {
+                    // WorkflowLogService.CanDelete( log ) always returns true, so no need to check
+                    bool keepDeleting = true;
+                    while ( keepDeleting )
+                    {
+                        var dbTransaction = workflowContext.Database.BeginTransaction();
+                        try
+                        {
+                            string sqlCommand = @"DELETE TOP (@batchAmount) FROM [WorkflowLog] WHERE [WorkflowId] = @workflowId";
+
+                            int rowsDeleted = workflowContext.Database.ExecuteSqlCommand( sqlCommand,
+                                new SqlParameter( "batchAmount", batchAmount ),
+                                new SqlParameter( "workflowId", workflow.Id )
+                            );
+                            keepDeleting = rowsDeleted > 0;
+                            totalRowsDeleted += rowsDeleted;
+                        }
+                        finally
+                        {
+                            dbTransaction.Commit();
+                        }
+                    }
+                }
+            }
+
+            return totalRowsDeleted;
+        }
+
+        /// <summary>
         /// Cleans the cached file directory.
         /// </summary>
         /// <param name="context">The context.</param>
@@ -285,6 +383,7 @@ namespace Rock.Jobs
         {
             // purge audit log
             int totalRowsDeleted = 0;
+            int? batchAmount = dataMap.GetString( "BatchCleanupAmount" ).AsIntegerOrNull() ?? 1000;
             int? auditExpireDays = dataMap.GetString( "AuditLogExpirationDays" ).AsIntegerOrNull();
             if ( auditExpireDays.HasValue )
             {
@@ -298,7 +397,10 @@ namespace Rock.Jobs
                     var dbTransaction = auditLogRockContext.Database.BeginTransaction();
                     try
                     {
-                        int rowsDeleted = auditLogRockContext.Database.ExecuteSqlCommand( @"DELETE TOP (1000) FROM [Audit] WHERE [DateTime] < @auditExpireDate", new SqlParameter( "auditExpireDate", auditExpireDate ) );
+                        int rowsDeleted = auditLogRockContext.Database.ExecuteSqlCommand( @"DELETE TOP (@batchAmount) FROM [Audit] WHERE [DateTime] < @auditExpireDate",
+                            new SqlParameter( "batchAmount", batchAmount ),
+                            new SqlParameter( "auditExpireDate", auditExpireDate )
+                        );
                         keepDeleting = rowsDeleted > 0;
                         totalRowsDeleted += rowsDeleted;
                     }
@@ -321,6 +423,7 @@ namespace Rock.Jobs
         private int PurgeExceptionLog( JobDataMap dataMap )
         {
             int totalRowsDeleted = 0;
+            int? batchAmount = dataMap.GetString( "BatchCleanupAmount" ).AsIntegerOrNull() ?? 1000;
             int? exceptionExpireDays = dataMap.GetString( "DaysKeepExceptions" ).AsIntegerOrNull();
             if ( exceptionExpireDays.HasValue )
             {
@@ -334,7 +437,12 @@ namespace Rock.Jobs
                     var dbTransaction = exceptionLogRockContext.Database.BeginTransaction();
                     try
                     {
-                        int rowsDeleted = exceptionLogRockContext.Database.ExecuteSqlCommand( @"DELETE TOP (1000) FROM [ExceptionLog] WHERE [CreatedDateTime] < @createdDateTime", new SqlParameter( "createdDateTime", exceptionExpireDate ) );
+                        string sqlCommand = @"DELETE TOP (@batchAmount) FROM [ExceptionLog] WHERE [CreatedDateTime] < @createdDateTime";
+
+                        int rowsDeleted = exceptionLogRockContext.Database.ExecuteSqlCommand( sqlCommand,
+                            new SqlParameter( "batchAmount", batchAmount ),
+                            new SqlParameter( "createdDateTime", exceptionExpireDate )
+                        );
                         keepDeleting = rowsDeleted > 0;
                         totalRowsDeleted += rowsDeleted;
                     }
@@ -354,9 +462,10 @@ namespace Rock.Jobs
         /// <param name="dataMap">The data map.</param>
         private int CleanupExpiredEntitySets( JobDataMap dataMap )
         {
-            var entitySetRockContext = new Rock.Data.RockContext();
+            var entitySetRockContext = new RockContext();
             var currentDateTime = RockDateTime.Now;
             var entitySetService = new EntitySetService( entitySetRockContext );
+            int? batchAmount = dataMap.GetString( "BatchCleanupAmount" ).AsIntegerOrNull() ?? 1000;
             var qry = entitySetService.Queryable().Where( a => a.ExpireDateTime.HasValue && a.ExpireDateTime < currentDateTime );
             int totalRowsDeleted = 0;
 
@@ -372,9 +481,12 @@ namespace Rock.Jobs
                         var dbTransaction = entitySetRockContext.Database.BeginTransaction();
                         try
                         {
-                            string sqlCommand = @"DELETE TOP (1000) FROM [EntitySetItem] WHERE [EntitySetId] = @entitySetId";
+                            string sqlCommand = @"DELETE TOP (@batchAmount) FROM [EntitySetItem] WHERE [EntitySetId] = @entitySetId";
 
-                            int rowsDeleted = entitySetRockContext.Database.ExecuteSqlCommand( sqlCommand, new SqlParameter( "entitySetId", entitySet.Id ) );
+                            int rowsDeleted = entitySetRockContext.Database.ExecuteSqlCommand( sqlCommand,
+                                new SqlParameter( "batchAmount", batchAmount ),
+                                new SqlParameter( "entitySetId", entitySet.Id )
+                            );
                             keepDeleting = rowsDeleted > 0;
                             totalRowsDeleted += rowsDeleted;
                         }
@@ -398,12 +510,12 @@ namespace Rock.Jobs
         /// <param name="dataMap">The data map.</param>
         private int CleanupInteractions( JobDataMap dataMap )
         {
+            int? batchAmount = dataMap.GetString( "BatchCleanupAmount" ).AsIntegerOrNull() ?? 1000;
             var interactionRockContext = new Rock.Data.RockContext();
             var currentDateTime = RockDateTime.Now;
             var interactionChannelService = new InteractionChannelService( interactionRockContext );
             var interactionChannelQry = interactionChannelService.Queryable().Where( a => a.RetentionDuration.HasValue );
             int totalRowsDeleted = 0;
-            //
 
             foreach ( var interactionChannel in interactionChannelQry.ToList() )
             {
@@ -421,14 +533,14 @@ namespace Rock.Jobs
                     try
                     {
                         string sqlCommand = @"
-DELETE TOP (1000)
+DELETE TOP (@batchAmount)
 FROM ia
 FROM [Interaction] ia
 INNER JOIN [InteractionComponent] ic ON ia.InteractionComponentId = ic.Id
 WHERE ic.ChannelId = @channelId
 	AND ia.InteractionDateTime < @retentionCutoffDateTime
 ";
-                        int rowsDeleted = interactionRockContext.Database.ExecuteSqlCommand( sqlCommand, new SqlParameter( "channelId", interactionChannel.Id ), new SqlParameter( "retentionCutoffDateTime", retentionCutoffDateTime ) );
+                        int rowsDeleted = interactionRockContext.Database.ExecuteSqlCommand( sqlCommand, new SqlParameter( "batchAmount", batchAmount ), new SqlParameter( "channelId", interactionChannel.Id ), new SqlParameter( "retentionCutoffDateTime", retentionCutoffDateTime ) );
                         keepDeleting = rowsDeleted > 0;
                         totalRowsDeleted += rowsDeleted;
                     }

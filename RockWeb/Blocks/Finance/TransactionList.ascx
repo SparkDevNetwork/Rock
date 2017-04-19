@@ -10,6 +10,7 @@
     <ContentTemplate>
 
         <asp:Panel ID="pnlContent" runat="server">
+            <asp:HiddenField ID="hfTransactionViewMode" runat="server" />
 
             <asp:ValidationSummary ID="valSummaryTop" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" />
 
@@ -17,16 +18,25 @@
                 <div class="panel-heading">
                     <h1 class="panel-title"><i class="fa fa-credit-card"></i> <asp:Literal ID="lTitle" runat="server"></asp:Literal></h1>
                     
-                        <Rock:ButtonDropDownList ID="bddlOptions" runat="server" FormGroupCssClass="panel-options pull-right" Title="Options" SelectionStyle="Checkmark" OnSelectionChanged="bddlOptions_SelectionChanged">
+                    <div class="pull-right">                    
+                        <Rock:ButtonDropDownList ID="bddlOptions" runat="server" FormGroupCssClass="panel-options" Title="Options" SelectionStyle="Checkmark" OnSelectionChanged="bddlOptions_SelectionChanged">
                             <asp:ListItem Text="Show Images" Value="1" />
                             <asp:ListItem Text="Show Summary" Value="0" />
                         </Rock:ButtonDropDownList>
+
+                        <div class="btn-group panel-toggle pull-right">
+                            <asp:LinkButton ID="btnTransactions" CssClass="btn btn-xs btn-primary" runat="server" Text="Transactions" OnClick="btnTransactionsViewMode_Click" />
+                            <asp:LinkButton ID="btnTransactionDetails" CssClass="btn btn-xs btn-default" runat="server" Text="Transaction Details" OnClick="btnTransactionsViewMode_Click" />
+                        </div>
+                    </div>
                     
                 </div>
                 <div class="panel-body">
 
                     <Rock:NotificationBox ID="nbClosedWarning" CssClass="alert-grid" runat="server" NotificationBoxType="Info" Title="Note"
                         Text="This batch has been closed and transactions cannot be edited." Visible="false" Dismissable="false" />
+
+                    
 
                     <div class="grid grid-panel">
                         <Rock:GridFilter ID="gfTransactions" runat="server">
@@ -48,8 +58,8 @@
                             RowItemText="Transaction" OnRowSelected="gTransactions_Edit" AllowSorting="true" ExportSource="ColumnOutput" >
                             <Columns>
                                 <Rock:SelectField></Rock:SelectField>
-                                <Rock:RockBoundField DataField="AuthorizedPersonAlias.Person.FullNameReversed" HeaderText="Person" 
-                                    SortExpression="AuthorizedPersonAlias.Person.LastName,AuthorizedPersonAlias.Person.NickName" />
+                                <Rock:RockLiteralField ID="lPersonFullNameReversed" HeaderText="Person" 
+                                    SortExpression="_PERSONNAME_" /> 
                                 <Rock:RockBoundField DataField="TransactionDateTime" HeaderText="Date / Time" SortExpression="TransactionDateTime" />                
                                 <Rock:CurrencyField DataField="TotalAmount" HeaderText="Amount" SortExpression="TotalAmount" />
                                 <Rock:RockTemplateField HeaderText="Currency Type" >
@@ -63,6 +73,9 @@
                                     <ItemTemplate><%# GetAccounts( Container.DataItem ) %></ItemTemplate>
                                 </Rock:RockTemplateField>
                                 <Rock:RockBoundField DataField="Summary" HeaderText="Summary" SortExpression="Summary" ColumnPriority="DesktopLarge" />                
+                                <Rock:RockBoundField DataField="Status" HeaderText="Status" ExcelExportBehavior="AlwaysInclude" Visible="false" />
+                                <Rock:DateTimeField DataField="SettledDate" HeaderText="Settled Date/Time" ExcelExportBehavior="AlwaysInclude" Visible="false" />
+                                <Rock:RockBoundField DataField="SettledGroupId" HeaderText="Processor Batch Id" ExcelExportBehavior="AlwaysInclude" Visible="false" />
                                 <Rock:RockLiteralField ID="lTransactionImage" HeaderText="Image" />
                                 <Rock:DeleteField OnClick="gTransactions_Delete" Visible="false"/>
                             </Columns>

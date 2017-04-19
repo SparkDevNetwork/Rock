@@ -25,7 +25,7 @@
                             </div>
                             <div class="col-md-9">
 
-                                <Rock:DataTextBox ID="tbBusinessName" runat="server" Label="Name" SourceTypeName="Rock.Model.Person, Rock" PropertyName="FirstName" ValidationGroup="businessDetail" />
+                                <Rock:DataTextBox ID="tbBusinessName" runat="server" Label="Name" SourceTypeName="Rock.Model.Person, Rock" PropertyName="FirstName" />
                             
                                 <Rock:AddressControl ID="acAddress" runat="server" UseStateAbbreviation="true" UseCountryAbbreviation="false" />
 
@@ -84,7 +84,7 @@
                 </div>
             </div>
 
-            <div class="panel panel-block">
+            <asp:Panel ID="pnlContactList" runat="server" CssClass="panel panel-block">
                 <div class="panel-heading">
                     <h1 class="panel-title"><i class="fa fa-users"></i> Business Contacts</h1>
                 </div>
@@ -98,7 +98,7 @@
                         </Rock:Grid>
                     </div>
                 </div>
-            </div>
+            </asp:Panel>
 
 
             <Rock:ModalDialog ID="mdAddContact" runat="server" Title="Add Contact" ValidationGroup="AddContact">

@@ -56,11 +56,10 @@ namespace RockWeb.Blocks.Finance
     {% endif %}
 {% endfor %}
 </div>", Order = 3)]
-    [BooleanField("Enable Debug", "Shows the merge fields available for the Lava", order:4)]
     [BooleanField("Use Person Context", "Determines if the person context should be used instead of the CurrentPerson.", false, order: 5)]
 
     [ContextAware]
-    public partial class ContributionStatementListLava : RockBlock
+    public partial class ContributionStatementListLava : RockBlock, ISecondaryBlock
     {
         #region Properties
 
@@ -189,12 +188,15 @@ namespace RockWeb.Blocks.Finance
             // don't show anything if the person doesn't have any transactions
             lResults.Visible = statementYears.Any();
 
-            // show debug info
-            if ( GetAttributeValue( "EnableDebug" ).AsBoolean() && IsUserAuthorized( Authorization.EDIT ) )
-            {
-                lDebug.Visible = true;
-                lDebug.Text = mergeFields.lavaDebugInfo();
-            }
+        }
+
+        /// <summary>
+        /// Hook so that other blocks can set the visibility of all ISecondaryBlocks on its page
+        /// </summary>
+        /// <param name="visible">if set to <c>true</c> [visible].</param>
+        public void SetVisible( bool visible )
+        {
+            pnlContent.Visible = visible;
         }
 
         #endregion

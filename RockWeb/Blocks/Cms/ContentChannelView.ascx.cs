@@ -55,7 +55,6 @@ namespace RockWeb.Blocks.Cms
     [CodeEditorField( "Template", "The template to use when formatting the list of items.", CodeEditorMode.Lava, CodeEditorTheme.Rock, 600, false, @"", "CustomSetting" )]
     [IntegerField( "Count", "The maximum number of items to display.", false, 5, "CustomSetting" )]
     [IntegerField( "Cache Duration", "Number of seconds to cache the content.", false, 3600, "CustomSetting" )]
-    [BooleanField( "Enable Debug", "Enabling debug will display the fields of the first 5 items to help show you wants available for your liquid.", false, "CustomSetting" )]
     [IntegerField( "Filter Id", "The data filter that is used to filter items", false, 0, "CustomSetting" )]
     [BooleanField( "Query Parameter Filtering", "Determines if block should evaluate the query string parameters for additional filter criteria.", false, "CustomSetting" )]
     [TextField( "Order", "The specifics of how items should be ordered. This value is set through configuration and should not be modified here.", false, "", "CustomSetting" )]
@@ -245,7 +244,6 @@ $(document).ready(function() {
 
             SetAttributeValue( "Status", cblStatus.SelectedValuesAsInt.AsDelimited(",") );
             SetAttributeValue( "Channel", ddlChannel.SelectedValue );
-            SetAttributeValue( "EnableDebug", cbDebug.Checked.ToString() );
             SetAttributeValue( "MergeContent", cbMergeContent.Checked.ToString() );
             SetAttributeValue( "Template", ceTemplate.Text );
             SetAttributeValue( "Count", ( nbCount.Text.AsIntegerOrNull() ?? 5 ).ToString() );
@@ -362,7 +360,6 @@ $(document).ready(function() {
                 }
             }
 
-            cbDebug.Checked = GetAttributeValue( "EnableDebug" ).AsBoolean();
             cbMergeContent.Checked = GetAttributeValue( "MergeContent" ).AsBoolean();
             cbSetRssAutodiscover.Checked = GetAttributeValue( "RssAutodiscover" ).AsBoolean();
             cbSetPageTitle.Checked = GetAttributeValue( "SetPageTitle" ).AsBoolean();
@@ -470,23 +467,6 @@ $(document).ready(function() {
             mergeFields.Add( "Items", currentPageContent );
             mergeFields.Add( "RockVersion", Rock.VersionInfo.VersionInfo.GetRockProductVersionNumber() );
 
-            // enable showing debug info
-            if ( GetAttributeValue( "EnableDebug" ).AsBoolean() && IsUserAuthorized( Authorization.EDIT ) )
-            {
-                mergeFields["Items"] = currentPageContent.Take( 5 ).ToList();
-
-                lDebug.Visible = true;
-                
-                lDebug.Text = mergeFields.lavaDebugInfo();
-
-                mergeFields["Items"] = currentPageContent;
-            }
-            else
-            {
-                lDebug.Visible = false;
-                lDebug.Text = string.Empty;
-            }
-
             // TODO: When support for "Person" is not supported anymore (should use "CurrentPerson" instead), remove this line
             mergeFields.AddOrIgnore( "Person", CurrentPerson );
 
@@ -574,13 +554,13 @@ $(document).ready(function() {
 
             var template = GetTemplate();
 
-            if ( template.InstanceAssigns.ContainsKey( "EnabledCommands" ) )
+            if ( template.Registers.ContainsKey( "EnabledCommands" ) )
             {
-                template.InstanceAssigns["EnabledCommands"] = GetAttributeValue( "EnabledLavaCommands" );
+                template.Registers["EnabledCommands"] = GetAttributeValue( "EnabledLavaCommands" );
             }
             else // this should never happen
             {
-                template.InstanceAssigns.Add( "EnabledCommands", GetAttributeValue( "EnabledLavaCommands" ) );
+                template.Registers.Add( "EnabledCommands", GetAttributeValue( "EnabledLavaCommands" ) );
             }
             
             phContent.Controls.Add( new LiteralControl( template.Render( Hash.FromDictionary( mergeFields ) ) ) );
@@ -999,10 +979,18 @@ $(document).ready(function() {
                             f.AttributeGuid.HasValue )
                         .ToList() )
                     {
+                        // remove EntityFields that aren't attributes for this ContentChannelType or ChannelChannel (to avoid duplicate Attribute Keys)
                         var attribute = AttributeCache.Read( entityField.AttributeGuid.Value );
                         if ( attribute != null && 
                             attribute.EntityTypeQualifierColumn == "ContentChannelTypeId" && 
                             attribute.EntityTypeQualifierValue.AsInteger() != channel.ContentChannelTypeId )
+                        {
+                            entityFields.Remove( entityField );
+                        }
+
+                        if ( attribute != null &&
+                            attribute.EntityTypeQualifierColumn == "ContentChannelId" &&
+                            attribute.EntityTypeQualifierValue.AsInteger() != channel.Id )
                         {
                             entityFields.Remove( entityField );
                         }

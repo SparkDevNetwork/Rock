@@ -366,7 +366,7 @@ namespace Rock.Rest.Controllers
         [System.Web.Http.Route( "api/People/Search" )]
         public IQueryable<PersonSearchResult> Search( string name, bool includeHtml, bool includeDetails, bool includeBusinesses = false, bool includeDeceased = false )
         {
-            int count = 20;
+            int count = GlobalAttributesCache.Value( "core.PersonPickerFetchCount" ).AsIntegerOrNull() ?? 60;
             bool showFullNameReversed;
             bool allowFirstNameOnly = false;
 
@@ -546,12 +546,12 @@ namespace Rock.Rest.Controllers
                 }
                 else
                 {
-                    personInfoHtml += familyGroupType.Roles.First( a => a.Id == familyGroupMember.GroupRoleId ).Name;
+                    personInfoHtml += "<div class='role'>" + familyGroupType.Roles.First( a => a.Id == familyGroupMember.GroupRoleId ).Name + "</div>";
                 }
 
                 if ( personAge != null )
                 {
-                    personInfoHtml += " <em>(" + personAge.ToString() + " yrs old)</em>";
+                    personInfoHtml += " <em class='age'>(" + personAge.ToString() + " yrs old)</em>";
                 }
 
                 if ( familyGroupMember.GroupRoleId == adultRoleId )
@@ -567,7 +567,7 @@ namespace Rock.Rest.Controllers
                     if ( spouse != null )
                     {
                         string spouseFullName = Person.FormatFullName( spouse.NickName, spouse.LastName, spouse.SuffixValueId );
-                        personInfoHtml += "<p><strong>Spouse:</strong> " + spouseFullName + "</p>";
+                        personInfoHtml += "<p class='spouse'><strong>Spouse:</strong> " + spouseFullName + "</p>";
                         personSearchResult.SpouseName = spouseFullName;
                     }
                 }
@@ -586,7 +586,7 @@ namespace Rock.Rest.Controllers
 
                 if ( location != null )
                 {
-                    string addressHtml = "<h5>Address</h5>" + location.GetFullStreetAddress().ConvertCrLfToHtmlBr();
+                    string addressHtml = "<div class='address'><h5>Address</h5>" + location.GetFullStreetAddress().ConvertCrLfToHtmlBr() + "</div>";
                     personSearchResult.Address = location.GetFullStreetAddress();
                     personInfoHtml += addressHtml;
                 }
@@ -595,9 +595,9 @@ namespace Rock.Rest.Controllers
             // Generate the HTML for Email and PhoneNumbers
             if ( !string.IsNullOrWhiteSpace( person.Email ) || person.PhoneNumbers.Any() )
             {
-                string emailAndPhoneHtml = "<p class='margin-t-sm'>";
-                emailAndPhoneHtml += person.Email;
-                string phoneNumberList = string.Empty;
+                string emailAndPhoneHtml = "<div class='margin-t-sm'>";
+                emailAndPhoneHtml += "<span class='email'>" + person.Email + "</span>";
+                string phoneNumberList = "<div class='phones'>";
                 foreach ( var phoneNumber in person.PhoneNumbers )
                 {
                     var phoneType = DefinedValueCache.Read( phoneNumber.NumberTypeValueId ?? 0 );
@@ -607,10 +607,13 @@ namespace Rock.Rest.Controllers
                         phoneType != null ? phoneType.Value : string.Empty );
                 }
 
-                emailAndPhoneHtml += phoneNumberList + "<p>";
+                emailAndPhoneHtml += phoneNumberList + "</div></div>";
 
                 personInfoHtml += emailAndPhoneHtml;
             }
+
+            // force the link to open a new scrollable,resizable browser window (and make it work in FF, Chrome and IE) http://stackoverflow.com/a/2315916/1755417
+            personInfoHtml += $"<p class='margin-t-sm'><small><a class='cursor-pointer' onclick=\"javascript: window.open('/person/{person.Id}', '_blank', 'scrollbars=1,resizable=1,toolbar=1'); return false;\" data-toggle=\"tooltip\" title=\"View Profile\">View Profile</a></small></p>";
 
             personSearchResult.PickerItemDetailsImageHtml = imageHtml;
             personSearchResult.PickerItemDetailsPersonInfoHtml = personInfoHtml;

@@ -53,10 +53,10 @@
   }
 
   .scroll-container-picker {
-    width: 355px;
+    width: 390px;
 
     .viewport {
-      width: 340px;
+      width: 360px;
       height: 190px;
     }
 
@@ -133,8 +133,18 @@
       list-style: none;
     }
 
-    .picker-select-item-details img {
-      width: 65px;
+    .picker-select-item-details {
+      position: relative;
+
+      label {
+          position: absolute;
+          top: 0;
+          right: 0;
+      }
+
+      img {
+        width: 65px;
+      }
     }
   }
 
@@ -147,7 +157,23 @@
 
   &.picker-mergefield {
     width: 370px;
+    max-width: 100%;
   }
+}
+
+.picker.picker-lg {
+    @media @sm {
+      position: relative;
+      width: 350px; // needed when floated right to keep the picker from shifting when the (x) appears to allow delete
+    }
+
+    .picker-label {
+      width: 325px;
+
+      span {
+        width: 240px;
+      }
+    }
 }
 
 #dialog .scroll-container-picker {

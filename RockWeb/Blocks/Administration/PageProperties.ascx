@@ -63,6 +63,10 @@
                                             Help="The description of the page to include as a meta tag for the page" />
                                     </div>
                                 </div>
+
+                                <Rock:PanelWidget ID="wpPageAttributes" runat="server" Title="Page Attribute Values">
+                                    <asp:PlaceHolder ID="phPageAttributes" runat="server" EnableViewState="false"></asp:PlaceHolder>
+                                </Rock:PanelWidget>
                             </asp:Panel>
 
                             <asp:Panel ID="pnlDisplaySettings" runat="server" Visible="false">
@@ -85,10 +89,6 @@
                                     <Rock:RockCheckBox ID="cbBreadCrumbIcon" runat="server" Text="Show Icon in Breadcrumb" Help="Should this page's icon be displayed in the breadcrumb trail when viewing this page or a child page?" />
                                 </fieldset>
                             </asp:Panel>
-
-                            <Rock:PanelWidget ID="wpPageAttributes" runat="server" Title="Page Attribute Values">
-                                <asp:PlaceHolder ID="phPageAttributes" runat="server" EnableViewState="false"></asp:PlaceHolder>
-                            </Rock:PanelWidget>
 
                             <asp:Panel ID="pnlAdvancedSettings" runat="server" Visible="false">
                                 <div class="row">
@@ -198,8 +198,8 @@
                     </asp:PlaceHolder>
 
                     <asp:Panel ID="pnlEditModeActions" runat="server" CssClass="actions">
-                        <asp:LinkButton ID="btnSave" runat="server" AccessKey="s" Text="Save" CssClass="btn btn-primary" OnClick="btnSave_Click" />
-                        <asp:LinkButton ID="btnCancel" runat="server" AccessKey="c" Text="Cancel" CssClass="btn btn-link" CausesValidation="false" OnClick="btnCancel_Click" />
+                        <asp:LinkButton ID="btnSave" runat="server" AccessKey="s" ToolTip="Alt+s" Text="Save" CssClass="btn btn-primary" OnClick="btnSave_Click" />
+                        <asp:LinkButton ID="btnCancel" runat="server" AccessKey="c" ToolTip="Alt+c" Text="Cancel" CssClass="btn btn-link" CausesValidation="false" OnClick="btnCancel_Click" />
                     </asp:Panel>
                 </div>
 
@@ -220,18 +220,18 @@
                     </div>
 
                     <asp:Panel ID="pnlReadOnlyModeActions" runat="server" CssClass="actions">
-                        <asp:LinkButton ID="btnEdit" runat="server" AccessKey="m" Text="Edit" CssClass="btn btn-primary" OnClick="btnEdit_Click" />
+                        <asp:LinkButton ID="btnEdit" runat="server" AccessKey="m" ToolTip="Alt+m" Text="Edit" CssClass="btn btn-primary" OnClick="btnEdit_Click" />
                         <Rock:ModalAlert ID="mdDeleteWarning" runat="server" />
                         <asp:LinkButton ID="btnDelete" runat="server" Text="Delete" CssClass="btn btn-link" OnClick="btnDelete_Click" />
                         <div class="pull-right">
-                            <asp:LinkButton ID="btnChildPageOrder" runat="server" ToolTip="Child Page Order" CssClass="btn btn-default btn-sm page-child-pages fa fa-sitemap" OnClick="btnChildPageOrder_Click" />
+                            <asp:LinkButton ID="btnChildPageOrder" runat="server" ToolTip="Child Page Order" CssClass="btn btn-default btn-sm page-child-pages fa fa-list-ol" OnClick="btnChildPageOrder_Click" />
                             <asp:LinkButton ID="btnCopy" runat="server" Tooltip="Copy Page" CssClass="btn btn-default btn-sm fa fa-clone" OnClick="btnCopy_Click" />
                             <Rock:SecurityButton ID="btnSecurity" runat="server" class="btn btn-sm btn-security" />
                         </div>
                     </asp:Panel>
                 </fieldset>
 
-                <Rock:ModalDialog ID="mdCopyPage" runat="server" ValidationGroup="vgCopyPage" Title="Copy Page" OnSaveClick="mdCopyPage_SaveClick" Visible="false">
+                <Rock:ModalDialog ID="mdCopyPage" runat="server" ValidationGroup="vgCopyPage" Title="Copy Page" OnSaveClick="mdCopyPage_SaveClick" SaveButtonText="Copy" Visible="false">
                     <Content>
                         <Rock:RockCheckBox ID="cbCopyPageIncludeChildPages" runat="server" Text="Include Child Pages" Checked="true" />
                     </Content>

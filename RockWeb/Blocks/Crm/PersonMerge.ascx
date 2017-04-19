@@ -17,7 +17,7 @@
 
                     <Rock:RockTextBox runat="server" ID="tbEntitySetNote" Label="Optional Note" Rows="4" TextMode="MultiLine" Visible="false" />
                     <div class="actions">
-                        <asp:LinkButton ID="btnSaveRequestNote" runat="server" AccessKey="s" Text="Save" CssClass="btn btn-primary" OnClick="btnSaveRequestNote_Click" Visible="false" />
+                        <asp:LinkButton ID="btnSaveRequestNote" runat="server" AccessKey="s" ToolTip="Alt+s" Text="Save" CssClass="btn btn-primary" OnClick="btnSaveRequestNote_Click" Visible="false" />
                     </div>
 
                     <Rock:NotificationBox runat="server" ID="nbNoteSavedSuccess" NotificationBoxType="Success" Title="Success" Text="Your note has been saved." Visible="false" />
@@ -42,9 +42,12 @@
                     prompted to reconfirm their logins using the email address you select, you may wish to manually confirm the validity of the request before
                     completing this merge." />
 
+                    <Rock:NotificationBox ID="nbError" runat="server" NotificationBoxType="Danger" Visible ="false" />
+
                     <div class="actions pull-right">
                         <asp:LinkButton ID="lbMerge" runat="server" Text="Merge Records" CssClass="btn btn-primary" OnClick="lbMerge_Click" />
                     </div>
+
                 </asp:Panel>
             </div>
         </div>

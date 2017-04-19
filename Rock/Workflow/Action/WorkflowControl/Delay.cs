@@ -34,7 +34,7 @@ namespace Rock.Workflow.Action
     [Export( typeof( Rock.Workflow.ActionComponent ) )]
     [ExportMetadata( "ComponentName", "Delay" )]
 
-    [IntegerField( "Minutes To Delay", "The number of minuts to delay successful execution of action", false, order: 0 )]
+    [IntegerField( "Minutes To Delay", "The number of minutes to delay successful execution of action", false, order: 0 )]
     [WorkflowAttribute( "Date In Attribute", "The date or date/time attribute value to use for the delay.", false, "", "", 1, null, new string[] { "Rock.Field.Types.DateFieldType", "Rock.Field.Types.DateTimeFieldType" } )]
     [CustomDropdownListField("Next Weekday", "The next day of the week to wait till.", "0^Sunday,1^Monday,2^Tuesday,3^Wednesday,4^Thursday,5^Friday,6^Saturday,7^Sunday", false, order: 2)]
     class Delay : Rock.Workflow.ActionComponent
