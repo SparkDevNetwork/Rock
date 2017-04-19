@@ -338,7 +338,7 @@ namespace Rock.Model
 
                             if ( txnAmount < 0.0M )
                             {
-                                transaction.Summary = "Reversal for previous transaction that failed during processing." + Environment.NewLine;
+                                transaction.Summary = "Reversal created for previous transaction(s) to correct the total transaction amount." + Environment.NewLine;
                             }
 
                             // Set the attributes of the transaction
@@ -611,7 +611,7 @@ namespace Rock.Model
             return processedAmount - rockAmount;
         }
 
-        private void LaunchWorkflow( WorkflowType workflowType, FinancialTransaction transaction )
+        private void LaunchWorkflow( WorkflowTypeCache workflowType, FinancialTransaction transaction )
         {
             if ( workflowType != null && ( workflowType.IsActive ?? true ) )
             {
