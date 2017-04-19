@@ -31,6 +31,7 @@
                                 <Rock:RockBoundField DataField="TransactionCode" HeaderText="Transaction Code" SortExpression="TransactionCode" ColumnPriority="DesktopSmall" />
                                 <Rock:RockBoundField DataField="Status" HeaderText="Transaction Status" SortExpression="Status" />
                                 <Rock:RockBoundField DataField="StatusMessage" HeaderText="Status Message" SortExpression="StatusMessage" />
+                                <Rock:RockBoundField DataField="Scheduled" HeaderText="Scheduled?" SortExpression="Scheduled" />
                             </Columns>
                         </Rock:Grid>
 
