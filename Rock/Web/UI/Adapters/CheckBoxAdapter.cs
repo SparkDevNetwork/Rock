@@ -77,6 +77,7 @@ namespace Rock.Web.UI.Adapters
                         }
                     }
 
+                    writer.AddAttribute( "title", cb.ToolTip );
                     writer.RenderBeginTag( HtmlTextWriterTag.Label );
                 }
 
