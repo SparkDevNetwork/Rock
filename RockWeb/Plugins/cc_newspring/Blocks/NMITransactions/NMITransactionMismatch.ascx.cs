@@ -208,7 +208,8 @@ namespace RockWeb.Plugins.cc_newspring.Blocks.NMITransactions
                     Amount = t.TransactionDetails.Select( d => d.Amount ).FirstOrDefault(),
                     t.TransactionCode,
                     t.Status,
-                    t.StatusMessage
+                    t.StatusMessage,
+                    Scheduled = t.CheckMicrHash,
                 } ).ToList();
 
                 gTransactions.DataBind();
@@ -235,7 +236,7 @@ namespace RockWeb.Plugins.cc_newspring.Blocks.NMITransactions
             restRequest.AddParameter( "username", GetAttributeValue( financialGateway, "AdminUsername" ) );
             restRequest.AddParameter( "password", GetAttributeValue( financialGateway, "AdminPassword" ) );
             restRequest.AddParameter( "start_date", startDate.ToString( "yyyyMMddHHmmss" ) );
-            restRequest.AddParameter( "end_date", endDate.ToString( "yyyyMMddHHmmss" ) );
+            restRequest.AddParameter( "end_date", endDate.AddHours( 23 ).AddMinutes( 59 ).AddSeconds( 59 ).ToString( "yyyyMMddHHmmss" ) );
 
             try
             {
@@ -257,50 +258,53 @@ namespace RockWeb.Plugins.cc_newspring.Blocks.NMITransactions
                                 foreach ( var xTxn in xdocResult.Root.Elements( "transaction" ) )
                                 {
                                     string subscriptionId = GetXElementValue( xTxn, "original_transaction_id" ).Trim();
-                                    if ( !string.IsNullOrWhiteSpace( subscriptionId ) )
+                                    FinancialTransaction transaction = null;
+                                    var statusMessage = new StringBuilder();
+                                    foreach ( var xAction in xTxn.Elements( "action" ) )
                                     {
-                                        FinancialTransaction transaction = null;
-                                        var statusMessage = new StringBuilder();
-                                        foreach ( var xAction in xTxn.Elements( "action" ) )
+                                        DateTime? actionDate = ParseDateValue( GetXElementValue( xAction, "date" ) );
+                                        string actionType = GetXElementValue( xAction, "action_type" );
+                                        string responseText = GetXElementValue( xAction, "response_text" );
+                                        if ( actionDate.HasValue )
                                         {
-                                            DateTime? actionDate = ParseDateValue( GetXElementValue( xAction, "date" ) );
-                                            string actionType = GetXElementValue( xAction, "action_type" );
-                                            string responseText = GetXElementValue( xAction, "response_text" );
-                                            if ( actionDate.HasValue )
+                                            statusMessage.AppendFormat( "{0} {1}: {2}; Status: {3}",
+                                                actionDate.Value.ToShortDateString(), actionDate.Value.ToShortTimeString(),
+                                                actionType.FixCase(), responseText );
+                                            statusMessage.AppendLine();
+                                        }
+                                        if ( transaction == null && actionType == "settle" )
+                                        {
+                                            var xLastAction = xTxn.Elements( "action" ).Last();
+                                            decimal? txnAmount = GetXElementValue( xLastAction, "amount" ).AsDecimalOrNull();
+                                            if ( txnAmount.HasValue && actionDate.HasValue )
                                             {
-                                                statusMessage.AppendFormat( "{0} {1}: {2}; Status: {3}",
-                                                    actionDate.Value.ToShortDateString(), actionDate.Value.ToShortTimeString(),
-                                                    actionType.FixCase(), responseText );
-                                                statusMessage.AppendLine();
-                                            }
-                                            if ( transaction == null && actionType == "settle" )
-                                            {
-                                                var xLastAction = xTxn.Elements( "action" ).Last();
-                                                decimal? txnAmount = GetXElementValue( xLastAction, "amount" ).AsDecimalOrNull();
-                                                if ( txnAmount.HasValue && actionDate.HasValue )
+                                                transaction = new FinancialTransaction();
+                                                transaction.Status = GetXElementValue( xTxn, "condition" ).FixCase();
+                                                //transaction.IsFailure = payment.Status == "Failed";
+                                                transaction.StatusMessage = GetXElementValue( xTxn, "response_text" );
+                                                // this will hold the transaction amount
+                                                var transactionDetails = new FinancialTransactionDetail();
+                                                transactionDetails.Amount = txnAmount.Value;
+                                                transaction.TransactionDetails.Add(transactionDetails);
+                                                transaction.TransactionDateTime = actionDate.Value;
+                                                transaction.TransactionCode = GetXElementValue( xTxn, "transaction_id" );
+                                                // this will hold the name
+                                                transaction.ForeignKey = GetXElementValue( xTxn, "first_name" ) + " " + GetXElementValue( xTxn, "last_name" );
+                                                // this will hold the email
+                                                transaction.CheckMicrEncrypted = GetXElementValue( xTxn, "email" );
+                                                // this will hold whether or not the transaction comes from a schedule
+                                                transaction.CheckMicrHash = "No";
+                                                if (subscriptionId != "")
                                                 {
-                                                    transaction = new FinancialTransaction();
-                                                    transaction.Status = GetXElementValue( xTxn, "condition" ).FixCase();
-                                                    //transaction.IsFailure = payment.Status == "Failed";
-                                                    transaction.StatusMessage = GetXElementValue( xTxn, "response_text" );
-                                                    // this will hold the transaction amount
-                                                    var transactionDetails = new FinancialTransactionDetail();
-                                                    transactionDetails.Amount = txnAmount.Value;
-                                                    transaction.TransactionDetails.Add(transactionDetails);
-                                                    transaction.TransactionDateTime = actionDate.Value;
-                                                    transaction.TransactionCode = GetXElementValue( xTxn, "transaction_id" );
-                                                    // this will hold the name
-                                                    transaction.ForeignKey = GetXElementValue( xTxn, "first_name" ) + " " + GetXElementValue( xTxn, "last_name" );
-                                                    // this will hold the email
-                                                    transaction.CheckMicrEncrypted = GetXElementValue( xTxn, "email" );
+                                                    transaction.CheckMicrHash = "Yes";
                                                 }
                                             }
                                         }
-                                        if ( transaction != null )
-                                        {
-                                            transaction.StatusMessage = statusMessage.ToString();
-                                            txns.Add( transaction );
-                                        }
+                                    }
+                                    if ( transaction != null )
+                                    {
+                                        transaction.StatusMessage = statusMessage.ToString();
+                                        txns.Add( transaction );
                                     }
                                 }
                             }
