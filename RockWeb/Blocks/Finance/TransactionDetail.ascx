@@ -35,6 +35,7 @@
                     <div class="row">
                         <div class="col-md-6">
                             <Rock:PersonPicker ID="ppAuthorizedPerson" CssClass="js-authorizedperson" runat="server" Label="Person" IncludeBusinesses="true" OnSelectPerson="ppAuthorizedPerson_SelectPerson" />
+                            <Rock:RockCheckBox ID="cbShowAsAnonymous" runat="server" Label="Show As Anonymous" />
                             <Rock:DateTimePicker ID="dtTransactionDateTime" runat="server" Label="Transaction Date/Time" Required="true" />
                         </div>
                         <div class="col-md-6">
