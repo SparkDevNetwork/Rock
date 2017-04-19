@@ -35,8 +35,11 @@
                         <div class="col-md-6">
                             <Rock:NumberBox ID="nbQuantity" runat="server" Label="Quantity" NumberType="Integer" Required="true" MinimumValue="1" Text="1" />
                         </div>
-                        <div class="col-md-6">
+                        <div class="col-md-3">
                             <Rock:RockDropDownList ID="ddlCampus" runat="server" Label="Campus"/>
+                        </div>
+                        <div class="col-md-3">
+                            <Rock:LocationPicker ID="lpLocationPicker" runat="server" Label="Attached Location" AllowedPickerModes="Named" CurrentPickerMode="Named" Help="Specify a location only if this resource is constrained or locked to a location."/>
                         </div>
                     </div>
                     <Rock:RockTextBox ID="tbNote" runat="server" Label="Note" TextMode="MultiLine" Rows="4" />

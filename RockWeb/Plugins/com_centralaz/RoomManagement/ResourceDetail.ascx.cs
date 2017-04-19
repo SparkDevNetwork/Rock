@@ -153,6 +153,16 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
                 resource.Name = tbName.Text;
                 resource.CategoryId = cpCategory.SelectedValueAsInt() ?? 0;
                 resource.CampusId = ddlCampus.SelectedValueAsInt();
+
+                if ( lpLocationPicker != null && lpLocationPicker.Location != null )
+                {
+                    resource.LocationId = lpLocationPicker.Location.Id;
+                }
+                else
+                {
+                    resource.LocationId = null;
+                }
+
                 resource.Quantity = nbQuantity.Text.AsIntegerOrNull() ?? 1;
                 resource.Note = tbNote.Text;
                 resource.ApprovalGroupId = gpApprovalGroup.SelectedValueAsId() ?? null;
@@ -246,6 +256,10 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
             tbName.Text = resource.Name;
             cpCategory.SetValue( resource.CategoryId );
             ddlCampus.SelectedValue = resource.CampusId.ToString();
+            if ( resource.LocationId.HasValue )
+            {
+                lpLocationPicker.Location = resource.Location;
+            }
             nbQuantity.Text = resource.Quantity.ToString();
             tbNote.Text = resource.Note;
             gpApprovalGroup.SetValue( resource.ApprovalGroupId );
