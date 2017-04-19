@@ -29,7 +29,12 @@ namespace com.centralaz.RoomManagement.Migrations
                 ALTER TABLE [dbo].[_com_centralaz_RoomManagement_Resource]  WITH CHECK ADD  CONSTRAINT [FK__com_centralaz_RoomManagement_Resource_Location] FOREIGN KEY([LocationId])
                 REFERENCES [dbo].[Location] ([Id])
 " );
+            RockMigrationHelper.AddBlockAttributeValue( "AF897B42-21AA-4A56-B0D7-9E5303D4CE53", "1322186A-862A-4CF1-B349-28ECB67229BA", @"{% include '~~/Assets/Lava/PageListAsTabs.lava' %}<hr class='margin-t-sm'></hr>" ); // Template
+
+            // Add New Reservation Detail page to the Available Resources block page.
+            RockMigrationHelper.AddBlockAttributeValue( "1B4F3A33-656B-4FCB-A446-D481782DE8B4", "85ECB608-B64E-43C0-986C-FC8FD38F9D81", "4CBD2B96-E076-46DF-A576-356BCA5E577F" ); // Detail Page
         }
+
         public override void Down()
         {
             DropForeignKey( "[dbo].[_com_centralaz_RoomManagement_Resource]", "LocationId" );
