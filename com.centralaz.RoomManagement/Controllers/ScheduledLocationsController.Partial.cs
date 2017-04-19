@@ -58,7 +58,8 @@ namespace Rock.Rest.Controllers
             int? reservationId = null,
             string iCalendarContent = "",
             int? setupTime = null,
-            int? cleanupTime = null )
+            int? cleanupTime = null,
+            int? attendeeCount = null )
         {
             var rockContext = new RockContext();
             var locationService = new LocationService( rockContext );
@@ -98,7 +99,8 @@ namespace Rock.Rest.Controllers
                     var treeViewItem = new TreeViewItem();
                     treeViewItem.Id = location.Id.ToString();
                     treeViewItem.Name = System.Web.HttpUtility.HtmlEncode( location.Name );
-                    treeViewItem.IsActive = !reservedLocationIds.Contains( location.Id );
+                    treeViewItem.IsActive = !reservedLocationIds.Contains( location.Id ) &&
+                        ( attendeeCount == null || location.FirmRoomThreshold == null || attendeeCount.Value <= location.FirmRoomThreshold.Value );
                     locationNameList.Add( treeViewItem );
                 }
             }
