@@ -359,8 +359,7 @@ namespace Rock.Jobs
 
                 using ( var rockContext = new RockContext() )
                 {
-                    var workflowTypeService = new WorkflowTypeService( rockContext );
-                    var workflowType = workflowTypeService.Get( workflowTypeGuid );
+                    var workflowType = WorkflowTypeCache.Read( workflowTypeGuid );
                     if ( workflowType != null && ( workflowType.IsActive ?? true ) )
                     {
                         var workflowService = new WorkflowService( rockContext );

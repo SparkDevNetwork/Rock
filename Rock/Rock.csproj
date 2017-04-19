@@ -1071,6 +1071,8 @@
     <Compile Include="Model\Schedule.cs" />
     <Compile Include="Model\ScheduleService.Partial.cs" />
     <Compile Include="Model\WorkflowActionService.Partial.cs" />
+    <Compile Include="PersonProfile\Badge\Giving.cs" />
+    <Compile Include="PersonProfile\Badge\GroupTypeAttendance.cs" />
     <Compile Include="PersonProfile\Badge\InDataView.cs" />
     <Compile Include="Reporting\DataFilter\Person\InRegistrationInstanceRegistrationTemplateFilter.cs" />
     <Compile Include="Reporting\DataFilter\Person\InLocationGeofenceFilter.cs" />
@@ -1154,6 +1156,7 @@
     <Compile Include="Plugin\HotFixes\004_FixGradeRequiredAttribute.cs" />
     <Compile Include="Plugin\HotFixes\005_FixCheckinAdminRoute.cs" />
     <Compile Include="Plugin\HotFixes\006_FixCheckinPrevPages.cs" />
+    <Compile Include="Plugin\HotFixes\022_Fundraising.cs" />
     <Compile Include="Plugin\HotFixes\017_FixBackgroundCheckOptionalCampus.cs" />
     <Compile Include="Plugin\HotFixes\016_SetInactiveFamilies.cs" />
     <Compile Include="Plugin\HotFixes\015_CheckinByBirthdate.cs" />
@@ -1306,6 +1309,11 @@
     <Compile Include="Utility\ExcelHelper.cs" />
     <Compile Include="Utility\ExtensionMethods\QuartzExtensions.cs" />
     <Compile Include="Utility\FileUtilities.cs" />
+    <Compile Include="Web\Cache\WorkflowActionFormAttributeCache.cs" />
+    <Compile Include="Web\Cache\WorkflowActivityTypeCache.cs" />
+    <Compile Include="Web\Cache\WorkflowActionTypeCache.cs" />
+    <Compile Include="Web\Cache\WorkflowActionFormCache.cs" />
+    <Compile Include="Web\Cache\WorkflowTypeCache.cs" />
     <Compile Include="Web\UI\RockHiddenFieldPageStatePersister.cs" />
     <Compile Include="Web\UI\Controls\Grid\LavaBoundField.cs" />
     <Compile Include="Web\UI\Controls\Pickers\DefinedValuesPickerEnhanced.cs" />

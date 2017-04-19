@@ -186,6 +186,10 @@
     <Compile Include="Migrations\201703271603300_TransactionSettledInfo.Designer.cs">
       <DependentUpon>201703271603300_TransactionSettledInfo.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201704031947125_Fundraising.cs" />
+    <Compile Include="Migrations\201704031947125_Fundraising.Designer.cs">
+      <DependentUpon>201704031947125_Fundraising.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 6.0\Version 1.6.0\201609282147388_WaitList.cs" />
     <Compile Include="Migrations\Version 6.0\Version 1.6.0\201609282147388_WaitList.Designer.cs">
       <DependentUpon>201609282147388_WaitList.cs</DependentUpon>
@@ -2475,6 +2479,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201703271603300_TransactionSettledInfo.resx">
       <DependentUpon>201703271603300_TransactionSettledInfo.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201704031947125_Fundraising.resx">
+      <DependentUpon>201704031947125_Fundraising.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 6.0\Version 1.6.0\201609282147388_WaitList.resx">
       <DependentUpon>201609282147388_WaitList.cs</DependentUpon>

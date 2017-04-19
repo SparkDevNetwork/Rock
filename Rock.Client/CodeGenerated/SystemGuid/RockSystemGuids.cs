@@ -23,8 +23,6 @@
 using System;
 using System.Collections.Generic;
 
-#pragma warning disable CS1591
-
 namespace Rock.Client.SystemGuid
 {
     #pragma warning disable CS1591
@@ -135,6 +133,7 @@ namespace Rock.Client.SystemGuid
         public const string FINANCIAL_SOURCE_TYPE = "4F02B41E-AB7D-4345-8A97-3904DDD89B01";
         public const string FINANCIAL_TRANSACTION_REFUND_REASON = "61FE3A58-9F4F-472F-A4E0-5116EB90A323";
         public const string FINANCIAL_TRANSACTION_TYPE = "FFF62A4B-5D88-4DEB-AF8F-8E6178E41FE5";
+        public const string FUNDRAISING_OPPORTUNITY_TYPE = "53C8FFF6-3022-4A2D-9BAE-FD3435BEA43D";
         public const string GROUP_LOCATION_TYPE = "2E68D37C-FB7B-4AA5-9E09-3785D52156CB";
         public const string GROUPTYPE_PURPOSE = "B23F1E45-BC26-4E82-BEB3-9B191FE5CCC3";
         public const string INTERACTION_CHANNEL_MEDIUM = "9bf5777a-961f-49a8-a834-45e5c2077967";
@@ -242,6 +241,7 @@ namespace Rock.Client.SystemGuid
     /// </summary>
     public class EntityType
     {
+        public const string ATTRIBUTE = "5997C8D3-8840-4591-99A5-552919F90CBD";
         public const string AUTHENTICATION_DATABASE = "4E9B798F-BB68-4C0E-9707-0928D15AB020";
         public const string BENEVOLENCE_REQUEST = "CF0CE5C1-9286-4310-9B50-10D040F8EBD2";
         public const string BLOCK = "D89555CA-9AE4-4D62-8AF1-E5E463C1EF65";
@@ -394,6 +394,8 @@ namespace Rock.Client.SystemGuid
     {
         public const string GROUPROLE_FAMILY_MEMBER_ADULT = "2639F9A5-2AAE-4E48-A8C3-4FFE86681E42";
         public const string GROUPROLE_FAMILY_MEMBER_CHILD = "C8B1814F-6AA7-4055-B2D7-48FE20429CB9";
+        public const string GROUPROLE_FUNDRAISINGOPPORTUNITY_LEADER = "253973A5-18F2-49B6-B2F1-F8F84294AAB2";
+        public const string GROUPROLE_FUNDRAISINGOPPORTUNITY_PARTICIPANT = "F82DF077-9664-4DA8-A3D9-7379B690124D";
         public const string GROUPROLE_IMPLIED_RELATIONSHIPS_OWNER = "CB9A0E14-6FCF-4C07-A49A-D7873F45E196";
         public const string GROUPROLE_IMPLIED_RELATIONSHIPS_RELATED = "FEA75948-97CB-4DE9-8A0D-43FA2646F55B";
         public const string GROUPROLE_KNOWN_RELATIONSHIPS_ALLOW_CHECK_IN_BY = "FF9869F1-BC56-4410-8A12-CAFC32C62257";
@@ -424,6 +426,8 @@ namespace Rock.Client.SystemGuid
         public const string GROUPTYPE_APPLICATION_GROUP = "3981CF6D-7D15-4B57-AACE-C0E25D28BD49";
         public const string GROUPTYPE_EVENTATTENDEES = "3311132B-268D-44E9-811A-A56A0835E50A";
         public const string GROUPTYPE_FAMILY = "790E3215-3B10-442B-AF69-616C0DCB998E";
+        public const string GROUPTYPE_FUNDRAISINGOPPORTUNITY = "4BE7FC44-332D-40A8-978E-47B7035D7A0C";
+        public const string GROUPTYPE_GENERAL = "8400497B-C52F-40AE-A529-3FCCB9587101";
         public const string GROUPTYPE_IMPLIED_RELATIONSHIPS = "8C0E5852-F08F-4327-9AA5-87800A6AB53E";
         public const string GROUPTYPE_KNOWN_RELATIONSHIPS = "E0C5A0E2-B7B3-4EF4-820D-BBF7F9A374EF";
         public const string GROUPTYPE_ORGANIZATION_UNIT = "AAB2E9F4-E828-4FEE-8467-73DC9DAB784C";
@@ -445,6 +449,8 @@ namespace Rock.Client.SystemGuid
     /// </summary>
     public class NoteType
     {
+        public const string FUNDRAISING_OPPORTUNITY_COMMENT = "9BB1A7B6-0E51-4E0E-BFC0-1E42F4F2DA95";
+        public const string GROUPMEMBER_NOTE = "FFFC3644-60CD-4D14-A714-E8DCC202A0E1";
         public const string PERSON_EVENT_REGISTRATION = "BBADA8EF-23FC-4B46-B7A7-0F6D31F8C045";
         public const string PERSON_TIMELINE_NOTE = "66A1B9D7-7EFA-40F3-9415-E54437977D60";
         public const string PRAYER_COMMENT = "0EBABD75-0890-4756-A9EE-62626282BB5D";
@@ -749,5 +755,3 @@ namespace Rock.Client.SystemGuid
 
     #pragma warning restore CS1591
 }
-
-#pragma warning restore CS1591

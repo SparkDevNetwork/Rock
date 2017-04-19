@@ -27,6 +27,11 @@ namespace Rock.SystemGuid
     public static class EntityType
     {
         /// <summary>
+        /// The guid for the Rock.Model.Attribute entity.
+        /// </summary>
+        public const string ATTRIBUTE = "5997C8D3-8840-4591-99A5-552919F90CBD";
+
+        /// <summary>
         /// The database authentication provider
         /// </summary>
         public const string AUTHENTICATION_DATABASE = "4E9B798F-BB68-4C0E-9707-0928D15AB020";

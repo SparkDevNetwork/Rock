@@ -20,6 +20,7 @@ using System.Linq;
 using System.Web.Compilation;
 
 using Rock.Data;
+using Rock.Web.Cache;
 
 namespace Rock.Model
 {
@@ -70,7 +71,7 @@ namespace Rock.Model
             }
             else
             {
-                if ( workflow.IsPersisted || workflow.WorkflowType.IsPersisted )
+                if ( workflow.IsPersisted || WorkflowTypeCache.Read( workflow.WorkflowTypeId ).IsPersisted )
                 {
                     if ( workflow.Id == 0 )
                     {

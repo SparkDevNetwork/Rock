@@ -64,16 +64,6 @@ namespace Rock.Workflow
         public abstract Boolean Execute( RockContext rockContext, WorkflowAction action, Object entity, out List<string> errorMessages );
 
         /// <summary>
-        /// Loads the attributes for the action.  The attributes are loaded by the framework prior to executing the action, 
-        /// so typically workflow actions do not need to load the attributes
-        /// </summary>
-        /// <param name="action">The action.</param>
-        public void LoadAttributes( WorkflowAction action )
-        {
-            action.ActionType.LoadAttributes();
-        }
-
-        /// <summary>
         /// Use GetAttributeValue( WorkflowAction action, string key) instead.  Workflow action attribute values are 
         /// specific to the action instance (rather than global).  This method will throw an exception
         /// </summary>
@@ -160,7 +150,7 @@ namespace Rock.Workflow
         /// <returns></returns>
         public static string GetActionAttributeValue( WorkflowAction action, string key )
         {
-            var actionType = action.ActionType;
+            var actionType = action.ActionTypeCache;
 
             if ( actionType != null )
             {

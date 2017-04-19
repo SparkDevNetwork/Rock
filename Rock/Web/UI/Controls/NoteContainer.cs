@@ -386,7 +386,7 @@ namespace Rock.Web.UI.Controls
 
         /// <summary>
         /// Gets or sets a value indicating whether the author's photo should 
-        /// be displayed wiht the note instead of an icon based on the source
+        /// be displayed with the note instead of an icon based on the source
         /// of the note.
         /// </summary>
         public bool UsePersonIcon

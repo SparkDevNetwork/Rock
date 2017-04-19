@@ -398,6 +398,26 @@ $('#{3}').find('.input-group-upper .input-group-addon').on('click', function () 
         }
 
         /// <summary>
+        /// Gets or sets the date range.
+        /// </summary>
+        /// <value>
+        /// The date range.
+        /// </value>
+        public DateRange DateRange
+        {
+            get
+            {
+                return new DateRange( this.LowerValue, this.UpperValue );
+            }
+
+            set
+            {
+                this.LowerValue = value.Start;
+                this.UpperValue = value.End;
+            }
+        }
+
+        /// <summary>
         /// Gets or sets a value indicating whether [read only].
         /// </summary>
         /// <value>

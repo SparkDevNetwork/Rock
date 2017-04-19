@@ -166,7 +166,7 @@ namespace Rock.Field.Types
         public int? GetEditValueAsEntityId( Control control, Dictionary<string, ConfigurationValue> configurationValues )
         {
             Guid guid = GetEditValue( control, configurationValues ).AsGuid();
-            var item = new FinancialAccountService( new RockContext() ).Get( guid );
+            var item = new DataViewService( new RockContext() ).Get( guid );
             return item != null ? item.Id : (int?)null;
         }
 
@@ -178,7 +178,7 @@ namespace Rock.Field.Types
         /// <param name="id">The identifier.</param>
         public void SetEditValueFromEntityId( Control control, Dictionary<string, ConfigurationValue> configurationValues, int? id )
         {
-            var item = new FinancialAccountService( new RockContext() ).Get( id ?? 0 );
+            var item = new DataViewService( new RockContext() ).Get( id ?? 0 );
             string guidValue = item != null ? item.Guid.ToString() : string.Empty;
             SetEditValue( control, configurationValues, guidValue );
         }
@@ -205,7 +205,7 @@ namespace Rock.Field.Types
             if ( guid.HasValue )
             {
                 rockContext = rockContext ?? new RockContext();
-                return new FinancialAccountService( rockContext ).Get( guid.Value );
+                return new DataViewService( rockContext ).Get( guid.Value );
             }
 
             return null;
