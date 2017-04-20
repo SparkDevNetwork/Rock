@@ -26,7 +26,9 @@
                         <Columns>
                             <Rock:RockBoundField DataField="Id" HeaderText="Id" Visible="false" />
                             <Rock:RockBoundField DataField="IsAvailable" HeaderText="IsAvailable" Visible="false" />
-                            <Rock:RockBoundField DataField="Name" HeaderText="Resource" />
+                            <Rock:RockTemplateField HeaderText="Name" >
+                                <ItemTemplate><%# Convert.ToString( Eval( "LocationName" ) ) == string.Empty ? Convert.ToString( Eval( "Name" ) ) : Convert.ToString( Eval( "Name" ) ) + " <em class='text-muted'>(attached to " + Eval( "LocationName" ) + ")" %></em></ItemTemplate>
+                            </Rock:RockTemplateField>
                             <Rock:RockBoundField DataField="Availability" HeaderText="Availability" HtmlEncode="false" />
                         </Columns>
                     </Rock:Grid>

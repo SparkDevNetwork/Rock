@@ -20,7 +20,9 @@
                         <Columns>
                             <Rock:RockBoundField DataField="Id" HeaderText="Id" Visible="false" />
                             <Rock:RockBoundField DataField="Category" HeaderText="Category" />
-                            <Rock:RockBoundField DataField="Name" HeaderText="Name" />
+                            <Rock:RockTemplateField HeaderText="Name" >
+                                <ItemTemplate><%# Convert.ToString( Eval( "Location.Name" ) ) == string.Empty ? Convert.ToString( Eval( "Name" ) ) : Convert.ToString( Eval( "Name" ) ) + " <em class='text-muted'>(attached to " + Eval("Location.Name") + ")" %></em></ItemTemplate>
+                            </Rock:RockTemplateField>
                             <Rock:RockBoundField DataField="Campus" HeaderText="Campus" />
                             <Rock:RockBoundField DataField="Quantity" HeaderText="Quantity" />
                         </Columns>
