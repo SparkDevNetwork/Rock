@@ -49,7 +49,7 @@
                             <Rock:PersonPicker runat="server" ID="ppGroupMemberPerson" Label="Person" CssClass="js-authorizedperson" Required="true" OnSelectPerson="ppGroupMemberPerson_SelectPerson" />
                         </div>
                         <div class="col-md-6">
-                            <Rock:RockCheckBox runat="server" ID="cbIsNotified" Label="Notified" />
+                            <Rock:RockCheckBox runat="server" ID="cbIsNotified" Label="Notified" Help="If this box is unchecked and a <a href='http://www.rockrms.com/Rock/BookContent/7/#servicejobsrelatingtogroups'>group leader notification job</a> is enabled then a notification will be sent to the group's leaders when this group member is saved." />
                         </div>
                     </div>
 

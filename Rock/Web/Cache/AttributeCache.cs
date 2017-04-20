@@ -594,6 +594,11 @@ namespace Rock.Web.Cache
         /// <returns></returns>
         public static AttributeCache Read( Guid guid, RockContext rockContext = null )
         {
+            if ( guid.IsEmpty() )
+            {
+                return null;
+            }
+
             int id = GetOrAddExisting( guid.ToString(),
                 () => LoadByGuid( guid, rockContext ) );
 

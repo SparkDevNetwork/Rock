@@ -25,6 +25,7 @@ using System.Collections.Generic;
 
 namespace Rock.Client.Enums
 {
+    #pragma warning disable CS1591
     /// <summary>
     /// </summary>
     public enum AttendanceGraphBy
@@ -524,4 +525,5 @@ namespace Rock.Client.Enums
         ImmediatePostSave = 0x4,
     }
 
+    #pragma warning restore CS1591
 }

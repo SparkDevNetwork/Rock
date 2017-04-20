@@ -4,6 +4,7 @@
     <ContentTemplate>
 
         <div class="persondetails-grouplist">
+            
             <asp:Repeater ID="rptrGroups" runat="server" >
             <ItemTemplate>
 
@@ -16,6 +17,8 @@
                             <asp:HyperLink ID="hlEditGroup" runat="server" AccessKey="O" ToolTip="Alt+O" CssClass="action"><i class="fa fa-pencil"></i></asp:HyperLink>
                         </div>              
                     </header>
+
+                    <asp:Literal ID="lGroupHeader" runat="server" />
 
                     <div class="row group-details">
                         <div class="col-md-8 clearfix">
@@ -73,10 +76,13 @@
                         </div>
                     </asp:panel>
 
+                    <asp:Literal ID="lGroupFooter" runat="server" />
+
                 </div>
 
             </ItemTemplate>
         </asp:Repeater>
+            
         </div>
 
     </ContentTemplate>

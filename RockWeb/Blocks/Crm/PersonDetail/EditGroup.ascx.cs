@@ -47,12 +47,18 @@ namespace RockWeb.Blocks.Crm.PersonDetail
     [BooleanField( "Hide Title", "Should Title field be hidden when entering new people?.", false, "", 3 )]
     [BooleanField( "Hide Suffix", "Should Suffix field be hidden when entering new people?.", false, "", 4 )]
     [BooleanField( "Hide Grade", "Should Grade field be hidden when entering new people?.", false, "", 5 )]
+    [BooleanField( "Show Age", "Should Age of Family Members be displayed?.", false, "", 6 )]
+    [DefinedValueField( Rock.SystemGuid.DefinedType.PERSON_PHONE_TYPE, "New Person Phone", "The Phone Type to prompt for when adding a new person to family (if any).", false, false, "", "", 7)]
+    [BooleanField("New Person Email", "Should an Email field be displayed when adding a new person to the family?", false, "", 8 )]
     public partial class EditGroup : PersonBlock
     {
         private GroupTypeCache _groupType = null;
         private bool _isFamilyGroupType = false;
         private Group _group = null;
         private bool _canEdit = false;
+        private bool _showAge = false;
+        private bool _showEmail = false;
+        private DefinedValueCache _showPhoneType = null;
 
         protected string basePersonUrl { get; set; }
         protected string GroupTypeName { get; set; }
@@ -109,6 +115,8 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         protected override void OnInit( EventArgs e )
         {
             base.OnInit( e );
+
+            _showAge = GetAttributeValue( "ShowAge" ).AsBoolean();
 
             var rockContext = new RockContext();
 
@@ -212,6 +220,9 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             // Save and Cancel should not confirm exit
             btnSave.OnClientClick = string.Format( "javascript:$('#{0}').val('');return true;", confirmExit.ClientID );
             btnCancel.OnClientClick = string.Format( "javascript:$('#{0}').val('');return true;", confirmExit.ClientID );
+
+            _showEmail = GetAttributeValue( "NewPersonEmail" ).AsBoolean();
+            _showPhoneType = DefinedValueCache.Read( GetAttributeValue( "NewPersonPhone" ).AsGuid() );
         }
 
         /// <summary>
@@ -381,6 +392,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             enableRequiredField( '{4}', false );
             enableRequiredField( '{5}', false );
             enableRequiredField( '{6}_rfv', false );
+            enableRequiredField( '{10}_rfv', false );
         }} else {{
             enableRequiredField('{1}', false)
             enableRequiredField('{2}_rfv', true);
@@ -388,6 +400,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             enableRequiredField('{4}', true);
             enableRequiredField('{5}', true);
             enableRequiredField('{6}_rfv', true);
+            enableRequiredField('{10}_rfv', true);
         }}
 
         // update the scrollbar since our validation box could show
@@ -421,7 +434,8 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                     ddlNewPersonConnectionStatus.ClientID,                          // {6}
                     valSummaryAddPerson.ClientID,                                   // {7}
                     divExistingPerson.ClientID,                                     // {8}
-                    hfActiveTab.ClientID                                            // {9}
+                    hfActiveTab.ClientID,                                           // {9}
+                    dpNewPersonBirthDate.ClientID                                   // {10}
                 );
 
                 ScriptManager.RegisterStartupScript( modalAddPerson, modalAddPerson.GetType(), "modaldialog-validation", script, true );
@@ -530,6 +544,12 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                         lbRemoveMember.ToolTip = string.Format( "Remove from {0}", _groupType.Name );
                         lbRemoveMember.Visible = _canEdit && ( !groupMember.ExistingGroupMember || groupMember.IsInOtherGroups ) && members > 1;
                     }
+
+                    var lFamilyMemberAge = e.Item.FindControl( "lFamilyMemberAge" ) as Literal;
+                    if ( lFamilyMemberAge != null )
+                    {
+                        lFamilyMemberAge.Text = ( _showAge && groupMember.Age.HasValue ) ? string.Format( " ({0})", groupMember.Age ) : string.Empty;
+                    }
                 }
             }
         }
@@ -630,6 +650,10 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             ddlGradePicker.SelectedIndex = 0;
             ddlGradePicker.Visible = !GetAttributeValue( "HideGrade" ).AsBoolean();
 
+            tbNewPersonEmail.Visible = _showEmail;
+            pnNewPersonPhoneNumber.Visible = _showPhoneType != null;
+            pnNewPersonPhoneNumber.Label = _showPhoneType != null ? _showPhoneType.Value : "";
+
             modalAddPerson.Show();
         }
 
@@ -642,19 +666,25 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         {
             var validationMessages = new List<string>();
 
+            bool isValid = true;
             if ( hfActiveTab.Value == "Existing" )
             {
             }
             else
             {
                 DateTime? birthdate = dpNewPersonBirthDate.SelectedDate;
-                if ( dpNewPersonBirthDate.IsValid && !birthdate.HasValue && GetAttributeValue( "RequireBirthdate" ).AsBoolean() )
+                if ( !dpNewPersonBirthDate.IsValid )
+                {
+                    isValid = false;
+                }
+                else if ( dpNewPersonBirthDate.IsValid && !birthdate.HasValue && GetAttributeValue( "RequireBirthdate" ).AsBoolean() )
                 {
                     validationMessages.Add( "Birthdate is Required." );
+                    isValid = false;
                 }
             }
 
-            if ( Page.IsValid && !validationMessages.Any() )
+            if ( isValid )
         {
             if ( hfActiveTab.Value == "Existing" )
             {
@@ -707,6 +737,21 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                 groupMember.SuffixValueId = ddlNewPersonSuffix.SelectedValueAsId();
                 groupMember.Gender = rblNewPersonGender.SelectedValueAsEnum<Gender>();
                 groupMember.MaritalStatusValueId = ddlNewPersonMaritalStatus.SelectedValueAsInt();
+
+                if ( _showEmail )
+                {
+                    groupMember.Email = tbNewPersonEmail.Text;
+                }
+
+                groupMember.PhoneNumbers = new List<GroupMemberPhoneInfo>();
+                if ( _showPhoneType != null && !string.IsNullOrWhiteSpace( pnNewPersonPhoneNumber.Text) )
+                {
+                    var pn = new GroupMemberPhoneInfo();
+                    pn.PhoneTypeId = _showPhoneType.Id;
+                    pn.Number = PhoneNumber.CleanNumber( pnNewPersonPhoneNumber.Text );
+                    groupMember.PhoneNumbers.Add( pn );
+                }
+
                 DateTime? birthdate = dpNewPersonBirthDate.SelectedDate;
                 //if ( birthdate.HasValue )
                 //{
@@ -1093,6 +1138,17 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                                 person.MaritalStatusValueId = groupMemberInfo.MaritalStatusValueId;
                                 person.GradeOffset = groupMemberInfo.GradeOffset;
                                 person.ConnectionStatusValueId = groupMemberInfo.ConnectionStatusValueId;
+                                person.Email = groupMemberInfo.Email;
+                                if ( groupMemberInfo.PhoneNumbers != null && groupMemberInfo.PhoneNumbers.Any() )
+                                {
+                                    foreach( var pnInfo in groupMemberInfo.PhoneNumbers )
+                                    {
+                                        var phoneNumber = new PhoneNumber();
+                                        phoneNumber.NumberTypeValueId = pnInfo.PhoneTypeId;
+                                        phoneNumber.Number = pnInfo.Number;
+                                        person.PhoneNumbers.Add( phoneNumber );
+                                    }
+                                }
                                 if ( isAdult )
                                 {
                                     person.GivingGroupId = _group.Id;
@@ -1171,6 +1227,14 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                                         }
 
                                         groupMember.Group = newGroup;
+                                        
+                                        // If this person is 18 or older, create them as an Adult in their new group
+                                        if ((groupMember.Person.Age ?? 0) >= 18)
+                                        {
+                                            var familyGroupType = GroupTypeCache.Read( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY.AsGuid() );
+                                            groupMember.GroupRoleId = familyGroupType.Roles.First( a => a.Guid == Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_ADULT.AsGuid() ).Id;
+                                        }
+
                                         rockContext.SaveChanges();
 
                                         var newMemberChanges = new List<string>();
@@ -1666,6 +1730,10 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 
         public int? ConnectionStatusValueId { get; set; }
 
+        public string Email { get; set; }
+
+        public List<GroupMemberPhoneInfo> PhoneNumbers { get; set; }
+
         public int? Age
         {
             get
@@ -1721,8 +1789,29 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                 MaritalStatusValueId = person.MaritalStatusValueId;
                 PhotoId = person.PhotoId;
                 ConnectionStatusValueId = person.ConnectionStatusValueId;
+                Email = person.Email;
+                PhoneNumbers = new List<GroupMemberPhoneInfo>();
+                foreach( var pn in person.PhoneNumbers )
+                {
+                    var phoneNumberInfo = new GroupMemberPhoneInfo();
+                    phoneNumberInfo.Id = pn.Id;
+                    phoneNumberInfo.PhoneTypeId = pn.NumberTypeValueId;
+                    phoneNumberInfo.Number = pn.Number;
+                    PhoneNumbers.Add( phoneNumberInfo );
+                }
             }
         }
+    }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    [Serializable]
+    public class GroupMemberPhoneInfo
+    {
+        public int Id { get; set; }
+        public int? PhoneTypeId { get; set; }
+        public string Number { get; set; }
     }
 
     /// <summary>

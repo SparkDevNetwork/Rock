@@ -978,7 +978,7 @@ The SQL can include Lava merge fields:";
                     iconClass = "fa fa-exclamation-triangle";
                 }
 
-                hlScheduleFriendlyText.Text = "<i class='" + iconClass + "'></i> " + metric.Schedule.FriendlyScheduleText;
+                hlScheduleFriendlyText.Text = "<i class='" + iconClass + "'></i> " + metric.Schedule.ToFriendlyScheduleText( true );
             }
             else
             {

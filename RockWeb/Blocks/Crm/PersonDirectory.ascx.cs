@@ -51,8 +51,7 @@ namespace RockWeb.Blocks.Crm
     [IntegerField( "Last Name Characters Required", "The number of characters that need to be entered before allowing a search.", false, 3, "", 6 )]
     [BooleanField( "Show Email", "Should email address be included in the directory?", true, "", 7)]
     [BooleanField( "Show Address", "Should email address be included in the directory?", true, "", 8 )]
-    [DefinedValueField( Rock.SystemGuid.DefinedType.PERSON_PHONE_TYPE, "Show Phones", "The phone numbers to be included in the directory",
-        false, true, "407e7e45-7b2e-4fcd-9605-ecb1339f2453,aa8732fb-2cea-4c76-8d6d-6aaa2c6a4303,2cc66d5a-f61c-4b74-9af9-590a9847c13c", "", 9 )]
+    [DefinedValueField( Rock.SystemGuid.DefinedType.PERSON_PHONE_TYPE, "Show Phones", "The phone numbers to be included in the directory", false, true, "", "", 9 )]
     [BooleanField( "Show Birthday", "Should email address be included in the directory?", true, "", 10 )]
     [BooleanField( "Show Gender", "Should email address be included in the directory?", true, "", 11 )]
     [BooleanField( "Show Grade", "Should grade be included in the directory?", false, "", 12 )]

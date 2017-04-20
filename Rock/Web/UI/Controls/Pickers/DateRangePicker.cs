@@ -339,7 +339,11 @@ $('#{3}').find('.input-group-upper .input-group-addon').on('click', function () 
 
             if ( !string.IsNullOrEmpty( this.CssClass ) )
             {
-                writer.AddAttribute( "class", this.CssClass );
+                writer.AddAttribute( "class", "picker-daterange " + this.CssClass );
+            }
+            else
+            {
+                writer.AddAttribute( "class", "picker-daterange" );
             }
 
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
@@ -394,6 +398,26 @@ $('#{3}').find('.input-group-upper .input-group-addon').on('click', function () 
             {
                 EnsureChildControls();
                 _tbUpperValue.SelectedDate = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the date range.
+        /// </summary>
+        /// <value>
+        /// The date range.
+        /// </value>
+        public DateRange DateRange
+        {
+            get
+            {
+                return new DateRange( this.LowerValue, this.UpperValue );
+            }
+
+            set
+            {
+                this.LowerValue = value.Start;
+                this.UpperValue = value.End;
             }
         }
 
@@ -538,16 +562,7 @@ $('#{3}').find('.input-group-upper .input-group-addon').on('click', function () 
         /// <returns></returns>
         public static DateRange CalculateDateRangeFromDelimitedValues( string delimitedValues )
         {
-            if ( !string.IsNullOrWhiteSpace( delimitedValues ) && delimitedValues.Contains( "," ) )
-            {
-                var dates = delimitedValues.Split( ',' );
-                if ( dates.Length == 2 )
-                {
-                    return new DateRange( dates[0].AsDateTime(), dates[1].AsDateTime() );
-                }
-            }
-
-            return new DateRange( null, null );
+            return DateRange.FromDelimitedValues( delimitedValues );
         }
     }
 }
