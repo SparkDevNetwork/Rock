@@ -1,0 +1,21 @@
+<div class="col-sm-6 margin-b-md">
+  <div class="media">
+    
+    <div class="pull-left">
+      <img src="{{ member.Member.Person.PhotoUrl }}&height=180&width=180&mode=crop&scale=both" height="60" width="60" />
+    </div>
+    <div class="media-body">
+			<strong class="media-heading">{{ member.Member.Person.FullName }}</strong>
+
+      <div>
+        {% for phone in member.Member.Person.PhoneNumbers %}
+          {% if phone.NumberTypeValue.Id == 13 or phone.NumberTypeValue.Id == 12 %}
+            {{ phone.NumberFormatted }} <small>({{ phone.NumberTypeValue.Value }})</small><br />
+          {% endif %}
+        {% endfor %}
+
+        <a href="mailto:{{ member.Member.Person.Email }}">{{ member.Member.Person.Email }}</a>
+      </div>
+    </div>
+  </div>
+</div>

@@ -2,7 +2,7 @@
   {% include '~~/Assets/Lava/Toolboxes/Neighborhood.lava' %}
 {% endcomment %}
 
-
+{% assign publicRosterPage = "/page/1498" %}
 {% assign fullRosterPage = "/page/558" %}
 
 

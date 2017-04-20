@@ -2,9 +2,10 @@
   {% include '~~/Assets/Lava/Toolboxes/YoungAdults.lava' %}
 {% endcomment %}
 
-
 {% assign fullRosterPage = "/page/1271" %}
+{% assign publicRosterPage = "/page/1497" %}
 {% assign memberDetailPage = "/page/1270" %}
+
 
 {% if AllowedActions.View == true || AllowedActions.Edit == true || AllowedActions.Administrate == true %}
 
