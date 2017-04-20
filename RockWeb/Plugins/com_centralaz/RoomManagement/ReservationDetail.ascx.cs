@@ -57,6 +57,47 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
         #endregion
 
         #region Properties
+        /// <summary>
+        /// Gets the base resource picker REST URL.
+        /// </summary>
+        /// <value>
+        /// The base resource REST URL.
+        /// </value>
+        private string BaseResourceRestUrl 
+        {
+            get
+            {
+                var baseResourceRestUrl = ViewState["BaseResourceRestUrl"] as string;
+
+                if ( baseResourceRestUrl == null )
+                {
+                    ViewState["BaseResourceRestUrl"] = srpResource.ItemRestUrlExtraParams;
+                    baseResourceRestUrl = srpResource.ItemRestUrlExtraParams;
+                }
+                return baseResourceRestUrl;
+            }
+        }
+
+        /// <summary>
+        /// Gets the base location picker REST URL.
+        /// </summary>
+        /// <value>
+        /// The base location REST URL.
+        /// </value>
+        private string BaseLocationRestUrl
+        {
+            get
+            {
+                var baseLocationRestUrl = ViewState["BaseLocationRestUrl"] as string;
+
+                if ( baseLocationRestUrl == null )
+                {
+                    ViewState["BaseLocationRestUrl"] = slpLocation.ItemRestUrlExtraParams;
+                    baseLocationRestUrl = slpLocation.ItemRestUrlExtraParams;
+                }
+                return baseLocationRestUrl;
+            }
+        }
 
         /// <summary>
         /// Gets or sets the state of the resources.
@@ -575,6 +616,7 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         private void gResources_Add( object sender, EventArgs e )
         {
+            LoadPickers();
             gResources_ShowEdit( Guid.Empty );
         }
 
@@ -691,8 +733,8 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
                 {
                     if ( !canApprove )
                     {
-                        e.Row.Cells[3].Controls[0].Visible = false;
                         e.Row.Cells[4].Controls[0].Visible = false;
+                        e.Row.Cells[5].Controls[0].Visible = false;
                     }
                 }
             }
@@ -751,10 +793,31 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
                 LocationsState.RemoveEntity( reservationLocation.Guid );
             }
 
+            // Add any location attached resources to the Resources grid for the location that was just selected.
+            var attachedResources = new ResourceService( new RockContext() ).Queryable().Where( r => r.LocationId == reservationLocation.LocationId );
+            if ( attachedResources.Any() )
+            {
+                foreach ( var resource in attachedResources )
+                {
+                    var reservationResource = new ReservationResource();
+                    reservationResource.ResourceId = resource.Id;
+                    // Do you always get all the quantity of this resource for "attached" resources? I can't see it any other way.
+                    reservationResource.Quantity = resource.Quantity;
+                    reservationResource.ApprovalState = ReservationResourceApprovalState.Unapproved;
+                    ResourcesState.Add( reservationResource );
+                }
+                BindReservationResourcesGrid();
+                wpResources.Expanded = true;
+            }
+
             LocationsState.Add( reservationLocation );
             BindReservationLocationsGrid();
             dlgReservationLocation.Hide();
             hfActiveDialog.Value = string.Empty;
+
+            // Re load the pickers because changing a location should include/exclude resources attached
+            // to locations.
+            LoadPickers();
         }
 
         /// <summary>
@@ -765,8 +828,28 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
         protected void gLocations_Delete( object sender, RowEventArgs e )
         {
             Guid rowGuid = (Guid)e.RowKeyValue;
-            LocationsState.RemoveEntity( rowGuid );
 
+            // check for attached resources and remove them too
+            var reservationLocation = LocationsState.FirstOrDefault( a => a.Guid == rowGuid );
+            if ( reservationLocation != null && reservationLocation.LocationId != null )
+            {
+                var attachedResources = new ResourceService( new RockContext() ).Queryable().Where( r => r.Location.Id == reservationLocation.LocationId );
+                if ( attachedResources.Any() )
+                {
+                    foreach ( var resource in attachedResources )
+                    {
+                        var item = ResourcesState.FirstOrDefault( a => a.ResourceId == resource.Id );
+                        if ( item != null )
+                        {
+                            ResourcesState.Remove( item );
+                        }
+                    }
+                    BindReservationResourcesGrid();
+                    //wpResources.Expanded = true;
+                }
+            }
+
+            LocationsState.RemoveEntity( rowGuid );
             BindReservationLocationsGrid();
         }
 
@@ -1109,9 +1192,14 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
             srpResource.Enabled = true;
             slpLocation.Enabled = true;
             int reservationId = PageParameter( "ReservationId" ).AsInteger();
+
+            // Get the selected locations and pass them as extra params to the Resource rest call so
+            // we don't get any resources that are attached to other/non-selected locations.
+            var locationIds = LocationsState.Select( a => a.LocationId ).ToList().AsDelimited(",");
+
             string encodedCalendarContent = Uri.EscapeUriString( sbSchedule.iCalendarContent );
-            srpResource.ItemRestUrlExtraParams += String.Format( "&reservationId={0}&iCalendarContent={1}&setupTime={2}&cleanupTime={3}", reservationId, encodedCalendarContent, nbSetupTime.Text.AsInteger(), nbCleanupTime.Text.AsInteger() );
-            slpLocation.ItemRestUrlExtraParams += String.Format( "?reservationId={0}&iCalendarContent={1}&setupTime={2}&cleanupTime={3}&attendeeCount={4}", reservationId, encodedCalendarContent, nbSetupTime.Text.AsInteger(), nbCleanupTime.Text.AsInteger(), nbAttending.Text.AsInteger() );
+            srpResource.ItemRestUrlExtraParams = BaseResourceRestUrl + String.Format( "&reservationId={0}&iCalendarContent={1}&setupTime={2}&cleanupTime={3}{4}", reservationId, encodedCalendarContent, nbSetupTime.Text.AsInteger(), nbCleanupTime.Text.AsInteger(), locationIds.IsNullOrWhiteSpace() ? "" : "&locationIds=" + locationIds );
+            slpLocation.ItemRestUrlExtraParams = BaseLocationRestUrl + String.Format( "?reservationId={0}&iCalendarContent={1}&setupTime={2}&cleanupTime={3}&attendeeCount={4}", reservationId, encodedCalendarContent, nbSetupTime.Text.AsInteger(), nbCleanupTime.Text.AsInteger(), nbAttending.Text.AsInteger() );
         }
 
         private Reservation UpdateApproval( Reservation reservation, RockContext rockContext )

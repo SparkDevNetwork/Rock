@@ -87,6 +87,9 @@
                                 <Rock:Grid ID="gResources" runat="server" AllowPaging="false" DisplayType="Light" RowItemText="Resource" ShowConfirmDeleteDialog="false" OnRowDataBound="gResources_RowDataBound">
                                     <Columns>
                                         <Rock:RockBoundField DataField="Resource.Name" HeaderText="Resource" />
+                                        <Rock:RockTemplateField>
+                                                <ItemTemplate><em class="text-muted"><%# Convert.ToString( Eval( "Resource.Location.Name") ) == string.Empty ? "" : "(attached to " +  Eval("Resource.Location.Name") + ")" %></em></ItemTemplate>
+                                            </Rock:RockTemplateField>
                                         <Rock:RockBoundField DataField="Quantity" HeaderText="Quantity" />
                                         <Rock:RockBoundField DataField="ApprovalState" HeaderText="Approved?" />
                                         <Rock:LinkButtonField CssClass="btn btn-success" OnClick="gResources_ApproveClick" Text="Approve" Visible="true" />

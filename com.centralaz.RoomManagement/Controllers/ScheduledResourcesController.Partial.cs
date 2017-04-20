@@ -64,6 +64,7 @@ namespace Rock.Rest.Controllers
             string iCalendarContent = "",
             int? setupTime = null,
             int? cleanupTime = null,
+            string locationIds = "",
             string entityQualifier = null,
             string entityQualifierValue = null,
             bool showUnnamedEntityItems = true,
@@ -73,7 +74,7 @@ namespace Rock.Rest.Controllers
             string defaultIconCssClass = null )
         {
             Person currentPerson = GetPerson();
-
+            var locationIdsList = locationIds.SplitDelimitedValues().AsIntegerList();
             var includedCategoryIdList = includedCategoryIds.SplitDelimitedValues().AsIntegerList().Except( new List<int> { 0 } ).ToList();
             var excludedCategoryIdList = excludedCategoryIds.SplitDelimitedValues().AsIntegerList().Except( new List<int> { 0 } ).ToList();
             int entityTypeId = EntityTypeCache.Read( com.centralaz.RoomManagement.SystemGuid.EntityType.RESOURCE.AsGuid() ).Id;
@@ -96,7 +97,6 @@ namespace Rock.Rest.Controllers
             {
                 qry = qry.Where( a => a.ParentCategoryId == id );
             }
-
 
             if ( includedCategoryIdList.Any() )
             {
@@ -141,6 +141,12 @@ namespace Rock.Rest.Controllers
                 var resourceQry = resourceService.Queryable();
                 if ( resourceQry.Where( r => r.CategoryId == parentItemId ) != null )
                 {
+                    // Exclude any resources that are attached to locations other than the ones provided here.
+                    if ( locationIdsList.Any() )
+                    {
+                        resourceQry = resourceQry.Where( r => r.LocationId == null || locationIdsList.Contains( r.LocationId.Value ) );
+                    }
+
                     // do a ToList to load from database prior to ordering by name, just in case Name is a virtual property
                     var itemsList = resourceQry.Where( r => r.CategoryId == parentItemId ).ToList();
 
