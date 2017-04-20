@@ -59,7 +59,7 @@ namespace church.ccv.Badges.NextSteps
                 </a>
             </div>", 
                 badge.Id // 0
-                , Person.NickName // 1
+                , Person.NickName.EncodeHtml() // 1
                 , Person.Guid // 2
                 , GetAttributeValue(badge, "BaptismEventId") // 3
                 , baptismRegistrationPageId // 4
