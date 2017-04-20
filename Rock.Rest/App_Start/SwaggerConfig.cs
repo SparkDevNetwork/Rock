@@ -14,9 +14,10 @@
 // limitations under the License.
 // </copyright>
 //
+using Swashbuckle.Application;
+using System.IO;
 using System.Linq;
 using System.Web.Http;
-using Swashbuckle.Application;
 
 namespace Rock.Rest
 {
@@ -29,13 +30,13 @@ namespace Rock.Rest
         /// Registers the specified configuration.
         /// </summary>
         /// <param name="config">The configuration.</param>
-        public static void Register( HttpConfiguration config )
+        public static void Register(HttpConfiguration config)
         {
-            var thisAssembly = typeof( SwaggerConfig ).Assembly;
+            var thisAssembly = typeof(SwaggerConfig).Assembly;
 
             config
-                .EnableSwagger( c =>
-                     {
+                .EnableSwagger(c =>
+                    {
                          // By default, the service root url is inferred from the request used to access the docs.
                          // However, there may be situations (e.g. proxy and load-balanced environments) where this does not
                          // resolve correctly. You can workaround this by providing your own code to determine the root URL.
@@ -52,7 +53,7 @@ namespace Rock.Rest
                          // hold additional metadata for an API. Version and title are required but you can also provide
                          // additional fields by chaining methods off SingleApiVersion.
                          //
-                         c.SingleApiVersion( "v1", "Rock.Rest" );
+                         c.SingleApiVersion("v1", "Rock.Rest");
 
                          // If your API has multiple versions, use "MultipleApiVersions" instead of "SingleApiVersion".
                          // In this case, you must provide a lambda that tells Swashbuckle which actions should be
@@ -117,7 +118,7 @@ namespace Rock.Rest
                          // those comments into the generated docs and UI. You can enable this by providing the path to one or
                          // more Xml comment files.
                          //
-                         //c.IncludeXmlComments(GetXmlCommentsPath());
+                         c.IncludeXmlComments(Path.Combine(System.Web.Hosting.HostingEnvironment.ApplicationPhysicalPath, "bin", "Rock.Rest.XML"));
 
                          // Swashbuckle makes a best attempt at generating Swagger compliant JSON schemas for the various types
                          // exposed in your API. However, there may be occasions when more control of the output is needed.
@@ -190,17 +191,17 @@ namespace Rock.Rest
                          // with the same path (sans query string) and HTTP method. You can workaround this by providing a
                          // custom strategy to pick a winner or merge the descriptions for the purposes of the Swagger docs 
                          //
-                         c.ResolveConflictingActions( apiDescriptions =>
-                          {
-                              return apiDescriptions.First();
-                          } );
+                         c.ResolveConflictingActions(apiDescriptions =>
+                         {
+                             return apiDescriptions.First();
+                         });
                          // Wrap the default SwaggerGenerator with additional behavior (e.g. caching) or provide an
                          // alternative implementation for ISwaggerProvider with the CustomProvider option.
                          //
                          //c.CustomProvider((defaultProvider) => new CachingSwaggerProvider(defaultProvider));
-                     } )
-                .EnableSwaggerUi( c =>
-                     {
+                     })
+                .EnableSwaggerUi(c =>
+                    {
                          // Use the "InjectStylesheet" option to enrich the UI with one or more additional CSS stylesheets.
                          // The file must be included in your project as an "Embedded Resource", and then the resource's
                          // "Logical Name" is passed to the method as shown below.
@@ -229,7 +230,7 @@ namespace Rock.Rest
                          // It can be set to "None" (default), "List" (shows operations for each resource),
                          // or "Full" (fully expanded: shows operations and their details).
                          //
-                         c.DocExpansion( DocExpansion.None );
+                         c.DocExpansion(DocExpansion.None);
 
                          // Specify which HTTP operations will have the 'Try it out!' option. An empty paramter list disables
                          // it for all operations.
