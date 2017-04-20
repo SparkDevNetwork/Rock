@@ -126,6 +126,11 @@ namespace Rock.SystemGuid
         #region Financial Source
 
         /// <summary>
+        /// The financial source of bank check
+        /// </summary>
+        public const string FINANCIAL_SOURCE_TYPE_BANK_CHECK = "61E46A46-7399-4817-A6EC-3D8495E2316E";
+
+        /// <summary>
         /// The financial source of Website
         /// </summary>
         public const string FINANCIAL_SOURCE_TYPE_WEBSITE = "7D705CE7-7B11-4342-A58E-53617C5B4E69";
@@ -278,6 +283,11 @@ namespace Rock.SystemGuid
         /// Marital Status of Single
         /// </summary>
         public const string PERSON_MARITAL_STATUS_SINGLE = "F19FC180-FE8F-4B72-A59C-8013E3B0EB0D";
+
+        /// <summary>
+        /// Marital Status of Divorced
+        /// </summary>
+        public const string PERSON_MARITAL_STATUS_DIVORCED = "3B689240-24C2-434B-A7B9-A4A6CBA7928C";
 
         #endregion
 

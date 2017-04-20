@@ -62,7 +62,6 @@ namespace RockWeb.Blocks.Cms
     </div>
 </div>
 ", "", 1 )]
-    [BooleanField("Enable Debug", "Show merge data to help you see what's available to you.", false, "", 2)]
 
     [CodeEditorField( "Edit Header", "The HTML to display above list when editing values.", CodeEditorMode.Html, CodeEditorTheme.Rock, 100, true, @"
 <div class='panel panel-block'>
@@ -439,19 +438,6 @@ namespace RockWeb.Blocks.Cms
             mergeFields.Add( "AllowedActions", securityActions ); 
             
             string template = GetAttributeValue( "LavaTemplate" );
-
-            // show debug info
-            if ( GetAttributeValue( "EnableDebug" ).AsBoolean() && IsUserAuthorized( Authorization.EDIT ) )
-            {
-                string postbackCommands = @"
-<h5>Available Postback Commands</h5>
-<ul>
-    <li><strong>EditList:</strong> Shows a panel for modifing group info.<code>{{ '' | Postback:'EditList' }}</code></li>
-</ul>
-";
-                lDebug.Visible = true;
-                lDebug.Text = mergeFields.lavaDebugInfo( null, string.Empty, postbackCommands );
-            }
 
             lContent.Text = template.ResolveMergeFields( mergeFields ).ResolveClientIds( upnlContent.ClientID );
         }

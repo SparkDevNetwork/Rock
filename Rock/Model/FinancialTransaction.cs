@@ -47,6 +47,15 @@ namespace Rock.Model
         public int? AuthorizedPersonAliasId { get; set; }
 
         /// <summary>
+        /// Gets or sets a value indicating whether to show the transaction as anonymous when displayed publicly, for example on a list of fundraising contributors
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [show as anonymous]; otherwise, <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool ShowAsAnonymous { get; set; }
+
+        /// <summary>
         /// Gets or sets BatchId of the <see cref="Rock.Model.FinancialBatch"/> that contains this transaction.
         /// </summary>
         /// <value>
@@ -202,6 +211,43 @@ namespace Rock.Model
         /// The processed date time.
         /// </value>
         public DateTime? ProcessedDateTime { get; set; }
+
+        /// <summary>
+        /// Gets or sets a flag indicating if the transaction has been settled by the processor/gateway.
+        /// </summary>
+        /// <value>
+        /// The is settled.
+        /// </value>
+        [DataMember]
+        public bool? IsSettled { get; set; }
+
+        /// <summary>
+        /// The group/batch identifier used by the processor/gateway when the transaction has been settled.
+        /// </summary>
+        /// <value>
+        /// The settled group identifier.
+        /// </value>
+        [DataMember]
+        [MaxLength( 100 )]
+        public string SettledGroupId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the date that the transaction was settled by the processor/gateway.
+        /// </summary>
+        /// <value>
+        /// The settled date.
+        /// </value>
+        [DataMember]
+        public DateTime? SettledDate { get; set; }
+
+        /// <summary>
+        /// Gets or sets a flag indicating if the transaction has been reconciled or not.
+        /// </summary>
+        /// <value>
+        /// The is settled.
+        /// </value>
+        [DataMember]
+        public bool? IsReconciled { get; set; }
 
         /// <summary>
         /// Gets the status of the transaction provided by the payment gateway (i.e. Pending, Complete, Failed)

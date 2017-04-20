@@ -339,6 +339,11 @@ namespace Rock.SystemGuid
         public const string SLIDING_DATE_RANGE = "55810BC5-45EA-4044-B783-0CCE0A445C6F";
 
         /// <summary>
+        /// Social Security Number
+        /// </summary>
+        public const string SSN = "4722C99A-C078-464A-968F-13AB5E8E318F";
+
+        /// <summary>
         /// Text field type
         /// </summary>
         public const string TEXT = "9C204CD0-1233-41C5-818A-C5DA439445AA";

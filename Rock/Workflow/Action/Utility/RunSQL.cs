@@ -64,27 +64,14 @@ namespace Rock.Workflow.Action
 
                 if ( sqlResult != null )
                 {
-                    Guid? attributeGuid = GetAttributeValue( action, "ResultAttribute" ).AsGuidOrNull();
-                    if ( attributeGuid.HasValue )
+                    string resultValue = sqlResult.ToString();
+                    var attribute = SetWorkflowAttributeValue( action, "ResultAttribute", resultValue );
+                    if ( attribute != null )
                     {
-                        var attribute = AttributeCache.Read( attributeGuid.Value, rockContext );
-                        if ( attribute != null )
-                        {
-                            string resultValue = sqlResult.ToString();
-
-                            if ( attribute.EntityTypeId == new Rock.Model.Workflow().TypeId )
-                            {
-                                action.Activity.Workflow.SetAttributeValue( attribute.Key, resultValue );
-                                action.AddLogEntry( string.Format( "Set '{0}' attribute to '{1}'.", attribute.Name, resultValue ) );
-                            }
-                            else if ( attribute.EntityTypeId == new Rock.Model.WorkflowActivity().TypeId )
-                            {
-                                action.Activity.SetAttributeValue( attribute.Key, resultValue );
-                                action.AddLogEntry( string.Format( "Set '{0}' attribute to '{1}'.", attribute.Name, resultValue ) );
-                            }
-                        }
+                        action.AddLogEntry( string.Format( "Set '{0}' attribute to '{1}'.", attribute.Name, resultValue ) );
                     }
                 }
+
                 return true;
             }
             catch (Exception ex)

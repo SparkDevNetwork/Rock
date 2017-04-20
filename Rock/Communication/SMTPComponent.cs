@@ -170,32 +170,13 @@ namespace Rock.Communication.Transport
                         string replyTo = communication.GetMediumDataValue( "ReplyTo" );
                         if ( !string.IsNullOrWhiteSpace( replyTo ) )
                         {
-                            message.ReplyToList.Add( new MailAddress( replyTo ) );
+                            // Resolve any possible merge fields in the replyTo address
+                            message.ReplyToList.Add( new MailAddress( replyTo.ResolveMergeFields( mergeFields, currentPerson ) ) );
                         }
                     }
                     catch { }
 
                     CheckSafeSender( message, globalAttributes );
-
-                    // CC
-                    string cc = communication.GetMediumDataValue( "CC" );
-                    if ( !string.IsNullOrWhiteSpace( cc ) )
-                    {
-                        foreach ( string ccRecipient in cc.SplitDelimitedValues() )
-                        {
-                            message.CC.Add( new MailAddress( ccRecipient ) );
-                        }
-                    }
-
-                    // BCC
-                    string bcc = communication.GetMediumDataValue( "BCC" );
-                    if ( !string.IsNullOrWhiteSpace( bcc ) )
-                    {
-                        foreach ( string bccRecipient in bcc.SplitDelimitedValues() )
-                        {
-                            message.Bcc.Add( new MailAddress( bccRecipient ) );
-                        }
-                    }
 
                     message.IsBodyHtml = true;
                     message.Priority = MailPriority.Normal;
@@ -241,6 +222,8 @@ namespace Rock.Communication.Transport
                                     try
                                     {
                                         message.To.Clear();
+                                        message.CC.Clear();
+                                        message.Bcc.Clear();
                                         message.Headers.Clear();
                                         message.AlternateViews.Clear();
 
@@ -248,6 +231,30 @@ namespace Rock.Communication.Transport
 
                                         // Create merge field dictionary
                                         var mergeObjects = recipient.CommunicationMergeValues( mergeFields );
+                                        
+                                        // CC
+                                        string cc = communication.GetMediumDataValue( "CC" );
+                                        if ( !string.IsNullOrWhiteSpace( cc ) )
+                                        {
+                                            // Resolve any possible merge fields in the cc address
+                                            cc = cc.ResolveMergeFields( mergeObjects, currentPerson );
+                                            foreach ( string ccRecipient in cc.SplitDelimitedValues() )
+                                            {
+                                                message.CC.Add( new MailAddress( ccRecipient ) );
+                                            }
+                                        }
+
+                                        // BCC
+                                        string bcc = communication.GetMediumDataValue( "BCC" );
+                                        if ( !string.IsNullOrWhiteSpace( bcc ) )
+                                        {
+                                            bcc = bcc.ResolveMergeFields( mergeObjects, currentPerson );
+                                            foreach ( string bccRecipient in bcc.SplitDelimitedValues() )
+                                            {
+                                                // Resolve any possible merge fields in the bcc address
+                                                message.Bcc.Add( new MailAddress( bccRecipient ) );
+                                            }
+                                        }
 
                                         // Subject
                                         message.Subject = communication.Subject.ResolveMergeFields( mergeObjects, currentPerson, communication.EnabledLavaCommands );
@@ -393,21 +400,6 @@ namespace Rock.Communication.Transport
 
                 CheckSafeSender( message, globalAttributes );
 
-                if ( !string.IsNullOrWhiteSpace( template.Cc ) )
-                {
-                    foreach ( string ccRecipient in template.Cc.SplitDelimitedValues() )
-                    {
-                        message.CC.Add( new MailAddress( ccRecipient ) );
-                    }
-                }
-
-                if ( !string.IsNullOrWhiteSpace( template.Bcc ) )
-                {
-                    foreach ( string ccRecipient in template.Bcc.SplitDelimitedValues() )
-                    {
-                        message.Bcc.Add( new MailAddress( ccRecipient ) );
-                    }
-                }
 
                 message.IsBodyHtml = true;
                 message.Priority = MailPriority.Normal;
@@ -437,6 +429,28 @@ namespace Rock.Communication.Transport
                         {
                             message.To.Clear();
                             message.To.Add( to );
+
+                            message.CC.Clear();
+                            if ( !string.IsNullOrWhiteSpace( template.Cc ) )
+                            {
+                                // Resolve any lava in the Cc field
+                                var cc = template.Cc.ResolveMergeFields( recipientData.MergeFields );
+                                foreach ( string ccRecipient in cc.SplitDelimitedValues() )
+                                {
+                                    message.CC.Add( new MailAddress( ccRecipient ) );
+                                }
+                            }
+
+                            message.Bcc.Clear();
+                            if ( !string.IsNullOrWhiteSpace( template.Bcc ) )
+                            {
+                                // Resolve any lava in the Bcc field
+                                var bcc = template.Bcc.ResolveMergeFields( recipientData.MergeFields );
+                                foreach ( string ccRecipient in bcc.SplitDelimitedValues() )
+                                {
+                                    message.Bcc.Add( new MailAddress( ccRecipient ) );
+                                }
+                            }
 
                             message.Headers.Clear();
 

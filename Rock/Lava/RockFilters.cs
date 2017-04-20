@@ -43,6 +43,7 @@ using Rock.Model;
 using Rock.Security;
 using Rock.Web.Cache;
 using Rock.Web.UI;
+using UAParser;
 
 namespace Rock.Lava
 {
@@ -769,81 +770,24 @@ namespace Rock.Lava
         }
 
         /// <summary>
-        /// Dates from i cal.
+        /// Returns the occurrence Dates from an iCal string or list.
         /// </summary>
-        /// <param name="input">The input.</param>
-        /// <param name="option">The option.</param>
-        /// <returns></returns>
+        /// <param name="input">The input is either an iCal string or a list of iCal strings.</param>
+        /// <param name="option">The quantity option (either an integer or "all").</param>
+        /// <returns>a list of datetimes</returns>
         public static List<DateTime> DatesFromICal( object input, object option = null )
         {
-            // if no option was specified, default to returning just 1 (to preserve previous behavior)
-            option = option ?? 1;
-
-            int returnCount = 1;
-            if ( option.GetType() == typeof( int ) )
-            {
-                returnCount = (int)option;
-            }
-            else if ( option.GetType() == typeof( string ) )
-            {
-                // if a string of "all" is specified for the option, return all of the dates
-                if ( string.Equals( (string)option, "all", StringComparison.OrdinalIgnoreCase ) )
-                {
-                    returnCount = int.MaxValue;
-                }
-            }
-
-            List<DateTime> nextOccurrences = new List<DateTime>();
-
-            if ( input is string )
-            {
-                nextOccurrences = GetOccurrenceDates( (string)input, returnCount );
-            }
-            else if ( input is IList )
-            {
-                foreach ( var item in input as IList )
-                {
-                    if ( item is string )
-                    {
-                        nextOccurrences.AddRange( GetOccurrenceDates( (string)item, returnCount ) );
-                    }
-                }
-            }
-
-            nextOccurrences.Sort( ( a, b ) => a.CompareTo( b ) );
-
-            return nextOccurrences.Take( returnCount ).ToList();
+            return DatesFromICal( input, option, endDateTimeOption: null );
         }
 
         /// <summary>
-        /// Gets the occurrence dates.
+        /// Returns the occurrence Dates from an iCal string or list.
         /// </summary>
-        /// <param name="iCalString">The i cal string.</param>
-        /// <param name="returnCount">The return count.</param>
-        /// <returns></returns>
-        private static List<DateTime> GetOccurrenceDates( string iCalString, int returnCount )
-        {
-            iCalendar calendar = iCalendar.LoadFromStream( new StringReader( iCalString ) ).First() as iCalendar;
-            DDay.iCal.Event calendarEvent = calendar.Events[0] as Event;
-
-            if ( calendarEvent.DTStart != null )
-            {
-                List<Occurrence> dates = calendar.GetOccurrences( RockDateTime.Now, RockDateTime.Now.AddYears( 1 ) ).Take( returnCount ).ToList();
-                return dates.Select( d => d.Period.StartTime.Value ).ToList();
-            }
-            else
-            {
-                return new List<DateTime>();
-            }
-        }
-
-        /// <summary>
-        /// End dates from i cal.
-        /// </summary>
-        /// <param name="input">The input.</param>
-        /// <param name="option">The option.</param>
-        /// <returns></returns>
-        public static List<DateTime> EndDatesFromICal( object input, object option = null )
+        /// <param name="input">The input is either an iCal string or a list of iCal strings.</param>
+        /// <param name="option">The quantity option (either an integer or "all").</param>
+        /// <param name="endDateTimeOption">The 'enddatetime' option if supplied will return the ending datetime of the occurrence; otherwise the start datetime is returned.</param>
+        /// <returns>a list of datetimes</returns>
+        public static List<DateTime> DatesFromICal( object input, object option = null, object endDateTimeOption = null )
         {
             // if no option was specified, default to returning just 1 (to preserve previous behavior)
             option = option ?? 1;
@@ -862,11 +806,13 @@ namespace Rock.Lava
                 }
             }
 
+            bool useEndDateTime = ( endDateTimeOption is string && ( string ) endDateTimeOption == "enddatetime" );
+
             List<DateTime> nextOccurrences = new List<DateTime>();
 
             if ( input is string )
             {
-                nextOccurrences = GetOccurrenceEndDates( ( string )input, returnCount );
+                nextOccurrences = GetOccurrenceDates( ( string )input, returnCount, useEndDateTime );
             }
             else if ( input is IList )
             {
@@ -874,7 +820,7 @@ namespace Rock.Lava
                 {
                     if ( item is string )
                     {
-                        nextOccurrences.AddRange( GetOccurrenceEndDates( ( string )item, returnCount ) );
+                        nextOccurrences.AddRange( GetOccurrenceDates( ( string )item, returnCount, useEndDateTime ) );
                     }
                 }
             }
@@ -889,13 +835,19 @@ namespace Rock.Lava
         /// </summary>
         /// <param name="iCalString">The i cal string.</param>
         /// <param name="returnCount">The return count.</param>
-        /// <returns></returns>
-        private static List<DateTime> GetOccurrenceEndDates( string iCalString, int returnCount )
+        /// <param name="useEndDateTime">if set to <c>true</c> uses the EndTime in the returned dates; otherwise it uses the StartTime.</param>
+        /// <returns>a list of datetimes</returns>
+        private static List<DateTime> GetOccurrenceDates( string iCalString, int returnCount, bool useEndDateTime = false )
         {
             iCalendar calendar = iCalendar.LoadFromStream( new StringReader( iCalString ) ).First() as iCalendar;
             DDay.iCal.Event calendarEvent = calendar.Events[0] as Event;
 
-            if ( calendarEvent.DTEnd != null )
+            if ( ! useEndDateTime && calendarEvent.DTStart != null )
+            {
+                List<Occurrence> dates = calendar.GetOccurrences( RockDateTime.Now, RockDateTime.Now.AddYears( 1 ) ).Take( returnCount ).ToList();
+                return dates.Select( d => d.Period.StartTime.Value ).ToList();
+            }
+            else if ( useEndDateTime && calendarEvent.DTEnd != null )
             {
                 List<Occurrence> dates = calendar.GetOccurrences( RockDateTime.Now, RockDateTime.Now.AddYears( 1 ) ).Take( returnCount ).ToList();
                 return dates.Select( d => d.Period.EndTime.Value ).ToList();
@@ -2678,6 +2630,67 @@ namespace Rock.Lava
         #region Misc Filters
 
         /// <summary>
+        /// Shows details about which Merge Fields are available
+        /// </summary>
+        /// <param name="context">The context.</param>
+        /// <param name="input">If a merge field is specified, only Debug info on that MergeField will be shown</param>
+        /// <param name="option1">either userName or outputFormat</param>
+        /// <param name="option2">either userName or outputFormat</param>
+        /// <returns></returns>
+        public static string Debug( DotLiquid.Context context, object input, string option1 = null, string option2 = null )
+        {
+            string[] outputFormats = new string[] { "Ascii", "Html" };
+            string userName = null;
+            string outputFormat = null;
+
+            // detect if option1 or option2 is the outputFormat or userName parameter
+            if ( outputFormats.Any( f => f.Equals( option1, StringComparison.OrdinalIgnoreCase ) ) )
+            {
+                outputFormat = option1;
+                userName = option2;
+            }
+            else if ( outputFormats.Any( f => f.Equals( option2, StringComparison.OrdinalIgnoreCase ) ) )
+            {
+                outputFormat = option2;
+                userName = option1;
+            }
+            else
+            {
+                userName = option1 ?? option2;
+            }
+
+            if ( userName.IsNotNullOrWhitespace() )
+            {
+                // if userName was specified, don't return anything if the currentPerson doesn't have a matching userName
+                var currentPerson = GetCurrentPerson( context );
+                if ( currentPerson != null )
+                {
+                    if ( !currentPerson.Users.Any( a => a.UserName.Equals( userName, StringComparison.OrdinalIgnoreCase ) ) )
+                    {
+                        // currentUser doesn't have the specified userName, so return nothing
+                        return null;
+                    }
+                }
+                else
+                {
+                    // CurrentPerson is null so return nothing
+                    return null;
+                }
+            }
+
+            var mergeFields = context.Environments.SelectMany( a => a ).ToDictionary( k => k.Key, v => v.Value );
+
+            // if a specific MergeField was specified as the Input, limit the help to just that MergeField
+            if ( input != null && mergeFields.Any( a => a.Value == input ) )
+            {
+                mergeFields = mergeFields.Where( a => a.Value == input ).ToDictionary( k => k.Key, v => v.Value );
+            }
+
+            // TODO: implement the outputFormat option to support ASCII
+            return mergeFields.lavaDebugInfo();
+        }
+
+        /// <summary>
         /// Redirects the specified input.
         /// </summary>
         /// <param name="input">The input.</param>
@@ -3025,6 +3038,66 @@ namespace Rock.Lava
         }
 
         /// <summary>
+        /// Clients the specified input.
+        /// </summary>
+        /// <param name="input">The input.</param>
+        /// <param name="parm">The parm.</param>
+        /// <returns></returns>
+        public static object Client( string input, string parm )
+        {
+            parm = parm.ToUpper();
+
+            switch ( parm )
+            {
+                case "IP":
+                    {
+                        string address = string.Empty;
+                        
+                        // http://stackoverflow.com/questions/735350/how-to-get-a-users-client-ip-address-in-asp-net
+                        string ipAddress = HttpContext.Current.Request.ServerVariables["HTTP_X_FORWARDED_FOR"];
+
+                        if ( !string.IsNullOrEmpty( ipAddress ) )
+                        {
+                            string[] addresses = ipAddress.Split( ',' );
+                            if ( addresses.Length != 0 )
+                            {
+                                address = addresses[0];
+                            }
+                        }
+
+                        address =  HttpContext.Current.Request.ServerVariables["REMOTE_ADDR"];
+
+                        // nicely format localhost
+                        if (address == "::1" )
+                        {
+                            address = "localhost";
+                        }
+
+                        return address;
+                    }
+                case "LOGIN": {
+                        return HttpContext.Current.Request.ServerVariables["AUTH_USER"];
+                    }
+                case "BROWSER":
+                    {
+                        Parser uaParser = Parser.GetDefault();
+                        ClientInfo client = uaParser.Parse( HttpContext.Current.Request.UserAgent );
+
+                        return client;
+                    }
+                case "PARMLIST":
+                    {
+                        return string.Join( ", ", HttpContext.Current.Request.ServerVariables.AllKeys );
+                    }
+                default:
+                    {
+                        return HttpContext.Current.Request.ServerVariables[parm];
+                    }
+            }
+
+        }
+
+        /// <summary>
         /// Pages the specified input.
         /// </summary>
         /// <param name="input">The input.</param>
@@ -3153,6 +3226,96 @@ namespace Rock.Lava
             }
 
             return result;
+        }
+
+        /// <summary>
+        /// Casts the input as a boolean value.
+        /// </summary>
+        /// <param name="input">The input value to be parsed into boolean form.</param>
+        /// <returns>A boolean value or null if the cast could not be performed.</returns>
+        public static bool? AsBoolean( object input )
+        {
+            if ( input == null )
+            {
+                return null;
+            }
+
+            return input.ToString().AsBooleanOrNull();
+        }
+
+        /// <summary>
+        /// Casts the input as an integer value.
+        /// </summary>
+        /// <param name="input">The input value to be parsed into integer form.</param>
+        /// <returns>An integer value or null if the cast could not be performed.</returns>
+        public static int? AsInteger( object input )
+        {
+            if ( input == null )
+            {
+                return null;
+            }
+
+            return input.ToString().AsIntegerOrNull();
+        }
+
+        /// <summary>
+        /// Casts the input as a decimal value.
+        /// </summary>
+        /// <param name="input">The input value to be parsed into decimal form.</param>
+        /// <returns>A decimal value or null if the cast could not be performed.</returns>
+        public static decimal? AsDecimal( object input )
+        {
+            if ( input == null )
+            {
+                return null;
+            }
+
+            return input.ToString().AsDecimalOrNull();
+        }
+
+        /// <summary>
+        /// Casts the input as a double value.
+        /// </summary>
+        /// <param name="input">The input value to be parsed into double form.</param>
+        /// <returns>A double value or null if the cast could not be performed.</returns>
+        public static double? AsDouble( object input )
+        {
+            if ( input == null )
+            {
+                return null;
+            }
+
+            return input.ToString().AsDoubleOrNull();
+        }
+
+        /// <summary>
+        /// Casts the input as a string value.
+        /// </summary>
+        /// <param name="input">The input value to be parsed into string form.</param>
+        /// <returns>A string value or null if the cast could not be performed.</returns>
+        public static string AsString( object input )
+        {
+            if ( input == null )
+            {
+                return null;
+            }
+
+            return input.ToString();
+        }
+
+        /// <summary>
+        /// Casts the input as a DateTime value.
+        /// </summary>
+        /// <param name="input">The input value to be parsed into DateTime form.</param>
+        /// <returns>A DateTime value or null if the cast could not be performed.</returns>
+        public static DateTime? AsDateTime( object input )
+        {
+            if ( input == null )
+            {
+                return null;
+            }
+
+            return input.ToString().AsDateTime();
         }
 
         #endregion

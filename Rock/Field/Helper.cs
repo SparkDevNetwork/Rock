@@ -43,17 +43,28 @@ namespace Rock.Field
         }
 
         /// <summary>
-        /// Gets the values.
+        /// Gets the configured values.
         /// </summary>
         /// <param name="configurationValues">The configuration values.</param>
         /// <returns></returns>
         public static Dictionary<string, string> GetConfiguredValues( Dictionary<string, ConfigurationValue> configurationValues )
         {
+            return GetConfiguredValues( configurationValues, "values" );
+        }
+
+        /// <summary>
+        /// Gets the configured values.
+        /// </summary>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="propertyName">Name of the property.</param>
+        /// <returns></returns>
+        public static Dictionary<string, string> GetConfiguredValues( Dictionary<string, ConfigurationValue> configurationValues, string propertyName )
+        {
             var items = new Dictionary<string, string>();
 
-            if ( configurationValues.ContainsKey( "values" ) )
+            if ( configurationValues.ContainsKey( propertyName ) )
             {
-                string listSource = configurationValues["values"].Value;
+                string listSource = configurationValues[ propertyName ].Value;
 
                 var options = new Lava.CommonMergeFieldsOptions();
                 options.GetLegacyGlobalMergeFields = false;

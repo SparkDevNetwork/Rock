@@ -47,7 +47,7 @@
                                         <div class="clearfix">
                                             <div class="person-image" id="divPersonImage" runat="server"></div>
                                             <div class="member-information">
-                                                <h4><%# Eval("NickName") %> <%# Eval("LastName") %></h4>
+                                                <h4><%# Eval("NickName") %> <%# Eval("LastName") %><asp:Literal ID="lFamilyMemberAge" runat="server" /></h4>
                                             
                                                   <asp:RadioButtonList ID="rblRole" runat="server" DataValueField="Id" DataTextField="Name" />
                                             
@@ -186,6 +186,8 @@
                                     <Rock:DatePicker ID="dpNewPersonBirthDate" runat="server" Label="Birthdate" ValidationGroup="AddPerson" AllowFutureDateSelection="False" ForceParse="false"/>
                                     <Rock:GradePicker ID="ddlGradePicker" runat="server" Label="Grade" ValidationGroup="AddPerson" UseAbbreviation="true" UseGradeOffsetAsValue="true" />
                                     <Rock:RockDropDownList ID="ddlNewPersonMaritalStatus" runat="server" DataTextField="Name" DataValueField="Id" RepeatDirection="Horizontal" Label="Marital Status"  ValidationGroup="AddPerson"/>
+                                    <Rock:PhoneNumberBox ID="pnNewPersonPhoneNumber"  runat="server" Label="Phone" ValidationGroup="AddPerson" />
+                                    <Rock:EmailBox ID="tbNewPersonEmail" runat="server" Label="Email" ValidationGroup="AddPerson" />
                                 </div>
                             </div>
                         </div>

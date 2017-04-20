@@ -188,7 +188,10 @@ namespace RockWeb.Blocks.Administration
             ResponseWrite( "Server Variables:", "", response );
             foreach ( string key in Request.ServerVariables )
             {
-                ResponseWrite( key, Request.ServerVariables[key], response );
+                if ( !key.Equals("HTTP_COOKIE", StringComparison.OrdinalIgnoreCase ) )
+                {
+                    ResponseWrite( key, Request.ServerVariables[key], response );
+                } 
             }
 
             response.Flush();

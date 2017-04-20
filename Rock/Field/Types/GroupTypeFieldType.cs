@@ -200,6 +200,8 @@ namespace Rock.Field.Types
                         return groupType.Guid.ToString();
                     }
                 }
+
+                return string.Empty;
             }
 
             return null;

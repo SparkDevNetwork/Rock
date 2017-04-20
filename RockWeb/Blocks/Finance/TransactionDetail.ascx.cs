@@ -318,10 +318,20 @@ namespace RockWeb.Blocks.Finance
 
             if ( txn == null )
             {
-                txn = new FinancialTransaction();
-                txnService.Add( txn );
-                txn.BatchId = batchId;
-                changes.Add( "Created transaction" );
+                if ( batchId.HasValue )
+                {
+                    txn = new FinancialTransaction();
+                    txnService.Add( txn );
+                    txn.BatchId = batchId;
+                    changes.Add( "Created transaction" );
+                }
+                else
+                {
+                    nbErrorMessage.Title = "Missing Batch Information";
+                    nbErrorMessage.Text = "<p>New transactions can only be added to an existing batch. Make sure you have navigated to this page by viewing the details of an existing batch.</p>";
+                    nbErrorMessage.Visible = true;
+                    return;
+                }
             }
 
             if ( txn != null )
@@ -343,6 +353,7 @@ namespace RockWeb.Blocks.Finance
                     }
 
                     History.EvaluateChange( changes, "Date/Time", txn.TransactionDateTime, dtTransactionDateTime.SelectedDateTime );
+                    History.EvaluateChange( changes, "Show as Anonymous", txn.ShowAsAnonymous, cbShowAsAnonymous.Checked );
                     History.EvaluateChange( changes, "Type", GetDefinedValue( txn.TransactionTypeValueId ), GetDefinedValue( ddlTransactionType.SelectedValue.AsInteger() ) );
                     History.EvaluateChange( changes, "Source", GetDefinedValue( txn.SourceTypeValueId ), GetDefinedValue( ddlSourceType.SelectedValueAsInt() ) );
 
@@ -359,6 +370,7 @@ namespace RockWeb.Blocks.Finance
                 }
 
                 txn.AuthorizedPersonAliasId = ppAuthorizedPerson.PersonAliasId;
+                txn.ShowAsAnonymous = cbShowAsAnonymous.Checked;
                 txn.TransactionDateTime = dtTransactionDateTime.SelectedDateTime;
                 txn.TransactionTypeValueId = ddlTransactionType.SelectedValue.AsInteger();
                 txn.SourceTypeValueId = ddlSourceType.SelectedValueAsInt();
@@ -1509,6 +1521,8 @@ namespace RockWeb.Blocks.Finance
                 {
                     ppAuthorizedPerson.SetValue( null );
                 }
+
+                cbShowAsAnonymous.Checked = txn.ShowAsAnonymous;
                 dtTransactionDateTime.SelectedDateTime = txn.TransactionDateTime;
                 ddlTransactionType.SetValue( txn.TransactionTypeValueId );
                 ddlSourceType.SetValue( txn.SourceTypeValueId );
