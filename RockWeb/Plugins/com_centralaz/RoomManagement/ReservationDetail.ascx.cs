@@ -35,6 +35,7 @@ using Newtonsoft.Json;
 using Rock.Web.UI.Controls;
 using Rock.Security;
 using Rock.Communication;
+using System.Web;
 
 namespace RockWeb.Plugins.com_centralaz.RoomManagement
 {
@@ -156,6 +157,8 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
         protected override void OnInit( EventArgs e )
         {
             base.OnInit( e );
+
+            RockPage.AddCSSLink( ResolveRockUrl( "~/Styles/fluidbox.css" ) );
 
             gLocations.DataKeyNames = new string[] { "Guid" };
             gLocations.Actions.ShowAdd = true;
@@ -357,7 +360,7 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
             {
                 reservation.Schedule = new Schedule();
                 reservation.Schedule.iCalendarContent = sbSchedule.iCalendarContent;
-            }            
+            }
 
             if ( ddlCampus.SelectedValueAsId().HasValue )
             {
@@ -751,7 +754,7 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void slpLocation_SelectItem( object sender, EventArgs e )
         {
-
+            LoadLocationImage();
         }
 
         /// <summary>
@@ -884,6 +887,7 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
             if ( reservationLocation != null )
             {
                 slpLocation.SetValue( reservationLocation.LocationId );
+                LoadLocationImage();
             }
             else
             {
@@ -1200,6 +1204,30 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
             string encodedCalendarContent = Uri.EscapeUriString( sbSchedule.iCalendarContent );
             srpResource.ItemRestUrlExtraParams = BaseResourceRestUrl + String.Format( "&reservationId={0}&iCalendarContent={1}&setupTime={2}&cleanupTime={3}{4}", reservationId, encodedCalendarContent, nbSetupTime.Text.AsInteger(), nbCleanupTime.Text.AsInteger(), locationIds.IsNullOrWhiteSpace() ? "" : "&locationIds=" + locationIds );
             slpLocation.ItemRestUrlExtraParams = BaseLocationRestUrl + String.Format( "?reservationId={0}&iCalendarContent={1}&setupTime={2}&cleanupTime={3}&attendeeCount={4}", reservationId, encodedCalendarContent, nbSetupTime.Text.AsInteger(), nbCleanupTime.Text.AsInteger(), nbAttending.Text.AsInteger() );
+        }
+
+        private void LoadLocationImage()
+        {
+            if ( slpLocation.SelectedValueAsId().HasValue )
+            {
+                var location = new LocationService( new RockContext() ).Get( slpLocation.SelectedValueAsId().Value );
+                if ( location != null && location.ImageId != null )
+                {
+                    string imgTag = string.Format( "<img src='{0}GetImage.ashx?id={1}&maxwidth=200&maxheight=200'/>", VirtualPathUtility.ToAbsolute( "~/" ), location.ImageId.Value );
+
+                    string imgUrl = string.Format( "~/GetImage.ashx?id={0}", location.ImageId );
+                    if ( System.Web.HttpContext.Current != null )
+                    {
+                        imgUrl = VirtualPathUtility.ToAbsolute( imgUrl );
+                    }
+
+                    lImage.Text = string.Format( "<a href='{0}' target='_blank'>{1}</a>", imgUrl, imgTag );
+                }
+                else
+                {
+                    lImage.Text = string.Empty;
+                }
+            }
         }
 
         private Reservation UpdateApproval( Reservation reservation, RockContext rockContext )

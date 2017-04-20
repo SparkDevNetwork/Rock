@@ -119,6 +119,11 @@
                     <div class="col-md-6">
                         <CentralAZ:ScheduledLocationItemPicker ID="slpLocation" runat="server" Label="Location" Required="false" Enabled="false" AllowMultiSelect="false" OnSelectItem="slpLocation_SelectItem" ValidationGroup="ReservationLocation" />
                     </div>
+                    <div class="col-md-6 xs-text-center" style="width:200px;">                
+                        <div class="photo">
+                            <asp:Literal ID="lImage" runat="server" />
+                        </div>
+                    </div>
                 </div>
             </Content>
         </Rock:ModalDialog>
