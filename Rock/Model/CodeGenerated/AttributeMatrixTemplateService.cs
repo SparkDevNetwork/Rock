@@ -51,12 +51,6 @@ namespace Rock.Model
         public bool CanDelete( AttributeMatrixTemplate item, out string errorMessage )
         {
             errorMessage = string.Empty;
- 
-            if ( new Service<AttributeMatrix>( Context ).Queryable().Any( a => a.AttributeMatrixTemplateId == item.Id ) )
-            {
-                errorMessage = string.Format( "This {0} is assigned to a {1}.", AttributeMatrixTemplate.FriendlyTypeName, AttributeMatrix.FriendlyTypeName );
-                return false;
-            }  
             return true;
         }
     }
@@ -94,6 +88,7 @@ namespace Rock.Model
         public static void CopyPropertiesFrom( this AttributeMatrixTemplate target, AttributeMatrixTemplate source )
         {
             target.Id = source.Id;
+            target.AttributeMatrices = source.AttributeMatrices;
             target.Description = source.Description;
             target.ForeignGuid = source.ForeignGuid;
             target.ForeignKey = source.ForeignKey;
