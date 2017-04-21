@@ -287,7 +287,6 @@ namespace Rock.Field.Types
                     }
 
                     attributeMatrixEditor.AttributeMatrixGuid = attributeMatrix.Guid;
-                    attributeMatrixEditor.BindMatrixItemsGrid( attributeMatrix );
                 }
             }
         }

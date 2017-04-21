@@ -162,7 +162,7 @@ namespace RockWeb.Blocks.Core
             AttributeMatrixTemplateService attributeMatrixTemplateService = new AttributeMatrixTemplateService( rockContext );
             AttributeMatrixService attributeMatrixService = new AttributeMatrixService( rockContext );
 
-            var matrixFieldTypeId = FieldTypeCache.All().First( a => a.Class == typeof( MatrixFieldType ).FullName ).Id;
+            var matrixFieldTypeId = FieldTypeCache.Read<MatrixFieldType>().Id;
 
             // get a list of attribute Matrix Guids that are actually in use so that only could the ones are that used in the InstanceCount
             var usedAttributeMatrices = new AttributeValueService( rockContext ).Queryable().Where( a => a.Attribute.FieldTypeId == matrixFieldTypeId ).Select( a => a.Value );

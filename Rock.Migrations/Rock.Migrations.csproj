@@ -194,6 +194,10 @@
     <Compile Include="Migrations\201704192119568_AnonymousGiving.Designer.cs">
       <DependentUpon>201704192119568_AnonymousGiving.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201704201840479_AttributeMatrix.cs" />
+    <Compile Include="Migrations\201704201840479_AttributeMatrix.Designer.cs">
+      <DependentUpon>201704201840479_AttributeMatrix.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 6.0\Version 1.6.0\201609282147388_WaitList.cs" />
     <Compile Include="Migrations\Version 6.0\Version 1.6.0\201609282147388_WaitList.Designer.cs">
       <DependentUpon>201609282147388_WaitList.cs</DependentUpon>
@@ -2465,6 +2469,7 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201701172024404_ContentChannelTypeDisableStatusOption.resx">
       <DependentUpon>201701172024404_ContentChannelTypeDisableStatusOption.cs</DependentUpon>
+      <SubType>Designer</SubType>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201701172352092_IndexTemplateField.resx">
       <DependentUpon>201701172352092_IndexTemplateField.cs</DependentUpon>
@@ -2489,6 +2494,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201704192119568_AnonymousGiving.resx">
       <DependentUpon>201704192119568_AnonymousGiving.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201704201840479_AttributeMatrix.resx">
+      <DependentUpon>201704201840479_AttributeMatrix.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 6.0\Version 1.6.0\201609282147388_WaitList.resx">
       <DependentUpon>201609282147388_WaitList.cs</DependentUpon>

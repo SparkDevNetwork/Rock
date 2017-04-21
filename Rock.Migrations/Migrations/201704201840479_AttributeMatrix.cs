@@ -104,7 +104,8 @@ namespace Rock.Migrations
                 .Index(t => t.CreatedByPersonAliasId)
                 .Index(t => t.ModifiedByPersonAliasId)
                 .Index(t => t.Guid, unique: true);
-            
+
+            RockMigrationHelper.UpdateFieldType("Matrix", "", "Rock", "Rock.Field.Types.MatrixFieldType", "24FF4AEA-693D-4B25-A4E0-347DD670D2BA");
         }
         
         /// <summary>
