@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using System.Web.UI;
 using System.Web.UI.WebControls;
 
 using Rock.Data;
@@ -10,7 +11,7 @@ namespace Rock.Web.UI.Controls
     /// <summary>
     /// 
     /// </summary>
-    public class AttributeMatrixEditor : CompositeControl, IHasValidationGroup
+    public class AttributeMatrixEditor : CompositeControl, INamingContainer, IHasValidationGroup
     {
         #region Controls
 
@@ -19,7 +20,9 @@ namespace Rock.Web.UI.Controls
 
         private Panel _pnlEditMatrixItem;
         private HiddenField _hfMatrixItemId;
+        private NotificationBox _nbWarning;
         private DynamicPlaceholder _phMatrixItemAttributes;
+        private Panel _pnlActions;
         private LinkButton _btnSaveMatrixItem;
         private LinkButton _btnCancelMatrixItem;
 
@@ -83,12 +86,44 @@ namespace Rock.Web.UI.Controls
             {
                 EnsureChildControls();
                 _hfAttributeMatrixGuid.Value = value.ToString();
+                BindGrid( value );
             }
         }
 
         #endregion Properties
 
         #region Overridden Control Methods
+
+        /// <summary>
+        /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
+        /// </summary>
+        /// <param name="e">An <see cref="T:System.EventArgs" /> object that contains the event data.</param>
+        protected override void OnInit( EventArgs e )
+        {
+            base.OnInit( e );
+            EnsureChildControls();
+        }
+
+        /// <summary>
+        /// Raises the <see cref="E:System.Web.UI.Control.Load" /> event.
+        /// </summary>
+        /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
+        protected override void OnLoad( EventArgs e )
+        {
+            base.OnLoad( e );
+            if ( this.Page.IsPostBack )
+            {
+                EnsureChildControls();
+                Guid? attributeMatrixGuid = this.AttributeMatrixGuid;
+                if ( !attributeMatrixGuid.HasValue )
+                {
+                    // if the AttributeMatrixGuid isn't known yet, try to scrape it from the PostBack Params
+                    attributeMatrixGuid = this.Page.Request.Params[_hfAttributeMatrixGuid.UniqueID].AsGuidOrNull();
+                }
+
+                BindGrid( attributeMatrixGuid );
+            }
+        }
 
         /// <summary>
         /// Called by the ASP.NET page framework to notify server controls that use composition-based implementation to create any child controls they contain in preparation for posting back or rendering.
@@ -101,6 +136,9 @@ namespace Rock.Web.UI.Controls
             _hfAttributeMatrixGuid = new HiddenField { ID = "_hfAttributeMatrixGuid" };
             this.Controls.Add( _hfAttributeMatrixGuid );
 
+            _nbWarning = new NotificationBox { ID = "_nbWarning", NotificationBoxType = NotificationBoxType.Warning, Dismissable = true };
+            this.Controls.Add( _nbWarning );
+
             // Grid with view of MatrixItems
             _gMatrixItems = new Grid { ID = "_gMatrixItems", DisplayType = GridDisplayType.Light };
             this.Controls.Add( _gMatrixItems );
@@ -109,6 +147,7 @@ namespace Rock.Web.UI.Controls
             _gMatrixItems.Actions.ShowAdd = true;
             _gMatrixItems.IsDeleteEnabled = true;
             _gMatrixItems.GridReorder += gMatrixItems_GridReorder;
+            _gMatrixItems.GridRebind += _gMatrixItems_GridRebind;
 
             _gMatrixItems.Columns.Add( new ReorderField() );
 
@@ -133,27 +172,51 @@ namespace Rock.Web.UI.Controls
             _gMatrixItems.RowSelected += gMatrixItems_RowSelected;
 
             // Edit Item
-            _pnlEditMatrixItem = new Panel { ID = "_pnlEditMatrixItem", Visible = false, CssClass = "well" };
+            _pnlEditMatrixItem = new Panel { ID = "_pnlEditMatrixItem", Visible = false, CssClass = "well js-validation-group" };
             _hfMatrixItemId = new HiddenField { ID = "_hfMatrixItemId" };
             _pnlEditMatrixItem.Controls.Add( _hfMatrixItemId );
 
             _phMatrixItemAttributes = new DynamicPlaceholder { ID = "_phMatrixItemAttributes" };
             _pnlEditMatrixItem.Controls.Add( _phMatrixItemAttributes );
 
+            string validationGroup = GetValidationGroupForAttributeControls();
+
             if ( tempAttributeMatrixItem != null )
             {
-                Rock.Attribute.Helper.AddEditControls( tempAttributeMatrixItem, _phMatrixItemAttributes, false );
+                Rock.Attribute.Helper.AddEditControls( tempAttributeMatrixItem, _phMatrixItemAttributes, false, validationGroup );
             }
 
-            _btnSaveMatrixItem = new LinkButton { ID = "_btnSaveMatrixItem", CssClass = "btn btn-primary", Text = "Save Matrix Item" };
-            _btnSaveMatrixItem.Click += btnSaveMatrixItem_Click;
-            _pnlEditMatrixItem.Controls.Add( _btnSaveMatrixItem );
+            _pnlActions = new Panel { ID = "_pnlActions", CssClass = "actions" };
+            _pnlEditMatrixItem.Controls.Add( _pnlActions );
 
-            _btnCancelMatrixItem = new LinkButton { ID = "_btnCancelMatrixItem", CssClass = "btn btn-link", Text = "Cancel" };
+            _btnSaveMatrixItem = new LinkButton { ID = "_btnSaveMatrixItem", CssClass = "btn btn-primary", Text = "Save Matrix Item", ValidationGroup = validationGroup, CausesValidation = true };
+            _btnSaveMatrixItem.Click += btnSaveMatrixItem_Click;
+            _pnlActions.Controls.Add( _btnSaveMatrixItem );
+
+            _btnCancelMatrixItem = new LinkButton { ID = "_btnCancelMatrixItem", CssClass = "btn btn-link", Text = "Cancel", CausesValidation = false };
             _btnCancelMatrixItem.Click += btnCancelMatrixItem_Click;
-            _pnlEditMatrixItem.Controls.Add( _btnCancelMatrixItem );
+            _pnlActions.Controls.Add( _btnCancelMatrixItem );
 
             this.Controls.Add( _pnlEditMatrixItem );
+        }
+
+        /// <summary>
+        /// Handles the GridRebind event of the _gMatrixItems control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="GridRebindEventArgs"/> instance containing the event data.</param>
+        private void _gMatrixItems_GridRebind( object sender, GridRebindEventArgs e )
+        {
+            BindGrid( this.AttributeMatrixGuid );
+        }
+
+        /// <summary>
+        /// Gets the validation group for attribute controls.
+        /// </summary>
+        /// <returns></returns>
+        private string GetValidationGroupForAttributeControls()
+        {
+            return $"vgAttributeMatrixEditor_{this.ID}";
         }
 
         #endregion Overridden Control Methods
@@ -202,7 +265,7 @@ namespace Rock.Web.UI.Controls
                 if ( attributeMatrixItem == null )
                 {
                     attributeMatrixItem = new AttributeMatrixItem();
-                    attributeMatrixItem.AttributeMatrix = new AttributeMatrixService( rockContext ).Get( _hfAttributeMatrixGuid.Value.AsGuid() );
+                    attributeMatrixItem.AttributeMatrix = new AttributeMatrixService( rockContext ).Get( this.AttributeMatrixGuid.Value );
                 }
 
                 if ( this.AttributeMatrixTemplateId.HasValue && attributeMatrixItem.AttributeMatrix.AttributeMatrixTemplateId != this.AttributeMatrixTemplateId )
@@ -215,7 +278,7 @@ namespace Rock.Web.UI.Controls
             }
 
             _phMatrixItemAttributes.Controls.Clear();
-            Rock.Attribute.Helper.AddEditControls( attributeMatrixItem, _phMatrixItemAttributes, true );
+            Rock.Attribute.Helper.AddEditControls( attributeMatrixItem, _phMatrixItemAttributes, true, GetValidationGroupForAttributeControls() );
 
             _gMatrixItems.Visible = false;
             _pnlEditMatrixItem.Visible = true;
@@ -228,8 +291,6 @@ namespace Rock.Web.UI.Controls
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         private void btnSaveMatrixItem_Click( object sender, EventArgs e )
         {
-            Guid attributeMatrixGuid = _hfAttributeMatrixGuid.Value.AsGuid();
-
             var rockContext = new RockContext();
             var attributeMatrixItemService = new AttributeMatrixItemService( rockContext );
             AttributeMatrixItem attributeMatrixItem = null;
@@ -243,7 +304,7 @@ namespace Rock.Web.UI.Controls
             if ( attributeMatrixItem == null )
             {
                 attributeMatrixItem = new AttributeMatrixItem();
-                attributeMatrixItem.AttributeMatrix = new AttributeMatrixService( rockContext ).Get( attributeMatrixGuid );
+                attributeMatrixItem.AttributeMatrix = new AttributeMatrixService( rockContext ).Get( this.AttributeMatrixGuid.Value );
                 attributeMatrixItemService.Add( attributeMatrixItem );
             }
 
@@ -255,7 +316,7 @@ namespace Rock.Web.UI.Controls
             _gMatrixItems.Visible = true;
             _pnlEditMatrixItem.Visible = false;
 
-            BindMatrixItemsGrid( attributeMatrixItem.AttributeMatrix );
+            BindGrid( this.AttributeMatrixGuid );
         }
 
         /// <summary>
@@ -274,18 +335,46 @@ namespace Rock.Web.UI.Controls
         #region MatrixItemsGrid
 
         /// <summary>
-        /// Binds the matrix items grid.
+        /// Binds the grid.
         /// </summary>
-        /// <param name="attributeMatrix">The attribute matrix.</param>
-        public void BindMatrixItemsGrid( AttributeMatrix attributeMatrix )
+        /// <param name="attributeMatrixGuid">The attribute matrix unique identifier.</param>
+        private void BindGrid( Guid? attributeMatrixGuid )
         {
-            foreach ( var attributeMatrixItem in attributeMatrix.AttributeMatrixItems )
+            if ( attributeMatrixGuid.HasValue )
             {
-                attributeMatrixItem.LoadAttributes();
-            }
+                var rockContext = new RockContext();
+                var attributeMatrix = new AttributeMatrixService( rockContext ).Get( attributeMatrixGuid.Value );
+                if ( attributeMatrix == null )
+                {
+                    return;
+                }
 
-            _gMatrixItems.DataSource = attributeMatrix.AttributeMatrixItems.ToList();
-            _gMatrixItems.DataBind();
+                var attributeMatrixItemList = attributeMatrix.AttributeMatrixItems.ToList();
+
+                foreach ( var attributeMatrixItem in attributeMatrixItemList )
+                {
+                    attributeMatrixItem.LoadAttributes();
+                }
+
+                _gMatrixItems.DataSource = attributeMatrixItemList;
+                _gMatrixItems.DataBind();
+
+                string itemText = "item".PluralizeIf( attributeMatrix.AttributeMatrixTemplate.MinimumRows.Value > 1 );
+                if ( attributeMatrix.AttributeMatrixTemplate.MinimumRows.HasValue && attributeMatrixItemList.Count < attributeMatrix.AttributeMatrixTemplate.MinimumRows.Value )
+                {
+                    _nbWarning.Text = $"At least {attributeMatrix.AttributeMatrixTemplate.MinimumRows.Value} {itemText} are required.";
+                    _nbWarning.Visible = true;
+                }
+                else if ( attributeMatrix.AttributeMatrixTemplate.MaximumRows.HasValue && attributeMatrixItemList.Count > attributeMatrix.AttributeMatrixTemplate.MaximumRows.Value )
+                {
+                    _nbWarning.Text = $"No more than {attributeMatrix.AttributeMatrixTemplate.MaximumRows.Value} {itemText} are allowed.";
+                    _nbWarning.Visible = true;
+                }
+                else
+                {
+                    _nbWarning.Visible = false;
+                }
+            }
         }
 
         /// <summary>
@@ -305,7 +394,7 @@ namespace Rock.Web.UI.Controls
                 attributeMatrixItemService.Delete( attributeMatrixItem );
                 rockContext.SaveChanges();
 
-                BindMatrixItemsGrid( attributeMatrix );
+                BindGrid( this.AttributeMatrixGuid );
             }
         }
 
@@ -316,16 +405,14 @@ namespace Rock.Web.UI.Controls
         /// <param name="e">The <see cref="GridReorderEventArgs"/> instance containing the event data.</param>
         private void gMatrixItems_GridReorder( object sender, GridReorderEventArgs e )
         {
-            Guid attributeMatrixGuid = _hfAttributeMatrixGuid.Value.AsGuid();
-
             var rockContext = new RockContext();
-            var attributeMatrix = new AttributeMatrixService( rockContext ).Get( attributeMatrixGuid );
+            var attributeMatrix = new AttributeMatrixService( rockContext ).Get( this.AttributeMatrixGuid.Value );
             var service = new AttributeMatrixItemService( rockContext );
             var items = service.Queryable().Where( a => a.AttributeMatrixId == attributeMatrix.Id ).OrderBy( i => i.Order ).ToList();
             service.Reorder( items, e.OldIndex, e.NewIndex );
             rockContext.SaveChanges();
 
-            BindMatrixItemsGrid( attributeMatrix );
+            BindGrid( this.AttributeMatrixGuid );
         }
 
         #endregion MatrixItemsGrid
