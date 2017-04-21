@@ -67,7 +67,7 @@ namespace church.ccv.Badges.Info
                 
                     ",
                      Person.Id.ToString(),
-                     Person.NickName,
+                     Person.NickName.EncodeHtml(),
                      badge.Id,
                      Person.Guid.ToString( ) ) );
             }

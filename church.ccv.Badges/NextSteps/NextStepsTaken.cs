@@ -17,7 +17,7 @@ namespace church.ccv.Badges.NextSteps
                     <i class='fa fa-road'></i><div class='steps-thisyear'></div><div class='steps-52weeks'></div>
             </div>", 
                 badge.Id // 0
-                , Person.NickName // 1
+                , Person.NickName.EncodeHtml() // 1
             ) );
 
             writer.Write( string.Format(
@@ -58,7 +58,7 @@ namespace church.ccv.Badges.NextSteps
                     ",
                      Person.Guid, // 0
                      badge.Id, // 1
-                     Person.NickName, // 2
+                     Person.NickName.EncodeHtml(), // 2
                      RockDateTime.Now.Year //3
                     ));
         }

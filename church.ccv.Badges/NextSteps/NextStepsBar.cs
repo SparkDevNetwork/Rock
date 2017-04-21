@@ -388,7 +388,7 @@ namespace church.ccv.Badges.NextSteps
     }});
 }});
                     </script>",
-                 Person.NickName, // 0
+                 Person.NickName.EncodeHtml(), // 0
                  Person.Guid.ToString(), // 1
                  Person.Id, // 2
                  badge.Id, // 3  
