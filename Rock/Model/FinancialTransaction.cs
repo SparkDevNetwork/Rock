@@ -299,6 +299,7 @@ namespace Rock.Model
         /// <value>
         /// A <see cref="Rock.Model.FinancialBatch"/> that contains the transaction.
         /// </value>
+        [LavaInclude]
         public virtual FinancialBatch Batch { get; set; }
 
         /// <summary>
@@ -344,6 +345,7 @@ namespace Rock.Model
         /// The <see cref="Rock.Model.FinancialTransactionRefund">refund transaction</see> associated with this transaction. This will be null if the transaction
         /// is not a refund transaction.
         /// </value>
+        [LavaInclude]
         public virtual FinancialTransactionRefund RefundDetails { get; set; }
 
         /// <summary>
@@ -352,6 +354,7 @@ namespace Rock.Model
         /// <value>
         /// The <see cref="Rock.Model.FinancialScheduledTransaction"/> that initiated this transaction.
         /// </value>
+        [LavaInclude]
         public virtual FinancialScheduledTransaction ScheduledTransaction { get; set; }
 
         /// <summary>
@@ -361,6 +364,7 @@ namespace Rock.Model
         /// <value>
         /// The processed by person alias.
         /// </value>
+        [LavaInclude]
         public virtual PersonAlias ProcessedByPersonAlias { get; set; }
 
         /// <summary>
@@ -398,6 +402,7 @@ namespace Rock.Model
         /// <value>
         /// The refunds.
         /// </value>
+        [LavaInclude]
         public virtual ICollection<FinancialTransactionRefund> Refunds
         {
             get { return _refunds ?? ( _refunds = new Collection<FinancialTransactionRefund>() ); }
