@@ -196,6 +196,7 @@ namespace Rock.Model
         /// <value>
         /// The activated by activity.
         /// </value>
+        [LavaInclude]
         public virtual WorkflowActivity ActivatedByActivity { get; set; }
 
         /// <summary>
@@ -218,6 +219,7 @@ namespace Rock.Model
         /// <value>
         /// An enumerable collection containing the active <see cref="Rock.Model.WorkflowAction">WorkflowActions</see> for this WorkflowActivity.
         /// </value>
+        [LavaInclude]
         public virtual IEnumerable<Rock.Model.WorkflowAction> ActiveActions
         {
             get

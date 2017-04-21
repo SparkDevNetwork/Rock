@@ -127,6 +127,7 @@ namespace Rock.Model
         /// <value>
         /// The notification system email.
         /// </value>
+        [LavaInclude]
         public virtual SystemEmail NotificationSystemEmail {get;set;}
 
         /// <summary>

@@ -181,6 +181,7 @@ namespace Rock.Model
         /// <value>
         /// The approved by person alias.
         /// </value>
+        [LavaInclude]
         public virtual PersonAlias ApprovedByPersonAlias { get; set; }
 
         /// <summary>

@@ -83,6 +83,7 @@ namespace Rock.Model
         /// <value>
         /// The report.
         /// </value>
+        [LavaInclude]
         public virtual Category Category { get; set; }
 
         #endregion

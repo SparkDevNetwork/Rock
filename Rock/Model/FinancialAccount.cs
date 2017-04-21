@@ -234,6 +234,7 @@ namespace Rock.Model
         /// <value>
         /// A <see cref="System.String"/> representing the parent FinancialAccount.
         /// </value>
+        [LavaInclude]
         public virtual FinancialAccount ParentAccount { get; set; }
 
         /// <summary>
@@ -242,6 +243,7 @@ namespace Rock.Model
         /// <value>
         /// the <see cref="Rock.Model.Campus"/> that this FinancialAccount is associated with.
         /// </value>
+        [LavaInclude]
         public virtual Campus Campus { get; set; }
 
         /// <summary>

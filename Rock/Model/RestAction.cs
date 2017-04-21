@@ -83,6 +83,7 @@ namespace Rock.Model
         /// <value>
         /// The controller.
         /// </value>
+        [LavaInclude]
         public virtual RestController Controller { get; set; }
 
         #endregion

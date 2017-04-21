@@ -110,6 +110,7 @@ namespace Rock.Model
         /// <value>
         /// The registration instance.
         /// </value>
+        [LavaInclude]
         public virtual Registration Registration { get; set; }
 
         /// <summary>

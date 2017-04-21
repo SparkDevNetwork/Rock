@@ -165,6 +165,7 @@ namespace Rock.Model
         /// <value>
         /// The registration template form.
         /// </value>
+        [LavaInclude]
         public virtual RegistrationTemplateForm RegistrationTemplateForm { get; set; }
 
         /// <summary>
