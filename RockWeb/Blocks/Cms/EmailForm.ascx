@@ -16,7 +16,10 @@
         </asp:Panel>
 
         <asp:Literal ID="lDebug" runat="server" />
-        <asp:Literal ID="lResponse" runat="server" Visible="false" />
+        
+        <div class="response-message js-response-message">
+            <asp:Literal ID="lResponse" runat="server" Visible="false" />
+        </div>
 
         <script>
 
@@ -33,6 +36,13 @@
                 });
             });
 
+            function scrollToMessage() {
+                if (!$('.js-response-message').visible(true)) {
+                    $('html, body').animate({
+                        scrollTop: $('.js-response-message').offset().top + 'px'
+                    }, 'fast');
+                }
+            }
 
             function validateForm() {
 
