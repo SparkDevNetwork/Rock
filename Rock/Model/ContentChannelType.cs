@@ -116,6 +116,7 @@ namespace Rock.Model
         /// <value>
         /// The channels.
         /// </value>
+        [LavaInclude]
         public virtual ICollection<ContentChannel> Channels { get; set; }
 
         /// <summary>

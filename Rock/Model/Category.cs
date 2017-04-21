@@ -146,6 +146,7 @@ namespace Rock.Model
         /// <value>
         /// The parent category
         /// </value>
+        [LavaInclude]
         public virtual Category ParentCategory { get; set; }
 
         /// <summary>

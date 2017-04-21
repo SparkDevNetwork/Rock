@@ -133,6 +133,7 @@ namespace Rock.Model
         /// <value>
         /// The report.
         /// </value>
+        [LavaInclude]
         public virtual Report Report { get; set; }
 
         /// <summary>

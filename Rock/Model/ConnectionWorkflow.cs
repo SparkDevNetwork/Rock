@@ -92,6 +92,7 @@ namespace Rock.Model
         /// <value>
         /// The type of the connection.
         /// </value>
+        [LavaInclude]
         public virtual ConnectionType ConnectionType { get; set; }
 
         /// <summary>
@@ -100,6 +101,7 @@ namespace Rock.Model
         /// <value>
         /// The connection opportunity.
         /// </value>
+        [LavaInclude]
         public virtual ConnectionOpportunity ConnectionOpportunity { get; set; }
 
         /// <summary>

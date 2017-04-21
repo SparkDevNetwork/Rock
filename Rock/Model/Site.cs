@@ -406,6 +406,7 @@ namespace Rock.Model
         /// <value>
         /// The change password page.
         /// </value>
+        [LavaInclude]
         public virtual Page ChangePasswordPage { get; set; }
 
         /// <summary>

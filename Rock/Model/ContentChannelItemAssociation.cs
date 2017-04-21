@@ -70,6 +70,7 @@ namespace Rock.Model
         /// <value>
         /// The content channel item.
         /// </value>
+        [LavaInclude]
         public virtual ContentChannelItem ContentChannelItem { get; set; }
 
         /// <summary>

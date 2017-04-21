@@ -88,6 +88,7 @@ namespace Rock.Model
         /// <value>
         /// The parent DataViewFilter.
         /// </value>
+        [LavaInclude]
         public virtual DataViewFilter Parent { get; set; }
 
         /// <summary>

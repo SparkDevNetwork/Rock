@@ -95,6 +95,7 @@ namespace Rock.Model
         /// <value>
         /// The <see cref="Rock.Model.Page"/> that uses this PageContext.
         /// </value>
+        [LavaInclude]
         public virtual Page Page { get; set; }
 
         #endregion

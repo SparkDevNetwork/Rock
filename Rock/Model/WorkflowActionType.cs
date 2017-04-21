@@ -139,6 +139,7 @@ namespace Rock.Model
         /// <value>
         /// The <see cref="Rock.Model.WorkflowActivityType" /> that performs this ActionType.
         /// </value>
+        [LavaInclude]
         public virtual WorkflowActivityType ActivityType { get; set; }
 
         /// <summary>

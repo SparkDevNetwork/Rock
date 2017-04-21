@@ -84,6 +84,7 @@ namespace Rock.Model
         /// <value>
         /// The Device type.
         /// </value>
+        [LavaInclude]
         public virtual InteractionDeviceType DeviceType { get; set; }
 
         /// <summary>
