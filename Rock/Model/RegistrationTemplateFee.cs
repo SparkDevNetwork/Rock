@@ -115,6 +115,7 @@ namespace Rock.Model
         /// <value>
         /// The registration template.
         /// </value>
+        [LavaInclude]
         public virtual RegistrationTemplate RegistrationTemplate { get; set; }
 
         #endregion

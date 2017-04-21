@@ -141,6 +141,7 @@ namespace Rock.Model
         /// <value>
         /// The registration template.
         /// </value>
+        [LavaInclude]
         public virtual RegistrationTemplate RegistrationTemplate { get; set; }
 
         /// <summary>
@@ -150,6 +151,7 @@ namespace Rock.Model
         /// The discount string.
         /// </value>
         [NotMapped]
+        [LavaInclude]
         public virtual string DiscountString
         {
             get
@@ -173,6 +175,7 @@ namespace Rock.Model
         /// The discount limits string.
         /// </value>
         [NotMapped]
+        [LavaInclude]
         public virtual string DiscountLimitsString
         {
             get

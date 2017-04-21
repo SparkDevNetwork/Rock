@@ -178,6 +178,7 @@ namespace Rock.Model
         /// <value>
         /// The <see cref="Rock.Model.Communication"/>
         /// </value>
+        [LavaInclude]
         public virtual Communication Communication { get; set; }
 
 

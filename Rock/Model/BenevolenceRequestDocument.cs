@@ -74,6 +74,7 @@ namespace Rock.Model
         /// <value>
         /// The package.
         /// </value>
+        [LavaInclude]
         public virtual BenevolenceRequest BenevolenceRequest { get; set; }
 
         /// <summary>
