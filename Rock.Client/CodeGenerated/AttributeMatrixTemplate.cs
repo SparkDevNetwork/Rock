@@ -35,6 +35,9 @@ namespace Rock.Client
         public int Id { get; set; }
 
         /// <summary />
+        public ICollection<AttributeMatrix> AttributeMatrices { get; set; }
+
+        /// <summary />
         public string Description { get; set; }
 
         /// <summary />
@@ -96,6 +99,7 @@ namespace Rock.Client
         public void CopyPropertiesFrom( AttributeMatrixTemplate source )
         {
             this.Id = source.Id;
+            this.AttributeMatrices = source.AttributeMatrices;
             this.Description = source.Description;
             this.ForeignGuid = source.ForeignGuid;
             this.ForeignKey = source.ForeignKey;

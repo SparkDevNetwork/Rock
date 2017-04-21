@@ -101,6 +101,9 @@ namespace Rock.Client
     public partial class AttributeMatrix : AttributeMatrixEntity
     {
         /// <summary />
+        public ICollection<AttributeMatrixItem> AttributeMatrixItems { get; set; }
+
+        /// <summary />
         public AttributeMatrixTemplate AttributeMatrixTemplate { get; set; }
 
         /// <summary>
