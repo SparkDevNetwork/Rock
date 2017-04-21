@@ -483,7 +483,7 @@ namespace Rock.Model
         /// <returns>
         /// The <see cref="Rock.Model.WorkflowAction" />
         /// </returns>        
-        [Obsolete( "Use Activate with WorkflowActionTypeCache parameter instead for better performance." )]
+        [Obsolete( "For improved performance, use the Activate method that takes a WorkflowActionTypeCache parameter instead. IMPORTANT NOTE: When using the new method, the WorkflowAction object that is returned by that method will not have the ActionType property set. If you are referencing the ActionType property on a Workflow Action returned by that method, you will get a Null Reference Exception! You should use the new ActionTypeCache property on the workflow action instead." )]
         internal static WorkflowAction Activate( WorkflowActionType actionType, WorkflowActivity activity )
         {
             using ( var rockContext = new RockContext() )
@@ -501,13 +501,18 @@ namespace Rock.Model
         /// <returns>
         /// The <see cref="Rock.Model.WorkflowAction" />
         /// </returns>
-        [Obsolete( "Use Activate with WorkflowActionTypeCache parameter instead for better performance." )]
+        [Obsolete( "For improved performance, use the Activate method that takes a WorkflowActionTypeCache parameter instead. IMPORTANT NOTE: When using the new method, the WorkflowAction object that is returned by that method will not have the ActionType property set. If you are referencing the ActionType property on a Workflow Action returned by that method, you will get a Null Reference Exception! You should use the new ActionTypeCache property on the workflow action instead." )]
         internal static WorkflowAction Activate( WorkflowActionType actionType, WorkflowActivity activity, RockContext rockContext )
         {
             if ( actionType != null )
             {
                 var actionTypeCache = WorkflowActionTypeCache.Read( actionType.Id );
-                return Activate( actionTypeCache, activity, rockContext );
+                var action = Activate( actionTypeCache, activity, rockContext );
+                if ( action != null )
+                {
+                    action.ActionType = actionType;
+                }
+                return action;
             }
 
             return null;
