@@ -666,7 +666,21 @@ namespace RockWeb.Blocks.Core
                 SortProperty sortProperty = rGrid.SortProperty;
                 if ( sortProperty != null )
                 {
-                    query = query.Sort( sortProperty );
+                    if ( sortProperty.Property == "Qualifier" )
+                    {
+                        if ( sortProperty.Direction == SortDirection.Ascending )
+                        {
+                            query = query.OrderBy( a => a.EntityType.Name ).ThenBy( a => a.EntityTypeQualifierColumn ).ThenBy( a => a.EntityTypeQualifierValue );
+                        }
+                        else
+                        {
+                            query = query.OrderByDescending( a => a.EntityType.Name ).ThenByDescending( a => a.EntityTypeQualifierColumn ).ThenByDescending( a => a.EntityTypeQualifierValue );
+                        }
+                    }
+                    else
+                    {
+                        query = query.Sort( sortProperty );
+                    }
                 }
                 else
                 {
