@@ -132,7 +132,7 @@
                         <h4 class="panel-title pull-left"><%=GroupTypeName %> Attributes</h4>
                     </div>
                     <div class="panel-body">
-                        <asp:PlaceHolder ID="phGroupAttributes" runat="server" EnableViewState="false"></asp:PlaceHolder>
+                        <Rock:DynamicPlaceHolder ID="phGroupAttributes" runat="server" />
                     </div>
                 </asp:Panel>
 
