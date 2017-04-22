@@ -205,7 +205,7 @@ namespace Rock.Web.UI.Controls
             _pnlActions = new Panel { ID = "_pnlActions", CssClass = "actions" };
             _pnlEditMatrixItem.Controls.Add( _pnlActions );
 
-            _btnSaveMatrixItem = new LinkButton { ID = "_btnSaveMatrixItem", CssClass = "btn btn-primary", Text = "Save Matrix Item", ValidationGroup = validationGroup, CausesValidation = true };
+            _btnSaveMatrixItem = new LinkButton { ID = "_btnSaveMatrixItem", CssClass = "btn btn-primary btn-sm", Text = "Save", ValidationGroup = validationGroup, CausesValidation = true };
             _btnSaveMatrixItem.Click += btnSaveMatrixItem_Click;
             _pnlActions.Controls.Add( _btnSaveMatrixItem );
 
@@ -365,7 +365,7 @@ namespace Rock.Web.UI.Controls
                     return;
                 }
 
-                var attributeMatrixItemList = attributeMatrix.AttributeMatrixItems.ToList();
+                var attributeMatrixItemList = attributeMatrix.AttributeMatrixItems.OrderBy(a => a.Order).ThenBy(a => a.Id).ToList();
 
                 foreach ( var attributeMatrixItem in attributeMatrixItemList )
                 {
@@ -375,16 +375,24 @@ namespace Rock.Web.UI.Controls
                 _gMatrixItems.DataSource = attributeMatrixItemList;
                 _gMatrixItems.DataBind();
 
-                string itemText = "item".PluralizeIf( attributeMatrix.AttributeMatrixTemplate.MinimumRows.Value > 1 );
+                _gMatrixItems.Actions.ShowAdd = true;
+
                 if ( attributeMatrix.AttributeMatrixTemplate.MinimumRows.HasValue && attributeMatrixItemList.Count < attributeMatrix.AttributeMatrixTemplate.MinimumRows.Value )
                 {
-                    _nbWarning.Text = $"At least {attributeMatrix.AttributeMatrixTemplate.MinimumRows.Value} {itemText} are required.";
+                    string itemPhrase = attributeMatrix.AttributeMatrixTemplate.MinimumRows.Value > 1 ? "items are" : "item is";
+                    _nbWarning.Text = $"At least {attributeMatrix.AttributeMatrixTemplate.MinimumRows.Value} {itemPhrase} required.";
                     _nbWarning.Visible = true;
                 }
-                else if ( attributeMatrix.AttributeMatrixTemplate.MaximumRows.HasValue && attributeMatrixItemList.Count > attributeMatrix.AttributeMatrixTemplate.MaximumRows.Value )
+                else if ( attributeMatrix.AttributeMatrixTemplate.MaximumRows.HasValue && attributeMatrixItemList.Count >= attributeMatrix.AttributeMatrixTemplate.MaximumRows.Value )
                 {
-                    _nbWarning.Text = $"No more than {attributeMatrix.AttributeMatrixTemplate.MaximumRows.Value} {itemText} are allowed.";
-                    _nbWarning.Visible = true;
+                    string itemPhrase = attributeMatrix.AttributeMatrixTemplate.MaximumRows.Value > 1 ? "items are" : "item is";
+                    _nbWarning.Text = $"No more than {attributeMatrix.AttributeMatrixTemplate.MaximumRows.Value} {itemPhrase} allowed.";
+
+                    // only show the warning if they are actually over the limit
+                    _nbWarning.Visible = ( attributeMatrix.AttributeMatrixTemplate.MaximumRows.HasValue && attributeMatrixItemList.Count > attributeMatrix.AttributeMatrixTemplate.MaximumRows.Value );
+
+                    // if they are at or over the limit, don't show the Add button
+                    _gMatrixItems.Actions.ShowAdd = true;
                 }
                 else
                 {
