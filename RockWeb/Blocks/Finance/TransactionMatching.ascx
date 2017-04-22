@@ -83,7 +83,7 @@
 
                             <div class="row">
                                 <div class="col-md-6">
-                                    <asp:PlaceHolder ID="phPaymentAttributeEdits" runat="server" EnableViewState="false"></asp:PlaceHolder>
+                                    <Rock:DynamicPlaceHolder ID="phPaymentAttributeEdits" runat="server" />
                                 </div>
                             </div>
                             
