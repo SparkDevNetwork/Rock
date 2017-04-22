@@ -62,7 +62,7 @@
                                 Help="Should any notices that would normally be sent on a weekend be sent of preceding Friday instead?" />
                         </div>
                         <div class="col-md-6">
-                            <asp:PlaceHolder ID="phAttributes" runat="server" EnableViewState="false" />
+                            <Rock:DynamicPlaceHolder ID="phAttributes" runat="server" />
                         </div>
                     </div>
 

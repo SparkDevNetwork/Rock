@@ -188,7 +188,7 @@
                             <h4 class="panel-title pull-left">Additional Information</h4>
                         </div>
                         <div class="panel-body">
-                            <asp:PlaceHolder ID="phPersonAttributes" runat="server" EnableViewState="false"></asp:PlaceHolder>
+                            <Rock:DynamicPlaceHolder ID="phPersonAttributes" runat="server" />
                         </div>
                         <hr />
                     </asp:Panel>
@@ -198,7 +198,7 @@
                             <h4 class="panel-title pull-left">Family Information</h4>
                         </div>
                         <div class="panel-body">
-                            <asp:PlaceHolder ID="phFamilyAttributes" runat="server" EnableViewState="false"></asp:PlaceHolder>
+                            <Rock:DynamicPlaceHolder ID="phFamilyAttributes" runat="server" />
                         </div>
                         <hr />
                     </asp:Panel>

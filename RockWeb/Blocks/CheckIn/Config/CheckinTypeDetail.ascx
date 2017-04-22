@@ -112,7 +112,7 @@
                         </Rock:PanelWidget>
 
                         <Rock:PanelWidget ID="wpCustom" runat="server" Title="Custom Settings">
-                            <asp:PlaceHolder ID="phAttributeEdits" runat="server" EnableViewState="false"></asp:PlaceHolder>
+                            <Rock:DynamicPlaceholder ID="phAttributeEdits" runat="server" ></Rock:DynamicPlaceholder>
                         </Rock:PanelWidget>
 
                         <div class="actions">
