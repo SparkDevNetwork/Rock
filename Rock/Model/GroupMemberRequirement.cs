@@ -98,6 +98,7 @@ namespace Rock.Model
         /// <value>
         /// The group member.
         /// </value>
+        [LavaInclude]
         public virtual GroupMember GroupMember { get; set; }
 
         /// <summary>
@@ -106,6 +107,7 @@ namespace Rock.Model
         /// <value>
         /// The group requirement.
         /// </value>
+        [LavaInclude]
         public virtual GroupRequirement GroupRequirement { get; set; }
 
         #endregion
