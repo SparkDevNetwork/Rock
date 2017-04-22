@@ -199,6 +199,8 @@ namespace RockWeb.Blocks.Core
                 {
                     Helper.SaveAttributeEdits( attributeState, entityTypeIdAttributeMatrix, "AttributeMatrixTemplateId", attributeMatrixTemplate.Id.ToString(), rockContext );
                 }
+
+                Rock.Web.Cache.AttributeCache.FlushEntityAttributes();
             } );
 
             NavigateToParentPage();

@@ -145,7 +145,10 @@ namespace Rock.Field.Types
             if ( attributeMatrixGuid.HasValue )
             {
                 attributeMatrix = attributeMatrixService.Get( attributeMatrixGuid.Value );
+            }
 
+            if ( attributeMatrix != null)
+            { 
                 if ( configurationValues.ContainsKey( ATTRIBUTE_MATRIX_TEMPLATE ) )
                 {
                     // set the AttributeMatrixTemplateId just in case it was changed since the last time the attributeMatrix was saved
