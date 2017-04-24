@@ -144,6 +144,8 @@ TransactionAcountDetails: [
     [BooleanField( "Enable Comment Entry", "Allows the guest to enter the the value that's put into the comment field (will be appended to the 'Payment Comment' setting)", false, "", 29 )]
     [TextField( "Comment Entry Label", "The label to use on the comment edit field (e.g. Trip Name to give to a specific trip).", false, "Comment", "", 30 )]
     [BooleanField( "Enable Business Giving", "Should the option to give as as a business be displayed", true, "", 31 )]
+    [BooleanField( "Enable Anonymous Giving", "Should the option to give anonymously be displayed. Giving anonymously will display the transaction as 'Anonymous' in places where it is shown publicly, for example, on a list of fundraising contributors.", false, "", 32 )]
+    [TextField( "Anonymous Giving Tooltip", "The tooltip for the 'Give Anonymously' checkbox.", false, "", order:33 )]
 
     #endregion
 
@@ -1236,6 +1238,9 @@ TransactionAcountDetails: [
             txtCurrentName.Visible = person != null;
             txtFirstName.Visible = person == null;
             txtLastName.Visible = person == null;
+
+            cbGiveAnonymously.Visible = GetAttributeValue( "EnableAnonymousGiving" ).AsBoolean();
+            cbGiveAnonymously.ToolTip = GetAttributeValue( "AnonymousGivingTooltip" );
 
             if ( GetAttributeValue( "EnableBusinessGiving" ).AsBoolean() )
             {
@@ -2794,6 +2799,8 @@ TransactionAcountDetails: [
 
             transaction.AuthorizedPersonAliasId = person.PrimaryAliasId;
             History.EvaluateChange( txnChanges, "Person", string.Empty, person.FullName );
+
+            transaction.ShowAsAnonymous = cbGiveAnonymously.Checked;
 
             transaction.TransactionDateTime = RockDateTime.Now;
             History.EvaluateChange( txnChanges, "Date/Time", null, transaction.TransactionDateTime );

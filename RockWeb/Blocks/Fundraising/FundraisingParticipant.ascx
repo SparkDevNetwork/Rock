@@ -57,7 +57,7 @@
                 <asp:Panel ID="pnlContributions" runat="server">
                     <Rock:Grid ID="gContributions" runat="server" DisplayType="Light" OnRowDataBound="gContributions_RowDataBound">
                         <Columns>
-                            <asp:BoundField DataField="AuthorizedPersonAlias.Person.FullName" HeaderText="Name" />
+                            <Rock:RockLiteralField ID="lPersonName" HeaderText="Name" />
                             <Rock:RockLiteralField ID="lAddress" HeaderText="Address" />
                             <Rock:DateTimeField DataField="TransactionDateTime" HeaderText="Date" ItemStyle-HorizontalAlign="Left" />
                             <Rock:CurrencyField DataField="TotalAmount" HeaderText="Amount" HeaderStyle-HorizontalAlign="Right" />

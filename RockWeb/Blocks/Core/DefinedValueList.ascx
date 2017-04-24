@@ -51,7 +51,7 @@
                         </div>
                     </div>
                     <div class="attributes">
-                        <asp:PlaceHolder ID="phDefinedValueAttributes" runat="server" EnableViewState="false"></asp:PlaceHolder>
+                        <Rock:DynamicPlaceHolder ID="phDefinedValueAttributes" runat="server" />
                     </div>
                 </fieldset>
 

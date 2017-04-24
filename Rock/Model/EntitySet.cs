@@ -111,6 +111,7 @@ namespace Rock.Model
         /// <value>
         /// The parent entity set.
         /// </value>
+        [LavaInclude]
         public virtual EntitySet ParentEntitySet { get; set; }
 
         /// <summary>

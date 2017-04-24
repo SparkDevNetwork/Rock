@@ -257,6 +257,7 @@ namespace Rock.Model
         /// <value>
         /// A <see cref="Rock.Model.Group"/> representing the Group's parent group. If this Group does not have a parent, the value will be null.
         /// </value>
+        [LavaInclude]
         public virtual Group ParentGroup { get; set; }
 
         /// <summary>
@@ -384,6 +385,7 @@ namespace Rock.Model
         /// <value>
         /// The group member workflow triggers.
         /// </value>
+        [LavaInclude]
         public virtual ICollection<GroupMemberWorkflowTrigger> GroupMemberWorkflowTriggers
         {
             get { return _triggers ?? ( _triggers = new Collection<GroupMemberWorkflowTrigger>() ); }
@@ -397,6 +399,7 @@ namespace Rock.Model
         /// <value>
         /// The linkages.
         /// </value>
+        [LavaInclude]
         public virtual ICollection<EventItemOccurrenceGroupMap> Linkages
         {
             get { return _linkages ?? ( _linkages = new Collection<EventItemOccurrenceGroupMap>() ); }

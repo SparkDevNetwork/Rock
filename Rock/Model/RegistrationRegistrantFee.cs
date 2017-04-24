@@ -94,6 +94,7 @@ namespace Rock.Model
         /// <value>
         /// The registration registrant.
         /// </value>
+        [LavaInclude]
         public virtual RegistrationRegistrant RegistrationRegistrant { get; set; }
 
         /// <summary>

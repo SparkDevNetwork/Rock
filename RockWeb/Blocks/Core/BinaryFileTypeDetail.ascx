@@ -27,7 +27,7 @@
                                 <Rock:RockCheckBox ID="cbRequiresViewSecurity" runat="server" Label="Requires View Security" Text="Yes" Help="Enable this to always do a security check before displaying images of this type. Leave disabled for files that can be viewed by any user." />
                                 <Rock:ComponentPicker ID="cpStorageType" runat="server" ContainerType="Rock.Storage.ProviderContainer, Rock" Label="Storage Type" Required="true" AutoPostBack="true" />
                                 <div class="attributes">
-                                    <asp:PlaceHolder ID="phAttributes" runat="server" EnableViewState="false"></asp:PlaceHolder>
+                                    <Rock:DynamicPlaceHolder ID="phAttributes" runat="server" />
                                 </div>
                             </div>
                             <div class="col-md-6">

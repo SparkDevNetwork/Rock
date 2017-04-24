@@ -387,16 +387,6 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
-        /// Handles the <see cref="E:System.Web.UI.Control.Init" /> event.
-        /// </summary>
-        /// <param name="e">An <see cref="T:System.EventArgs" /> object that contains the event data.</param>
-        protected override void OnInit( EventArgs e )
-        {
-            base.OnInit( e );
-            RockPage.AddScriptLink( this.Page, "~/Scripts/chosen.jquery.min.js" );
-        }
-
-        /// <summary>
         /// Saves the current view state of the <see cref="T:System.Web.UI.WebControls.ListControl" /> -derived control and the items it contains.
         /// </summary>
         /// <returns>
