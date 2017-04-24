@@ -30,6 +30,9 @@ namespace Rock.Rest.Controllers
     /// </summary>
     public partial class SitesController : Rock.Rest.ApiController<Rock.Model.Site>
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="SitesController"/> class.
+        /// </summary>
         public SitesController() : base( new Rock.Model.SiteService( new Rock.Data.RockContext() ) ) { } 
     }
 }

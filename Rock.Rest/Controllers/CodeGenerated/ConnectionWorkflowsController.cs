@@ -30,6 +30,9 @@ namespace Rock.Rest.Controllers
     /// </summary>
     public partial class ConnectionWorkflowsController : Rock.Rest.ApiController<Rock.Model.ConnectionWorkflow>
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ConnectionWorkflowsController"/> class.
+        /// </summary>
         public ConnectionWorkflowsController() : base( new Rock.Model.ConnectionWorkflowService( new Rock.Data.RockContext() ) ) { } 
     }
 }

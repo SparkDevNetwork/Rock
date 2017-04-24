@@ -30,6 +30,9 @@ namespace Rock.Rest.Controllers
     /// </summary>
     public partial class MergeTemplatesController : Rock.Rest.ApiController<Rock.Model.MergeTemplate>
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="MergeTemplatesController"/> class.
+        /// </summary>
         public MergeTemplatesController() : base( new Rock.Model.MergeTemplateService( new Rock.Data.RockContext() ) ) { } 
     }
 }

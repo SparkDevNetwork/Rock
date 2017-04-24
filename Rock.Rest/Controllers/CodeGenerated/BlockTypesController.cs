@@ -30,6 +30,9 @@ namespace Rock.Rest.Controllers
     /// </summary>
     public partial class BlockTypesController : Rock.Rest.ApiController<Rock.Model.BlockType>
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="BlockTypesController"/> class.
+        /// </summary>
         public BlockTypesController() : base( new Rock.Model.BlockTypeService( new Rock.Data.RockContext() ) ) { } 
     }
 }

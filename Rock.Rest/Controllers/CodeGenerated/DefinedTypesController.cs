@@ -30,6 +30,9 @@ namespace Rock.Rest.Controllers
     /// </summary>
     public partial class DefinedTypesController : Rock.Rest.ApiController<Rock.Model.DefinedType>
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="DefinedTypesController"/> class.
+        /// </summary>
         public DefinedTypesController() : base( new Rock.Model.DefinedTypeService( new Rock.Data.RockContext() ) ) { } 
     }
 }
