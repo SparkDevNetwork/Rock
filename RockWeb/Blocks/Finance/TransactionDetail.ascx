@@ -35,6 +35,7 @@
                     <div class="row">
                         <div class="col-md-6">
                             <Rock:PersonPicker ID="ppAuthorizedPerson" CssClass="js-authorizedperson" runat="server" Label="Person" IncludeBusinesses="true" OnSelectPerson="ppAuthorizedPerson_SelectPerson" />
+                            <Rock:RockCheckBox ID="cbShowAsAnonymous" runat="server" Label="Show As Anonymous" />
                             <Rock:DateTimePicker ID="dtTransactionDateTime" runat="server" Label="Transaction Date/Time" Required="true" />
                         </div>
                         <div class="col-md-6">
@@ -76,11 +77,11 @@
                             <Rock:RockDropDownList ID="ddlSourceType" runat="server" Label="Source" />
                             <Rock:RockDropDownList ID="ddlCurrencyType" runat="server" Label="Currency Type" AutoPostBack="true" OnSelectedIndexChanged="ddlCurrencyType_SelectedIndexChanged" />
                             <Rock:RockDropDownList ID="ddlCreditCardType" runat="server" Label="Credit Card Type" />
-                            <asp:PlaceHolder ID="phPaymentAttributeEdits" runat="server" EnableViewState="false"></asp:PlaceHolder>
+                            <Rock:DynamicPlaceHolder ID="phPaymentAttributeEdits" runat="server" />
                             <Rock:FinancialGatewayPicker ID="gpPaymentGateway" runat="server" Label="Payment Gateway" ShowAll="true" />
                             <Rock:DataTextBox ID="tbTransactionCode" runat="server" Label="Transaction Code"
                                 SourceTypeName="Rock.Model.FinancialTransaction, Rock" PropertyName="TransactionCode" />
-                            <asp:PlaceHolder ID="phAttributeEdits" runat="server" EnableViewState="false"></asp:PlaceHolder>
+                            <Rock:DynamicPlaceHolder ID="phAttributeEdits" runat="server" />
                         </div>
                         <div class="col-md-6">
                             <Rock:RockCheckBox ID="cbIsRefund" runat="server" Label="This is a Refund" Text="Yes" AutoPostBack="true" OnCheckedChanged="cbIsRefund_CheckedChanged" />
@@ -193,7 +194,7 @@
                     <div class="col-md-6">
                         <Rock:RockTextBox ID="tbAccountSummary" runat="server" Label="Summary" TextMode="MultiLine" Rows="3" ValidationGroup="Account" />
                         <div class="attributes">
-                            <asp:PlaceHolder ID="phAccountAttributeEdits" runat="server" EnableViewState="false"></asp:PlaceHolder>
+                            <asp:PlaceHolder ID="phAccountAttributeEdits" runat="server" />
                         </div>
                     </div>
                 </div>

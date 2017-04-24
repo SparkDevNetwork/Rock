@@ -34,6 +34,16 @@
                         HeaderText="Age"  
                         SortExpression="BirthYear desc,BirthMonth desc,BirthDay desc" 
                         ColumnPriority="Desktop" />
+                    <Rock:RockBoundField 
+                        DataField="Gender" 
+                        HeaderText="Gender" 
+                        SortExpression="Gender" 
+                        ColumnPriority="Desktop" />
+                    <Rock:RockTemplateField HeaderText="Spouse">
+                        <ItemTemplate>
+                            <asp:Literal ID="lSpouse" runat="server" />
+                        </ItemTemplate>
+                    </Rock:RockTemplateField>
                     <Rock:DefinedValueField
                         DataField="ConnectionStatusValueId"
                         HeaderText="Connection Status"

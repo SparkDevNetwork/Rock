@@ -86,6 +86,7 @@ namespace Rock.Model
         /// <value>
         /// The <see cref="Rock.Model.Page"/> that is associated with the RoutePath.
         /// </value>
+        [LavaInclude]
         public virtual Page Page { get; set; }
 
         #endregion

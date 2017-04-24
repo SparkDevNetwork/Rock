@@ -1087,15 +1087,8 @@ namespace Rock.Attribute
                 numberOfColumns = 12;
             }
 
-            HtmlGenericControl fieldSet;
-            if ( parentControl is DynamicControlsPanel )
-            {
-                fieldSet = new DynamicControlsHtmlGenericControl( "fieldset" );
-            }
-            else
-            {
-                fieldSet = new HtmlGenericControl( "fieldset" );
-            }
+            bool parentIsDynamic = parentControl is DynamicControlsPanel || parentControl is DynamicPlaceholder;
+            HtmlGenericControl fieldSet = parentIsDynamic ? new DynamicControlsHtmlGenericControl( "fieldset" ) : new HtmlGenericControl( "fieldset" );
 
             parentControl.Controls.Add( fieldSet );
             fieldSet.Controls.Clear();
@@ -1125,7 +1118,7 @@ namespace Rock.Attribute
                 legend.InnerText = category.Trim();
             }
 
-            HtmlGenericControl attributeRow = new HtmlGenericControl( "div" );
+            HtmlGenericControl attributeRow = parentIsDynamic ? new DynamicControlsHtmlGenericControl( "div" ) : new HtmlGenericControl( "div" );
             if ( numberOfColumns.HasValue )
             {
                 fieldSet.Controls.Add( attributeRow );
@@ -1144,7 +1137,7 @@ namespace Rock.Attribute
                     {
                         int colSize = (int)Math.Ceiling((double)12 / numberOfColumns.Value);
 
-                        HtmlGenericControl attributeCol = new HtmlGenericControl( "div" );
+                        HtmlGenericControl attributeCol = parentIsDynamic ? new DynamicControlsHtmlGenericControl( "div" ) : new HtmlGenericControl( "div" );
                         attributeRow.Controls.Add( attributeCol );
                         attributeCol.AddCssClass( string.Format( "col-md-{0}", colSize ) );
                         attribute.AddControl( attributeCol.Controls, item.AttributeValues[attribute.Key].Value, validationGroup, setValue, true );

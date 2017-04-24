@@ -60,6 +60,7 @@ namespace Rock.Model
         /// <value>
         /// The event item occurrence.
         /// </value>
+        [LavaInclude]
         public virtual EventItemOccurrence EventItemOccurrence { get; set; }
 
         /// <summary>

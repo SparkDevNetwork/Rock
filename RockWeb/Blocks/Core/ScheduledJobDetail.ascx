@@ -36,8 +36,8 @@
                         <Rock:DataTextBox ID="tbNotificationEmails" runat="server" SourceTypeName="Rock.Model.ServiceJob, Rock" PropertyName="NotificationEmails" TabIndex="4" />
                         <Rock:NotificationBox ID="nbJobTypeError" runat="server" NotificationBoxType="Danger" Dismissable="true" />
                         <Rock:RockDropDownList ID="ddlJobTypes" runat="server" Label="Job Type" OnSelectedIndexChanged="ddlJobTypes_SelectedIndexChanged" AutoPostBack="true" TabIndex="6" Required="true" />
-                        <Rock:DynamicControlsPanel ID="phAttributes" runat="server" ></Rock:DynamicControlsPanel>
-                        <Rock:DynamicControlsPanel ID="phAttributesReadOnly" runat="server" Visible="false" ></Rock:DynamicControlsPanel>
+                        <Rock:DynamicPlaceholder ID="phAttributes" runat="server" ></Rock:DynamicPlaceholder>
+                        <Rock:DynamicPlaceholder ID="phAttributesReadOnly" runat="server" Visible="false" ></Rock:DynamicPlaceholder>
                     </div>
                     <div class="col-md-6">
                         <Rock:DataTextBox ID="tbCronExpression" runat="server" SourceTypeName="Rock.Model.ServiceJob, Rock" PropertyName="CronExpression" 
