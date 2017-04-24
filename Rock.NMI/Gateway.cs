@@ -724,7 +724,10 @@ namespace Rock.NMI
                                     Payment payment = new Payment();
                                     payment.TransactionCode = GetXElementValue( xTxn, "transaction_id" );
                                     payment.Status = GetXElementValue( xTxn, "condition" ).FixCase();
-                                    payment.IsFailure = payment.Status == "Failed";
+                                    payment.IsFailure =
+                                        payment.Status == "Failed" ||
+                                        payment.Status == "Abandoned" ||
+                                        payment.Status == "Canceled";
                                     payment.TransactionCode = GetXElementValue( xTxn, "transaction_id" );
                                     payment.GatewayScheduleId = GetXElementValue( xTxn, "original_transaction_id" ).Trim();
 

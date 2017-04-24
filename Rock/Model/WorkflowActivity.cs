@@ -147,6 +147,10 @@ namespace Rock.Model
                 {
                     return WorkflowActivityTypeCache.Read( ActivityTypeId );
                 }
+                else if ( ActivityType != null )
+                {
+                    return WorkflowActivityTypeCache.Read( ActivityType.Id );
+                }
                 return null;
             }
         }
@@ -192,6 +196,7 @@ namespace Rock.Model
         /// <value>
         /// The activated by activity.
         /// </value>
+        [LavaInclude]
         public virtual WorkflowActivity ActivatedByActivity { get; set; }
 
         /// <summary>
@@ -214,6 +219,7 @@ namespace Rock.Model
         /// <value>
         /// An enumerable collection containing the active <see cref="Rock.Model.WorkflowAction">WorkflowActions</see> for this WorkflowActivity.
         /// </value>
+        [LavaInclude]
         public virtual IEnumerable<Rock.Model.WorkflowAction> ActiveActions
         {
             get
@@ -236,6 +242,27 @@ namespace Rock.Model
             get
             {
                 return this.Workflow != null ? this.Workflow : base.ParentAuthority;
+            }
+        }
+
+        /// <summary>
+        /// Gets the <see cref="System.Object"/> with the specified key.
+        /// </summary>
+        /// <value>
+        /// The <see cref="System.Object"/>.
+        /// </value>
+        /// <param name="key">The key.</param>
+        /// <returns></returns>
+        public override object this[object key]
+        {
+            get
+            {
+                string propertyKey = key.ToStringSafe();
+                if ( propertyKey == "ActivityType" )
+                {
+                    return ActivityTypeCache;
+                }
+                return base[key];
             }
         }
 
@@ -358,7 +385,7 @@ namespace Rock.Model
         /// <param name="activityType">The <see cref="Rock.Model.WorkflowActivityType"/> to activate.</param>
         /// <param name="workflow">The persisted <see cref="Rock.Model.Workflow"/> instance that this Workflow activity belongs to.</param>
         /// <returns>The activated <see cref="Rock.Model.WorkflowActivity"/>.</returns>
-        [Obsolete( "Use Activate with WorkflowActivityTypeCache parameter instead for better performance." )]
+        [Obsolete( "For improved performance, use the Activate method that takes a WorkflowActivityTypeCache parameter instead. IMPORTANT NOTE: When using the new method, the WorkflowActivity object that is returned by that method will not have the ActitivtyType property set. If you are referencing the ActivityType property on a Workflow Activity returned by that method, you will get a Null Reference Exception! You should use the new ActivityTypeCache property on the workflow activity instead." )]
         public static WorkflowActivity Activate( WorkflowActivityType activityType, Workflow workflow )
         {
             using ( var rockContext = new RockContext() )
@@ -376,13 +403,18 @@ namespace Rock.Model
         /// <returns>
         /// The activated <see cref="Rock.Model.WorkflowActivity" />.
         /// </returns>
-        [Obsolete( "Use Activate with WorkflowActivityTypeCache parameter instead for better performance." )]
+        [Obsolete( "For improved performance, use the Activate method that takes a WorkflowActivityTypeCache parameter instead. IMPORTANT NOTE: When using the new method, the WorkflowActivity object that is returned by that method will not have the ActitivtyType property set. If you are referencing the ActivityType property on a Workflow Activity returned by that method, you will get a Null Reference Exception! You should use the new ActivityTypeCache property on the workflow activity instead." )]
         public static WorkflowActivity Activate( WorkflowActivityType activityType, Workflow workflow, RockContext rockContext )
         {
             if ( activityType != null )
             {
                 var activityTypeCache = WorkflowActivityTypeCache.Read( activityType.Id );
-                return Activate( activityTypeCache, workflow, rockContext );
+                var activity = Activate( activityTypeCache, workflow, rockContext );
+                if ( activity != null )
+                {
+                    activity.ActivityType = activityType;
+                }
+                return activity;
             }
 
             return null;

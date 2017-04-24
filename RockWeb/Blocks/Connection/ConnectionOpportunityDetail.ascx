@@ -83,7 +83,7 @@
                         </div>
 
                         <Rock:PanelWidget ID="wpAttributes" runat="server" Title="Opportunity Attributes">
-                            <asp:PlaceHolder ID="phAttributes" runat="server" EnableViewState="false"></asp:PlaceHolder>
+                            <Rock:DynamicPlaceHolder ID="phAttributes" runat="server" />
                         </Rock:PanelWidget>
 
                         <Rock:PanelWidget ID="wpConnectionOpportunityGroups" runat="server" Title="Placement Groups">

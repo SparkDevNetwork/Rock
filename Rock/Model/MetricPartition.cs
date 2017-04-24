@@ -110,6 +110,7 @@ namespace Rock.Model
         /// <value>
         /// The metric.
         /// </value>
+        [LavaInclude]
         public virtual Metric Metric { get; set; }
 
         /// <summary>

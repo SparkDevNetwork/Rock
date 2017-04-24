@@ -181,6 +181,7 @@ namespace Rock.Model
         /// <value>
         /// The <see cref="Rock.Model.Site"/> that the exception occurred on. If this did not occur on a site, this value will be null.
         /// </value>
+        [LavaInclude]
         public virtual Rock.Model.Site Site { get; set; }
 
         /// <summary>
@@ -190,6 +191,7 @@ namespace Rock.Model
         /// The <see cref="Rock.Model.Page"/> that the exception occurred on. If this exception was not thrown on a <see cref="Rock.Model.Page"/>
         /// this value will be null.
         /// </value>
+        [LavaInclude]
         public virtual Rock.Model.Page Page { get; set; }
 
         #endregion

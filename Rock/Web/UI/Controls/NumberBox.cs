@@ -143,7 +143,7 @@ namespace Rock.Web.UI.Controls
             switch( _rangeValidator.Type )
             {
                 case ValidationDataType.Integer: rangeMessageFormat = "{0} must be an integer"; break;
-                case ValidationDataType.Double: rangeMessageFormat = "{0} must be a decimal amout"; break;
+                case ValidationDataType.Double: rangeMessageFormat = "{0} must be a decimal amount"; break;
                 case ValidationDataType.Currency: rangeMessageFormat = "{0} must be a currency amount"; break;
                 case ValidationDataType.Date: rangeMessageFormat = "{0} must be a date"; break;
                 case ValidationDataType.String: rangeMessageFormat = "{0} must be a string"; break;
