@@ -38,7 +38,12 @@ namespace Rock.Rest.Controllers
     {
         #region Get
 
-        // GET api/<controller>/5
+        /// <summary>
+        /// GET endpoint to get a single person record
+        /// </summary>
+        /// <param name="id">The Id of the record</param>
+        /// <returns></returns>
+        /// <exception cref="HttpResponseException"></exception>
         [Authenticate, Secured]
         [ActionName( "GetById" )]
         public override Person GetById( int id )
@@ -53,7 +58,11 @@ namespace Rock.Rest.Controllers
             return person;
         }
 
-        // GET api/<controller>(5)
+        /// <summary>
+        /// GET endpoint to get a single person record
+        /// </summary>
+        /// <param name="key">The Id of the record</param>
+        /// <returns></returns>
         [Authenticate, Secured]
         [EnableQuery]
         public override Person Get( [FromODataUri] int key )
@@ -63,11 +72,9 @@ namespace Rock.Rest.Controllers
         }
 
         /// <summary>
-        /// Returns a Queryable of Person records
+        /// Queryable GET endpoint. Note that records that are marked as Deceased are not included
         /// </summary>
-        /// <returns>
-        /// A queryable collection of Person records that matches the supplied Odata query.
-        /// </returns>
+        /// <returns></returns>
         [Authenticate, Secured]
         [EnableQuery]
         public override IQueryable<Person> Get()
@@ -77,7 +84,7 @@ namespace Rock.Rest.Controllers
         }
 
         /// <summary>
-        /// Get api controller with option to include Person records for deceased individuals.
+        /// Queryable GET endpoint with an option to include person records that have been marked as Deceased
         /// </summary>
         /// <param name="includeDeceased">if set to <c>true</c> [include deceased].</param>
         /// <returns></returns>
@@ -106,7 +113,7 @@ namespace Rock.Rest.Controllers
         }
 
         /// <summary>
-        /// Searches the person entit(ies) by email.
+        /// Searches the person records based on the specified email address
         /// </summary>
         /// <param name="email">The email.</param>
         /// <returns></returns>
@@ -121,7 +128,7 @@ namespace Rock.Rest.Controllers
         }
 
         /// <summary>
-        /// Searches the person entit(ies) by phone number.
+        /// Searches the person records based on the specified phone number. NOTE that partial matches are included
         /// </summary>
         /// <param name="number">The phone number.</param>
         /// <returns></returns>
@@ -136,7 +143,7 @@ namespace Rock.Rest.Controllers
         }
 
         /// <summary>
-        /// Gets the name of the by user.
+        /// GET a person record based on the specified username
         /// </summary>
         /// <param name="username">The username.</param>
         /// <returns></returns>
@@ -160,7 +167,7 @@ namespace Rock.Rest.Controllers
         }
 
         /// <summary>
-        /// Gets the Person by person alias identifier.
+        /// GET the Person by person alias identifier.
         /// </summary>
         /// <param name="personAliasId">The person alias identifier.</param>
         /// <returns></returns>
@@ -228,6 +235,11 @@ namespace Rock.Rest.Controllers
             return ControllerContext.Request.CreateResponse( HttpStatusCode.Created, person.Id );
         }
 
+        /// <summary>
+        /// PUT endpoint. Use this to UPDATE a person record
+        /// </summary>
+        /// <param name="id">The identifier.</param>
+        /// <param name="person">The person.</param>
         public override void Put( int id, Person person )
         {
             SetProxyCreation( true );
@@ -431,11 +443,10 @@ namespace Rock.Rest.Controllers
         }
 
         /// <summary>
-        /// Searches the with details.
+        /// Returns a List of PersonSearchRecord based on the sorted person query
         /// </summary>
-        /// <param name="reversed">if set to <c>true</c> [reversed].</param>
         /// <param name="sortedPersonQry">The sorted person qry.</param>
-        /// <param name="rockContext">The rock context.</param>
+        /// <param name="showFullNameReversed">if set to <c>true</c> [show full name reversed].</param>
         /// <returns></returns>
         private List<PersonSearchResult> SearchWithDetails( IQueryable<Person> sortedPersonQry, bool showFullNameReversed )
         {
@@ -620,6 +631,11 @@ namespace Rock.Rest.Controllers
             personSearchResult.PickerItemDetailsHtml = string.Format( itemDetailFormat, imageHtml, personInfoHtml );
         }
 
+        /// <summary>
+        /// Gets the impersonation parameter.
+        /// </summary>
+        /// <param name="personId">The person identifier.</param>
+        /// <returns></returns>
         [Authenticate, Secured]
         [HttpGet]
         [System.Web.Http.Route( "api/People/GetSearchDetails/{personId}" )]
@@ -734,9 +750,10 @@ namespace Rock.Rest.Controllers
         #endregion
 
         /// <summary>
-        /// Deletes the specified identifier.
+        /// DELETE endpoint for a Person Record. NOTE: Person records can not be deleted using REST, so this will always return a 405
         /// </summary>
         /// <param name="id">The identifier.</param>
+        /// <exception cref="HttpResponseException"></exception>
         public override void Delete( int id )
         {
             // we don't want to support DELETE on a Person in ROCK (especially from REST).  So, return a MethodNotAllowed.

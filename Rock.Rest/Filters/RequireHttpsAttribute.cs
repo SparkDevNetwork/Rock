@@ -22,8 +22,16 @@ using System.Web.Http.Filters;
 
 namespace Rock.Rest.Filters
 {
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <seealso cref="System.Web.Http.Filters.ActionFilterAttribute" />
     public class RequireHttpsAttribute : ActionFilterAttribute
     {
+        /// <summary>
+        /// Occurs before the action method is invoked.
+        /// </summary>
+        /// <param name="actionContext">The action context.</param>
         public override void OnActionExecuting( HttpActionContext actionContext )
         {
             if ( !string.Equals( actionContext.Request.RequestUri.Scheme, "https", StringComparison.OrdinalIgnoreCase ) )

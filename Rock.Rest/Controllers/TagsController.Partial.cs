@@ -57,6 +57,13 @@ namespace Rock.Rest.Controllers
                 } );
         }
 
+        /// <summary>
+        /// GET a specific Tag
+        /// </summary>
+        /// <param name="entityTypeId">The entity type identifier.</param>
+        /// <param name="ownerId">The owner identifier.</param>
+        /// <param name="name">The name.</param>
+        /// <returns></returns>
         [Authenticate, Secured]
         [HttpGet]
         public Tag Get( int entityTypeId, int ownerId, string name )
@@ -64,6 +71,14 @@ namespace Rock.Rest.Controllers
             return Get( entityTypeId, ownerId, name, string.Empty, string.Empty );
         }
 
+        /// <summary>
+        /// GET a specific Tag
+        /// </summary>
+        /// <param name="entityTypeId">The entity type identifier.</param>
+        /// <param name="ownerId">The owner identifier.</param>
+        /// <param name="name">The name.</param>
+        /// <param name="entityQualifier">The entity qualifier.</param>
+        /// <returns></returns>
         [Authenticate, Secured]
         [HttpGet]
         public Tag Get( int entityTypeId, int ownerId, string name, string entityQualifier )
@@ -71,6 +86,16 @@ namespace Rock.Rest.Controllers
             return Get( entityTypeId, ownerId, name, entityQualifier, string.Empty );
         }
 
+        /// <summary>
+        /// GET a specific Tag
+        /// </summary>
+        /// <param name="entityTypeId">The entity type identifier.</param>
+        /// <param name="ownerId">The owner identifier.</param>
+        /// <param name="name">The name.</param>
+        /// <param name="entityQualifier">The entity qualifier.</param>
+        /// <param name="entityQualifierValue">The entity qualifier value.</param>
+        /// <returns></returns>
+        /// <exception cref="HttpResponseException"></exception>
         [Authenticate, Secured]
         [HttpGet]
         public Tag Get( int entityTypeId, int ownerId, string name, string entityQualifier, string entityQualifierValue )
@@ -90,6 +115,14 @@ namespace Rock.Rest.Controllers
             }
         }
 
+        /// <summary>
+        /// Queryable GET of Tags
+        /// </summary>
+        /// <param name="entityTypeId">The entity type identifier.</param>
+        /// <param name="ownerId">The owner identifier.</param>
+        /// <param name="entityGuid">The entity unique identifier.</param>
+        /// <param name="name">The name.</param>
+        /// <returns></returns>
         [Authenticate, Secured]
         [HttpGet]
         public IQueryable<Tag> AvailableNames( int entityTypeId, int ownerId, Guid entityGuid, string name )
@@ -97,6 +130,15 @@ namespace Rock.Rest.Controllers
             return AvailableNames( entityTypeId, ownerId, entityGuid, name, string.Empty, string.Empty );
         }
 
+        /// <summary>
+        /// Queryable GET of Tags
+        /// </summary>
+        /// <param name="entityTypeId">The entity type identifier.</param>
+        /// <param name="ownerId">The owner identifier.</param>
+        /// <param name="entityGuid">The entity unique identifier.</param>
+        /// <param name="name">The name.</param>
+        /// <param name="entityQualifier">The entity qualifier.</param>
+        /// <returns></returns>
         [Authenticate, Secured]
         [HttpGet]
         public IQueryable<Tag> AvailableNames( int entityTypeId, int ownerId, Guid entityGuid, string name, string entityQualifier )
@@ -104,6 +146,16 @@ namespace Rock.Rest.Controllers
             return AvailableNames( entityTypeId, ownerId, entityGuid, name, entityQualifier, string.Empty );
         }
 
+        /// <summary>
+        /// Queryable GET of Tags
+        /// </summary>
+        /// <param name="entityTypeId">The entity type identifier.</param>
+        /// <param name="ownerId">The owner identifier.</param>
+        /// <param name="entityGuid">The entity unique identifier.</param>
+        /// <param name="name">The name.</param>
+        /// <param name="entityQualifier">The entity qualifier.</param>
+        /// <param name="entityQualifierValue">The entity qualifier value.</param>
+        /// <returns></returns>
         [Authenticate, Secured]
         [HttpGet]
         public IQueryable<Tag> AvailableNames( int entityTypeId, int ownerId, Guid entityGuid, string name, string entityQualifier, string entityQualifierValue )
