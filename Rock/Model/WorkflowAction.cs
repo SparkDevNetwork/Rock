@@ -121,6 +121,10 @@ namespace Rock.Model
                 {
                     return WorkflowActionTypeCache.Read( ActionTypeId );
                 }
+                else if ( ActionType != null )
+                {
+                    return WorkflowActionTypeCache.Read( ActionType.Id );
+                }
                 return null;
             }
         }
@@ -185,6 +189,27 @@ namespace Rock.Model
             get
             {
                 return this.Activity != null ? this.Activity : base.ParentAuthority;
+            }
+        }
+
+        /// <summary>
+        /// Gets the <see cref="System.Object"/> with the specified key.
+        /// </summary>
+        /// <value>
+        /// The <see cref="System.Object"/>.
+        /// </value>
+        /// <param name="key">The key.</param>
+        /// <returns></returns>
+        public override object this[object key]
+        {
+            get
+            {
+                string propertyKey = key.ToStringSafe();
+                if ( propertyKey == "ActionType" )
+                {
+                    return ActionTypeCache;
+                }
+                return base[key];
             }
         }
 
