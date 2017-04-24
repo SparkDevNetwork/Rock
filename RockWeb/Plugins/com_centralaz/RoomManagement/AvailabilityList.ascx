@@ -15,8 +15,8 @@
                         <Rock:DateTimePicker ID="dtpStartDateTime" runat="server" Label="Start Date" />
                         <Rock:RockRadioButtonList ID="rblResourceLocation" runat="server" RepeatDirection="Vertical" CssClass="inputs-list" Label="Search For"
                             OnSelectedIndexChanged="rblResourceLocation_SelectedIndexChanged" AutoPostBack="true">
-                            <asp:ListItem Value="Resource" Text="Resources"></asp:ListItem>
                             <asp:ListItem Value="Location" Text="Locations" Selected="True"></asp:ListItem>
+                            <asp:ListItem Value="Resource" Text="Resources"></asp:ListItem>
                         </Rock:RockRadioButtonList>
                         <Rock:CategoryPicker ID="cpResource" runat="server" Label="Resource Category"  Visible="false" EntityTypeName="com.centralaz.RoomManagement.Model.Resource" />
                         <Rock:LocationItemPicker ID="lipLocation" runat="server" Label="Parent Location"/>

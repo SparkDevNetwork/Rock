@@ -17,16 +17,17 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Data.Entity;
 using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
-using com.centralaz.RoomManagement.Model;
 using Rock;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
+using com.centralaz.RoomManagement.Model;
 
 namespace RockWeb.Plugins.com_centralaz.RoomManagement
 {
@@ -130,29 +131,16 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
                         e.Value = string.Empty;
                         break;
                     }
-                case "Start Time":
-                case "End Time":
-                    {
-                        e.Value = DateRangePicker.FormatDelimitedValues( e.Value );
-                        break;
-                    }
                 case "Resource Category":
                     {
-                        if ( gfSettings.GetUserPreference( "Selected Entity" ) == "Resources" )
+                        var resourceCategoryIdList = e.Value.Split( ',' ).AsIntegerList();
+                        if ( resourceCategoryIdList.Any() && cpResource.Visible )
                         {
-                            var resourceIdList = e.Value.Split( ',' ).AsIntegerList();
-                            if ( resourceIdList.Any() && cpResource.Visible )
+                            var service = new CategoryService( new RockContext() );
+                            var categories = service.GetByIds( resourceCategoryIdList );
+                            if ( categories != null && categories.Any() )
                             {
-                                var service = new ResourceService( new RockContext() );
-                                var resources = service.GetByIds( resourceIdList );
-                                if ( resources != null && resources.Any() )
-                                {
-                                    e.Value = resources.Select( a => a.Name ).ToList().AsDelimited( "," );
-                                }
-                                else
-                                {
-                                    e.Value = string.Empty;
-                                }
+                                e.Value = categories.Select( a => a.Name ).ToList().AsDelimited( "," );
                             }
                             else
                             {
@@ -168,12 +156,12 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
                     }
                 case "Parent Location":
                     {
-                        if ( gfSettings.GetUserPreference( "Selected Entity" ) == "Locations" )
+                        if ( gfSettings.GetUserPreference( "Selected Entity" ) == "Location" )
                         {
                             var locationIdList = e.Value.Split( ',' ).AsIntegerList();
                             if ( locationIdList.Any() && lipLocation.Visible )
                             {
-                                var service = new FinancialAccountService( new RockContext() );
+                                var service = new LocationService( new RockContext() );
                                 var locations = service.GetByIds( locationIdList );
                                 if ( locations != null && locations.Any() )
                                 {
@@ -207,8 +195,8 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
         protected void gfSettings_ApplyFilterClick( object sender, EventArgs e )
         {
             gfSettings.SaveUserPreference( "Selected Entity", rblResourceLocation.SelectedValue );
-            gfSettings.SaveUserPreference( "Start Time", dtpStartDateTime.ToString() );
-            gfSettings.SaveUserPreference( "End Time", dtpEndDateTime.ToString() );
+            gfSettings.SaveUserPreference( "Start Time", dtpStartDateTime.SelectedDateTime.ToString() );
+            gfSettings.SaveUserPreference( "End Time", dtpEndDateTime.SelectedDateTime.ToString() );
             gfSettings.SaveUserPreference( "Resource Category", cpResource.SelectedValue.ToString() );
             gfSettings.SaveUserPreference( "Parent Location", lipLocation.SelectedValue.ToString() );
             BindGrid();
@@ -274,17 +262,25 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
         /// </summary>
         private void BindGrid()
         {
-            if ( rblResourceLocation.SelectedValue == "Location" )
+            if ( rblResourceLocation.SelectedValue == "Resource" )
             {
-                gLocations.Visible = true;
-                gResources.Visible = false;
-                BindLocationsGrid();
+                cpResource.Visible = true;
+                gResources.Visible = true;
+
+                gLocations.Visible = false;
+                lipLocation.Visible = false;
+
+                BindResourcesGrid();
             }
             else
             {
-                gLocations.Visible = false;
-                gResources.Visible = true;
-                BindResourcesGrid();
+                cpResource.Visible = false;
+                gResources.Visible = false;
+
+                gLocations.Visible = true;
+                lipLocation.Visible = true;
+
+                BindLocationsGrid();
             }
         }
 
@@ -295,7 +291,7 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
         {
             var rockContext = new RockContext();
             var reservationService = new ReservationService( rockContext );
-            var qry = reservationService.Queryable().Where( r => r.ApprovalState != ReservationApprovalState.Denied );
+            var qry = reservationService.Queryable().AsNoTracking().Where( r => r.ApprovalState != ReservationApprovalState.Denied );
             var locationService = new LocationService( rockContext );
 
             List<int> locationIdList = new List<int>();
@@ -304,7 +300,7 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
             {
                 locationIdList = locationService.GetAllDescendents( lipLocation.SelectedValueAsInt().Value ).Select( l => l.Id ).ToList();
                 locationIdList.Add( lipLocation.SelectedValueAsInt().Value );
-                locationList = locationService.Queryable().Where( l => locationIdList.Contains( l.Id ) ).ToList();
+                locationList = locationService.Queryable().AsNoTracking().Where( l => locationIdList.Contains( l.Id ) ).ToList();
 
                 if ( locationIdList.Any() )
                 {
@@ -313,10 +309,8 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
             }
             else
             {
-                locationList = locationService.Queryable().ToList();
+                locationList = locationService.Queryable().AsNoTracking().Where( l => l.Name != null && l.Name != string.Empty ).ToList();
             }
-
-            locationList = locationList.Where( l => !String.IsNullOrWhiteSpace( l.Name ) ).ToList();
 
             // Filter by Time
             var today = RockDateTime.Today;
@@ -344,15 +338,14 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
             var rockContext = new RockContext();
             var reservationService = new ReservationService( rockContext );
             var resourceService = new ResourceService( rockContext );
-            var qry = reservationService.Queryable().Where( r => r.ApprovalState != ReservationApprovalState.Denied );
+            var qry = reservationService.Queryable().AsNoTracking().Where( r => r.ApprovalState != ReservationApprovalState.Denied );
 
-            List<int> resourceIdList = new List<int>();
             List<Resource> resourceList = new List<Resource>();
             if ( cpResource.SelectedValueAsInt().HasValue )
             {
                 int categoryId = cpResource.SelectedValueAsInt().Value;
-                resourceList = resourceService.Queryable().Where( r => r.CategoryId == categoryId ).ToList();
-                resourceIdList = resourceList.Select( r => r.Id ).ToList();
+                resourceList = resourceService.Queryable().AsNoTracking().Where( r => r.CategoryId == categoryId ).ToList();
+                var resourceIdList = resourceList.Select( r => r.Id ).ToList();
 
                 if ( resourceIdList.Any() )
                 {
@@ -361,7 +354,7 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
             }
             else
             {
-                resourceList = resourceService.Queryable().ToList();
+                resourceList = resourceService.Queryable().AsNoTracking().ToList();
             }
 
             // Filter by Time
