@@ -51,6 +51,7 @@
     <Compile Include="Migrations\001_CreateDb.cs" />
     <Compile Include="Model\CodeGenerated\DPSOffenderService.cs" />
     <Compile Include="Model\DPSOffender.cs" />
+    <Compile Include="Model\VolunteerScreening.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
