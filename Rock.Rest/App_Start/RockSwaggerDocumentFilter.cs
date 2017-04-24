@@ -21,11 +21,21 @@ using Swashbuckle.Swagger;
 
 namespace Rock.Rest
 {
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <seealso cref="Swashbuckle.Swagger.IDocumentFilter" />
     public class RockSwaggerDocumentFilter : IDocumentFilter
     {
-        // The default doc is huge and very slow, so this attempts to narrow down what is included
+        /// <summary>
+        /// Applies the specified swagger document.
+        /// </summary>
+        /// <param name="swaggerDoc">The swagger document.</param>
+        /// <param name="schemaRegistry">The schema registry.</param>
+        /// <param name="apiExplorer">The API explorer.</param>
         public void Apply( SwaggerDocument swaggerDoc, SchemaRegistry schemaRegistry, IApiExplorer apiExplorer )
         {
+            // The default doc is huge and very slow, so this attempts to narrow down what is included
             // to help make the doc smaller, remove paths for the following actions
             string[] actionsToHide = new string[]
             {

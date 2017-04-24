@@ -36,7 +36,7 @@ namespace Rock.Rest.Controllers
         /// <summary>
         /// Uploads a file and stores it as a binary file
         /// </summary>
-        /// <param name="binaryFileTypeId"></param>
+        /// <param name="binaryFileTypeGuid">The binary file type unique identifier.</param>
         /// <returns></returns>
         [Authenticate, Secured]
         [HttpPost]

@@ -40,6 +40,11 @@ namespace Rock.Rest.Controllers
     /// </summary>
     public partial class HtmlContentsController
     {
+        /// <summary>
+        /// Updates the contents.
+        /// </summary>
+        /// <param name="blockId">The block identifier.</param>
+        /// <param name="htmlContents">The HTML contents.</param>
         [Authenticate]
         [HttpPost]
         [System.Web.Http.Route( "api/HtmlContents/UpdateContents/{blockId}" )]
@@ -70,9 +75,25 @@ namespace Rock.Rest.Controllers
             }
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
         public class HtmlContents
         {
+            /// <summary>
+            /// Gets or sets the entity value.
+            /// </summary>
+            /// <value>
+            /// The entity value.
+            /// </value>
             public string EntityValue { get; set; }
+            
+            /// <summary>
+            /// Gets or sets the content.
+            /// </summary>
+            /// <value>
+            /// The content.
+            /// </value>
             public string Content { get; set; }
         }
     }
