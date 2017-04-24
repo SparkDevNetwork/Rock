@@ -30,6 +30,9 @@ namespace Rock.Rest.Controllers
     /// </summary>
     public partial class EventItemOccurrenceChannelItemsController : Rock.Rest.ApiController<Rock.Model.EventItemOccurrenceChannelItem>
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="EventItemOccurrenceChannelItemsController"/> class.
+        /// </summary>
         public EventItemOccurrenceChannelItemsController() : base( new Rock.Model.EventItemOccurrenceChannelItemService( new Rock.Data.RockContext() ) ) { } 
     }
 }

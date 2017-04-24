@@ -30,6 +30,9 @@ namespace Rock.Rest.Controllers
     /// </summary>
     public partial class SignatureDocumentsController : Rock.Rest.ApiController<Rock.Model.SignatureDocument>
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="SignatureDocumentsController"/> class.
+        /// </summary>
         public SignatureDocumentsController() : base( new Rock.Model.SignatureDocumentService( new Rock.Data.RockContext() ) ) { } 
     }
 }

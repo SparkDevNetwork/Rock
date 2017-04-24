@@ -30,6 +30,9 @@ namespace Rock.Rest.Controllers
     /// </summary>
     public partial class ContentChannelItemAssociationsController : Rock.Rest.ApiController<Rock.Model.ContentChannelItemAssociation>
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ContentChannelItemAssociationsController"/> class.
+        /// </summary>
         public ContentChannelItemAssociationsController() : base( new Rock.Model.ContentChannelItemAssociationService( new Rock.Data.RockContext() ) ) { } 
     }
 }

@@ -30,6 +30,9 @@ namespace Rock.Rest.Controllers
     /// </summary>
     public partial class AnalyticsDimFamilyHeadOfHouseholdsController : Rock.Rest.ApiController<Rock.Model.AnalyticsDimFamilyHeadOfHousehold>
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="AnalyticsDimFamilyHeadOfHouseholdsController"/> class.
+        /// </summary>
         public AnalyticsDimFamilyHeadOfHouseholdsController() : base( new Rock.Model.AnalyticsDimFamilyHeadOfHouseholdService( new Rock.Data.RockContext() ) ) { } 
     }
 }
