@@ -32,7 +32,7 @@
                                 <Rock:RockDropDownList ID="ddlPrinter" runat="server" Label="Printer" DataTextField="Name" DataValueField="Id" 
                                     Help="The printer that this location should use for printing" />
                                 <Rock:ImageEditor ID="imgImage" runat="server" Label="Image" BinaryFileTypeGuid="DAB74416-3272-4411-BA69-70944B549A4B" />
-                                <asp:PlaceHolder ID="phAttributeEdits" runat="server" EnableViewState="false"></asp:PlaceHolder>
+                                <Rock:DynamicPlaceHolder ID="phAttributeEdits" runat="server" />
                             </div>
                             <div class="col-md-6">
                                 <Rock:RockCheckBox ID="cbIsActive" runat="server" Text="Active" />

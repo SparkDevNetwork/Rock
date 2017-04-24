@@ -188,6 +188,7 @@ namespace Rock.Model
         /// <value>
         /// The items.
         /// </value>
+        [LavaInclude]
         public virtual ICollection<ContentChannelItem> Items { get; set; }
 
         /// <summary>

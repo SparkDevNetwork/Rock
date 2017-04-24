@@ -60,7 +60,7 @@
                                 Help="By default online payments will be grouped into batches with a start time 12:00:00 AM. However if the payment gateway groups transactions into batches based on a different time, this offset can specified so that Rock will use the same time when creating batches for online transactions" />
                         </div>
                         <div class="col-md-6">                
-                            <asp:PlaceHolder ID="phAttributes" runat="server" EnableViewState="false" />
+                            <Rock:DynamicPlaceHolder ID="phAttributes" runat="server" />
                         </div>
                     </div>
 

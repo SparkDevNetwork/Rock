@@ -207,6 +207,8 @@ namespace RockWeb.Blocks.Cms
                     lError.Text += "<div class='alert alert-warning'>A subject has not been provided for this form.</div>";
                 }
             }
+
+            RockPage.AddScriptLink( ResolveRockUrl( "~/Scripts/jquery.visible.min.js" ) );
         }
 
         #endregion
@@ -229,6 +231,13 @@ namespace RockWeb.Blocks.Cms
         {
             SendEmail();
             pnlEmailForm.Visible = false;
+
+            ScriptManager.RegisterStartupScript(
+                Page,
+                GetType(),
+                "ScrollToMessage",
+                "scrollToMessage();",
+                true );
         }
 
         #endregion

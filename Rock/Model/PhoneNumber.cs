@@ -162,6 +162,7 @@ namespace Rock.Model
         /// <value>
         /// The <see cref="Rock.Model.Person"/> that the phone number belongs to.
         /// </value>
+        [LavaInclude]
         public virtual Person Person { get; set; }
 
         /// <summary>

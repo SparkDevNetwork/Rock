@@ -131,6 +131,7 @@ namespace Rock.Model
         /// <value>
         /// The type of the connection.
         /// </value>
+        [LavaInclude]
         public virtual ConnectionType ConnectionType { get; set; }
 
         /// <summary>
@@ -156,6 +157,7 @@ namespace Rock.Model
         /// <value>
         /// The <see cref="Rock.Model.BinaryFile"/> that contains the Opportunity's photo.
         /// </value>
+        [LavaInclude]
         public virtual BinaryFile Photo { get; set; }
 
         /// <summary>
