@@ -120,6 +120,9 @@ namespace RockWeb.Blocks.Administration
         {
             var msgs = Rock.Web.Cache.RockMemoryCache.ClearAllCachedItems();
 
+            // Flush today's Check-in Codes
+            Rock.Model.AttendanceCodeService.FlushTodaysCodes();
+
             string webAppPath = Server.MapPath( "~" );
 
             // Check for any unregistered entity types, field types, and block types
