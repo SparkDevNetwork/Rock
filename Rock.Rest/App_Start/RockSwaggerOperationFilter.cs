@@ -38,6 +38,19 @@ namespace Rock.Rest
             operation.consumes = operation.consumes?.Where( a => a == "application/json" ).ToList();
             operation.produces = operation.produces?.Where( a => a == "application/json" ).ToList();
             operation.operationId = apiDescription.ID.Replace( '/', '_' ).RemoveSpecialCharacters();
+
+            if ( string.IsNullOrEmpty( operation.summary ) )
+            {
+                // Manually set the documentation summary if swashbuckle couldn't figure it out. Swashbuckle 5 isn't able to figure these out since they have Generic parameters
+                if ( apiDescription.HttpMethod.Method == "POST" )
+                {
+                    operation.summary = "POST endpoint. Use this to add a record";
+                }
+                else if ( apiDescription.HttpMethod.Method == "PUT" )
+                {
+                    operation.summary = "PUT endpoint. Use this to update a record";
+                }
+            }
         }
     }
 }
