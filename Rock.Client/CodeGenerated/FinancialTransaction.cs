@@ -91,6 +91,9 @@ namespace Rock.Client
         public string SettledGroupId { get; set; }
 
         /// <summary />
+        public bool ShowAsAnonymous { get; set; }
+
+        /// <summary />
         public int? SourceTypeValueId { get; set; }
 
         /// <summary />
@@ -162,6 +165,7 @@ namespace Rock.Client
             this.ScheduledTransactionId = source.ScheduledTransactionId;
             this.SettledDate = source.SettledDate;
             this.SettledGroupId = source.SettledGroupId;
+            this.ShowAsAnonymous = source.ShowAsAnonymous;
             this.SourceTypeValueId = source.SourceTypeValueId;
             this.Status = source.Status;
             this.StatusMessage = source.StatusMessage;

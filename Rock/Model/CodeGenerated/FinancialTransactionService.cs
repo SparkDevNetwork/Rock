@@ -111,6 +111,7 @@ namespace Rock.Model
             target.ScheduledTransactionId = source.ScheduledTransactionId;
             target.SettledDate = source.SettledDate;
             target.SettledGroupId = source.SettledGroupId;
+            target.ShowAsAnonymous = source.ShowAsAnonymous;
             target.SourceTypeValueId = source.SourceTypeValueId;
             target.Status = source.Status;
             target.StatusMessage = source.StatusMessage;
