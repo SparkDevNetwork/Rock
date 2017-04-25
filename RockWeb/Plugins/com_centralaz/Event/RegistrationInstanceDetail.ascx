@@ -216,9 +216,9 @@
                                             <asp:Literal ID="lRegistrant" runat="server"></asp:Literal>
                                         </ItemTemplate>
                                     </Rock:RockTemplateField>
-                                    <Rock:RockTemplateField HeaderText="Registration" SortExpression="PersonAlias.Person.LastName, PersonAlias.Person.NickName" ExcelExportBehavior="AlwaysInclude" Visible="false">
+                                    <Rock:RockTemplateField HeaderText="Registration Instance" ExcelExportBehavior="AlwaysInclude" Visible="false">
                                         <ItemTemplate>
-                                            <asp:Literal ID="lRegistration" runat="server"></asp:Literal>
+                                            <asp:Literal ID="lRegistrationInstance" runat="server"></asp:Literal>
                                         </ItemTemplate>
                                     </Rock:RockTemplateField>
                                     <Rock:RockBoundField HeaderText="First Name" DataField="Person.NickName" ExcelExportBehavior="AlwaysInclude" Visible="false" />

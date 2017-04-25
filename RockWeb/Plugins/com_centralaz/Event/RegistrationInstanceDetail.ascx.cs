@@ -1032,16 +1032,16 @@ namespace RockWeb.Plugins.com_CentralAZ.Event
                 }
 
                 // Set the registration name
-                var lRegistration = e.Row.FindControl( "lRegistration" ) as Literal;
-                if ( lRegistration != null )
+                var lRegistrationInstance = e.Row.FindControl( "lRegistrationInstance" ) as Literal;
+                if ( lRegistrationInstance != null )
                 {
                     if(registrant.Registration != null && registrant.Registration.RegistrationInstance != null )
                     {
-                        lRegistration.Text = registrant.Registration.RegistrationInstance.Name;
+                        lRegistrationInstance.Text = registrant.Registration.RegistrationInstance.Name;
                     }
                     else
                     {
-                        lRegistration.Text = string.Empty;
+                        lRegistrationInstance.Text = string.Empty;
                     }
                 }
 
