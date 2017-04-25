@@ -60,7 +60,40 @@ namespace Rock.CheckIn
         /// <value>
         /// The length of the security code.
         /// </value>
+        [Obsolete("Use SecurityCodeAlphaNumericLength instead.")]
         public int SecurityCodeLength { get { return GetSetting( "core_checkin_SecurityCodeLength" ).AsIntegerOrNull() ?? 3; } }
+
+        /// <summary>
+        /// Gets the length of the security code alpha numeric.
+        /// </summary>
+        /// <value>
+        /// The length of the security code alpha numeric.
+        /// </value>
+        public int SecurityCodeAlphaNumericLength { get { return GetSetting( "core_checkin_SecurityCodeLength" ).AsIntegerOrNull() ?? 3; } }
+
+        /// <summary>
+        /// Gets the length of the security code alpha.
+        /// </summary>
+        /// <value>
+        /// The length of the security code alpha.
+        /// </value>
+        public int SecurityCodeAlphaLength { get { return GetSetting( "core_checkin_SecurityCodeAlphaLength" ).AsIntegerOrNull() ?? 0; } }
+
+        /// <summary>
+        /// Gets the length of the security code numeric.
+        /// </summary>
+        /// <value>
+        /// The length of the security code numeric.
+        /// </value>
+        public int SecurityCodeNumericLength { get { return GetSetting( "core_checkin_SecurityCodeNumericLength" ).AsIntegerOrNull() ?? 0; } }
+
+        /// <summary>
+        /// Gets a value indicating whether [security code numeric random].
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if [security code numeric random]; otherwise, <c>false</c>.
+        /// </value>
+        public bool SecurityCodeNumericRandom { get { return GetSetting( "core_checkin_SecurityCodeNumericRandom" ).AsBooleanOrNull() ?? true; } }
 
         /// <summary>
         /// Gets a value indicating whether [reuse same code].
