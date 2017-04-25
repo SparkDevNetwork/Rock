@@ -82,7 +82,8 @@ namespace com.centralaz.RoomManagement.Model
                             EventDateTimeDescription = GetFriendlyScheduleDescription( reservationDateTime.StartDateTime, reservationDateTime.EndDateTime ),
                             EventTimeDescription = GetFriendlyScheduleDescription( reservationDateTime.StartDateTime, reservationDateTime.EndDateTime, false ),
                             ReservationDateTimeDescription = GetFriendlyScheduleDescription( reservationDateTime.StartDateTime.AddMinutes( -reservation.SetupTime ?? 0 ), reservationDateTime.EndDateTime.AddMinutes( reservation.CleanupTime ?? 0 ) ),
-                            ReservationTimeDescription = GetFriendlyScheduleDescription( reservationDateTime.StartDateTime.AddMinutes( -reservation.SetupTime ?? 0 ), reservationDateTime.EndDateTime.AddMinutes( reservation.CleanupTime ?? 0 ), false )
+                            ReservationTimeDescription = GetFriendlyScheduleDescription( reservationDateTime.StartDateTime.AddMinutes( -reservation.SetupTime ?? 0 ), reservationDateTime.EndDateTime.AddMinutes( reservation.CleanupTime ?? 0 ), false ),
+                            SetupPhotoId = reservation.SetupPhotoId
                         } );
                     }
                 }
@@ -137,6 +138,7 @@ namespace com.centralaz.RoomManagement.Model
             public DateTime ReservationEndDateTime { get; set; }
             public DateTime EventStartDateTime { get; set; }
             public DateTime EventEndDateTime { get; set; }
+            public int? SetupPhotoId { get; set; }
         }
 
         public class ReservationDate

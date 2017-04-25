@@ -341,7 +341,8 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
                 ReservationStartDateTime = r.ReservationStartDateTime,
                 ReservationEndDateTime = r.ReservationEndDateTime,
                 EventDateTimeDescription = r.EventTimeDescription,
-                ReservationDateTimeDescription = r.ReservationTimeDescription
+                ReservationDateTimeDescription = r.ReservationTimeDescription,
+                SetupPhotoId = r.SetupPhotoId
             } )
             .OrderBy( r => r.EventStartDateTime )
             .GroupBy( r => r.EventStartDateTime.Date )

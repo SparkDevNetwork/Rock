@@ -21,7 +21,8 @@ using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using System.Linq;
 using System.Runtime.Serialization;
-
+using System.Text;
+using System.Web;
 using Rock;
 using Rock.Data;
 using Rock.Model;
@@ -70,6 +71,9 @@ namespace com.centralaz.RoomManagement.Model
         [DataMember]
         public string Note { get; set; }
 
+        [DataMember]
+        public int? SetupPhotoId { get; set; }
+
         #endregion
 
         #region Virtual Properties
@@ -112,6 +116,24 @@ namespace com.centralaz.RoomManagement.Model
             set { _reservationLocations = value; }
         }
         private ICollection<ReservationLocation> _reservationLocations;
+
+        [LavaInclude]
+        [NotMapped]
+        public virtual string SetupPhotoUrl
+        {
+            get
+            {
+                return Reservation.GetSetupPhotoUrl( this );
+            }
+
+            private set
+            {
+                // intentionally blank
+            }
+        }
+
+        [DataMember]
+        public virtual BinaryFile SetupPhoto { get; set; }
 
         #endregion
 
@@ -158,6 +180,96 @@ namespace com.centralaz.RoomManagement.Model
 
         }
 
+        public static string GetSetupPhotoUrl( Reservation reservation, int? maxWidth = null, int? maxHeight = null )
+        {
+            return GetSetupPhotoUrl( reservation.Id, reservation.SetupPhotoId, maxWidth, maxHeight );
+        }
+
+        public static string GetSetupPhotoUrl( int reservationId, int? maxWidth = null, int? maxHeight = null )
+        {
+            using ( RockContext rockContext = new RockContext() )
+            {
+                Reservation reservation = new ReservationService( rockContext ).Get( reservationId );
+                return GetSetupPhotoUrl( reservation, maxWidth, maxHeight );
+            }
+        }
+
+        public static string GetSetupPhotoUrl( int? reservationId, int? setupPhotoId, int? maxWidth = null, int? maxHeight = null )
+        {
+            string virtualPath = string.Empty;
+            if ( setupPhotoId.HasValue )
+            {
+                string widthHeightParams = string.Empty;
+                if ( maxWidth.HasValue )
+                {
+                    widthHeightParams += string.Format( "&maxwidth={0}", maxWidth.Value );
+                }
+
+                if ( maxHeight.HasValue )
+                {
+                    widthHeightParams += string.Format( "&maxheight={0}", maxHeight.Value );
+                }
+
+                virtualPath = string.Format( "~/GetImage.ashx?id={0}" + widthHeightParams, setupPhotoId );
+            }
+
+            if ( System.Web.HttpContext.Current == null )
+            {
+                return virtualPath;
+            }
+            else
+            {
+                return VirtualPathUtility.ToAbsolute( virtualPath );
+            }
+        }
+
+        public static string GetSetupPhotoImageTag( Reservation reservation, int? maxWidth = null, int? maxHeight = null, string altText = "", string className = "" )
+        {
+            if ( reservation != null )
+            {
+                return GetSetupPhotoImageTag( reservation.Id, reservation.SetupPhotoId, maxWidth, maxHeight, altText, className );
+            }
+            else
+            {
+                return GetSetupPhotoImageTag( null, null, maxWidth, maxHeight, altText, className );
+            }
+
+        }
+
+        public static string GetSetupPhotoImageTag( int? reservationId, int? setupPhotoId, int? maxWidth = null, int? maxHeight = null, string altText = "", string className = "" )
+        {
+            var photoUrl = new StringBuilder();
+
+            photoUrl.Append( VirtualPathUtility.ToAbsolute( "~/" ) );
+
+            string styleString = string.Empty;
+
+            string altString = string.IsNullOrWhiteSpace( altText ) ? string.Empty :
+                string.Format( " alt='{0}'", altText );
+
+            string classString = string.IsNullOrWhiteSpace( className ) ? string.Empty :
+                string.Format( " class='{0}'", className );
+
+            if ( setupPhotoId.HasValue )
+            {
+                photoUrl.AppendFormat( "GetImage.ashx?id={0}", setupPhotoId );
+                if ( maxWidth.HasValue )
+                {
+                    photoUrl.AppendFormat( "&maxwidth={0}", maxWidth.Value );
+                }
+
+                if ( maxHeight.HasValue )
+                {
+                    photoUrl.AppendFormat( "&maxheight={0}", maxHeight.Value );
+                }
+
+                return string.Format( "<img src='{0}'{1}{2}{3}/>", photoUrl.ToString(), styleString, altString, classString );
+            }
+
+            return string.Empty;
+        }
+
+
         /// <summary>
         /// Creates a transaction to act a hook for workflow triggers before changes occur
         /// </summary>
@@ -193,6 +305,8 @@ namespace com.centralaz.RoomManagement.Model
             this.HasRequired( r => r.Schedule ).WithMany().HasForeignKey( r => r.ScheduleId ).WillCascadeOnDelete( false );
             this.HasRequired( r => r.RequesterAlias ).WithMany().HasForeignKey( r => r.RequesterAliasId ).WillCascadeOnDelete( false );
             this.HasRequired( r => r.ApproverAlias ).WithMany().HasForeignKey( r => r.ApproverAliasId ).WillCascadeOnDelete( false );
+            this.HasOptional( p => p.SetupPhoto ).WithMany().HasForeignKey( p => p.SetupPhotoId ).WillCascadeOnDelete( false );
+
         }
     }
 

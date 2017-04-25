@@ -22,10 +22,13 @@
                         <Rock:RockDropDownList ID="ddlMinistry" runat="server" Label="Ministry" Required="false" />
                         <Rock:RockTextBox ID="rtbNote" runat="server" Label="Notes" TextMode="MultiLine" />
                         <div class="row">
-                            <div class="col-md-6">
+                            <div class="col-md-4">
                                 <Rock:NumberBox ID="nbAttending" runat="server" NumberType="Integer" MinimumValue="0" Label="Number Attending" Required="false" />
                             </div>
-                            <div class="col-md-6">
+                            <div class="col-md-4">
+                                <Rock:FileUploader ID="fuSetupPhoto" runat="server" Label="Setup Photo" Help="If you'd like a special setup for your event, please upload a photo or diagram here." />
+                            </div>
+                            <div class="col-md-4">
                                 <div class="form-group" id="divStatus" runat="server">
                                     <div class="form-control-static">
                                         <asp:HiddenField ID="hfApprovalState" runat="server" OnValueChanged="hfApprovalState_ValueChanged" />

@@ -372,6 +372,13 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
                 reservation.ReservationMinistryId = ddlMinistry.SelectedValueAsId().Value;
             }
 
+            int? orphanedImageId = null;
+            if ( reservation.SetupPhotoId != fuSetupPhoto.BinaryFileId )
+            {
+                orphanedImageId = reservation.SetupPhotoId;
+                reservation.SetupPhotoId = fuSetupPhoto.BinaryFileId;
+            }
+
             reservation.Note = rtbNote.Text;
             reservation.Name = rtbName.Text;
             reservation.NumberAttending = nbAttending.Text.AsInteger();
@@ -416,6 +423,18 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
             }
 
             rockContext.SaveChanges();
+
+            if ( orphanedImageId.HasValue )
+            {
+                BinaryFileService binaryFileService = new BinaryFileService( rockContext );
+                var binaryFile = binaryFileService.Get( orphanedImageId.Value );
+                if ( binaryFile != null )
+                {
+                    // marked the old images as IsTemporary so they will get cleaned up later
+                    binaryFile.IsTemporary = true;
+                    rockContext.SaveChanges();
+                }
+            }
 
             ReturnToParentPage();
         }
@@ -1092,6 +1111,8 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
                     }
                 }
             }
+
+            fuSetupPhoto.BinaryFileId = reservation.SetupPhotoId;
 
             rtbName.Text = reservation.Name;
             rtbNote.Text = reservation.Note;

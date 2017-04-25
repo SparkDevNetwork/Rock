@@ -16,7 +16,7 @@
     </div>
     <div class="panel-body">
 		<div class="row">
-			<div class="col-md-2">
+			<div class="col-md-1">
 				<b>Name</b>
 			</div>
 			<div class="col-md-2">       
@@ -32,6 +32,9 @@
 			  <b>Resources</b>
 			</div>
 			<div class="col-md-1">
+			  <b>Setup</b>
+			</div>
+			<div class="col-md-1">
 			  <b>Status</b>
 			</div>
 			<div class="col-md-1">
@@ -40,7 +43,7 @@
 		</div>
 		{% for reservationSummary in reservationDate %}
 		<div class="row">
-			<div class="col-md-2">
+			<div class="col-md-1">
 				{{ reservationSummary.ReservationName }}
 			</div>
 			<div class="col-md-2">       
@@ -62,6 +65,11 @@
 				<li>{{ reservationResource.Resource.Name }}({{reservationResource.Quantity}}) {% if reservationResource.ApprovalState == 2 %} <i class="fa fa-check"></i>{% endif %}</li>
 				{% endfor %}
 				</ul>
+			</div>
+			<div class="col-md-1">
+			  {% if reservationSummary.SetupPhotoId %}
+				<a href='{{ 'Global' | Attribute:'PublicApplicationRoot' }}GetImage.ashx?id={{ reservationSummary.SetupPhotoId }}' target='_blank'><img src='{{ 'Global' | Attribute:'PublicApplicationRoot' }}GetImage.ashx?id={{ reservationSummary.SetupPhotoId }}&maxwidth=30&maxheight=30'/></a>
+				{% endif %}
 			</div>
 			<div class="col-md-1">
 			  {{ reservationSummary.ApprovalState }}
