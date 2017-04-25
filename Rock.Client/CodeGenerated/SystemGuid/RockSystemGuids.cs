@@ -351,6 +351,7 @@ namespace Rock.Client.SystemGuid
         public const string SINGLE_SELECT = "7525C4CB-EE6B-41D4-9B64-A08048D5A5C0";
         public const string SITE = "BB7AB90F-4DE9-4804-A852-F5593A35C8A0";
         public const string SLIDING_DATE_RANGE = "55810BC5-45EA-4044-B783-0CCE0A445C6F";
+        public const string SSN = "4722C99A-C078-464A-968F-13AB5E8E318F";
         public const string TEXT = "9C204CD0-1233-41C5-818A-C5DA439445AA";
         public const string TIME = "2F8F5EC4-57FA-4F6C-AB15-9D6616994580";
         public const string URL_LINK = "C0D0D7E2-C3B0-4004-ABEA-4BBFAD10D5D2";
