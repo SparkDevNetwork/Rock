@@ -245,7 +245,7 @@ namespace Rock.SystemGuid
         public const string REST_API_ALLOWED_DOMAINS = "DF7C8DF7-49F9-4858-9E5D-20842AF65AD8";
 
         /// <summary>
-        /// The school grades defined type which has values that determine which grade gext to display
+        /// The school grades defined type, which has values that determine which grade the person is based. The Value of the DefinedValue is the GradeOffset.
         /// </summary>
         public const string SCHOOL_GRADES = "24E5A79F-1E62-467A-AD5D-0D10A2328B4D";
 
