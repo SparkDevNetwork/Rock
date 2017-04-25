@@ -199,16 +199,6 @@ namespace RockWeb.Blocks.Event
             }
 
             lResults.Text = GetAttributeValue( "ResultsLavaTemplate" ).ResolveMergeFields( mergeFields );
-
-            var attributeValueService = new AttributeValueService( rockContext );
-            foreach ( var attributeValueId in attributeValueService.Queryable().Select(a => a.Id))
-            {
-                var attributeValue = attributeValueService.Queryable().AsNoTracking().FirstOrDefault(a => a.Id == attributeValueId );
-            }
-
-            var person = new PersonService( rockContext ).Get( this.CurrentPersonId.Value );
-            person.FirstName = "Admiral";
-            rockContext.SaveChanges();
         }
 
         /// <summary>
