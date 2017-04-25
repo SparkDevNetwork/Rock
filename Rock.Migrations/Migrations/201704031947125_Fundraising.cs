@@ -740,7 +740,7 @@ END" );
             RockMigrationHelper.AddBlockAttributeValue( "84F800D3-C32E-4A16-9F84-081F8CB4DCBF", "4DFDB295-6D0F-40A1-BEF9-7B70C56F66C4", @"0" );
 
             // MP: Add Marital Statuses
-            RockMigrationHelper.AddDefinedValue( Rock.SystemGuid.DefinedType.PERSON_MARITAL_STATUS, "Divorced", "Used when the individual is divorced.", "3B689240-24C2-434B-A7B9-A4A6CBA7928C" );
+            RockMigrationHelper.UpdateDefinedValue( Rock.SystemGuid.DefinedType.PERSON_MARITAL_STATUS, "Divorced", "Used when the individual is divorced.", "3B689240-24C2-434B-A7B9-A4A6CBA7928C" );
         }
 
         /// <summary>
