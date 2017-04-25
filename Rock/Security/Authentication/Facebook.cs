@@ -124,7 +124,10 @@ namespace Rock.Security.ExternalAuthentication
 
                 if ( restResponse.StatusCode == HttpStatusCode.OK )
                 {
-                    string accessToken = HttpUtility.ParseQueryString( "?" + restResponse.Content )["access_token"];
+                    // As of March 28, 2017... the response is now in JSON format, not form values.  Facebook says 
+                    // they made this update to be compliant with section 5.1 of RFC 6749. https://developers.facebook.com/docs/apps/changelog
+                    dynamic facebookOauthResponse = JsonConvert.DeserializeObject<ExpandoObject>( restResponse.Content );
+                    string accessToken = facebookOauthResponse.access_token;
 
                     // Get information about the person who logged in using Facebook
                     restRequest = new RestRequest( Method.GET );
@@ -433,7 +436,7 @@ namespace Rock.Security.ExternalAuthentication
                             // If person does not have a photo, try to get their Facebook photo
                             if ( !person.PhotoId.HasValue )
                             {
-                                var restClient = new RestClient( string.Format( "https://graph.facebook.com/v2.2/{0}/picture?redirect=false&type=square&height=400&width=400", facebookId ) );
+                                var restClient = new RestClient( string.Format( "https://graph.facebook.com/v2.5/{0}/picture?redirect=false&type=square&height=400&width=400", facebookId ) );
                                 var restRequest = new RestRequest( Method.GET );
                                 restRequest.RequestFormat = DataFormat.Json;
                                 restRequest.AddHeader( "Accept", "application/json" );
@@ -495,7 +498,7 @@ namespace Rock.Security.ExternalAuthentication
                                 restRequest.RequestFormat = DataFormat.Json;
                                 restRequest.AddHeader( "Accept", "application/json" );
 
-                                var restClient = new RestClient( string.Format( "https://graph.facebook.com/v2.2/{0}/friends", facebookId ) );
+                                var restClient = new RestClient( string.Format( "https://graph.facebook.com/v2.5/{0}/friends", facebookId ) );
                                 var restResponse = restClient.Execute( restRequest );
 
                                 if ( restResponse.StatusCode == HttpStatusCode.OK )

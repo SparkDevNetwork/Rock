@@ -22,7 +22,8 @@
                             <Rock:DatePicker ID="dpRequestDate" runat="server" Label="Request Date" SourceTypeName="Rock.Model.BenevolenceRequest, Rock" PropertyName="RequestDateTime" />
                         </div>
                         <div class="col-md-3">
-                            <Rock:RockDropDownList ID="ddlCaseWorker" runat="server" Label="Case Worker" SourceTypeName="Rock.Model.BenevolenceRequest, Rock" PropertyName="CaseWorkerPersonAlias" />
+                            <Rock:PersonPicker ID="ppCaseWorker" runat="server" Label="Case Worker" Visible="false" />
+                            <Rock:RockDropDownList ID="ddlCaseWorker" runat="server" Label="Case Worker" />
                         </div>
                         <div class="col-md-3">
                             <Rock:CampusPicker ID="cpCampus" runat="server" Label="Campus" />
