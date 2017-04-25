@@ -9,7 +9,7 @@
 <asp:UpdatePanel ID="upnlContent" runat="server">
     <ContentTemplate>
 
-        <div class="wizard" style="display:none">
+        <div class="wizard" style="display: none">
             <div class="wizard-item complete">
                 <asp:LinkButton ID="lbWizardTemplate" runat="server" OnClick="lbTemplate_Click" CausesValidation="false">
                     <%-- Placeholder needed for bug. See: http://stackoverflow.com/questions/5539327/inner-image-and-text-of-asplinkbutton-disappears-after-postback--%>
@@ -56,7 +56,7 @@
 
             <asp:HiddenField ID="hfRegistrationInstanceId" runat="server" />
 
-            <div class="panel panel-block" style="display:none;">
+            <div class="panel panel-block" style="display: none;">
 
                 <div class="panel-heading panel-follow clearfix">
                     <h1 class="panel-title"><i class="fa fa-file-o"></i>
@@ -116,29 +116,29 @@
             <asp:Panel ID="pnlTabs" runat="server" Visible="true">
 
                 <ul class="nav nav-pills margin-b-md">
-                    <li id="liRegistrations" runat="server" class="active" style="display:none">
+                    <li id="liRegistrations" runat="server" class="active" style="display: none">
                         <asp:LinkButton ID="lbRegistrations" runat="server" Text="Registrations" OnClick="lbTab_Click" />
                     </li>
                     <li id="liRegistrants" runat="server">
                         <asp:LinkButton ID="lbRegistrants" runat="server" Text="Registrants" OnClick="lbTab_Click" />
                     </li>
-                    <li id="liPayments" runat="server" style="display:none">
+                    <li id="liPayments" runat="server" style="display: none">
                         <asp:LinkButton ID="lbPayments" runat="server" Text="Payments" OnClick="lbTab_Click" />
                     </li>
-                    <li id="liLinkage" runat="server" style="display:none">
+                    <li id="liLinkage" runat="server" style="display: none">
                         <asp:LinkButton ID="lbLinkage" runat="server" Text="Linkages" OnClick="lbTab_Click" />
                     </li>
-                     <li id="liWaitList" runat="server" style="display:none">
+                    <li id="liWaitList" runat="server" style="display: none">
                         <asp:LinkButton ID="lbWaitList" runat="server" Text="Wait List" OnClick="lbTab_Click" />
                     </li>
-                    <li id="liGroupPlacement" runat="server" style="display:none">
+                    <li id="liGroupPlacement" runat="server" style="display: none">
                         <asp:LinkButton ID="lbGroupPlacement" runat="server" Text="Group Placement" OnClick="lbTab_Click" />
                     </li>
                 </ul>
 
                 <asp:Panel ID="pnlRegistrations" runat="server" Visible="false" CssClass="panel panel-block">
                     <div class="panel-heading">
-                        <h1 class="panel-title"><i class="fa fa-user"></i> Registrations</h1>
+                        <h1 class="panel-title"><i class="fa fa-user"></i>Registrations</h1>
                     </div>
                     <div class="panel-body">
                         <Rock:ModalAlert ID="mdRegistrationsGridWarning" runat="server" />
@@ -195,7 +195,7 @@
 
                 <asp:Panel ID="pnlRegistrants" runat="server" Visible="false" CssClass="panel panel-block">
                     <div class="panel-heading">
-                        <h1 class="panel-title"><i class="fa fa-users"></i> Registrants</h1>
+                        <h1 class="panel-title"><i class="fa fa-users"></i>Registrants</h1>
                     </div>
                     <div class="panel-body">
                         <Rock:ModalAlert ID="mdRegistrantsGridWarning" runat="server" />
@@ -204,7 +204,7 @@
                                 <Rock:DateRangePicker ID="drpRegistrantDateRange" runat="server" Label="Date Range" />
                                 <Rock:RockTextBox ID="tbRegistrantFirstName" runat="server" Label="First Name" />
                                 <Rock:RockTextBox ID="tbRegistrantLastName" runat="server" Label="Last Name" />
-                                <Rock:RockDropDownList ID="ddlInGroup" runat="server" Label="In Group"  />    
+                                <Rock:RockDropDownList ID="ddlInGroup" runat="server" Label="In Group" />
                                 <Rock:RockDropDownList ID="ddlSignedDocument" runat="server" Label="Signed Document" />
                                 <asp:PlaceHolder ID="phRegistrantFormFieldFilters" runat="server" />
                             </Rock:GridFilter>
@@ -214,6 +214,11 @@
                                     <Rock:RockTemplateField HeaderText="Registrant" SortExpression="PersonAlias.Person.LastName, PersonAlias.Person.NickName" ExcelExportBehavior="NeverInclude">
                                         <ItemTemplate>
                                             <asp:Literal ID="lRegistrant" runat="server"></asp:Literal>
+                                        </ItemTemplate>
+                                    </Rock:RockTemplateField>
+                                    <Rock:RockTemplateField HeaderText="Registration" SortExpression="PersonAlias.Person.LastName, PersonAlias.Person.NickName" ExcelExportBehavior="AlwaysInclude" Visible="false">
+                                        <ItemTemplate>
+                                            <asp:Literal ID="lRegistration" runat="server"></asp:Literal>
                                         </ItemTemplate>
                                     </Rock:RockTemplateField>
                                     <Rock:RockBoundField HeaderText="First Name" DataField="Person.NickName" ExcelExportBehavior="AlwaysInclude" Visible="false" />
@@ -262,7 +267,7 @@
 
                 <asp:Panel ID="pnlPayments" runat="server" Visible="false" CssClass="panel panel-block">
                     <div class="panel-heading">
-                        <h1 class="panel-title"><i class="fa fa-credit-card"></i> Payments</h1>
+                        <h1 class="panel-title"><i class="fa fa-credit-card"></i>Payments</h1>
                     </div>
                     <div class="panel-body">
                         <Rock:ModalAlert ID="mdPaymentsGridWarning" runat="server" />
@@ -297,7 +302,7 @@
 
                 <asp:Panel ID="pnlLinkages" runat="server" Visible="false" CssClass="panel panel-block">
                     <div class="panel-heading">
-                        <h1 class="panel-title"><i class="fa fa-link"></i> Linkages</h1>
+                        <h1 class="panel-title"><i class="fa fa-link"></i>Linkages</h1>
                     </div>
                     <div class="panel-body">
                         <Rock:ModalAlert ID="mdLinkagesGridWarning" runat="server" />
@@ -331,7 +336,7 @@
 
                 <asp:Panel ID="pnlWaitList" runat="server" Visible="false" CssClass="panel panel-block">
                     <div class="panel-heading">
-                        <h1 class="panel-title"><i class="fa fa-clock-o"></i> Wait List</h1>
+                        <h1 class="panel-title"><i class="fa fa-clock-o"></i>Wait List</h1>
                     </div>
                     <div class="panel-body">
                         <Rock:ModalAlert ID="mdWaitListWarning" runat="server" />
@@ -345,7 +350,7 @@
                             <Rock:Grid ID="gWaitList" runat="server" DisplayType="Full" AllowSorting="true" OnRowSelected="gWaitList_RowSelected" RowItemText="Wait List Individual" PersonIdField="PersonId" ExportSource="ColumnOutput">
                                 <Columns>
                                     <Rock:SelectField ItemStyle-Width="48px" />
-                                    <Rock:RockTemplateField HeaderText="Wait List Order" >
+                                    <Rock:RockTemplateField HeaderText="Wait List Order">
                                         <ItemTemplate>
                                             <asp:Literal ID="lWaitListOrder" runat="server"></asp:Literal>
                                         </ItemTemplate>
@@ -365,7 +370,7 @@
 
                 <asp:Panel ID="pnlGroupPlacement" runat="server" Visible="false" CssClass="panel panel-block">
                     <div class="panel-heading">
-                        <h1 class="panel-title"><i class="fa fa-link"></i> Group Placement</h1>
+                        <h1 class="panel-title"><i class="fa fa-link"></i>Group Placement</h1>
                     </div>
                     <div class="panel-body">
                         <div class="row">

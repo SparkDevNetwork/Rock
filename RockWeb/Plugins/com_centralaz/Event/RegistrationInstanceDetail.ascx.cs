@@ -1031,6 +1031,20 @@ namespace RockWeb.Plugins.com_CentralAZ.Event
                     }
                 }
 
+                // Set the registration name
+                var lRegistration = e.Row.FindControl( "lRegistration" ) as Literal;
+                if ( lRegistration != null )
+                {
+                    if(registrant.Registration != null && registrant.Registration.RegistrationInstance != null )
+                    {
+                        lRegistration.Text = registrant.Registration.RegistrationInstance.Name;
+                    }
+                    else
+                    {
+                        lRegistration.Text = string.Empty;
+                    }
+                }
+
                 // Set the Group Name
                 if ( registrant.GroupMember != null && GroupLinks.ContainsKey( registrant.GroupMember.GroupId ) )
                 {
