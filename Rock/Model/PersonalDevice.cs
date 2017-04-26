@@ -112,8 +112,8 @@ namespace Rock.Model
         /// </summary>
         public PersonalDeviceConfiguration()
         {
-            //this.HasOptional( r => r.PersonAlias ).WithMany().HasForeignKey( r => r.PersonAliasId ).WillCascadeOnDelete( false );
-            //this.HasOptional( r => r.PersonalDeviceType ).WithMany().HasForeignKey( r => r.PersonalDeviceTypeId ).WillCascadeOnDelete( false );
+            this.HasOptional( r => r.PersonAlias ).WithMany().HasForeignKey( r => r.PersonAliasId ).WillCascadeOnDelete( false );
+            this.HasOptional( r => r.PersonalDeviceType ).WithMany().HasForeignKey( r => r.PersonalDeviceTypeId ).WillCascadeOnDelete( false );
         }
     }
 
