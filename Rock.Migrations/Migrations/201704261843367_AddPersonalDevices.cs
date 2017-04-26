@@ -50,8 +50,8 @@ namespace Rock.Migrations
                 .PrimaryKey(t => t.Id)
                 .ForeignKey("dbo.PersonAlias", t => t.CreatedByPersonAliasId)
                 .ForeignKey("dbo.PersonAlias", t => t.ModifiedByPersonAliasId)
-                .ForeignKey("dbo.DefinedValue", t => t.PersonalDeviceTypeId, cascadeDelete: true)
-                .ForeignKey("dbo.PersonAlias", t => t.PersonAliasId, cascadeDelete: true)
+                .ForeignKey("dbo.DefinedValue", t => t.PersonalDeviceTypeId)
+                .ForeignKey("dbo.PersonAlias", t => t.PersonAliasId)
                 .Index(t => t.PersonAliasId)
                 .Index(t => t.PersonalDeviceTypeId)
                 .Index(t => t.CreatedByPersonAliasId)
@@ -64,7 +64,7 @@ namespace Rock.Migrations
             RockMigrationHelper.AddAttributeQualifier( "D098823B-C6D6-44F4-9248-5F1971EE4009", "SupportsNotificationsFalseText", "No", "B6AD7267-E54D-4660-B1B4-1B6DB0DF3402" );
             RockMigrationHelper.AddDefinedValue( SystemGuid.DefinedType.PERSONAL_DEVICE_TYPE, "Mobile", "Personal Device Type Mobile", SystemGuid.DefinedValue.PERSONAL_DEVICE_TYPE_MOBILE );
         }
-        
+
         /// <summary>
         /// Operations to be performed during the downgrade process.
         /// </summary>
@@ -80,9 +80,6 @@ namespace Rock.Migrations
             DropIndex("dbo.PersonalDevice", new[] { "PersonalDeviceTypeId" });
             DropIndex("dbo.PersonalDevice", new[] { "PersonAliasId" });
             DropTable("dbo.PersonalDevice");
-            RockMigrationHelper.DeleteDefinedType( SystemGuid.DefinedType.PERSONAL_DEVICE_TYPE ); // Personal Device Type
-            RockMigrationHelper.DeleteDefinedValue( SystemGuid.DefinedValue.PERSONAL_DEVICE_TYPE_MOBILE ); // Personal Device Type Mobile
-            RockMigrationHelper.DeleteAttribute( "D098823B-C6D6-44F4-9248-5F1971EE4009" );
         }
     }
 }
