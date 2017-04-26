@@ -45,14 +45,31 @@
                                         <asp:ListItem Text="Individual" Value="0" />
                                         <asp:ListItem Text="Family" Value="1" />
                                     </Rock:RockDropDownList>
-                                    <Rock:NumberBox ID="nbSecurityCodeLength" runat="server" Label="Security Code Length" MinimumValue="3" MaximumValue="10" NumberType="Integer" 
-                                        Help="The number of characters that should be used when generating a unique security code for labels (minimum is 3)." />
+                                    <Rock:RockControlWrapper ID="rcwSecurityCode" runat="server" Label="Label Security Code Length" 
+                                        Help="How should the security code be generated. Note: Alpha-Numeric characters will be printed first, followed by Alpha characters, then by numeric characters.">
+                                        <div class="row">
+                                            <div class="col-xs-6">
+                                                <Rock:NumberBox ID="nbCodeAlphaNumericLength" runat="server" Label="Alpha-Numeric" MinimumValue="0" MaximumValue="10" NumberType="Integer" 
+                                                    Help="The number of alpha-numeric characters that should be used when generating a unique security code for labels." />
+                                            </div>
+                                            <div class="col-xs-6">
+                                                <Rock:NumberBox ID="nbCodeAlphaLength" runat="server" Label="Alpha" MinimumValue="0" MaximumValue="10" NumberType="Integer" 
+                                                    Help="The number of alpha characters that should be used when generating a unique security code for labels." />
+                                            </div>
+                                            <div class="col-xs-6">
+                                                <Rock:NumberBox ID="nbCodeNumericLength" runat="server" Label="Numeric" MinimumValue="0" MaximumValue="10" NumberType="Integer" 
+                                                    Help="The number of numeric characters that should be used when generating a unique security code for labels." />
+                                            </div>
+                                            <div class="col-xs-6">
+                                                <Rock:RockCheckBox ID="cbCodeRandom" runat="server" Label="Random Numeric Values" 
+                                                    Help="Should the numbers be randomized (vs. generated in order)." />
+                                            </div>
+                                        </div>
+                                    </Rock:RockControlWrapper>
                                     <Rock:RockCheckBox ID="cbEnableManager" runat="server" Label="Enable Manager Option" Text="Yes" 
                                         Help="Should an option be displayed on the check-in welcome screen that allows user to view the management screen (after entering a passcode)?" />
                                     <Rock:RockCheckBox ID="cbEnableOverride" runat="server" Label="Enable Override" Text="Yes" 
                                         Help="Should an override button be displayed on the check-in Manager screen that allows a manager to check-in a person and ignore any age and/or grade requirements?" />
-                                    <Rock:RockCheckBox ID="cbPreventInactivePeople" runat="server" Label="Prevent Inactive People" Text="Yes" 
-                                        Help="Should people who are inactive be excluded from being able to check-in?" />
                                 </div>
                                 <div class="col-md-6">
                                     <Rock:NumberBox ID="nbAutoSelectDaysBack" runat="server" Label="Auto Select Days Back" MinimumValue="0" NumberType="Integer" 
@@ -64,6 +81,8 @@
                                         Help="If family member(s) is checking into more than one service, should the same options for additional services be automatically selected that were selected for first service?" />
                                     <Rock:RockCheckBox ID="cbHidePhotos" runat="server" Label="Hide Photos" Text="Yes"
                                         Help="Select this option if person photos should not be displayed when selecting the people from the selected family that are checking in." />
+                                    <Rock:RockCheckBox ID="cbPreventInactivePeople" runat="server" Label="Prevent Inactive People" Text="Yes" 
+                                        Help="Should people who are inactive be excluded from being able to check-in?" />
                                     <Rock:RockCheckBox ID="cbPreventDuplicateCheckin" runat="server" Label="Prevent Duplicate Check-in" Text="Yes" 
                                         Help="Should people be prevented from checking into a specifice service time (schedule) more than once?" />
                                 </div>
@@ -112,7 +131,7 @@
                         </Rock:PanelWidget>
 
                         <Rock:PanelWidget ID="wpCustom" runat="server" Title="Custom Settings">
-                            <asp:PlaceHolder ID="phAttributeEdits" runat="server" EnableViewState="false"></asp:PlaceHolder>
+                            <Rock:DynamicPlaceholder ID="phAttributeEdits" runat="server" ></Rock:DynamicPlaceholder>
                         </Rock:PanelWidget>
 
                         <div class="actions">

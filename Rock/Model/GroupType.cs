@@ -354,6 +354,7 @@ namespace Rock.Model
         /// <value>
         /// A collection containing a collection of the <see cref="Rock.Model.Group">Groups</see> that belong to this GroupType.
         /// </value>
+        [LavaInclude]
         public virtual ICollection<Group> Groups
         {
             get { return _groups ?? ( _groups = new Collection<Group>() ); }
@@ -469,6 +470,7 @@ namespace Rock.Model
         /// <value>
         /// A <see cref="System.Int32"/> representing the number of <see cref="Rock.Model.Group">Groups</see> that belong to this GroupType.
         /// </value>
+        [LavaInclude]
         public virtual int GroupCount
         {
             get
@@ -498,6 +500,7 @@ namespace Rock.Model
         /// This is similar to a parent or a template GroupType.
         /// </summary>
         /// <value>The <see cref="Rock.Model.GroupType"/> that this GroupType is inheriting settings and properties from.</value>
+        [LavaInclude]
         public virtual GroupType InheritedGroupType { get; set; }
 
         #endregion

@@ -77,7 +77,6 @@
 
 <html class="no-js">
 <head runat="server">
-    <meta http-equiv="X-UA-Compatible" content="IE=10" />
     <title></title>
 
     <script src="<%# ResolveRockUrl("~/Scripts/modernizr.js", true) %>"></script>

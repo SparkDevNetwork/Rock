@@ -20,6 +20,7 @@ using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
 
 using Rock.Data;
+using Rock.Financial;
 
 namespace Rock.Model
 {
@@ -29,7 +30,7 @@ namespace Rock.Model
     /// </summary>
     [Table( "FinancialScheduledTransactionDetail" )]
     [DataContract]
-    public partial class FinancialScheduledTransactionDetail : Model<FinancialScheduledTransactionDetail>
+    public partial class FinancialScheduledTransactionDetail : Model<FinancialScheduledTransactionDetail>, ITransactionDetail
     {
         #region Entity Properties
 
@@ -99,6 +100,7 @@ namespace Rock.Model
         /// <value>
         /// The <see cref="Rock.Model.FinancialScheduledTransaction"/> that the transaction detail belongs to.
         /// </value>
+        [LavaInclude]
         public virtual FinancialScheduledTransaction ScheduledTransaction { get; set; }
 
         /// <summary>
@@ -107,6 +109,7 @@ namespace Rock.Model
         /// <value>
         /// Tehe <see cref="Rock.Model.FinancialAccount"/>/account that the <see cref="Amount"/> of this transaction detail will be credited toward.
         /// </value>
+        [LavaInclude]
         public virtual FinancialAccount Account { get; set; }
 
         /// <summary>

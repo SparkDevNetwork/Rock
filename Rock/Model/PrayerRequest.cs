@@ -245,6 +245,7 @@ namespace Rock.Model
         /// <value>
         /// The request's group.
         /// </value>
+        [LavaInclude]
         public virtual Group Group { get; set; }
 
         /// <summary>

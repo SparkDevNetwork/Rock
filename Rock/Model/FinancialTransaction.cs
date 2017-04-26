@@ -47,6 +47,15 @@ namespace Rock.Model
         public int? AuthorizedPersonAliasId { get; set; }
 
         /// <summary>
+        /// Gets or sets a value indicating whether to show the transaction as anonymous when displayed publicly, for example on a list of fundraising contributors
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [show as anonymous]; otherwise, <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool ShowAsAnonymous { get; set; }
+
+        /// <summary>
         /// Gets or sets BatchId of the <see cref="Rock.Model.FinancialBatch"/> that contains this transaction.
         /// </summary>
         /// <value>
@@ -204,6 +213,43 @@ namespace Rock.Model
         public DateTime? ProcessedDateTime { get; set; }
 
         /// <summary>
+        /// Gets or sets a flag indicating if the transaction has been settled by the processor/gateway.
+        /// </summary>
+        /// <value>
+        /// The is settled.
+        /// </value>
+        [DataMember]
+        public bool? IsSettled { get; set; }
+
+        /// <summary>
+        /// The group/batch identifier used by the processor/gateway when the transaction has been settled.
+        /// </summary>
+        /// <value>
+        /// The settled group identifier.
+        /// </value>
+        [DataMember]
+        [MaxLength( 100 )]
+        public string SettledGroupId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the date that the transaction was settled by the processor/gateway.
+        /// </summary>
+        /// <value>
+        /// The settled date.
+        /// </value>
+        [DataMember]
+        public DateTime? SettledDate { get; set; }
+
+        /// <summary>
+        /// Gets or sets a flag indicating if the transaction has been reconciled or not.
+        /// </summary>
+        /// <value>
+        /// The is settled.
+        /// </value>
+        [DataMember]
+        public bool? IsReconciled { get; set; }
+
+        /// <summary>
         /// Gets the status of the transaction provided by the payment gateway (i.e. Pending, Complete, Failed)
         /// </summary>
         /// <value>
@@ -253,6 +299,7 @@ namespace Rock.Model
         /// <value>
         /// A <see cref="Rock.Model.FinancialBatch"/> that contains the transaction.
         /// </value>
+        [LavaInclude]
         public virtual FinancialBatch Batch { get; set; }
 
         /// <summary>
@@ -298,6 +345,7 @@ namespace Rock.Model
         /// The <see cref="Rock.Model.FinancialTransactionRefund">refund transaction</see> associated with this transaction. This will be null if the transaction
         /// is not a refund transaction.
         /// </value>
+        [LavaInclude]
         public virtual FinancialTransactionRefund RefundDetails { get; set; }
 
         /// <summary>
@@ -306,6 +354,7 @@ namespace Rock.Model
         /// <value>
         /// The <see cref="Rock.Model.FinancialScheduledTransaction"/> that initiated this transaction.
         /// </value>
+        [LavaInclude]
         public virtual FinancialScheduledTransaction ScheduledTransaction { get; set; }
 
         /// <summary>
@@ -315,6 +364,7 @@ namespace Rock.Model
         /// <value>
         /// The processed by person alias.
         /// </value>
+        [LavaInclude]
         public virtual PersonAlias ProcessedByPersonAlias { get; set; }
 
         /// <summary>
@@ -352,6 +402,7 @@ namespace Rock.Model
         /// <value>
         /// The refunds.
         /// </value>
+        [LavaInclude]
         public virtual ICollection<FinancialTransactionRefund> Refunds
         {
             get { return _refunds ?? ( _refunds = new Collection<FinancialTransactionRefund>() ); }

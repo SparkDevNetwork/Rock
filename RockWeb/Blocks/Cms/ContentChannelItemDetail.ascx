@@ -81,7 +81,7 @@
 
                     <div class="row">
                         <div class="col-md-12">
-                            <asp:PlaceHolder ID="phAttributes" runat="server" EnableViewState="false" />
+                            <Rock:DynamicPlaceHolder ID="phAttributes" runat="server" />
                         </div>
                     </div>
 

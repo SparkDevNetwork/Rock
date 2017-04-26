@@ -172,7 +172,6 @@ namespace RockWeb.Blocks.Finance
 <p class=""text-center"">
     <em>Unless otherwise noted, the only goods and services provided are intangible religious benefits.</em>
 </p>", order: 2)]
-    [BooleanField("Enable Debug", "Shows the merge fields available for the Lava", order:3)]
     [DefinedValueField( Rock.SystemGuid.DefinedType.FINANCIAL_CURRENCY_TYPE, "Excluded Currency Types", "Select the currency types you would like to excluded.", false, true, order: 4)]
     [BooleanField("Allow Person Querystring", "Determines if a person is allowed to be passed through the querystring. For security reasons this is not allowed by default.", false, order: 5)]
     public partial class ContributionStatementLava : Rock.Web.UI.RockBlock
@@ -424,12 +423,6 @@ namespace RockWeb.Blocks.Finance
 
             lResults.Text = template.ResolveMergeFields( mergeFields );
 
-            // show debug info
-            if ( GetAttributeValue( "EnableDebug" ).AsBoolean() && IsUserAuthorized( Authorization.EDIT ) )
-            {
-                lDebug.Visible = true;
-                lDebug.Text = mergeFields.lavaDebugInfo();
-            }
         }
 
         #endregion

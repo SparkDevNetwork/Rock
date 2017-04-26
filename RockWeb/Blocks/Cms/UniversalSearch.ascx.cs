@@ -639,7 +639,13 @@ namespace RockWeb.Blocks.Cms
             }
 
             var entities = EntityTypeCache.All();
-            var indexableEntities = entities.Where( i => i.IsIndexingSupported == true &&  enabledModelIds.Contains( i.Id )).ToList();
+            var indexableEntities = entities.Where( i => i.IsIndexingEnabled == true ).ToList();
+
+            // if enabled entities setting is set further filter by those
+            if ( enabledModelIds.Count > 0 )
+            {
+                indexableEntities = indexableEntities.Where( i => enabledModelIds.Contains( i.Id ) ).ToList();
+            }
 
             cblModelFilter.DataTextField = "FriendlyName";
             cblModelFilter.DataValueField = "Id";
@@ -718,9 +724,15 @@ namespace RockWeb.Blocks.Cms
             }
 
             var entities = EntityTypeCache.All();
-            var indexableEntities = entities.Where( i => i.IsIndexingSupported == true && enabledModelIds.Contains( i.Id ) ).ToList();
+            var indexableEntities = entities.Where( i => i.IsIndexingEnabled == true ).ToList();
 
-            foreach ( var entity in indexableEntities )
+            // if select entities are configured further filter by them
+            if ( enabledModelIds.Count > 0 )
+            {
+                indexableEntities = indexableEntities.Where( i => enabledModelIds.Contains( i.Id ) ).ToList();
+            }
+
+                foreach ( var entity in indexableEntities )
             {
                 var entityType = entity.GetEntityType();
 

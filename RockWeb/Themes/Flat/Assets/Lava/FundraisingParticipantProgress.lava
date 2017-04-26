@@ -1,0 +1,38 @@
+{% assign disablePublicContributionRequests = GroupMember | Attribute:'DisablePublicContributionRequests' %}
+{% assign percentWidth = PercentMet %}
+{% if percentWidth > 100 %}
+  {% assign percentWidth = 100 %}
+{% endif %}
+{% assign percentRounded = PercentMet | Floor %}
+
+{% if disablePublicContributionRequests != 'Yes' %}
+    <div class='well margin-t-md'>
+        <div class='row'>
+            <div class='col-md-12'>
+
+                <label>
+                    Fundraising Progress
+                </label>
+                <label class='pull-right'>
+                    {% if AmountLeft >= 0 %}
+                        {{ AmountLeft | FormatAsCurrency }}
+                    {% else %}
+                        {{ percentRounded }}%
+                    {% endif %}
+                </label>
+                <div class='progress'>
+                    <div class='progress-bar' role='progressbar' aria-valuenow='{{ percentRounded }}}' aria-valuemin='0' aria-valuemax='100' style='width: {{ percentWidth }}%;'>
+                    <span class='sr-only'>{{ percentRounded }}% Complete</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class='row'>
+            <div class='col-md-12'>
+                <div class='actions pull-right'>
+                    <a href='{{ MakeDonationUrl }}' class='btn btn-sm btn-primary' >{{ MakeDonationButtonText }}</a>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endif %}

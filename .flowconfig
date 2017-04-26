@@ -1,0 +1,8 @@
+[ignore]
+.*/node_modules/.*
+.*/libs/.*
+.*/__tests__/.*
+.*/__stories__/.*
+.*/RockWeb/Scripts/.*
+
+suppress_comment= \\(.\\|\n\\)*\\$FlowIgnore

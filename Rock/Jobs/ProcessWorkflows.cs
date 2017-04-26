@@ -23,6 +23,7 @@ using Quartz;
 
 using Rock.Model;
 using Rock.Data;
+using Rock.Web.Cache;
 
 namespace Rock.Jobs
 {
@@ -75,33 +76,37 @@ namespace Rock.Jobs
                     // create a new rockContext and service for every workflow to prevent a build-up of Context.ChangeTracker.Entries()
                     var rockContext = new RockContext();
                     var workflowService = new WorkflowService( rockContext );
-                    var workflow = workflowService.Queryable( "WorkflowType" ).FirstOrDefault( a => a.Id == workflowId );
+                    var workflow = workflowService.Queryable().FirstOrDefault( a => a.Id == workflowId );
                     if ( workflow != null )
                     {
-                        try
+                        var workflowType = workflow.WorkflowTypeCache;
+                        if ( workflowType != null )
                         {
-                            if ( !workflow.LastProcessedDateTime.HasValue ||
-                                RockDateTime.Now.Subtract( workflow.LastProcessedDateTime.Value ).TotalSeconds >= ( workflow.WorkflowType.ProcessingIntervalSeconds ?? 0 ) )
+                            try
                             {
-                                var errorMessages = new List<string>();
+                                if ( !workflow.LastProcessedDateTime.HasValue ||
+                                    RockDateTime.Now.Subtract( workflow.LastProcessedDateTime.Value ).TotalSeconds >= ( workflowType.ProcessingIntervalSeconds ?? 0 ) )
+                                {
+                                    var errorMessages = new List<string>();
 
-                                var processed = workflowService.Process( workflow, out errorMessages );
-                                if ( processed )
-                                {
-                                    workflowsProcessed++;
-                                }
-                                else
-                                {
-                                    workflowErrors++;
-                                    ProcessingErrors.Add( string.Format( "{0} [{1}] - {2} [{3}]: {4}", workflow.WorkflowType.Name, workflow.WorkflowTypeId, workflow.Name, workflow.Id, errorMessages.AsDelimited( ", " ) ) );
+                                    var processed = workflowService.Process( workflow, out errorMessages );
+                                    if ( processed )
+                                    {
+                                        workflowsProcessed++;
+                                    }
+                                    else
+                                    {
+                                        workflowErrors++;
+                                        ProcessingErrors.Add( string.Format( "{0} [{1}] - {2} [{3}]: {4}", workflowType.Name, workflowType.Id, workflow.Name, workflow.Id, errorMessages.AsDelimited( ", " ) ) );
+                                    }
                                 }
                             }
-                        }
-                        catch ( Exception ex )
-                        {
-                            string workflowDetails = string.Format( "{0} [{1}] - {2} [{3}]", workflow.WorkflowType.Name, workflow.WorkflowTypeId, workflow.Name, workflow.Id );
-                            exceptionMsgs.Add( workflowDetails + ": " + ex.Message );
-                            throw new Exception( "Exception occurred processing workflow: " + workflowDetails, ex );
+                            catch ( Exception ex )
+                            {
+                                string workflowDetails = string.Format( "{0} [{1}] - {2} [{3}]", workflowType.Name, workflowType.Id, workflow.Name, workflow.Id );
+                                exceptionMsgs.Add( workflowDetails + ": " + ex.Message );
+                                throw new Exception( "Exception occurred processing workflow: " + workflowDetails, ex );
+                            }
                         }
                     }
                 }
