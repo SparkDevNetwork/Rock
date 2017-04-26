@@ -22,6 +22,7 @@ using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
 
 using Rock.Data;
+using Rock.Web.Cache;
 
 namespace Rock.Model
 {
@@ -336,6 +337,133 @@ namespace Rock.Model
             string oldStringValue = oldValue != null ? oldValue.ConvertToString() : string.Empty;
             string newStringValue = newValue != null ? newValue.ConvertToString() : string.Empty;
             EvaluateChange( historyMessages, propertyName, oldStringValue, newStringValue, isSensitive );
+        }
+
+        /// <summary>
+        /// Evaluates the defined value change.
+        /// </summary>
+        /// <param name="historyMessages">The history messages.</param>
+        /// <param name="propertyName">Name of the property.</param>
+        /// <param name="oldDefinedValueId">The old defined value identifier.</param>
+        /// <param name="newDefinedValue">The new defined value.</param>
+        /// <param name="newDefinedValueId">The new defined value identifier.</param>
+        /// <param name="blankValue">The blank value.</param>
+        /// <param name="isSensitive">if set to <c>true</c> [is sensitive].</param>
+        public static void EvaluateChange( List<string> historyMessages, string propertyName, int? oldDefinedValueId, DefinedValue newDefinedValue, int? newDefinedValueId, string blankValue = "none", bool isSensitive = false )
+        {
+            if ( !oldDefinedValueId.Equals( newDefinedValueId ) )
+            {
+                string oldStringValue = GetDefinedValueValue( null, oldDefinedValueId, blankValue );
+                string newStringValue = GetDefinedValueValue( newDefinedValue, newDefinedValueId, blankValue );
+                EvaluateChange( historyMessages, propertyName, oldStringValue, newStringValue, isSensitive );
+            }
+        }
+
+        /// <summary>
+        /// Evaluates the person alias change.
+        /// </summary>
+        /// <param name="historyMessages">The history messages.</param>
+        /// <param name="propertyName">Name of the property.</param>
+        /// <param name="oldPersonAliasId">The old person alias identifier.</param>
+        /// <param name="newPersonAlias">The new person alias.</param>
+        /// <param name="newPersonAliasId">The new person alias identifier.</param>
+        /// <param name="rockContext">The rock context.</param>
+        /// <param name="blankValue">The blank value.</param>
+        /// <param name="isSensitive">if set to <c>true</c> [is sensitive].</param>
+        public static void EvaluateChange( List<string> historyMessages, string propertyName, int? oldPersonAliasId, PersonAlias newPersonAlias, int? newPersonAliasId, RockContext rockContext, string blankValue = "none", bool isSensitive = false )
+        {
+            if ( !oldPersonAliasId.Equals( newPersonAliasId ) )
+            {
+                string oldStringValue = GetValue<PersonAlias>( null, oldPersonAliasId, rockContext, blankValue );
+                string newStringValue = GetValue<PersonAlias>( newPersonAlias, newPersonAliasId, rockContext, blankValue );
+                EvaluateChange( historyMessages, propertyName, oldStringValue, newStringValue, isSensitive );
+            }
+        }
+
+        /// <summary>
+        /// Gets the value.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="entity">The entity.</param>
+        /// <param name="id">The identifier.</param>
+        /// <param name="rockContext">The rock context.</param>
+        /// <param name="blankValue">The blank value.</param>
+        /// <returns></returns>
+        public static string GetValue<T>( T entity, int? id, RockContext rockContext, string blankValue = "None" ) where T: Rock.Data.Entity<T>, new()
+        {
+            if ( typeof(T) == typeof(DefinedValue) )
+            {
+                return GetDefinedValueValue( entity as DefinedValue, id, blankValue );
+            }
+
+            if ( typeof( T ) == typeof( PersonAlias ) )
+            {
+                return GetPersonAliasValue( entity as PersonAlias, id, rockContext, blankValue );
+            }
+
+            if ( entity == null && id.HasValue )
+            {
+                var service = new Service<T>( rockContext );
+                if ( service != null )
+                {
+                    entity = service.Get( id.Value );
+                }
+            }
+
+            return entity != null ? entity.ToString() : blankValue;
+        }
+
+        /// <summary>
+        /// Gets the value.
+        /// </summary>
+        /// <param name="definedValue">The defined value.</param>
+        /// <param name="definedValueId">The defined value identifier.</param>
+        /// <param name="blankValue">The blank value.</param>
+        /// <returns></returns>
+        public static string GetDefinedValueValue( DefinedValue definedValue, int? definedValueId, string blankValue = "None" )
+        {
+            if ( definedValue != null )
+            {
+                return definedValue.Value;
+            }
+
+            if ( definedValueId.HasValue )
+            {
+                var dv = DefinedValueCache.Read( definedValueId.Value );
+                if ( dv != null )
+                {
+                    return dv.Value;
+                }
+            }
+
+            return blankValue;
+        }
+
+        /// <summary>
+        /// Gets the value.
+        /// </summary>
+        /// <param name="personAlias">The person alias.</param>
+        /// <param name="personAliasId">The person alias identifier.</param>
+        /// <param name="rockContext">The rock context.</param>
+        /// <param name="blankValue">The blank value.</param>
+        /// <returns></returns>
+        private static string GetPersonAliasValue( PersonAlias personAlias, int? personAliasId, RockContext rockContext, string blankValue = "None" )
+        {
+            if ( personAlias != null && personAlias.Person != null )
+            {
+                return personAlias.Person.FullName;
+            }
+
+            if ( personAliasId.HasValue )
+            {
+                var person = new PersonAliasService( rockContext ).GetPerson( personAliasId.Value );
+                if ( person != null )
+                {
+                    return person.FullName;
+                }
+            }
+
+            return blankValue;
         }
 
         #endregion

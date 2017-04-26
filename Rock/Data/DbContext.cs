@@ -334,6 +334,12 @@ namespace Rock.Data
                     TriggerWorkflows( item, WorkflowTriggerType.ImmediatePostSave, personAlias );
                     TriggerWorkflows( item, WorkflowTriggerType.PostSave, personAlias );
                 }
+
+                if ( item.Entity is IModel )
+                {
+                    var model = item.Entity as IModel;
+                    model.PostSaveChanges( this );
+                }
             }
         }
 
