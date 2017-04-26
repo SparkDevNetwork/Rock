@@ -36,7 +36,6 @@ namespace Rock.Communication.Transport
     [Description( "Sends a communication through Firebase API" )]
     [Export( typeof( TransportComponent ) )]
     [ExportMetadata( "ComponentName", "Firebase" )]
-    [TextField( "SenderId", "Your Firebase account sender Id (find at https://console.firebase.google.com/project/<YOUR_APP>/settings/cloudmessaging)", true, "", "", 0 )]
     [TextField( "ServerKey", "The server key for your firebase account", true, "", "", 1 )]
     class Firebase : TransportComponent
     {
@@ -58,7 +57,6 @@ namespace Rock.Communication.Transport
                 ( !communication.FutureSendDateTime.HasValue || communication.FutureSendDateTime.Value.CompareTo( RockDateTime.Now ) <= 0 ) )
             {
 
-                string senderId = GetAttributeValue( "SenderId" );
                 string serverKey = GetAttributeValue( "ServerKey" );
                 var sender = new Sender(serverKey);
 
@@ -94,8 +92,8 @@ namespace Rock.Communication.Transport
                             int personAlias = recipient.PersonAliasId;
 
                             List<string> devices = service.Queryable()
-                                .Where(p => p.PersonAliasId == personAlias && p.NotificationsEnabled)
-                                .Select(p => p.DeviceRegistrationId)
+                                .Where( p => p.PersonAliasId == personAlias && p.NotificationsEnabled )
+                                .Select( p => p.DeviceRegistrationId )
                                 .ToList();
 
                             if ( devices != null )
@@ -106,7 +104,7 @@ namespace Rock.Communication.Transport
                                 var resolvedMessage = message.ResolveMergeFields( mergeObjects, communication.EnabledLavaCommands );
                                 var notification = new Message
                                 {
-                                    RegistrationIds = devices,
+                                    RegistrationIds = devices.Distinct().ToList(),
                                     Notification = new FCM.Net.Notification
                                     {
                                         Title = title,
@@ -178,7 +176,6 @@ namespace Rock.Communication.Transport
             {
                 var globalAttributes = GlobalAttributesCache.Read();
 
-                string senderId = GetAttributeValue( "SenderId" );
                 string serverKey = GetAttributeValue( "ServerKey" );
                 var sender = new Sender(serverKey);
 
