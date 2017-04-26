@@ -182,6 +182,9 @@
     <Compile Include="Migrations\201702202308080_UniversalSearchJob-Rollup.Designer.cs">
       <DependentUpon>201702202308080_UniversalSearchJob-Rollup.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201702281536580_AddPersonalDevices.cs" />
+    <Compile Include="Migrations\201702281536580_AddPersonalDevices.Designer.cs">
+      <DependentUpon>201702281536580_AddPersonalDevices.cs</DependentUpon>
     <Compile Include="Migrations\201703271603300_TransactionSettledInfo.cs" />
     <Compile Include="Migrations\201703271603300_TransactionSettledInfo.Designer.cs">
       <DependentUpon>201703271603300_TransactionSettledInfo.cs</DependentUpon>
@@ -2485,6 +2488,8 @@
     <EmbeddedResource Include="Migrations\201702202308080_UniversalSearchJob-Rollup.resx">
       <DependentUpon>201702202308080_UniversalSearchJob-Rollup.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201702281536580_AddPersonalDevices.resx">
+      <DependentUpon>201702281536580_AddPersonalDevices.cs</DependentUpon>
     <EmbeddedResource Include="Migrations\201703271603300_TransactionSettledInfo.resx">
       <DependentUpon>201703271603300_TransactionSettledInfo.cs</DependentUpon>
     </EmbeddedResource>
