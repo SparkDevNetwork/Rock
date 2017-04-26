@@ -50,6 +50,9 @@ namespace Rock.Rest
             // So, since Rock doesn't do TimeZones, we don't want Transmission of DateTimes to specify TimeZone either.
             config.Formatters.JsonFormatter.SerializerSettings.DateTimeZoneHandling = Newtonsoft.Json.DateTimeZoneHandling.Unspecified;
 
+            // register Swagger and its routes first
+            Rock.Rest.Swagger.SwaggerConfig.Register( config );
+
             // Add API route for dataviews
             config.Routes.MapHttpRoute(
                 name: "DataViewApi",
@@ -257,8 +260,6 @@ namespace Rock.Rest
             }
 
             config.Routes.MapODataServiceRoute( "api", "api", builder.GetEdmModel() );
-
-            SwaggerConfig.Register( config );
         }
     }
 }

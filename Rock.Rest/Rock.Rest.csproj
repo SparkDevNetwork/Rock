@@ -107,9 +107,10 @@
   <ItemGroup>
     <Compile Include="ApiController.cs" />
     <Compile Include="ApiControllerBase.cs" />
-    <Compile Include="App_Start\RockSwaggerDocumentFilter.cs" />
-    <Compile Include="App_Start\RockSwaggerOperationFilter.cs" />
-    <Compile Include="App_Start\SwaggerConfig.cs" />
+    <Compile Include="Swagger\RockDocumentFilter.cs" />
+    <Compile Include="Swagger\RockOperationFilter.cs" />
+    <Compile Include="Swagger\RockSchemaFilter.cs" />
+    <Compile Include="Swagger\SwaggerConfig.cs" />
     <Compile Include="App_Start\WebApiConfig.cs" />
     <Compile Include="Binders\NakedBodyAttribute.cs" />
     <Compile Include="Binders\NakedBodyParameterBinding.cs" />
@@ -344,6 +345,11 @@
     <None Include="packages.config">
       <SubType>Designer</SubType>
     </None>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Swagger\CustomAssets\index.html" />
+    <EmbeddedResource Include="Swagger\CustomAssets\screen.css" />
+    <EmbeddedResource Include="Swagger\CustomAssets\typography.css" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

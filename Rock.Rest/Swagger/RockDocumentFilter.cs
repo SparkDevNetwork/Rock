@@ -19,13 +19,13 @@ using System.Linq;
 using System.Web.Http.Description;
 using Swashbuckle.Swagger;
 
-namespace Rock.Rest
+namespace Rock.Rest.Swagger
 {
     /// <summary>
     /// 
     /// </summary>
     /// <seealso cref="Swashbuckle.Swagger.IDocumentFilter" />
-    public class RockSwaggerDocumentFilter : IDocumentFilter
+    public class RockDocumentFilter : IDocumentFilter
     {
         /// <summary>
         /// Applies the specified swagger document.

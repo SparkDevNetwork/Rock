@@ -18,13 +18,13 @@ using System.Linq;
 using System.Web.Http.Description;
 using Swashbuckle.Swagger;
 
-namespace Rock.Rest
+namespace Rock.Rest.Swagger
 {
     /// <summary>
     /// 
     /// </summary>
     /// <seealso cref="Swashbuckle.Swagger.IOperationFilter" />
-    public class RockSwaggerOperationFilter : IOperationFilter
+    public class RockOperationFilter : IOperationFilter
     {
         /// <summary>
         /// Applies the specified operation.
