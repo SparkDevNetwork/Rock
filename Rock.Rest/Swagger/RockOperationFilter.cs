@@ -17,6 +17,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Web.Http.Description;
+using Rock.Attribute;
 using Swashbuckle.Swagger;
 
 namespace Rock.Rest.Swagger
@@ -46,20 +47,38 @@ namespace Rock.Rest.Swagger
                 var responseType = apiDescription.ResponseDescription?.DeclaredType;
 
                 // Add OData helpers if this is an IQueryable GET
-                if ( responseType != null & responseType.GetInterfaces().Contains( typeof( IQueryable ) ) )
+                if ( responseType != null )
                 {
-                    // add the odata parameters
-                    operation.parameters = operation.parameters
-                        .Parameter( "$expand", "query", "Expands related entities inline.", "string", false )
-                        .Parameter( "$filter", "query", "Filters the results, based on a Boolean condition.", "string", false )
-                        .Parameter( "$select", "query", "Selects which properties to include in the response.", "string", false )
-                        .Parameter( "$orderby", "query", "Sorts the results.", "string", false )
-                        .Parameter( "$top", "query", "Returns only the first n results.", "integer", false, "int32" )
-                        .Parameter( "$skip", "query", "Skips the first n results.", "integer", false, "int32" );
-                }
+                    bool supportsLoadAttributes = false;
+                    if ( responseType.GetInterfaces().Contains( typeof( IQueryable ) ) )
+                    {
+                        // add the odata parameters
+                        operation.parameters = operation.parameters
+                            .Parameter( "$expand", "query", "Expands related entities inline.", "string", false )
+                            .Parameter( "$filter", "query", "Filters the results, based on a Boolean condition.", "string", false )
+                            .Parameter( "$select", "query", "Selects which properties to include in the response.", "string", false )
+                            .Parameter( "$orderby", "query", "Sorts the results.", "string", false )
+                            .Parameter( "$top", "query", "Returns only the first n results.", "integer", false, "int32" )
+                            .Parameter( "$skip", "query", "Skips the first n results.", "integer", false, "int32" );
 
-                // Add loadAttributes helper
-                operation.parameters.Parameter( "loadAttributes", "query", "Specify 'simple' or 'expanded' to load attributes", "string", false );
+                        var queryableArgumentType = responseType.GenericTypeArguments.FirstOrDefault();
+                        if ( queryableArgumentType != null && queryableArgumentType.GetInterfaces().Contains( typeof( IHasAttributes ) ) )
+                        {
+                            supportsLoadAttributes = true;
+                        }
+                    }
+
+                    if ( responseType.GetInterfaces().Contains(typeof( IHasAttributes ) ) )
+                    {
+                        supportsLoadAttributes = true;
+                    }
+
+                    if ( supportsLoadAttributes )
+                    {
+                        // Add loadAttributes helper
+                        operation.parameters.Parameter( "loadAttributes", "query", "Specify 'simple' or 'expanded' to load attributes", "string", false, null, new string[] { "simple", "expanded" } );
+                    }
+                }
             }
 
             if ( string.IsNullOrEmpty( operation.summary ) )
