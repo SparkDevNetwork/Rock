@@ -226,14 +226,6 @@ namespace Rock.Data
         }
 
         /// <summary>
-        /// Posts the save changes.
-        /// </summary>
-        /// <param name="dbContext">The database context.</param>
-        public virtual void PostSaveChanges( Rock.Data.DbContext dbContext )
-        {
-        }
-
-        /// <summary>
         /// Gets the created audit HTML.
         /// </summary>
         /// <param name="rootUrl">The root URL.</param>

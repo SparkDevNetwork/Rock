@@ -111,19 +111,7 @@
             SaveButtonText="Reassign" OnSaveClick="dlgReassign_SaveClick" OnCancelScript="clearActiveDialog();" >
             <Content>
 
-                <div class="row">
-                    <div class="col-sm-6">
-                        <Rock:PersonPicker ID="ppReassign" runat="server" Label="Reassign Selected Transactions To" Required="true" ValidationGroup="Reassign" />
-                    </div>
-                    <div class="col-sm-6">
-                        <Rock:RockRadioButtonList ID="rblReassingBankAccounts" runat="server" Label="Reassign Bank Accounts" Required="true" ValidationGroup="Reassign"
-                            Help="In addition to the selected transactions, how should all of the saved bank accounts for this person be reassigned?">
-                            <asp:ListItem Text="Move bank accounts to selected individual" Value="MOVE" Selected="True" />
-                            <asp:ListItem Text="Copy bank accounts to selected individual" Value="COPY" />
-                            <asp:ListItem Text="Do not adjsut bank accounts" Value="NONE" />
-                        </Rock:RockRadioButtonList>
-                    </div>
-                </div>
+                <Rock:PersonPicker ID="ppReassign" runat="server" Label="Reassign Selected Transactions To" Required="true" ValidationGroup="Reassign" />
 
             </Content>
         </Rock:ModalDialog>
