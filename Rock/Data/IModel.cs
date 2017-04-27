@@ -103,12 +103,6 @@ namespace Rock.Data
         void PreSaveChanges( Rock.Data.DbContext dbContext, System.Data.Entity.Infrastructure.DbEntityEntry entry );
 
         /// <summary>
-        /// Method that will be called on an entity immediately after the item is saved
-        /// </summary>
-        /// <param name="dbContext">The database context.</param>
-        void PostSaveChanges( Rock.Data.DbContext dbContext );
-
-        /// <summary>
         /// Gets the Created By audit HTML details.
         /// </summary>
         /// <param name="rootUrl">The root URL.</param>

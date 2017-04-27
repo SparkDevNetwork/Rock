@@ -971,7 +971,6 @@
     <Compile Include="Plugin\HotFixes\004_FixGradeRequiredAttribute.cs" />
     <Compile Include="Plugin\HotFixes\005_FixCheckinAdminRoute.cs" />
     <Compile Include="Plugin\HotFixes\006_FixCheckinPrevPages.cs" />
-    <Compile Include="Plugin\HotFixes\024_TransactionHistory.cs" />
     <Compile Include="Plugin\HotFixes\023_SecurityCodeLength.cs" />
     <Compile Include="Plugin\HotFixes\022_Fundraising.cs" />
     <Compile Include="Plugin\HotFixes\017_FixBackgroundCheckOptionalCampus.cs" />
