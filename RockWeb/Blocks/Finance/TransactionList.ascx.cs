@@ -665,38 +665,6 @@ namespace RockWeb.Blocks.Finance
 
                             foreach ( var txn in txnsToUpdate )
                             {
-                                string caption = ( txn.AuthorizedPersonAlias != null && txn.AuthorizedPersonAlias.Person != null ) ?
-                                    txn.AuthorizedPersonAlias.Person.FullName :
-                                    string.Format( "Transaction: {0}", txn.Id );
-
-                                var changes = new List<string>();
-                                History.EvaluateChange( changes, "Batch",
-                                    string.Format( "{0} (Id:{1})", oldBatch.Name, oldBatch.Id ),
-                                    string.Format( "{0} (Id:{1})", newBatch.Name, newBatch.Id ) );
-
-                                HistoryService.SaveChanges(
-                                    rockContext,
-                                    typeof( FinancialBatch ),
-                                    Rock.SystemGuid.Category.HISTORY_FINANCIAL_TRANSACTION.AsGuid(),
-                                    oldBatch.Id,
-                                    changes,
-                                    caption,
-                                    typeof( FinancialTransaction ),
-                                    txn.Id,
-                                    false
-                                );
-
-                                HistoryService.SaveChanges(
-                                    rockContext,
-                                    typeof( FinancialBatch ),
-                                    Rock.SystemGuid.Category.HISTORY_FINANCIAL_TRANSACTION.AsGuid(),
-                                    newBatch.Id,
-                                    changes,
-                                    caption,
-                                    typeof( FinancialTransaction ),
-                                    txn.Id, false
-                                );
-
                                 txn.BatchId = newBatch.Id;
                                 oldBatchControlAmount -= txn.TotalAmount;
                                 newBatchControlAmount += txn.TotalAmount;

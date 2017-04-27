@@ -202,6 +202,10 @@
     <Compile Include="Migrations\201704261843367_AddPersonalDevices.Designer.cs">
       <DependentUpon>201704261843367_AddPersonalDevices.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201704271246518_TransactionHistory.cs" />
+    <Compile Include="Migrations\201704271246518_TransactionHistory.Designer.cs">
+      <DependentUpon>201704271246518_TransactionHistory.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 6.0\Version 1.6.0\201609282147388_WaitList.cs" />
     <Compile Include="Migrations\Version 6.0\Version 1.6.0\201609282147388_WaitList.Designer.cs">
       <DependentUpon>201609282147388_WaitList.cs</DependentUpon>
@@ -2503,6 +2507,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201704261843367_AddPersonalDevices.resx">
       <DependentUpon>201704261843367_AddPersonalDevices.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201704271246518_TransactionHistory.resx">
+      <DependentUpon>201704271246518_TransactionHistory.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 6.0\Version 1.6.0\201609282147388_WaitList.resx">
       <DependentUpon>201609282147388_WaitList.cs</DependentUpon>
