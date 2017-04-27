@@ -282,7 +282,6 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
             ResourceService resourceService = new ResourceService( rockContext );
             LocationService locationService = new LocationService( rockContext );
             ReservationService reservationService = new ReservationService( rockContext );
-            PersonAliasService personAliasService = new PersonAliasService( rockContext );
             ReservationResourceService reservationResourceService = new ReservationResourceService( rockContext );
             ReservationLocationService reservationLocationService = new ReservationLocationService( rockContext );
 
@@ -446,6 +445,41 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void btnCancel_OnClick( object sender, EventArgs e )
         {
+            ReturnToParentPage();
+        }
+
+
+        /// <summary>
+        /// Handles the Click event of the btnDelete control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
+        protected void btnDelete_OnClick( object sender, EventArgs e )
+        { 
+            if ( PageParameter( "ReservationId" ).AsIntegerOrNull() != null )
+            {
+                RockContext rockContext = new RockContext();
+                ReservationService reservationService = new ReservationService( rockContext );
+                ReservationResourceService reservationResourceService = new ReservationResourceService( rockContext );
+                ReservationLocationService reservationLocationService = new ReservationLocationService( rockContext );
+                var reservation = reservationService.Get( PageParameter( "ReservationId" ).AsInteger() );
+                if ( reservation != null )
+                {
+                    if ( reservation.ReservationResources != null )
+                    {
+                        reservationResourceService.DeleteRange( reservation.ReservationResources );
+                    }
+
+                    if ( reservation.ReservationLocations != null )
+                    {
+                        reservationLocationService.DeleteRange( reservation.ReservationLocations );
+                    }
+
+                    reservationService.Delete( reservation );
+                    rockContext.SaveChanges();
+                }
+            }
+
             ReturnToParentPage();
         }
 
@@ -1169,6 +1203,12 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
 
             if ( reservation.Id != 0 )
             {
+                // Show the delete button if the person is authorized to delete it
+                if ( canApprove || CurrentPersonAliasId == reservation.CreatedByPersonAliasId )
+                {
+                    btnDelete.Visible = true;
+                }
+
                 if ( canApprove )
                 {
                     pnlEditApprovalState.Visible = true;
