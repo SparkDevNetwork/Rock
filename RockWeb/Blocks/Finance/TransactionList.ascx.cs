@@ -798,24 +798,81 @@ namespace RockWeb.Blocks.Finance
         {
             if ( _canEdit && _person != null )
             {
+                int? personId = ppReassign.PersonId;
                 int? personAliasId = ppReassign.PersonAliasId;
                 var txnsSelected = new List<int>();
                 gTransactions.SelectedKeys.ToList().ForEach( b => txnsSelected.Add( b.ToString().AsInteger() ) );
 
                 if ( txnsSelected.Any() && personAliasId.HasValue )
                 {
-                    var rockContext = new RockContext();
-                    var txnService = new FinancialTransactionService( rockContext );
-                    var txnsToUpdate = txnService.Queryable( "AuthorizedPersonAlias.Person" )
-                        .Where( t => txnsSelected.Contains( t.Id ) )
-                        .ToList();
-
-                    foreach ( var txn in txnsToUpdate )
+                    using ( var rockContext = new RockContext() )
                     {
-                        txn.AuthorizedPersonAliasId = personAliasId.Value;
-                    }
+                        foreach ( var txn in new FinancialTransactionService( rockContext )
+                            .Queryable( "AuthorizedPersonAlias.Person" )
+                            .Where( t => txnsSelected.Contains( t.Id ) )
+                            .ToList() )
+                        {
+                            txn.AuthorizedPersonAliasId = personAliasId.Value;
+                        }
+                        rockContext.SaveChanges();
 
-                    rockContext.SaveChanges();
+                        string acctAction = rblReassingBankAccounts.SelectedValue;
+                        if ( acctAction != "NONE" && personId.HasValue && _person != null )
+                        {
+                            var bankAcctService = new FinancialPersonBankAccountService( rockContext );
+
+                            var bankAccts = bankAcctService.Queryable()
+                                .Where( a => a.PersonAlias != null && a.PersonAlias.PersonId == _person.Id )
+                                .ToList();
+
+                            var existingAccts = bankAcctService.Queryable()
+                                .Where( a => a.PersonAlias != null && a.PersonAlias.PersonId == personId.Value )
+                                .Select( a => a.AccountNumberSecured )
+                                .ToList();
+
+                            if ( bankAccts.Any() )
+                            {
+                                foreach ( var bankAcct in bankAccts )
+                                {
+                                    if ( acctAction == "MOVE" )
+                                    {
+                                        if ( existingAccts.Contains( bankAcct.AccountNumberSecured ) )
+                                        {
+                                            bankAcctService.Delete( bankAcct );
+                                        }
+                                        else
+                                        {
+                                            bankAcct.PersonAliasId = personAliasId.Value;
+                                        }
+                                    }
+                                    else
+                                    {
+                                        if ( !existingAccts.Contains( bankAcct.AccountNumberSecured ) )
+                                        {
+                                            var newBankAcct = new FinancialPersonBankAccount();
+                                            bankAcctService.Add( newBankAcct );
+                                            newBankAcct.PersonAliasId = personAliasId.Value;
+                                            newBankAcct.AccountNumberMasked = bankAcct.AccountNumberMasked;
+                                            newBankAcct.AccountNumberSecured = bankAcct.AccountNumberSecured;
+                                        }
+                                    }
+                                }
+
+                                rockContext.SaveChanges();
+
+                                if ( acctAction == "MOVE" )
+                                {
+                                    HistoryService.SaveChanges( rockContext, typeof( Person ), Rock.SystemGuid.Category.HISTORY_PERSON.AsGuid(), _person.Id,
+                                        new List<string> { "Deleted Acct/Routing information" }, true, CurrentPersonAliasId );
+                                }
+                                HistoryService.SaveChanges( rockContext, typeof( Person ), Rock.SystemGuid.Category.HISTORY_PERSON.AsGuid(), personId.Value,
+                                    new List<string> { "Added Acct/Routing information" }, true, CurrentPersonAliasId );
+
+                                RockPage.UpdateBlocks( "~/Blocks/Crm/PersonDetail/BankAccountList.ascx" );
+                            }
+                        }
+
+                    }
                 }
             }
 
