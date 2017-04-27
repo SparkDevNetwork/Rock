@@ -227,6 +227,7 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
         protected void calReservationCalendar_VisibleMonthChanged( object sender, MonthChangedEventArgs e )
         {
             calReservationCalendar.SelectedDate = e.NewDate;
+            Session["CalendarVisibleDate"] = e.NewDate;
             ResetCalendarSelection();
             BindData();
         }
@@ -276,6 +277,7 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
             var btnViewMode = sender as BootstrapButton;
             if ( btnViewMode != null )
             {
+                this.SetUserPreference( "ViewMode", btnViewMode.Text );
                 ViewMode = btnViewMode.Text;
                 ResetCalendarSelection();
                 BindData();
@@ -377,7 +379,12 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
         private bool SetFilterControls()
         {
             // Get and verify the view mode
-            ViewMode = GetAttributeValue( "DefaultViewOption" );
+            ViewMode = this.GetUserPreference( "ViewMode" );
+            if ( string.IsNullOrWhiteSpace( ViewMode ) )
+            {
+                ViewMode = GetAttributeValue( "DefaultViewOption" );
+            }
+
             if ( !GetAttributeValue( string.Format( "Show{0}View", ViewMode ) ).AsBoolean() )
             {
                 ShowError( "Configuration Error", string.Format( "The Default View Option setting has been set to '{0}', but the Show {0} View setting has not been enabled.", ViewMode ) );
@@ -389,6 +396,15 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
 
             // Get the first/last dates based on today's date and the viewmode setting
             var today = RockDateTime.Today;
+
+            // Use the CalendarVisibleDate if it's in session.
+            var selectedDate = ( DateTime ) Session["CalendarVisibleDate"];
+            if ( selectedDate != null )
+            {
+                today = selectedDate;
+                calReservationCalendar.VisibleDate = today;
+            }
+
             FilterStartDate = today;
             FilterEndDate = today;
             if ( ViewMode == "Week" )
@@ -479,6 +495,8 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
         {
             // Even though selection will be a single date due to calendar's selection mode, set the appropriate days
             var selectedDate = calReservationCalendar.SelectedDate;
+            calReservationCalendar.VisibleDate = selectedDate;
+            Session["CalendarVisibleDate"] = selectedDate;
             FilterStartDate = selectedDate;
             FilterEndDate = selectedDate;
             if ( ViewMode == "Week" )
