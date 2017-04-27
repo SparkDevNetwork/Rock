@@ -86,8 +86,12 @@
         {% assign registrationInstanceLinkagesCount = RegistrationInstanceLinkages | Size %}
         {% if registrationInstanceLinkagesCount > 0 %}
             {% for registrationInstanceLinkage in RegistrationInstanceLinkages %}
-                {% assign registrationButtonText = 'Register for ' | Plus:registrationInstanceLinkage.Group.Name %}
-                <a href='{{ RegistrationPage }}?RegistrationInstanceId={{ RegistrationInstance.Id }}&Slug={{registrationInstanceLinkage.UrlSlug}}' class='btn btn-primary btn-block margin-t-md'>{{ registrationButtonText }}</a>
+                {% assign registrationButtonText = 'Register for ' | Plus:registrationInstanceLinkage.PublicName %}
+                {% if registrationInstanceLinkage.UrlSlug != '' %}
+                  <a href='{{ RegistrationPage }}?RegistrationInstanceId={{ RegistrationInstance.Id }}&Slug={{registrationInstanceLinkage.UrlSlug}}' class='btn btn-primary btn-block margin-t-md'>{{ registrationButtonText }}</a>
+                {% else %}
+                  <a href="{{ RegistrationPage }}?RegistrationInstanceId={{ RegistrationInstance.Id }}&EventOccurrenceID={{ registrationInstanceLinkage.EventItemOccurrenceId }}" class="btn btn-primary btn-block margin-t-md">{{ registrationButtonText }}</a>
+                {% endif %}
             {% endfor %}
         {% else %}
           <a href='{{ RegistrationPage }}?RegistrationInstanceId={{ RegistrationInstance.Id }}' class='btn btn-primary btn-block margin-t-md'>{{ registrationButtonText }}</a>
