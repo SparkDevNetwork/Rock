@@ -14,6 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
+using System.Collections.Generic;
 using System.Linq;
 using System.Web.Http.Description;
 using Swashbuckle.Swagger;
@@ -38,6 +39,28 @@ namespace Rock.Rest.Swagger
             operation.consumes = operation.consumes?.Where( a => a == "application/json" ).ToList();
             operation.produces = operation.produces?.Where( a => a == "application/json" ).ToList();
             operation.operationId = apiDescription.ID.Replace( '/', '_' ).RemoveSpecialCharacters();
+
+            if ( apiDescription.HttpMethod.Method == "GET" )
+            {
+                operation.parameters = operation.parameters ?? new List<Parameter>();
+                var responseType = apiDescription.ResponseDescription?.DeclaredType;
+
+                // Add OData helpers if this is an IQueryable GET
+                if ( responseType != null & responseType.GetInterfaces().Contains( typeof( IQueryable ) ) )
+                {
+                    // add the odata parameters
+                    operation.parameters = operation.parameters
+                        .Parameter( "$expand", "query", "Expands related entities inline.", "string", false )
+                        .Parameter( "$filter", "query", "Filters the results, based on a Boolean condition.", "string", false )
+                        .Parameter( "$select", "query", "Selects which properties to include in the response.", "string", false )
+                        .Parameter( "$orderby", "query", "Sorts the results.", "string", false )
+                        .Parameter( "$top", "query", "Returns only the first n results.", "integer", false, "int32" )
+                        .Parameter( "$skip", "query", "Skips the first n results.", "integer", false, "int32" );
+                }
+
+                // Add loadAttributes helper
+                operation.parameters.Parameter( "loadAttributes", "query", "Specify 'simple' or 'expanded' to load attributes", "string", false );
+            }
 
             if ( string.IsNullOrEmpty( operation.summary ) )
             {

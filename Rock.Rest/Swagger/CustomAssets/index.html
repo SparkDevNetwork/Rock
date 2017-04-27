@@ -138,18 +138,53 @@
 </head>
 
 <body class="swagger-section">
-<div id='header'>
-  <div class="swagger-ui-wrap">
-    <a id="logo" href="http://swagger.io"><img class="logo__img" alt="swagger" height="30" width="30" src="images/logo_small-png" /><span class="logo__title">swagger</span></a>
-    <form id='api_selector'>
-      <div class='input'><input placeholder="http://example.com/api" id="input_baseUrl" name="baseUrl" type="text"/></div>
-      <div class='input'><input placeholder="api_key" id="input_apiKey" name="apiKey" type="text" /></div>
-      <div class='input'><a id="explore" class="header__btn" href="#" data-sw-translate>Explore</a></div>
-    </form>
-  </div>
-</div>
+    <div id='header'>
 
-<div id="message-bar" class="swagger-ui-wrap" data-sw-translate>&nbsp;</div>
-<div id="swagger-ui-container" class="swagger-ui-wrap"></div>
+        <!-- This div is from the stock Swagger UI. We can hide it but we need the form and inputs so that the navigation works -->
+        <div class="swagger-ui-wrap" style="display:none">
+            <a id="logo" href="http://swagger.io"><img class="logo__img" alt="swagger" height="30" width="30" src="images/logo_small-png" /><span class="logo__title">swagger</span></a>
+            <form id='api_selector'>
+                <div class='input'><input placeholder="http://example.com/api" id="input_baseUrl" name="baseUrl" type="text" /></div>
+                <div class='input'><input placeholder="api_key" id="input_apiKey" name="apiKey" type="text" /></div>
+                <div class='input'><a id="explore" class="header__btn" href="#" data-sw-translate>Explore</a></div>
+            </form>
+        </div>
+    </div>
+
+    <script type="text/javascript">
+        // Normally, SwaggerUI will load the entire Model into a single page, but Rock has a lot of models, so we'll break it up one controller at a time
+        // Fetch a list of all the REST Controllers in Rock to make.  When the user clicks on one, the SwaggerUI will be loaded for that Controller
+        $.get('%(RootUrl)' + '/api/RestControllers/EnsureRestControllers', function ()
+        {
+            $.get('%(RootUrl)' + '/api/RestControllers?$select=Name&$orderby=Name', function (data)
+            {
+                var $rockControllerList = $('#rock-controller-list ul');
+                $.each(data, function (index, value)
+                {
+                    $rockControllerList.append('<li><a href="#" onclick="showUiForController(\'' + value.Name + '\')">' + value.Name + '</a></li>');
+                });
+            });
+        })
+
+        function showUiForController(controllerName)
+        {
+            $('#input_baseUrl').val(swashbuckleConfig.rootUrl + '/' + swashbuckleConfig.discoveryPaths[0] + '?controllerName=' + controllerName);
+            $('#explore').click();
+        }
+    </script>
+
+    <div id="message-bar" class="swagger-ui-wrap" data-sw-translate>&nbsp;</div>
+    
+    <div>
+        <div id="rock-controller-list" style="float:left">
+            <ul></ul>
+        </div>
+        <div id="rock-swagger-ui" style="float:right">
+            <div id="swagger-ui-container" class="swagger-ui-wrap">
+
+            </div>
+        </div>
+    </div>
+
 </body>
 </html>

@@ -107,9 +107,9 @@
   <ItemGroup>
     <Compile Include="ApiController.cs" />
     <Compile Include="ApiControllerBase.cs" />
+    <Compile Include="Swagger\RockSwaggerHelper.cs" />
     <Compile Include="Swagger\RockDocumentFilter.cs" />
     <Compile Include="Swagger\RockOperationFilter.cs" />
-    <Compile Include="Swagger\RockSchemaFilter.cs" />
     <Compile Include="Swagger\SwaggerConfig.cs" />
     <Compile Include="App_Start\WebApiConfig.cs" />
     <Compile Include="Binders\NakedBodyAttribute.cs" />
@@ -324,6 +324,7 @@
     <Compile Include="Handler\RockApiExceptionLogger.cs" />
     <Compile Include="IHasCustomRoutes.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Swagger\SwaggerExtensions.cs" />
     <Compile Include="Utility\HttpRequestMessageExtensions.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -342,6 +343,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
+    <Compile Include="Controllers\RestControllersController.partial.cs" />
     <None Include="packages.config">
       <SubType>Designer</SubType>
     </None>
