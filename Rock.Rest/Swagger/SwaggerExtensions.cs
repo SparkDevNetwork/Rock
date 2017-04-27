@@ -18,8 +18,9 @@ namespace Rock.Rest.Swagger
         /// <param name="type">The type.</param>
         /// <param name="required">if set to <c>true</c> [required].</param>
         /// <param name="format">The format.</param>
+        /// <param name="enum">The enum.</param>
         /// <returns></returns>
-        public static IList<Parameter> Parameter(this IList<Parameter> parameters, string name, string @in, string description, string @type, bool required, string format = null )
+        public static IList<Parameter> Parameter(this IList<Parameter> parameters, string name, string @in, string description, string @type, bool required, string format = null, object[] @enum = null )
         {
             parameters.Add( new Parameter
             {
@@ -28,7 +29,8 @@ namespace Rock.Rest.Swagger
                 @in = @in,
                 description = description,
                 required = required,
-                format = format
+                format = format,
+                @enum = @enum
             } );
 
             return parameters;
