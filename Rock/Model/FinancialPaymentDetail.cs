@@ -249,7 +249,6 @@ namespace Rock.Model
         /// <param name="paymentInfo">The payment information.</param>
         /// <param name="paymentGateway">The payment gateway.</param>
         /// <param name="rockContext">The rock context.</param>
-        /// <param name="changes">The changes.</param>
         public void SetFromPaymentInfo( PaymentInfo paymentInfo, GatewayComponent paymentGateway, RockContext rockContext )
         {
             if ( !string.IsNullOrWhiteSpace( paymentInfo.MaskedNumber ) )

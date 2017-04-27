@@ -101,7 +101,7 @@ namespace Rock.Model
         /// Pres the save.
         /// </summary>
         /// <param name="dbContext">The database context.</param>
-        /// <param name="state">The state.</param>
+        /// <param name="entry"></param>
         public override void PreSaveChanges( Rock.Data.DbContext dbContext, System.Data.Entity.Infrastructure.DbEntityEntry entry )
         {
             var rockContext = (RockContext)dbContext;

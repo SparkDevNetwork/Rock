@@ -163,6 +163,11 @@ namespace Rock.Model
             return this.Amount.ToStringSafe();
         }
 
+        /// <summary>
+        /// Method that will be called on an entity immediately before the item is saved by context
+        /// </summary>
+        /// <param name="dbContext"></param>
+        /// <param name="entry"></param>
         public override void PreSaveChanges( Rock.Data.DbContext dbContext, System.Data.Entity.Infrastructure.DbEntityEntry entry )
         {
             var rockContext = (RockContext)dbContext;
