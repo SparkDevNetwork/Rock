@@ -404,6 +404,7 @@ namespace RockWeb.Plugins.com_centralaz.Baptism
         protected void BindCalendar( DateTime selectedDate )
         {
             calBaptism.SelectedDate = selectedDate;
+            calBaptism.VisibleDate = selectedDate;
             UpdateSchedulePanel();
         }
 
