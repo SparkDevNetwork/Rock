@@ -398,10 +398,9 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
             var today = RockDateTime.Today;
 
             // Use the CalendarVisibleDate if it's in session.
-            var selectedDate = ( DateTime ) Session["CalendarVisibleDate"];
-            if ( selectedDate != null )
+            if ( Session["CalendarVisibleDate"] != null )
             {
-                today = selectedDate;
+                today = ( DateTime ) Session["CalendarVisibleDate"];
                 calReservationCalendar.VisibleDate = today;
             }
 
