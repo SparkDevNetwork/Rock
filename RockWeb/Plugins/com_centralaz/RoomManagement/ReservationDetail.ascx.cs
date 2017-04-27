@@ -816,21 +816,7 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
             }
 
             // Add any location attached resources to the Resources grid for the location that was just selected.
-            var attachedResources = new ResourceService( new RockContext() ).Queryable().Where( r => r.LocationId == reservationLocation.LocationId );
-            if ( attachedResources.Any() )
-            {
-                foreach ( var resource in attachedResources )
-                {
-                    var reservationResource = new ReservationResource();
-                    reservationResource.ResourceId = resource.Id;
-                    // Do you always get all the quantity of this resource for "attached" resources? I can't see it any other way.
-                    reservationResource.Quantity = resource.Quantity;
-                    reservationResource.ApprovalState = ReservationResourceApprovalState.Unapproved;
-                    ResourcesState.Add( reservationResource );
-                }
-                BindReservationResourcesGrid();
-                wpResources.Expanded = true;
-            }
+            AddAttachedResources( reservationLocation.LocationId );
 
             LocationsState.Add( reservationLocation );
             BindReservationLocationsGrid();
@@ -1080,7 +1066,11 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
                 {
                     ReservationLocation reservationLocation = new ReservationLocation();
                     reservationLocation.LocationId = PageParameter( "LocationId" ).AsInteger();
+                    reservationLocation.ApprovalState = ReservationLocationApprovalState.Unapproved;
                     reservation.ReservationLocations.Add( reservationLocation );
+
+                    // Add any attached resources...
+                    AddAttachedResources( reservationLocation.LocationId, reservation );
                 }
 
                 if ( PageParameter( "ResourceId" ).AsInteger() != 0 )
@@ -1088,7 +1078,11 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
                     ReservationResource reservationResource = new ReservationResource();
                     reservationResource.ResourceId = PageParameter( "ResourceId" ).AsInteger();
                     reservationResource.Quantity = 1;
+                    reservationResource.ApprovalState = ReservationResourceApprovalState.Unapproved;
                     reservation.ReservationResources.Add( reservationResource );
+
+                    // Add any attached locations...
+                    AddAttachedLocations( reservationResource.ResourceId, reservation );
                 }
             }
 
@@ -1197,6 +1191,80 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
 
             hfApprovalState.Value = reservation.ApprovalState.ConvertToString();
 
+        }
+
+        /// <summary>
+        /// Adds (to the state object) any resources attached to the given wpLocations 
+        /// </summary>
+        /// <param name="locationid">The location identifier.</param>
+        protected void AddAttachedResources( int locationId, Reservation reservation = null )
+        {
+            var attachedResources = new ResourceService( new RockContext() ).Queryable().Where( r => r.LocationId == locationId );
+            if ( attachedResources.Any() )
+            {
+                foreach ( var resource in attachedResources )
+                {
+                    var reservationResource = new ReservationResource();
+                    reservationResource.ResourceId = resource.Id;
+                    // Do you always get all the quantity of this resource for "attached" resources? I can't see it any other way.
+                    reservationResource.Quantity = resource.Quantity;
+                    reservationResource.ApprovalState = ReservationResourceApprovalState.Unapproved;
+
+                    // ResourcesState will be null when this method is being called
+                    // from another page that passed in a location that has attached resources
+                    // therefore we'll just add it to the reservation and not the state.
+                    if ( ResourcesState != null )
+                    {
+                        ResourcesState.Add( reservationResource );
+                    }
+                    else if ( reservation != null )
+                    {
+                        reservation.ReservationResources.Add( reservationResource );
+                    }
+                }
+
+                if ( ResourcesState != null )
+                {
+                    BindReservationResourcesGrid();
+                    wpResources.Expanded = true;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Adds (to the state object) any locations attached to the given reqource 
+        /// </summary>
+        /// <param name="resourceId">The resource identifier.</param>
+        protected void AddAttachedLocations( int resourceId, Reservation reservation = null )
+        {
+            var attachedResources = new ResourceService( new RockContext() ).Queryable().Where( r => r.Id == resourceId );
+            if ( attachedResources.Any() )
+            {
+                foreach ( var resource in attachedResources )
+                {
+                    ReservationLocation reservationLocation = new ReservationLocation();
+                    reservationLocation.LocationId = resource.LocationId.Value;
+                    reservationLocation.ApprovalState = ReservationLocationApprovalState.Unapproved;
+
+                    // ResourcesState will be null when this method is being called
+                    // from another page that passed in a resource that has attached locations
+                    // therefore we'll just add it to the reservation and not the state.
+                    if ( LocationsState != null )
+                    {
+                        LocationsState.Add( reservationLocation );
+                    }
+                    else if ( reservation != null )
+                    {
+                        reservation.ReservationLocations.Add( reservationLocation );
+                    }
+                }
+
+                if ( LocationsState != null )
+                {
+                    BindReservationLocationsGrid();
+                    wpLocations.Expanded = true;
+                }
+            }
         }
 
         /// <summary>
