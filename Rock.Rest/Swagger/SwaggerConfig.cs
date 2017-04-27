@@ -14,11 +14,11 @@
 // limitations under the License.
 // </copyright>
 //
-using Swashbuckle.Application;
 using System.IO;
 using System.Linq;
 using System.Web.Http;
 using System.Web.Http.Routing;
+using Swashbuckle.Application;
 
 namespace Rock.Rest.Swagger
 {
@@ -57,21 +57,20 @@ namespace Rock.Rest.Swagger
                          // hold additional metadata for an API. Version and title are required but you can also provide
                          // additional fields by chaining methods off SingleApiVersion.
                          //
-                         c.SingleApiVersion( "v1", "Rock.Rest" );
+                         //c.SingleApiVersion( "v1", "Rock.Rest" );
 
                          // If your API has multiple versions, use "MultipleApiVersions" instead of "SingleApiVersion".
                          // In this case, you must provide a lambda that tells Swashbuckle which actions should be
                          // included in the docs for a given API version. Like "SingleApiVersion", each call to "Version"
                          // returns an "Info" builder so you can provide additional metadata per API version.
                          //
-                         /*c.MultipleApiVersions(
-                             (apiDesc, targetApiVersion) => ResolveVersionSupportByRouteConstraint(apiDesc, targetApiVersion),
-                             (vc) =>
+                         c.MultipleApiVersions(
+                             ( apiDesc, targetApiVersion ) => RockSwaggerHelper.RockVersionSupportResolverAndControllerFilter( apiDesc, targetApiVersion ),
+                             ( vc ) =>
                              {
-                                 vc.Version("v2", "Swashbuckle Dummy API V2");
-                                 vc.Version("v1", "Swashbuckle Dummy API V1");
-                             });
-                             */
+                                 vc.Version( "v1", "Rock Rest API v1" );
+                             } );
+
                          // You can use "BasicAuth", "ApiKey" or "OAuth2" options to describe security schemes for the API.
                          // See https://github.com/swagger-api/swagger-spec/blob/master/versions/2.0.md for more details.
                          // NOTE: These only define the schemes and need to be coupled with a corresponding "security" property
@@ -140,7 +139,7 @@ namespace Rock.Rest.Swagger
                          // If you want to post-modify "complex" Schemas once they've been generated, across the board or for a
                          // specific type, you can wire up one or more Schema filters.
                          //
-                         c.SchemaFilter<RockSchemaFilter>();
+                         //c.SchemaFilter<RockSchemaFilter>();
 
                          // In a Swagger 2.0 document, complex types are typically declared globally and referenced by unique
                          // Schema Id. By default, Swashbuckle does NOT use the full type name in Schema Ids. In most cases, this
@@ -202,7 +201,7 @@ namespace Rock.Rest.Swagger
                          // Wrap the default SwaggerGenerator with additional behavior (e.g. caching) or provide an
                          // alternative implementation for ISwaggerProvider with the CustomProvider option.
                          //
-                         //c.CustomProvider((defaultProvider) => new CachingSwaggerProvider(defaultProvider));
+                         //c.CustomProvider( ( defaultProvider ) => new RockSwaggerProvider( defaultProvider ) );
                      } )
                 .EnableSwaggerUi( swaggerUiRoute, c =>
                     {
@@ -234,7 +233,7 @@ namespace Rock.Rest.Swagger
                         // It can be set to "None" (default), "List" (shows operations for each resource),
                         // or "Full" (fully expanded: shows operations and their details).
                         //
-                        c.DocExpansion( DocExpansion.None );
+                        c.DocExpansion( DocExpansion.List );
 
                         // Specify which HTTP operations will have the 'Try it out!' option. An empty paramter list disables
                         // it for all operations.
