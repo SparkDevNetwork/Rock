@@ -16,6 +16,8 @@
                         <Rock:RockTextBox ID="tbFirstName" runat="server" Label="First Name" Required="true" />
                         <Rock:RockTextBox ID="tbLastName" runat="server" Label="Last Name" Required="false" />
                         <Rock:RockTextBox ID="tbEmail" runat="server" Label="Email" TextMode="Email"  Required="false" />
+
+                        <Rock:CampusPicker ID="cpCampus" runat="server" Label="Campus" />
                     </asp:Panel>
                     
                     <Rock:ButtonDropDownList ID="bddlCategory" runat="server" Label="Category"></Rock:ButtonDropDownList>

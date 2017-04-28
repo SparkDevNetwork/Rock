@@ -44,6 +44,7 @@
                             </Rock:RockDropDownList>
 
                             <Rock:CategoryPicker ID="catpPrayerCategoryFilter" runat="server" Label="Category" EntityTypeName="Rock.Model.PrayerRequest"/>
+                            <Rock:CampusPicker ID="cpPrayerCampusFilter" runat="server" />
 
                             <Rock:RockCheckBox ID="cbShowExpired" runat="server" Label="Show Expired Requests?" />
 
@@ -56,6 +57,7 @@
                         <Rock:Grid ID="gPrayerRequests" runat="server" AllowSorting="true" RowItemText="request" OnRowSelected="gPrayerRequests_Edit" OnRowDataBound="gPrayerRequests_RowDataBound" >
                             <Columns>
                                 <Rock:RockLiteralField id="lFullname" HeaderText="Name" SortExpression="FirstName,LastName" />
+                                <Rock:RockBoundField DataField="Campus.Name" HeaderText="Campus" SortExpression="Campus.Name" />
                                 <Rock:RockBoundField DataField="Category.Name" HeaderText="Category" SortExpression="Category.Name" />
                                 <Rock:DateField DataField="EnteredDateTime" HeaderText="Entered" SortExpression="EnteredDateTime"/>
                                 <Rock:RockBoundField DataField="Text" HeaderText="Request" SortExpression="Text" />
