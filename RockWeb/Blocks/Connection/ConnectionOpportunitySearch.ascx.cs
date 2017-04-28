@@ -40,15 +40,16 @@ namespace RockWeb.Blocks.Connection
     [Category( "Connection" )]
     [Description( "Allows users to search for an opportunity to join" )]
 
-    [CodeEditorField( "Lava Template", "Lava template to use to display the list of opportunities.", CodeEditorMode.Lava, CodeEditorTheme.Rock, 400, true, @"{% include '~~/Assets/Lava/OpportunitySearch.lava' %}", "", 2 )]
-    [BooleanField( "Enable Debug", "Display a list of merge fields available for lava.", false, "", 3 )]
-    [BooleanField( "Enable Campus Context", "If the page has a campus context it's value will be used as a filter", true )]
-    [BooleanField( "Set Page Title", "Determines if the block should set the page title with the connection type name.", false )]
-    [BooleanField( "Display Name Filter", "Display the name filter", false )]
-    [BooleanField( "Display Campus Filter", "Display the campus filter", true )]
-    [BooleanField( "Display Attribute Filters", "Display the attribute filters", true )]
-    [LinkedPage( "Detail Page", "The page used to view a connection opportunity." )]
-    [IntegerField( "Connection Type Id", "The Id of the connection type whose opportunities are displayed.", true, 1 )]
+    [CodeEditorField( "Lava Template", "Lava template to use to display the list of opportunities.", CodeEditorMode.Lava, CodeEditorTheme.Rock, 400, true, @"{% include '~~/Assets/Lava/OpportunitySearch.lava' %}", "", 0 )]
+    [BooleanField( "Enable Campus Context", "If the page has a campus context it's value will be used as a filter", true, order: 1 )]
+    [BooleanField( "Set Page Title", "Determines if the block should set the page title with the connection type name.", false, order: 2 )]
+    [BooleanField( "Display Name Filter", "Display the name filter", false, order: 3 )]
+    [BooleanField( "Display Campus Filter", "Display the campus filter", true, order: 4 )]
+    [BooleanField( "Display Inactive Campuses", "Include inactive campuses in the Campus Filter", true, order: 5 )]
+    [BooleanField( "Display Attribute Filters", "Display the attribute filters", true, order: 6 )]
+    [LinkedPage( "Detail Page", "The page used to view a connection opportunity.", order: 7 )]
+    [IntegerField( "Connection Type Id", "The Id of the connection type whose opportunities are displayed.", true, 1, order:8 )]
+    [BooleanField( "Show Search", "Determines if the search fields should be displayed. Sometimes listing all the options is enough.", true, order: 9 )]
 
     public partial class OpportunitySearch : Rock.Web.UI.RockBlock
     {
@@ -104,6 +105,8 @@ namespace RockWeb.Blocks.Connection
                 SetFilters( true );
                 UpdateList();
             }
+
+            pnlSearch.Visible = GetAttributeValue( "ShowSearch" ).AsBoolean();
         }
 
         /// <summary>
@@ -244,13 +247,6 @@ namespace RockWeb.Blocks.Connection
                     RockPage.BrowserTitle = String.Format( "{0} | {1}", pageTitle, RockPage.Site.Name );
                     RockPage.Header.Title = String.Format( "{0} | {1}", pageTitle, RockPage.Site.Name );
                 }
-
-                // show debug info
-                if ( GetAttributeValue( "EnableDebug" ).AsBoolean() && IsUserAuthorized( Authorization.EDIT ) )
-                {
-                    lDebug.Visible = true;
-                    lDebug.Text = mergeFields.lavaDebugInfo();
-                }
             }
         }
 
@@ -302,7 +298,7 @@ namespace RockWeb.Blocks.Connection
                 if ( GetAttributeValue( "DisplayCampusFilter" ).AsBoolean() )
                 {
                     cblCampus.Visible = true;
-                    cblCampus.DataSource = CampusCache.All();
+                    cblCampus.DataSource = CampusCache.All( GetAttributeValue( "DisplayInactiveCampuses" ).AsBoolean() );
                     cblCampus.DataBind();
                 }
                 else
