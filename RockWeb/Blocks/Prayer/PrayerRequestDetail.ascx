@@ -72,6 +72,14 @@
                                 </div>
                             </div>
 
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <div class="attributes">
+                                        <asp:PlaceHolder ID="phAttributes" runat="server" />
+                                    </div>
+                                </div>
+                            </div>
+
                         </fieldset>
 
                         <div class="actions">
@@ -95,6 +103,8 @@
                         <div class="row">
                             <div class="col-md-12">
                                 <asp:Literal ID="lMainDetails" runat="server" />
+
+                                <asp:PlaceHolder ID="phDisplayAttributes" runat="server" />
                             </div>
                         </div>
 

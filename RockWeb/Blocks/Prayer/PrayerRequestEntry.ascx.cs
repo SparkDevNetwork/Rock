@@ -156,6 +156,11 @@ namespace RockWeb.Blocks.Prayer
                 }
 
                 dtbRequest.Text = PageParameter( "Request" );
+
+                var prayerRequest = new PrayerRequest { Id = 0 };
+                prayerRequest.LoadAttributes();
+                phAttributes.Controls.Clear();
+                Rock.Attribute.Helper.AddEditControls( prayerRequest, phAttributes, false, BlockValidationGroup );
             }
         }
 
@@ -261,6 +266,9 @@ namespace RockWeb.Blocks.Prayer
                 return;
             }
 
+            prayerRequest.LoadAttributes( rockContext );
+            Rock.Attribute.Helper.GetEditValues( phAttributes, prayerRequest );
+
             if ( !prayerRequest.IsValid )
             {
                 // field controls render error messages
@@ -268,6 +276,7 @@ namespace RockWeb.Blocks.Prayer
             }
 
             rockContext.SaveChanges();
+            prayerRequest.SaveAttributeValues( rockContext );
 
             StartWorkflow( prayerRequest, rockContext );
 

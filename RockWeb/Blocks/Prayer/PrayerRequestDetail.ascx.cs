@@ -135,6 +135,27 @@ namespace RockWeb.Blocks.Prayer
             {
                 ShowDetail( PageParameter( "prayerRequestId" ).AsInteger() );
             }
+            else
+            {
+                if ( pnlEditDetails.Visible )
+                {
+                    var rockContext = new RockContext();
+                    PrayerRequest prayerRequest;
+                    int? prayerRequestId = PageParameter( "prayerRequestId" ).AsIntegerOrNull();
+                    if ( prayerRequestId.HasValue && prayerRequestId.Value > 0 )
+                    {
+                        prayerRequest = new PrayerRequestService( rockContext ).Get( prayerRequestId.Value );
+                    }
+                    else
+                    {
+                        prayerRequest = new PrayerRequest { Id = 0 };
+                    }
+
+                    prayerRequest.LoadAttributes();
+                    phAttributes.Controls.Clear();
+                    Rock.Attribute.Helper.AddEditControls( prayerRequest, phAttributes, false, BlockValidationGroup );
+                }
+            }
 
             base.OnLoad( e );
         }
@@ -319,6 +340,13 @@ namespace RockWeb.Blocks.Prayer
             descriptionList.Add( "Answer", prayerRequest.Answer.ScrubHtmlAndConvertCrLfToBr() );
             lMainDetails.Text = descriptionList.Html;
 
+            prayerRequest.LoadAttributes();
+            var attributes = prayerRequest.Attributes.Select( a => a.Value ).OrderBy( a => a.Order ).ThenBy( a => a.Name ).ToList();
+
+            var attributeCategories = Helper.GetAttributeCategories( attributes );
+
+            Rock.Attribute.Helper.AddDisplayControls( prayerRequest, attributeCategories, phDisplayAttributes, null, false );
+
             ShowStatus( prayerRequest, this.CurrentPerson, hlblFlaggedMessageRO );
             ShowPrayerCount( prayerRequest );
 
@@ -363,7 +391,7 @@ namespace RockWeb.Blocks.Prayer
             }
             else
             {
-                if ( !string.IsNullOrWhiteSpace(PageParameter( "PersonId" ) ) )
+                if ( !string.IsNullOrWhiteSpace( PageParameter( "PersonId" ) ) )
                 {
                     var requestor = new PersonService( new RockContext() ).Get( PageParameter( "PersonId" ).AsInteger() );
                     ppRequestor.SetValue( requestor );
@@ -393,6 +421,10 @@ namespace RockWeb.Blocks.Prayer
             cbIsUrgent.Checked = prayerRequest.IsUrgent ?? false;
             cbIsActive.Checked = prayerRequest.IsActive ?? false;
             cbAllowComments.Checked = prayerRequest.AllowComments ?? false;
+
+            prayerRequest.LoadAttributes();
+            phAttributes.Controls.Clear();
+            Rock.Attribute.Helper.AddEditControls( prayerRequest, phAttributes, true, BlockValidationGroup );
         }
 
         /// <summary>
@@ -573,6 +605,9 @@ namespace RockWeb.Blocks.Prayer
             prayerRequest.Text = dtbText.Text.Trim();
             prayerRequest.Answer = dtbAnswer.Text.Trim();
 
+            prayerRequest.LoadAttributes( rockContext );
+            Rock.Attribute.Helper.GetEditValues( phAttributes, prayerRequest );
+
             if ( !Page.IsValid )
             {
                 return;
@@ -585,6 +620,7 @@ namespace RockWeb.Blocks.Prayer
             }
 
             rockContext.SaveChanges();
+            prayerRequest.SaveAttributeValues( rockContext );
 
             var queryParms = new Dictionary<string, string>();
             if ( !string.IsNullOrWhiteSpace( PageParameter( "PersonId" ) ) )
