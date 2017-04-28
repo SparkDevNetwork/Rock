@@ -156,12 +156,12 @@ namespace RockWeb.Blocks.Prayer
                 }
 
                 dtbRequest.Text = PageParameter( "Request" );
-
-                var prayerRequest = new PrayerRequest { Id = 0 };
-                prayerRequest.LoadAttributes();
-                phAttributes.Controls.Clear();
-                Rock.Attribute.Helper.AddEditControls( prayerRequest, phAttributes, false, BlockValidationGroup );
             }
+
+            var prayerRequest = new PrayerRequest { Id = 0 };
+            prayerRequest.LoadAttributes();
+            phAttributes.Controls.Clear();
+            Rock.Attribute.Helper.AddEditControls( prayerRequest, phAttributes, false, BlockValidationGroup );
         }
 
         #endregion
