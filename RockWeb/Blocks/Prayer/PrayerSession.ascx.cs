@@ -38,6 +38,51 @@ namespace RockWeb.Blocks.Prayer
     [CategoryField( "Category", "A top level category. This controls which categories are shown when starting a prayer session.", false, "Rock.Model.PrayerRequest", "", "", false, "", "Filtering", 2, "CategoryGuid" )]
     [BooleanField( "Enable Prayer Team Flagging", "If enabled, members of the prayer team can flag a prayer request if they feel the request is inappropriate and needs review by an administrator.", false, "Flagging", 3, "EnableCommunityFlagging" )]
     [IntegerField( "Flag Limit", "The number of flags a prayer request has to get from the prayer team before it is automatically unapproved.", false, 1, "Flagging", 4 )]
+
+    [CodeEditorField( "Prayer Person Lava", "The Lava Template for how the person details are shown in the header", CodeEditorMode.Lava, CodeEditorTheme.Rock, 200, true, order: 5, defaultValue:
+        @"
+{% if PrayerRequest.RequestedByPersonAlias %}
+<img src='{{ PrayerRequest.RequestedByPersonAlias.Person.PhotoUrl }}' class='pull-left margin-r-md img-thumbnail' width=50 />
+{% endif %}
+<span class='first-word'>{{ PrayerRequest.FirstName }}</span> {{ PrayerRequest.LastName }}
+" )]
+    [CodeEditorField( "Prayer Display Lava", "The Lava Template which will show the details of the Prayer Request", CodeEditorMode.Lava, CodeEditorTheme.Rock, 200, true, order: 5,
+        defaultValue: @"
+<div class='row'>
+    <div class='col-md-6'>
+        {% if PrayerRequest.Campus %}
+        <strong>Campus</strong>
+        <p>{{ PrayerRequest.Campus.Name }}</p>
+        {% endif %} 
+        <strong>Prayer Request</strong>
+    </div>
+    <div class='col-md-6 text-right'>
+      {% if PrayerRequest.EnteredDateTime  %}
+          Date Entered: {{  PrayerRequest.EnteredDateTime | Date:'M/d/yyyy'  }}          
+      {% endif %}
+    </div>
+</div>
+                                                
+{{ PrayerRequest.Text | NewlineToBr }}
+
+<div class='attributes margin-t-md'>
+{% for prayerRequestAttribute in PrayerRequest.AttributeValues %}
+    {% if prayerRequestAttribute.Value != '' %}
+    <strong>{{ prayerRequestAttribute.AttributeName }}</strong> 
+    <p>{{ prayerRequestAttribute.ValueFormatted }}</p>
+    {% endif %}
+{% endfor %}
+</div>
+
+{% if PrayerRequest.Answer %}
+<div class='margin-t-lg'>
+    <strong>Update</strong> 
+    <br />
+    {{ PrayerRequest.Answer | Escape | NewlineToBr }}
+</div>
+{% endif %}
+
+" )]
     public partial class PrayerSession : RockBlock
     {
         #region Fields
@@ -449,40 +494,22 @@ namespace RockWeb.Blocks.Prayer
         private void ShowPrayerRequest( PrayerRequest prayerRequest, RockContext rockContext )
         {
             pnlPrayer.Visible = true;
-            divPrayerAnswer.Visible = false;
 
             prayerRequest.PrayerCount = ( prayerRequest.PrayerCount ?? 0 ) + 1;
             hlblPrayerCountTotal.Text = prayerRequest.PrayerCount.ToString() + " team prayers";
             hlblUrgent.Visible = prayerRequest.IsUrgent ?? false;
-            lTitle.Text = prayerRequest.FullName.FormatAsHtmlTitle();
-
-            lPrayerText.Text = prayerRequest.Text.ScrubHtmlAndConvertCrLfToBr();
-
-            if ( prayerRequest.EnteredDateTime != null )
-            {
-                lPrayerRequestDate.Text = string.Format( "Date Entered: {0}", prayerRequest.EnteredDateTime.ToShortDateString() );
-            }
 
             hlblCategory.Text = prayerRequest.Category.Name;
+            var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson, new Rock.Lava.CommonMergeFieldsOptions { GetLegacyGlobalMergeFields = false } );
 
-            // Show their answer if there is one on the request.
-            if ( !string.IsNullOrWhiteSpace( prayerRequest.Answer ) )
-            {
-                divPrayerAnswer.Visible = true;
-                lPrayerAnswerText.Text = prayerRequest.Answer.EncodeHtml().ConvertCrLfToHtmlBr();
-            }
+            // need to load attributes so that lava can loop thru PrayerRequest.Attributes
+            prayerRequest.LoadAttributes();
 
-            // put the request's id in the hidden field in case it needs to be flagged.
-            hfIdValue.SetValue( prayerRequest.Id );
-
-            if ( prayerRequest.RequestedByPersonAlias != null )
-            {
-                lPersonIconHtml.Text = Person.GetPersonPhotoImageTag( prayerRequest.RequestedByPersonAlias, 50, 50, "pull-left margin-r-md img-thumbnail" );
-            }
-            else
-            {
-                lPersonIconHtml.Text = string.Empty;
-            }
+            mergeFields.Add( "PrayerRequest", prayerRequest );
+            string prayerPersonLava = this.GetAttributeValue( "PrayerPersonLava" );
+            string prayerDisplayLava = this.GetAttributeValue( "PrayerDisplayLava" );
+            lPersonLavaOutput.Text = prayerPersonLava.ResolveMergeFields( mergeFields );
+            lPrayerLavaOutput.Text = prayerDisplayLava.ResolveMergeFields( mergeFields );
 
             pnlPrayerComments.Visible = prayerRequest.AllowComments ?? false;
             if ( notesComments.Visible )
