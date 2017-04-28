@@ -130,10 +130,6 @@ namespace RockWeb.Plugins.church_ccv.SafetySecurity
         {
             var qryParams = new Dictionary<string, string>();
             qryParams.Add( "VolunteerScreeningInstanceId", e.RowKeyId.ToString() );
-            if ( TargetPerson != null )
-            {
-                qryParams.Add( "PersonAliasId", TargetPerson.PrimaryAliasId.ToString() );
-            }
 
             NavigateToLinkedPage( "DetailPage", qryParams );
         }
@@ -147,10 +143,15 @@ namespace RockWeb.Plugins.church_ccv.SafetySecurity
         /// </summary>
         private void BindGrid( RockContext rockContext )
         {
-            // get the application instances for this person
-            Service<VolunteerScreening> rockService = new Service<VolunteerScreening>( rockContext );
-            IQueryable<VolunteerScreening> instanceQuery = rockService.Queryable( ).Where( vs => vs.PersonAliasId == TargetPerson.PrimaryAliasId ).AsNoTracking( );
-
+            // get all the volunteer screening instances tied to this person
+            var vsQuery = new Service<VolunteerScreening>( rockContext ).Queryable( ).AsNoTracking( );
+            var paQuery = new Service<PersonAlias>( rockContext ).Queryable( ).AsNoTracking( );
+            
+            var instanceQuery = vsQuery.Join( paQuery, vs => vs.PersonAliasId, pa => pa.Id, ( vs, pa ) => new { VolunteerScreening = vs, PersonAlias = pa } )
+                                       .Where( a => a.PersonAlias.PersonId == TargetPerson.Id )
+                                       .Select( a => a.VolunteerScreening )
+                                       .AsQueryable( );
+            
             if ( instanceQuery.Count( ) > 0 )
             {
                 var instances = instanceQuery.Select( vs => new { Id = vs.Id, Date = vs.Date, Type = vs.Type } ).ToList( );
