@@ -10,7 +10,7 @@
                 </div>
                 <div class="panel-body">
                     <div class="grid grid-panel">
-                        <Rock:GridFilter ID="gfFilter" runat="server" OnApplyFilterClick="gfFilter_ApplyFilterClick" OnDisplayFilterValue="gfFilter_DisplayFilterValue">
+                        <Rock:GridFilter ID="gfFilter" runat="server" OnApplyFilterClick="gfFilter_ApplyFilterClick" OnDisplayFilterValue="gfFilter_DisplayFilterValue" OnClearFilterClick="gfFilter_ClearFilterClick">
                             <Rock:DateRangePicker ID="drpDateRange" runat="server" Label="Date Range" />
 
                             <Rock:RockDropDownList ID="ddlApprovedFilter" runat="server" Label="Approval Status">
@@ -47,20 +47,21 @@
 
                             <Rock:RockCheckBox ID="cbShowExpired" runat="server" Label="Show Expired Requests?" />
 
+                            <asp:PlaceHolder ID="phAttributeFilters" runat="server" />
+
                         </Rock:GridFilter>
 
                         <Rock:ModalAlert ID="maGridWarning" runat="server" />
 
                         <Rock:Grid ID="gPrayerRequests" runat="server" AllowSorting="true" RowItemText="request" OnRowSelected="gPrayerRequests_Edit" OnRowDataBound="gPrayerRequests_RowDataBound" >
                             <Columns>
-                                <Rock:RockBoundField DataField="FullName" HeaderText="Name" SortExpression="FullName" />
-                                <Rock:RockBoundField DataField="CategoryName" HeaderText="Category" SortExpression="CategoryName" />
-                                <Rock:DateField DataField="EnteredDate" HeaderText="Entered" SortExpression="EnteredDate"/>
+                                <Rock:RockLiteralField id="lFullname" HeaderText="Name" SortExpression="FirstName,LastName" />
+                                <Rock:RockBoundField DataField="Category.Name" HeaderText="Category" SortExpression="Category.Name" />
+                                <Rock:DateField DataField="EnteredDateTime" HeaderText="Entered" SortExpression="EnteredDateTime"/>
                                 <Rock:RockBoundField DataField="Text" HeaderText="Request" SortExpression="Text" />
                                 <Rock:BadgeField DataField="PrayerCount" HeaderText="Prayer Count" SortExpression="PrayerCount" DangerMin="0" DangerMax="0" SuccessMin="3" />
                                 <Rock:BadgeField DataField="FlagCount" HeaderText="Flag Count" SortExpression="FlagCount" DangerMin="4" WarningMin="2" InfoMin="1" InfoMax="2" />
                                 <Rock:ToggleField DataField="IsApproved" HeaderText="Approved?" ButtonSizeCssClass="btn-xs" Enabled="True" OnCssClass="btn-success" OnText="Yes" OffText="No" SortExpression="IsApproved" OnCheckedChanged="gPrayerRequests_CheckChanged" />
-                                <Rock:DeleteField OnClick="gPrayerRequests_Delete"  />
                             </Columns>
                         </Rock:Grid>
                     </div>
