@@ -17,9 +17,11 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Data.Entity;
 using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
+using Newtonsoft.Json;
 using Rock;
 using Rock.Attribute;
 using Rock.Constants;
@@ -63,6 +65,14 @@ namespace RockWeb.Blocks.Prayer
         /// Holds whether or not the person can approve requests.
         /// </summary>
         private bool _canApprove = false;
+
+        /// <summary>
+        /// Gets or sets the available attributes.
+        /// </summary>
+        /// <value>
+        /// The available attributes.
+        /// </value>
+        public List<AttributeCache> AvailableAttributes { get; set; }
 
         #endregion
 
@@ -129,6 +139,32 @@ namespace RockWeb.Blocks.Prayer
             base.OnLoad( e );
         }
 
+        /// <summary>
+        /// Restores the view-state information from a previous user control request that was saved by the <see cref="M:System.Web.UI.UserControl.SaveViewState" /> method.
+        /// </summary>
+        /// <param name="savedState">An <see cref="T:System.Object" /> that represents the user control state to be restored.</param>
+        protected override void LoadViewState( object savedState )
+        {
+            base.LoadViewState( savedState );
+
+            AvailableAttributes = ViewState["AvailableAttributes"] as List<AttributeCache>;
+
+            //AddDynamicControls();
+        }
+
+        /// <summary>
+        /// Saves any user control view-state changes that have occurred since the last page postback.
+        /// </summary>
+        /// <returns>
+        /// Returns the user control's current view state. If there is no view state associated with the control, it returns null.
+        /// </returns>
+        protected override object SaveViewState()
+        {
+            ViewState["AvailableAttributes"] = AvailableAttributes;
+
+            return base.SaveViewState();
+        }
+
         #endregion
 
         #region Grid Filter
@@ -163,6 +199,9 @@ namespace RockWeb.Blocks.Prayer
 
             // Set the Show Expired filter
             cbShowExpired.Checked = gfFilter.GetUserPreference( FilterSetting.ShowExpired ).AsBooleanOrNull() ?? false;
+
+            BindAttributes();
+            AddDynamicControls();
         }
 
         /// <summary>
@@ -224,6 +263,26 @@ namespace RockWeb.Blocks.Prayer
 
             gfFilter.SaveUserPreference( FilterSetting.ShowExpired, cbShowExpired.Checked ? "True" : string.Empty );
 
+            if ( AvailableAttributes != null )
+            {
+                foreach ( var attribute in AvailableAttributes )
+                {
+                    var filterControl = phAttributeFilters.FindControl( "filter_" + attribute.Id.ToString() );
+                    if ( filterControl != null )
+                    {
+                        try
+                        {
+                            var values = attribute.FieldType.Field.GetFilterValues( filterControl, attribute.QualifierValues, Rock.Reporting.FilterMode.SimpleFilter );
+                            gfFilter.SaveUserPreference( "attribute_" + attribute.Key, attribute.Name, attribute.FieldType.Field.GetFilterValues( filterControl, attribute.QualifierValues, Rock.Reporting.FilterMode.SimpleFilter ).ToJson() );
+                        }
+                        catch
+                        {
+                            // intentionally ignore
+                        }
+                    }
+                }
+            }
+
             BindGrid();
         }
 
@@ -234,6 +293,24 @@ namespace RockWeb.Blocks.Prayer
         /// <param name="e">The e as DisplayFilterValueArgs (hint: e.Key and e.Value).</param>
         protected void gfFilter_DisplayFilterValue( object sender, GridFilter.DisplayFilterValueArgs e )
         {
+            if ( AvailableAttributes != null )
+            {
+                var attribute = AvailableAttributes.FirstOrDefault( a => ( "Attribute_" + a.Key ) == e.Key );
+                if ( attribute != null )
+                {
+                    try
+                    {
+                        var values = JsonConvert.DeserializeObject<List<string>>( e.Value );
+                        e.Value = attribute.FieldType.Field.FormatFilterValues( attribute.QualifierValues, values );
+                        return;
+                    }
+                    catch
+                    {
+                        // intentionally ignore
+                    }
+                }
+            }
+
             switch ( e.Key )
             {
                 case "Date Range":
@@ -275,40 +352,119 @@ namespace RockWeb.Blocks.Prayer
         #region Prayer Request Grid
 
         /// <summary>
+        /// Binds the attributes.
+        /// </summary>
+        private void BindAttributes()
+        {
+            // Parse the attribute filters 
+            AvailableAttributes = new List<AttributeCache>();
+
+            int entityTypeId = new PrayerRequest().TypeId;
+            foreach ( var attributeModel in new AttributeService( new RockContext() ).Queryable()
+                .Where( a =>
+                    a.EntityTypeId == entityTypeId &&
+                    a.IsGridColumn )
+                .OrderBy( a => a.Order )
+                .ThenBy( a => a.Name ) )
+            {
+                AvailableAttributes.Add( AttributeCache.Read( attributeModel ) );
+            }
+        }
+
+        /// <summary>
+        /// Adds the attribute columns.
+        /// </summary>
+        private void AddDynamicControls()
+        {
+            // Clear the filter controls
+            phAttributeFilters.Controls.Clear();
+
+            // Remove attribute columns
+            foreach ( var column in gPrayerRequests.Columns.OfType<AttributeField>().ToList() )
+            {
+                gPrayerRequests.Columns.Remove( column );
+            }
+
+            if ( AvailableAttributes != null )
+            {
+                foreach ( var attribute in AvailableAttributes )
+                {
+                    var control = attribute.FieldType.Field.FilterControl( attribute.QualifierValues, "filter_" + attribute.Id.ToString(), false, Rock.Reporting.FilterMode.SimpleFilter );
+                    if ( control != null )
+                    {
+                        if ( control is IRockControl )
+                        {
+                            var rockControl = ( IRockControl ) control;
+                            rockControl.Label = attribute.Name;
+                            rockControl.Help = attribute.Description;
+                            phAttributeFilters.Controls.Add( control );
+                        }
+                        else
+                        {
+                            var wrapper = new RockControlWrapper();
+                            wrapper.ID = control.ID + "_wrapper";
+                            wrapper.Label = attribute.Name;
+                            wrapper.Controls.Add( control );
+                            phAttributeFilters.Controls.Add( wrapper );
+                        }
+
+                        string savedValue = gfFilter.GetUserPreference( "attribute_" + attribute.Key );
+                        if ( !string.IsNullOrWhiteSpace( savedValue ) )
+                        {
+                            try
+                            {
+                                var values = JsonConvert.DeserializeObject<List<string>>( savedValue );
+                                attribute.FieldType.Field.SetFilterValues( control, attribute.QualifierValues, values );
+                            }
+                            catch
+                            {
+                                // intentionally ignore
+                            }
+                        }
+                    }
+
+                    bool columnExists = gPrayerRequests.Columns.OfType<AttributeField>().FirstOrDefault( a => a.AttributeId == attribute.Id ) != null;
+                    if ( !columnExists )
+                    {
+                        AttributeField boundField = new AttributeField();
+                        boundField.DataField = attribute.Key;
+                        boundField.AttributeId = attribute.Id;
+                        boundField.HeaderText = attribute.Name;
+
+                        var attributeCache = Rock.Web.Cache.AttributeCache.Read( attribute.Id );
+                        if ( attributeCache != null )
+                        {
+                            boundField.ItemStyle.HorizontalAlign = attributeCache.FieldType.Field.AlignValue;
+                        }
+
+                        gPrayerRequests.Columns.Add( boundField );
+                    }
+                }
+            }
+
+            // Add delete column
+            var deleteField = new DeleteField();
+            gPrayerRequests.Columns.Add( deleteField );
+            deleteField.Click += gPrayerRequests_Delete;
+        }
+
+        /// <summary>
         /// Binds the grid to a list of Prayer Requests.
         /// </summary>
         private void BindGrid()
         {
-            PrayerRequestService prayerRequestService = new PrayerRequestService( new RockContext() );
+            var rockContext = new RockContext();
+            PrayerRequestService prayerRequestService = new PrayerRequestService( rockContext );
             SortProperty sortProperty = gPrayerRequests.SortProperty;
 
-            var prayerRequests = prayerRequestService.Queryable().Select( a =>
-                new
-                {
-                    a.Id,
-                    a.RequestedByPersonAlias,
-                    FullName = a.FirstName + " " + a.LastName,
-                    CategoryName = a.CategoryId.HasValue ? a.Category.Name : null,
-                    EnteredDate = a.EnteredDateTime,
-                    a.ExpirationDate,
-                    a.Text,
-                    a.FlagCount,
-                    PrayerCount = a.PrayerCount.HasValue ? a.PrayerCount : 0,
-                    a.IsApproved,
-                    a.CategoryId,
-                    CategoryParentCategoryId = a.CategoryId.HasValue ? a.Category.ParentCategoryId : null,
-                    a.IsUrgent,
-                    a.IsPublic,
-                    a.IsActive,
-                    a.AllowComments
-                } );
+            var prayerRequests = prayerRequestService.Queryable().AsNoTracking();
 
             // Filter by prayer category if one is selected...
             int selectedPrayerCategoryID = catpPrayerCategoryFilter.SelectedValue.AsIntegerOrNull() ?? All.Id;
             if ( selectedPrayerCategoryID != All.Id && selectedPrayerCategoryID != None.Id )
             {
                 prayerRequests = prayerRequests.Where( c => c.CategoryId == selectedPrayerCategoryID
-                    || c.CategoryParentCategoryId == selectedPrayerCategoryID );
+                    || ( c.CategoryId.HasValue && c.Category.ParentCategoryId == selectedPrayerCategoryID ) );
             }
 
             // Filter by approved/unapproved
@@ -380,20 +536,47 @@ namespace RockWeb.Blocks.Prayer
             if ( drpDateRange.LowerValue.HasValue )
             {
                 DateTime startDate = drpDateRange.LowerValue.Value.Date;
-                prayerRequests = prayerRequests.Where( a => a.EnteredDate >= startDate );
+                prayerRequests = prayerRequests.Where( a => a.EnteredDateTime >= startDate );
             }
 
             if ( drpDateRange.UpperValue.HasValue )
             {
                 // Add one day in order to include everything up to the end of the selected datetime.
                 var endDate = drpDateRange.UpperValue.Value.AddDays( 1 );
-                prayerRequests = prayerRequests.Where( a => a.EnteredDate < endDate );
+                prayerRequests = prayerRequests.Where( a => a.EnteredDateTime < endDate );
             }
 
             // Don't show expired prayer requests.
             if ( !cbShowExpired.Checked )
             {
                 prayerRequests = prayerRequests.Where( a => a.ExpirationDate == null || RockDateTime.Today <= a.ExpirationDate );
+            }
+
+            // Filter query by any configured attribute filters
+            if ( AvailableAttributes != null && AvailableAttributes.Any() )
+            {
+                var attributeValueService = new AttributeValueService( rockContext );
+                var parameterExpression = attributeValueService.ParameterExpression;
+
+                foreach ( var attribute in AvailableAttributes )
+                {
+                    var filterControl = phAttributeFilters.FindControl( "filter_" + attribute.Id.ToString() );
+                    if ( filterControl != null )
+                    {
+                        var filterValues = attribute.FieldType.Field.GetFilterValues( filterControl, attribute.QualifierValues, Rock.Reporting.FilterMode.SimpleFilter );
+                        var expression = attribute.FieldType.Field.AttributeFilterExpression( attribute.QualifierValues, filterValues, parameterExpression );
+                        if ( expression != null )
+                        {
+                            var attributeValues = attributeValueService
+                                .Queryable()
+                                .Where( v => v.Attribute.Id == attribute.Id );
+
+                            attributeValues = attributeValues.Where( parameterExpression, expression, null );
+
+                            prayerRequests = prayerRequests.Where( w => attributeValues.Select( v => v.EntityId ).Contains( w.Id ) );
+                        }
+                    }
+                }
             }
 
             var personContext = this.ContextEntity<Person>();
@@ -409,7 +592,7 @@ namespace RockWeb.Blocks.Prayer
             }
             else
             {
-                gPrayerRequests.DataSource = prayerRequests.OrderByDescending( p => p.EnteredDate ).ThenByDescending( p => p.Id ).ToList();
+                gPrayerRequests.DataSource = prayerRequests.OrderByDescending( p => p.EnteredDateTime ).ThenByDescending( p => p.Id ).ToList();
             }
 
             gPrayerRequests.EntityTypeId = EntityTypeCache.Read<PrayerRequest>().Id;
@@ -561,27 +744,44 @@ namespace RockWeb.Blocks.Prayer
         /// <param name="e">The <see cref="GridViewRowEventArgs" /> instance containing the event data.</param>
         protected void gPrayerRequests_RowDataBound( object sender, GridViewRowEventArgs e )
         {
-            if ( _canApprove )
-            {
-                return;
-            }
-
             if ( e.Row.RowType == DataControlRowType.DataRow )
             {
-                foreach ( TableCell cell in e.Row.Cells )
+                if ( !_canApprove )
                 {
-                    foreach ( Control c in cell.Controls )
+                    foreach ( TableCell cell in e.Row.Cells )
                     {
-                        Toggle toggle = c as Toggle;
-                        if ( toggle != null )
+                        foreach ( Control c in cell.Controls )
                         {
-                            toggle.Enabled = false;
+                            Toggle toggle = c as Toggle;
+                            if ( toggle != null )
+                            {
+                                toggle.Enabled = false;
+                            }
                         }
                     }
+                }
+
+                var prayerRequest = e.Row.DataItem as PrayerRequest;
+
+                Literal lFullname = e.Row.FindControl( "lFullname" ) as Literal;
+                if (lFullname != null && prayerRequest != null)
+                {
+                    lFullname.Text = prayerRequest.FirstName + " " + prayerRequest.LastName;
                 }
             }
         }
 
         #endregion
+
+        /// <summary>
+        /// Handles the ClearFilterClick event of the gfFilter control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void gfFilter_ClearFilterClick( object sender, EventArgs e )
+        {
+            gfFilter.DeleteUserPreferences();
+            BindFilter();
+        }
     }
 }
