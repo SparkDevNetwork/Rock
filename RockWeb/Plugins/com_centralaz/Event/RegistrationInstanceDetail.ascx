@@ -195,7 +195,7 @@
 
                 <asp:Panel ID="pnlRegistrants" runat="server" Visible="false" CssClass="panel panel-block">
                     <div class="panel-heading">
-                        <h1 class="panel-title"><i class="fa fa-users"></i>Registrants</h1>
+                        <h1 class="panel-title"><i class="fa fa-users"></i> Registrants</h1>
                     </div>
                     <div class="panel-body">
                         <Rock:ModalAlert ID="mdRegistrantsGridWarning" runat="server" />
@@ -211,12 +211,17 @@
                             <Rock:Grid ID="gRegistrants" runat="server" DisplayType="Full" AllowSorting="true" OnRowSelected="gRegistrants_RowSelected" RowItemText="Registrant" PersonIdField="PersonId" ExportSource="ColumnOutput">
                                 <Columns>
                                     <Rock:SelectField ItemStyle-Width="48px" />
+                                    <Rock:RockTemplateField HeaderText="Registered By" ExcelExportBehavior="NeverInclude">
+                                        <ItemTemplate>
+                                            <asp:Literal ID="lRegisteredBy2" runat="server"></asp:Literal>
+                                        </ItemTemplate>
+                                    </Rock:RockTemplateField>
                                     <Rock:RockTemplateField HeaderText="Registrant" SortExpression="PersonAlias.Person.LastName, PersonAlias.Person.NickName" ExcelExportBehavior="NeverInclude">
                                         <ItemTemplate>
                                             <asp:Literal ID="lRegistrant" runat="server"></asp:Literal>
                                         </ItemTemplate>
                                     </Rock:RockTemplateField>
-                                    <Rock:RockTemplateField HeaderText="Registration Instance" ExcelExportBehavior="AlwaysInclude" Visible="false">
+                                    <Rock:RockTemplateField HeaderText="Registration Instance" ExcelExportBehavior="AlwaysInclude" Visible="true">
                                         <ItemTemplate>
                                             <asp:Literal ID="lRegistrationInstance" runat="server"></asp:Literal>
                                         </ItemTemplate>

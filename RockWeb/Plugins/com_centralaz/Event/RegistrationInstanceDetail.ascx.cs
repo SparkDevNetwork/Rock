@@ -1045,6 +1045,12 @@ namespace RockWeb.Plugins.com_CentralAZ.Event
                     }
                 }
 
+                var lRegisteredBy2 = e.Row.FindControl( "lRegisteredBy2" ) as Literal;
+                if ( lRegisteredBy2 != null && registrant.Registration != null && registrant.Registration.PersonAlias != null && registrant.Registration.PersonAlias.Person != null )
+                {
+                    lRegisteredBy2.Text = string.Format( "{0} {1} ({2})", registrant.Registration.PersonAlias.Person.NickName, registrant.Registration.PersonAlias.Person.LastName, registrant.Registration.ConfirmationEmail );
+                }
+
                 // Set the Group Name
                 if ( registrant.GroupMember != null && GroupLinks.ContainsKey( registrant.GroupMember.GroupId ) )
                 {
