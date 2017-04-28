@@ -205,6 +205,7 @@ namespace Rock.Model
         /// <value>
         /// The metric values.
         /// </value>
+        [LavaInclude]
         public virtual ICollection<MetricValue> MetricValues { get; set; }
 
         /// <summary>
@@ -222,6 +223,7 @@ namespace Rock.Model
         /// <value>
         /// The data view.
         /// </value>
+        [LavaInclude]
         public virtual DataView DataView { get; set; }
 
         /// <summary>
@@ -230,6 +232,7 @@ namespace Rock.Model
         /// <value>
         /// The metric champion person alias.
         /// </value>
+        [LavaInclude]
         public virtual PersonAlias MetricChampionPersonAlias { get; set; }
 
         /// <summary>
@@ -238,6 +241,7 @@ namespace Rock.Model
         /// <value>
         /// The admin person alias.
         /// </value>
+        [LavaInclude]
         public virtual PersonAlias AdminPersonAlias { get; set; }
 
         /// <summary>
@@ -246,6 +250,7 @@ namespace Rock.Model
         /// <value>
         /// The schedule.
         /// </value>
+        [LavaInclude]
         public virtual Schedule Schedule { get; set; }
 
         /// <summary>
@@ -265,6 +270,7 @@ namespace Rock.Model
         /// <value>
         /// The type of the numeric data.
         /// </value>
+        [LavaInclude]
         public MetricNumericDataType NumericDataType { get; set; }
 
         #endregion

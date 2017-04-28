@@ -2898,22 +2898,12 @@ namespace RockWeb.Blocks.Event
         {
             if ( transaction != null )
             {
-                var txnChanges = new List<string>();
-                txnChanges.Add( "Created Transaction" );
-
-                History.EvaluateChange( txnChanges, "Transaction Code", string.Empty, transaction.TransactionCode );
-
                 transaction.AuthorizedPersonAliasId = registration.PersonAliasId;
-
                 transaction.TransactionDateTime = RockDateTime.Now;
-                History.EvaluateChange( txnChanges, "Date/Time", null, transaction.TransactionDateTime );
-
                 transaction.FinancialGatewayId = RegistrationTemplate.FinancialGatewayId;
-                History.EvaluateChange( txnChanges, "Gateway", string.Empty, RegistrationTemplate.FinancialGateway.Name );
 
                 var txnType = DefinedValueCache.Read( new Guid( Rock.SystemGuid.DefinedValue.TRANSACTION_TYPE_EVENT_REGISTRATION ) );
                 transaction.TransactionTypeValueId = txnType.Id;
-                History.EvaluateChange( txnChanges, "Type", string.Empty, txnType.Value );
 
                 if ( transaction.FinancialPaymentDetail == null )
                 {
@@ -2925,7 +2915,7 @@ namespace RockWeb.Blocks.Event
 
                 if ( paymentInfo != null )
                 {
-                    transaction.FinancialPaymentDetail.SetFromPaymentInfo( paymentInfo, gateway, rockContext, txnChanges );
+                    transaction.FinancialPaymentDetail.SetFromPaymentInfo( paymentInfo, gateway, rockContext );
                     currencyType = paymentInfo.CurrencyTypeValue;
                     creditCardType = paymentInfo.CreditCardTypeValue;
                 }
@@ -2937,7 +2927,6 @@ namespace RockWeb.Blocks.Event
                     if ( source != null )
                     {
                         transaction.SourceTypeValueId = source.Id;
-                        History.EvaluateChange( txnChanges, "Source", string.Empty, source.Value );
                     }
                 }
 
@@ -2949,8 +2938,6 @@ namespace RockWeb.Blocks.Event
                 transactionDetail.EntityTypeId = EntityTypeCache.Read( typeof( Rock.Model.Registration ) ).Id;
                 transactionDetail.EntityId = registration.Id;
                 transaction.TransactionDetails.Add( transactionDetail );
-
-                History.EvaluateChange( txnChanges, RegistrationInstanceState.Account.Name, 0.0M.FormatAsCurrency(), transactionDetail.Amount.FormatAsCurrency() );
 
                 var batchChanges = new List<string>();
 
@@ -3005,18 +2992,6 @@ namespace RockWeb.Blocks.Event
                             Rock.SystemGuid.Category.HISTORY_FINANCIAL_BATCH.AsGuid(),
                             transaction.BatchId.Value,
                             batchChanges, true, CurrentPersonAliasId )
-                    );
-
-                    Task.Run( () =>
-                        HistoryService.SaveChanges(
-                            new RockContext(),
-                            typeof( FinancialBatch ),
-                            Rock.SystemGuid.Category.HISTORY_FINANCIAL_TRANSACTION.AsGuid(),
-                            transaction.BatchId.Value,
-                            txnChanges,
-                            CurrentPerson != null ? CurrentPerson.FullName : string.Empty,
-                            typeof( FinancialTransaction ),
-                            transaction.Id, true, CurrentPersonAliasId )
                     );
                 }
 

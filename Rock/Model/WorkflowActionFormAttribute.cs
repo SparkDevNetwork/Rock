@@ -128,6 +128,7 @@ namespace Rock.Model
         /// <value>
         /// The workflow action form.
         /// </value>
+        [LavaInclude]
         public virtual WorkflowActionForm WorkflowActionForm { get; set; }
 
         /// <summary>

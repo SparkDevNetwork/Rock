@@ -514,6 +514,7 @@ namespace Rock.Model
         /// <value>
         /// The <see cref="Rock.Model.Page" /> entity for the parent Page
         /// </value>
+        [LavaInclude]
         public virtual Category Category { get; set; }
 
         /// <summary>
@@ -522,6 +523,7 @@ namespace Rock.Model
         /// <value>
         /// The type of the group.
         /// </value>
+        [LavaInclude]
         public virtual GroupType GroupType { get; set; }
 
         /// <summary>
@@ -578,13 +580,14 @@ namespace Rock.Model
             set { _fees = value; }
         }
         private ICollection<RegistrationTemplateFee> _fees;
-        
+
         /// <summary>
         /// Gets or sets the collection of the current page's child pages.
         /// </summary>
         /// <value>
         /// Collection of child pages
         /// </value>
+        [LavaInclude]
         public virtual ICollection<RegistrationInstance> Instances
         {
             get { return _registrationInstances ?? ( _registrationInstances = new Collection<RegistrationInstance>() ); }

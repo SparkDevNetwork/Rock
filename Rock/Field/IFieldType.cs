@@ -117,6 +117,14 @@ namespace Rock.Field
         #region Edit Control
 
         /// <summary>
+        /// Gets a value indicating whether this field has a control to configure the default value
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if this instance has default control; otherwise, <c>false</c>.
+        /// </value>
+        bool HasDefaultControl { get; }
+
+        /// <summary>
         /// Creates an HTML control.
         /// </summary>
         /// <param name="configurationValues">The configuration values.</param>

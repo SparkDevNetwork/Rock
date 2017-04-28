@@ -42,9 +42,10 @@
                 this.innerHTML = '';
 
                 if (isValid) {
-                    controlToValidate.parents('div.form-group').removeClass("has-error");
-                } else {
-                    controlToValidate.parents('div.form-group').addClass("has-error");
+                    controlToValidate.parentsUntil('.js-validation-group', 'div.form-group').removeClass("has-error");
+                } else
+                {
+                    controlToValidate.parentsUntil('.js-validation-group', 'div.form-group').addClass("has-error");
                     controlToValidate.trigger("validation-error");
                 }
             });
@@ -69,9 +70,10 @@
                 mutation.target.innerHTML = '';
 
                 if (isValid) {
-                    controlToValidate.parents('div.form-group').removeClass("has-error");
-                } else {
-                    controlToValidate.parents('div.form-group').addClass("has-error");
+                    controlToValidate.parentsUntil('.js-validation-group', 'div.form-group').removeClass("has-error");
+                } else
+                {
+                    controlToValidate.parentsUntil('.js-validation-group', 'div.form-group').addClass("has-error");
                     controlToValidate.trigger("validation-error");
                 }
             })

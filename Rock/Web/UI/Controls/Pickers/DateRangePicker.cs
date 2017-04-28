@@ -339,7 +339,11 @@ $('#{3}').find('.input-group-upper .input-group-addon').on('click', function () 
 
             if ( !string.IsNullOrEmpty( this.CssClass ) )
             {
-                writer.AddAttribute( "class", this.CssClass );
+                writer.AddAttribute( "class", "picker-daterange " + this.CssClass );
+            }
+            else
+            {
+                writer.AddAttribute( "class", "picker-daterange" );
             }
 
             writer.RenderBeginTag( HtmlTextWriterTag.Div );

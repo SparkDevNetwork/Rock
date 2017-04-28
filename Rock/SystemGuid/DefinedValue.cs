@@ -126,6 +126,11 @@ namespace Rock.SystemGuid
         #region Financial Source
 
         /// <summary>
+        /// The financial source of bank check
+        /// </summary>
+        public const string FINANCIAL_SOURCE_TYPE_BANK_CHECK = "61E46A46-7399-4817-A6EC-3D8495E2316E";
+
+        /// <summary>
         /// The financial source of Website
         /// </summary>
         public const string FINANCIAL_SOURCE_TYPE_WEBSITE = "7D705CE7-7B11-4342-A58E-53617C5B4E69";
@@ -394,6 +399,13 @@ namespace Rock.SystemGuid
         /// </summary>
         public const string PERSON_REVIEW_REASON_SELF_INACTIVATED = "D539C356-6856-4E94-80B4-8FEA869AF38B";
 
+        #endregion
+
+        #region Personal Device Type
+        /// <summary>
+        /// Personal device types for notifications
+        /// </summary>
+        public const string PERSONAL_DEVICE_TYPE_MOBILE = "5A8F264F-3BE6-4F15-912A-3CE93A98E8F6";
         #endregion
 
         #region Map Styles

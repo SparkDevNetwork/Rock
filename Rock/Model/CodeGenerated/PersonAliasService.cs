@@ -76,6 +76,42 @@ namespace Rock.Model
                 return false;
             }  
  
+            if ( new Service<AttributeMatrix>( Context ).Queryable().Any( a => a.CreatedByPersonAliasId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", PersonAlias.FriendlyTypeName, AttributeMatrix.FriendlyTypeName );
+                return false;
+            }  
+ 
+            if ( new Service<AttributeMatrix>( Context ).Queryable().Any( a => a.ModifiedByPersonAliasId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", PersonAlias.FriendlyTypeName, AttributeMatrix.FriendlyTypeName );
+                return false;
+            }  
+ 
+            if ( new Service<AttributeMatrixItem>( Context ).Queryable().Any( a => a.CreatedByPersonAliasId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", PersonAlias.FriendlyTypeName, AttributeMatrixItem.FriendlyTypeName );
+                return false;
+            }  
+ 
+            if ( new Service<AttributeMatrixItem>( Context ).Queryable().Any( a => a.ModifiedByPersonAliasId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", PersonAlias.FriendlyTypeName, AttributeMatrixItem.FriendlyTypeName );
+                return false;
+            }  
+ 
+            if ( new Service<AttributeMatrixTemplate>( Context ).Queryable().Any( a => a.CreatedByPersonAliasId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", PersonAlias.FriendlyTypeName, AttributeMatrixTemplate.FriendlyTypeName );
+                return false;
+            }  
+ 
+            if ( new Service<AttributeMatrixTemplate>( Context ).Queryable().Any( a => a.ModifiedByPersonAliasId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", PersonAlias.FriendlyTypeName, AttributeMatrixTemplate.FriendlyTypeName );
+                return false;
+            }  
+ 
             if ( new Service<AttributeValue>( Context ).Queryable().Any( a => a.CreatedByPersonAliasId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", PersonAlias.FriendlyTypeName, AttributeValue.FriendlyTypeName );
@@ -1417,6 +1453,18 @@ namespace Rock.Model
             if ( new Service<Person>( Context ).Queryable().Any( a => a.ModifiedByPersonAliasId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", PersonAlias.FriendlyTypeName, Person.FriendlyTypeName );
+                return false;
+            }  
+ 
+            if ( new Service<PersonalDevice>( Context ).Queryable().Any( a => a.CreatedByPersonAliasId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", PersonAlias.FriendlyTypeName, PersonalDevice.FriendlyTypeName );
+                return false;
+            }  
+ 
+            if ( new Service<PersonalDevice>( Context ).Queryable().Any( a => a.ModifiedByPersonAliasId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", PersonAlias.FriendlyTypeName, PersonalDevice.FriendlyTypeName );
                 return false;
             }  
  

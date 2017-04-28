@@ -787,6 +787,7 @@ namespace Rock.Model
         /// <value>
         /// A collection of <see cref="Rock.Model.GroupMember">GroupMember</see> entities representing the group memberships that are associated with
         /// </value>
+        [LavaInclude]
         public virtual ICollection<GroupMember> Members
         {
             get { return _members; }
@@ -801,6 +802,7 @@ namespace Rock.Model
         /// <value>
         /// The aliases.
         /// </value>
+        [LavaInclude]
         public virtual ICollection<PersonAlias> Aliases
         {
             get { return _aliases; }
@@ -896,6 +898,7 @@ namespace Rock.Model
         /// <value>
         /// The giving group.
         /// </value>
+        [LavaInclude]
         public virtual Group GivingGroup { get; set; }
 
         /// <summary>
@@ -1157,6 +1160,7 @@ namespace Rock.Model
         /// A <see cref="System.Double"/> representing the Person's age (including fraction of year)
         /// </value>
         [NotMapped]
+        [LavaInclude]
         public virtual double? AgePrecise
         {
             get
@@ -2149,7 +2153,7 @@ namespace Rock.Model
             {
                 if ( recordTypeValueGuid.HasValue && recordTypeValueGuid.Value == SystemGuid.DefinedValue.PERSON_RECORD_TYPE_BUSINESS.AsGuid() )
                 {
-                    photoUrl.Append( "/Assets/Images/business-no-photo.svg?" );
+                    photoUrl.Append( "Assets/Images/business-no-photo.svg?" );
                 }
                 else if ( age.HasValue && age.Value < 18 )
                 {

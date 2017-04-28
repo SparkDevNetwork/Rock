@@ -30,6 +30,9 @@
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\Attendance.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\AttendanceCode.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\Attribute.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\AttributeMatrix.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\AttributeMatrixItem.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\AttributeMatrixTemplate.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\AttributeQualifier.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\AttributeValue.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\Audit.cs" />

@@ -49,6 +49,7 @@ public class BundleConfig
             "~/Scripts/bootstrap-modalmanager.js",
             "~/Scripts/bootstrap-modal.js",
             "~/Scripts/bootbox.min.js",
+            "~/Scripts/chosen.jquery.min.js",
             "~/Scripts/typeahead.min.js",
             "~/Scripts/jquery.fileupload.js",
             "~/Scripts/jquery.tinyscrollbar.js",

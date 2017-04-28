@@ -18,13 +18,10 @@ using System;
 using System.ComponentModel;
 using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.Caching;
 using System.Text;
 using System.Web;
 using System.Web.UI;
 using System.Web.UI.WebControls;
-using System.Xml.Linq;
-using System.Xml.Xsl;
 
 using Rock;
 using Rock.Attribute;
@@ -339,10 +336,13 @@ namespace RockWeb.Blocks.Communication
             {
                 if ( !Recipients.Any( r => r.PersonId == ppAddPerson.PersonId.Value ) )
                 {
-                    var Person = new PersonService( new RockContext() ).Get( ppAddPerson.PersonId.Value );
+                    var context = new RockContext();
+                    var Person = new PersonService( context ).Get( ppAddPerson.PersonId.Value );
                     if ( Person != null )
                     {
-                        Recipients.Add( new Recipient( Person, Person.PhoneNumbers.Any(a => a.IsMessagingEnabled), CommunicationRecipientStatus.Pending ) );
+                        var HasPersonalDevice = new PersonalDeviceService( context ).Queryable()
+                            .Where( pd => pd.PersonAliasId == Person.PrimaryAliasId && pd.NotificationsEnabled).Any();
+                        Recipients.Add( new Recipient( Person, Person.PhoneNumbers.Any(a => a.IsMessagingEnabled), HasPersonalDevice, CommunicationRecipientStatus.Pending ) );
                         ShowAllRecipients = true;
                     }
                 }
@@ -420,6 +420,15 @@ namespace RockWeb.Blocks.Communication
                                     // No SMS Number
                                     textClass = "text-danger";
                                     textTooltip = "No phone number with SMS enabled.";
+                                }
+                            }
+                            else if ( MediumEntityTypeId == EntityTypeCache.Read( "Rock.Communication.Medium.PushNotification" ).Id )
+                            {
+                                if ( !recipient.HasNotificationsEnabled )
+                                {
+                                    // No Notifications Enabled
+                                    textClass = "text-danger";
+                                    textTooltip = "Notifications not enabled for this number.";
                                 }
                             }
                         }
@@ -689,20 +698,26 @@ namespace RockWeb.Blocks.Communication
             {
                 this.AdditionalMergeFields = communication.AdditionalMergeFields.ToList();
                 lTitle.Text = ( communication.Subject ?? "New Communication" ).FormatAsHtmlTitle();
-                var recipientList = new CommunicationRecipientService( new RockContext() )
+                var context = new RockContext();
+                var personalDeviceService = new PersonalDeviceService( context ).Queryable();
+                var recipientList = new CommunicationRecipientService( context )
                     .Queryable()
-                    //.Include()
                     .Where( r => r.CommunicationId == communication.Id )
                     .Select(a => new {
                         a.PersonAlias.Person,
                         PersonHasSMS = a.PersonAlias.Person.PhoneNumbers.Any( p => p.IsMessagingEnabled ),
+                        HasPersonalDevice = (
+                            personalDeviceService
+                                .Where( pd => pd.PersonAliasId == a.PersonAliasId)
+                                .Any( pd => pd.NotificationsEnabled )
+                        ),
                         a.Status,
                         a.StatusNote,
                         a.OpenedClient,
                         a.OpenedDateTime
                     }).ToList();
 
-                Recipients = recipientList.Select( recipient => new Recipient( recipient.Person, recipient.PersonHasSMS, recipient.Status, recipient.StatusNote, recipient.OpenedClient, recipient.OpenedDateTime ) ).ToList();
+                Recipients = recipientList.Select( recipient => new Recipient( recipient.Person, recipient.PersonHasSMS, recipient.HasPersonalDevice, recipient.Status, recipient.StatusNote, recipient.OpenedClient, recipient.OpenedDateTime ) ).ToList();
             }
             else
             {
@@ -715,10 +730,13 @@ namespace RockWeb.Blocks.Communication
                 if ( personId.HasValue )
                 {
                     communication.IsBulkCommunication = false;
-                    var person = new PersonService( new RockContext() ).Get( personId.Value );
+                    var context = new RockContext();
+                    var person = new PersonService( context ).Get( personId.Value );
                     if ( person != null )
                     {
-                        Recipients.Add( new Recipient( person, person.PhoneNumbers.Any(p => p.IsMessagingEnabled), CommunicationRecipientStatus.Pending, string.Empty, string.Empty, null ) );
+                        var HasPersonalDevice = new PersonalDeviceService( context ).Queryable()
+                            .Where( pd => pd.PersonAliasId == person.PrimaryAliasId && pd.NotificationsEnabled ).Any();
+                        Recipients.Add( new Recipient( person, person.PhoneNumbers.Any(p => p.IsMessagingEnabled), HasPersonalDevice, CommunicationRecipientStatus.Pending, string.Empty, string.Empty, null ) );
                     }
                 }
             }
@@ -1343,6 +1361,14 @@ namespace RockWeb.Blocks.Communication
             public bool HasSmsNumber { get; set; }
 
             /// <summary>
+            /// Gets or sets a value indicating whether [has notifications enabled].
+            /// </summary>
+            /// <value>
+            ///   <c>true</c> if [has notifications enabled]; otherwise, <c>false</c>.
+            /// </value>
+            public bool HasNotificationsEnabled { get; set; }
+
+            /// <summary>
             /// Gets or sets the email.
             /// </summary>
             /// <value>
@@ -1412,12 +1438,13 @@ namespace RockWeb.Blocks.Communication
             /// <param name="personId">The person id.</param>
             /// <param name="personName">Name of the person.</param>
             /// <param name="status">The status.</param>
-            public Recipient( Person person, bool personHasSMS, CommunicationRecipientStatus status, string statusNote = "", string openedClient = "", DateTime? openedDateTime = null )
+            public Recipient( Person person, bool personHasSMS, bool personHasNotificationsEnabled, CommunicationRecipientStatus status, string statusNote = "", string openedClient = "", DateTime? openedDateTime = null )
             {
                 PersonId = person.Id;
                 PersonName = person.FullName;
                 IsDeceased = person.IsDeceased;
                 HasSmsNumber = personHasSMS;
+                HasNotificationsEnabled = personHasNotificationsEnabled;
                 Email = person.Email;
                 IsEmailActive = person.IsEmailActive;
                 EmailNote = person.EmailNote;

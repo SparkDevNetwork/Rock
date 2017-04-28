@@ -65,7 +65,7 @@
                                 </div>
 
                                 <Rock:PanelWidget ID="wpPageAttributes" runat="server" Title="Page Attribute Values">
-                                    <asp:PlaceHolder ID="phPageAttributes" runat="server" EnableViewState="false"></asp:PlaceHolder>
+                                    <Rock:DynamicPlaceholder ID="phPageAttributes" runat="server" ></Rock:DynamicPlaceholder>
                                 </Rock:PanelWidget>
                             </asp:Panel>
 

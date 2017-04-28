@@ -35,27 +35,6 @@
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="Microsoft.CSharp" />
-    <Reference Include="System.Net" />
-    <Reference Include="System.Net.Http">
-      <HintPath>..\Applications\Wpf\StatementGenerator\packages\System.Net.Http.2.0.20126.16343\lib\net40\System.Net.Http.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="System.Net.Http.Extensions, Version=2.2.29.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
-      <HintPath>..\Applications\Wpf\StatementGenerator\packages\System.Net.Http.Formatting.Extension.5.2.3.0\lib\System.Net.Http.Extensions.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="System.Net.Http.Formatting, Version=5.2.3.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <HintPath>..\Applications\Wpf\StatementGenerator\packages\System.Net.Http.Formatting.Extension.5.2.3.0\lib\System.Net.Http.Formatting.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="System.Net.Http.Primitives, Version=4.2.29.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
-      <HintPath>..\Applications\Wpf\StatementGenerator\packages\System.Net.Http.Formatting.Extension.5.2.3.0\lib\System.Net.Http.Primitives.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="System.Net.Http.WebRequest">
-      <HintPath>..\Applications\Wpf\StatementGenerator\packages\System.Net.Http.2.0.20126.16343\lib\net40\System.Net.Http.WebRequest.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="CodeGenerated\AnalyticsDimAttendanceLocation.cs" />
@@ -77,6 +56,9 @@
     <Compile Include="CodeGenerated\Attendance.cs" />
     <Compile Include="CodeGenerated\AttendanceCode.cs" />
     <Compile Include="CodeGenerated\Attribute.cs" />
+    <Compile Include="CodeGenerated\AttributeMatrix.cs" />
+    <Compile Include="CodeGenerated\AttributeMatrixItem.cs" />
+    <Compile Include="CodeGenerated\AttributeMatrixTemplate.cs" />
     <Compile Include="CodeGenerated\AttributeQualifier.cs" />
     <Compile Include="CodeGenerated\AttributeValue.cs" />
     <Compile Include="CodeGenerated\Audit.cs" />

@@ -114,8 +114,12 @@ namespace RockWeb.Blocks.Cms
 </div>", "", 6 )]
     [LinkedPage( "Response Page", "The page the use will be taken to after submitting the form. Use the 'Response Message' field if you just need a simple message.", false, "", "", 7 )]
     [TextField( "Submit Button Text", "The text to display for the submit button.", true, "Submit", "", 8 )]
-    [TextField("Submit Button CSS Class", "The CSS class string to place on the submit button. Leave blank for a default button.", false, "", "", 9, "ButtonCssClass")]
-    [BooleanField( "Save Communication History", "Should a record of this communication be saved to the recipient's profile", false, "", 11 )]
+    [TextField( "Submit Button Wrap CSS Class", "CSS class to add to the div wrapping the button.", false, "", "", 9, key: "SubmitButtonWrapCssClass" )]
+    [TextField( "Submit Button CSS Class", "The CSS class add to the submit button.", false, "btn btn-primary", "", 10, key: "SubmitButtonCssClass" )]
+    [BooleanField( "Enable Debug", "Shows the fields available to merge in lava.", false, "", 11 )]
+    [BooleanField( "Save Communication History", "Should a record of this communication be saved to the recipient's profile", false, "", 12 )]
+    [LavaCommandsField( "Enabled Lava Commands", "The Lava commands that should be enabled for this HTML block.", false, order: 13 )]
+
     public partial class EmailForm : Rock.Web.UI.RockBlock
     {
         #region Fields
@@ -183,9 +187,14 @@ namespace RockWeb.Blocks.Cms
                     btnSubmit.Text = GetAttributeValue( "SubmitButtonText" );
                 }
 
-                if ( !string.IsNullOrWhiteSpace( GetAttributeValue( "ButtonCssClass" ) ) )
+                if ( !string.IsNullOrWhiteSpace( GetAttributeValue( "SubmitButtonWrapCssClass" ) ) )
                 {
-                    btnSubmit.CssClass = GetAttributeValue( "ButtonCssClass" );
+                    divButtonWrap.Attributes.Add( "class", GetAttributeValue( "SubmitButtonWrapCssClass" ) );
+                }
+
+                if ( !string.IsNullOrWhiteSpace( GetAttributeValue( "SubmitButtonCssClass" ) ) )
+                {
+                    btnSubmit.CssClass = GetAttributeValue( "SubmitButtonCssClass" );
                 }
 
                 if ( string.IsNullOrWhiteSpace( GetAttributeValue( "RecipientEmail" ) ) )
@@ -198,6 +207,8 @@ namespace RockWeb.Blocks.Cms
                     lError.Text += "<div class='alert alert-warning'>A subject has not been provided for this form.</div>";
                 }
             }
+
+            RockPage.AddScriptLink( ResolveRockUrl( "~/Scripts/jquery.visible.min.js" ) );
         }
 
         #endregion
@@ -220,6 +231,13 @@ namespace RockWeb.Blocks.Cms
         {
             SendEmail();
             pnlEmailForm.Visible = false;
+
+            ScriptManager.RegisterStartupScript(
+                Page,
+                GetType(),
+                "ScrollToMessage",
+                "scrollToMessage();",
+                true );
         }
 
         #endregion
@@ -230,7 +248,7 @@ namespace RockWeb.Blocks.Cms
         {
             var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson );
 
-            lEmailForm.Text = GetAttributeValue( "HTMLForm" ).ResolveMergeFields( mergeFields );
+            lEmailForm.Text = GetAttributeValue( "HTMLForm" ).ResolveMergeFields( mergeFields, GetAttributeValue( "EnabledLavaCommands" ) );
         }
 
         private void SendEmail()
@@ -296,10 +314,14 @@ namespace RockWeb.Blocks.Cms
 
                 // send email
                 List<string> recipients = GetAttributeValue( "RecipientEmail" ).Split( ',' ).ToList();
-                string message = GetAttributeValue( "MessageBody" ).ResolveMergeFields( mergeFields );
-                string fromEmail = GetAttributeValue( "FromEmail" ).ResolveMergeFields( mergeFields );
-                string fromName = GetAttributeValue( "FromName" ).ResolveMergeFields( mergeFields );
-                string subject = GetAttributeValue( "Subject" ).ResolveMergeFields( mergeFields );
+                for ( var i = 0; i < recipients.Count; i++ )
+                {
+                    recipients[i] = recipients[i].ResolveMergeFields( mergeFields, GetAttributeValue( "EnabledLavaCommands" ) );
+                }
+                string message = GetAttributeValue( "MessageBody" ).ResolveMergeFields( mergeFields, GetAttributeValue( "EnabledLavaCommands" ) );
+                string fromEmail = GetAttributeValue( "FromEmail" ).ResolveMergeFields( mergeFields, GetAttributeValue( "EnabledLavaCommands" ) );
+                string fromName = GetAttributeValue( "FromName" ).ResolveMergeFields( mergeFields, GetAttributeValue( "EnabledLavaCommands" ) );
+                string subject = GetAttributeValue( "Subject" ).ResolveMergeFields( mergeFields, GetAttributeValue( "EnabledLavaCommands" ) );
 
                 Email.Send( fromEmail, fromName, subject, recipients, message, ResolveRockUrl( "~/" ), ResolveRockUrl( "~~/" ), attachments, GetAttributeValue( "SaveCommunicationHistory" ).AsBoolean() );
 
@@ -312,8 +334,14 @@ namespace RockWeb.Blocks.Cms
                 // display response message
                 lResponse.Visible = true;
                 lEmailForm.Visible = false;
-                lResponse.Text = GetAttributeValue( "ResponseMessage" ).ResolveMergeFields( mergeFields );
+                lResponse.Text = GetAttributeValue( "ResponseMessage" ).ResolveMergeFields( mergeFields, GetAttributeValue( "EnabledLavaCommands" ) );
 
+                // show debug info
+                if ( GetAttributeValue( "EnableDebug" ).AsBoolean() && IsUserAuthorized( Authorization.EDIT ) )
+                {
+                    lDebug.Visible = true;
+                    lDebug.Text = mergeFields.lavaDebugInfo();
+                }
             }
             else
             {

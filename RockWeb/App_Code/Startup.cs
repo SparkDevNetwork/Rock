@@ -28,13 +28,20 @@ using System.Linq;
 [assembly: OwinStartup(typeof(RockWeb.Startup))]
 namespace RockWeb
 {
+    /// <summary>
+    /// 
+    /// </summary>
     public class Startup
     {
+        /// <summary>
+        /// Configurations the specified application.
+        /// </summary>
+        /// <param name="app">The application.</param>
         public void Configuration( IAppBuilder app )
         {
             app.MapSignalR();
             ReactSiteConfiguration.Configuration = new ReactSiteConfiguration()
-                .AddScript("~/Scripts/React/dist/server.blocks.bundle.js");
+                .AddScript( "~/Scripts/React/dist/server.blocks.bundle.js" );
 
             // Find any plugins that implement IRockOwinStartup
             try
