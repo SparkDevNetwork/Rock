@@ -142,7 +142,7 @@
                                 <asp:PlaceHolder ID="phActivities" runat="server" />
                             </div>
                             <span class="pull-right">
-                                <asp:DropDownList ID="ddlActivateNewActivity" runat="server" AutoPostBack="true" OnSelectedIndexChanged="ddlActivateNewActivity_SelectedIndexChanged" />
+                                <Rock:RockDropDownList ID="ddlActivateNewActivity" runat="server" AutoPostBack="true" OnSelectedIndexChanged="ddlActivateNewActivity_SelectedIndexChanged" />
                             </span>
 
                         </asp:Panel>
