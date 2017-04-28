@@ -27,6 +27,7 @@ using Rock.Data;
 using Rock.Model;
 using Rock.Security;
 using Rock.Web;
+using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
@@ -123,6 +124,8 @@ namespace RockWeb.Blocks.Prayer
             ScriptManager.RegisterStartupScript( pnlStatus, pnlStatus.GetType(), "status-script-" + this.BlockId.ToString(), script, true );
 
             tbLastName.Required = GetAttributeValue( "RequireLastName" ).AsBooleanOrNull() ?? true;
+
+            cpCampus.Campuses = CampusCache.All( false );
         }
 
         /// <summary>
@@ -336,6 +339,7 @@ namespace RockWeb.Blocks.Prayer
             }
 
             descriptionList.Add( "Name", prayerRequest.FullName );
+            descriptionList.Add( "Campus", prayerRequest.Campus );
             descriptionList.Add( "Request", prayerRequest.Text.ScrubHtmlAndConvertCrLfToBr() );
             descriptionList.Add( "Answer", prayerRequest.Answer.ScrubHtmlAndConvertCrLfToBr() );
             lMainDetails.Text = descriptionList.Html;
@@ -375,6 +379,8 @@ namespace RockWeb.Blocks.Prayer
                     prayerRequest.LastName = CurrentPerson.LastName;
                 }
             }
+
+            cpCampus.SelectedCampusId = prayerRequest.CampusId;
 
             pnlDetails.Visible = true;
 
@@ -582,6 +588,8 @@ namespace RockWeb.Blocks.Prayer
             {
                 prayerRequest.ExpirationDate = dpExpirationDate.SelectedDate;
             }
+
+            prayerRequest.CampusId = cpCampus.SelectedCampusId;
 
             // If no category was selected, then use the default category if there is one.
             int? categoryId = catpCategory.SelectedValueAsInt();

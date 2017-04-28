@@ -34,6 +34,7 @@
                                     <Rock:RockTextBox ID="tbFirstName" runat="server" Label="First Name" Required="true" />
                                     <Rock:RockTextBox ID="tbLastName" runat="server" Label="Last Name" />
                                     <Rock:DatePicker ID="dpExpirationDate" Text="Expires On" runat="server" SourceTypeName="Rock.Model.PrayerRequest, Rock" PropertyName="ExpirationDate" />
+                                    <Rock:CampusPicker ID="cpCampus" runat="server" />
                                 </div>
 
                                 <div class="col-md-3">
