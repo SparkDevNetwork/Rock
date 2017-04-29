@@ -214,9 +214,9 @@ public class WebhookToWorkflow : IHttpHandler
     /// <param name="hook">The DefinedValue of the currently executing webhook.</param>
     protected virtual void PopulateWorkflowAttributes( Workflow workflow, DefinedValueCache hook )
     {
-        workflow.SetAttributeValue( "Request", JsonConvert.SerializeObject( RequestToDictionary( hook ) ) );
+        var mergeFields = RequestToDictionary( hook );
 
-        string workflowAttributes = hook.GetAttributeValue( "WorkflowAttributes" );
+        string workflowAttributes = hook.GetAttributeValue( "WorkflowAttributes" ).ResolveMergeFields( mergeFields );
         string nameTemplate = hook.GetAttributeValue( "WorkflowNameTemplate" );
 
         string[] attributes = workflowAttributes.Split( '|' );
@@ -246,12 +246,12 @@ public class WebhookToWorkflow : IHttpHandler
     /// <returns></returns>
     protected virtual Dictionary<string, object> RequestToDictionary( DefinedValueCache hook )
     {
-        var dictionary = new Dictionary<string, object>();
+        var dictionary = Rock.Lava.LavaHelper.GetCommonMergeFields( null );
 
         //
         // Set the standard values to be used.
         //
-        dictionary.Add( "DefinedValueId", hook.Id );
+        dictionary.Add( "DefinedValue", hook );
         dictionary.Add( "Url", Url );
         dictionary.Add( "RawUrl", HttpContext.Request.Url.AbsoluteUri );
         dictionary.Add( "Method", HttpContext.Request.HttpMethod );
@@ -305,25 +305,13 @@ public class WebhookToWorkflow : IHttpHandler
             }
         }
 
-        //
-        // Add in all the headers if the admin wants them.
-        //
-        if ( hook.GetAttributeValue( "Headers" ).AsBoolean() )
-        {
-            var headers = HttpContext.Request.Headers.Cast<string>()
-                .Where( h => !h.Equals( "Authorization", StringComparison.InvariantCultureIgnoreCase ) )
-                .Where( h => !h.Equals( "Cookie", StringComparison.InvariantCultureIgnoreCase ) )
-                .ToDictionary( h => h, h => HttpContext.Request.Headers[h] );
-            dictionary.Add( "Headers", headers );
-        }
+        var headers = HttpContext.Request.Headers.Cast<string>()
+            .Where( h => !h.Equals( "Authorization", StringComparison.InvariantCultureIgnoreCase ) )
+            .Where( h => !h.Equals( "Cookie", StringComparison.InvariantCultureIgnoreCase ) )
+            .ToDictionary( h => h, h => HttpContext.Request.Headers[h] );
+        dictionary.Add( "Headers", headers );
 
-        //
-        // Add in all the cookies if the admin wants them.
-        //
-        if ( hook.GetAttributeValue( "Cookies" ).AsBoolean() )
-        {
-            dictionary.Add( "Cookies", HttpContext.Request.Cookies.Cast<string>().ToDictionary( q => q, q => HttpContext.Request.Cookies[q].Value ) );
-        }
+        dictionary.Add( "Cookies", HttpContext.Request.Cookies.Cast<string>().ToDictionary( q => q, q => HttpContext.Request.Cookies[q].Value ) );
 
         return dictionary;
     }
