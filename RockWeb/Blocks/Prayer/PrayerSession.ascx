@@ -28,14 +28,12 @@
             <div class="panel panel-default">
                  <div class="panel-heading clearfix">
                     <h3 class="panel-title pull-left">
-                        <asp:Literal ID="lPersonIconHtml" runat="server" />
-                        <asp:Literal ID="lTitle" runat="server" />
+                        <asp:Literal ID="lPersonLavaOutput" runat="server" />
                     </h3>
                     <div class="panel-labels">
                         <Rock:HighlightLabel ID="hlblPrayerCountTotal" runat="server" IconCssClass="fa fa-users" LabelType="Info" Text="team: 0" ToolTip="The number of prayers offered by the team for this request." />
                         <Rock:HighlightLabel ID="hlblUrgent" runat="server" LabelType="Warning" Text="Urgent" Visible="false" />
                         <Rock:HighlightLabel ID="hlblCategory" runat="server" LabelType="Type" />
-
                     </div>
                 </div>
             
@@ -50,27 +48,9 @@
                             </div>
                         </div>
 
-                        <div class="row">
-                            <div class="col-md-6">
-                                <strong>Prayer Request</strong>
-                            </div>
-                            <div class="col-md-6 text-right">
-                                <asp:Literal ID="lPrayerRequestDate" runat="server" />
-                            </div>
-                        </div>
-                                                
-                        <asp:Literal ID="lPrayerText" runat="server" />
-
-                        <div id="divPrayerAnswer" runat="server" class="margin-t-lg">
-                            <strong>Update</strong> 
-                            <br />
-                            <asp:Literal ID="lPrayerAnswerText" runat="server"></asp:Literal>
-                        </div>
-
+                    <asp:Literal ID="lPrayerLavaOutput" runat="server" />    
 
                     <div class="actions margin-t-lg margin-b-md">
-                       
-                        
                         <div class="row margin-t-md">
                             <div class="col-md-12">
                                 <asp:LinkButton ID="lbFlag" runat="server" Text="<i class='fa fa-flag'></i> Flag" CssClass="btn btn-warning" ToolTip="Flag as inappropriate so that an administrator can review the content." CausesValidation="false" OnClick="lbFlag_Click" />
