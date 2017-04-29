@@ -258,5 +258,10 @@ namespace Rock.SystemGuid
         /// Used to manage the topic options for small groups.
         /// </summary>
         public const string SMALL_GROUP_TOPIC = "D4111631-6B42-1CBD-4019-427D6BC6F475";
+
+        /// <summary>
+        /// Used to manage the .
+        /// </summary>
+        public const string WEBHOOK_TO_WORKFLOW = "7B39BA6A-E7EF-48A6-9EC7-4A0F498D8FDB";
     }
 }

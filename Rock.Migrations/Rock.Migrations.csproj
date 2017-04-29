@@ -206,6 +206,10 @@
     <Compile Include="Migrations\201704271246518_TransactionHistory.Designer.cs">
       <DependentUpon>201704271246518_TransactionHistory.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201704281533422_WorkflowWebhookDefinedType.cs" />
+    <Compile Include="Migrations\201704281533422_WorkflowWebhookDefinedType.Designer.cs">
+      <DependentUpon>201704281533422_WorkflowWebhookDefinedType.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\201704281656220_PrayerRequestCampus.cs" />
     <Compile Include="Migrations\201704281656220_PrayerRequestCampus.Designer.cs">
       <DependentUpon>201704281656220_PrayerRequestCampus.cs</DependentUpon>
@@ -2514,6 +2518,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201704271246518_TransactionHistory.resx">
       <DependentUpon>201704271246518_TransactionHistory.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201704281533422_WorkflowWebhookDefinedType.resx">
+      <DependentUpon>201704281533422_WorkflowWebhookDefinedType.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201704281656220_PrayerRequestCampus.resx">
       <DependentUpon>201704281656220_PrayerRequestCampus.cs</DependentUpon>
