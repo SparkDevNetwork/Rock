@@ -174,6 +174,8 @@ namespace Rock.Workflow.Action
                 {
                     new AttributeService( newRockContext ).Add( attribute );
                     newRockContext.SaveChanges();
+                    AttributeCache.FlushEntityAttributes();
+                    WorkflowActivityTypeCache.Flush( action.Activity.ActivityTypeId );
                 }
 
                 action.Activity.Attributes.Add( AttrKey, AttributeCache.Read( attribute ) );
@@ -225,6 +227,8 @@ namespace Rock.Workflow.Action
                 {
                     new AttributeService( newRockContext ).Add( attribute );
                     newRockContext.SaveChanges();
+                    AttributeCache.FlushEntityAttributes();
+                    WorkflowActivityTypeCache.Flush( action.Activity.ActivityTypeId );
                 }
 
                 action.Activity.Attributes.Add( AttrKey, AttributeCache.Read( attribute ) );
