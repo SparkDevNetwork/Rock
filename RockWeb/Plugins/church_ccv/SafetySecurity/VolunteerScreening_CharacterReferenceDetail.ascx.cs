@@ -37,8 +37,6 @@ namespace RockWeb.Plugins.church_ccv.SafetySecurity
     
     public partial class VolunteerScreening_CharacterReferenceDetail : RockBlock
     {
-        public object RockTransactionScope { get; private set; }
-                
         #region Control Methods
 
         /// <summary>
@@ -85,16 +83,13 @@ namespace RockWeb.Plugins.church_ccv.SafetySecurity
             IQueryable<PersonAlias> paQuery = new PersonAliasService( rockContext ).Queryable( ).AsNoTracking( );
 
             int applicantPrimaryAliasId = charRefWorkflow.AttributeValues["ApplicantPrimaryAliasId"].Value.AsInteger( );
-            int referencePrimaryAliasId = charRefWorkflow.AttributeValues["ReferencePrimaryAliasId"].Value.AsInteger( );
-
             PersonAlias applicant = paQuery.Where( pa => pa.Id == applicantPrimaryAliasId ).SingleOrDefault( );
-            PersonAlias referencePerson = paQuery.Where( pa => pa.Id == referencePrimaryAliasId ).SingleOrDefault( );
-            
+                        
             // set the applicant
             lApplicant.Text = string.Format( "<a href=\"/Person/{0}\">{1}</a>", applicant.Person.Id, applicant.Person.FullName );
 
             // set the reference
-            lReference.Text = string.Format( "<a href=\"/Person/{0}\">{1}</a>", referencePerson.Person.Id, referencePerson.Person.FullName );
+            lReference.Text = charRefWorkflow.AttributeValues["FirstName"] + " " + charRefWorkflow.AttributeValues["LastName"];
             lReferenceEmail.Text = charRefWorkflow.AttributeValues["EmailAddress"].Value;
             lReferencePhoneNumber.Text = charRefWorkflow.AttributeValues["PhoneNumber"].Value;
             

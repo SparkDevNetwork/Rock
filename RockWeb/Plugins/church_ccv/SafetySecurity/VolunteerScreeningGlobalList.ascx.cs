@@ -15,6 +15,7 @@
 // </copyright>
 //
 using church.ccv.SafetySecurity.Model;
+using Rock;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
@@ -30,16 +31,13 @@ using System.Web.UI;
 
 namespace RockWeb.Plugins.church_ccv.SafetySecurity
 {
-    [DisplayName( "Volunteer Screening List" )]
+    [DisplayName( "Volunteer Screening Global List" )]
     [Category( "CCV > Safety and Security" )]
-    [Description( "Lists volunteer screening instances for the given person." )]
-
-    [ContextAware( typeof( Person ) )]
+    [Description( "Lists all volunteer screening instances newer than 2 months." )]
+    
     [LinkedPage( "Detail Page" )]
-    public partial class VolunteerScreeningList : RockBlock
-    {
-        protected Person TargetPerson { get; set; }
-                
+    public partial class VolunteerScreeningGlobalList : RockBlock
+    {                
         #region Control Methods
 
         /// <summary>
@@ -49,17 +47,14 @@ namespace RockWeb.Plugins.church_ccv.SafetySecurity
         protected override void OnInit( EventArgs e )
         {
             base.OnInit( e );
-
-            // in case this is used as a Person Block, set the TargetPerson 
-            TargetPerson = ContextEntity<Person>();
+            
             InitInstancesGrid( );
         }
 
         void InitInstancesGrid( )
         {
             gGrid.DataKeyNames = new string[] { "Id" };
-
-            // turn on only the 'add' button
+            
             gGrid.Actions.Visible = true;
             gGrid.Actions.Enabled = true;
             gGrid.Actions.ShowBulkUpdate = false;
@@ -67,9 +62,6 @@ namespace RockWeb.Plugins.church_ccv.SafetySecurity
             gGrid.Actions.ShowExcelExport = false;
             gGrid.Actions.ShowMergePerson = false;
             gGrid.Actions.ShowMergeTemplate = false;
-
-            //gGrid.Actions.ShowAdd = IsUserAuthorized( Authorization.EDIT );
-            //gGrid.Actions.AddClick += gGrid_AddClick;
 
             gGrid.GridRebind += gGrid_Rebind;
         }
@@ -82,7 +74,7 @@ namespace RockWeb.Plugins.church_ccv.SafetySecurity
         {
             base.OnLoad( e );
             
-            if ( !Page.IsPostBack && TargetPerson != null )
+            if ( !Page.IsPostBack )
             {   
                 using ( RockContext rockContext = new RockContext( ) )
                 {
@@ -94,24 +86,7 @@ namespace RockWeb.Plugins.church_ccv.SafetySecurity
         #endregion
         
         #region Grid Events (main grid)
-
-        protected void gGrid_AddClick( object sender, EventArgs e )
-        {
-            using ( RockContext rockContext = new RockContext( ) )
-            {
-                VolunteerScreening instance = new VolunteerScreening( );
-                instance.PersonAliasId = TargetPerson.PrimaryAliasId.Value;
-                instance.CreatedDateTime = DateTime.Now;
-                instance.ModifiedDateTime = DateTime.Now;
-                instance.Type = (int)VolunteerScreening.Types.Legacy;
-
-                Service<VolunteerScreening> rockService = new Service<VolunteerScreening>( rockContext );
-                rockService.Add( instance );
-
-                rockContext.SaveChanges( );
-            }
-        }
-
+        
         /// <summary>
         /// Handles the GridRebind event of the gPromotions control.
         /// </summary>
@@ -147,22 +122,19 @@ namespace RockWeb.Plugins.church_ccv.SafetySecurity
             var paQuery = new Service<PersonAlias>( rockContext ).Queryable( ).AsNoTracking( );
             var wfQuery = new Service<Workflow>( rockContext ).Queryable( ).AsNoTracking( );
             
-            var vsForPersonQuery = vsQuery.Join( paQuery, vs => vs.PersonAliasId, pa => pa.Id, ( vs, pa ) => new { VolunteerScreening = vs, PersonAlias = pa } )
-                                       .Where( a => a.PersonAlias.PersonId == TargetPerson.Id )
-                                       .Select( a => a.VolunteerScreening )
-                                       .AsQueryable( );
-
-            var instanceQuery = vsForPersonQuery.Join( wfQuery, vs => vs.Application_WorkflowId, wf => wf.Id, ( vs, wf ) => new { VolunteerScreening = vs, WorkflowStatus = wf.Status } ).AsQueryable( );
+            var instanceQuery = vsQuery.Join( paQuery, vs => vs.PersonAliasId, pa => pa.Id, ( vs, pa ) => new { VolunteerScreening = vs, PersonName = pa.Person.FirstName + " " + pa.Person.LastName } )
+                                       .Join( wfQuery, vs => vs.VolunteerScreening.Application_WorkflowId, wf => wf.Id, ( vs, wf ) => new { VolunteerScreeningWithPerson = vs, WorkflowStatus = wf.Status } )
+                                       .Select( a => new { Id = a.VolunteerScreeningWithPerson.VolunteerScreening.Id,
+                                                           SentDate = a.VolunteerScreeningWithPerson.VolunteerScreening.CreatedDateTime.Value,
+                                                           CompletedDate = a.VolunteerScreeningWithPerson.VolunteerScreening.ModifiedDateTime.Value,
+                                                           PersonName = a.VolunteerScreeningWithPerson.PersonName,
+                                                           WorkflowStatus = a.WorkflowStatus } ).ToList( );
             
             if ( instanceQuery.Count( ) > 0 )
             {
-                var instances = instanceQuery.Select( vs => new { Id = vs.VolunteerScreening.Id,
-                                                                  SentDate = vs.VolunteerScreening.CreatedDateTime.Value,
-                                                                  CompletedDate = vs.VolunteerScreening.ModifiedDateTime.Value,
-                                                                  vs.WorkflowStatus } ).ToList( );
-
-                gGrid.DataSource = instances.OrderByDescending( vs => vs.SentDate ).OrderByDescending( vs => vs.CompletedDate ).Select( vs => 
+                gGrid.DataSource = instanceQuery.OrderByDescending( vs => vs.SentDate ).OrderByDescending( vs => vs.CompletedDate ).Select( vs => 
                     new {
+                            Name = vs.PersonName,
                             Id = vs.Id,
                             SentDate = vs.SentDate.ToShortDateString( ),
                             CompletedDate = ParseCompletedDate( vs.SentDate, vs.CompletedDate ),
@@ -204,15 +176,6 @@ namespace RockWeb.Plugins.church_ccv.SafetySecurity
                 return "Waiting for Applicant to Complete";
             }
         }
-
-        /*string ParseType( int typeVal )
-        {
-            string typeString = Enum.Parse( typeof( VolunteerScreening.Types ), typeVal.ToString( ) ).ToString( );
-
-            typeString = typeString.Replace( '_', ' ' );
-
-            return typeString;
-        }*/
         
         #endregion
     }

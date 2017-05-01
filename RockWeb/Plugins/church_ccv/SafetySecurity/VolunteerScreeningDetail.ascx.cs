@@ -118,7 +118,7 @@ namespace RockWeb.Plugins.church_ccv.SafetySecurity
                     Person person = personAlias.Person;
 
                     lPersonName.Text = "<a href=/Person/" + person.Id + ">" + person.FullName + "</a>";
-                    lDate.Text = "Date Sent: " + vsInstance.Date.ToShortDateString( );
+                    lDateApplicationSent.Text = "Date Sent to Applicant: " + vsInstance.CreatedDateTime.Value.ToShortDateString( );
 
                     if( vsInstance.Type == VolunteerScreening.Types.Normal.ConvertToInt( ) )
                     {
@@ -174,7 +174,7 @@ namespace RockWeb.Plugins.church_ccv.SafetySecurity
                         }
 
                         // setup the application info
-                        ShowApplicationInfo( rockContext, vsInstance );
+                        ShowApplicationInfo( rockContext, vsInstance, person );
                     }
                     else
                     {
@@ -185,7 +185,7 @@ namespace RockWeb.Plugins.church_ccv.SafetySecurity
             }
         }
 
-        protected void ShowApplicationInfo( RockContext rockContext, VolunteerScreening vsInstance )
+        protected void ShowApplicationInfo( RockContext rockContext, VolunteerScreening vsInstance, Person person )
         {
             if( vsInstance.Application_WorkflowId.HasValue )
             {
@@ -197,10 +197,26 @@ namespace RockWeb.Plugins.church_ccv.SafetySecurity
                 if( applicationWorkflow.Status == "Completed" )
                 {
                     lApplicationWorkflow.Text = "<a href=/page/329?workflowId=" + vsInstance.Application_WorkflowId.Value + ">View Completed Application</a>";
+                    lDateApplicationCompleted.Text = "Date Approved by CCV: " + vsInstance.ModifiedDateTime.Value.ToShortDateString( );
                 }
                 else
                 {
-                    lApplicationWorkflow.Text = "<a href=/WorkflowEntry/" + vsInstance.Application_WorkflowTypeId.Value + "/" + vsInstance.Application_WorkflowId.Value + ">Review Volunteer Application</a>";
+                    // this text should only show if the modified time is greater, which means it was received back from the applicant.
+                    if( vsInstance.ModifiedDateTime > vsInstance.CreatedDateTime )
+                    {
+                        lApplicationWorkflow.Text = "<a href=/WorkflowEntry/" + vsInstance.Application_WorkflowTypeId.Value + "/" + vsInstance.Application_WorkflowId.Value + ">Review Application</a>";
+                        lDateApplicationCompleted.Text = "Date Returned to CCV: " + vsInstance.ModifiedDateTime.Value.ToShortDateString( );
+                    }
+                    else
+                    {
+
+                        lApplicationWorkflow.Text = "<a href=/WorkflowEntry/" + 206;
+
+                        // now add the query params needed to re-send this application
+                        lApplicationWorkflow.Text += string.Format( "?ApplicationWorkflowGuid={0}&ApplicantEmail={1}&ApplicantFirstName={2}&ApplicantLastName={3}&SourceVolunteerScreeningId={4}>", applicationWorkflow.Guid, person.Email, person.FirstName, person.LastName, vsInstance.Id );
+                        lApplicationWorkflow.Text += "Resend Application</a>";
+                        lDateApplicationCompleted.Text = "Application has not yet been returned.";
+                    }
                 }
                 
                 // to know if we should show character references, see if any character reference workflows tied to this Screening Instance exist.
@@ -219,28 +235,27 @@ namespace RockWeb.Plugins.church_ccv.SafetySecurity
                         workflow.LoadAttributes( );
                     }
                     // to make this query fast, first get the personAliasIds for each character reference
-                    List<int> personAliasIds = charRefWorkflows.Select( cw => cw.AttributeValues["ReferencePrimaryAliasId"].Value.AsInteger( ) ).ToList( );
+                    //List<int> personAliasIds = charRefWorkflows.Select( cw => cw.AttributeValues["ReferencePrimaryAliasId"].Value.AsInteger( ) ).ToList( );
 
                     // now pull only those people from the personAlias table
-                    IQueryable<PersonAlias> personAliasQuery = new PersonAliasService( rockContext ).Queryable( ).AsNoTracking( );
-                    var charRefPersonsQuery = personAliasQuery.Where( pa => personAliasIds.Contains( pa.Id ) );
+                    //IQueryable<PersonAlias> personAliasQuery = new PersonAliasService( rockContext ).Queryable( ).AsNoTracking( );
+                    //var charRefPersonsQuery = personAliasQuery.Where( pa => personAliasIds.Contains( pa.Id ) );
                     
                     // and join them to their corresponding char reference application
-                    var charRefWithPerson = charRefWorkflows.Join( charRefPersonsQuery, wf => wf.AttributeValues["ReferencePrimaryAliasId"].Value.AsInteger( ), pa => pa.Id, ( wf, pa ) => new { Workflow = wf, PersonAlias = pa }).ToList( );
+                    //var charRefWithPerson = charRefWorkflows.Join( charRefPersonsQuery, wf => wf.AttributeValues["ReferencePrimaryAliasId"].Value.AsInteger( ), pa => pa.Id, ( wf, pa ) => new { Workflow = wf, PersonAlias = pa }).ToList( );
 
                     lNoCharacterRefs.Visible = false;
                     gCharacterRefs.Visible = true;
 
-                    gCharacterRefs.DataSource = charRefWithPerson.Select( cr => new
+                    gCharacterRefs.DataSource = charRefWorkflows.Select( cr => new
                     {
-                        Id = cr.Workflow.Id,
-                        WorkflowId = cr.Workflow.Id,
+                        Id = cr.Id,
+                        WorkflowId = cr.Id,
                         WorkflowText = "View Form",
 
-                        State = cr.Workflow.Status == "Active" ? "Waiting for Response" : "Responded",
-
-                        PersonId = cr.PersonAlias.PersonId,
-                        PersonText = cr.PersonAlias.Person.FullName
+                        State = cr.Status == "Active" ? "Waiting for Response" : "Responded",
+                        
+                        PersonText = cr.AttributeValues["FirstName"].Value + " " + cr.AttributeValues["LastName"].Value
                     } );
 
                     gCharacterRefs.DataBind( );

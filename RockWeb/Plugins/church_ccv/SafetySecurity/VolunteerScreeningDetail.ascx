@@ -28,7 +28,13 @@
                 
                 <div class="row">
                     <div class="col-md-6">
-                        <asp:Literal ID="lDate" runat="server"></asp:Literal>
+                        <asp:Literal ID="lDateApplicationSent" runat="server"></asp:Literal>
+                    </div>
+                </div>
+                <br>
+                <div class="row">
+                    <div class="col-md-6">
+                        <asp:Literal ID="lDateApplicationCompleted" runat="server"></asp:Literal>
                     </div>
                 </div>
 
@@ -75,7 +81,7 @@
             <div class="panel-body">
                 <Rock:Grid ID="gCharacterRefs" Title="Character References" runat="server" DisplayType="Light" AllowSorting="true" RowItemText="Result" AllowPaging="false">
                     <Columns>
-                        <asp:HyperLinkField DataNavigateUrlFields="PersonId" DataTextField="PersonText" DataNavigateUrlFormatString="~/Person/{0}" HeaderText="Person" />
+                        <Rock:RockBoundField DataField="PersonText" HeaderText="Person" SortExpression="PersonText" />
                         <asp:HyperLinkField DataNavigateUrlFields="WorkflowId" DataTextField="WorkflowText" DataNavigateUrlFormatString="~/page/1492?CharacterReferenceWorkflowId={0}" HeaderText="Review" />
                         <Rock:RockBoundField DataField="State" HeaderText="State" SortExpression="State" />
                     </Columns>

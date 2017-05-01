@@ -16,9 +16,6 @@ namespace church.ccv.SafetySecurity.Model
             }
 
             [DataMember]
-            public DateTime Date { get; set; }
-
-            [DataMember]
             public int PersonAliasId { get; set; }
 
             [DataMember]
