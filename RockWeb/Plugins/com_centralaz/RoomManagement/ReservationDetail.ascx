@@ -14,6 +14,7 @@
                 <h1 class="panel-title">
                     <asp:Literal ID="lPanelTitle" runat="server" /></h1>
             </div>
+            <Rock:PanelDrawer ID="pdAuditDetails" runat="server"></Rock:PanelDrawer>
             <div class="panel-body">
                 <div class="row">
                     <div class="col-md-6">
@@ -55,6 +56,7 @@
                     <div class="col-md-6">
                         <div class="row">
                             <div class="col-md-6">
+                                <Rock:RockLiteral Label="Requested By" ID="lRequestedBy" runat="server" Visible="false"></Rock:RockLiteral>
                                 <Rock:RockControlWrapper ID="rcwSchedule" runat="server" Label="Schedule">
                                     <Rock:ScheduleBuilder ID="sbSchedule" runat="server" ValidationGroup="Schedule" Required="true" OnSaveSchedule="sbSchedule_SaveSchedule" />
                                     <asp:Literal ID="lScheduleText" runat="server" />

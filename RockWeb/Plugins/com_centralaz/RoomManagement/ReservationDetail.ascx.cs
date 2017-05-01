@@ -1093,6 +1093,7 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
 
             if ( reservation == null )
             {
+                pdAuditDetails.Visible = false;
                 reservation = new Reservation { Id = 0 };
 
                 if ( PageParameter( "LocationId" ).AsInteger() != 0 )
@@ -1117,6 +1118,12 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
                     // Add any attached locations...
                     AddAttachedLocations( reservationResource.ResourceId, reservation );
                 }
+            }
+            else
+            {
+                pdAuditDetails.SetEntity( reservation, ResolveRockUrl( "~" ) );
+                lRequestedBy.Visible = true;
+                lRequestedBy.Text = reservation.CreatedByPersonName;
             }
 
             sbSchedule.iCalendarContent = string.Empty;
