@@ -7,13 +7,13 @@ namespace Rock.Migrations
     using System.Resources;
     
     [GeneratedCode("EntityFramework.Migrations", "6.1.3-40302")]
-    public sealed partial class CampusReOrder : IMigrationMetadata
+    public sealed partial class CampusOrder : IMigrationMetadata
     {
-        private readonly ResourceManager Resources = new ResourceManager(typeof(CampusReOrder));
+        private readonly ResourceManager Resources = new ResourceManager(typeof(CampusOrder));
         
         string IMigrationMetadata.Id
         {
-            get { return "201704301650568_CampusReOrder"; }
+            get { return "201705011932514_CampusOrder"; }
         }
         
         string IMigrationMetadata.Source

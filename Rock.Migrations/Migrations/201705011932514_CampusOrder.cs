@@ -22,7 +22,7 @@ namespace Rock.Migrations
     /// <summary>
     ///
     /// </summary>
-    public partial class CampusReOrder : Rock.Migrations.RockMigration
+    public partial class CampusOrder : Rock.Migrations.RockMigration
     {
         /// <summary>
         /// Operations to be performed during the upgrade process.
