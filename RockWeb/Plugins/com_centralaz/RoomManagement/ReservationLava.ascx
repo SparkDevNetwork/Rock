@@ -22,8 +22,8 @@
                     </asp:Calendar>
                 </asp:Panel>
 
-                 <% if ( CampusPanelOpen || CampusPanelClosed )
-                   { %>
+                <% if ( CampusPanelOpen || CampusPanelClosed )
+                    { %>
                 <div class="panel panel-default">
                     <div class="panel-heading">
                         <a role="button" data-toggle="collapse" href="#collapseOne">
@@ -44,14 +44,14 @@
                             </Rock:RockControlWrapper>
 
                             <% if ( CampusPanelOpen || CampusPanelClosed )
-                               { %>
+                                { %>
                         </div>
                     </div>
                 </div>
                 <% } %>
 
                 <% if ( MinistryPanelOpen || MinistryPanelClosed )
-                   { %>
+                    { %>
                 <div class="panel panel-default">
                     <div class="panel-heading">
                         <a role="button" data-toggle="collapse" href="#collapseTwo">
@@ -70,14 +70,14 @@
                             </Rock:RockControlWrapper>
 
                             <% if ( MinistryPanelOpen || MinistryPanelClosed )
-                               { %>
+                                { %>
                         </div>
                     </div>
                 </div>
                 <% } %>
 
                 <% if ( ApprovalPanelOpen || ApprovalPanelClosed )
-                   { %>
+                    { %>
                 <div class="panel panel-default">
                     <div class="panel-heading">
                         <a role="button" data-toggle="collapse" href="#collapseThree">
@@ -96,7 +96,7 @@
                             </Rock:RockControlWrapper>
 
                             <% if ( ApprovalPanelOpen || ApprovalPanelClosed )
-                               { %>
+                                { %>
                         </div>
                     </div>
                 </div>
@@ -113,6 +113,10 @@
                     <Rock:BootstrapButton ID="btnDay" runat="server" CssClass="btn btn-default" Text="Day" OnClick="btnViewMode_Click" />
                     <Rock:BootstrapButton ID="btnWeek" runat="server" CssClass="btn btn-default" Text="Week" OnClick="btnViewMode_Click" />
                     <Rock:BootstrapButton ID="btnMonth" runat="server" CssClass="btn btn-default" Text="Month" OnClick="btnViewMode_Click" />
+                </div>
+
+                <div class="pull-right">
+                    <asp:LinkButton ID="lbPrint" runat="server" Text="Print" OnClick="lbPrint_Click" />
                 </div>
 
                 <asp:Literal ID="lOutput" runat="server"></asp:Literal>

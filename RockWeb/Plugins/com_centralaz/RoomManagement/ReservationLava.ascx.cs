@@ -35,6 +35,9 @@ using Rock.Security;
 
 using com.centralaz.RoomManagement.Model;
 using com.centralaz.RoomManagement.Web.Cache;
+using iTextSharp.text;
+using iTextSharp.text.pdf;
+
 namespace RockWeb.Plugins.com_centralaz.RoomManagement
 {
     [DisplayName( "Reservation Lava" )]
@@ -57,6 +60,9 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
     [CodeEditorField( "Lava Template", "Lava template to use to display the list of events.", CodeEditorMode.Lava, CodeEditorTheme.Rock, 400, true, @"{% include '~/Themes/Stark/Assets/Lava/CalendarGroupedOccurrence.lava' %}", "", 12 )]
 
     [DayOfWeekField( "Start of Week Day", "Determines what day is the start of a week.", true, DayOfWeek.Sunday, order: 13 )]
+
+    [TextField( "Report Font", "", true, "Gotham", "", 0 )]
+    [TextField( "Report Logo", "URL to the logo (PNG) to display in the printed report.", true, "~/Plugins/com_centralaz/RoomManagement/Assets/Icons/Central_Logo_Black_rgb_165_90.png", "", 0 )]
 
     [BooleanField( "Enable Debug", "Display a list of merge fields available for lava.", false, "", 14 )]
 
@@ -239,7 +245,7 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void cblCampus_SelectedIndexChanged( object sender, EventArgs e )
         {
-            this.SetUserPreference( "Campuses", cblCampus.Items.OfType<ListItem>().Where( l => l.Selected ).Select( a => a.Value.AsInteger() ).ToList().AsDelimited( "," ) );
+            this.SetUserPreference( "Campuses", cblCampus.Items.OfType<System.Web.UI.WebControls.ListItem>().Where( l => l.Selected ).Select( a => a.Value.AsInteger() ).ToList().AsDelimited( "," ) );
             BindData();
         }
 
@@ -250,7 +256,7 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void cblMinistry_SelectedIndexChanged( object sender, EventArgs e )
         {
-            this.SetUserPreference( "Ministries", cblMinistry.Items.OfType<ListItem>().Where( l => l.Selected ).Select( a => a.Value.AsInteger() ).ToList().AsDelimited( "," ) );
+            this.SetUserPreference( "Ministries", cblMinistry.Items.OfType<System.Web.UI.WebControls.ListItem>().Where( l => l.Selected ).Select( a => a.Value.AsInteger() ).ToList().AsDelimited( "," ) );
             BindData();
         }
 
@@ -261,7 +267,7 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void cblApproval_SelectedIndexChanged( object sender, EventArgs e )
         {
-            this.SetUserPreference( "Approval State", cblApproval.Items.OfType<ListItem>().Where( l => l.Selected ).Select( a => a.Value.ConvertToEnum<ReservationApprovalState>().ConvertToInt() ).Where( a => a != null ).ToList().AsDelimited( "," ) );
+            this.SetUserPreference( "Approval State", cblApproval.Items.OfType<System.Web.UI.WebControls.ListItem>().Where( l => l.Selected ).Select( a => a.Value.ConvertToEnum<ReservationApprovalState>().ConvertToInt() ).Where( a => a != null ).ToList().AsDelimited( "," ) );
             BindData();
         }
 
@@ -284,50 +290,179 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
             }
         }
 
+        protected void lbPrint_Click( object sender, EventArgs e )
+        {
+            List<ReservationService.ReservationSummary> reservationSummaryList = GetReservationSummaries();
+            String font = GetAttributeValue( "ReportFont" );
+
+            // Bind to Grid
+            var reservationSummaries = reservationSummaryList.Select( r => new
+            {
+                Id = r.Id,
+                ReservationName = r.ReservationName,
+                ApprovalState = r.ApprovalState.ConvertToString(),
+                Locations = r.ReservationLocations.ToList(),
+                Resources = r.ReservationResources.ToList(),
+                CalendarDate = r.EventStartDateTime.ToLongDateString(),
+                EventStartDateTime = r.EventStartDateTime,
+                EventEndDateTime = r.EventEndDateTime,
+                ReservationStartDateTime = r.ReservationStartDateTime,
+                ReservationEndDateTime = r.ReservationEndDateTime,
+                EventDateTimeDescription = r.EventTimeDescription,
+                ReservationDateTimeDescription = r.ReservationTimeDescription,
+                SetupPhotoId = r.SetupPhotoId
+            } )
+            .OrderBy( r => r.EventStartDateTime )
+            .GroupBy( r => r.EventStartDateTime.Date )
+            .Select( r => r.ToList() )
+            .ToList();
+
+            //Setup the document
+            var document = new Document( PageSize.A4, 50, 50, 25, 25 );
+
+            var output = new MemoryStream();
+            var writer = PdfWriter.GetInstance( document, output );
+
+            document.Open();
+
+            var titleFont = FontFactory.GetFont( font, 16, Font.BOLD );
+            var subTitleFont = FontFactory.GetFont( font, 14, Color.GRAY );
+
+            // Add logo
+            try
+            {
+                string logoUri = GetAttributeValue( "ReportLogo" );
+                string fileUrl = string.Empty;
+                iTextSharp.text.Image logo;
+                if ( logoUri.ToLower().StartsWith( "http" ) )
+                {
+                    logo = iTextSharp.text.Image.GetInstance( new Uri( logoUri ) );
+                }
+                else
+                {
+                    fileUrl = Server.MapPath( ResolveRockUrl( logoUri ) );
+                    logo = iTextSharp.text.Image.GetInstance( fileUrl );
+                }
+
+                logo.Alignment = iTextSharp.text.Image.RIGHT_ALIGN;
+                logo.ScaleToFit( 100, 55 );
+                document.Add( logo );
+            }
+            catch { }
+
+            // Write the document
+            var today = RockDateTime.Today;
+            var filterStartDateTime = FilterStartDate.HasValue ? FilterStartDate.Value : today;
+            var filterEndDateTime = FilterEndDate.HasValue ? FilterEndDate.Value : today.AddMonths( 1 );
+            String title = String.Format( "Reservations for: {0} - {1}", filterStartDateTime.ToString( "MMMM d" ), filterEndDateTime.ToString( "MMMM d" ) );
+            document.Add( new Paragraph( title, titleFont ) );
+
+            // Populate the Lists            
+            foreach ( var reservationDay in reservationSummaries )
+            {
+                var firstReservation = reservationDay.FirstOrDefault();
+                if ( firstReservation != null )
+                {
+                    //Fonts
+                    var listHeaderFont = FontFactory.GetFont( font, 12, Font.BOLD, Color.DARK_GRAY );
+                    var listSubHeaderFont = FontFactory.GetFont( font, 10, Font.BOLD, Color.DARK_GRAY );
+
+                    //Build Header
+                    document.Add( Chunk.NEWLINE );
+                    String listHeader = firstReservation.CalendarDate;
+                    document.Add( new Paragraph( listHeader, listHeaderFont ) );
+
+                    //Build Subheaders
+                    var listSubHeaderTable = new PdfPTable( 6 );
+                    listSubHeaderTable.LockedWidth = true;
+                    listSubHeaderTable.TotalWidth = PageSize.A4.Width - document.LeftMargin - document.RightMargin;
+                    listSubHeaderTable.HorizontalAlignment = 0;
+                    listSubHeaderTable.SpacingBefore = 10;
+                    listSubHeaderTable.SpacingAfter = 0;
+                    listSubHeaderTable.DefaultCell.BorderWidth = 0;
+                    listSubHeaderTable.DefaultCell.BorderWidthBottom = 1;
+                    listSubHeaderTable.DefaultCell.BorderColorBottom = Color.DARK_GRAY;
+
+                    listSubHeaderTable.AddCell( new Phrase( "Name", listSubHeaderFont ) );
+                    listSubHeaderTable.AddCell( new Phrase( "Event Time", listSubHeaderFont ) );
+                    listSubHeaderTable.AddCell( new Phrase( "Reservation Time", listSubHeaderFont ) );
+                    listSubHeaderTable.AddCell( new Phrase( "Locations", listSubHeaderFont ) );
+                    listSubHeaderTable.AddCell( new Phrase( "Resources", listSubHeaderFont ) );
+                    listSubHeaderTable.AddCell( new Phrase( "Has Layout?", listSubHeaderFont ) );
+                    listSubHeaderTable.AddCell( new Phrase( "Status", listSubHeaderFont ) );
+
+                    document.Add( listSubHeaderTable );
+
+                    foreach ( var reservationSummary in reservationDay )
+                    {
+                        //Fonts
+                        var listItemFont = FontFactory.GetFont( font, 8, Font.NORMAL );
+
+                        //Build the list item table
+                        var listItemTable = new PdfPTable( 6 );
+                        listItemTable.LockedWidth = true;
+                        listItemTable.TotalWidth = PageSize.A4.Width - document.LeftMargin - document.RightMargin;
+                        listItemTable.HorizontalAlignment = 0;
+                        listItemTable.SpacingBefore = 0;
+                        listItemTable.SpacingAfter = 1;
+                        listItemTable.DefaultCell.BorderWidth = 0;
+
+                        //Add the list items
+                        listItemTable.AddCell( new Phrase( reservationSummary.ReservationName, listItemFont ) );
+
+                        listItemTable.AddCell( new Phrase( reservationSummary.EventDateTimeDescription, listItemFont ) );
+
+                        listItemTable.AddCell( new Phrase( reservationSummary.ReservationDateTimeDescription, listItemFont ) );
+
+                        StringBuilder sb = new StringBuilder();
+                        sb.Append( "<ul>" );
+                        foreach ( var reservationLocation in reservationSummary.Locations )
+                        {
+                            sb.AppendFormat( "<li>{0} {1}</li>", reservationLocation.Location.Name, reservationLocation.ApprovalState == ReservationLocationApprovalState.Approved ? "<i class='fa fa - check'></i>" : "" );
+                        }
+                        sb.Append( "</ul>" );
+
+                        listItemTable.AddCell( new Phrase( sb.ToString(), listItemFont ) );
+
+                        sb = new StringBuilder();
+                        sb.Append( "<ul>" );
+                        foreach ( var reservationResource in reservationSummary.Resources )
+                        {
+                            sb.AppendFormat( "<li>{0}({1}) {2}</li>", reservationResource.Resource.Name, reservationResource.Quantity, reservationResource.ApprovalState == ReservationResourceApprovalState.Approved ? "<i class='fa fa - check'></i>" : "" );
+                        }
+                        sb.Append( "</ul>" );
+
+                        listItemTable.AddCell( new Phrase( sb.ToString(), listItemFont ) );
+
+                        listItemTable.AddCell( new Phrase( reservationSummary.SetupPhotoId.HasValue.ToYesNo(), listItemFont ) );
+
+                        listItemTable.AddCell( new Phrase( reservationSummary.ApprovalState, listItemFont ) );
+
+                        document.Add( listItemTable );
+                    }
+                }
+            }
+
+            document.Close();
+
+            Response.ClearHeaders();
+            Response.ClearContent();
+            Response.Clear();
+            Response.ContentType = "application/pdf";
+            Response.AddHeader( "Content-Disposition", string.Format( "attachment;filename= Reservation Schedule for {0} - {1}.pdf", filterStartDateTime.ToString( "MMMM d" ), filterEndDateTime.ToString( "MMMM d" ) ) );
+            Response.BinaryWrite( output.ToArray() );
+            Response.Flush();
+            Response.End();
+            return;
+        }
+
         #endregion
 
         #region Methods
 
         private void BindData()
         {
-            var rockContext = new RockContext();
-            var reservationService = new ReservationService( rockContext );
-            var qry = reservationService.Queryable();
-
-            // Filter by campus
-            List<int> campusIds = cblCampus.Items.OfType<ListItem>().Where( l => l.Selected ).Select( a => a.Value.AsInteger() ).ToList();
-            if ( campusIds.Any() )
-            {
-                qry = qry
-                    .Where( r =>
-                        !r.CampusId.HasValue ||    // All
-                        campusIds.Contains( r.CampusId.Value ) );
-            }
-
-            // Filter by Ministry
-            List<int> ministryIds = cblMinistry.Items.OfType<ListItem>().Where( l => l.Selected ).Select( a => a.Value.AsInteger() ).ToList();
-            if ( ministryIds.Any() )
-            {
-                qry = qry
-                    .Where( r =>
-                        !r.ReservationMinistryId.HasValue ||    // All
-                        ministryIds.Contains( r.ReservationMinistryId.Value ) );
-            }
-
-            // Filter by Approval
-            List<ReservationApprovalState> approvalValues = cblApproval.Items.OfType<ListItem>().Where( l => l.Selected ).Select( a => a.Value.ConvertToEnum<ReservationApprovalState>() ).Where( a => a != null ).ToList();
-            if ( approvalValues.Any() )
-            {
-                qry = qry
-                    .Where( r =>
-                        approvalValues.Contains( r.ApprovalState ) );
-            }
-
-            // Filter by Time
-            var today = RockDateTime.Today;
-            var filterStartDateTime = FilterStartDate.HasValue ? FilterStartDate.Value : today;
-            var filterEndDateTime = FilterEndDate.HasValue ? FilterEndDate.Value : today.AddMonths( 1 );
-            var reservationSummaryList = reservationService.GetReservationSummaries( qry, filterStartDateTime, filterEndDateTime );
+            List<ReservationService.ReservationSummary> reservationSummaryList = GetReservationSummaries();
 
             // Bind to Grid
             var reservationSummaries = reservationSummaryList.Select( r => new
@@ -371,6 +506,49 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
                 lDebug.Text = string.Empty;
             }
 
+        }
+
+        private List<ReservationService.ReservationSummary> GetReservationSummaries()
+        {
+            var rockContext = new RockContext();
+            var reservationService = new ReservationService( rockContext );
+            var qry = reservationService.Queryable();
+
+            // Filter by campus
+            List<int> campusIds = cblCampus.Items.OfType<System.Web.UI.WebControls.ListItem>().Where( l => l.Selected ).Select( a => a.Value.AsInteger() ).ToList();
+            if ( campusIds.Any() )
+            {
+                qry = qry
+                    .Where( r =>
+                        !r.CampusId.HasValue ||    // All
+                        campusIds.Contains( r.CampusId.Value ) );
+            }
+
+            // Filter by Ministry
+            List<int> ministryIds = cblMinistry.Items.OfType<System.Web.UI.WebControls.ListItem>().Where( l => l.Selected ).Select( a => a.Value.AsInteger() ).ToList();
+            if ( ministryIds.Any() )
+            {
+                qry = qry
+                    .Where( r =>
+                        !r.ReservationMinistryId.HasValue ||    // All
+                        ministryIds.Contains( r.ReservationMinistryId.Value ) );
+            }
+
+            // Filter by Approval
+            List<ReservationApprovalState> approvalValues = cblApproval.Items.OfType<System.Web.UI.WebControls.ListItem>().Where( l => l.Selected ).Select( a => a.Value.ConvertToEnum<ReservationApprovalState>() ).Where( a => a != null ).ToList();
+            if ( approvalValues.Any() )
+            {
+                qry = qry
+                    .Where( r =>
+                        approvalValues.Contains( r.ApprovalState ) );
+            }
+
+            // Filter by Time
+            var today = RockDateTime.Today;
+            var filterStartDateTime = FilterStartDate.HasValue ? FilterStartDate.Value : today;
+            var filterEndDateTime = FilterEndDate.HasValue ? FilterEndDate.Value : today.AddMonths( 1 );
+            var reservationSummaryList = reservationService.GetReservationSummaries( qry, filterStartDateTime, filterEndDateTime );
+            return reservationSummaryList;
         }
 
         /// <summary>
