@@ -20,14 +20,18 @@ using System.Data.Entity.SqlServer;
 namespace Rock.Data
 {
     /// <summary>
-    /// Create a DbConfiguration that uses an execution strategy that will retry exceptions that are 
-    /// known to be possibley transient when working with SqlAzure
+    /// 
     /// </summary>
+    /// <seealso cref="System.Data.Entity.DbConfiguration" />
     public class RockContextConfig : DbConfiguration
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="RockContextConfig"/> class.
+        /// </summary>
         public RockContextConfig()
         {
-            SetExecutionStrategy( "System.Data.SqlClient", () => new SqlAzureExecutionStrategy() );
+            // default Initializer is CreateDatabaseIfNotExists, so set it to NULL so that nothing happens if there isn't a database yet
+            this.SetDatabaseInitializer<RockContext>( null );
         }
     }
 }
