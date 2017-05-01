@@ -110,16 +110,16 @@ namespace com.centralaz.RoomManagement.Model
             {
                 if ( showDate )
                 {
-                    return String.Format( "{0} {1} - {2}", startDateTime.ToShortDateString(), startDateTime.ToShortTimeString(), endDateTime.ToShortTimeString() );
+                    return String.Format( "{0} {1} - {2}", startDateTime.ToString( "MM/dd" ), startDateTime.ToString( "hh:mmt" ).ToLower(), endDateTime.ToString( "hh:mmt" ).ToLower() );
                 }
                 else
                 {
-                    return String.Format( "{0} - {1}", startDateTime.ToShortTimeString(), endDateTime.ToShortTimeString() );
+                    return String.Format( "{0} - {1}", startDateTime.ToString( "hh:mmt" ).ToLower(), endDateTime.ToString( "hh:mmt" ).ToLower() );
                 }
             }
             else
             {
-                return String.Format( "{0} {1} - {2} {3}", startDateTime.ToShortDateString(), startDateTime.ToShortTimeString(), endDateTime.ToShortDateString(), endDateTime.ToShortTimeString() );
+                return String.Format( "{0} {1} - {2} {3}", startDateTime.ToString( "MM/dd/yy" ), startDateTime.ToString( "hh:mmt" ).ToLower(), endDateTime.ToString( "MM/dd/yy" ), endDateTime.ToString( "hh:mmt" ).ToLower() );
             }
         }
 

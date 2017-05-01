@@ -39,13 +39,12 @@ using System.Web;
 
 namespace RockWeb.Plugins.com_centralaz.RoomManagement
 {
-
     [DisplayName( "Reservation Detail" )]
     [Category( "com_centralaz > Room Management" )]
     [Description( "Block for viewing a reservation detail" )]
-    [SecurityRoleField( "Super Admin Group", "The superadmin group that can force an approve / deny status on reservations, i.e. a facilities team.", true, com.centralaz.RoomManagement.SystemGuid.Group.GROUP_RESERVATION_ADMINISTRATORS, "" )]
-    [SecurityRoleField( "Final Approval Group", "An optional group that provides final approval for a reservation. If used, this should be the same group as in the Reservation Approval Workflow.", true, "", "" )]
-    [SystemEmailField( "System Email", "A system email to send.", true, "", "", 0 )]
+    [SecurityRoleField( "Super Admin Group", "The superadmin group that can force an approve / deny status on reservations, i.e. a facilities team.", false, com.centralaz.RoomManagement.SystemGuid.Group.GROUP_RESERVATION_ADMINISTRATORS, "" )]
+    [SecurityRoleField( "Final Approval Group", "An optional group that provides final approval for a reservation. If used, this should be the same group as in the Reservation Approval Workflow.", false, "", "" )]
+    [SystemEmailField( "System Email", "A system email to use when notifying approvers about a reservation request.", true, "", "", 0 )]
     [BooleanField( "Save Communication History", "Should a record of this communication be saved to the recipient's profile", false, "", 2 )]
     public partial class ReservationDetail : Rock.Web.UI.RockBlock
     {
