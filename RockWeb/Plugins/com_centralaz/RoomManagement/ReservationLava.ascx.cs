@@ -63,6 +63,7 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
 
     [TextField( "Report Font", "", true, "Gotham", "", 0 )]
     [TextField( "Report Logo", "URL to the logo (PNG) to display in the printed report.", true, "~/Plugins/com_centralaz/RoomManagement/Assets/Icons/Central_Logo_Black_rgb_165_90.png", "", 0 )]
+    [TextField( "Font Awesome Ttf", "URL to the FontAwesome ttf to use for checkmarks in the printed report", true, "~/Assets/Fonts/FontAwesome/fontawesome-webfont.ttf", "", 0 )]
 
     [BooleanField( "Enable Debug", "Display a list of merge fields available for lava.", false, "", 14 )]
 
@@ -126,6 +127,10 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
             // this event gets fired after block settings are updated. it's nice to repaint the screen if these settings would alter it
             this.BlockUpdated += Block_BlockUpdated;
             this.AddConfigurationUpdateTrigger( upnlContent );
+
+            // register lbPrint as a PostBackControl since it is returning a File download
+            ScriptManager scriptManager = ScriptManager.GetCurrent( Page );
+            scriptManager.RegisterPostBackControl( lbPrint );
         }
 
         /// <summary>
@@ -318,7 +323,7 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
             .ToList();
 
             //Setup the document
-            var document = new Document( PageSize.A4, 50, 50, 25, 25 );
+            var document = new Document( PageSize.A4, 25, 25, 25, 25 );
 
             var output = new MemoryStream();
             var writer = PdfWriter.GetInstance( document, output );
@@ -357,6 +362,10 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
             String title = String.Format( "Reservations for: {0} - {1}", filterStartDateTime.ToString( "MMMM d" ), filterEndDateTime.ToString( "MMMM d" ) );
             document.Add( new Paragraph( title, titleFont ) );
 
+            var fontAwesomeUrl = Server.MapPath( ResolveRockUrl( GetAttributeValue( "FontAwesomeTtf" ) ) );
+            var fontAwesome = BaseFont.CreateFont( fontAwesomeUrl, BaseFont.IDENTITY_H, BaseFont.EMBEDDED );
+            Font fontAwe = new Font( fontAwesome, 8 );
+
             // Populate the Lists            
             foreach ( var reservationDay in reservationSummaries )
             {
@@ -373,7 +382,7 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
                     document.Add( new Paragraph( listHeader, listHeaderFont ) );
 
                     //Build Subheaders
-                    var listSubHeaderTable = new PdfPTable( 6 );
+                    var listSubHeaderTable = new PdfPTable( 7 );
                     listSubHeaderTable.LockedWidth = true;
                     listSubHeaderTable.TotalWidth = PageSize.A4.Width - document.LeftMargin - document.RightMargin;
                     listSubHeaderTable.HorizontalAlignment = 0;
@@ -399,7 +408,7 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
                         var listItemFont = FontFactory.GetFont( font, 8, Font.NORMAL );
 
                         //Build the list item table
-                        var listItemTable = new PdfPTable( 6 );
+                        var listItemTable = new PdfPTable( 7 );
                         listItemTable.LockedWidth = true;
                         listItemTable.TotalWidth = PageSize.A4.Width - document.LeftMargin - document.RightMargin;
                         listItemTable.HorizontalAlignment = 0;
@@ -414,25 +423,41 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
 
                         listItemTable.AddCell( new Phrase( reservationSummary.ReservationDateTimeDescription, listItemFont ) );
 
-                        StringBuilder sb = new StringBuilder();
-                        sb.Append( "<ul>" );
+                        List locationList = new List( List.UNORDERED, 8f );
+                        locationList.SetListSymbol( "\u2022" );
+
                         foreach ( var reservationLocation in reservationSummary.Locations )
                         {
-                            sb.AppendFormat( "<li>{0} {1}</li>", reservationLocation.Location.Name, reservationLocation.ApprovalState == ReservationLocationApprovalState.Approved ? "<i class='fa fa - check'></i>" : "" );
+                            var listItem = new iTextSharp.text.ListItem( reservationLocation.Location.Name, FontFactory.GetFont( "TIMES_ROMAN", 8 ) );
+                            if ( reservationLocation.ApprovalState == ReservationLocationApprovalState.Approved )
+                            {
+                                listItem.Add( new Phrase( "\uf00c", fontAwe ) );
+                            }
+                            locationList.Add( listItem );
                         }
-                        sb.Append( "</ul>" );
 
-                        listItemTable.AddCell( new Phrase( sb.ToString(), listItemFont ) );
+                        PdfPCell locationCell = new PdfPCell();
+                        locationCell.Border = 0;
+                        locationCell.AddElement( locationList );
+                        listItemTable.AddCell( locationCell );
 
-                        sb = new StringBuilder();
-                        sb.Append( "<ul>" );
+                        List resourceList = new List( List.UNORDERED, 8f );
+                        resourceList.SetListSymbol( "\u2022" );
+
                         foreach ( var reservationResource in reservationSummary.Resources )
                         {
-                            sb.AppendFormat( "<li>{0}({1}) {2}</li>", reservationResource.Resource.Name, reservationResource.Quantity, reservationResource.ApprovalState == ReservationResourceApprovalState.Approved ? "<i class='fa fa - check'></i>" : "" );
+                            var listItem = new iTextSharp.text.ListItem( String.Format( "{0}({1})", reservationResource.Resource.Name, reservationResource.Quantity ), FontFactory.GetFont( "TIMES_ROMAN", 8 ) );
+                            if ( reservationResource.ApprovalState == ReservationResourceApprovalState.Approved )
+                            {
+                                listItem.Add( new Phrase( "\uf00c", fontAwe ) );
+                            }
+                            resourceList.Add( listItem );
                         }
-                        sb.Append( "</ul>" );
 
-                        listItemTable.AddCell( new Phrase( sb.ToString(), listItemFont ) );
+                        PdfPCell resourceCell = new PdfPCell();
+                        resourceCell.Border = 0;
+                        resourceCell.AddElement( resourceList );
+                        listItemTable.AddCell( resourceCell );
 
                         listItemTable.AddCell( new Phrase( reservationSummary.SetupPhotoId.HasValue.ToYesNo(), listItemFont ) );
 
@@ -449,7 +474,7 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
             Response.ClearContent();
             Response.Clear();
             Response.ContentType = "application/pdf";
-            Response.AddHeader( "Content-Disposition", string.Format( "attachment;filename= Reservation Schedule for {0} - {1}.pdf", filterStartDateTime.ToString( "MMMM d" ), filterEndDateTime.ToString( "MMMM d" ) ) );
+            Response.AddHeader( "Content-Disposition", string.Format( "attachment;filename=Reservation Schedule for {0} - {1}.pdf", filterStartDateTime.ToString( "MMMM d" ), filterEndDateTime.ToString( "MMMM d" ) ) );
             Response.BinaryWrite( output.ToArray() );
             Response.Flush();
             Response.End();
@@ -578,7 +603,7 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
             // Use the CalendarVisibleDate if it's in session.
             if ( Session["CalendarVisibleDate"] != null )
             {
-                today = ( DateTime ) Session["CalendarVisibleDate"];
+                today = (DateTime)Session["CalendarVisibleDate"];
                 calReservationCalendar.VisibleDate = today;
             }
 
