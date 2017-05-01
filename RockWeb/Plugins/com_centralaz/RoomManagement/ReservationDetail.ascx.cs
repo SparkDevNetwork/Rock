@@ -413,7 +413,7 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
             }
 
             reservation.ApprovalState = hfApprovalState.Value.ConvertToEnum<ReservationApprovalState>( ReservationApprovalState.Unapproved );
-            reservation = UpdateApproval( reservation, rockContext );
+            var groupGuidList = UpdateApproval( reservation, rockContext );
 
             if ( reservation.Id.Equals( 0 ) )
             {
@@ -421,6 +421,10 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
             }
 
             rockContext.SaveChanges();
+
+            // We can't send emails until the request is saved because it won't have an ID
+            // until then.
+            SendNotifications( reservation, groupGuidList, rockContext );
 
             if ( orphanedImageId.HasValue )
             {
@@ -1365,7 +1369,14 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
             }
         }
 
-        private Reservation UpdateApproval( Reservation reservation, RockContext rockContext )
+        /// <summary>
+        /// Updates the approval and returns the group guids for any groups that
+        /// need to be notified of approval.
+        /// </summary>
+        /// <param name="reservation">The reservation.</param>
+        /// <param name="rockContext">The rock context.</param>
+        /// <returns></returns>
+        private List<Guid> UpdateApproval( Reservation reservation, RockContext rockContext )
         {
             List<Guid> groupGuidList = new List<Guid>();
 
@@ -1477,32 +1488,6 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
                     {
                         reservation.ApprovalState = ReservationApprovalState.ChangesNeeded;
                     }
-
-                    var groups = new GroupService( rockContext ).GetByGuids( groupGuidList.Distinct().ToList() );
-                    foreach ( var group in groups )
-                    {
-                        var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( null );
-                        var recipients = new List<RecipientData>();
-
-                        foreach ( var person in group.Members
-                                           .Where( m => m.GroupMemberStatus == GroupMemberStatus.Active )
-                                           .Select( m => m.Person ) )
-                        {
-                            if ( person.IsEmailActive &&
-                                person.EmailPreference != EmailPreference.DoNotEmail &&
-                                !string.IsNullOrWhiteSpace( person.Email ) )
-                            {
-                                var personDict = new Dictionary<string, object>( mergeFields );
-                                personDict.Add( "Person", person );
-                                recipients.Add( new RecipientData( person.Email, personDict ) );
-                            }
-                        }
-
-                        if ( recipients.Any() )
-                        {
-                            Email.Send( GetAttributeValue( "SystemEmail" ).AsGuid(), recipients, string.Empty, string.Empty, GetAttributeValue( "SaveCommunicationHistory" ).AsBoolean() );
-                        }
-                    }
                 }
             }
 
@@ -1534,7 +1519,40 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
                 }
             }
 
-            return reservation;
+            return groupGuidList;
+        }
+
+        private void SendNotifications( Reservation reservation, List<Guid> groupGuidList, RockContext rockContext )
+        {
+            if ( reservation.ApprovalState == ReservationApprovalState.Unapproved || reservation.ApprovalState == ReservationApprovalState.ChangesNeeded )
+            {
+                var groups = new GroupService( rockContext ).GetByGuids( groupGuidList.Distinct().ToList() );
+                foreach ( var group in groups )
+                {
+                    var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( null );
+                    mergeFields.Add( "Reservation", reservation );
+                    var recipients = new List<RecipientData>();
+
+                    foreach ( var person in group.Members
+                                       .Where( m => m.GroupMemberStatus == GroupMemberStatus.Active )
+                                       .Select( m => m.Person ) )
+                    {
+                        if ( person.IsEmailActive &&
+                            person.EmailPreference != EmailPreference.DoNotEmail &&
+                            !string.IsNullOrWhiteSpace( person.Email ) )
+                        {
+                            var personDict = new Dictionary<string, object>( mergeFields );
+                            personDict.Add( "Person", person );
+                            recipients.Add( new RecipientData( person.Email, personDict ) );
+                        }
+                    }
+
+                    if ( recipients.Any() )
+                    {
+                        Email.Send( GetAttributeValue( "SystemEmail" ).AsGuid(), recipients, string.Empty, string.Empty, GetAttributeValue( "SaveCommunicationHistory" ).AsBoolean() );
+                    }
+                }
+            }
         }
 
         private void Hydrate( List<ReservationLocation> locationsState, RockContext rockContext )
