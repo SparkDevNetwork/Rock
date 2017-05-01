@@ -339,6 +339,12 @@ namespace Rock.Data
                     TriggerWorkflows( item, WorkflowTriggerType.PostSave, personAlias );
                 }
 
+                if ( item.Entity is IModel )
+                {
+                    var model = item.Entity as IModel;
+                    model.PostSaveChanges( this );
+                }
+
                 // check if this entity should be passed on for indexing
                 if ( indexingEnabled && item.Entity is IRockIndexable )
                 {

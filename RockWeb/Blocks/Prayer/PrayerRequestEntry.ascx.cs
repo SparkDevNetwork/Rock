@@ -52,13 +52,15 @@ namespace RockWeb.Blocks.Prayer
     [BooleanField( "Enable Public Display Flag", "If enabled, requestors will be able set whether or not they want their request displayed on the public website.", false, "Features", 8 )]
     [IntegerField( "Character Limit", "If set to something other than 0, this will limit the number of characters allowed when entering a new prayer request.", false, 250, "Features", 9 )]
     [BooleanField( "Require Last Name", "Require that a last name be entered", true, "Features", 10 )]
-    
-    // On Save Behavior
-    [BooleanField( "Navigate To Parent On Save", "If enabled, on successful save control will redirect back to the parent page.", false, "On Save Behavior", 11 )]
-    [BooleanField( "Refresh Page On Save", "If enabled, on successful save control will reload the current page. NOTE: This is ignored if 'Navigate to Parent On Save' is enabled.", false, "On Save Behavior", 12 )]
+    [BooleanField( "Show Campus", "Show a campus picker", true, "Features", 11 )]
+    [BooleanField( "Require Campus", "Require that a campus be selected", false, "Features", 12 )]
 
-    [CodeEditorField( "Save Success Text", "Text to display upon successful save. (Only applies if not navigating to parent page on save.) <span class='tip tip-lava'></span><span class='tip tip-html'></span>", CodeEditorMode.Html, CodeEditorTheme.Rock, 200, false, "<p>Thank you for allowing us to pray for you.</p>", "On Save Behavior", 13 )]
-    [WorkflowTypeField( "Workflow", "An optional workflow to start when prayer request is created. The PrayerRequest will be set as the workflow 'Entity' attribute when processing is started.", false, false, "", "On Save Behavior", 14 )]
+    // On Save Behavior
+    [BooleanField( "Navigate To Parent On Save", "If enabled, on successful save control will redirect back to the parent page.", false, "On Save Behavior", 13 )]
+    [BooleanField( "Refresh Page On Save", "If enabled, on successful save control will reload the current page. NOTE: This is ignored if 'Navigate to Parent On Save' is enabled.", false, "On Save Behavior", 14 )]
+
+    [CodeEditorField( "Save Success Text", "Text to display upon successful save. (Only applies if not navigating to parent page on save.) <span class='tip tip-lava'></span><span class='tip tip-html'></span>", CodeEditorMode.Html, CodeEditorTheme.Rock, 200, false, "<p>Thank you for allowing us to pray for you.</p>", "On Save Behavior", 15 )]
+    [WorkflowTypeField( "Workflow", "An optional workflow to start when prayer request is created. The PrayerRequest will be set as the workflow 'Entity' attribute when processing is started.", false, false, "", "On Save Behavior", 16 )]
 
     [ContextAware(typeof(Rock.Model.Person))]
     public partial class PrayerRequestEntry : RockBlock
@@ -90,6 +92,13 @@ namespace RockWeb.Blocks.Prayer
             this.EnableCommentsFlag = GetAttributeValue( "EnableCommentsFlag" ).AsBoolean();
             this.EnablePublicDisplayFlag = GetAttributeValue( "EnablePublicDisplayFlag" ).AsBoolean();
             tbLastName.Required = GetAttributeValue( "RequireLastName" ).AsBooleanOrNull() ?? true;
+            cpCampus.Visible = GetAttributeValue( "ShowCampus" ).AsBoolean();
+            cpCampus.Required = GetAttributeValue( "RequireCampus" ).AsBoolean();
+
+            if ( cpCampus.Visible )
+            {
+                cpCampus.Campuses = CampusCache.All( false );
+            }
 
             RockPage.AddScriptLink( Page, ResolveUrl( "~/Scripts/bootstrap-limit.js" ) );
             var categoryGuid = GetAttributeValue( "GroupCategoryId" );
@@ -153,10 +162,16 @@ namespace RockWeb.Blocks.Prayer
                     tbFirstName.Text = CurrentPerson.FirstName;
                     tbLastName.Text = CurrentPerson.LastName;
                     tbEmail.Text = CurrentPerson.Email;
+                    cpCampus.SetValue( CurrentPerson.GetCampus() );
                 }
 
                 dtbRequest.Text = PageParameter( "Request" );
             }
+
+            var prayerRequest = new PrayerRequest { Id = 0 };
+            prayerRequest.LoadAttributes();
+            phAttributes.Controls.Clear();
+            Rock.Attribute.Helper.AddEditControls( prayerRequest, phAttributes, false, BlockValidationGroup );
         }
 
         #endregion
@@ -231,6 +246,8 @@ namespace RockWeb.Blocks.Prayer
                 prayerRequest.Email = personContext.Email;
             }
 
+            prayerRequest.CampusId = cpCampus.SelectedCampusId;
+
             prayerRequest.Text = dtbRequest.Text;
             
             if ( this.EnableUrgentFlag )
@@ -261,6 +278,9 @@ namespace RockWeb.Blocks.Prayer
                 return;
             }
 
+            prayerRequest.LoadAttributes( rockContext );
+            Rock.Attribute.Helper.GetEditValues( phAttributes, prayerRequest );
+
             if ( !prayerRequest.IsValid )
             {
                 // field controls render error messages
@@ -268,6 +288,7 @@ namespace RockWeb.Blocks.Prayer
             }
 
             rockContext.SaveChanges();
+            prayerRequest.SaveAttributeValues( rockContext );
 
             StartWorkflow( prayerRequest, rockContext );
 
