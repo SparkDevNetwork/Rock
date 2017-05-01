@@ -45,8 +45,6 @@ namespace RockWeb.Plugins.church_ccv.Promotions
     [Description( "Lists requested promotions for events." )]
     public partial class PromotionRequestList : RockBlock
     {
-        public object RockTransactionScope { get; private set; }
-                
         #region Control Methods
 
         /// <summary>

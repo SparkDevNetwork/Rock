@@ -45,8 +45,6 @@ namespace RockWeb.Plugins.church_ccv.Promotions
     [LinkedPage( "Detail Page" )]
     public partial class PromotionList : RockBlock
     {
-        public object RockTransactionScope { get; private set; }
-        
         /// <summary>
         /// Used by the Promotion Occurrences grid to know which promotion/event to enumerate
         /// </summary>
