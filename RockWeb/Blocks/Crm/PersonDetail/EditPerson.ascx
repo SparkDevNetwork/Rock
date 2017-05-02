@@ -157,7 +157,12 @@
                         <Rock:PanelWidget runat="server" ID="pwAdvanced" Title="Advanced Settings">
                             <div class="row">
                                 <div class="col-md-6">
+                                    <asp:HiddenField ID="hfGivingEnvelopeNumberConfirmed" runat="server" />
                                     <Rock:RockDropDownList ID="ddlGivingGroup" runat="server" Label="Combine Giving With" Help="The family that this person's gifts should be combined with for contribution statements and reporting.  If left blank, their contributions will not be grouped with their family" /> 
+                                    <Rock:RockControlWrapper ID="rcwEnvelope" runat="server" Label="Envelope #" Help="The Giving Envelope Number that is associated with this Person" >
+                                        <Rock:NumberBox ID="tbGivingEnvelopeNumber" CssClass="input-width-sm pull-left" runat="server" Help="" NumberType="Integer" />
+                                        <asp:LinkButton ID="btnGenerateEnvelopeNumber" runat="server" Text="Generate Envelope #" CssClass="btn btn-default margin-l-sm" OnClick="btnGenerateEnvelopeNumber_Click" />
+                                    </Rock:RockControlWrapper>
                                 </div>
                                 <div class="col-md-6">
                                     <Rock:RockControlWrapper ID="rcwPreviousNames" runat="server" Label="Previous Last Names">

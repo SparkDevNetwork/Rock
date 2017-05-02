@@ -17,6 +17,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Data.Entity;
 using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
@@ -411,6 +412,66 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                         History.EvaluateChange( changes, "Giving Group", oldGivingGroupName, newGivingGroupName );
                     }
 
+                    // Save the Envelope Number attribute if it exists and has changed
+                    var personGivingEnvelopeAttribute = AttributeCache.Read( Rock.SystemGuid.Attribute.PERSON_GIVING_ENVELOPE_NUMBER.AsGuid() );
+                    if ( GlobalAttributesCache.Read().EnableGivingEnvelopeNumber && personGivingEnvelopeAttribute != null )
+                    {
+                        if ( person.Attributes == null )
+                        {
+                            person.LoadAttributes( rockContext );
+                        }
+
+                        var newEnvelopeNumber = tbGivingEnvelopeNumber.Text;
+                        var oldEnvelopeNumber = person.GetAttributeValue( personGivingEnvelopeAttribute.Key );
+                        if ( newEnvelopeNumber != oldEnvelopeNumber )
+                        {
+                            // If they haven't already comfirmed about duplicate, see if the envelope number if assigned to somebody else
+                            if ( !string.IsNullOrWhiteSpace( newEnvelopeNumber ) && hfGivingEnvelopeNumberConfirmed.Value != newEnvelopeNumber )
+                            {
+                                var otherPersonIdsWithEnvelopeNumber = new AttributeValueService( rockContext ).Queryable()
+                                    .Where( a => a.AttributeId == personGivingEnvelopeAttribute.Id && a.Value == newEnvelopeNumber && a.EntityId != person.Id )
+                                    .Select( a => a.EntityId );
+                                if ( otherPersonIdsWithEnvelopeNumber.Any() )
+                                {
+                                    var personList = new PersonService( rockContext ).Queryable().Where( a => otherPersonIdsWithEnvelopeNumber.Contains( a.Id ) ).AsNoTracking().ToList();
+                                    string personListMessage = personList.Select( a => a.FullName ).ToList().AsDelimited( ", ", " and " );
+                                    int maxCount = 5;
+                                    if ( personList.Count > maxCount )
+                                    {
+                                        var otherCount = personList.Count() - maxCount;
+                                        personListMessage = personList.Select( a => a.FullName ).Take( 10 ).ToList().AsDelimited( ", " ) + " and " + otherCount.ToString() + " other " + "person".PluralizeIf( otherCount > 1 );
+                                    }
+
+                                    string givingEnvelopeWarningText = string.Format(
+                                        "The envelope # {0} is already assigned to {1}. Do you want to also assign this number to {2}?",
+                                        newEnvelopeNumber,
+                                        personListMessage,
+                                        person.FullName );
+
+                                    string givingEnvelopeWarningScriptFormat = @"
+                                        Rock.dialogs.confirm('{0}', function (result) {{
+                                            if ( result )
+                                                {{
+                                                   $('#{1}').val('{2}');
+                                                }}
+                                        }})";
+
+                                    string givingEnvelopeWarningScript = string.Format(
+                                        givingEnvelopeWarningScriptFormat,
+                                        givingEnvelopeWarningText,
+                                        hfGivingEnvelopeNumberConfirmed.ClientID,
+                                        newEnvelopeNumber );
+
+                                    ScriptManager.RegisterStartupScript( hfGivingEnvelopeNumberConfirmed, hfGivingEnvelopeNumberConfirmed.GetType(), "confirm-envelope-number", givingEnvelopeWarningScript, true );
+                                    return;
+                                }
+                            }
+
+                            History.EvaluateChange( changes, "Giving Envelope Number", oldEnvelopeNumber, newEnvelopeNumber );
+                            person.SetAttributeValue( personGivingEnvelopeAttribute.Key, newEnvelopeNumber );
+                        }
+                    }
+
                     person.GivingGroupId = newGivingGroupId;
 
                     bool recordStatusChangedToOrFromInactive = false;
@@ -469,7 +530,15 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 
                     if ( person.IsValid )
                     {
-                        if ( rockContext.SaveChanges() > 0 )
+                        var saveChangeResult = rockContext.SaveChanges();
+
+                        // if AttributeValues where loaded and set (for example Giving Envelope Number), Save Attribute Values
+                        if ( person.AttributeValues != null )
+                        {
+                            person.SaveAttributeValues( rockContext );
+                        }
+
+                        if ( saveChangeResult > 0 )
                         {
                             if ( changes.Any() )
                             {
@@ -649,6 +718,12 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             }
 
             ddlGivingGroup.SetValue( Person.GivingGroupId );
+            var personGivingEnvelopeAttribute = AttributeCache.Read( Rock.SystemGuid.Attribute.PERSON_GIVING_ENVELOPE_NUMBER.AsGuid() );
+            rcwEnvelope.Visible = GlobalAttributesCache.Read().EnableGivingEnvelopeNumber && personGivingEnvelopeAttribute != null;
+            if ( personGivingEnvelopeAttribute != null )
+            {
+                tbGivingEnvelopeNumber.Text = Person.GetAttributeValue( personGivingEnvelopeAttribute.Key );
+            }
 
             this.PersonPreviousNamesState = Person.GetPreviousNames().ToList();
 
@@ -698,6 +773,20 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             BindPersonPreviousNamesGrid();
 
             mdPreviousName.Hide();
+        }
+
+        /// <summary>
+        /// Handles the Click event of the btnGenerateEnvelopeNumber control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void btnGenerateEnvelopeNumber_Click( object sender, EventArgs e )
+        {
+            var personGivingEnvelopeAttribute = AttributeCache.Read( Rock.SystemGuid.Attribute.PERSON_GIVING_ENVELOPE_NUMBER.AsGuid() );
+            var maxEnvelopeNumber = new AttributeValueService( new RockContext() ).Queryable()
+                                    .Where( a => a.AttributeId == personGivingEnvelopeAttribute.Id && a.ValueAsNumeric.HasValue )
+                                    .Max( a => (int?)a.ValueAsNumeric );
+            tbGivingEnvelopeNumber.Text = ( (maxEnvelopeNumber ?? 0) + 1 ).ToString();
         }
     }
 }
