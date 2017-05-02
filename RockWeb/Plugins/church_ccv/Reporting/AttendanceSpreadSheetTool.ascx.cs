@@ -1350,6 +1350,13 @@ namespace RockWeb.Plugins.church_ccv.Reporting
             // autofit the GroupName/Area column
             worksheet.Column( 1 ).AutoFit();
 
+            // Add the Sunday date to the spreadsheet
+            worksheet.Cells[3, 1].Value = lSundayDate.Text;
+            worksheet.Cells[3, 1].Style.Font.Bold = true;
+            worksheet.Cells[3, 1].Style.Font.Size = 12;
+            worksheet.Cells[3, 1].Style.HorizontalAlignment = OfficeOpenXml.Style.ExcelHorizontalAlignment.Center;
+            worksheet.Cells[3, 1].Style.Font.Name = "Arial";
+
             // send the spreadsheet to the browser
             excel.SendToBrowser( this.Page, filename );
         }
