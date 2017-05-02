@@ -163,13 +163,32 @@
                 {
                     $rockControllerList.append('<li><a href="#" onclick="showUiForController(\'' + value.Name + '\')">' + value.Name + '</a></li>');
                 });
+            }).fail(function (a)
+            {
+                if (a.status == 401)
+                {
+                    redirectToLoginPage(a);
+                }
             });
-        })
+        }).fail(function (a)
+        {
+            if (a.status == 401)
+            {
+                redirectToLoginPage(a);
+            }
+        });
 
         function showUiForController(controllerName)
         {
             $('#input_baseUrl').val(swashbuckleConfig.rootUrl + '/' + swashbuckleConfig.discoveryPaths[0] + '?controllerName=' + controllerName);
             $('#explore').click();
+        }
+
+        function redirectToLoginPage(a)
+        {
+            debugger
+            var currentUrl = window.location;
+            window.location = swashbuckleConfig.rootUrl + '/login?returnUrl=' + encodeURIComponent(currentUrl);
         }
     </script>
 
