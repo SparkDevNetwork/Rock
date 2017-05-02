@@ -57,6 +57,7 @@
                             <asp:Literal ID="lCampus" runat="server" />
                         </ItemTemplate>
                     </Rock:RockTemplateField>
+                    <Rock:RockLiteralField Id="lEnvelopeNumber" HeaderText="Envelope #" />
                 </Columns>
             </Rock:Grid>
         </div>
