@@ -192,7 +192,7 @@ namespace RockWeb.Blocks.Fundraising
             if ( registrationInstance != null )
             {
                 mergeFields.Add( "RegistrationInstance", registrationInstance );
-                mergeFields.Add( "RegistrationInstanceLinkages", registrationInstance.Linkages.Where(a => !string.IsNullOrEmpty(a.UrlSlug)) );
+                mergeFields.Add( "RegistrationInstanceLinkages", registrationInstance.Linkages );
 
                 // populate merge fields for Registration Counts
                 var maxRegistrantCount = 0;

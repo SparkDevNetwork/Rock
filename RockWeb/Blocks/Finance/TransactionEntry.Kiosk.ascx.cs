@@ -417,12 +417,7 @@ namespace RockWeb.Blocks.Finance
 
                         if ( transaction != null )
                         {
-
-                            var txnChanges = new List<string>();
-                            txnChanges.Add( "Created Transaction (from kiosk)" );
-
                             _transactionCode = transaction.TransactionCode;
-                            History.EvaluateChange( txnChanges, "Transaction Code", string.Empty, transaction.TransactionCode );
 
                             var personName = new PersonAliasService( rockContext )
                                 .Queryable().AsNoTracking()
@@ -431,26 +426,19 @@ namespace RockWeb.Blocks.Finance
                                 .FirstOrDefault();
 
                             transaction.AuthorizedPersonAliasId = this.SelectedGivingUnit.PersonAliasId;
-                            History.EvaluateChange( txnChanges, "Person", string.Empty, personName );
-
                             transaction.TransactionDateTime = RockDateTime.Now;
-                            History.EvaluateChange( txnChanges, "Date/Time", null, transaction.TransactionDateTime );
-
                             transaction.FinancialGatewayId = financialGateway.Id;
-                            History.EvaluateChange( txnChanges, "Gateway", string.Empty, financialGateway.Name );
 
                             var txnType = DefinedValueCache.Read( new Guid( Rock.SystemGuid.DefinedValue.TRANSACTION_TYPE_CONTRIBUTION ) );
                             transaction.TransactionTypeValueId = txnType.Id;
-                            History.EvaluateChange( txnChanges, "Type", string.Empty, txnType.Value );
 
                             transaction.Summary = swipeInfo.Comment1;
-                            History.EvaluateChange( txnChanges, "Transaction Code", string.Empty, transaction.Summary );
 
                             if ( transaction.FinancialPaymentDetail == null )
                             {
                                 transaction.FinancialPaymentDetail = new FinancialPaymentDetail();
                             }
-                            transaction.FinancialPaymentDetail.SetFromPaymentInfo( swipeInfo, gateway, rockContext, txnChanges );
+                            transaction.FinancialPaymentDetail.SetFromPaymentInfo( swipeInfo, gateway, rockContext );
 
                             Guid sourceGuid = Guid.Empty;
                             if ( Guid.TryParse( GetAttributeValue( "Source" ), out sourceGuid ) )
@@ -459,7 +447,6 @@ namespace RockWeb.Blocks.Finance
                                 if ( source != null )
                                 {
                                     transaction.SourceTypeValueId = source.Id;
-                                    History.EvaluateChange( txnChanges, "Source", string.Empty, source.Value );
                                 }
                             }
 
@@ -470,10 +457,6 @@ namespace RockWeb.Blocks.Finance
                                 transactionDetail.AccountId = accountAmount.Key;
                                 transaction.TransactionDetails.Add( transactionDetail );
                                 var account = new FinancialAccountService( rockContext ).Get( accountAmount.Key );
-                                if ( account != null )
-                                {
-                                    History.EvaluateChange( txnChanges, account.Name, 0.0M.FormatAsCurrency(), transactionDetail.Amount.FormatAsCurrency() );
-                                }
                             }
 
                             var batchService = new FinancialBatchService( rockContext );
@@ -516,16 +499,6 @@ namespace RockWeb.Blocks.Finance
                                     batchChanges
                                 );
 
-                                HistoryService.SaveChanges(
-                                    rockContext,
-                                    typeof( FinancialBatch ),
-                                    Rock.SystemGuid.Category.HISTORY_FINANCIAL_TRANSACTION.AsGuid(),
-                                    batch.Id,
-                                    txnChanges,
-                                    personName,
-                                    typeof( FinancialTransaction ),
-                                    transaction.Id
-                                );
                             } );
 
                             // send receipt in one is configured and not giving anonymously
