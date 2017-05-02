@@ -631,6 +631,20 @@ namespace Rock.Web.Cache
             }
         }
 
+        /// <summary>
+        /// Gets a value indicating whether Envelope Number feature is enabled
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if [enable giving envelope number]; otherwise, <c>false</c>.
+        /// </value>
+        public bool EnableGivingEnvelopeNumber
+        {
+            get
+            {
+                return GetValue( "core.EnableGivingEnvelopeNumber" ).AsBoolean();
+            }
+        }
+
         #endregion
     }
 }
