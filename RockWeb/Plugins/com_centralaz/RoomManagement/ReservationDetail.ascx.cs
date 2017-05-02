@@ -422,8 +422,10 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
 
             rockContext.SaveChanges();
 
-            // We can't send emails until the request is saved because it won't have an ID
-            // until then.
+            // ..."need to fetch the item using a new service if you need the updated property as a fully hydrated entity"
+            reservation = new ReservationService( new RockContext() ).Get( reservation.Id );
+
+            // We can't send emails because it won't have an ID until the request is saved.
             SendNotifications( reservation, groupGuidList, rockContext );
 
             if ( orphanedImageId.HasValue )
@@ -561,6 +563,10 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
                 var availableQuantity = new ReservationResourceService( new RockContext() ).GetAvailableResourceQuantity( resource, newReservation );
                 nbQuantity.MaximumValue = availableQuantity.ToString();
                 nbQuantity.Label = String.Format( "Quantity ({0} Available)", availableQuantity );
+                if ( availableQuantity >= 1 && string.IsNullOrWhiteSpace( nbQuantity.Text ) )
+                {
+                    nbQuantity.Text = "1";
+                }
             }
 
         }
