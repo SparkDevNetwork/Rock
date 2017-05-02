@@ -17,7 +17,6 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Data.Entity.ModelConfiguration;
 using System.Linq;
 using System.Data.Services;
 using System.Runtime.Serialization;
@@ -223,6 +222,14 @@ namespace Rock.Data
         public virtual void PreSaveChanges( Rock.Data.DbContext dbContext, System.Data.Entity.Infrastructure.DbEntityEntry entry )
         {
             PreSaveChanges( dbContext, entry.State );
+        }
+
+        /// <summary>
+        /// Posts the save changes.
+        /// </summary>
+        /// <param name="dbContext">The database context.</param>
+        public virtual void PostSaveChanges( Rock.Data.DbContext dbContext )
+        {
         }
 
         /// <summary>

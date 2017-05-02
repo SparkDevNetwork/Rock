@@ -83,6 +83,14 @@ namespace Rock.Model
             return GetNew( 0, alphaLength, numericLength, isRandomized );
         }
 
+        /// <summary>
+        /// Gets the new.
+        /// </summary>
+        /// <param name="alphaNumericLength">Length of the alpha numeric.</param>
+        /// <param name="alphaLength">Length of the alpha.</param>
+        /// <param name="numericLength">Length of the numeric.</param>
+        /// <param name="isRandomized">if set to <c>true</c> [is randomized].</param>
+        /// <returns></returns>
         public static AttendanceCode GetNew( int alphaNumericLength, int alphaLength, int numericLength, bool isRandomized )
         {
             lock ( _obj )
