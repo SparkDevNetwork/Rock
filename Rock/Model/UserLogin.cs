@@ -203,6 +203,7 @@ namespace Rock.Model
         /// <value>
         /// The <see cref="Rock.Model.Person"/> that this UserLogin is associated with.
         /// </value>
+        [LavaInclude]
         public virtual Model.Person Person { get; set; }
 
         /// <summary>
@@ -222,6 +223,7 @@ namespace Rock.Model
         ///   A <see cref="System.Boolean"/> value that is <c>true</c> if the user actually authenticated; otherwise <c>false</c>.
         /// </value>
         [NotMapped]
+        [LavaInclude]
         public virtual bool IsAuthenticated
         {
             get

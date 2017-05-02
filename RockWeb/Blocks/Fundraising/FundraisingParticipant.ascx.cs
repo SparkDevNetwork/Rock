@@ -455,8 +455,6 @@ namespace RockWeb.Blocks.Fundraising
             var photoGuid = group.GetAttributeValue( "OpportunityPhoto" );
             imgOpportunityPhoto.ImageUrl = string.Format( "~/GetImage.ashx?Guid={0}", photoGuid );
 
-            SetActiveTab( "Updates" );
-
             // Top Main
             string profileLavaTemplate = this.GetAttributeValue( "ProfileLavaTemplate" );
             if ( groupMember.PersonId == this.CurrentPersonId )
@@ -487,8 +485,9 @@ namespace RockWeb.Blocks.Fundraising
             bool disablePublicContributionRequests = groupMember.GetAttributeValue( "DisablePublicContributionRequests" ).AsBoolean();
 
             // only show Contribution stuff if the current person is the participant and contribution requests haven't been disabled
-            btnContributionsTab.Visible = !disablePublicContributionRequests && ( groupMember.PersonId == this.CurrentPersonId );
-            
+            bool showContributions = !disablePublicContributionRequests && ( groupMember.PersonId == this.CurrentPersonId );
+            btnContributionsTab.Visible = showContributions;
+
             // Progress
             var entityTypeIdGroupMember = EntityTypeCache.GetId<Rock.Model.GroupMember>();
 
@@ -536,12 +535,15 @@ namespace RockWeb.Blocks.Fundraising
 
             // Tab:Updates
             btnUpdatesTab.Visible = false;
+            bool showContentChannelUpdates = false;
             var updatesContentChannelGuid = group.GetAttributeValue( "UpdateContentChannel" ).AsGuidOrNull();
             if ( updatesContentChannelGuid.HasValue )
             {
                 var contentChannel = new ContentChannelService( rockContext ).Get( updatesContentChannelGuid.Value );
                 if ( contentChannel != null )
                 {
+                    showContentChannelUpdates = true;
+
                     // only show the UpdatesTab if there is another Tab option
                     btnUpdatesTab.Visible = btnContributionsTab.Visible;
 
@@ -552,6 +554,19 @@ namespace RockWeb.Blocks.Fundraising
                     lUpdatesContentItemsHtml.Text = updatesLavaTemplate.ResolveMergeFields( mergeFields );
                     btnUpdatesTab.Text = string.Format( "{0} Updates ({1})", opportunityType, contentChannelItems.Count() );
                 }
+            }
+
+            if ( showContentChannelUpdates )
+            {
+                SetActiveTab( "Updates" );
+            }
+            else if (showContributions)
+            {
+                SetActiveTab( "Contributions" );
+            }
+            else
+            {
+                SetActiveTab( "" );
             }
 
             // Tab: Contributions
@@ -626,8 +641,30 @@ namespace RockWeb.Blocks.Fundraising
             Literal lAddress = e.Row.FindControl( "lAddress" ) as Literal;
             if ( financialTransaction != null && lAddress != null && financialTransaction.AuthorizedPersonAliasId.HasValue )
             {
-                var personAddress = financialTransaction.AuthorizedPersonAlias.Person.GetHomeLocation();
-                lAddress.Text = personAddress.GetFullStreetAddress();
+                if ( financialTransaction.ShowAsAnonymous )
+                {
+                    // don't show the person's address if they wanted to give anonymously
+                    lAddress.Text = string.Empty;
+                }
+                else
+                { 
+                    var personAddress = financialTransaction.AuthorizedPersonAlias.Person.GetHomeLocation();
+                    lAddress.Text = personAddress.GetFullStreetAddress();
+                }
+            }
+
+            Literal lPersonName = e.Row.FindControl( "lPersonName" ) as Literal;
+            if ( financialTransaction != null && lPersonName != null && financialTransaction.AuthorizedPersonAliasId.HasValue )
+            {
+                if (financialTransaction.ShowAsAnonymous)
+                {
+                    // don't show the person's name if they wanted to give anonymously
+                    lPersonName.Text = "Anonymous";
+                }
+                else
+                {
+                    lPersonName.Text = financialTransaction.AuthorizedPersonAlias.Person.FullName;
+                }
             }
         }
 

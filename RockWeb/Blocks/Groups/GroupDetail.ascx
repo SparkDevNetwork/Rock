@@ -126,7 +126,7 @@
                         </Rock:PanelWidget>
 
                         <Rock:PanelWidget ID="wpGroupAttributes" runat="server" Title="Group Attribute Values">
-                            <asp:PlaceHolder ID="phGroupAttributes" runat="server" EnableViewState="false"></asp:PlaceHolder>
+                            <Rock:DynamicPlaceHolder ID="phGroupAttributes" runat="server"></Rock:DynamicPlaceHolder>
                         </Rock:PanelWidget>
 
                         <Rock:PanelWidget ID="wpGroupMemberAttributes" runat="server" Title="Member Attributes" CssClass="group-type-attribute-panel">

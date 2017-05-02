@@ -45,7 +45,7 @@
                         <div class="col-md-4">
                             <Rock:RockLiteral ID="lRequestDate" runat="server" Label="Request Date" />
                             <Rock:RockLiteral ID="lPlacementGroup" runat="server" Label="Placement Group" />
-                            <asp:PlaceHolder ID="phGroupMemberAttributesView" runat="server" EnableViewState="false"></asp:PlaceHolder>
+                            <Rock:DynamicPlaceHolder ID="phGroupMemberAttributesView" runat="server" />
                         </div>
                         <div class="col-md-2 text-right">
                             <asp:LinkButton ID="lbProfilePage" runat="server" CssClass="btn btn-default btn-xs"><i class="fa fa-user"></i> Profile</asp:LinkButton>
@@ -135,7 +135,7 @@
                     </div>
 
                     <asp:HiddenField ID="hfGroupMemberAttributeValues" runat="server" />
-                    <asp:PlaceHolder ID="phGroupMemberAttributes" runat="server" EnableViewState="false"></asp:PlaceHolder>
+                    <Rock:DynamicPlaceHolder ID="phGroupMemberAttributes" runat="server" />
 
                     <Rock:NotificationBox ID="nbRequirementsWarning" runat="server" NotificationBoxType="Warning" Visible="false" />
 
@@ -236,7 +236,7 @@
                     <div class="col-md-6">
                         <Rock:RockTextBox ID="tbSearchName" runat="server" Label="Name" />
                         <Rock:RockCheckBoxList ID="cblCampus" runat="server" Label="Campuses" DataTextField="Name" DataValueField="Id" RepeatDirection="Horizontal" />
-                        <asp:PlaceHolder ID="phAttributeFilters" runat="server" />
+                        <Rock:DynamicPlaceHolder ID="phAttributeFilters" runat="server" />
                     </div>
                     <div class="col-md-6">
                         <asp:Repeater ID="rptSearchResult" runat="server">
