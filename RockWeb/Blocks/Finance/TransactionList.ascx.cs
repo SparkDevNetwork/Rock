@@ -316,7 +316,18 @@ namespace RockWeb.Blocks.Finance
                 _lbReassign.Visible = false;
             }
 
-            gTransactions.Columns[0].Visible = showSelectColumn;
+            var selectColumn = gTransactions.ColumnsOfType<SelectField>().FirstOrDefault();
+            if ( selectColumn != null )
+            {
+                selectColumn.Visible = showSelectColumn;
+            }
+
+            // don't show the BatchId column if we are in the context of a single Batch
+            var batchIdColumn = gTransactions.ColumnsOfType<RockLiteralField>().Where( a => a.ID == "lBatchId" ).FirstOrDefault();
+            if ( batchIdColumn != null )
+            {
+                batchIdColumn.Visible = _batch == null;
+            }
         }
 
         #endregion Control Methods
