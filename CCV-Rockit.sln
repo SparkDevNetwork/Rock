@@ -6,7 +6,7 @@ Project("{E24C65DC-7377-472B-9ABA-BC803B73C61A}") = "RockWeb", "RockWeb\", "{223
 	ProjectSection(WebsiteProperties) = preProject
 		UseIISExpress = "true"
 		TargetFrameworkMoniker = ".NETFramework,Version%3Dv4.5.2"
-		ProjectReferences = "{496ec024-71ed-4ad1-b677-2a3fa60ccd05}|church.ccv.SampleProject.dll;{a5b47749-d8b2-4223-822b-26208bce34f4}|church.ccv.CommandCenter.dll;{10702916-bb67-4be9-a507-e1f8932bd05f}|church.ccv.Authentication.dll;{629a186e-1ed2-49bc-95d4-76d65950ae73}|church.ccv.Residency.dll;{f9f3319c-19d7-43a8-bc3a-4781b0b3f281}|church.ccv.Hr.dll;{8280012c-bb74-46ab-baa7-8a4004570829}|church.ccv.Datamart.dll;{9199bfe3-3c75-486b-afa0-d043da822afa}|church.ccv.Utility.dll;{da93ffd7-95fa-479b-bf60-b60979d846b9}|church.ccv.SafetySecurity.dll;{0ea13d43-bd98-48cf-8a15-d902c8a3ed99}|church.ccv.Badges.dll;{f0e9e6bc-9e66-493a-975a-638162fa22b1}|church.ccv.Reporting.dll;{da1fbd70-3d06-46f7-8aa0-a27f18fdfdcd}|church.ccv.Steps.dll;{f48eed81-6e9f-4b28-8742-e87dc47f9530}|church.ccv.Web.dll;{334e53d7-e955-44ed-b190-14d19164cbb1}|church.ccv.Promotions.dll;{1a03c5da-6ae4-4e30-9266-733f68945794}|church.ccv.Podcasts.dll;{00EDCB8D-EF33-459C-AD62-02876BD24DFF}|DotLiquid.dll;{185A31D7-3037-4DAE-8797-0459849A84BD}|Rock.dll;{ADD1EDD0-A4CB-4E82-B6AD-6AD1D556DEAE}|Rock.Rest.dll;{2c4ff899-4347-44c0-adc2-927b58041c0b}|church.ccv.MobileApp.dll;{AEB3EBF4-253A-4438-A380-ECFF89C6BDDA}|church.ccv.Actions.dll;{d9f29b51-5fa0-4691-ba2e-b31ca836c05d}|church.ccv.FamilyManager.dll;{77e6a5fe-6afb-4704-9d8f-9b9587af393f}|church.ccv.MarketingSite.dll;{6FE0930C-6832-4C2F-8A76-D4E4A2D80DDF}|Rock.Version.dll;{d6b19c0d-da5e-4f75-8001-04ded86b741f}|Rock.Mailgun.dll;{cf8c694a-55a0-434f-bc96-3450b96ec12a}|Rock.Mandrill.dll;{704740d8-b539-4560-9f8c-681670c9d6ad}|Rock.Migrations.dll;{f3692909-952d-4c4a-b2d2-d90d0083cf53}|Rock.NMI.dll;{a005d091-140e-4ec4-bcdf-cf7d42bb702c}|Rock.PayFlowPro.dll;{1f5956f2-2b0f-49b8-aaf1-2cc28f01426a}|Rock.SignNow.dll;{46cf7669-522b-485e-a998-c74abc5078dc}|church.ccv.StreamingBox.dll;{a4235f0b-af30-4dc4-bd60-06e46c9195c2}|church.ccv.PurpleWifiSync.dll;"
+		ProjectReferences = "{496ec024-71ed-4ad1-b677-2a3fa60ccd05}|church.ccv.SampleProject.dll;{a5b47749-d8b2-4223-822b-26208bce34f4}|church.ccv.CommandCenter.dll;{10702916-bb67-4be9-a507-e1f8932bd05f}|church.ccv.Authentication.dll;{629a186e-1ed2-49bc-95d4-76d65950ae73}|church.ccv.Residency.dll;{f9f3319c-19d7-43a8-bc3a-4781b0b3f281}|church.ccv.Hr.dll;{8280012c-bb74-46ab-baa7-8a4004570829}|church.ccv.Datamart.dll;{9199bfe3-3c75-486b-afa0-d043da822afa}|church.ccv.Utility.dll;{da93ffd7-95fa-479b-bf60-b60979d846b9}|church.ccv.SafetySecurity.dll;{0ea13d43-bd98-48cf-8a15-d902c8a3ed99}|church.ccv.Badges.dll;{f0e9e6bc-9e66-493a-975a-638162fa22b1}|church.ccv.Reporting.dll;{da1fbd70-3d06-46f7-8aa0-a27f18fdfdcd}|church.ccv.Steps.dll;{f48eed81-6e9f-4b28-8742-e87dc47f9530}|church.ccv.Web.dll;{334e53d7-e955-44ed-b190-14d19164cbb1}|church.ccv.Promotions.dll;{1a03c5da-6ae4-4e30-9266-733f68945794}|church.ccv.Podcasts.dll;{00EDCB8D-EF33-459C-AD62-02876BD24DFF}|DotLiquid.dll;{185A31D7-3037-4DAE-8797-0459849A84BD}|Rock.dll;{ADD1EDD0-A4CB-4E82-B6AD-6AD1D556DEAE}|Rock.Rest.dll;{2c4ff899-4347-44c0-adc2-927b58041c0b}|church.ccv.MobileApp.dll;{AEB3EBF4-253A-4438-A380-ECFF89C6BDDA}|church.ccv.Actions.dll;{d9f29b51-5fa0-4691-ba2e-b31ca836c05d}|church.ccv.FamilyManager.dll;{77e6a5fe-6afb-4704-9d8f-9b9587af393f}|church.ccv.MarketingSite.dll;{6FE0930C-6832-4C2F-8A76-D4E4A2D80DDF}|Rock.Version.dll;{d6b19c0d-da5e-4f75-8001-04ded86b741f}|Rock.Mailgun.dll;{cf8c694a-55a0-434f-bc96-3450b96ec12a}|Rock.Mandrill.dll;{704740d8-b539-4560-9f8c-681670c9d6ad}|Rock.Migrations.dll;{f3692909-952d-4c4a-b2d2-d90d0083cf53}|Rock.NMI.dll;{a005d091-140e-4ec4-bcdf-cf7d42bb702c}|Rock.PayFlowPro.dll;{1f5956f2-2b0f-49b8-aaf1-2cc28f01426a}|Rock.SignNow.dll;{46cf7669-522b-485e-a998-c74abc5078dc}|church.ccv.StreamingBox.dll;{a4235f0b-af30-4dc4-bd60-06e46c9195c2}|church.ccv.PurpleWifiSync.dll;{724f79b3-6b14-423e-bc8c-1e3f27cdf0b0}|church.ccv.ClientApp.dll;"
 		Debug.AspNetCompiler.VirtualPath = "/localhost_50345"
 		Debug.AspNetCompiler.PhysicalPath = "RockWeb\"
 		Debug.AspNetCompiler.TargetPath = "PrecompiledWeb\localhost_50345\"
@@ -87,6 +87,8 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "church.ccv.StreamingBox", "church.ccv.StreamingBox\church.ccv.StreamingBox.csproj", "{46CF7669-522B-485E-A998-C74ABC5078DC}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "church.ccv.PurpleWifiSync", "church.ccv.PurpleWifiSync\church.ccv.PurpleWifiSync.csproj", "{A4235F0B-AF30-4DC4-BD60-06E46C9195C2}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "church.ccv.ClientApp", "church.ccv.ClientApp\church.ccv.ClientApp.csproj", "{724F79B3-6B14-423E-BC8C-1E3F27CDF0B0}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -218,6 +220,10 @@ Global
 		{A4235F0B-AF30-4DC4-BD60-06E46C9195C2}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A4235F0B-AF30-4DC4-BD60-06E46C9195C2}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A4235F0B-AF30-4DC4-BD60-06E46C9195C2}.Release|Any CPU.Build.0 = Release|Any CPU
+		{724F79B3-6B14-423E-BC8C-1E3F27CDF0B0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{724F79B3-6B14-423E-BC8C-1E3F27CDF0B0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{724F79B3-6B14-423E-BC8C-1E3F27CDF0B0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{724F79B3-6B14-423E-BC8C-1E3F27CDF0B0}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
