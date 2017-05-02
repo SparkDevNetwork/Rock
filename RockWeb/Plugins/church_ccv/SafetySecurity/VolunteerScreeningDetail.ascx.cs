@@ -18,6 +18,7 @@ using church.ccv.SafetySecurity.Model;
 using Rock;
 using Rock.Data;
 using Rock.Model;
+using Rock.Web.UI.Controls;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -210,7 +211,7 @@ namespace RockWeb.Plugins.church_ccv.SafetySecurity
                     else
                     {
 
-                        lApplicationWorkflow.Text = "<a href=/WorkflowEntry/" + 206;
+                        lApplicationWorkflow.Text = "<a href=/WorkflowEntry/" + 211;
 
                         // now add the query params needed to re-send this application
                         lApplicationWorkflow.Text += string.Format( "?ApplicationWorkflowGuid={0}&ApplicantEmail={1}&ApplicantFirstName={2}&ApplicantLastName={3}&SourceVolunteerScreeningId={4}>", applicationWorkflow.Guid, person.Email, person.FirstName, person.LastName, vsInstance.Id );
@@ -253,7 +254,18 @@ namespace RockWeb.Plugins.church_ccv.SafetySecurity
                         WorkflowId = cr.Id,
                         WorkflowText = "View Form",
 
+                        
+                        
                         State = cr.Status == "Active" ? "Waiting for Response" : "Responded",
+
+                        // setup the values for re-sending this reference
+                        ResendReference = "Click to Resend",
+                        CharacterReferenceWorkflowGuid = cr.Guid,
+                        ApplicantFirstName = person.FirstName,
+                        ApplicantLastName = person.LastName,
+                        SourceVolunteerScreeningId = vsInstance.Id,
+                        ReferenceEmail = cr.AttributeValues["EmailAddress"].Value,
+
                         
                         PersonText = cr.AttributeValues["FirstName"].Value + " " + cr.AttributeValues["LastName"].Value
                     } );
@@ -271,6 +283,19 @@ namespace RockWeb.Plugins.church_ccv.SafetySecurity
                 lApplicationWorkflow.Text = "No Application Available";
                 gCharacterRefs.Visible = false;
             }
+        }
+
+        protected void CharacterRef_Delete( object sender, RowEventArgs e )
+        {
+            var rockContext = new RockContext();
+            WorkflowService workflowService = new WorkflowService( rockContext );
+            Workflow workflow = workflowService.Get( e.RowKeyId );
+            if ( workflow != null )
+            {
+                workflowService.Delete( workflow );
+                rockContext.SaveChanges();
+            }
+            
         }
                 
         // ---- Legacy Application Document File Uploader ---
