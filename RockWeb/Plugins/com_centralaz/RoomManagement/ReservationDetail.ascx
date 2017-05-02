@@ -21,7 +21,7 @@
                         <Rock:RockTextBox ID="rtbName" runat="server" Label="Event Name" Required="true" />
                         <Rock:RockDropDownList ID="ddlCampus" runat="server" Label="Campus" Required="false" />
                         <Rock:RockDropDownList ID="ddlMinistry" runat="server" Label="Ministry" Required="false" />
-                        <Rock:RockTextBox ID="rtbNote" runat="server" Label="Notes" TextMode="MultiLine" />
+                        <Rock:RockTextBox ID="rtbNote" runat="server" Label="Notes" TextMode="MultiLine" MaxLength="2500" />
                         <div class="row">
                             <div class="col-md-4">
                                 <Rock:NumberBox ID="nbAttending" runat="server" NumberType="Integer" MinimumValue="0" Label="Number Attending" Required="false" />
