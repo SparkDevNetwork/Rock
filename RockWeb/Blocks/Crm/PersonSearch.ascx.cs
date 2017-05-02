@@ -45,7 +45,8 @@ namespace RockWeb.Blocks.Crm
     [BooleanField( "Show Age", "Should an age column be displayed?", true, "", 3 )]
     [BooleanField( "Show Gender", "Should a gender column be displayed?", false, "", 4 )]
     [BooleanField( "Show Spouse", "Should a spouse column be displayed?", false, "", 5 )]
-    [BooleanField("Show Performance", "Displays how long the search took.", false, "", 6 )]
+    [BooleanField( "Show Envelope Number", "Should an envelope # column be displayed?", false, "", 6 )]
+    [BooleanField("Show Performance", "Displays how long the search took.", false, "", 7 )]
     public partial class PersonSearch : Rock.Web.UI.RockBlock
     {
         #region Fields
@@ -55,6 +56,7 @@ namespace RockWeb.Blocks.Crm
         private DefinedValueCache _inactiveStatus = null;
         private Stopwatch _sw = new Stopwatch();
         private Literal _lPerf = new Literal();
+        private Dictionary<int, string> _envelopeNumbers = null;
 
         #endregion
 
@@ -249,6 +251,15 @@ namespace RockWeb.Blocks.Crm
                                 }
                             }
                         }
+
+                        if ( _envelopeNumbers != null && _envelopeNumbers.ContainsKey( person.Id ) )
+                        {
+                            var lEnvelopeNumber = e.Row.FindControl( "lEnvelopeNumber" ) as Literal;
+                            if ( lEnvelopeNumber != null )
+                            {
+                                lEnvelopeNumber.Text = _envelopeNumbers[person.Id];
+                            }
+                        }
                     }
                     else
                     {
@@ -272,7 +283,19 @@ namespace RockWeb.Blocks.Crm
             var birthDateCol = gPeople.ColumnsOfType<DateField>().First( c => c.DataField == "BirthDate" );
             var ageCol = gPeople.ColumnsOfType<RockBoundField>().First( c => c.DataField == "Age" );
             var genderCol = gPeople.ColumnsOfType<RockBoundField>().First( c => c.DataField == "Gender" );
+            
+            var envelopeNumberField = gPeople.ColumnsOfType<RockLiteralField>().First( c => c.ID == "lEnvelopeNumber" );
             var spouseCol = gPeople.ColumnsOfType<RockTemplateField>().First( c => c.HeaderText == "Spouse" );
+
+            var personGivingEnvelopeAttribute = AttributeCache.Read( Rock.SystemGuid.Attribute.PERSON_GIVING_ENVELOPE_NUMBER.AsGuid() );
+            if ( personGivingEnvelopeAttribute != null )
+            {
+                envelopeNumberField.Visible = GlobalAttributesCache.Read().EnableGivingEnvelopeNumber && this.GetAttributeValue( "ShowEnvelopeNumber" ).AsBoolean();
+            }
+            else
+            {
+                envelopeNumberField.Visible = false;
+            }
 
             birthDateCol.Visible = GetAttributeValue( "ShowBirthdate" ).AsBoolean();
             ageCol.Visible = GetAttributeValue( "ShowAge" ).AsBoolean();
@@ -427,6 +450,20 @@ namespace RockWeb.Blocks.Crm
                     }
 
                     _inactiveStatus = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_INACTIVE );
+                    var personIds = personList.Select( a => a.Id ).ToList();
+
+                    if ( envelopeNumberField != null && envelopeNumberField.Visible )
+                    {
+                        _envelopeNumbers = new AttributeValueService( rockContext ).Queryable()
+                                            .Where( a => a.AttributeId == personGivingEnvelopeAttribute.Id )
+                                            .Where( a => personIds.Contains( a.EntityId.Value ) )
+                                            .Select( a => new
+                                            {
+                                                PersonId = a.EntityId.Value,
+                                                Value = a.Value
+                                            } ).ToList().ToDictionary( k => k.PersonId, v => v.Value );
+                    }
+
                     gPeople.EntityTypeId = EntityTypeCache.GetId<Person>();
 
                     gPeople.DataSource = personList;
