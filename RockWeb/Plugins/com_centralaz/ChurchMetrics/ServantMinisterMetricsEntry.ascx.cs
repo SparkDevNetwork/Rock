@@ -41,7 +41,8 @@ namespace RockWeb.Plugins.com_centralaz.ChurchMetrics
 
     [CategoryField( "Schedule Category", "The schedule category to use for list of service times. If this has category has child categories, Rock will search for one that contains the name of the currently selected campus. Otherwise, Rock will use this one.", false, "Rock.Model.Schedule", "", "", true, "", "", 0 )]
     [MetricCategoriesField( "Metric Categories", "Select the metric categories to display (note: only metrics in those categories with a campus and schedule partition will displayed).", true, "", "", 3 )]
-    [GroupField( "Parent Group", "The parent group to the campus-specific groups that dictate who can add metrics", true )]
+    [GroupField( "Group", "The group that dictates who can add metrics", true )]
+    [TextField( "Authorized Campuses Attribute Key", "The key to the groupmember attribute that dictates which campuses the person can enter metrics for.", true, "Campuses" )]
     public partial class ServantMinisterMetricsEntry : Rock.Web.UI.RockBlock
     {
         #region Fields
@@ -389,25 +390,44 @@ namespace RockWeb.Plugins.com_centralaz.ChurchMetrics
         {
             var campuses = new List<CampusCache>();
 
-            var parentGroupGuid = GetAttributeValue( "ParentGroup" ).AsGuidOrNull();
-            if ( parentGroupGuid != null )
+            if ( UserCanEdit )
             {
-                var parentGroup = new GroupService( new RockContext() ).Get( parentGroupGuid.Value );
-                if ( parentGroup != null )
-                {
-                    var authorizedCampusIds = parentGroup.Groups.Where( g => g.Members.Where( m => m.PersonId == CurrentPersonId ).Any() ).Select( g => g.CampusId ).Distinct().ToList();
-                    foreach ( var campus in CampusCache.All()
+                foreach ( var campus in CampusCache.All()
                             .Where( c => c.IsActive.HasValue &&
-                                c.IsActive.Value &&
-                                authorizedCampusIds.Contains( c.Id ) )
+                                c.IsActive.Value )
                             .OrderBy( c => c.Name ) )
+                {
+                    campuses.Add( campus );
+                }
+            }
+            else
+            {
+                var groupGuid = GetAttributeValue( "Group" ).AsGuidOrNull();
+                if ( groupGuid != null )
+                {
+                    var group = new GroupService( new RockContext() ).Get( groupGuid.Value );
+                    if ( group != null )
                     {
-                        campuses.Add( campus );
+                        var groupMember = new GroupMemberService( new RockContext() ).Queryable().Where( gm => gm.GroupId == group.Id && gm.PersonId == CurrentPersonId ).FirstOrDefault();
+                        if ( groupMember != null )
+                        {
+                            groupMember.LoadAttributes();
+                            var authorizedCampusIds = groupMember.GetAttributeValue( GetAttributeValue( "AuthorizedCampusesAttributeKey" ) ).SplitDelimitedValues().AsGuidList();
+                            if ( authorizedCampusIds != null )
+                            {
+                                foreach ( var campus in CampusCache.All()
+                                  .Where( c => c.IsActive.HasValue &&
+                                      c.IsActive.Value &&
+                                  authorizedCampusIds.Contains( c.Guid ) )
+                                  .OrderBy( c => c.Name ) )
+                                {
+                                    campuses.Add( campus );
+                                }
+                            }
+                        }
                     }
                 }
             }
-
-
 
             return campuses;
         }
