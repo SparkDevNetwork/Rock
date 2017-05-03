@@ -1467,7 +1467,7 @@ namespace RockWeb.Blocks.Crm
                         string labelText = string.Format( "<span class='js-select-item'><i class='fa {0}'></i></span> {1}", iconCss, attributeCache.Name );
                         Control control = attributeCache.AddControl( pw.Controls, string.Empty, string.Empty, setValues, true, false, labelText );
 
-                        if ( !( control is RockCheckBox ) && !( control is PersonPicker ) )
+                        if ( !( control is RockCheckBox ) && !( control is PersonPicker ) && !(control is ItemPicker) )
                         {
                             var webControl = control as WebControl;
                             if ( webControl != null )
