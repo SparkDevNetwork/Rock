@@ -568,7 +568,14 @@ namespace RockWeb.Blocks.Cms
             string entityValue = EntityValue();
             string html = string.Empty;
 
-            string cachedContent = HtmlContentService.GetCachedContent( this.BlockId, entityValue );
+            int cacheDuration = GetAttributeValue( "CacheDuration" ).AsInteger();
+            string cachedContent = null;
+
+            // only load from the cache if a cacheDuration was specified
+            if ( cacheDuration > 0 )
+            {
+                cachedContent = HtmlContentService.GetCachedContent( this.BlockId, entityValue );
+            }
 
             // if content not cached load it from DB
             if ( cachedContent == null )
@@ -624,7 +631,6 @@ namespace RockWeb.Blocks.Cms
                 html = html.Replace( "~~/", themeRoot ).Replace( "~/", appRoot );
 
                 // cache content
-                int cacheDuration = GetAttributeValue( "CacheDuration" ).AsInteger();
                 if ( cacheDuration > 0 )
                 {
                     HtmlContentService.AddCachedContent( this.BlockId, entityValue, html, cacheDuration );

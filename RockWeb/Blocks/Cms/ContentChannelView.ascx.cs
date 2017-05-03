@@ -610,15 +610,21 @@ $(document).ready(function() {
             Template template = null;
 
             try {
-                template = GetCacheItem( TEMPLATE_CACHE_KEY ) as Template;
+                int cacheDuration = GetAttributeValue( "CacheDuration" ).AsInteger();
+
+                // only load from the cache if a cacheDuration was specified
+                if ( cacheDuration > 0 )
+                {
+                    template = GetCacheItem( TEMPLATE_CACHE_KEY ) as Template;
+                }
+
                 if ( template == null )
                 {
                     template = Template.Parse( GetAttributeValue( "Template" ) );
 
-                    int? cacheDuration = GetAttributeValue( "CacheDuration" ).AsInteger();
                     if ( cacheDuration > 0 )
                     {
-                        var cacheItemPolicy = new CacheItemPolicy { AbsoluteExpiration = DateTimeOffset.Now.AddSeconds( cacheDuration.Value ) };
+                        var cacheItemPolicy = new CacheItemPolicy { AbsoluteExpiration = DateTimeOffset.Now.AddSeconds( cacheDuration ) };
                         AddCacheItem( TEMPLATE_CACHE_KEY, template, cacheItemPolicy );
                     }
                 }
@@ -633,7 +639,16 @@ $(document).ready(function() {
 
         private List<ContentChannelItem> GetContent( List<string> errorMessages )
         {
-            var items = GetCacheItem( CONTENT_CACHE_KEY ) as List<ContentChannelItem>;
+            List<ContentChannelItem> items = null;
+            
+            int cacheDuration = GetAttributeValue( "CacheDuration" ).AsInteger();
+
+            // only load from the cache if a cacheDuration was specified
+            if ( cacheDuration > 0 )
+            {
+                items = GetCacheItem( CONTENT_CACHE_KEY ) as List<ContentChannelItem>;
+            }
+
             bool queryParameterFiltering = GetAttributeValue( "QueryParameterFiltering" ).AsBoolean( false );
 
             if ( items == null || ( queryParameterFiltering && Request.QueryString.Count > 0 ) )
@@ -790,10 +805,9 @@ $(document).ready(function() {
 
                             }
 
-                            int? cacheDuration = GetAttributeValue( "CacheDuration" ).AsInteger();
                             if ( cacheDuration > 0 )
                             {
-                                var cacheItemPolicy = new CacheItemPolicy { AbsoluteExpiration = DateTimeOffset.Now.AddSeconds( cacheDuration.Value ) };
+                                var cacheItemPolicy = new CacheItemPolicy { AbsoluteExpiration = DateTimeOffset.Now.AddSeconds( cacheDuration ) };
                                 AddCacheItem( CONTENT_CACHE_KEY, items, cacheItemPolicy );
                             }
                         }
