@@ -14,6 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
@@ -32,6 +33,8 @@ namespace com.centralaz.RoomManagement.Model
         #region Entity Properties
 
         [DataMember]
+        [Required]
+        [MaxLength( 50 )]
         public string Name { get; set; }
 
         [DataMember]
@@ -50,6 +53,7 @@ namespace com.centralaz.RoomManagement.Model
         public int Quantity { get; set; }
 
         [DataMember]
+        [MaxLength( 2000 )]
         public string Note { get; set; }
 
         #endregion

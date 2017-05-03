@@ -21,7 +21,7 @@
 
                     <div class="row">
                         <div class="col-md-6">
-                            <Rock:RockTextBox ID="tbName" runat="server" Label="Name" Required="true" />
+                            <Rock:DataTextBox ID="tbName" runat="server" Label="Name" Required="true" SourceTypeName="com.centralaz.RoomManagement.Model.Resource, com.centralaz.RoomManagement" PropertyName="Name" />
                         </div>
                         <div class="col-md-3">
                             <Rock:CategoryPicker ID="cpCategory" runat="server" Label="Category" EntityTypeName="com.centralaz.RoomManagement.Model.Resource" Required="true" />
@@ -42,7 +42,7 @@
                             <Rock:LocationPicker ID="lpLocationPicker" runat="server" Label="Attached Location" AllowedPickerModes="Named" CurrentPickerMode="Named" Help="Specify a location only if this resource is constrained or locked to a location."/>
                         </div>
                     </div>
-                    <Rock:RockTextBox ID="tbNote" runat="server" Label="Note" TextMode="MultiLine" Rows="4" />
+                    <Rock:DataTextBox ID="tbNote" runat="server" Label="Note" TextMode="MultiLine" Rows="4" SourceTypeName="com.centralaz.RoomManagement.Model.Resource, com.centralaz.RoomManagement" PropertyName="Note" />
 
                     <div class="actions">
                         <asp:LinkButton ID="btnSave" runat="server" AccessKey="s" Text="Save" CssClass="btn btn-primary" OnClick="btnSave_Click" />
