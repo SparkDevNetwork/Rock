@@ -23,13 +23,13 @@
                         <Rock:RockDropDownList ID="ddlMinistry" runat="server" Label="Ministry" Required="false" />
                         <Rock:RockTextBox ID="rtbNote" runat="server" Label="Notes" TextMode="MultiLine" MaxLength="2500" />
                         <div class="row">
-                            <div class="col-md-4">
+                            <div class="col-md-3">
                                 <Rock:NumberBox ID="nbAttending" runat="server" NumberType="Integer" MinimumValue="0" Label="Number Attending" Required="false" />
                             </div>
-                            <div class="col-md-4">
+                            <div class="col-md-3">
                                 <Rock:FileUploader ID="fuSetupPhoto" runat="server" Label="Setup Photo" Help="If you'd like a special setup for your event, please upload a photo or diagram here." />
                             </div>
-                            <div class="col-md-4">
+                            <div class="col-md-6">
                                 <div class="form-group" id="divStatus" runat="server">
                                     <div class="form-control-static">
                                         <asp:HiddenField ID="hfApprovalState" runat="server" OnValueChanged="hfApprovalState_ValueChanged" />
@@ -97,8 +97,8 @@
                                             </Rock:RockTemplateField>
                                         <Rock:RockBoundField DataField="Quantity" HeaderText="Quantity" />
                                         <Rock:RockBoundField DataField="ApprovalState" HeaderText="Approved?" />
-                                        <Rock:LinkButtonField CssClass="btn btn-success" OnClick="gResources_ApproveClick" Text="Approve" Visible="true" />
-                                        <Rock:LinkButtonField CssClass="btn btn-danger" OnClick="gResources_DenyClick" Text="Deny" Visible="true" />
+                                        <Rock:LinkButtonField CssClass="btn btn-sm btn-success " OnClick="gResources_ApproveClick" Text="Approve" Visible="true" />
+                                        <Rock:LinkButtonField CssClass="btn btn-sm btn-danger" OnClick="gResources_DenyClick" Text="Deny" Visible="true" />
                                         <Rock:EditField OnClick="gResources_Edit" />
                                         <Rock:DeleteField OnClick="gResources_Delete" />
                                     </Columns>
