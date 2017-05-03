@@ -29,7 +29,7 @@
                 <asp:Panel ID="pnlMetrics" runat="server" Visible="false">
 
                     <div class="btn-group btn-group-justified margin-b-lg panel-settings-group">
-                        <Rock:ButtonDropDownList ID="bddlCampus" runat="server" OnSelectedIndexChanged="bddlCampus_SelectedIndexChanged"/>
+                        <Rock:ButtonDropDownList ID="bddlCampus" runat="server" OnSelectedIndexChanged="bddlCampus_SelectedIndexChanged" />
                         <Rock:ButtonDropDownList ID="bddlWeekend" runat="server" OnSelectionChanged="bddl_SelectionChanged" />
                         <Rock:ButtonDropDownList ID="bddlService" runat="server" OnSelectionChanged="bddl_SelectionChanged" />
                     </div>
@@ -37,11 +37,19 @@
                     <asp:ValidationSummary ID="vsDetails" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" />
                     <Rock:NotificationBox ID="nbMetricsSaved" runat="server" Text="Metric Values Have Been Updated" NotificationBoxType="Success" Visible="false" />
 
-                    <div class="form-horizontal label-md">
+                    <div class="form-horizontal label-xs">
                         <asp:Repeater ID="rptrMetric" runat="server" OnItemDataBound="rptrMetric_ItemDataBound">
                             <ItemTemplate>
                                 <asp:HiddenField ID="hfMetricId" runat="server" Value='<%# Eval("Id") %>' />
-                                <Rock:NumberBox ID="nbMetricValue" runat="server" NumberType="Double" Label='<%# Eval( "Name") %>' Text='<%# Eval( "Value") %>' />
+                                <div class="row">
+                                    <div class="col-xs-6" style="text-align:right">
+                                        <asp:Label ID="lMetricTitle" runat="server" Text='<%# Eval( "Name") %>' />
+                                    </div>
+                                    <div class="col-xs-6">
+                                        <Rock:NumberBox ID="nbMetricValue" runat="server" NumberType="Double" Text='<%# Eval( "Value") %>' />
+                                    </div>
+                                </div>
+                                <br />
                             </ItemTemplate>
                         </asp:Repeater>
                     </div>
