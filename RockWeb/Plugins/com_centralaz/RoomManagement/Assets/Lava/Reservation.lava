@@ -42,7 +42,12 @@
 			</div>
 		</div>
 		{% for reservationSummary in reservationDate %}
-		<div class="row">
+		{% if reservationSummary.ApprovalState == 'Unapproved' %}
+			{% assign rowclasss = 'text-warning' %}
+		{% else %}
+			{% assign rowclasss = '' %}
+		{% endif %}
+		<div class="row {{ rowclasss }}">
 			<div class="col-md-1">
 				{{ reservationSummary.ReservationName }}
 			</div>
