@@ -43,6 +43,7 @@ namespace RockWeb.Plugins.com_centralaz.ChurchMetrics
     [MetricCategoriesField( "Metric Categories", "Select the metric categories to display (note: only metrics in those categories with a campus and schedule partition will displayed).", true, "", "", 3 )]
     [GroupField( "Group", "The group that dictates who can add metrics", true )]
     [TextField( "Authorized Campuses Attribute Key", "The key to the groupmember attribute that dictates which campuses the person can enter metrics for.", true, "Campuses" )]
+    [TextField( "Notes Visible Attribute Key", "The key to the groupmember attribute that dictates whether the person can see the notes field.", true, "CanSeeNotes" )]
     public partial class ServantMinisterMetricsEntry : Rock.Web.UI.RockBlock
     {
         #region Fields
@@ -584,6 +585,29 @@ namespace RockWeb.Plugins.com_centralaz.ChurchMetrics
             rptrMetric.DataBind();
 
             tbNote.Text = notes.AsDelimited( Environment.NewLine + Environment.NewLine );
+
+            if ( UserCanEdit )
+            {
+                tbNote.Visible = true;
+            }
+            else
+            {
+                var groupGuid = GetAttributeValue( "Group" ).AsGuidOrNull();
+                if ( groupGuid != null )
+                {
+                    var group = new GroupService( new RockContext() ).Get( groupGuid.Value );
+                    if ( group != null )
+                    {
+                        var groupMember = new GroupMemberService( new RockContext() ).Queryable().Where( gm => gm.GroupId == group.Id && gm.PersonId == CurrentPersonId ).FirstOrDefault();
+                        if ( groupMember != null )
+                        {
+                            groupMember.LoadAttributes();
+                            bool canSeeNotes = groupMember.GetAttributeValue( GetAttributeValue( "NotesVisibleAttributeKey" ) ).AsBoolean();
+                            tbNote.Visible = canSeeNotes;
+                        }
+                    }
+                }
+            }
         }
 
         #endregion
