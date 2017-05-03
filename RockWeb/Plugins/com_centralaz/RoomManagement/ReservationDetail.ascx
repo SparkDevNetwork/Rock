@@ -7,6 +7,7 @@
 </script>
 <asp:UpdatePanel ID="upnlContent" runat="server">
     <ContentTemplate>
+        <asp:ValidationSummary ID="ValidationSummary1" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" />
         <Rock:NotificationBox ID="nbErrorWarning" runat="server" NotificationBoxType="Danger" />
         <asp:Panel ID="pnlView" runat="server" CssClass="panel panel-block">
 
@@ -18,10 +19,10 @@
             <div class="panel-body">
                 <div class="row">
                     <div class="col-md-6">
-                        <Rock:RockTextBox ID="rtbName" runat="server" Label="Event Name" Required="true" />
+                        <Rock:DataTextBox ID="rtbName" runat="server" Label="Event Name" Required="true" SourceTypeName="com.centralaz.RoomManagement.Model.Reservation, com.centralaz.RoomManagement" PropertyName="Name" />
                         <Rock:RockDropDownList ID="ddlCampus" runat="server" Label="Campus" Required="false" />
                         <Rock:RockDropDownList ID="ddlMinistry" runat="server" Label="Ministry" Required="false" />
-                        <Rock:RockTextBox ID="rtbNote" runat="server" Label="Notes" TextMode="MultiLine" MaxLength="2500" />
+                        <Rock:DataTextBox ID="rtbNote" runat="server" Label="Notes" TextMode="MultiLine" Rows="4" MaxLength="2500" SourceTypeName="com.centralaz.RoomManagement.Model.Reservation, com.centralaz.RoomManagement" PropertyName="Note"/>
                         <div class="row">
                             <div class="col-md-3">
                                 <Rock:NumberBox ID="nbAttending" runat="server" NumberType="Integer" MinimumValue="0" Label="Number Attending" Required="false" />
@@ -56,7 +57,7 @@
                     <div class="col-md-6">
                         <div class="row">
                             <div class="col-md-6">
-                                <Rock:RockLiteral Label="Requested By" ID="lRequestedBy" runat="server" Visible="false"></Rock:RockLiteral>
+                                <Rock:RockLiteral Label="Setup By" ID="lRequestedBy" runat="server" Visible="false"></Rock:RockLiteral>
                                 <Rock:RockControlWrapper ID="rcwSchedule" runat="server" Label="Schedule">
                                     <Rock:ScheduleBuilder ID="sbSchedule" runat="server" ValidationGroup="Schedule" Required="true" OnSaveSchedule="sbSchedule_SaveSchedule" />
                                     <asp:Literal ID="lScheduleText" runat="server" />
@@ -105,6 +106,13 @@
                                 </Rock:Grid>
                             </div>
                         </Rock:PanelWidget>
+                        <div class="row">
+                            <div class="col-md-12">                                
+                                <Rock:PersonPicker ID="ppContact" runat="server" Label="Contact" EnableSelfSelection="true" OnSelectPerson="ppContact_SelectPerson" Help="The person to contact if there are questions about this reservation." />
+                                <Rock:PhoneNumberBox ID="pnContactPhone" runat="server" Label="Contact Phone" />
+                                <Rock:EmailBox ID="tbContactEmail" runat="server" Label="Contact Email" />
+                            </div>
+                        </div>
                     </div>
                 </div>
                 <div class="actions">

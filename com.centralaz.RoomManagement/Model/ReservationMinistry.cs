@@ -14,6 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
@@ -37,6 +38,7 @@ namespace com.centralaz.RoomManagement.Model
         /// The name.
         /// </value>
         [DataMember]
+        [MaxLength( 50 )]
         public string Name { get; set; }
 
         /// <summary>

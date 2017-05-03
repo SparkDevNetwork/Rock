@@ -36,6 +36,7 @@ using Rock.Web.UI.Controls;
 using Rock.Security;
 using Rock.Communication;
 using System.Web;
+using System.Data.Entity;
 
 namespace RockWeb.Plugins.com_centralaz.RoomManagement
 {
@@ -277,170 +278,176 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void btnSave_OnClick( object sender, EventArgs e )
         {
-            RockContext rockContext = new RockContext();
-            ResourceService resourceService = new ResourceService( rockContext );
-            LocationService locationService = new LocationService( rockContext );
-            ReservationService reservationService = new ReservationService( rockContext );
-            ReservationResourceService reservationResourceService = new ReservationResourceService( rockContext );
-            ReservationLocationService reservationLocationService = new ReservationLocationService( rockContext );
-
-            Reservation reservation = null;
-
-            if ( PageParameter( "ReservationId" ).AsIntegerOrNull() != null )
+            if ( Page.IsValid )
             {
-                reservation = reservationService.Get( PageParameter( "ReservationId" ).AsInteger() );
-            }
+                RockContext rockContext = new RockContext();
+                ResourceService resourceService = new ResourceService( rockContext );
+                LocationService locationService = new LocationService( rockContext );
+                ReservationService reservationService = new ReservationService( rockContext );
+                ReservationResourceService reservationResourceService = new ReservationResourceService( rockContext );
+                ReservationLocationService reservationLocationService = new ReservationLocationService( rockContext );
 
-            if ( reservation == null )
-            {
-                reservation = new Reservation { Id = 0 };
-                reservation.ApprovalState = ReservationApprovalState.Unapproved;
-                reservation.RequesterAliasId = CurrentPersonAliasId;
-            }
-            else
-            {
-                var uiLocations = LocationsState.Select( l => l.Guid );
-                foreach ( var reservationLocation in reservation.ReservationLocations.Where( l => !uiLocations.Contains( l.Guid ) ).ToList() )
+                Reservation reservation = null;
+
+                if ( PageParameter( "ReservationId" ).AsIntegerOrNull() != null )
                 {
-                    reservation.ReservationLocations.Remove( reservationLocation );
-                    reservationLocationService.Delete( reservationLocation );
+                    reservation = reservationService.Get( PageParameter( "ReservationId" ).AsInteger() );
                 }
 
-                var uiResources = ResourcesState.Select( l => l.Guid );
-                foreach ( var reservationResource in reservation.ReservationResources.Where( l => !uiResources.Contains( l.Guid ) ).ToList() )
+                if ( reservation == null )
                 {
-                    reservation.ReservationResources.Remove( reservationResource );
-                    reservationResourceService.Delete( reservationResource );
-                }
-            }
-
-            foreach ( var reservationLocationState in LocationsState )
-            {
-                ReservationLocation reservationLocation = reservation.ReservationLocations.Where( a => a.Guid == reservationLocationState.Guid ).FirstOrDefault();
-                if ( reservationLocation == null )
-                {
-                    reservationLocation = new ReservationLocation();
-                    reservation.ReservationLocations.Add( reservationLocation );
+                    reservation = new Reservation { Id = 0 };
+                    reservation.ApprovalState = ReservationApprovalState.Unapproved;
+                    reservation.RequesterAliasId = CurrentPersonAliasId;
                 }
                 else
                 {
-                    reservationLocationState.Id = reservationLocation.Id;
-                    reservationLocationState.Guid = reservationLocation.Guid;
+                    var uiLocations = LocationsState.Select( l => l.Guid );
+                    foreach ( var reservationLocation in reservation.ReservationLocations.Where( l => !uiLocations.Contains( l.Guid ) ).ToList() )
+                    {
+                        reservation.ReservationLocations.Remove( reservationLocation );
+                        reservationLocationService.Delete( reservationLocation );
+                    }
+
+                    var uiResources = ResourcesState.Select( l => l.Guid );
+                    foreach ( var reservationResource in reservation.ReservationResources.Where( l => !uiResources.Contains( l.Guid ) ).ToList() )
+                    {
+                        reservation.ReservationResources.Remove( reservationResource );
+                        reservationResourceService.Delete( reservationResource );
+                    }
                 }
 
-                reservationLocation.CopyPropertiesFrom( reservationLocationState );
-                reservationLocation.Reservation = reservationService.Get( reservation.Id );
-                reservationLocation.Location = locationService.Get( reservationLocation.LocationId );
-                reservationLocation.ReservationId = reservation.Id;
-            }
-
-            foreach ( var reservationResourceState in ResourcesState )
-            {
-                ReservationResource reservationResource = reservation.ReservationResources.Where( a => a.Guid == reservationResourceState.Guid ).FirstOrDefault();
-                if ( reservationResource == null )
+                foreach ( var reservationLocationState in LocationsState )
                 {
-                    reservationResource = new ReservationResource();
-                    reservation.ReservationResources.Add( reservationResource );
+                    ReservationLocation reservationLocation = reservation.ReservationLocations.Where( a => a.Guid == reservationLocationState.Guid ).FirstOrDefault();
+                    if ( reservationLocation == null )
+                    {
+                        reservationLocation = new ReservationLocation();
+                        reservation.ReservationLocations.Add( reservationLocation );
+                    }
+                    else
+                    {
+                        reservationLocationState.Id = reservationLocation.Id;
+                        reservationLocationState.Guid = reservationLocation.Guid;
+                    }
+
+                    reservationLocation.CopyPropertiesFrom( reservationLocationState );
+                    reservationLocation.Reservation = reservationService.Get( reservation.Id );
+                    reservationLocation.Location = locationService.Get( reservationLocation.LocationId );
+                    reservationLocation.ReservationId = reservation.Id;
                 }
-                else
+
+                foreach ( var reservationResourceState in ResourcesState )
                 {
-                    reservationResourceState.Id = reservationResource.Id;
-                    reservationResourceState.Guid = reservationResource.Guid;
+                    ReservationResource reservationResource = reservation.ReservationResources.Where( a => a.Guid == reservationResourceState.Guid ).FirstOrDefault();
+                    if ( reservationResource == null )
+                    {
+                        reservationResource = new ReservationResource();
+                        reservation.ReservationResources.Add( reservationResource );
+                    }
+                    else
+                    {
+                        reservationResourceState.Id = reservationResource.Id;
+                        reservationResourceState.Guid = reservationResource.Guid;
+                    }
+
+                    reservationResource.CopyPropertiesFrom( reservationResourceState );
+                    reservationResource.Reservation = reservationService.Get( reservation.Id );
+                    reservationResource.Resource = resourceService.Get( reservationResource.ResourceId );
+                    reservationResource.ReservationId = reservation.Id;
                 }
 
-                reservationResource.CopyPropertiesFrom( reservationResourceState );
-                reservationResource.Reservation = reservationService.Get( reservation.Id );
-                reservationResource.Resource = resourceService.Get( reservationResource.ResourceId );
-                reservationResource.ReservationId = reservation.Id;
-            }
-
-            if ( sbSchedule.iCalendarContent != null )
-            {
-                reservation.Schedule = new Schedule();
-                reservation.Schedule.iCalendarContent = sbSchedule.iCalendarContent;
-            }
-
-            if ( ddlCampus.SelectedValueAsId().HasValue )
-            {
-                reservation.CampusId = ddlCampus.SelectedValueAsId().Value;
-            }
-
-            if ( ddlMinistry.SelectedValueAsId().HasValue )
-            {
-                reservation.ReservationMinistryId = ddlMinistry.SelectedValueAsId().Value;
-            }
-
-            int? orphanedImageId = null;
-            if ( reservation.SetupPhotoId != fuSetupPhoto.BinaryFileId )
-            {
-                orphanedImageId = reservation.SetupPhotoId;
-                reservation.SetupPhotoId = fuSetupPhoto.BinaryFileId;
-            }
-
-            reservation.Note = rtbNote.Text;
-            reservation.Name = rtbName.Text;
-            reservation.NumberAttending = nbAttending.Text.AsInteger();
-            reservation.SetupTime = nbSetupTime.Text.AsInteger();
-            reservation.CleanupTime = nbCleanupTime.Text.AsInteger();
-
-            //Check to make sure that nothing has a scheduling conflict.
-            bool hasConflict = false;
-            StringBuilder sb = new StringBuilder();
-            sb.Append( "<b>The Following items are already reserved for the scheduled times:<br><ul>" );
-            var reservedLocationIds = reservationService.GetReservedLocationIds( reservation );
-            foreach ( var location in reservation.ReservationLocations.Where( l => reservedLocationIds.Contains( l.LocationId ) ) )
-            {
-                sb.AppendFormat( "<li>{0}</li>", location.Location.Name );
-                hasConflict = true;
-            }
-
-            foreach ( var resource in reservation.ReservationResources )
-            {
-                var availableQuantity = new ReservationResourceService( rockContext ).GetAvailableResourceQuantity( resource.Resource, reservation );
-                if ( availableQuantity - resource.Quantity < 0 )
+                if ( sbSchedule.iCalendarContent != null )
                 {
-                    sb.AppendFormat( "<li>{0}</li>", resource.Resource.Name );
+                    reservation.Schedule = new Schedule();
+                    reservation.Schedule.iCalendarContent = sbSchedule.iCalendarContent;
+                }
+
+                if ( ddlCampus.SelectedValueAsId().HasValue )
+                {
+                    reservation.CampusId = ddlCampus.SelectedValueAsId().Value;
+                }
+
+                if ( ddlMinistry.SelectedValueAsId().HasValue )
+                {
+                    reservation.ReservationMinistryId = ddlMinistry.SelectedValueAsId().Value;
+                }
+
+                int? orphanedImageId = null;
+                if ( reservation.SetupPhotoId != fuSetupPhoto.BinaryFileId )
+                {
+                    orphanedImageId = reservation.SetupPhotoId;
+                    reservation.SetupPhotoId = fuSetupPhoto.BinaryFileId;
+                }
+
+                reservation.Note = rtbNote.Text;
+                reservation.Name = rtbName.Text;
+                reservation.NumberAttending = nbAttending.Text.AsInteger();
+                reservation.SetupTime = nbSetupTime.Text.AsInteger();
+                reservation.CleanupTime = nbCleanupTime.Text.AsInteger();
+                reservation.ContactPersonAliasId = ppContact.PersonAliasId;
+                reservation.ContactPhone = PhoneNumber.FormattedNumber( PhoneNumber.DefaultCountryCode(), pnContactPhone.Number );
+                reservation.ContactEmail = tbContactEmail.Text;
+
+                //Check to make sure that nothing has a scheduling conflict.
+                bool hasConflict = false;
+                StringBuilder sb = new StringBuilder();
+                sb.Append( "<b>The Following items are already reserved for the scheduled times:<br><ul>" );
+                var reservedLocationIds = reservationService.GetReservedLocationIds( reservation );
+                foreach ( var location in reservation.ReservationLocations.Where( l => reservedLocationIds.Contains( l.LocationId ) ) )
+                {
+                    sb.AppendFormat( "<li>{0}</li>", location.Location.Name );
                     hasConflict = true;
                 }
-            }
 
-            if ( hasConflict )
-            {
-                sb.Append( "</ul>" );
-                nbErrorWarning.Text = sb.ToString();
-                nbErrorWarning.Visible = true;
-                return;
-            }
-
-            reservation.ApprovalState = hfApprovalState.Value.ConvertToEnum<ReservationApprovalState>( ReservationApprovalState.Unapproved );
-            var groupGuidList = UpdateApproval( reservation, rockContext );
-
-            if ( reservation.Id.Equals( 0 ) )
-            {
-                reservationService.Add( reservation );
-            }
-
-            rockContext.SaveChanges();
-
-            // ..."need to fetch the item using a new service if you need the updated property as a fully hydrated entity"
-            reservation = new ReservationService( new RockContext() ).Get( reservation.Id );
-
-            // We can't send emails because it won't have an ID until the request is saved.
-            SendNotifications( reservation, groupGuidList, rockContext );
-
-            if ( orphanedImageId.HasValue )
-            {
-                BinaryFileService binaryFileService = new BinaryFileService( rockContext );
-                var binaryFile = binaryFileService.Get( orphanedImageId.Value );
-                if ( binaryFile != null )
+                foreach ( var resource in reservation.ReservationResources )
                 {
-                    // marked the old images as IsTemporary so they will get cleaned up later
-                    binaryFile.IsTemporary = true;
-                    rockContext.SaveChanges();
+                    var availableQuantity = new ReservationResourceService( rockContext ).GetAvailableResourceQuantity( resource.Resource, reservation );
+                    if ( availableQuantity - resource.Quantity < 0 )
+                    {
+                        sb.AppendFormat( "<li>{0}</li>", resource.Resource.Name );
+                        hasConflict = true;
+                    }
                 }
-            }
 
-            ReturnToParentPage();
+                if ( hasConflict )
+                {
+                    sb.Append( "</ul>" );
+                    nbErrorWarning.Text = sb.ToString();
+                    nbErrorWarning.Visible = true;
+                    return;
+                }
+
+                reservation.ApprovalState = hfApprovalState.Value.ConvertToEnum<ReservationApprovalState>( ReservationApprovalState.Unapproved );
+                var groupGuidList = UpdateApproval( reservation, rockContext );
+
+                if ( reservation.Id.Equals( 0 ) )
+                {
+                    reservationService.Add( reservation );
+                }
+
+                rockContext.SaveChanges();
+
+                // ..."need to fetch the item using a new service if you need the updated property as a fully hydrated entity"
+                reservation = new ReservationService( new RockContext() ).Get( reservation.Id );
+
+                // We can't send emails because it won't have an ID until the request is saved.
+                SendNotifications( reservation, groupGuidList, rockContext );
+
+                if ( orphanedImageId.HasValue )
+                {
+                    BinaryFileService binaryFileService = new BinaryFileService( rockContext );
+                    var binaryFile = binaryFileService.Get( orphanedImageId.Value );
+                    if ( binaryFile != null )
+                    {
+                        // marked the old images as IsTemporary so they will get cleaned up later
+                        binaryFile.IsTemporary = true;
+                        rockContext.SaveChanges();
+                    }
+                }
+
+                ReturnToParentPage();
+            }
         }
 
         /// <summary>
@@ -1106,6 +1113,27 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
                 pdAuditDetails.Visible = false;
                 reservation = new Reservation { Id = 0 };
 
+                // Auto fill out the Contact section with the Current Person's details...
+                reservation.ContactPersonAlias = CurrentPersonAlias;
+                reservation.ContactPersonAliasId = CurrentPersonAliasId;
+                reservation.ContactEmail = CurrentPerson.Email;
+                Guid workPhoneValueGuid = new Guid( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_WORK );
+                var workPhone = CurrentPerson.PhoneNumbers.Where( p => p.NumberTypeValue.Guid == workPhoneValueGuid ).FirstOrDefault();
+                if ( workPhone != null )
+                {
+                    reservation.ContactPhone = workPhone.NumberFormatted;
+                }
+                else
+                {
+                    // Try using their mobile number
+                    Guid mobilePhoneValueGuid = new Guid( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE);
+                    var mobilePhone = CurrentPerson.PhoneNumbers.Where( p => p.NumberTypeValue.Guid == mobilePhoneValueGuid ).FirstOrDefault();
+                    if ( mobilePhone != null )
+                    {
+                        reservation.ContactPhone = mobilePhone.NumberFormatted;
+                    }
+                }
+
                 if ( PageParameter( "LocationId" ).AsInteger() != 0 )
                 {
                     ReservationLocation reservationLocation = new ReservationLocation();
@@ -1163,7 +1191,11 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
             nbAttending.Text = reservation.NumberAttending.ToString();
             nbSetupTime.Text = reservation.SetupTime.HasValue ? reservation.SetupTime.ToString() : "30";
             nbCleanupTime.Text = reservation.CleanupTime.HasValue ? reservation.CleanupTime.ToString() : "30";
+            ppContact.SetValue( reservation.ContactPersonAlias != null ? reservation.ContactPersonAlias.Person : null );
 
+            pnContactPhone.Text = reservation.ContactPhone;
+            tbContactEmail.Text = reservation.ContactEmail;
+            
             LocationsState = reservation.ReservationLocations.ToList();
             BindReservationLocationsGrid();
             if ( LocationsState.Any() )
@@ -1247,6 +1279,44 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
 
             hfApprovalState.Value = reservation.ApprovalState.ConvertToString();
 
+        }
+
+        /// <summary>
+        /// Handles the SelectPerson event of the ppContact control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void ppContact_SelectPerson( object sender, EventArgs e )
+        {
+            if ( ppContact.PersonId.HasValue )
+            {
+                using ( var rockContext = new RockContext() )
+                {
+                    Guid workPhoneGuid = Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_WORK.AsGuid();
+                    var contactInfo = new PersonService( rockContext )
+                        .Queryable().AsNoTracking()
+                        .Where( p => p.Id == ppContact.PersonId.Value )
+                        .Select( p => new
+                        {
+                            Email = p.Email,
+                            Phone = p.PhoneNumbers
+                                .Where( n => n.NumberTypeValue.Guid.Equals( workPhoneGuid ) )
+                                .Select( n => n.NumberFormatted )
+                                .FirstOrDefault()
+                        } )
+                        .FirstOrDefault();
+
+                    if ( string.IsNullOrWhiteSpace( tbContactEmail.Text ) && contactInfo != null )
+                    {
+                        tbContactEmail.Text = contactInfo.Email;
+                    }
+
+                    if ( string.IsNullOrWhiteSpace( pnContactPhone.Text ) && contactInfo != null )
+                    {
+                        pnContactPhone.Text = contactInfo.Phone;
+                    }
+                }
+            }
         }
 
         /// <summary>

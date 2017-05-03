@@ -139,6 +139,7 @@ namespace com.centralaz.RoomManagement.Model
             public DateTime EventStartDateTime { get; set; }
             public DateTime EventEndDateTime { get; set; }
             public int? SetupPhotoId { get; set; }
+            public string Note { get; set; }
         }
 
         public class ReservationDate

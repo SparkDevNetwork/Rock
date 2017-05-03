@@ -315,7 +315,8 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
                 ReservationEndDateTime = r.ReservationEndDateTime,
                 EventDateTimeDescription = r.EventTimeDescription,
                 ReservationDateTimeDescription = r.ReservationTimeDescription,
-                SetupPhotoId = r.SetupPhotoId
+                SetupPhotoId = r.SetupPhotoId,
+                Note = r.Note
             } )
             .OrderBy( r => r.EventStartDateTime )
             .GroupBy( r => r.EventStartDateTime.Date )
@@ -464,6 +465,20 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
                         listItemTable.AddCell( new Phrase( reservationSummary.ApprovalState, listItemFont ) );
 
                         document.Add( listItemTable );
+
+                        if ( ! string.IsNullOrWhiteSpace( reservationSummary.Note ) )
+                        {
+                            document.Add( Chunk.NEWLINE );
+                            var listNoteTable = new PdfPTable( 1 );
+                            listNoteTable.LockedWidth = true;
+                            listNoteTable.TotalWidth = PageSize.A4.Width - document.LeftMargin - document.RightMargin;
+                            listNoteTable.HorizontalAlignment = 0;
+                            listNoteTable.SpacingBefore = 0;
+                            listNoteTable.SpacingAfter = 1;
+                            listNoteTable.DefaultCell.BorderWidth = 0;
+                            listNoteTable.AddCell( new Phrase( reservationSummary.Note, listItemFont ) );
+                            document.Add( listItemTable );
+                        }
                     }
                 }
             }

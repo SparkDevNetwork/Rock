@@ -40,8 +40,10 @@ namespace com.centralaz.RoomManagement.Model
         #region Entity Properties
 
         [DataMember]
+        [MaxLength( 50 )]
         public string Name { get; set; }
 
+        [Required]
         [DataMember]
         public int ScheduleId { get; set; }
 
@@ -70,11 +72,41 @@ namespace com.centralaz.RoomManagement.Model
         public int? NumberAttending { get; set; }
 
         [DataMember]
-        [StringLength( 2500 ), MaxLength( 2500 )]
+        [MaxLength( 2500 )]
         public string Note { get; set; }
 
         [DataMember]
         public int? SetupPhotoId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the name of the contact.
+        /// </summary>
+        /// <value>
+        /// The name of the contact.
+        /// </value>
+        [DataMember]
+        public int? ContactPersonAliasId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the contact phone.
+        /// </summary>
+        /// <value>
+        /// A <see cref="System.String"/> representing the phone number of the contact person.
+        /// </value>
+        [DataMember]
+        [MaxLength( 50 )]
+        public string ContactPhone { get; set; }
+
+        /// <summary>
+        /// Gets or sets the email address of the contact.
+        /// </summary>
+        /// <value>
+        /// A <see cref="System.String"/> representing the email of the contact person.
+        /// </value>
+        [DataMember]
+        [MaxLength( 400 )]
+        [RegularExpression( @"[\w\.\'_%-]+(\+[\w-]*)?@([\w-]+\.)+[\w-]+", ErrorMessage = "The Email address is invalid" )]
+        public string ContactEmail { get; set; }
 
         #endregion
 
@@ -136,6 +168,15 @@ namespace com.centralaz.RoomManagement.Model
 
         [DataMember]
         public virtual BinaryFile SetupPhoto { get; set; }
+
+        /// <summary>
+        /// Gets or sets the <see cref="Rock.Model.PersonAlias"/> representing the personalias who is the contact person.
+        /// </summary>
+        /// <value>
+        /// A <see cref="Rock.Model.PersonAlias"/> representing the personalias who is the contact person.
+        /// </value>
+        [DataMember]
+        public virtual PersonAlias ContactPersonAlias { get; set; }
 
         #endregion
 
@@ -308,7 +349,7 @@ namespace com.centralaz.RoomManagement.Model
             this.HasRequired( r => r.RequesterAlias ).WithMany().HasForeignKey( r => r.RequesterAliasId ).WillCascadeOnDelete( false );
             this.HasRequired( r => r.ApproverAlias ).WithMany().HasForeignKey( r => r.ApproverAliasId ).WillCascadeOnDelete( false );
             this.HasOptional( p => p.SetupPhoto ).WithMany().HasForeignKey( p => p.SetupPhotoId ).WillCascadeOnDelete( false );
-
+            this.HasOptional( p => p.ContactPersonAlias ).WithMany().HasForeignKey( p => p.ContactPersonAliasId ).WillCascadeOnDelete( false );
         }
     }
 
