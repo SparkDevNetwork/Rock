@@ -443,7 +443,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                                     }
 
                                     string givingEnvelopeWarningText = string.Format(
-                                        "The envelope # {0} is already assigned to {1}. Do you want to also assign this number to {2}?",
+                                        "The envelope #{0} is already assigned to {1}. Do you want to also assign this number to {2}?",
                                         newEnvelopeNumber,
                                         personListMessage,
                                         person.FullName );
