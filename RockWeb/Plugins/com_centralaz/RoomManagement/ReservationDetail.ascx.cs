@@ -42,7 +42,7 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
     [DisplayName( "Reservation Detail" )]
     [Category( "com_centralaz > Room Management" )]
     [Description( "Block for viewing a reservation detail" )]
-    [SecurityRoleField( "Super Admin Group", "The superadmin group that can force an approve / deny status on reservations, i.e. a facilities team.", false, com.centralaz.RoomManagement.SystemGuid.Group.GROUP_RESERVATION_ADMINISTRATORS, "" )]
+    [SecurityRoleField( "Super Admin Group", "The superadmin group that can force an approve / deny status on reservations, i.e. a facilities team.", false, "", "" )]
     [SecurityRoleField( "Final Approval Group", "An optional group that provides final approval for a reservation. If used, this should be the same group as in the Reservation Approval Workflow.", false, "", "" )]
     [SystemEmailField( "System Email", "A system email to use when notifying approvers about a reservation request.", true, "", "", 0 )]
     [BooleanField( "Save Communication History", "Should a record of this communication be saved to the recipient's profile", false, "", 2 )]
@@ -1386,6 +1386,7 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
         {
             List<Guid> groupGuidList = new List<Guid>();
 
+            Group finalApprovalGroup = null;
             bool inApprovalGroups = false;
             var superAdminGroup = new GroupService( new RockContext() ).Get( GetAttributeValue( "SuperAdminGroup" ).AsGuid() );
             if ( superAdminGroup != null )
@@ -1396,7 +1397,7 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
                 }
                 else
                 {
-                    var finalApprovalGroup = new GroupService( new RockContext() ).Get( GetAttributeValue( "FinalApprovalGroup" ).AsGuid() );
+                    finalApprovalGroup = new GroupService( new RockContext() ).Get( GetAttributeValue( "FinalApprovalGroup" ).AsGuid() );
                     if ( finalApprovalGroup != null )
                     {
                         if ( CurrentPerson.Members.Select( m => m.GroupId ).Distinct().ToList().Contains( finalApprovalGroup.Id ) )
@@ -1486,7 +1487,14 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
             {
                 if ( reservation.ReservationLocations.All( rl => rl.ApprovalState == ReservationLocationApprovalState.Approved ) && reservation.ReservationResources.All( rr => rr.ApprovalState == ReservationResourceApprovalState.Approved ) )
                 {
-                    reservation.ApprovalState = ReservationApprovalState.PendingReview;
+                    if ( finalApprovalGroup == null )
+                    {
+                        reservation.ApprovalState = ReservationApprovalState.Approved;
+                    }
+                    else
+                    {
+                        reservation.ApprovalState = ReservationApprovalState.PendingReview;
+                    }
                 }
                 else
                 {
