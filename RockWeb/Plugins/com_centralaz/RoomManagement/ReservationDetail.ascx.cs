@@ -1483,7 +1483,7 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
                 }
             }
 
-            if ( reservation.ApprovalState == ReservationApprovalState.Unapproved )
+            if ( reservation.ApprovalState == ReservationApprovalState.Unapproved || reservation.ApprovalState == ReservationApprovalState.PendingReview )
             {
                 if ( reservation.ReservationLocations.All( rl => rl.ApprovalState == ReservationLocationApprovalState.Approved ) && reservation.ReservationResources.All( rr => rr.ApprovalState == ReservationResourceApprovalState.Approved ) )
                 {
