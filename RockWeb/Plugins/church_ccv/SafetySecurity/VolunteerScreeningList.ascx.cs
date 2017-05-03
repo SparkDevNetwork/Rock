@@ -166,7 +166,7 @@ namespace RockWeb.Plugins.church_ccv.SafetySecurity
                             Id = vs.Id,
                             SentDate = vs.SentDate.ToShortDateString( ),
                             CompletedDate = ParseCompletedDate( vs.SentDate, vs.CompletedDate ),
-                            State = ParseState( vs.SentDate, vs.CompletedDate, vs.WorkflowStatus ),
+                            State = VolunteerScreening.GetState( vs.SentDate, vs.CompletedDate, vs.WorkflowStatus ),
                         } ).ToList( );
             }
             
@@ -184,36 +184,6 @@ namespace RockWeb.Plugins.church_ccv.SafetySecurity
                 return completedDate.ToShortDateString( );
             }
         }
-
-        string ParseState( DateTime sentDate, DateTime completedDate, string workflowStatus )
-        {
-            // there are 3 overall states for the screening process:
-            // Application Sent (modifiedDateTime == createdDateTime)
-            // Application Completed and in Review (modifiedDateTime > createdDateTime)
-            // Application Approved and now being reviewed by security (workflow == complete)
-            if( workflowStatus == "Completed" )
-            {
-                return "Handed off to Security";
-            }
-            else if ( completedDate > sentDate )
-            {
-                return "Application in Review";
-            }
-            else
-            {
-                return "Waiting for Applicant to Complete";
-            }
-        }
-
-        /*string ParseType( int typeVal )
-        {
-            string typeString = Enum.Parse( typeof( VolunteerScreening.Types ), typeVal.ToString( ) ).ToString( );
-
-            typeString = typeString.Replace( '_', ' ' );
-
-            return typeString;
-        }*/
-        
         #endregion
     }
 }

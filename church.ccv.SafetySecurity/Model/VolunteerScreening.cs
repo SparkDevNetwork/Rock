@@ -49,5 +49,29 @@ namespace church.ccv.SafetySecurity.Model
             [DataMember]
             public int? Legacy_CharacterReference3_DocFileId { get; set; }
             //
+
+            public const string sState_HandedOff = "Handed off to Security";
+            public const string sState_InReview = "Application in Review";
+            public const string sState_Waiting = "Waiting for Applicant to Complete";
+
+            public static string GetState( DateTime sentDate, DateTime completedDate, string workflowStatus )
+            {
+                // there are 3 overall states for the screening process:
+                // Application Sent (modifiedDateTime == createdDateTime)
+                // Application Completed and in Review (modifiedDateTime > createdDateTime)
+                // Application Approved and now being reviewed by security (workflow == complete)
+                if( workflowStatus == "Completed" )
+                {
+                    return sState_HandedOff;
+                }
+                else if ( completedDate > sentDate )
+                {
+                    return sState_InReview;
+                }
+                else
+                {
+                    return sState_Waiting;
+                }
+            }
         }
 }

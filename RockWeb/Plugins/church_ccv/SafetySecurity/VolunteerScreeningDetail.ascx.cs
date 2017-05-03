@@ -18,12 +18,14 @@ using church.ccv.SafetySecurity.Model;
 using Rock;
 using Rock.Data;
 using Rock.Model;
+using Rock.Web;
 using Rock.Web.UI.Controls;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data.Entity;
 using System.Linq;
+using System.Web;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
@@ -35,12 +37,17 @@ namespace RockWeb.Plugins.church_ccv.SafetySecurity
     [DisplayName( "Volunteer Screening Detail" )]
     [Category( "CCV > Safety and Security" )]
     [Description( "Block for users to create, edit, and volunteer screening instances." )]
-    
     public partial class VolunteerScreeningDetail : Rock.Web.UI.RockBlock
     {
         private List<int> DocumentsState { get; set; }
         
-        const int sCharacterReferenceWorkflowId = 203;
+        // Define the IDs for the various workflows needed
+        const int sBackgroundCheck_WorkflowId = 26;
+        const int sCharacterReference_WorkflowId = 203;
+        const int sSendNewCharacterReference_WorkflowId = 213;
+        const int sResendApplication_WorkflowId = 211;
+
+        private int VSInstanceId { get; set; }
 
         #region Base Control Methods
 
@@ -57,8 +64,38 @@ namespace RockWeb.Plugins.church_ccv.SafetySecurity
             gCharacterRefs.DataKeyNames = new string[] { "Id" };
             DocumentsState = new List<int>( );
 
+            gCharacterRefs.Actions.ShowAdd = true;
+            gCharacterRefs.Actions.AddClick += gCharacterRef_AddClick;
+
             // setup the legacy application file uploader's filetype
             fu_legAppFile.BinaryFileTypeGuid = Rock.SystemGuid.BinaryFiletype.DEFAULT.AsGuid();
+        }
+
+        protected void gCharacterRef_AddClick( object sender, EventArgs e )
+        {
+            // get the volunteer screening instance
+            using ( RockContext rockContext = new RockContext( ) )
+            {
+                // let it throw an exception if any of these objects come back null
+                VolunteerScreening vsInstance = new Service<VolunteerScreening>( rockContext ).Get( VSInstanceId );
+                
+                // setup the person info / Application Instance Header details
+                PersonAlias personAlias = new PersonAliasService( rockContext ).Get( vsInstance.PersonAliasId );
+                Person person = personAlias.Person;
+
+                Dictionary<string, string> pageParams = new Dictionary<string, string>( );
+                pageParams.Add( "WorkflowTypeId", sSendNewCharacterReference_WorkflowId.ToString( ) );
+                pageParams.Add( "ApplicationWorkflowId",vsInstance.Application_WorkflowId.ToString( ) );
+                pageParams.Add( "ApplicantFirstName", person.FirstName );
+                pageParams.Add( "ApplicantLastName", person.LastName );
+                pageParams.Add( "VolunteerScreeningInstanceId", vsInstance.Id.ToString( ) );
+                pageParams.Add( "ApplicantPrimaryAliasId", vsInstance.PersonAliasId.ToString( ) );
+                
+                PageReference pageRef = new PageReference( new Uri( ResolveRockUrlIncludeRoot("~/WorkflowEntry/" + sSendNewCharacterReference_WorkflowId.ToString( ) ) ), HttpContext.Current.Request.ApplicationPath );
+                pageRef.Parameters = pageParams;
+
+                NavigateToPage( pageRef );
+            }
         }
 
         /// <summary>
@@ -68,13 +105,13 @@ namespace RockWeb.Plugins.church_ccv.SafetySecurity
         protected override void OnLoad( EventArgs e )
         {
             base.OnLoad( e );
+
+            VSInstanceId = PageParameter( "VolunteerScreeningInstanceId" ).AsInteger();
             
             // load the VolunteerScreening instance
             if ( Page.IsPostBack == false )
             {
-                int vsInstanceId = PageParameter( "VolunteerScreeningInstanceId" ).AsInteger();
-
-                ShowDetail( vsInstanceId );
+                ShowDetail( VSInstanceId );
             }
         }
         
@@ -157,17 +194,17 @@ namespace RockWeb.Plugins.church_ccv.SafetySecurity
                             lBGCheck_Result.Text = "Pending";
 
                             // assume we'll link to launching a new background check, and all fields should be hidden
-                            string bgCheckText = "<a href=/WorkflowEntry/26?PersonId=" + person.Id + "&VolunteerScreeningInstanceId=" + vsInstance.Id + ">Request Background Check</a>";
+                            string bgCheckText = "<a href=/WorkflowEntry/" + sBackgroundCheck_WorkflowId.ToString( ) + "?PersonId=" + person.Id + "&VolunteerScreeningInstanceId=" + vsInstance.Id + ">Request Background Check</a>";
 
                             // but if there's a result, link them to the one in progress
                             List<int?> attribIds = new AttributeValueService( rockContext ).Queryable( ).AsNoTracking( ).Where( av => av.Attribute.Key == "VolunteerScreeningInstanceId" && av.ValueAsNumeric == vsInstance.Id ).Select( av => av.EntityId ).ToList( );
                             if( attribIds.Count > 0 )
                             { 
-                                Workflow bgCheckWorkflow = new WorkflowService( rockContext ).Queryable( ).AsNoTracking( ).Where( wf => wf.WorkflowTypeId == 26 && attribIds.Contains( wf.Id ) ).SingleOrDefault( );
+                                Workflow bgCheckWorkflow = new WorkflowService( rockContext ).Queryable( ).AsNoTracking( ).Where( wf => wf.WorkflowTypeId == sBackgroundCheck_WorkflowId && attribIds.Contains( wf.Id ) ).SingleOrDefault( );
                                 if ( bgCheckWorkflow != null )
                                 {
                                     // since there is one, let them view the date and doc (which may or may not be filled in)
-                                    bgCheckText = "<a href=/WorkflowEntry/26/" + bgCheckWorkflow.Id + ">Background Check In Progress</a>";
+                                    bgCheckText = "<a href=/WorkflowEntry/" + sBackgroundCheck_WorkflowId.ToString( ) + "/" + bgCheckWorkflow.Id + ">Background Check In Progress</a>";
                                 }
                             }
                             
@@ -211,7 +248,7 @@ namespace RockWeb.Plugins.church_ccv.SafetySecurity
                     else
                     {
 
-                        lApplicationWorkflow.Text = "<a href=/WorkflowEntry/" + 211;
+                        lApplicationWorkflow.Text = "<a href=/WorkflowEntry/" + sResendApplication_WorkflowId.ToString( );
 
                         // now add the query params needed to re-send this application
                         lApplicationWorkflow.Text += string.Format( "?ApplicationWorkflowGuid={0}&ApplicantEmail={1}&ApplicantFirstName={2}&ApplicantLastName={3}&SourceVolunteerScreeningId={4}>", applicationWorkflow.Guid, person.Email, person.FirstName, person.LastName, vsInstance.Id );
@@ -225,7 +262,7 @@ namespace RockWeb.Plugins.church_ccv.SafetySecurity
                 List<int?> attribIds = new AttributeValueService( rockContext ).Queryable( ).AsNoTracking( ).Where( av => av.Attribute.Key == "VolunteerScreeningInstanceId" && av.ValueAsNumeric == vsInstance.Id ).Select( av => av.EntityId ).ToList( );
                 if( attribIds.Count > 0 )
                 { 
-                    charRefWorkflows = workflowService.Queryable( ).AsNoTracking( ).Where( wf => wf.WorkflowTypeId == sCharacterReferenceWorkflowId && attribIds.Contains( wf.Id ) ).ToList( );
+                    charRefWorkflows = workflowService.Queryable( ).AsNoTracking( ).Where( wf => wf.WorkflowTypeId == sCharacterReference_WorkflowId && attribIds.Contains( wf.Id ) ).ToList( );
                 }
 
                 if ( charRefWorkflows.Count > 0 )
@@ -235,15 +272,6 @@ namespace RockWeb.Plugins.church_ccv.SafetySecurity
                     {
                         workflow.LoadAttributes( );
                     }
-                    // to make this query fast, first get the personAliasIds for each character reference
-                    //List<int> personAliasIds = charRefWorkflows.Select( cw => cw.AttributeValues["ReferencePrimaryAliasId"].Value.AsInteger( ) ).ToList( );
-
-                    // now pull only those people from the personAlias table
-                    //IQueryable<PersonAlias> personAliasQuery = new PersonAliasService( rockContext ).Queryable( ).AsNoTracking( );
-                    //var charRefPersonsQuery = personAliasQuery.Where( pa => personAliasIds.Contains( pa.Id ) );
-                    
-                    // and join them to their corresponding char reference application
-                    //var charRefWithPerson = charRefWorkflows.Join( charRefPersonsQuery, wf => wf.AttributeValues["ReferencePrimaryAliasId"].Value.AsInteger( ), pa => pa.Id, ( wf, pa ) => new { Workflow = wf, PersonAlias = pa }).ToList( );
 
                     lNoCharacterRefs.Visible = false;
                     gCharacterRefs.Visible = true;
@@ -253,8 +281,6 @@ namespace RockWeb.Plugins.church_ccv.SafetySecurity
                         Id = cr.Id,
                         WorkflowId = cr.Id,
                         WorkflowText = "View Form",
-
-                        
                         
                         State = cr.Status == "Active" ? "Waiting for Response" : "Responded",
 
@@ -265,7 +291,6 @@ namespace RockWeb.Plugins.church_ccv.SafetySecurity
                         ApplicantLastName = person.LastName,
                         SourceVolunteerScreeningId = vsInstance.Id,
                         ReferenceEmail = cr.AttributeValues["EmailAddress"].Value,
-
                         
                         PersonText = cr.AttributeValues["FirstName"].Value + " " + cr.AttributeValues["LastName"].Value
                     } );
@@ -295,7 +320,6 @@ namespace RockWeb.Plugins.church_ccv.SafetySecurity
                 workflowService.Delete( workflow );
                 rockContext.SaveChanges();
             }
-            
         }
                 
         // ---- Legacy Application Document File Uploader ---

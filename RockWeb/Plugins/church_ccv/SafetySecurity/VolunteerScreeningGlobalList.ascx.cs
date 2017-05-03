@@ -20,6 +20,7 @@ using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
+using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 using System;
@@ -39,19 +40,116 @@ namespace RockWeb.Plugins.church_ccv.SafetySecurity
     public partial class VolunteerScreeningGlobalList : RockBlock
     {                
         #region Control Methods
-
-        /// <summary>
-        /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
-        /// </summary>
-        /// <param name="e">An <see cref="T:System.EventArgs" /> object that contains the event data.</param>
+        
         protected override void OnInit( EventArgs e )
         {
             base.OnInit( e );
             
-            InitInstancesGrid( );
+            InitFilter( );
+            InitGrid( );
+        }
+        
+        protected override void OnLoad( EventArgs e )
+        {
+            base.OnLoad( e );
+            
+            if ( !Page.IsPostBack )
+            {   
+                BindFilter( );
+                BindGrid( );
+            }
+        }
+        
+        #endregion
+        
+        #region Filter Methods
+
+        void InitFilter( )
+        {
+            rFilter.ApplyFilterClick += rFilter_ApplyFilterClick;
         }
 
-        void InitInstancesGrid( )
+        protected void rFilter_ApplyFilterClick( object sender, EventArgs e )
+        {
+            rFilter.SaveUserPreference( "Campus", "Campus", cblCampus.SelectedValues.AsDelimited( ";" ) );
+            rFilter.SaveUserPreference( "Status", ddlStatus.SelectedValue );
+            rFilter.SaveUserPreference( "STARS Applicant", ddlStarsApp.SelectedValue );
+
+            BindFilter( );
+            BindGrid( );
+        }
+
+        protected void rFilter_DisplayFilterValue( object sender, GridFilter.DisplayFilterValueArgs e )
+        {
+            switch ( e.Key )
+            {
+                case "Campus":
+                {
+                    var values = new List<string>();
+                    foreach ( string value in e.Value.Split( ';' ) )
+                    {
+                        var item = cblCampus.Items.FindByValue( value );
+                        if ( item != null )
+                        {
+                            values.Add( item.Text );
+                        }
+                    }
+                    e.Value = values.AsDelimited( ", " );
+                    break;
+                }
+
+                case "Status":
+                {
+                    e.Value = rFilter.GetUserPreference( "Status" );
+                    break;
+                }
+
+                case "STARS Applicant":
+                {
+                    e.Value = rFilter.GetUserPreference( "STARS Applicant" );
+                    break;
+                }
+
+                default:
+                {
+                    e.Value = string.Empty;
+                    break;
+                }
+            }
+        }
+
+        private void BindFilter()
+        {
+            // setup the campus
+            cblCampus.DataSource = CampusCache.All( false );
+            cblCampus.DataBind();
+
+            string campusValue = rFilter.GetUserPreference( "Campus" );
+            if ( !string.IsNullOrWhiteSpace( campusValue ) )
+            {
+                cblCampus.SetValues( campusValue.Split( ';' ).ToList() );
+            }
+
+            // setup the status / state
+            ddlStatus.Items.Clear( );
+            ddlStatus.Items.Add( string.Empty );
+            ddlStatus.Items.Add( VolunteerScreening.sState_HandedOff );
+            ddlStatus.Items.Add( VolunteerScreening.sState_InReview );
+            ddlStatus.Items.Add( VolunteerScreening.sState_Waiting );
+            ddlStatus.SetValue( rFilter.GetUserPreference( "Status" ) );
+
+            // setup the STARS applicants
+            ddlStarsApp.Items.Clear( );
+            ddlStarsApp.Items.Add( string.Empty );
+            ddlStarsApp.Items.Add( "Yes" );
+            ddlStarsApp.Items.Add( "No" );
+            ddlStarsApp.SetValue( rFilter.GetUserPreference( "STARS Applicant" ) );
+        }
+        #endregion
+
+        #region Grid Methods
+
+        void InitGrid( )
         {
             gGrid.DataKeyNames = new string[] { "Id" };
             
@@ -66,38 +164,10 @@ namespace RockWeb.Plugins.church_ccv.SafetySecurity
             gGrid.GridRebind += gGrid_Rebind;
         }
 
-        /// <summary>
-        /// Raises the <see cref="E:System.Web.UI.Control.Load" /> event.
-        /// </summary>
-        /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
-        protected override void OnLoad( EventArgs e )
-        {
-            base.OnLoad( e );
-            
-            if ( !Page.IsPostBack )
-            {   
-                using ( RockContext rockContext = new RockContext( ) )
-                {
-                    BindGrid( rockContext );
-                }
-            }
-        }
-        
-        #endregion
-        
-        #region Grid Events (main grid)
-        
-        /// <summary>
-        /// Handles the GridRebind event of the gPromotions control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         private void gGrid_Rebind( object sender, EventArgs e )
         {
-            using ( RockContext rockContext = new RockContext( ) )
-            {
-                BindGrid( rockContext );
-            }
+            BindFilter( );
+            BindGrid( );
         }
 
         protected void gGrid_Edit( object sender, RowEventArgs e )
@@ -107,42 +177,113 @@ namespace RockWeb.Plugins.church_ccv.SafetySecurity
 
             NavigateToLinkedPage( "DetailPage", qryParams );
         }
+        
+        private void BindGrid( )
+        {
+            using ( RockContext rockContext = new RockContext( ) )
+            {
+                // get all the volunteer screening instances tied to this person
+                var vsQuery = new Service<VolunteerScreening>( rockContext ).Queryable( ).AsNoTracking( );
+                var paQuery = new Service<PersonAlias>( rockContext ).Queryable( ).AsNoTracking( );
+                var wfQuery = new Service<Workflow>( rockContext ).Queryable( ).AsNoTracking( );
+            
+                var instanceQuery = vsQuery.Join( paQuery, vs => vs.PersonAliasId, pa => pa.Id, ( vs, pa ) => new { VolunteerScreening = vs, PersonName = pa.Person.FirstName + " " + pa.Person.LastName } )
+                                           .Join( wfQuery, vs => vs.VolunteerScreening.Application_WorkflowId, wf => wf.Id, ( vs, wf ) => new { VolunteerScreeningWithPerson = vs, Workflow = wf } )
+                                           .Select( a => new { Id = a.VolunteerScreeningWithPerson.VolunteerScreening.Id,
+                                                               SentDate = a.VolunteerScreeningWithPerson.VolunteerScreening.CreatedDateTime.Value,
+                                                               CompletedDate = a.VolunteerScreeningWithPerson.VolunteerScreening.ModifiedDateTime.Value,
+                                                               PersonName = a.VolunteerScreeningWithPerson.PersonName,
+                                                               Workflow = a.Workflow } ).ToList( );
 
+                // load all attributes for the workflows, since we need them for the grid
+                foreach( var queryObj in instanceQuery )
+                {
+                    queryObj.Workflow.LoadAttributes( );
+                }
+
+                // ---- Apply Filters ----
+                var filteredQuery = instanceQuery;
+
+                // Campus
+                List<int> campusIds = cblCampus.SelectedValuesAsInt;
+                if( campusIds.Count > 0 )
+                {
+                    // the workflows store the campus by name, so convert the selected Ids to names
+                    List<string> selectedCampusNames = CampusCache.All( ).Where( cc => campusIds.Contains( cc.Id ) ).Select( cc => cc.Name ).ToList( );
+
+                    filteredQuery = filteredQuery.Where( vs => ContainsCampus( selectedCampusNames, vs.Workflow ) ).ToList( );
+                }
+
+                // Status
+                string statusValue = rFilter.GetUserPreference( "Status" );
+                if ( string.IsNullOrWhiteSpace( statusValue ) == false )
+                {
+                    filteredQuery = filteredQuery.Where( vs => VolunteerScreening.GetState( vs.SentDate, vs.CompletedDate, vs.Workflow.Status ) == statusValue ).ToList( );
+                }
+
+                // STARS Applicant
+                string starsApp = rFilter.GetUserPreference( "STARS Applicant" );
+                if ( string.IsNullOrWhiteSpace( starsApp ) == false )
+                {
+                    filteredQuery = filteredQuery.Where( vs => IsStars( vs.Workflow ) == starsApp ).ToList( );
+                }
+
+                // ---- End Filters ----
+            
+                if ( filteredQuery.Count( ) > 0 )
+                {
+                    gGrid.DataSource = filteredQuery.OrderByDescending( vs => vs.SentDate ).OrderByDescending( vs => vs.CompletedDate ).Select( vs => 
+                        new {
+                                Name = vs.PersonName,
+                                Id = vs.Id,
+                                SentDate = vs.SentDate.ToShortDateString( ),
+                                CompletedDate = ParseCompletedDate( vs.SentDate, vs.CompletedDate ),
+                                State = VolunteerScreening.GetState( vs.SentDate, vs.CompletedDate, vs.Workflow.Status ),
+                                Campus = GetCampus( vs.Workflow ),
+                                IsStars = IsStars( vs.Workflow )
+                            } ).ToList( );
+                }
+
+                gGrid.DataBind( );
+            }
+        }
         #endregion
 
-        #region Internal Methods
-
-        /// <summary>
-        /// Binds the grid.
-        /// </summary>
-        private void BindGrid( RockContext rockContext )
+        #region Helper Methods
+        bool ContainsCampus( List<string> selectedCampusNames, Workflow  workflow )
         {
-            // get all the volunteer screening instances tied to this person
-            var vsQuery = new Service<VolunteerScreening>( rockContext ).Queryable( ).AsNoTracking( );
-            var paQuery = new Service<PersonAlias>( rockContext ).Queryable( ).AsNoTracking( );
-            var wfQuery = new Service<Workflow>( rockContext ).Queryable( ).AsNoTracking( );
-            
-            var instanceQuery = vsQuery.Join( paQuery, vs => vs.PersonAliasId, pa => pa.Id, ( vs, pa ) => new { VolunteerScreening = vs, PersonName = pa.Person.FirstName + " " + pa.Person.LastName } )
-                                       .Join( wfQuery, vs => vs.VolunteerScreening.Application_WorkflowId, wf => wf.Id, ( vs, wf ) => new { VolunteerScreeningWithPerson = vs, WorkflowStatus = wf.Status } )
-                                       .Select( a => new { Id = a.VolunteerScreeningWithPerson.VolunteerScreening.Id,
-                                                           SentDate = a.VolunteerScreeningWithPerson.VolunteerScreening.CreatedDateTime.Value,
-                                                           CompletedDate = a.VolunteerScreeningWithPerson.VolunteerScreening.ModifiedDateTime.Value,
-                                                           PersonName = a.VolunteerScreeningWithPerson.PersonName,
-                                                           WorkflowStatus = a.WorkflowStatus } ).ToList( );
-            
-            if ( instanceQuery.Count( ) > 0 )
+            if( workflow.AttributeValues.ContainsKey( "Campus" ) )
             {
-                gGrid.DataSource = instanceQuery.OrderByDescending( vs => vs.SentDate ).OrderByDescending( vs => vs.CompletedDate ).Select( vs => 
-                    new {
-                            Name = vs.PersonName,
-                            Id = vs.Id,
-                            SentDate = vs.SentDate.ToShortDateString( ),
-                            CompletedDate = ParseCompletedDate( vs.SentDate, vs.CompletedDate ),
-                            State = ParseState( vs.SentDate, vs.CompletedDate, vs.WorkflowStatus ),
-                        } ).ToList( );
+                // check for the campus in the selected list. if somehow campus is null, we'll go ahead and display 
+                // the entry
+                string workflowCampus = workflow.AttributeValues [ "Campus" ].ToString( );
+                if( string.IsNullOrEmpty( workflowCampus ) == false )
+                {
+                    return selectedCampusNames.Contains( workflowCampus );
+                }
             }
-            
-            gGrid.DataBind();
+
+            return true;
+        }
+
+        string GetCampus( Workflow workflow )
+        {
+            if( workflow.AttributeValues.ContainsKey( "Campus" ) )
+            {
+                return workflow.AttributeValues [ "Campus" ].ToString( );
+            }
+
+            return string.Empty;
+        }
+
+        string IsStars( Workflow workflow )
+        {
+            if( workflow.AttributeValues.ContainsKey( "ApplyingForStars" ) )
+            {
+                return workflow.AttributeValues [ "ApplyingForStars" ].ToString( );
+            }
+
+            return string.Empty;
         }
 
         string ParseCompletedDate( DateTime sentDate, DateTime completedDate )
@@ -156,27 +297,6 @@ namespace RockWeb.Plugins.church_ccv.SafetySecurity
                 return completedDate.ToShortDateString( );
             }
         }
-
-        string ParseState( DateTime sentDate, DateTime completedDate, string workflowStatus )
-        {
-            // there are 3 overall states for the screening process:
-            // Application Sent (modifiedDateTime == createdDateTime)
-            // Application Completed and in Review (modifiedDateTime > createdDateTime)
-            // Application Approved and now being reviewed by security (workflow == complete)
-            if( workflowStatus == "Completed" )
-            {
-                return "Handed off to Security";
-            }
-            else if ( completedDate > sentDate )
-            {
-                return "Application in Review";
-            }
-            else
-            {
-                return "Waiting for Applicant to Complete";
-            }
-        }
-        
         #endregion
     }
 }
