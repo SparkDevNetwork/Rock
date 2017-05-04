@@ -355,7 +355,7 @@ namespace RockWeb.Blocks.Finance
                         .Select( c => new
                         {
                             CampusId = c.Key,
-                            Accounts = c.OrderBy( a => a.Name ).Select( a => new { a.Id, a.Name } ).ToList()
+                            Accounts = c.OrderBy( a => a.Order ).ThenBy( a => a.Name ).Select( a => new { a.Id, a.Name } ).ToList()
                         } ) )
                     {
                         _campusAccounts.Add( campusAccounts.CampusId, new Dictionary<int, string>() );
