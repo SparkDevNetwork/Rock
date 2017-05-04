@@ -29,7 +29,7 @@
                 <asp:Panel ID="pnlMetrics" runat="server" Visible="false">
 
                     <div class="btn-group btn-group-justified margin-b-lg panel-settings-group">
-                        <Rock:ButtonDropDownList ID="bddlCampus" runat="server" OnSelectedIndexChanged="bddlCampus_SelectedIndexChanged" />
+                        <Rock:ButtonDropDownList ID="bddlCampus" runat="server" OnSelectionChanged="bddlCampus_SelectionChanged" />
                         <Rock:ButtonDropDownList ID="bddlWeekend" runat="server" OnSelectionChanged="bddl_SelectionChanged" />
                         <Rock:ButtonDropDownList ID="bddlService" runat="server" OnSelectionChanged="bddl_SelectionChanged" />
                     </div>
@@ -42,7 +42,7 @@
                             <ItemTemplate>
                                 <asp:HiddenField ID="hfMetricId" runat="server" Value='<%# Eval("Id") %>' />
                                 <div class="row">
-                                    <div class="col-xs-6" style="text-align:right">
+                                    <div class="col-xs-6" style="text-align: right">
                                         <asp:Label ID="lMetricTitle" runat="server" Text='<%# Eval( "Name") %>' />
                                     </div>
                                     <div class="col-xs-6">

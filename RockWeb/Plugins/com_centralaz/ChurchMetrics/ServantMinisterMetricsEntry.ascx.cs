@@ -270,8 +270,11 @@ namespace RockWeb.Plugins.com_centralaz.ChurchMetrics
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void bddlCampus_SelectedIndexChanged( object sender, EventArgs e )
+        protected void bddlCampus_SelectionChanged( object sender, EventArgs e )
         {
+            _selectedCampusId = bddlCampus.SelectedValueAsInt();
+            bddlService.Items.Clear();
+
             // Load service times
             foreach ( var service in GetServices() )
             {
