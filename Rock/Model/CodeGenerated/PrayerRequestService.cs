@@ -92,6 +92,7 @@ namespace Rock.Model
             target.Answer = source.Answer;
             target.ApprovedByPersonAliasId = source.ApprovedByPersonAliasId;
             target.ApprovedOnDateTime = source.ApprovedOnDateTime;
+            target.CampusId = source.CampusId;
             target.CategoryId = source.CategoryId;
             target.Email = source.Email;
             target.EnteredDateTime = source.EnteredDateTime;
