@@ -1106,6 +1106,7 @@
     <Compile Include="Transactions\DeleteIndexEntityTransaction.cs" />
     <Compile Include="Transactions\IndexEntityTransaction.cs" />
     <Compile Include="Transactions\BulkIndexEntityTypeTransaction.cs" />
+    <Compile Include="Transactions\LaunchWorkflowsTransaction.cs" />
     <Compile Include="Transactions\SendPaymentReceipts.cs" />
     <Compile Include="Transactions\SendPaymentReciepts.cs" />
     <Compile Include="UniversalSearch\Crawler\Crawler.cs" />
