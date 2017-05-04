@@ -37,11 +37,37 @@ namespace Rock.Web.UI.Controls.Communication
         private RockDropDownList ddlFrom;
         private RockControlWrapper rcwMessage;
         private MergeFieldPicker mfpMessage;
+        private Label lblCount;
         private RockTextBox tbMessage;
 
         #endregion
 
+        #region Base Control Methods
+
+        protected override void OnInit( EventArgs e )
+        {
+            base.OnInit( e );
+
+            // add the bootstrap-limit so that we can have a countdown of characters when entering SMS text
+            int charLimit = this.CharacterLimit;
+            if ( charLimit > 0 )
+            {
+                string script = $"$('#{tbMessage.ClientID}').limit({{maxChars: {charLimit}, counter:'#{lblCount.ClientID}', normalClass:'badge', warningClass:'badge-warning', overLimitClass: 'badge-danger'}})";
+                ScriptManager.RegisterStartupScript( this, this.GetType(), $"limit-{this.ClientID}", script, true );
+            }
+        }
+
+        #endregion Base Control Methods
+
         #region Properties
+
+        /// <summary>
+        /// Gets or sets the character limit.
+        /// </summary>
+        /// <value>
+        /// The character limit.
+        /// </value>
+        public int CharacterLimit { get; set; }
 
         /// <summary>
         /// Gets or sets the medium data.
@@ -110,6 +136,12 @@ namespace Rock.Web.UI.Controls.Communication
             tbMessage.Rows = 3;
             tbMessage.Required = true;
             rcwMessage.Controls.Add( tbMessage );
+
+            lblCount = new Label();
+            lblCount.CssClass = "pull-right badge margin-t-sm";
+            lblCount.ID = string.Format( "lblCount_{0}", this.ID );
+            lblCount.Visible = this.CharacterLimit > 0;
+            rcwMessage.Controls.Add( lblCount );
         }
 
         /// <summary>
