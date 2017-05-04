@@ -34,15 +34,17 @@
 			{% assign startTimeDiff = 'Now' | DateDiff:reservationSummary.EventStartDateTime,'s' %}
 			{% assign endTimeDiff = 'Now' | DateDiff:reservationSummary.EventEndDateTime,'s' %}
 
+			{% assign bold = "" %}
 			{% if endTimeDiff < 0  %}
 				{% assign rowclasss = 'text-muted' %}
 			{% elseif startTimeDiff < 0 and endTimeDiff > 0 %}
-				{% assign rowclasss = 'bg-warning' %}
+				{% assign rowclasss = 'bg-info' %}
+				{% assign bold = 'font-weight: bold' %}
 			{% else %}
 				{% assign rowclasss = '' %}
 			{% endif %}
 
-		<div class="row {{ rowclasss }}">
+		<div class="row {{ rowclasss }}" style="{{bold}}" >
 
 			<div class="col-xs-3">       
 				{{ reservationSummary.EventDateTimeDescription }}
