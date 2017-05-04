@@ -291,6 +291,7 @@ namespace RockWeb.Plugins.church_ccv.SafetySecurity
                         ApplicantLastName = person.LastName,
                         SourceVolunteerScreeningId = vsInstance.Id,
                         ReferenceEmail = cr.AttributeValues["EmailAddress"].Value,
+                        Type = cr.AttributeValues["Type"].Value,
                         
                         PersonText = cr.AttributeValues["FirstName"].Value + " " + cr.AttributeValues["LastName"].Value
                     } );

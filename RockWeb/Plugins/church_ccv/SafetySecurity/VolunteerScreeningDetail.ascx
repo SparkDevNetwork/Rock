@@ -84,6 +84,7 @@
                         <Rock:RockBoundField DataField="PersonText" HeaderText="Person" SortExpression="PersonText" />
                         <asp:HyperLinkField DataNavigateUrlFields="WorkflowId" DataTextField="WorkflowText" DataNavigateUrlFormatString="~/page/1492?CharacterReferenceWorkflowId={0}" HeaderText="Review" />
                         <Rock:RockBoundField DataField="State" HeaderText="State" SortExpression="State" />
+                        <Rock:RockBoundField DataField="Type" HeaderText="Type" SortExpression="Type" />
                         
                         <asp:HyperLinkField DataNavigateUrlFields="CharacterReferenceWorkflowGuid, ApplicantFirstName, ApplicantLastName, SourceVolunteerScreeningId, ReferenceEmail" DataTextField="ResendReference" 
                                             DataNavigateUrlFormatString="/WorkflowEntry/212?CharacterReferenceWorkflowGuid={0}&ApplicantFirstName={1}&ApplicantLastName={2}&SourceVolunteerScreeningId={3}&ReferenceEmail={4}" 
