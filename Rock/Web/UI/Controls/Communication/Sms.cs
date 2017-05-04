@@ -126,9 +126,15 @@ namespace Rock.Web.UI.Controls.Communication
             mfpMessage.MergeFields.Clear();
             mfpMessage.MergeFields.Add( "GlobalAttribute" );
             mfpMessage.MergeFields.Add( "Rock.Model.Person" );
-            mfpMessage.CssClass += " pull-right margin-b-sm"; 
+            mfpMessage.CssClass += " margin-b-sm pull-right"; 
             mfpMessage.SelectItem += mfpMergeFields_SelectItem;
             rcwMessage.Controls.Add( mfpMessage );
+
+            lblCount = new Label();
+            lblCount.CssClass = "badge margin-all-sm pull-right";
+            lblCount.ID = string.Format( "lblCount_{0}", this.ID );
+            lblCount.Visible = this.CharacterLimit > 0;
+            rcwMessage.Controls.Add( lblCount );
 
             tbMessage = new RockTextBox();
             tbMessage.ID = string.Format( "tbTextMessage_{0}", this.ID );
@@ -136,12 +142,6 @@ namespace Rock.Web.UI.Controls.Communication
             tbMessage.Rows = 3;
             tbMessage.Required = true;
             rcwMessage.Controls.Add( tbMessage );
-
-            lblCount = new Label();
-            lblCount.CssClass = "pull-right badge margin-t-sm";
-            lblCount.ID = string.Format( "lblCount_{0}", this.ID );
-            lblCount.Visible = this.CharacterLimit > 0;
-            rcwMessage.Controls.Add( lblCount );
         }
 
         /// <summary>
