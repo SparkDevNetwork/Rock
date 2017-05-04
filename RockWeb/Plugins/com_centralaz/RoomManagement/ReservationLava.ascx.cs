@@ -302,7 +302,8 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
             var titleFont = FontFactory.GetFont( font, 16, Font.BOLD );
             var listHeaderFont = FontFactory.GetFont( font, 12, Font.BOLD, Color.DARK_GRAY );
             var listSubHeaderFont = FontFactory.GetFont( font, 10, Font.BOLD, Color.DARK_GRAY );
-            var listItemFont = FontFactory.GetFont( font, 8, Font.NORMAL );
+            var listItemFontNormal = FontFactory.GetFont( font, 8, Font.NORMAL );
+            var listItemFontUnapproved = FontFactory.GetFont( font, 8, Font.ITALIC, Color.MAGENTA );
             var noteFont = FontFactory.GetFont( font, 8, Font.NORMAL, Color.GRAY );
 
             List<ReservationService.ReservationSummary> reservationSummaryList = GetReservationSummaries();
@@ -415,18 +416,18 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
                         listItemTable.DefaultCell.BorderWidth = 0;
 
                         //Add the list items
-                        listItemTable.AddCell( new Phrase( reservationSummary.ReservationName, listItemFont ) );
+                        listItemTable.AddCell( new Phrase( reservationSummary.ReservationName, listItemFontNormal ) );
 
-                        listItemTable.AddCell( new Phrase( reservationSummary.EventDateTimeDescription, listItemFont ) );
+                        listItemTable.AddCell( new Phrase( reservationSummary.EventDateTimeDescription, listItemFontNormal ) );
 
-                        listItemTable.AddCell( new Phrase( reservationSummary.ReservationDateTimeDescription, listItemFont ) );
+                        listItemTable.AddCell( new Phrase( reservationSummary.ReservationDateTimeDescription, listItemFontNormal ) );
 
                         List locationList = new List( List.UNORDERED, 8f );
                         locationList.SetListSymbol( "\u2022" );
 
                         foreach ( var reservationLocation in reservationSummary.Locations )
                         {
-                            var listItem = new iTextSharp.text.ListItem( reservationLocation.Location.Name, FontFactory.GetFont( "TIMES_ROMAN", 8 ) );
+                            var listItem = new iTextSharp.text.ListItem( reservationLocation.Location.Name, listItemFontNormal );
                             if ( reservationLocation.ApprovalState == ReservationLocationApprovalState.Approved )
                             {
                                 listItem.Add( new Phrase( "\uf00c", fontAwe ) );
@@ -436,6 +437,7 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
 
                         PdfPCell locationCell = new PdfPCell();
                         locationCell.Border = 0;
+                        locationCell.PaddingTop = -2;
                         locationCell.AddElement( locationList );
                         listItemTable.AddCell( locationCell );
 
@@ -444,7 +446,7 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
 
                         foreach ( var reservationResource in reservationSummary.Resources )
                         {
-                            var listItem = new iTextSharp.text.ListItem( String.Format( "{0}({1})", reservationResource.Resource.Name, reservationResource.Quantity ), FontFactory.GetFont( "TIMES_ROMAN", 8 ) );
+                            var listItem = new iTextSharp.text.ListItem( String.Format( "{0}({1})", reservationResource.Resource.Name, reservationResource.Quantity ), listItemFontNormal );
                             if ( reservationResource.ApprovalState == ReservationResourceApprovalState.Approved )
                             {
                                 listItem.Add( new Phrase( "\uf00c", fontAwe ) );
@@ -454,11 +456,13 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
 
                         PdfPCell resourceCell = new PdfPCell();
                         resourceCell.Border = 0;
+                        resourceCell.PaddingTop = -2;
                         resourceCell.AddElement( resourceList );
                         listItemTable.AddCell( resourceCell );
 
-                        listItemTable.AddCell( new Phrase( reservationSummary.SetupPhotoId.HasValue.ToYesNo(), listItemFont ) );
+                        listItemTable.AddCell( new Phrase( reservationSummary.SetupPhotoId.HasValue.ToYesNo(), listItemFontNormal ) );
 
+                        var listItemFont = ( reservationSummary.ApprovalState == "Unapproved" ) ? listItemFontUnapproved : listItemFontNormal;
                         listItemTable.AddCell( new Phrase( reservationSummary.ApprovalState, listItemFont ) );
 
                         document.Add( listItemTable );
@@ -469,11 +473,10 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
                             var listNoteTable = new PdfPTable( 1 );
                             listNoteTable.LockedWidth = true;
                             listNoteTable.TotalWidth = PageSize.A4.Width - document.LeftMargin - document.RightMargin - 50;
-                            listNoteTable.HorizontalAlignment = 0;
+                            listNoteTable.HorizontalAlignment = 1;
                             listNoteTable.SpacingBefore = 0;
                             listNoteTable.SpacingAfter = 1;
                             listNoteTable.DefaultCell.BorderWidth = 0;
-                            listNoteTable.HorizontalAlignment = 1;
                             listNoteTable.AddCell( new Phrase( reservationSummary.Note, noteFont ) );
                             document.Add( listNoteTable );
                         }
