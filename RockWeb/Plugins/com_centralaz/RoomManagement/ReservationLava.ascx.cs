@@ -297,8 +297,15 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
 
         protected void lbPrint_Click( object sender, EventArgs e )
         {
-            List<ReservationService.ReservationSummary> reservationSummaryList = GetReservationSummaries();
+            //Fonts
             String font = GetAttributeValue( "ReportFont" );
+            var titleFont = FontFactory.GetFont( font, 16, Font.BOLD );
+            var listHeaderFont = FontFactory.GetFont( font, 12, Font.BOLD, Color.DARK_GRAY );
+            var listSubHeaderFont = FontFactory.GetFont( font, 10, Font.BOLD, Color.DARK_GRAY );
+            var listItemFont = FontFactory.GetFont( font, 8, Font.NORMAL );
+            var noteFont = FontFactory.GetFont( font, 8, Font.NORMAL, Color.GRAY );
+
+            List<ReservationService.ReservationSummary> reservationSummaryList = GetReservationSummaries();
 
             // Bind to Grid
             var reservationSummaries = reservationSummaryList.Select( r => new
@@ -330,9 +337,6 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
             var writer = PdfWriter.GetInstance( document, output );
 
             document.Open();
-
-            var titleFont = FontFactory.GetFont( font, 16, Font.BOLD );
-            var subTitleFont = FontFactory.GetFont( font, 14, Color.GRAY );
 
             // Add logo
             try
@@ -373,10 +377,6 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
                 var firstReservation = reservationDay.FirstOrDefault();
                 if ( firstReservation != null )
                 {
-                    //Fonts
-                    var listHeaderFont = FontFactory.GetFont( font, 12, Font.BOLD, Color.DARK_GRAY );
-                    var listSubHeaderFont = FontFactory.GetFont( font, 10, Font.BOLD, Color.DARK_GRAY );
-
                     //Build Header
                     document.Add( Chunk.NEWLINE );
                     String listHeader = firstReservation.CalendarDate;
@@ -405,9 +405,6 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
 
                     foreach ( var reservationSummary in reservationDay )
                     {
-                        //Fonts
-                        var listItemFont = FontFactory.GetFont( font, 8, Font.NORMAL );
-
                         //Build the list item table
                         var listItemTable = new PdfPTable( 7 );
                         listItemTable.LockedWidth = true;
@@ -468,16 +465,17 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
 
                         if ( ! string.IsNullOrWhiteSpace( reservationSummary.Note ) )
                         {
-                            document.Add( Chunk.NEWLINE );
+                            //document.Add( Chunk.NEWLINE );
                             var listNoteTable = new PdfPTable( 1 );
                             listNoteTable.LockedWidth = true;
-                            listNoteTable.TotalWidth = PageSize.A4.Width - document.LeftMargin - document.RightMargin;
+                            listNoteTable.TotalWidth = PageSize.A4.Width - document.LeftMargin - document.RightMargin - 50;
                             listNoteTable.HorizontalAlignment = 0;
                             listNoteTable.SpacingBefore = 0;
                             listNoteTable.SpacingAfter = 1;
                             listNoteTable.DefaultCell.BorderWidth = 0;
-                            listNoteTable.AddCell( new Phrase( reservationSummary.Note, listItemFont ) );
-                            document.Add( listItemTable );
+                            listNoteTable.HorizontalAlignment = 1;
+                            listNoteTable.AddCell( new Phrase( reservationSummary.Note, noteFont ) );
+                            document.Add( listNoteTable );
                         }
                     }
                 }
