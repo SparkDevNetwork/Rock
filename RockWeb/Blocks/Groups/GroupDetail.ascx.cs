@@ -1049,31 +1049,9 @@ namespace RockWeb.Blocks.Groups
                 nbEditModeMessage.Text = EditModeMessage.System( Group.FriendlyTypeName );
             }
 
-            var roleLimitWarnings = new StringBuilder();
-
-            if ( group.GroupType != null && group.GroupType.Roles != null && group.GroupType.Roles.Any() )
-            {
-                foreach ( var role in group.GroupType.Roles.Where( a => a.MinCount.HasValue || a.MaxCount.HasValue ) )
-                {
-                    var groupMemberService = new GroupMemberService( rockContext );
-                    int curCount = groupMemberService.Queryable().Where( m => m.GroupId == group.Id && m.GroupRoleId == role.Id && m.GroupMemberStatus == GroupMemberStatus.Active ).Count();
-
-                    if ( role.MinCount.HasValue && role.MinCount.Value > curCount )
-                    {
-                        string format = "The <strong>{1}</strong> role is currently below its minimum requirement of {2:N0} active {3}.<br/>";
-                        roleLimitWarnings.AppendFormat( format, role.Name.Pluralize(), role.Name, role.MinCount, role.MinCount == 1 ? group.GroupType.GroupMemberTerm : group.GroupType.GroupMemberTerm.Pluralize() );
-                    }
-
-                    if ( role.MaxCount.HasValue && role.MaxCount.Value < curCount )
-                    {
-                        string format = "The <strong>{1}</strong> role is currently above its maximum limit of {2:N0} active {3}.<br/>";
-                        roleLimitWarnings.AppendFormat( format, role.Name.Pluralize(), role.Name, role.MaxCount, role.MaxCount == 1 ? group.GroupType.GroupMemberTerm : group.GroupType.GroupMemberTerm.Pluralize() );
-                    }
-                }
-            }
-
-            nbRoleLimitWarning.Text = roleLimitWarnings.ToString();
-            nbRoleLimitWarning.Visible = roleLimitWarnings.Length > 0;
+            string roleLimitWarnings;
+            nbRoleLimitWarning.Visible = group.GetGroupTypeRoleLimitWarnings( out roleLimitWarnings );
+            nbRoleLimitWarning.Text = roleLimitWarnings;
 
             FollowingsHelper.SetFollowing( group, pnlFollowing, this.CurrentPerson );
 
