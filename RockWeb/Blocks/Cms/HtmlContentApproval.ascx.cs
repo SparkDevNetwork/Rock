@@ -304,6 +304,7 @@ namespace RockWeb.Blocks.Cms
                 ApprovedByPerson = a.IsApproved ? a.ApprovedByPersonAlias.Person : null,
                 BlockPageId = a.Block.PageId,
                 BlockLayoutId = a.Block.LayoutId,
+                BlockSiteId = a.Block.SiteId,
             } );
 
             gContentList.EntityTypeId = EntityTypeCache.Read<HtmlContent>().Id;
