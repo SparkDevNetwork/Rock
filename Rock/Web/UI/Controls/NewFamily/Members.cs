@@ -108,7 +108,7 @@ namespace Rock.Web.UI.Controls
             Controls.Add( _lbAddGroupMember );
             _lbAddGroupMember.ID = this.ID + "_btnAddGroupMember";
             _lbAddGroupMember.Click += lbAddGroupMember_Click;
-            _lbAddGroupMember.AddCssClass( "add btn btn-xs btn-action" );
+            _lbAddGroupMember.AddCssClass( "add btn btn-xs btn-action pull-right" );
             _lbAddGroupMember.CausesValidation = false;
 
             var iAddFilter = new HtmlGenericControl( "i" );
@@ -215,10 +215,7 @@ namespace Rock.Web.UI.Controls
                 writer.RenderBeginTag( HtmlTextWriterTag.Tfoot );
                 writer.RenderBeginTag( HtmlTextWriterTag.Tr );
 
-                writer.AddAttribute( HtmlTextWriterAttribute.Colspan, "8" );
-                writer.RenderBeginTag( HtmlTextWriterTag.Td );
-                writer.RenderEndTag();
-
+                writer.AddAttribute( HtmlTextWriterAttribute.Colspan, "9" );
                 writer.RenderBeginTag( HtmlTextWriterTag.Td );
                 _lbAddGroupMember.RenderControl( writer );
                 writer.RenderEndTag();
