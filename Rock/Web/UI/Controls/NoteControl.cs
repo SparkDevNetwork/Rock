@@ -895,7 +895,7 @@ namespace Rock.Web.UI.Controls
                 if ( NoteId.HasValue )
                 {
                     note = service.Get( NoteId.Value );
-                    if ( note != null && note.NoteType.UserSelectable && note.IsAuthorized( Authorization.EDIT, currentPerson ) )
+                    if ( note != null && note.IsAuthorized( Authorization.EDIT, currentPerson ) )
                     {
                         service.Delete( note );
                         rockContext.SaveChanges();

@@ -984,6 +984,8 @@ namespace RockWeb.Blocks.Event
                 {
                     using ( var rockContext = new RockContext() )
                     {
+                        var personService = new PersonService(rockContext);
+                        var signatureDocumentTemplateService = new SignatureDocumentTemplateService(rockContext);
                         var registrant = new RegistrationRegistrantService( rockContext ).Get( registrantId.Value );
                         if ( registrant != null && 
                             registrant.PersonAlias != null &&
@@ -992,7 +994,9 @@ namespace RockWeb.Blocks.Event
                             Registration.RegistrationInstance != null &&
                             Registration.RegistrationInstance.RegistrationTemplate != null )
                         {
-                            var assignedTo = registrant.PersonAlias.Person;
+                            // Make sure to load these person records using the current rockContext
+                            var assignedTo = personService.Get(registrant.PersonAlias.PersonId);
+                            var appliesTo = personService.Get(registrant.PersonAlias.PersonId);
                             string email = Registration.ConfirmationEmail;
                             if ( string.IsNullOrWhiteSpace( email ) && Registration.PersonAlias != null && Registration.PersonAlias.Person != null )
                             {
@@ -1007,7 +1011,7 @@ namespace RockWeb.Blocks.Event
                                     m.GroupRole.Guid.Equals( adultRole.Value ) );
                             if ( !registrantIsAdult && Registration.PersonAlias != null && Registration.PersonAlias.Person != null )
                             {
-                                assignedTo = Registration.PersonAlias.Person;
+                                assignedTo = personService.Get(Registration.PersonAlias.PersonId);
                             }
                             else
                             {
@@ -1019,8 +1023,8 @@ namespace RockWeb.Blocks.Event
 
                             var sendErrorMessages = new List<string>();
                             if ( new SignatureDocumentTemplateService( rockContext ).SendDocument(
-                                Registration.RegistrationInstance.RegistrationTemplate.RequiredSignatureDocumentTemplate,
-                                registrant.PersonAlias.Person, 
+                                signatureDocumentTemplateService.Get(Registration.RegistrationInstance.RegistrationTemplate.RequiredSignatureDocumentTemplateId.Value),
+                                appliesTo, 
                                 assignedTo,
                                 Registration.RegistrationInstance.Name,
                                 email,
