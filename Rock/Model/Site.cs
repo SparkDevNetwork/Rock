@@ -356,6 +356,15 @@ namespace Rock.Model
         public virtual ICollection<Layout> Layouts { get; set; }
 
         /// <summary>
+        /// Gets or sets the collection of <see cref="Rock.Model.Block">Blocks</see> that are used on the site.
+        /// </summary>
+        /// <value>
+        /// Collection of <see cref="Rock.Model.Block"/> entities that are used on the site.
+        /// </value>
+        [DataMember]
+        public virtual ICollection<Block> Blocks { get; set; }
+
+        /// <summary>
         /// Gets or sets the collection of <see cref="Rock.Model.SiteDomain"/> entities that reference the Site.
         /// </summary>
         /// <value>

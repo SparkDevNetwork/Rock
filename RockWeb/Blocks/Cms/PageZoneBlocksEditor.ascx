@@ -18,9 +18,22 @@
                 </div>
             </div>
             <div class="panel-body">
+                <legend>Blocks From Site</legend>
+                <div class="site-blocks-sort-container">
+                    <asp:Repeater ID="rptSiteBlocks" runat="server" OnItemDataBound="rptBlocks_ItemDataBound">
+                        <ItemTemplate>
+                            
+                            <asp:Panel ID="pnlBlockEditWidget" runat="server" CssClass="panel panel-widget">
+                                <asp:HiddenField ID="hfSiteBlockId" runat="server" Value='<%# Eval("Id") %>' />
+                            </asp:Panel>
+                        </ItemTemplate>
+                    </asp:Repeater>
+                </div>
+
+                <hr />
                 <legend>Blocks From Layout</legend>
                 <div class="layout-blocks-sort-container">
-                    <asp:Repeater ID="rptLayoutBlocks" runat="server" OnItemDataBound="rptPageOrLayoutBlocks_ItemDataBound">
+                    <asp:Repeater ID="rptLayoutBlocks" runat="server" OnItemDataBound="rptBlocks_ItemDataBound">
                         <ItemTemplate>
                             
                             <asp:Panel ID="pnlBlockEditWidget" runat="server" CssClass="panel panel-widget">
@@ -34,7 +47,7 @@
 
                 <legend>Blocks From Page</legend>
                 <div class="page-blocks-sort-container">
-                    <asp:Repeater ID="rptPageBlocks" runat="server" OnItemDataBound="rptPageOrLayoutBlocks_ItemDataBound">
+                    <asp:Repeater ID="rptPageBlocks" runat="server" OnItemDataBound="rptBlocks_ItemDataBound">
                         <ItemTemplate>
                             
                             <asp:Panel ID="pnlBlockEditWidget" runat="server" CssClass="panel panel-widget">
@@ -79,7 +92,7 @@
                 <asp:LinkButton ID="btnContentChannelQuickSetting" runat="server" Text="Content Channel" CssClass="btn btn-default" OnClick="btnNewBlockQuickSetting_Click" />
                 <asp:LinkButton ID="btnPageMenuQuickSetting" runat="server" Text="Page Menu" CssClass="btn btn-default" OnClick="btnNewBlockQuickSetting_Click" />
 
-                <Rock:RockRadioButtonList ID="cblAddBlockPageOrLayout" runat="server" Label="Add To" RepeatDirection="Horizontal" FormGroupCssClass="margin-t-md" />
+                <Rock:RockRadioButtonList ID="rblAddBlockLocation" runat="server" Label="Add To" RepeatDirection="Horizontal" FormGroupCssClass="margin-t-md" />
 
             </Content>
         </Rock:ModalDialog>
@@ -95,7 +108,7 @@
                 };
 
                 // javascript to make the Reorder buttons work on the panel-widget controls
-                $('.layout-blocks-sort-container, .page-blocks-sort-container').sortable({
+                $('.site-blocks-sort-container, .layout-blocks-sort-container, .page-blocks-sort-container').sortable({
                     helper: fixHelper,
                     handle: '.panel-widget-reorder',
                     containment: 'parent',

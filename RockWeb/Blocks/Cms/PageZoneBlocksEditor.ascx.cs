@@ -106,11 +106,16 @@ namespace RockWeb.Blocks.Cms
             string panelWidgetClientId = values[0];
             int newIndex = int.Parse( values[1] );
             Panel pnlWidget = pnlDetails.ControlsOfTypeRecursive<Panel>().FirstOrDefault( a => a.ClientID == panelWidgetClientId );
+            HiddenField hfSiteBlockId = pnlWidget.FindControl( "hfSiteBlockId" ) as HiddenField;
             HiddenField hfLayoutBlockId = pnlWidget.FindControl( "hfLayoutBlockId" ) as HiddenField;
             HiddenField hfPageBlockId = pnlWidget.FindControl( "hfPageBlockId" ) as HiddenField;
 
             int? blockId = null;
-            if ( hfLayoutBlockId != null )
+            if ( hfSiteBlockId != null )
+            {
+                blockId = hfSiteBlockId.Value.AsIntegerOrNull();
+            }
+            else if ( hfLayoutBlockId != null )
             {
                 blockId = hfLayoutBlockId.Value.AsIntegerOrNull();
             }
@@ -128,13 +133,17 @@ namespace RockWeb.Blocks.Cms
                 if ( block != null && page != null )
                 {
                     List<Block> zoneBlocks = null;
-                    if ( block.LayoutId.HasValue )
+                    switch ( block.BlockLocation )
                     {
-                        zoneBlocks = blockService.GetByLayoutAndZone( block.LayoutId.Value, block.Zone ).ToList();
-                    }
-                    else
-                    {
-                        zoneBlocks = blockService.GetByPageAndZone( block.PageId.Value, block.Zone ).ToList();
+                        case BlockLocation.Page:
+                            zoneBlocks = blockService.GetByPageAndZone( block.PageId.Value, block.Zone ).ToList();
+                            break;
+                        case BlockLocation.Layout:
+                            zoneBlocks = blockService.GetByLayoutAndZone( block.LayoutId.Value, block.Zone ).ToList();
+                            break;
+                        case BlockLocation.Site:
+                            zoneBlocks = blockService.GetBySiteAndZone( block.SiteId.Value, block.Zone ).ToList();
+                            break;
                     }
 
                     if ( zoneBlocks != null )
@@ -155,6 +164,11 @@ namespace RockWeb.Blocks.Cms
                     if ( block.LayoutId.HasValue )
                     {
                         Rock.Web.Cache.PageCache.FlushLayoutBlocks( block.LayoutId.Value );
+                    }
+
+                    if ( block.SiteId.HasValue )
+                    {
+                        Rock.Web.Cache.PageCache.FlushSiteBlocks( block.SiteId.Value );
                     }
 
                     ShowDetailForZone( ddlZones.SelectedValue );
@@ -207,16 +221,16 @@ namespace RockWeb.Blocks.Cms
                     zoneListItem.Text = string.Format( "{0} ({1})", zoneListItem.Value, zoneBlockCount );
                 }
 
-                // update LayoutBlock and PageBlock repeaters
+                // update SiteBlock, LayoutBlock and PageBlock repeaters
                 var zoneBlocks = page.Blocks.Where( a => a.Zone == zoneName ).ToList();
 
-                var layoutBlocks = zoneBlocks.Where( a => a.LayoutId.HasValue ).OrderBy( a => a.Order ).ThenBy( a => a.Name ).ToList();
-                var pageBlocks = zoneBlocks.Where( a => !a.LayoutId.HasValue ).OrderBy( a => a.Order ).ThenBy( a => a.Name ).ToList();
+                rptSiteBlocks.DataSource = zoneBlocks.Where(a => a.BlockLocation == BlockLocation.Site).ToList();
+                rptSiteBlocks.DataBind();
 
-                rptLayoutBlocks.DataSource = layoutBlocks;
+                rptLayoutBlocks.DataSource = zoneBlocks.Where( a => a.BlockLocation == BlockLocation.Layout ).ToList();
                 rptLayoutBlocks.DataBind();
 
-                rptPageBlocks.DataSource = pageBlocks;
+                rptPageBlocks.DataSource = zoneBlocks.Where( a => a.BlockLocation == BlockLocation.Page ).ToList();
                 rptPageBlocks.DataBind();
             }
         }
@@ -516,11 +530,11 @@ namespace RockWeb.Blocks.Cms
         }
 
         /// <summary>
-        /// Handles the ItemDataBound event of the rptPageBlocks control.
+        /// Handles the ItemDataBound event of the any of the rpt****Blocks controls.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="RepeaterItemEventArgs"/> instance containing the event data.</param>
-        protected void rptPageOrLayoutBlocks_ItemDataBound( object sender, RepeaterItemEventArgs e )
+        protected void rptBlocks_ItemDataBound( object sender, RepeaterItemEventArgs e )
         {
             BlockCache block = e.Item.DataItem as BlockCache;
             if ( block != null )
@@ -606,22 +620,28 @@ namespace RockWeb.Blocks.Cms
 
             ddlBlockType.SetValue( htmlContentBlockType.Id );
 
-            cblAddBlockPageOrLayout.Items.Clear();
+            rblAddBlockLocation.Items.Clear();
 
             var page = PageCache.Read( hfPageId.Value.AsInteger() );
 
             var listItemPage = new ListItem();
-            listItemPage.Text = "Page: " + page.ToString();
+            listItemPage.Text = string.Format( "Page ({0})", page.ToString() );
             listItemPage.Value = "Page";
             listItemPage.Selected = true;
 
             var listItemLayout = new ListItem();
-            listItemLayout.Text = string.Format( "All Pages use the '{0}' Layout", page.Layout );
+            listItemLayout.Text = string.Format( "Layout ({0})", page.Layout );
             listItemLayout.Value = "Layout";
             listItemLayout.Selected = false;
 
-            cblAddBlockPageOrLayout.Items.Add( listItemPage );
-            cblAddBlockPageOrLayout.Items.Add( listItemLayout );
+            var listItemSite = new ListItem();
+            listItemSite.Text = string.Format( "Site ({0})", page.Layout.Site );
+            listItemSite.Value = "Site";
+            listItemSite.Selected = false;
+
+            rblAddBlockLocation.Items.Add( listItemPage );
+            rblAddBlockLocation.Items.Add( listItemLayout );
+            rblAddBlockLocation.Items.Add( listItemSite );
             mdAddBlock.Title = "Add Block to " + ddlZones.SelectedValue + " Zone";
             mdAddBlock.Show();
         }
@@ -689,15 +709,23 @@ namespace RockWeb.Blocks.Cms
                 block.Name = tbNewBlockName.Text;
                 block.BlockTypeId = ddlBlockType.SelectedValue.AsInteger();
 
-                if ( cblAddBlockPageOrLayout.SelectedValue == "Page" )
+                if ( rblAddBlockLocation.SelectedValue == "Site" )
                 {
-                    block.PageId = page.Id;
+                    block.PageId = null;
                     block.LayoutId = null;
+                    block.SiteId = page.SiteId;
                 }
-                else
+                else if ( rblAddBlockLocation.SelectedValue == "Layout" )
                 {
                     block.PageId = null;
                     block.LayoutId = page.LayoutId;
+                    block.SiteId = null;
+                }
+                else if ( rblAddBlockLocation.SelectedValue == "Page" )
+                {
+                    block.PageId = page.Id;
+                    block.LayoutId = null;
+                    block.SiteId = null;
                 }
 
                 block.Order = blockService.GetMaxOrder( block );
