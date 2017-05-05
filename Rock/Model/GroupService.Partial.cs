@@ -608,6 +608,7 @@ namespace Rock.Model
                         person.LastName = person.LastName.FixCase();
 
                         group.Members.Add( groupMember );
+                        groupMember.Group = group;
 
                         var demographicChanges = new List<string>();
                         demographicChanges.Add( "Created" );
@@ -649,6 +650,11 @@ namespace Rock.Model
                             History.EvaluateChange( memberChanges, "Role", string.Empty, roleName );
                             familyMemberChanges.Add( person.Guid, memberChanges );
                         }
+                    }
+
+                    if ( !groupMember.IsValid )
+                    {
+                        throw new GroupMemberValidationException( groupMember.ValidationResults.Select( a => a.ErrorMessage ).ToList().AsDelimited( "<br />" ) );
                     }
                 }
 

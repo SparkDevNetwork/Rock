@@ -347,11 +347,12 @@ namespace Rock.Model
         private bool ValidateGroupMembership( RockContext rockContext, out string errorMessage )
         {
             errorMessage = string.Empty;
-            GroupMemberService groupMemberService = new GroupMemberService( rockContext );
-            var groupRole = this.GroupRole ?? new GroupTypeRoleService( rockContext ).Get( this.GroupRoleId );
 
             // load group including members to save queries in group member validation
-            var group = this.Group ?? new GroupService( rockContext ).Queryable("Members").Where(g => g.Id == this.GroupId ).FirstOrDefault();
+            var group = this.Group ?? new GroupService( rockContext ).Queryable( "Members" ).Where( g => g.Id == this.GroupId ).FirstOrDefault();
+
+            var groupType = GroupTypeCache.Read( group.GroupTypeId );
+            var groupRole = groupType.Roles.First( a => a.Id == this.GroupRoleId );
 
             var existingGroupMembership = group.Members.Where(m => m.PersonId == this.PersonId);
 
@@ -367,55 +368,59 @@ namespace Rock.Model
                     errorMessage = string.Format(
                         "{0} already belongs to the {1} role for this {2}, and cannot be added again with the same role",
                         person,
-                        groupRole.Name,
-                        groupRole.GroupType.GroupTerm );
+                        groupRole.Name.ToLower(),
+                        groupType.GroupTerm.ToLower() );
 
                     return false;
                 }
             }
 
-            var databaseRecord = existingGroupMembership.FirstOrDefault( a => a.Id == this.Id );
-
-            int memberCountInRole = group.Members
-                                        .Where( m => 
-                                            m.GroupRoleId == this.GroupRoleId 
-                                            && m.GroupMemberStatus == GroupMemberStatus.Active )
-                                        .Count();
-
-            bool roleMembershipAboveMax = false;
-
-            // if adding new active group member..
-            if ( this.Id.Equals( 0 ) && this.GroupMemberStatus == GroupMemberStatus.Active )
+            if ( groupRole.MaxCount.HasValue && this.GroupMemberStatus == GroupMemberStatus.Active )
             {
-                // verify that active count has not exceeded the max
-                if ( groupRole.MaxCount != null && ( memberCountInRole + 1 ) > groupRole.MaxCount )
+                int memberCountInRole = group.Members
+                                            .Where( m =>
+                                                m.GroupRoleId == this.GroupRoleId
+                                                && m.GroupMemberStatus == GroupMemberStatus.Active )
+                                            .Count();
+
+                bool roleMembershipAboveMax = false;
+
+                // if adding new group member..
+                if ( this.Id.Equals( 0 ) )
                 {
-                    roleMembershipAboveMax = true;
+                    // verify that active count has not exceeded the max
+                    if ( ( memberCountInRole + 1 ) > groupRole.MaxCount )
+                    {
+                        roleMembershipAboveMax = true;
+                    }
+                }
+                else
+                {
+                    GroupMemberService groupMemberService = new GroupMemberService( rockContext );
+                    var databaseRecord = groupMemberService.Get( this.Id );
+                    // if existing group member changing role or status..
+                    if ( databaseRecord != null && ( this.GroupRoleId != databaseRecord.GroupRoleId || this.GroupMemberStatus != databaseRecord.GroupMemberStatus ))
+                    {
+                        // verify that active count has not exceeded the max
+                        if ( groupRole.MaxCount != null && ( memberCountInRole + 1 ) > groupRole.MaxCount )
+                        {
+                            roleMembershipAboveMax = true;
+                        }
+                    }
+                }
+
+                // throw error if above max.. do not proceed
+                if ( roleMembershipAboveMax )
+                {
+                    errorMessage = string.Format(
+                "The number of {0} for this {1} is above its maximum allowed limit of {2:N0} active {3}.",
+                groupRole.Name.Pluralize().ToLower(),
+                groupType.GroupTerm.ToLower(),
+                groupRole.MaxCount,
+                groupType.GroupMemberTerm.Pluralize( groupRole.MaxCount == 1 ) ).ToLower();
+                    return false;
                 }
             }
-            else if ( databaseRecord != null && this.Id > 0 && ( this.GroupRoleId != databaseRecord.GroupRoleId || this.GroupMemberStatus != databaseRecord.GroupMemberStatus )
-                    && this.GroupMemberStatus == GroupMemberStatus.Active )
-            {
-                // if existing group member changing role or status..
-                // verify that active count has not exceeded the max
-                if ( groupRole.MaxCount != null && ( memberCountInRole + 1 ) > groupRole.MaxCount )
-                {
-                    roleMembershipAboveMax = true;
-                }
-            }
-
-            // throw error if above max.. do not proceed
-            if ( roleMembershipAboveMax )
-            {
-                errorMessage = string.Format(
-            "The number of {0} for this {1} is at or above its maximum allowed limit of {2:N0} active {3}.",
-            groupRole.Name.Pluralize(),
-            groupRole.GroupType.GroupTerm,
-            groupRole.MaxCount,
-            groupRole.GroupType.GroupMemberTerm.Pluralize( groupRole.MaxCount == 1 ) );
-                return false;
-            }
-
             
             // if the GroupMember is getting Added (or if Person or Role is different), and if this Group has requirements that must be met before the person is added, check those
             if ( this.IsNewOrChangedGroupMember( rockContext ) )
@@ -437,8 +442,10 @@ namespace Rock.Model
                 }
             }
 
+            
+
             // check group capacity
-            if ( group.GroupType.GroupCapacityRule == GroupCapacityRule.Hard && group.GroupCapacity.HasValue )
+            if ( groupType.GroupCapacityRule == GroupCapacityRule.Hard && group.GroupCapacity.HasValue )
             {
                 var currentActiveGroupMemberCount = group.Members.Where( m => m.GroupMemberStatus == GroupMemberStatus.Active ).Count();
 
@@ -605,6 +612,25 @@ namespace Rock.Model
         /// The <see cref="Rock.Model.GroupMember">GroupMember's</see> membership in the <see cref="Rock.Model.Group"/> is pending.
         /// </summary>
         Pending = 2
+    }
+
+    #endregion
+
+    #region Exceptions
+
+    /// <summary>
+    /// Exception to throw if GroupMember validation rules are invalid (and can't be checked using .IsValid)
+    /// </summary>
+    /// <seealso cref="System.Exception" />
+    public class GroupMemberValidationException : Exception
+    {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="GroupMemberValidationException"/> class.
+        /// </summary>
+        /// <param name="message">The message that describes the error.</param>
+        public GroupMemberValidationException( string message ) : base( message )
+        {
+        }
     }
 
     #endregion

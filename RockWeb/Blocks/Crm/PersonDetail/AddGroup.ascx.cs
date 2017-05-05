@@ -389,29 +389,37 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 
                             Guid? parentGroupGuid = GetAttributeValue( "ParentGroup" ).AsGuidOrNull();
 
-                            rockContext.WrapTransaction( () =>
+                            try
                             {
-                                Group group = null;
-                                if ( _isFamilyGroupType )
+                                rockContext.WrapTransaction( () =>
                                 {
-                                    group = GroupService.SaveNewFamily( rockContext, GroupMembers, cpCampus.SelectedValueAsInt(), true );
-                                }
-                                else
-                                {
-                                    group = GroupService.SaveNewGroup( rockContext, _groupType.Id, parentGroupGuid, tbGroupName.Text, GroupMembers, null, true );
-                                }
-
-                                if ( group != null )
-                                {
-                                    string locationKey = GetLocationKey();
-                                    if ( !string.IsNullOrEmpty( locationKey ) && _verifiedLocations.ContainsKey( locationKey ) )
+                                    Group group = null;
+                                    if ( _isFamilyGroupType )
                                     {
-                                        GroupService.AddNewGroupAddress( rockContext, group, _locationType.Guid.ToString(), _verifiedLocations[locationKey] );
+                                        group = GroupService.SaveNewFamily( rockContext, GroupMembers, cpCampus.SelectedValueAsInt(), true );
                                     }
-                                }
-                            } );
+                                    else
+                                    {
+                                        group = GroupService.SaveNewGroup( rockContext, _groupType.Id, parentGroupGuid, tbGroupName.Text, GroupMembers, null, true );
+                                    }
 
-                            Response.Redirect( string.Format( "~/Person/{0}", GroupMembers[0].Person.Id ), false );
+                                    if ( group != null )
+                                    {
+                                        string locationKey = GetLocationKey();
+                                        if ( !string.IsNullOrEmpty( locationKey ) && _verifiedLocations.ContainsKey( locationKey ) )
+                                        {
+                                            GroupService.AddNewGroupAddress( rockContext, group, _locationType.Guid.ToString(), _verifiedLocations[locationKey] );
+                                        }
+                                    }
+                                } );
+
+                                Response.Redirect( string.Format( "~/Person/{0}", GroupMembers[0].Person.Id ), false );
+                            }
+                            catch (GroupMemberValidationException vex)
+                            {
+                                cvGroupMember.IsValid = false;
+                                cvGroupMember.ErrorMessage = vex.Message;
+                            }
                         }
                     }
                 }

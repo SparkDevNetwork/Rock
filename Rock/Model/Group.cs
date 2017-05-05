@@ -24,6 +24,7 @@ using System.Data.Entity;
 using System.Data.Entity.ModelConfiguration;
 using System.Linq;
 using System.Runtime.Serialization;
+using System.Text;
 using Rock.Data;
 using Rock.Security;
 using Rock.Web.Cache;
@@ -435,6 +436,41 @@ namespace Rock.Model
         #endregion
 
         #region Public Methods
+
+        /// <summary>
+        /// Gets any group type role limit warnings based on GroupTypeRole restrictions
+        /// </summary>
+        /// <param name="warningMessageHtml">The warning message HTML.</param>
+        /// <returns></returns>
+        public bool GetGroupTypeRoleLimitWarnings( out string warningMessageHtml )
+        {
+            var roleLimitWarnings = new StringBuilder();
+            var group = this;
+            var groupType = GroupTypeCache.Read( group.GroupTypeId );
+            if ( groupType?.Roles != null && groupType.Roles.Any() )
+            {
+                var groupMemberService = new GroupMemberService( new RockContext() );
+                foreach ( var role in groupType.Roles.Where( a => a.MinCount.HasValue || a.MaxCount.HasValue ) )
+                {
+                    int curCount = groupMemberService.Queryable().Where( m => m.GroupId == group.Id && m.GroupRoleId == role.Id && m.GroupMemberStatus == GroupMemberStatus.Active ).Count();
+
+                    if ( role.MinCount.HasValue && role.MinCount.Value > curCount )
+                    {
+                        string format = "The <strong>{1}</strong> role is currently below its minimum requirement of {2:N0} active {3}.<br/>";
+                        roleLimitWarnings.AppendFormat( format, role.Name.Pluralize().ToLower(), role.Name.ToLower(), role.MinCount, role.MinCount == 1 ? groupType.GroupMemberTerm.ToLower() : groupType.GroupMemberTerm.Pluralize().ToLower() );
+                    }
+
+                    if ( role.MaxCount.HasValue && role.MaxCount.Value < curCount )
+                    {
+                        string format = "The <strong>{1}</strong> role is currently above its maximum limit of {2:N0} active {3}.<br/>";
+                        roleLimitWarnings.AppendFormat( format, role.Name.Pluralize().ToLower(), role.Name.ToLower(), role.MaxCount, role.MaxCount == 1 ? groupType.GroupMemberTerm.ToLower() : groupType.GroupMemberTerm.Pluralize().ToLower() );
+                    }
+                }
+            }
+
+            warningMessageHtml = roleLimitWarnings.ToString();
+            return !string.IsNullOrEmpty( warningMessageHtml );
+        }
 
         /// <summary>
         /// Gets all the group member workflow triggers from the group and the group type sorted by order
