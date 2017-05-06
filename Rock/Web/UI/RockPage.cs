@@ -534,12 +534,15 @@ namespace Rock.Web.UI
         }
 
         /// <summary>
-        /// Find the <see cref="Rock.Web.UI.Controls.Zone"/> for the specified zone name.  Looks in the
-        /// <see cref="Zones"/> property to see if it has been defined.  If an existing zone 
-        /// <see cref="Rock.Web.UI.Controls.Zone"/> cannot be found, the defaultZone will be returned
+        /// Find the <see cref="Rock.Web.UI.Controls.Zone" /> for the specified zone name.  Looks in the
+        /// <see cref="Zones" /> property to see if it has been defined.  If an existing zone
+        /// <see cref="Rock.Web.UI.Controls.Zone" /> cannot be found, the defaultZone will be returned
         /// </summary>
-        /// <param name="zoneName">A <see cref="System.String"/> representing the name of the zone.</param>
-        /// <returns>The <see cref="System.Web.UI.Control"/> for the zone, if the zone is not found, the defaultZone is returned.</returns>
+        /// <param name="zoneName">A <see cref="System.String" /> representing the name of the zone.</param>
+        /// <param name="defaultZone">The default zone.</param>
+        /// <returns>
+        /// The <see cref="System.Web.UI.Control" /> for the zone, if the zone is not found, the defaultZone is returned.
+        /// </returns>
         protected virtual Control FindZone( string zoneName, Control defaultZone )
         {
             // First look in the Zones dictionary
