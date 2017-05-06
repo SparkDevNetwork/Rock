@@ -1593,6 +1593,7 @@ namespace Rock.Model
                 person.LastName = person.LastName.FixCase();
 
                 // new person that hasn't be saved to database yet
+                demographicChanges.Add( "Created" );
                 History.EvaluateChange( demographicChanges, "Title", string.Empty, DefinedValueCache.GetName( person.TitleValueId ) );
                 History.EvaluateChange( demographicChanges, "First Name", string.Empty, person.FirstName );
                 History.EvaluateChange( demographicChanges, "Last Name", string.Empty, person.LastName );
@@ -1646,7 +1647,7 @@ namespace Rock.Model
                 rockContext,
                 typeof( Person ),
                 Rock.SystemGuid.Category.HISTORY_PERSON_DEMOGRAPHIC_CHANGES.AsGuid(),
-                groupMember.Id,
+                groupMember.Person.Id,
                 demographicChanges );
 
             if ( isFamilyGroup )
@@ -1655,7 +1656,7 @@ namespace Rock.Model
                     rockContext,
                     typeof( Person ),
                     Rock.SystemGuid.Category.HISTORY_PERSON_FAMILY_CHANGES.AsGuid(),
-                    groupMember.Id,
+                    groupMember.Person.Id,
                     memberChanges,
                     group.Name,
                     typeof( Group ),

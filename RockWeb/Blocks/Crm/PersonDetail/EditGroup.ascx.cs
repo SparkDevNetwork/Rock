@@ -1110,9 +1110,6 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                             Person person = null;
                             if ( groupMemberInfo.Id == -1 )
                             {
-                                // added new person
-                                demographicChanges.Add( "Created" );
-
                                 person = new Person();
 
                                 person.TitleValueId = groupMemberInfo.TitleValueId;
@@ -1185,6 +1182,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                             }
 
                             PersonService.AddPersonToGroup( person, person.Id == 0, _group.Id, role.Id, rockContext );
+                            groupMemberInfo.Id = person.Id;
                         }
                         else
                         {

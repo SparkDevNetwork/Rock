@@ -100,6 +100,7 @@ namespace Rock.Model
             target.PageId = source.PageId;
             target.PostHtml = source.PostHtml;
             target.PreHtml = source.PreHtml;
+            target.SiteId = source.SiteId;
             target.Zone = source.Zone;
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;
