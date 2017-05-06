@@ -362,24 +362,24 @@ namespace Rock.Model
     public enum BlockLocation
     {
         /// <summary>
-        /// Block is doesn't have a PageId, LayoutId, or a SiteId specific (shouldn't happen, but just in case)
-        /// </summary>
-        None,
-
-        /// <summary>
-        /// Block is located in the site (will be rendered for every page of the site)
-        /// </summary>
-        Site,
-
-        /// <summary>
         /// Block is located in the layout (will be rendered for every page using the layout)
         /// </summary>
-        Layout,
+        Layout = 0,
 
         /// <summary>
         /// Block is located on the page
         /// </summary>
-        Page,
+        Page = 1,
+
+        /// <summary>
+        /// Block is located in the site (will be rendered for every page of the site)
+        /// </summary>
+        Site = 2,
+
+        /// <summary>
+        /// Block is doesn't have a PageId, LayoutId, or a SiteId specific (shouldn't happen, but just in case)
+        /// </summary>
+        None = 3
     }
 
     #endregion
