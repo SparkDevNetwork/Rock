@@ -73,7 +73,7 @@ namespace Rock.Model
         /// <summary>
         /// Returns an enumerable collection of <see cref="Rock.Model.Block">Blocks</see> that included on all pages of the Site
         /// </summary>
-        /// <param name="site">An <see cref="System.Int32"/> representing the Id of the <see cref="Rock.Model.Site/> that the block belongs to.</param>
+        /// <param name="siteId">An <see cref="System.Int32"/> representing the Id of the <see cref="Rock.Model.Site"/> that the block belongs to.</param>
         /// <returns>
         /// An enumerable collection of <see cref="Rock.Model.Block">Blocks</see> that are implemented as part of the provided site.
         /// </returns>
