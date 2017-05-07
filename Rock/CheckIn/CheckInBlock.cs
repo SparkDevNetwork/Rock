@@ -22,6 +22,7 @@ using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web;
+using Rock.Web.Cache;
 using Rock.Web.UI;
 
 namespace Rock.CheckIn
@@ -265,13 +266,9 @@ namespace Rock.CheckIn
             {
                 using ( var rockContext = new RockContext() )
                 {
-                    var workflowTypeService = new WorkflowTypeService( rockContext );
                     var workflowService = new WorkflowService( rockContext );
 
-                    var workflowType = workflowTypeService.Queryable( "ActivityTypes" )
-                        .Where( w => w.Guid.Equals( guid.Value ) )
-                        .FirstOrDefault();
-
+                    var workflowType = WorkflowTypeCache.Read( guid.Value );
                     if ( workflowType != null && ( workflowType.IsActive ?? true ) )
                     {
                         if ( CurrentWorkflow == null )

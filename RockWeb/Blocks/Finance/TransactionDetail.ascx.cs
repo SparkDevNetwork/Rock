@@ -353,6 +353,7 @@ namespace RockWeb.Blocks.Finance
                     }
 
                     History.EvaluateChange( changes, "Date/Time", txn.TransactionDateTime, dtTransactionDateTime.SelectedDateTime );
+                    History.EvaluateChange( changes, "Show as Anonymous", txn.ShowAsAnonymous, cbShowAsAnonymous.Checked );
                     History.EvaluateChange( changes, "Type", GetDefinedValue( txn.TransactionTypeValueId ), GetDefinedValue( ddlTransactionType.SelectedValue.AsInteger() ) );
                     History.EvaluateChange( changes, "Source", GetDefinedValue( txn.SourceTypeValueId ), GetDefinedValue( ddlSourceType.SelectedValueAsInt() ) );
 
@@ -369,6 +370,7 @@ namespace RockWeb.Blocks.Finance
                 }
 
                 txn.AuthorizedPersonAliasId = ppAuthorizedPerson.PersonAliasId;
+                txn.ShowAsAnonymous = cbShowAsAnonymous.Checked;
                 txn.TransactionDateTime = dtTransactionDateTime.SelectedDateTime;
                 txn.TransactionTypeValueId = ddlTransactionType.SelectedValue.AsInteger();
                 txn.SourceTypeValueId = ddlSourceType.SelectedValueAsInt();
@@ -1519,6 +1521,8 @@ namespace RockWeb.Blocks.Finance
                 {
                     ppAuthorizedPerson.SetValue( null );
                 }
+
+                cbShowAsAnonymous.Checked = txn.ShowAsAnonymous;
                 dtTransactionDateTime.SelectedDateTime = txn.TransactionDateTime;
                 ddlTransactionType.SetValue( txn.TransactionTypeValueId );
                 ddlSourceType.SetValue( txn.SourceTypeValueId );

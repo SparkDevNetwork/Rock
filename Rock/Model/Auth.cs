@@ -130,14 +130,16 @@ namespace Rock.Model
         /// <value>
         /// The <see cref="Rock.Model.Group"/> that this Auth entity allows or denies access to. If group based authorization is not used, this value will be null.
         /// </value>
+        [LavaInclude]
         public virtual Model.Group Group { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the <see cref="Rock.Model.PersonAlias"/> that this Auth entity allows or denies access to. This is used for Person based authorization.
         /// </summary>
         /// <value>
         /// The <see cref="Rock.Model.PersonAlias"/> that this Auth entity allows or denies access to. If person based authorization is not used, this value will be null.
         /// </value>
+        [LavaInclude]
         public virtual Model.PersonAlias PersonAlias { get; set; }
 
         /// <summary>
@@ -146,6 +148,7 @@ namespace Rock.Model
         /// <value>
         /// The <see cref="Rock.Model.EntityType"/> of of the entity that is being secured.
         /// </value>
+        [LavaInclude]
         public virtual Model.EntityType EntityType { get; set; }
 
         #endregion

@@ -107,6 +107,29 @@ namespace Rock.Model
         public virtual WorkflowActionType ActionType { get; set; }
 
         /// <summary>
+        /// Gets the action type cache.
+        /// </summary>
+        /// <value>
+        /// The action type cache.
+        /// </value>
+        [LavaInclude]
+        public virtual WorkflowActionTypeCache ActionTypeCache
+        {
+            get
+            {
+                if ( ActionTypeId > 0 )
+                {
+                    return WorkflowActionTypeCache.Read( ActionTypeId );
+                }
+                else if ( ActionType != null )
+                {
+                    return WorkflowActionTypeCache.Read( ActionType.Id );
+                }
+                return null;
+            }
+        }
+
+        /// <summary>
         /// Gets a value indicating whether this WorkflowAction is active.
         /// </summary>
         /// <value>
@@ -135,20 +158,20 @@ namespace Rock.Model
             get
             {
                 bool result = true;
-
-                if ( ActionType != null && ActionType.CriteriaAttributeGuid.HasValue )
+                var actionType = this.ActionTypeCache;
+                if ( actionType != null && actionType.CriteriaAttributeGuid.HasValue )
                 {
                     result = false;
 
-                    string criteria = GetWorklowAttributeValue( ActionType.CriteriaAttributeGuid.Value ) ?? string.Empty;
-                    string value = ActionType.CriteriaValue;
+                    string criteria = GetWorklowAttributeValue( actionType.CriteriaAttributeGuid.Value ) ?? string.Empty;
+                    string value = actionType.CriteriaValue;
 
                     if ( IsValueAnAttribute( value ) )
                     {
-                        value = GetWorklowAttributeValue( ActionType.CriteriaValue.AsGuid() );
+                        value = GetWorklowAttributeValue( actionType.CriteriaValue.AsGuid() );
                     }
 
-                    return criteria.CompareTo( value, ActionType.CriteriaComparisonType );
+                    return criteria.CompareTo( value, actionType.CriteriaComparisonType );
                 }
 
                 return result;
@@ -166,6 +189,27 @@ namespace Rock.Model
             get
             {
                 return this.Activity != null ? this.Activity : base.ParentAuthority;
+            }
+        }
+
+        /// <summary>
+        /// Gets the <see cref="System.Object"/> with the specified key.
+        /// </summary>
+        /// <value>
+        /// The <see cref="System.Object"/>.
+        /// </value>
+        /// <param name="key">The key.</param>
+        /// <returns></returns>
+        public override object this[object key]
+        {
+            get
+            {
+                string propertyKey = key.ToStringSafe();
+                if ( propertyKey == "ActionType" )
+                {
+                    return ActionTypeCache;
+                }
+                return base[key];
             }
         }
 
@@ -187,13 +231,17 @@ namespace Rock.Model
         {
             AddLogEntry( "Processing..." );
 
-            ActionComponent workflowAction = this.ActionType.WorkflowAction;
-            if ( workflowAction == null )
+            var actionType = this.ActionTypeCache;
+            if ( actionType == null )
             {
-                throw new SystemException( string.Format( "The '{0}' component does not exist, or is not active", this.ActionType.EntityType ) );
+                throw new SystemException( string.Format( "ActionTypeId: {0} could not be loaded.", this.ActionTypeId ) );
             }
 
-            this.ActionType.LoadAttributes( rockContext );
+            ActionComponent workflowAction = actionType.WorkflowAction;
+            if ( workflowAction == null )
+            {
+                throw new SystemException( string.Format( "The '{0}' component does not exist, or is not active", actionType.EntityType ) );
+            }
 
             if ( IsCriteriaValid )
             {
@@ -211,14 +259,14 @@ namespace Rock.Model
 
                 AddLogEntry( string.Format( "Processing Complete (Success:{0})", success.ToString() ) );
 
-                if ( success && this.ActionType != null )
+                if ( success )
                 {
-                    if ( this.ActionType.IsActionCompletedOnSuccess )
+                    if ( actionType.IsActionCompletedOnSuccess )
                     {
                         this.MarkComplete();
                     }
 
-                    if ( this.ActionType.IsActivityCompletedOnSuccess )
+                    if ( actionType.IsActivityCompletedOnSuccess )
                     {
                         this.Activity.MarkComplete();
                     }
@@ -324,17 +372,17 @@ namespace Rock.Model
         /// <param name="force">if set to <c>true</c> will ignore logging level and always add the entry.</param>
         public virtual void AddLogEntry( string logEntry, bool force = false )
         {
-            if ( this.Activity != null &&
-                this.Activity.Workflow != null &&
-                ( force || (
-                this.Activity.Workflow.WorkflowType != null &&
-                this.Activity.Workflow.WorkflowType.LoggingLevel == WorkflowLoggingLevel.Action ) ) )
+            if ( this.Activity != null && this.Activity.Workflow != null )
             {
-                string activityIdStr = this.Activity.Id > 0 ? "(" + this.Activity.Id.ToString() + ")" : "";
-                string idStr = Id > 0 ? "(" + Id.ToString() + ")" : "";
+                var workflowType = this.Activity.Workflow.WorkflowTypeCache;
+                if ( force || ( workflowType != null && workflowType.LoggingLevel == WorkflowLoggingLevel.Action ) )
+                {
+                    string activityIdStr = this.Activity.Id > 0 ? "(" + this.Activity.Id.ToString() + ")" : "";
+                    string idStr = Id > 0 ? "(" + Id.ToString() + ")" : "";
 
-                this.Activity.Workflow.AddLogEntry( string.Format( "{0} Activity {1} > {2} Action {3}: {4}",
-                    this.Activity.ToString(), activityIdStr, this.ToString(), idStr, logEntry ), force );
+                    this.Activity.Workflow.AddLogEntry( string.Format( "{0} Activity {1} > {2} Action {3}: {4}",
+                        this.Activity.ToString(), activityIdStr, this.ToString(), idStr, logEntry ), force );
+                }
             }
         }
 
@@ -360,10 +408,10 @@ namespace Rock.Model
             get
             {
                 var attributeList = new List<LiquidFormAttribute>();
-
-                if ( ActionType != null && ActionType.WorkflowForm != null )
+                var actionType = this.ActionTypeCache;
+                if ( actionType != null && actionType.WorkflowForm != null )
                 {
-                    foreach ( var formAttribute in ActionType.WorkflowForm.FormAttributes.OrderBy( a => a.Order ) )
+                    foreach ( var formAttribute in actionType.WorkflowForm.FormAttributes.OrderBy( a => a.Order ) )
                     {
                         var attribute = AttributeCache.Read( formAttribute.AttributeId );
                         if ( attribute != null && Activity != null )
@@ -415,7 +463,12 @@ namespace Rock.Model
         /// </returns>
         public override string ToString()
         {
-            return this.ActionType.ToStringSafe();
+            var actionType = this.ActionTypeCache;
+            if ( actionType != null )
+            {
+                return actionType.ToStringSafe();
+            }
+            return base.ToString();
         }
 
         #endregion
@@ -430,6 +483,7 @@ namespace Rock.Model
         /// <returns>
         /// The <see cref="Rock.Model.WorkflowAction" />
         /// </returns>        
+        [Obsolete( "For improved performance, use the Activate method that takes a WorkflowActionTypeCache parameter instead. IMPORTANT NOTE: When using the new method, the WorkflowAction object that is returned by that method will not have the ActionType property set. If you are referencing the ActionType property on a Workflow Action returned by that method, you will get a Null Reference Exception! You should use the new ActionTypeCache property on the workflow action instead." )]
         internal static WorkflowAction Activate( WorkflowActionType actionType, WorkflowActivity activity )
         {
             using ( var rockContext = new RockContext() )
@@ -447,11 +501,53 @@ namespace Rock.Model
         /// <returns>
         /// The <see cref="Rock.Model.WorkflowAction" />
         /// </returns>
+        [Obsolete( "For improved performance, use the Activate method that takes a WorkflowActionTypeCache parameter instead. IMPORTANT NOTE: When using the new method, the WorkflowAction object that is returned by that method will not have the ActionType property set. If you are referencing the ActionType property on a Workflow Action returned by that method, you will get a Null Reference Exception! You should use the new ActionTypeCache property on the workflow action instead." )]
         internal static WorkflowAction Activate( WorkflowActionType actionType, WorkflowActivity activity, RockContext rockContext )
+        {
+            if ( actionType != null )
+            {
+                var actionTypeCache = WorkflowActionTypeCache.Read( actionType.Id );
+                var action = Activate( actionTypeCache, activity, rockContext );
+                if ( action != null )
+                {
+                    action.ActionType = actionType;
+                }
+                return action;
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Activates the specified <see cref="Rock.Model.WorkflowAction" />.
+        /// </summary>
+        /// <param name="actionTypeCache">The action type cache.</param>
+        /// <param name="activity">The <see cref="Rock.Model.WorkflowActivity" /> that this WorkflowAction belongs to..</param>
+        /// <returns>
+        /// The <see cref="Rock.Model.WorkflowAction" />
+        /// </returns>
+        internal static WorkflowAction Activate( WorkflowActionTypeCache actionTypeCache, WorkflowActivity activity )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                return Activate( actionTypeCache, activity, rockContext );
+            }
+        }
+
+        /// <summary>
+        /// Activates the specified <see cref="Rock.Model.WorkflowAction" />.
+        /// </summary>
+        /// <param name="actionTypeCache">The action type cache.</param>
+        /// <param name="activity">The <see cref="Rock.Model.WorkflowActivity" /> that this WorkflowAction belongs to..</param>
+        /// <param name="rockContext">The rock context.</param>
+        /// <returns>
+        /// The <see cref="Rock.Model.WorkflowAction" />
+        /// </returns>
+        internal static WorkflowAction Activate( WorkflowActionTypeCache actionTypeCache, WorkflowActivity activity, RockContext rockContext )
         {
             var action = new WorkflowAction();
             action.Activity = activity;
-            action.ActionType = actionType;
+            action.ActionTypeId = actionTypeCache.Id;
             action.LoadAttributes( rockContext );
 
             action.AddLogEntry( "Activated" );

@@ -23,8 +23,6 @@
 using System;
 using System.Collections.Generic;
 
-#pragma warning disable CS1591
-
 namespace Rock.Client.Enums
 {
     #pragma warning disable CS1591
@@ -527,7 +525,5 @@ namespace Rock.Client.Enums
         ImmediatePostSave = 0x4,
     }
 
-    #pragma warning retore CS1591
+    #pragma warning restore CS1591
 }
-
-#pragma warning restore CS1591

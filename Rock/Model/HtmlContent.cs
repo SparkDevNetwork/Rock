@@ -133,6 +133,7 @@ namespace Rock.Model
         /// <value>
         /// The <see cref="Rock.Model.Block"/> that this HTML content appears on.
         /// </value>
+        [LavaInclude]
         public virtual Block Block { get; set; }
 
         /// <summary>
@@ -141,6 +142,7 @@ namespace Rock.Model
         /// <value>
         /// The approved by person alias.
         /// </value>
+        [LavaInclude]
         public virtual Model.PersonAlias ApprovedByPersonAlias { get; set; }
 
         #endregion

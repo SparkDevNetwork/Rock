@@ -184,7 +184,7 @@ namespace Rock.Workflow.Action
                     // Use the specified Is Mailing and Is Mapped values from the action's parameters if they are set,
                     // otherwise set them to true if any of the existing addresses of that type have those values set to true
                     GroupService.AddNewGroupAddress( rockContext, family, locationType.Guid.ToString(), location.Id, true,
-                        $"the {action.ActionType.ActivityType.WorkflowType.Name} workflow",
+                        $"the {action.ActionTypeCache.ActivityType.WorkflowType.Name} workflow",
                         mailing ?? groupLocations.Any( x => x.IsMailingLocation ),
                         mapped ?? groupLocations.Any( x => x.IsMappedLocation ) );
                 }
@@ -236,7 +236,7 @@ namespace Rock.Workflow.Action
 
                 if ( groupChanges.Any() )
                 {
-                    groupChanges.Add( string.Format( "<em>(Updated by the '{0}' workflow)</em>", action.ActionType.ActivityType.WorkflowType.Name ) );
+                    groupChanges.Add( string.Format( "<em>(Updated by the '{0}' workflow)</em>", action.ActionTypeCache.ActivityType.WorkflowType.Name ) );
                     foreach ( var fm in family.Members )
                     {
                         HistoryService.SaveChanges(

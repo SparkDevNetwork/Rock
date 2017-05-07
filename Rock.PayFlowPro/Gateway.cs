@@ -185,6 +185,26 @@ namespace Rock.PayFlowPro
                     {
                         var transaction = new FinancialTransaction();
                         transaction.TransactionCode = txnResponse.Pnref;
+
+                        // Get the stored payment method that was used so we can update it
+                        //  with the latest transaction code.  We do this because Paypal
+                        //  will only let us use the same transaction code in reference 
+                        //  transactions for up to 12 months.
+                        if ( paymentInfo is ReferencePaymentInfo )
+                        {
+                            var reference = paymentInfo as ReferencePaymentInfo;
+                            var rockContext = new RockContext();
+                            var savedAccount = new FinancialPersonSavedAccountService( rockContext )
+                                .Queryable()
+                                .Where( s => s.TransactionCode == reference.TransactionCode )
+                                .FirstOrDefault();
+                            if ( savedAccount != null )
+                            {
+                                savedAccount.TransactionCode = txnResponse.Pnref;
+                                rockContext.SaveChanges();
+                            }
+                        }
+
                         return transaction;
                     }
                     else

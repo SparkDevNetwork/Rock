@@ -28,7 +28,8 @@
             </div>
 
             <div class="panel-body">
-                <Rock:NotificationBox ID="nbNoUnmatchedTransactionsRemaining" runat="server" NotificationBoxType="Success" Text="<i class='fa fa-2x fa-check-circle'></i> There are no more unmatched transactions in this batch." />
+                <Rock:NotificationBox ID="nbNoUnmatchedTransactionsRemaining" runat="server" NotificationBoxType="Success" Text="<i class='fa fa-2x fa-check-circle'></i> There are no more unmatched transactions in this batch. Click 'Done' to indicate that the batch is no longer pending and return to batch details." />
+                <asp:LinkButton ID="lbFinish" runat="server" CssClass="btn btn-default" OnClick="lbFinish_Click">Done</asp:LinkButton>
                 <asp:Panel ID="pnlEdit" runat="server">
                     <div class="row">
                         <div class="col-md-7">
@@ -82,7 +83,7 @@
 
                             <div class="row">
                                 <div class="col-md-6">
-                                    <asp:PlaceHolder ID="phPaymentAttributeEdits" runat="server" EnableViewState="false"></asp:PlaceHolder>
+                                    <Rock:DynamicPlaceHolder ID="phPaymentAttributeEdits" runat="server" />
                                 </div>
                             </div>
                             
@@ -114,7 +115,14 @@
 
             <Rock:ModalDialog ID="mdAccountsPersonalFilter" runat="server" Title="Accounts Filter" OnSaveClick="mdAccountsPersonalFilter_SaveClick">
                 <Content>
-                    <Rock:AccountPicker ID="apPersonalAccounts" runat="server" AllowMultiSelect="true" Label="Select Account(s)" DisplayActiveOnly="true" />
+                    <div class="row">
+                        <div class="col-md-6">
+                            <Rock:AccountPicker ID="apPersonalAccounts" runat="server" AllowMultiSelect="true" Label="Select Account(s)" DisplayActiveOnly="true" />
+                        </div>
+                        <div class="col-md-6">
+                            <Rock:CampusPicker ID="cpAccounts" runat="server" Label="Campus" Help="Only display selected accounts that are associated with this campus (or not associated with a campus)." />
+                        </div>
+                    </div>
                 </Content>
             </Rock:ModalDialog>
 

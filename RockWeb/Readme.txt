@@ -1,3 +1,31 @@
+Rock McKinley 6.3
+
++ Updated the Protect My Ministry integration to include email address when sending a request to PMM.
++ Updated PayFlowPro to update the saved transaction code whenever a payment is made using a saved payment method. This is because PayPal only allows transaction codes that are less than 12 months old.
++ Update Relationships block so that a custom Relationships group type can be used.
++ Added new Giving person badge.
++ Added new Attended Group of Type person badge.
++ Updated the Transaction Entry block to allow anonymous person to still give as a business.
++ Added Features to the Transaction Entry Block.
++ Fixed issue with not being able to unselect all the phone types on the directory block (Fixes #1983).
++ Added logic to the Registration Entry block to prevent a registration if login is associated with a business (only occurs if bad data was created during import) (fixes #1772).
++ Fixed issue with not being able to do a Place Elsewhere workflow on a member who is associated with a registration (Fixes #2022).
++ Updated Registration Entry block to persist the discount code when hitting Previous button (Fixes #2015).
++ Fixed issue with Current Family Member option persisting incorrectly (Fixes #2074).
++ Updated Lava commands to clean up Lava variable space to keep things less cluttered for the user.
++ Added new group data view filter that pulls all groups that meet the criteria of a group type data view.
++ Update Actions to use helper method for saving attribute values so that it works with either a workflow or activity attribute.
++ Update Sliding Date Range picker to clear controls when set to a null value.
++ Update Benevolence Request action to set attribute value correctly.
++ Add workflow action to create Benevolence Result.
++ Added additional merge fields available to check-in labels that summarize the schedule/group type/group/location selected for each person.
++ Fixed registration issue when using NMI that would result in not being able to submit a payment if first attempt was unsuccessful (i.e. wrong card number entered).
++ Added the ability to search by Birthdate.
++ Added the ability to use the Prayer Request List and Entry blocks on a Person Profile page.
++ Updated the Person Directory block to display families in order by family name rather than by id.
++ Updated the Protect My Ministry block so that when changes are saved, it does not requires a Rock restart, or editing of background check components before changes are used. Also fixed issue with error message not being displayed correctly in workflow entry form.
+
+
 Rock McKinley 6.2
 
 + Fixed issue with icons printing incorrectly when using ipad checkin and client printing (fixes #1971).

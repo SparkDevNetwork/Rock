@@ -132,7 +132,7 @@
                         <h4 class="panel-title pull-left"><%=GroupTypeName %> Attributes</h4>
                     </div>
                     <div class="panel-body">
-                        <asp:PlaceHolder ID="phGroupAttributes" runat="server" EnableViewState="false"></asp:PlaceHolder>
+                        <Rock:DynamicPlaceHolder ID="phGroupAttributes" runat="server" />
                     </div>
                 </asp:Panel>
 
@@ -186,6 +186,8 @@
                                     <Rock:DatePicker ID="dpNewPersonBirthDate" runat="server" Label="Birthdate" ValidationGroup="AddPerson" AllowFutureDateSelection="False" ForceParse="false"/>
                                     <Rock:GradePicker ID="ddlGradePicker" runat="server" Label="Grade" ValidationGroup="AddPerson" UseAbbreviation="true" UseGradeOffsetAsValue="true" />
                                     <Rock:RockDropDownList ID="ddlNewPersonMaritalStatus" runat="server" DataTextField="Name" DataValueField="Id" RepeatDirection="Horizontal" Label="Marital Status"  ValidationGroup="AddPerson"/>
+                                    <Rock:PhoneNumberBox ID="pnNewPersonPhoneNumber"  runat="server" Label="Phone" ValidationGroup="AddPerson" />
+                                    <Rock:EmailBox ID="tbNewPersonEmail" runat="server" Label="Email" ValidationGroup="AddPerson" />
                                 </div>
                             </div>
                         </div>
