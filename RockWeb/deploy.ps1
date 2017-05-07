@@ -78,7 +78,7 @@ If (Test-Path "$webroot\app_offline.htm"){
 }
 
 # move web.config file back from temp (restarts the app pool)
-# If (Test-Path "$rootfolder\temp\web.config"){
-# 	Write-Host "Moving web.config from temp dir"
-# 	Copy-Item "$rootfolder\temp\web.config" "$webroot" -force
-# }
+If (Test-Path "$rootfolder\temp\web.config"){
+	Write-Host "Moving web.config from temp dir"
+	Copy-Item "$rootfolder\temp\web.config" "$webroot" -force
+}
