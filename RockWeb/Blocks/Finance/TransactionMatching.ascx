@@ -52,7 +52,21 @@
                                     <Rock:RockDropDownList ID="ddlIndividual" runat="server" Label="Individual" Help="Select a person that has previously been matched to the bank account. If the person isn't in this list, use the 'Assign to New' to select the matching person." AutoPostBack="true" OnSelectedIndexChanged="ddlIndividual_SelectedIndexChanged" />
                                     <span ID="badgeIndividualCount" runat="server" class="pull-right badge badge-danger" 
                                         style="position: relative; top: -58px; left: 10px"></span>
-                                    <Rock:PersonPicker ID="ppSelectNew" runat="server" Label="Assign to New" Help="Select a new person to match to the bank account." IncludeBusinesses="true" OnSelectPerson="ppSelectNew_SelectPerson"/>
+
+                                    <div>
+                                        <Rock:PersonPicker ID="ppSelectNew" runat="server" Label="Assign to New" FormGroupCssClass="pull-left" Help="Select a new person to match to the bank account." IncludeBusinesses="true" OnSelectPerson="ppSelectNew_SelectPerson" />
+                                        <Rock:RockControlWrapper ID="rcwEnvelope" runat="server" Label="Envelope #" Help="Select a person based on their assigned envelope number" >
+                                            <Rock:RockTextBox ID="tbEnvelopeNumber" runat="server" CssClass="input-width-sm pull-left" />
+                                            <asp:LinkButton ID="btnFindByEnvelopeNumber" runat="server" CssClass="btn btn-default margin-l-sm" Text="Find" OnClick="btnFindByEnvelopeNumber_Click" />
+                                        </Rock:RockControlWrapper>
+                                        <Rock:ModalDialog ID="mdEnvelopeSearchResults" runat="server" Title="Alert" OnSaveClick="mdEnvelopeSearchResults_SaveClick" ValidationGroup="vgEnvelopeSearchResults">
+                                            <Content>
+                                                <asp:Literal ID="lEnvelopeSearchResults" runat="server" />
+                                                <br />
+                                                <Rock:RockRadioButtonList ID="cblEnvelopeSearchPersons" runat="server" ValidationGroup="vgEnvelopeSearchResults" Required="true" />
+                                            </Content>
+                                        </Rock:ModalDialog>
+                                    </div>
                                 </div>
 
                                 <div class="col-md-6">

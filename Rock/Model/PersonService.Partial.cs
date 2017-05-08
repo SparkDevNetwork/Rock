@@ -1639,6 +1639,11 @@ namespace Rock.Model
                 throw new Exception( string.Format( "Specified groupRoleId ({0}) is not a {1} role ", groupRoleId, group.GroupType.Name ) );
             }
 
+            if ( !groupMember.IsValid )
+            {
+                throw new GroupMemberValidationException( groupMember.ValidationResults.Select( a => a.ErrorMessage ).ToList().AsDelimited( "<br />" )  );
+            }
+
             groupMemberService.Add( groupMember );
 
             rockContext.SaveChanges();
