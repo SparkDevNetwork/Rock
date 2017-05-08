@@ -51,7 +51,7 @@
                         </div>
                     </div>
 
-                    <Rock:PanelWidget ID="pwWorkFlows" runat="server" Title="Workflows"  Expanded="false">
+                    <Rock:PanelWidget ID="pwWorkFlows" runat="server" Title="Workflows" TitleIconCssClass="fa fa-cogs"  Expanded="false">
                         <div class="row">
                             <div class="col-sm-6">
                                 <Rock:RockListBox ID="rlbWorkFlowType" runat="server" DisplayDropAsAbsolute="true" />

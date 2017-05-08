@@ -36,6 +36,7 @@ using Rock.Web.UI;
 using Rock.Web.UI.Controls.Communication;
 using Rock.Web.UI.Controls;
 using Rock.Transactions;
+using System.Data.Entity;
 
 namespace RockWeb.Blocks.Crm
 {
@@ -48,7 +49,7 @@ namespace RockWeb.Blocks.Crm
 
     [AttributeCategoryField( "Attribute Categories", "The person attribute categories to display and allow bulk updating", true, "Rock.Model.Person", false, "", "", 0 )]
     [IntegerField( "Display Count", "The initial number of individuals to display prior to expanding list", false, 0, "", 1 )]
-    [WorkflowTypeField( "Workflow Actions", "The workflows to make available for bulk updating.", true, false, "", "", 2 )]
+    [WorkflowTypeField( "Workflow Types", "The workflows to make available for bulk updating.", true, false, "", "", 2 )]
     public partial class BulkUpdate : RockBlock
     {
         #region Fields
@@ -83,23 +84,23 @@ namespace RockWeb.Blocks.Crm
             ddlReviewReason.BindToDefinedType( DefinedTypeCache.Read( new Guid( Rock.SystemGuid.DefinedType.PERSON_REVIEW_REASON ) ), true );
 
             rlbWorkFlowType.Items.Clear();
-            var workflowActions = GetAttributeValue( "WorkflowActions" );
-            if ( !string.IsNullOrWhiteSpace( workflowActions ) )
+            var guidList = GetAttributeValue( "WorkflowTypes" ).SplitDelimitedValues().AsGuidList();
+            using ( var rockContext = new RockContext() )
             {
-                using ( var rockContext = new RockContext() )
+                var workflowTypeService = new WorkflowTypeService( rockContext );
+                foreach ( var workflowType in new WorkflowTypeService( rockContext )
+                    .Queryable().AsNoTracking()
+                    .Where( t => guidList.Contains( t.Guid ) )
+                    .ToList() )
                 {
-                    var workflowTypeService = new WorkflowTypeService( rockContext );
-                    foreach ( string guidValue in workflowActions.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ) )
-                    {
-                        Guid? guid = guidValue.AsGuidOrNull();
-                        if ( guid.HasValue )
-                        {
-                            var workflowType = workflowTypeService.Get( guid.Value );
-                            ListItem item = new ListItem( workflowType.Name, workflowType.Id.ToString() );
-                            rlbWorkFlowType.Items.Add( item );
-                        }
-                    }
+                    ListItem item = new ListItem( workflowType.Name, workflowType.Id.ToString() );
+                    rlbWorkFlowType.Items.Add( item );
                 }
+            }
+
+            if ( !guidList.Any() )
+            {
+                pwWorkFlows.Visible = false;
             }
 
             ddlTagList.Items.Clear();
@@ -708,16 +709,17 @@ namespace RockWeb.Blocks.Crm
 
                 if ( !string.IsNullOrWhiteSpace( rlbWorkFlowType.SelectedValue ) )
                 {
-                    string wotkFlowTypes = string.Empty;
+                    var workFlowTypes = new List<string>();
                     foreach ( ListItem item in this.rlbWorkFlowType.Items )
                     {
                         if ( item.Selected )
                         {
-                            wotkFlowTypes = wotkFlowTypes + item.Text + ",";
+                            workFlowTypes.Add( item.Text );
                         }
                     }
-                    changes.Add( string.Format( "Activate the Workflow <span class='field-name'>{0}</span>",
-                       wotkFlowTypes ) );
+                    changes.Add( string.Format( "Activate the <span class='field-name'>{0}</span> {1}.",
+                         workFlowTypes.AsDelimited( ", ", " and " ),
+                         "workflow".PluralizeIf( workFlowTypes.Count > 1 ) ) );
                 }
                 #endregion
 
@@ -1340,9 +1342,7 @@ namespace RockWeb.Blocks.Crm
                 #endregion
 
                 #region workflow
-                var personsService = new PersonAliasService( rockContext );
-                var persons = personsService.Queryable()
-                               .Where( p => ids.Contains( p.PersonId ) ).ToList();
+
                 IEnumerable<string> selectedWorkflows = from ListItem li in rlbWorkFlowType.Items
                                                         where li.Selected == true
                                                         select li.Value;
@@ -1352,7 +1352,7 @@ namespace RockWeb.Blocks.Crm
                     if ( intValue.HasValue )
                     {
 
-                        var workflowDetails = persons.Select( p => new LaunchWorkflowDetails( p ) ).ToList();
+                        var workflowDetails = people.Select( p => new LaunchWorkflowDetails( p ) ).ToList();
                         var launchWorkflowsTxn = new Rock.Transactions.LaunchWorkflowsTransaction( intValue.Value, workflowDetails );
                         Rock.Transactions.RockQueue.TransactionQueue.Enqueue( launchWorkflowsTxn );
                     }
