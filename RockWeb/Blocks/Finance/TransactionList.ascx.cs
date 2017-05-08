@@ -1208,8 +1208,6 @@ namespace RockWeb.Blocks.Finance
 
                 // Account Id
                 var accountIds = ( gfTransactions.GetUserPreference( "Account" ) ?? "" ).SplitDelimitedValues().AsIntegerList().Where( a => a > 0 ).ToList();
-
-                accountIds.AddRange( childAccountIds );
                 accountIds = accountIds.Distinct().ToList();
 
                 if ( accountIds.Any() )
