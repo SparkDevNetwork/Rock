@@ -1,3 +1,23 @@
+Rock McKinley 6.4
+
++ Updated the Edit Family block to create history correctly when adding a new person (Fixes #1726).
++ Fixed mispelled 'amount' in NumberBox validation message.
++ Fixed business photo reference.
++ Fixed the GroupRegistration block to not erase matched person's data if the user did not fully fill out the form.
++ Fixed issue with not being able to delete a non note (Fixes #2123)
++ Fixed SignNow issue with document getting sent to "Applies To" person instead of "Assigned to" and an exception that would occur when sending a required registration document (Fixes #2176, Fixes #2177)
++ Updated the Communication Entry block to validate the future send date/time (Fixes #1999)
++ Updated giving analytics to display accounts in configured order rather than alphabetically.
++ Added option to show NickName when adding a new family
++ Update the Facebook authentication to deal with their "[Oauth Access Token] Format" change (Fixes #2117).
++ Fixed blocks and stock lava that use the Google Static Map API to include the Google API Key since it is now required (Fixes #1991).
++ Updated the Global Attribute Filter so that it passes original merge fields when resolving contents of attribute (Fixes #2162).
++ Updated check-in to support numeric-only security codes.
++ Added option to display phone numbers, gender, and/or spouse on the person search results.
++ Added optional phone and email fields to the new person dialog when editing an existing family. These are not displayed by default.
++ Updated transaction matching to include 'Finish' button that will mark batch as being open instead of pending, and added a campus filter to limit selected accounts by campus.
+
+
 Rock McKinley 6.3
 
 + Updated the Protect My Ministry integration to include email address when sending a request to PMM.
