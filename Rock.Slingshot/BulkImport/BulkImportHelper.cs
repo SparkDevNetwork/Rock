@@ -564,6 +564,34 @@ namespace Rock.Slingshot
             sbStats.AppendLine( $"[{stopwatch.Elapsed.TotalMilliseconds}ms] Update {groupImportsWithParentGroup.Count} Group's Parent Group " );
             stopwatch.Restart();
 
+
+            // Update GroupTypes' Allowed Child GroupTypes based on groups that became child groups
+            rockContext.Database.ExecuteSqlCommand( @"
+INSERT INTO GroupTypeAssociation (
+	GroupTypeId
+	,ChildGroupTypeId
+	)
+SELECT DISTINCT pg.GroupTypeId [ParentGroupTypeId]
+	,g.GroupTypeId [ChildGroupTypeId]
+FROM [Group] g
+INNER JOIN [Group] pg ON g.ParentGroupId = pg.id
+INNER JOIN [GroupType] pgt ON pg.GroupTypeId = pgt.Id
+INNER JOIN [GroupType] cgt ON g.GroupTypeId = cgt.Id
+OUTER APPLY (
+	SELECT *
+	FROM GroupTypeAssociation
+	WHERE GroupTypeId = pg.GroupTypeId
+		AND ChildGroupTypeId = g.GroupTypeid
+	) gta
+WHERE gta.GroupTypeId IS NULL" );
+
+
+            // make sure grouptype caches get updated in case 'allowed group types' changed
+            foreach ( var groupTypeId in groupTypeGroupLookup.Keys )
+            {
+                GroupTypeCache.Flush( groupTypeId );
+            }
+
             stopwatchTotal.Stop();
 
             sbStats.AppendLine( $"[{stopwatchTotal.Elapsed.TotalMilliseconds}ms] Insert {newGroupImports.Count} Groups and {groupMembersToInsert.Count} Group Members" );
