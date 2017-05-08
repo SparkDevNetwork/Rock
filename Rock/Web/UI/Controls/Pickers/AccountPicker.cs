@@ -29,9 +29,6 @@ namespace Rock.Web.UI.Controls
     /// </summary>
     public class AccountPicker : ItemPicker
     {
-        private HiddenField _hfLastSelectedAccountId;
-        private HyperLink _btnSelectChildAccounts;
-
         /// <summary>
         /// Initializes a new instance of the <see cref="AccountPicker"/> class.
         /// </summary>
