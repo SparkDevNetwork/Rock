@@ -317,10 +317,11 @@
 				    }
 
 				    $li.append('<span class="rocktree-name" title="' + nodeText.trim() + '"> ' + node.name + countInfoHtml + '</span>');
+				    var $rockTreeNameNode = $li.find('.rocktree-name');
 				    
 				    for (var i = 0; i < self.selectedNodes.length; i++) {
 				        if (self.selectedNodes[i].id == node.id) {
-				            $li.find('.rocktree-name').addClass('selected');
+				            $rockTreeNameNode.addClass('selected');
 				            break;
 				        }
 				    }
@@ -329,11 +330,15 @@
 				        $li.prepend('<i class="rocktree-icon icon-fw ' + folderCssClass + '"></i>');
 
 				        if (node.iconCssClass) {
-				            $li.find('.rocktree-name').prepend('<i class="icon-fw ' + node.iconCssClass + '"></i>');
+				            $rockTreeNameNode.prepend('<i class="icon-fw ' + node.iconCssClass + '"></i>');
+				        }
+
+				        if (self.options.showSelectChildren && self.options.multiselect) {
+				            $li.append('<span class="clickable js-select-children" title="Select Children"><i class="fa fa-list-ul icon-fw"></i></span>');
 				        }
 				    } else {
 				        if (leafCssClass) {
-				            $li.find('.rocktree-name').prepend('<i class="icon-fw ' + leafCssClass + '"></i>');
+				            $rockTreeNameNode.prepend('<i class="icon-fw ' + leafCssClass + '"></i>');
 				        }
 				    }
 
@@ -505,6 +510,32 @@
                     $(document).trigger(onSelected[i], id);
                 }
             });
+
+            // clicking on the 'select children' icon
+            this.$el.on('click', '.js-select-children', function (e) {
+                e.preventDefault();
+                e.stopPropagation();
+
+                var $itemNode = $(this).parent('li')
+
+                var $childNameNodes = $itemNode.find('.rocktree-children').find('.rocktree-name');
+
+                var allChildNodesAlreadySelected = true;
+                $childNameNodes.each(function (a) {
+                    if (!$(this).hasClass('selected')) {
+                            allChildNodesAlreadySelected = false;
+                    }
+                });
+
+                if (!allChildNodesAlreadySelected) {
+                    // mark them all as unselected (just in case some are selected already), then click them to select them 
+                    $childNameNodes.removeClass('selected');
+                    $childNameNodes.click();
+                } else {
+                    // if all where already selected, toggle them to unselected
+                    $childNameNodes.removeClass('selected');
+                }
+            });
         }
     };
 
@@ -546,6 +577,7 @@
         restParams: null,
         local: null,
         multiselect: false,
+        showSelectChildren: false,
         loadingHtml: '<span class="rocktree-loading"><i class="fa fa-refresh fa-spin"></i></span>',
         iconClasses: {
             branchOpen: 'fa fa-fw fa-caret-down',
