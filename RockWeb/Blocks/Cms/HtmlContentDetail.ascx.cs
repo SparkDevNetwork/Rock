@@ -50,7 +50,7 @@ namespace RockWeb.Blocks.Cms
     [TextField("Document Root Folder", "The folder to use as the root when browsing or uploading documents.", false, "~/Content", "", 2 )]
     [TextField( "Image Root Folder", "The folder to use as the root when browsing or uploading images.", false, "~/Content", "", 3 )]
     [BooleanField( "User Specific Folders", "Should the root folders be specific to current user?", false, "", 4 )]
-    [IntegerField( "Cache Duration", "Number of seconds to cache the content.", false, 3600, "", 5 )]
+    [IntegerField( "Cache Duration", "Number of seconds to cache the content.", false, 0, "", 5 )]
     [TextField( "Context Parameter", "Query string parameter to use for 'personalizing' content based on unique values.", false, "", "", 6 )]
     [TextField( "Context Name", "Name to use to further 'personalize' content.  Blocks with the same name, and referenced with the same context parameter will share html values.", false, "", "", 7 )]
     [BooleanField( "Enable Versioning", "If checked, previous versions of the content will be preserved. Versioning is required if you want to require approval.", false, "", 8, "SupportVersions" )]
