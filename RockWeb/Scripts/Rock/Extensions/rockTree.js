@@ -334,7 +334,7 @@
 				        }
 
 				        if (self.options.showSelectChildren && self.options.multiselect) {
-				            $li.append('<span class="clickable js-select-children" title="Select Children"><i class="fa fa-list-ul icon-fw"></i></span>');
+				            $li.append('<i class="fa fa-angle-double-down icon-fw clickable select-children js-select-children" title="Select Children"></i>');
 				        }
 				    } else {
 				        if (leafCssClass) {
