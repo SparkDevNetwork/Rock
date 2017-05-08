@@ -957,7 +957,7 @@ namespace RockWeb.Blocks.Crm
                     {
                         string value = person.GetAttributeValue( attribute.Key );
                         bool condensed = attribute.Value.FieldType.Class == typeof( Rock.Field.Types.ImageFieldType ).FullName;
-                        string formattedValue = attribute.Value.FieldType.Field.FormatValue( null, value, attribute.Value.QualifierValues, condensed );
+                        string formattedValue = attribute.Value.FieldType.Field.FormatValue( null, attribute.Value.EntityTypeId, person.Id, value, attribute.Value.QualifierValues, condensed );
                         AddProperty( "attr_" + attribute.Key, attribute.Value.Name, person.Id, value, formattedValue );
                     }
                 }

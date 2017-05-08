@@ -2395,7 +2395,7 @@ namespace RockWeb.Blocks.Event
                         }
 
                         rlField.Label = attribute.Name;
-                        rlField.Text = attribute.FieldType.Field.FormatValueAsHtml( null, fieldValue.ToString(), attribute.QualifierValues );
+                        rlField.Text = attribute.FieldType.Field.FormatValueAsHtml( null, attribute.EntityTypeId, registrant.Id, fieldValue.ToString(), attribute.QualifierValues );
                     }
                 }
 
