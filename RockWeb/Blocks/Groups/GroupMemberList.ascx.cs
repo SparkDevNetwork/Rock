@@ -477,6 +477,17 @@ namespace RockWeb.Blocks.Groups
         }
 
         /// <summary>
+        /// Handles the ClearFilterClick event of the rFilter control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void rFilter_ClearFilterClick( object sender, EventArgs e )
+        {
+            rFilter.DeleteUserPreferences();
+            SetFilter();
+        }
+
+        /// <summary>
         /// Handles the Click event of the DeleteGroupMember control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
@@ -1335,5 +1346,7 @@ namespace RockWeb.Blocks.Groups
         }
 
         #endregion
+
+       
     }
 }
