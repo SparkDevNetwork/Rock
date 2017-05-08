@@ -65,6 +65,7 @@ namespace Rock.Web.UI.Controls
             base.OnInit(e);
             this.ItemRestUrlExtraParams = "/" + DisplayActiveOnly.ToString();
             this.IconCssClass = "fa fa-building-o";
+            this.CssClass = "picker-lg";
         }
         
         
