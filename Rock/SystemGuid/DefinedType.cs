@@ -155,7 +155,7 @@ namespace Rock.SystemGuid
         public const string LOCATION_TYPE = "3285DCEF-FAA4-43B9-9338-983F4A384ABA";
 
         /// <summary>
-        /// Guid for Marketing Campaign Audience Type
+        /// Guid for Content Channel Audience Type (formally called Marketing Campaign)
         /// </summary>
         public const string MARKETING_CAMPAIGN_AUDIENCE_TYPE =  "799301A3-2026-4977-994E-45DC68502559";
 
