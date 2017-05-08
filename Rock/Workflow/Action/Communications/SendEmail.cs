@@ -40,7 +40,7 @@ namespace Rock.Workflow.Action
         new string[] { "Rock.Field.Types.TextFieldType", "Rock.Field.Types.EmailFieldType", "Rock.Field.Types.PersonFieldType" } )]
     [WorkflowTextOrAttribute( "Send To Email Addresses", "Attribute Value", "The email addresses or an attribute that contains the person or email address that email should be sent to. <span class='tip tip-lava'></span>", true, "", "", 1, "To",
         new string[] { "Rock.Field.Types.TextFieldType", "Rock.Field.Types.EmailFieldType", "Rock.Field.Types.PersonFieldType", "Rock.Field.Types.GroupFieldType", "Rock.Field.Types.SecurityRoleFieldType" } )]
-    [WorkflowAttribute( "Send to Group Role", "The Group Role or an attribute that contains the Group Role to which email should be sent to. <span class='tip tip-lava'></span>", false, "", "", 2, "GroupRole",
+    [WorkflowAttribute( "Send to Group Role", "An optional Group Role attribute to limit recipients to if the 'Send to Email Address' is a group or security role.", false, "", "", 2, "GroupRole",
         new string[] { "Rock.Field.Types.GroupRoleFieldType" } )]
     [TextField( "Subject", "The subject that should be used when sending email. <span class='tip tip-lava'></span>", false, "", "", 3 )]
     [CodeEditorField( "Body", "The body of the email that should be sent. <span class='tip tip-lava'></span> <span class='tip tip-html'></span>", Web.UI.Controls.CodeEditorMode.Html, Web.UI.Controls.CodeEditorTheme.Rock, 200, false, "", "", 4 )]
@@ -186,11 +186,7 @@ namespace Rock.Workflow.Action
 
                                     if ( groupRoleValueGuid.HasValue )
                                     {
-                                        GroupTypeRole groupTypeRole = new GroupTypeRoleService( rockContext ).Get( groupRoleValueGuid.Value );
-                                        if ( groupTypeRole != null )
-                                        {
-                                            qry = qry.Where( m => m.GroupRoleId == groupTypeRole.Id );
-                                        }
+                                        qry = qry.Where( m => m.GroupRole != null && m.GroupRole.Guid.Equals( groupRoleValueGuid.Value ) );
                                     }
 
                                     if ( qry != null )
