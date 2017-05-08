@@ -79,6 +79,9 @@ namespace RockWeb.Plugins.church_ccv.SafetySecurity
 
             charRefWorkflow.LoadAttributes( );
 
+            // set the character reference type (professional, non-family, etc.)
+            lType.Text = "Relationship: " + charRefWorkflow.AttributeValues["Type"].Value;
+
             // grab the people associated
             IQueryable<PersonAlias> paQuery = new PersonAliasService( rockContext ).Queryable( ).AsNoTracking( );
 
@@ -89,9 +92,9 @@ namespace RockWeb.Plugins.church_ccv.SafetySecurity
             lApplicant.Text = string.Format( "<a href=\"/Person/{0}\">{1}</a>", applicant.Person.Id, applicant.Person.FullName );
 
             // set the reference
-            lReference.Text = charRefWorkflow.AttributeValues["FirstName"] + " " + charRefWorkflow.AttributeValues["LastName"];
-            lReferenceEmail.Text = charRefWorkflow.AttributeValues["EmailAddress"].Value;
-            lReferencePhoneNumber.Text = charRefWorkflow.AttributeValues["PhoneNumber"].Value;
+            lReference.Text = "Name: " + charRefWorkflow.AttributeValues["FirstName"] + " " + charRefWorkflow.AttributeValues["LastName"];
+            lReferenceEmail.Text = "Email: " + charRefWorkflow.AttributeValues["EmailAddress"].Value;
+            lReferencePhoneNumber.Text = "Phone: " + charRefWorkflow.AttributeValues["PhoneNumber"].Value;
             
 
             if ( charRefWorkflow.Status == "Completed" )

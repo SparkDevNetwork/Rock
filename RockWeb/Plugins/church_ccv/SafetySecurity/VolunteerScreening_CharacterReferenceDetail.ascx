@@ -21,6 +21,12 @@
                     <h4>Character Reference</h4>
                     <div class="row">
                         <div class="col-md-6">
+                            <asp:Literal ID="lType" runat="server"></asp:Literal>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
                             <asp:Literal ID="lReference" runat="server"></asp:Literal>
                         </div>
                     </div>
