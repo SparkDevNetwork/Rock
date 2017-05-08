@@ -1209,8 +1209,6 @@ namespace RockWeb.Blocks.Finance
                 // Account Id
                 var accountIds = ( gfTransactions.GetUserPreference( "Account" ) ?? "" ).SplitDelimitedValues().AsIntegerList().Where( a => a > 0 ).ToList();
 
-                // also include any immediate Child Accounts of the selected accounts in the filter
-                var childAccountIds = _financialAccountLookup.Where( a => a.Value.ParentAccountId.HasValue && accountIds.Contains( a.Value.ParentAccountId.Value ) ).Select( a => a.Key ).ToList();
                 accountIds.AddRange( childAccountIds );
                 accountIds = accountIds.Distinct().ToList();
 
