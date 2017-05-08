@@ -17,6 +17,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Web.UI;
+using System.Web.UI.WebControls;
 using Rock.Data;
 using Rock.Model;
 
@@ -27,6 +29,16 @@ namespace Rock.Web.UI.Controls
     /// </summary>
     public class AccountPicker : ItemPicker
     {
+        private HiddenField _hfLastSelectedAccountId;
+        private HyperLink _btnSelectChildAccounts;
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="AccountPicker"/> class.
+        /// </summary>
+        public AccountPicker(): base()
+        {
+            this.ShowSelectChildren = true;
+        }
 
         /// <summary>
         /// Gets or sets a value indicating whether [display active only].
@@ -167,6 +179,5 @@ namespace Rock.Web.UI.Controls
         {
             get { return "~/api/financialaccounts/getchildren/"; }
         }
-
     }
 }
