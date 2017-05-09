@@ -722,8 +722,6 @@ namespace RockWeb.Plugins.church_ccv.Hr
                 qry = qry.OrderBy( a => a.PersonAlias.Person.LastName ).ThenBy( a => a.PersonAlias.Person.FirstName );
             }
 
-            // only show TimeCards that have non-zero total hours
-            qry = qry.WhereTimeCardsHaveHours();
             var timeCardList = qry.ToList();
 
             var selectedWageTypeValues = gfSettings.GetUserPreference( "PayrollWageTypes" ).SplitDelimitedValues().AsGuidList();
