@@ -5,7 +5,7 @@
         <Rock:ModalAlert ID="mdGridWarning" runat="server" />
         
         <div class="grid">
-            <Rock:Grid ID="gSchedules" runat="server" AllowSorting="true" OnRowSelected="gSchedules_Edit">
+            <Rock:Grid ID="gSchedules" runat="server" AllowSorting="true" OnRowSelected="gSchedules_Edit" CssClass="js-grid-schedule-list">
                 <Columns>
                     <Rock:RockBoundField DataField="Name" HeaderText="Name" SortExpression="Name" />
                     <Rock:RockBoundField DataField="CategoryName" HeaderText="Category" SortExpression="CategoryName" />
