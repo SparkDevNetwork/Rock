@@ -401,6 +401,13 @@ namespace Rock.SystemGuid
 
         #endregion
 
+        #region Personal Device Type
+        /// <summary>
+        /// Personal device types for notifications
+        /// </summary>
+        public const string PERSONAL_DEVICE_TYPE_MOBILE = "5A8F264F-3BE6-4F15-912A-3CE93A98E8F6";
+        #endregion
+
         #region Map Styles
 
         /// <summary>
