@@ -363,6 +363,7 @@ namespace RockWeb.Blocks.Finance
 
                     // stored the value in cents to avoid javascript floating point math issues
                     hfOriginalTotalAmount.Value = (transactionToMatch.TotalAmount*100).ToString();
+                    hfCurrencySymbol.Value = GlobalAttributesCache.Value( "CurrencySymbol" );
 
                     // get the first 2 images (should be no more than 2, but just in case)
                     var transactionImages = transactionToMatch.Images.OrderBy( a => a.Order ).Take( 2 ).ToList();
