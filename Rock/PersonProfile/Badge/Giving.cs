@@ -102,13 +102,18 @@ namespace Rock.PersonProfile.Badge
 
                 if ( minimumAmount.HasValue )
                 {
-                    qry = qry.Where( a => a.TransactionDetails.Sum( d => (decimal?)d.Amount ) > minimumAmount );
+                    qry = qry.Where( a => a.TransactionDetails.Sum( d => ( decimal? ) d.Amount ) > minimumAmount );
+                }
+
+                if ( accountGuids.Any() )
+                {
+                    qry = qry.Where( t => t.TransactionDetails.Any( d => accountGuids.Contains( d.Account.Guid ) ) );
                 }
 
                 var contributionList = qry.Select( a => new
                 {
                     a.TransactionDateTime,
-                    ContributionAmount = a.TransactionDetails.Sum( d => (decimal?)d.Amount )
+                    ContributionAmount = a.TransactionDetails.Sum( d => ( decimal? ) d.Amount )
                 } ).ToList();
 
                 if ( contributionList.Any() )
