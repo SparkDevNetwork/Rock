@@ -60,8 +60,8 @@
                                             <Rock:RockTemplateField HeaderText="Accounts">
                                                 <ItemTemplate><%# AccountName( (int)Eval("AccountId") ) %></ItemTemplate>
                                             </Rock:RockTemplateField>
-                                            <Rock:CurrencyField DataField="Amount" SortExpression="Amount" ItemStyle-HorizontalAlign="Right" />
                                             <Rock:RockBoundField DataField="Summary" SortExpression="Summary" />
+                                            <Rock:CurrencyField DataField="Amount" SortExpression="Amount" ItemStyle-HorizontalAlign="Right" />
                                             <Rock:EditField OnClick="gAccountsEdit_EditClick" />
                                             <Rock:DeleteField OnClick="gAccountsEdit_DeleteClick" />
                                         </Columns>
@@ -115,19 +115,20 @@
                             <asp:PlaceHolder ID="phAttributes" runat="server"></asp:PlaceHolder>
                         </div>
                         <div class="col-md-6">
-
-                            <Rock:Grid ID="gAccountsView" runat="server" EmptyDataText="No Account Details" RowItemText="Account" DisplayType="Light">
+                            
+                            <label>Accounts</label>
+                            <Rock:Grid ID="gAccountsView" runat="server" EmptyDataText="No Account Details" RowItemText="Account" DisplayType="Light" ShowHeader="false">
                                 <Columns>
-                                    <Rock:RockTemplateField HeaderText="Accounts">
+                                    <Rock:RockTemplateField>
                                         <ItemTemplate><%# AccountName( (int)Eval("AccountId") ) %></ItemTemplate>
                                     </Rock:RockTemplateField>
-                                    <Rock:CurrencyField DataField="Amount" SortExpression="Amount" ItemStyle-HorizontalAlign="Right" />
                                     <Rock:RockBoundField DataField="Summary" SortExpression="Summary" />
+                                    <Rock:CurrencyField DataField="Amount" SortExpression="Amount" ItemStyle-HorizontalAlign="Right" />
                                 </Columns>
                             </Rock:Grid>
 
-                            <asp:Panel ID="pnlImages" runat="server">
-                                <h4>Images</h4>
+                            <asp:Panel ID="pnlImages" runat="server" CssClass="margin-t-md">
+                                <label>Images</label>
                                 <div>
                                     <asp:Image ID="imgPrimary" runat="server" CssClass="transaction-image" />
                                 </div>
@@ -140,20 +141,24 @@
                                 </div>
                             </asp:Panel>
 
-                            <asp:Panel ID="pnlRefunds" runat="server">
-                                <Rock:Grid ID="gRefunds" runat="server" RowItemText="Refund" DisplayType="Light">
+                            <asp:Panel ID="pnlRefunds" runat="server" CssClass="margin-t-md">
+                                <label>Refunds</label>
+                                <Rock:Grid ID="gRefunds" runat="server" RowItemText="Refund" DisplayType="Light" ShowHeader="false">
                                     <Columns>
-                                        <asp:HyperLinkField DataTextField="TransactionDateTime" DataNavigateUrlFields="Id" HeaderText="Refunds" />
+                                        <asp:HyperLinkField DataTextField="TransactionDateTime" DataNavigateUrlFields="Id"/>
                                         <Rock:RockBoundField DataField="TransactionCode" />
+                                        <Rock:RockBoundField DataField="RefundReasonValue" />
+                                        <Rock:RockBoundField DataField="RefundReasonSummary" />
                                         <Rock:CurrencyField DataField="TotalAmount" ItemStyle-HorizontalAlign="Right" />
                                     </Columns>
                                 </Rock:Grid>
                             </asp:Panel>
 
-                            <asp:Panel ID="pnlRelated" runat="server">
-                                <Rock:Grid ID="gRelated" runat="server" RowItemText="Transaction" DisplayType="Light">
+                            <asp:Panel ID="pnlRelated" runat="server" Visible="false">
+                                <label>Related Transactions</label>
+                                <Rock:Grid ID="gRelated" runat="server" RowItemText="Transaction" DisplayType="Light" ShowHeader="false">
                                     <Columns>
-                                        <asp:HyperLinkField DataTextField="TransactionDateTime" DataNavigateUrlFields="Id" HeaderText="Related Transactions" />
+                                        <asp:HyperLinkField DataTextField="TransactionDateTime" DataNavigateUrlFields="Id" />
                                         <Rock:RockBoundField DataField="TransactionCode" />
                                         <Rock:CurrencyField DataField="TotalAmount" ItemStyle-HorizontalAlign="Right" />
                                     </Columns>

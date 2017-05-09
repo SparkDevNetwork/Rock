@@ -1353,6 +1353,8 @@ namespace RockWeb.Blocks.Finance
                             TransactionDateTime = r.FinancialTransaction.TransactionDateTime.Value.ToShortDateString() + " " +
                                 r.FinancialTransaction.TransactionDateTime.Value.ToShortTimeString(),
                             TransactionCode = r.FinancialTransaction.TransactionCode,
+                            r.RefundReasonValue,
+                            r.RefundReasonSummary,
                             TotalAmount = r.FinancialTransaction.TotalAmount
                         } )
                         .ToList();
