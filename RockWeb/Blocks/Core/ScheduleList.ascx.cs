@@ -76,7 +76,7 @@ namespace RockWeb.Blocks.Administration
         Rock.dialogs.confirm('Are you sure you want to delete this schedule?', function (result) {
             if (result) {
                 if ( $btn.closest('tr').hasClass('js-has-attendance') ) {
-                    Rock.dialogs.confirm('This schedule has attendance history. Are you really sure that you want to delete this schedule and all of its attendance history?', function (result) {
+                    Rock.dialogs.confirm('This schedule has attendance history. Are you sure that you want to delete this schedule and all of its attendance history?', function (result) {
                         if (result) {
                             window.location = e.target.href ? e.target.href : e.target.parentElement.href;
                         }
