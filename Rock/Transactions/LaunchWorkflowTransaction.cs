@@ -112,17 +112,15 @@ namespace Rock.Transactions
         {
             using ( var rockContext = new RockContext() )
             {
-                var workflowTypeService = new WorkflowTypeService( rockContext );
-                WorkflowType workflowType = null;
-
+                WorkflowTypeCache workflowType = null;
                 if ( WorkflowTypeGuid.HasValue )
                 {
-                    workflowType = workflowTypeService.Get( WorkflowTypeGuid.Value );
+                    workflowType = WorkflowTypeCache.Read( WorkflowTypeGuid.Value );
                 }
 
                 if ( workflowType == null && WorkflowTypeId.HasValue )
                 {
-                    workflowType = workflowTypeService.Get( WorkflowTypeId.Value );
+                    workflowType = WorkflowTypeCache.Read( WorkflowTypeId.Value );
                 }
 
                 if ( workflowType != null && ( workflowType.IsActive ?? true ) )

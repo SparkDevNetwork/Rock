@@ -311,12 +311,13 @@ namespace Rock.Model
 
                 if ( groupRole.Attributes.ContainsKey( "InverseRelationship" ) )
                 {
-                    Guid ownerRoleGuid = new Guid( Rock.SystemGuid.GroupRole.GROUPROLE_KNOWN_RELATIONSHIPS_OWNER );
+                    Guid knownRelationShipOwnerRoleGuid = new Guid( Rock.SystemGuid.GroupRole.GROUPROLE_KNOWN_RELATIONSHIPS_OWNER );
 
-                    var memberInfo = Queryable( true )
+                    // The 'owner' of the group is determined by built-in KnownRelationshipsOwner role or the role that is marked as IsLeader for the group
+                    var ownerInfo = Queryable( true )
                         .Where( m =>
                             m.GroupId == groupMember.GroupId &&
-                            m.GroupRole.Guid.Equals( ownerRoleGuid ) )
+                            ( m.GroupRole.Guid.Equals( knownRelationShipOwnerRoleGuid ) || m.GroupRole.IsLeader ) )
                         .Select( m => new 
                         {
                             PersonId = m.PersonId,
@@ -327,20 +328,21 @@ namespace Rock.Model
                     int? ownerPersonId = null;
                     int? ownerRoleId = null;
 
-                    if ( memberInfo != null )
+                    if ( ownerInfo != null )
                     {
-                        ownerPersonId = memberInfo.PersonId;
-                        ownerRoleId = memberInfo.RoleId;
+                        ownerPersonId = ownerInfo.PersonId;
+                        ownerRoleId = ownerInfo.RoleId;
                     }
 
                     if ( ownerPersonId.HasValue && ownerRoleId.HasValue )
                     {
-                        // Find related person's group
+                        // Find related person's group where the person is the Owner
+                        // NOTE: The 'owner' of the group is determined by built-in KnownRelationshipsOwner role or the role that is marked as IsLeader for the group
                         var inverseGroup = Queryable( true )
                             .Where( m =>
                                 m.PersonId == groupMember.PersonId &&
                                 m.Group.GroupTypeId == groupRole.GroupTypeId &&
-                                m.GroupRole.Guid.Equals( ownerRoleGuid ) )
+                                ( m.GroupRole.Guid.Equals( knownRelationShipOwnerRoleGuid ) || m.GroupRole.IsLeader ) )
                             .Select( m => m.Group )
                             .FirstOrDefault();
 

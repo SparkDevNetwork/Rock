@@ -53,7 +53,7 @@
                                     <asp:Literal ID="lImage" runat="server" />
                                 </div>
                                     
-                                <asp:PlaceHolder id="phAttributesView" runat="server" /> 
+                                <Rock:DynamicPlaceHolder id="phAttributesView" runat="server" /> 
                             </div>
                         </div>
 
@@ -113,7 +113,7 @@
                     </div>
 
                     <Rock:PanelWidget ID="wpAttributes" runat="server" Title="Attribute Values">
-                        <asp:PlaceHolder ID="phAttributes" runat="server" EnableViewState="false"></asp:PlaceHolder>
+                        <Rock:DynamicPlaceHolder ID="phAttributes" runat="server" />
                     </Rock:PanelWidget>
 
                     <div class="actions">

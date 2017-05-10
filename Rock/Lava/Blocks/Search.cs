@@ -207,7 +207,7 @@ namespace Rock.Lava.Blocks
 
             var parms = new Dictionary<string, string>();
             parms.Add( "iterator", "results" );
-            parms.Add( "searchtype", "exactmatch" );
+            parms.Add( "searchtype", "wildcard" );
 
             var markupItems = Regex.Matches( resolvedMarkup, "(.*?:'[^']+')" )
                 .Cast<Match>()

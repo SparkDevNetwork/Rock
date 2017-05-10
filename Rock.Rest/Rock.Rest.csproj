@@ -126,6 +126,9 @@
     <Compile Include="Controllers\CodeGenerated\AnalyticsSourceFamilyHistoricalsController.cs" />
     <Compile Include="Controllers\CodeGenerated\AnalyticsSourceFinancialTransactionsController.cs" />
     <Compile Include="Controllers\CodeGenerated\AnalyticsSourcePersonHistoricalsController.cs" />
+    <Compile Include="Controllers\CodeGenerated\AttributeMatricesController.cs" />
+    <Compile Include="Controllers\CodeGenerated\AttributeMatrixItemsController.cs" />
+    <Compile Include="Controllers\CodeGenerated\AttributeMatrixTemplatesController.cs" />
     <Compile Include="Controllers\CodeGenerated\CommunicationRecipientsController.cs" />
     <Compile Include="Controllers\CodeGenerated\ConnectionOpportunityGroupConfigsController.cs" />
     <Compile Include="Controllers\CodeGenerated\InteractionChannelsController.cs" />

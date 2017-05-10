@@ -106,6 +106,7 @@ namespace Rock.Model
         /// <value>
         /// The metric.
         /// </value>
+        [LavaInclude]
         public virtual EntitySet EntitySet { get; set; }
 
         #endregion

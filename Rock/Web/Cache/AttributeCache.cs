@@ -438,7 +438,8 @@ namespace Rock.Web.Cache
 
                     if ( renderLabel || renderHelp || renderWarning )
                     {
-                        HtmlGenericControl div = new HtmlGenericControl( "div" );
+                        DynamicControlsHtmlGenericControl div = new DynamicControlsHtmlGenericControl( "div" );
+                        div.ID = "_formgroup_div";
                         controls.Add( div );
 
                         div.Controls.Clear();
@@ -453,6 +454,7 @@ namespace Rock.Web.Cache
                         if ( renderLabel )
                         {
                             Label label = new Label();
+                            label.ID = "_label";
                             div.Controls.Add( label );
                             label.ClientIDMode = ClientIDMode.AutoID;
                             label.Text = labelText;
@@ -463,6 +465,7 @@ namespace Rock.Web.Cache
                         if ( renderHelp )
                         {
                             var helpBlock = new Rock.Web.UI.Controls.HelpBlock();
+                            helpBlock.ID = "_helpBlock";
                             div.Controls.Add( helpBlock );
                             helpBlock.ClientIDMode = ClientIDMode.AutoID;
                             helpBlock.Text = helpText;
@@ -471,6 +474,7 @@ namespace Rock.Web.Cache
                         if ( renderWarning )
                         {
                             var warningBlock = new Rock.Web.UI.Controls.WarningBlock();
+                            warningBlock.ID = "_warningBlock";
                             div.Controls.Add( warningBlock );
                             warningBlock.ClientIDMode = ClientIDMode.AutoID;
                             warningBlock.Text = warningText;
@@ -594,6 +598,11 @@ namespace Rock.Web.Cache
         /// <returns></returns>
         public static AttributeCache Read( Guid guid, RockContext rockContext = null )
         {
+            if ( guid.IsEmpty() )
+            {
+                return null;
+            }
+
             int id = GetOrAddExisting( guid.ToString(),
                 () => LoadByGuid( guid, rockContext ) );
 

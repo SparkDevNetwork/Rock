@@ -88,6 +88,7 @@
                                         <Rock:AddressControl ID="acAddress" runat="server" UseStateAbbreviation="true" UseCountryAbbreviation="false" Label="Address" />
                                         <Rock:PhoneNumberBox ID="pnbPhone" runat="server" Label="Phone"></Rock:PhoneNumberBox>
                                         <Rock:EmailBox ID="txtEmail" runat="server" Label="Email"></Rock:EmailBox>
+                                        <Rock:RockCheckBox ID="cbGiveAnonymously" runat="server" Text="Give Anonymously" />
                                         <asp:PlaceHolder ID="phBusinessContact" runat="server" Visible="false">
                                             <hr />
                                             <h4>Business Contact</h4>

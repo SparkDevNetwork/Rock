@@ -153,6 +153,7 @@ namespace Rock.Model
         /// <value>
         /// The <see cref="Rock.Model.GroupType"/> that this GroupRole belongs to.
         /// </value>
+        [LavaInclude]
         public virtual GroupType GroupType { get; set; }
 
         #endregion

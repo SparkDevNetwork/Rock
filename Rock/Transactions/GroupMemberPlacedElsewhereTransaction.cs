@@ -75,8 +75,7 @@ namespace Rock.Transactions
         /// <param name="name">The name.</param>
         private void LaunchWorkflow( RockContext rockContext, int workflowTypeId, string name )
         {
-            var workflowTypeService = new WorkflowTypeService( rockContext );
-            var workflowType = workflowTypeService.Get( workflowTypeId );
+            var workflowType = Web.Cache.WorkflowTypeCache.Read( workflowTypeId );
             if ( workflowType != null && ( workflowType.IsActive ?? true ) )
             {
                 var workflow = Rock.Model.Workflow.Activate( workflowType, name );

@@ -106,6 +106,11 @@ namespace Rock.Reporting.DataSelect.Group
             public int PersonId { get; set; }
 
             public int GroupMemberId { get; set; }
+
+            public override string ToString()
+            {
+                return NickName + " " + LastName;
+            }
         }
 
         /// <summary>

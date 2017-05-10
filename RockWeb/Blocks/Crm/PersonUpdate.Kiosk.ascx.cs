@@ -365,9 +365,8 @@ namespace RockWeb.Blocks.Crm
             // launch workflow if configured
             if ( !string.IsNullOrWhiteSpace( GetAttributeValue( "WorkflowType" ) ) )
             {
-                var workflowTypeService = new WorkflowTypeService( rockContext );
                 var workflowService = new WorkflowService( rockContext );
-                var workflowType = workflowTypeService.Get( new Guid( GetAttributeValue( "WorkflowType" ) ) );
+                var workflowType = WorkflowTypeCache.Read( new Guid( GetAttributeValue( "WorkflowType" ) ) );
 
                 if ( workflowType != null && ( workflowType.IsActive ?? true ) )
                 {

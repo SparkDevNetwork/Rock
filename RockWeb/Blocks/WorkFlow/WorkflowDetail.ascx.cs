@@ -45,6 +45,7 @@ namespace RockWeb.Blocks.WorkFlow
         #region Fields
 
         private bool _canEdit = false;
+        private bool _canView = false;
         private PersonAliasService _personAliasService = null;
         private GroupService _groupService = null;
 
@@ -108,6 +109,7 @@ namespace RockWeb.Blocks.WorkFlow
             }
 
             _canEdit = UserCanEdit || Workflow.IsAuthorized( Rock.Security.Authorization.EDIT, CurrentPerson );
+            _canView = _canEdit || ( Workflow.IsAuthorized( Authorization.VIEW, CurrentPerson ) && Workflow.IsAuthorized( "ViewList", CurrentPerson ) );
         }
 
         /// <summary>
@@ -548,10 +550,10 @@ namespace RockWeb.Blocks.WorkFlow
                 var gridActions = e.Item.FindControl("gridActions") as Grid;
                 if ( gridActions != null )
                 {
-                    gridActions.DataSource = activity.Actions.OrderBy( a => a.ActionType.Order )
+                    gridActions.DataSource = activity.Actions.OrderBy( a => a.ActionTypeCache.Order )
                         .Select( a => new
                         {
-                            Name = a.ActionType.Name,
+                            Name = a.ActionTypeCache.Name,
                             LastProcessed = a.LastProcessedDateTime.HasValue ?
                                 string.Format( "{0} {1} ({2})",
                                     a.LastProcessedDateTime.Value.ToShortDateString(),
@@ -608,16 +610,14 @@ namespace RockWeb.Blocks.WorkFlow
             int? activityTypeId = ddlActivateNewActivity.SelectedValueAsId();
             if (activityTypeId.HasValue)
             {
-                var activityType = new WorkflowActivityTypeService(new RockContext()).Get(activityTypeId.Value);
+                var activityType = WorkflowActivityTypeCache.Read(activityTypeId.Value);
                 if (activityType != null)
                 {
                     var activity = WorkflowActivity.Activate( activityType, Workflow );
-                    activity.ActivityTypeId = activity.ActivityType.Id;
                     activity.Guid = Guid.NewGuid();
 
                     foreach( var action in activity.Actions)
                     {
-                        action.ActionTypeId = action.ActionType.Id;
                         action.Guid = Guid.NewGuid();
                     }
 
@@ -673,6 +673,7 @@ namespace RockWeb.Blocks.WorkFlow
             pdAuditDetails.SetEntity( Workflow, ResolveRockUrl( "~" ) );
 
             _canEdit = UserCanEdit || Workflow.IsAuthorized( Rock.Security.Authorization.EDIT, CurrentPerson );
+            _canView = _canEdit || ( Workflow.IsAuthorized( Authorization.VIEW, CurrentPerson ) && Workflow.IsAuthorized( "ViewList", CurrentPerson ) );
 
             Workflow.LoadAttributes( rockContext );
             foreach ( var activity in Workflow.Activities )
@@ -702,9 +703,11 @@ namespace RockWeb.Blocks.WorkFlow
         {
             hfMode.Value = "View";
 
+            HideSecondaryBlocks( false );
+
             if ( Workflow != null )
             {
-                if ( _canEdit || Workflow.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
+                if ( _canView )
                 {
                     if ( Workflow.WorkflowType != null )
                     {
@@ -765,10 +768,9 @@ namespace RockWeb.Blocks.WorkFlow
                 {
                     nbNotAuthorized.Visible = true;
                     pnlContent.Visible = false;
+                    HideSecondaryBlocks( true );
                 }
             }
-
-            HideSecondaryBlocks( false );
         }
 
         private void ShowEditDetails()
@@ -909,7 +911,7 @@ namespace RockWeb.Blocks.WorkFlow
                 activityEditor.DeleteActivityTypeClick += workflowActivityEditor_DeleteActivityClick;
                 activityEditor.SetWorkflowActivity( activity, rockContext, setValues);
 
-                foreach ( WorkflowAction action in activity.Actions.OrderBy( a => a.ActionType.Order ) )
+                foreach ( WorkflowAction action in activity.Actions.ToList().OrderBy( a => a.ActionTypeCache.Order ) )
                 {
                     var actionEditor = new WorkflowActionEditor();
                     actionEditor.ID = "WorkflowActionEditor_" + action.Guid.ToString( "N" );
