@@ -21,6 +21,9 @@
                         <div class="col-md-6">
                             <Rock:DataTextBox ID="tbScheduleName" runat="server" SourceTypeName="Rock.Model.Schedule, Rock" PropertyName="Name" Required="true" />
                         </div>
+                        <div class="col-md-6">
+                            <Rock:RockCheckBox ID="cbIsActive" runat="server" Text="Active" />
+                        </div>
                     </div>
 
                     <div class="row">
@@ -62,6 +65,10 @@
 
                 <div class="panel-heading">
                     <h1 class="panel-title"><i class="fa fa-calendar"></i> <asp:Literal ID="lReadOnlyTitle" runat="server" /></h1>
+
+                    <div class="panel-labels">
+                        <Rock:HighlightLabel ID="hlInactive" runat="server" LabelType="Danger" Text="Inactive" />
+                    </div>
                 </div>
 
                 <Rock:PanelDrawer ID="pdAuditDetails" runat="server"></Rock:PanelDrawer>

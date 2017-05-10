@@ -220,7 +220,7 @@ namespace RockWeb.Blocks.CheckIn.Manager
                 // Get all the schedules that allow checkin
                 var schedules = new ScheduleService( rockContext )
                     .Queryable().AsNoTracking()
-                    .Where( s => s.CheckInStartOffsetMinutes.HasValue )
+                    .Where( s => s.CheckInStartOffsetMinutes.HasValue && s.IsActive )
                     .ToList();
 
                 // Get a lit of the schedule ids
@@ -633,7 +633,7 @@ namespace RockWeb.Blocks.CheckIn.Manager
                                 var activeSchedules = new List<int>();
                                 foreach ( var schedule in new ScheduleService( rockContext )
                                     .Queryable().AsNoTracking()
-                                    .Where( s => s.CheckInStartOffsetMinutes.HasValue ) )
+                                    .Where( s => s.IsActive && s.CheckInStartOffsetMinutes.HasValue ) )
                                 {
                                     if ( schedule.IsScheduleOrCheckInActive )
                                     {
@@ -985,7 +985,7 @@ namespace RockWeb.Blocks.CheckIn.Manager
                     else
                     {
                         schedules = new ScheduleService( rockContext ).Queryable().AsNoTracking()
-                            .Where( s => s.CheckInStartOffsetMinutes.HasValue )
+                            .Where( s => s.IsActive && s.CheckInStartOffsetMinutes.HasValue )
                             .ToList();
                     }
 
@@ -1365,7 +1365,7 @@ namespace RockWeb.Blocks.CheckIn.Manager
                         var activeSchedules = new List<int>();
                         foreach ( var schedule in new ScheduleService( rockContext )
                             .Queryable().AsNoTracking()
-                            .Where( s => s.CheckInStartOffsetMinutes.HasValue ) )
+                            .Where( s => s.IsActive && s.CheckInStartOffsetMinutes.HasValue ) )
                         {
                             if ( schedule.IsScheduleOrCheckInActive )
                             {
