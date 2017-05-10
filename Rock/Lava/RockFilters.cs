@@ -3500,7 +3500,7 @@ namespace Rock.Lava
         }
 
         /// <summary>
-        /// Rearranges an array in a random order
+        /// Extracts a single item from an array.
         /// </summary>
         /// <param name="input">The input object to extract one element from.</param>
         /// <param name="index">The index number of the object to extract.</param>
