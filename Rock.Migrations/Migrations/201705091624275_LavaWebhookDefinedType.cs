@@ -47,7 +47,7 @@ namespace Rock.Migrations
   ""RemoteAddress"": ""127.0.0.1"",
   ""RemoteName"": ""127.0.0.1"",
   ""ServerName"": ""localhost"",
-  ""RawBody"": ""{\""key1\"":\""value1\"", \""key2\"":\""value2\""}"",
+  ""RawBody"": ""{""key1"":""value1"", ""key2"":""value2""}"",
   ""Body"": {
     ""key1"": ""value1"",
     ""key2"": ""value2""
