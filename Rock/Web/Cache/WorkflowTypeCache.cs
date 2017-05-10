@@ -406,11 +406,11 @@ namespace Rock.Web.Cache
         public static void Flush( int id )
         {
             var workflowType = WorkflowTypeCache.Read( id );
-            if ( workflowType != null && workflowType.activityTypeIds != null )
+            if ( workflowType != null )
             {
-                foreach ( int activityTypeId in workflowType.activityTypeIds )
+                foreach ( var activityType in workflowType.ActivityTypes )
                 {
-                    WorkflowActivityTypeCache.Flush( activityTypeId );
+                    WorkflowActivityTypeCache.Flush( activityType.Id );
                 }
             }
             FlushCache( WorkflowTypeCache.CacheKey( id ) );
