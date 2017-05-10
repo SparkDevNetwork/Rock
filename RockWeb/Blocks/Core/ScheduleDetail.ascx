@@ -100,7 +100,7 @@
                         {
                             if ($('#<%=hfHasAttendanceHistory.ClientID%>').val() == "1")
                             {
-                                Rock.dialogs.confirm('This schedule has attendance history. Are you really sure that you want to delete this schedule and all of its attendance history?', function (result)
+                                Rock.dialogs.confirm('This schedule has attendance history. Are you sure that you want to delete this schedule and all of its attendance history?', function (result)
                                 {
                                     if (result)
                                     {
