@@ -3,14 +3,17 @@
 </h4>
 
 {% for member in Group.Members %}
-  {% if member.GroupRole.IsLeader %}
+  {% if member.GroupRole.Name == 'Coach' %}
     {% assign groupLeader = member %}
   {% endif %}
 {% endfor %}
 
 <div class="clearfix">
-  {% if groupLeader %}
-    <img class="pull-left margin-r-sm margin-b-sm" src="{{ groupLeader.Person.PhotoUrl }}&height=180&width=180&mode=crop&scale=both" height="60" width="60"/>
+  {% assign groupPicture = Group | Attribute:'GroupPicture','Url' %}
+  {% if groupPicture != empty %}
+    <img class="pull-left margin-r-sm margin-b-sm" src="{{ groupPicture }}&height=180&width=180&mode=crop&scale=both" height="60" width="60"/>
+  {% elseif groupLeader %}
+    <img class="pull-left margin-r-sm margin-b-sm" src="{{ groupLeader.Person.PhotoUrl }}&height=180&width=180&mode=crop&scale=both" height="60" width="60"/> 
   {% endif %}
 
   <div class='margin-b-sm'>
