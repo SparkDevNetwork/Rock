@@ -27,6 +27,7 @@ using Rock;
 using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
+using Rock.Security;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
@@ -43,6 +44,8 @@ namespace RockWeb.Blocks.Crm.PersonDetail
     [DisplayName( "Edit Person" )]
     [Category( "CRM > Person Detail" )]
     [Description( "Allows you to edit a person." )]
+    [SecurityAction( "EditConnectionStatus", "The roles and/or users that can edit the connection status for the selected person." )]
+    [SecurityAction( "EditRecordStatus", "The roles and/or users that can edit the record status for the selected person." )]
     public partial class EditPerson : Rock.Web.UI.PersonBlock
     {
         /// <summary>
@@ -60,6 +63,14 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             ddlRecordStatus.BindToDefinedType( DefinedTypeCache.Read( new Guid( Rock.SystemGuid.DefinedType.PERSON_RECORD_STATUS ) ) );
             ddlReason.BindToDefinedType( DefinedTypeCache.Read( new Guid( Rock.SystemGuid.DefinedType.PERSON_RECORD_STATUS_REASON ) ), true );
 
+            bool canEditConnectionStatus = UserCanAdministrate || IsUserAuthorized( "EditConnectionStatus" );
+            ddlConnectionStatus.Visible = canEditConnectionStatus;
+            lConnectionStatusReadOnly.Visible = !canEditConnectionStatus;
+
+            bool canEditRecordStatus = UserCanAdministrate || IsUserAuthorized( "EditRecordStatus" );
+            ddlRecordStatus.Visible = canEditRecordStatus;
+            lRecordStatusReadOnly.Visible = !canEditRecordStatus;
+            
             ddlGivingGroup.Items.Clear();
             ddlGivingGroup.Items.Add( new ListItem( None.Text, None.IdValue ) );
             if ( Person != null )
@@ -188,8 +199,11 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         {
             bool showInactiveReason = ( ddlRecordStatus.SelectedValueAsInt() == DefinedValueCache.Read( new Guid( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_INACTIVE ) ).Id );
 
-            ddlReason.Visible = showInactiveReason;
-            tbInactiveReasonNote.Visible = showInactiveReason;
+            bool canEditRecordStatus = UserCanAdministrate || IsUserAuthorized( "EditRecordStatus" );
+            ddlReason.Visible = showInactiveReason && canEditRecordStatus;
+            lReasonReadOnly.Visible = showInactiveReason && !canEditRecordStatus;
+            tbInactiveReasonNote.Visible = showInactiveReason && canEditRecordStatus;
+            lReasonNoteReadOnly.Visible = showInactiveReason && !canEditRecordStatus;
         }
 
         /// <summary>
@@ -669,22 +683,23 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 
             dpAnniversaryDate.SelectedDate = Person.AnniversaryDate;
             rblGender.SelectedValue = Person.Gender.ConvertToString( false );
-            ddlMaritalStatus.SelectedValue = Person.MaritalStatusValueId.HasValue ? Person.MaritalStatusValueId.Value.ToString() : string.Empty;
-            ddlConnectionStatus.SelectedValue = Person.ConnectionStatusValueId.HasValue ? Person.ConnectionStatusValueId.Value.ToString() : string.Empty;
+            ddlMaritalStatus.SetValue( Person.MaritalStatusValueId );
+            ddlConnectionStatus.SetValue( Person.ConnectionStatusValueId );
+            lConnectionStatusReadOnly.Text = Person.ConnectionStatusValueId.HasValue ? Person.ConnectionStatusValue.Value : string.Empty;
+            
             tbEmail.Text = Person.Email;
             cbIsEmailActive.Checked = Person.IsEmailActive;
             rblEmailPreference.SelectedValue = Person.EmailPreference.ConvertToString( false );
 
-            ddlRecordStatus.SelectedValue = Person.RecordStatusValueId.HasValue ? Person.RecordStatusValueId.Value.ToString() : string.Empty;
-            ddlReason.SelectedValue = Person.RecordStatusReasonValueId.HasValue ? Person.RecordStatusReasonValueId.Value.ToString() : string.Empty;
+            ddlRecordStatus.SetValue( Person.RecordStatusValueId );
+            lRecordStatusReadOnly.Text = Person.RecordStatusValueId.HasValue ? Person.RecordStatusValue.Value : string.Empty;
+            ddlReason.SetValue( Person.RecordStatusReasonValueId );
+            lReasonReadOnly.Text = Person.RecordStatusReasonValueId.HasValue ? Person.RecordStatusReasonValue.Value : string.Empty;
 
             tbInactiveReasonNote.Text = Person.InactiveReasonNote;
+            lReasonNoteReadOnly.Text = Person.InactiveReasonNote;
 
-            bool showInactiveReason = ( Person.RecordStatusValueId.HasValue
-                                        && Person.RecordStatusValueId.Value == DefinedValueCache.Read( new Guid( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_INACTIVE ) ).Id );
-
-            ddlReason.Visible = showInactiveReason;
-            tbInactiveReasonNote.Visible = showInactiveReason;
+            ddlRecordStatus_SelectedIndexChanged( null, null );
 
             var mobilePhoneType = DefinedValueCache.Read( new Guid( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE ) );
 

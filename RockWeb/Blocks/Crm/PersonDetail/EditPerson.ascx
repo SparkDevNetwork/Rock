@@ -24,6 +24,9 @@
 
                     <div class="col-md-3">
                         <div class="well">
+                            <Rock:RockLiteral ID="lRecordStatusReadOnly" runat="server" Label="Record Status" />
+                            <Rock:RockLiteral ID="lReasonReadOnly" runat="server" Label="Reason" />
+                            <Rock:RockLiteral ID="lReasonNoteReadOnly" runat="server" Label="Inactive Reason Note" />
                             <Rock:RockDropDownList ID="ddlRecordStatus" runat="server" Label="Record Status" AutoPostBack="true" OnSelectedIndexChanged="ddlRecordStatus_SelectedIndexChanged" />
                             <Rock:RockDropDownList ID="ddlReason" runat="server" Label="Reason" Visible="false"></Rock:RockDropDownList>
                             <Rock:RockTextBox ID="tbInactiveReasonNote" runat="server" Label="Inactive Reason Note" TextMode="MultiLine" Rows="2" Visible="false" ></Rock:RockTextBox>
@@ -68,6 +71,7 @@
                                 
                                 <div class="row">
                                     <div class="col-sm-6">
+                                        <Rock:RockLiteral ID="lConnectionStatusReadOnly" runat="server" Label="Connection Status" />
                                         <Rock:RockDropDownList ID="ddlConnectionStatus" runat="server" Label="Connection Status" Required="true" />
                                     </div>
                                     <div class="col-sm-6">
