@@ -320,6 +320,8 @@ namespace RockWeb.Plugins.church_ccv.SafetySecurity
             {
                 workflowService.Delete( workflow );
                 rockContext.SaveChanges();
+
+                ShowDetail( VSInstanceId );
             }
         }
                 
