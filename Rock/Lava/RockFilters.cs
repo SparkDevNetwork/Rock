@@ -716,7 +716,7 @@ namespace Rock.Lava
                 input = RockDateTime.Now.ToString();
             }
 
-            if ( string.IsNullOrWhiteSpace( format ) )
+            if ( string.IsNullOrWhiteSpace( format ) ) 
             {
                 return input.ToString();
             }

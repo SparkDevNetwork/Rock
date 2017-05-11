@@ -70,6 +70,11 @@
                                         <Rock:CodeEditor ID="ceSourceSql" runat="server" Label="Source SQL" EditorMode="Sql" />
                                         <Rock:NotificationBox ID="nbSQLHelp" runat="server" Visible="false" />
                                     </asp:Panel>
+
+                                    <asp:Panel ID="pnlLavaSourceType" runat="server">
+                                        <Rock:CodeEditor ID="ceSourceLava" runat="server" Label="Source Lava" EditorMode="Lava" />
+                                        <Rock:NotificationBox ID="nbLavaHelp" runat="server" Visible="false" />
+                                    </asp:Panel>
                             
                                     <asp:Panel ID="pnlDataviewSourceType" runat="server">
                                         <Rock:RockDropDownList ID="ddlDataView" runat="server" Label="Source DataView" />

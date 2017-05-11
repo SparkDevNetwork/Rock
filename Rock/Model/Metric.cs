@@ -112,6 +112,15 @@ namespace Rock.Model
         public string SourceSql { get; set; }
 
         /// <summary>
+        /// Gets or sets the Lava code that returns the data for the Metric.
+        /// </summary>
+        /// <value>
+        /// A <see cref="System.String" /> that represents the Lava code that returns the data for the Metric.
+        /// </value>
+        [DataMember]
+        public string SourceLava { get; set; }
+
+        /// <summary>
         /// Gets or sets the data view identifier.
         /// </summary>
         /// <value>

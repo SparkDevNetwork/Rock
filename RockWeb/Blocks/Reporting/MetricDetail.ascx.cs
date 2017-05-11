@@ -25,6 +25,7 @@ using Rock;
 using Rock.Attribute;
 using Rock.Constants;
 using Rock.Data;
+using Rock.Lava;
 using Rock.Model;
 using Rock.Security;
 using Rock.Web;
@@ -279,6 +280,7 @@ Example: Let's say you have a DataView called 'Small Group Attendance for Last W
 
             int sourceTypeDataView = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.METRIC_SOURCE_VALUE_TYPE_DATAVIEW.AsGuid() ).Id;
             int sourceTypeSQL = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.METRIC_SOURCE_VALUE_TYPE_SQL.AsGuid() ).Id;
+            int sourceTypeLava = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.METRIC_SOURCE_VALUE_TYPE_LAVA.AsGuid() ).Id;
 
             var personService = new PersonService( rockContext );
             var metricChampionPerson = personService.Get( ppMetricChampionPerson.SelectedValue ?? 0 );
@@ -289,6 +291,15 @@ Example: Let's say you have a DataView called 'Small Group Attendance for Last W
             if ( metric.SourceValueTypeId == sourceTypeSQL )
             {
                 metric.SourceSql = ceSourceSql.Text;
+            }
+            else
+            {
+                metric.SourceSql = string.Empty;
+            }
+
+            if ( metric.SourceValueTypeId == sourceTypeLava )
+            {
+                metric.SourceLava = ceSourceLava.Text;
             }
             else
             {
@@ -545,6 +556,7 @@ Example: Let's say you have a DataView called 'Small Group Attendance for Last W
             if ( sourceValueType != null )
             {
                 pnlSQLSourceType.Visible = sourceValueType.Guid == Rock.SystemGuid.DefinedValue.METRIC_SOURCE_VALUE_TYPE_SQL.AsGuid();
+                pnlLavaSourceType.Visible = sourceValueType.Guid == Rock.SystemGuid.DefinedValue.METRIC_SOURCE_VALUE_TYPE_LAVA.AsGuid();
                 pnlDataviewSourceType.Visible = sourceValueType.Guid == Rock.SystemGuid.DefinedValue.METRIC_SOURCE_VALUE_TYPE_DATAVIEW.AsGuid();
 
                 // only show LastRun label if SourceValueType is not Manual
@@ -786,6 +798,89 @@ The SQL can include Lava merge fields:";
 
 
             ceSourceSql.Help += metric.GetMergeObjects( RockDateTime.Now ).lavaDebugInfo();
+
+
+            ceSourceLava.Text = metric.SourceLava;
+            ceSourceLava.Help = @"There are several ways to design your Lava to populate the Metric Values. If you use the 'Lava' source type option, the results will be stored with the date of the date when the Calculation is scheduled. To specify a specific date of the metric value, include a [MetricValueDate] column in the result set.
+<br />
+<h4>Example #1</h4> 
+Simple metric with the default partition
+<ul>
+  <li>The output will be the YValue </li>
+</ul>
+Lava Template:
+<pre>{% webrequest url:'https://api.github.com/repos/SparkDevNetwork/Rock/subscribers'  %}
+    {{ results | Size }}
+{% endwebrequest %}</pre>
+
+Lava Output:
+<pre>30</pre>
+
+<h4>Example #2</h4> 
+Simple metric with a MetricValueDateTime specified
+<ul>
+  <li>The 1st Column will be the YValue </li>
+  <li>The 2nd Column will be the MetricValueDateTime </li>
+</ul>
+
+Lava Template:
+<pre>{% webrequest url:'https://api.github.com/repos/SparkDevNetwork/Rock/subscribers'  %}
+    {{ results | Size }},{{ RunDateTime | SundayDate | DateAdd:-7 }} 
+{% endwebrequest %}</pre>
+
+Lava Output:
+<pre>30, 5/7/2016</pre>
+
+<h4>Example #3</h4>
+Lava that returns a Count and EntityIds for each Partition
+<ul>
+    <li>The 1st Column will be the YValue </li>
+    <li>The 2nd Column will be the EntityId of the 1st Partition </li>
+    <li>The 3rd Column will be the EntityId of the 2nd Partition </li>
+    <li>... </li>
+    <li>The Nth Column will be the EntityId of the (N-1)th Partition </li>
+</ul>
+
+Lava Template:
+<pre>{% webrequest url:'https://api.example.com/statsByGroupAndCampus'  %}
+     {% for item in results %}
+	    item.Count,Item.GroupId,Item.CampusId
+    {% endfor %}
+{% endwebrequest %}</pre>
+
+Lava Output:
+<pre>30, 45, 2
+34, 45, 3
+36, 45, 4
+30, 46, 2
+34, 46, 3
+36, 46, 4</pre>
+
+<h4>Example #4</h4>
+Lava that returns a Count, Date and EntityIds for each Partition
+
+Lava Template:
+<pre>{% assign weekEndDate = RunDateTime | SundayDate | DateAdd:-7,'d' | Date:'yyyy-MM-dd'  %}
+{% webrequest url:'https://api.example.com/weeklyStatsByCampus?since={{ weekEndDate }}'  %}
+     {% for item in results %}
+	    item.Count, item.DateTime, Item.CampusId
+    {% endfor %}
+{% endwebrequest %}</pre>
+
+Lava Output:
+<pre>30, 5/7/2016, 2
+34, 5/7/2016, 3
+36, 5/7/2016, 4
+30, 5/8/2016, 2
+34, 5/8/2016, 3
+36, 5/8/2016, 4</pre>
+
+NOTE: If a [MetricValueDateTime] is specified and there is already a metric value, the value will get updated. This is handy if you have a weekly metric, but schedule it to calculate every day.
+<hr>
+The Lava can include Lava merge fields:";
+
+
+            ceSourceLava.Help += metric.GetMergeObjects( RockDateTime.Now ).lavaDebugInfo();
 
             if ( metric.Schedule != null )
             {
