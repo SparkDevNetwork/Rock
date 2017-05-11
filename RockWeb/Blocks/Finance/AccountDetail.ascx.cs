@@ -44,7 +44,7 @@ namespace RockWeb.Blocks.Finance
         {
             base.OnLoad( e );
 
-            var accountId = PageParameter("accountId").AsInteger();
+            var accountId = PageParameter( "accountId" ).AsInteger();
             if ( !Page.IsPostBack )
             {
                 ShowDetail( accountId );
@@ -52,14 +52,14 @@ namespace RockWeb.Blocks.Finance
 
             // Add any attribute controls. 
             // This must be done here regardless of whether it is a postback so that the attribute values will get saved.
-            var account = new FinancialAccountService(new RockContext()).Get(accountId);
-            if (account == null)
+            var account = new FinancialAccountService( new RockContext() ).Get( accountId );
+            if ( account == null )
             {
                 account = new FinancialAccount();
             }
             account.LoadAttributes();
             phAttributes.Controls.Clear();
-            Helper.AddEditControls(account, phAttributes, true, BlockValidationGroup);
+            Helper.AddEditControls( account, phAttributes, true, BlockValidationGroup );
         }
 
         #endregion
@@ -161,25 +161,33 @@ namespace RockWeb.Blocks.Finance
                 editAllowed = editAllowed || account.IsAuthorized( Authorization.EDIT, CurrentPerson );
                 pdAuditDetails.SetEntity( account, ResolveRockUrl( "~" ) );
             }
-
+            int? parentAccountId = PageParameter( "ParentAccountId" ).AsIntegerOrNull();
             if ( account == null )
             {
-                account = new FinancialAccount { Id = 0, IsActive = true };
+                account = new FinancialAccount { Id = 0, ParentAccountId = parentAccountId, IsActive = true };
                 // hide the panel drawer that show created and last modified dates
+                if ( parentAccountId.HasValue )
+                {
+                    var parentAccount = new FinancialAccountService( new RockContext() ).Get( parentAccountId.Value );
+                    if ( parentAccount != null )
+                    {
+                        account.ParentAccount = parentAccount;
+                    }
+                }
                 pdAuditDetails.Visible = false;
             }
 
             hfAccountId.Value = account.Id.ToString();
 
             nbEditModeMessage.Text = string.Empty;
-            if (editAllowed)
+            if ( editAllowed )
             {
-                ShowEditDetails(account);
+                ShowEditDetails( account );
             }
             else
             {
-                nbEditModeMessage.Text = EditModeMessage.ReadOnlyEditActionNotAllowed(FinancialAccount.FriendlyTypeName);
-                ShowReadonlyDetails(account);
+                nbEditModeMessage.Text = EditModeMessage.ReadOnlyEditActionNotAllowed( FinancialAccount.FriendlyTypeName );
+                ShowReadonlyDetails( account );
             }
         }
 

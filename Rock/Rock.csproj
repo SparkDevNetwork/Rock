@@ -734,6 +734,7 @@
     <Compile Include="Model\CodeGenerated\AttributeMatrixItemService.cs" />
     <Compile Include="Model\CodeGenerated\AttributeMatrixService.cs" />
     <Compile Include="Model\CodeGenerated\AttributeMatrixTemplateService.cs" />
+    <Compile Include="Model\FinancialAccountService.Partial.cs" />
     <Compile Include="Model\InteractionService.Partial.cs" />
     <Compile Include="Model\MetricService.Partial.cs" />
     <Compile Include="Model\AttendanceCodeService.Partial.cs" />
