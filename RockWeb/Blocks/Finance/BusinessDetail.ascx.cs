@@ -30,6 +30,7 @@ using Rock.Security;
 using Rock.Web;
 using Rock.Web.Cache;
 using Rock.Web.UI;
+using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.Finance
 {
@@ -440,7 +441,7 @@ namespace RockWeb.Blocks.Finance
                             g.PersonId == contactId.Value )
                         .Select( g => g.Group )
                         .FirstOrDefault();
-                    if (contactKnownRelationshipGroup == null)
+                    if ( contactKnownRelationshipGroup == null )
                     {
                         // In some cases person may not yet have a know relationship group type
                         contactKnownRelationshipGroup = new Group();
@@ -586,17 +587,13 @@ namespace RockWeb.Blocks.Finance
             var business = new PersonService( new RockContext() ).Get( businessId );
             if ( business != null )
             {
+                SetHeadingStatusInfo( business );
                 var detailsLeft = new DescriptionList();
                 detailsLeft.Add( "Business Name", business.LastName );
 
                 if ( business.GivingGroup != null )
                 {
                     detailsLeft.Add( "Campus", business.GivingGroup.Campus );
-                }
-
-                if ( business.RecordStatusValue != null )
-                {
-                    detailsLeft.Add( "Record Status", business.RecordStatusValue );
                 }
 
                 if ( business.RecordStatusReasonValue != null )
@@ -638,6 +635,30 @@ namespace RockWeb.Blocks.Finance
                 lDetailsRight.Text = detailsRight
                     .Add( "Email Address", business.Email )
                     .Html;
+            }
+        }
+
+        /// <summary>
+        /// Sets the heading Status information.
+        /// </summary>
+        /// <param name="business">The business.</param>
+        private void SetHeadingStatusInfo( Person business )
+        {
+            if ( business.RecordStatusValue != null )
+            {
+                hlStatus.Text = business.RecordStatusValue.Value;
+                if ( business.RecordStatusValue.Guid == Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_PENDING.AsGuid() )
+                {
+                    hlStatus.LabelType = LabelType.Warning;
+                }
+                else if ( business.RecordStatusValue.Guid == Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_INACTIVE.AsGuid() )
+                {
+                    hlStatus.LabelType = LabelType.Danger;
+                }
+                else
+                {
+                    hlStatus.LabelType = LabelType.Success;
+                }
             }
         }
 

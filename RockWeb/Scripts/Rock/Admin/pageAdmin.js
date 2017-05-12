@@ -22,15 +22,26 @@
 
                         // Update the new zone
                         getData.Zone = zoneName;
+                        var blockLocation = $('#block-move-Location :checked').val() 
 
-                        // Set the appropriate parent value (layout or page)
-                        if ($('#block-move-Location_0').prop('checked')) {
+                        // Set the appropriate parent value (site, layout or page)
+                        switch (blockLocation)
+                        {
+                          case "Site":
+                            getData.SiteId = Rock.settings.get('siteId');
                             getData.LayoutId = null;
-                            getData.PageId = Rock.settings.get('pageId');
-                        }
-                        else {
+                            getData.PageId = null;
+                            break;
+                          case "Layout":
+                            getData.SiteId = null;
                             getData.LayoutId = Rock.settings.get('layoutId');
                             getData.PageId = null;
+                            break;
+                          case "Page":
+                            getData.SiteId = null;
+                            getData.LayoutId = null;
+                            getData.PageId = Rock.settings.get('pageId');
+                            break;
                         }
 
                         // Save the updated block instance
@@ -140,9 +151,10 @@
                     $('#block-move-zone').val($(this).attr('data-zone'));
 
                     // Set the dialog's parent option to the current zone's parent (either the page or the layout)
-                    var pageBlock = $(this).attr('data-zone-location') == 'Page';
-                    $('#block-move-Location_0').prop('checked', pageBlock);
-                    $('#block-move-Location_1').prop('checked', !pageBlock);
+                    var blockLocation = $(this).attr('data-zone-location');
+                    $('#block-move-Location input[value=' + blockLocation + ']').prop('checked', true);
+
+                    $('.js-modal-block-move .js-subtitle').text($(this).attr('data-blockname'));
 
                     // Show the popup block move dialog
                     $('.js-modal-block-move .modal').modal('show');

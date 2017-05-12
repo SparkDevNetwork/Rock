@@ -136,7 +136,7 @@ namespace RockWeb.Blocks.Core
             if ( attributeMatrixTemplate != null )
             {
                 string errorMessage;
-                if ( !attributeMatrixTemplateService.CanDelete( attributeMatrixTemplate, out errorMessage ) )
+                if ( !attributeMatrixTemplateService.CanDelete( attributeMatrixTemplate, true, out errorMessage ) )
                 {
                     mdGridWarning.Show( errorMessage, ModalAlertType.Information );
                     return;

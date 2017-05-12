@@ -44,10 +44,10 @@ namespace Rock.Model
         public int EventItemId { get; set; }
 
         /// <summary>
-        /// Gets or sets the Id of the <see cref="Rock.Model.Campus"/> that this EventItemAudience is associated with. This property is required.
+        /// Gets or sets the Id of the <see cref="Rock.Model.DefinedValue"/> that this EventItemAudience is associated with. This property is required.
         /// </summary>
         /// <value>
-        /// An <see cref="System.Int32"/> representing the Id of the <see cref="Rock.Model.Campus"/> that the EventItemAudience is associated with.
+        /// An <see cref="System.Int32"/> representing the Id of the <see cref="Rock.Model.DefinedValue"/> that the EventItemAudience is associated with.
         /// </value>
         [Required]
         [DataMember]

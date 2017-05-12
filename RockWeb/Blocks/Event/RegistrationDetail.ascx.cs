@@ -982,6 +982,8 @@ namespace RockWeb.Blocks.Event
                 {
                     using ( var rockContext = new RockContext() )
                     {
+                        var personService = new PersonService(rockContext);
+                        var signatureDocumentTemplateService = new SignatureDocumentTemplateService(rockContext);
                         var registrant = new RegistrationRegistrantService( rockContext ).Get( registrantId.Value );
                         if ( registrant != null && 
                             registrant.PersonAlias != null &&
@@ -990,7 +992,9 @@ namespace RockWeb.Blocks.Event
                             Registration.RegistrationInstance != null &&
                             Registration.RegistrationInstance.RegistrationTemplate != null )
                         {
-                            var assignedTo = registrant.PersonAlias.Person;
+                            // Make sure to load these person records using the current rockContext
+                            var assignedTo = personService.Get(registrant.PersonAlias.PersonId);
+                            var appliesTo = personService.Get(registrant.PersonAlias.PersonId);
                             string email = Registration.ConfirmationEmail;
                             if ( string.IsNullOrWhiteSpace( email ) && Registration.PersonAlias != null && Registration.PersonAlias.Person != null )
                             {
@@ -1005,7 +1009,7 @@ namespace RockWeb.Blocks.Event
                                     m.GroupRole.Guid.Equals( adultRole.Value ) );
                             if ( !registrantIsAdult && Registration.PersonAlias != null && Registration.PersonAlias.Person != null )
                             {
-                                assignedTo = Registration.PersonAlias.Person;
+                                assignedTo = personService.Get(Registration.PersonAlias.PersonId);
                             }
                             else
                             {
@@ -1017,8 +1021,8 @@ namespace RockWeb.Blocks.Event
 
                             var sendErrorMessages = new List<string>();
                             if ( new SignatureDocumentTemplateService( rockContext ).SendDocument(
-                                Registration.RegistrationInstance.RegistrationTemplate.RequiredSignatureDocumentTemplate,
-                                registrant.PersonAlias.Person, 
+                                signatureDocumentTemplateService.Get(Registration.RegistrationInstance.RegistrationTemplate.RequiredSignatureDocumentTemplateId.Value),
+                                appliesTo, 
                                 assignedTo,
                                 Registration.RegistrationInstance.Name,
                                 email,
@@ -1500,7 +1504,7 @@ namespace RockWeb.Blocks.Event
         Rock.dialogs.confirm('Are you sure you want to delete this Registration? All of the registrants will also be deleted!', function (result) {
             if (result) {
                 if ( $('input.js-has-payments').val() == 'True' ) {
-                    Rock.dialogs.confirm('This registration also has payments. Are you really sure that you want to delete the registration?<br/><small>(Payments will not be deleted, but they will no longer be associated with a registration.)</small>', function (result) {
+                    Rock.dialogs.confirm('This registration also has payments. Are you sure that you want to delete the registration?<br/><small>(Payments will not be deleted, but they will no longer be associated with a registration.)</small>', function (result) {
                         if (result) {
                             window.location = e.target.href ? e.target.href : e.target.parentElement.href;
                         }

@@ -46,6 +46,7 @@ public class BundleConfig
             "~/Scripts/bootstrap.min.js",
             "~/Scripts/bootstrap-timepicker.js",
             "~/Scripts/bootstrap-datepicker.js",
+            "~/Scripts/bootstrap-limit.js",
             "~/Scripts/bootstrap-modalmanager.js",
             "~/Scripts/bootstrap-modal.js",
             "~/Scripts/bootbox.min.js",

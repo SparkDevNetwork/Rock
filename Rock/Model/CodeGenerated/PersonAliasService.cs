@@ -1468,6 +1468,12 @@ namespace Rock.Model
                 return false;
             }  
  
+            if ( new Service<PersonalDevice>( Context ).Queryable().Any( a => a.PersonAliasId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", PersonAlias.FriendlyTypeName, PersonalDevice.FriendlyTypeName );
+                return false;
+            }  
+ 
             if ( new Service<PersonBadge>( Context ).Queryable().Any( a => a.CreatedByPersonAliasId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", PersonAlias.FriendlyTypeName, PersonBadge.FriendlyTypeName );

@@ -526,14 +526,31 @@ namespace Rock.Web.UI
         /// </summary>
         /// <param name="zoneName">A <see cref="System.String"/> representing the name of the zone.</param>
         /// <returns>The <see cref="System.Web.UI.Control"/> for the zone, if the zone is not found, the form control is returned.</returns>
+        [Obsolete("Use the other FindZone()")]
         protected virtual Control FindZone( string zoneName )
+        {
+            // Find the zone, or use the Form if not found
+            return FindZone( zoneName, this.Form );
+        }
+
+        /// <summary>
+        /// Find the <see cref="Rock.Web.UI.Controls.Zone" /> for the specified zone name.  Looks in the
+        /// <see cref="Zones" /> property to see if it has been defined.  If an existing zone
+        /// <see cref="Rock.Web.UI.Controls.Zone" /> cannot be found, the defaultZone will be returned
+        /// </summary>
+        /// <param name="zoneName">A <see cref="System.String" /> representing the name of the zone.</param>
+        /// <param name="defaultZone">The default zone.</param>
+        /// <returns>
+        /// The <see cref="System.Web.UI.Control" /> for the zone, if the zone is not found, the defaultZone is returned.
+        /// </returns>
+        protected virtual Control FindZone( string zoneName, Control defaultZone )
         {
             // First look in the Zones dictionary
             if ( Zones.ContainsKey( zoneName ) )
                 return Zones[zoneName].Value;
 
-            // If no match, just add module to the form
-            return this.Form;
+            // If no match, return the defaultZone
+            return defaultZone;
         }
 
         #endregion
@@ -1017,6 +1034,7 @@ namespace Rock.Web.UI
                     // Load the blocks and insert them into page zones
                     Page.Trace.Warn( "Loading Blocks" );
                     var pageBlocks = _pageCache.Blocks;
+                    
                     foreach ( Rock.Web.Cache.BlockCache block in pageBlocks )
                     {
                         var stopwatchBlockInit= Stopwatch.StartNew();
@@ -1028,10 +1046,13 @@ namespace Rock.Web.UI
                         bool canEdit = block.IsAuthorized( Authorization.EDIT, CurrentPerson );
                         bool canView = block.IsAuthorized( Authorization.VIEW, CurrentPerson );
 
-                        // Make sure user has access to view block instance
-                        if ( canAdministrate || canEdit || canView )
-                        {
+                        // if this is a Site-wide block, only render it if its Zone exists on this page
+                        // In other cases, Rock will add the block to the Form (at the very bottom of the page)
+                        Control zone = FindZone( block.Zone, block.BlockLocation == BlockLocation.Site ? null : this.Form );
 
+                        // Make sure there is a Zone for the block, and make sure user has access to view block instance
+                        if ( zone != null && (canAdministrate || canEdit || canView) )
+                        {
                             // Load the control and add to the control tree
                             Page.Trace.Warn( "\tLoading control" );
                             Control control = null;
@@ -1123,7 +1144,7 @@ namespace Rock.Web.UI
 
                             }
 
-                            FindZone( block.Zone ).Controls.Add( control );
+                            zone.Controls.Add( control );
                             if ( control is RockBlockWrapper )
                             {
                                 ( (RockBlockWrapper)control ).EnsureBlockControls();
@@ -2049,8 +2070,9 @@ Sys.Application.add_load(function () {
             rblLocation.ClientIDMode = ClientIDMode.Static;
             rblLocation.ID = "block-move-Location";
             rblLocation.CssClass = "inputs-list";
-            rblLocation.Items.Add( new ListItem( "Current Page" ) );
-            rblLocation.Items.Add( new ListItem( string.Format( "All Pages Using the '{0}' Layout", _pageCache.Layout.Name ) ) );
+            rblLocation.Items.Add( new ListItem( string.Format( "Page ({0})", _pageCache.InternalName), "Page" ) );
+            rblLocation.Items.Add( new ListItem( string.Format( "Layout ({0})", _pageCache.Layout.Name ), "Layout" ) );
+            rblLocation.Items.Add( new ListItem( string.Format( "Site ({0})", _pageCache.Layout.Site.Name ), "Site" ) );
             rblLocation.Label = "Parent";
             fsZoneSelect.Controls.Add( rblLocation );
         }

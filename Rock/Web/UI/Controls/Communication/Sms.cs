@@ -37,11 +37,41 @@ namespace Rock.Web.UI.Controls.Communication
         private RockDropDownList ddlFrom;
         private RockControlWrapper rcwMessage;
         private MergeFieldPicker mfpMessage;
+        private Label lblCount;
         private RockTextBox tbMessage;
 
         #endregion
 
+        #region Base Control Methods
+
+        /// <summary>
+        /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
+        /// </summary>
+        /// <param name="e">An <see cref="T:System.EventArgs" /> object that contains the event data.</param>
+        protected override void OnInit( EventArgs e )
+        {
+            base.OnInit( e );
+
+            // add the bootstrap-limit so that we can have a countdown of characters when entering SMS text
+            int charLimit = this.CharacterLimit;
+            if ( charLimit > 0 )
+            {
+                string script = $"$('#{tbMessage.ClientID}').limit({{maxChars: {charLimit}, counter:'#{lblCount.ClientID}', normalClass:'badge', warningClass:'badge-warning', overLimitClass: 'badge-danger'}})";
+                ScriptManager.RegisterStartupScript( this, this.GetType(), $"limit-{this.ClientID}", script, true );
+            }
+        }
+
+        #endregion Base Control Methods
+
         #region Properties
+
+        /// <summary>
+        /// Gets or sets the character limit.
+        /// </summary>
+        /// <value>
+        /// The character limit.
+        /// </value>
+        public int CharacterLimit { get; set; }
 
         /// <summary>
         /// Gets or sets the medium data.
@@ -100,9 +130,15 @@ namespace Rock.Web.UI.Controls.Communication
             mfpMessage.MergeFields.Clear();
             mfpMessage.MergeFields.Add( "GlobalAttribute" );
             mfpMessage.MergeFields.Add( "Rock.Model.Person" );
-            mfpMessage.CssClass += " pull-right margin-b-sm"; 
+            mfpMessage.CssClass += " margin-b-sm pull-right"; 
             mfpMessage.SelectItem += mfpMergeFields_SelectItem;
             rcwMessage.Controls.Add( mfpMessage );
+
+            lblCount = new Label();
+            lblCount.CssClass = "badge margin-all-sm pull-right";
+            lblCount.ID = string.Format( "lblCount_{0}", this.ID );
+            lblCount.Visible = this.CharacterLimit > 0;
+            rcwMessage.Controls.Add( lblCount );
 
             tbMessage = new RockTextBox();
             tbMessage.ID = string.Format( "tbTextMessage_{0}", this.ID );

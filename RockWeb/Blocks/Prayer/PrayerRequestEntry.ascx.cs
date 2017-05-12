@@ -100,7 +100,6 @@ namespace RockWeb.Blocks.Prayer
                 cpCampus.Campuses = CampusCache.All( false );
             }
 
-            RockPage.AddScriptLink( Page, ResolveUrl( "~/Scripts/bootstrap-limit.js" ) );
             var categoryGuid = GetAttributeValue( "GroupCategoryId" );
             if ( ! string.IsNullOrEmpty( categoryGuid ) )
             {
