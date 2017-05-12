@@ -104,10 +104,6 @@ namespace Rock.Lava.Blocks
             string parmWorkflowId = null;
             string parmActivityType = null;
 
-            bool doReturn = false;
-            if ( doReturn )
-                return;
-
             /* Parse the markup text to pull out configuration parameters. */
             var parms = ParseMarkup( _markup, context );
             foreach ( var p in parms )
@@ -223,33 +219,35 @@ namespace Rock.Lava.Blocks
                         {
                             if ( workflow.CompletedDateTime == null )
                             {
-                                /* Get the type of activity */
-                                if ( type.AsGuidOrNull() != null )
+                                /* Currently we cannot activate an activity in a workflow that is currently
+                                 * being processed. The workflow is held in-memory so the activity we would
+                                 * activate would not show up for the processor and probably never run.
+                                 */
+                                if ( !workflow.IsProcessing )
                                 {
-                                    activityType = workflowActivityTypeService.Get( type.AsGuid() );
-                                }
-                                else if ( type.AsIntegerOrNull() != null )
-                                {
-                                    activityType = workflowActivityTypeService.Get( type.AsInteger() );
-                                }
-
-                                if ( activityType != null )
-                                {
-                                    activity = WorkflowActivity.Activate( activityType, workflow );
-
-                                    /* Set any workflow attributes that were specified. */
-                                    foreach ( var attr in attributes )
+                                    /* Get the type of activity */
+                                    if ( type.AsGuidOrNull() != null )
                                     {
-                                        if ( activity.Attributes.ContainsKey( attr.Key ) )
-                                        {
-                                            activity.SetAttributeValue( attr.Key, attr.Value.ToString() );
-                                        }
+                                        activityType = workflowActivityTypeService.Get( type.AsGuid() );
+                                    }
+                                    else if ( type.AsIntegerOrNull() != null )
+                                    {
+                                        activityType = workflowActivityTypeService.Get( type.AsInteger() );
                                     }
 
-                                    /* Stack overflow recursion results in calling Process on a workflow that
-                                     * is already being processed. */
-                                    if ( !workflow.IsProcessing )
+                                    if ( activityType != null )
                                     {
+                                        activity = WorkflowActivity.Activate( activityType, workflow );
+
+                                        /* Set any workflow attributes that were specified. */
+                                        foreach ( var attr in attributes )
+                                        {
+                                            if ( activity.Attributes.ContainsKey( attr.Key ) )
+                                            {
+                                                activity.SetAttributeValue( attr.Key, attr.Value.ToString() );
+                                            }
+                                        }
+
                                         List<string> errorMessages;
                                         workflowService.Process( workflow, out errorMessages );
 
@@ -263,12 +261,12 @@ namespace Rock.Lava.Blocks
                                     }
                                     else
                                     {
-                                        context["Error"] = "Cannot activate activity on workflow that is currently being processed.";
+                                        context["Error"] = "Activity type was not found.";
                                     }
                                 }
                                 else
                                 {
-                                    context["Error"] = "Activity type was not found.";
+                                    context["Error"] = "Cannot activate activity on workflow that is currently being processed.";
                                 }
                             }
                             else
