@@ -189,6 +189,9 @@ namespace RockWeb.Blocks.Groups
             gGroupTypeAttributes.GridRebind += gGroupTypeAttributes_GridRebind;
             gGroupTypeAttributes.GridReorder += gGroupTypeAttributes_GridReorder;
 
+            SecurityField groupTypeAttributeSecurityField = gGroupTypeAttributes.Columns.OfType<SecurityField>().FirstOrDefault();
+            groupTypeAttributeSecurityField.EntityTypeId = EntityTypeCache.GetId<Attribute>() ?? 0;
+
             gGroupAttributesInherited.Actions.ShowAdd = false;
             gGroupAttributesInherited.EmptyDataText = Server.HtmlEncode( None.Text );
             gGroupAttributesInherited.GridRebind += gGroupAttributesInherited_GridRebind;
@@ -200,6 +203,9 @@ namespace RockWeb.Blocks.Groups
             gGroupAttributes.GridRebind += gGroupAttributes_GridRebind;
             gGroupAttributes.GridReorder += gGroupAttributes_GridReorder;
 
+            SecurityField groupAttributeSecurityField = gGroupAttributes.Columns.OfType<SecurityField>().FirstOrDefault();
+            groupAttributeSecurityField.EntityTypeId = EntityTypeCache.GetId<Attribute>() ?? 0;
+
             gGroupMemberAttributesInherited.Actions.ShowAdd = false;
             gGroupMemberAttributesInherited.EmptyDataText = Server.HtmlEncode( None.Text );
             gGroupMemberAttributesInherited.GridRebind += gGroupMemberAttributesInherited_GridRebind;
@@ -210,6 +216,9 @@ namespace RockWeb.Blocks.Groups
             gGroupMemberAttributes.EmptyDataText = Server.HtmlEncode( None.Text );
             gGroupMemberAttributes.GridRebind += gGroupMemberAttributes_GridRebind;
             gGroupMemberAttributes.GridReorder += gGroupMemberAttributes_GridReorder;
+
+            SecurityField groupMemberAttributeSecurityField = gGroupMemberAttributes.Columns.OfType<SecurityField>().FirstOrDefault();
+            groupMemberAttributeSecurityField.EntityTypeId = EntityTypeCache.GetId<Attribute>() ?? 0;
 
             gMemberWorkflowTriggers.DataKeyNames = new string[] { "Guid" };
             gMemberWorkflowTriggers.Actions.ShowAdd = true;
