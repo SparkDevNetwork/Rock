@@ -88,11 +88,121 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             base.OnLoad( e );
 
             BindGroups();
+
+            // handle sort events
+            string postbackArgs = Request.Params["__EVENTARGUMENT"];
+            if ( !string.IsNullOrWhiteSpace( postbackArgs ) )
+            {
+                string[] nameValue = postbackArgs.Split( new char[] { ':' } );
+                if ( nameValue.Count() == 2 )
+                {
+                    string eventParam = nameValue[0];
+                    if ( eventParam.Equals( "re-order-panel-widget" ) )
+                    {
+                        string[] values = nameValue[1].Split( new char[] { ';' } );
+                        if ( values.Count() == 2 )
+                        {
+                            SortGroupsForGroupMember( eventParam, values );
+                        }
+                    }
+                }
+            }
         }
 
         #endregion
 
         #region Events
+
+        private void SortGroupsForGroupMember( string eventParam, string[] values )
+        {
+            string panelWidgetClientId = values[0];
+            int newIndex = int.Parse( values[1] );
+
+
+            if ( Person != null && Person.Id > 0 )
+            {
+                using ( _bindGroupsRockContext = new RockContext() )
+                {
+                    var memberService = new GroupMemberService( _bindGroupsRockContext );
+                    var groupMemberGroups = memberService.Queryable( true )
+                        .Where( m =>
+                            m.PersonId == Person.Id &&
+                            m.Group.GroupTypeId == _groupType.Id )
+                        //.OrderBy( m => m.GroupOrder )
+                        .ToList();
+                }
+            }
+
+                    Panel pnlWidget = pnlDetails.ControlsOfTypeRecursive<Panel>().FirstOrDefault( a => a.ClientID == panelWidgetClientId );
+            HiddenField hfSiteBlockId = pnlWidget.FindControl( "hfSiteBlockId" ) as HiddenField;
+            HiddenField hfLayoutBlockId = pnlWidget.FindControl( "hfLayoutBlockId" ) as HiddenField;
+            HiddenField hfPageBlockId = pnlWidget.FindControl( "hfPageBlockId" ) as HiddenField;
+
+            int? blockId = null;
+            if ( hfSiteBlockId != null )
+            {
+                blockId = hfSiteBlockId.Value.AsIntegerOrNull();
+            }
+            else if ( hfLayoutBlockId != null )
+            {
+                blockId = hfLayoutBlockId.Value.AsIntegerOrNull();
+            }
+            else if ( hfPageBlockId != null )
+            {
+                blockId = hfPageBlockId.Value.AsIntegerOrNull();
+            }
+
+            if ( blockId.HasValue )
+            {
+                var rockContext = new RockContext();
+                var blockService = new BlockService( rockContext );
+                var block = blockService.Get( blockId.Value );
+                var page = Rock.Web.Cache.PageCache.Read( hfPageId.Value.AsInteger() );
+                if ( block != null && page != null )
+                {
+                    List<Block> zoneBlocks = null;
+                    switch ( block.BlockLocation )
+                    {
+                        case BlockLocation.Page:
+                            zoneBlocks = blockService.GetByPageAndZone( block.PageId.Value, block.Zone ).ToList();
+                            break;
+                        case BlockLocation.Layout:
+                            zoneBlocks = blockService.GetByLayoutAndZone( block.LayoutId.Value, block.Zone ).ToList();
+                            break;
+                        case BlockLocation.Site:
+                            zoneBlocks = blockService.GetBySiteAndZone( block.SiteId.Value, block.Zone ).ToList();
+                            break;
+                    }
+
+                    if ( zoneBlocks != null )
+                    {
+                        var oldIndex = zoneBlocks.IndexOf( block );
+                        blockService.Reorder( zoneBlocks, oldIndex, newIndex );
+
+                        rockContext.SaveChanges();
+                    }
+
+                    foreach ( var zoneBlock in zoneBlocks )
+                    {
+                        // make sure the BlockCache for all the re-ordered blocks get flushed so the new Order is updated
+                        BlockCache.Flush( zoneBlock.Id );
+                    }
+
+                    page.FlushBlocks();
+                    if ( block.LayoutId.HasValue )
+                    {
+                        Rock.Web.Cache.PageCache.FlushLayoutBlocks( block.LayoutId.Value );
+                    }
+
+                    if ( block.SiteId.HasValue )
+                    {
+                        Rock.Web.Cache.PageCache.FlushSiteBlocks( block.SiteId.Value );
+                    }
+
+                    BindGroups();
+                }
+            }
+        }
 
         /// <summary>
         /// Handles the ItemDataBound event of the rptrGroups control.
@@ -375,6 +485,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                         .Where( m =>
                             m.PersonId == Person.Id &&
                             m.Group.GroupTypeId == _groupType.Id )
+                        //.OrderBy( m => m.GroupOrder )
                         .Select( m => m.Group )
                         .ToList();
 
