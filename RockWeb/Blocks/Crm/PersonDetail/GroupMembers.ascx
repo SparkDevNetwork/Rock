@@ -3,13 +3,14 @@
 <asp:UpdatePanel ID="upGroupMembers" runat="server">
     <ContentTemplate>
 
-        <div class="persondetails-grouplist">
+        <div class="persondetails-grouplist js-grouplist-sort-container">
             
             <asp:Repeater ID="rptrGroups" runat="server" >
             <ItemTemplate>
 
                 <div class="persondetails-group js-persondetails-group">
                     <header>
+                        <a id="lReorderIcon" runat="server" class="btn btn-link btn-xs panel-widget-reorder pull-left js-stop-immediate-propagation"><i class="fa fa-bars"></i></a>
                         <h1><%# FormatAsHtmlTitle(Eval("Name").ToString()) %></h1>
 
                         <div class="action-wrapper">
@@ -84,6 +85,38 @@
         </asp:Repeater>
             
         </div>
+
+        <script>
+            Sys.Application.add_load(function () {
+
+                var fixHelper = function (e, ui) {
+                    ui.children().each(function () {
+                        $(this).width($(this).width());
+                    });
+                    return ui;
+                };
+
+                // javascript to make the Reorder buttons work on the panel-widget controls
+                $('.js-grouplist-sort-container').sortable({
+                    helper: fixHelper,
+                    handle: '.panel-widget-reorder',
+                    containment: 'parent',
+                    tolerance: 'pointer',
+                    start: function (event, ui) {
+                        {
+                            var start_pos = ui.item.index();
+                            ui.item.data('start_pos', start_pos);
+                        }
+                    },
+                    update: function (event, ui) {
+                        {
+                            var newItemIndex = $(ui.item).prevAll('.panel-widget').length;
+                            __doPostBack('<%=upGroupMembers.ClientID %>', 're-order-panel-widget:' + ui.item.attr('id') + ';' + newItemIndex);
+                        }
+                    }
+                });
+            });
+        </script>
 
     </ContentTemplate>
 </asp:UpdatePanel>
