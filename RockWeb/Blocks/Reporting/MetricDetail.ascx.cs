@@ -1031,12 +1031,12 @@ The SQL can include Lava merge fields:";
             rblScheduleSelect.Items.Add( new ListItem( ScheduleSelectionType.NamedSchedule.ConvertToString(), ScheduleSelectionType.NamedSchedule.ConvertToInt().ToString() ) );
 
             var scheduleCategoryId = new CategoryService( rockContext ).Get( Rock.SystemGuid.Category.SCHEDULE_METRICS.AsGuid() ).Id;
-            var scheduleCategories = new ScheduleService( rockContext ).Queryable()
-                .Where( a => a.CategoryId == scheduleCategoryId && a.Name != string.Empty )
+            var metricSchedules = new ScheduleService( rockContext ).Queryable()
+                .Where( a => a.CategoryId == scheduleCategoryId && a.Name != string.Empty && a.IsActive )
                 .OrderBy( a => a.Name ).ToList();
 
             ddlSchedule.Items.Clear();
-            foreach ( var item in scheduleCategories )
+            foreach ( var item in metricSchedules )
             {
                 ddlSchedule.Items.Add( new ListItem( item.Name, item.Id.ToString() ) );
             }
