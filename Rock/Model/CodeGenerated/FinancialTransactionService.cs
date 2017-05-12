@@ -103,10 +103,16 @@ namespace Rock.Model
             target.FinancialPaymentDetailId = source.FinancialPaymentDetailId;
             target.ForeignGuid = source.ForeignGuid;
             target.ForeignKey = source.ForeignKey;
+            target.HistoryChanges = source.HistoryChanges;
+            target.IsReconciled = source.IsReconciled;
+            target.IsSettled = source.IsSettled;
             target.MICRStatus = source.MICRStatus;
             target.ProcessedByPersonAliasId = source.ProcessedByPersonAliasId;
             target.ProcessedDateTime = source.ProcessedDateTime;
             target.ScheduledTransactionId = source.ScheduledTransactionId;
+            target.SettledDate = source.SettledDate;
+            target.SettledGroupId = source.SettledGroupId;
+            target.ShowAsAnonymous = source.ShowAsAnonymous;
             target.SourceTypeValueId = source.SourceTypeValueId;
             target.Status = source.Status;
             target.StatusMessage = source.StatusMessage;

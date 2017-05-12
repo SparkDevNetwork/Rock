@@ -302,7 +302,7 @@ namespace Rock.Web.UI.Controls
 
                 if ( ShowScheduleFriendlyTextAsToolTip )
                 {
-                    this.ToolTip = new Rock.Model.Schedule { iCalendarContent = _scheduleBuilderPopupContents.iCalendarContent }.ToFriendlyScheduleText();
+                    this.ToolTip = new Rock.Model.Schedule { iCalendarContent = _scheduleBuilderPopupContents.iCalendarContent }.ToFriendlyScheduleText( true );
                 }
             }
         }

@@ -39,19 +39,13 @@ namespace Rock.Lava.Blocks
         /// <returns></returns>
         protected bool IsAuthorized( Context context )
         {
-            if ( context.Scopes != null )
+            if ( context.Registers.ContainsKey( "EnabledCommands" ) )
             {
-                foreach ( var scopeHash in context.Scopes )
-                {
-                    if ( scopeHash.ContainsKey( "EnabledCommands" ) )
-                    {
-                        var enabledCommands = scopeHash["EnabledCommands"].ToString().Split( ',' ).ToList();
+                var enabledCommands = context.Registers["EnabledCommands"].ToString().Split( ',' ).ToList();
 
-                        if ( enabledCommands.Contains( "All" ) || enabledCommands.Contains( this.GetType().Name ) )
-                        {
-                            return true;
-                        }
-                    }
+                if ( enabledCommands.Contains( "All" ) || enabledCommands.Contains( this.GetType().Name ) )
+                {
+                    return true;
                 }
             }
 

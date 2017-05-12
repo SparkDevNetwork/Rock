@@ -82,8 +82,8 @@ namespace Rock.Model
                 }
                 if ( document.AssignedToPersonAlias != null && document.AssignedToPersonAlias.Person != null )
                 {
-                    assignedToPerson = assignedToPerson ?? document.AppliesToPersonAlias.Person;
-                    alternateEmail = !string.IsNullOrWhiteSpace( alternateEmail ) ? alternateEmail : document.AppliesToPersonAlias.Person.Email;
+                    assignedToPerson = assignedToPerson ?? document.AssignedToPersonAlias.Person;
+                    alternateEmail = !string.IsNullOrWhiteSpace( alternateEmail ) ? alternateEmail : document.AssignedToPersonAlias.Person.Email;
                 }
 
                 documentName = !string.IsNullOrWhiteSpace( documentName ) ? documentName : document.Name;

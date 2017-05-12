@@ -44,7 +44,6 @@ namespace RockWeb.Blocks.Groups
     [Description( "Displays the details of the given group." )]
     [GroupTypesField( "Group Types Include", "Select group types to show in this block.  Leave all unchecked to show all but the excluded group types.", false, key: "GroupTypes", order: 0 )]
     [GroupTypesField( "Group Types Exclude", "Select group types to exclude from this block.", false, key: "GroupTypesExclude", order: 1 )]
-    [BooleanField( "Show Edit", "", true, "", 2 )]
     [BooleanField( "Limit to Security Role Groups", "", false, "", 3 )]
     [BooleanField( "Limit to Group Types that are shown in navigation", "", false, "", 4, "LimitToShowInNavigationGroupTypes" )]
     [DefinedValueField( Rock.SystemGuid.DefinedType.MAP_STYLES, "Map Style", "The style of maps to use", false, false, Rock.SystemGuid.DefinedValue.MAP_STYLE_ROCK, "", 5 )]
@@ -1058,31 +1057,9 @@ namespace RockWeb.Blocks.Groups
                 nbEditModeMessage.Text = EditModeMessage.System( Group.FriendlyTypeName );
             }
 
-            var roleLimitWarnings = new StringBuilder();
-
-            if ( group.GroupType != null && group.GroupType.Roles != null && group.GroupType.Roles.Any() )
-            {
-                foreach ( var role in group.GroupType.Roles.Where( a => a.MinCount.HasValue || a.MaxCount.HasValue ) )
-                {
-                    var groupMemberService = new GroupMemberService( rockContext );
-                    int curCount = groupMemberService.Queryable().Where( m => m.GroupId == group.Id && m.GroupRoleId == role.Id && m.GroupMemberStatus == GroupMemberStatus.Active ).Count();
-
-                    if ( role.MinCount.HasValue && role.MinCount.Value > curCount )
-                    {
-                        string format = "The <strong>{1}</strong> role is currently below its minimum requirement of {2:N0} active {3}.<br/>";
-                        roleLimitWarnings.AppendFormat( format, role.Name.Pluralize(), role.Name, role.MinCount, role.MinCount == 1 ? group.GroupType.GroupMemberTerm : group.GroupType.GroupMemberTerm.Pluralize() );
-                    }
-
-                    if ( role.MaxCount.HasValue && role.MaxCount.Value < curCount )
-                    {
-                        string format = "The <strong>{1}</strong> role is currently above its maximum limit of {2:N0} active {3}.<br/>";
-                        roleLimitWarnings.AppendFormat( format, role.Name.Pluralize(), role.Name, role.MaxCount, role.MaxCount == 1 ? group.GroupType.GroupMemberTerm : group.GroupType.GroupMemberTerm.Pluralize() );
-                    }
-                }
-            }
-
-            nbRoleLimitWarning.Text = roleLimitWarnings.ToString();
-            nbRoleLimitWarning.Visible = roleLimitWarnings.Length > 0;
+            string roleLimitWarnings;
+            nbRoleLimitWarning.Visible = group.GetGroupTypeRoleLimitWarnings( out roleLimitWarnings );
+            nbRoleLimitWarning.Text = roleLimitWarnings;
 
             FollowingsHelper.SetFollowing( group, pnlFollowing, this.CurrentPerson );
 
@@ -1583,12 +1560,14 @@ namespace RockWeb.Blocks.Groups
                     {
                         if ( groupLocation.Location != null )
                         {
-                            if ( groupLocation.Location.GeoPoint != null )
+                            var googleAPIKey = GlobalAttributesCache.Read().GetValue( "GoogleAPIKey" );
+
+                            if ( groupLocation.Location.GeoPoint != null && ! string.IsNullOrWhiteSpace( googleAPIKey ) )
                             {
                                 string markerPoints = string.Format( "{0},{1}", groupLocation.Location.GeoPoint.Latitude, groupLocation.Location.GeoPoint.Longitude );
                                 string mapLink = System.Text.RegularExpressions.Regex.Replace( mapStyle, @"\{\s*MarkerPoints\s*\}", markerPoints );
                                 mapLink = System.Text.RegularExpressions.Regex.Replace( mapLink, @"\{\s*PolygonPoints\s*\}", string.Empty );
-                                mapLink += "&sensor=false&size=450x250&zoom=13&format=png";
+                                mapLink += "&sensor=false&size=450x250&zoom=13&format=png&key=" + googleAPIKey;
                                 var literalcontrol = new Literal()
                                 {
                                     Text = string.Format(
@@ -1600,12 +1579,12 @@ namespace RockWeb.Blocks.Groups
                                 };
                                 phMaps.Controls.Add( literalcontrol );
                             }
-                            else if ( groupLocation.Location.GeoFence != null )
+                            else if ( groupLocation.Location.GeoFence != null && !string.IsNullOrWhiteSpace( googleAPIKey ) )
                             {
                                 string polygonPoints = "enc:" + groupLocation.Location.EncodeGooglePolygon();
                                 string mapLink = System.Text.RegularExpressions.Regex.Replace( mapStyle, @"\{\s*MarkerPoints\s*\}", string.Empty );
                                 mapLink = System.Text.RegularExpressions.Regex.Replace( mapLink, @"\{\s*PolygonPoints\s*\}", polygonPoints );
-                                mapLink += "&sensor=false&size=350x200&format=png";
+                                mapLink += "&sensor=false&size=350x200&format=png&key=" + googleAPIKey;
                                 phMaps.Controls.Add(
                                     new LiteralControl( string.Format(
                                         "<div class='group-location-map'>{0}<a href='{1}'><img class='img-thumbnail' src='{2}'/></a></div>",

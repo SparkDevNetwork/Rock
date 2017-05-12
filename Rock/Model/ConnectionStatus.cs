@@ -107,6 +107,7 @@ namespace Rock.Model
         /// <value>
         /// The type of the connection.
         /// </value>
+        [LavaInclude]
         public virtual ConnectionType ConnectionType { get; set; }
 
         #endregion

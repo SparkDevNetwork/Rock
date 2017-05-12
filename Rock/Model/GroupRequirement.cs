@@ -78,6 +78,7 @@ namespace Rock.Model
         /// <value>
         /// The group.
         /// </value>
+        [LavaInclude]
         public virtual Group Group { get; set; }
 
         /// <summary>
@@ -95,6 +96,7 @@ namespace Rock.Model
         /// <value>
         /// The group type role.
         /// </value>
+        [LavaInclude]
         public virtual GroupTypeRole GroupRole { get; set; }
 
         #endregion

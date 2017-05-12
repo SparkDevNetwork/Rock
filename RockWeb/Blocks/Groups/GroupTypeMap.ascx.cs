@@ -92,7 +92,6 @@ namespace RockWeb.Blocks.Groups
 {% endif %}
 
 ", "", 9 )]
-    [BooleanField( "Enable Debug", "Enabling debug will display the fields of the first 5 groups to help show you wants available for your liquid.", false, "", 10 )]
     public partial class GroupTypeMap : Rock.Web.UI.RockBlock
     {
         #region Fields
@@ -359,18 +358,6 @@ namespace RockWeb.Blocks.Groups
                         dynGroup.GroupMembers = groupMembers;
 
                         dynamicGroups.Add( dynGroup );
-                    }
-
-                    // enable showing debug info
-                    if ( GetAttributeValue( "EnableDebug" ).AsBoolean() && IsUserAuthorized( Authorization.EDIT ) )
-                    {
-                        lDebug.Visible = true;
-                        lDebug.Text = dynamicGroups.Take( 5 ).lavaDebugInfo();
-                    }
-                    else
-                    {
-                        lDebug.Visible = false;
-                        lDebug.Text = string.Empty;
                     }
 
                     foreach ( var group in dynamicGroups )

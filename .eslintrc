@@ -1,0 +1,69 @@
+{
+  "parser": "babel-eslint",
+  "extends": "airbnb",
+  "env": {
+    "node": true,
+    "browser": true,
+    "es6": true,
+    "jest": true
+  },
+  "globals": {
+    "jest": true
+  },
+  "plugins": [
+    "jsx-a11y",
+    "compat"
+  ],
+  "rules": {
+    "linebreak-style": [0, "windows"],
+    "arrow-parens": [2, "always"],
+    "quotes": [2, "double"],
+    "import/extensions": 0,
+    "import/no-absolute-path": 0,
+    "import/no-extraneous-dependencies": [2],
+    "react/jsx-filename-extension": [1, { "extensions": [".js"] }],
+    "react/react-in-jsx-scope": 0,
+    "react/no-string-refs": 0,
+    "react/forbid-prop-types": 0,
+    "class-methods-use-this": 0,
+    "jsx-a11y/anchor-has-content": 1,
+    "jsx-a11y/aria-props": 1,
+    "jsx-a11y/aria-proptypes": 1,
+    "jsx-a11y/aria-role": 1,
+    "jsx-a11y/aria-unsupported-elements": 1,
+    "jsx-a11y/click-events-have-key-events": 1,
+    "jsx-a11y/heading-has-content": 1,
+    "jsx-a11y/href-no-hash": 1,
+    "jsx-a11y/html-has-lang": 1,
+    "jsx-a11y/img-has-alt": 1,
+    "jsx-a11y/img-redundant-alt": 1,
+    "jsx-a11y/label-has-for": 1,
+    "jsx-a11y/lang": 1,
+    "jsx-a11y/mouse-events-have-key-events": 1,
+    "jsx-a11y/no-access-key": 1,
+    "jsx-a11y/no-onchange": 1,
+    "jsx-a11y/no-static-element-interactions": 1,
+    "jsx-a11y/onclick-has-focus": 1,
+    "jsx-a11y/onclick-has-role": 1,
+    "jsx-a11y/role-has-required-aria-props": 1,
+    "jsx-a11y/role-supports-aria-props": 1,
+    "jsx-a11y/scope": 1,
+    "jsx-a11y/tabindex-no-positive": 1,
+    "react/sort-comp": [1, {
+      order: [
+        'type-annotations',
+        'static-methods',
+        'lifecycle',
+        'everything-else',
+        'render',
+      ],
+    }],
+    "no-useless-escape": 0,
+    "no-cond-assign": 0,
+    "compat/compat": 2,
+  },
+  "settings": {
+    "targets": ["chrome", "firefox", "edge", "safari", "ie"],
+    "polyfills": ["fetch"]
+  }
+}

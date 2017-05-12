@@ -30,15 +30,12 @@ using Rock.Web.Cache;
 
 namespace Rock.PersonProfile.Badge
 {
-    // TODO: Update to return actual data
-
     /// <summary>
-    /// FamilyAttendance Badge
+    /// Family Weeks Attended In Duration Badge
     /// </summary>
     [Description( "Shows the number of times a family attended in a duration of weeks." )]
     [Export( typeof( BadgeComponent ) )]
     [ExportMetadata( "ComponentName", "Family Weeks Attended In Duration" )]
-    
     
     [IntegerField("Duration", "The number of weeks to use for the duration (default 16.)", false, 16)]
     public class FamilyWeeksAttendedInDuration : BadgeComponent

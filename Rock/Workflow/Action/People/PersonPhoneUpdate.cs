@@ -60,7 +60,7 @@ namespace Rock.Workflow.Action
             errorMessages = new List<string>();
 
             // get person
-            Person person = null;
+            int? personId = null;
 
             string personAttributeValue = GetAttributeValue( action, "Person" );
             Guid? guidPersonAttribute = personAttributeValue.AsGuidOrNull();
@@ -75,11 +75,11 @@ namespace Rock.Workflow.Action
                         Guid personAliasGuid = attributePersonValue.AsGuid();
                         if ( !personAliasGuid.IsEmpty() )
                         {
-                            person = new PersonAliasService( rockContext ).Queryable()
+                            personId = new PersonAliasService( rockContext ).Queryable()
                                 .Where( a => a.Guid.Equals( personAliasGuid ) )
-                                .Select( a => a.Person )
+                                .Select( a => a.PersonId )
                                 .FirstOrDefault();
-                            if ( person == null )
+                            if ( personId == null )
                             {
                                 errorMessages.Add( string.Format( "Person could not be found for selected value ('{0}')!", guidPersonAttribute.ToString() ) );
                                 return false;
@@ -88,8 +88,8 @@ namespace Rock.Workflow.Action
                     }
                 }
             }
-        
-            if ( person == null )
+
+            if ( personId == null )
             {
                 errorMessages.Add( "The attribute used to provide the person was invalid, or not of type 'Person'." );
                 return false;
@@ -103,11 +103,11 @@ namespace Rock.Workflow.Action
                 phoneType = DefinedValueCache.Read( phoneTypeAttributeValue.AsGuid() );
             }
             if ( phoneType == null )
-            { 
+            {
                 phoneType = DefinedValueCache.Read( GetAttributeValue( action, "PhoneType" ).AsGuid() );
             }
             if ( phoneType == null )
-            { 
+            {
                 errorMessages.Add( "The phone type to be updated was not selected." );
                 return false;
             }
@@ -154,48 +154,68 @@ namespace Rock.Workflow.Action
             }
             bool? smsEnabled = smsEnabledValue.AsBooleanOrNull();
 
-            var phoneNumber = person.PhoneNumbers.FirstOrDefault( n => n.NumberTypeValueId == phoneType.Id );
+            bool updated = false;
+            var phoneNumberService = new PhoneNumberService( rockContext );
+            var phoneNumber = phoneNumberService.Queryable()
+                .Where( n =>
+                    n.PersonId == personId.Value &&
+                    n.NumberTypeValueId == phoneType.Id )
+                .FirstOrDefault();
             string oldValue = string.Empty;
             if ( phoneNumber == null )
             {
-                phoneNumber = new PhoneNumber { NumberTypeValueId = phoneType.Id };
-                person.PhoneNumbers.Add( phoneNumber );
+                phoneNumber = new PhoneNumber { NumberTypeValueId = phoneType.Id, PersonId = personId.Value };
+                phoneNumberService.Add( phoneNumber );
+                updated = true;
             }
             else
             {
                 oldValue = phoneNumber.NumberFormattedWithCountryCode;
             }
 
-
             if ( !string.IsNullOrWhiteSpace( phoneNumberValue ) || !ignoreBlanks )
             {
+                updated = updated || phoneNumber.Number != phoneNumberValue;
                 phoneNumber.Number = phoneNumberValue;
             }
             if ( unlisted.HasValue )
             {
+                updated = updated || phoneNumber.IsUnlisted != unlisted.Value;
                 phoneNumber.IsUnlisted = unlisted.Value;
             }
             if ( smsEnabled.HasValue )
             {
+                updated = updated || phoneNumber.IsMessagingEnabled != smsEnabled.Value;
                 phoneNumber.IsMessagingEnabled = smsEnabled.Value;
             }
 
-            var changes = new List<string>();
-            History.EvaluateChange(
-                changes,
-                string.Format( "{0} Phone", phoneType.Value ),
-                oldValue,
-                phoneNumber.NumberFormattedWithCountryCode );
-
-            if ( changes.Any() )
+            if ( updated )
             {
-                changes.Add( string.Format( "<em>(Updated by the '{0}' workflow)</em>", action.ActionType.ActivityType.WorkflowType.Name ) );
-                HistoryService.SaveChanges( rockContext, typeof( Person ), Rock.SystemGuid.Category.HISTORY_PERSON_DEMOGRAPHIC_CHANGES.AsGuid(), person.Id, changes, false );
+                var changes = new List<string>();
+                History.EvaluateChange(
+                    changes,
+                    string.Format( "{0} Phone", phoneType.Value ),
+                    oldValue,
+                    phoneNumber.NumberFormattedWithCountryCode );
+
+                if ( changes.Any() )
+                {
+                    changes.Add( string.Format( "<em>(Updated by the '{0}' workflow)</em>", action.ActionTypeCache.ActivityType.WorkflowType.Name ) );
+                    HistoryService.SaveChanges( rockContext, typeof( Person ), Rock.SystemGuid.Category.HISTORY_PERSON_DEMOGRAPHIC_CHANGES.AsGuid(), personId.Value, changes, false );
+                }
+
+                rockContext.SaveChanges();
+
+                if ( action.Activity != null && action.Activity.Workflow != null )
+                {
+                    var workflowType = action.Activity.Workflow.WorkflowTypeCache;
+                    if ( workflowType != null && workflowType.LoggingLevel == WorkflowLoggingLevel.Action )
+                    {
+                        var person = new PersonService( rockContext ).Get( personId.Value );
+                        action.AddLogEntry( string.Format( "Updated {0} phone for {1} to {2}.", phoneType.Value, person.FullName, phoneNumber.NumberFormattedWithCountryCode ) );
+                    }
+                }
             }
-
-            rockContext.SaveChanges();
-
-            action.AddLogEntry( string.Format( "Updated {0} phone for {1} to {2}.", phoneType.Value, person.FullName, phoneNumber.NumberFormattedWithCountryCode ) );
 
             return true;
         }

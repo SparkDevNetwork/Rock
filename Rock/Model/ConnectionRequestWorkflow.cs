@@ -94,6 +94,7 @@ namespace Rock.Model
         /// <value>
         /// The connection request.
         /// </value>
+        [LavaInclude]
         public virtual ConnectionRequest ConnectionRequest { get; set; }
 
         /// <summary>
@@ -102,6 +103,7 @@ namespace Rock.Model
         /// <value>
         /// The connection workflow.
         /// </value>
+        [LavaInclude]
         public virtual ConnectionWorkflow ConnectionWorkflow { get; set; }
 
         /// <summary>
@@ -110,6 +112,7 @@ namespace Rock.Model
         /// <value>
         /// The workflow.
         /// </value>
+        [LavaInclude]
         public virtual Workflow Workflow { get; set; }
 
         #endregion

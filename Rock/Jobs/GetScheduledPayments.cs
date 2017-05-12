@@ -34,7 +34,8 @@ namespace Rock.Jobs
     [IntegerField( "Days Back", "The number of days prior to the current date to use as the start date when querying for scheduled payments that were processed.", true, 7, "", 1 )]
     [TextField( "Batch Name Prefix", "The batch prefix name to use when creating a new batch", false, "Online Giving", "", 2 )]
     [SystemEmailField( "Receipt Email", "The system email to use to send the receipts.", false, "", "", 3 )]
-
+    [SystemEmailField( "Failed Payment Email", "The system email to use to send a notice about a scheduled payment that failed.", false, "", "", 4 )]
+    [WorkflowTypeField( "Failed Payment Workflow", "An optional workflow to start whenever a scheduled payment has failed.", false, false, "", "", 5)]
     [DisallowConcurrentExecution]
     public class GetScheduledPayments : IJob
     {
@@ -95,9 +96,12 @@ namespace Rock.Jobs
 
                             if ( string.IsNullOrWhiteSpace( errorMessage ) )
                             {
-                                Guid? systemEmailGuid = dataMap.GetString( "ReceiptEmail" ).AsGuidOrNull();
+                                Guid? receiptEmail = dataMap.GetString( "ReceiptEmail" ).AsGuidOrNull();
+                                Guid? failedPaymentEmail = dataMap.GetString( "FailedPaymentEmail" ).AsGuidOrNull();
+                                Guid? failedPaymentWorkflowType = dataMap.GetString( "FailedPaymentWorkflow" ).AsGuidOrNull();
+
                                 string batchNamePrefix = dataMap.GetString( "BatchNamePrefix" );
-                                FinancialScheduledTransactionService.ProcessPayments( financialGateway, batchNamePrefix, payments, string.Empty, systemEmailGuid );
+                                FinancialScheduledTransactionService.ProcessPayments( financialGateway, batchNamePrefix, payments, string.Empty, receiptEmail, failedPaymentEmail, failedPaymentWorkflowType );
                                 scheduledPaymentsProcessed += payments.Count();
                             }
                             else

@@ -43,6 +43,7 @@ using Rock.Model;
 using Rock.Security;
 using Rock.Web.Cache;
 using Rock.Web.UI;
+using UAParser;
 
 namespace Rock.Lava
 {
@@ -1516,7 +1517,15 @@ namespace Rock.Lava
                     if ( theValue.HasMergeFields() )
                     {
                         // Global attributes may reference other global attributes, so try to resolve this value again
-                        rawValue = theValue.ResolveMergeFields( new Dictionary<string, object>() );
+                        var mergeFields = new Dictionary<string, object>();
+                        if ( context.Environments.Count > 0 )
+                        {
+                            foreach( var keyVal in context.Environments[0] )
+                            {
+                                mergeFields.Add( keyVal.Key, keyVal.Value );
+                            }
+                        }
+                        rawValue = theValue.ResolveMergeFields( mergeFields );
                     }
                     else
                     {
@@ -3034,6 +3043,66 @@ namespace Rock.Lava
             }
 
             return null;
+        }
+
+        /// <summary>
+        /// Clients the specified input.
+        /// </summary>
+        /// <param name="input">The input.</param>
+        /// <param name="parm">The parm.</param>
+        /// <returns></returns>
+        public static object Client( string input, string parm )
+        {
+            parm = parm.ToUpper();
+
+            switch ( parm )
+            {
+                case "IP":
+                    {
+                        string address = string.Empty;
+                        
+                        // http://stackoverflow.com/questions/735350/how-to-get-a-users-client-ip-address-in-asp-net
+                        string ipAddress = HttpContext.Current.Request.ServerVariables["HTTP_X_FORWARDED_FOR"];
+
+                        if ( !string.IsNullOrEmpty( ipAddress ) )
+                        {
+                            string[] addresses = ipAddress.Split( ',' );
+                            if ( addresses.Length != 0 )
+                            {
+                                address = addresses[0];
+                            }
+                        }
+
+                        address =  HttpContext.Current.Request.ServerVariables["REMOTE_ADDR"];
+
+                        // nicely format localhost
+                        if (address == "::1" )
+                        {
+                            address = "localhost";
+                        }
+
+                        return address;
+                    }
+                case "LOGIN": {
+                        return HttpContext.Current.Request.ServerVariables["AUTH_USER"];
+                    }
+                case "BROWSER":
+                    {
+                        Parser uaParser = Parser.GetDefault();
+                        ClientInfo client = uaParser.Parse( HttpContext.Current.Request.UserAgent );
+
+                        return client;
+                    }
+                case "PARMLIST":
+                    {
+                        return string.Join( ", ", HttpContext.Current.Request.ServerVariables.AllKeys );
+                    }
+                default:
+                    {
+                        return HttpContext.Current.Request.ServerVariables[parm];
+                    }
+            }
+
         }
 
         /// <summary>

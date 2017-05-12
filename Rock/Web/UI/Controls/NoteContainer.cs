@@ -234,6 +234,17 @@ namespace Rock.Web.UI.Controls
             }
         }
 
+        /// <summary>
+        /// Gets or sets a value indicating whether the Note Type should be displayed as a heading to each note.
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if display note type heading; otherwise, <c>false</c>.
+        /// </value>
+        public bool DisplayNoteTypeHeading
+        {
+            get { return ViewState["DisplayNoteTypeHeading"] as bool? ?? false; }
+            set { ViewState["DisplayNoteTypeHeading"] = value; }
+        }
 
         /// <summary>
         /// Gets or sets the display type.  Full or Light
@@ -375,7 +386,7 @@ namespace Rock.Web.UI.Controls
 
         /// <summary>
         /// Gets or sets a value indicating whether the author's photo should 
-        /// be displayed wiht the note instead of an icon based on the source
+        /// be displayed with the note instead of an icon based on the source
         /// of the note.
         /// </summary>
         public bool UsePersonIcon
@@ -573,6 +584,7 @@ namespace Rock.Web.UI.Controls
                     if ( control is NoteControl && control.ID != "noteNew" )
                     {
                         var noteEditor = (NoteControl)control;
+                        noteEditor.DisplayNoteTypeHeading = this.DisplayNoteTypeHeading;
                         noteEditor.DisplayType = this.DisplayType;
                         noteEditor.ShowAlertCheckBox = this.ShowAlertCheckBox;
                         noteEditor.ShowPrivateCheckBox = this.ShowPrivateCheckBox;

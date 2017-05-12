@@ -36,7 +36,7 @@ namespace Rock.Attribute
         /// </summary>
         /// <param name="name">The name.</param>
         /// <param name="description">The description.</param>
-        /// <param name="listSource">The source of the values to display in a list.  Format is either 'value1,value2,value3,...', 'value1^text1,value2^text2,value3^text3,...', or a SQL Select statement that returns result set with a 'Value' and 'Text' column.</param>
+        /// <param name="listSource">The source of the values to display in a list. Format is either 'value1,value2,value3,...', 'value1^text1,value2^text2,value3^text3,...', or a SQL Select statement that returns result set with a 'Value' and 'Text' column.</param>
         /// <param name="required">if set to <c>true</c> [required].</param>
         /// <param name="defaultValue">The default value.  If multiple values are supported (i.e. checkbox) each value should be delimited by a comma</param>
         /// <param name="category">The category.</param>

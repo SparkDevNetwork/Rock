@@ -191,6 +191,7 @@ namespace Rock.Model
         /// <value>
         /// The <see cref="Rock.Model.BinaryFileData"/> that contains the content of the file. 
         /// </value>
+        [LavaInclude]
         public virtual BinaryFileData DatabaseData { get; set; }
 
         /// <summary>
@@ -200,6 +201,7 @@ namespace Rock.Model
         /// The storage provider.
         /// </value>
         [NotMapped]
+        [LavaInclude]
         public virtual Storage.ProviderComponent StorageProvider { get; private set; }
 
         /// <summary>

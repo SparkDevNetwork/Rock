@@ -35,6 +35,7 @@
                     <div class="row">
                         <div class="col-md-6">
                             <Rock:PersonPicker ID="ppAuthorizedPerson" CssClass="js-authorizedperson" runat="server" Label="Person" IncludeBusinesses="true" OnSelectPerson="ppAuthorizedPerson_SelectPerson" />
+                            <Rock:RockCheckBox ID="cbShowAsAnonymous" runat="server" Label="Show As Anonymous" />
                             <Rock:DateTimePicker ID="dtTransactionDateTime" runat="server" Label="Transaction Date/Time" Required="true" />
                         </div>
                         <div class="col-md-6">
@@ -59,8 +60,8 @@
                                             <Rock:RockTemplateField HeaderText="Accounts">
                                                 <ItemTemplate><%# AccountName( (int)Eval("AccountId") ) %></ItemTemplate>
                                             </Rock:RockTemplateField>
-                                            <Rock:CurrencyField DataField="Amount" SortExpression="Amount" ItemStyle-HorizontalAlign="Right" />
                                             <Rock:RockBoundField DataField="Summary" SortExpression="Summary" />
+                                            <Rock:CurrencyField DataField="Amount" SortExpression="Amount" ItemStyle-HorizontalAlign="Right" />
                                             <Rock:EditField OnClick="gAccountsEdit_EditClick" />
                                             <Rock:DeleteField OnClick="gAccountsEdit_DeleteClick" />
                                         </Columns>
@@ -76,11 +77,11 @@
                             <Rock:RockDropDownList ID="ddlSourceType" runat="server" Label="Source" />
                             <Rock:RockDropDownList ID="ddlCurrencyType" runat="server" Label="Currency Type" AutoPostBack="true" OnSelectedIndexChanged="ddlCurrencyType_SelectedIndexChanged" />
                             <Rock:RockDropDownList ID="ddlCreditCardType" runat="server" Label="Credit Card Type" />
-                            <asp:PlaceHolder ID="phPaymentAttributeEdits" runat="server" EnableViewState="false"></asp:PlaceHolder>
+                            <Rock:DynamicPlaceHolder ID="phPaymentAttributeEdits" runat="server" />
                             <Rock:FinancialGatewayPicker ID="gpPaymentGateway" runat="server" Label="Payment Gateway" ShowAll="true" />
                             <Rock:DataTextBox ID="tbTransactionCode" runat="server" Label="Transaction Code"
                                 SourceTypeName="Rock.Model.FinancialTransaction, Rock" PropertyName="TransactionCode" />
-                            <asp:PlaceHolder ID="phAttributeEdits" runat="server" EnableViewState="false"></asp:PlaceHolder>
+                            <Rock:DynamicPlaceHolder ID="phAttributeEdits" runat="server" />
                         </div>
                         <div class="col-md-6">
                             <Rock:RockCheckBox ID="cbIsRefund" runat="server" Label="This is a Refund" Text="Yes" AutoPostBack="true" OnCheckedChanged="cbIsRefund_CheckedChanged" />
@@ -114,19 +115,20 @@
                             <asp:PlaceHolder ID="phAttributes" runat="server"></asp:PlaceHolder>
                         </div>
                         <div class="col-md-6">
-
-                            <Rock:Grid ID="gAccountsView" runat="server" EmptyDataText="No Account Details" RowItemText="Account" DisplayType="Light">
+                            
+                            <label>Accounts</label>
+                            <Rock:Grid ID="gAccountsView" runat="server" EmptyDataText="No Account Details" RowItemText="Account" DisplayType="Light" ShowHeader="false">
                                 <Columns>
-                                    <Rock:RockTemplateField HeaderText="Accounts">
+                                    <Rock:RockTemplateField>
                                         <ItemTemplate><%# AccountName( (int)Eval("AccountId") ) %></ItemTemplate>
                                     </Rock:RockTemplateField>
-                                    <Rock:CurrencyField DataField="Amount" SortExpression="Amount" ItemStyle-HorizontalAlign="Right" />
                                     <Rock:RockBoundField DataField="Summary" SortExpression="Summary" />
+                                    <Rock:CurrencyField DataField="Amount" SortExpression="Amount" ItemStyle-HorizontalAlign="Right" />
                                 </Columns>
                             </Rock:Grid>
 
-                            <asp:Panel ID="pnlImages" runat="server">
-                                <h4>Images</h4>
+                            <asp:Panel ID="pnlImages" runat="server" CssClass="margin-t-md">
+                                <label>Images</label>
                                 <div>
                                     <asp:Image ID="imgPrimary" runat="server" CssClass="transaction-image" />
                                 </div>
@@ -139,20 +141,24 @@
                                 </div>
                             </asp:Panel>
 
-                            <asp:Panel ID="pnlRefunds" runat="server">
-                                <Rock:Grid ID="gRefunds" runat="server" RowItemText="Refund" DisplayType="Light">
+                            <asp:Panel ID="pnlRefunds" runat="server" CssClass="margin-t-md">
+                                <label>Refunds</label>
+                                <Rock:Grid ID="gRefunds" runat="server" RowItemText="Refund" DisplayType="Light" ShowHeader="false">
                                     <Columns>
-                                        <asp:HyperLinkField DataTextField="TransactionDateTime" DataNavigateUrlFields="Id" HeaderText="Refunds" />
+                                        <asp:HyperLinkField DataTextField="TransactionDateTime" DataNavigateUrlFields="Id"/>
                                         <Rock:RockBoundField DataField="TransactionCode" />
+                                        <Rock:RockBoundField DataField="RefundReasonValue" />
+                                        <Rock:RockBoundField DataField="RefundReasonSummary" />
                                         <Rock:CurrencyField DataField="TotalAmount" ItemStyle-HorizontalAlign="Right" />
                                     </Columns>
                                 </Rock:Grid>
                             </asp:Panel>
 
-                            <asp:Panel ID="pnlRelated" runat="server">
-                                <Rock:Grid ID="gRelated" runat="server" RowItemText="Transaction" DisplayType="Light">
+                            <asp:Panel ID="pnlRelated" runat="server" Visible="false">
+                                <label>Related Transactions</label>
+                                <Rock:Grid ID="gRelated" runat="server" RowItemText="Transaction" DisplayType="Light" ShowHeader="false">
                                     <Columns>
-                                        <asp:HyperLinkField DataTextField="TransactionDateTime" DataNavigateUrlFields="Id" HeaderText="Related Transactions" />
+                                        <asp:HyperLinkField DataTextField="TransactionDateTime" DataNavigateUrlFields="Id" />
                                         <Rock:RockBoundField DataField="TransactionCode" />
                                         <Rock:CurrencyField DataField="TotalAmount" ItemStyle-HorizontalAlign="Right" />
                                     </Columns>
@@ -193,7 +199,7 @@
                     <div class="col-md-6">
                         <Rock:RockTextBox ID="tbAccountSummary" runat="server" Label="Summary" TextMode="MultiLine" Rows="3" ValidationGroup="Account" />
                         <div class="attributes">
-                            <asp:PlaceHolder ID="phAccountAttributeEdits" runat="server" EnableViewState="false"></asp:PlaceHolder>
+                            <asp:PlaceHolder ID="phAccountAttributeEdits" runat="server" />
                         </div>
                     </div>
                 </div>

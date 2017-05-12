@@ -109,6 +109,7 @@ namespace Rock.Model
         /// <value>
         /// The person alias.
         /// </value>
+        [LavaInclude]
         public virtual Model.PersonAlias PersonAlias { get; set; }
 
         /// <summary>
@@ -117,6 +118,7 @@ namespace Rock.Model
         /// <value>
         /// The workflow.
         /// </value>
+        [LavaInclude]
         public virtual Model.Workflow Workflow { get; set; }
 
         /// <summary>
@@ -125,6 +127,7 @@ namespace Rock.Model
         /// <value>
         /// The response document.
         /// </value>
+        [LavaInclude]
         public virtual Model.BinaryFile ResponseDocument { get; set; }
 
         #endregion

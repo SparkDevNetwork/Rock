@@ -65,7 +65,7 @@
                 <Rock:NotificationBox ID="nbErrorMessage" runat="server" NotificationBoxType="Danger" />
                 <div class="row">
                     <div class="col-md-6">
-                        <Rock:PersonPicker ID="ppPerson" runat="server" Label="Person" />
+                        <Rock:PersonPicker ID="ppPerson" runat="server" Label="Person" Required="true" />
                     </div>
                     <div class="col-md-6">
                     </div>

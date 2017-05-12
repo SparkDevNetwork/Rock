@@ -29,6 +29,7 @@ using Rock.Model;
 using Rock.Security;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
+using Rock.Web.Cache;
 
 namespace RockWeb.Blocks.Finance
 {
@@ -39,9 +40,10 @@ namespace RockWeb.Blocks.Finance
     [Category( "Finance" )]
     [Description( "Used to match transactions to an individual and allocate the transaction amount to financial account(s)." )]
 
-    [AccountsField( "Accounts", "Select the accounts that transaction amounts can be allocated to.  Leave blank to show all accounts" )]
-    [LinkedPage( "Add Family Link", "Select the page where a new family can be added. If specified, a link will be shown which will open in a new window when clicked", DefaultValue = "6a11a13d-05ab-4982-a4c2-67a8b1950c74,af36e4c2-78c6-4737-a983-e7a78137ddc7" )]
-    [LinkedPage( "Add Business Link", "Select the page where a new business can be added. If specified, a link will be shown which will open in a new window when clicked" )]
+    [AccountsField( "Accounts", "Select the accounts that transaction amounts can be allocated to.  Leave blank to show all accounts", false, "", "", 0 )]
+    [LinkedPage( "Add Family Link", "Select the page where a new family can be added. If specified, a link will be shown which will open in a new window when clicked", false, "6a11a13d-05ab-4982-a4c2-67a8b1950c74,af36e4c2-78c6-4737-a983-e7a78137ddc7", "", 1 )]
+    [LinkedPage( "Add Business Link", "Select the page where a new business can be added. If specified, a link will be shown which will open in a new window when clicked", false, "", "", 2 )]
+    [LinkedPage( "Batch Detail Page", "Select the page for displaying batch details", false, "", "", 3)]
     public partial class TransactionMatching : RockBlock, IDetailBlock
     {
         #region Properties
@@ -175,8 +177,16 @@ namespace RockWeb.Blocks.Finance
                 accountQry = accountQry.Where( a => personalAccountGuidList.Contains( a.Guid ) );
             }
 
+            int? campusId = ( this.GetUserPreference( keyPrefix + "account-campus" ) ?? string.Empty ).AsIntegerOrNull();
+            if ( campusId.HasValue )
+            {
+                accountQry = accountQry.Where( a => !a.CampusId.HasValue || a.CampusId.Value == campusId.Value );
+            }
+
             rptAccounts.DataSource = accountQry.OrderBy( a => a.Order ).ThenBy( a => a.Name ).ToList();
             rptAccounts.DataBind();
+
+            rcwEnvelope.Visible = GlobalAttributesCache.Read().EnableGivingEnvelopeNumber;
         }
 
         /// <summary>
@@ -322,8 +332,23 @@ namespace RockWeb.Blocks.Finance
                     }
                 }
 
-                nbNoUnmatchedTransactionsRemaining.Visible = transactionToMatch == null;
-                pnlEdit.Visible = transactionToMatch != null;
+                if ( transactionToMatch == null )
+                {
+                    nbNoUnmatchedTransactionsRemaining.Visible = true;
+                    lbFinish.Visible = true; 
+                    pnlEdit.Visible = false;
+
+                    btnFilter.Visible = false;
+                    rcwAddNewBusiness.Visible = false;
+                    rcwAddNewFamily.Visible = false;
+                }
+                else
+                {
+                    nbNoUnmatchedTransactionsRemaining.Visible = false;
+                    lbFinish.Visible = false;
+                    pnlEdit.Visible = true;
+                }
+
                 nbIsInProcess.Visible = false;
                 if ( transactionToMatch != null )
                 {
@@ -533,11 +558,14 @@ namespace RockWeb.Blocks.Finance
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void mdAccountsPersonalFilter_SaveClick( object sender, EventArgs e )
         {
+            string keyPrefix = string.Format( "transaction-matching-{0}-", this.BlockId );
+
             var selectedAccountIdList = apPersonalAccounts.SelectedValuesAsInt().ToList();
             var selectedAccountGuidList = new FinancialAccountService( new RockContext() ).GetByIds( selectedAccountIdList ).Select( a => a.Guid ).ToList();
-
-            string keyPrefix = string.Format( "transaction-matching-{0}-", this.BlockId );
             this.SetUserPreference( keyPrefix + "account-list", selectedAccountGuidList.AsDelimited( "," ) );
+
+            int campusId = cpAccounts.SelectedCampusId ?? 0;
+            this.SetUserPreference( keyPrefix + "account-campus", campusId.ToString() );
 
             mdAccountsPersonalFilter.Hide();
             LoadDropDowns();
@@ -573,13 +601,16 @@ namespace RockWeb.Blocks.Finance
         protected void btnFilter_Click( object sender, EventArgs e )
         {
             string keyPrefix = string.Format( "transaction-matching-{0}-", this.BlockId );
+
             var personalAccountGuidList = ( this.GetUserPreference( keyPrefix + "account-list" ) ?? string.Empty ).SplitDelimitedValues().Select( a => a.AsGuid() ).ToList();
             var personalAccountList = new FinancialAccountService( new RockContext() )
                 .GetByGuids( personalAccountGuidList )
                 .Where( a => a.IsActive )
                 .ToList();
-
             apPersonalAccounts.SetValues( personalAccountList );
+
+            cpAccounts.Campuses = Rock.Web.Cache.CampusCache.All();
+            cpAccounts.SelectedCampusId = ( this.GetUserPreference( keyPrefix + "account-campus" ) ?? string.Empty ).AsIntegerOrNull();
 
             mdAccountsPersonalFilter.Show();
         }
@@ -827,6 +858,93 @@ namespace RockWeb.Blocks.Finance
         }
 
         /// <summary>
+        /// Handles the Click event of the btnFindByEnvelopeNumber control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void btnFindByEnvelopeNumber_Click( object sender, EventArgs e )
+        {
+            var rockContext = new RockContext();
+            var personGivingEnvelopeAttribute = AttributeCache.Read( Rock.SystemGuid.Attribute.PERSON_GIVING_ENVELOPE_NUMBER.AsGuid() );
+            var envelopeNumber = tbEnvelopeNumber.Text;
+            if ( !string.IsNullOrEmpty( envelopeNumber ) )
+            {
+                var personIdsWithEnvelopeNumber = new AttributeValueService( rockContext ).Queryable()
+                                        .Where( a => a.AttributeId == personGivingEnvelopeAttribute.Id && a.Value == envelopeNumber )
+                                        .Select( a => a.EntityId.Value );
+                var count = personIdsWithEnvelopeNumber.Count();
+                var personService = new PersonService( rockContext );
+                if ( count == 0 )
+                {
+                    lEnvelopeSearchResults.Text = string.Format( "No individual found with envelope number of {0}.", envelopeNumber );
+                    cblEnvelopeSearchPersons.Visible = false;
+                    mdEnvelopeSearchResults.SaveButtonText = string.Empty;
+                    mdEnvelopeSearchResults.Show();
+                }
+                else if ( count == 1 )
+                {
+                    var personId = personIdsWithEnvelopeNumber.First();
+                    ppSelectNew.SetValue( personService.Get( personId ));
+                    LoadPersonPreview( personId );
+                }
+                else
+                {
+                    lEnvelopeSearchResults.Text = string.Format( "More than one person is assigned envelope number {0}. Please select the individual you wish to use.", envelopeNumber );
+                    cblEnvelopeSearchPersons.Visible = true;
+                    cblEnvelopeSearchPersons.Items.Clear();
+                    var personList = personService.Queryable().Where( a => personIdsWithEnvelopeNumber.Contains( a.Id ) ).AsNoTracking().ToList();
+                    foreach (var person in personList)
+                    {
+                        cblEnvelopeSearchPersons.Items.Add( new ListItem( person.FullName, person.Id.ToString() ) );
+                    }
+
+                    mdEnvelopeSearchResults.SaveButtonText = "Select";
+                    mdEnvelopeSearchResults.Show();
+                }
+            }
+        }
+
+        /// <summary>
+        /// Handles the SaveClick event of the mdEnvelopeSearchResults control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void mdEnvelopeSearchResults_SaveClick( object sender, EventArgs e )
+        {
+            var personId = cblEnvelopeSearchPersons.SelectedValue.AsIntegerOrNull();
+            if ( personId.HasValue )
+            {
+                mdEnvelopeSearchResults.Hide();
+                ppSelectNew.SetValue( new PersonService( new RockContext() ).Get( personId.Value ) );
+                LoadPersonPreview( personId );
+            }
+        }
+
+        /// <summary>
+        /// Handles the Click event of the btnDone control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void lbFinish_Click( object sender, EventArgs e )
+        {
+            int? batchId = hfBatchId.Value.AsIntegerOrNull();
+            if ( batchId.HasValue )
+            {
+                using ( var rockContext = new RockContext() )
+                {
+                    var batch = new FinancialBatchService( rockContext ).Get( batchId.Value );
+                    if ( batch != null && batch.Status == BatchStatus.Pending )
+                    {
+                        batch.Status = BatchStatus.Open;
+                        rockContext.SaveChanges();
+                    }
+                }
+
+                NavigateToLinkedPage( "BatchDetailPage", new Dictionary<string, string> { { "BatchId", batchId.Value.ToString() } } );
+            }
+        }
+
+        /// <summary>
         /// Loads the person preview.
         /// </summary>
         /// <param name="personId">The person identifier.</param>
@@ -838,8 +956,9 @@ namespace RockWeb.Blocks.Finance
             pnlPreview.Visible = person != null;
             if ( person != null )
             {
-                lPersonName.Text = person.FullName;
-                
+                // force the link to open a new scrollable,resizable browser window (and make it work in FF, Chrome and IE) http://stackoverflow.com/a/2315916/1755417
+                lPersonName.Text = string.Format( "<a href onclick=\"javascript: window.open('/person/{0}', '_blank', 'scrollbars=1,resizable=1,toolbar=1'); return false;\">{1}</a>", person.Id, person.FullName );
+
                 var spouse = person.GetSpouse( rockContext );
                 lSpouseName.Text = spouse != null ? string.Format( "<p><strong>Spouse: </strong>{0}</p>", spouse.FullName ) : string.Empty;
 

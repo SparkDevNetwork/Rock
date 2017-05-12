@@ -28,3 +28,7 @@ RockWeb/App_Data/PackageStaging
 *.sln.GhostDoc.xml
 
 Packages/*
+
+# javascript deps
+node_modules
+*.map

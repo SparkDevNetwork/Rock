@@ -19,11 +19,10 @@
                     <a href="#" onclick="$('.js-slidingdaterange-help').slideToggle()">
                         <i class='fa fa-question-circle'></i>
                     </a>
-                    <button id="btnCopyToClipboard" runat="server" disabled="disabled" 
-                        data-toggle="tooltip" data-placement="top" data-title="Copy Report Link to Clipboard" 
-                        class="btn btn-link padding-all-none " 
-                        onmouseover="$(this).tooltip('hide').attr('data-original-title','Copy Report Link to Clipboard').tooltip('fixTitle').tooltip('show');"
-                        onclick="$(this).tooltip('hide').attr('data-original-title','Copied').tooltip('fixTitle').tooltip('show');return false;">
+                    <button id="btnCopyToClipboard" runat="server" disabled="disabled"
+                        data-toggle="tooltip" data-placement="top" data-trigger="hover" data-delay="250" title="Copy Report Link to Clipboard"
+                        class="btn btn-link padding-all-none btn-copy-to-clipboard"
+                        onclick="$(this).attr('data-original-title', 'Copied').tooltip('show').attr('data-original-title', 'Copy Link to Clipboard');return false;">
                         <i class='fa fa-clipboard'></i>
                     </button>
                 </div>
@@ -74,6 +73,7 @@
                             <Rock:NotificationBox ID="nbGroupsWarning" runat="server" NotificationBoxType="Warning" Text="Please select at least one group." Visible="false"/>
                             
                             <div class="grouplist-actions rollover-container" id="divGroupListActions" runat="server">
+                                <Rock:Toggle runat="server" ID="cbShowInactive" CssClass="pull-right" ButtonSizeCssClass="btn-xs" OnCssClass="btn-primary" OffCssClass="btn-primary" OnText="All Groups" OffText="Active Groups" AutoPostBack="true" OnCheckedChanged="cbShowInactive_CheckedChanged" />
                                 <span class="h4 js-checkbox-selector cursor-pointer">Groups</span>
                                 <span class="rollover-item" id="pnlRolloverConfig" runat="server">
                                     <i class="fa fa-gear clickable js-show-config" onclick="$(this).closest('.js-groups-container').find('.js-groups-config-panel').slideToggle()"></i>

@@ -608,7 +608,7 @@ namespace Rock.Attribute
                 var attributes = entity.Attributes.Select( a => a.Value );
                 if ( !supressOrdering )
                 {
-                    attributes = attributes.OrderBy( t => t.Order ).ThenBy( t => t.Name );
+                    attributes = attributes.OrderBy(t => t.EntityTypeQualifierValue).ThenBy( t => t.Order ).ThenBy( t => t.Name );
                 }
 
                 return GetAttributeCategories( attributes.ToList(), onlyIncludeGridColumns, allowMultiple );
@@ -820,15 +820,37 @@ namespace Rock.Attribute
         /// </remarks>
         public static void SaveAttributeValues( IHasAttributes model, RockContext rockContext = null )
         {
-            if ( model != null && model.Attributes != null && model.AttributeValues != null )
+            if ( model != null && model.Attributes != null && model.AttributeValues != null && model.Attributes.Any() && model.AttributeValues.Any() )
             {
-                foreach ( var attribute in model.Attributes )
+                rockContext = rockContext ?? new RockContext();
+                var attributeValueService = new Model.AttributeValueService( rockContext );
+                
+                var attributeIds = model.Attributes.Select( y => y.Value.Id ).ToList();
+                var valueQuery = attributeValueService.Queryable().Where( x => attributeIds.Contains( x.AttributeId ) && x.EntityId == model.Id );
+
+                var attributeValues = valueQuery.ToDictionary( x => x.AttributeKey );
+                foreach ( var attribute in model.Attributes.Values )
                 {
                     if ( model.AttributeValues.ContainsKey( attribute.Key ) )
                     {
-                        SaveAttributeValue( model, attribute.Value, model.AttributeValues[attribute.Key].Value, rockContext );
+                        if ( attributeValues.ContainsKey( attribute.Key ) )
+                        {
+                            if ( attributeValues[attribute.Key].Value != model.AttributeValues[attribute.Key].Value )
+                            {
+                                attributeValues[attribute.Key].Value = model.AttributeValues[attribute.Key].Value;
+                            }
+                        }
+                        else
+                        {
+                            var attributeValue = new AttributeValue();
+                            attributeValue.AttributeId = attribute.Id;
+                            attributeValue.EntityId = model.Id;
+                            attributeValue.Value = model.AttributeValues[attribute.Key].Value ?? string.Empty;
+                            attributeValueService.Add( attributeValue );
+                        }
                     }
                 }
+                rockContext.SaveChanges();
             }
         }
 
@@ -1064,15 +1086,8 @@ namespace Rock.Attribute
                 numberOfColumns = 12;
             }
 
-            HtmlGenericControl fieldSet;
-            if ( parentControl is DynamicControlsPanel )
-            {
-                fieldSet = new DynamicControlsHtmlGenericControl( "fieldset" );
-            }
-            else
-            {
-                fieldSet = new HtmlGenericControl( "fieldset" );
-            }
+            bool parentIsDynamic = parentControl is DynamicControlsPanel || parentControl is DynamicPlaceholder;
+            HtmlGenericControl fieldSet = parentIsDynamic ? new DynamicControlsHtmlGenericControl( "fieldset" ) : new HtmlGenericControl( "fieldset" );
 
             parentControl.Controls.Add( fieldSet );
             fieldSet.Controls.Clear();
@@ -1102,7 +1117,7 @@ namespace Rock.Attribute
                 legend.InnerText = category.Trim();
             }
 
-            HtmlGenericControl attributeRow = new HtmlGenericControl( "div" );
+            HtmlGenericControl attributeRow = parentIsDynamic ? new DynamicControlsHtmlGenericControl( "div" ) : new HtmlGenericControl( "div" );
             if ( numberOfColumns.HasValue )
             {
                 fieldSet.Controls.Add( attributeRow );
@@ -1121,7 +1136,7 @@ namespace Rock.Attribute
                     {
                         int colSize = (int)Math.Ceiling((double)12 / numberOfColumns.Value);
 
-                        HtmlGenericControl attributeCol = new HtmlGenericControl( "div" );
+                        HtmlGenericControl attributeCol = parentIsDynamic ? new DynamicControlsHtmlGenericControl( "div" ) : new HtmlGenericControl( "div" );
                         attributeRow.Controls.Add( attributeCol );
                         attributeCol.AddCssClass( string.Format( "col-md-{0}", colSize ) );
                         attribute.AddControl( attributeCol.Controls, item.AttributeValues[attribute.Key].Value, validationGroup, setValue, true );

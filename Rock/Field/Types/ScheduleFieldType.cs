@@ -140,8 +140,7 @@ namespace Rock.Field.Types
         /// <returns></returns>
         public override System.Web.UI.Control FilterControl( System.Collections.Generic.Dictionary<string, ConfigurationValue> configurationValues, string id, bool required, Rock.Reporting.FilterMode filterMode )
         {
-            // This field type does not support filtering
-            return null;
+            return base.FilterControl( configurationValues, id, required, filterMode );
         }
 
         /// <summary>
@@ -150,7 +149,7 @@ namespace Rock.Field.Types
         /// <returns></returns>
         public override bool HasFilterControl()
         {
-            return false;
+            return true;
         }
 
         #endregion

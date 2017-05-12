@@ -82,7 +82,7 @@ namespace Rock.Model
         [MaxLength( 200 )]
         [DataMember]
         public string UrlSlug { get; set; }
-        
+
         #region Virtual Properties
 
         /// <summary>
@@ -91,6 +91,7 @@ namespace Rock.Model
         /// <value>
         /// The event item occurrence.
         /// </value>
+        [LavaInclude]
         public virtual EventItemOccurrence EventItemOccurrence { get; set; }
 
         /// <summary>

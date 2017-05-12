@@ -94,14 +94,16 @@ namespace Rock.Model
         /// <value>
         /// A <see cref="Rock.Model.Person"/> entity representing the viewer.
         /// </value>
+        [LavaInclude]
         public virtual PersonAlias ViewerPersonAlias { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the <see cref="Rock.Model.Person"/> entity of the individual who was viewed.
         /// </summary>
         /// <value>
         /// A <see cref="Rock.Model.Person"/> entity representing the person who was viewed.
         /// </value>
+        [LavaInclude]
         public virtual PersonAlias TargetPersonAlias { get; set; }
 
         #endregion

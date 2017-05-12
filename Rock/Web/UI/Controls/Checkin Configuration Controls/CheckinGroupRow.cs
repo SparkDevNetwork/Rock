@@ -31,13 +31,13 @@ namespace Rock.Web.UI.Controls
     [ToolboxData( "<{0}:CheckinGroupRow runat=server></{0}:CheckinGroupRow>" )]
     public class CheckinGroupRow : CompositeControl
     {
+        private Group _group;
         private HiddenFieldWithClass _hfExpanded;
         private HiddenField _hfGroupGuid;
 
         private Label _lblGroupRowName;
 
         private LinkButton _lbAddGroup;
-        private LinkButton _lblDeleteGroup;
 
         /// <summary>
         /// Gets the group type unique identifier.
@@ -143,11 +143,16 @@ $('.checkin-group a.checkin-group-add-group').click(function (event) {
         /// <param name="group">Type of the group.</param>
         public void SetGroup( Group group )
         {
-            EnsureChildControls();
             if ( group != null )
             {
+                _group = group;
+                EnsureChildControls();
                 _hfGroupGuid.Value = group.Guid.ToString();
                 _lblGroupRowName.Text = group.Name;
+                if ( !group.IsActive )
+                {
+                    _lblGroupRowName.Text += " <small>(Inactive)</small>";
+                }
             }
         }
 
@@ -166,31 +171,22 @@ $('.checkin-group a.checkin-group-add-group').click(function (event) {
 
             _hfGroupGuid = new HiddenField();
             _hfGroupGuid.ID = this.ID + "_hfGroupGuid";
+            Controls.Add( _hfGroupGuid );
 
             _lblGroupRowName = new Label();
             _lblGroupRowName.ClientIDMode = ClientIDMode.Static;
             _lblGroupRowName.ID = this.ID + "_lblGroupRowName";
+            Controls.Add( _lblGroupRowName );
+
 
             _lbAddGroup = new LinkButton();
             _lbAddGroup.ID = this.ID + "_lbAddGroup";
             _lbAddGroup.CssClass = "btn btn-xs btn-default checkin-group-add-group";
             _lbAddGroup.Click += lbAddGroup_Click;
             _lbAddGroup.CausesValidation = false;
+            _lbAddGroup.ToolTip = "Add New Group";
             _lbAddGroup.Controls.Add( new LiteralControl { Text = "<i class='fa fa-plus'></i> <i class='fa fa-check-circle'></i>" } );
-
-            _lblDeleteGroup = new LinkButton();
-            _lblDeleteGroup.CausesValidation = false;
-            _lblDeleteGroup.ID = this.ID + "_lblDeleteGroup";
-            _lblDeleteGroup.CssClass = "btn btn-xs btn-danger";
-            _lblDeleteGroup.Click += lblDeleteGroup_Click;
-            _lblDeleteGroup.Controls.Add( new LiteralControl { Text = "<i class='fa fa-times'></i>" } );
-            _lblDeleteGroup.Attributes["onclick"] = string.Format( "javascript: return Rock.dialogs.confirmDelete(event, '{0}', '{1}');", "check-in group", "Once saved, you will lose all attendance data." );
-
-            Controls.Add( _hfGroupGuid );
-            Controls.Add( _lblGroupRowName );
-
             Controls.Add( _lbAddGroup );
-            Controls.Add( _lblDeleteGroup );
         }
 
         /// <summary>
@@ -202,7 +198,7 @@ $('.checkin-group a.checkin-group-add-group').click(function (event) {
             writer.AddAttribute( "data-key", _hfGroupGuid.Value );
             writer.RenderBeginTag( HtmlTextWriterTag.Li );
 
-            writer.AddAttribute( HtmlTextWriterAttribute.Class, string.Format( "checkin-item{0} checkin-group rollover-container", Selected ? " checkin-item-selected" : "" ) );
+            writer.AddAttribute( HtmlTextWriterAttribute.Class, string.Format( "checkin-item{0} checkin-group rollover-container {1}", Selected ? " checkin-item-selected" : "", !_group.IsActive ? " is-inactive" : "" ) );
             writer.AddAttribute( HtmlTextWriterAttribute.Id, this.ID + "_section" );
             writer.RenderBeginTag( "section" );
 
@@ -217,9 +213,11 @@ $('.checkin-group a.checkin-group-add-group').click(function (event) {
             writer.AddAttribute( HtmlTextWriterAttribute.Class, "pull-right checkin-item-actions rollover-item" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
-            _lbAddGroup.RenderControl( writer );
-            writer.Write( " " );
-            _lblDeleteGroup.RenderControl( writer );
+            if ( _lbAddGroup != null )
+            {
+                _lbAddGroup.RenderControl( writer );
+                writer.Write( " " );
+            }
 
             writer.RenderEndTag();  // Div
             writer.RenderEndTag();  // Section
@@ -235,7 +233,7 @@ $('.checkin-group a.checkin-group-add-group').click(function (event) {
             {
                 writer.AddAttribute( HtmlTextWriterAttribute.Class, "checkin-list js-checkin-group-list" );
                 writer.RenderBeginTag( HtmlTextWriterTag.Ul );
-                foreach( var groupRow in groupRows )
+                foreach ( var groupRow in groupRows )
                 {
                     groupRow.RenderControl( writer );
                 }
@@ -246,7 +244,7 @@ $('.checkin-group a.checkin-group-add-group').click(function (event) {
 
             writer.RenderEndTag();  // Li
         }
-      
+
         /// <summary>
         /// Handles the Click event of the lbAddGroup control.
         /// </summary>
