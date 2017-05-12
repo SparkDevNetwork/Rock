@@ -63,7 +63,6 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             ddlConnectionStatus.BindToDefinedType( DefinedTypeCache.Read( new Guid( Rock.SystemGuid.DefinedType.PERSON_CONNECTION_STATUS ) ), true );
             ddlRecordStatus.BindToDefinedType( DefinedTypeCache.Read( new Guid( Rock.SystemGuid.DefinedType.PERSON_RECORD_STATUS ) ) );
             ddlReason.BindToDefinedType( DefinedTypeCache.Read( new Guid( Rock.SystemGuid.DefinedType.PERSON_RECORD_STATUS_REASON ) ), true );
-            pnlGivingGroup.Visible = UserCanAdministrate || IsUserAuthorized( "EditFinancials" );
 
             bool canEditConnectionStatus = UserCanAdministrate || IsUserAuthorized( "EditConnectionStatus" );
             ddlConnectionStatus.Visible = canEditConnectionStatus;
