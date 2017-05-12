@@ -134,7 +134,7 @@ namespace chuch.ccv.ClientApp.Rest
                 // if it is, we'll call it a conflict so the client app knows
                 UserLoginService userLoginService = new UserLoginService( rockContext );
                 UserLogin userLogin = userLoginService.GetByUserName( regAccountData.Username );
-                if( userLogin != null ) { statusCode = HttpStatusCode.Unauthorized; break; }
+                if( userLogin != null ) { statusCode = HttpStatusCode.NotAcceptable; break; }
 
 
                 // we know we can create the person. So first, begin tracking who made these changes, and then
