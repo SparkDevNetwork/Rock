@@ -29,6 +29,7 @@ using Rock.Model;
 using Rock.Security;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
+using Rock.Web.Cache;
 
 namespace RockWeb.Blocks.Finance
 {
@@ -184,6 +185,8 @@ namespace RockWeb.Blocks.Finance
 
             rptAccounts.DataSource = accountQry.OrderBy( a => a.Order ).ThenBy( a => a.Name ).ToList();
             rptAccounts.DataBind();
+
+            rcwEnvelope.Visible = GlobalAttributesCache.Read().EnableGivingEnvelopeNumber;
         }
 
         /// <summary>
@@ -851,6 +854,69 @@ namespace RockWeb.Blocks.Finance
                 
                 nbSaveError.Text = string.Empty;
                 nbSaveError.Visible = false;
+            }
+        }
+
+        /// <summary>
+        /// Handles the Click event of the btnFindByEnvelopeNumber control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void btnFindByEnvelopeNumber_Click( object sender, EventArgs e )
+        {
+            var rockContext = new RockContext();
+            var personGivingEnvelopeAttribute = AttributeCache.Read( Rock.SystemGuid.Attribute.PERSON_GIVING_ENVELOPE_NUMBER.AsGuid() );
+            var envelopeNumber = tbEnvelopeNumber.Text;
+            if ( !string.IsNullOrEmpty( envelopeNumber ) )
+            {
+                var personIdsWithEnvelopeNumber = new AttributeValueService( rockContext ).Queryable()
+                                        .Where( a => a.AttributeId == personGivingEnvelopeAttribute.Id && a.Value == envelopeNumber )
+                                        .Select( a => a.EntityId.Value );
+                var count = personIdsWithEnvelopeNumber.Count();
+                var personService = new PersonService( rockContext );
+                if ( count == 0 )
+                {
+                    lEnvelopeSearchResults.Text = string.Format( "No individual found with envelope number of {0}.", envelopeNumber );
+                    cblEnvelopeSearchPersons.Visible = false;
+                    mdEnvelopeSearchResults.SaveButtonText = string.Empty;
+                    mdEnvelopeSearchResults.Show();
+                }
+                else if ( count == 1 )
+                {
+                    var personId = personIdsWithEnvelopeNumber.First();
+                    ppSelectNew.SetValue( personService.Get( personId ));
+                    LoadPersonPreview( personId );
+                }
+                else
+                {
+                    lEnvelopeSearchResults.Text = string.Format( "More than one person is assigned envelope number {0}. Please select the individual you wish to use.", envelopeNumber );
+                    cblEnvelopeSearchPersons.Visible = true;
+                    cblEnvelopeSearchPersons.Items.Clear();
+                    var personList = personService.Queryable().Where( a => personIdsWithEnvelopeNumber.Contains( a.Id ) ).AsNoTracking().ToList();
+                    foreach (var person in personList)
+                    {
+                        cblEnvelopeSearchPersons.Items.Add( new ListItem( person.FullName, person.Id.ToString() ) );
+                    }
+
+                    mdEnvelopeSearchResults.SaveButtonText = "Select";
+                    mdEnvelopeSearchResults.Show();
+                }
+            }
+        }
+
+        /// <summary>
+        /// Handles the SaveClick event of the mdEnvelopeSearchResults control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void mdEnvelopeSearchResults_SaveClick( object sender, EventArgs e )
+        {
+            var personId = cblEnvelopeSearchPersons.SelectedValue.AsIntegerOrNull();
+            if ( personId.HasValue )
+            {
+                mdEnvelopeSearchResults.Hide();
+                ppSelectNew.SetValue( new PersonService( new RockContext() ).Get( personId.Value ) );
+                LoadPersonPreview( personId );
             }
         }
 

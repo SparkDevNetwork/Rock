@@ -52,9 +52,10 @@ Sorry, your account has been locked.  Please contact our office at {{ 'Global' |
 ", "", 5 )]
     [BooleanField("Hide New Account Option", "Should 'New Account' option be hidden?  For site's that require user to be in a role (Internal Rock Site for example), users shouldn't be able to create their own account.", false, "", 6, "HideNewAccount" )]
     [TextField( "New Account Text", "The text to show on the New Account button.", false, "Register", "", 7, "NewAccountButtonText" )]
-    [RemoteAuthsField("Remote Authorization Types", "Which of the active remote authorization types should be displayed as an option for user to use for authentication.", false, "", "", 8)]
-    [CodeEditorField( "Prompt Message", "Optional text (HTML) to display above username and password fields.", CodeEditorMode.Html, CodeEditorTheme.Rock, 100, false, @"", "", 9 )]
-    [LinkedPage( "Redirect Page", "Page to redirect user to upon successful login. The 'returnurl' query string will always override this setting for database authenticated logins. Redirect Page Setting will override third-party authentication 'returnurl'.", false, "", "", 10 )]
+    [CodeEditorField("No Account Text", "The text to show when no account exists. <span class='tip tip-lava'></span>.", CodeEditorMode.Html, CodeEditorTheme.Rock, 100, false, @"Sorry, we couldn't find an account matching that username/password. Can we help you <a href='{{HelpPage}}'>recover your account information</a>?", "", 8, "NoAccountText")]
+    [RemoteAuthsField("Remote Authorization Types", "Which of the active remote authorization types should be displayed as an option for user to use for authentication.", false, "", "", 9)]
+    [CodeEditorField( "Prompt Message", "Optional text (HTML) to display above username and password fields.", CodeEditorMode.Html, CodeEditorTheme.Rock, 100, false, @"", "", 10 )]
+    [LinkedPage( "Redirect Page", "Page to redirect user to upon successful login. The 'returnurl' query string will always override this setting for database authenticated logins. Redirect Page Setting will override third-party authentication 'returnurl'.", false, "", "", 11 )]
     public partial class Login : Rock.Web.UI.RockBlock
     {
         #region Base Control Methods
@@ -227,8 +228,10 @@ Sorry, your account has been locked.  Please contact our office at {{ 'Global' |
             {
                 helpUrl = ResolveRockUrl("~/ForgotUserName");
             }
-                
-            DisplayError( string.Format("Sorry, we couldn't find an account matching that username/password. Can we help you <a href='{0}'>recover your account information</a>?", helpUrl) );
+
+            var mergeFieldsNoAccount = Rock.Lava.LavaHelper.GetCommonMergeFields(this.RockPage, this.CurrentPerson);
+            mergeFieldsNoAccount.Add("HelpPage", helpUrl);
+            DisplayError( GetAttributeValue("NoAccountText").ResolveMergeFields(mergeFieldsNoAccount) );
         }
 
         /// <summary>

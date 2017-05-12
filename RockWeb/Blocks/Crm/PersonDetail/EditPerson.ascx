@@ -24,6 +24,9 @@
 
                     <div class="col-md-3">
                         <div class="well">
+                            <Rock:RockLiteral ID="lRecordStatusReadOnly" runat="server" Label="Record Status" />
+                            <Rock:RockLiteral ID="lReasonReadOnly" runat="server" Label="Reason" />
+                            <Rock:RockLiteral ID="lReasonNoteReadOnly" runat="server" Label="Inactive Reason Note" />
                             <Rock:RockDropDownList ID="ddlRecordStatus" runat="server" Label="Record Status" AutoPostBack="true" OnSelectedIndexChanged="ddlRecordStatus_SelectedIndexChanged" />
                             <Rock:RockDropDownList ID="ddlReason" runat="server" Label="Reason" Visible="false"></Rock:RockDropDownList>
                             <Rock:RockTextBox ID="tbInactiveReasonNote" runat="server" Label="Inactive Reason Note" TextMode="MultiLine" Rows="2" Visible="false" autocomplete="off" ></Rock:RockTextBox>
@@ -63,6 +66,7 @@
                                 
                                 <div class="row">
                                     <div class="col-sm-6">
+                                        <Rock:RockLiteral ID="lConnectionStatusReadOnly" runat="server" Label="Connection Status" />
                                         <Rock:RockDropDownList ID="ddlConnectionStatus" runat="server" Label="Connection Status" Required="true" />
                                     </div>
                                     <div class="col-sm-6">
@@ -152,7 +156,12 @@
                         <Rock:PanelWidget runat="server" ID="pwAdvanced" Title="Advanced Settings">
                             <div class="row">
                                 <asp:Panel ID="pnlGivingGroup" runat="server" CssClass="col-md-6">
+                                    <asp:HiddenField ID="hfGivingEnvelopeNumberConfirmed" runat="server" />
                                     <Rock:RockDropDownList ID="ddlGivingGroup" runat="server" Label="Combine Giving With" Help="The family that this person's gifts should be combined with for contribution statements and reporting.  If left blank, their contributions will not be grouped with their family" /> 
+                                    <Rock:RockControlWrapper ID="rcwEnvelope" runat="server" Label="Envelope #" Help="The Giving Envelope Number that is associated with this Person" >
+                                        <Rock:NumberBox ID="tbGivingEnvelopeNumber" CssClass="input-width-sm pull-left" runat="server" Help="" NumberType="Integer" />
+                                        <asp:LinkButton ID="btnGenerateEnvelopeNumber" runat="server" Text="Generate Envelope #" CssClass="btn btn-default margin-l-sm" OnClick="btnGenerateEnvelopeNumber_Click" />
+                                    </Rock:RockControlWrapper>
                                 </asp:Panel>
                                 <div class="col-md-6">
                                     <Rock:RockControlWrapper ID="rcwPreviousNames" runat="server" Label="Previous Last Names">

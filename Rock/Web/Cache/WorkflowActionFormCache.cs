@@ -298,11 +298,11 @@ namespace Rock.Web.Cache
         public static void Flush( int id )
         {
             var actionForm = WorkflowActionFormCache.Read( id );
-            if ( actionForm != null && actionForm.AttributeIds != null )
+            if ( actionForm != null  )
             {
-                foreach ( int attributeFormId in actionForm.AttributeIds )
+                foreach ( var formAttribute in actionForm.FormAttributes )
                 {
-                    WorkflowActionFormAttributeCache.Flush( attributeFormId );
+                    WorkflowActionFormAttributeCache.Flush( formAttribute.Id );
                 }
             }
             FlushCache( WorkflowActionFormCache.CacheKey( id ) );

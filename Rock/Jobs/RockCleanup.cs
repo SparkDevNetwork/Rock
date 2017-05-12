@@ -269,6 +269,7 @@ namespace Rock.Jobs
                     var personIdsWithoutKnownRelationshipGroup = personService.Queryable().Where( p => !qryGroupOwnerPersonIds.Contains( p.Id ) ).Select( a => a.Id ).ToList();
 
                     var groupsToInsert = new List<Group>();
+                    var groupGroupMembersToInsert = new Dictionary<Guid, GroupMember>();
                     foreach ( var personId in personIdsWithoutKnownRelationshipGroup )
                     {
                         var groupMember = new GroupMember();
@@ -277,16 +278,30 @@ namespace Rock.Jobs
 
                         var group = new Group();
                         group.Name = relationshipGroupType.Name;
+                        group.Guid = Guid.NewGuid();
                         group.GroupTypeId = relationshipGroupType.Id;
-                        group.Members.Add( groupMember );
+
+                        groupGroupMembersToInsert.Add( group.Guid, groupMember );
 
                         groupsToInsert.Add( group );
                     }
 
-                    new GroupService( rockContext ).AddRange( groupsToInsert );
+                    if ( groupsToInsert.Any() )
+                    {
+                        // use BulkInsert just in case there are a large number of groups and group members to insert
+                        rockContext.BulkInsert( groupsToInsert );
 
-                    // save with disablePrePostProcessing=true since we don't need History records for when the person was added to the group (and the presavechanges is super slow if there are lots of inserts)
-                    rockContext.SaveChanges( true );
+                        Dictionary<Guid, int> groupIdLookup = new GroupService( rockContext ).Queryable().Where( a => a.GroupTypeId == relationshipGroupType.Id ).Select( a => new { a.Id, a.Guid } ).ToDictionary( k => k.Guid, v => v.Id );
+                        var groupMembersToInsert = new List<GroupMember>();
+                        foreach ( var groupGroupMember in groupGroupMembersToInsert )
+                        {
+                            var groupMember = groupGroupMember.Value;
+                            groupMember.GroupId = groupIdLookup[groupGroupMember.Key];
+                            groupMembersToInsert.Add( groupMember );
+                        }
+
+                        rockContext.BulkInsert( groupMembersToInsert );
+                    }
                 }
             }
         }

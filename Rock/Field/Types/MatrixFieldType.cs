@@ -249,9 +249,15 @@ namespace Rock.Field.Types
             AttributeMatrixEditor attributeMatrixEditor = control as AttributeMatrixEditor;
             if ( attributeMatrixEditor != null )
             {
+                var rockContext = new RockContext();
+                AttributeMatrixTemplate attributeMatrixTemplate = null;
                 if ( attributeMatrixEditor.AttributeMatrixTemplateId.HasValue )
                 {
-                    var rockContext = new RockContext();
+                    attributeMatrixTemplate = new AttributeMatrixTemplateService( rockContext ).Get( attributeMatrixEditor.AttributeMatrixTemplateId.Value );
+                }
+
+                if ( attributeMatrixTemplate != null )
+                {
                     var attributeMatrixService = new AttributeMatrixService( rockContext );
                     AttributeMatrix attributeMatrix = null;
                     Guid? attributeMatrixGuid = value.AsGuidOrNull();
