@@ -1013,7 +1013,7 @@ namespace RockWeb.Blocks.Finance
                 {
                     if ( accountIds.Any() )
                     {
-                        qry = qry.Where( t => t.TransactionDetails.Any( d => accountIds.Contains( d.AccountId ) || ( d.Account.ParentAccountId.HasValue && accountIds.Contains( d.Account.ParentAccountId.Value ) ) ) );
+                        qry = qry.Where( t => t.TransactionDetails.Any( d => accountIds.Contains( d.AccountId ) ) );
                     }
                 }
 

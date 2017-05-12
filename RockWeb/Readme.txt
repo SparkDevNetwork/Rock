@@ -1,5 +1,6 @@
 Rock McKinley 6.4
 
++ Merge 'feature-mp-accountpicker-selectchildren' from develop into 1.6.4
 + Updated the Edit Family block to create history correctly when adding a new person (Fixes #1726).
 + Fixed mispelled 'amount' in NumberBox validation message.
 + Fixed business photo reference.
