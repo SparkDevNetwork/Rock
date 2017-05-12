@@ -27,6 +27,11 @@ namespace Rock.SystemGuid
     public static class EntityType
     {
         /// <summary>
+        /// The guid for the Rock.Model.Attribute entity.
+        /// </summary>
+        public const string ATTRIBUTE = "5997C8D3-8840-4591-99A5-552919F90CBD";
+
+        /// <summary>
         /// The database authentication provider
         /// </summary>
         public const string AUTHENTICATION_DATABASE = "4E9B798F-BB68-4C0E-9707-0928D15AB020";
@@ -55,6 +60,11 @@ namespace Rock.SystemGuid
         /// The guid for the email communication medium
         /// </summary>
         public const string COMMUNICATION_MEDIUM_EMAIL = "5A653EBE-6803-44B4-85D2-FB7B8146D55D";
+
+        /// <summary>
+        /// The guid for the push notification communication medium
+        /// </summary>
+        public const string COMMUNICATION_MEDIUM_PUSH_NOTIFICATION = "3638C6DF-4FF3-4A52-B4B8-AFB754991597";
 
         /// <summary>
         /// The guid for the email communication medium

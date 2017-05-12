@@ -18,6 +18,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
+using System.Data.Entity;
 using System.Linq;
 using System.Web;
 
@@ -55,7 +56,11 @@ namespace Rock.Workflow.Action
 
             if ( action.Activity.Workflow.InitiatorPersonAliasId.HasValue )
             {
-                var personAlias = new PersonAliasService( rockContext ).Get( action.Activity.Workflow.InitiatorPersonAliasId.Value );
+                var personAlias = new PersonAliasService( rockContext )
+                    .Queryable().AsNoTracking()
+                    .Where( a => a.Id == action.Activity.Workflow.InitiatorPersonAliasId.Value )
+                    .FirstOrDefault();
+
                 if ( personAlias != null )
                 {
                     // Get the attribute to set

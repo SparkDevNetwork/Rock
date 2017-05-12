@@ -165,6 +165,7 @@ namespace Rock.Model
         /// <value>
         /// The data view.
         /// </value>
+        [LavaInclude]
         public virtual DataView DataView { get; set; }
 
         /// <summary>
@@ -173,6 +174,7 @@ namespace Rock.Model
         /// <value>
         /// The warning data view.
         /// </value>
+        [LavaInclude]
         public virtual DataView WarningDataView { get; set; }
 
         #endregion

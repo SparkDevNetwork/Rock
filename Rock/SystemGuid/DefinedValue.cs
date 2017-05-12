@@ -103,9 +103,14 @@ namespace Rock.SystemGuid
         public const string CURRENCY_TYPE_ACH = "DABEE8FD-AEDF-43E1-8547-4C97FA14D9B6";
 
         /// <summary>
-        /// ACH
+        /// Non-Cash
         /// </summary>
         public const string CURRENCY_TYPE_NONCASH = "7950FF66-80EE-E8AB-4A77-4A13EDEB7513";
+
+        /// <summary>
+        /// Unknown Currency Type
+        /// </summary>
+        public const string CURRENCY_TYPE_UNKNOWN = "56C9AE9C-B5EB-46D5-9650-2EF86B14F856";
 
         #endregion
 
@@ -124,6 +129,11 @@ namespace Rock.SystemGuid
         #endregion
 
         #region Financial Source
+
+        /// <summary>
+        /// The financial source of bank check
+        /// </summary>
+        public const string FINANCIAL_SOURCE_TYPE_BANK_CHECK = "61E46A46-7399-4817-A6EC-3D8495E2316E";
 
         /// <summary>
         /// The financial source of Website
@@ -279,6 +289,11 @@ namespace Rock.SystemGuid
         /// </summary>
         public const string PERSON_MARITAL_STATUS_SINGLE = "F19FC180-FE8F-4B72-A59C-8013E3B0EB0D";
 
+        /// <summary>
+        /// Marital Status of Divorced
+        /// </summary>
+        public const string PERSON_MARITAL_STATUS_DIVORCED = "3B689240-24C2-434B-A7B9-A4A6CBA7928C";
+
         #endregion
 
         #region Person Phone Type
@@ -389,6 +404,13 @@ namespace Rock.SystemGuid
         /// </summary>
         public const string PERSON_REVIEW_REASON_SELF_INACTIVATED = "D539C356-6856-4E94-80B4-8FEA869AF38B";
 
+        #endregion
+
+        #region Personal Device Type
+        /// <summary>
+        /// Personal device types for notifications
+        /// </summary>
+        public const string PERSONAL_DEVICE_TYPE_MOBILE = "5A8F264F-3BE6-4F15-912A-3CE93A98E8F6";
         #endregion
 
         #region Map Styles

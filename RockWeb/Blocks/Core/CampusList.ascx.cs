@@ -32,7 +32,7 @@ namespace RockWeb.Blocks.Core
     [Category( "Core" )]
     [Description( "Displays a list of all campuses." )]
 
-    [LinkedPage("Detail Page")] 
+    [LinkedPage( "Detail Page" )]
     public partial class Campuses : RockBlock
     {
         #region Control Methods
@@ -48,7 +48,7 @@ namespace RockWeb.Blocks.Core
             gCampuses.DataKeyNames = new string[] { "Id" };
             gCampuses.Actions.AddClick += gCampuses_Add;
             gCampuses.GridRebind += gCampuses_GridRebind;
-
+            gCampuses.GridReorder += gCampuses_GridReorder;
             // Block Security and special attributes (RockPage takes care of View)
             bool canAddEditDelete = IsUserAuthorized( Authorization.EDIT );
             gCampuses.Actions.ShowAdd = canAddEditDelete;
@@ -138,6 +138,27 @@ namespace RockWeb.Blocks.Core
             BindGrid();
         }
 
+
+        /// <summary>
+        /// Handles the GridReorder event of the gCampuses control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="GridReorderEventArgs"/> instance containing the event data.</param>
+        protected void gCampuses_GridReorder( object sender, GridReorderEventArgs e )
+        {
+            var rockContext = new RockContext();
+            var campuses = GetCampuses( rockContext ).ToList();
+            if ( campuses != null )
+            {
+                new CampusService( rockContext ).Reorder( campuses, e.OldIndex, e.NewIndex );
+                rockContext.SaveChanges();
+
+                campuses.ForEach( t => CampusCache.Flush( t.Id ) );
+            }
+
+            BindGrid();
+        }
+
         #endregion
 
         #region Internal Methods
@@ -147,19 +168,15 @@ namespace RockWeb.Blocks.Core
         /// </summary>
         private void BindGrid()
         {
-            CampusService campusService = new CampusService( new RockContext() );
-            SortProperty sortProperty = gCampuses.SortProperty;
-
-            if ( sortProperty != null )
-            {
-                gCampuses.DataSource = campusService.Queryable().Sort( sortProperty ).ToList();
-            }
-            else
-            {
-                gCampuses.DataSource = campusService.Queryable().OrderBy( s => s.Name ).ToList();
-            }
-
+            gCampuses.DataSource = GetCampuses().ToList();
             gCampuses.DataBind();
+        }
+
+        private IQueryable<Campus> GetCampuses( RockContext rockContext = null )
+        {
+            rockContext = rockContext ?? new RockContext();
+            CampusService campusService = new CampusService( rockContext );
+            return campusService.Queryable().OrderBy( s => s.Order );
         }
 
         #endregion

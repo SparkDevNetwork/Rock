@@ -259,6 +259,8 @@ namespace RockWeb.Blocks.Checkin
                             {
                                 _addedGroupIds.Add( group.Id );
 
+                                var groupName = group.IsActive ? group.Name : group.Name + " (Inactive)";
+
                                 if ( !string.IsNullOrWhiteSpace( GetAttributeValue( "GroupDetailPage" ) ) )
                                 {
                                     var groupPageParams = new Dictionary<string, string>();
@@ -267,11 +269,11 @@ namespace RockWeb.Blocks.Checkin
                                         groupPageParams.Add( "GroupTypeIds", Request["GroupTypeIds"] );
                                     }
                                     groupPageParams.Add( "GroupId", group.Id.ToString() );
-                                    groupContent.Append( string.Format( "<li><a href='{0}'>{1}</a></li>", LinkedPageUrl( "GroupDetailPage", groupPageParams ), group.Name ) );
+                                    groupContent.Append( string.Format( "<li><a href='{0}'>{1}</a></li>", LinkedPageUrl( "GroupDetailPage", groupPageParams ), groupName ) );
                                 }
                                 else
                                 {
-                                    groupContent.Append( string.Format( "<li>{0}</li>", group.Name ) );
+                                    groupContent.Append( string.Format( "<li>{0}</li>", groupName ) );
                                 }
                             }
                         }

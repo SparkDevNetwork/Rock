@@ -120,6 +120,7 @@ namespace Rock.Model
         /// <value>
         /// The person alias.
         /// </value>
+        [LavaInclude]
         public virtual Rock.Model.PersonAlias PersonAlias { get; set; }
 
         /// <summary>

@@ -307,11 +307,9 @@ namespace RockWeb.Blocks.Groups
             SetAttributeValue( "ShowFence", cbShowFence.Checked.ToString() );
             SetAttributeValue( "PolygonColors", vlPolygonColors.Value );
             SetAttributeValue( "MapInfo", ceMapInfo.Text );
-            SetAttributeValue( "MapInfoDebug", cbMapInfoDebug.Checked.ToString() );
 
             SetAttributeValue( "ShowLavaOutput", cbShowLavaOutput.Checked.ToString() );
             SetAttributeValue( "LavaOutput", ceLavaOutput.Text );
-            SetAttributeValue( "LavaOutputDebug", cbLavaOutputDebug.Checked.ToString() );
 
             SetAttributeValue( "ShowGrid", cbShowGrid.Checked.ToString() );
             SetAttributeValue( "ShowSchedule", cbShowSchedule.Checked.ToString() );
@@ -466,11 +464,9 @@ namespace RockWeb.Blocks.Groups
             cbShowFence.Checked = GetAttributeValue( "ShowFence" ).AsBoolean();
             vlPolygonColors.Value = GetAttributeValue( "PolygonColors" );
             ceMapInfo.Text = GetAttributeValue( "MapInfo" );
-            cbMapInfoDebug.Checked = GetAttributeValue( "MapInfoDebug" ).AsBoolean();
 
             cbShowLavaOutput.Checked = GetAttributeValue( "ShowLavaOutput" ).AsBoolean();
             ceLavaOutput.Text = GetAttributeValue( "LavaOutput" );
-            cbLavaOutputDebug.Checked = GetAttributeValue( "LavaOutputDebug" ).AsBoolean();
 
             cbShowGrid.Checked = GetAttributeValue( "ShowGrid" ).AsBoolean();
             cbShowSchedule.Checked = GetAttributeValue( "ShowSchedule" ).AsBoolean();
@@ -1023,7 +1019,7 @@ namespace RockWeb.Blocks.Groups
                 }
 
                 // if not sorting by ColumnClick and SortByDistance, then sort the groups by distance
-                if ( gGroups.SortProperty == null && GetAttributeValue( "SortByDistance" ).AsBoolean() )
+                if ( gGroups.SortProperty == null && showProximity && GetAttributeValue( "SortByDistance" ).AsBoolean() )
                 {
                     // only show groups with a known location, and sort those by distance
                     groups = groups.Where( a => distances.Select( b => b.Key ).Contains( a.Id ) ).ToList();

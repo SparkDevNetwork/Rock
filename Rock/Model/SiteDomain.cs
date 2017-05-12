@@ -81,6 +81,7 @@ namespace Rock.Model
         /// <value>
         /// The <see cref="Rock.Model.Site"/> that this SiteDomain is associated with.
         /// </value>
+        [LavaInclude]
         public virtual Site Site { get; set; }
 
         #endregion

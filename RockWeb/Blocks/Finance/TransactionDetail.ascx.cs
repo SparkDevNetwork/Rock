@@ -309,8 +309,6 @@ namespace RockWeb.Blocks.Finance
             int? txnId = hfTransactionId.Value.AsIntegerOrNull();
             int? batchId = hfBatchId.Value.AsIntegerOrNull();
 
-            var changes = new List<string>();
-
             if ( txnId.HasValue )
             {
                 txn = txnService.Get( txnId.Value );
@@ -318,10 +316,19 @@ namespace RockWeb.Blocks.Finance
 
             if ( txn == null )
             {
-                txn = new FinancialTransaction();
-                txnService.Add( txn );
-                txn.BatchId = batchId;
-                changes.Add( "Created transaction" );
+                if ( batchId.HasValue )
+                {
+                    txn = new FinancialTransaction();
+                    txnService.Add( txn );
+                    txn.BatchId = batchId;
+                }
+                else
+                {
+                    nbErrorMessage.Title = "Missing Batch Information";
+                    nbErrorMessage.Text = "<p>New transactions can only be added to an existing batch. Make sure you have navigated to this page by viewing the details of an existing batch.</p>";
+                    nbErrorMessage.Visible = true;
+                    return;
+                }
             }
 
             if ( txn != null )
@@ -333,32 +340,8 @@ namespace RockWeb.Blocks.Finance
 
                 string newPerson = ppAuthorizedPerson.PersonName;
 
-                if ( batchId.HasValue )
-                {
-                    if ( !txn.AuthorizedPersonAliasId.Equals( ppAuthorizedPerson.PersonAliasId ) )
-                    {
-                        string prevPerson = ( txn.AuthorizedPersonAlias != null && txn.AuthorizedPersonAlias.Person != null ) ?
-                            txn.AuthorizedPersonAlias.Person.FullName : string.Empty;
-                        History.EvaluateChange( changes, "Person", prevPerson, newPerson );
-                    }
-
-                    History.EvaluateChange( changes, "Date/Time", txn.TransactionDateTime, dtTransactionDateTime.SelectedDateTime );
-                    History.EvaluateChange( changes, "Type", GetDefinedValue( txn.TransactionTypeValueId ), GetDefinedValue( ddlTransactionType.SelectedValue.AsInteger() ) );
-                    History.EvaluateChange( changes, "Source", GetDefinedValue( txn.SourceTypeValueId ), GetDefinedValue( ddlSourceType.SelectedValueAsInt() ) );
-
-                    if ( !txn.FinancialGatewayId.Equals( gpPaymentGateway.SelectedValueAsInt() ) )
-                    {
-                        History.EvaluateChange( changes, "Gateway", GetFinancialGatewayName( txn.FinancialGatewayId, rockContext ), GetFinancialGatewayName( gpPaymentGateway.SelectedValueAsInt(), rockContext ) );
-                    }
-
-                    History.EvaluateChange( changes, "Transaction Code", txn.TransactionCode, tbTransactionCode.Text );
-                    History.EvaluateChange( changes, "Currency Type", GetDefinedValue( txn.FinancialPaymentDetail.CurrencyTypeValueId ), GetDefinedValue( ddlCurrencyType.SelectedValueAsInt() ) );
-                    History.EvaluateChange( changes, "Credit Card Type", GetDefinedValue( txn.FinancialPaymentDetail.CreditCardTypeValueId ), GetDefinedValue( ddlCreditCardType.SelectedValueAsInt() ) );
-                    History.EvaluateChange( changes, "Summary", txn.Summary, tbSummary.Text );
-                    History.EvaluateChange( changes, "Is Refund", ( txn.RefundDetails != null ), cbIsRefund.Checked );
-                }
-
                 txn.AuthorizedPersonAliasId = ppAuthorizedPerson.PersonAliasId;
+                txn.ShowAsAnonymous = cbShowAsAnonymous.Checked;
                 txn.TransactionDateTime = dtTransactionDateTime.SelectedDateTime;
                 txn.TransactionTypeValueId = ddlTransactionType.SelectedValue.AsInteger();
                 txn.SourceTypeValueId = ddlSourceType.SelectedValueAsInt();
@@ -413,10 +396,6 @@ namespace RockWeb.Blocks.Finance
                                          select txnDetail;
                     deletedDetails.ToList().ForEach( txnDetail =>
                     {
-                        if ( batchId.HasValue )
-                        {
-                            History.EvaluateChange( changes, txnDetail.Account != null ? txnDetail.Account.Name : "Unknown", txnDetail.Amount.FormatAsCurrency(), string.Empty );
-                        }
                         txnDetailService.Delete( txnDetail );
                     } );
 
@@ -445,29 +424,6 @@ namespace RockWeb.Blocks.Finance
                         newAccountName = AccountName( editorTxnDetail.AccountId );
                         newAmount = UseSimpleAccountMode ? tbSingleAccountAmount.Text.AsDecimal() : editorTxnDetail.Amount;
 
-                        if ( batchId.HasValue )
-                        {
-                            if ( string.IsNullOrWhiteSpace(oldAccountName) )
-                            {
-                                History.EvaluateChange( changes, newAccountName, string.Empty, newAmount.FormatAsCurrency() );
-                            }
-                            else
-                            {
-                                if ( oldAccountName == newAccountName )
-                                {
-                                    if ( oldAmount != newAmount )
-                                    {
-                                        History.EvaluateChange( changes, oldAccountName, oldAmount.FormatAsCurrency(), newAmount.FormatAsCurrency() );
-                                    }
-                                }
-                                else
-                                {
-                                    History.EvaluateChange( changes, oldAccountName, oldAmount.FormatAsCurrency(), string.Empty );
-                                    History.EvaluateChange( changes, newAccountName, string.Empty, newAmount.FormatAsCurrency() );
-                                }
-                            }
-                        }
-
                         txnDetail.AccountId = editorTxnDetail.AccountId;
                         txnDetail.Amount = newAmount;
                         txnDetail.Summary = editorTxnDetail.Summary;
@@ -486,7 +442,6 @@ namespace RockWeb.Blocks.Finance
                     var txnImagesInDB = txnImageService.Queryable().Where( a => a.TransactionId.Equals( txn.Id ) ).ToList();
                     foreach ( var txnImage in txnImagesInDB.Where( i => !TransactionImagesState.Contains( i.BinaryFileId ) ) )
                     {
-                        changes.Add( "Removed Image" );
                         orphanedBinaryFileIds.Add( txnImage.BinaryFileId );
                         txnImageService.Delete( txnImage );
                     }
@@ -499,17 +454,9 @@ namespace RockWeb.Blocks.Finance
                         var txnImage = txnImagesInDB.FirstOrDefault( i => i.BinaryFileId == binaryFileId );
                         if ( txnImage == null )
                         {
-                            changes.Add( "Added Image" );
                             txnImage = new FinancialTransactionImage();
                             txnImage.TransactionId = txn.Id;
                             txn.Images.Add( txnImage );
-                        }
-                        else
-                        {
-                            if ( txnImage.BinaryFileId != binaryFileId )
-                            {
-                                changes.Add( "Updated Image" );
-                            }
                         }
 
                         txnImage.BinaryFileId = binaryFileId;
@@ -537,25 +484,13 @@ namespace RockWeb.Blocks.Finance
                     Helper.GetEditValues(phAttributeEdits, txn);
                     Helper.GetEditValues(phPaymentAttributeEdits, txn.FinancialPaymentDetail);
 
-                    // If the transaction is associated with a batch, update that batch's history
-                    if ( batchId.HasValue )
-                    {
-                        HistoryService.SaveChanges(
-                            rockContext,
-                            typeof( FinancialBatch ),
-                            Rock.SystemGuid.Category.HISTORY_FINANCIAL_TRANSACTION.AsGuid(),
-                            batchId.Value,
-                            changes,
-                            !string.IsNullOrWhiteSpace( newPerson ) ? newPerson : string.Format( "Transaction Id:{0}", txn.Id ),
-                            typeof( FinancialTransaction ),
-                            txn.Id
-                        );
-                    }
-
                     rockContext.SaveChanges();
                     txn.SaveAttributeValues(rockContext);
                     txn.FinancialPaymentDetail.SaveAttributeValues(rockContext);
                 } );
+
+                // Then refresh history block
+                RockPage.UpdateBlocks( "~/Blocks/Core/HistoryLog.ascx" );
 
                 // Save selected options to session state in order to prefill values for next added txn
                 Session["NewTxnDefault_BatchId"] = txn.BatchId;
@@ -1165,8 +1100,6 @@ namespace RockWeb.Blocks.Finance
                         txn.TransactionDetails.Add( txnDetail );
                     }
                 }
-
-
             }
             else
             {
@@ -1420,6 +1353,8 @@ namespace RockWeb.Blocks.Finance
                             TransactionDateTime = r.FinancialTransaction.TransactionDateTime.Value.ToShortDateString() + " " +
                                 r.FinancialTransaction.TransactionDateTime.Value.ToShortTimeString(),
                             TransactionCode = r.FinancialTransaction.TransactionCode,
+                            r.RefundReasonValue,
+                            r.RefundReasonSummary,
                             TotalAmount = r.FinancialTransaction.TotalAmount
                         } )
                         .ToList();
@@ -1509,6 +1444,8 @@ namespace RockWeb.Blocks.Finance
                 {
                     ppAuthorizedPerson.SetValue( null );
                 }
+
+                cbShowAsAnonymous.Checked = txn.ShowAsAnonymous;
                 dtTransactionDateTime.SelectedDateTime = txn.TransactionDateTime;
                 ddlTransactionType.SetValue( txn.TransactionTypeValueId );
                 ddlSourceType.SetValue( txn.SourceTypeValueId );
@@ -1566,6 +1503,7 @@ namespace RockWeb.Blocks.Finance
             pnlEditDetails.Visible = editable;
             valSummaryTop.Enabled = editable;
             fieldsetViewSummary.Visible = !editable;
+            HideSecondaryBlocks( editable );
         }
 
         /// <summary>

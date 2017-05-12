@@ -208,6 +208,15 @@ namespace Rock.Model
         public int? ApprovedByPersonAliasId { get; set; }
 
         /// <summary>
+        /// Gets or sets the campus identifier.
+        /// </summary>
+        /// <value>
+        /// The campus identifier.
+        /// </value>
+        [DataMember]
+        public int? CampusId { get; set; }
+
+        /// <summary>
         /// Gets or sets the date this prayer request was approved.
         /// </summary>
         /// <value>
@@ -245,6 +254,7 @@ namespace Rock.Model
         /// <value>
         /// The request's group.
         /// </value>
+        [LavaInclude]
         public virtual Group Group { get; set; }
 
         /// <summary>
@@ -256,6 +266,14 @@ namespace Rock.Model
         [DataMember]
         public virtual PersonAlias ApprovedByPersonAlias { get; set; }
 
+        /// <summary>
+        /// Gets or sets the campus.
+        /// </summary>
+        /// <value>
+        /// The campus.
+        /// </value>
+        [LavaInclude]
+        public virtual Campus Campus { get; set; }
 
         /// <summary>
         /// Gets  full name of the person for who the prayer request is about.
@@ -333,6 +351,7 @@ namespace Rock.Model
             this.HasOptional( p => p.Category ).WithMany().HasForeignKey( p => p.CategoryId ).WillCascadeOnDelete( false );
             this.HasOptional( p => p.RequestedByPersonAlias ).WithMany().HasForeignKey( p => p.RequestedByPersonAliasId ).WillCascadeOnDelete( false );
             this.HasOptional( p => p.ApprovedByPersonAlias ).WithMany().HasForeignKey( p => p.ApprovedByPersonAliasId ).WillCascadeOnDelete( false );
+            this.HasOptional( a => a.Campus ).WithMany().HasForeignKey( p => p.CampusId ).WillCascadeOnDelete( true );
         }
     }
 

@@ -102,14 +102,12 @@ namespace Rock.Workflow.Action
             {
                 var timedOut = false;
 
-                var activityTypeService = new WorkflowActivityTypeService( rockContext );
-
-                WorkflowActivityType unopenedActivityType = null;
+                WorkflowActivityTypeCache unopenedActivityType = null;
                 int? unopenedTimeout = null;
                 Guid? guid = GetAttributeValue( action, "UnopenedTimeoutActivity" ).AsGuidOrNull();
                 if ( guid.HasValue )
                 {
-                    unopenedActivityType = activityTypeService.Queryable().Where( a => a.Guid.Equals( guid.Value ) ).FirstOrDefault();
+                    unopenedActivityType = WorkflowActivityTypeCache.Read( guid.Value );
                     unopenedTimeout = GetAttributeValue( action, "UnopenedTimeoutLength" ).AsIntegerOrNull();
 
                     if ( emailStatus != OPENED_STATUS &&
@@ -124,12 +122,12 @@ namespace Rock.Workflow.Action
                     }
                 }
 
-                WorkflowActivityType noActionActivityType = null;
+                WorkflowActivityTypeCache noActionActivityType = null;
                 int? noActionTimeout = null;
                 guid = GetAttributeValue( action, "NoActionTimeoutActivity" ).AsGuidOrNull();
                 if ( guid.HasValue )
                 {
-                    noActionActivityType = activityTypeService.Queryable().Where( a => a.Guid.Equals( guid.Value ) ).FirstOrDefault();
+                    noActionActivityType = WorkflowActivityTypeCache.Read( guid.Value );
                     noActionTimeout = GetAttributeValue( action, "NoActionTimeoutLength" ).AsIntegerOrNull();
 
                     if ( emailStatus != CLICKED_STATUS &&
@@ -156,7 +154,7 @@ namespace Rock.Workflow.Action
         private double HoursElapsed( WorkflowAction action )
         {
             // Use the current action type' guid as the key for a 'DateTime Sent' attribute 
-            string AttrKey = action.ActionType.Guid.ToString() + "_DateTimeSent";
+            string AttrKey = action.ActionTypeCache.Guid.ToString() + "_DateTimeSent";
 
             // Check to see if the action's activity does not yet have the the 'DateTime Sent' attribute.
             // The first time this action runs on any workflow instance using this action instance, the 
@@ -176,6 +174,8 @@ namespace Rock.Workflow.Action
                 {
                     new AttributeService( newRockContext ).Add( attribute );
                     newRockContext.SaveChanges();
+                    AttributeCache.FlushEntityAttributes();
+                    WorkflowActivityTypeCache.Flush( action.Activity.ActivityTypeId );
                 }
 
                 action.Activity.Attributes.Add( AttrKey, AttributeCache.Read( attribute ) );
@@ -207,7 +207,7 @@ namespace Rock.Workflow.Action
         private string EmailStatus( WorkflowAction action )
         {
             // Use the current action type' guid as the key for a 'Email Status' attribute 
-            string AttrKey = action.ActionType.Guid.ToString() + "_EmailStatus";
+            string AttrKey = action.ActionTypeCache.Guid.ToString() + "_EmailStatus";
 
             // Check to see if the action's activity does not yet have the the 'Email Status' attribute.
             // The first time this action runs on any workflow instance using this action instance, the 
@@ -227,6 +227,8 @@ namespace Rock.Workflow.Action
                 {
                     new AttributeService( newRockContext ).Add( attribute );
                     newRockContext.SaveChanges();
+                    AttributeCache.FlushEntityAttributes();
+                    WorkflowActivityTypeCache.Flush( action.Activity.ActivityTypeId );
                 }
 
                 action.Activity.Attributes.Add( AttrKey, AttributeCache.Read( attribute ) );
@@ -401,7 +403,7 @@ namespace Rock.Workflow.Action
             if ( action != null && action.Activity != null )
             {
 
-                string attrKey = action.ActionType.Guid.ToString() + "_EmailStatus";
+                string attrKey = action.ActionTypeCache.Guid.ToString() + "_EmailStatus";
 
                 action.Activity.LoadAttributes( rockContext );
                 string currentStatus = action.Activity.GetAttributeValue( attrKey );
@@ -448,8 +450,7 @@ namespace Rock.Workflow.Action
                 if ( activityGuid.HasValue )
                 {
                     var workflow = action.Activity.Workflow;
-                    var activityType = new WorkflowActivityTypeService( rockContext ).Queryable()
-                        .Where( a => a.Guid.Equals( activityGuid.Value ) ).FirstOrDefault();
+                    var activityType = WorkflowActivityTypeCache.Read( activityGuid.Value );
                     if ( workflow != null && activityType != null )
                     {
                         WorkflowActivity.Activate( activityType, workflow );

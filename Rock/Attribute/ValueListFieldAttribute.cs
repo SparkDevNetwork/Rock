@@ -37,7 +37,7 @@ namespace Rock.Attribute
         /// <param name="defaultValue">The default value.</param>
         /// <param name="valuePrompt">The text to display as a prompt in the label textbox.</param>
         /// <param name="definedTypeGuid">An Optional Defined Type Guid to select values from, otherwise values will be free-form text fields..</param>
-        /// <param name="customValues">Optional list of options to use for the values.  Format is either 'value1,value2,value3,...', or 'value1:text1,value2:text2,value3:text3,...'.</param>
+        /// <param name="customValues">Optional list of options to use for the values. Format is either 'value1,value2,value3,...', 'value1^text1,value2^text2,value3^text3,...', or a SQL Select statement that returns result set with a 'Value' and 'Text' column.</param>
         /// <param name="category">The category.</param>
         /// <param name="order">The order.</param>
         /// <param name="key">The key.</param>

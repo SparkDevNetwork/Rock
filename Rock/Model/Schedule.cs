@@ -241,6 +241,7 @@ namespace Rock.Model
         /// </summary>
         /// <returns></returns>
         [NotMapped]
+        [LavaInclude]
         public virtual DateTime? NextStartDateTime 
         {
             get
@@ -257,6 +258,7 @@ namespace Rock.Model
         /// The first start date time this week.
         /// </value>
         [NotMapped]
+        [LavaInclude]
         public virtual DateTime? FirstStartDateTimeThisWeek
         {
             get
@@ -274,6 +276,7 @@ namespace Rock.Model
         /// <value>
         /// The start time of day.
         /// </value>
+        [LavaInclude]
         public virtual TimeSpan StartTimeOfDay
         {
             get
@@ -566,6 +569,19 @@ namespace Rock.Model
         /// <returns>A <see cref="System.String"/> containing a friendly description of the Schedule.</returns>
         public string ToFriendlyScheduleText()
         {
+            return ToFriendlyScheduleText( false );
+        }
+
+        /// <summary>
+        /// Gets the Friendly Text of the Calendar Event.
+        /// For example, "Every 3 days at 10:30am", "Monday, Wednesday, Friday at 5:00pm", "Saturday at 4:30pm"
+        /// </summary>
+        /// <param name="condensed">if set to <c>true</c> [condensed].</param>
+        /// <returns>
+        /// A <see cref="System.String" /> containing a friendly description of the Schedule.
+        /// </returns>
+        public string ToFriendlyScheduleText( bool condensed )
+        {
             // init the result to just the schedule name just in case we can't figure out the FriendlyText
             string result = this.Name;
 
@@ -667,17 +683,9 @@ namespace Rock.Model
 
                     if ( dates.Count() > 1 )
                     {
-                        if ( dates.Count() > 99 )
+                        if ( condensed || dates.Count() > 99 )
                         {
-                            // shouldn't happen, but just in case
-                            if ( calendarEvent.DTStart.HasDate && calendarEvent.DTEnd.HasDate )
-                            {
-                                result = string.Format( "Multiple dates between {0} and {1}", calendarEvent.DTStart.Value.ToShortDateString(), calendarEvent.DTEnd.Value.ToShortDateString() );
-                            }
-                            else
-                            {
-                                // something unexpected, just return the schedule name
-                            }
+                            result = string.Format( "Multiple dates between {0} and {1}", dates.First().ToShortDateString(), dates.Last().ToShortDateString() );
                         }
                         else
                         {
@@ -685,7 +693,7 @@ namespace Rock.Model
                             var listHtml = "<ul class='list-unstyled'>" + Environment.NewLine;
                             foreach ( var date in dates )
                             {
-                                listHtml += string.Format( "<li>{0}</li>", date.ToString() ) + Environment.NewLine;
+                                listHtml += string.Format( "<li>{0}</li>", date.ToShortDateTimeString() ) + Environment.NewLine;
                             }
 
                             listHtml += "</ul>";
@@ -695,7 +703,7 @@ namespace Rock.Model
                     }
                     else if ( dates.Count() == 1)
                     {
-                        result = "Once at " + calendarEvent.DTStart.Value.ToString();
+                        result = "Once at " + calendarEvent.DTStart.Value.ToShortDateTimeString();
                     }
                     else
                     {

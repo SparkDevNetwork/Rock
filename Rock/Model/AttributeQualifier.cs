@@ -87,6 +87,7 @@ namespace Rock.Model
         /// <value>
         /// The <see cref="Rock.Model.Attribute"/> that uses this AttributeQualifier.
         /// </value>
+        [LavaInclude]
         public virtual Attribute Attribute { get; set; }
 
         #endregion

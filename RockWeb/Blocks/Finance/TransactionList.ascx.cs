@@ -316,7 +316,18 @@ namespace RockWeb.Blocks.Finance
                 _lbReassign.Visible = false;
             }
 
-            gTransactions.Columns[0].Visible = showSelectColumn;
+            var selectColumn = gTransactions.ColumnsOfType<SelectField>().FirstOrDefault();
+            if ( selectColumn != null )
+            {
+                selectColumn.Visible = showSelectColumn;
+            }
+
+            // don't show the BatchId column if we are in the context of a single Batch
+            var batchIdColumn = gTransactions.ColumnsOfType<RockLiteralField>().Where( a => a.ID == "lBatchId" ).FirstOrDefault();
+            if ( batchIdColumn != null )
+            {
+                batchIdColumn.Visible = _batch == null;
+            }
         }
 
         #endregion Control Methods
@@ -665,38 +676,6 @@ namespace RockWeb.Blocks.Finance
 
                             foreach ( var txn in txnsToUpdate )
                             {
-                                string caption = ( txn.AuthorizedPersonAlias != null && txn.AuthorizedPersonAlias.Person != null ) ?
-                                    txn.AuthorizedPersonAlias.Person.FullName :
-                                    string.Format( "Transaction: {0}", txn.Id );
-
-                                var changes = new List<string>();
-                                History.EvaluateChange( changes, "Batch",
-                                    string.Format( "{0} (Id:{1})", oldBatch.Name, oldBatch.Id ),
-                                    string.Format( "{0} (Id:{1})", newBatch.Name, newBatch.Id ) );
-
-                                HistoryService.SaveChanges(
-                                    rockContext,
-                                    typeof( FinancialBatch ),
-                                    Rock.SystemGuid.Category.HISTORY_FINANCIAL_TRANSACTION.AsGuid(),
-                                    oldBatch.Id,
-                                    changes,
-                                    caption,
-                                    typeof( FinancialTransaction ),
-                                    txn.Id,
-                                    false
-                                );
-
-                                HistoryService.SaveChanges(
-                                    rockContext,
-                                    typeof( FinancialBatch ),
-                                    Rock.SystemGuid.Category.HISTORY_FINANCIAL_TRANSACTION.AsGuid(),
-                                    newBatch.Id,
-                                    changes,
-                                    caption,
-                                    typeof( FinancialTransaction ),
-                                    txn.Id, false
-                                );
-
                                 txn.BatchId = newBatch.Id;
                                 oldBatchControlAmount -= txn.TotalAmount;
                                 newBatchControlAmount += txn.TotalAmount;
@@ -798,24 +777,81 @@ namespace RockWeb.Blocks.Finance
         {
             if ( _canEdit && _person != null )
             {
+                int? personId = ppReassign.PersonId;
                 int? personAliasId = ppReassign.PersonAliasId;
                 var txnsSelected = new List<int>();
                 gTransactions.SelectedKeys.ToList().ForEach( b => txnsSelected.Add( b.ToString().AsInteger() ) );
 
                 if ( txnsSelected.Any() && personAliasId.HasValue )
                 {
-                    var rockContext = new RockContext();
-                    var txnService = new FinancialTransactionService( rockContext );
-                    var txnsToUpdate = txnService.Queryable( "AuthorizedPersonAlias.Person" )
-                        .Where( t => txnsSelected.Contains( t.Id ) )
-                        .ToList();
-
-                    foreach ( var txn in txnsToUpdate )
+                    using ( var rockContext = new RockContext() )
                     {
-                        txn.AuthorizedPersonAliasId = personAliasId.Value;
-                    }
+                        foreach ( var txn in new FinancialTransactionService( rockContext )
+                            .Queryable( "AuthorizedPersonAlias.Person" )
+                            .Where( t => txnsSelected.Contains( t.Id ) )
+                            .ToList() )
+                        {
+                            txn.AuthorizedPersonAliasId = personAliasId.Value;
+                        }
+                        rockContext.SaveChanges();
 
-                    rockContext.SaveChanges();
+                        string acctAction = rblReassingBankAccounts.SelectedValue;
+                        if ( acctAction != "NONE" && personId.HasValue && _person != null )
+                        {
+                            var bankAcctService = new FinancialPersonBankAccountService( rockContext );
+
+                            var bankAccts = bankAcctService.Queryable()
+                                .Where( a => a.PersonAlias != null && a.PersonAlias.PersonId == _person.Id )
+                                .ToList();
+
+                            var existingAccts = bankAcctService.Queryable()
+                                .Where( a => a.PersonAlias != null && a.PersonAlias.PersonId == personId.Value )
+                                .Select( a => a.AccountNumberSecured )
+                                .ToList();
+
+                            if ( bankAccts.Any() )
+                            {
+                                foreach ( var bankAcct in bankAccts )
+                                {
+                                    if ( acctAction == "MOVE" )
+                                    {
+                                        if ( existingAccts.Contains( bankAcct.AccountNumberSecured ) )
+                                        {
+                                            bankAcctService.Delete( bankAcct );
+                                        }
+                                        else
+                                        {
+                                            bankAcct.PersonAliasId = personAliasId.Value;
+                                        }
+                                    }
+                                    else
+                                    {
+                                        if ( !existingAccts.Contains( bankAcct.AccountNumberSecured ) )
+                                        {
+                                            var newBankAcct = new FinancialPersonBankAccount();
+                                            bankAcctService.Add( newBankAcct );
+                                            newBankAcct.PersonAliasId = personAliasId.Value;
+                                            newBankAcct.AccountNumberMasked = bankAcct.AccountNumberMasked;
+                                            newBankAcct.AccountNumberSecured = bankAcct.AccountNumberSecured;
+                                        }
+                                    }
+                                }
+
+                                rockContext.SaveChanges();
+
+                                if ( acctAction == "MOVE" )
+                                {
+                                    HistoryService.SaveChanges( rockContext, typeof( Person ), Rock.SystemGuid.Category.HISTORY_PERSON.AsGuid(), _person.Id,
+                                        new List<string> { "Deleted Acct/Routing information" }, true, CurrentPersonAliasId );
+                                }
+                                HistoryService.SaveChanges( rockContext, typeof( Person ), Rock.SystemGuid.Category.HISTORY_PERSON.AsGuid(), personId.Value,
+                                    new List<string> { "Added Acct/Routing information" }, true, CurrentPersonAliasId );
+
+                                RockPage.UpdateBlocks( "~/Blocks/Crm/PersonDetail/BankAccountList.ascx" );
+                            }
+                        }
+
+                    }
                 }
             }
 
@@ -1020,6 +1056,9 @@ namespace RockWeb.Blocks.Finance
                         SourceTypeValueId = a.Transaction.SourceTypeValueId,
                         TotalAmount = a.Amount,
                         TransactionCode = a.Transaction.TransactionCode,
+                        Status = a.Transaction.Status,
+                        SettledDate = a.Transaction.SettledDate,
+                        SettledGroupId = a.Transaction.SettledGroupId,
                         TransactionDetail = new DetailInfo { AccountId = a.AccountId, Amount = a.Amount, EntityId = a.EntityId, EntityTypeId = a.EntityId },
                         Summary = a.Transaction.Summary,
                         FinancialPaymentDetail = new PaymentDetailInfo { CreditCardTypeValueId = a.Transaction.FinancialPaymentDetail.CreditCardTypeValueId, CurrencyTypeValueId = a.Transaction.FinancialPaymentDetail.CurrencyTypeValueId }
@@ -1059,6 +1098,9 @@ namespace RockWeb.Blocks.Finance
                         SourceTypeValueId = a.SourceTypeValueId,
                         TotalAmount = a.TransactionDetails.Sum( d => (decimal?)d.Amount ),
                         TransactionCode = a.TransactionCode,
+                        Status = a.Status,
+                        SettledDate = a.SettledDate,
+                        SettledGroupId = a.SettledGroupId,
                         Summary = a.Summary,
                         FinancialPaymentDetail = new PaymentDetailInfo { CreditCardTypeValueId = a.FinancialPaymentDetail.CreditCardTypeValueId, CurrencyTypeValueId = a.FinancialPaymentDetail.CurrencyTypeValueId }
                     } );
@@ -1166,10 +1208,6 @@ namespace RockWeb.Blocks.Finance
 
                 // Account Id
                 var accountIds = ( gfTransactions.GetUserPreference( "Account" ) ?? "" ).SplitDelimitedValues().AsIntegerList().Where( a => a > 0 ).ToList();
-
-                // also include any immediate Child Accounts of the selected accounts in the filter
-                var childAccountIds = _financialAccountLookup.Where( a => a.Value.ParentAccountId.HasValue && accountIds.Contains( a.Value.ParentAccountId.Value ) ).Select( a => a.Key ).ToList();
-                accountIds.AddRange( childAccountIds );
                 accountIds = accountIds.Distinct().ToList();
 
                 if ( accountIds.Any() )
@@ -1536,6 +1574,9 @@ namespace RockWeb.Blocks.Finance
             public int? SourceTypeValueId { get; internal set; }
             public decimal? TotalAmount { get; set; }
             public string Summary { get; set; }
+            public string Status { get; set; }
+            public DateTime? SettledDate { get; set; }
+            public string SettledGroupId { get; set; }
 
             /// <summary>
             /// NOTE: This will only be used in "Transaction Details" mode

@@ -355,6 +355,7 @@ namespace Rock.Model
         /// <value>
         /// The <see cref="Rock.Model.Page"/> entity for the parent Page
         /// </value>
+        [LavaInclude]
         public virtual Page ParentPage { get; set; }
 
         /// <summary>
@@ -380,6 +381,7 @@ namespace Rock.Model
         /// <value>
         /// The <see cref="Rock.Model.Layout"/> entity that the Page is using
         /// </value>
+        [LavaInclude]
         public virtual Layout Layout { get; set; }
 
         /// <summary>

@@ -49,7 +49,7 @@ namespace RockWeb.Blocks.Finance
         Rock.SystemGuid.DefinedValue.FINANCIAL_SOURCE_TYPE_WEBSITE, "", 3 )]
     [BooleanField( "Impersonation", "Allow (only use on an internal page used by staff)", "Don't Allow",
         "Should the current user be able to view and edit other people's transactions?  IMPORTANT: This should only be enabled on an internal page that is secured to trusted users", false, "", 4 )]
-    [CodeEditorField( "Account Header Template", "The Lava Template to use as the amount input label for each account", CodeEditorMode.Lava, CodeEditorTheme.Rock, 100, true, "{{ Account.PublicName }}", order:3)]
+    [CodeEditorField( "Account Header Template", "The Lava Template to use as the amount input label for each account", CodeEditorMode.Lava, CodeEditorTheme.Rock, 50, true, "{{ Account.PublicName }}", order:3)]
     [AccountsField( "Accounts", "The accounts to display.  By default all active accounts with a Public Name will be displayed", false, "", "", 7 )]
     [BooleanField( "Additional Accounts", "Display option for selecting additional accounts", "Don't display option",
         "Should users be allowed to select additional accounts?  If so, any active account with a Public Name value will be available", true, "", 8 )]
@@ -144,6 +144,8 @@ TransactionAcountDetails: [
     [BooleanField( "Enable Comment Entry", "Allows the guest to enter the the value that's put into the comment field (will be appended to the 'Payment Comment' setting)", false, "", 29 )]
     [TextField( "Comment Entry Label", "The label to use on the comment edit field (e.g. Trip Name to give to a specific trip).", false, "Comment", "", 30 )]
     [BooleanField( "Enable Business Giving", "Should the option to give as as a business be displayed", true, "", 31 )]
+    [BooleanField( "Enable Anonymous Giving", "Should the option to give anonymously be displayed. Giving anonymously will display the transaction as 'Anonymous' in places where it is shown publicly, for example, on a list of fundraising contributors.", false, "", 32 )]
+    [TextField( "Anonymous Giving Tooltip", "The tooltip for the 'Give Anonymously' checkbox.", false, "", order:33 )]
 
     #endregion
 
@@ -156,10 +158,10 @@ TransactionAcountDetails: [
     [CustomDropdownListField( "Account Campus Context", "Should any context be applied to the Account List", "-1^No Account Campus Context Filter Applied,0^Only Accounts with Current Campus Context,1^Accounts with No Campus and Current Campus Context", false, "-1", "Advanced", 4 )]
     [AttributeField( Rock.SystemGuid.EntityType.FINANCIAL_TRANSACTION, "Allowed Transaction Attributes From URL", "Specify any Transaction Attributes that can be populated from the URL.  The URL should be formatted like: ?Attribute_AttributeKey1=hello&Attribute_AttributeKey2=world", false, true, "", "Advanced", 5 )]
     [DefinedValueField( Rock.SystemGuid.DefinedType.FINANCIAL_TRANSACTION_TYPE, "Transaction Type", "", true, false, Rock.SystemGuid.DefinedValue.TRANSACTION_TYPE_CONTRIBUTION, "Advanced", order: 6 )]
-    [EntityTypeField( "Transaction Entity Type", "The Entity Type for the Transaction Detail Record (usually left blank)", false, "Advanced", order: 2 )]
-    [TextField( "Entity Id Param", "The Page Parameter that will be used to set the EntityId value for the Transaction Detail Record (requires Transaction Entry Type to be configured)", false, "", "Advanced", order: 7 )]
-    [CodeEditorField( "Transaction Header", "The Lava template which will be displayed prior to the Amount entry", CodeEditorMode.Lava, CodeEditorTheme.Rock, 200, false, "", "Advanced", order: 8 )]
-    [BooleanField( "Enable Initial Back button", "Show a Back button on the initial page that will navigate to wherever the user was prior to the transaction entry", false, "Advanced", order:9)]
+    [EntityTypeField( "Transaction Entity Type", "The Entity Type for the Transaction Detail Record (usually left blank)", false, "Advanced", order: 7 )]
+    [TextField( "Entity Id Param", "The Page Parameter that will be used to set the EntityId value for the Transaction Detail Record (requires Transaction Entry Type to be configured)", false, "", "Advanced", order: 8 )]
+    [CodeEditorField( "Transaction Header", "The Lava template which will be displayed prior to the Amount entry", CodeEditorMode.Lava, CodeEditorTheme.Rock, 200, false, "", "Advanced", order: 9 )]
+    [BooleanField( "Enable Initial Back button", "Show a Back button on the initial page that will navigate to wherever the user was prior to the transaction entry", false, "Advanced", order:10)]
 
     #endregion
 
@@ -306,36 +308,6 @@ TransactionAcountDetails: [
                 SetTargetPerson( rockContext );
                 SetGatewayOptions( rockContext );
                 BindSavedAccounts( rockContext, true );
-            }
-
-            // Resolve the text field merge fields
-            var mergeFields = LavaHelper.GetCommonMergeFields( this.RockPage );
-
-            using ( var rockContext = new RockContext() )
-            {
-                IEntity transactionEntity = GetTransactionEntity();
-                if ( transactionEntity != null )
-                {
-                    mergeFields.Add( "TransactionEntity", transactionEntity );
-                    var transactionEntityTypeId = transactionEntity.TypeId;
-
-                    // include any Transactions that are associated with the TransactionEntity for Lava
-                    var transactionEntityTransactions = new FinancialTransactionService( rockContext ).Queryable()
-                        .Include( a => a.TransactionDetails )
-                        .Where( a => a.TransactionDetails.Any( d => d.EntityTypeId.HasValue && d.EntityTypeId == transactionEntityTypeId && d.EntityId == transactionEntity.Id ) )
-                        .AsNoTracking().ToList();
-
-                    var transactionEntityTransactionsTotal = transactionEntityTransactions.SelectMany( d => d.TransactionDetails ).Sum( d => (decimal?)d.Amount );
-                    mergeFields.Add( "TransactionEntityTransactions", transactionEntityTransactions );
-                    mergeFields.Add( "TransactionEntityTransactionsTotal", transactionEntityTransactionsTotal );
-                    mergeFields.Add( "AmountLimit", this.PageParameter("AmountLimit").AsDecimalOrNull() );
-                }
-
-                lTransactionHeader.Text = GetAttributeValue( "TransactionHeader" ).ResolveMergeFields( mergeFields );
-                lConfirmationHeader.Text = GetAttributeValue( "ConfirmationHeader" ).ResolveMergeFields( mergeFields );
-                lConfirmationFooter.Text = GetAttributeValue( "ConfirmationFooter" ).ResolveMergeFields( mergeFields );
-                lSuccessHeader.Text = GetAttributeValue( "SuccessHeader" ).ResolveMergeFields( mergeFields );
-                lSuccessFooter.Text = GetAttributeValue( "SuccessFooter" ).ResolveMergeFields( mergeFields );
             }
 
             // Determine account campus context mode
@@ -544,6 +516,7 @@ TransactionAcountDetails: [
             // Show save account info based on if checkbox is checked
             divSaveAccount.Style[HtmlTextWriterStyle.Display] = cbSaveAccount.Checked ? "block" : "none";
 
+            ResolveHeaderFooterTemplates();
         }
 
         #endregion
@@ -970,7 +943,8 @@ TransactionAcountDetails: [
                     var entityId = this.PageParameter( this.GetAttributeValue( "EntityIdParam" ) ).AsIntegerOrNull();
                     if ( entityId.HasValue )
                     {
-                        IService serviceInstance = Reflection.GetServiceForEntityType( transactionEntityType.GetEntityType(), new RockContext() );
+                        var dbContext = Reflection.GetDbContextForEntityType( transactionEntityType.GetEntityType() );
+                        IService serviceInstance = Reflection.GetServiceForEntityType( transactionEntityType.GetEntityType(), dbContext );
                         if ( serviceInstance != null )
                         {
                             System.Reflection.MethodInfo getMethod = serviceInstance.GetType().GetMethod( "Get", new Type[] { typeof( int ) } );
@@ -1183,6 +1157,51 @@ TransactionAcountDetails: [
             }
         }
 
+        /// <summary>
+        /// Resolves the lava merge fields for the various header and footer templates.
+        /// </summary>
+        private void ResolveHeaderFooterTemplates()
+        {
+            // Resolve the text field merge fields
+            var mergeFields = LavaHelper.GetCommonMergeFields( this.RockPage );
+
+            using ( var rockContext = new RockContext() )
+            {
+                IEntity transactionEntity = GetTransactionEntity();
+                if ( transactionEntity != null )
+                {
+                    mergeFields.Add( "TransactionEntity", transactionEntity );
+                    var transactionEntityTypeId = transactionEntity.TypeId;
+
+                    // include any Transactions that are associated with the TransactionEntity for Lava
+                    var transactionEntityTransactions = new FinancialTransactionService( rockContext ).Queryable()
+                        .Include( a => a.TransactionDetails )
+                        .Where( a => a.TransactionDetails.Any( d => d.EntityTypeId.HasValue && d.EntityTypeId == transactionEntityTypeId && d.EntityId == transactionEntity.Id ) )
+                        .ToList();
+
+                    var transactionEntityTransactionsTotal = transactionEntityTransactions.SelectMany( d => d.TransactionDetails ).Sum( d => (decimal?)d.Amount );
+                    mergeFields.Add( "TransactionEntityTransactions", transactionEntityTransactions );
+                    mergeFields.Add( "TransactionEntityTransactionsTotal", transactionEntityTransactionsTotal );
+                    mergeFields.Add( "AmountLimit", this.PageParameter( "AmountLimit" ).AsDecimalOrNull() );
+                }
+
+                if ( hfTransactionGuid.Value.AsGuidOrNull().HasValue )
+                {
+                    var financialTransaction = new FinancialTransactionService( rockContext ).Get( hfTransactionGuid.Value.AsGuid() );
+                    mergeFields.Add( "FinancialTransaction", financialTransaction );
+                }
+
+                lTransactionHeader.Text = GetAttributeValue( "TransactionHeader" ).ResolveMergeFields( mergeFields );
+                lConfirmationHeader.Text = GetAttributeValue( "ConfirmationHeader" ).ResolveMergeFields( mergeFields );
+                lConfirmationFooter.Text = GetAttributeValue( "ConfirmationFooter" ).ResolveMergeFields( mergeFields );
+                lSuccessHeader.Text = GetAttributeValue( "SuccessHeader" ).ResolveMergeFields( mergeFields );
+                lSuccessFooter.Text = GetAttributeValue( "SuccessFooter" ).ResolveMergeFields( mergeFields );
+            }
+        }
+
+        /// <summary>
+        /// Sets the control options.
+        /// </summary>
         private void SetControlOptions()
         {
             FluidLayout = GetAttributeValue( "LayoutStyle" ) == "Fluid";
@@ -1219,6 +1238,9 @@ TransactionAcountDetails: [
             txtCurrentName.Visible = person != null;
             txtFirstName.Visible = person == null;
             txtLastName.Visible = person == null;
+
+            cbGiveAnonymously.Visible = GetAttributeValue( "EnableAnonymousGiving" ).AsBoolean();
+            cbGiveAnonymously.ToolTip = GetAttributeValue( "AnonymousGivingTooltip" );
 
             if ( GetAttributeValue( "EnableBusinessGiving" ).AsBoolean() )
             {
@@ -2770,32 +2792,21 @@ TransactionAcountDetails: [
 
         private void SaveTransaction( FinancialGateway financialGateway, GatewayComponent gateway, Person person, PaymentInfo paymentInfo, FinancialTransaction transaction, RockContext rockContext )
         {
-            var txnChanges = new List<string>();
-            txnChanges.Add( "Created Transaction" );
-
-            History.EvaluateChange( txnChanges, "Transaction Code", string.Empty, transaction.TransactionCode );
-
             transaction.AuthorizedPersonAliasId = person.PrimaryAliasId;
-            History.EvaluateChange( txnChanges, "Person", string.Empty, person.FullName );
-
+            transaction.ShowAsAnonymous = cbGiveAnonymously.Checked;
             transaction.TransactionDateTime = RockDateTime.Now;
-            History.EvaluateChange( txnChanges, "Date/Time", null, transaction.TransactionDateTime );
-
             transaction.FinancialGatewayId = financialGateway.Id;
-            History.EvaluateChange( txnChanges, "Gateway", string.Empty, financialGateway.Name );
 
             var txnType = DefinedValueCache.Read( this.GetAttributeValue("TransactionType").AsGuidOrNull() ?? Rock.SystemGuid.DefinedValue.TRANSACTION_TYPE_CONTRIBUTION.AsGuid() );
             transaction.TransactionTypeValueId = txnType.Id;
-            History.EvaluateChange( txnChanges, "Type", string.Empty, txnType.Value );
 
             transaction.Summary = paymentInfo.Comment1;
-            History.EvaluateChange( txnChanges, "Summary", string.Empty, transaction.Summary );
 
             if ( transaction.FinancialPaymentDetail == null )
             {
                 transaction.FinancialPaymentDetail = new FinancialPaymentDetail();
             }
-            transaction.FinancialPaymentDetail.SetFromPaymentInfo( paymentInfo, gateway, rockContext, txnChanges );
+            transaction.FinancialPaymentDetail.SetFromPaymentInfo( paymentInfo, gateway, rockContext );
 
             Guid sourceGuid = Guid.Empty;
             if ( Guid.TryParse( GetAttributeValue( "Source" ), out sourceGuid ) )
@@ -2804,7 +2815,6 @@ TransactionAcountDetails: [
                 if ( source != null )
                 {
                     transaction.SourceTypeValueId = source.Id;
-                    History.EvaluateChange( txnChanges, "Source", string.Empty, source.Value );
                 }
             }
 
@@ -2822,7 +2832,6 @@ TransactionAcountDetails: [
                 }
 
                 transaction.TransactionDetails.Add( transactionDetail );
-                History.EvaluateChange( txnChanges, account.Name, 0.0M.FormatAsCurrency(), transactionDetail.Amount.FormatAsCurrency() );
             }
 
             var batchService = new FinancialBatchService( rockContext );
@@ -2876,17 +2885,6 @@ TransactionAcountDetails: [
                 batchChanges
             );
 
-            HistoryService.SaveChanges(
-                rockContext,
-                typeof( FinancialBatch ),
-                Rock.SystemGuid.Category.HISTORY_FINANCIAL_TRANSACTION.AsGuid(),
-                batch.Id,
-                txnChanges,
-                person.FullName,
-                typeof( FinancialTransaction ),
-                transaction.Id
-            );
-
             SendReceipt( transaction.Id );
 
             TransactionCode = transaction.TransactionCode;
@@ -2937,6 +2935,9 @@ TransactionAcountDetails: [
             {
                 pnlSaveAccount.Visible = false;
             }
+
+            // the merge fields for the header/footer includes the financialTransaction, so update them now that we have saved the transaction to the database
+            ResolveHeaderFooterTemplates();
         }
 
 

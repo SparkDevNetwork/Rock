@@ -54,7 +54,11 @@ namespace Rock.Workflow.Action.CheckIn
                 DateTime startDateTime = RockDateTime.Now;
 
                 bool reuseCodeForFamily = checkInState.CheckInType != null && checkInState.CheckInType.ReuseSameCode;
-                int securityCodeLength = checkInState.CheckInType != null ? checkInState.CheckInType.SecurityCodeLength : 3;
+                int securityCodeAlphaNumericLength = checkInState.CheckInType != null ? checkInState.CheckInType.SecurityCodeAlphaNumericLength : 3;
+                int securityCodeAlphaLength = checkInState.CheckInType != null ? checkInState.CheckInType.SecurityCodeAlphaLength : 0;
+                int securityCodeNumericLength = checkInState.CheckInType != null ? checkInState.CheckInType.SecurityCodeNumericLength : 0;
+                bool securityCodeNumericRandom = checkInState.CheckInType != null ? checkInState.CheckInType.SecurityCodeNumericRandom : true;
+
 
                 var attendanceCodeService = new AttendanceCodeService( rockContext );
                 var attendanceService = new AttendanceService( rockContext );
@@ -73,7 +77,7 @@ namespace Rock.Workflow.Action.CheckIn
                         }
                         else
                         {
-                            attendanceCode = AttendanceCodeService.GetNew( securityCodeLength );
+                            attendanceCode = AttendanceCodeService.GetNew( securityCodeAlphaNumericLength, securityCodeAlphaLength, securityCodeNumericLength, securityCodeNumericRandom );
                             person.SecurityCode = attendanceCode.Code;
                         }
 
