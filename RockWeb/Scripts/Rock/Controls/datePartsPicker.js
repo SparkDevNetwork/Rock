@@ -17,19 +17,19 @@
       clientValidate: function (validator, args)
       {
         var $datePartsPicker = $(validator).closest('.js-datepartspicker');
-        var $month = $datePartsPicker.find('.js-month');
-        var $day = $datePartsPicker.find('.js-day');
-        var $year = $datePartsPicker.find('.js-year');
+        var monthNumber = Number($datePartsPicker.find('.js-month').val());
+        var dayNumber = Number($datePartsPicker.find('.js-day').val());
+        var yearNumber = Number($datePartsPicker.find('.js-year').val());
         var requireYear = $datePartsPicker.attr('data-requireyear') == 'true';
         var allowFuture = $datePartsPicker.attr('data-allowFuture') == 'true';
-
+        
         var isValid = true;
 
         if (!allowFuture) {
-          if ($month.val() && $day.val() && $year.val()) {
-            var monthIndex = $month.val();
-            monthIndex--;
-            var bDate = new Date($year.val(), monthIndex, $day.val());
+          if (monthNumber && dayNumber && yearNumber) {
+            // NOTE: Javascript Date Contructor's month parameter is zero based!
+            // see http://stackoverflow.com/questions/2552483/why-does-the-month-argument-range-from-0-to-11-in-javascripts-date-constructor
+            var bDate = new Date(yearNumber, monthNumber-1, dayNumber);
             var now = new Date();
             if (bDate > now) {
               isValid = false;
@@ -38,10 +38,10 @@
         }
 
         if (requireYear) {
-          if ($month.val() && $day.val() && $year.val()) {
+          if (monthNumber && dayNumber && yearNumber) {
             // month, day and year are all set, it's OK  
           }
-          else if (!$month.val() || !$day.val() || !$year.val()) {
+          else if (monthNumber || dayNumber || yearNumber) {
             // at least one of them is set, but some are not, so it is invalid
             isValid = false;
           }
