@@ -98,6 +98,14 @@ namespace Rock.Lava.Blocks
         /// <param name="result">The result.</param>
         public override void Render( Context context, TextWriter result )
         {
+            // first ensure that entity commands are allowed in the context
+            if ( !this.IsAuthorized( context ) )
+            {
+                result.Write( string.Format( "The Lava command '{0}' is not configured for this template.", this.Name ) );
+                base.Render( context, result );
+                return;
+            }
+
             var attributes = new Dictionary<string, string>();
             string parmWorkflowType = null;
             string parmWorkflowName = null;
