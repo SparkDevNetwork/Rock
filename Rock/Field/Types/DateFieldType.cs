@@ -35,6 +35,16 @@ namespace Rock.Field.Types
     public class DateFieldType : FieldType
     {
 
+        #region enums
+
+        public enum DatePickerControlType
+        {
+            DatePicker,
+            DatePartsPicker
+        }
+
+        #endregion
+
         #region Configuration
 
         /// <summary>
@@ -47,6 +57,7 @@ namespace Rock.Field.Types
             keys.Add( "format" );
             keys.Add( "displayDiff" );
             keys.Add( "displayCurrentOption" );
+            keys.Add( "datePickerControlType" );
             return keys;
         }
 
@@ -76,6 +87,16 @@ namespace Rock.Field.Types
             cbDisplayCurrent.Label = "Display Current Option";
             cbDisplayCurrent.Text = "Yes";
             cbDisplayCurrent.Help = "Include option to specify value as the current date.";
+
+            var ddlDatePickerMode = new RockDropDownList();
+            controls.Add( ddlDatePickerMode );
+            ddlDatePickerMode.Items.Clear();
+            ddlDatePickerMode.Items.Add( new ListItem( "Date", DatePickerControlType.DatePicker.ConvertToString() ) );
+            ddlDatePickerMode.Items.Add( new ListItem( "Month,Day,Year", DatePickerControlType.DatePartsPicker.ConvertToString() ) );
+            ddlDatePickerMode.Label = "DatePicker Control Type";
+            ddlDatePickerMode.Help = "Select 'Date' to use a DatePicker, or 'Month,Day,Year' to select Month, Day and Year individually";
+            ddlDatePickerMode.AutoPostBack = true;
+            ddlDatePickerMode.SelectedIndexChanged += OnQualifierUpdated;
 
             return controls;
         }
@@ -108,6 +129,12 @@ namespace Rock.Field.Types
                 {
                     ( (CheckBox)controls[2] ).Checked = configurationValues["displayCurrentOption"].Value.AsBoolean( false );
                 }
+
+                if ( controls.Count > 3 && controls[3] != null && controls[3] is DropDownList &&
+                    configurationValues.ContainsKey( "datePickerControlType" ) )
+                {
+                    ( ( DropDownList ) controls[3] ).SetValue( configurationValues["datePickerControlType"].Value );
+                }
             }
         }
 
@@ -122,6 +149,7 @@ namespace Rock.Field.Types
             values.Add( "format", new ConfigurationValue( "Date Format", "The format string to use for date (default is system short date).", "" ) );
             values.Add( "displayDiff", new ConfigurationValue( "Display as Elapsed Time", "Display value as an elapsed time.", "False" ) );
             values.Add( "displayCurrentOption", new ConfigurationValue( "Display Current Option", "Include option to specify value as the current date.", "False" ) );
+            values.Add( "datePickerControlType", new ConfigurationValue( "DatePicker Control Type", "Select 'Date' to use a DatePicker, or 'Month,Day,Year' to select Month, Day and Year individually", DatePickerControlType.DatePicker.ConvertToString() ) );
 
             if ( controls != null )
             {
@@ -138,6 +166,11 @@ namespace Rock.Field.Types
                 if ( controls.Count > 2 && controls[2] != null && controls[2] is CheckBox )
                 {
                     values["displayCurrentOption"].Value = ( (CheckBox)controls[2] ).Checked.ToString();
+                }
+
+                if ( controls.Count > 3 && controls[3] != null && controls[3] is DropDownList )
+                {
+                    values["datePickerControlType"].Value = ( ( DropDownList ) controls[3] ).SelectedValue;
                 }
             }
 
@@ -265,11 +298,18 @@ namespace Rock.Field.Types
         /// </returns>
         public override Control EditControl( Dictionary<string, ConfigurationValue> configurationValues, string id )
         {
-            var datePicker = new DatePicker { ID = id }; 
-            datePicker.DisplayCurrentOption = configurationValues != null &&
-                configurationValues.ContainsKey( "displayCurrentOption" ) &&
-                configurationValues["displayCurrentOption"].Value.AsBoolean();
-            return datePicker;
+            var datePickerControlType = configurationValues?.GetValueOrNull( "datePickerControlType" ).ConvertToEnumOrNull<DatePickerControlType>() ?? DatePickerControlType.DatePicker;
+            switch ( datePickerControlType )
+            {
+                case DatePickerControlType.DatePartsPicker:
+                    var datePartsPicker = new DatePartsPicker { ID = id };
+                    return datePartsPicker;
+                case DatePickerControlType.DatePicker:
+                default:
+                    var datePicker = new DatePicker { ID = id };
+                    datePicker.DisplayCurrentOption = configurationValues?.GetValueOrNull( "displayCurrentOption" )?.AsBooleanOrNull() ?? false;
+                    return datePicker;
+            }
         }
 
         /// <summary>
@@ -280,16 +320,24 @@ namespace Rock.Field.Types
         /// <returns></returns>
         public override string GetEditValue( Control control, Dictionary<string, ConfigurationValue> configurationValues )
         {
-            var dp = control as DatePicker;
-            if ( dp != null )
+            var datePicker = control as DatePicker;
+            var datePartsPicker = control as DatePartsPicker;
+            if ( datePicker != null )
             {
-                if ( dp.DisplayCurrentOption && dp.IsCurrentDateOffset )
+                if ( datePicker.DisplayCurrentOption && datePicker.IsCurrentDateOffset )
                 {
-                    return string.Format( "CURRENT:{0}", dp.CurrentDateOffsetDays );
+                    return string.Format( "CURRENT:{0}", datePicker.CurrentDateOffsetDays );
                 }
-                else if ( dp.SelectedDate.HasValue )
+                else if ( datePicker.SelectedDate.HasValue )
                 {
-                    return dp.SelectedDate.Value.ToString( "o" );
+                    return datePicker.SelectedDate.Value.ToString( "o" );
+                }
+            }
+            else if ( datePartsPicker != null )
+            {
+                if ( datePartsPicker.SelectedDate.HasValue )
+                {
+                    return datePartsPicker.SelectedDate.Value.ToString( "o" );
                 }
             }
 
@@ -304,16 +352,17 @@ namespace Rock.Field.Types
         /// <param name="value">The value.</param>
         public override void SetEditValue( Control control, Dictionary<string, ConfigurationValue> configurationValues, string value )
         {
-            var dp = control as DatePicker;
-            if ( dp != null )
+            var datePicker = control as DatePicker;
+            var datePartsPicker = control as DatePartsPicker;
+            if ( datePicker != null )
             {
-                if ( dp.DisplayCurrentOption && value != null && value.StartsWith( "CURRENT", StringComparison.OrdinalIgnoreCase ) )
+                if ( datePicker.DisplayCurrentOption && value != null && value.StartsWith( "CURRENT", StringComparison.OrdinalIgnoreCase ) )
                 {
-                    dp.IsCurrentDateOffset = true;
+                    datePicker.IsCurrentDateOffset = true;
                     var valueParts = value.Split( ':' );
                     if ( valueParts.Length > 1 )
                     {
-                        dp.CurrentDateOffsetDays = valueParts[1].AsInteger();
+                        datePicker.CurrentDateOffsetDays = valueParts[1].AsInteger();
                     }
                 }
                 else
@@ -321,9 +370,13 @@ namespace Rock.Field.Types
                     var dt = value.AsDateTime();
                     if ( dt.HasValue )
                     {
-                        dp.SelectedDate = dt;
+                        datePicker.SelectedDate = dt;
                     }
                 }
+            }
+            else if ( datePartsPicker != null )
+            {
+                datePartsPicker.SelectedDate = value.AsDateTime();
             }
         }
 
@@ -357,12 +410,29 @@ namespace Rock.Field.Types
 
             var datePickerPanel = new Panel();
             dateFiltersPanel.Controls.Add( datePickerPanel );
+
+            var datePickerControlType = configurationValues?.GetValueOrNull( "datePickerControlType" ).ConvertToEnumOrNull<DatePickerControlType>() ?? DatePickerControlType.DatePicker;
+
+            switch ( datePickerControlType )
+            {
+                case DatePickerControlType.DatePartsPicker:
+                    var datePartsPicker = new DatePartsPicker { ID = id };
+                    datePartsPicker.ID = string.Format( "{0}_dtPicker", id );
+                    //datePartsPicker.DisplayCurrentOption = true;
+                    datePickerPanel.AddCssClass( "js-filter-control" );
+                    datePickerPanel.Controls.Add( datePartsPicker );
+                    break;
+                case DatePickerControlType.DatePicker:
+                default:
+                    var datePicker = new DatePicker();
+                    datePicker.ID = string.Format( "{0}_dtPicker", id );
+                    datePicker.DisplayCurrentOption = true;
+                    datePickerPanel.AddCssClass( "js-filter-control" );
+                    datePickerPanel.Controls.Add( datePicker );
+                    break;
+            }
+
             
-            var datePicker = new DatePicker();
-            datePicker.ID = string.Format( "{0}_dtPicker", id );
-            datePicker.DisplayCurrentOption = true;
-            datePickerPanel.AddCssClass( "js-filter-control" );
-            datePickerPanel.Controls.Add( datePicker );
 
             var slidingDateRangePicker = new SlidingDateRangePicker();
             slidingDateRangePicker.ID = string.Format( "{0}_dtSlidingDateRange", id );
@@ -393,12 +463,18 @@ namespace Rock.Field.Types
         {
             var dateFiltersPanel = control as Panel;
             var datePicker = dateFiltersPanel.ControlsOfTypeRecursive<DatePicker>().FirstOrDefault();
+            var datePartsPicker = dateFiltersPanel.ControlsOfTypeRecursive<DatePartsPicker>().FirstOrDefault();
             var slidingDateRangePicker = dateFiltersPanel.ControlsOfTypeRecursive<SlidingDateRangePicker>().FirstOrDefault();
             string datePickerValue = string.Empty;
             string slidingDateRangePickerValue = string.Empty;
             if ( datePicker != null )
             {
                 datePickerValue = this.GetEditValue( datePicker, configurationValues );
+            }
+
+            if ( datePartsPicker != null )
+            {
+                datePickerValue = this.GetEditValue( datePartsPicker, configurationValues );
             }
 
             if ( slidingDateRangePicker != null)
@@ -420,14 +496,20 @@ namespace Rock.Field.Types
         {
             // uses Tab Delimited since slidingDateRangePicker is | delimited
             var filterValues = value.Split( new string[] { "\t" }, StringSplitOptions.None );
-            
+
             var dateFiltersPanel = control as Panel;
             var datePicker = dateFiltersPanel.ControlsOfTypeRecursive<DatePicker>().FirstOrDefault();
-            if (datePicker != null && filterValues.Length > 0)
+            if ( datePicker != null && filterValues.Length > 0 )
             {
                 this.SetEditValue( datePicker, configurationValues, filterValues[0] );
             }
-            
+
+            var datePartsPicker = dateFiltersPanel.ControlsOfTypeRecursive<DatePartsPicker>().FirstOrDefault();
+            if ( datePartsPicker != null && filterValues.Length > 0 )
+            {
+                this.SetEditValue( datePartsPicker, configurationValues, filterValues[0] );
+            }
+
             var slidingDateRangePicker = dateFiltersPanel.ControlsOfTypeRecursive<SlidingDateRangePicker>().FirstOrDefault();
             if ( slidingDateRangePicker != null && filterValues.Length > 1 )
             {
