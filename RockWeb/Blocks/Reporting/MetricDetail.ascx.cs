@@ -73,11 +73,9 @@ namespace RockWeb.Blocks.Reporting
             btnSecurity.EntityTypeId = EntityTypeCache.Read( typeof( Rock.Model.Metric ) ).Id;
 
             ddlDataView.Help = @"NOTE: When using DataView to populate Metrics, multiple partitions is not supported.
-<br />
-<br />
+
 When using a DataView as the Source Type, the Metric Values will based on the number of records returned by the DataView when the Calculate Metrics job processes this metric.
-<br />
-<br />
+
 Example: Let's say you have a DataView called 'Small Group Attendance for Last Week', and schedule this metric for every Monday. When the Calculate Metrics job runs this metric, the Metric Value for that week will be number of records returned by the Dataview.
 ";
 
@@ -717,7 +715,7 @@ Example: Let's say you have a DataView called 'Small Group Attendance for Last W
             ppMetricChampionPerson.SetValue( metric.MetricChampionPersonAlias != null ? metric.MetricChampionPersonAlias.Person : null );
             ppAdminPerson.SetValue( metric.AdminPersonAlias != null ? metric.AdminPersonAlias.Person : null );
             ceSourceSql.Text = metric.SourceSql;
-            ceSourceSql.Help = @"There are several ways to design your SQL to populate the Metric Values. If you use the 'SQL' source type option, the results will be stored with the date of the date when the Calculation is scheduled. To specify a specific date of the metric value, include a [MetricValueDate] column in the result set (see Example #4).
+            nbSQLHelp.InnerHtml = @"There are several ways to design your SQL to populate the Metric Values. If you use the 'SQL' source type option, the results will be stored with the date of the date when the Calculation is scheduled. To specify a specific date of the metric value, include a [MetricValueDate] column in the result set (see Example #4).
 <br />
 <br />
 <h4>Example #1</h4> 
@@ -797,32 +795,35 @@ NOTE: If a [MetricValueDateTime] is specified and there is already a metric valu
 The SQL can include Lava merge fields:";
 
 
-            ceSourceSql.Help += metric.GetMergeObjects( RockDateTime.Now ).lavaDebugInfo();
+            nbSQLHelp.InnerHtml += metric.GetMergeObjects( RockDateTime.Now ).lavaDebugInfo();
 
 
             ceSourceLava.Text = metric.SourceLava;
-            ceSourceLava.Help = @"There are several ways to design your Lava to populate the Metric Values. If you use the 'Lava' source type option, the results will be stored with the date of the date when the Calculation is scheduled. To specify a specific date of the metric value, include a [MetricValueDate] column in the result set.
+            nbLavaHelp.InnerHtml = @"There are several ways to design your Lava to populate the Metric Values. If you use the 'Lava' source type option, the results will be stored with the date of the date when the Calculation is scheduled. To specify a specific date of the metric value, include a [MetricValueDate] column in the result set.
+<br />
 <br />
 <h4>Example #1</h4> 
 Simple metric with the default partition
 <ul>
   <li>The output will be the YValue </li>
 </ul>
+<br />
 Lava Template:
-<pre>{% webrequest url:'https://api.github.com/repos/SparkDevNetwork/Rock/subscribers'  %}
-    {{ results | Size }}
-{% endwebrequest %}</pre>
+<pre>{% attendance where:'DidAttend == true && GroupId == 56' count:'true' %}
+  {{ count }}            
+{% endattendance %}</pre>
 
 Lava Output:
-<pre>30</pre>
+<pre>15052</pre>
 
+<br />
 <h4>Example #2</h4> 
 Simple metric with a MetricValueDateTime specified
 <ul>
   <li>The 1st Column will be the YValue </li>
   <li>The 2nd Column will be the MetricValueDateTime </li>
 </ul>
-
+<br />
 Lava Template:
 <pre>{% webrequest url:'https://api.github.com/repos/SparkDevNetwork/Rock/subscribers'  %}
     {{ results | Size }},{{ RunDateTime | SundayDate | DateAdd:-7 }} 
@@ -831,6 +832,7 @@ Lava Template:
 Lava Output:
 <pre>30, 5/7/2016</pre>
 
+<br />
 <h4>Example #3</h4>
 Lava that returns a Count and EntityIds for each Partition
 <ul>
@@ -856,9 +858,10 @@ Lava Output:
 34, 46, 3
 36, 46, 4</pre>
 
+<br />
 <h4>Example #4</h4>
 Lava that returns a Count, Date and EntityIds for each Partition
-
+<br />
 Lava Template:
 <pre>{% assign weekEndDate = RunDateTime | SundayDate | DateAdd:-7,'d' | Date:'yyyy-MM-dd'  %}
 {% webrequest url:'https://api.example.com/weeklyStatsByCampus?since={{ weekEndDate }}'  %}
@@ -880,7 +883,7 @@ NOTE: If a [MetricValueDateTime] is specified and there is already a metric valu
 The Lava can include Lava merge fields:";
 
 
-            ceSourceLava.Help += metric.GetMergeObjects( RockDateTime.Now ).lavaDebugInfo();
+            nbLavaHelp.InnerHtml += metric.GetMergeObjects( RockDateTime.Now ).lavaDebugInfo();
 
             if ( metric.Schedule != null )
             {
@@ -1411,5 +1414,12 @@ The Lava can include Lava merge fields:";
         }
 
         #endregion
+
+        protected void btnTestLava_Click( object sender, EventArgs e )
+        {
+            var metric = new MetricService( new RockContext() ).Get( hfMetricId.Value.AsInteger() ) ?? new Metric();
+            var mergeObjects = metric.GetMergeObjects( RockDateTime.Now );
+            lLavaTestResult.Text = ceSourceLava.Text.ResolveMergeFields( mergeObjects, enabledLavaCommands: "All", throwExceptionOnErrors: true );
+        }
     }
 }
