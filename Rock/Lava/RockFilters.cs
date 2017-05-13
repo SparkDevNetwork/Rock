@@ -3501,6 +3501,34 @@ namespace Rock.Lava
             }
         }
 
+        /// <summary>
+        /// Extracts a single item from an array.
+        /// </summary>
+        /// <param name="input">The input object to extract one element from.</param>
+        /// <param name="index">The index number of the object to extract.</param>
+        /// <returns>The single object from the array or null if not found.</returns>
+        public static object Index( object input, object index )
+        {
+            if ( input == null || index == null )
+            {
+                return input;
+            }
+
+            if ( !( input is IList ) )
+            {
+                return input;
+            }
+
+            var inputList = input as IList;
+            var indexInt = index.ToString().AsIntegerOrNull();
+            if ( !indexInt.HasValue || indexInt.Value < 0 || indexInt.Value >= inputList.Count )
+            {
+                return null;
+            }
+
+            return inputList[indexInt.Value];
+        }
+
         #endregion
 
         #region Object Filters
