@@ -28,30 +28,30 @@
 
                 <div class="panel-body">
                     <div class="row">
-                        <div class="col-md-6">
-                            <div class="row">
-                                <div class="col-md-4">
-                                    <div class="photo">
-                                        <asp:Literal ID="lPortrait" runat="server" />
-                                    </div>
-                                </div>
-                                <div class="col-md-8">
-                                    <Rock:RockLiteral ID="lContactInfo" runat="server" Label="Contact Info" />
-                                    <Rock:RockLiteral ID="lConnector" runat="server" Label="Connector" />
-                                    <asp:Panel runat="server" class="form-group static-control" ID="pnlBadges">
-                                        <label class="control-label">Person Info</label>
-                                        <div class="control-wrapper">
-                                            <Rock:PersonProfileBadgeList ID="blStatus" runat="server" />
-					                    </div>
-                                    </asp:Panel>
-                                </div>
+                        <div class="col-md-2">
+                            <div class="photo">
+                                <asp:Literal ID="lPortrait" runat="server" />
                             </div>
                         </div>
-                        <div class="col-md-4">
-                            <Rock:RockLiteral ID="lRequestDate" runat="server" Label="Request Date" />
-                            <Rock:RockLiteral ID="lPlacementGroup" runat="server" Label="Placement Group" />
-                            <Rock:DynamicPlaceHolder ID="phGroupMemberAttributesView" runat="server" />
+                        <div class="col-md-8">
+                            <asp:Panel runat="server" CssClass="margin-b-sm" ID="pnlBadges">
+                                <Rock:PersonProfileBadgeList ID="blStatus" runat="server" />
+                            </asp:Panel>
+                            
+                            <div class="row">
+                                <div class="col-md-6">
+                                     <Rock:RockLiteral ID="lContactInfo" runat="server" Label="Contact Info" />
+                                    <Rock:RockLiteral ID="lConnector" runat="server" Label="Connector" />
+                                </div>
+                                <div class="col-md-6">
+                                    <Rock:RockLiteral ID="lRequestDate" runat="server" Label="Request Date" />
+                                    <Rock:RockLiteral ID="lPlacementGroup" runat="server" Label="Placement Group" />
+                                    <Rock:DynamicPlaceHolder ID="phGroupMemberAttributesView" runat="server" />
+                                </div>
+                            </div>
+       
                         </div>
+
                         <div class="col-md-2 text-right">
                             <asp:LinkButton ID="lbProfilePage" runat="server" CssClass="btn btn-default btn-xs"><i class="fa fa-user"></i> Profile</asp:LinkButton>
                         </div>
