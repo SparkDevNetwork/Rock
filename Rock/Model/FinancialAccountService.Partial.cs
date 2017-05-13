@@ -28,10 +28,10 @@ namespace Rock.Model
         /// <summary>
         /// Gets immediate children of a account (id) or a rootGroupId. Specify 0 for both Id and rootGroupId to get top level accounts limited
         /// </summary>
-        /// <param name="id">The ID of the account to get the children of (or 0 to use rootGroupId)</param>
-        /// <param name="includeInactiveGroups">if set to <c>true</c> [include inactive groups].</param>
+        /// <param name="id">The ID of the account to get the children of (or 0 to use rootAccountId)</param>
+        /// <param name="includeInactiveAccounts">if set to <c>true</c> [include inactive Accounts].</param>
         /// <returns></returns>
-        public IQueryable<FinancialAccount> GetChildren( int id, bool includeInactiveGroups )
+        public IQueryable<FinancialAccount> GetChildren( int id, bool includeInactiveAccounts )
         {
             var qry = Queryable();
 
@@ -44,7 +44,7 @@ namespace Rock.Model
                 qry = qry.Where( a => a.ParentAccountId == id );
             }
 
-            if ( !includeInactiveGroups )
+            if ( !includeInactiveAccounts )
             {
                 qry = qry.Where( a => a.IsActive );
             }

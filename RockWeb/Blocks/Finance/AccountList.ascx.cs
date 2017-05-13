@@ -223,9 +223,25 @@ namespace RockWeb.Blocks.Finance
         /// <returns></returns>
         private IQueryable<FinancialAccount> GetAccounts( RockContext rockContext )
         {
+            int? parentAccountId = PageParameter( "AccountId" ).AsIntegerOrNull();
+
+            if ( parentAccountId.HasValue )
+            {
+                lActionTitle.Text = "Child Accounts".FormatAsHtmlTitle();
+            }
+            else
+            {
+                lActionTitle.Text = "List Accounts".FormatAsHtmlTitle();
+            }
+
             var accountService = new FinancialAccountService( rockContext );
             SortProperty sortProperty = rGridAccount.SortProperty;
             var accountQuery = accountService.Queryable();
+
+            if ( parentAccountId.HasValue )
+            {
+                accountQuery = accountQuery.Where( account => account.ParentAccountId == parentAccountId.Value );
+            }
 
             string accountNameFilter = rAccountFilter.GetUserPreference( "Account Name" );
             if ( !string.IsNullOrEmpty( accountNameFilter ) )
