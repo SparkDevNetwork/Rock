@@ -76,8 +76,6 @@
                                         <label>Source Lava</label><a class="help" href="javascript: $('.js-sourcelava-help').toggle;"><i class="fa fa-question-circle"></i></a>
                                         <div class="alert alert-info js-sourcelava-help" id="nbLavaHelp" runat="server" style="display: none;"></div>
                                         <Rock:CodeEditor ID="ceSourceLava" runat="server" EditorMode="Lava" />
-                                        <asp:LinkButton ID="btnTestLava" runat="server" CssClass="bt btn-default" Text="Test" OnClick="btnTestLava_Click"  />
-                                        <asp:Literal ID="lLavaTestResult" runat="server" />
                                     </asp:Panel>
                             
                                     <asp:Panel ID="pnlDataviewSourceType" runat="server">

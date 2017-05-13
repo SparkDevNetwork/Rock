@@ -1414,12 +1414,5 @@ The Lava can include Lava merge fields:";
         }
 
         #endregion
-
-        protected void btnTestLava_Click( object sender, EventArgs e )
-        {
-            var metric = new MetricService( new RockContext() ).Get( hfMetricId.Value.AsInteger() ) ?? new Metric();
-            var mergeObjects = metric.GetMergeObjects( RockDateTime.Now );
-            lLavaTestResult.Text = ceSourceLava.Text.ResolveMergeFields( mergeObjects, enabledLavaCommands: "All", throwExceptionOnErrors: true );
-        }
     }
 }
