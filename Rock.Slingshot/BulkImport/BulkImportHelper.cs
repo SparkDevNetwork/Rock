@@ -685,6 +685,7 @@ WHERE gta.GroupTypeId IS NULL" );
             var familyGroupType = GroupTypeCache.GetFamilyGroupType();
             int familyGroupTypeId = familyGroupType.Id;
             int familyChildRoleId = familyGroupType.Roles.First( a => a.Guid == Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_CHILD.AsGuid() ).Id;
+            int recordTypePersonId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_PERSON.AsGuid() ).Id;
 
             StringBuilder sbStats = new StringBuilder();
 
@@ -746,7 +747,7 @@ WHERE gta.GroupTypeId IS NULL" );
                 if ( person == null )
                 {
                     person = new Person();
-                    person.RecordTypeValueId = personImport.RecordTypeValueId;
+                    person.RecordTypeValueId = personImport.RecordTypeValueId ?? recordTypePersonId;
                     person.RecordStatusValueId = personImport.RecordStatusValueId;
                     person.RecordStatusLastModifiedDateTime = personImport.RecordStatusLastModifiedDateTime;
                     person.RecordStatusReasonValueId = personImport.RecordStatusReasonValueId;
