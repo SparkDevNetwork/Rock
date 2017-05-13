@@ -693,6 +693,7 @@
     <Compile Include="Lava\Blocks\Search.cs" />
     <Compile Include="Lava\Blocks\WebRequest.cs" />
     <Compile Include="Lava\Blocks\Sql.cs" />
+    <Compile Include="Lava\Blocks\WorkflowActivate.cs" />
     <Compile Include="Lava\CommonMergeFieldsOptions.cs" />
     <Compile Include="Lava\ILiquidizable.cs" />
     <Compile Include="Lava\LavaHelper.cs" />
