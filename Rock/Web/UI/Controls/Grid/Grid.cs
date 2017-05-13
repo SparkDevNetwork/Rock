@@ -1761,7 +1761,7 @@ namespace Rock.Web.UI.Controls
                             {
                                 var attrib = dataItemWithAttributes.Attributes[attributeField.DataField];
                                 string rawValue = dataItemWithAttributes.GetAttributeValue( attributeField.DataField );
-                                string resultHtml = attrib.FieldType.Field.FormatValue( null, rawValue, attrib.QualifierValues, false ).ReverseCurrencyFormatting().ToString();
+                                string resultHtml = attrib.FieldType.Field.FormatValue( null, attrib.EntityTypeId, dataItemWithAttributes.Id, rawValue, attrib.QualifierValues, false ).ReverseCurrencyFormatting().ToString();
                                 worksheet.Cells[rowCounter, columnCounter].Value = resultHtml;
 
                                 // Update column formatting based on data

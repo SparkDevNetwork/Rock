@@ -1503,6 +1503,7 @@ namespace Rock.Lava
 
             AttributeCache attribute = null;
             string rawValue = string.Empty;
+            int? entityId = null;
 
             // If Input is "Global" then look for a global attribute with key
             if ( input.ToString().Equals( "Global", StringComparison.OrdinalIgnoreCase ) )
@@ -1557,6 +1558,7 @@ namespace Rock.Lava
                     {
                         attribute = item.Attributes[attributeKey];
                         rawValue = item.AttributeValues[attributeKey].Value;
+                        entityId = item.Id;
                     }
                 }
             }
@@ -1607,7 +1609,7 @@ namespace Rock.Lava
                     }
 
                     // Otherwise return the formatted value
-                    return field.FormatValue( null, rawValue, attribute.QualifierValues, false );
+                    return field.FormatValue( null, attribute.EntityTypeId, entityId, rawValue, attribute.QualifierValues, false );
                 }
             }
 

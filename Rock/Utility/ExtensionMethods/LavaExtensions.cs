@@ -247,7 +247,7 @@ namespace Rock
                     foreach ( var objAttr in objWithAttrs.Attributes )
                     {
                         var attributeCache = objAttr.Value;
-                        string value = attributeCache.FieldType.Field.FormatValue( null, objWithAttrs.GetAttributeValue( attributeCache.Key ), attributeCache.QualifierValues, false );
+                        string value = attributeCache.FieldType.Field.FormatValue( null, attributeCache.EntityTypeId, objWithAttrs.Id, objWithAttrs.GetAttributeValue( attributeCache.Key ), attributeCache.QualifierValues, false );
                         objAttrs.Add( attributeCache.Key, value.Truncate( 50 ).EncodeHtml() );
                     }
 
