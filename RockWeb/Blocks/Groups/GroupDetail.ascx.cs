@@ -204,6 +204,9 @@ namespace RockWeb.Blocks.Groups
             gGroupMemberAttributes.GridRebind += gGroupMemberAttributes_GridRebind;
             gGroupMemberAttributes.GridReorder += gGroupMemberAttributes_GridReorder;
 
+            SecurityField groupMemberAttributeSecurityField = gGroupMemberAttributes.Columns.OfType<SecurityField>().FirstOrDefault();
+            groupMemberAttributeSecurityField.EntityTypeId = EntityTypeCache.GetId<Attribute>() ?? 0;
+
             gGroupRequirements.DataKeyNames = new string[] { "Guid" };
             gGroupRequirements.Actions.ShowAdd = true;
             gGroupRequirements.Actions.AddClick += gGroupRequirements_Add;
@@ -1329,7 +1332,8 @@ namespace RockWeb.Blocks.Groups
                 if ( group.Attributes != null && group.Attributes.Any() )
                 {
                     wpGroupAttributes.Visible = true;
-                    Rock.Attribute.Helper.AddEditControls( group, phGroupAttributes, setValues, BlockValidationGroup );
+                    var excludeForEdit = group.Attributes.Where( a => !a.Value.IsAuthorized( Rock.Security.Authorization.EDIT, this.CurrentPerson ) ).Select( a => a.Key ).ToList();
+                    Rock.Attribute.Helper.AddEditControls( group, phGroupAttributes, setValues, BlockValidationGroup, excludeForEdit );
                 }
                 else
                 {
@@ -1483,7 +1487,9 @@ namespace RockWeb.Blocks.Groups
             lblMainDetails.Text = descriptionList.Html;
 
             group.LoadAttributes();
-            var attributes = group.Attributes.Select( a => a.Value ).OrderBy( a => a.Order ).ThenBy( a => a.Name ).ToList();
+            var attributes = group.Attributes.Select( a => a.Value ).OrderBy( a => a.Order ).ThenBy( a => a.Name )
+                .Where( a => a.IsAuthorized( Rock.Security.Authorization.VIEW, this.CurrentPerson ) )
+                .ToList();
 
             var attributeCategories = Helper.GetAttributeCategories( attributes );
 

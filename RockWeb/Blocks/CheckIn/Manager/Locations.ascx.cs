@@ -41,7 +41,7 @@ namespace RockWeb.Blocks.CheckIn.Manager
     [Category( "Check-in > Manager" )]
     [Description( "Block used to view current check-in counts and locations." )]
     [CustomRadioListField( "Navigation Mode", "Navigation and attendance counts can be grouped and displayed either by 'Group Type > Group Type (etc) > Group > Location' or by 'location > location (etc).'  Select the navigation heirarchy that is most appropriate for your organization.", "T^Group Type,L^Location,", true, "T", "", 0, "Mode" )]
-    [GroupTypeField( "Check-in Type", "The Check-in Area to display.  This value can also be overridden through the URL query string key (e.g. when navigated to from the Check-in Type selection block).", true, "", "", 1, "GroupTypeTemplate", Rock.SystemGuid.DefinedValue.GROUPTYPE_PURPOSE_CHECKIN_TEMPLATE )]
+    [GroupTypeField( "Check-in Type", "The Check-in Area to display.  This value can also be overridden through the URL query string key (e.g. when navigated to from the Check-in Type selection block).", false, "", "", 1, "GroupTypeTemplate", Rock.SystemGuid.DefinedValue.GROUPTYPE_PURPOSE_CHECKIN_TEMPLATE )]
     [LinkedPage( "Person Page", "The page used to display a selected person's details.", order: 2 )]
     [LinkedPage( "Area Select Page", "The page to redirect user to if area has not be configured or selected.", order: 3 )]
     [DefinedValueField( Rock.SystemGuid.DefinedType.CHART_STYLES, "Chart Style", order: 4, defaultValue: Rock.SystemGuid.DefinedValue.CHART_STYLE_ROCK )]
@@ -220,7 +220,7 @@ namespace RockWeb.Blocks.CheckIn.Manager
                 // Get all the schedules that allow checkin
                 var schedules = new ScheduleService( rockContext )
                     .Queryable().AsNoTracking()
-                    .Where( s => s.CheckInStartOffsetMinutes.HasValue )
+                    .Where( s => s.CheckInStartOffsetMinutes.HasValue && s.IsActive )
                     .ToList();
 
                 // Get a lit of the schedule ids
@@ -633,7 +633,7 @@ namespace RockWeb.Blocks.CheckIn.Manager
                                 var activeSchedules = new List<int>();
                                 foreach ( var schedule in new ScheduleService( rockContext )
                                     .Queryable().AsNoTracking()
-                                    .Where( s => s.CheckInStartOffsetMinutes.HasValue ) )
+                                    .Where( s => s.IsActive && s.CheckInStartOffsetMinutes.HasValue ) )
                                 {
                                     if ( schedule.IsScheduleOrCheckInActive )
                                     {
@@ -936,10 +936,14 @@ namespace RockWeb.Blocks.CheckIn.Manager
                             .ToList();
                     }
 
-                    // If not group types left, redirect to area select page
+                    // If no group types left, display error message.
                     if ( NavData.GroupTypes.Count == 0 )
                     {
-                        NavigateToLinkedPage( "AreaSelectPage" );
+                        nbWarning.Text = "The selected check-in type does not have any valid groups or locations.";
+                        nbWarning.Visible = true;
+                        pnlContent.Visible = false;
+
+                        return null;
                     }
 
                     // Get the locations
@@ -985,7 +989,7 @@ namespace RockWeb.Blocks.CheckIn.Manager
                     else
                     {
                         schedules = new ScheduleService( rockContext ).Queryable().AsNoTracking()
-                            .Where( s => s.CheckInStartOffsetMinutes.HasValue )
+                            .Where( s => s.IsActive && s.CheckInStartOffsetMinutes.HasValue )
                             .ToList();
                     }
 
@@ -1365,7 +1369,7 @@ namespace RockWeb.Blocks.CheckIn.Manager
                         var activeSchedules = new List<int>();
                         foreach ( var schedule in new ScheduleService( rockContext )
                             .Queryable().AsNoTracking()
-                            .Where( s => s.CheckInStartOffsetMinutes.HasValue ) )
+                            .Where( s => s.IsActive && s.CheckInStartOffsetMinutes.HasValue ) )
                         {
                             if ( schedule.IsScheduleOrCheckInActive )
                             {

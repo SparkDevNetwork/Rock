@@ -33,7 +33,7 @@ namespace Rock.Model
     /// </summary>
     [Table( "Schedule" )]
     [DataContract]
-    public partial class Schedule : Model<Schedule>, ICategorized
+    public partial class Schedule : Model<Schedule>, ICategorized, IHasActiveFlag
     {
         #region Entity Properties
 
@@ -166,7 +166,7 @@ namespace Rock.Model
         {
             get
             {
-                return CheckInStartOffsetMinutes.HasValue;
+                return CheckInStartOffsetMinutes.HasValue && IsActive;
             }
         }
 
@@ -246,8 +246,15 @@ namespace Rock.Model
         {
             get
             {
-                var occurrences = GetScheduledStartTimes( RockDateTime.Now, RockDateTime.Now.AddYears( 1 ) );
-                return occurrences.Min( o => (DateTime?)o );
+                if ( this.IsActive )
+                {
+                    var occurrences = GetScheduledStartTimes( RockDateTime.Now, RockDateTime.Now.AddYears( 1 ) );
+                    return occurrences.Min( o => ( DateTime? ) o );
+                }
+                else
+                {
+                    return null;
+                }
             }
         }
 
@@ -317,6 +324,22 @@ namespace Rock.Model
         {
             get { return ToFriendlyScheduleText(); }
         }
+
+        /// <summary>
+        /// Gets or sets a flag indicating if this is an active schedule. This value is required.
+        /// </summary>
+        /// <value>
+        /// A <see cref="System.Boolean"/> value that is <c>true</c> if this schedule is active, otherwise <c>false</c>.
+        /// </value>
+        [Required]
+        [DataMember( IsRequired = true )]
+        [Previewable]
+        public bool IsActive
+        {
+            get { return _isActive; }
+            set { _isActive = value; }
+        }
+        private bool _isActive = true;
 
         #endregion
 

@@ -175,10 +175,13 @@ function() {
 
         /// <summary>
         /// Gets the selection.
+        /// Implement this version of GetSelection if your DataFilterComponent works the same in all FilterModes
         /// </summary>
-        /// <param name="entityType">Type of the entity.</param>
-        /// <param name="controls">The controls.</parm>
-        /// <returns></returns>
+        /// <param name="entityType">The System Type of the entity to which the filter will be applied.</param>
+        /// <param name="controls">The collection of controls used to set the filter values.</param>
+        /// <returns>
+        /// A formatted string.
+        /// </returns>
         public override string GetSelection( Type entityType, Control[] controls )
         {
             var location = ( controls[0] as LocationPicker ).Location;
