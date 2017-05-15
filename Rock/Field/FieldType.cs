@@ -106,7 +106,12 @@ namespace Rock.Field
         /// <returns></returns>
         public virtual string FormatValue( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
         {
-            return FormatValue( parentControl, null, null, value, configurationValues, condensed );
+            if ( condensed )
+            {
+                return value.Truncate( 100 );
+            }
+
+            return value;
         }
 
         /// <summary>
@@ -121,12 +126,7 @@ namespace Rock.Field
         /// <returns></returns>
         public virtual string FormatValue( Control parentControl, int? entityTypeId, int? entityId, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
         {
-            if ( condensed )
-            {
-                return value.Truncate( 100 );
-            }
-
-            return value;
+            return FormatValue( parentControl, value, configurationValues, condensed );
         }
 
         /// <summary>
