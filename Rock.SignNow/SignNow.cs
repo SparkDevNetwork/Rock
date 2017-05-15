@@ -178,7 +178,7 @@ namespace Rock.SignNow
             {
                 foreach ( JObject folder in folders )
                 {
-                    if ( folder.Value<string>( "name" ) == "Templates" || folder.Value<string>( "name" ) == "Team Templates" )
+                    if ( folder.Value<string>( "name" ) == "Templates" )
                     {
                         string folderId = folder.Value<string>( "id" );
                         if ( !string.IsNullOrWhiteSpace( folderId ) )
@@ -196,17 +196,9 @@ namespace Rock.SignNow
                             {
                                 foreach ( JObject document in documents )
                                 {
-                                    string team_name = documentListRes.Value<string>( "team_name" );
-                                    string document_name = document.Value<string>( "document_name" );
-
-                                    if ( !string.IsNullOrWhiteSpace( team_name ) )
-                                    {
-                                        document_name = string.Format( "{0} > {1}", team_name, document_name );
-                                    }
-
                                     templates.AddOrIgnore(
                                         document.Value<string>( "id" ),
-                                        document_name );
+                                        document.Value<string>( "document_name" ) );
                                 }
                             }
                         }
