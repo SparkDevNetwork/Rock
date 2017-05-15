@@ -378,13 +378,13 @@ namespace RockWeb.Blocks.Finance
             // add detailed pledge information
             foreach ( var pledge in pledges )
             {
-                var adjustedPedgeEndDate = pledge.PledgeEndDate.Value.Date.AddHours( 23 ).AddMinutes( 59 ).AddSeconds( 59 );
+                var adjustedPedgeEndDate = pledge.PledgeEndDate.Value.Date.AddDays( 1 );
                 pledge.AmountGiven = new FinancialTransactionDetailService( rockContext ).Queryable()
                                             .Where( t =>
                                                  t.AccountId == pledge.AccountId
                                                  && t.Transaction.TransactionDateTime >= pledge.PledgeStartDate
-                                                 && t.Transaction.TransactionDateTime <= adjustedPedgeEndDate )
-                                            .Sum( t => t.Amount );
+                                                 && t.Transaction.TransactionDateTime < adjustedPedgeEndDate )
+                                            .Sum( t => ( decimal? ) t.Amount ) ?? 0;
 
                 pledge.AmountRemaining = (pledge.AmountGiven > pledge.AmountPledged) ? 0 : (pledge.AmountPledged - pledge.AmountGiven);
 
