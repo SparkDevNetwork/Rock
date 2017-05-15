@@ -15,6 +15,7 @@
 // </copyright>
 //
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using Rock;
@@ -26,6 +27,7 @@ using Rock.Security;
 using Rock.Web;
 using Rock.Web.Cache;
 using Rock.Web.UI;
+using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.Finance
 {
@@ -128,7 +130,11 @@ namespace RockWeb.Blocks.Finance
             rockContext.SaveChanges();
             account.SaveAttributeValues( rockContext );
 
-            NavigateToParentPage();
+            var qryParams = new Dictionary<string, string>();
+            qryParams["AccountId"] = account.Id.ToString();
+            qryParams["ExpandedIds"] = PageParameter( "ExpandedIds" );
+
+            NavigateToPage( RockPage.Guid, qryParams );
         }
 
         /// <summary>
@@ -138,7 +144,34 @@ namespace RockWeb.Blocks.Finance
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnCancel_Click( object sender, EventArgs e )
         {
-            NavigateToParentPage();
+            if ( hfAccountId.Value.Equals( "0" ) )
+            {
+                int? parentAccountId = PageParameter( "ParentAccountId" ).AsIntegerOrNull();
+                if ( parentAccountId.HasValue )
+                {
+                    // Cancelling on Add, and we know the parentGroupID, so we are probably in treeview mode, so navigate to the current page
+                    var qryParams = new Dictionary<string, string>();
+                    if ( parentAccountId != 0 )
+                    {
+                        qryParams["AccountId"] = parentAccountId.ToString();
+                    }
+
+                    qryParams["ExpandedIds"] = PageParameter( "ExpandedIds" );
+                    NavigateToPage( RockPage.Guid, qryParams );
+                }
+                else
+                {
+                    // Cancelling on Add.  Return to Grid
+                    NavigateToPage( RockPage.Guid, null );
+                }
+            }
+            else
+            {
+                // Cancelling on Edit.  Return to Details
+                FinancialAccountService service = new FinancialAccountService( new RockContext() );
+                FinancialAccount account = service.Get( hfAccountId.ValueAsInt() );
+                ShowReadonlyDetails( account );
+            }
         }
 
         /// <summary>
@@ -151,6 +184,53 @@ namespace RockWeb.Blocks.Finance
             FinancialAccountService service = new FinancialAccountService( new RockContext() );
             FinancialAccount account = service.Get( hfAccountId.ValueAsInt() );
             ShowEditDetails( account );
+        }
+
+        /// <summary>
+        /// Handles the Click event of the btnDelete control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
+        protected void btnDelete_Click( object sender, EventArgs e )
+        {
+            int? parentAccountId = null;
+            RockContext rockContext = new RockContext();
+
+            FinancialAccountService accountService = new FinancialAccountService( rockContext );
+            AuthService authService = new AuthService( rockContext );
+            FinancialAccount account = accountService.Get( hfAccountId.Value.AsInteger() );
+
+            if ( account != null )
+            {
+                if ( !account.IsAuthorized( Authorization.EDIT, this.CurrentPerson ) )
+                {
+                    mdDeleteWarning.Show( "You are not authorized to delete this account.", ModalAlertType.Information );
+                    return;
+                }
+
+                parentAccountId = account.ParentAccountId;
+                string errorMessage;
+                if ( !accountService.CanDelete( account, out errorMessage ) )
+                {
+                    mdDeleteWarning.Show( errorMessage, ModalAlertType.Information );
+                    return;
+                }
+
+                accountService.Delete( account );
+
+                rockContext.SaveChanges();
+            }
+
+            // reload page, selecting the deleted account's parent
+            var qryParams = new Dictionary<string, string>();
+            if ( parentAccountId != null )
+            {
+                qryParams["AccountId"] = parentAccountId.ToString();
+            }
+
+            qryParams["ExpandedIds"] = PageParameter( "ExpandedIds" );
+
+            NavigateToPage( RockPage.Guid, qryParams );
         }
 
         #endregion
