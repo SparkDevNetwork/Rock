@@ -361,9 +361,8 @@ namespace RockWeb.Blocks.Finance
 
             // pledge information
             var pledges = new FinancialPledgeService( rockContext ).Queryable().AsNoTracking()
-                                .Where( p =>
-                                     p.PersonAlias.Person.GivingId == targetPerson.GivingId
-                                    && (p.StartDate.Year == statementYear || p.EndDate.Year == statementYear) )
+                                .Where( p => p.PersonAliasId.HasValue && personAliasIds.Contains(p.PersonAliasId.Value)
+                                    && ( p.StartDate.Year == statementYear || p.EndDate.Year == statementYear ) )
                                 .GroupBy( p => p.Account )
                                 .Select( g => new PledgeSummary
                                 {
@@ -382,6 +381,7 @@ namespace RockWeb.Blocks.Finance
                 pledge.AmountGiven = new FinancialTransactionDetailService( rockContext ).Queryable()
                                             .Where( t =>
                                                  t.AccountId == pledge.AccountId
+                                                 && t.Transaction.AuthorizedPersonAliasId.HasValue && personAliasIds.Contains( t.Transaction.AuthorizedPersonAliasId.Value )
                                                  && t.Transaction.TransactionDateTime >= pledge.PledgeStartDate
                                                  && t.Transaction.TransactionDateTime < adjustedPedgeEndDate )
                                             .Sum( t => ( decimal? ) t.Amount ) ?? 0;
