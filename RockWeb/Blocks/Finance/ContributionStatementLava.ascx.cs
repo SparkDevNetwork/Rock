@@ -320,14 +320,6 @@ namespace RockWeb.Blocks.Finance
                                     .OrderBy( p => p.FamilyRoleOrder ).ThenBy( p => p.Gender )
                                     .ToList();
 
-            // make a list of person ids in the giving group
-            List<int> givingGroupIdsOnly = new List<int>();
-            foreach ( var x in givingGroup )
-            {
-                givingGroupIdsOnly.Add( x.PersonId );
-            }
-
-
             string salutation = string.Empty;
 
             if ( givingGroup.GroupBy( g => g.LastName ).Count() == 1 )
@@ -382,8 +374,7 @@ namespace RockWeb.Blocks.Finance
                                                 .OrderBy( s => s.Order ) );
             // pledge information
             var pledges = new FinancialPledgeService( rockContext ).Queryable().AsNoTracking()
-                                .Where( p =>
-                                     p.PersonAlias.Person.GivingId == targetPerson.GivingId
+                                .Where( p => p.PersonAliasId.HasValue && personAliasIds.Contains(p.PersonAliasId.Value)
                                     && ( p.StartDate.Year == statementYear || p.EndDate.Year == statementYear ) )
                                 .GroupBy( p => p.Account )
                                 .Select( g => new PledgeSummary
@@ -404,7 +395,7 @@ namespace RockWeb.Blocks.Finance
                 pledge.AmountGiven = new FinancialTransactionDetailService( rockContext ).Queryable()
                                             .Where( t =>
                                                  t.AccountId == pledge.AccountId
-                                                 && givingGroupIdsOnly.Contains( t.Transaction.AuthorizedPersonAlias.PersonId )
+                                                 && t.Transaction.AuthorizedPersonAliasId.HasValue && personAliasIds.Contains( t.Transaction.AuthorizedPersonAliasId.Value )
                                                  && t.Transaction.TransactionDateTime >= pledge.PledgeStartDate
                                                  && t.Transaction.TransactionDateTime < adjustedPedgeEndDate )
                                             .Sum( t => ( decimal? ) t.Amount ) ?? 0;
