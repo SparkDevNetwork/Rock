@@ -22,6 +22,7 @@ using System.Text.RegularExpressions;
 using DotLiquid;
 using Rock.Data;
 using Rock.Model;
+using Rock.Web.Cache;
 
 namespace Rock.Lava.Blocks
 {
@@ -144,8 +145,6 @@ namespace Rock.Lava.Blocks
             {
                 using ( var rockContext = new RockContext() )
                 {
-                    WorkflowTypeService workflowTypeService = new WorkflowTypeService( rockContext );
-                    WorkflowActivityTypeService workflowActivityTypeService = new WorkflowActivityTypeService( rockContext );
                     WorkflowService workflowService = new WorkflowService( rockContext );
                     Rock.Model.Workflow workflow = null;
                     WorkflowActivity activity = null;
@@ -155,16 +154,16 @@ namespace Rock.Lava.Blocks
                     {
                         string type = parmWorkflowType;
                         string name = parmWorkflowName ?? string.Empty;
-                        WorkflowType workflowType = null;
+                        WorkflowTypeCache workflowType = null;
 
                         /* Get the type of workflow */
                         if ( type.AsGuidOrNull() != null )
                         {
-                            workflowType = workflowTypeService.Get( type.AsGuid() );
+                            workflowType = WorkflowTypeCache.Read( type.AsGuid() );
                         }
                         else if ( type.AsIntegerOrNull() != null )
                         {
-                            workflowType = workflowTypeService.Get( type.AsInteger() );
+                            workflowType = WorkflowTypeCache.Read( type.AsInteger() );
                         }
 
                         /* Try to activate the workflow */
@@ -211,7 +210,7 @@ namespace Rock.Lava.Blocks
                     {
                         string id = parmWorkflowId.ToString();
                         string type = parmActivityType.ToString();
-                        WorkflowActivityType activityType = null;
+                        WorkflowActivityTypeCache activityType = null;
 
                         /* Get the workflow */
                         if ( id.AsGuidOrNull() != null )
@@ -236,11 +235,11 @@ namespace Rock.Lava.Blocks
                                     /* Get the type of activity */
                                     if ( type.AsGuidOrNull() != null )
                                     {
-                                        activityType = workflowActivityTypeService.Get( type.AsGuid() );
+                                        activityType = WorkflowActivityTypeCache.Read( type.AsGuid() );
                                     }
                                     else if ( type.AsIntegerOrNull() != null )
                                     {
-                                        activityType = workflowActivityTypeService.Get( type.AsInteger() );
+                                        activityType = WorkflowActivityTypeCache.Read( type.AsInteger() );
                                     }
 
                                     if ( activityType != null )
@@ -301,6 +300,7 @@ namespace Rock.Lava.Blocks
         /// Parses the markup.
         /// </summary>
         /// <param name="markup">The markup.</param>
+        /// <param name="context">The context.</param>
         /// <returns></returns>
         /// <exception cref="System.Exception">No parameters were found in your command. The syntax for a parameter is parmName:'' (note that you must use single quotes).</exception>
         private Dictionary<string, string> ParseMarkup( string markup, Context context )
