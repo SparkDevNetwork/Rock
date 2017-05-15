@@ -298,6 +298,7 @@ namespace RockWeb.Blocks.Finance
                     qryTransactionsToMatch = qryTransactionsToMatch.Where( a => !historyList.Contains( a.Id ) );
                 }
 
+                // put them in a predictable order
                 qryTransactionsToMatch = qryTransactionsToMatch.OrderBy( a => a.CreatedDateTime ).ThenBy( a => a.Id );
 
                 FinancialTransaction transactionToMatch = qryTransactionsToMatch.FirstOrDefault();
@@ -312,6 +313,9 @@ namespace RockWeb.Blocks.Finance
                     {
                         qryRemainingTransactionsToMatch = qryRemainingTransactionsToMatch.Where( a => a.BatchId == batchId );
                     }
+
+                    // put them in a predictable order
+                    qryRemainingTransactionsToMatch = qryRemainingTransactionsToMatch.OrderBy( a => a.CreatedDateTime ).ThenBy( a => a.Id );
 
                     // get the first transaction that we haven't visited yet, or the next one we have visited after one we are on, or simple the first unmatched one
                     transactionToMatch = qryRemainingTransactionsToMatch.Where( a => a.Id > fromTransactionId && !historyList.Contains( a.Id ) ).FirstOrDefault()
@@ -380,6 +384,10 @@ namespace RockWeb.Blocks.Finance
                     }
 
                     hfTransactionId.Value = transactionToMatch.Id.ToString();
+
+                    // stored the value in cents to avoid javascript floating point math issues
+                    hfOriginalTotalAmount.Value = (transactionToMatch.TotalAmount*100).ToString();
+                    hfCurrencySymbol.Value = GlobalAttributesCache.Value( "CurrencySymbol" );
 
                     // get the first 2 images (should be no more than 2, but just in case)
                     var transactionImages = transactionToMatch.Images.OrderBy( a => a.Order ).Take( 2 ).ToList();
@@ -564,8 +572,8 @@ namespace RockWeb.Blocks.Finance
             var selectedAccountGuidList = new FinancialAccountService( new RockContext() ).GetByIds( selectedAccountIdList ).Select( a => a.Guid ).ToList();
             this.SetUserPreference( keyPrefix + "account-list", selectedAccountGuidList.AsDelimited( "," ) );
 
-            int campusId = cpAccounts.SelectedCampusId ?? 0;
-            this.SetUserPreference( keyPrefix + "account-campus", campusId.ToString() );
+            int? campusId = cpAccounts.SelectedCampusId;
+            this.SetUserPreference( keyPrefix + "account-campus", campusId.HasValue ? campusId.Value.ToString() : "" );
 
             mdAccountsPersonalFilter.Hide();
             LoadDropDowns();
