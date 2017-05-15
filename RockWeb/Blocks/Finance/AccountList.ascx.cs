@@ -37,7 +37,7 @@ namespace RockWeb.Blocks.Finance
     [Category( "Finance" )]
     [Description( "Block for viewing list of financial accounts." )]
     [LinkedPage( "Detail Page" )]
-    public partial class AccountList : RockBlock
+    public partial class AccountList : RockBlock, ISecondaryBlock
     {
         #region Control Methods
 
@@ -159,7 +159,11 @@ namespace RockWeb.Blocks.Finance
                 rockContext.SaveChanges();
             }
 
-            BindGrid();
+            var qryParams = new Dictionary<string, string>();
+            qryParams["AccountId"] = PageParameter( "AccountId" );
+            qryParams["ExpandedIds"] = PageParameter( "ExpandedIds" );
+
+            NavigateToPage( RockPage.Guid, qryParams );
         }
 
         /// <summary>
@@ -344,6 +348,11 @@ namespace RockWeb.Blocks.Finance
                     rGridAccount.Columns.Add( boundField );
                 }
             }
+        }
+
+        public void SetVisible( bool visible )
+        {
+            divDetails.Visible = visible;
         }
 
         #endregion

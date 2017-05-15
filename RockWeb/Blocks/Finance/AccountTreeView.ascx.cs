@@ -307,7 +307,7 @@ namespace RockWeb.Blocks.Finance
 
             var qry = accounts.GetChildren( 0, !tglHideInactiveAccounts.Checked );
 
-            foreach ( var account in qry.OrderBy( g => g.Name ) )
+            foreach ( var account in qry.OrderBy( g => g.Order ).ThenBy( g => g.Name ) )
             {
                 // return first account they are authorized to view
                 if ( account.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
