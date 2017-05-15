@@ -133,6 +133,18 @@ namespace Rock.Model
         [DataMember]
         public bool IsNotified { get; set; }
 
+        /// <summary>
+        /// Gets or sets the order of Groups of the Group's GroupType for the Person.
+        /// For example, if this is a FamilyGroupType, GroupOrder can be used to specify which family should be 
+        /// listed as first (primary), 2nd, etc for the Person.
+        /// If GroupOrder is null, then there is no specific order
+        /// </summary>
+        /// <value>
+        /// The group order.
+        /// </value>
+        [DataMember]
+        public int? GroupOrder { get; set; }
+
         #endregion
 
         #region Virtual Properties

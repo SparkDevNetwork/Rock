@@ -247,7 +247,7 @@ namespace Rock
                     foreach ( var objAttr in objWithAttrs.Attributes )
                     {
                         var attributeCache = objAttr.Value;
-                        string value = attributeCache.FieldType.Field.FormatValue( null, objWithAttrs.GetAttributeValue( attributeCache.Key ), attributeCache.QualifierValues, false );
+                        string value = attributeCache.FieldType.Field.FormatValue( null, attributeCache.EntityTypeId, objWithAttrs.Id, objWithAttrs.GetAttributeValue( attributeCache.Key ), attributeCache.QualifierValues, false );
                         objAttrs.Add( attributeCache.Key, value.Truncate( 50 ).EncodeHtml() );
                     }
 
@@ -548,6 +548,8 @@ namespace Rock
                 Template template = Template.Parse( content );
                 template.Registers.Add( "EnabledCommands", enabledLavaCommands );
 
+                string result;
+
                 if ( encodeStrings )
                 {
                     // if encodeStrings = true, we want any string values to be XML Encoded ( 
@@ -555,13 +557,26 @@ namespace Rock
                     renderParameters.LocalVariables = Hash.FromDictionary( mergeObjects );
                     renderParameters.ValueTypeTransformers = new Dictionary<Type, Func<object, object>>();
                     renderParameters.ValueTypeTransformers[typeof( string )] = EncodeStringTransformer;
-                    return template.Render( renderParameters );
+                    result = template.Render( renderParameters );
                 }
                 else
                 {
-                    return template.Render( Hash.FromDictionary( mergeObjects ) );
+                    result = template.Render( Hash.FromDictionary( mergeObjects ) );
                 }
 
+                if ( throwExceptionOnErrors && template.Errors.Any() )
+                {
+                    if ( template.Errors.Count == 1 )
+                    {
+                        throw template.Errors[0];
+                    }
+                    else
+                    {
+                        throw new AggregateException( template.Errors );
+                    }
+                }
+
+                return result;
             }
             catch ( Exception ex )
             {
