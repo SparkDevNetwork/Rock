@@ -69,16 +69,26 @@ namespace Rock.Field.Types
         {
             var controls = base.ConfigurationControls();
 
-            var textbox = new RockTextBox();
-            controls.Add( textbox );
-            textbox.Label = "Date Format";
-            textbox.Help = "The format string to use for date (default is system short date).";
+            var tbDateFormat = new RockTextBox();
+            controls.Add( tbDateFormat );
+            tbDateFormat.Label = "Date Format";
+            tbDateFormat.Help = "The format string to use for date (default is system short date).";
 
             var cbDisplayDiff = new RockCheckBox();
             controls.Add( cbDisplayDiff );
             cbDisplayDiff.Label = "Display as Elapsed Time";
             cbDisplayDiff.Text = "Yes";
             cbDisplayDiff.Help = "Display value as an elapsed time.";
+
+            var ddlDatePickerMode = new RockDropDownList();
+            controls.Add( ddlDatePickerMode );
+            ddlDatePickerMode.Items.Clear();
+            ddlDatePickerMode.Items.Add( new ListItem( "Date Picker", DatePickerControlType.DatePicker.ConvertToString() ) );
+            ddlDatePickerMode.Items.Add( new ListItem( "Date Parts Picker", DatePickerControlType.DatePartsPicker.ConvertToString() ) );
+            ddlDatePickerMode.Label = "Control Type";
+            ddlDatePickerMode.Help = "Select 'Date Picker' to use a DatePicker, or 'Date Parts Picker' to select Month, Day and Year individually";
+            ddlDatePickerMode.AutoPostBack = true;
+            ddlDatePickerMode.SelectedIndexChanged += OnQualifierUpdated;
 
             var cbDisplayCurrent = new RockCheckBox();
             controls.Add( cbDisplayCurrent );
@@ -87,16 +97,6 @@ namespace Rock.Field.Types
             cbDisplayCurrent.Label = "Display Current Option";
             cbDisplayCurrent.Text = "Yes";
             cbDisplayCurrent.Help = "Include option to specify value as the current date.";
-
-            var ddlDatePickerMode = new RockDropDownList();
-            controls.Add( ddlDatePickerMode );
-            ddlDatePickerMode.Items.Clear();
-            ddlDatePickerMode.Items.Add( new ListItem( "Date", DatePickerControlType.DatePicker.ConvertToString() ) );
-            ddlDatePickerMode.Items.Add( new ListItem( "Month,Day,Year", DatePickerControlType.DatePartsPicker.ConvertToString() ) );
-            ddlDatePickerMode.Label = "DatePicker Control Type";
-            ddlDatePickerMode.Help = "Select 'Date' to use a DatePicker, or 'Month,Day,Year' to select Month, Day and Year individually";
-            ddlDatePickerMode.AutoPostBack = true;
-            ddlDatePickerMode.SelectedIndexChanged += OnQualifierUpdated;
 
             return controls;
         }
@@ -110,30 +110,37 @@ namespace Rock.Field.Types
         {
             base.SetConfigurationValues( controls, configurationValues );
 
-            if ( controls != null )
+            if ( controls != null && controls.Count > 3 )
             {
-                if ( controls.Count > 0 && controls[0] != null && controls[0] is TextBox &&
-                    configurationValues.ContainsKey( "format" ) )
+                var tbDateFormat = controls[0] as RockTextBox;
+                var cbDisplayDiff = controls[1] as RockCheckBox;
+                var ddlDatePickerMode = controls[2] as RockDropDownList;
+                var cbDisplayCurrent = controls[3] as RockCheckBox;
+
+                if ( configurationValues.ContainsKey( "format" ) && tbDateFormat != null )
                 {
-                    ( (TextBox)controls[0] ).Text = configurationValues["format"].Value ?? string.Empty;
+                    tbDateFormat.Text = configurationValues["format"].Value ?? string.Empty;
                 }
 
-                if ( controls.Count > 1 && controls[1] != null && controls[1] is CheckBox &&
-                    configurationValues.ContainsKey( "displayDiff" ) )
+                if ( configurationValues.ContainsKey( "displayDiff" ) && cbDisplayDiff != null )
                 {
-                    ( (CheckBox)controls[1] ).Checked = configurationValues["displayDiff"].Value.AsBoolean( false );
+                    cbDisplayDiff.Checked = configurationValues["displayDiff"].Value.AsBoolean( false );
                 }
 
-                if ( controls.Count > 2 && controls[2] != null && controls[2] is CheckBox &&
-                    configurationValues.ContainsKey( "displayCurrentOption" ) )
+                DatePickerControlType datePickerControlType = DatePickerControlType.DatePicker;
+
+                if ( configurationValues.ContainsKey( "datePickerControlType" ) && ddlDatePickerMode != null )
                 {
-                    ( (CheckBox)controls[2] ).Checked = configurationValues["displayCurrentOption"].Value.AsBoolean( false );
+                    ddlDatePickerMode.SetValue( configurationValues["datePickerControlType"].Value );
+                    datePickerControlType = configurationValues["datePickerControlType"].Value.ConvertToEnumOrNull<DatePickerControlType>() ?? DatePickerControlType.DatePicker;
                 }
 
-                if ( controls.Count > 3 && controls[3] != null && controls[3] is DropDownList &&
-                    configurationValues.ContainsKey( "datePickerControlType" ) )
+                if ( configurationValues.ContainsKey( "displayCurrentOption" ) && cbDisplayCurrent != null )
                 {
-                    ( ( DropDownList ) controls[3] ).SetValue( configurationValues["datePickerControlType"].Value );
+                    cbDisplayCurrent.Checked = configurationValues["displayCurrentOption"].Value.AsBoolean( false );
+
+                    // only support the 'Use Current' option of they are using the DatePicker
+                    cbDisplayCurrent.Visible = datePickerControlType == DatePickerControlType.DatePicker;
                 }
             }
         }
@@ -149,29 +156,19 @@ namespace Rock.Field.Types
             values.Add( "format", new ConfigurationValue( "Date Format", "The format string to use for date (default is system short date).", "" ) );
             values.Add( "displayDiff", new ConfigurationValue( "Display as Elapsed Time", "Display value as an elapsed time.", "False" ) );
             values.Add( "displayCurrentOption", new ConfigurationValue( "Display Current Option", "Include option to specify value as the current date.", "False" ) );
-            values.Add( "datePickerControlType", new ConfigurationValue( "DatePicker Control Type", "Select 'Date' to use a DatePicker, or 'Month,Day,Year' to select Month, Day and Year individually", DatePickerControlType.DatePicker.ConvertToString() ) );
+            values.Add( "datePickerControlType", new ConfigurationValue( "Control Type", "Select 'Date' to use a DatePicker, or 'Month,Day,Year' to select Month, Day and Year individually", DatePickerControlType.DatePicker.ConvertToString() ) );
 
-            if ( controls != null )
+            if ( controls != null && controls.Count > 3 )
             {
-                if ( controls.Count > 0 && controls[0] != null && controls[0] is TextBox )
-                {
-                    values["format"].Value = ( (TextBox)controls[0] ).Text;
-                }
+                var tbDateFormat = controls[0] as RockTextBox;
+                var cbDisplayDiff = controls[1] as RockCheckBox;
+                var ddlDatePickerMode = controls[2] as RockDropDownList;
+                var cbDisplayCurrent = controls[3] as RockCheckBox;
 
-                if ( controls.Count > 1 && controls[1] != null && controls[1] is CheckBox )
-                {
-                    values["displayDiff"].Value = ( (CheckBox)controls[1] ).Checked.ToString();
-                }
-
-                if ( controls.Count > 2 && controls[2] != null && controls[2] is CheckBox )
-                {
-                    values["displayCurrentOption"].Value = ( (CheckBox)controls[2] ).Checked.ToString();
-                }
-
-                if ( controls.Count > 3 && controls[3] != null && controls[3] is DropDownList )
-                {
-                    values["datePickerControlType"].Value = ( ( DropDownList ) controls[3] ).SelectedValue;
-                }
+                values["format"].Value = tbDateFormat.Text;
+                values["displayDiff"].Value = cbDisplayDiff.Checked.ToString();
+                values["displayCurrentOption"].Value = cbDisplayCurrent.Checked.ToString();
+                values["datePickerControlType"].Value = ddlDatePickerMode.SelectedValue;
             }
 
             return values;

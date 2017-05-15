@@ -22,6 +22,7 @@
         var yearNumber = Number($datePartsPicker.find('.js-year').val());
         var requireYear = $datePartsPicker.attr('data-requireyear') == 'true';
         var allowFuture = $datePartsPicker.attr('data-allowFuture') == 'true';
+        var itemLabelText = $datePartsPicker.attr('data-itemlabel');
         
         var isValid = true;
 
@@ -33,6 +34,7 @@
             var now = new Date();
             if (bDate > now) {
               isValid = false;
+              validator.errormessage = itemLabelText + ' cannot be a future date.'
             }
           }
         }
@@ -44,6 +46,7 @@
           else if (monthNumber || dayNumber || yearNumber) {
             // at least one of them is set, but some are not, so it is invalid
             isValid = false;
+            validator.errormessage = itemLabelText + ' must be a valid value.';
           }
         }
 

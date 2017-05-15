@@ -285,6 +285,47 @@ namespace Rock.Web.UI.Controls
             }
         }
 
+        /// <summary>
+        /// Gets or sets how many years from now that the Max Year cutoff is
+        /// If left blank, this will default to 50
+        /// NOTE: This only applies when AllowFutureDates == True
+        /// </summary>
+        /// <value>
+        /// The future year count.
+        /// </value>
+        public int FutureYearCount
+        {
+            get
+            {
+                return ViewState["FutureYearCount"] as int? ?? 50;
+            }
+
+            set
+            {
+                ViewState["FutureYearCount"] = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the start year.
+        /// If left blank, this will default to 1900
+        /// </summary>
+        /// <value>
+        /// The start year.
+        /// </value>
+        public int StartYear
+        {
+            get
+            {
+                return ViewState["StartYear"] as int? ?? 1900;
+            }
+
+            set
+            {
+                ViewState["StartYear"] = value;
+            }
+        }
+
         private DropDownList monthDropDownList;
         private DropDownList dayDropDownList;
         private DropDownList yearDropDownList;
@@ -390,8 +431,9 @@ namespace Rock.Web.UI.Controls
 
             yearDropDownList.Items.Clear();
             yearDropDownList.Items.Add( new ListItem( string.Empty, string.Empty ) );
-            var startYear = this.AllowFutureDates ? RockDateTime.Now.AddYears( 100 ).Year : RockDateTime.Now.Year;
-            for ( int year = startYear; year >= 1900; year-- )
+            var maxYear = this.AllowFutureDates ? RockDateTime.Now.AddYears( this.FutureYearCount ).Year : RockDateTime.Now.Year;
+            var minYear = this.StartYear;
+            for ( int year = maxYear; year >= minYear; year-- )
             {
                 yearDropDownList.Items.Add( new ListItem( year.ToString(), year.ToString() ) );
             }
@@ -431,6 +473,7 @@ namespace Rock.Web.UI.Controls
 
             writer.AddAttribute( "data-requireyear", this.RequireYear.ToTrueFalse().ToLower());
             writer.AddAttribute( "data-allowFuture", this.AllowFutureDates.ToTrueFalse().ToLower() );
+            writer.AddAttribute( "data-itemlabel", this.Label );
 
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
