@@ -44,7 +44,7 @@ namespace RockWeb.Blocks.Finance
         {
             base.OnLoad( e );
 
-            var accountId = PageParameter("accountId").AsInteger();
+            var accountId = PageParameter( "accountId" ).AsInteger();
             if ( !Page.IsPostBack )
             {
                 ShowDetail( accountId );
@@ -52,14 +52,14 @@ namespace RockWeb.Blocks.Finance
 
             // Add any attribute controls. 
             // This must be done here regardless of whether it is a postback so that the attribute values will get saved.
-            var account = new FinancialAccountService(new RockContext()).Get(accountId);
-            if (account == null)
+            var account = new FinancialAccountService( new RockContext() ).Get( accountId );
+            if ( account == null )
             {
                 account = new FinancialAccount();
             }
             account.LoadAttributes();
             phAttributes.Controls.Clear();
-            Helper.AddEditControls(account, phAttributes, true, BlockValidationGroup);
+            Helper.AddEditControls( account, phAttributes, true, BlockValidationGroup );
         }
 
         #endregion
@@ -141,6 +141,18 @@ namespace RockWeb.Blocks.Finance
             NavigateToParentPage();
         }
 
+        /// <summary>
+        /// Handles the Click event of the btnEdit control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
+        protected void btnEdit_Click( object sender, EventArgs e )
+        {
+            FinancialAccountService service = new FinancialAccountService( new RockContext() );
+            FinancialAccount account = service.Get( hfAccountId.ValueAsInt() );
+            ShowEditDetails( account );
+        }
+
         #endregion
 
         #region Internal Methods
@@ -164,7 +176,16 @@ namespace RockWeb.Blocks.Finance
 
             if ( account == null )
             {
-                account = new FinancialAccount { Id = 0, IsActive = true };
+                int? parentAccountId = PageParameter( "ParentAccountId" ).AsIntegerOrNull();
+                account = new FinancialAccount { Id = 0, ParentAccountId = parentAccountId, IsActive = true };
+                if ( parentAccountId.HasValue )
+                {
+                    var parentAccount = new FinancialAccountService( new RockContext() ).Get( parentAccountId.Value );
+                    if ( parentAccount != null )
+                    {
+                        account.ParentAccount = parentAccount;
+                    }
+                }
                 // hide the panel drawer that show created and last modified dates
                 pdAuditDetails.Visible = false;
             }
@@ -172,15 +193,27 @@ namespace RockWeb.Blocks.Finance
             hfAccountId.Value = account.Id.ToString();
 
             nbEditModeMessage.Text = string.Empty;
-            if (editAllowed)
+
+            if ( !editAllowed )
             {
-                ShowEditDetails(account);
+                btnEdit.Visible = false;
+                ShowReadonlyDetails( account );
+                nbEditModeMessage.Text = EditModeMessage.ReadOnlyEditActionNotAllowed( FinancialAccount.FriendlyTypeName );
             }
             else
             {
-                nbEditModeMessage.Text = EditModeMessage.ReadOnlyEditActionNotAllowed(FinancialAccount.FriendlyTypeName);
-                ShowReadonlyDetails(account);
+                btnEdit.Visible = true;
+
+                if ( account.Id > 0 )
+                {
+                    ShowReadonlyDetails( account );
+                }
+                else
+                {
+                    ShowEditDetails( account );
+                }
             }
+
         }
 
         /// <summary>
@@ -238,9 +271,14 @@ namespace RockWeb.Blocks.Finance
             hlInactive.Visible = !account.IsActive;
             lAccountDescription.Text = account.Description;
 
-            DescriptionList descriptionList = new DescriptionList();
-            descriptionList.Add( string.Empty, string.Empty );
-            lblMainDetails.Text = descriptionList.Html;
+            DescriptionList leftDescription = new DescriptionList();
+            leftDescription.Add( "Public Name", account.PublicName );
+            leftDescription.Add( "Campus", account.Campus != null ? account.Campus.Name : string.Empty );
+            leftDescription.Add( "GLCode", account.GlCode );
+            leftDescription.Add( "Is Tax Deductible", account.IsTaxDeductible );
+            lLeftDetails.Text = leftDescription.Html;
+            account.LoadAttributes();
+            Helper.AddDisplayControls( account, Helper.GetAttributeCategories( account, true, false ), lRightDetails, null, false );
         }
 
         /// <summary>
