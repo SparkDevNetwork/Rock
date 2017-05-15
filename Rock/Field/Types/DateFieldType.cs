@@ -382,6 +382,31 @@ namespace Rock.Field.Types
         #region Filter Control
 
         /// <summary>
+        /// Gets the filter compare control with the specified FilterMode
+        /// </summary>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="id">The identifier.</param>
+        /// <param name="required">if set to <c>true</c> [required].</param>
+        /// <param name="filterMode">The filter mode.</param>
+        /// <returns></returns>
+        public override Control FilterCompareControl( Dictionary<string, ConfigurationValue> configurationValues, string id, bool required, FilterMode filterMode )
+        {
+            var ddlCompare = base.FilterCompareControl( configurationValues, id, required, filterMode );
+
+            if ( ddlCompare is DropDownList )
+            {
+                var liBetween = ( ddlCompare as DropDownList ).Items.FindByValue( ComparisonType.Between.ConvertToInt().ToString() );
+                if ( liBetween != null )
+                {
+                    // in the case of a 'between' comparison, change it to say 'range' since we use a sliding date range control to do the 'between' for dates
+                    liBetween.Text = "Range";
+                }
+            }
+
+            return ddlCompare;
+        }
+
+        /// <summary>
         /// Gets the type of the filter comparison.
         /// </summary>
         /// <value>
