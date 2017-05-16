@@ -102,6 +102,7 @@ namespace RockWeb.Blocks.Core
             }
 
             schedule.Name = tbScheduleName.Text;
+            schedule.IsActive = cbIsActive.Checked;
             schedule.Description = tbScheduleDescription.Text;
             schedule.iCalendarContent = sbSchedule.iCalendarContent;
 
@@ -380,6 +381,7 @@ namespace RockWeb.Blocks.Core
             SetEditMode( true );
 
             tbScheduleName.Text = schedule.Name;
+            cbIsActive.Checked = schedule.IsActive;
             tbScheduleDescription.Text = schedule.Description;
 
             sbSchedule.iCalendarContent = schedule.iCalendarContent;
@@ -400,6 +402,7 @@ namespace RockWeb.Blocks.Core
             SetEditMode( false );
             hfScheduleId.SetValue( schedule.Id );
             lReadOnlyTitle.Text = schedule.Name.FormatAsHtmlTitle();
+            hlInactive.Visible = schedule.IsActive == false;
 
             string occurrenceText = string.Empty;
             var occurrences = schedule.GetOccurrences( RockDateTime.Now, RockDateTime.Now.AddYears( 1 ) );
@@ -443,7 +446,7 @@ namespace RockWeb.Blocks.Core
             DescriptionList descriptionList = new DescriptionList()
                 .Add( "Description", schedule.Description ?? string.Empty )
                 .Add( "Schedule", friendlyText )
-                .Add( "Next Occurrence", occurrenceText )
+                .Add( "Next Occurrence", schedule.NextStartDateTime )
                 .Add( "Category", schedule.Category != null ? schedule.Category.Name : string.Empty );
 
             if ( schedule.CheckInStartOffsetMinutes.HasValue )

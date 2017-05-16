@@ -165,9 +165,9 @@ namespace Rock.Lava.Blocks
                     }
 
                     context.Scopes.Last()[parms["return"]] = responseData;
-                } catch(Exception ex )
+                } catch
                 {
-                    result.Write( string.Format("An error occurred: {0}", ex.Message ) );
+                    throw;
                 }
 
                 context.Scopes.Last()[parms["return"]] = responseData;
