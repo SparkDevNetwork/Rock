@@ -150,13 +150,16 @@ namespace Rock.Model
 
                         if ( document == null )
                         {
-                            document = new SignatureDocument();
-                            document.SignatureDocumentTemplate = signatureDocumentTemplate;
-                            document.SignatureDocumentTemplateId = signatureDocumentTemplate.Id;
-                            document.Name = documentName;
-                            document.AppliesToPersonAliasId = appliesToPerson.PrimaryAliasId;
-                            document.AssignedToPersonAliasId = assignedToPerson.PrimaryAliasId;
-                            documentService.Add( document );
+                             //Recreate SignatureDocumentTemplate as the object passed in the parameter is used in a different context.
+                            SignatureDocumentTemplate thisSignatureDocumentTemplate = new SignatureDocumentTemplate();
+                            thisSignatureDocumentTemplate.Name = signatureDocumentTemplate.Name;
+                            thisSignatureDocumentTemplate.Description = signatureDocumentTemplate.Description;
+                            thisSignatureDocumentTemplate.ProviderEntityTypeId = signatureDocumentTemplate.ProviderEntityTypeId;
+                            thisSignatureDocumentTemplate.ProviderTemplateKey = signatureDocumentTemplate.ProviderTemplateKey;
+                            thisSignatureDocumentTemplate.BinaryFileTypeId = signatureDocumentTemplate.BinaryFileTypeId;
+                            thisSignatureDocumentTemplate.InviteSystemEmailId = signatureDocumentTemplate.InviteSystemEmailId;
+                            int? appliestoPersonId = appliesToPerson.PrimaryAliasId;
+                            int? assignedToPersonId = assignedToPerson.PrimaryAliasId;
                         }
 
                         if ( !sendErrors.Any() )
