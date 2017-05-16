@@ -45,6 +45,14 @@ namespace Rock.Workflow.Action
         new string[] { "Rock.Field.Types.PersonFieldType", "Rock.Field.Types.GroupFieldType" } )]
     public class PersonFollowAdd : ActionComponent
     {
+        /// <summary>
+        /// Executes the action.
+        /// </summary>
+        /// <param name="rockContext">The rock context.</param>
+        /// <param name="action">The workflow action.</param>
+        /// <param name="entity">The entity.</param>
+        /// <param name="errorMessages">The error messages.</param>
+        /// <returns></returns>
         public override bool Execute( RockContext rockContext, WorkflowAction action, object entity, out List<string> errorMessages )
         {
             errorMessages = new List<string>();

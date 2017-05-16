@@ -275,6 +275,11 @@ namespace Rock.SystemGuid
         /// </summary>
         public const string METRIC_SOURCE_VALUE_TYPE_SQL = "6A1E1A1B-A636-4E12-B90C-D7FD1BDAE764";
 
+        /// <summary>
+        /// Metric values are populated from custom Lava
+        /// </summary>
+        public const string METRIC_SOURCE_VALUE_TYPE_LAVA = "2868A3E8-4632-4966-84CD-EDB8B775D66C";
+
         #endregion
 
         #region Person Marital Status

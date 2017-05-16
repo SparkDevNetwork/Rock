@@ -383,11 +383,11 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                         {
                             if ( attribute.FieldType.Class == typeof(Rock.Field.Types.ImageFieldType).FullName )
                             {
-                                formattedValue = attribute.FieldType.Field.FormatValueAsHtml( fsAttributes, attributeValue, attribute.QualifierValues, true );
+                                formattedValue = attribute.FieldType.Field.FormatValueAsHtml( fsAttributes, attribute.EntityTypeId, Person.Id, attributeValue, attribute.QualifierValues, true );
                             }
                             else
                             {
-                                formattedValue = attribute.FieldType.Field.FormatValueAsHtml( fsAttributes, attributeValue, attribute.QualifierValues, false );
+                                formattedValue = attribute.FieldType.Field.FormatValueAsHtml( fsAttributes, attribute.EntityTypeId, Person.Id, attributeValue, attribute.QualifierValues, false );
                             }
                             
                             if ( !string.IsNullOrWhiteSpace( formattedValue ) )

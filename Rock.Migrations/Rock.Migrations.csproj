@@ -218,9 +218,9 @@
     <Compile Include="Migrations\201705051826156_SiteBlocks.Designer.cs">
       <DependentUpon>201705051826156_SiteBlocks.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201705122047398_GroupMemberGroupOrder.cs" />
-    <Compile Include="Migrations\201705122047398_GroupMemberGroupOrder.Designer.cs">
-      <DependentUpon>201705122047398_GroupMemberGroupOrder.cs</DependentUpon>
+    <Compile Include="Migrations\201705122302485_GroupMemberGroupOrder.cs" />
+    <Compile Include="Migrations\201705122302485_GroupMemberGroupOrder.Designer.cs">
+      <DependentUpon>201705122302485_GroupMemberGroupOrder.cs</DependentUpon>
     </Compile>
     <Compile Include="Migrations\Version 6.0\Version 1.6.0\201609282147388_WaitList.cs" />
     <Compile Include="Migrations\Version 6.0\Version 1.6.0\201609282147388_WaitList.Designer.cs">
@@ -2536,8 +2536,8 @@
     <EmbeddedResource Include="Migrations\201705051826156_SiteBlocks.resx">
       <DependentUpon>201705051826156_SiteBlocks.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201705122047398_GroupMemberGroupOrder.resx">
-      <DependentUpon>201705122047398_GroupMemberGroupOrder.cs</DependentUpon>
+    <EmbeddedResource Include="Migrations\201705122302485_GroupMemberGroupOrder.resx">
+      <DependentUpon>201705122302485_GroupMemberGroupOrder.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 6.0\Version 1.6.0\201609282147388_WaitList.resx">
       <DependentUpon>201609282147388_WaitList.cs</DependentUpon>

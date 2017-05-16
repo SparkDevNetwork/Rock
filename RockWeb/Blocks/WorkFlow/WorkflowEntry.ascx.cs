@@ -570,11 +570,11 @@ namespace RockWeb.Blocks.WorkFlow
                         // get formatted value 
                         if ( attribute.FieldType.Class == typeof( Rock.Field.Types.ImageFieldType ).FullName )
                         {
-                            formattedValue = attribute.FieldType.Field.FormatValueAsHtml( phAttributes, value, attribute.QualifierValues, true );
+                            formattedValue = attribute.FieldType.Field.FormatValueAsHtml( phAttributes, attribute.EntityTypeId, _activity.Id, value, attribute.QualifierValues, true );
                         }
                         else
                         {
-                            formattedValue = field.FormatValueAsHtml( phAttributes, value, attribute.QualifierValues );
+                            formattedValue = field.FormatValueAsHtml( phAttributes, attribute.EntityTypeId, _activity.Id, value, attribute.QualifierValues );
                         }
 
                         if ( formAttribute.HideLabel )
