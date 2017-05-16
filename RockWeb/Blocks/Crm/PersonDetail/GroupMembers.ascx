@@ -8,7 +8,8 @@
             <asp:Repeater ID="rptrGroups" runat="server" >
             <ItemTemplate>
 
-                <div class="persondetails-group js-persondetails-group">
+                <asp:Panel ID="pnlGroup" runat="server" CssClass="persondetails-group js-persondetails-group panel-widget">
+                    <asp:HiddenField ID="hfGroupId" runat="server" Value='<%# Eval("Id") %>' />
                     <header>
                         <a id="lReorderIcon" runat="server" class="btn btn-link btn-xs panel-widget-reorder pull-left js-stop-immediate-propagation"><i class="fa fa-bars"></i></a>
                         <h1><%# FormatAsHtmlTitle(Eval("Name").ToString()) %></h1>
@@ -79,7 +80,7 @@
 
                     <asp:Literal ID="lGroupFooter" runat="server" />
 
-                </div>
+                </asp:Panel>
 
             </ItemTemplate>
         </asp:Repeater>
