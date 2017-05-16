@@ -30,6 +30,7 @@ namespace Rock.Model
     /// <summary>
     /// Represents a financial transaction in Rock.
     /// </summary>
+    [RockDomain( "Finance" )]
     [Table( "FinancialTransaction" )]
     [DataContract]
     public partial class FinancialTransaction : Model<FinancialTransaction>, IAnalytic

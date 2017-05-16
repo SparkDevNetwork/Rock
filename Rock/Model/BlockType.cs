@@ -29,6 +29,7 @@ namespace Rock.Model
     /// Represents a a configurable and functional component or module that extends the base functionality of the Rock system/framework. A
     /// BlockType can be implemented one or more <see cref="Page">Pages</see> or <see cref="Layout">Layouts</see>.
     /// </summary>
+    [RockDomain( "Core" )]
     [Table( "BlockType" )]
     [DataContract]
     public partial class BlockType : Model<BlockType>

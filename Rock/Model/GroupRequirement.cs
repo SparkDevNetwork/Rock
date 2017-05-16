@@ -29,6 +29,7 @@ namespace Rock.Model
     /// <summary>
     /// 
     /// </summary>
+    [RockDomain( "Group" )]
     [Table( "GroupRequirement" )]
     [DataContract]
     public partial class GroupRequirement : Model<GroupRequirement>

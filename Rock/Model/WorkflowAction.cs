@@ -30,6 +30,7 @@ namespace Rock.Model
     /// <summary>
     /// Represents a persisted WorkflowAction in Rock.
     /// </summary>
+    [RockDomain( "Workflow" )]
     [Table( "WorkflowAction" )]
     [DataContract]
     public partial class WorkflowAction : Model<WorkflowAction>
