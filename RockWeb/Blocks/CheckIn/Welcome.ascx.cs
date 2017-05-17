@@ -90,10 +90,12 @@ namespace RockWeb.Blocks.CheckIn
                 SaveState();
                 RefreshView();
 
-                if ( !string.IsNullOrWhiteSpace( GetAttributeValue( "CheckinButtonText" ) ) )
+                string btnText = GetAttributeValue( "CheckinButtonText" );
+                if ( string.IsNullOrWhiteSpace( btnText ) )
                 {
-                    lbSearch.Text = string.Format("<span>{0}</span>", GetAttributeValue( "CheckinButtonText" ));
+                    btnText = CurrentCheckInState.CheckInType.AllowCheckout ? "Start" : "Check In";
                 }
+                lbSearch.Text = string.Format( "<span>{0}</span>", btnText );
             }
         }
 
