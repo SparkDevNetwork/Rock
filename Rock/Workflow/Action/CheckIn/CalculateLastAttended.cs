@@ -52,6 +52,18 @@ namespace Rock.Workflow.Action.CheckIn
                 DateTime sixMonthsAgo = RockDateTime.Today.AddMonths( -6 );
                 var attendanceService = new AttendanceService( rockContext );
 
+                var activeScheduleIds = new List<int>();
+                foreach ( var schedule in new ScheduleService( rockContext )
+                    .Queryable().AsNoTracking()
+                    .Where( s => s.CheckInStartOffsetMinutes.HasValue )
+                    .ToList() )
+                {
+                    if ( schedule.IsScheduleOrCheckInActive )
+                    {
+                        activeScheduleIds.Add( schedule.Id );
+                    }
+                }
+
                 foreach ( var family in checkInState.CheckIn.GetFamilies( true ) )
                 {
                     foreach ( var person in family.People )
@@ -68,10 +80,14 @@ namespace Rock.Workflow.Action.CheckIn
                                 .Where( a =>
                                     a.PersonAlias.PersonId == person.Person.Id &&
                                     a.Group.GroupTypeId == groupType.GroupType.Id &&
-                                    a.StartDateTime >= sixMonthsAgo )
+                                    a.StartDateTime >= sixMonthsAgo &&
+                                    a.DidAttend.HasValue &&
+                                    a.DidAttend.Value == true )
                                 .Select( a => new
                                 {
+                                    a.Id,
                                     a.StartDateTime,
+                                    a.EndDateTime,
                                     a.GroupId,
                                     a.LocationId,
                                     a.ScheduleId
@@ -81,29 +97,46 @@ namespace Rock.Workflow.Action.CheckIn
                             if ( groupTypeCheckIns.Any() )
                             {
                                 groupType.LastCheckIn = groupTypeCheckIns.Select( a => a.StartDateTime ).Max();
-
                                 foreach ( var group in groupType.Groups )
                                 {
                                     var groupCheckIns = groupTypeCheckIns.Where( a => a.GroupId == group.Group.Id ).ToList();
                                     if ( groupCheckIns.Any() )
                                     {
                                         group.LastCheckIn = groupCheckIns.Select( a => a.StartDateTime ).Max();
-                                    }
-
-                                    foreach ( var location in group.Locations )
-                                    {
-                                        var locationCheckIns = groupCheckIns.Where( a => a.LocationId == location.Location.Id ).ToList();
-                                        if ( locationCheckIns.Any() )
+                                        foreach ( var location in group.Locations )
                                         {
-                                            location.LastCheckIn = locationCheckIns.Select( a => a.StartDateTime ).Max();
-                                        }
-
-                                        foreach ( var schedule in location.Schedules )
-                                        {
-                                            var scheduleCheckIns = locationCheckIns.Where( a => a.ScheduleId == schedule.Schedule.Id ).ToList();
-                                            if ( scheduleCheckIns.Any() )
+                                            var locationCheckIns = groupCheckIns.Where( a => a.LocationId == location.Location.Id ).ToList();
+                                            if ( locationCheckIns.Any() )
                                             {
-                                                schedule.LastCheckIn = scheduleCheckIns.Select( a => a.StartDateTime ).Max();
+                                                location.LastCheckIn = locationCheckIns.Select( a => a.StartDateTime ).Max();
+                                                foreach ( var schedule in location.Schedules )
+                                                {
+                                                    var scheduleCheckIns = locationCheckIns.Where( a => a.ScheduleId == schedule.Schedule.Id ).ToList();
+                                                    if ( scheduleCheckIns.Any() )
+                                                    {
+                                                        schedule.LastCheckIn = scheduleCheckIns.Select( a => a.StartDateTime ).Max();
+                                                    }
+                                                }
+
+                                                var activeAttendanceIds = locationCheckIns
+                                                    .Where( a =>
+                                                        a.StartDateTime > DateTime.Today &&
+                                                        activeScheduleIds.Contains( a.ScheduleId.Value ) &&
+                                                        !a.EndDateTime.HasValue )
+                                                    .Select( a => a.Id )
+                                                    .ToList();
+                                                if ( activeAttendanceIds.Any() )
+                                                {
+                                                    var checkOutPerson = family.CheckOutPeople.FirstOrDefault( p => p.Person.Id == person.Person.Id );
+                                                    if ( checkOutPerson == null )
+                                                    {
+                                                        checkOutPerson = new Rock.CheckIn.CheckOutPerson();
+                                                        checkOutPerson.Person = person.Person;
+                                                        family.CheckOutPeople.Add( checkOutPerson );
+                                                    }
+                                                    checkOutPerson.AttendanceIds.AddRange( activeAttendanceIds );
+                                                }
+
                                             }
                                         }
                                     }

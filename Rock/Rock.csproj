@@ -335,6 +335,7 @@
     <Compile Include="CheckIn\CheckInGroupType.cs" />
     <Compile Include="CheckIn\CheckInLabel.cs" />
     <Compile Include="CheckIn\CheckInLocation.cs" />
+    <Compile Include="CheckIn\CheckOutPerson.cs" />
     <Compile Include="CheckIn\CheckInPerson.cs" />
     <Compile Include="CheckIn\CheckInSchedule.cs" />
     <Compile Include="CheckIn\CheckInState.cs" />
@@ -971,6 +972,7 @@
     <Compile Include="Plugin\HotFixes\004_FixGradeRequiredAttribute.cs" />
     <Compile Include="Plugin\HotFixes\005_FixCheckinAdminRoute.cs" />
     <Compile Include="Plugin\HotFixes\006_FixCheckinPrevPages.cs" />
+    <Compile Include="Plugin\HotFixes\027_CheckinSettings.cs" />
     <Compile Include="Plugin\HotFixes\023_SecurityCodeLength.cs" />
     <Compile Include="Plugin\HotFixes\022_Fundraising.cs" />
     <Compile Include="Plugin\HotFixes\017_FixBackgroundCheckOptionalCampus.cs" />
@@ -1525,6 +1527,7 @@
     <Compile Include="Workflow\Action\BackgroundCheck\BackgroundCheckRequest.cs" />
     <Compile Include="Workflow\Action\CheckIn\CalculateLastAttended.cs" />
     <Compile Include="Workflow\Action\CheckIn\CheckInActionComponent.cs" />
+    <Compile Include="Workflow\Action\CheckIn\CreateCheckoutLabels.cs" />
     <Compile Include="Workflow\Action\CheckIn\CreateLabels.cs" />
     <Compile Include="Workflow\Action\CheckIn\FilterActiveLocations.cs" />
     <Compile Include="Workflow\Action\CheckIn\FilterByAge.cs" />

@@ -28,24 +28,18 @@ using Rock.Model;
 
 namespace RockWeb.Blocks.CheckIn
 {
-    [DisplayName("Person Select (Family Check-in)")]
+    [DisplayName("Check Out Person Select")]
     [Category("Check-in")]
-    [Description("Lists people who match the selected family and provides option of selecting multiple.")]
-    public partial class MultiPersonSelect : CheckInBlock
+    [Description("Lists people who match the selected family and provides option of selecting multiple people to check-out.")]
+    public partial class CheckOutPersonSelect : CheckInBlock
     {
         bool _hidePhotos = false;
-        bool _autoCheckin = false;
 
-        /// <summary>
-        /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
-        /// </summary>
-        /// <param name="e">An <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnInit( EventArgs e )
         {
             base.OnInit( e );
 
             rSelection.ItemDataBound += rSelection_ItemDataBound;
-            rSelection.ItemCommand += RSelection_ItemCommand;
 
             string script = string.Format( @"
         function GetPersonSelection() {{
@@ -74,10 +68,6 @@ namespace RockWeb.Blocks.CheckIn
             ScriptManager.RegisterStartupScript( Page, Page.GetType(), "SelectPerson", script, true );
         }
 
-        /// <summary>
-        /// Raises the <see cref="E:System.Web.UI.Control.Load" /> event.
-        /// </summary>
-        /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
             base.OnLoad( e );
@@ -88,7 +78,7 @@ namespace RockWeb.Blocks.CheckIn
             var bodyTag = this.Page.Master.FindControl( "bodyTag" ) as HtmlGenericControl;
             if ( bodyTag != null )
             {
-                bodyTag.AddCssClass( "checkin-multipersonselect-bg" );
+                bodyTag.AddCssClass( "checkin-checkoutpersonselect-bg" );
             }
 
             if ( CurrentWorkflow == null || CurrentCheckInState == null )
@@ -97,9 +87,6 @@ namespace RockWeb.Blocks.CheckIn
             }
             else
             {
-                _autoCheckin = CurrentCheckInState.CheckInType.AutoSelectOptions.HasValue && CurrentCheckInState.CheckInType.AutoSelectOptions.Value == 1;
-                _hidePhotos = CurrentCheckInState.CheckInType.HidePhotos;
-
                 if ( !Page.IsPostBack )
                 {
                     ClearSelection();
@@ -112,16 +99,14 @@ namespace RockWeb.Blocks.CheckIn
 
                     lFamilyName.Text = family.ToString();
 
-                    BindData();
+                    _hidePhotos = CurrentCheckInState.CheckInType.TypeOfCheckin == TypeOfCheckin.Individual || CurrentCheckInState.CheckInType.HidePhotos;
+
+                    rSelection.DataSource = family.CheckOutPeople;
+                    rSelection.DataBind();
                 }
             }
         }
 
-        /// <summary>
-        /// Handles the ItemDataBound event of the rSelection control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="RepeaterItemEventArgs"/> instance containing the event data.</param>
         private void rSelection_ItemDataBound( object sender, RepeaterItemEventArgs e )
         {
             if ( e.Item.ItemType == ListItemType.Item || e.Item.ItemType == ListItemType.AlternatingItem )
@@ -130,40 +115,24 @@ namespace RockWeb.Blocks.CheckIn
                 pnlPhoto.Visible = !_hidePhotos;
 
                 var pnlPerson = e.Item.FindControl( "pnlPerson" ) as Panel;
-                pnlPerson.CssClass = ( _hidePhotos ? "col-md-10 col-sm-10 col-xs-8" : "col-md-10 col-sm-8 col-xs-6" ) + " family-personselect";
+                pnlPerson.CssClass = ( _hidePhotos ? "col-md-11 col-sm-10 col-xs-8" : "col-md-10 col-sm-8 col-xs-6" ) + " family-personselect";
+            }
+        }
 
-                if ( _autoCheckin )
+        /// <summary>
+        /// Clear any previously selected people.
+        /// </summary>
+        private void ClearSelection()
+        {
+            foreach ( var family in CurrentCheckInState.CheckIn.Families )
+            {
+                foreach ( var person in family.CheckOutPeople )
                 {
-                    var pnlPersonButton = e.Item.FindControl( "pnlPersonButton" ) as Panel;
-                    var pnlChangeButton = e.Item.FindControl( "pnlChangeButton" ) as Panel;
-                    if ( pnlPersonButton != null && pnlChangeButton != null )
-                    {
-                        pnlPersonButton.CssClass = "col-xs-12 col-sm-9 col-md-10";
-                        pnlChangeButton.Visible = true;
-                    }
+                    person.Selected = true;
                 }
             }
         }
 
-        /// <summary>
-        /// Handles the ItemCommand event of the RSelection control.
-        /// </summary>
-        /// <param name="source">The source of the event.</param>
-        /// <param name="e">The <see cref="RepeaterCommandEventArgs"/> instance containing the event data.</param>
-        /// <exception cref="System.NotImplementedException"></exception>
-        private void RSelection_ItemCommand( object source, RepeaterCommandEventArgs e )
-        {
-            if ( e.CommandName == "Change" )
-            {
-                int personId = e.CommandArgument.ToString().AsInteger();
-            }
-        }
-
-        /// <summary>
-        /// Handles the Click event of the lbSelect control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void lbSelect_Click( object sender, EventArgs e )
         {
             if ( KioskCurrentlyActive )
@@ -173,10 +142,9 @@ namespace RockWeb.Blocks.CheckIn
                 var family = CurrentCheckInState.CheckIn.CurrentFamily;
                 if ( family != null )
                 {
-                    foreach ( var person in family.People )
+                    foreach ( var person in family.CheckOutPeople )
                     {
                         person.Selected = selectedPersonIds.Contains( person.Person.Id );
-                        person.PreSelected = person.Selected;
                     }
 
                     ProcessSelection( maWarning );
@@ -194,47 +162,9 @@ namespace RockWeb.Blocks.CheckIn
             CancelCheckin();
         }
 
-        /// <summary>
-        /// Clear any previously selected people.
-        /// </summary>
-        private void ClearSelection()
-        {
-            foreach ( var family in CurrentCheckInState.CheckIn.Families )
-            {
-                foreach ( var person in family.People )
-                {
-                    person.ClearFilteredExclusions();
-                    person.PossibleSchedules = new List<CheckInSchedule>();
-                    person.Selected = false;
-                    person.Processed = false;
-                }
-            }
-        }
-
-        private void BindData()
-        {
-            var family = CurrentCheckInState.CheckIn.CurrentFamily;
-            if ( family != null )
-            {
-                rSelection.DataSource = family.People
-                .OrderByDescending( p => p.FamilyMember )
-                .ThenBy( p => p.Person.BirthYear )
-                .ThenBy( p => p.Person.BirthMonth )
-                .ThenBy( p => p.Person.BirthDay )
-                .ToList();
-
-                rSelection.DataBind();
-            }
-        }
-
         protected void ProcessSelection()
         {
-            ProcessSelection( 
-                maWarning, 
-                () => CurrentCheckInState.CheckIn.CurrentFamily.GetPeople( true )
-                    .SelectMany( p => p.GroupTypes.Where( t => !t.ExcludedByFilter ) ) 
-                    .Count() <= 0,
-                "<p>Sorry, there are currently not any available areas that the selected people can check into.</p>" );
+            ProcessSelection( maWarning, false );
         }
 
         protected string GetCheckboxClass( bool selected )
@@ -251,6 +181,5 @@ namespace RockWeb.Blocks.CheckIn
             }
             return string.Empty;
         }
-
     }
 }
