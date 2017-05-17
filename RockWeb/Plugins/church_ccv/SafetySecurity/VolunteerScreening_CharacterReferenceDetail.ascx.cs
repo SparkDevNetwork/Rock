@@ -78,6 +78,8 @@ namespace RockWeb.Plugins.church_ccv.SafetySecurity
             Workflow charRefWorkflow = new WorkflowService( rockContext ).Queryable( ).AsNoTracking( ).Where( wf => wf.Id == charWorkflowId ).SingleOrDefault( );
 
             charRefWorkflow.LoadAttributes( );
+            
+            lHeader.Text = "<h4>Information (Number: " + charRefWorkflow.AttributeValues["CompletionNumber"].Value + ")</h4>";
 
             // set the character reference type (professional, non-family, etc.)
             lType.Text = "Relationship: " + charRefWorkflow.AttributeValues["Type"].Value;

@@ -128,7 +128,7 @@ namespace RockWeb.Plugins.church_ccv.SafetySecurity
             }
 
             // update the header text
-            lHeader.Text = string.Format( "<h4>Responses ({0})", charRefWorkflows.Count );
+            lHeader.Text = string.Format( "<h4>Total Responses ({0})</h4>", charRefWorkflows.Count );
 
             // render the grid
             BindGrid( rockContext, charRefWorkflows );
@@ -139,8 +139,9 @@ namespace RockWeb.Plugins.church_ccv.SafetySecurity
         /// </summary>
         private void BindGrid( RockContext rockContext, List<Workflow> charRefWorkflows )
         {
-            gGrid.DataSource = charRefWorkflows.OrderByDescending( wf => wf.CreatedDateTime ).Select( wf => 
+            gGrid.DataSource = charRefWorkflows.OrderByDescending( wf => wf.ModifiedDateTime ).Select( wf => 
                     new {
+                            CompletionNumber = wf.AttributeValues["CompletionNumber"].Value,
                             Id = wf.Id,
                             Date = wf.CreatedDateTime.Value.ToShortDateString( ),
                             VolunteerApplicantsName = wf.AttributeValues["ApplicantFirstName"].Value + " " + wf.AttributeValues["ApplicantLastName"].Value

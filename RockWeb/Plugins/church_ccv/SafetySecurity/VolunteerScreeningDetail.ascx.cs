@@ -278,6 +278,11 @@ namespace RockWeb.Plugins.church_ccv.SafetySecurity
 
                     gCharacterRefs.DataSource = charRefWorkflows.Select( cr => new
                     {
+                        // IsSystem is used as a flag to disable the delete button.
+                        // we don't allow completed character references to be deleted, so 
+                        // set it to true in that case
+                        IsSystem = cr.Status == "Completed" ? true : false,
+
                         Id = cr.Id,
                         WorkflowId = cr.Id,
                         WorkflowText = "View Form",
@@ -286,14 +291,18 @@ namespace RockWeb.Plugins.church_ccv.SafetySecurity
 
                         // setup the values for re-sending this reference
                         ResendReference = "Click to Resend",
+
+
                         CharacterReferenceWorkflowGuid = cr.Guid,
                         ApplicantFirstName = person.FirstName,
                         ApplicantLastName = person.LastName,
                         SourceVolunteerScreeningId = vsInstance.Id,
                         ReferenceEmail = cr.AttributeValues["EmailAddress"].Value,
                         Type = cr.AttributeValues["Type"].Value,
+                        LastDateSent = cr.ModifiedDateTime.Value.ToShortDateString( ),
                         
                         PersonText = cr.AttributeValues["FirstName"].Value + " " + cr.AttributeValues["LastName"].Value
+                        
                     } );
 
                     gCharacterRefs.DataBind( );
