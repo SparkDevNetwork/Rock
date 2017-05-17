@@ -539,12 +539,15 @@ namespace Rock.Model
                             }
                             if ( batchId.HasValue )
                             {
-                                BatchHistoryChanges.Add( BatchId.Value, new List<string> { string.Format( "Added <span class='field-name'>{0:C2}</span> transaction for <span class='field-value'>{1}</span>.", this.TotalAmount, person ) } );
+                                BatchHistoryChanges.Add( batchId.Value, new List<string> { string.Format( "Added <span class='field-name'>{0:C2}</span> transaction for <span class='field-value'>{1}</span>.", this.TotalAmount, person ) } );
                             }
                         }
                         else
                         {
-                            BatchHistoryChanges.Add( BatchId.Value, new List<string> { string.Format( "Updated <span class='field-name'>Transaction</span> ID: <span class='field-value'>{0}</span>.", Id ) } );
+                            if ( batchId.HasValue )
+                            {
+                                BatchHistoryChanges.Add( batchId.Value, new List<string> { string.Format( "Updated <span class='field-name'>Transaction</span> ID: <span class='field-value'>{0}</span>.", Id ) } );
+                            }
                         }
                         break;
                     }
