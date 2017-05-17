@@ -118,7 +118,7 @@ namespace Rock.Reporting.DataSelect.Person
             }
         }
 
-        // <summary>
+        /// <summary>
         /// Comma-delimited list of the Entity properties that should be used for Sorting. Normally, you should leave this as null which will make it sort on the returned field
         /// To disable sorting for this field, return string.Empty;
         /// </summary>
