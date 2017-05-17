@@ -406,6 +406,9 @@ namespace Rock.Web.UI.Controls
             SelectedDatePartsChanged?.Invoke( this, e );
         }
 
+        /// <summary>
+        /// Occurs when [selected date parts changed].
+        /// </summary>
         public event EventHandler SelectedDatePartsChanged;
 
         /// <summary>

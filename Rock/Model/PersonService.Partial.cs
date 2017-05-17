@@ -888,7 +888,7 @@ namespace Rock.Model
         /// <param name="personId">The person identifier.</param>
         /// <param name="includeSelf">if set to <c>true</c> [include self].</param>
         /// <returns>
-        /// An enumerable collection of <see cref="Rock.Model.PerGroupMemberson" /> entities containing the family members of the provided person.
+        /// An enumerable collection of <see cref="Rock.Model.GroupMember" /> entities containing the family members of the provided person.
         /// </returns>
         public IQueryable<GroupMember> GetFamilyMembers( Group family, int personId, bool includeSelf = false )
         {
