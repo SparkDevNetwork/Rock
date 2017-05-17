@@ -277,7 +277,7 @@ namespace RockWeb.Blocks.Finance
                 accountQuery = accountQuery.Where( account => account.IsTaxDeductible == ( taxDeductibleFilter == "Yes" ) );
             }
 
-            accountQuery = accountQuery.OrderBy( a => a.Order );
+            accountQuery = accountQuery.OrderBy( a => a.Order ).ThenBy( f => f.Name );
 
             return accountQuery;
         }
