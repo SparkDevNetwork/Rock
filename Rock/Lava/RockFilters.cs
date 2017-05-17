@@ -1875,7 +1875,7 @@ namespace Rock.Lava
 
             if ( person != null )
             {
-                Guid familyGuid = Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY.AsGuid();
+                var familyGroupTypeId = GroupTypeCache.Read( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY ).Id;
 
                 Location location = null;
 
@@ -1887,7 +1887,8 @@ namespace Rock.Lava
                             .AsNoTracking()
                             .Where( m =>
                                 m.PersonId == person.Id &&
-                                m.Group.GroupType.Guid == familyGuid )
+                                m.Group.GroupTypeId == familyGroupTypeId )
+                            .OrderBy( m => m.GroupOrder ?? int.MaxValue )
                             .SelectMany( m => m.Group.GroupLocations )
                             .Where( gl =>
                                 gl.IsMailingLocation == true )
@@ -1900,7 +1901,8 @@ namespace Rock.Lava
                             .AsNoTracking()
                             .Where( m =>
                                 m.PersonId == person.Id &&
-                                m.Group.GroupType.Guid == familyGuid )
+                                m.Group.GroupTypeId == familyGroupTypeId )
+                            .OrderBy( m => m.GroupOrder ?? int.MaxValue )
                             .SelectMany( m => m.Group.GroupLocations )
                             .Where( gl =>
                                 gl.IsMappedLocation == true )
@@ -1913,7 +1915,8 @@ namespace Rock.Lava
                             .AsNoTracking()
                             .Where( m =>
                                 m.PersonId == person.Id &&
-                                m.Group.GroupType.Guid == familyGuid )
+                                m.Group.GroupTypeId == familyGroupTypeId )
+                            .OrderBy( m => m.GroupOrder ?? int.MaxValue )
                             .SelectMany( m => m.Group.GroupLocations )
                             .Where( gl =>
                                 gl.GroupLocationTypeValue.Value == addressType )

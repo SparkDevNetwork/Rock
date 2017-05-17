@@ -152,6 +152,7 @@ namespace Rock.Reporting.DataSelect.Person
                         m.Person.Gender != p.Gender &&
                         m.Person.MaritalStatusValueId == marriedDefinedValueId &&
                         !m.Person.IsDeceased )
+                    .OrderBy( m => m.Group.Members.FirstOrDefault( x => x.PersonId == p.Id ).GroupOrder ?? int.MaxValue )
                     .Select( m => m.Person.NickName ).FirstOrDefault() );
 
             var selectSpouseExpression = SelectExpressionExtractor.Extract( personSpouseQuery, entityIdProperty, "p" );
