@@ -15,11 +15,6 @@
 // </copyright>
 //
 using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 using Rock.Model;
 
@@ -101,6 +96,12 @@ namespace Rock.Data
         /// Method that will be called on an entity immediately before the item is saved
         /// </summary>
         void PreSaveChanges( Rock.Data.DbContext dbContext, System.Data.Entity.Infrastructure.DbEntityEntry entry );
+
+        /// <summary>
+        /// Method that will be called on an entity immediately after the item is saved
+        /// </summary>
+        /// <param name="dbContext">The database context.</param>
+        void PostSaveChanges( Rock.Data.DbContext dbContext );
 
         /// <summary>
         /// Gets the Created By audit HTML details.

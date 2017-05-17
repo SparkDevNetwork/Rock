@@ -14,12 +14,18 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
 using Microsoft.Owin;
 using Owin;
+using System.Web;
 using React;
+using System.Collections.Generic;
+using Rock;
+using Rock.Model;
+using Rock.Utility;
+using System.Linq;
 
-[assembly: OwinStartup( typeof( RockWeb.Startup ) )]
-
+[assembly: OwinStartup(typeof(RockWeb.Startup))]
 namespace RockWeb
 {
     /// <summary>
@@ -36,6 +42,30 @@ namespace RockWeb
             app.MapSignalR();
             ReactSiteConfiguration.Configuration = new ReactSiteConfiguration()
                 .AddScript( "~/Scripts/React/dist/server.blocks.bundle.js" );
+
+            // Find any plugins that implement IRockOwinStartup
+            try
+            {
+                var startups = new Dictionary<int, List<IRockOwinStartup>>();
+                foreach ( var startupType in Rock.Reflection.FindTypes( typeof( IRockOwinStartup ) ).Select( a => a.Value ).ToList() )
+                {
+                    var startup = Activator.CreateInstance( startupType ) as IRockOwinStartup;
+                    startups.AddOrIgnore( startup.StartupOrder, new List<IRockOwinStartup>() );
+                    startups[startup.StartupOrder].Add( startup );
+                }
+
+                foreach ( var startupList in startups.OrderBy( s => s.Key ).Select( s => s.Value ) )
+                {
+                    foreach ( var startup in startupList )
+                    {
+                        startup.OnStartup( app );
+                    }
+                }
+            }
+            catch ( Exception ex )
+            {
+                ExceptionLogService.LogException( ex, null );
+            }
         }
     }
 }

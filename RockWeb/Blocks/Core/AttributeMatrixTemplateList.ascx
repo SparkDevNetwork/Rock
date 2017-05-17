@@ -16,7 +16,6 @@
                         <Columns>
                             <Rock:RockBoundField DataField="Name" HeaderText="Name" SortExpression="Name" />
                             <Rock:RockBoundField DataField="Description" HeaderText="Description" SortExpression="Description" />
-                            <Rock:RockBoundField DataField="InstanceCount" HeaderText="Instance Count" SortExpression="InstanceCount" />
                             <Rock:BoolField DataField="IsActive" HeaderText="Active" SortExpression="IsActive" />
                             <Rock:DeleteField OnClick="gList_DeleteClick" />
                         </Columns>
