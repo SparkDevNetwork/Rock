@@ -1387,7 +1387,6 @@ namespace Rock.Model
             }
 
             var groupOrderQuery = new GroupMemberService( this.Context as RockContext ).Queryable();
-            int defaultGroupOrder = int.MaxValue;
 
             return GetFamilyMembers( person.Id )
                 .Where( m => m.GroupRoleId == adultRoleId )
