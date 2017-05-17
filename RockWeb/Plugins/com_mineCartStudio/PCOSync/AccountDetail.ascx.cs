@@ -171,6 +171,11 @@ namespace RockWeb.Plugins.com_mineCartStudio.PCOSync
 
             rockContext.SaveChanges();
 
+            // Refresh Tags
+            account = accountService.Get( account.Id );
+            var api = new PCOApi( account );
+            api.SyncTags();
+
             ShowReadonlyDetails( account );
         }
 
@@ -629,9 +634,13 @@ namespace RockWeb.Plugins.com_mineCartStudio.PCOSync
                         {
                             groups.Add( group.Id, groupService.GroupAncestorPathName( group.Id ) );
                         }
+                        bool selected = true;
                         foreach( var group in groups.OrderBy( g => g.Value ))
                         {
-                            ddlGroup.Items.Add( new ListItem( group.Value, group.Key.ToString() ) );
+                            var li = new ListItem( group.Value, group.Key.ToString() );
+                            li.Selected = selected;
+                            ddlGroup.Items.Add( li );
+                            selected = false;
                         }
                     }
                 }
