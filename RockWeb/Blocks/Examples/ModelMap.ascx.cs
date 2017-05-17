@@ -24,17 +24,14 @@ using System.Linq;
 using System.Reflection;
 using System.Runtime.Caching;
 using System.Text;
-using System.Text.RegularExpressions;
 using System.Web;
-using System.Web.Caching;
+using System.Web.UI;
+using System.Web.UI.WebControls;
 using System.Xml.Linq;
 using Rock;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
-using Rock.Security;
-using Rock.Web;
-using Rock.Web.Cache;
 using Rock.Web.UI;
 
 namespace RockWeb.Blocks.Examples
@@ -42,11 +39,42 @@ namespace RockWeb.Blocks.Examples
     [DisplayName( "Model Map" )]
     [Category( "Examples" )]
     [Description( "Displays details about each model classes in Rock.Model." )]
-    [IntegerField("Minutes To Cache", "Numer of whole minutes to cache the class data (since reflecting on the assembly can be time consuming).", false, 60 )]
+    [IntegerField( "Minutes To Cache", "Numer of whole minutes to cache the class data (since reflecting on the assembly can be time consuming).", false, 60 )]
     public partial class ModelMap : RockBlock
     {
         Dictionary<string, XElement> _docuDocMembers;
         ObjectCache cache = MemoryCache.Default;
+
+        #region Properties
+
+        protected string SelectedCategory { get; set; }
+        protected Guid? SelectedModelId { get; set; }
+
+        #endregion
+
+        #region Base Control Methods
+
+        /// <summary>
+        /// Restores the view-state information from a previous user control request that was saved by the <see cref="M:System.Web.UI.UserControl.SaveViewState" /> method.
+        /// </summary>
+        /// <param name="savedState">An <see cref="T:System.Object" /> that represents the user control state to be restored.</param>
+        protected override void LoadViewState( object savedState )
+        {
+            base.LoadViewState( savedState );
+
+            SelectedCategory = ViewState["SelectedCategory"].ToString();
+            SelectedModelId = ViewState["SelectedCategory"] as Guid?;
+        }
+
+        protected override void OnInit( EventArgs e )
+        {
+            base.OnInit( e );
+
+            rptCategory.ItemCommand += rptCategory_ItemCommand;
+            rptCategory.ItemCreated += rptCategory_ItemCreated;
+            rptModel.ItemCommand += rptModel_ItemCommand;
+            rptModel.ItemCreated += rptModel_ItemCreated;
+        }
 
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Load" /> event.
@@ -56,15 +84,138 @@ namespace RockWeb.Blocks.Examples
         {
             base.OnLoad( e );
 
+            GetData();
+        }
+
+        /// <summary>
+        /// Saves any user control view-state changes that have occurred since the last page postback.
+        /// </summary>
+        /// <returns>
+        /// Returns the user control's current view state. If there is no view state associated with the control, it returns null.
+        /// </returns>
+        protected override object SaveViewState()
+        {
+            ViewState["SelectedCategory"] = SelectedCategory;
+            ViewState["SelectedModelId"] = SelectedModelId;
+            return base.SaveViewState();
+        }
+
+        #endregion
+
+        #region Events
+
+        /// <summary>
+        /// Handles the ItemCreated event of the rptCategory control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="RepeaterItemEventArgs"/> instance containing the event data.</param>
+        protected void rptCategory_ItemCreated( object sender, RepeaterItemEventArgs e )
+        {
+            var lbCategory = e.Item.FindControl( "lbCategory" ) as LinkButton;
+            if ( lbCategory != null )
+            {
+                ScriptManager.GetCurrent( this.Page ).RegisterPostBackControl( lbCategory );
+            }
+        }
+
+        /// <summary>
+        /// Handles the ItemCommand event of the rptCategory control.
+        /// </summary>
+        /// <param name="source">The source of the event.</param>
+        /// <param name="e">The <see cref="RepeaterCommandEventArgs"/> instance containing the event data.</param>
+        protected void rptCategory_ItemCommand( object source, RepeaterCommandEventArgs e )
+        {
+            string category = e.CommandArgument.ToString();
+            SelectedCategory = category;
+            SelectedModelId=null;
+            GetData();
+        }
+
+        /// <summary>
+        /// Handles the ItemCreated event of the rptModel control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="RepeaterItemEventArgs"/> instance containing the event data.</param>
+        protected void rptModel_ItemCreated( object sender, RepeaterItemEventArgs e )
+        {
+            var lbModel = e.Item.FindControl( "lbModel" ) as LinkButton;
+            if ( lbModel != null )
+            {
+                ScriptManager.GetCurrent( this.Page ).RegisterPostBackControl( lbModel );
+            }
+        }
+
+        /// <summary>
+        /// Handles the ItemCommand event of the rptModel control.
+        /// </summary>
+        /// <param name="source">The source of the event.</param>
+        /// <param name="e">The <see cref="RepeaterCommandEventArgs"/> instance containing the event data.</param>
+        protected void rptModel_ItemCommand( object source, RepeaterCommandEventArgs e )
+        {
+            Guid guidModel = e.CommandArgument.ToString().AsGuid();
+            SelectedModelId = guidModel;
+            GetData();
+        }
+
+        #endregion
+
+        #region Methods
+
+        private void GetData()
+        {
             var sb = new StringBuilder();
 
             List<MClass> allClasses = GetModelClasses() as List<MClass>;
             if ( allClasses != null )
-            { 
-                foreach ( var aClass in allClasses.OrderBy( a => a.Name ).ToList() )
+            {
+                var qry = allClasses.GroupBy( a => a.Category.Name )
+                    .OrderBy( a => a.Key );
+
+                if ( string.IsNullOrWhiteSpace( SelectedCategory ) )
                 {
-                    sb.Append( ClassNode( aClass ) );
+                    SelectedCategory = qry.Select( a => a.Key ).First();
                 }
+
+                var displayCategoryList = qry.
+                                    Select( a => new
+                                    {
+                                        Category = new Category
+                                        {
+                                            Name = a.Key,
+                                            IconCssClass = a.Select( g => g.Name ).First(),
+                                        },
+                                        Count = a.Count(),
+                                        Class = ( !string.IsNullOrWhiteSpace( SelectedCategory ) && SelectedCategory == a.Key ) ? "active" : ""
+                                    } );
+
+                rptCategory.DataSource = displayCategoryList.ToList();
+                rptCategory.DataBind();
+
+                var modelQry = allClasses
+                                .Where( a => a.Category.Name == SelectedCategory )
+                                .OrderBy( a => a.Name );
+
+                if ( !SelectedModelId.HasValue )
+                {
+                    SelectedModelId = modelQry.Select( a => a.Guid ).First().AsGuidOrNull();
+                }
+
+                var displayModel = modelQry
+                                        .Select( a => new
+                                        {
+                                            GuidId = a.Guid,
+                                            Name = a.Name,
+                                            Class = ( SelectedModelId.HasValue && SelectedModelId == a.Guid.AsGuidOrNull() ) ? "active" : ""
+                                        } );
+
+                rptModel.DataSource = displayModel.ToList();
+                rptModel.DataBind();
+
+                var model = modelQry
+                            .Where( a => a.Guid == SelectedModelId.ToString() )
+                            .First();
+                sb.Append( ClassNode( model ) );
+
             }
             else
             {
@@ -83,25 +234,17 @@ namespace RockWeb.Blocks.Examples
         {
             var sb = new StringBuilder();
 
-            string classGuid = this.PageParameter( "classGuid" );
-            bool isSelected = false;
-            if ( !string.IsNullOrWhiteSpace( classGuid ) )
-            {
-                isSelected = aClass.Guid == classGuid;
-            }
-
             var name = HttpUtility.HtmlEncode( aClass.Name );
             sb.AppendFormat(
-                "<div class='panel panel-default' data-id='{0}'><div class='panel-heading js-example-toggle'><h1 class='panel-title rollover-container'><a name='{1}' href='?classGuid={0}#{1}' class='link-address rollover-item' style='margin-left: -20px;'><i class='fa fa-link'></i></a> <strong>{1}</strong> <small class='pull-right'><i class='fa js-toggle {3}'></i> Show Details</small></h1><p class='description'>{2}</p></div>",
+                "<div class='panel panel-default' data-id='{0}'><div class='panel-heading'><h1 class='panel-title rollover-container'><strong>{1}</strong></h1><p class='description'>{2}</p></div>",
                 aClass.Guid,
                 name,
-                aClass.Comment.Summary,
-                isSelected ? "fa-circle" : "fa-circle-o"
+                aClass.Comment.Summary
                 );
 
             if ( aClass.Properties.Any() || aClass.Methods.Any() )
             {
-                sb.AppendFormat( "<div class='panel-body' {0}>", !isSelected ? "style='display: none;'" : string.Empty );
+                sb.AppendFormat( "<div class='panel-body'>" );
 
                 if ( aClass.Properties.Any() )
                 {
@@ -112,7 +255,7 @@ namespace RockWeb.Blocks.Examples
                         sb.AppendFormat( "<li data-id='p{0}' class='{6}'><strong><tt>{1}</tt></strong>{3}{4}{5}{2}{7}</li>{8}",
                             property.Id,
                             HttpUtility.HtmlEncode( property.Name ),
-                            ( property.Comment != null && !string.IsNullOrWhiteSpace( property.Comment.Summary ) ) ? " - " +  property.Comment.Summary : "",
+                            ( property.Comment != null && !string.IsNullOrWhiteSpace( property.Comment.Summary ) ) ? " - " + property.Comment.Summary : "",
                             property.Required ? " <strong class='text-danger'>*</strong> " : string.Empty,
                             property.IsLavaInclude ? " <small><span class='tip tip-lava'></span></small> " : string.Empty,
                             property.NotMapped || property.IsVirtual ? " <span class='fa-stack small'><i class='fa fa-database fa-stack-1x'></i><i class='fa fa-ban fa-stack-2x text-danger'></i></span> " : string.Empty,
@@ -138,7 +281,7 @@ namespace RockWeb.Blocks.Examples
                         sb.AppendFormat( "<li data-id='m{0}' class='{3}'><strong><tt>{1}</tt></strong> {2}{4}</li>{5}",
                             method.Id,
                             HttpUtility.HtmlEncode( method.Signature ),
-                            ( method.Comment != null && !string.IsNullOrWhiteSpace( method.Comment.Summary ) ) ? " - " +  method.Comment.Summary : "",
+                            ( method.Comment != null && !string.IsNullOrWhiteSpace( method.Comment.Summary ) ) ? " - " + method.Comment.Summary : "",
                             method.IsInherited ? " js-model hidden " : " ",
                             method.IsInherited ? " (inherited)" : "",
                             Environment.NewLine );
@@ -167,7 +310,7 @@ namespace RockWeb.Blocks.Examples
             {
                 list = ReadClassesFromAssembly();
                 var cacheItemPolicy = new CacheItemPolicy();
-                cacheItemPolicy.AbsoluteExpiration = DateTime.Now.AddMinutes( GetAttributeValue("MinutesToCache").AsInteger() );
+                cacheItemPolicy.AbsoluteExpiration = DateTime.Now.AddMinutes( GetAttributeValue( "MinutesToCache" ).AsInteger() );
                 cache.Set( "classes", list, cacheItemPolicy );
             }
             else
@@ -226,7 +369,7 @@ namespace RockWeb.Blocks.Examples
 
             if ( !File.Exists( docuPath ) )
             {
-                docuPath =  HttpContext.Current.Server.MapPath("~") + @"bin\Rock.XML";
+                docuPath = HttpContext.Current.Server.MapPath( "~" ) + @"bin\Rock.XML";
             }
 
             if ( File.Exists( docuPath ) )
@@ -246,9 +389,15 @@ namespace RockWeb.Blocks.Examples
             MClass mClass = new MClass
             {
                 Name = type.Name,
+                Category = new Category
+                {
+                    Name = type.IsDefined( typeof( RockDomainAttribute ), true ) ? type.GetCustomAttribute<RockDomainAttribute>( true ).Name : "Other",
+                    IconCssClass = type.IsDefined( typeof( RockDomainAttribute ), true ) ? type.GetCustomAttribute<RockDomainAttribute>( true ).IconCssClass : "fa fa-file-o"
+                },
                 Guid = type.GUID.ToStringSafe(),
                 Comment = GetComments( type )
             };
+
 
             PropertyInfo[] properties = type.GetProperties( BindingFlags.Public | ( includeInherited ? BindingFlags.Instance : BindingFlags.Instance | BindingFlags.DeclaredOnly ) ).Where( m => ( m.MemberType == MemberTypes.Method || m.MemberType == MemberTypes.Property ) ).ToArray();
             foreach ( PropertyInfo p in properties.OrderBy( i => i.Name ).ToArray() )
@@ -258,7 +407,7 @@ namespace RockWeb.Blocks.Examples
                     Name = p.Name,
                     IsInherited = p.DeclaringType != type,
                     IsVirtual = p.GetGetMethod() != null && p.GetGetMethod().IsVirtual,
-                    IsLavaInclude = p.IsDefined( typeof( LavaIncludeAttribute ) ),
+                    IsLavaInclude = p.IsDefined( typeof( LavaIncludeAttribute) ),
                     NotMapped = p.IsDefined( typeof( NotMappedAttribute ) ),
                     Required = p.IsDefined( typeof( RequiredAttribute ) ),
                     Id = p.MetadataToken,
@@ -349,10 +498,13 @@ namespace RockWeb.Blocks.Examples
         }
     }
 
+    #endregion
+
     #region Helper Classes
 
     class MClass
     {
+        public Category Category { get; set; }
         public string Name { get; set; }
         public XmlComment Comment { get; set; }
         public string Guid { get; set; }
@@ -363,7 +515,7 @@ namespace RockWeb.Blocks.Examples
         {
             Properties = new List<MProperty>();
             Methods = new List<MMethod>();
-        }    
+        }
     }
 
     class MProperty
@@ -394,6 +546,12 @@ namespace RockWeb.Blocks.Examples
         public string Remarks { get; set; }
         public string[] Params { get; set; }
         public string Returns { get; set; }
+    }
+
+    public class Category
+    {
+        public string Name { get; set; }
+        public string IconCssClass { get; set; }
     }
     # endregion
 

@@ -38,7 +38,7 @@ namespace Rock.Data
         /// <value>
         /// The CSS class.
         /// </value>
-        public string CssClass { get; set; }
+        public string IconCssClass { get; set; }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="RockDomainAttribute"/> class.
@@ -54,7 +54,7 @@ namespace Rock.Data
         public RockDomainAttribute( string name, string cssClass )
         {
             Name = name;
-            CssClass = cssClass;
+            IconCssClass = cssClass;
         }
 
         /// <summary>
