@@ -137,7 +137,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                         .Where( m =>
                             m.PersonId == Person.Id &&
                             m.Group.GroupTypeId == _groupType.Id )
-                        .OrderBy( m => m.GroupOrder ).ThenBy( m => m.Id )
+                        .OrderBy( m => m.GroupOrder ?? int.MaxValue ).ThenBy( m => m.Id )
                         .ToList();
 
                     var groupMember = groupMemberGroups.FirstOrDefault( a => a.GroupId == groupId );
@@ -436,7 +436,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                         .Where( m =>
                             m.PersonId == Person.Id &&
                             m.Group.GroupTypeId == _groupType.Id )
-                        .OrderBy( m => m.GroupOrder ).ThenBy( m => m.Id )
+                        .OrderBy( m => m.GroupOrder ?? int.MaxValue ).ThenBy( m => m.Id )
                         .Select( m => m.Group )
                         .ToList();
 
