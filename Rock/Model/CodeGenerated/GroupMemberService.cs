@@ -21,6 +21,7 @@
 // </copyright>
 //
 using System;
+using System.Collections.Generic;
 using System.Linq;
 
 using Rock.Data;
@@ -54,6 +55,39 @@ namespace Rock.Model
             
             // ignoring RegistrationRegistrant,GroupMemberId 
             return true;
+        }
+
+        /// <summary>
+        /// Reorders the group member group.
+        /// </summary>
+        /// <param name="items">The items.</param>
+        /// <param name="oldIndex">The old index.</param>
+        /// <param name="newIndex">The new index.</param>
+        public virtual void ReorderGroupMemberGroup( List<GroupMember> items, int oldIndex, int newIndex )
+        {
+            GroupMember movedItem = items[oldIndex];
+            if ( movedItem != null )
+            {
+                items.RemoveAt( oldIndex );
+                if ( newIndex >= items.Count )
+                    items.Add( movedItem );
+                else
+                    items.Insert( newIndex, movedItem );
+
+                int order = 0;
+                foreach ( GroupMember item in items )
+                {
+                    GroupMember orderedItem = item as GroupMember;
+                    if ( orderedItem != null )
+                    {
+                        if ( orderedItem.GroupOrder != order )
+                        {
+                            orderedItem.GroupOrder = order;
+                        }
+                    }
+                    order++;
+                }
+            }
         }
     }
 

@@ -52,6 +52,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 
         // private global rockContext that is specifically for rptrGroups binding and rptrGroups_ItemDataBound
         private RockContext _bindGroupsRockContext = null;
+        private bool _showReorderIcon;
 
         #endregion
 
@@ -88,11 +89,68 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             base.OnLoad( e );
 
             BindGroups();
+
+            // handle sort events
+            string postbackArgs = Request.Params["__EVENTARGUMENT"];
+            if ( !string.IsNullOrWhiteSpace( postbackArgs ) )
+            {
+                string[] nameValue = postbackArgs.Split( new char[] { ':' } );
+                if ( nameValue.Count() == 2 )
+                {
+                    string eventParam = nameValue[0];
+                    if ( eventParam.Equals( "re-order-panel-widget" ) )
+                    {
+                        string[] values = nameValue[1].Split( new char[] { ';' } );
+                        if ( values.Count() == 2 )
+                        {
+                            SortGroupsForGroupMember( eventParam, values );
+                        }
+                    }
+                }
+            }
         }
 
         #endregion
 
         #region Events
+
+        /// <summary>
+        /// Sorts the groups for group member.
+        /// </summary>
+        /// <param name="eventParam">The event parameter.</param>
+        /// <param name="values">The values.</param>
+        private void SortGroupsForGroupMember( string eventParam, string[] values )
+        {
+            string panelWidgetClientId = values[0];
+            int newIndex = int.Parse( values[1] );
+
+            if ( Person != null && Person.Id > 0 )
+            {
+                Panel pnlWidget = this.ControlsOfTypeRecursive<Panel>().FirstOrDefault( a => a.ClientID == panelWidgetClientId );
+                HiddenField hfGroupId = pnlWidget.FindControl( "hfGroupId" ) as HiddenField;
+                var groupId = hfGroupId.Value.AsInteger();
+
+                using ( _bindGroupsRockContext = new RockContext() )
+                {
+                    var memberService = new GroupMemberService( _bindGroupsRockContext );
+                    var groupMemberGroups = memberService.Queryable( true )
+                        .Where( m =>
+                            m.PersonId == Person.Id &&
+                            m.Group.GroupTypeId == _groupType.Id )
+                        .OrderBy( m => m.GroupOrder ?? int.MaxValue ).ThenBy( m => m.Id )
+                        .ToList();
+
+                    var groupMember = groupMemberGroups.FirstOrDefault( a => a.GroupId == groupId );
+                    if ( groupMember != null)
+                    {
+                        memberService.ReorderGroupMemberGroup( groupMemberGroups, groupMemberGroups.IndexOf(groupMember), newIndex );
+                        _bindGroupsRockContext.SaveChanges();
+                    }
+
+                    BindGroups();
+                }
+            }
+        }
 
         /// <summary>
         /// Handles the ItemDataBound event of the rptrGroups control.
@@ -115,6 +173,9 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                         pageParams.Add( "GroupId", group.Id.ToString() );
                         hlEditGroup.NavigateUrl = LinkedPageUrl( "GroupEditPage", pageParams );
                     }
+
+                    var lReorderIcon = e.Item.FindControl( "lReorderIcon" ) as Control;
+                    lReorderIcon.Visible = _showReorderIcon;
 
                     Repeater rptrMembers = e.Item.FindControl( "rptrMembers" ) as Repeater;
                     if ( rptrMembers != null )
@@ -375,6 +436,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                         .Where( m =>
                             m.PersonId == Person.Id &&
                             m.Group.GroupTypeId == _groupType.Id )
+                        .OrderBy( m => m.GroupOrder ?? int.MaxValue ).ThenBy( m => m.Id )
                         .Select( m => m.Group )
                         .ToList();
 
@@ -400,6 +462,8 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                     }
                     
                     rptrGroups.DataSource = groups;
+
+                    _showReorderIcon = groups.Count > 1;
                     rptrGroups.DataBind();
                 }
             }

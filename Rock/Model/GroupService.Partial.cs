@@ -131,13 +131,12 @@ namespace Rock.Model
             var rockContext = (RockContext)this.Context;
             var groupLocationService = new GroupLocationService( rockContext );
 
-            Guid familyTypeGuid = Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY.AsGuid();
+            var familyGroupTypeId = GroupTypeCache.Read( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY ).Id;
 
             return groupLocationService.GetMappedLocationsByGeofences( geofences )
                 .Where( l =>
                     l.Group != null &&
-                    l.Group.GroupType != null &&
-                    l.Group.GroupType.Guid.Equals( familyTypeGuid ) )
+                    l.Group.GroupTypeId == familyGroupTypeId )
                 .Select( l => l.Group );
         }
 
