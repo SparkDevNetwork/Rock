@@ -429,6 +429,29 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         {
             if ( Person != null && Person.Id > 0 )
             {
+                // If this is a Family GroupType and they belong to multiple families, 
+                // first make sure that the GroupMember.GroupOrder is set for this Person's Families.
+                // This will ensure that other spots that rely on the GroupOrder provide consistent results.
+                if ( this._IsFamilyGroupType )
+                {
+                    using ( var rockContext = new RockContext() )
+                    {
+                        var memberService = new GroupMemberService( rockContext );
+                        var groupMemberGroups = memberService.Queryable( true )
+                            .Where( m =>
+                                m.PersonId == Person.Id &&
+                                m.Group.GroupTypeId == _groupType.Id )
+                            .OrderBy( m => m.GroupOrder ?? int.MaxValue ).ThenBy( m => m.Id )
+                            .ToList();
+
+                        if ( groupMemberGroups.Count > 1 && memberService.SetGroupMemberGroupOrder( groupMemberGroups ) )
+                        {
+                            rockContext.SaveChanges();
+                        }
+                    }
+                }
+
+                // Gind the Groups repeater which will show the Groups with a list of GroupMembers
                 using ( _bindGroupsRockContext = new RockContext() )
                 {
                     var memberService = new GroupMemberService( _bindGroupsRockContext );
