@@ -10,6 +10,7 @@ using Rock.Slingshot.Model;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
+using System.Web;
 
 namespace Rock.Slingshot
 {
@@ -564,7 +565,6 @@ namespace Rock.Slingshot
             sbStats.AppendLine( $"[{stopwatch.Elapsed.TotalMilliseconds}ms] Update {groupImportsWithParentGroup.Count} Group's Parent Group " );
             stopwatch.Restart();
 
-
             // Update GroupTypes' Allowed Child GroupTypes based on groups that became child groups
             rockContext.Database.ExecuteSqlCommand( @"
 INSERT INTO GroupTypeAssociation (
@@ -584,7 +584,6 @@ OUTER APPLY (
 		AND ChildGroupTypeId = g.GroupTypeid
 	) gta
 WHERE gta.GroupTypeId IS NULL" );
-
 
             // make sure grouptype caches get updated in case 'allowed group types' changed
             foreach ( var groupTypeId in groupTypeGroupLookup.Keys )
@@ -667,6 +666,9 @@ WHERE gta.GroupTypeId IS NULL" );
             return responseText;
         }
 
+        private static string _defaultPhoneCountryCode = null;
+        private static int _recordTypePersonId;
+
         /// <summary>
         /// Bulks the import.
         /// </summary>
@@ -674,6 +676,7 @@ WHERE gta.GroupTypeId IS NULL" );
         /// <returns></returns>
         public static string BulkPersonImport( List<PersonImport> personImports )
         {
+            var initiatedWithWebRequest = HttpContext.Current?.Request != null;
             Stopwatch stopwatchTotal = Stopwatch.StartNew();
             Stopwatch stopwatch = Stopwatch.StartNew();
             RockContext rockContext = new RockContext();
@@ -685,19 +688,20 @@ WHERE gta.GroupTypeId IS NULL" );
             var familyGroupType = GroupTypeCache.GetFamilyGroupType();
             int familyGroupTypeId = familyGroupType.Id;
             int familyChildRoleId = familyGroupType.Roles.First( a => a.Guid == Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_CHILD.AsGuid() ).Id;
+            _recordTypePersonId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_PERSON.AsGuid() ).Id;
 
             StringBuilder sbStats = new StringBuilder();
 
             Dictionary<int, Group> familiesLookup = groupService.Queryable().AsNoTracking().Where( a => a.GroupTypeId == familyGroupTypeId && a.ForeignId.HasValue )
                 .ToList().ToDictionary( k => k.ForeignId.Value, v => v );
 
-            Dictionary<int, Person> personLookup = qryAllPersons.AsNoTracking().Where( a => a.ForeignId.HasValue )
+            Dictionary<int, Person> personLookup = qryAllPersons.Include( a => a.PhoneNumbers ).AsNoTracking().Where( a => a.ForeignId.HasValue )
                 .ToList().ToDictionary( k => k.ForeignId.Value, v => v );
 
             stopwatch.Stop();
             sbStats.AppendLine( $"[{stopwatch.Elapsed.TotalMilliseconds}ms] Get {familiesLookup.Count} family and {personLookup.Count} person lookups" );
             stopwatch.Restart();
-            string defaultPhoneCountryCode = PhoneNumber.DefaultCountryCode();
+            _defaultPhoneCountryCode = PhoneNumber.DefaultCountryCode();
 
             int nextNewFamilyForeignId = familiesLookup.Any() ? familiesLookup.Max( a => a.Key ) : 0;
             if ( personImports.Any() )
@@ -705,8 +709,41 @@ WHERE gta.GroupTypeId IS NULL" );
                 nextNewFamilyForeignId = Math.Max( nextNewFamilyForeignId, personImports.Where( a => a.FamilyForeignId.HasValue ).Max( a => a.FamilyForeignId.Value ) );
             }
 
+            // Just In Case, ensure Entity Attributes are flushed (they might be stale if they were added thru REST)
+            AttributeCache.FlushEntityAttributes();
+
+            var entityTypeIdPerson = EntityTypeCache.Read<Person>().Id;
+            Dictionary<int, List<AttributeValueCache>> attributeValuesLookup = new AttributeValueService( rockContext ).Queryable().Where( a => a.Attribute.EntityTypeId == entityTypeIdPerson && a.EntityId.HasValue )
+                .Select( a => new
+                {
+                    PersonId = a.EntityId.Value,
+                    a.AttributeId,
+                    a.Value
+                } )
+                .GroupBy( a => a.PersonId )
+                .ToDictionary(
+                    k => k.Key,
+                    v => v.Select( x => new AttributeValueCache { AttributeId = x.AttributeId, Value = x.Value } ).ToList() );
+
+            int personUpdatesCount = 0;
+            double personUpdatesMS = 0.0;
+            int progress = 0;
+            int total = personImports.Count();
+
             foreach ( var personImport in personImports )
             {
+                progress++;
+                if ( progress % 100 == 0 && personUpdatesMS > 0)
+                {
+                    if ( initiatedWithWebRequest && HttpContext.Current?.Response?.IsClientConnected != true )
+                    {
+                        // if this was called from a WebRequest (versus a job or utility), quit if the client has disconnected
+                        return "Client Disconnected";
+                    }
+
+                    Debug.WriteLine( $"Progress {progress} of {total}. personUpdatesCount: {personUpdatesCount}, personUpdatesMS/progress={ personUpdatesMS / progress }" );
+                }
+
                 Group family = null;
 
                 if ( !personImport.FamilyForeignId.HasValue )
@@ -746,50 +783,35 @@ WHERE gta.GroupTypeId IS NULL" );
                 if ( person == null )
                 {
                     person = new Person();
-                    person.RecordTypeValueId = personImport.RecordTypeValueId;
-                    person.RecordStatusValueId = personImport.RecordStatusValueId;
-                    person.RecordStatusLastModifiedDateTime = personImport.RecordStatusLastModifiedDateTime;
-                    person.RecordStatusReasonValueId = personImport.RecordStatusReasonValueId;
-                    person.ConnectionStatusValueId = personImport.ConnectionStatusValueId;
-                    person.ReviewReasonValueId = personImport.ReviewReasonValueId;
-                    person.IsDeceased = personImport.IsDeceased;
-                    person.TitleValueId = personImport.TitleValueId;
-                    person.FirstName = personImport.FirstName.FixCase();
-                    person.NickName = personImport.NickName.FixCase();
-
-                    if ( string.IsNullOrWhiteSpace( person.NickName ) )
-                    {
-                        person.NickName = person.FirstName;
-                    }
-
-                    if ( string.IsNullOrWhiteSpace( person.FirstName ) )
-                    {
-                        person.FirstName = person.NickName;
-                    }
-
-                    person.LastName = personImport.LastName.FixCase();
-                    person.SuffixValueId = personImport.SuffixValueId;
-                    person.BirthDay = personImport.BirthDay;
-                    person.BirthMonth = personImport.BirthMonth;
-                    person.BirthYear = personImport.BirthYear;
-                    person.Gender = ( Gender ) personImport.Gender;
-                    person.MaritalStatusValueId = personImport.MaritalStatusValueId;
-                    person.AnniversaryDate = personImport.AnniversaryDate;
-                    person.GraduationYear = personImport.GraduationYear;
-                    person.Email = personImport.Email;
-                    person.IsEmailActive = personImport.IsEmailActive;
-                    person.EmailNote = personImport.EmailNote;
-                    person.EmailPreference = ( EmailPreference ) personImport.EmailPreference;
-                    person.InactiveReasonNote = personImport.InactiveReasonNote;
-                    person.ConnectionStatusValueId = personImport.ConnectionStatusValueId;
-                    person.ForeignId = personImport.PersonForeignId;
+                    UpdatePersonPropertiesFromPersonImport( personImport, person );
                     personLookup.Add( personImport.PersonForeignId, person );
+                }
+                else
+                {
+                    Stopwatch stopwatchPersonUpdates = Stopwatch.StartNew();
+                    bool wasChanged = UpdatePersonFromPersonImport( person, personImport, attributeValuesLookup, familiesLookup );
+                    stopwatchPersonUpdates.Stop();
+                    personUpdatesMS += stopwatchPersonUpdates.Elapsed.TotalMilliseconds;
+                    if ( wasChanged )
+                    {
+                        personUpdatesCount++;
+                    }
                 }
             }
 
-            stopwatch.Stop();
-            sbStats.AppendLine( $"[{stopwatch.Elapsed.TotalMilliseconds}ms] Build Import Lists" );
-            stopwatch.Restart();
+            if ( personUpdatesMS > 0 || personUpdatesCount > 0 )
+            {
+                stopwatch.Stop();
+                sbStats.AppendLine( $"[{stopwatch.Elapsed.TotalMilliseconds - personUpdatesMS}ms] Build Import Lists" );
+                sbStats.AppendLine( $"[{personUpdatesMS}ms] Updated {personUpdatesCount} Person records" );
+                stopwatch.Restart();
+            }
+            else
+            {
+                stopwatch.Stop();
+                sbStats.AppendLine( $"[{stopwatch.Elapsed.TotalMilliseconds}ms] Build Import Lists" );
+                stopwatch.Restart();
+            }
 
             double buildImportListsMS = stopwatch.Elapsed.TotalMilliseconds;
             stopwatch.Restart();
@@ -923,7 +945,7 @@ WHERE gta.GroupTypeId IS NULL" );
             foreach ( var familyRecord in personsIdsForPersonImport.GroupBy( a => a.FamilyId ) )
             {
                 // get the distinct addresses for each family in our import
-                var familyAddresses = familyRecord.Where( a => a.PersonImport?.Addresses != null ).SelectMany( a => a.PersonImport.Addresses ).DistinctBy( a => new { a.Street1, a.Street2, a.City, a.County, a.State, a.Country, a.PostalCode } );
+                var familyAddresses = familyRecord.Where( a => a.PersonImport?.Addresses != null ).SelectMany( a => a.PersonImport.Addresses ).DistinctBy( a => new { a.GroupLocationTypeValueId, a.Street1, a.Street2, a.City, a.County, a.State, a.Country, a.PostalCode } );
 
                 foreach ( var address in familyAddresses )
                 {
@@ -986,15 +1008,8 @@ WHERE gta.GroupTypeId IS NULL" );
                 foreach ( var phoneNumberImport in personsIds.PersonImport.PhoneNumbers )
                 {
                     var phoneNumberToInsert = new PhoneNumber();
-
                     phoneNumberToInsert.PersonId = personsIds.PersonId;
-                    phoneNumberToInsert.NumberTypeValueId = phoneNumberImport.NumberTypeValueId;
-                    phoneNumberToInsert.CountryCode = defaultPhoneCountryCode;
-                    phoneNumberToInsert.Number = PhoneNumber.CleanNumber( phoneNumberImport.Number );
-                    phoneNumberToInsert.NumberFormatted = PhoneNumber.FormattedNumber( phoneNumberToInsert.CountryCode, phoneNumberToInsert.Number );
-                    phoneNumberToInsert.Extension = phoneNumberImport.Extension;
-                    phoneNumberToInsert.IsMessagingEnabled = phoneNumberImport.IsMessagingEnabled;
-                    phoneNumberToInsert.IsUnlisted = phoneNumberImport.IsUnlisted;
+                    UpdatePhoneNumberFromPhoneNumberImport( phoneNumberImport, phoneNumberToInsert );
 
                     phoneNumbersToInsert.Add( phoneNumberToInsert );
                 }
@@ -1043,6 +1058,212 @@ WHERE gta.GroupTypeId IS NULL" );
             var responseText = sbStats.ToString();
 
             return responseText;
+        }
+
+        /// <summary>
+        /// Updates the person properties from person import.
+        /// </summary>
+        /// <param name="personImport">The person import.</param>
+        /// <param name="person">The person.</param>
+        private static void UpdatePersonPropertiesFromPersonImport( PersonImport personImport, Person person )
+        {
+            person.RecordTypeValueId = personImport.RecordTypeValueId ?? _recordTypePersonId;
+            person.RecordStatusValueId = personImport.RecordStatusValueId;
+            person.RecordStatusLastModifiedDateTime = personImport.RecordStatusLastModifiedDateTime;
+            person.RecordStatusReasonValueId = personImport.RecordStatusReasonValueId;
+            person.ConnectionStatusValueId = personImport.ConnectionStatusValueId;
+            person.ReviewReasonValueId = personImport.ReviewReasonValueId;
+            person.IsDeceased = personImport.IsDeceased;
+            person.TitleValueId = personImport.TitleValueId;
+            person.FirstName = personImport.FirstName.FixCase();
+            person.NickName = personImport.NickName.FixCase();
+
+            if ( string.IsNullOrWhiteSpace( person.NickName ) )
+            {
+                person.NickName = person.FirstName;
+            }
+
+            if ( string.IsNullOrWhiteSpace( person.FirstName ) )
+            {
+                person.FirstName = person.NickName;
+            }
+
+            person.LastName = personImport.LastName.FixCase();
+            person.SuffixValueId = personImport.SuffixValueId;
+            person.BirthDay = personImport.BirthDay;
+            person.BirthMonth = personImport.BirthMonth;
+            person.BirthYear = personImport.BirthYear;
+            person.Gender = ( Gender ) personImport.Gender;
+            person.MaritalStatusValueId = personImport.MaritalStatusValueId;
+            person.AnniversaryDate = personImport.AnniversaryDate;
+            person.GraduationYear = personImport.GraduationYear;
+            person.Email = personImport.Email;
+
+            if ( !person.Email.IsValidEmail() )
+            {
+                person.Email = null;
+            }
+
+            person.IsEmailActive = personImport.IsEmailActive;
+            person.EmailNote = personImport.EmailNote;
+            person.EmailPreference = ( EmailPreference ) personImport.EmailPreference;
+            person.InactiveReasonNote = personImport.InactiveReasonNote;
+            person.ConnectionStatusValueId = personImport.ConnectionStatusValueId;
+            person.ForeignId = personImport.PersonForeignId;
+        }
+
+        /// <summary>
+        /// Updates the phone number from phone number import.
+        /// </summary>
+        /// <param name="phoneNumberImport">The phone number import.</param>
+        /// <param name="phoneNumberToInsert">The phone number to insert.</param>
+        private static void UpdatePhoneNumberFromPhoneNumberImport( PhoneNumberImport phoneNumberImport, PhoneNumber phoneNumberToInsert )
+        {
+            phoneNumberToInsert.NumberTypeValueId = phoneNumberImport.NumberTypeValueId;
+            phoneNumberToInsert.CountryCode = _defaultPhoneCountryCode;
+            phoneNumberToInsert.Number = PhoneNumber.CleanNumber( phoneNumberImport.Number );
+            phoneNumberToInsert.NumberFormatted = PhoneNumber.FormattedNumber( phoneNumberToInsert.CountryCode, phoneNumberToInsert.Number );
+            phoneNumberToInsert.Extension = phoneNumberImport.Extension;
+            phoneNumberToInsert.IsMessagingEnabled = phoneNumberImport.IsMessagingEnabled;
+            phoneNumberToInsert.IsUnlisted = phoneNumberImport.IsUnlisted;
+        }
+
+        /// <summary>
+        /// Updates the person from person import and returns whether there were any changes to the person record
+        /// </summary>
+        /// <param name="lookupPerson">The lookup person.</param>
+        /// <param name="personImport">The person import.</param>
+        /// <param name="attributeValuesLookup">The attribute values lookup.</param>
+        /// <param name="familiesLookup">The families lookup.</param>
+        /// <returns></returns>
+        private static bool UpdatePersonFromPersonImport( Person lookupPerson, PersonImport personImport, Dictionary<int, List<AttributeValueCache>> attributeValuesLookup, Dictionary<int, Group> familiesLookup )
+        {
+            using ( var rockContextForPersonUpdate = new RockContext() )
+            {
+                rockContextForPersonUpdate.People.Attach( lookupPerson );
+                var person = lookupPerson;
+
+                // Add/Update PhoneNumbers
+                UpdatePersonPropertiesFromPersonImport( personImport, person );
+                var phoneNumberService = new PhoneNumberService( rockContextForPersonUpdate );
+                var personPhoneNumberList = person.PhoneNumbers.Select( a => new
+                {
+                    a.Id,
+                    a.Number
+                } ).ToList();
+
+                foreach ( var phoneNumberImport in personImport.PhoneNumbers )
+                {
+                    var hasPhoneNumber = personPhoneNumberList.Any( a => a.Number == PhoneNumber.CleanNumber( phoneNumberImport.Number ) );
+                    if ( !hasPhoneNumber )
+                    {
+                        var personPhoneNumber = new PhoneNumber();
+                        personPhoneNumber.PersonId = person.Id;
+                        UpdatePhoneNumberFromPhoneNumberImport( phoneNumberImport, personPhoneNumber );
+                        phoneNumberService.Add( personPhoneNumber );
+                    }
+                }
+
+                // Remove any phonenumbers that are no longer in the PersonImport.PhoneNumbers list
+                foreach ( var phone in personPhoneNumberList.Where( a => !personImport.PhoneNumbers.Any( x => PhoneNumber.CleanNumber( x.Number ) == a.Number ) ) )
+                {
+                    var personPhoneNumber = phoneNumberService.Get( phone.Id );
+                    if ( personPhoneNumber != null )
+                    {
+                        phoneNumberService.Delete( personPhoneNumber );
+                    }
+                }
+
+                var personAttributesUpdated = false;
+                if ( personImport.AttributeValues.Any() )
+                {
+                    var attributeValues = attributeValuesLookup.GetValueOrNull( person.Id );
+
+                    foreach ( AttributeValueImport attributeValueImport in personImport.AttributeValues )
+                    {
+                        var currentValue = attributeValues?.FirstOrDefault( a => a.AttributeId == attributeValueImport.AttributeId );
+
+                        if ( ( currentValue == null ) || ( currentValue.Value != attributeValueImport.Value ) )
+                        {
+                            if ( person.Attributes == null )
+                            {
+                                person.LoadAttributes( rockContextForPersonUpdate );
+                            }
+
+                            var attributeCache = AttributeCache.Read( attributeValueImport.AttributeId );
+                            if ( person.AttributeValues[attributeCache.Key].Value != attributeValueImport.Value )
+                            {
+                                person.SetAttributeValue( attributeCache.Key, attributeValueImport.Value );
+                                personAttributesUpdated = true;
+                            }
+                        }
+                    }
+                }
+
+                // update Addresses
+                var addressesUpdated = false;
+                if ( personImport.Addresses.Any() )
+                {
+                    var primaryFamily = familiesLookup.GetValueOrNull( personImport.FamilyForeignId ?? 0 );
+
+                    if ( primaryFamily != null )
+                    {
+                        var groupLocationService = new GroupLocationService( rockContextForPersonUpdate );
+                        var primaryFamilyGroupLocations = groupLocationService.Queryable().Where( a => a.GroupId == primaryFamily.Id ).Include( a => a.Location ).AsNoTracking().ToList();
+                        foreach ( var personAddressImport in personImport.Addresses )
+                        {
+                            bool addressAlreadyExistsExactMatch = primaryFamilyGroupLocations.Where( a =>
+                                 a.GroupLocationTypeValueId == personAddressImport.GroupLocationTypeValueId
+                                 && (
+                                    a.Location.Street1 == personAddressImport.Street1
+                                    && a.Location.Street2 == personAddressImport.Street2
+                                    && a.Location.City == personAddressImport.City
+                                    && a.Location.County == personAddressImport.County
+                                    && a.Location.State == personAddressImport.State
+                                    && a.Location.Country == personAddressImport.Country
+                                    && a.Location.PostalCode == personAddressImport.PostalCode
+                                 ) ).Any();
+
+                            if ( !addressAlreadyExistsExactMatch )
+                            {
+                                var locationService = new LocationService( rockContextForPersonUpdate );
+
+                                Location location = locationService.Get( personAddressImport.Street1, personAddressImport.Street2, personAddressImport.City, personAddressImport.State, personAddressImport.PostalCode, personAddressImport.Country, false );
+
+                                if ( !primaryFamilyGroupLocations.Where( a => a.GroupLocationTypeValueId == personAddressImport.GroupLocationTypeValueId && a.LocationId == location.Id ).Any() )
+                                {
+                                    var groupLocation = new GroupLocation();
+                                    groupLocation.GroupId = primaryFamily.Id;
+                                    groupLocation.GroupLocationTypeValueId = personAddressImport.GroupLocationTypeValueId;
+                                    groupLocation.IsMailingLocation = personAddressImport.IsMailingLocation;
+                                    groupLocation.IsMappedLocation = personAddressImport.IsMappedLocation;
+
+                                    if ( location.GeoPoint == null && personAddressImport.Latitude.HasValue && personAddressImport.Longitude.HasValue )
+                                    {
+                                        location.SetLocationPointFromLatLong( personAddressImport.Latitude.Value, personAddressImport.Longitude.Value );
+                                    }
+
+                                    groupLocation.LocationId = location.Id;
+                                    groupLocationService.Add( groupLocation );
+
+                                    addressesUpdated = true;
+                                }
+                            }
+                        }
+
+                        // NOTE: Don't remove addresses that are part of family, but not included in the personImport.  It might be from another Person that is the same family which hasn't been included
+                    }
+                }
+
+                if ( personAttributesUpdated )
+                {
+                    person.SaveAttributeValues();
+                }
+
+                var updatedRecords = rockContextForPersonUpdate.SaveChanges( true );
+
+                return addressesUpdated || personAttributesUpdated || updatedRecords > 0;
+            }
         }
 
         /// <summary>

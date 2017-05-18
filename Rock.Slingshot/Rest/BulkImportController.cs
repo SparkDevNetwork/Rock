@@ -42,6 +42,11 @@ namespace Rock.Slingshot.Rest.Controllers
             return ControllerContext.Request.CreateResponse<string>( HttpStatusCode.Created, responseText );
         }
 
+        /// <summary>
+        /// Financials the account import.
+        /// </summary>
+        /// <param name="financialAccountImports">The financial account imports.</param>
+        /// <returns></returns>
         [System.Web.Http.Route( "api/BulkImport/FinancialAccountImport" )]
         [HttpPost]
         [Authenticate, Secured]
@@ -51,6 +56,11 @@ namespace Rock.Slingshot.Rest.Controllers
             return ControllerContext.Request.CreateResponse<string>( HttpStatusCode.Created, responseText );
         }
 
+        /// <summary>
+        /// Financials the batch import.
+        /// </summary>
+        /// <param name="financialBatchImports">The financial batch imports.</param>
+        /// <returns></returns>
         [System.Web.Http.Route( "api/BulkImport/FinancialBatchImport" )]
         [HttpPost]
         [Authenticate, Secured]
@@ -60,6 +70,11 @@ namespace Rock.Slingshot.Rest.Controllers
             return ControllerContext.Request.CreateResponse<string>( HttpStatusCode.Created, responseText );
         }
 
+        /// <summary>
+        /// Financials the transaction import.
+        /// </summary>
+        /// <param name="financialTransactionImports">The financial transaction imports.</param>
+        /// <returns></returns>
         [System.Web.Http.Route( "api/BulkImport/FinancialTransactionImport" )]
         [HttpPost]
         [Authenticate, Secured]
@@ -100,7 +115,7 @@ namespace Rock.Slingshot.Rest.Controllers
         /// <summary>
         /// Bulk Import of Family or Person Photo records
         /// </summary>
-        /// <param name="personImports">The person imports.</param>
+        /// <param name="photoImports">The photo imports.</param>
         /// <returns></returns>
         [System.Web.Http.Route( "api/BulkImport/PhotoImport" )]
         [HttpPost]
