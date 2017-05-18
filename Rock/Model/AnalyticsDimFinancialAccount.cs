@@ -25,6 +25,7 @@ namespace Rock.Model
     /// <summary>
     /// AnalyticsDimFinancialAccount is a SQL View off of the FinancialAccount table
     /// </summary>
+    [RockDomain( "Reporting" )]
     [Table( "AnalyticsDimFinancialAccount" )]
     [DataContract]
     [HideFromReporting]

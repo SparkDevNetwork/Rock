@@ -29,6 +29,7 @@ namespace Rock.Model
     /// <summary>
     /// 
     /// </summary>
+    [RockDomain( "Core" )]
     [NotAudited]
     [Table( "EntityType" )]
     [DataContract]

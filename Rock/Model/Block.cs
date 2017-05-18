@@ -38,7 +38,7 @@ namespace Rock.Model
     /// 
     /// An example of a Block being implemented on a page would be the New Account <see cref="Rock.Model.BlockType"/> being implemented on the New Account page.
     /// </summary>
-    [RockDomain( "Core" )]
+    [RockDomain( "CMS" )]
     [Table( "Block" )]
     [DataContract]
     public partial class Block : Model<Block>, IOrdered

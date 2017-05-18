@@ -23,6 +23,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.Caching;
+using System.Runtime.Serialization;
 using System.Text;
 using System.Web;
 using System.Web.UI;
@@ -127,7 +128,7 @@ namespace RockWeb.Blocks.Examples
         {
             string category = e.CommandArgument.ToString();
             SelectedCategory = category;
-            SelectedModelId=null;
+            SelectedModelId = null;
             GetData();
         }
 
@@ -182,7 +183,7 @@ namespace RockWeb.Blocks.Examples
                                         Category = new Category
                                         {
                                             Name = a.Key,
-                                            IconCssClass = a.Select( g => g.Name ).First(),
+                                            IconCssClass = a.Select( g => g.Category.IconCssClass ).First(),
                                         },
                                         Count = a.Count(),
                                         Class = ( !string.IsNullOrWhiteSpace( SelectedCategory ) && SelectedCategory == a.Key ) ? "active" : ""
@@ -386,13 +387,15 @@ namespace RockWeb.Blocks.Examples
         /// <returns></returns>
         private MClass GetPropertiesAndMethods( Type type, bool includeInherited = true )
         {
+            var attr = type.GetCustomAttribute<RockDomainAttribute>();
+
             MClass mClass = new MClass
             {
                 Name = type.Name,
                 Category = new Category
                 {
-                    Name = type.IsDefined( typeof( RockDomainAttribute ), true ) ? type.GetCustomAttribute<RockDomainAttribute>( true ).Name : "Other",
-                    IconCssClass = type.IsDefined( typeof( RockDomainAttribute ), true ) ? type.GetCustomAttribute<RockDomainAttribute>( true ).IconCssClass : "fa fa-file-o"
+                    Name = attr != null ? attr.Name : "Other",
+                    IconCssClass = attr != null ? attr.IconCssClass : "fa fa-file-o"
                 },
                 Guid = type.GUID.ToStringSafe(),
                 Comment = GetComments( type )
@@ -407,7 +410,7 @@ namespace RockWeb.Blocks.Examples
                     Name = p.Name,
                     IsInherited = p.DeclaringType != type,
                     IsVirtual = p.GetGetMethod() != null && p.GetGetMethod().IsVirtual,
-                    IsLavaInclude = p.IsDefined( typeof( LavaIncludeAttribute) ),
+                    IsLavaInclude = p.IsDefined( typeof( LavaIncludeAttribute ) ) || p.IsDefined( typeof( DataMemberAttribute ) ),
                     NotMapped = p.IsDefined( typeof( NotMappedAttribute ) ),
                     Required = p.IsDefined( typeof( RequiredAttribute ) ),
                     Id = p.MetadataToken,

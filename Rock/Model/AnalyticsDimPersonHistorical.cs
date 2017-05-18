@@ -36,6 +36,7 @@ namespace Rock.Model
     /// </summary>
     /// <typeparam name="T"></typeparam>
     /// <seealso cref="Rock.Model.AnalyticsSourcePersonBase{T}" />
+    [RockDomain( "Reporting" )]
     public abstract class AnalyticsDimPersonBase<T> : AnalyticsSourcePersonBase<T>
         where T : AnalyticsDimPersonBase<T>, new()
     {

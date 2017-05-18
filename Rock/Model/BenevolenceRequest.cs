@@ -29,6 +29,7 @@ namespace Rock.Model
     /// <summary>
     /// Represents a benevolence request that a person has submitted.
     /// </summary>
+    [RockDomain( "Finance" )]
     [Table( "BenevolenceRequest" )]
     [DataContract]
     public partial class BenevolenceRequest : Model<BenevolenceRequest>
@@ -352,7 +353,7 @@ namespace Rock.Model
         [DataMember]
         public virtual ICollection<BenevolenceRequestDocument> Documents
         {
-            get { return _documents ?? (_documents = new Collection<BenevolenceRequestDocument>()); }
+            get { return _documents ?? ( _documents = new Collection<BenevolenceRequestDocument>() ); }
             set { _documents = value; }
         }
         private ICollection<BenevolenceRequestDocument> _documents;
