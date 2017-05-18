@@ -580,24 +580,39 @@ namespace Rock.Model
             {
                 items.RemoveAt( oldIndex );
                 if ( newIndex >= items.Count )
-                    items.Add( movedItem );
-                else
-                    items.Insert( newIndex, movedItem );
-
-                int order = 0;
-                foreach ( GroupMember item in items )
                 {
-                    GroupMember orderedItem = item as GroupMember;
-                    if ( orderedItem != null )
-                    {
-                        if ( orderedItem.GroupOrder != order )
-                        {
-                            orderedItem.GroupOrder = order;
-                        }
-                    }
-                    order++;
+                    items.Add( movedItem );
+                }
+                else
+                {
+                    items.Insert( newIndex, movedItem );
                 }
             }
+
+            SetGroupMemberGroupOrder( items );
+        }
+
+        /// <summary>
+        /// Ensures that the GroupMember.GroupOrder is set for the sortedList of GroupMembers, 
+        /// and returns true if any updates to GroupMember.GroupOrder where made
+        /// </summary>
+        /// <param name="items">The items.</param>
+        public virtual bool SetGroupMemberGroupOrder( List<GroupMember> sortedItems )
+        {
+            bool changesMade = false;
+            int order = 0;
+            foreach ( GroupMember item in sortedItems )
+            {
+                if ( item.GroupOrder != order )
+                {
+                    item.GroupOrder = order;
+                    changesMade = true;
+                }
+
+                order++;
+            }
+
+            return changesMade;
         }
     }
 }
