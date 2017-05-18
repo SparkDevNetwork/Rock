@@ -234,7 +234,7 @@ namespace RockWeb.Plugins.church_ccv.SafetySecurity
 
                 if( applicationWorkflow.Status == "Completed" )
                 {
-                    lApplicationWorkflow.Text = "<a href=/page/329?workflowId=" + vsInstance.Application_WorkflowId.Value + ">View Completed Application</a>";
+                    lApplicationWorkflow.Text = "<a href=/page/1534?workflowId=" + vsInstance.Application_WorkflowId.Value + ">View Completed Application</a>";
                     lDateApplicationCompleted.Text = "Date Approved by CCV: " + vsInstance.ModifiedDateTime.Value.ToShortDateString( );
                 }
                 else
