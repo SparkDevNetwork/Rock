@@ -17,6 +17,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Data.Entity;
 using System.Linq;
 using System.Web.UI;
 using System.Web.UI.HtmlControls;
@@ -188,16 +189,22 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                             .OrderBy( m => m.GroupRole.Order )
                             .ToList();
 
-                        // add header and footer information
-                        var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, CurrentPerson );
-                        mergeFields.Add( "Group", group );
-                        mergeFields.Add( "GroupMembers", members );
+                        var groupHeaderLava = GetAttributeValue( "GroupHeaderLava" );
+                        var groupFooterLava = GetAttributeValue( "GroupFooterLava" );
 
-                        Literal lGroupHeader = e.Item.FindControl( "lGroupHeader" ) as Literal;
-                        Literal lGroupFooter = e.Item.FindControl( "lGroupFooter" ) as Literal;
+                        if ( groupHeaderLava.IsNotNullOrWhitespace() || groupFooterLava.IsNotNullOrWhitespace() )
+                        {
+                            // add header and footer information
+                            var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, CurrentPerson );
+                            mergeFields.Add( "Group", group );
+                            mergeFields.Add( "GroupMembers", members );
 
-                        lGroupHeader.Text = GetAttributeValue( "GroupHeaderLava" ).ResolveMergeFields( mergeFields );
-                        lGroupFooter.Text = GetAttributeValue( "GroupFooterLava" ).ResolveMergeFields( mergeFields );
+                            Literal lGroupHeader = e.Item.FindControl( "lGroupHeader" ) as Literal;
+                            Literal lGroupFooter = e.Item.FindControl( "lGroupFooter" ) as Literal;
+
+                            lGroupHeader.Text = groupHeaderLava.ResolveMergeFields( mergeFields );
+                            lGroupFooter.Text = groupHeaderLava.ResolveMergeFields( mergeFields );
+                        }
 
                         var orderedMembers = new List<GroupMember>();
 
@@ -461,6 +468,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                             m.Group.GroupTypeId == _groupType.Id )
                         .OrderBy( m => m.GroupOrder ?? int.MaxValue ).ThenBy( m => m.Id )
                         .Select( m => m.Group )
+                        .AsNoTracking()
                         .ToList();
 
                     if ( !groups.Any() && GetAttributeValue("AutoCreateGroup").AsBoolean(true) )
