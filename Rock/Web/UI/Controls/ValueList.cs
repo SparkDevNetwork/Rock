@@ -445,6 +445,7 @@ namespace Rock.Web.UI.Controls
         private void RegisterClientScript()
         {
             string script = @"
+(function () {
     function updateKeyValues( e ) {
         var $span = e.closest('span.value-list');
         var newValue = '';
@@ -472,6 +473,7 @@ namespace Rock.Web.UI.Controls
     $(document).on('focusout', '.js-value-list-input', function (e) {
         updateKeyValues($(this));            
     });
+})();
 ";
 
             ScriptManager.RegisterStartupScript( this, this.GetType(), "value-list", script, true );

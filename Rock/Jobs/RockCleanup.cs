@@ -237,6 +237,58 @@ namespace Rock.Jobs
 
                 personRockContext.SaveChanges();
             }
+            
+            //// Add any missing Implied/Known relationship groups
+            // Known Relationship Group
+            AddMissingRelationshipGroups( GroupTypeCache.Read( Rock.SystemGuid.GroupType.GROUPTYPE_KNOWN_RELATIONSHIPS ), Rock.SystemGuid.GroupRole.GROUPROLE_KNOWN_RELATIONSHIPS_OWNER.AsGuid() );
+
+            // Implied Relationship Group
+            AddMissingRelationshipGroups( GroupTypeCache.Read( Rock.SystemGuid.GroupType.GROUPTYPE_IMPLIED_RELATIONSHIPS ), Rock.SystemGuid.GroupRole.GROUPROLE_IMPLIED_RELATIONSHIPS_OWNER.AsGuid() );
+        }
+
+        /// <summary>
+        /// Adds the missing relationship groups.
+        /// </summary>
+        /// <param name="relationshipGroupType">Type of the relationship group.</param>
+        /// <param name="ownerRoleGuid">The owner role unique identifier.</param>
+        private static void AddMissingRelationshipGroups( GroupTypeCache relationshipGroupType, Guid ownerRoleGuid )
+        {
+            if ( relationshipGroupType != null )
+            {
+                var ownerRoleId = relationshipGroupType.Roles
+                    .Where( r => r.Guid.Equals( ownerRoleGuid ) ).Select( a => ( int? ) a.Id ).FirstOrDefault();
+                if ( ownerRoleId.HasValue )
+                {
+                    var rockContext = new RockContext();
+                    var personService = new PersonService( rockContext );
+                    var memberService = new GroupMemberService( rockContext );
+
+                    var qryGroupOwnerPersonIds = memberService.Queryable( true )
+                        .Where( m => m.GroupRoleId == ownerRoleId.Value ).Select( a => a.PersonId );
+
+                    var personIdsWithoutKnownRelationshipGroup = personService.Queryable().Where( p => !qryGroupOwnerPersonIds.Contains( p.Id ) ).Select( a => a.Id ).ToList();
+
+                    var groupsToInsert = new List<Group>();
+                    foreach ( var personId in personIdsWithoutKnownRelationshipGroup )
+                    {
+                        var groupMember = new GroupMember();
+                        groupMember.PersonId = personId;
+                        groupMember.GroupRoleId = ownerRoleId.Value;
+
+                        var group = new Group();
+                        group.Name = relationshipGroupType.Name;
+                        group.GroupTypeId = relationshipGroupType.Id;
+                        group.Members.Add( groupMember );
+
+                        groupsToInsert.Add( group );
+                    }
+
+                    new GroupService( rockContext ).AddRange( groupsToInsert );
+
+                    // save with disablePrePostProcessing=true since we don't need History records for when the person was added to the group (and the presavechanges is super slow if there are lots of inserts)
+                    rockContext.SaveChanges( true );
+                }
+            }
         }
 
         /// <summary>
@@ -589,11 +641,11 @@ WHERE ic.ChannelId = @channelId
 
                 var matrixFieldTypeId = FieldTypeCache.Read<MatrixFieldType>().Id;
                 // get a list of attribute Matrix Guids that are actually in use
-                var usedAttributeMatrices = new AttributeValueService( rockContext ).Queryable().Where( a => a.Attribute.FieldTypeId == matrixFieldTypeId ).Select( a => a.Value );
+                var usedAttributeMatrices = new AttributeValueService( rockContext ).Queryable().Where( a => a.Attribute.FieldTypeId == matrixFieldTypeId ).Select( a => a.Value ).ToList().AsGuidList();
 
                 // clean up any orphaned attribute matrices
                 var dayAgo = RockDateTime.Now.AddDays( 0 );
-                var orphanedAttributeMatrices = attributeMatrixService.Queryable().Where( a => ( a.CreatedDateTime < dayAgo ) && !usedAttributeMatrices.Contains( a.Guid.ToString() ) ).ToList();
+                var orphanedAttributeMatrices = attributeMatrixService.Queryable().Where( a => ( a.CreatedDateTime < dayAgo ) && !usedAttributeMatrices.Contains( a.Guid ) ).ToList();
                 if ( orphanedAttributeMatrices.Any() )
                 {
                     recordsDeleted += orphanedAttributeMatrices.Count;

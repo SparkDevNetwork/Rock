@@ -106,7 +106,7 @@
                             <asp:LinkButton ID="btnDelete" runat="server" Text="Delete" CssClass="btn btn-link js-delete-instance" OnClick="btnDelete_Click" CausesValidation="false" />
                             <span class="pull-right">
                                 <asp:LinkButton ID="btnPreview" runat="server" Text="Preview" CssClass="btn btn-link" OnClick="btnPreview_Click" Visible="false" />
-                                <asp:LinkButton ID="btnSendPaymentReminder" runat="server" Text="Send Payment Reminder" CssClass="btn btn-link" OnClick="btnSendPaymentReminder_Click" Visible="false" />
+                                <asp:LinkButton ID="btnSendPaymentReminder" runat="server" Text="Send Payment Reminders" CssClass="btn btn-link" OnClick="btnSendPaymentReminder_Click" Visible="false" />
                             </span>
                         </div>
                     </fieldset>

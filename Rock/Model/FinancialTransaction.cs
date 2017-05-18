@@ -423,6 +423,24 @@ namespace Rock.Model
             get { return TransactionDetails.Sum( d => d.Amount ); }
         }
 
+        /// <summary>
+        /// Gets or sets the history changes.
+        /// </summary>
+        /// <value>
+        /// The history changes.
+        /// </value>
+        [NotMapped]
+        public List<string> HistoryChanges { get; set; }
+
+        /// <summary>
+        /// Gets or sets the batch history changes.
+        /// </summary>
+        /// <value>
+        /// The batch history changes.
+        /// </value>
+        [NotMapped]
+        private Dictionary<int, List<string>> BatchHistoryChanges { get; set; }
+
         #endregion Virtual Properties
 
         #region Public Methods
@@ -442,59 +460,146 @@ namespace Rock.Model
         /// Pres the save.
         /// </summary>
         /// <param name="dbContext">The database context.</param>
-        /// <param name="state">The state.</param>
-        public override void PreSaveChanges( DbContext dbContext, System.Data.Entity.EntityState state )
+        /// <param name="entry"></param>
+        public override void PreSaveChanges( Rock.Data.DbContext dbContext, System.Data.Entity.Infrastructure.DbEntityEntry entry )
         {
-            if ( state == System.Data.Entity.EntityState.Deleted )
+            var rockContext = (RockContext)dbContext;
+
+            HistoryChanges = new List<string>();
+            BatchHistoryChanges = new Dictionary<int, List<string>>();
+
+            switch ( entry.State )
             {
-                // since images have a cascade delete relationship, make sure the PreSaveChanges gets called 
-                var childImages = new FinancialTransactionImageService( dbContext as RockContext ).Queryable().Where( a => a.TransactionId == this.Id );
-                foreach ( var image in childImages )
+                case System.Data.Entity.EntityState.Added:
+                    {
+                        HistoryChanges.Add( "Created Transaction" );
+
+                        string person = History.GetValue<PersonAlias>( AuthorizedPersonAlias, AuthorizedPersonAliasId, rockContext );
+
+                        History.EvaluateChange( HistoryChanges, "Authorized Person", string.Empty, person );
+                        History.EvaluateChange( HistoryChanges, "Batch", string.Empty, History.GetValue<FinancialBatch>( Batch, BatchId, rockContext ) );
+                        History.EvaluateChange( HistoryChanges, "Gateway", string.Empty, History.GetValue<FinancialGateway>( FinancialGateway, FinancialGatewayId, rockContext ) );
+                        History.EvaluateChange( HistoryChanges, "Transaction Date/Time", (DateTime?)null, TransactionDateTime );
+                        History.EvaluateChange( HistoryChanges, "Transaction Code", string.Empty, TransactionCode );
+                        History.EvaluateChange( HistoryChanges, "Summary", string.Empty, Summary );
+                        History.EvaluateChange( HistoryChanges, "Type", (int?)null, TransactionTypeValue, TransactionTypeValueId );
+                        History.EvaluateChange( HistoryChanges, "Source", (int?)null, SourceTypeValue, SourceTypeValueId );
+                        History.EvaluateChange( HistoryChanges, "Scheduled Transaction Id", (int?)null, ScheduledTransactionId );
+                        History.EvaluateChange( HistoryChanges, "Processed By", string.Empty, History.GetValue<PersonAlias>( ProcessedByPersonAlias, ProcessedByPersonAliasId, rockContext ) );
+                        History.EvaluateChange( HistoryChanges, "Processed Date/Time", (DateTime?)null, ProcessedDateTime );
+                        History.EvaluateChange( HistoryChanges, "Status", string.Empty, Status );
+                        History.EvaluateChange( HistoryChanges, "Status Message", string.Empty, StatusMessage );
+
+                        int? batchId = Batch != null ? Batch.Id : BatchId;
+                        if ( batchId.HasValue )
+                        {
+                            BatchHistoryChanges.Add( batchId.Value, new List<string> { string.Format( "Added <span class='field-name'>{0:C2}</span> transaction for <span class='field-value'>{1}</span>.", this.TotalAmount, person ) } );
+                        }
+
+                        break;
+                    }
+
+                case System.Data.Entity.EntityState.Modified:
+                    {
+                        string origPerson = History.GetValue<PersonAlias>( null, entry.OriginalValues["AuthorizedPersonAliasId"].ToStringSafe().AsIntegerOrNull(), rockContext );
+                        string person = History.GetValue<PersonAlias>( AuthorizedPersonAlias, AuthorizedPersonAliasId, rockContext );
+                        History.EvaluateChange( HistoryChanges, "Authorized Person", origPerson, person );
+
+                        int? origBatchId = entry.OriginalValues["BatchId"].ToStringSafe().AsIntegerOrNull();
+                        int? batchId = Batch != null ? Batch.Id : BatchId;
+                        if ( !batchId.Equals( origBatchId ) )
+                        {
+                            string origBatch = History.GetValue<FinancialBatch>( null, origBatchId, rockContext );
+                            string batch = History.GetValue<FinancialBatch>( Batch, BatchId, rockContext );
+                            History.EvaluateChange( HistoryChanges, "Batch", origBatch, batch );
+                        }
+
+                        int? origGatewayId = entry.OriginalValues["FinancialGatewayId"].ToStringSafe().AsIntegerOrNull();
+                        if ( !FinancialGatewayId.Equals( origGatewayId ) )
+                        {
+                            History.EvaluateChange( HistoryChanges, "Gateway", History.GetValue<FinancialGateway>( null, origGatewayId, rockContext ), History.GetValue<FinancialGateway>( FinancialGateway, FinancialGatewayId, rockContext ) );
+                        }
+
+                        History.EvaluateChange( HistoryChanges, "Transaction Date/Time", entry.OriginalValues["TransactionDateTime"].ToStringSafe().AsDateTime(), TransactionDateTime );
+                        History.EvaluateChange( HistoryChanges, "Transaction Code", entry.OriginalValues["TransactionCode"].ToStringSafe(), TransactionCode );
+                        History.EvaluateChange( HistoryChanges, "Summary", entry.OriginalValues["Summary"].ToStringSafe(), Summary );
+                        History.EvaluateChange( HistoryChanges, "Type", entry.OriginalValues["TransactionTypeValueId"].ToStringSafe().AsIntegerOrNull(), TransactionTypeValue, TransactionTypeValueId );
+                        History.EvaluateChange( HistoryChanges, "Source", entry.OriginalValues["SourceTypeValueId"].ToStringSafe().AsIntegerOrNull(), SourceTypeValue, SourceTypeValueId );
+                        History.EvaluateChange( HistoryChanges, "Scheduled Transaction Id", entry.OriginalValues["ScheduledTransactionId"].ToStringSafe().AsIntegerOrNull(), ScheduledTransactionId );
+                        History.EvaluateChange( HistoryChanges, "Processed By", entry.OriginalValues["ProcessedByPersonAliasId"].ToStringSafe().AsIntegerOrNull(), ProcessedByPersonAlias, ProcessedByPersonAliasId, rockContext );
+                        History.EvaluateChange( HistoryChanges, "Processed Date/Time", entry.OriginalValues["ProcessedDateTime"].ToStringSafe().AsDateTime(), ProcessedDateTime );
+                        History.EvaluateChange( HistoryChanges, "Status", entry.OriginalValues["Status"].ToStringSafe(), Status );
+                        History.EvaluateChange( HistoryChanges, "Status Message", entry.OriginalValues["StatusMessage"].ToStringSafe(), StatusMessage );
+
+                        if ( !batchId.Equals( origBatchId ) )
+                        {
+                            if ( origBatchId.HasValue )
+                            {
+                                BatchHistoryChanges.Add( origBatchId.Value, new List<string> { string.Format( "Removed <span class='field-name'>{0:C2}</span> transaction for <span class='field-value'>{1}</span>.", this.TotalAmount, person ) } );
+                            }
+                            if ( batchId.HasValue )
+                            {
+                                BatchHistoryChanges.Add( batchId.Value, new List<string> { string.Format( "Added <span class='field-name'>{0:C2}</span> transaction for <span class='field-value'>{1}</span>.", this.TotalAmount, person ) } );
+                            }
+                        }
+                        else
+                        {
+                            if ( batchId.HasValue )
+                            {
+                                BatchHistoryChanges.Add( batchId.Value, new List<string> { string.Format( "Updated <span class='field-name'>Transaction</span> ID: <span class='field-value'>{0}</span>.", Id ) } );
+                            }
+                        }
+                        break;
+                    }
+
+                case System.Data.Entity.EntityState.Deleted:
+                    {
+                        HistoryChanges.Add( "Deleted Transaction" );
+
+                        int? batchId = Batch != null ? Batch.Id : BatchId;
+                        if ( batchId.HasValue )
+                        {
+                            string batch = History.GetValue<FinancialBatch>( Batch, BatchId, rockContext );
+                            string person = History.GetValue<PersonAlias>( AuthorizedPersonAlias, AuthorizedPersonAliasId, rockContext );
+                            BatchHistoryChanges.Add( batchId.Value, new List<string> { string.Format( "Deleted <span class='field-name'>{0:C2}</span> transaction for <span class='field-value'>{1}</span>.", this.TotalAmount, person ) } );
+                        }
+
+                        // since images have a cascade delete relationship, make sure the PreSaveChanges gets called 
+                        var childImages = new FinancialTransactionImageService( dbContext as RockContext ).Queryable().Where( a => a.TransactionId == this.Id );
+                        foreach ( var image in childImages )
+                        {
+                            image.PreSaveChanges( dbContext, entry.State );
+                        }
+                        break;
+                    }
+            }
+
+            base.PreSaveChanges( dbContext, entry );
+        }
+
+        /// <summary>
+        /// Method that will be called on an entity immediately after the item is saved
+        /// </summary>
+        /// <param name="dbContext">The database context.</param>
+        public override void PostSaveChanges( DbContext dbContext )
+        {
+            if ( HistoryChanges.Any() )
+            {
+                HistoryService.SaveChanges( (RockContext)dbContext, typeof( FinancialTransaction ), Rock.SystemGuid.Category.HISTORY_FINANCIAL_TRANSACTION.AsGuid(), this.Id, HistoryChanges, true, this.ModifiedByPersonAliasId );
+            }
+
+            foreach ( var keyVal in BatchHistoryChanges )
+            {
+                if ( keyVal.Value.Any() )
                 {
-                    image.PreSaveChanges( dbContext, state );
+                    HistoryService.SaveChanges( (RockContext)dbContext, typeof( FinancialBatch ), Rock.SystemGuid.Category.HISTORY_FINANCIAL_TRANSACTION.AsGuid(), keyVal.Key, keyVal.Value, string.Empty, typeof( FinancialTransaction ), this.Id, true, this.ModifiedByPersonAliasId );
                 }
             }
+
+            base.PostSaveChanges( dbContext );
         }
 
         #endregion
-    }
-
-    /// <summary>
-    /// Special Class to use when uploading a FinancialTransaction from a Scanned Check thru the Rest API.
-    /// The Rest Client can't be given access to the DataEncryptionKey, so they'll upload it (using SSL)
-    /// with the plain text CheckMicr and the Rock server will encrypt prior to saving to database
-    /// </summary>
-    [DataContract]
-    [NotMapped]
-    [RockClientInclude("Special Class to use when uploading a FinancialTransaction from a Scanned Check thru the Rest API")]
-    public class FinancialTransactionScannedCheck
-    {
-        /// <summary>
-        /// Gets or sets the financial transaction.
-        /// </summary>
-        /// <value>
-        /// The financial transaction.
-        /// </value>
-        [DataMember]
-        public FinancialTransaction FinancialTransaction { get; set; }
-
-        /// <summary>
-        /// Gets or sets the scanned check MICR (the raw track data)
-        /// </summary>
-        /// <value>
-        /// The scanned check MICR.
-        /// </value>
-        [DataMember]
-        public string ScannedCheckMicrData { get; set; }
-
-        /// <summary>
-        /// Gets or sets the scanned check parsed MICR in the format {routingnumber}_{accountnumber}_{checknumber}
-        /// </summary>
-        /// <value>
-        /// The scanned check micr parts.
-        /// </value>
-        [DataMember]
-        public string ScannedCheckMicrParts { get; set; }
     }
 
     #region Entity Configuration
@@ -561,6 +666,48 @@ namespace Rock.Model
         /// The campus
         /// </summary>
         Campus = 2,
+    }
+
+    #endregion
+
+    #region Helper Classes
+
+    /// <summary>
+    /// Special Class to use when uploading a FinancialTransaction from a Scanned Check thru the Rest API.
+    /// The Rest Client can't be given access to the DataEncryptionKey, so they'll upload it (using SSL)
+    /// with the plain text CheckMicr and the Rock server will encrypt prior to saving to database
+    /// </summary>
+    [DataContract]
+    [NotMapped]
+    [RockClientInclude( "Special Class to use when uploading a FinancialTransaction from a Scanned Check thru the Rest API" )]
+    public class FinancialTransactionScannedCheck
+    {
+        /// <summary>
+        /// Gets or sets the financial transaction.
+        /// </summary>
+        /// <value>
+        /// The financial transaction.
+        /// </value>
+        [DataMember]
+        public FinancialTransaction FinancialTransaction { get; set; }
+
+        /// <summary>
+        /// Gets or sets the scanned check MICR (the raw track data)
+        /// </summary>
+        /// <value>
+        /// The scanned check MICR.
+        /// </value>
+        [DataMember]
+        public string ScannedCheckMicrData { get; set; }
+
+        /// <summary>
+        /// Gets or sets the scanned check parsed MICR in the format {routingnumber}_{accountnumber}_{checknumber}
+        /// </summary>
+        /// <value>
+        /// The scanned check micr parts.
+        /// </value>
+        [DataMember]
+        public string ScannedCheckMicrParts { get; set; }
     }
 
     #endregion

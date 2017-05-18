@@ -236,6 +236,22 @@ namespace Rock.Data
             private set { }
         }
 
+        /// <summary>
+        /// Gets the entity string value.
+        /// </summary>
+        /// <value>
+        /// The entity string value.
+        /// </value>
+        [NotMapped]
+        [LavaInclude]
+        public virtual string EntityStringValue
+        {
+            get
+            {
+                return this.ToStringSafe();
+            }
+        }
+
         #endregion
 
         #region Static Properties
