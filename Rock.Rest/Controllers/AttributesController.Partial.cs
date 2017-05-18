@@ -22,6 +22,7 @@ using System.Web.Http;
 using Rock.Model;
 using Rock.Rest.Filters;
 using System.Net.Http;
+using Rock.Web.Cache;
 
 namespace Rock.Rest.Controllers
 {
@@ -71,7 +72,35 @@ namespace Rock.Rest.Controllers
                 }
             }
 
-            return base.Post( value );
+            var result = base.Post( value );
+            AttributeCache.FlushEntityAttributes();
+
+            return result;
+        }
+
+        /// <summary>
+        /// Deletes the specified identifier.
+        /// </summary>
+        /// <param name="id">The identifier.</param>
+        [Authenticate, Secured]
+        public override void Delete( int id )
+        {
+            base.Delete( id );
+            AttributeCache.Flush( id );
+            AttributeCache.FlushEntityAttributes();
+        }
+
+        /// <summary>
+        /// Puts the specified identifier.
+        /// </summary>
+        /// <param name="id">The identifier.</param>
+        /// <param name="value">The value.</param>
+        [Authenticate, Secured]
+        public override void Put( int id, [FromBody] Model.Attribute value )
+        {
+            base.Put( id, value );
+            AttributeCache.Flush( id );
+            AttributeCache.FlushEntityAttributes();
         }
     }
 }
