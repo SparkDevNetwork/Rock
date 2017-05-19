@@ -299,7 +299,7 @@ namespace RockWeb.Plugins.church_ccv.SafetySecurity
                         SourceVolunteerScreeningId = vsInstance.Id,
                         ReferenceEmail = cr.AttributeValues["EmailAddress"].Value,
                         Type = cr.AttributeValues["Type"].Value,
-                        LastDateSent = cr.ModifiedDateTime.Value.ToShortDateString( ),
+                        LastDateSent = cr.AttributeValues["LastSentDate"].Value,
                         
                         PersonText = cr.AttributeValues["FirstName"].Value + " " + cr.AttributeValues["LastName"].Value
                         
