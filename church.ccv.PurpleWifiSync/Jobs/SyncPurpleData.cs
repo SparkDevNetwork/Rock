@@ -31,6 +31,8 @@ namespace church.ccv.CCVPurpleWifiSync
     [TextField("Private Key", "Your company's Purple Wifi Private Key.", true, "", order: 1)]
     [TextField("Host", "The host for your Purple Portal.", true, "", order: 2)]
     [TextField("Attendance Group Id", "The group Id where attendance records should be added.", true, "", order: 3)]
+    [DefinedValueField( Rock.SystemGuid.DefinedType.PERSON_CONNECTION_STATUS, "Default Connection Status", "The connection status that should be set by default", false, false, 
+                        Rock.SystemGuid.DefinedValue.PERSON_CONNECTION_STATUS_VISITOR, "", 4 )]
     [DisallowConcurrentExecution]
     public class SyncPurpleData : IJob
     {
@@ -69,6 +71,7 @@ namespace church.ccv.CCVPurpleWifiSync
                 string publicKey = dataMap.GetString( "PublicKey" );
                 string privateKey = dataMap.GetString( "PrivateKey" );
                 string host = dataMap.GetString( "Host" );
+                Guid connectionStatusGuid = dataMap.GetString( "DefaultConnectionStatus" ).AsGuid( );
 
                 AttendanceGroupId = dataMap.GetInt( "AttendanceGroupId" );
                 
@@ -100,13 +103,23 @@ namespace church.ccv.CCVPurpleWifiSync
                             if( StatusInSuccessRange( statusCode ) )
                             {
                                 // we got a response, so add the campus Id (or -1 if we couldn't find it) and visitor list to our dictionary
-                                venueWithVisitorsDict.Add( campusId.HasValue ? campusId.Value : -1, venueVisitors );
+                                int campusIdVal = campusId.HasValue ? campusId.Value : -1;
+                                if( venueWithVisitorsDict.ContainsKey( campusIdVal ) == false )
+                                {
+                                    venueWithVisitorsDict.Add( campusIdVal, venueVisitors );
+                                }
+                                else
+                                {
+                                    // if the campus is already in our dictionary (would happen if we get multiple -1 IDs), append the new visitors to it.
+                                    var visitorsForVenu = venueWithVisitorsDict[campusIdVal];
+                                    visitorsForVenu.AddRange( venueVisitors );
+                                }
                             }
                         });
                 }
                 
-                // get all required values and make sure they exist
-                DefinedValueCache connectionStatusVisitor = DefinedValueCache.Read(Rock.SystemGuid.DefinedValue.PERSON_CONNECTION_STATUS_VISITOR);
+                // get all required values
+                DefinedValueCache connectionStatus = DefinedValueCache.Read(connectionStatusGuid);
                 DefinedValueCache recordStatusPending = DefinedValueCache.Read(Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_PENDING);
                 DefinedValueCache recordTypePerson = DefinedValueCache.Read(Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_PERSON);
                     
@@ -139,7 +152,7 @@ namespace church.ccv.CCVPurpleWifiSync
                                 campusId = campusId == -1 ? null : campusId;
 
                                 // first make sure the person exists, adding them if they don't.
-                                if ( TryAddPerson( visitor, campusId, connectionStatusVisitor.Id, recordStatusPending.Id, recordTypePerson.Id, personService, rockContext, out personId ) == true )
+                                if ( TryAddPerson( visitor, campusId, connectionStatus.Id, recordStatusPending.Id, recordTypePerson.Id, personService, rockContext, out personId ) == true )
                                 {
                                     numNewPeople++;
                                 }
