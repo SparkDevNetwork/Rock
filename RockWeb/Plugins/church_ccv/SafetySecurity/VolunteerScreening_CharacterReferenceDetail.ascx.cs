@@ -132,11 +132,11 @@ namespace RockWeb.Plugins.church_ccv.SafetySecurity
                                                       charRefWorkflow.AttributeValues["Feedback_Commitment_Additional"].Value;
 
                 // Trustworth with Children
-                lFeedback_TrustworthyWithChildren.Text = "<strong>" + charRefWorkflow.AttributeValues["Feedback_AroundChildren"].AttributeName + "</strong>" + "<br>" + 
-                                                         charRefWorkflow.AttributeValues["Feedback_AroundChildren"].Value;
+                lFeedback_TrustworthyWithChildren.Text = "<strong>" + charRefWorkflow.AttributeValues["Feedback_TrustworthyWithChildren"].AttributeName + "</strong>" + "<br>" + 
+                                                         charRefWorkflow.AttributeValues["Feedback_TrustworthyWithChildren"].Value;
 
-                lFeedback_TrustworthyWithChildrenReason.Text = "<strong>" + charRefWorkflow.AttributeValues["Feedback_AroundChildren_Desc"].AttributeName + "</strong>" + "<br>" + 
-                                                               charRefWorkflow.AttributeValues["Feedback_AroundChildren_Desc"].Value;
+                lFeedback_TrustworthyWithChildrenReason.Text = "<strong>" + charRefWorkflow.AttributeValues["Feedback_TrustworthyWithChildren_Reason"].AttributeName + "</strong>" + "<br>" + 
+                                                               charRefWorkflow.AttributeValues["Feedback_TrustworthyWithChildren_Reason"].Value;
 
                 // Overall rating
                 lFeedback_OverallRating.Text = "<strong>" + charRefWorkflow.AttributeValues["Feedback_OverallRating"].AttributeName + "</strong>" + "<br>" + 
