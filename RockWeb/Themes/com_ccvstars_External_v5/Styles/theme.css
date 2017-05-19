@@ -7785,7 +7785,7 @@ h2 {
 @font-face {
   font-family: 'STARS-Icon-Font-v1';
   src: url('../assets/fonts/STARS-Icon-Font-v1.eot');
-  src: url('../assets/fonts/STARS-Icon-Font-v1.eot?#iefix') format('embedded-opentype'), url('../../assets/fonts/STARS-Icon-Font-v1.woff') format('woff'), url('../assets/fonts/STARS-Icon-Font-v1.ttf') format('truetype'), url('../assets/fonts/STARS-Icon-Font-v1.svg#STARS-Icon-Font-v1') format('svg');
+  src: url('../assets/fonts/STARS-Icon-Font-v1.eot?#iefix') format('embedded-opentype'), url('../assets/fonts/STARS-Icon-Font-v1.woff') format('woff'), url('../assets/fonts/STARS-Icon-Font-v1.ttf') format('truetype'), url('../assets/fonts/STARS-Icon-Font-v1.svg#STARS-Icon-Font-v1') format('svg');
   font-weight: normal;
   font-style: normal;
 }
@@ -7809,6 +7809,9 @@ h2 {
 }
 .icon-twitter:before {
   content: "\e006";
+}
+.icon-baseball:before {
+  content: "\e007";
 }
 .sports {
   font-family: 'STARS-Icon-Font-v1';
@@ -7840,6 +7843,9 @@ h2 {
 .sports.basketball:before {
   content: "\e003";
 }
+.sports.baseball:before {
+  content: "\e007";
+}
 .sports.soccer {
   color: #000;
 }
@@ -7855,6 +7861,9 @@ h2 {
 }
 .sports.exceptional {
   color: #9d261d;
+}
+.sports.baseball {
+  color: #000;
 }
 .fieldstatus p {
   margin-bottom: 0;
