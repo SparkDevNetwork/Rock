@@ -209,6 +209,9 @@ namespace Rock.Web.UI.Controls
     /// </summary>
     public class AttributeFieldObject : IHasAttributes
     {
+        /// <summary>
+        /// Gets the id.
+        /// </summary>
         public int Id { get; set; }
 
         /// <summary>
