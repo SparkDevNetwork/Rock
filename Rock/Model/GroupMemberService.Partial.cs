@@ -593,10 +593,11 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Ensures that the GroupMember.GroupOrder is set for the sortedList of GroupMembers, 
+        /// Ensures that the GroupMember.GroupOrder is set for the sortedList of GroupMembers,
         /// and returns true if any updates to GroupMember.GroupOrder where made
         /// </summary>
-        /// <param name="items">The items.</param>
+        /// <param name="sortedItems">The sorted items.</param>
+        /// <returns></returns>
         public virtual bool SetGroupMemberGroupOrder( List<GroupMember> sortedItems )
         {
             bool changesMade = false;
