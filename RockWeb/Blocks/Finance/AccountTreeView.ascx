@@ -55,7 +55,8 @@
 
 
         <script type="text/javascript">
-            $(function () {
+            $(function ()
+            {
                 var $selectedId = $('#<%=hfSelectedAccountId.ClientID%>'),
                     $expandedIds = $('#<%=hfInitialAccountParentIds.ClientID%>');
 
@@ -63,36 +64,45 @@
                 scrollbCategory.tinyscrollbar({ axis: 'x', sizethumb: 60, size: 200 });
 
                 // resize scrollbar when the window resizes
-                $(document).ready(function () {
-                    $(window).on('resize', function () {
+                $(document).ready(function ()
+                {
+                    $(window).on('resize', function ()
+                    {
                         resizeScrollbar(scrollbCategory);
                     });
                 });
 
                 $('#<%=pnlTreeviewContent.ClientID%>')
-                    .on('rockTree:selected', function (e, id) {
+                    .on('rockTree:selected', function (e, id)
+                    {
                         var accountSearch = '?AccountId=' + id;
                         var currentItemId = $selectedId.val();
 
-                        if (currentItemId !== id) {
+                        if (currentItemId !== id)
+                        {
 
                             // get the data-id values of rock-tree items that are showing visible children (in other words, Expanded Nodes)
-                            var expandedDataIds = $(e.currentTarget).find('.rocktree-children').filter(":visible").closest('.rocktree-item').map(function () {
+                            var expandedDataIds = $(e.currentTarget).find('.rocktree-children').filter(":visible").closest('.rocktree-item').map(function ()
+                            {
                                 return $(this).attr('data-id')
                             }).get().join(',');
 
                             var pageRouteTemplate = $('#<%=hfPageRouteTemplate.ClientID%>').val();
                             var locationUrl = "";
-                            if (pageRouteTemplate.match(/{accountId}/i)) {
+                            if (pageRouteTemplate.match(/{accountId}/i))
+                            {
                                 locationUrl = Rock.settings.get('baseUrl') + pageRouteTemplate.replace(/{accountId}/i, id);
                                 locationUrl += "?ExpandedIds=" + encodeURIComponent(expandedDataIds);
                             }
-                            else {
+                            else
+                            {
                                 var detailPageUrl = $('#<%=hfDetailPageUrl.ClientID%>').val();
-                                if (detailPageUrl) {
+                                if (detailPageUrl)
+                                {
                                     locationUrl = detailPageUrl + accountSearch;
                                 }
-                                else {
+                                else
+                                {
                                     locationUrl = window.location.href.split('?')[0] + accountSearch;
                                 }
 
@@ -102,7 +112,16 @@
                             window.location = locationUrl;
                         }
                     })
-                    .on('rockTree:rendered', function () {
+                    .on('rockTree:collapse', function ()
+                    {
+                        resizeScrollbar(scrollbCategory);
+                    })
+                    .on('rockTree:expand', function ()
+                    {
+                        resizeScrollbar(scrollbCategory);
+                    })
+                    .on('rockTree:rendered', function ()
+                    {
 
                         // update viewport height
                         resizeScrollbar(scrollbCategory);
@@ -110,20 +129,21 @@
                     })
                     .rockTree({
                         restUrl: '<%=ResolveUrl( "~/api/FinancialAccounts/GetChildren/" ) %>',
-                        restParams: '/'+ ($('#<%=hfexcludeInactiveGroups.ClientID%>').val() || false),
+                        restParams: '/' + ($('#<%=hfexcludeInactiveGroups.ClientID%>').val() || false),
                         multiSelect: false,
                         selectedIds: $selectedId.val() ? $selectedId.val().split(',') : null,
                         expandedIds: $expandedIds.val() ? $expandedIds.val().split(',') : null
                     });
             });
 
-                function resizeScrollbar(scrollControl) {
-                    var overviewHeight = $(scrollControl).find('.overview').height();
+            function resizeScrollbar(scrollControl)
+            {
+                var overviewHeight = $(scrollControl).find('.overview').height();
 
-                    $(scrollControl).find('.viewport').height(overviewHeight);
+                $(scrollControl).find('.viewport').height(overviewHeight);
 
-                    scrollControl.tinyscrollbar_update('relative');
-                }
+                scrollControl.tinyscrollbar_update('relative');
+            }
         </script>
 
     </ContentTemplate>
