@@ -137,8 +137,9 @@ namespace Rock.Model
         /// <summary>
         /// Gets or sets the order of Groups of the Group's GroupType for the Person.
         /// For example, if this is a FamilyGroupType, GroupOrder can be used to specify which family should be 
-        /// listed as first (primary), 2nd, etc for the Person.
-        /// If GroupOrder is null, then there is no specific order
+        /// listed as 1st (primary), 2nd, 3rd, etc for the Person.
+        /// If GroupOrder is null, the group will be listed in no particular order after the ones that do have a GroupOrder.
+        /// NOTE: Use int.MaxValue in OrderBy statements for null GroupOrder values
         /// </summary>
         /// <value>
         /// The group order.

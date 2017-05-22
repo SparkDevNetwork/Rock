@@ -1837,12 +1837,12 @@ namespace Rock.Model
                     Guid? familyRoleGuid = null;
                     if ( personId.HasValue )
                     {
-                        var familyGroupTypeGuid = Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY.AsGuid();
+                        var familyGroupTypeId = GroupTypeCache.Read( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY ).Id;
                         familyRoleGuid = new GroupMemberService( new RockContext() ).Queryable()
                                             .Where( m =>
-                                                m.Group.GroupType.Guid == familyGroupTypeGuid
+                                                m.Group.GroupTypeId == familyGroupTypeId
                                                 && m.PersonId == personId )
-                                            .OrderBy( m => m.GroupRole.Order )
+                                            .OrderBy(m => m.GroupOrder ?? int.MaxValue ).ThenBy( m => m.GroupRole.Order )
                                             .Select( m => m.GroupRole.Guid )
                                             .FirstOrDefault();
                     }
@@ -1965,12 +1965,12 @@ namespace Rock.Model
                     Guid? familyRoleGuid = null;
                     if ( personId.HasValue )
                     {
-                        var familyGroupTypeGuid = Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY.AsGuid();
+                        var familyGroupTypeId = GroupTypeCache.Read( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY ).Id;
                         familyRoleGuid = new GroupMemberService( new RockContext() ).Queryable()
                                             .Where( m =>
-                                                m.Group.GroupType.Guid == familyGroupTypeGuid
+                                                m.Group.GroupTypeId == familyGroupTypeId
                                                 && m.PersonId == personId )
-                                            .OrderBy( m => m.GroupRole.Order )
+                                            .OrderBy( m => m.GroupOrder ?? int.MaxValue ).ThenBy( m => m.GroupRole.Order )
                                             .Select( m => m.GroupRole.Guid )
                                             .FirstOrDefault();
                     }
@@ -2174,12 +2174,12 @@ namespace Rock.Model
                     Guid? familyRoleGuid = null;
                     if ( personId.HasValue )
                     {
-                        var familyGroupTypeGuid = Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY.AsGuid();
+                        var familyGroupTypeId = GroupTypeCache.Read( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY ).Id;
                         familyRoleGuid = new GroupMemberService( new RockContext() ).Queryable()
                                             .Where( m =>
-                                                m.Group.GroupType.Guid == familyGroupTypeGuid
+                                                m.Group.GroupTypeId == familyGroupTypeId
                                                 && m.PersonId == personId )
-                                            .OrderBy( m => m.GroupRole.Order )
+                                            .OrderBy( m => m.GroupOrder ?? int.MaxValue ).ThenBy( m => m.GroupRole.Order )
                                             .Select( m => m.GroupRole.Guid )
                                             .FirstOrDefault();
                     }
@@ -2325,12 +2325,12 @@ namespace Rock.Model
                     Guid? familyRoleGuid = null;
                     if ( personId.HasValue )
                     {
-                        var familyGroupTypeGuid = Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY.AsGuid();
+                        var familyGroupTypeId = GroupTypeCache.Read( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY ).Id;
                         familyRoleGuid = new GroupMemberService( new RockContext() ).Queryable()
                                             .Where( m =>
-                                                m.Group.GroupType.Guid == familyGroupTypeGuid
+                                                m.Group.GroupTypeId == familyGroupTypeId
                                                 && m.PersonId == personId )
-                                            .OrderBy( m => m.GroupRole.Order )
+                                            .OrderBy( m => m.GroupOrder ?? int.MaxValue ).ThenBy( m => m.GroupRole.Order )
                                             .Select( m => m.GroupRole.Guid )
                                             .FirstOrDefault();
                     }
@@ -2802,7 +2802,7 @@ namespace Rock.Model
     public static partial class PersonExtensionMethods
     {
         /// <summary>
-        /// Gets the families.
+        /// Gets the families sorted by the person's GroupOrder (GroupMember.GroupOrder)
         /// </summary>
         /// <param name="person">The person.</param>
         /// <param name="rockContext">The rock context.</param>
@@ -2814,14 +2814,14 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Gets the family for the person. If multiple families the first family is selected with an active family having preference over an inactive one.
+        /// Gets the family for the person. If multiple families the first family based on the GroupOrder value of the GroupMember
         /// </summary>
         /// <param name="person">The person.</param>
         /// <param name="rockContext">The rock context.</param>
         /// <returns></returns>
         public static Group GetFamily( this Person person, RockContext rockContext = null )
         {
-            return person.GetFamilies( rockContext ).OrderByDescending( g => g.IsActive ).FirstOrDefault();
+            return person.GetFamilies( rockContext ).FirstOrDefault();
         }
 
         /// <summary>

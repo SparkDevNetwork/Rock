@@ -37,9 +37,19 @@ namespace Rock.Field.Types
 
         #region enums
 
+        /// <summary>
+        /// 
+        /// </summary>
         public enum DatePickerControlType
         {
+            /// <summary>
+            /// The date picker
+            /// </summary>
             DatePicker,
+            
+            /// <summary>
+            /// The date parts picker
+            /// </summary>
             DatePartsPicker
         }
 
