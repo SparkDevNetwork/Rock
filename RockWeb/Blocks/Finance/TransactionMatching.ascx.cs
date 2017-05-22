@@ -52,6 +52,18 @@ namespace RockWeb.Blocks.Finance
         /// The _focus control
         /// </summary>
         private Control _focusControl = null;
+        private HashSet<int> _visibleAccountIds
+        {
+            get
+            {
+                return this.ViewState["_visibleAccountIds"] as HashSet<int>;
+            }
+
+            set
+            {
+                this.ViewState["_visibleAccountIds"] = value;
+            }
+        }
 
         #endregion
 
@@ -183,7 +195,11 @@ namespace RockWeb.Blocks.Finance
                 accountQry = accountQry.Where( a => !a.CampusId.HasValue || a.CampusId.Value == campusId.Value );
             }
 
-            rptAccounts.DataSource = accountQry.OrderBy( a => a.Order ).ThenBy( a => a.Name ).ToList();
+            _visibleAccountIds = new HashSet<int>( accountQry.Select( a => a.Id ).ToList() );
+
+            // make the datasource all accounts, but only show the ones that are in _visibleAccountIds or have a non-zero amount
+            var qryAllAccounts = new FinancialAccountService( rockContext ).Queryable().AsNoTracking();
+            rptAccounts.DataSource = qryAllAccounts.OrderBy( a => a.Order ).ThenBy( a => a.Name ).ToList();
             rptAccounts.DataBind();
 
             rcwEnvelope.Visible = GlobalAttributesCache.Read().EnableGivingEnvelopeNumber;
@@ -481,6 +497,7 @@ namespace RockWeb.Blocks.Finance
                     foreach ( var accountBox in rptAccounts.ControlsOfTypeRecursive<CurrencyBox>() )
                     {
                         accountBox.Text = string.Empty;
+                        accountBox.Visible = _visibleAccountIds.Contains( accountBox.Attributes["data-account-id"].AsInteger() );
                     }
 
                     foreach ( var detail in transactionToMatch.TransactionDetails )
@@ -489,6 +506,13 @@ namespace RockWeb.Blocks.Finance
                         if ( accountBox != null )
                         {
                             accountBox.Text = detail.Amount.ToString();
+
+                            
+                            if ( !accountBox.Visible && detail.Amount != 0 )
+                            {
+                                // if there is a non-zero amount, show the edit box regardless of the account filter settings
+                                accountBox.Visible = true;
+                            }
                         }
                     }
 
