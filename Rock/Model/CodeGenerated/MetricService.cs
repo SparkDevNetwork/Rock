@@ -101,6 +101,7 @@ namespace Rock.Model
             target.MetricChampionPersonAliasId = source.MetricChampionPersonAliasId;
             target.NumericDataType = source.NumericDataType;
             target.ScheduleId = source.ScheduleId;
+            target.SourceLava = source.SourceLava;
             target.SourceSql = source.SourceSql;
             target.SourceValueTypeId = source.SourceValueTypeId;
             target.Subtitle = source.Subtitle;

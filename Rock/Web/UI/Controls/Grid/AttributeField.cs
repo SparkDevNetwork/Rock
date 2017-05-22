@@ -209,12 +209,10 @@ namespace Rock.Web.UI.Controls
     /// </summary>
     public class AttributeFieldObject : IHasAttributes
     {
-        int Id { get; set; }
-
-        int IHasAttributes.Id
-        {
-            get { throw new NotImplementedException(); }
-        }
+        /// <summary>
+        /// Gets the id.
+        /// </summary>
+        public int Id { get; set; }
 
         /// <summary>
         /// List of attributes associated with the object.  This property will not include the attribute values.

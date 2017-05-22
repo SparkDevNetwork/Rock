@@ -118,6 +118,21 @@ namespace Rock.Reporting.DataSelect.Person
             }
         }
 
+        /// <summary>
+        /// Comma-delimited list of the Entity properties that should be used for Sorting. Normally, you should leave this as null which will make it sort on the returned field
+        /// To disable sorting for this field, return string.Empty;
+        /// </summary>
+        /// <param name="selection"></param>
+        /// <returns></returns>
+        /// <value>
+        /// The sort expression.
+        /// </value>
+        public override string SortProperties( string selection )
+        {
+            // disable sorting on this column since it is an IEnumerable
+            return string.Empty;
+        }
+
         #endregion
 
         #region Methods
@@ -163,6 +178,7 @@ namespace Rock.Reporting.DataSelect.Person
                 .Select( p => familyGroupMembers.Where( s => s.PersonId == p.Id && s.GroupRole.Guid == childGuid )
                     .SelectMany( m => m.Group.Members )
                     .Where( m => m.GroupRole.Guid == adultGuid )
+                    .OrderBy( m => m.Group.Members.FirstOrDefault( x => x.PersonId == p.Id ).GroupOrder ?? int.MaxValue )
                     .Select( m => m.Person )
                     .Where( m => m.PhoneNumbers.Count( t => t.NumberTypeValueId == phoneNumberTypeValueId ) != 0 )
                     .Select( m => m.PhoneNumbers.FirstOrDefault( t => t.NumberTypeValueId == phoneNumberTypeValueId ) ).AsEnumerable() );
