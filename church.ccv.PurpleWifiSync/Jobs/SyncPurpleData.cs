@@ -24,6 +24,7 @@ using System;
 using Rock.Model;
 using System.Linq;
 using Rock.Web.Cache;
+using church.ccv.CCVPurpleWifiSync.Model;
 
 namespace church.ccv.CCVPurpleWifiSync
 {
@@ -74,7 +75,6 @@ namespace church.ccv.CCVPurpleWifiSync
                 Guid connectionStatusGuid = dataMap.GetString( "DefaultConnectionStatus" ).AsGuid( );
 
                 AttendanceGroupId = dataMap.GetInt( "AttendanceGroupId" );
-                
 
                 PurpleWifi.API.Init( publicKey, privateKey, host );
 
@@ -136,9 +136,9 @@ namespace church.ccv.CCVPurpleWifiSync
                         {
                             // Now, process each person
                             PersonService personService = new PersonService( rockContext );
-                            GroupService groupService = new GroupService( rockContext );
                             AttendanceService attendanceService = new AttendanceService( rockContext );
                             PersonAliasService personAliasService = new PersonAliasService( rockContext );
+                            Service<PurpleUser> purpleUserService = new Service<PurpleUser>( rockContext );
 
                             // make sure the person has valid first/last/email, or we can't process them
                             if ( string.IsNullOrWhiteSpace( visitor.First_Name ) == false &&
@@ -152,7 +152,7 @@ namespace church.ccv.CCVPurpleWifiSync
                                 campusId = campusId == -1 ? null : campusId;
 
                                 // first make sure the person exists, adding them if they don't.
-                                if ( TryAddPerson( visitor, campusId, connectionStatus.Id, recordStatusPending.Id, recordTypePerson.Id, personService, rockContext, out personId ) == true )
+                                if ( TryAddPerson( visitor, campusId, connectionStatus.Id, recordStatusPending.Id, recordTypePerson.Id, personService, personAliasService, purpleUserService, rockContext, out personId ) == true )
                                 {
                                     numNewPeople++;
                                 }
@@ -193,47 +193,62 @@ namespace church.ccv.CCVPurpleWifiSync
                             int recordStatusPendingId, 
                             int recordTypePersonId, 
                             PersonService personService, 
+                            PersonAliasService personAliasService,
+                            Service<PurpleUser> purpleUserService,
                             RockContext rockContext,
                             out int personId )
         {
 
-            // first, see if they already exist in the database
-            IEnumerable<Person> personList = personService.GetByMatch( visitor.First_Name, visitor.Last_Name, visitor.Email );
-
-            Person person = null;
             bool createdNewPerson = false;
-                        
-            // they don't, so add them
-            if ( personList.Count( ) == 0 )
+
+            // Before creating someone new, see if they already exist in the database.
+
+            // Our first attempt will be finding them by a Purple Wifi Id in our lookup table. (Purple User ID -> Person Alias ID)
+            Person person = GetPersonByPurpleWifiId( visitor.Id, personAliasService, purpleUserService );
+            if( person == null )
             {
-                // wrap the transaction since SaveNewPerson invokes multiple context saves
-                rockContext.WrapTransaction( () =>
+                // we couldn't, so see if they exist by a matching first, last, and email
+                IEnumerable<Person> personList = personService.GetByMatch( visitor.First_Name, visitor.Last_Name, visitor.Email );
+            
+                // they don't, so add them
+                if ( personList.Count( ) == 0 )
                 {
-                    person = new Person( );
-                
-                    person.FirstName = visitor.First_Name.Trim( );
-                    person.LastName = visitor.Last_Name.Trim( );
+                    // wrap the transaction since SaveNewPerson invokes multiple context saves
+                    rockContext.WrapTransaction( ( ) =>
+                    {
+                        person = new Person( );
 
-                    person.Email = visitor.Email.Trim( );
-                    person.IsEmailActive = string.IsNullOrWhiteSpace( visitor.Email ) == false ? true : false;
-                    person.EmailPreference = EmailPreference.EmailAllowed;
+                        person.FirstName = visitor.First_Name.Trim( );
+                        person.LastName = visitor.Last_Name.Trim( );
 
-                    // now set values so it's a Person Record Type, and pending visitor.
-                    person.ConnectionStatusValueId = connectionStatusVisitorId;
-                    person.RecordStatusValueId = recordStatusPendingId;
-                    person.RecordTypeValueId = recordTypePersonId;
+                        person.Email = visitor.Email.Trim( );
+                        person.IsEmailActive = string.IsNullOrWhiteSpace( visitor.Email ) == false ? true : false;
+                        person.EmailPreference = EmailPreference.EmailAllowed;
 
-                    person.SystemNote = "Added by PurpleWifi";
+                        // now set values so it's a Person Record Type, and pending visitor.
+                        person.ConnectionStatusValueId = connectionStatusVisitorId;
+                        person.RecordStatusValueId = recordStatusPendingId;
+                        person.RecordTypeValueId = recordTypePersonId;
 
-                    // now, save the person so that all the extra stuff (known relationship groups) gets created.
-                    Group newFamily = PersonService.SaveNewPerson( person, rockContext, campusId );
+                        person.SystemNote = "Added by PurpleWifi";
 
-                    createdNewPerson = true;
-                });
-            }
-            else
-            {
-                person = personList.First( );
+                        // now, save the person so that all the extra stuff (known relationship groups) gets created.
+                        Group newFamily = PersonService.SaveNewPerson( person, rockContext, campusId );
+
+                        createdNewPerson = true;
+                    } );
+                }
+                else
+                {
+                    person = personList.First( );
+                }
+
+                // whether they exist in Rock or not, this was the first time we've encountered them,
+                // so put them in our lookup table.
+                PurpleUser purpleUser = new PurpleUser( );
+                purpleUser.PurpleId = int.Parse( visitor.Id );
+                purpleUser.PersonAliasId = person.PrimaryAliasId.Value;
+                purpleUserService.Add( purpleUser );
             }
             
             // return the ID of the person we created / found, and whether we did create a new person
@@ -264,6 +279,25 @@ namespace church.ccv.CCVPurpleWifiSync
             }
 
             return false;
+        }
+
+        public Person GetPersonByPurpleWifiId( string purpleWifiId, PersonAliasService personAliasService, Service<PurpleUser> purpleUserService )
+        {
+            // find this purple user ID in the lookup table. If it exists, we've processed this person,
+            // and the corresponding Person Alias Id will point to their record, whether a merged one or the original.
+            int purpleWifiUserId = int.Parse( purpleWifiId );
+            PurpleUser purpleUser = purpleUserService.Queryable( ).Where( pu => pu.PurpleId == purpleWifiUserId ).SingleOrDefault( );
+            if( purpleUser != null )
+            {
+                // grab the person and return them
+                PersonAlias personAlias = personAliasService.Get( purpleUser.PersonAliasId );
+                if( personAlias != null )
+                {
+                    return personAlias.Person;
+                }
+            }
+
+            return null;
         }
 
         int? VenueToCampus( PurpleWifi.Models.Venue venue )
