@@ -29,6 +29,7 @@ namespace Rock.Model
     /// <summary>
     /// Represents a connection type
     /// </summary>
+    [RockDomain( "Connection" )]
     [Table( "ConnectionType" )]
     [DataContract]
     public partial class ConnectionType : Model<ConnectionType>
@@ -103,7 +104,7 @@ namespace Rock.Model
         /// The owner person alias identifier.
         /// </value>
         [DataMember]
-        public int? OwnerPersonAliasId {get;set;}
+        public int? OwnerPersonAliasId { get; set; }
 
         /// <summary>
         /// Gets or sets the number of days until the request is considered idle.

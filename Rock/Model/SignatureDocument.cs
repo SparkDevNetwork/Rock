@@ -27,6 +27,7 @@ namespace Rock.Model
     /// <summary>
     /// Represents a persisted <see cref="Rock.Model.SignatureDocument"/> execution/instance in Rock.
     /// </summary>
+    [RockDomain( "Core" )]
     [Table( "SignatureDocument" )]
     [DataContract]
     public partial class SignatureDocument : Model<SignatureDocument>

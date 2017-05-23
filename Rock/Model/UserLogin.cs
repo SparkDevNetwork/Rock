@@ -31,6 +31,7 @@ namespace Rock.Model
     /// <summary>
     /// Represents a user's Rock login and authentication credentials.
     /// </summary>
+    [RockDomain( "Core" )]
     [Table( "UserLogin" )]
     [DataContract]
     public partial class UserLogin : Model<UserLogin>

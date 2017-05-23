@@ -28,6 +28,7 @@ namespace Rock.Model
     /// <summary>
     /// Represents a WorkflowActivityType or set of <see cref="Rock.Model.WorkflowActionType">ActionsTypes</see> that are executed/performed as part of a <see cref="Rock.Model.WorkflowType"/>
     /// </summary>
+    [RockDomain( "Workflow" )]
     [Table( "WorkflowActivityType" )]
     [DataContract]
     public partial class WorkflowActivityType : Model<WorkflowActivityType>, IOrdered

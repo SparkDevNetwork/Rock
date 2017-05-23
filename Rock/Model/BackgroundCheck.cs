@@ -28,6 +28,7 @@ namespace Rock.Model
     /// <summary>
     /// 
     /// </summary>
+    [RockDomain( "Workflow" )]
     [Table( "BackgroundCheck" )]
     [DataContract]
     public partial class BackgroundCheck : Model<BackgroundCheck>
@@ -53,7 +54,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public int? WorkflowId { get; set; }
-    
+
         /// <summary>
         /// Gets or sets the request date.
         /// </summary>
@@ -145,7 +146,7 @@ namespace Rock.Model
         /// </summary>
         public BackgroundCheckConfiguration()
         {
-            this.HasRequired( p => p.PersonAlias ).WithMany().HasForeignKey( p => p.PersonAliasId ).WillCascadeOnDelete(true);
+            this.HasRequired( p => p.PersonAlias ).WithMany().HasForeignKey( p => p.PersonAliasId ).WillCascadeOnDelete( true );
             this.HasOptional( p => p.Workflow ).WithMany().HasForeignKey( p => p.WorkflowId ).WillCascadeOnDelete( true );
             this.HasOptional( p => p.ResponseDocument ).WithMany().HasForeignKey( p => p.ResponseDocumentId ).WillCascadeOnDelete( false );
         }

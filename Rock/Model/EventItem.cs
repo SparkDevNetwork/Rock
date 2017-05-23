@@ -30,6 +30,7 @@ namespace Rock.Model
     /// <summary>
     /// Represents an event item for one or more event calendars.
     /// </summary>
+    [RockDomain( "Event" )]
     [Table( "EventItem" )]
     [DataContract]
     public partial class EventItem : Model<EventItem>, IHasActiveFlag

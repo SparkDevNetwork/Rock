@@ -32,6 +32,7 @@ namespace Rock.Model
     /// <summary>
     /// Communication Recipient POCO Entity.
     /// </summary>
+    [RockDomain( "Communication" )]
     [Table( "CommunicationRecipient" )]
     [DataContract]
     public partial class CommunicationRecipient : Model<CommunicationRecipient>

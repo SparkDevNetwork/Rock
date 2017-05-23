@@ -33,6 +33,7 @@ namespace Rock.Model
     /// for each defined value/lookup that you want to create.  In the case of attributes these can be created as the need arises without having to change the core base or add a plug-in just to 
     /// provide additional lookup data.
     /// </remarks>
+    [RockDomain("Core")]
     [Table( "DefinedType" )]
     [DataContract]
     public partial class DefinedType : Model<DefinedType>, IOrdered

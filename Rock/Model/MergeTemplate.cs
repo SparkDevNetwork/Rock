@@ -27,6 +27,7 @@ namespace Rock.Model
     /// <summary>
     /// 
     /// </summary>
+    [RockDomain( "CMS" )]
     [Table( "MergeTemplate" )]
     [DataContract]
     public partial class MergeTemplate : Model<MergeTemplate>, ICategorized

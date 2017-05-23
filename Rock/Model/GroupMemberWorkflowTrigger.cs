@@ -26,6 +26,7 @@ namespace Rock.Model
     /// <summary>
     /// A Group Member Workflow Trigger defined a workflow that should be triggered to start when certain group member changes are made..
     /// </summary>
+    [RockDomain( "Group" )]
     [Table( "GroupMemberWorkflowTrigger" )]
     [DataContract]
     public partial class GroupMemberWorkflowTrigger : Entity<GroupMemberWorkflowTrigger>, IOrdered, IHasActiveFlag

@@ -33,6 +33,7 @@ namespace Rock.Model
     /// <summary>
     /// Represents a filter on a <see cref="Rock.Model.DataView"/> in Rock.
     /// </summary>
+    [RockDomain( "Reporting" )]
     [NotAudited]
     [Table( "DataViewFilter" )]
     [DataContract]

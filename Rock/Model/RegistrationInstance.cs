@@ -32,6 +32,7 @@ namespace Rock.Model
     /// <summary>
     /// 
     /// </summary>
+    [RockDomain( "Event" )]
     [Table( "RegistrationInstance" )]
     [DataContract]
     public partial class RegistrationInstance : Model<RegistrationInstance>, IHasActiveFlag

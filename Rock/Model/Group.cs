@@ -39,6 +39,7 @@ namespace Rock.Model
     /// <remarks>
     /// In Rock any collection or defined subset of people are considered a group.
     /// </remarks>
+    [RockDomain( "Group" )]
     [Table( "Group" )]
     [DataContract]
     public partial class Group : Model<Group>, IOrdered, IHasActiveFlag, IRockIndexable
@@ -139,11 +140,11 @@ namespace Rock.Model
         [Required]
         [DataMember( IsRequired = true )]
         [Previewable]
-        public bool IsActive		
-        {		
-            get { return _isActive; }		
-            set { _isActive = value; }		
-        }		
+        public bool IsActive
+        {
+            get { return _isActive; }
+            set { _isActive = value; }
+        }
         private bool _isActive = true;
 
         /// <summary>
@@ -407,7 +408,7 @@ namespace Rock.Model
             set { _linkages = value; }
         }
         private ICollection<EventItemOccurrenceGroupMap> _linkages;
-        
+
         /// <summary>
         /// Gets the securable object that security permissions should be inherited from.  If block is located on a page
         /// security will be inherited from the page, otherwise it will be inherited from the site.
@@ -596,7 +597,7 @@ namespace Rock.Model
                 // manually set any attendance search group ids to null
                 var attendanceService = new AttendanceService( dbContext as RockContext );
                 foreach ( var attendance in attendanceService.Queryable()
-                    .Where( a => 
+                    .Where( a =>
                         a.SearchResultGroupId.HasValue &&
                         a.SearchResultGroupId.Value == this.Id ) )
                 {
@@ -624,12 +625,12 @@ namespace Rock.Model
                         // validate that a campus is not required
                         var groupType = this.GroupType ?? new GroupTypeService( rockContext ).Queryable().Where( g => g.Id == this.GroupTypeId ).FirstOrDefault();
 
-                        if (groupType != null )
+                        if ( groupType != null )
                         {
-                            if (groupType.GroupsRequireCampus && this.CampusId == null )
+                            if ( groupType.GroupsRequireCampus && this.CampusId == null )
                             {
                                 errorMessage = string.Format( "{0} require a campus.", groupType.Name.Pluralize() );
-                                ValidationResults.Add( new ValidationResult( errorMessage ));
+                                ValidationResults.Add( new ValidationResult( errorMessage ) );
                                 result = false;
                             }
                         }
@@ -666,8 +667,8 @@ namespace Rock.Model
             // return people
             var groups = new GroupService( rockContext ).Queryable().AsNoTracking()
                                 .Where( g =>
-                                     g.IsActive == true 
-                                     && g.GroupType.IsIndexEnabled == true);
+                                     g.IsActive == true
+                                     && g.GroupType.IsIndexEnabled == true );
 
             int recordCounter = 0;
 
@@ -678,7 +679,7 @@ namespace Rock.Model
 
                 recordCounter++;
 
-                if (recordCounter > 100 )
+                if ( recordCounter > 100 )
                 {
                     IndexContainer.IndexDocuments( indexableItems );
                     indexableItems = new List<IndexModelBase>();

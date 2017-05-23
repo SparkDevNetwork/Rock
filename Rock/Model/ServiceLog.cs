@@ -27,6 +27,7 @@ namespace Rock.Model
     /// <summary>
     /// Represents a log entry from when Rock makes a call to an external service.
     /// </summary>
+    [RockDomain( "Core" )]
     [Table( "ServiceLog" )]
     [DataContract]
     public partial class ServiceLog : Model<ServiceLog>
