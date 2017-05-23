@@ -30,7 +30,7 @@ namespace Rock.Model
     /// <summary>
     /// Recipient of a notification
     /// </summary>
-    [RockDomain( "Core" )]
+    [RockDomain( "Communication" )]
     [Table( "NotificationRecipient" )]
     [DataContract]
     public partial class NotificationRecipient : Model<NotificationRecipient>

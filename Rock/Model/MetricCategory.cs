@@ -26,7 +26,7 @@ namespace Rock.Model
     /// <summary>
     /// 
     /// </summary>
-    [RockDomain( "Core" )]
+    [RockDomain( "Reporting" )]
     [Table( "MetricCategory" )]
     [DataContract]
     public class MetricCategory : Entity<MetricCategory>, IOrdered, ICategorized

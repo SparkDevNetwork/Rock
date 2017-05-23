@@ -26,7 +26,7 @@ namespace Rock.Model
     /// <summary>
     /// 
     /// </summary>
-    [RockDomain( "Core" )]
+    [RockDomain( "CRM" )]
     [Table( "PersonDuplicate" )]
     [DataContract]
     public partial class PersonDuplicate : Model<PersonDuplicate>

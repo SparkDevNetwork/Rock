@@ -31,7 +31,7 @@ namespace Rock.Model
     /// 
     /// The PersonAlias entity is a log containing the merge history (previous Person identifiers) and a pointer to the Person's current Id.
     /// </summary>
-    [RockDomain( "Core" )]
+    [RockDomain( "CRM" )]
     [Table( "PersonAlias" )]
     [NotAudited]
     [DataContract]

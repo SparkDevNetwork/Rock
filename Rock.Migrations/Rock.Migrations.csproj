@@ -226,6 +226,10 @@
     <Compile Include="Migrations\201705221159536_AccountTreeView.Designer.cs">
       <DependentUpon>201705221159536_AccountTreeView.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201705231726383_NewModelMap.cs" />
+    <Compile Include="Migrations\201705231726383_NewModelMap.Designer.cs">
+      <DependentUpon>201705231726383_NewModelMap.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 6.0\Version 1.6.0\201609282147388_WaitList.cs" />
     <Compile Include="Migrations\Version 6.0\Version 1.6.0\201609282147388_WaitList.Designer.cs">
       <DependentUpon>201609282147388_WaitList.cs</DependentUpon>
@@ -2546,6 +2550,9 @@
     <EmbeddedResource Include="Migrations\201705221159536_AccountTreeView.resx">
       <DependentUpon>201705221159536_AccountTreeView.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201705231726383_NewModelMap.resx">
+      <DependentUpon>201705231726383_NewModelMap.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 6.0\Version 1.6.0\201609282147388_WaitList.resx">
       <DependentUpon>201609282147388_WaitList.cs</DependentUpon>
     </EmbeddedResource>
@@ -4207,12 +4214,12 @@
       <Link>SqlServerTypes\x86\SqlServerSpatial110.dll</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="Migrations\201705221159536_ufnCrm_GetSpousePersonIdFromPersonId.sql" >
-		<DependentUpon>201705221159536_AccountTreeView.cs</DependentUpon>
-	</Content>
-    <Content Include="Migrations\201705221159536_ufnCrm_GetAddress.sql" >
-	    <DependentUpon>201705221159536_AccountTreeView.cs</DependentUpon>
-	</Content>
+    <Content Include="Migrations\201705221159536_ufnCrm_GetSpousePersonIdFromPersonId.sql">
+      <DependentUpon>201705221159536_AccountTreeView.cs</DependentUpon>
+    </Content>
+    <Content Include="Migrations\201705221159536_ufnCrm_GetAddress.sql">
+      <DependentUpon>201705221159536_AccountTreeView.cs</DependentUpon>
+    </Content>
     <Content Include="Migrations\201610031959052_FamilyAnalyticsUpdate_spCrm_FamilyAnalyticsAttendance.sql">
       <DependentUpon>201610031959052_FamilyAnalyticsUpdate.cs</DependentUpon>
     </Content>

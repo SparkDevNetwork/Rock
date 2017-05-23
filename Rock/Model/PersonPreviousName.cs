@@ -30,7 +30,7 @@ namespace Rock.Model
     /// <summary>
     /// Contains a list of previous LastNames that this person has had
     /// </summary>
-    [RockDomain( "Core" )]
+    [RockDomain( "CRM" )]
     [Table( "PersonPreviousName" )]
     [DataContract]
     public class PersonPreviousName : Model<PersonPreviousName>

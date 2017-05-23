@@ -26,6 +26,7 @@ namespace Rock.Model
     /// <summary>
     /// Represents the source record for an Analytic Fact Attendance record in Rock.
     /// </summary>
+    [RockDomain( "Reporting" )]
     [Table( "AnalyticsSourceAttendance" )]
     [DataContract]
     [HideFromReporting]

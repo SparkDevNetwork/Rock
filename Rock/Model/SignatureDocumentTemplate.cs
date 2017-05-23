@@ -28,7 +28,7 @@ namespace Rock.Model
     /// <summary>
     /// SignatureDocumentTemplate Entity.
     /// </summary>
-    [RockDomain( "Core" )]
+    [RockDomain( "Communication" )]
     [Table( "SignatureDocumentTemplate" )]
     [DataContract]
     public partial class SignatureDocumentTemplate : Model<SignatureDocumentTemplate>
