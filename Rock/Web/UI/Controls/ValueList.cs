@@ -445,7 +445,7 @@ namespace Rock.Web.UI.Controls
         private void RegisterClientScript()
         {
             string script = @"
-(function () {
+;(function () {
     function updateKeyValues( e ) {
         var $span = e.closest('span.value-list');
         var newValue = '';
