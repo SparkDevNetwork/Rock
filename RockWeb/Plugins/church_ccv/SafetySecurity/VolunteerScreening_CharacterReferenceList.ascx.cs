@@ -127,8 +127,12 @@ namespace RockWeb.Plugins.church_ccv.SafetySecurity
                 workflow.LoadAttributes( );
             }
 
-            // update the header text
-            lHeader.Text = string.Format( "<h4>Total Responses ({0})</h4>", charRefWorkflows.Count );
+            // the header should show the "total completed". We could use the total number of completed, but security wanted to continue the counting
+            // from their prior system, so the base isn't 0. The number is set once in the Workflow, so we just sort the workflows by their CompletionNumber, and take the top.
+            charRefWorkflows = charRefWorkflows.OrderByDescending( wf => int.Parse( wf.AttributeValues["CompletionNumber"].Value ) ).ToList( );
+
+            // update the header text (take the highest numbered completion number)
+            lHeader.Text = string.Format( "<h4>Total Responses ({0})</h4>", charRefWorkflows.First( ).AttributeValues["CompletionNumber"] );
 
             // render the grid
             BindGrid( rockContext, charRefWorkflows );
@@ -139,7 +143,7 @@ namespace RockWeb.Plugins.church_ccv.SafetySecurity
         /// </summary>
         private void BindGrid( RockContext rockContext, List<Workflow> charRefWorkflows )
         {
-            gGrid.DataSource = charRefWorkflows.OrderByDescending( wf => wf.ModifiedDateTime ).Select( wf => 
+            gGrid.DataSource = charRefWorkflows.Select( wf => 
                     new {
                             CompletionNumber = wf.AttributeValues["CompletionNumber"].Value,
                             Id = wf.Id,
