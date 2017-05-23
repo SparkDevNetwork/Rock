@@ -34,6 +34,7 @@ namespace Rock.Model
     /// here as well as a masked version of the account number.  This saved account will either be associated to a person
     /// alias or a group. 
     /// </summary>
+    [RockDomain( "Finance" )]
     [Table( "FinancialPersonSavedAccount" )]
     [DataContract]
     public partial class FinancialPersonSavedAccount : Model<FinancialPersonSavedAccount>

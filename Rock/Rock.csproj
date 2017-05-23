@@ -507,6 +507,7 @@
     <Compile Include="Data\RockClientIncludeAttribute.cs" />
     <Compile Include="Data\RockContext.cs" />
     <Compile Include="Data\RockContextConfig.cs" />
+    <Compile Include="Data\RockDomainAttribute.cs" />
     <Compile Include="Data\RockPluginDBInitializer.cs" />
     <Compile Include="Data\RouteAttribute.cs" />
     <Compile Include="Data\Service.cs" />

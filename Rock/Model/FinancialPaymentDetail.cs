@@ -36,6 +36,7 @@ namespace Rock.Model
     /// <summary>
     /// Represents details about the bank account or credit card that was used to make a payment
     /// </summary>
+    [RockDomain( "Finance" )]
     [Table( "FinancialPaymentDetail" )]
     [DataContract]
     public partial class FinancialPaymentDetail : Model<FinancialPaymentDetail>

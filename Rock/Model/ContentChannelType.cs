@@ -27,6 +27,7 @@ namespace Rock.Model
     /// <summary>
     /// Represents a Type of <see cref="Rock.Model.ContentChannelType"/>.
     /// </summary>
+    [RockDomain( "CMS" )]
     [Table( "ContentChannelType" )]
     [DataContract]
     public partial class ContentChannelType : Model<ContentChannelType>

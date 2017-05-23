@@ -25,6 +25,7 @@ namespace Rock.Model
     /// <summary>
     /// Represents a personal device used for notifications.
     /// </summary>
+    [RockDomain( "Core" )]
     [Table( "PersonalDevice" )]
     [DataContract]
     public partial class PersonalDevice : Model<PersonalDevice>

@@ -26,6 +26,7 @@ namespace Rock.Model
     /// <summary>
     /// Represents a physical or virtual Campus/Site for an organization.  
     /// </summary>
+    [RockDomain( "Core" )]
     [Table( "Campus" )]
     [DataContract]
     public partial class Campus : Model<Campus>, IOrdered

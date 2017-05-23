@@ -27,6 +27,7 @@ namespace Rock.Model
     /// <summary>
     /// Represents an instance where a <see cref="Rock.Model.Person"/> followed an instance of an entity
     /// </summary>
+    [RockDomain( "Core" )]
     [Table( "Following" )]
     [DataContract]
     public partial class Following : Model<Following>

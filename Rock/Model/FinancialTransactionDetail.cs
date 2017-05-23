@@ -30,6 +30,7 @@ namespace Rock.Model
     /// <summary>
     /// Represents a transaction detail line item for a <see cref="Rock.Model.FinancialTransaction"/> in Rock.
     /// </summary>
+    [RockDomain( "Finance" )]
     [Table( "FinancialTransactionDetail" )]
     [DataContract]
     public partial class FinancialTransactionDetail : Model<FinancialTransactionDetail>, ITransactionDetail

@@ -30,6 +30,7 @@ namespace Rock.Model
     /// Represents an account that gifts/donations and other <see cref="Rock.Model.FinancialTransaction">Financial Transactions</see> are posted to.  
     /// FinancialAccounts are hierarchical and are orderable.
     /// </summary>
+    [RockDomain( "Finance" )]
     [Table( "FinancialAccount" )]
     [DataContract]
     public partial class FinancialAccount : Model<FinancialAccount>, IOrdered, IHasActiveFlag

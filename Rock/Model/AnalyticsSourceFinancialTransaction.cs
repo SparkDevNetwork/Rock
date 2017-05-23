@@ -41,7 +41,8 @@ namespace Rock.Model
     /// </summary>
     /// <typeparam name="T"></typeparam>
     /// <seealso cref="Rock.Data.Entity{T}" />
-    public abstract class AnalyticsBaseFinancialTransaction<T> : Entity<T> 
+    [RockDomain( "Reporting" )]
+    public abstract class AnalyticsBaseFinancialTransaction<T> : Entity<T>
         where T : AnalyticsBaseFinancialTransaction<T>, new()
     {
         #region Entity Properties specific to Analytics

@@ -27,6 +27,7 @@ namespace Rock.Model
     /// <summary>
     /// The plugin migrations that have bee run
     /// </summary>
+    [RockDomain( "Core" )]
     [Table( "PluginMigration" )]
     [DataContract]
     public partial class PluginMigration : Model<PluginMigration>

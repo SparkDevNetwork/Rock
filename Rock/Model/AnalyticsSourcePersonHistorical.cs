@@ -37,6 +37,7 @@ namespace Rock.Model
     /// <summary>
     /// AnalyticsSourcePersonHistorical is a real table, and AnalyticsDimPersonHistorical and AnalyticsDimPersonCurrent are VIEWs off of AnalyticsSourcePersonHistorical, so they share lots of columns
     /// </summary>
+    [RockDomain( "Reporting" )]
     public abstract class AnalyticsSourcePersonBase<T> : Entity<T>
         where T : AnalyticsSourcePersonBase<T>, new()
     {

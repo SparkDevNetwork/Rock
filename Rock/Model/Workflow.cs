@@ -35,6 +35,7 @@ namespace Rock.Model
     /// <summary>
     /// Represents a persisted <see cref="Rock.Model.Workflow"/> execution/instance in Rock.
     /// </summary>
+    [RockDomain( "Workflow" )]
     [Table( "Workflow" )]
     [DataContract]
     public partial class Workflow : Model<Workflow>
@@ -147,7 +148,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public int? InitiatorPersonAliasId { get; set; }
-        
+
         #endregion
 
         #region Virtual Properties
@@ -217,7 +218,7 @@ namespace Rock.Model
         /// A collection containing the <see cref="Rock.Model.WorkflowActivity">WorkflowActivities</see> that are a part of this Workflow instance.
         /// </value>
         [DataMember]
-        public virtual ICollection<WorkflowActivity> Activities 
+        public virtual ICollection<WorkflowActivity> Activities
         {
             get { return _activities ?? ( _activities = new Collection<WorkflowActivity>() ); }
             set { _activities = value; }
@@ -271,7 +272,7 @@ namespace Rock.Model
                 return this.Activities.Any( a => a.IsActive );
             }
         }
-        
+
         /// <summary>
         /// Gets the parent security authority for this Workflow instance.
         /// </summary>
@@ -295,7 +296,7 @@ namespace Rock.Model
         /// </value>
         [NotMapped]
         [DataMember]
-        public virtual bool IsPersisted 
+        public virtual bool IsPersisted
         {
             get
             {
@@ -321,7 +322,7 @@ namespace Rock.Model
             get
             {
                 string propertyKey = key.ToStringSafe();
-                if( propertyKey == "WorkflowType" )
+                if ( propertyKey == "WorkflowType" )
                 {
                     return WorkflowTypeCache;
                 }
@@ -354,7 +355,8 @@ namespace Rock.Model
             SetInitiator();
 
             while ( ProcessActivity( rockContext, processStartTime, entity, out errorMessages )
-                && errorMessages.Count == 0 ) { }
+                && errorMessages.Count == 0 )
+            { }
 
             this.LastProcessedDateTime = RockDateTime.Now;
 
@@ -398,7 +400,7 @@ namespace Rock.Model
         /// </summary>
         public virtual void MarkComplete( string status )
         {
-            foreach( var activity in this.Activities)
+            foreach ( var activity in this.Activities )
             {
                 activity.MarkComplete();
             }
@@ -536,7 +538,7 @@ namespace Rock.Model
         /// <param name="state">The state.</param>
         public override void PreSaveChanges( Rock.Data.DbContext dbContext, System.Data.Entity.EntityState state )
         {
-            if (_logEntries != null)
+            if ( _logEntries != null )
             {
                 if ( _logEntries.Any() )
                 {
@@ -547,12 +549,12 @@ namespace Rock.Model
                         {
                             workflowLogService.Add( new WorkflowLog { LogDateTime = logEntry.LogDateTime, LogText = logEntry.LogText, WorkflowId = this.Id } );
                         }
-                        
+
                         _logEntries.Clear();
                     }
                 }
             }
-            
+
             // Set the workflow number
             if ( state == System.Data.Entity.EntityState.Added )
             {
@@ -591,7 +593,7 @@ namespace Rock.Model
                     if ( !activity.LastProcessedDateTime.HasValue ||
                         activity.LastProcessedDateTime.Value.CompareTo( processStartTime ) < 0 )
                     {
-                        if ( activity.Attributes == null)
+                        if ( activity.Attributes == null )
                         {
                             activity.LoadAttributes( rockContext );
                         }
@@ -618,7 +620,7 @@ namespace Rock.Model
         [Obsolete( "For improved performance, use the Activate method that takes a WorkflowTypeCache parameter instead. IMPORTANT NOTE: When using the new method, the Workflow object that is returned by that method will not have the WorkflowType property set. If you are referencing the WorkflowType property on a Workflow returned by that method, you will get a Null Reference Exception! You should use the new WorkflowTypeCache property on the workflow instead." )]
         public static Workflow Activate( WorkflowType workflowType, string name )
         {
-            using( var rockContext = new RockContext() )
+            using ( var rockContext = new RockContext() )
             {
                 return Activate( workflowType, name, rockContext );
             }
@@ -702,7 +704,7 @@ namespace Rock.Model
 
             return workflow;
         }
-        
+
         #endregion
 
     }
