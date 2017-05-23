@@ -25,6 +25,7 @@ namespace Rock.Model
 {
     /// <summary>
     /// </summary>
+    [RockDomain( "CMS" )]
     [Table( "RestAction" )]
     [DataContract]
     public partial class RestAction : Model<RestAction>

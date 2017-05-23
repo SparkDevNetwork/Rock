@@ -27,6 +27,7 @@ namespace Rock.Model
     /// <summary>
     /// Represents an entity object that belongs to a Tag. The same entity object can belong to multiple tags.
     /// </summary>
+    [RockDomain( "Core" )]
     [Table( "TaggedItem" )]
     [DataContract]
     public partial class TaggedItem : Model<TaggedItem>

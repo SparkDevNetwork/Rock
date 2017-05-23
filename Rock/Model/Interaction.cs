@@ -27,6 +27,7 @@ namespace Rock.Model
     /// <summary>
     /// Represents a interaction <see cref="Rock.Model.Interaction"/>.
     /// </summary>
+    [RockDomain( "Core" )]
     [NotAudited]
     [Table( "Interaction" )]
     [DataContract]

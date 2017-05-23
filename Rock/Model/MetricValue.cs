@@ -30,6 +30,7 @@ namespace Rock.Model
     /// <summary>
     /// MetricValue POCO Entity.
     /// </summary>
+    [RockDomain( "Core" )]
     [Table( "MetricValue" )]
     [DataContract]
     public partial class MetricValue : Model<MetricValue>, IChartData

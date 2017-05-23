@@ -32,6 +32,7 @@ namespace Rock.Model
     /// <summary>
     /// Represents an <see cref="Rock.Model.WorkflowActionForm"/> (action or task) that is performed as part of a <see cref="Rock.Model.WorkflowActionForm"/>.
     /// </summary>
+    [RockDomain( "Workflow" )]
     [Table( "WorkflowActionForm" )]
     [DataContract]
     public partial class WorkflowActionForm : Model<WorkflowActionForm>

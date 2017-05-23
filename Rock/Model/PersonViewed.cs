@@ -29,6 +29,7 @@ namespace Rock.Model
     /// Represents an instance of when a <see cref="Rock.Model.Person">Person's</see> person detail data was viewed in Rock.  Includes data on who was viewed, the person who viewed their record, and when/where their record
     /// was viewed.
     /// </summary>
+    [RockDomain( "Core" )]
     [Table( "PersonViewed" )]
     [NotAudited]
     [DataContract]

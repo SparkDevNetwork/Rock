@@ -28,6 +28,7 @@ namespace Rock.Model
     /// Represents a detail item of a <see cref="Rock.Model.FinancialScheduledTransaction"/>.  It represents a gift/payment to be made to an <see cref="Rock.Model.FinancialAccount"/>/account
     /// as part of the scheduled transaction. This allows multiple payments/gifts to be consolidated into one scheduled transaction.
     /// </summary>
+    [RockDomain( "Finance" )]
     [Table( "FinancialScheduledTransactionDetail" )]
     [DataContract]
     public partial class FinancialScheduledTransactionDetail : Model<FinancialScheduledTransactionDetail>, ITransactionDetail

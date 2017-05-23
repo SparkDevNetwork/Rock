@@ -27,6 +27,7 @@ namespace Rock.Model
     /// <summary>
     /// Represents Device Type for <see cref="Rock.Model.Interaction">Interaction</see>
     /// </summary>
+    [RockDomain( "Core" )]
     [NotAudited]
     [Table( "InteractionDeviceType" )]
     [DataContract]

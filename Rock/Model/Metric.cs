@@ -28,6 +28,7 @@ namespace Rock.Model
     /// <summary>
     /// Metric POCO Entity.
     /// </summary>
+    [RockDomain( "Core" )]
     [Table( "Metric" )]
     [DataContract]
     public partial class Metric : Model<Metric>

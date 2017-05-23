@@ -33,6 +33,7 @@ namespace Rock.Model
     /// <summary>
     /// Represents a communication in Rock (i.e. email, SMS message, etc.).
     /// </summary>
+    [RockDomain( "Communication" )]
     [Table( "Communication" )]
     [DataContract]
     public partial class Communication : Model<Communication>
@@ -155,7 +156,7 @@ namespace Rock.Model
         /// <value>
         /// A Json formatted <see cref="System.String"/> that contains any additional merge fields for the Communication.
         /// </value>
-        public string AdditionalMergeFieldsJson 
+        public string AdditionalMergeFieldsJson
         {
             get
             {
@@ -245,7 +246,7 @@ namespace Rock.Model
 
                         string componentName = component.GetType().FullName;
                         if ( this.MediumEntityType != null &&
-                            this.MediumEntityType.Name == componentName)
+                            this.MediumEntityType.Name == componentName )
                         {
                             return component;
                         }
@@ -396,7 +397,7 @@ namespace Rock.Model
 
             var delayTime = RockDateTime.Now.AddMinutes( -10 );
 
-            lock( _obj )
+            lock ( _obj )
             {
                 recipient = new CommunicationRecipientService( rockContext ).Queryable( "Communication,PersonAlias.Person" )
                     .Where( r =>

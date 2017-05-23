@@ -26,6 +26,7 @@ namespace Rock.Model
     /// <summary>
     /// 
     /// </summary>
+    [RockDomain( "Core" )]
     [Table( "ScheduleCategoryExclusion" )]
     [DataContract]
     public partial class ScheduleCategoryExclusion : Model<ScheduleCategoryExclusion>

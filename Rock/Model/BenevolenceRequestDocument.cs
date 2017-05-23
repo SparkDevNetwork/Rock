@@ -29,6 +29,7 @@ namespace Rock.Model
     /// <summary>
     /// Represents a benevolence request document.
     /// </summary>
+    [RockDomain( "Finance" )]
     [Table( "BenevolenceRequestDocument" )]
     [DataContract]
     public partial class BenevolenceRequestDocument : Model<BenevolenceRequestDocument>

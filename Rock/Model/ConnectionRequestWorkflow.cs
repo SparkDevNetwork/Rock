@@ -29,6 +29,7 @@ namespace Rock.Model
     /// <summary>
     /// Represents a connection request workflow
     /// </summary>
+    [RockDomain( "Connection" )]
     [Table( "ConnectionRequestWorkflow" )]
     [DataContract]
     public partial class ConnectionRequestWorkflow : Model<ConnectionRequestWorkflow>

@@ -26,6 +26,7 @@ namespace Rock.Model
     /// <summary>
     /// MetricPartition POCO Entity.
     /// </summary>
+    [RockDomain( "Core" )]
     [Table( "MetricPartition" )]
     [DataContract]
     public partial class MetricPartition : Model<MetricPartition>, IOrdered
