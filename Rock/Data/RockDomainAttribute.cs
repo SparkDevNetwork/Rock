@@ -33,28 +33,10 @@ namespace Rock.Data
         public string Name { get; set; }
 
         /// <summary>
-        /// Gets or sets an optional CSS class to include when attribute is rendered
-        /// </summary>
-        /// <value>
-        /// The CSS class.
-        /// </value>
-        public string IconCssClass { get; set; }
-
-        /// <summary>
         /// Initializes a new instance of the <see cref="RockDomainAttribute"/> class.
         /// </summary>
         public RockDomainAttribute()
         {
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="RockDomainAttribute" /> class.
-        /// </summary>
-        /// <param name="name">The defined type GUID.</param>
-        public RockDomainAttribute( string name, string cssClass )
-        {
-            Name = name;
-            IconCssClass = cssClass;
         }
 
         /// <summary>

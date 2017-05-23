@@ -28,6 +28,7 @@ namespace Rock.Model
     /// Note that this represents a combination of the FinancialTransaction and the FinancialTransactionDetail, 
     /// so if a person contributed to multiple accounts in a transaction, there will be multiple AnalyticSourceFinancialRecords.
     /// </summary>
+    [RockDomain( "Reporting" )]
     [Table( "AnalyticsSourceFinancialTransaction" )]
     [DataContract]
     [HideFromReporting]

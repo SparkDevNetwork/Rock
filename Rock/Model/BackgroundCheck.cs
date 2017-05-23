@@ -28,7 +28,7 @@ namespace Rock.Model
     /// <summary>
     /// 
     /// </summary>
-    [RockDomain( "Workflow" )]
+    [RockDomain( "CRM" )]
     [Table( "BackgroundCheck" )]
     [DataContract]
     public partial class BackgroundCheck : Model<BackgroundCheck>

@@ -28,7 +28,7 @@ namespace Rock.Model
     /// <summary>
     /// Represents a Rock email template.
     /// </summary>
-    [RockDomain( "Core" )]
+    [RockDomain( "Communication" )]
     [Table( "SystemEmail" )]
     [DataContract]
     public partial class SystemEmail : Model<SystemEmail>

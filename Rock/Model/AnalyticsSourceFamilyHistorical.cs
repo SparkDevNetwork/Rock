@@ -27,6 +27,7 @@ namespace Rock.Model
     /// <summary>
     /// Represents the source record for the AnalyticsDimFamilyHistorical and AnalyticsDimFamilyCurrent views
     /// </summary>
+    [RockDomain( "Reporting" )]
     [Table( "AnalyticsSourceFamilyHistorical" )]
     [DataContract]
     [HideFromReporting]
