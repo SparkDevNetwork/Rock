@@ -259,11 +259,10 @@ namespace RockWeb.Blocks.Security
             if ( personId > 0 )
             {
                 var userLoginService = new Rock.Model.UserLoginService( new RockContext() );
-				var databaseEntityTypeId = EntityTypeCache.Read( Rock.SystemGuid.EntityType.AUTHENTICATION_DATABASE.AsGuid() ).Id;
                 var userLogins = userLoginService.GetByPersonId( personId )
-				.Where( ul => ul.EntityTypeId == databaseEntityTypeId )
-				.ToList();
-                if ( userLogins.Count > 0 )
+                .ToList();
+
+                if ( userLogins.Any( ul => !AuthenticationContainer.GetComponent( ul.EntityType.Name ).RequiresRemoteAuthentication ) )
                 {
                     DisplaySendLogin( personId, Direction.Forward );
                 }
