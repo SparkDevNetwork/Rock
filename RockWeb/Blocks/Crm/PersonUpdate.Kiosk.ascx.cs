@@ -243,7 +243,8 @@ namespace RockWeb.Blocks.Crm
 
         protected void lbPersonSelectBack_Click( object sender, EventArgs e )
         {
-
+            HidePanels();
+            pnlSearch.Visible = true;
         }
         protected void lbPersonSelectCancel_Click( object sender, EventArgs e )
         {

@@ -113,6 +113,7 @@
 
             <footer>
                 <div class="container">
+                    <br />
                     <div class="row">
                         <div class="col-md-8">
                             <asp:LinkButton ID="lbPersonSelectBack" runat="server" OnClick="lbPersonSelectBack_Click" CssClass="btn btn-default btn-kiosk">Back</asp:LinkButton>
@@ -181,8 +182,8 @@
                 <div class="container">
                     <div class="row">
                         <div class="col-md-8">
-                            <asp:LinkButton ID="lbProfileBack" runat="server" OnClick="lbProfileBack_Click" CssClass="btn btn-default btn-kiosk">Back</asp:LinkButton>
-                            <asp:LinkButton ID="lbProfileCancel" runat="server" OnClick="lbProfileCancel_Click" CssClass="btn btn-default btn-kiosk">Cancel</asp:LinkButton>
+                            <asp:LinkButton ID="lbProfileBack" runat="server" OnClick="lbProfileBack_Click" CssClass="btn btn-default btn-kiosk" CausesValidation="false" >Back</asp:LinkButton>
+                            <asp:LinkButton ID="lbProfileCancel" runat="server" OnClick="lbProfileCancel_Click" CssClass="btn btn-default btn-kiosk" CausesValidation="false">Cancel</asp:LinkButton>
                         </div>
                     </div>
                 </div>
