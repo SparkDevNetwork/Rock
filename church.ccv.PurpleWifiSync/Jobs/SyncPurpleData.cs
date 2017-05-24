@@ -189,7 +189,7 @@ namespace church.ccv.CCVPurpleWifiSync
         
         bool TryAddPerson( PurpleWifi.Models.Visitor visitor, 
                             int? campusId,
-                            int connectionStatusVisitorId, 
+                            int connectionStatusId, 
                             int recordStatusPendingId, 
                             int recordTypePersonId, 
                             PersonService personService, 
@@ -225,8 +225,8 @@ namespace church.ccv.CCVPurpleWifiSync
                         person.IsEmailActive = string.IsNullOrWhiteSpace( visitor.Email ) == false ? true : false;
                         person.EmailPreference = EmailPreference.EmailAllowed;
 
-                        // now set values so it's a Person Record Type, and pending visitor.
-                        person.ConnectionStatusValueId = connectionStatusVisitorId;
+                        // now set values so it's a Person Record Type, and pending whatever status is set.
+                        person.ConnectionStatusValueId = connectionStatusId;
                         person.RecordStatusValueId = recordStatusPendingId;
                         person.RecordTypeValueId = recordTypePersonId;
 
