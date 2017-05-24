@@ -66,10 +66,10 @@
                         </div>
                         <div class="row">
                             <div class="col-md-6">
-                                <Rock:NumberBox ID="nbSetupTime" runat="server" NumberType="Integer" MinimumValue="0" Label="Setup Time" Required="false" OnTextChanged="nbSetupTime_TextChanged" Help="The number of minutes it will take to set up the event." />
+                                <Rock:NumberBox ID="nbSetupTime" runat="server" NumberType="Integer" MinimumValue="0" Label="Setup Time" OnTextChanged="nbSetupTime_TextChanged" Help="The number of minutes it will take to set up the event." RequiredErrorMessage="You must supply a number for Setup Time (even if 0 minutes) as this will effect when others can reserve the same location/resource." />
                             </div>
                             <div class="col-md-6">
-                                <Rock:NumberBox ID="nbCleanupTime" runat="server" NumberType="Integer" MinimumValue="0" Label="Cleanup Time" Required="false" OnTextChanged="nbCleanupTime_TextChanged" Help="The number of minutes it will take to clean up the event." />
+                                <Rock:NumberBox ID="nbCleanupTime" runat="server" NumberType="Integer" MinimumValue="0" Label="Cleanup Time"  OnTextChanged="nbCleanupTime_TextChanged" Help="The number of minutes it will take to clean up the event." RequiredErrorMessage="You must supply a number for Cleanup Time (even if 0 minutes) as this will effect when others can reserve the same location/resource." />
                             </div>
                         </div>
                         <Rock:PanelWidget ID="wpLocations" runat="server" Title="Locations">

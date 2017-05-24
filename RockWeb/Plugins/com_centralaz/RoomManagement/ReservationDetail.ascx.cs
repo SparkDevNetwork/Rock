@@ -47,6 +47,9 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
     [SecurityRoleField( "Final Approval Group", "An optional group that provides final approval for a reservation. If used, this should be the same group as in the Reservation Approval Workflow.", false, "", "" )]
     [SystemEmailField( "System Email", "A system email to use when notifying approvers about a reservation request.", true, "", "", 0 )]
     [BooleanField( "Save Communication History", "Should a record of this communication be saved to the recipient's profile", false, "", 2 )]
+    [BooleanField( "Require Setup & Cleanup Time", "Should the setup and cleanup time be required to be supplied?", true, "", 3, "RequireSetupCleanupTime" )]
+    [IntegerField( "Defatult Setup & Cleanup Time", "If you wish to default to a particular setup and cleanup time, you can supply a value here. (Use -1 to indicate no default value)", false, -1, "", 4, "DefaultSetupCleanupTime" )]
+
     public partial class ReservationDetail : Rock.Web.UI.RockBlock
     {
         #region Fields
@@ -575,7 +578,6 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
                     nbQuantity.Text = "1";
                 }
             }
-
         }
 
         /// <summary>
@@ -1102,6 +1104,7 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
             RockContext rockContext = new RockContext();
             ReservationService roomReservationService = new ReservationService( rockContext );
             Reservation reservation = null;
+            nbSetupTime.Required = nbCleanupTime.Required = GetAttributeValue( "RequireSetupCleanupTime" ).AsBoolean();
 
             if ( PageParameter( "ReservationId" ).AsIntegerOrNull() != null )
             {
@@ -1186,11 +1189,17 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
 
             fuSetupPhoto.BinaryFileId = reservation.SetupPhotoId;
 
+            var defaultTime = GetAttributeValue( "DefaultSetupCleanupTime" );
+            if ( defaultTime == "-1" )
+            {
+                defaultTime = string.Empty;
+            }
+
             rtbName.Text = reservation.Name;
             rtbNote.Text = reservation.Note;
             nbAttending.Text = reservation.NumberAttending.ToString();
-            nbSetupTime.Text = reservation.SetupTime.HasValue ? reservation.SetupTime.ToString() : "30";
-            nbCleanupTime.Text = reservation.CleanupTime.HasValue ? reservation.CleanupTime.ToString() : "30";
+            nbSetupTime.Text = reservation.SetupTime.HasValue ? reservation.SetupTime.ToString() : defaultTime;
+            nbCleanupTime.Text = reservation.CleanupTime.HasValue ? reservation.CleanupTime.ToString() : defaultTime;
             ppContact.SetValue( reservation.ContactPersonAlias != null ? reservation.ContactPersonAlias.Person : null );
 
             pnContactPhone.Text = reservation.ContactPhone;
