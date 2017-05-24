@@ -164,7 +164,7 @@
     </div>
     <!-- Multiple Radios (inline) -->
     <div class="form-group">
-      <label class="control-label col-sm-3" for="InterestedInHostHome">Would you be interested in a host-home during your stay as a resident (no pets allowed)?</label>
+      <label class="control-label col-sm-3" for="InterestedInHostHome">Would you be interested in a host-home during your stay as a resident<br />(no pets allowed)?</label>
       <div class="col-sm-9">
         <label class="radio-inline" for="InterestedInHostHome-0">
           <input type="radio" name="InterestedInHostHome" id="InterestedInHostHome-0" value="Yes" checked="checked">Yes
