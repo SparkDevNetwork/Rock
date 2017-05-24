@@ -69,6 +69,8 @@ namespace Rock.Rest.Controllers
             string entityQualifierValue = null,
             bool showUnnamedEntityItems = true,
             bool showCategoriesThatHaveNoChildren = true,
+            bool includeAllCampuses = true,
+            int campusId = 0,
             string includedCategoryIds = null,
             string excludedCategoryIds = null,
             string defaultIconCssClass = null )
@@ -139,6 +141,12 @@ namespace Rock.Rest.Controllers
                 var newReservation = new Reservation() { Id = reservationId ?? 0, Schedule = new Schedule() { iCalendarContent = iCalendarContent }, SetupTime = setupTime, CleanupTime = cleanupTime };
 
                 var resourceQry = resourceService.Queryable();
+
+                if ( !includeAllCampuses )
+                {
+                    resourceQry = resourceQry.Where( r => r.CampusId == campusId );
+                }
+
                 if ( resourceQry.Where( r => r.CategoryId == parentItemId ) != null )
                 {
                     // Exclude any resources that are attached to locations other than the ones provided here.

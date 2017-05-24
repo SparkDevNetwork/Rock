@@ -22,6 +22,8 @@ using System.Web.UI.WebControls;
 using com.centralaz.RoomManagement.Model;
 using Rock;
 using Rock.Data;
+using Rock.Web.UI.Controls;
+
 namespace com.centralaz.RoomManagement.Web.UI.Controls
 {
     /// <summary>
@@ -30,13 +32,40 @@ namespace com.centralaz.RoomManagement.Web.UI.Controls
     [ToolboxData( "<{0}:ScheduledResourcePicker runat=server></{0}:ScheduledResourcePicker>" )]
     public class ScheduledResourcePicker : Rock.Web.UI.Controls.ItemPicker
     {
+        #region Controls
+
+        /// <summary>
+        /// The checkbox to show inactive groups
+        /// </summary>
+        private RockCheckBox _cbShowAllResources;
+
+        #endregion
+
+        /// <summary>
+        /// Called by the ASP.NET page framework to notify server controls that use composition-based implementation to create any child controls they contain in preparation for posting back or rendering.
+        /// </summary>
+        protected override void CreateChildControls()
+        {
+            base.CreateChildControls();
+
+            _cbShowAllResources = new RockCheckBox();
+            _cbShowAllResources.ContainerCssClass = "pull-right";
+            _cbShowAllResources.SelectedIconCssClass = "fa fa-check-square-o";
+            _cbShowAllResources.UnSelectedIconCssClass = "fa fa-square-o";
+            _cbShowAllResources.ID = this.ID + "_cbShowAllResources";
+            _cbShowAllResources.Text = "Show All Resources";
+            _cbShowAllResources.AutoPostBack = true;
+            _cbShowAllResources.CheckedChanged += _cbShowAllResources_CheckedChanged;
+            this.Controls.Add( _cbShowAllResources );
+        }
+
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
         /// </summary>
         /// <param name="e">An <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnInit( EventArgs e )
         {
-            ItemRestUrlExtraParams = "?getCategorizedItems=true&showUnnamedEntityItems=true&showCategoriesThatHaveNoChildren=true";
+            ItemRestUrlExtraParams = "?includeAllCampuses=false";
             this.IconCssClass = "fa fa-cogs";
             base.OnInit( e );
         }
@@ -137,6 +166,36 @@ namespace com.centralaz.RoomManagement.Web.UI.Controls
         public override string ItemRestUrl
         {
             get { return "~/api/ScheduledResources/GetChildren/"; }
+        }
+
+        /// <summary>
+        /// Render any additional picker actions
+        /// </summary>
+        /// <param name="writer">The writer.</param>
+        public override void RenderCustomPickerActions( HtmlTextWriter writer )
+        {
+            base.RenderCustomPickerActions( writer );
+
+            _cbShowAllResources.RenderControl( writer );
+        }
+
+        /// <summary>
+        /// Sets the extra rest parameters.
+        /// </summary>
+        private void SetExtraRestParams( bool includeAllCampuses = false )
+        {
+            ItemRestUrlExtraParams = "?includeAllCampuses=" + includeAllCampuses.ToTrueFalse() + "&getCategorizedItems=true&showUnnamedEntityItems=true&showCategoriesThatHaveNoChildren=true";
+        }
+
+        /// <summary>
+        /// Handles the CheckedChanged event of the _cbShowAllResources control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        public void _cbShowAllResources_CheckedChanged( object sender, EventArgs e )
+        {
+            ShowDropDown = true;
+            SetExtraRestParams( _cbShowAllResources.Checked );
         }
     }
 }
