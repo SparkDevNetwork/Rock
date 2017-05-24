@@ -54,6 +54,7 @@ public class Mandrill : IHttpHandler
             var rockContext = new Rock.Data.RockContext();
 
             CommunicationRecipientService communicationRecipientService = new CommunicationRecipientService( rockContext );
+
             InteractionComponentService interactionComponentService = new InteractionComponentService( rockContext );
             InteractionService interactionService = new InteractionService( rockContext );
 
