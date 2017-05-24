@@ -34,6 +34,11 @@ namespace Rock.SystemGuid
         public const string GLOBAL_ENABLED_LAVA_COMMANDS = "933CFB7D-C9E1-BDAE-40AD-231002A91626";
 
         /// <summary>
+        /// The global enable giving envelope feature
+        /// </summary>
+        public const string GLOBAL_ENABLE_GIVING_ENVELOPE = "805698B0-BED7-4183-8FC6-3BDBF9E49EF1";
+
+        /// <summary>
         /// The Facebook link attribute
         /// </summary>
         public const string PERSON_FACEBOOK = "2B8A03D3-B7DC-4DA3-A31E-826D655435D5";
@@ -53,7 +58,13 @@ namespace Rock.SystemGuid
         /// </summary>
         public const string PERSON_ALLERGY = "DBD192C9-0AA1-46EC-92AB-A3DA8E056D31";
 
+        /// <summary>
+        /// The person attribute for the the person's giving envelope number
+        /// </summary>
+        public const string PERSON_GIVING_ENVELOPE_NUMBER = "76C33FBC-8799-4DF1-B2FE-A6C41AC3DD49";
+
         #region eRA Attributes
+
         /// <summary>
         /// The eRA Currently an eRA attribute
         /// </summary>

@@ -78,6 +78,8 @@ namespace Rock.Client.Enums
     {
         Layout = 0x0,
         Page = 0x1,
+        Site = 0x2,
+        None = 0x3,
     }
 
     /// <summary>

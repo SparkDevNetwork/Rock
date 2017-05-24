@@ -47,6 +47,9 @@ namespace Rock.Client
         public DateTime? ApprovedOnDateTime { get; set; }
 
         /// <summary />
+        public int? CampusId { get; set; }
+
+        /// <summary />
         public int? CategoryId { get; set; }
 
         /// <summary />
@@ -139,6 +142,7 @@ namespace Rock.Client
             this.Answer = source.Answer;
             this.ApprovedByPersonAliasId = source.ApprovedByPersonAliasId;
             this.ApprovedOnDateTime = source.ApprovedOnDateTime;
+            this.CampusId = source.CampusId;
             this.CategoryId = source.CategoryId;
             this.Email = source.Email;
             this.EnteredDateTime = source.EnteredDateTime;

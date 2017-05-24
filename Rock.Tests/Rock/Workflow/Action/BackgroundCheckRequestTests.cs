@@ -22,7 +22,7 @@ namespace Rock.Tests.Workflow.Action
             Assert.True( BackgroundAction.GetType().GetMethod( "Execute" ) != null );
         }
 
-        [Fact (Skip = "NS - Skipping because of error with APPVYR-WIN user login")]
+        [Fact (Skip = "new way of mocking RockContext")]
         public void ReturnsFalse()
         {
             var BackgroundAction = new BackgroundCheckRequest();
@@ -47,7 +47,7 @@ namespace Rock.Tests.Workflow.Action
 
         }
 
-        [Fact( Skip = "NS - Skipping because of error with APPVYR-WIN user login" )]
+        [Fact( Skip = "new way of mocking RockContext" )]
         public void InvalidProviderGuidError()
         {
             var BackgroundAction = new BackgroundCheckRequest();

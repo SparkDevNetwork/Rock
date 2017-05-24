@@ -76,6 +76,9 @@ namespace Rock.Client
         public string PreHtml { get; set; }
 
         /// <summary />
+        public int? SiteId { get; set; }
+
+        /// <summary />
         public string Zone { get; set; }
 
         /// <summary>
@@ -124,6 +127,7 @@ namespace Rock.Client
             this.PageId = source.PageId;
             this.PostHtml = source.PostHtml;
             this.PreHtml = source.PreHtml;
+            this.SiteId = source.SiteId;
             this.Zone = source.Zone;
             this.CreatedDateTime = source.CreatedDateTime;
             this.ModifiedDateTime = source.ModifiedDateTime;

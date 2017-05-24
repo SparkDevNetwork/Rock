@@ -207,7 +207,7 @@ namespace RockWeb.Blocks.Groups
         Rock.dialogs.confirm('Are you sure you want to delete this group member?', function (result) {
             if (result) {
                 if ( $btn.closest('tr').hasClass('js-has-registration') ) {
-                    Rock.dialogs.confirm('This group member was added through a registration. Are you really sure that you want to delete this group member and remove the link from the registration? ', function (result) {
+                    Rock.dialogs.confirm('This group member was added through a registration. Are you sure that you want to delete this group member and remove the link from the registration? ', function (result) {
                         if (result) {
                             window.location = e.target.href ? e.target.href : e.target.parentElement.href;
                         }
@@ -474,6 +474,17 @@ namespace RockWeb.Blocks.Groups
             {
                 e.Value = string.Empty;
             }
+        }
+
+        /// <summary>
+        /// Handles the ClearFilterClick event of the rFilter control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void rFilter_ClearFilterClick( object sender, EventArgs e )
+        {
+            rFilter.DeleteUserPreferences();
+            SetFilter();
         }
 
         /// <summary>
@@ -1335,5 +1346,7 @@ namespace RockWeb.Blocks.Groups
         }
 
         #endregion
+
+       
     }
 }

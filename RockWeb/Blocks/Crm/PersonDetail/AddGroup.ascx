@@ -11,6 +11,7 @@
             <div class="panel-body">
 
                 <asp:ValidationSummary ID="valSummaryTop" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" />
+                <asp:CustomValidator ID="cvGroupMember" runat="server" Display="None" />
                 <Rock:NotificationBox ID="nbValidation" runat="server" Heading="Please Correct the Following" NotificationBoxType="Danger" />
 
                 <asp:Panel ID="pnlGroupData" runat="server">

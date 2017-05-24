@@ -1477,6 +1477,7 @@ namespace Rock.Data
 
             modelBuilder.Conventions.Add( new GetAddressStoreFunctionInjectionConvention() );
             modelBuilder.Conventions.Add( new GetGeofencingGroupNamesStoreFunctionInjectionConvention() );
+            modelBuilder.Conventions.Add( new GetSpousePersonIdFromPersonIdStoreFunctionInjectionConvention() );
 
             try
             {
