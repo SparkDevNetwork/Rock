@@ -392,7 +392,15 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
                 reservation.ContactPhone = PhoneNumber.FormattedNumber( PhoneNumber.DefaultCountryCode(), pnContactPhone.Number );
                 reservation.ContactEmail = tbContactEmail.Text;
 
-                //Check to make sure that nothing has a scheduling conflict.
+
+                // Check to make sure there's a schedule
+                if ( String.IsNullOrWhiteSpace( lScheduleText.Text ) )
+                {
+                    nbErrorWarning.Text = "<b>Please add a schedule.</b>";
+                    nbErrorWarning.Visible = true;
+                    return;
+                }
+                // Check to make sure that nothing has a scheduling conflict.
                 bool hasConflict = false;
                 StringBuilder sb = new StringBuilder();
                 sb.Append( "<b>The Following items are already reserved for the scheduled times:<br><ul>" );
