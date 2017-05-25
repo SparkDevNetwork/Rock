@@ -24,7 +24,7 @@
                         <Rock:RockDropDownList ID="ddlMinistry" runat="server" Label="Ministry" Required="false" />
                         <Rock:DataTextBox ID="rtbNote" runat="server" Label="Notes" TextMode="MultiLine" Rows="4" MaxLength="2500" SourceTypeName="com.centralaz.RoomManagement.Model.Reservation, com.centralaz.RoomManagement" PropertyName="Note" />
                         <div class="row">
-                            <div class="col-md-3">0
+                            <div class="col-md-3">
                                 <Rock:NumberBox ID="nbAttending" runat="server" NumberType="Integer" MinimumValue="0" Label="Number Attending" Required="false" />
                             </div>
                             <div class="col-md-3">

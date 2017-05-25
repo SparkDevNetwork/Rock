@@ -49,6 +49,7 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
     [BooleanField( "Save Communication History", "Should a record of this communication be saved to the recipient's profile", false, "", 2 )]
     [BooleanField( "Require Setup & Cleanup Time", "Should the setup and cleanup time be required to be supplied?", true, "", 3, "RequireSetupCleanupTime" )]
     [IntegerField( "Defatult Setup & Cleanup Time", "If you wish to default to a particular setup and cleanup time, you can supply a value here. (Use -1 to indicate no default value)", false, -1, "", 4, "DefaultSetupCleanupTime" )]
+    [BooleanField( "Require Number Attending", "Should the Number Attending be required to be supplied?", true, "", 5  )]
 
     public partial class ReservationDetail : Rock.Web.UI.RockBlock
     {
@@ -1116,6 +1117,7 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
             ReservationService roomReservationService = new ReservationService( rockContext );
             Reservation reservation = null;
             nbSetupTime.Required = nbCleanupTime.Required = GetAttributeValue( "RequireSetupCleanupTime" ).AsBoolean();
+            nbAttending.Required = GetAttributeValue( "RequireNumberAttending" ).AsBoolean();
 
             if ( PageParameter( "ReservationId" ).AsIntegerOrNull() != null )
             {
@@ -1127,14 +1129,10 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
                 pdAuditDetails.Visible = false;
                 reservation = new Reservation { Id = 0 };
 
-                // Auto fill out the Contact section with the Current Person's details...
+                // Auto fill only the Administrative Contact section with the Current Person's details...
                 reservation.AdministrativeContactPersonAlias = CurrentPersonAlias;
                 reservation.AdministrativeContactPersonAliasId = CurrentPersonAliasId;
                 reservation.AdministrativeContactEmail = CurrentPerson.Email;
-
-                reservation.EventContactPersonAlias = CurrentPersonAlias;
-                reservation.EventContactPersonAliasId = CurrentPersonAliasId;
-                reservation.EventContactEmail = CurrentPerson.Email;
 
                 Guid workPhoneValueGuid = new Guid( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_WORK );
                 var workPhone = CurrentPerson.PhoneNumbers.Where( p => p.NumberTypeValue.Guid == workPhoneValueGuid ).FirstOrDefault();
