@@ -296,14 +296,14 @@ namespace RockWeb.Plugins.com_centralaz.ChurchMetrics
                 _selectedWeekend = RockDateTime.Today.SundayDate();
             }
 
-            var options = new List<ServiceMetricSelectItem>();
+            var options = new List<InternalServiceMetricSelectItem>();
 
             if ( !_selectedCampusId.HasValue )
             {
                 lSelection.Text = "Select Location:";
                 foreach ( var campus in GetCampuses() )
                 {
-                    options.Add( new ServiceMetricSelectItem( "Campus", campus.Id.ToString(), campus.Name ) );
+                    options.Add( new InternalServiceMetricSelectItem( "Campus", campus.Id.ToString(), campus.Name ) );
                 }
             }
 
@@ -312,7 +312,7 @@ namespace RockWeb.Plugins.com_centralaz.ChurchMetrics
                 lSelection.Text = "Select Week of:";
                 foreach ( var weekend in GetWeekendDates( 1, 0 ) )
                 {
-                    options.Add( new ServiceMetricSelectItem( "Weekend", weekend.ToString( "o" ), "Sunday " + weekend.ToShortDateString() ) );
+                    options.Add( new InternalServiceMetricSelectItem( "Weekend", weekend.ToString( "o" ), "Sunday " + weekend.ToShortDateString() ) );
                 }
             }
 
@@ -321,7 +321,7 @@ namespace RockWeb.Plugins.com_centralaz.ChurchMetrics
                 lSelection.Text = "Select Service Time:";
                 foreach ( var service in GetServices() )
                 {
-                    options.Add( new ServiceMetricSelectItem( "Service", service.Id.ToString(), service.Name ) );
+                    options.Add( new InternalServiceMetricSelectItem( "Service", service.Id.ToString(), service.Name ) );
                 }
             }
 
@@ -484,7 +484,7 @@ namespace RockWeb.Plugins.com_centralaz.ChurchMetrics
         /// </summary>
         private void BindMetrics()
         {
-            var serviceMetricValues = new List<ServiceMetric>();
+            var serviceMetricValues = new List<InternalServiceMetric>();
 
             int campusEntityTypeId = EntityTypeCache.Read( typeof( Rock.Model.Campus ) ).Id;
             int scheduleEntityTypeId = EntityTypeCache.Read( typeof( Rock.Model.Schedule ) ).Id;
@@ -521,7 +521,7 @@ namespace RockWeb.Plugins.com_centralaz.ChurchMetrics
                             SchedulePartitionId = m.MetricPartitions.Where( p => p.EntityTypeId.HasValue && p.EntityTypeId.Value == scheduleEntityTypeId ).Select( p => p.Id ).FirstOrDefault(),
                         } ) )
                     {
-                        var serviceMetric = new ServiceMetric( metric.Id, metric.Title );
+                        var serviceMetric = new InternalServiceMetric( metric.Id, metric.Title );
 
                         if ( campusId.HasValue && weekend.HasValue && scheduleId.HasValue )
                         {
@@ -563,12 +563,12 @@ namespace RockWeb.Plugins.com_centralaz.ChurchMetrics
 
     }
 
-    public class ServiceMetricSelectItem
+    public class InternalServiceMetricSelectItem
     {
         public string CommandName { get; set; }
         public string CommandArg { get; set; }
         public string OptionText { get; set; }
-        public ServiceMetricSelectItem( string commandName, string commandArg, string optionText )
+        public InternalServiceMetricSelectItem( string commandName, string commandArg, string optionText )
         {
             CommandName = commandName;
             CommandArg = commandArg;
@@ -576,13 +576,13 @@ namespace RockWeb.Plugins.com_centralaz.ChurchMetrics
         }
     }
 
-    public class ServiceMetric
+    public class InternalServiceMetric
     {
         public int Id { get; set; }
         public string Name { get; set; }
         public decimal? Value { get; set; }
 
-        public ServiceMetric( int id, string name )
+        public InternalServiceMetric( int id, string name )
         {
             Id = id;
             Name = name;
