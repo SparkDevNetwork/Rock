@@ -79,34 +79,64 @@ namespace com.centralaz.RoomManagement.Model
         public int? SetupPhotoId { get; set; }
 
         /// <summary>
-        /// Gets or sets the name of the contact.
+        /// Gets or sets the name of the event contact.
         /// </summary>
         /// <value>
-        /// The name of the contact.
+        /// The name of the event contact.
         /// </value>
         [DataMember]
-        public int? ContactPersonAliasId { get; set; }
+        public int? EventContactPersonAliasId { get; set; }
 
         /// <summary>
-        /// Gets or sets the contact phone.
+        /// Gets or sets the event contact phone.
         /// </summary>
         /// <value>
-        /// A <see cref="System.String"/> representing the phone number of the contact person.
+        /// A <see cref="System.String"/> representing the phone number of the event contact person.
         /// </value>
         [DataMember]
         [MaxLength( 50 )]
-        public string ContactPhone { get; set; }
+        public string EventContactPhone { get; set; }
 
         /// <summary>
-        /// Gets or sets the email address of the contact.
+        /// Gets or sets the email address of the event contact.
         /// </summary>
         /// <value>
-        /// A <see cref="System.String"/> representing the email of the contact person.
+        /// A <see cref="System.String"/> representing the email of the event contact person.
         /// </value>
         [DataMember]
         [MaxLength( 400 )]
         [RegularExpression( @"[\w\.\'_%-]+(\+[\w-]*)?@([\w-]+\.)+[\w-]+", ErrorMessage = "The Email address is invalid" )]
-        public string ContactEmail { get; set; }
+        public string EventContactEmail { get; set; }
+
+        /// <summary>
+        /// Gets or sets the name of the administrative contact.
+        /// </summary>
+        /// <value>
+        /// The name of the administrative contact.
+        /// </value>
+        [DataMember]
+        public int? AdministrativeContactPersonAliasId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the administrative contact phone.
+        /// </summary>
+        /// <value>
+        /// A <see cref="System.String"/> representing the phone number of the administrative contact person.
+        /// </value>
+        [DataMember]
+        [MaxLength( 50 )]
+        public string AdministrativeContactPhone { get; set; }
+
+        /// <summary>
+        /// Gets or sets the email address of the administrative contact.
+        /// </summary>
+        /// <value>
+        /// A <see cref="System.String"/> representing the email of the administrative contact person.
+        /// </value>
+        [DataMember]
+        [MaxLength( 400 )]
+        [RegularExpression( @"[\w\.\'_%-]+(\+[\w-]*)?@([\w-]+\.)+[\w-]+", ErrorMessage = "The Email address is invalid" )]
+        public string AdministrativeContactEmail { get; set; }
 
         #endregion
 
@@ -170,13 +200,22 @@ namespace com.centralaz.RoomManagement.Model
         public virtual BinaryFile SetupPhoto { get; set; }
 
         /// <summary>
-        /// Gets or sets the <see cref="Rock.Model.PersonAlias"/> representing the personalias who is the contact person.
+        /// Gets or sets the <see cref="Rock.Model.PersonAlias"/> representing the personalias who is the event contact person.
         /// </summary>
         /// <value>
-        /// A <see cref="Rock.Model.PersonAlias"/> representing the personalias who is the contact person.
+        /// A <see cref="Rock.Model.PersonAlias"/> representing the personalias who is the event contact person.
         /// </value>
         [DataMember]
-        public virtual PersonAlias ContactPersonAlias { get; set; }
+        public virtual PersonAlias EventContactPersonAlias { get; set; }
+
+        /// <summary>
+        /// Gets or sets the <see cref="Rock.Model.PersonAlias"/> representing the personalias who is the administrative contact person.
+        /// </summary>
+        /// <value>
+        /// A <see cref="Rock.Model.PersonAlias"/> representing the personalias who is the administrative contact person.
+        /// </value>
+        [DataMember]
+        public virtual PersonAlias AdministrativeContactPersonAlias { get; set; }
 
         #endregion
 
@@ -349,7 +388,8 @@ namespace com.centralaz.RoomManagement.Model
             this.HasRequired( r => r.RequesterAlias ).WithMany().HasForeignKey( r => r.RequesterAliasId ).WillCascadeOnDelete( false );
             this.HasRequired( r => r.ApproverAlias ).WithMany().HasForeignKey( r => r.ApproverAliasId ).WillCascadeOnDelete( false );
             this.HasOptional( p => p.SetupPhoto ).WithMany().HasForeignKey( p => p.SetupPhotoId ).WillCascadeOnDelete( false );
-            this.HasOptional( p => p.ContactPersonAlias ).WithMany().HasForeignKey( p => p.ContactPersonAliasId ).WillCascadeOnDelete( false );
+            this.HasOptional( p => p.EventContactPersonAlias ).WithMany().HasForeignKey( p => p.EventContactPersonAliasId ).WillCascadeOnDelete( false );
+            this.HasOptional( p => p.AdministrativeContactPersonAlias ).WithMany().HasForeignKey( p => p.AdministrativeContactPersonAliasId ).WillCascadeOnDelete( false );
         }
     }
 

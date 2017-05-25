@@ -388,9 +388,12 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
                 reservation.NumberAttending = nbAttending.Text.AsInteger();
                 reservation.SetupTime = nbSetupTime.Text.AsInteger();
                 reservation.CleanupTime = nbCleanupTime.Text.AsInteger();
-                reservation.ContactPersonAliasId = ppContact.PersonAliasId;
-                reservation.ContactPhone = PhoneNumber.FormattedNumber( PhoneNumber.DefaultCountryCode(), pnContactPhone.Number );
-                reservation.ContactEmail = tbContactEmail.Text;
+                reservation.EventContactPersonAliasId = ppEventContact.PersonAliasId;
+                reservation.EventContactPhone = PhoneNumber.FormattedNumber( PhoneNumber.DefaultCountryCode(), pnEventContactPhone.Number );
+                reservation.EventContactEmail = tbEventContactEmail.Text;
+                reservation.AdministrativeContactPersonAliasId = ppAdministrativeContact.PersonAliasId;
+                reservation.AdministrativeContactPhone = PhoneNumber.FormattedNumber( PhoneNumber.DefaultCountryCode(), pnAdministrativeContactPhone.Number );
+                reservation.AdministrativeContactEmail = tbAdministrativeContactEmail.Text;
 
 
                 // Check to make sure there's a schedule
@@ -1125,14 +1128,20 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
                 reservation = new Reservation { Id = 0 };
 
                 // Auto fill out the Contact section with the Current Person's details...
-                reservation.ContactPersonAlias = CurrentPersonAlias;
-                reservation.ContactPersonAliasId = CurrentPersonAliasId;
-                reservation.ContactEmail = CurrentPerson.Email;
+                reservation.AdministrativeContactPersonAlias = CurrentPersonAlias;
+                reservation.AdministrativeContactPersonAliasId = CurrentPersonAliasId;
+                reservation.AdministrativeContactEmail = CurrentPerson.Email;
+
+                reservation.EventContactPersonAlias = CurrentPersonAlias;
+                reservation.EventContactPersonAliasId = CurrentPersonAliasId;
+                reservation.EventContactEmail = CurrentPerson.Email;
+
                 Guid workPhoneValueGuid = new Guid( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_WORK );
                 var workPhone = CurrentPerson.PhoneNumbers.Where( p => p.NumberTypeValue.Guid == workPhoneValueGuid ).FirstOrDefault();
                 if ( workPhone != null )
                 {
-                    reservation.ContactPhone = workPhone.NumberFormatted;
+                    reservation.AdministrativeContactPhone = workPhone.NumberFormatted;
+                    reservation.EventContactPhone = workPhone.NumberFormatted;
                 }
                 else
                 {
@@ -1141,7 +1150,8 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
                     var mobilePhone = CurrentPerson.PhoneNumbers.Where( p => p.NumberTypeValue.Guid == mobilePhoneValueGuid ).FirstOrDefault();
                     if ( mobilePhone != null )
                     {
-                        reservation.ContactPhone = mobilePhone.NumberFormatted;
+                        reservation.AdministrativeContactPhone = mobilePhone.NumberFormatted;
+                        reservation.EventContactPhone = mobilePhone.NumberFormatted;
                     }
                 }
 
@@ -1208,11 +1218,15 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
             nbAttending.Text = reservation.NumberAttending.ToString();
             nbSetupTime.Text = reservation.SetupTime.HasValue ? reservation.SetupTime.ToString() : defaultTime;
             nbCleanupTime.Text = reservation.CleanupTime.HasValue ? reservation.CleanupTime.ToString() : defaultTime;
-            ppContact.SetValue( reservation.ContactPersonAlias != null ? reservation.ContactPersonAlias.Person : null );
+            ppEventContact.SetValue( reservation.EventContactPersonAlias != null ? reservation.EventContactPersonAlias.Person : null );
+            ppAdministrativeContact.SetValue( reservation.AdministrativeContactPersonAlias != null ? reservation.AdministrativeContactPersonAlias.Person : null );
 
-            pnContactPhone.Text = reservation.ContactPhone;
-            tbContactEmail.Text = reservation.ContactEmail;
-            
+            pnEventContactPhone.Text = reservation.EventContactPhone;
+            tbEventContactEmail.Text = reservation.EventContactEmail;
+
+            pnAdministrativeContactPhone.Text = reservation.AdministrativeContactPhone;
+            tbAdministrativeContactEmail.Text = reservation.AdministrativeContactEmail;
+
             LocationsState = reservation.ReservationLocations.ToList();
             BindReservationLocationsGrid();
             if ( LocationsState.Any() )
@@ -1299,20 +1313,20 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
         }
 
         /// <summary>
-        /// Handles the SelectPerson event of the ppContact control.
+        /// Handles the SelectPerson event of the ppEventContact control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void ppContact_SelectPerson( object sender, EventArgs e )
+        protected void ppEventContact_SelectPerson( object sender, EventArgs e )
         {
-            if ( ppContact.PersonId.HasValue )
+            if ( ppEventContact.PersonId.HasValue )
             {
                 using ( var rockContext = new RockContext() )
                 {
                     Guid workPhoneGuid = Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_WORK.AsGuid();
                     var contactInfo = new PersonService( rockContext )
                         .Queryable().AsNoTracking()
-                        .Where( p => p.Id == ppContact.PersonId.Value )
+                        .Where( p => p.Id == ppEventContact.PersonId.Value )
                         .Select( p => new
                         {
                             Email = p.Email,
@@ -1323,14 +1337,52 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
                         } )
                         .FirstOrDefault();
 
-                    if ( string.IsNullOrWhiteSpace( tbContactEmail.Text ) && contactInfo != null )
+                    if ( string.IsNullOrWhiteSpace( tbEventContactEmail.Text ) && contactInfo != null )
                     {
-                        tbContactEmail.Text = contactInfo.Email;
+                        tbEventContactEmail.Text = contactInfo.Email;
                     }
 
-                    if ( string.IsNullOrWhiteSpace( pnContactPhone.Text ) && contactInfo != null )
+                    if ( string.IsNullOrWhiteSpace( pnEventContactPhone.Text ) && contactInfo != null )
                     {
-                        pnContactPhone.Text = contactInfo.Phone;
+                        pnEventContactPhone.Text = contactInfo.Phone;
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Handles the SelectPerson event of the ppAdministrativeContact control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void ppAdministrativeContact_SelectPerson( object sender, EventArgs e )
+        {
+            if ( ppAdministrativeContact.PersonId.HasValue )
+            {
+                using ( var rockContext = new RockContext() )
+                {
+                    Guid workPhoneGuid = Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_WORK.AsGuid();
+                    var contactInfo = new PersonService( rockContext )
+                        .Queryable().AsNoTracking()
+                        .Where( p => p.Id == ppAdministrativeContact.PersonId.Value )
+                        .Select( p => new
+                        {
+                            Email = p.Email,
+                            Phone = p.PhoneNumbers
+                                .Where( n => n.NumberTypeValue.Guid.Equals( workPhoneGuid ) )
+                                .Select( n => n.NumberFormatted )
+                                .FirstOrDefault()
+                        } )
+                        .FirstOrDefault();
+
+                    if ( string.IsNullOrWhiteSpace( tbAdministrativeContactEmail.Text ) && contactInfo != null )
+                    {
+                        tbAdministrativeContactEmail.Text = contactInfo.Email;
+                    }
+
+                    if ( string.IsNullOrWhiteSpace( pnAdministrativeContactPhone.Text ) && contactInfo != null )
+                    {
+                        pnAdministrativeContactPhone.Text = contactInfo.Phone;
                     }
                 }
             }
