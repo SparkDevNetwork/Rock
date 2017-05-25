@@ -16,28 +16,28 @@
     </div>
     <div class="panel-body">
 		<div class="row">
-			<div class="col-md-1">
+			<div class="col-xs-1">
 				<b>Name</b>
 			</div>
-			<div class="col-md-2">       
+			<div class="col-xs-2">       
 				<b>Event Time</b>
 			</div>
-			<div class="col-md-2">
+			<div class="col-xs-2">
 				 <b>Reservation Time</b>
 			</div>
-			<div class="col-md-2">
+			<div class="col-xs-2">
 			  <b>Locations</b>
 			</div>
-			<div class="col-md-2">
+			<div class="col-xs-2">
 			  <b>Resources</b>
 			</div>
-			<div class="col-md-1">
+			<div class="col-xs-1">
 			  <b>Setup</b>
 			</div>
-			<div class="col-md-1">
+			<div class="col-xs-1">
 			  <b>Status</b>
 			</div>
-			<div class="col-md-1">
+			<div class="col-xs-1">
 			  <b>Edit</b>
 			</div>
 		</div>
@@ -48,38 +48,38 @@
 			{% assign rowclasss = '' %}
 		{% endif %}
 		<div class="row {{ rowclasss }}">
-			<div class="col-md-1">
+			<div class="col-xs-1">
 				{{ reservationSummary.ReservationName }}
 			</div>
-			<div class="col-md-2">       
+			<div class="col-xs-2">       
 				{{ reservationSummary.EventDateTimeDescription }}
 			</div>
-			<div class="col-md-2">
+			<div class="col-xs-2">
 				 {{ reservationSummary.ReservationDateTimeDescription }}
 			</div>
-			<div class="col-md-2">
+			<div class="col-xs-2">
 				<ul>
 				{% for reservationLocation in reservationSummary.Locations %}
 				<li>{{ reservationLocation.Location.Name }}{% if reservationLocation.ApprovalState == 2 %} <i class="fa fa-check"></i>{% endif %}</li>
 				{% endfor %}
 				</ul>
 			</div>
-			<div class="col-md-2">
+			<div class="col-xs-2">
 			  <ul>
 				{% for reservationResource in reservationSummary.Resources %}
 				<li>{{ reservationResource.Resource.Name }}({{reservationResource.Quantity}}) {% if reservationResource.ApprovalState == 2 %} <i class="fa fa-check"></i>{% endif %}</li>
 				{% endfor %}
 				</ul>
 			</div>
-			<div class="col-md-1">
+			<div class="col-xs-1">
 			  {% if reservationSummary.SetupPhotoId %}
 				<a href='{{ '~' | ResolveRockUrl }}GetImage.ashx?id={{ reservationSummary.SetupPhotoId }}' target='_blank'><img src='{{ '~' | ResolveRockUrl }}GetImage.ashx?id={{ reservationSummary.SetupPhotoId }}&maxwidth=30&maxheight=30'/></a>
 				{% endif %}
 			</div>
-			<div class="col-md-1">
+			<div class="col-xs-1">
 			  {{ reservationSummary.ApprovalState }}
 			</div>
-			<div class="col-md-1">
+			<div class="col-xs-1">
 			  <a href="{{ DetailsPage }}?ReservationId={{ reservationSummary.Id }}"><i class="fa fa-edit"></i></a>
 			</div>
 		</div>
