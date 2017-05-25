@@ -807,7 +807,7 @@ namespace RockWeb.Blocks.Crm
 
                 var allChanges = new Dictionary<int, List<string>>();
 
-                var people = personService.Queryable().Where( p => ids.Contains( p.Id ) ).ToList();
+                var people = personService.Queryable( true ).Where( p => ids.Contains( p.Id ) ).ToList();
                 foreach ( var person in people )
                 {
                     var changes = new List<string>();
@@ -1305,7 +1305,7 @@ namespace RockWeb.Blocks.Crm
                     var taggedItemService = new TaggedItemService( rockContext );
 
                     // get guids of selected individuals
-                    var personGuids = new PersonService( rockContext ).Queryable()
+                    var personGuids = new PersonService( rockContext ).Queryable( true )
                                         .Where( p =>
                                             ids.Contains( p.Id ) )
                                         .Select( p => p.Guid )
@@ -1546,7 +1546,7 @@ namespace RockWeb.Blocks.Crm
                         string labelText = string.Format( "<span class='js-select-item'><i class='fa {0}'></i></span> {1}", iconCss, attributeCache.Name );
                         Control control = attributeCache.AddControl( pw.Controls, string.Empty, string.Empty, setValues, true, false, labelText );
 
-                        if ( !( control is RockCheckBox ) && !( control is PersonPicker ) && !(control is ItemPicker) )
+                        if ( !( control is RockCheckBox ) && !( control is PersonPicker ) && !( control is ItemPicker ) )
                         {
                             var webControl = control as WebControl;
                             if ( webControl != null )
