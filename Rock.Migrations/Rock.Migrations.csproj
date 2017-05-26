@@ -60,6 +60,9 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="..\Rock.Version\AssemblySharedInfo.cs">
+      <Link>AssemblySharedInfo.cs</Link>
+    </Compile>
     <Compile Include="HotFixMigrations\001_FixLabelMergeFields.cs" />
     <Compile Include="HotFixMigrations\002_FixAttendanceEmail.cs" />
     <Compile Include="HotFixMigrations\003_AddAttendanceIndex.cs" />
