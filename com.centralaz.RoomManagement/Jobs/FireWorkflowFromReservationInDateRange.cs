@@ -16,6 +16,7 @@
 //
 using System;
 using System.Collections.Generic;
+using System.Data.Entity;
 using System.Linq;
 
 using com.centralaz.RoomManagement.Attribute;
@@ -33,8 +34,8 @@ namespace com.centralaz.RoomManagement.Jobs
 {
     [SlidingDateRangeField( "Date Range", "The range of reservations to fire a workflow for.", required: true )]
     [BooleanField( "Include only reservations that start in date range", key: "StartsInDateRange" )]
-    [WorkflowTypeField( "Workflow Type", "The workflow type to fire for eligible reservations", required: true )]
-    [EnumsField( "Reservation Statuses", "The reservation statuses to filter by", typeof( ReservationApprovalState ), false, "", "" )]
+    [WorkflowTypeField( "Workflow Type", "The workflow type to fire for eligible reservations.  The type MUST have a 'ReservationId' attribute that will be set by this job.", required: true )]
+    [EnumsField( "Reservation Statuses", "The reservation statuses to filter by", typeof( ReservationApprovalState ), false, "", "", key: "Status" )]
     [DisallowConcurrentExecution]
     public class FireWorkflowFromReservationInDateRange : IJob
     {
@@ -54,12 +55,15 @@ namespace com.centralaz.RoomManagement.Jobs
         {
             JobDataMap dataMap = context.JobDetail.JobDataMap;
             var dateRange = SlidingDateRangePicker.CalculateDateRangeFromDelimitedValues( dataMap.Get( "DateRange" ) != null ? dataMap.Get( "DateRange" ).ToString() : "-1||" );
-            var startsInDateRange = dataMap.Get( "StartsInDateRange" ).ToString().AsBoolean();
+            var startsInDateRange = dataMap.Get( "StartsInDateRange" ).ToStringSafe().AsBoolean();
+
+            int reservationsProcessed = 0;
+            List<string> workflowErrors = new List<string>();
 
             // Check for the configured states and limit query to those
             var states = new List<ReservationApprovalState>();
 
-            foreach ( string stateVal in ( dataMap.Get( "Status" ).ToString() ?? "2" ).Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ) )
+            foreach ( string stateVal in ( dataMap.Get( "Status" ).ToStringSafe() ?? "2" ).Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ) )
             {
                 var state = stateVal.ConvertToEnumOrNull<ReservationApprovalState>();
                 if ( state != null )
@@ -70,17 +74,17 @@ namespace com.centralaz.RoomManagement.Jobs
 
             var rockContext = new RockContext();
             WorkflowType workflowType = null;
-            Guid? workflowTypeGuid = dataMap.Get( "WorkflowType" ).ToString().AsGuidOrNull();
+            Guid? workflowTypeGuid = dataMap.Get( "WorkflowType" ).ToStringSafe().AsGuidOrNull();
             if ( workflowTypeGuid.HasValue )
             {
                 var workflowTypeService = new WorkflowTypeService( rockContext );
                 workflowType = workflowTypeService.Get( workflowTypeGuid.Value );
             }
 
-            if ( workflowType != null )
+            if ( workflowType != null && ( workflowType.IsActive ?? true ) )
             {
                 var reservationService = new ReservationService( rockContext );
-                var reservationQuery = reservationService.Queryable();
+                var reservationQuery = reservationService.Queryable().AsNoTracking();
                 var reservationList = new List<Reservation>();
 
                 if ( states.Any() )
@@ -124,38 +128,24 @@ namespace com.centralaz.RoomManagement.Jobs
                     {
                         var workflowService = new WorkflowService( rockContext );
                         var workflow = Rock.Model.Workflow.Activate( workflowType, reservation.Name );
-                        workflow.LoadAttributes();
+
+                        // set attributes
                         workflow.SetAttributeValue( "ReservationId", reservation.Id.ToString() );
-                        List<string> workflowErrors;
-                        if ( workflowService.Process( workflow, out workflowErrors ) )
-                        {
-                            if ( workflow.IsPersisted || workflowType.IsPersisted )
-                            {
-                                if ( workflow.Id == 0 )
-                                {
-                                    workflowService.Add( workflow );
-                                }
 
-                                rockContext.WrapTransaction( () =>
-                                {
-                                    rockContext.SaveChanges();
-                                    workflow.SaveAttributeValues( rockContext );
-                                    foreach ( var activity in workflow.Activities )
-                                    {
-                                        activity.SaveAttributeValues( rockContext );
-                                    }
-                                } );
-                            }
-                        }
+                        // lauch workflow
+                        workflowService.Process( workflow, reservation, out workflowErrors );
 
+                        reservationsProcessed++;
                     }
                     catch ( Exception ex )
                     {
+                        ExceptionLogService.LogException( ex, System.Web.HttpContext.Current );
+                        context.Result += "Exception(s) occurred trying to launch a workflow. ";
                     }
                 }
             }
 
-            rockContext.SaveChanges();
+            context.Result += string.Format( "{0} workflows launched{1}", reservationsProcessed, ( workflowErrors.Count > 0 ) ? ", but " + workflowErrors.Count + " workflow errors were reported" : string.Empty );
         }
     }
 }
