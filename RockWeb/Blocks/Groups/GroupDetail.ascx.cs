@@ -825,6 +825,63 @@ namespace RockWeb.Blocks.Groups
             }
         }
 
+        /// <summary>
+        /// Handles the Click event of the btnCopy control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void btnCopy_Click( object sender, EventArgs e )
+        {
+            var rockContext = new RockContext();
+            var groupService = new GroupService( rockContext );
+            var authService = new AuthService( rockContext );
+
+            int groupId = hfGroupId.ValueAsInt();
+            var group = groupService.Queryable( "GroupType" )
+                    .Where( g => g.Id == groupId )
+                    .FirstOrDefault();
+
+            if ( group != null )
+            {
+                // clone the group
+                var newGroup = group.Clone( false );
+                newGroup.CreatedByPersonAlias = null;
+                newGroup.CreatedByPersonAliasId = null;
+                newGroup.CreatedDateTime = RockDateTime.Now;
+                newGroup.ModifiedByPersonAlias = null;
+                newGroup.ModifiedByPersonAliasId = null;
+                newGroup.ModifiedDateTime = RockDateTime.Now;
+                newGroup.Id = 0;
+                newGroup.Guid = Guid.NewGuid();
+                newGroup.IsSystem = false;
+                newGroup.Name = group.Name + " - Copy";
+
+                var auths = authService.GetAuths( group.Id );
+                rockContext.WrapTransaction( () =>
+                {
+                    groupService.Add( newGroup );
+                    rockContext.SaveChanges();
+
+                    foreach ( var auth in auths )
+                    {
+                        var newAuth = auth.Clone( false );
+                        newAuth.Id = 0;
+                        newAuth.Guid = Guid.NewGuid();
+                        newAuth.GroupId = newGroup.Id;
+                        newAuth.CreatedByPersonAlias = null;
+                        newAuth.CreatedByPersonAliasId = null;
+                        newAuth.CreatedDateTime = RockDateTime.Now;
+                        newAuth.ModifiedByPersonAlias = null;
+                        newAuth.ModifiedByPersonAliasId = null;
+                        newAuth.ModifiedDateTime = RockDateTime.Now;
+                        authService.Add( newAuth );
+                    }
+                    rockContext.SaveChanges();
+                } );
+                ShowDetail( newGroup.Id );
+            }
+        }
+
         #endregion
 
         #region Control Events
