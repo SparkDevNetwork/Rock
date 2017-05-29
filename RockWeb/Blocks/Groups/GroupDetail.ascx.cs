@@ -694,7 +694,7 @@ namespace RockWeb.Blocks.Groups
                 cvGroup.ErrorMessage = group.ValidationResults.Select( a => a.ErrorMessage ).ToList().AsDelimited( "<br />" );
                 return;
             }
-            
+
             // use WrapTransaction since SaveAttributeValues does its own RockContext.SaveChanges()
             rockContext.WrapTransaction( () =>
             {
@@ -835,12 +835,13 @@ namespace RockWeb.Blocks.Groups
             var rockContext = new RockContext();
             var groupService = new GroupService( rockContext );
             var authService = new AuthService( rockContext );
+            var attributeService = new AttributeService( rockContext );
 
             int groupId = hfGroupId.ValueAsInt();
             var group = groupService.Queryable( "GroupType" )
                     .Where( g => g.Id == groupId )
                     .FirstOrDefault();
-
+            group.LoadAttributes( rockContext );
             if ( group != null )
             {
                 // clone the group
@@ -861,6 +862,44 @@ namespace RockWeb.Blocks.Groups
                 {
                     groupService.Add( newGroup );
                     rockContext.SaveChanges();
+
+                    newGroup.LoadAttributes( rockContext );
+                    if ( group.Attributes != null && group.Attributes.Any() )
+                    {
+                        foreach ( var attributeKey in group.Attributes.Select( a => a.Key ) )
+                        {
+                            string value = group.GetAttributeValue( attributeKey );
+                            Guid guidValue = value.AsGuid();
+                            newGroup.SetAttributeValue( attributeKey, value );
+                        }
+                    }
+                    newGroup.SaveAttributeValues( rockContext );
+
+                    /* Take care of Group Member Attributes */
+                    var entityTypeId = EntityTypeCache.Read( typeof( GroupMember ) ).Id;
+                    string qualifierColumn = "GroupId";
+                    string qualifierValue = group.Id.ToString();
+                    // Get the existing attributes for this entity type and qualifier value
+                    var attributes = attributeService.Get( entityTypeId, qualifierColumn, qualifierValue );
+
+                    foreach ( var attribute in attributes )
+                    {
+                        var newAttribute = attribute.Clone( false );
+                        newAttribute.Id = 0;
+                        newAttribute.Guid = Guid.NewGuid();
+                        newAttribute.IsSystem = false;
+
+                        foreach ( var qualifier in attribute.AttributeQualifiers )
+                        {
+                            var newQualifier = qualifier.Clone( false );
+                            newQualifier.Id = 0;
+                            newQualifier.Guid = Guid.NewGuid();
+                            newQualifier.IsSystem = false;
+                            newAttribute.AttributeQualifiers.Add( qualifier );
+                        }
+
+                        Rock.Attribute.Helper.SaveAttributeEdits( newAttribute, entityTypeId, qualifierColumn, newGroup.Id.ToString(), rockContext );
+                    }
 
                     foreach ( var auth in auths )
                     {
@@ -1528,7 +1567,7 @@ namespace RockWeb.Blocks.Groups
                     int activeGroupMemberCount = group.Members.Where( m => m.GroupMemberStatus == GroupMemberStatus.Active ).Count();
                     if ( activeGroupMemberCount > group.GroupCapacity )
                     {
-                        nbGroupCapacityMessage.Text = string.Format( "This group is over capacity by {0}.", "individual".ToQuantity((activeGroupMemberCount - group.GroupCapacity.Value)) );
+                        nbGroupCapacityMessage.Text = string.Format( "This group is over capacity by {0}.", "individual".ToQuantity( ( activeGroupMemberCount - group.GroupCapacity.Value ) ) );
                         nbGroupCapacityMessage.Visible = true;
 
                         if ( group.GroupType != null && group.GroupType.GroupCapacityRule == GroupCapacityRule.Hard )
@@ -1625,7 +1664,7 @@ namespace RockWeb.Blocks.Groups
                         {
                             var googleAPIKey = GlobalAttributesCache.Read().GetValue( "GoogleAPIKey" );
 
-                            if ( groupLocation.Location.GeoPoint != null && ! string.IsNullOrWhiteSpace( googleAPIKey ) )
+                            if ( groupLocation.Location.GeoPoint != null && !string.IsNullOrWhiteSpace( googleAPIKey ) )
                             {
                                 string markerPoints = string.Format( "{0},{1}", groupLocation.Location.GeoPoint.Latitude, groupLocation.Location.GeoPoint.Longitude );
                                 string mapLink = System.Text.RegularExpressions.Regex.Replace( mapStyle, @"\{\s*MarkerPoints\s*\}", markerPoints );
