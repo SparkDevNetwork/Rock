@@ -421,6 +421,7 @@ namespace Rock.Model
                                             .Where( m =>
                                                 m.GroupRoleId == this.GroupRoleId
                                                 && m.GroupMemberStatus == GroupMemberStatus.Active )
+                                            .Where( m => m != this)
                                             .Count();
 
                 bool roleMembershipAboveMax = false;
