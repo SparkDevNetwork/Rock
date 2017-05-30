@@ -54,8 +54,9 @@ public class Lava : IHttpHandler
                 string lava = api.GetAttributeValue( "Template" );
                 string enabledLavaCommands = api.GetAttributeValue( "EnabledLavaCommands" );
                 string contentType = api.GetAttributeValue( "ResponseContentType" );
+                var currentUser = Rock.Model.UserLoginService.GetCurrentUser();
 
-                string response = lava.ResolveMergeFields( mergeFields, enabledLavaCommands, false, true );
+                string response = lava.ResolveMergeFields( mergeFields, currentUser != null ? currentUser.Person : null, enabledLavaCommands );
 
                 context.Response.Write( response );
                 context.Response.ContentType = contentType.IsNotNullOrWhitespace() ? contentType : "text/plain";
