@@ -190,7 +190,7 @@ namespace RockWeb.Blocks.Fundraising
             {
                 var person = groupMember.Person;
                 imgProfilePhoto.BinaryFileId = person.PhotoId;
-                imgProfilePhoto.NoPictureUrl = Person.GetPersonPhotoUrl( person, 200, 200 );
+                imgProfilePhoto.NoPictureUrl = Person.GetPersonNoPictureUrl( person, 200, 200 );
 
                 groupMember.LoadAttributes( rockContext );
                 groupMember.Group.LoadAttributes( rockContext );
