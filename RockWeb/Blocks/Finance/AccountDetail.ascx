@@ -26,11 +26,18 @@
                     </p>
 
                     <div class="row">
-                        <div class="col-md-12">
-                            <asp:Literal ID="lblMainDetails" runat="server" />
+                          <div class="col-md-6">
+                            <asp:Literal ID="lLeftDetails" runat="server" />
+                        </div>
+                        <div class="col-md-6">
+                            <asp:Literal ID="lRightDetails" runat="server" />
                         </div>
                     </div>
-
+                       <div class="actions">
+                        <asp:LinkButton ID="btnEdit" runat="server" AccessKey="m" ToolTip="Alt+m" Text="Edit" CssClass="btn btn-primary" OnClick="btnEdit_Click" />
+                        <Rock:ModalAlert ID="mdDeleteWarning" runat="server" />
+                        <asp:LinkButton ID="btnDelete" runat="server" Text="Delete" CssClass="btn btn-link" OnClick="btnDelete_Click" CausesValidation="false" />
+                    </div>
                 </div>
 
                 <div id="pnlEditDetails" runat="server">

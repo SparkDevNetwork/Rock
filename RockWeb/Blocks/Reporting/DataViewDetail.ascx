@@ -70,6 +70,7 @@
                                 <asp:Literal ID="lFilters" runat="server" />
                                 <asp:Literal ID="lDataViews" runat="server" />
                                 <asp:Literal ID="lReports" runat="server" />
+                                <asp:Literal ID="lGroups" runat="server" />
                             </div>
                         </div>
 

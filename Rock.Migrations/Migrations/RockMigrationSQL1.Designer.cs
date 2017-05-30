@@ -2811,5 +2811,58 @@ namespace Rock.Migrations.Migrations {
                 return ResourceManager.GetString("_201701040116351_Analytics1_spAnalytics_ETL_FinancialTransaction", resourceCulture);
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to /*
+        ///&lt;doc&gt;
+        ///    &lt;summary&gt;
+        ///         This function returns the address of the person provided.
+        ///    &lt;/summary&gt;
+        ///
+        ///    &lt;returns&gt;
+        ///        Address of the person.
+        ///    &lt;/returns&gt;
+        ///    &lt;remarks&gt;
+        ///        This function allows you to request an address for a specific person. It will return
+        ///        the first address of that type (multiple address are possible if the individual is in
+        ///        multiple families). 
+        ///        
+        ///        You can provide the address type by specifing &apos;Home&apos;, &apos;Previous&apos;, 
+        ///        &apos;Work&apos;. F [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _201705221159536_ufnCrm_GetAddress {
+            get {
+                return ResourceManager.GetString("_201705221159536_ufnCrm_GetAddress", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to /*
+        ///    &lt;doc&gt;
+        ///	    &lt;summary&gt;
+        /// 		    This function returns the most likely spouse for the person [Id] provided
+        ///	    &lt;/summary&gt;
+        ///
+        ///	    &lt;returns&gt;
+        ///		    Person [Id] of the most likely spouse; otherwise returns NULL
+        ///	    &lt;/returns&gt;
+        ///	    &lt;remarks&gt;
+        ///		
+        ///
+        ///	    &lt;/remarks&gt;
+        ///	    &lt;code&gt;
+        ///		    SELECT [dbo].[ufnCrm_GetSpousePersonIdFromPersonId](3) -- Ted Decker (married) 
+        ///		    SELECT [dbo].[ufnCrm_GetSpousePersonIdFromPersonId](7) -- Ben Jones (single)
+        ///	    &lt;/code&gt;
+        ///    &lt;/doc&gt;
+        ///    */
+        ///
+        ///    ALTER FUNCTION  [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _201705221159536_ufnCrm_GetSpousePersonIdFromPersonId {
+            get {
+                return ResourceManager.GetString("_201705221159536_ufnCrm_GetSpousePersonIdFromPersonId", resourceCulture);
+            }
+        }
     }
 }

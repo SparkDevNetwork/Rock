@@ -2327,7 +2327,7 @@ namespace RockWeb.Blocks.Connection
                             }
                             else
                             {
-                                mdWorkflowLaunched.Show( string.Format( "A '{0}' workflow was processed (but not persisted).",
+                                mdWorkflowLaunched.Show( string.Format( "A '{0}' workflow was processed.",
                                     workflowType.Name ), ModalAlertType.Information );
                             }
                         }
