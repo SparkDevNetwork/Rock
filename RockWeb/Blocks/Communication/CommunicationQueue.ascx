@@ -1,11 +1,6 @@
 ﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="CommunicationQueue.ascx.cs" Inherits="RockWeb.Blocks.Communication.CommunicationQueue" %>
-<script>
-    Sys.Application.add_load(function ()
-    {
-        $('.grid-table span.badge').tooltip({ html: true, container: 'body', delay: { show: 500, hide: 100 } });
-    });
-</script>
-<asp:UpdatePanel ID="upFinancial" runat="server">
+
+<asp:UpdatePanel ID="upCommunication" runat="server">
     <ContentTemplate>
 
         <div class="panel panel-block">
@@ -42,8 +37,5 @@
         </div>
 
         <Rock:ModalAlert ID="mdGridWarning" runat="server" />
-
-
-
     </ContentTemplate>
 </asp:UpdatePanel>

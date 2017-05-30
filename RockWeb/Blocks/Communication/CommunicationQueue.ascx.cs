@@ -25,13 +25,9 @@ using System.Web.UI.WebControls;
 using Rock;
 using Rock.Attribute;
 using Rock.Communication;
-using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
-using Rock.Security;
 using Rock.Web.Cache;
-using Rock.Web.UI;
-using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.Communication
 {
@@ -39,7 +35,7 @@ namespace RockWeb.Blocks.Communication
     [Category( "Communication" )]
     [Description( "Lists the status of all communications." )]
 
-    [IntegerField( "Time Range", "The Hour window within which all the communiations are looked for.", false, 2, "", 0 )]
+    [IntegerField( "Time Range", "Number of hours from Current Time before which all the communiations are looked for.", false, 2, "", 0 )]
     [LinkedPage( "Detail Page" )]
     public partial class CommunicationQueue : Rock.Web.UI.RockBlock
     {
@@ -172,7 +168,6 @@ namespace RockWeb.Blocks.Communication
         {
             var timeRange = GetAttributeValue( "TimeRange" ).AsInteger();
             var beginWindow = RockDateTime.Now.AddHours( -timeRange );
-            var endWindow = RockDateTime.Now.AddHours( timeRange );
 
             var rockContext = new RockContext();
 
