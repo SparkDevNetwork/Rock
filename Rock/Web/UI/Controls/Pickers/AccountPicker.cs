@@ -29,6 +29,15 @@ namespace Rock.Web.UI.Controls
     /// </summary>
     public class AccountPicker : ItemPicker
     {
+        #region Controls
+
+        /// <summary>
+        /// The Select All button
+        /// </summary>
+        private HyperLink _btnSelectAll;
+
+        #endregion
+
         /// <summary>
         /// Initializes a new instance of the <see cref="AccountPicker"/> class.
         /// </summary>
@@ -50,6 +59,35 @@ namespace Rock.Web.UI.Controls
             {
                 ViewState["DisplayActiveOnly"] = value;  
                 this.ItemRestUrlExtraParams = "/" + value.ToString();
+            }
+        }
+
+        /// <summary>
+        /// Called by the ASP.NET page framework to notify server controls that use composition-based implementation to create any child controls they contain in preparation for posting back or rendering.
+        /// </summary>
+        protected override void CreateChildControls()
+        {
+            base.CreateChildControls();
+
+            _btnSelectAll = new HyperLink();
+            _btnSelectAll.ID = "_btnSelectAll";
+            _btnSelectAll.CssClass = "btn btn-default btn-xs js-select-all pull-right";
+            _btnSelectAll.Text = "Select All";
+
+            this.Controls.Add( _btnSelectAll );
+        }
+
+        /// <summary>
+        /// Render any additional picker actions
+        /// </summary>
+        /// <param name="writer">The writer.</param>
+        public override void RenderCustomPickerActions( HtmlTextWriter writer )
+        {
+            base.RenderCustomPickerActions( writer );
+
+            if ( this.AllowMultiSelect )
+            {
+                _btnSelectAll.RenderControl( writer );
             }
         }
 
