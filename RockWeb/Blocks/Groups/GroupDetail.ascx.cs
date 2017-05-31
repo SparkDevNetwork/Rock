@@ -841,9 +841,10 @@ namespace RockWeb.Blocks.Groups
             var group = groupService.Queryable( "GroupType" )
                     .Where( g => g.Id == groupId )
                     .FirstOrDefault();
-            group.LoadAttributes( rockContext );
+            
             if ( group != null )
             {
+                group.LoadAttributes( rockContext );
                 // clone the group
                 var newGroup = group.Clone( false );
                 newGroup.CreatedByPersonAlias = null;
@@ -857,7 +858,7 @@ namespace RockWeb.Blocks.Groups
                 newGroup.IsSystem = false;
                 newGroup.Name = group.Name + " - Copy";
 
-                var auths = authService.GetAuths( group.Id );
+                var auths = authService.GetByGroup( group.Id );
                 rockContext.WrapTransaction( () =>
                 {
                     groupService.Add( newGroup );
@@ -869,7 +870,6 @@ namespace RockWeb.Blocks.Groups
                         foreach ( var attributeKey in group.Attributes.Select( a => a.Key ) )
                         {
                             string value = group.GetAttributeValue( attributeKey );
-                            Guid guidValue = value.AsGuid();
                             newGroup.SetAttributeValue( attributeKey, value );
                         }
                     }
@@ -888,6 +888,7 @@ namespace RockWeb.Blocks.Groups
                         newAttribute.Id = 0;
                         newAttribute.Guid = Guid.NewGuid();
                         newAttribute.IsSystem = false;
+                        newAttribute.EntityTypeQualifierValue = newGroup.Id.ToString();
 
                         foreach ( var qualifier in attribute.AttributeQualifiers )
                         {
@@ -895,11 +896,14 @@ namespace RockWeb.Blocks.Groups
                             newQualifier.Id = 0;
                             newQualifier.Guid = Guid.NewGuid();
                             newQualifier.IsSystem = false;
+
                             newAttribute.AttributeQualifiers.Add( qualifier );
                         }
 
-                        Rock.Attribute.Helper.SaveAttributeEdits( newAttribute, entityTypeId, qualifierColumn, newGroup.Id.ToString(), rockContext );
+                        attributeService.Add( newAttribute );
+                     
                     }
+                    rockContext.SaveChanges();
 
                     foreach ( var auth in auths )
                     {
@@ -916,6 +920,8 @@ namespace RockWeb.Blocks.Groups
                         authService.Add( newAuth );
                     }
                     rockContext.SaveChanges();
+                    Rock.Security.Authorization.Flush();
+
                 } );
                 ShowDetail( newGroup.Id );
             }

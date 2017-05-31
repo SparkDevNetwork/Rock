@@ -65,7 +65,7 @@ namespace Rock.Model
         /// <returns>
         /// An enumerable list of <see cref="Rock.Model.Auth" /> entities that secure a specific entity.
         /// </returns>
-        public IQueryable<Auth> GetAuths( int groupId )
+        public IQueryable<Auth> GetByGroup( int groupId )
         {
             return Queryable()
                 .Where( t => t.GroupId == groupId )
