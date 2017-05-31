@@ -532,17 +532,18 @@
                     // mark them all as unselected (just in case some are selected already), then click them to select them 
                     $childNameNodes.removeClass('selected');
                     $childNameNodes.click();
-
-                    // make sure the child items are showing
-                    var isExpanded = $itemNode.find('.rocktree-icon').hasClass(self.options.iconClasses.branchOpen);
-                    if (!isExpanded) {
-                      $itemNode.find('.rocktree-icon').click();
-                    }
                 } else {
                     // unselect children
                     // mark them all as selected (just in case some are unselected already), then click them to unselect them 
                     $childNameNodes.addClass('selected');
                     $childNameNodes.click();
+                }
+
+                // make sure the child items are showing
+                var $closedFolders = $itemNode.find('.rocktree-icon').filter('.' + self.options.iconClasses.branchClosed.replace(/ /g, '.'))
+
+                if ($closedFolders.length) {
+                  $closedFolders.click();
                 }
             });
         }
