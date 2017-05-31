@@ -37,8 +37,9 @@ namespace RockWeb.Blocks.Finance
     [Category( "Finance" )]
     [Description( "Displays the details of the given financial batch." )]
 
-    [LinkedPage( "Transaction Matching Page", "Page used to match transactions for a batch." )]
-    [LinkedPage( "Audit Page", "Page used to display the history of changes to a batch." )]
+    [LinkedPage( "Transaction Matching Page", "Page used to match transactions for a batch.", order: 1 )]
+    [LinkedPage( "Audit Page", "Page used to display the history of changes to a batch.", order: 2 )]
+    [DefinedTypeField( "Batch Names", "The Defined Type that contains a predefined list of batch names to choose from instead of entering it in manually when adding a new batch. Leave this blank to hide this option and let them edit the batch name manually.", false, "", "", 3 )]
     public partial class BatchDetail : Rock.Web.UI.RockBlock, IDetailBlock
     {
         #region Control Methods
@@ -192,8 +193,16 @@ namespace RockWeb.Blocks.Finance
 
             if ( batch != null )
             {
-                History.EvaluateChange( changes, "Batch Name", batch.Name, tbName.Text );
-                batch.Name = tbName.Text;
+                if ( ddlBatchName.Visible )
+                {
+                    History.EvaluateChange( changes, "Batch Name", batch.Name, ddlBatchName.SelectedItem.Text );
+                    batch.Name = ddlBatchName.SelectedItem.Text;
+                }
+                else
+                {
+                    History.EvaluateChange( changes, "Batch Name", batch.Name, tbName.Text );
+                    batch.Name = tbName.Text;
+                }
 
                 BatchStatus batchStatus = (BatchStatus)ddlStatus.SelectedIndex;
                 History.EvaluateChange( changes, "Status", batch.Status, batchStatus );
@@ -332,6 +341,10 @@ namespace RockWeb.Blocks.Finance
             if ( batchId != 0 )
             {
                 ShowReadonlyDetails( GetBatch( batchId ) );
+            }
+            else
+            {
+                ShowEditDetails( GetBatch( batchId ) );
             }
         }
 
@@ -511,6 +524,28 @@ namespace RockWeb.Blocks.Finance
         /// <param name="batch">The financial batch.</param>
         protected void ShowEditDetails( FinancialBatch batch )
         {
+            if ( batch == null || batch.Id == 0 )
+            {
+                // if the "BatchNames" configuration setting is set, and this is a new batch present a DropDown of BatchNames instead of a text box
+                var batchNamesDefinedTypeGuid = this.GetAttributeValue( "BatchNames" ).AsGuidOrNull();
+                ddlBatchName.Visible = false;
+                tbName.Visible = true;
+
+                if ( batchNamesDefinedTypeGuid.HasValue )
+                {
+                    var batchNamesDefinedType = DefinedTypeCache.Read( batchNamesDefinedTypeGuid.Value );
+                    if ( batchNamesDefinedType != null )
+                    {
+                        ddlBatchName.BindToDefinedType( batchNamesDefinedType, false, false );
+                        if ( batchNamesDefinedType.DefinedValues.Any( a => a.Value.IsNotNullOrWhitespace() ) )
+                        {
+                            ddlBatchName.Visible = true;
+                            tbName.Visible = false;
+                        }
+                    }
+                }
+            }
+
             if ( batch != null )
             {
                 hfBatchId.Value = batch.Id.ToString();
