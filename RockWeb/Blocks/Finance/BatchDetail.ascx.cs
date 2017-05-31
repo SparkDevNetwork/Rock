@@ -511,8 +511,8 @@ namespace RockWeb.Blocks.Finance
                     var batchNamesDefinedType = DefinedTypeCache.Read( batchNamesDefinedTypeGuid.Value );
                     if ( batchNamesDefinedType != null )
                     {
-                        ddlBatchName.BindToDefinedType( batchNamesDefinedType, false, false );
-                        if ( batchNamesDefinedType.DefinedValues.Any( a => a.Value.IsNotNullOrWhitespace() ) )
+                        ddlBatchName.BindToDefinedType( batchNamesDefinedType, true, false );
+                        if ( batchNamesDefinedType.DefinedValues.Any( a => !string.IsNullOrWhiteSpace(a.Value) ) )
                         {
                             ddlBatchName.Visible = true;
                             tbName.Visible = false;
