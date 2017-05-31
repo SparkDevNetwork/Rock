@@ -29,7 +29,7 @@
 
                     <div class="row">
                         <div class="col-md-6">
-                            <Rock:RockDropDownList ID="ddlBatchName" runat="server" Label="Name" Visible="false"/>
+                            <Rock:RockDropDownList ID="ddlBatchName" runat="server" Label="Name" Visible="false" Required="true"/>
                             <Rock:RockTextBox ID="tbName" runat="server" Label="Name" Required="true" />
                             <Rock:RockDropDownList ID="ddlStatus" runat="server" Label="Status" Required="true"></Rock:RockDropDownList>
                             <Rock:DateTimePicker ID="dtpStart" runat="server" Label="Batch Start" Required="true" RequiredErrorMessage="A Batch Start Date is required" />
