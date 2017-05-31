@@ -608,7 +608,7 @@ namespace Rock.Attribute
                 var attributes = entity.Attributes.Select( a => a.Value );
                 if ( !supressOrdering )
                 {
-                    attributes = attributes.OrderBy( t => t.Order ).ThenBy( t => t.Name );
+                    attributes = attributes.OrderBy(t => t.EntityTypeQualifierValue).ThenBy( t => t.Order ).ThenBy( t => t.Name );
                 }
 
                 return GetAttributeCategories( attributes.ToList(), onlyIncludeGridColumns, allowMultiple );
@@ -1204,7 +1204,7 @@ namespace Rock.Attribute
                             value = item.AttributeValues[attribute.Key].Value;
                         }
 
-                        string controlHtml = attribute.FieldType.Field.FormatValueAsHtml( parentControl, value, attribute.QualifierValues );
+                        string controlHtml = attribute.FieldType.Field.FormatValueAsHtml( parentControl, attribute.EntityTypeId, item.Id, value, attribute.QualifierValues );
 
                         // If the Attribute Value has some content, display it.
                         if (!string.IsNullOrWhiteSpace(controlHtml))

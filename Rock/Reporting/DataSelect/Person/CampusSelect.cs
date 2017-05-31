@@ -130,60 +130,21 @@ namespace Rock.Reporting.DataSelect.Person
         /// <returns></returns>
         public override Expression GetExpression( RockContext context, MemberExpression entityIdProperty, string selection )
         {
-            // groupmembers
-            var groupMembers = context.Set<Rock.Model.GroupMember>();
+            int familyGroupTypeId = GroupTypeCache.GetFamilyGroupType().Id;
 
-            // m
-            ParameterExpression groupMemberParameter = Expression.Parameter( typeof( Rock.Model.GroupMember ), "m" );
+            var familyGroups = new GroupService( context ).Queryable()
+                .Where( m => m.GroupTypeId == familyGroupTypeId );
 
-            // m.PersonId
-            MemberExpression memberPersonIdProperty = Expression.Property( groupMemberParameter, "PersonId" );
+            var personCampusQuery = new PersonService( context ).Queryable()
+                .Select( p =>
+                    familyGroups.Where( g => g.Members.Any( a => a.PersonId == p.Id ) ).Select( a => new
+                    {
+                        a.Members.FirstOrDefault( x => x.PersonId == p.Id ).GroupOrder,
+                        CampusName = a.Campus.Name
+                    } ).OrderBy( a => a.GroupOrder ).Select( a => a.CampusName ).FirstOrDefault()
+                    );
 
-            // m.Group
-            MemberExpression groupProperty = Expression.Property( groupMemberParameter, "Group" );
-            MemberExpression groupCampusProperty = Expression.Property( groupProperty, "Campus" );
-
-            // m.Group.GroupTypeId
-            MemberExpression groupTypeProperty = Expression.Property( groupProperty, "GroupTypeID" );
-
-
-            var groupTypeFamily = GroupTypeCache.GetFamilyGroupType();
-            int groupTypeFamilyId = groupTypeFamily != null ? groupTypeFamily.Id : 0;
-
-            // family group type Id
-            Expression groupTypeConstant = Expression.Constant( groupTypeFamilyId );
-
-            // m.PersonId == p.Id
-            Expression personCompare = Expression.Equal( memberPersonIdProperty, entityIdProperty );
-
-            // m.Group.GroupTypeId == GROUPTYPE_FAMILY Id
-            Expression groupTypeCompare = Expression.Equal( groupTypeProperty, groupTypeConstant );
-
-            // m.PersonID == p.Id && m.Group.GroupTypeId == GROUPTYPE_FAMILY Id
-            Expression andExpression = Expression.And( personCompare, groupTypeCompare );
-
-            // m => m.PersonID == p.Id && m.Group.GroupTypeId == GROUPTYPE_FAMILY Id
-            var compare = new Expression[] {
-                Expression.Constant(groupMembers),
-                Expression.Lambda<Func<Rock.Model.GroupMember, bool>>(andExpression, new ParameterExpression[] { groupMemberParameter } )
-            };
-
-            // groupmembers.Where(m => m.PersonID == p.Id && m.Group.GroupTypeId == GROUPTYPE_FAMILY Id)
-            Expression whereExpression = Expression.Call( typeof( Queryable ), "Where", new Type[] { typeof( Rock.Model.GroupMember ) }, compare );
-
-            // m.Group.Campus.Name
-            MemberExpression groupCampusName = Expression.Property( groupCampusProperty, "Name" );
-
-            // m => m.Group.Campus.Name
-            Expression groupCampusNameLambda = Expression.Lambda( groupCampusName, new ParameterExpression[] { groupMemberParameter } );
-
-            // groupmembers.Where(m => m.PersonID == p.Id && m.Group.GroupTypeId == GROUPTYPE_FAMILY Id).Select( m => m.Group.Name);
-            Expression selectName = Expression.Call( typeof( Queryable ), "Select", new Type[] { typeof( Rock.Model.GroupMember ), typeof( string ) }, whereExpression, groupCampusNameLambda );
-
-            // groupmembers.Where(m => m.PersonID == p.Id && m.Group.GroupTypeId == GROUPTYPE_FAMILY Id).Select( m => m.Group.Name).FirstOrDefault();
-            Expression firstOrDefault = Expression.Call( typeof( Queryable ), "FirstOrDefault", new Type[] { typeof( string ) }, selectName );
-
-            return firstOrDefault;
+            return SelectExpressionExtractor.Extract( personCampusQuery, entityIdProperty, "p" );
         }
 
         /// <summary>

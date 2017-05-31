@@ -530,6 +530,7 @@ namespace Rock.Rest.Controllers
             var familyGroupMember = groupMemberService.Queryable()
                 .Where( a => a.PersonId == person.Id )
                 .Where( a => a.Group.GroupTypeId == groupTypeFamilyId )
+                .OrderBy( a => a.GroupOrder ?? int.MaxValue )
                 .Select( s => new
                 {
                     s.GroupRoleId,

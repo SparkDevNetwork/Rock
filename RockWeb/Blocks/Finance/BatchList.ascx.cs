@@ -88,7 +88,7 @@ namespace RockWeb.Blocks.Finance
         Rock.dialogs.confirm('Are you sure you want to delete this batch?', function (result) {
             if (result) {
                 if ( $btn.closest('tr').hasClass('js-has-transactions') ) {
-                    Rock.dialogs.confirm('This batch has transactions. Are you sure that you want to delete this batch and all of it\'s transactions?', function (result) {
+                    Rock.dialogs.confirm('This batch has transactions. Are you sure that you want to delete this batch and all of its transactions?', function (result) {
                         if (result) {
                             window.location = e.target.href ? e.target.href : e.target.parentElement.href;
                         }

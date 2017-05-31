@@ -521,6 +521,10 @@ javascript:
             writer.AddAttribute( HtmlTextWriterAttribute.Class, "pull-right" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
+            if ( _sbSecurity.EntityId != 0 )
+            {
+                writer.WriteLine( string.Format( "<span class=\"label label-default\">Id: {0}</span>", _sbSecurity.EntityId ) );
+            }
             writer.WriteLine( "<a class='btn btn-xs btn-link workflow-activity-reorder'><i class='fa fa-bars'></i></a>" );
             writer.WriteLine( string.Format( "<a class='btn btn-xs btn-link'><i class='workflow-activity-state fa {0}'></i></a>",
                 Expanded ? "fa fa-chevron-up" : "fa fa-chevron-down" ) );

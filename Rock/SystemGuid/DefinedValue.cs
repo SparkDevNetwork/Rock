@@ -103,9 +103,14 @@ namespace Rock.SystemGuid
         public const string CURRENCY_TYPE_ACH = "DABEE8FD-AEDF-43E1-8547-4C97FA14D9B6";
 
         /// <summary>
-        /// ACH
+        /// Non-Cash
         /// </summary>
         public const string CURRENCY_TYPE_NONCASH = "7950FF66-80EE-E8AB-4A77-4A13EDEB7513";
+
+        /// <summary>
+        /// Unknown Currency Type
+        /// </summary>
+        public const string CURRENCY_TYPE_UNKNOWN = "56C9AE9C-B5EB-46D5-9650-2EF86B14F856";
 
         #endregion
 
@@ -269,6 +274,11 @@ namespace Rock.SystemGuid
         /// Metric values are populated from custom sql
         /// </summary>
         public const string METRIC_SOURCE_VALUE_TYPE_SQL = "6A1E1A1B-A636-4E12-B90C-D7FD1BDAE764";
+
+        /// <summary>
+        /// Metric values are populated from custom Lava
+        /// </summary>
+        public const string METRIC_SOURCE_VALUE_TYPE_LAVA = "2868A3E8-4632-4966-84CD-EDB8B775D66C";
 
         #endregion
 

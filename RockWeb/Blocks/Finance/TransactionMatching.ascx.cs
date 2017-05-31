@@ -29,6 +29,7 @@ using Rock.Model;
 using Rock.Security;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
+using Rock.Web.Cache;
 
 namespace RockWeb.Blocks.Finance
 {
@@ -51,6 +52,18 @@ namespace RockWeb.Blocks.Finance
         /// The _focus control
         /// </summary>
         private Control _focusControl = null;
+        private HashSet<int> _visibleAccountIds
+        {
+            get
+            {
+                return this.ViewState["_visibleAccountIds"] as HashSet<int>;
+            }
+
+            set
+            {
+                this.ViewState["_visibleAccountIds"] = value;
+            }
+        }
 
         #endregion
 
@@ -182,8 +195,14 @@ namespace RockWeb.Blocks.Finance
                 accountQry = accountQry.Where( a => !a.CampusId.HasValue || a.CampusId.Value == campusId.Value );
             }
 
-            rptAccounts.DataSource = accountQry.OrderBy( a => a.Order ).ThenBy( a => a.Name ).ToList();
+            _visibleAccountIds = new HashSet<int>( accountQry.Select( a => a.Id ).ToList() );
+
+            // make the datasource all accounts, but only show the ones that are in _visibleAccountIds or have a non-zero amount
+            var qryAllAccounts = new FinancialAccountService( rockContext ).Queryable().AsNoTracking();
+            rptAccounts.DataSource = qryAllAccounts.OrderBy( a => a.Order ).ThenBy( a => a.Name ).ToList();
             rptAccounts.DataBind();
+
+            rcwEnvelope.Visible = GlobalAttributesCache.Read().EnableGivingEnvelopeNumber;
         }
 
         /// <summary>
@@ -295,6 +314,7 @@ namespace RockWeb.Blocks.Finance
                     qryTransactionsToMatch = qryTransactionsToMatch.Where( a => !historyList.Contains( a.Id ) );
                 }
 
+                // put them in a predictable order
                 qryTransactionsToMatch = qryTransactionsToMatch.OrderBy( a => a.CreatedDateTime ).ThenBy( a => a.Id );
 
                 FinancialTransaction transactionToMatch = qryTransactionsToMatch.FirstOrDefault();
@@ -309,6 +329,9 @@ namespace RockWeb.Blocks.Finance
                     {
                         qryRemainingTransactionsToMatch = qryRemainingTransactionsToMatch.Where( a => a.BatchId == batchId );
                     }
+
+                    // put them in a predictable order
+                    qryRemainingTransactionsToMatch = qryRemainingTransactionsToMatch.OrderBy( a => a.CreatedDateTime ).ThenBy( a => a.Id );
 
                     // get the first transaction that we haven't visited yet, or the next one we have visited after one we are on, or simple the first unmatched one
                     transactionToMatch = qryRemainingTransactionsToMatch.Where( a => a.Id > fromTransactionId && !historyList.Contains( a.Id ) ).FirstOrDefault()
@@ -377,6 +400,10 @@ namespace RockWeb.Blocks.Finance
                     }
 
                     hfTransactionId.Value = transactionToMatch.Id.ToString();
+
+                    // stored the value in cents to avoid javascript floating point math issues
+                    hfOriginalTotalAmount.Value = (transactionToMatch.TotalAmount*100).ToString();
+                    hfCurrencySymbol.Value = GlobalAttributesCache.Value( "CurrencySymbol" );
 
                     // get the first 2 images (should be no more than 2, but just in case)
                     var transactionImages = transactionToMatch.Images.OrderBy( a => a.Order ).Take( 2 ).ToList();
@@ -470,6 +497,7 @@ namespace RockWeb.Blocks.Finance
                     foreach ( var accountBox in rptAccounts.ControlsOfTypeRecursive<CurrencyBox>() )
                     {
                         accountBox.Text = string.Empty;
+                        accountBox.Visible = _visibleAccountIds.Contains( accountBox.Attributes["data-account-id"].AsInteger() );
                     }
 
                     foreach ( var detail in transactionToMatch.TransactionDetails )
@@ -478,6 +506,13 @@ namespace RockWeb.Blocks.Finance
                         if ( accountBox != null )
                         {
                             accountBox.Text = detail.Amount.ToString();
+
+                            
+                            if ( !accountBox.Visible && detail.Amount != 0 )
+                            {
+                                // if there is a non-zero amount, show the edit box regardless of the account filter settings
+                                accountBox.Visible = true;
+                            }
                         }
                     }
 
@@ -561,8 +596,8 @@ namespace RockWeb.Blocks.Finance
             var selectedAccountGuidList = new FinancialAccountService( new RockContext() ).GetByIds( selectedAccountIdList ).Select( a => a.Guid ).ToList();
             this.SetUserPreference( keyPrefix + "account-list", selectedAccountGuidList.AsDelimited( "," ) );
 
-            int campusId = cpAccounts.SelectedCampusId ?? 0;
-            this.SetUserPreference( keyPrefix + "account-campus", campusId.ToString() );
+            int? campusId = cpAccounts.SelectedCampusId;
+            this.SetUserPreference( keyPrefix + "account-campus", campusId.HasValue ? campusId.Value.ToString() : "" );
 
             mdAccountsPersonalFilter.Hide();
             LoadDropDowns();
@@ -851,6 +886,69 @@ namespace RockWeb.Blocks.Finance
                 
                 nbSaveError.Text = string.Empty;
                 nbSaveError.Visible = false;
+            }
+        }
+
+        /// <summary>
+        /// Handles the Click event of the btnFindByEnvelopeNumber control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void btnFindByEnvelopeNumber_Click( object sender, EventArgs e )
+        {
+            var rockContext = new RockContext();
+            var personGivingEnvelopeAttribute = AttributeCache.Read( Rock.SystemGuid.Attribute.PERSON_GIVING_ENVELOPE_NUMBER.AsGuid() );
+            var envelopeNumber = tbEnvelopeNumber.Text;
+            if ( !string.IsNullOrEmpty( envelopeNumber ) )
+            {
+                var personIdsWithEnvelopeNumber = new AttributeValueService( rockContext ).Queryable()
+                                        .Where( a => a.AttributeId == personGivingEnvelopeAttribute.Id && a.Value == envelopeNumber )
+                                        .Select( a => a.EntityId.Value );
+                var count = personIdsWithEnvelopeNumber.Count();
+                var personService = new PersonService( rockContext );
+                if ( count == 0 )
+                {
+                    lEnvelopeSearchResults.Text = string.Format( "No individual found with envelope number of {0}.", envelopeNumber );
+                    cblEnvelopeSearchPersons.Visible = false;
+                    mdEnvelopeSearchResults.SaveButtonText = string.Empty;
+                    mdEnvelopeSearchResults.Show();
+                }
+                else if ( count == 1 )
+                {
+                    var personId = personIdsWithEnvelopeNumber.First();
+                    ppSelectNew.SetValue( personService.Get( personId ));
+                    LoadPersonPreview( personId );
+                }
+                else
+                {
+                    lEnvelopeSearchResults.Text = string.Format( "More than one person is assigned envelope number {0}. Please select the individual you wish to use.", envelopeNumber );
+                    cblEnvelopeSearchPersons.Visible = true;
+                    cblEnvelopeSearchPersons.Items.Clear();
+                    var personList = personService.Queryable().Where( a => personIdsWithEnvelopeNumber.Contains( a.Id ) ).AsNoTracking().ToList();
+                    foreach (var person in personList)
+                    {
+                        cblEnvelopeSearchPersons.Items.Add( new ListItem( person.FullName, person.Id.ToString() ) );
+                    }
+
+                    mdEnvelopeSearchResults.SaveButtonText = "Select";
+                    mdEnvelopeSearchResults.Show();
+                }
+            }
+        }
+
+        /// <summary>
+        /// Handles the SaveClick event of the mdEnvelopeSearchResults control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void mdEnvelopeSearchResults_SaveClick( object sender, EventArgs e )
+        {
+            var personId = cblEnvelopeSearchPersons.SelectedValue.AsIntegerOrNull();
+            if ( personId.HasValue )
+            {
+                mdEnvelopeSearchResults.Hide();
+                ppSelectNew.SetValue( new PersonService( new RockContext() ).Get( personId.Value ) );
+                LoadPersonPreview( personId );
             }
         }
 

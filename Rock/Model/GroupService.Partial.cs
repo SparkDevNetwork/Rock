@@ -131,13 +131,12 @@ namespace Rock.Model
             var rockContext = (RockContext)this.Context;
             var groupLocationService = new GroupLocationService( rockContext );
 
-            Guid familyTypeGuid = Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY.AsGuid();
+            var familyGroupTypeId = GroupTypeCache.Read( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY ).Id;
 
             return groupLocationService.GetMappedLocationsByGeofences( geofences )
                 .Where( l =>
                     l.Group != null &&
-                    l.Group.GroupType != null &&
-                    l.Group.GroupType.Guid.Equals( familyTypeGuid ) )
+                    l.Group.GroupTypeId == familyGroupTypeId )
                 .Select( l => l.Group );
         }
 
@@ -638,6 +637,7 @@ namespace Rock.Model
                         person.LastName = person.LastName.FixCase();
 
                         group.Members.Add( groupMember );
+                        groupMember.Group = group;
 
                         var demographicChanges = new List<string>();
                         demographicChanges.Add( "Created" );
@@ -679,6 +679,11 @@ namespace Rock.Model
                             History.EvaluateChange( memberChanges, "Role", string.Empty, roleName );
                             familyMemberChanges.Add( person.Guid, memberChanges );
                         }
+                    }
+
+                    if ( !groupMember.IsValid )
+                    {
+                        throw new GroupMemberValidationException( groupMember.ValidationResults.Select( a => a.ErrorMessage ).ToList().AsDelimited( "<br />" ) );
                     }
                 }
 

@@ -62,6 +62,9 @@ namespace Rock.Client
         public string ForeignKey { get; set; }
 
         /// <summary />
+        public List<string> HistoryChanges { get; set; }
+
+        /// <summary />
         public bool? IsReconciled { get; set; }
 
         /// <summary />
@@ -156,6 +159,7 @@ namespace Rock.Client
             this.FinancialPaymentDetailId = source.FinancialPaymentDetailId;
             this.ForeignGuid = source.ForeignGuid;
             this.ForeignKey = source.ForeignKey;
+            this.HistoryChanges = source.HistoryChanges;
             this.IsReconciled = source.IsReconciled;
             this.IsSettled = source.IsSettled;
             this.MICRStatus = source.MICRStatus;

@@ -716,7 +716,7 @@ namespace Rock.Lava
                 input = RockDateTime.Now.ToString();
             }
 
-            if ( string.IsNullOrWhiteSpace( format ) )
+            if ( string.IsNullOrWhiteSpace( format ) ) 
             {
                 return input.ToString();
             }
@@ -1503,6 +1503,7 @@ namespace Rock.Lava
 
             AttributeCache attribute = null;
             string rawValue = string.Empty;
+            int? entityId = null;
 
             // If Input is "Global" then look for a global attribute with key
             if ( input.ToString().Equals( "Global", StringComparison.OrdinalIgnoreCase ) )
@@ -1557,6 +1558,7 @@ namespace Rock.Lava
                     {
                         attribute = item.Attributes[attributeKey];
                         rawValue = item.AttributeValues[attributeKey].Value;
+                        entityId = item.Id;
                     }
                 }
             }
@@ -1607,7 +1609,7 @@ namespace Rock.Lava
                     }
 
                     // Otherwise return the formatted value
-                    return field.FormatValue( null, rawValue, attribute.QualifierValues, false );
+                    return field.FormatValue( null, attribute.EntityTypeId, entityId, rawValue, attribute.QualifierValues, false );
                 }
             }
 
@@ -1873,7 +1875,7 @@ namespace Rock.Lava
 
             if ( person != null )
             {
-                Guid familyGuid = Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY.AsGuid();
+                var familyGroupTypeId = GroupTypeCache.Read( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY ).Id;
 
                 Location location = null;
 
@@ -1885,7 +1887,8 @@ namespace Rock.Lava
                             .AsNoTracking()
                             .Where( m =>
                                 m.PersonId == person.Id &&
-                                m.Group.GroupType.Guid == familyGuid )
+                                m.Group.GroupTypeId == familyGroupTypeId )
+                            .OrderBy( m => m.GroupOrder ?? int.MaxValue )
                             .SelectMany( m => m.Group.GroupLocations )
                             .Where( gl =>
                                 gl.IsMailingLocation == true )
@@ -1898,7 +1901,8 @@ namespace Rock.Lava
                             .AsNoTracking()
                             .Where( m =>
                                 m.PersonId == person.Id &&
-                                m.Group.GroupType.Guid == familyGuid )
+                                m.Group.GroupTypeId == familyGroupTypeId )
+                            .OrderBy( m => m.GroupOrder ?? int.MaxValue )
                             .SelectMany( m => m.Group.GroupLocations )
                             .Where( gl =>
                                 gl.IsMappedLocation == true )
@@ -1911,7 +1915,8 @@ namespace Rock.Lava
                             .AsNoTracking()
                             .Where( m =>
                                 m.PersonId == person.Id &&
-                                m.Group.GroupType.Guid == familyGuid )
+                                m.Group.GroupTypeId == familyGroupTypeId )
+                            .OrderBy( m => m.GroupOrder ?? int.MaxValue )
                             .SelectMany( m => m.Group.GroupLocations )
                             .Where( gl =>
                                 gl.GroupLocationTypeValue.Value == addressType )
@@ -3497,6 +3502,34 @@ namespace Rock.Lava
             {
                 return input;
             }
+        }
+
+        /// <summary>
+        /// Extracts a single item from an array.
+        /// </summary>
+        /// <param name="input">The input object to extract one element from.</param>
+        /// <param name="index">The index number of the object to extract.</param>
+        /// <returns>The single object from the array or null if not found.</returns>
+        public static object Index( object input, object index )
+        {
+            if ( input == null || index == null )
+            {
+                return input;
+            }
+
+            if ( !( input is IList ) )
+            {
+                return input;
+            }
+
+            var inputList = input as IList;
+            var indexInt = index.ToString().AsIntegerOrNull();
+            if ( !indexInt.HasValue || indexInt.Value < 0 || indexInt.Value >= inputList.Count )
+            {
+                return null;
+            }
+
+            return inputList[indexInt.Value];
         }
 
         #endregion

@@ -199,10 +199,22 @@ namespace RockWeb.Blocks.CheckIn.Config
                 if ( device != null )
                 {
                     string currentIp = device.IPAddress;
-                    var printerIp = new IPEndPoint( IPAddress.Parse( currentIp ), 9100 );
+                    int printerPort = 9100;
+                    var printerIp = currentIp;
+
+                    // If the user specified in 0.0.0.0:1234 syntax then pull our the IP and port numbers.
+                    if ( printerIp.Contains( ":" ) )
+                    {
+                        var segments = printerIp.Split( ':' );
+
+                        printerIp = segments[0];
+                        printerPort = segments[1].AsInteger();
+                    }
+
+                    var printerEndpoint = new IPEndPoint( IPAddress.Parse( currentIp ), printerPort );
 
                     var socket = new Socket( AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp );
-                    IAsyncResult result = socket.BeginConnect( printerIp, null, null );
+                    IAsyncResult result = socket.BeginConnect( printerEndpoint, null, null );
                     bool success = result.AsyncWaitHandle.WaitOne( 5000, true );
 
                     if ( socket.Connected )

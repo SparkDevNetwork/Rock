@@ -6,8 +6,9 @@
 
     <asp:HiddenField ID="hfOption" runat="server" Value="Page" />
     <ul id="zone-block-options" class="nav nav-pills margin-b-md">
-        <li id="liPage" runat="server" ><a href='#<%=divPage.ClientID%>'  data-toggle="pill">Current Page</a></li>
-        <li id="liLayout" runat="server" ><a href='#<%=divLayout.ClientID%>' data-toggle="pill"><asp:Literal ID="lAllPages" runat="server"></asp:Literal></a></li>
+        <li id="liPage" runat="server" ><a href='#<%=divPage.ClientID%>'  data-toggle="pill">Page</a></li>
+        <li id="liLayout" runat="server" ><a href='#<%=divLayout.ClientID%>' data-toggle="pill"><asp:Literal ID="lAllPagesForLayout" runat="server"></asp:Literal></a></li>
+        <li id="liSite" runat="server" ><a href='#<%=divSite.ClientID%>' data-toggle="pill"><asp:Literal ID="lAllPagesOnSite" runat="server"></asp:Literal></a></li>
     </ul>
 
     <asp:Panel ID="pnlLists" runat="server" CssClass="tab-content">
@@ -46,6 +47,26 @@
                             </ItemTemplate>
                         </Rock:RockTemplateField>
                         <Rock:DeleteField OnClick="gLayoutBlocks_Delete" />
+                    </Columns>
+                </Rock:Grid>
+            </div>
+
+        </div>
+
+         <div id="divSite" runat="server" class="tab-pane" >
+            
+            <div class="grid">
+                <Rock:Grid ID="gSiteBlocks" runat="server" AllowPaging="false" EmptyDataText="No Site Blocks Found" OnRowSelected="gSiteBlocks_Edit">
+                    <Columns>
+                        <Rock:ReorderField />
+                        <Rock:RockBoundField DataField="Name" HeaderText="Name" />
+                        <Rock:RockTemplateField HeaderText="Type" >
+                            <ItemTemplate>
+                                <%# Eval("BlockTypeName") %><br />
+                                <small><%# Eval("BlockTypePath") %></small>
+                            </ItemTemplate>
+                        </Rock:RockTemplateField>
+                        <Rock:DeleteField OnClick="gSiteBlocks_Delete" />
                     </Columns>
                 </Rock:Grid>
             </div>

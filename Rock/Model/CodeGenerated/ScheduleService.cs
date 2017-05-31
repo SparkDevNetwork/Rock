@@ -115,6 +115,7 @@ namespace Rock.Model
             target.ForeignGuid = source.ForeignGuid;
             target.ForeignKey = source.ForeignKey;
             target.iCalendarContent = source.iCalendarContent;
+            target.IsActive = source.IsActive;
             target.Name = source.Name;
             target.WeeklyDayOfWeek = source.WeeklyDayOfWeek;
             target.WeeklyTimeOfDay = source.WeeklyTimeOfDay;
