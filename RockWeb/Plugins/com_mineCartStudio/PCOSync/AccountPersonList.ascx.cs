@@ -291,7 +291,7 @@ namespace RockWeb.Plugins.com_mineCartStudio.PCOSync
         {
             if ( _account != null )
             {
-                PCOAccount.RefreshAccountPeople( _account.Id );
+                _account.RefreshAccountPeople();
             }
 
             BindAccountPersonsGrid();
@@ -394,7 +394,7 @@ namespace RockWeb.Plugins.com_mineCartStudio.PCOSync
                 using ( var rockContext = new RockContext() )
                 {
                     // Get all the active group members that belong to any of the groups that this account is associated with
-                    var accountMembers = PCOAccount.GetAccountMembers( _account.Id, rockContext );
+                    var accountMembers = _account.GetAccountMembers( rockContext );
 
                     var qry = new PCOAccountPersonService( rockContext )
                         .Queryable( "PersonAlias.Person" )

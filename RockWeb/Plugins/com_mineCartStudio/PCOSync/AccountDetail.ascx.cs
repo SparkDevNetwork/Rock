@@ -408,7 +408,7 @@ namespace RockWeb.Plugins.com_mineCartStudio.PCOSync
 
             using ( var rockContext = new RockContext() )
             {
-                var groupPermissions = PCOAccount.GetSyncedGroups( account.Id, rockContext );
+                var groupPermissions = account.GetSyncedGroups( rockContext );
                 if ( groupPermissions != null )
                 {
                     var groupList = new Dictionary<string, string>();
