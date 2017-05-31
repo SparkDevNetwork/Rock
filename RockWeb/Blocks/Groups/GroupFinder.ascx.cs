@@ -61,6 +61,7 @@ namespace RockWeb.Blocks.Groups
     [BooleanField( "Enable Campus Context", "", false, "CustomSetting" )]
     [BooleanField( "Hide Overcapacity Groups", "When set to true, groups that are at capacity or whose default GroupTypeRole are at capacity are hidden.", true )]
     [AttributeField( Rock.SystemGuid.EntityType.GROUP, "Attribute Filters", "", false, true, "", "CustomSetting" )]
+    [DataViewField( "DataView", "", false, "", "Rock.Model.Group", "CustomSetting" )]
 
     // Map Settings
     [BooleanField( "Show Map", "", false, "CustomSetting" )]
@@ -191,6 +192,8 @@ namespace RockWeb.Blocks.Groups
             this.AddConfigurationUpdateTrigger( upnlContent );
 
             this.LoadGoogleMapsApi();
+
+            dvpDataView.EntityTypeId = EntityTypeCache.Read( typeof( Rock.Model.Group ) ).Id;
         }
 
         /// <summary>
@@ -224,6 +227,9 @@ namespace RockWeb.Blocks.Groups
                         cblCampus.SetValue( contextCampus.Id.ToString() );
                     }
                 }
+
+                var dataViewVal = GetAttributeValue( "DataView" ).AsInteger();
+                dvpDataView.SetValue( dataViewVal );
 
                 if ( _targetPersonGuid != Guid.Empty )
                 {
@@ -288,6 +294,7 @@ namespace RockWeb.Blocks.Groups
 
             SetAttributeValue( "GroupType", GetGroupTypeGuid( gtpGroupType.SelectedGroupTypeId ) );
             SetAttributeValue( "GeofencedGroupType", GetGroupTypeGuid( gtpGeofenceGroupType.SelectedGroupTypeId ) );
+            SetAttributeValue( "DataView", dvpDataView.SelectedValue );
             if ( cblSchedule.Visible )
             {
                 SetAttributeValue( "ScheduleFilters", cblSchedule.Items.Cast<ListItem>().Where( i => i.Selected ).Select( i => i.Value ).ToList().AsDelimited( "," ) );
@@ -456,6 +463,9 @@ namespace RockWeb.Blocks.Groups
                 }
             }
 
+            var dataViewVal = GetAttributeValue( "DataView" ).AsInteger();
+            dvpDataView.SetValue( dataViewVal );
+            
             cbFilterCampus.Checked = GetAttributeValue( "DisplayCampusFilter" ).AsBoolean();
             cbCampusContext.Checked = GetAttributeValue( "EnableCampusContext" ).AsBoolean();
 
@@ -827,6 +837,23 @@ namespace RockWeb.Blocks.Groups
                 .Where( g => g.IsActive && g.GroupType.Guid.Equals( groupTypeGuid.Value ) && g.IsPublic );
 
             var groupParameterExpression = groupService.ParameterExpression;
+            
+            // first use the dataview to limit the groups to only those with a future starting date
+            var dataViewId = dvpDataView.SelectedValueAsInt();
+            if( dataViewId.HasValue )
+            {
+                var dataView = new DataViewService( rockContext ).Get( dataViewId.Value );
+                if ( dataView != null )
+                {
+                    var errorMessages = new List<string>();
+                    Expression whereExpression = dataView.GetExpression( groupService, groupParameterExpression, out errorMessages );
+
+                    groupQry = groupService
+                        .Queryable().AsNoTracking()
+                        .Where( groupParameterExpression, whereExpression );
+                }
+            }
+            
             var schedulePropertyExpression = Expression.Property( groupParameterExpression, "Schedule" );
 
             var dowFilterControl = phFilterControls.FindControl( "filter_dow" );

@@ -86,6 +86,8 @@
                                         <Rock:GroupTypePicker ID="gtpGeofenceGroupType" runat="server" Label="Geofence Group Type"
                                             Help="An optional group type that contains groups with geographic boundary (fence). If specified, user will be prompted for their address, and only groups that are located in the same geographic boundary ( as defined by one or more groups of this type ) will be displayed."
                                             ValidationGroup="GroupFinderSettings" />
+
+                                        <Rock:DataViewPicker ID="dvpDataView" runat="server" Label="Group Data View" Help="An optional dataview that will allow more advanced filtering on search results." CssClass="margin-b-sm" />
                                     </div>
                                     <div class="col-md-6">
                                         <Rock:RockCheckBoxList ID="cblSchedule" runat="server" Label="Display Schedule Filters" RepeatDirection="Horizontal"
