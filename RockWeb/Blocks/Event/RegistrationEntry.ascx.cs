@@ -390,7 +390,7 @@ namespace RockWeb.Blocks.Event
             if ( !Page.IsPostBack )
             {
                 var personDv = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_PERSON.AsGuid() );
-                if ( CurrentPerson != null && personDv != null && CurrentPerson.RecordTypeValue.Guid != personDv.Guid )
+                if ( CurrentPerson != null && CurrentPerson.RecordTypeValue != null && personDv != null && CurrentPerson.RecordTypeValue.Guid != personDv.Guid )
                 {
                     ShowError( "Invalid Login", "Sorry, the login you are using doesn't appear to be tied to a valid person record. Try logging out and logging in with a different username, or create a new account before registering for the selected event." );
                 }
