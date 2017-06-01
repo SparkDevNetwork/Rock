@@ -52,6 +52,7 @@ namespace RockWeb.Blocks.Groups
     [LinkedPage( "Registration Instance Page", "The page to display registration details.", false, "", "", 7 )]
     [LinkedPage( "Event Item Occurrence Page", "The page to display event item occurrence details.", false, "", "", 8 )]
     [LinkedPage( "Content Item Page", "The page to display registration details.", false, "", "", 9 )]
+    [BooleanField( "Show Copy Button", "Copies the group and all of its associated authorization rules", false, "", 10 )]
     public partial class GroupDetail : RockBlock, IDetailBlock
     {
         #region Constants
@@ -224,7 +225,6 @@ namespace RockWeb.Blocks.Groups
             btnSecurity.EntityTypeId = EntityTypeCache.Read( typeof( Rock.Model.Group ) ).Id;
 
             rblScheduleSelect.BindToEnum<ScheduleType>();
-
             // this event gets fired after block settings are updated. it's nice to repaint the screen if these settings would alter it
             this.BlockUpdated += Block_BlockUpdated;
             this.AddConfigurationUpdateTrigger( upnlGroupDetail );
@@ -249,6 +249,7 @@ namespace RockWeb.Blocks.Groups
                 {
                     pnlDetails.Visible = false;
                 }
+                btnCopy.Visible = GetAttributeValue( "ShowCopyButton" ).AsBoolean();
             }
             else
             {
@@ -841,7 +842,7 @@ namespace RockWeb.Blocks.Groups
             var group = groupService.Queryable( "GroupType" )
                     .Where( g => g.Id == groupId )
                     .FirstOrDefault();
-            
+
             if ( group != null )
             {
                 group.LoadAttributes( rockContext );
@@ -901,7 +902,7 @@ namespace RockWeb.Blocks.Groups
                         }
 
                         attributeService.Add( newAttribute );
-                     
+
                     }
                     rockContext.SaveChanges();
 
@@ -1029,6 +1030,7 @@ namespace RockWeb.Blocks.Groups
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void Block_BlockUpdated( object sender, EventArgs e )
         {
+            btnCopy.Visible = GetAttributeValue( "ShowCopyButton" ).AsBoolean();
             var currentGroup = GetGroup( hfGroupId.Value.AsInteger() );
             if ( currentGroup != null )
             {
