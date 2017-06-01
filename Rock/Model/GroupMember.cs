@@ -312,6 +312,7 @@ namespace Rock.Model
 
         /// <summary>
         /// Gets a value indicating whether this instance is valid.
+        /// NOTE: Try using IsValidGroupMember instead
         /// </summary>
         /// <value>
         ///   <c>true</c> if this instance is valid; otherwise, <c>false</c>.
@@ -320,22 +321,37 @@ namespace Rock.Model
         {
             get
             {
-                var result = base.IsValid;
-                if ( result )
+                using ( var rockContext = new RockContext() )
                 {
-                    string errorMessage;
-                    using ( var rockContext = new RockContext() )
-                    {
-                        if ( !ValidateGroupMembership( rockContext, out errorMessage ) )
-                        {
-                            ValidationResults.Add( new ValidationResult( errorMessage ) );
-                            result = false;
-                        }
-                    }
+                    return this.IsValidGroupMember( rockContext );
                 }
-
-                return result;
             }
+        }
+
+        /// <summary>
+        /// Calls IsValid with the specified context (to avoid deadlocks)
+        /// Try to call this instead of IsValid when possible
+        /// </summary>
+        /// <param name="rockContext">The rock context.</param>
+        /// <returns>
+        ///   <c>true</c> if [is valid group member] [the specified rock context]; otherwise, <c>false</c>.
+        /// </returns>
+        public bool IsValidGroupMember( RockContext rockContext )
+        {
+            var result = base.IsValid;
+            if ( result )
+            {
+                string errorMessage;
+                
+                if ( !ValidateGroupMembership( rockContext, out errorMessage ) )
+                {
+                    ValidationResults.Add( new ValidationResult( errorMessage ) );
+                    result = false;
+                }
+                
+            }
+
+            return result;
         }
 
         /// <summary>
@@ -396,10 +412,8 @@ namespace Rock.Model
                 }
                 else
                 {
-                    GroupMemberService groupMemberService = new GroupMemberService( rockContext );
-                    var databaseRecord = groupMemberService.Get( this.Id );
-                    // if existing group member changing role or status..
-                    if ( databaseRecord != null && ( this.GroupRoleId != databaseRecord.GroupRoleId || this.GroupMemberStatus != databaseRecord.GroupMemberStatus ))
+                    // if existing group member was modified
+                    if ( this.IsNewOrChangedGroupMember( rockContext ) )
                     {
                         // verify that active count has not exceeded the max
                         if ( groupRole.MaxCount != null && ( memberCountInRole + 1 ) > groupRole.MaxCount )
@@ -486,7 +500,15 @@ namespace Rock.Model
                 var databaseGroupMemberRecord = groupMemberService.Get( this.Id );
 
                 // existing groupmember record, but person or role was changed
-                return ( ( this.PersonId != databaseGroupMemberRecord.PersonId ) || ( this.GroupRoleId != databaseGroupMemberRecord.GroupRoleId ) );
+                var hasChanged = ( ( this.PersonId != databaseGroupMemberRecord.PersonId ) || ( this.GroupRoleId != databaseGroupMemberRecord.GroupRoleId ) );
+
+                if ( !hasChanged )
+                {
+                    var entryState = rockContext.Entry( this )?.State;
+                    hasChanged = entryState == null || entryState.Value == EntityState.Modified;
+                }
+
+                return hasChanged;
             }
         }
 
