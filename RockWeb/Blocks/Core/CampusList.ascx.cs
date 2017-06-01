@@ -15,6 +15,7 @@
 // </copyright>
 //
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using Rock;
@@ -35,6 +36,18 @@ namespace RockWeb.Blocks.Core
     [LinkedPage( "Detail Page" )]
     public partial class Campuses : RockBlock
     {
+        #region fields
+
+        /// <summary>
+        /// Gets or sets the available attributes.
+        /// </summary>
+        /// <value>
+        /// The available attributes.
+        /// </value>
+        public List<AttributeCache> AvailableAttributes { get; set; }
+
+        #endregion
+
         #region Control Methods
 
         /// <summary>
@@ -53,6 +66,9 @@ namespace RockWeb.Blocks.Core
             bool canAddEditDelete = IsUserAuthorized( Authorization.EDIT );
             gCampuses.Actions.ShowAdd = canAddEditDelete;
             gCampuses.IsDeleteEnabled = canAddEditDelete;
+
+            BindAttributes();
+            AddDynamicControls();
         }
 
         /// <summary>
@@ -67,6 +83,30 @@ namespace RockWeb.Blocks.Core
             }
 
             base.OnLoad( e );
+        }
+
+        /// <summary>
+        /// Restores the view-state information from a previous user control request that was saved by the <see cref="M:System.Web.UI.UserControl.SaveViewState" /> method.
+        /// </summary>
+        /// <param name="savedState">An <see cref="T:System.Object" /> that represents the user control state to be restored.</param>
+        protected override void LoadViewState( object savedState )
+        {
+            base.LoadViewState( savedState );
+
+            AvailableAttributes = ViewState["AvailableAttributes"] as List<AttributeCache>;
+        }
+
+        /// <summary>
+        /// Saves any user control view-state changes that have occurred since the last page postback.
+        /// </summary>
+        /// <returns>
+        /// Returns the user control's current view state. If there is no view state associated with the control, it returns null.
+        /// </returns>
+        protected override object SaveViewState()
+        {
+            ViewState["AvailableAttributes"] = AvailableAttributes;
+
+            return base.SaveViewState();
         }
 
         #endregion
@@ -162,6 +202,66 @@ namespace RockWeb.Blocks.Core
         #endregion
 
         #region Internal Methods
+
+        /// <summary>
+        /// Binds the attributes.
+        /// </summary>
+        private void BindAttributes()
+        {
+            // Parse the attribute filters 
+            AvailableAttributes = new List<AttributeCache>();
+
+            int entityTypeId = new Campus().TypeId;
+            foreach ( var attributeModel in new AttributeService( new RockContext() ).Queryable()
+                .Where( a =>
+                    a.EntityTypeId == entityTypeId &&
+                    a.IsGridColumn )
+                .OrderBy( a => a.Order )
+                .ThenBy( a => a.Name ) )
+            {
+                AvailableAttributes.Add( AttributeCache.Read( attributeModel ) );
+            }
+        }
+
+        /// <summary>
+        /// Adds the attribute columns.
+        /// </summary>
+        private void AddDynamicControls()
+        {
+            // Remove attribute columns
+            foreach ( var column in gCampuses.Columns.OfType<AttributeField>().ToList() )
+            {
+                gCampuses.Columns.Remove( column );
+            }
+
+            if ( AvailableAttributes != null )
+            {
+                foreach ( var attribute in AvailableAttributes )
+                {
+                    bool columnExists = gCampuses.Columns.OfType<AttributeField>().FirstOrDefault( a => a.AttributeId == attribute.Id ) != null;
+                    if ( !columnExists )
+                    {
+                        AttributeField boundField = new AttributeField();
+                        boundField.DataField = attribute.Key;
+                        boundField.AttributeId = attribute.Id;
+                        boundField.HeaderText = attribute.Name;
+
+                        var attributeCache = Rock.Web.Cache.AttributeCache.Read( attribute.Id );
+                        if ( attributeCache != null )
+                        {
+                            boundField.ItemStyle.HorizontalAlign = attributeCache.FieldType.Field.AlignValue;
+                        }
+
+                        gCampuses.Columns.Add( boundField );
+                    }
+                }
+            }
+
+            // Add delete column
+            var deleteField = new DeleteField();
+            gCampuses.Columns.Add( deleteField );
+            deleteField.Click += gCampuses_Delete;
+        }
 
         /// <summary>
         /// Binds the grid.
