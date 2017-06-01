@@ -445,7 +445,7 @@ namespace RockWeb.Blocks.Groups
 
             // if the groupMember IsValid is false, and the UI controls didn't report any errors, it is probably because the custom rules of GroupMember didn't pass.
             // So, make sure a message is displayed in the validation summary
-            cvEditGroupMember.IsValid = groupMember.IsValid;
+            cvEditGroupMember.IsValid = groupMember.IsValidGroupMember( rockContext );
 
             if ( !cvEditGroupMember.IsValid )
             {
