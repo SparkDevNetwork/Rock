@@ -505,7 +505,7 @@ namespace Rock.Model
                 if ( !hasChanged )
                 {
                     var entryState = rockContext.Entry( this )?.State;
-                    hasChanged = entryState == null || entryState.Value == EntityState.Modified;
+                    hasChanged = entryState == null || entryState.Value == System.Data.Entity.EntityState.Modified;
                 }
 
                 return hasChanged;
