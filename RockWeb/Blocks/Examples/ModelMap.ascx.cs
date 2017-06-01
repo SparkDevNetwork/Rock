@@ -304,7 +304,7 @@ namespace RockWeb.Blocks.Examples
 
             var name = HttpUtility.HtmlEncode( aClass.Name );
             sb.AppendFormat(
-                "<div class='panel panel-block' data-id='{0}'><div class='panel-heading'><h1 class='panel-title rollover-container'><strong>{1}</strong></h1><p class='description'>{2}</p></div>",
+                "<div class='panel panel-block' data-id='{0}'><div class='panel-heading'><h1 class='panel-title rollover-container'>{1}</h1><p class='description'>{2}</p></div>",
                 aClass.Guid,
                 name,
                 aClass.Comment != null ? aClass.Comment.Summary : ""
