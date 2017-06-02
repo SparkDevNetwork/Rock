@@ -270,9 +270,9 @@ TransactionAcountDetails: [
         /// <summary>
         /// Gets or sets the payment schedule id.
         /// </summary>
-        protected string ScheduleId
+        protected int? ScheduleId
         {
-            get { return ViewState["ScheduleId"] as string ?? string.Empty; }
+            get { return ViewState["ScheduleId"] as int?; }
             set { ViewState["ScheduleId"] = value; }
         }
 
@@ -802,7 +802,7 @@ TransactionAcountDetails: [
                         FinancialPaymentDetail paymentDetail = null;
                         int? currencyTypeValueId = isACHTxn ? achCurrencyType.Id : ccCurrencyType.Id;
 
-                        if ( string.IsNullOrWhiteSpace( ScheduleId ) )
+                        if ( !ScheduleId.HasValue )
                         {
                             var transaction = new FinancialTransactionService( rockContext ).GetByTransactionCode( TransactionCode );
                             if ( transaction != null && transaction.AuthorizedPersonAlias != null )
@@ -817,7 +817,7 @@ TransactionAcountDetails: [
                         }
                         else
                         {
-                            var scheduledTransaction = new FinancialScheduledTransactionService( rockContext ).GetByScheduleId( ScheduleId );
+                            var scheduledTransaction = new FinancialScheduledTransactionService( rockContext ).Get( ScheduleId.Value );
                             if ( scheduledTransaction != null )
                             {
                                 if ( scheduledTransaction.FinancialGateway != null )
@@ -2753,7 +2753,7 @@ TransactionAcountDetails: [
             }
             rockContext.SaveChanges();
 
-            ScheduleId = scheduledTransaction.GatewayScheduleId;
+            ScheduleId = scheduledTransaction.Id;
             TransactionCode = scheduledTransaction.TransactionCode;
         }
 
@@ -2914,8 +2914,23 @@ TransactionAcountDetails: [
             tdTransactionCodeReceipt.Description = TransactionCode;
             tdTransactionCodeReceipt.Visible = !string.IsNullOrWhiteSpace( TransactionCode );
 
-            tdScheduleId.Description = ScheduleId;
-            tdScheduleId.Visible = !string.IsNullOrWhiteSpace( ScheduleId );
+            if ( ScheduleId.HasValue )
+            {
+                var scheduledTxn = new FinancialScheduledTransactionService( rockContext ).Get( ScheduleId.Value );
+                if ( scheduledTxn != null && !string.IsNullOrWhiteSpace( scheduledTxn.GatewayScheduleId ) )
+                {
+                    tdScheduleId.Description = scheduledTxn.GatewayScheduleId;
+                    tdScheduleId.Visible = true;
+                }
+                else
+                {
+                    tdScheduleId.Visible = false;
+                }
+            }
+            else
+            {
+                tdScheduleId.Visible = false;
+            }
 
             tdNameReceipt.Description = paymentInfo.FullName;
             tdPhoneReceipt.Description = paymentInfo.Phone;
