@@ -1,3 +1,10 @@
+Rock McKinley 6.5
+
++ Fixed an issue with ValueList and KeyValueList block settings not allowing user to add new values.
++ Fixed a backward-compatibility issue with migration helper method that was affecting plugin installs.
++ Fixed an exception that would occur when saving a change to a family.
+
+
 Rock McKinley 6.4
 
 + Updated the Edit Family block to create history correctly when adding a new person (Fixes #1726).
