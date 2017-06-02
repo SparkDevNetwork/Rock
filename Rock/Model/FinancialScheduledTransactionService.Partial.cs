@@ -74,10 +74,26 @@ namespace Rock.Model
         /// </summary>
         /// <param name="scheduleId">The schedule identifier.</param>
         /// <returns></returns>
-        public FinancialScheduledTransaction GetByScheduleId( string scheduleId )
+        //[Obsolete("The GetByScheduleId( scheduleId, gatewayId ) method should be used instead.")]
+        //public FinancialScheduledTransaction GetByScheduleId( string scheduleId )
+        //{
+        //    return Queryable( "ScheduledTransactionDetails,AuthorizedPersonAlias.Person" )
+        //        .Where( t => t.GatewayScheduleId == scheduleId.Trim() )
+        //        .FirstOrDefault();
+        //}
+
+        /// <summary>
+        /// Gets the by schedule identifier.
+        /// </summary>
+        /// <param name="scheduleId">The schedule identifier.</param>
+        /// <param name="gatewayId">The gateway identifier.</param>
+        /// <returns></returns>
+        public FinancialScheduledTransaction GetByScheduleId( string scheduleId, int gatewayId )
         {
             return Queryable( "ScheduledTransactionDetails,AuthorizedPersonAlias.Person" )
-                .Where( t => t.GatewayScheduleId == scheduleId.Trim() )
+                .Where( t =>
+                    t.FinancialGatewayId == gatewayId &&
+                    t.GatewayScheduleId == scheduleId.Trim() )
                 .FirstOrDefault();
         }
 
@@ -278,7 +294,7 @@ namespace Rock.Model
                 {
                     totalPayments++;
 
-                    var scheduledTransaction = scheduledTxnService.GetByScheduleId( payment.GatewayScheduleId );
+                    var scheduledTransaction = scheduledTxnService.GetByScheduleId( payment.GatewayScheduleId, gateway.Id );
                     if ( scheduledTransaction != null )
                     {
                         // Find existing payments with same transaction code
