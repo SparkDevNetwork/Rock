@@ -413,8 +413,8 @@ namespace Rock.Model
                 }
                 else
                 {
-                    // if existing group member was modified
-                    if ( this.IsNewOrChangedGroupMember( rockContext ) )
+                    // if existing group member changing role or status..
+                    if ( this.IsStatusOrRoleModified( rockContext ) )
                     {
                         // verify that active count has not exceeded the max
                         if ( groupRole.MaxCount != null && ( memberCountInRole + 1 ) > groupRole.MaxCount )
@@ -484,6 +484,44 @@ namespace Rock.Model
         }
 
         /// <summary>
+        /// Determines whether this is an existing record but the GroupMemberStatus or GroupRoleId was modified since loaded from the database
+        /// </summary>
+        /// <param name="rockContext">The rock context.</param>
+        /// <returns></returns>
+        public bool IsStatusOrRoleModified( RockContext rockContext )
+        {
+            if ( this.Id == 0 )
+            {
+                // new group member
+                return false;
+            }
+            else
+            {
+                var groupMemberService = new GroupMemberService( rockContext );
+                var databaseGroupMemberRecord = groupMemberService.Get( this.Id );
+
+                if ( databaseGroupMemberRecord == null )
+                {
+                    return false;
+                }
+
+                // existing groupmember record, but person or role was changed
+                var hasChanged = ( ( this.GroupMemberStatus != databaseGroupMemberRecord.GroupMemberStatus ) || ( this.GroupRoleId != databaseGroupMemberRecord.GroupRoleId ) );
+
+                if ( !hasChanged )
+                {
+                    var entry = rockContext.Entry( this );
+                    if ( entry != null )
+                    {
+                        hasChanged = rockContext.Entry( this ).Property( "GroupMemberStatus" )?.IsModified == true || rockContext.Entry( this ).Property( "GroupRoleId" )?.IsModified == true;
+                    }
+                }
+
+                return hasChanged;
+            }
+        }
+
+        /// <summary>
         /// Determines whether this is a new group member (just added) or if either Person or Role is different than what is stored in the database
         /// </summary>
         /// <param name="rockContext">The rock context.</param>
@@ -505,8 +543,11 @@ namespace Rock.Model
 
                 if ( !hasChanged )
                 {
-                    var entryState = rockContext.Entry( this )?.State;
-                    hasChanged = entryState == null || entryState.Value == System.Data.Entity.EntityState.Modified;
+                    var entry = rockContext.Entry( this );
+                    if ( entry != null )
+                    {
+                        hasChanged = rockContext.Entry( this ).Property( "PersonId" )?.IsModified == true || rockContext.Entry( this ).Property( "GroupRoleId" )?.IsModified == true;
+                    }
                 }
 
                 return hasChanged;
