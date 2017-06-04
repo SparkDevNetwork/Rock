@@ -304,7 +304,7 @@ namespace RockWeb.Blocks.Examples
 
             var name = HttpUtility.HtmlEncode( aClass.Name );
             sb.AppendFormat(
-                "<div class='panel panel-default' data-id='{0}'><div class='panel-heading'><h1 class='panel-title rollover-container'><strong>{1}</strong></h1><p class='description'>{2}</p></div>",
+                "<div class='panel panel-block' data-id='{0}'><div class='panel-heading'><h1 class='panel-title rollover-container'>{1}</h1><p class='description'>{2}</p></div>",
                 aClass.Guid,
                 name,
                 aClass.Comment != null ? aClass.Comment.Summary : ""
@@ -316,20 +316,23 @@ namespace RockWeb.Blocks.Examples
 
                 if ( aClass.Properties.Any() )
                 {
-                    sb.AppendLine( "<small class='pull-right js-model-inherited'>Show: <i class='js-model-check fa fa-fw fa-square-o'></i> inherited</small><h4>Properties</h4><ul>" );
+                    sb.AppendLine( "<small class='pull-right js-model-inherited'>Show: <i class='js-model-check fa fa-fw fa-square-o'></i> inherited</small><h4>Properties</h4><ul class='list-unstyled'>" );
                     foreach ( var property in aClass.Properties.OrderBy( p => p.Name ) )
                     {
                         //  data-expanded='false' data-model='Block' data-id='b{0}'
-                        sb.AppendFormat( "<li data-id='p{0}' class='{6}'><strong><tt>{1}</tt></strong>{3}{4}{5}{2}{7}</li>{8}",
-                            property.Id,
-                            HttpUtility.HtmlEncode( property.Name ),
-                            ( property.Comment != null && !string.IsNullOrWhiteSpace( property.Comment.Summary ) ) ? " - " + property.Comment.Summary : "",
-                            property.Required ? " <strong class='text-danger'>*</strong> " : string.Empty,
-                            property.IsLavaInclude ? " <small><span class='tip tip-lava'></span></small> " : string.Empty,
-                            property.NotMapped || property.IsVirtual ? " <span class='fa-stack small'><i class='fa fa-database fa-stack-1x'></i><i class='fa fa-ban fa-stack-2x text-danger'></i></span> " : string.Empty,
-                            property.IsInherited ? " js-model hidden " : " ",
-                            property.IsInherited ? " (inherited)" : "",
-                            Environment.NewLine );
+                        sb.AppendFormat( "<li data-id='p{0}' class='{6}'><strong>{9}<tt>{1}</tt></strong>{3}{4}{5}{2}{7}</li>{8}",
+                            property.Id, // 0
+                            HttpUtility.HtmlEncode( property.Name ), // 1
+                            ( property.Comment != null && !string.IsNullOrWhiteSpace( property.Comment.Summary ) ) ? " - " + property.Comment.Summary : "", // 2
+                            property.Required ? " <strong class='text-danger'>*</strong> " : string.Empty, // 3
+                            property.IsLavaInclude ? " <i class='fa fa-bolt fa-fw text-warning'></i> " : string.Empty, // 4
+                            "", // 5
+                            property.IsInherited ? " js-model hidden " : " ", // 6
+                            property.IsInherited ? " (inherited)" : "", // 7
+                            Environment.NewLine, // 8
+                            property.NotMapped || property.IsVirtual ? "<i class='fa fa-square-o fa-fw'></i> " : "<i class='fa fa-database fa-fw'></i> " // 9
+
+                            );
                     }
                     sb.AppendLine( "</ul>" );
                 }
