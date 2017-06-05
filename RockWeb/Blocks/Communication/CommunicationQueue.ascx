@@ -5,18 +5,23 @@
 
         <div class="panel panel-block">
             <div class="panel-heading">
-                <h1 class="panel-title"><i class="fa fa-comments-o"></i>  Communication Queue</h1>
+                <h1 class="panel-title"><i class="fa fa-comments-o"></i> Communication Queue</h1>
             </div>
             <div class="panel-body">
+                <div class="row">
+                    <div class="col-sm-4">
+                        <Rock:RockCheckBox ID="cbFutureComm" runat="server" Label="Show Future Communications" AutoPostBack="true" OnCheckedChanged="cbFilter_Changed" />
+                    </div>
+                    <div class="col-sm-4">
+                        <Rock:RockCheckBox ID="cbPendingApproval" runat="server" Label="Show Communications Pending Approval" AutoPostBack="true" OnCheckedChanged="cbFilter_Changed" />
+                    </div>
+                    <div class="col-sm-4">
+                        <Rock:RockCheckBoxList ID="cblMedium"  runat="server" Label="Communication Medium" RepeatDirection="Horizontal" AutoPostBack="true" >
+                        </Rock:RockCheckBoxList>
+                    </div>
+                </div>
 
                 <div class="grid grid-panel">
-                    <Rock:GridFilter ID="rFilter" runat="server">
-                        <Rock:RockCheckBox ID="cbFutureComm" runat="server" Label="Show Future Communications" />
-                        <Rock:RockCheckBox ID="cbPendingApproval" runat="server" Label="Show Communications Pending Approval" />
-                        <Rock:RockCheckBoxList ID="cblMedium"  runat="server" Label="Communication Medium" RepeatDirection="Horizontal">
-                        </Rock:RockCheckBoxList>
-                    </Rock:GridFilter>
-
                     <Rock:Grid ID="gCommunicationQueue" runat="server" AllowSorting="true" OnRowSelected="gCommunicationQueue_RowSelected">
                         <Columns>
                             <Rock:DateTimeField DataField="SendDateTime" SortExpression="SendDateTime" HeaderText="Send Date / Time" />

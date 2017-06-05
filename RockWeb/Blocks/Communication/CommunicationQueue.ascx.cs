@@ -35,7 +35,6 @@ namespace RockWeb.Blocks.Communication
     [Category( "Communication" )]
     [Description( "Lists the status of all communications." )]
 
-    [IntegerField( "Time Range", "Number of hours from Current Time before which all the communiations are looked for.", false, 2, "", 0 )]
     [LinkedPage( "Detail Page" )]
     public partial class CommunicationQueue : Rock.Web.UI.RockBlock
     {
@@ -50,9 +49,6 @@ namespace RockWeb.Blocks.Communication
         protected override void OnInit( EventArgs e )
         {
             base.OnInit( e );
-
-            rFilter.ApplyFilterClick += rFilter_ApplyFilterClick;
-            rFilter.DisplayFilterValue += rFilter_DisplayFilterValue;
 
             gCommunicationQueue.DataKeyNames = new string[] { "Id" };
             gCommunicationQueue.Actions.ShowAdd = false;
@@ -71,6 +67,30 @@ namespace RockWeb.Blocks.Communication
                 SetFilter();
                 BindGrid();
             }
+            else
+            {
+                // Because the RockCheckBoxList does not handle postback event correctly, check to see if it was selected
+                // and update values manually.
+                if (Request.Form["__EVENTTARGET"] == cblMedium.UniqueID )
+                {
+                    for ( int i = 0; i < cblMedium.Items.Count; i++ )
+                    {
+                        string value = Request.Form[cblMedium.UniqueID + "$" + i.ToString()];
+                        if ( value != null )
+                        {
+                            cblMedium.Items[i].Selected = true;
+                        }
+                        else
+                        {
+                            cblMedium.Items[i].Selected = false;
+                        }
+                    }
+
+                    BindGrid();
+
+                }
+
+            }
 
             base.OnLoad( e );
         }
@@ -79,17 +99,8 @@ namespace RockWeb.Blocks.Communication
 
         #region Events
 
-        /// <summary>
-        /// Handles the ApplyFilterClick event of the rFilter control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
-        protected void rFilter_ApplyFilterClick( object sender, EventArgs e )
+        protected void cbFilter_Changed( object sender, EventArgs e )
         {
-            rFilter.SaveUserPreference( "FutureCommunication", cbFutureComm.Checked ? "True" : string.Empty );
-            rFilter.SaveUserPreference( "PendingApproval", cbPendingApproval.Checked ? "True" : string.Empty );
-            rFilter.SaveUserPreference( "Medium", cblMedium.SelectedValues.AsDelimited( ";" ) );
-
             BindGrid();
         }
 
@@ -140,13 +151,12 @@ namespace RockWeb.Blocks.Communication
         /// </summary>
         private void SetFilter()
         {
-
             BindMediums();
-            string mediumValues = rFilter.GetUserPreference( "Medium" );
+            string mediumValues = GetBlockUserPreference( "Medium" );
 
             cblMedium.SetValues( mediumValues.SplitDelimitedValues().AsIntegerList() );
-            cbPendingApproval.Checked = rFilter.GetUserPreference( "PendingApproval" ).AsBooleanOrNull() ?? false;
-            cbFutureComm.Checked = rFilter.GetUserPreference( "FutureCommunication" ).AsBooleanOrNull() ?? false;
+            cbPendingApproval.Checked = GetBlockUserPreference( "PendingApproval" ).AsBooleanOrNull() ?? false;
+            cbFutureComm.Checked = GetBlockUserPreference( "FutureCommunication" ).AsBooleanOrNull() ?? false;
         }
 
         /// <summary>
@@ -156,8 +166,11 @@ namespace RockWeb.Blocks.Communication
         {
             foreach ( var item in MediumContainer.Instance.Components.Values )
             {
-                var entityType = item.Value.EntityType;
-                cblMedium.Items.Add( new ListItem( item.Metadata.ComponentName, entityType.Id.ToString() ) );
+                if ( item.Value.IsActive )
+                {
+                    var entityType = item.Value.EntityType;
+                    cblMedium.Items.Add( new ListItem( item.Metadata.ComponentName, entityType.Id.ToString() ) );
+                }
             }
         }
 
@@ -166,49 +179,22 @@ namespace RockWeb.Blocks.Communication
         /// </summary>
         private void BindGrid()
         {
-            var timeRange = GetAttributeValue( "TimeRange" ).AsInteger();
-            var beginWindow = RockDateTime.Now.AddHours( -timeRange );
-
             var rockContext = new RockContext();
 
-            var qryPendingRecipients = new CommunicationRecipientService( rockContext ).Queryable().Where( a => a.Status == CommunicationRecipientStatus.Pending );
+            var jobEntityType = EntityTypeCache.Read( typeof( Rock.Model.ServiceJob ) );
+
+            int expirationDays = GetJobAttributeValue("ExpirationPeriod", 3, rockContext );
+            int delayMins = GetJobAttributeValue( "DelayPeriod", 30, rockContext );
+
             var communications = new CommunicationService( rockContext )
-                    .Queryable().AsNoTracking();
+                .GetQueued( expirationDays, delayMins, cbFutureComm.Checked, cbPendingApproval.Checked );
 
-            bool pendingApproval = cbPendingApproval.Checked;
+            var mediumEntityTypeIds = cblMedium.SelectedValues.AsIntegerList();
 
-            if ( pendingApproval )
+            if ( mediumEntityTypeIds.Any() )
             {
-                communications = communications.Where( c => c.Status == CommunicationStatus.PendingApproval
-                                                || c.Status == CommunicationStatus.Approved );
+                communications = communications.Where( c => c.MediumEntityTypeId.HasValue && mediumEntityTypeIds.Contains( c.MediumEntityTypeId.Value ) );
             }
-            else
-            {
-                communications = communications.Where( c => c.Status == CommunicationStatus.Approved );
-            }
-
-            var entityTypeGuids = cblMedium.SelectedValues.AsIntegerList();
-
-            if ( entityTypeGuids.Any() )
-            {
-                communications = communications.Where( c => c.MediumEntityTypeId.HasValue && entityTypeGuids.Contains( c.MediumEntityTypeId.Value ) );
-            }
-
-            bool futureCommunication = cbFutureComm.Checked;
-
-            if ( futureCommunication )
-            {
-                communications = communications.Where( c => ( !c.ReviewedDateTime.HasValue && c.CreatedDateTime.Value.CompareTo( beginWindow ) < 0 )
-                                                 || ( c.ReviewedDateTime.HasValue && c.ReviewedDateTime.Value.CompareTo( beginWindow ) < 0 )
-                                                 || ( c.FutureSendDateTime.HasValue && c.FutureSendDateTime.Value.CompareTo( beginWindow ) < 0 ) );
-            }
-            else
-            {
-                communications = communications.Where( c => ( !c.ReviewedDateTime.HasValue && c.CreatedDateTime.Value.CompareTo( beginWindow ) < 0 )
-                                                    || ( c.ReviewedDateTime.HasValue && c.ReviewedDateTime.Value.CompareTo( beginWindow ) < 0 ) );
-            }
-
-            communications = communications.Where( c => qryPendingRecipients.Where( r => r.CommunicationId == c.Id ).Any() );
 
             var queryable = communications
                 .Select( c => new
@@ -220,7 +206,7 @@ namespace RockWeb.Blocks.Communication
                     SendDateTime = c.FutureSendDateTime.HasValue && c.FutureSendDateTime > c.CreatedDateTime ? c.FutureSendDateTime : c.CreatedDateTime,
                     Sender = c.SenderPersonAlias != null ? c.SenderPersonAlias.Person : null,
                     Status = c.Status,
-                    PendingRecipients = qryPendingRecipients.Where( r => r.CommunicationId == c.Id ).Count()
+                    PendingRecipients = c.Recipients.Where( r => r.Status == CommunicationRecipientStatus.Pending ).Count()
                 } );
 
             var sortProperty = gCommunicationQueue.SortProperty;
@@ -236,6 +222,40 @@ namespace RockWeb.Blocks.Communication
             gCommunicationQueue.EntityTypeId = EntityTypeCache.Read<Rock.Model.Communication>().Id;
             gCommunicationQueue.SetLinqDataSource( queryable );
             gCommunicationQueue.DataBind();
+
+            SetBlockUserPreference( "FutureCommunication", cbFutureComm.Checked ? "True" : string.Empty );
+            SetBlockUserPreference( "PendingApproval", cbPendingApproval.Checked ? "True" : string.Empty );
+            SetBlockUserPreference( "Medium", cblMedium.SelectedValues.AsDelimited( ";" ) );
+
+        }
+
+        private int GetJobAttributeValue( string key, int defaultValue, RockContext rockContext )
+        {
+            var jobEntityType = EntityTypeCache.Read( typeof( Rock.Model.ServiceJob ) );
+
+            int intValue = 3;
+            var jobExpirationAttribute = new AttributeService( rockContext )
+                .Queryable().AsNoTracking()
+                .Where( a =>
+                    a.EntityTypeId == jobEntityType.Id &&
+                    a.EntityTypeQualifierColumn == "Class" &&
+                    a.EntityTypeQualifierValue == "Rock.Jobs.SendCommunications" &&
+                    a.Key == key )
+                .FirstOrDefault();
+            if ( jobExpirationAttribute != null )
+            {
+                intValue = jobExpirationAttribute.DefaultValue.AsIntegerOrNull() ?? 3;
+                var attributeValue = new AttributeValueService( rockContext )
+                    .Queryable().AsNoTracking()
+                    .Where( v => v.AttributeId == jobExpirationAttribute.Id )
+                    .FirstOrDefault();
+                if ( attributeValue != null )
+                {
+                    intValue = attributeValue.Value.AsIntegerOrNull() ?? intValue;
+                }
+            }
+
+            return intValue;
         }
 
         /// <summary>
