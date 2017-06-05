@@ -125,7 +125,7 @@
 
                 <div class="row">
                     <div class="col-sm-6">
-                        <Rock:PersonPicker ID="ppReassign" runat="server" Label="Reassign Selected Transactions To" Required="true" ValidationGroup="Reassign" />
+                        <Rock:PersonPicker ID="ppReassign" runat="server" Label="Reassign Selected Transactions To" Required="true" ValidationGroup="Reassign" IncludeBusinesses="true" />
                     </div>
                     <div class="col-sm-6">
                         <Rock:RockRadioButtonList ID="rblReassingBankAccounts" runat="server" Label="Reassign Bank Accounts" Required="true" ValidationGroup="Reassign"
