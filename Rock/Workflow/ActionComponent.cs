@@ -134,7 +134,11 @@ namespace Rock.Workflow
                     var attribute = AttributeCache.Read( attributeGuid.Value );
                     if ( attribute != null )
                     {
-                        return action.GetWorklowAttributeValue( attributeGuid.Value );
+                        value = action.GetWorklowAttributeValue( attributeGuid.Value );
+                        if ( !string.IsNullOrWhiteSpace( value ) && attribute.FieldTypeId == FieldTypeCache.Read( SystemGuid.FieldType.ENCRYPTED_TEXT.AsGuid() ).Id )
+                        {
+                            value = Security.Encryption.DecryptString( value );
+                        }
                     }
                 }
             }

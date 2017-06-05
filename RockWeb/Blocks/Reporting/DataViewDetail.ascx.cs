@@ -43,6 +43,7 @@ namespace RockWeb.Blocks.Reporting
 
     [LinkedPage( "Data View Detail Page", "The page to display a data view.", false, order: 0 )]
     [LinkedPage( "Report Detail Page", "The page to display a report.", false, order: 1 )]
+    [LinkedPage( "Group Detail Page", "The page to display a group.", false, order: 2 )]
     [IntegerField( "Database Timeout", "The number of seconds to wait before reporting a database timeout.", false, 180, order: 3 )]
     public partial class DataViewDetail : RockBlock, IDetailBlock
     {
@@ -669,7 +670,7 @@ $(document).ready(function() {
             var rockContext = new RockContext();
             DataViewService dataViewService = new DataViewService( rockContext );
 
-            var dataViews = dataViewService.Queryable()
+            var dataViews = dataViewService.Queryable().AsNoTracking()
                 .Where( d => d.DataViewFilter.ChildFilters
                     .Any( f => f.Selection == dataView.Id.ToString()
                         && f.EntityTypeId == dataViewFilterEntityId ) );
@@ -696,7 +697,7 @@ $(document).ready(function() {
             StringBuilder sbReports = new StringBuilder();
 
             ReportService reportService = new ReportService( rockContext );
-            var reports = reportService.Queryable().Where( r => r.DataViewId == dataView.Id );
+            var reports = reportService.Queryable().AsNoTracking().Where( r => r.DataViewId == dataView.Id );
             var reportDetailPage = GetAttributeValue( "ReportDetailPage" );
 
             foreach ( var report in reports )
@@ -713,6 +714,32 @@ $(document).ready(function() {
 
             descriptionListReports.Add( "Reports", sbReports );
             lReports.Text = descriptionListReports.Html;
+
+            // Groups using DataView in Group Sync
+            DescriptionList descriptionListGroupSync = new DescriptionList();
+            StringBuilder sbGroups = new StringBuilder();
+
+            GroupService groupService = new GroupService( rockContext );
+            var groups = groupService.Queryable().AsNoTracking().Where( g => g.SyncDataViewId == dataView.Id );
+            var groupDetailPage = GetAttributeValue( "GroupDetailPage" );
+
+            if ( groups.Count() > 0 )
+            {
+                foreach ( var group in groups )
+                {
+                    if ( !string.IsNullOrWhiteSpace( groupDetailPage ) )
+                    {
+                        sbGroups.Append( "<a href=\"" + LinkedPageUrl( "GroupDetailPage", new Dictionary<string, string>() { { "GroupId", group.Id.ToString() } } ) + "\">" + group.Name + "</a><br/>" );
+                    }
+                    else
+                    {
+                        sbGroups.Append( group.Name + "<br/>" );
+                    }
+                }
+
+                descriptionListGroupSync.Add( "Groups", sbGroups );
+                lGroups.Text = descriptionListGroupSync.Html;
+            }
 
             ShowReport( dataView );
         }

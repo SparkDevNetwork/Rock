@@ -31,6 +31,7 @@
                     <asp:HiddenField ID="hfMediumId" runat="server" />
 
                     <asp:ValidationSummary ID="ValidationSummary" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" />
+                    <asp:CustomValidator ID="cvDelayDateTime" runat="server" />
 
                     <div class="well well-pillwrap">
                         <div id="divMediums" runat="server">

@@ -188,7 +188,7 @@ namespace Rock.Model
                 var attribute = AttributeCache.Read( this.AttributeId );
                 if ( attribute != null )
                 {
-                    return attribute.FieldType.Field.FormatValue( null, Value, attribute.QualifierValues, false);
+                    return attribute.FieldType.Field.FormatValue( null, attribute.EntityTypeId, this.EntityId, Value, attribute.QualifierValues, false);
                 }
                 return Value;
             }

@@ -407,5 +407,10 @@ namespace RockWeb.Blocks.Examples
             var val1 = rsSlider.SelectedValue;
             var val2 = rsSlider2.SelectedValue;
         }
-}
+
+        protected void dppExample_SelectedDatePartsChanged( object sender, EventArgs e )
+        {
+
+        }
+    }
 }

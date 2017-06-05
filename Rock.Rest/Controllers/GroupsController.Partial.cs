@@ -144,7 +144,7 @@ namespace Rock.Rest.Controllers
         }
 
         /// <summary>
-        /// Gets the families.
+        /// Gets the families sorted by the person's GroupOrder (GroupMember.GroupOrder)
         /// </summary>
         /// <param name="personId">The person identifier.</param>
         /// <returns></returns>

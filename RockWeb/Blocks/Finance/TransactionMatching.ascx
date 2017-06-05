@@ -52,7 +52,21 @@
                                     <Rock:RockDropDownList ID="ddlIndividual" runat="server" Label="Individual" Help="Select a person that has previously been matched to the bank account. If the person isn't in this list, use the 'Assign to New' to select the matching person." AutoPostBack="true" OnSelectedIndexChanged="ddlIndividual_SelectedIndexChanged" />
                                     <span ID="badgeIndividualCount" runat="server" class="pull-right badge badge-danger" 
                                         style="position: relative; top: -58px; left: 10px"></span>
-                                    <Rock:PersonPicker ID="ppSelectNew" runat="server" Label="Assign to New" Help="Select a new person to match to the bank account." IncludeBusinesses="true" OnSelectPerson="ppSelectNew_SelectPerson"/>
+
+                                    <div>
+                                        <Rock:PersonPicker ID="ppSelectNew" runat="server" Label="Assign to New" FormGroupCssClass="pull-left" Help="Select a new person to match to the bank account." IncludeBusinesses="true" OnSelectPerson="ppSelectNew_SelectPerson" />
+                                        <Rock:RockControlWrapper ID="rcwEnvelope" runat="server" Label="Envelope #" Help="Select a person based on their assigned envelope number" >
+                                            <Rock:RockTextBox ID="tbEnvelopeNumber" runat="server" CssClass="input-width-sm pull-left" />
+                                            <asp:LinkButton ID="btnFindByEnvelopeNumber" runat="server" CssClass="btn btn-default margin-l-sm" Text="Find" OnClick="btnFindByEnvelopeNumber_Click" />
+                                        </Rock:RockControlWrapper>
+                                        <Rock:ModalDialog ID="mdEnvelopeSearchResults" runat="server" Title="Alert" OnSaveClick="mdEnvelopeSearchResults_SaveClick" ValidationGroup="vgEnvelopeSearchResults">
+                                            <Content>
+                                                <asp:Literal ID="lEnvelopeSearchResults" runat="server" />
+                                                <br />
+                                                <Rock:RockRadioButtonList ID="cblEnvelopeSearchPersons" runat="server" ValidationGroup="vgEnvelopeSearchResults" Required="true" />
+                                            </Content>
+                                        </Rock:ModalDialog>
+                                    </div>
                                 </div>
 
                                 <div class="col-md-6">
@@ -97,7 +111,10 @@
                             </Rock:RockControlWrapper>
 
                             <%-- note: using disabled instead of readonly so that we can set the postback value in javascript --%>
+                            <Rock:CurrencyBox ID="cbUnallocatedAmount" runat="server" Label="Unallocated Amount" FormGroupCssClass="js-unallocated-amount has-error" Help="The unallocated amount based on the original total amount." disabled="disabled" />
                             <Rock:CurrencyBox ID="cbTotalAmount" runat="server" Label="Total Amount" CssClass="js-total-amount" Help="Allocates amounts to the above account(s) until the total amount matches what is shown on the transaction image." disabled="disabled" Text="0.00"></Rock:CurrencyBox>
+                            <Rock:HiddenFieldWithClass ID="hfOriginalTotalAmount" runat="server" CssClass="js-original-total-amount" />
+                            <Rock:HiddenFieldWithClass ID="hfCurrencySymbol" runat="server" CssClass="js-currencysymbol" />
 
                             <Rock:RockTextBox ID="tbSummary" runat="server" Label="Summary" TextMode="MultiLine" Rows="2" />
                         </div>
@@ -144,12 +161,36 @@
                 var transactionTotalAmountDollars = transactionTotalAmountCents != null ? (transactionTotalAmountCents / 100).toFixed(2) : null;
 
                 $('#<%=pnlView.ClientID%>').find('.js-total-amount :input').val(transactionTotalAmountDollars);
+                
+                $unallocatedAmountEl = $('#<%=pnlView.ClientID%>').find('.js-unallocated-amount');
+
+                var originalTotalAmountCents = Number($('#<%=pnlView.ClientID%>').find('.js-original-total-amount').val());
+                var unallocatedAmountCents = 0;
+                if (originalTotalAmountCents && originalTotalAmountCents > 0)
+                {
+                    unallocatedAmountCents = originalTotalAmountCents - (transactionTotalAmountCents || 0);
+                }
+
+                $unallocatedAmountEl.find(':input').val((unallocatedAmountCents / 100).toFixed(2));
+                if (unallocatedAmountCents == 0)
+                {
+                    $unallocatedAmountEl.hide();
+                }
+                else
+                {
+                    $unallocatedAmountEl.show();
+                }
+
             }
 
             Sys.Application.add_load(function () {
                 if ($('#<%=hfDoFadeIn.ClientID%>').val() == "1") {
                     $('#<%=pnlView.ClientID%>').rockFadeIn();
                 }
+
+                $('#<%=btnNext.ClientID%>').click(verifyUnallocated);
+
+                updateRemainingAccountAllocation();
             })
 
             // handle onkeypress for the account amount input boxes
@@ -190,6 +231,35 @@
             function handleAmountBoxKeyUp(keyCode)
             {
                 updateRemainingAccountAllocation();
+            }
+
+            // handle btnNext so that it warns if the total amount was changed from the original (if there was an amount to start with)
+            function verifyUnallocated(e)
+            {
+                $unallocatedAmountEl = $('#<%=pnlView.ClientID%>').find('.js-unallocated-amount');
+                if ($unallocatedAmountEl.is(':visible'))
+                {
+                    if (Number($unallocatedAmountEl.find('input').val()) != 0)
+                    {
+                        e.preventDefault();
+
+                        var originalTotalAmountCents = Number($('#<%=pnlView.ClientID%>').find('.js-original-total-amount').val());
+                        var totalAmountCents = Number($('#<%=pnlView.ClientID%>').find('.js-total-amount :input').val()) * 100;
+                        var currencySymbol = $('#<%=pnlView.ClientID%>').find('.js-currencysymbol').val()
+                        var warningMsg = 'Note: The original transaction amount was ' + currencySymbol + (originalTotalAmountCents / 100).toFixed(2) + '. This has been changed to ' + currencySymbol + (totalAmountCents / 100).toFixed(2) + '. Are you sure you want to proceed with this change?';
+                        Rock.dialogs.confirm(warningMsg, function (result)
+                        {
+                            if (result)
+                            {
+                                window.location = e.target.href ? e.target.href : e.target.parentElement.href;
+                            }
+                        });
+                    }
+                }
+                else
+                {
+                    return true;
+                }
             }
         </script>
 

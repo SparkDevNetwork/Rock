@@ -295,6 +295,11 @@
                         <Rock:DatePicker ID="dpExample" runat="server" Label="Rock:DatePicker" />
                     </div>
 
+                    <a id="DatePartsPicker"></a>
+                    <div runat="server" class="r-example">
+                        <Rock:DatePartsPicker ID="dppExample" runat="server" Label="Rock:DatePartsPicker" OnSelectedDatePartsChanged="dppExample_SelectedDatePartsChanged" />
+                    </div>
+
                     <a id="DateTimePicker"></a>
                     <div runat="server" class="r-example">
                         <Rock:DateTimePicker ID="dtpExample" runat="server" Label="Rock:DateTimePicker" />

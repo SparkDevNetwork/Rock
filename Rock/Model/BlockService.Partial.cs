@@ -71,6 +71,37 @@ namespace Rock.Model
         }
 
         /// <summary>
+        /// Returns an enumerable collection of <see cref="Rock.Model.Block">Blocks</see> that included on all pages of the Site
+        /// </summary>
+        /// <param name="siteId">An <see cref="System.Int32"/> representing the Id of the <see cref="Rock.Model.Site"/> that the block belongs to.</param>
+        /// <returns>
+        /// An enumerable collection of <see cref="Rock.Model.Block">Blocks</see> that are implemented as part of the provided site.
+        /// </returns>
+        public IQueryable<Block> GetBySite( int siteId )
+        {
+            return Queryable()
+                .Where( t => t.SiteId == siteId )
+                .OrderBy( t => t.Zone ).ThenBy( t => t.Order );
+        }
+
+        /// <summary>
+        /// Returns an enumerable collection of <see cref="Rock.Model.Block">Blocks</see> that are implemented all pages of a site for the specific zone. 
+        /// </summary>
+        /// <param name="siteId">An <see cref="System.Int32"/> representing the Id of the <see cref="Rock.Model.Site"/> that the block belongs to.</param>
+        /// <param name="zone">A <see cref="System.String"/> representing the name of the Zone to search by.</param>
+        /// <returns>
+        /// An enumerable collection of <see cref="Block">Blocks</see> that are implemented in a Zone on all pages of a <see cref="Rock.Model.Site"/> .
+        /// </returns>
+        public IQueryable<Block> GetBySiteAndZone( int siteId, string zone )
+        {
+            return Queryable()
+                .Where( t =>
+                    t.SiteId == siteId &&
+                    string.Compare( t.Zone, zone ) == 0 )
+                .OrderBy( t => t.Order );
+        }
+
+        /// <summary>
         /// Returns a collection of <see cref="Rock.Model.Block">Blocks</see> that are implemented on a specific page.
         /// </summary>
         /// <param name="pageId">An <see cref="System.Int32"/> representing the Id of a <see cref="Page"/> that a <see cref="Block"/> may be implemented on.</param>
@@ -107,7 +138,8 @@ namespace Rock.Model
             Block existingBlock = Get( block.Id );
 
             int? order = Queryable()
-                .Where( b => 
+                .Where( b =>
+                    b.SiteId == block.SiteId &&
                     b.LayoutId == block.LayoutId &&
                     b.PageId == block.PageId &&
                     b.Zone == block.Zone )

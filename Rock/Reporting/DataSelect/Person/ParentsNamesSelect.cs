@@ -168,7 +168,8 @@ namespace Rock.Reporting.DataSelect.Person
                 .Select( p => familyGroupMembers.Where( s => s.PersonId == p.Id && s.GroupRole.Guid == childGuid )
                     .SelectMany( m => m.Group.Members )
                     .Where( m => m.GroupRole.Guid == adultGuid )
-                    .OrderBy( m => m.Person.Gender )
+                    .OrderBy( m => m.Group.Members.FirstOrDefault( x => x.PersonId == p.Id ).GroupOrder ?? int.MaxValue )
+                    .ThenBy( m => m.Person.Gender )
                     .Select( m => m.Person.NickName + " " + m.Person.LastName).AsEnumerable() );
 
             var selectParentsExpression = SelectExpressionExtractor.Extract( personParentsQuery, entityIdProperty, "p" );

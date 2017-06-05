@@ -48,6 +48,8 @@ namespace RockWeb.Blocks.Groups
     [BooleanField( "Display System Column", "Should the System column be displayed?", true, "", 9 )]
     [BooleanField( "Display Filter", "Should filter be displayed to allow filtering by group type?", false, "", 10 )]
     [CustomDropdownListField( "Limit to Active Status", "Select which groups to show, based on active status. Select [All] to let the user filter by active status.", "all^[All], active^Active, inactive^Inactive", false, "all", Order = 11 )]
+    [TextField( "Set Panel Title", "The title to display in the panel header. Leave empty to have the title be set automatically based on the group type or block name.", required:false, order: 12 )]
+    [TextField( "Set Panel Icon", "The icon to display in the panel header. Leave empty to have the icon be set automatically based on the group type or default icon.", required: false, order: 13 )]
     [ContextAware]
     public partial class GroupList : RockBlock
     {
@@ -151,6 +153,8 @@ namespace RockWeb.Blocks.Groups
                 boundFields["DateAdded"].Visible = false;
                 boundFields["MemberCount"].Visible = GetAttributeValue( "DisplayMemberCountColumn" ).AsBoolean();
             }
+
+            SetPanelTitleAndIcon();
         }
 
         /// <summary>
@@ -561,6 +565,19 @@ namespace RockWeb.Blocks.Groups
                 }
             }
 
+            groupTypeIds = qry.Select( t => t.Id ).ToList();
+
+            return groupTypeIds;
+        }
+
+        /// <summary>
+        /// Sets the panel title and icon.
+        /// </summary>
+        private void SetPanelTitleAndIcon()
+        {
+            List<int> groupTypeIds = GetAvailableGroupTypes();
+
+            // automatically set the panel title and icon based on group type
             // If there's only one group type, use it's 'group term' in the panel title.
             if ( groupTypeIds.Count == 1 )
             {
@@ -574,9 +591,19 @@ namespace RockWeb.Blocks.Groups
                 iIcon.AddCssClass( "fa fa-users" );
             }
 
-            groupTypeIds = qry.Select( t => t.Id ).ToList();
+            // if a SetPanelTitle is specified in block settings, use that instead
+            string customSetPanelTitle = this.GetAttributeValue( "SetPanelTitle" );
+            if ( !string.IsNullOrEmpty( customSetPanelTitle ) )
+            {
+                lTitle.Text = customSetPanelTitle;
+            }
 
-            return groupTypeIds;
+            // if a SetPanelIcon is specified in block settings, use that instead
+            string customSetPanelIcon = this.GetAttributeValue( "SetPanelIcon" );
+            if ( !string.IsNullOrEmpty( customSetPanelIcon ) )
+            {
+                iIcon.Attributes["class"] = customSetPanelIcon;
+            }
         }
 
         #endregion

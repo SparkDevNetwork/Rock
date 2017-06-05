@@ -40,9 +40,11 @@ namespace Rock.Workflow.Action
         new string[] { "Rock.Field.Types.TextFieldType", "Rock.Field.Types.EmailFieldType", "Rock.Field.Types.PersonFieldType" } )]
     [WorkflowTextOrAttribute( "Send To Email Addresses", "Attribute Value", "The email addresses or an attribute that contains the person or email address that email should be sent to. <span class='tip tip-lava'></span>", true, "", "", 1, "To",
         new string[] { "Rock.Field.Types.TextFieldType", "Rock.Field.Types.EmailFieldType", "Rock.Field.Types.PersonFieldType", "Rock.Field.Types.GroupFieldType", "Rock.Field.Types.SecurityRoleFieldType" } )]
-    [TextField( "Subject", "The subject that should be used when sending email. <span class='tip tip-lava'></span>", false, "", "", 2 )]
-    [CodeEditorField( "Body", "The body of the email that should be sent. <span class='tip tip-lava'></span> <span class='tip tip-html'></span>", Web.UI.Controls.CodeEditorMode.Html, Web.UI.Controls.CodeEditorTheme.Rock, 200, false, "", "", 3 )]
-    [BooleanField( "Save Communication History", "Should a record of this communication be saved to the recipient's profile", false, "", 4 )]
+    [WorkflowAttribute( "Send to Group Role", "An optional Group Role attribute to limit recipients to if the 'Send to Email Address' is a group or security role.", false, "", "", 2, "GroupRole",
+        new string[] { "Rock.Field.Types.GroupRoleFieldType" } )]
+    [TextField( "Subject", "The subject that should be used when sending email. <span class='tip tip-lava'></span>", false, "", "", 3 )]
+    [CodeEditorField( "Body", "The body of the email that should be sent. <span class='tip tip-lava'></span> <span class='tip tip-html'></span>", Web.UI.Controls.CodeEditorMode.Html, Web.UI.Controls.CodeEditorTheme.Rock, 200, false, "", "", 4 )]
+    [BooleanField( "Save Communication History", "Should a record of this communication be saved to the recipient's profile", false, "", 5 )]
     public class SendEmail : ActionComponent
     {
         /// <summary>
@@ -63,6 +65,7 @@ namespace Rock.Workflow.Action
             string fromValue = GetAttributeValue( action, "From" );
             string subject = GetAttributeValue( action, "Subject" );
             string body = GetAttributeValue( action, "Body" );
+
             bool createCommunicationRecord = GetAttributeValue( action, "SaveCommunicationHistory" ).AsBoolean();
 
             string from = string.Empty;
@@ -75,7 +78,7 @@ namespace Rock.Workflow.Action
                     string fromAttributeValue = action.GetWorklowAttributeValue( fromGuid.Value );
                     if ( !string.IsNullOrWhiteSpace( fromAttributeValue ) )
                     {
-                        if ( attribute.FieldType.Class == "Rock.Field.Types.PersonFieldType")
+                        if ( attribute.FieldType.Class == "Rock.Field.Types.PersonFieldType" )
                         {
                             Guid personAliasGuid = fromAttributeValue.AsGuid();
                             if ( !personAliasGuid.IsEmpty() )
@@ -86,7 +89,7 @@ namespace Rock.Workflow.Action
                                     .FirstOrDefault();
                                 if ( person != null && !string.IsNullOrWhiteSpace( person.Email ) )
                                 {
-                                    from = string.Format("{0} <{1}>", person.FullName, person.Email);
+                                    from = string.Format( "{0} <{1}>", person.FullName, person.Email );
                                 }
                             }
                         }
@@ -130,7 +133,7 @@ namespace Rock.Workflow.Action
                                             .FirstOrDefault();
                                         if ( person == null )
                                         {
-                                            action.AddLogEntry("Invalid Recipient: Person not found", true );
+                                            action.AddLogEntry( "Invalid Recipient: Person not found", true );
                                         }
                                         else if ( string.IsNullOrWhiteSpace( person.Email ) )
                                         {
@@ -146,8 +149,8 @@ namespace Rock.Workflow.Action
                                         }
                                         else
                                         {
-                                            var personDict = new Dictionary<string, object>(mergeFields);
-                                            personDict.Add("Person", person);
+                                            var personDict = new Dictionary<string, object>( mergeFields );
+                                            personDict.Add( "Person", person );
                                             Send( person.Email, from, subject, body, personDict, rockContext, createCommunicationRecord );
                                         }
                                     }
@@ -158,6 +161,10 @@ namespace Rock.Workflow.Action
                                 {
                                     int? groupId = toValue.AsIntegerOrNull();
                                     Guid? groupGuid = toValue.AsGuidOrNull();
+
+                                    //Get the Group Role attribute value
+                                    Guid? groupRoleValueGuid = GetGroupRoleValue( action );
+
                                     IQueryable<GroupMember> qry = null;
 
                                     // Handle situations where the attribute value is the ID
@@ -174,6 +181,12 @@ namespace Rock.Workflow.Action
                                     else
                                     {
                                         action.AddLogEntry( "Invalid Recipient: No valid group id or Guid", true );
+                                    }
+
+
+                                    if ( groupRoleValueGuid.HasValue )
+                                    {
+                                        qry = qry.Where( m => m.GroupRole != null && m.GroupRole.Guid.Equals( groupRoleValueGuid.Value ) );
                                     }
 
                                     if ( qry != null )
@@ -206,10 +219,25 @@ namespace Rock.Workflow.Action
             return true;
         }
 
+        private Guid? GetGroupRoleValue( WorkflowAction action )
+        {
+            Guid? groupRoleGuid = null;
+
+            string groupRole = GetAttributeValue( action, "GroupRole" );
+            Guid? groupRoleAttributeGuid = GetAttributeValue( action, "GroupRole" ).AsGuidOrNull();
+
+            if ( groupRoleAttributeGuid.HasValue )
+            {
+                groupRoleGuid = action.GetWorklowAttributeValue( groupRoleAttributeGuid.Value ).AsGuidOrNull();
+            }
+
+            return groupRoleGuid;
+        }
+
         private void Send( string recipients, string from, string subject, string body, Dictionary<string, object> mergeFields, RockContext rockContext, bool createCommunicationRecord )
         {
             var recipientList = recipients.SplitDelimitedValues().ToList();
-             
+
             var mediumData = new Dictionary<string, string>();
             mediumData.Add( "From", from.ResolveMergeFields( mergeFields ) );
             mediumData.Add( "Subject", subject.ResolveMergeFields( mergeFields ) );

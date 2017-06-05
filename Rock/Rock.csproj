@@ -515,6 +515,7 @@
     <Compile Include="Data\RouteAttribute.cs" />
     <Compile Include="Data\Service.cs" />
     <Compile Include="Data\Udf\DbMetadataExtensions.cs" />
+    <Compile Include="Data\Udf\GetSpousePersonIdFromPersonIdStoreFunctionInjectionConvention.cs" />
     <Compile Include="Data\Udf\GetAddressStoreFunctionInjectionConvention.cs" />
     <Compile Include="Data\Udf\GetGeofencedGroupNamesStoreFunctionInjectionConvention.cs" />
     <Compile Include="Data\Udf\RockUdfHelper.cs" />
@@ -532,6 +533,7 @@
     <Compile Include="Field\IFieldType.cs" />
     <Compile Include="Field\ILinkableFieldType.cs" />
     <Compile Include="Field\SelectFromListFieldType.cs" />
+    <Compile Include="Field\Types\LavaFieldType.cs" />
     <Compile Include="Field\Types\AccountFieldType.cs" />
     <Compile Include="Field\Types\AccountsFieldType.cs" />
     <Compile Include="Field\Types\AddressFieldType.cs" />
@@ -695,6 +697,7 @@
     <Compile Include="Lava\Blocks\Search.cs" />
     <Compile Include="Lava\Blocks\WebRequest.cs" />
     <Compile Include="Lava\Blocks\Sql.cs" />
+    <Compile Include="Lava\Blocks\WorkflowActivate.cs" />
     <Compile Include="Lava\CommonMergeFieldsOptions.cs" />
     <Compile Include="Lava\ILiquidizable.cs" />
     <Compile Include="Lava\LavaHelper.cs" />
@@ -732,10 +735,12 @@
     <Compile Include="Model\CodeGenerated\AnalyticsFactAttendanceService.cs" />
     <Compile Include="Model\CodeGenerated\AnalyticsSourceAttendanceService.cs" />
     <Compile Include="Model\CodeGenerated\AnalyticsSourceFamilyHistoricalService.cs" />
+    <Compile Include="Model\AttributeMatrixTemplateService.partial.cs" />
     <Compile Include="Model\CodeGenerated\PersonalDeviceService.cs" />
     <Compile Include="Model\CodeGenerated\AttributeMatrixItemService.cs" />
     <Compile Include="Model\CodeGenerated\AttributeMatrixService.cs" />
     <Compile Include="Model\CodeGenerated\AttributeMatrixTemplateService.cs" />
+    <Compile Include="Model\FinancialAccountService.Partial.cs" />
     <Compile Include="Model\InteractionService.Partial.cs" />
     <Compile Include="Model\MetricService.Partial.cs" />
     <Compile Include="Model\AttendanceCodeService.Partial.cs" />
@@ -1102,12 +1107,14 @@
     <Compile Include="Reporting\DataSelect\GroupMember\GroupLinkSelect.cs" />
     <Compile Include="Reporting\DataSelect\Group\GroupFormattedFieldSelect.cs" />
     <Compile Include="Reporting\DataSelect\Person\PersonFormattedFieldSelect.cs" />
+    <Compile Include="Reporting\DataTransform\Person\SpouseTransform.cs" />
     <Compile Include="Search\Other\Universal.cs" />
     <Compile Include="Reporting\DataFilter\Person\InRegistrationInstanceFilter.cs" />
     <Compile Include="SystemGuid\InteractionChannel.cs" />
     <Compile Include="Transactions\DeleteIndexEntityTransaction.cs" />
     <Compile Include="Transactions\IndexEntityTransaction.cs" />
     <Compile Include="Transactions\BulkIndexEntityTypeTransaction.cs" />
+    <Compile Include="Transactions\LaunchWorkflowsTransaction.cs" />
     <Compile Include="Transactions\SendPaymentReceipts.cs" />
     <Compile Include="Transactions\SendPaymentReciepts.cs" />
     <Compile Include="UniversalSearch\Crawler\Crawler.cs" />
@@ -1193,6 +1200,8 @@
     <Compile Include="Plugin\HotFixes\021_UpdateCheckInMergefieldDebugInfo.cs" />
     <Compile Include="Plugin\HotFixes\019_FixIpadClientPrinting.cs" />
     <Compile Include="Plugin\HotFixes\018_RestrictGroupRegistrationGroupTypes.cs" />
+    <Compile Include="Plugin\HotFixes\025_PersonGivingEnvelopeAttribute.cs" />
+    <Compile Include="Plugin\HotFixes\026_PersonEditConnectionRecordStatus.cs" />
     <Compile Include="Plugin\Migration.cs" />
     <Compile Include="Plugin\VersionAttribute.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -1340,6 +1349,7 @@
     <Compile Include="Web\Cache\WorkflowTypeCache.cs" />
     <Compile Include="Web\UI\Controls\AttributeMatrixEditor.cs" />
     <Compile Include="Web\UI\Controls\DynamicPlaceholder.cs" />
+    <Compile Include="Web\UI\Controls\Pickers\DatePartsPicker.cs" />
     <Compile Include="Web\UI\Controls\SSNBox.cs" />
     <Compile Include="Web\UI\RockHiddenFieldPageStatePersister.cs" />
     <Compile Include="Web\UI\Controls\Grid\LavaBoundField.cs" />
@@ -1818,6 +1828,7 @@
     <Compile Include="Workflow\Action\Groups\UpdateGroupMemberStatus.cs" />
     <Compile Include="Workflow\Action\People\GetPersonFromFields.cs" />
     <Compile Include="Workflow\Action\People\PersonAddressUpdate.cs" />
+    <Compile Include="Workflow\Action\People\PersonFollowAdd.cs" />
     <Compile Include="Workflow\Action\People\PersonGetHeadOfHousehold.cs" />
     <Compile Include="Workflow\Action\People\PersonGetSpouse.cs" />
     <Compile Include="Workflow\Action\People\PersonInDataView.cs" />

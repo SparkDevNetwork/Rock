@@ -153,6 +153,7 @@
                                         <Rock:RockBoundField DataField="Name" HeaderText="Attribute" />
                                         <Rock:RockBoundField DataField="Description" HeaderText="Description" />
                                         <Rock:BoolField DataField="IsRequired" HeaderText="Required" />
+                                        <Rock:SecurityField TitleField="Name" />
                                         <Rock:EditField OnClick="gGroupMemberAttributes_Edit" />
                                         <Rock:DeleteField OnClick="gGroupMemberAttributes_Delete" />
                                     </Columns>
