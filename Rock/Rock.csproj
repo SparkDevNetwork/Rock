@@ -1099,6 +1099,7 @@
     <Compile Include="PersonProfile\Badge\GroupTypeAttendance.cs" />
     <Compile Include="PersonProfile\Badge\InDataView.cs" />
     <Compile Include="Plugin\HotFixes\024_PrayerRequestAttributes.cs" />
+    <Compile Include="Reporting\DataFilter\Person\FinancialTransactionDataViewFilter.cs" />
     <Compile Include="Reporting\DataFilter\Person\InRegistrationInstanceRegistrationTemplateFilter.cs" />
     <Compile Include="Reporting\DataFilter\Person\InLocationGeofenceFilter.cs" />
     <Compile Include="Reporting\DataFilter\Person\LocationFilter.cs" />
