@@ -47,7 +47,7 @@ namespace RockWeb.Blocks.Groups
     [BooleanField( "Limit to Security Role Groups", "", false, "", 3 )]
     [BooleanField( "Limit to Group Types that are shown in navigation", "", false, "", 4, "LimitToShowInNavigationGroupTypes" )]
     [DefinedValueField( Rock.SystemGuid.DefinedType.MAP_STYLES, "Map Style", "The style of maps to use", false, false, Rock.SystemGuid.DefinedValue.MAP_STYLE_ROCK, "", 5 )]
-    [LinkedPage( "Group Map Page", "The page to display detailed group map.", true, "", "", 6 )]
+    [LinkedPage( "Group Map Page", "The page to display detailed group map.", false, "", "", 6 )]
     [LinkedPage( "Attendance Page", "The page to display attendance list.", false, "", "", 7 )]
     [LinkedPage( "Registration Instance Page", "The page to display registration details.", false, "", "", 7 )]
     [LinkedPage( "Event Item Occurrence Page", "The page to display event item occurrence details.", false, "", "", 8 )]
@@ -924,7 +924,8 @@ namespace RockWeb.Blocks.Groups
                     Rock.Security.Authorization.Flush();
 
                 } );
-                ShowDetail( newGroup.Id );
+
+                NavigateToCurrentPage( new Dictionary<string, string> { { "GroupId", newGroup.Id.ToString() } } );
             }
         }
 
@@ -1605,8 +1606,6 @@ namespace RockWeb.Blocks.Groups
             hlAttendance.Visible = group.GroupType != null && group.GroupType.TakesAttendance;
             hlAttendance.NavigateUrl = LinkedPageUrl( "AttendancePage", pageParams );
 
-            string groupMapUrl = LinkedPageUrl( "GroupMapPage", pageParams );
-
             var registrations = new Dictionary<int, string>();
             var eventItemOccurrences = new Dictionary<int, string>();
             var contentItems = new Dictionary<int, string>();
@@ -1655,60 +1654,69 @@ namespace RockWeb.Blocks.Groups
 
             // Get Map Style
             phMaps.Controls.Clear();
-            var mapStyleValue = DefinedValueCache.Read( GetAttributeValue( "MapStyle" ) );
-            if ( mapStyleValue == null )
-            {
-                mapStyleValue = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.MAP_STYLE_ROCK );
-            }
 
-            if ( mapStyleValue != null )
+            string groupMapUrl = LinkedPageUrl( "GroupMapPage", pageParams );
+            if ( groupMapUrl.IsNotNullOrWhitespace() )
             {
-                string mapStyle = mapStyleValue.GetAttributeValue( "StaticMapStyle" );
-                if ( !string.IsNullOrWhiteSpace( mapStyle ) )
+                var mapStyleValue = DefinedValueCache.Read( GetAttributeValue( "MapStyle" ) );
+                if ( mapStyleValue == null )
                 {
-                    foreach ( GroupLocation groupLocation in group.GroupLocations.OrderBy( gl => ( gl.GroupLocationTypeValue != null ) ? gl.GroupLocationTypeValue.Order : int.MaxValue ) )
-                    {
-                        if ( groupLocation.Location != null )
-                        {
-                            var googleAPIKey = GlobalAttributesCache.Read().GetValue( "GoogleAPIKey" );
+                    mapStyleValue = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.MAP_STYLE_ROCK );
+                }
 
-                            if ( groupLocation.Location.GeoPoint != null && !string.IsNullOrWhiteSpace( googleAPIKey ) )
+                if ( mapStyleValue != null )
+                {
+                    string mapStyle = mapStyleValue.GetAttributeValue( "StaticMapStyle" );
+                    if ( !string.IsNullOrWhiteSpace( mapStyle ) )
+                    {
+                        foreach ( GroupLocation groupLocation in group.GroupLocations.OrderBy( gl => ( gl.GroupLocationTypeValue != null ) ? gl.GroupLocationTypeValue.Order : int.MaxValue ) )
+                        {
+                            if ( groupLocation.Location != null )
                             {
-                                string markerPoints = string.Format( "{0},{1}", groupLocation.Location.GeoPoint.Latitude, groupLocation.Location.GeoPoint.Longitude );
-                                string mapLink = System.Text.RegularExpressions.Regex.Replace( mapStyle, @"\{\s*MarkerPoints\s*\}", markerPoints );
-                                mapLink = System.Text.RegularExpressions.Regex.Replace( mapLink, @"\{\s*PolygonPoints\s*\}", string.Empty );
-                                mapLink += "&sensor=false&size=450x250&zoom=13&format=png&key=" + googleAPIKey;
-                                var literalcontrol = new Literal()
+                                var googleAPIKey = GlobalAttributesCache.Read().GetValue( "GoogleAPIKey" );
+
+                                if ( groupLocation.Location.GeoPoint != null && !string.IsNullOrWhiteSpace( googleAPIKey ) )
                                 {
-                                    Text = string.Format(
-                                    "<div class='group-location-map'>{0}<a href='{1}'><img class='img-thumbnail' src='{2}'/></a></div>",
-                                    groupLocation.GroupLocationTypeValue != null ? ( "<h4>" + groupLocation.GroupLocationTypeValue.Value + "</h4>" ) : string.Empty,
-                                    groupMapUrl,
-                                    mapLink ),
-                                    Mode = LiteralMode.PassThrough
-                                };
-                                phMaps.Controls.Add( literalcontrol );
-                            }
-                            else if ( groupLocation.Location.GeoFence != null && !string.IsNullOrWhiteSpace( googleAPIKey ) )
-                            {
-                                string polygonPoints = "enc:" + groupLocation.Location.EncodeGooglePolygon();
-                                string mapLink = System.Text.RegularExpressions.Regex.Replace( mapStyle, @"\{\s*MarkerPoints\s*\}", string.Empty );
-                                mapLink = System.Text.RegularExpressions.Regex.Replace( mapLink, @"\{\s*PolygonPoints\s*\}", polygonPoints );
-                                mapLink += "&sensor=false&size=350x200&format=png&key=" + googleAPIKey;
-                                phMaps.Controls.Add(
-                                    new LiteralControl( string.Format(
+                                    string markerPoints = string.Format( "{0},{1}", groupLocation.Location.GeoPoint.Latitude, groupLocation.Location.GeoPoint.Longitude );
+                                    string mapLink = System.Text.RegularExpressions.Regex.Replace( mapStyle, @"\{\s*MarkerPoints\s*\}", markerPoints );
+                                    mapLink = System.Text.RegularExpressions.Regex.Replace( mapLink, @"\{\s*PolygonPoints\s*\}", string.Empty );
+                                    mapLink += "&sensor=false&size=450x250&zoom=13&format=png&key=" + googleAPIKey;
+                                    var literalcontrol = new Literal()
+                                    {
+                                        Text = string.Format(
                                         "<div class='group-location-map'>{0}<a href='{1}'><img class='img-thumbnail' src='{2}'/></a></div>",
                                         groupLocation.GroupLocationTypeValue != null ? ( "<h4>" + groupLocation.GroupLocationTypeValue.Value + "</h4>" ) : string.Empty,
                                         groupMapUrl,
-                                        mapLink ) ) );
+                                        mapLink ),
+                                        Mode = LiteralMode.PassThrough
+                                    };
+                                    phMaps.Controls.Add( literalcontrol );
+                                }
+                                else if ( groupLocation.Location.GeoFence != null && !string.IsNullOrWhiteSpace( googleAPIKey ) )
+                                {
+                                    string polygonPoints = "enc:" + groupLocation.Location.EncodeGooglePolygon();
+                                    string mapLink = System.Text.RegularExpressions.Regex.Replace( mapStyle, @"\{\s*MarkerPoints\s*\}", string.Empty );
+                                    mapLink = System.Text.RegularExpressions.Regex.Replace( mapLink, @"\{\s*PolygonPoints\s*\}", polygonPoints );
+                                    mapLink += "&sensor=false&size=350x200&format=png&key=" + googleAPIKey;
+                                    phMaps.Controls.Add(
+                                        new LiteralControl( string.Format(
+                                            "<div class='group-location-map'>{0}<a href='{1}'><img class='img-thumbnail' src='{2}'/></a></div>",
+                                            groupLocation.GroupLocationTypeValue != null ? ( "<h4>" + groupLocation.GroupLocationTypeValue.Value + "</h4>" ) : string.Empty,
+                                            groupMapUrl,
+                                            mapLink ) ) );
+                                }
                             }
                         }
                     }
                 }
-            }
 
-            hlMap.Visible = !string.IsNullOrWhiteSpace( groupMapUrl );
-            hlMap.NavigateUrl = groupMapUrl;
+                hlMap.Visible = true;
+                hlMap.NavigateUrl = groupMapUrl;
+            }
+            else
+            {
+                hlMap.Visible = false;
+            }
 
             btnSecurity.Visible = group.IsAuthorized( Authorization.ADMINISTRATE, CurrentPerson );
             btnSecurity.EntityId = group.Id;
