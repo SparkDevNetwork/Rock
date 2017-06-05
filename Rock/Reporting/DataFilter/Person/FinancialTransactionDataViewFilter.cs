@@ -33,9 +33,9 @@ using Rock.Web.Utilities;
 namespace Rock.Reporting.DataFilter.Person
 {
     /// <summary>
-    ///     A Data Filter to select Donor according to their Transactions from a Financial Transaction View.
+    ///     A Data Filter to select Donor by their Transactions from a Financial Transaction View.
     /// </summary>
-    [Description( "Select Donor according to their Transactions from a Financial Transaction View." )]
+    [Description( "Select Person by their Transactions from a Financial Transaction View." )]
     [Export( typeof( DataFilterComponent ) )]
     [ExportMetadata( "ComponentName", "Financial Transaction View" )]
     public class FinancialTransactionDataViewFilter : DataFilterComponent
@@ -191,7 +191,7 @@ function() {
             {
                 var dataView = new DataViewService( context ).Get( settings.DataViewGuid.GetValueOrDefault() );
 
-                result = string.Format( "Donor in Data View \"{0}\"", ( dataView != null ? dataView.ToString() : string.Empty ) );
+                result = string.Format( "Person in Data View \"{0}\"", ( dataView != null ? dataView.ToString() : string.Empty ) );
             }
 
             return result;
@@ -211,8 +211,8 @@ function() {
         {
             var ddlDataView = new DataViewPicker();
             ddlDataView.ID = filterControl.GetChildControlInstanceName( _CtlDataView );
-            ddlDataView.Label = "Has a Donor in this Data View";
-            ddlDataView.Help = "A Data View that provides the set of Donor to match.";
+            ddlDataView.Label = "Has a Person in this Data View";
+            ddlDataView.Help = "A Data View that provides the set of Person to match.";
 
             filterControl.Controls.Add( ddlDataView );
 
@@ -284,7 +284,7 @@ function() {
             // Get the Financial Transaction Data View.
             var dataView = DataComponentSettingsHelper.GetDataViewForFilterComponent( settings.DataViewGuid, context );
 
-            // Evaluate the Data View that defines the donor Financial Transaction.
+            // Evaluate the Data View that defines the Person's Financial Transaction.
             var financialTransactionService = new FinancialTransactionService( context );
 
             var financialTransactionQuery = financialTransactionService.Queryable();
