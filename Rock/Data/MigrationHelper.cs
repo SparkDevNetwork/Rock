@@ -3568,6 +3568,21 @@ END
         }
 
         /// <summary>
+        /// Adds the group type group attribute.
+        /// </summary>
+        /// <param name="groupTypeGuid">The group type unique identifier.</param>
+        /// <param name="fieldTypeGuid">The field type unique identifier.</param>
+        /// <param name="name">The name.</param>
+        /// <param name="description">The description.</param>
+        /// <param name="order">The order.</param>
+        /// <param name="defaultValue">The default value.</param>
+        /// <param name="guid">The unique identifier.</param>
+        public void AddGroupTypeGroupAttribute( string groupTypeGuid, string fieldTypeGuid, string name, string description, int order, string defaultValue, string guid )
+        {
+            AddGroupTypeGroupAttribute( groupTypeGuid, fieldTypeGuid, name, description, order, defaultValue, guid, false );
+        }
+
+        /// <summary>
         /// Adds (or Updates) a new GroupType "Group Attribute" for the given GroupType using the given values.
         /// </summary>
         /// <param name="groupTypeGuid">The group type unique identifier.</param>
@@ -3578,7 +3593,7 @@ END
         /// <param name="defaultValue">a string, empty string, or NULL</param>
         /// <param name="guid">The unique identifier.</param>
         /// <param name="isRequired">if set to <c>true</c> [is required].</param>
-        public void AddGroupTypeGroupAttribute( string groupTypeGuid, string fieldTypeGuid, string name, string description, int order, string defaultValue, string guid, bool isRequired = false )
+        public void AddGroupTypeGroupAttribute( string groupTypeGuid, string fieldTypeGuid, string name, string description, int order, string defaultValue, string guid, bool isRequired )
         {
             AddGroupTypeAttribute( "Rock.Model.Group", groupTypeGuid, fieldTypeGuid, name, description, order, defaultValue, isRequired, guid );
         }

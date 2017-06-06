@@ -652,7 +652,7 @@ namespace Rock.Model
                         }
                     }
 
-                    if ( !groupMember.IsValid )
+                    if ( !groupMember.IsValidGroupMember(rockContext) )
                     {
                         throw new GroupMemberValidationException( groupMember.ValidationResults.Select( a => a.ErrorMessage ).ToList().AsDelimited( "<br />" ) );
                     }

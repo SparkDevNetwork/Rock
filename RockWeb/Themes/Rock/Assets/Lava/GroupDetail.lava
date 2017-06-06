@@ -103,7 +103,8 @@
 		{% if countPending > -1 %}
 			{% assign icountPending = 0 %}
 
-			
+			<div class="well">
+				<h4>Pending Members</h4>
 
 			{% for member in Group.Members %}
 
@@ -112,8 +113,6 @@
 					{% assign loopcycle = icountPending | Modulo:2 %}
 
 					{% if loopcycle == 0 %}
-					<div class="well">
-						<h4>Pending Members</h4>
 						<div class="row">
 					{% endif %}
 
@@ -127,7 +126,7 @@
 							<small>({{ member.GroupRole.Name}})</small>
 
 							{% for phone in member.Person.PhoneNumbers %}
-							<br />{{ phone.NumberFormatted }} <small>({{ phone.NumberTypeValue.Value }})</small>
+							<br />{% if phone.IsUnlisted != true %}<a href="tel:{{ phone.NumberFormatted }}">{{ phone.NumberFormatted }}</a>{% else %}Unlisted{% endif %}  <small>({{ phone.NumberTypeValue.Value }})</small>
 							{% endfor %}
 
 							{% assign memberAddress =  member.Person | Address:'Home' %}
@@ -157,7 +156,6 @@
 
 					{% if loopcycle != 0 or icountPending == countPending %}
 						</div>
-						</div>
 					{% endif %}
 
 					{% assign icountPending = icountPending | Plus: 1 %}
@@ -165,7 +163,7 @@
 				{% endif %}
 
 			{% endfor %}
-
+				</div>
 		{% endif %}
 
 
@@ -195,7 +193,7 @@
 							<small>({{ member.GroupRole.Name}})</small>
 
 							{% for phone in member.Person.PhoneNumbers %}
-							<br />{{ phone.NumberFormatted }} <small>({{ phone.NumberTypeValue.Value }})</small>
+							<br />{% if phone.IsUnlisted != true %}<a href="tel:{{ phone.NumberFormatted }}">{{ phone.NumberFormatted }}</a>{% else %}Unlisted{% endif %}  <small>({{ phone.NumberTypeValue.Value }})</small>
 							{% endfor %}
 
 							{% assign memberAddress =  member.Person | Address:'Home' %}
@@ -262,7 +260,7 @@
 							<small>({{ member.GroupRole.Name}})</small>
 
 							{% for phone in member.Person.PhoneNumbers %}
-							<br />{{ phone.NumberFormatted }} <small>({{ phone.NumberTypeValue.Value }})</small>
+							<br />{% if phone.IsUnlisted != true %}<a href="tel:{{ phone.NumberFormatted }}">{{ phone.NumberFormatted }}</a>{% else %}Unlisted{% endif %}  <small>({{ phone.NumberTypeValue.Value }})</small>
 							{% endfor %}
 
 							{% assign memberAddress =  member.Person | Address:'Home' %}

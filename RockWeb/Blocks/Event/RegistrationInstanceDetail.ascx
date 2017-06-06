@@ -161,6 +161,7 @@
                                             <asp:Literal ID="lRegisteredBy" runat="server"></asp:Literal>
                                         </ItemTemplate>
                                     </Rock:RockTemplateField>
+                                    <Rock:RockBoundField DataField="ConfirmationEmail" HeaderText="Confirmation Email" ExcelExportBehavior="AlwaysInclude" Visible="false" />
                                     <Rock:RockTemplateField HeaderText="Registrants">
                                         <ItemTemplate>
                                             <asp:Literal ID="lRegistrants" runat="server"></asp:Literal>
