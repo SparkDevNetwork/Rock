@@ -766,6 +766,12 @@ namespace RockWeb.Blocks.Groups
                 return;
             }
 
+            var selectedGroupRoleId = ddlGroupRole.SelectedValue.AsInteger();
+            if ( groupMember != null && selectedGroupRoleId != groupMember.GroupRoleId )
+            {
+                groupMember.GroupRoleId = selectedGroupRoleId;
+            }
+
             rcwRequirements.Visible = true;
 
             IEnumerable<GroupRequirementStatus> requirementsResults;
