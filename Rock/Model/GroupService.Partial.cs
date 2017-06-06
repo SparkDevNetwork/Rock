@@ -438,7 +438,7 @@ namespace Rock.Model
         /// <summary>
         /// Groups the members not meeting requirements.
         /// </summary>
-        /// <param name="groupId">The group identifier.</param>
+        /// <param name="group">The group.</param>
         /// <param name="includeWarnings">if set to <c>true</c> [include warnings].</param>
         /// <param name="includeInactive">if set to <c>true</c> [include inactive].</param>
         /// <returns></returns>

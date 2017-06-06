@@ -178,6 +178,9 @@ namespace Rock.Client
         public ICollection<GroupLocation> GroupLocations { get; set; }
 
         /// <summary />
+        public ICollection<GroupRequirement> GroupRequirements { get; set; }
+
+        /// <summary />
         public GroupType GroupType { get; set; }
 
         /// <summary />
