@@ -953,6 +953,8 @@ namespace RockWeb.Blocks.Groups
                 var groupType = CurrentGroupTypeCache;
                 SetScheduleControls( groupType, null );
                 ShowGroupTypeEditDetails( groupType, group, true );
+                BindInheritedAttributes( CurrentGroupTypeId, new AttributeService( new RockContext() ) );
+                BindGroupRequirementsGrid();
             }
         }
 
@@ -2659,12 +2661,11 @@ namespace RockWeb.Blocks.Groups
             var rockContext = new RockContext();
             var groupTypeGroupRequirements = new GroupRequirementService( rockContext ).Queryable().Where( a => a.GroupTypeId.HasValue && a.GroupTypeId == CurrentGroupTypeId ).ToList();
             var groupGroupRequirements = GroupRequirementsState.ToList();
-
+            rcwGroupTypeGroupRequirements.Visible = groupTypeGroupRequirements.Any();
+            rcwGroupRequirements.Label = groupTypeGroupRequirements.Any() ? "Specific Group Requirements" : string.Empty;
             if ( CurrentGroupTypeCache != null )
             {
-                rcwGroupTypeGroupRequirements.Visible = groupTypeGroupRequirements.Any();
                 lGroupTypeGroupRequirementsFrom.Text = string.Format( "(From <a href='{0}' target='_blank'>{1}</a>)", this.ResolveUrl( "~/GroupType/" + CurrentGroupTypeCache.Id ), CurrentGroupTypeCache.Name );
-                rcwGroupRequirements.Label = groupTypeGroupRequirements.Any() ? "Specific Group Requirements" : string.Empty;
             }
 
             gGroupTypeGroupRequirements.AddCssClass( "grouptype-group-requirements-grid" );

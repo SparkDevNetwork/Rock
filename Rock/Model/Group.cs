@@ -567,7 +567,7 @@ namespace Rock.Model
         /// <returns></returns>
         public IQueryable<GroupRequirement> GetGroupRequirements(RockContext rockContext )
         {
-            return new GroupRequirementService( rockContext ).Queryable().Where( a => ( a.GroupId.HasValue && a.GroupId == this.Id ) || ( a.GroupTypeId.HasValue && a.GroupTypeId == this.GroupTypeId ));
+            return new GroupRequirementService( rockContext ).Queryable().Include( a=> a.GroupRequirementType ). Where( a => ( a.GroupId.HasValue && a.GroupId == this.Id ) || ( a.GroupTypeId.HasValue && a.GroupTypeId == this.GroupTypeId ));
         }
 
         /// <summary>
@@ -597,7 +597,7 @@ namespace Rock.Model
             var result = new List<PersonGroupRequirementStatus>();
             foreach ( var groupRequirement in this.GetGroupRequirements(rockContext).OrderBy( a => a.GroupRequirementType.Name ) )
             {
-                var requirementStatus = groupRequirement.PersonMeetsGroupRequirement( personId, groupRoleId );
+                var requirementStatus = groupRequirement.PersonMeetsGroupRequirement( personId, this.Id, groupRoleId );
                 result.Add( requirementStatus );
             }
 

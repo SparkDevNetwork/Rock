@@ -140,14 +140,19 @@ namespace Rock.Model
         /// </returns>
         public override string ToString()
         {
-            if ( this.GroupRequirementType != null && this.Group != null )
+            if ( this.GroupRequirementType != null )
             {
-                return string.Format( "{0}|{1}", this.GroupRequirementType, this.Group );
+                if ( this.Group != null )
+                {
+                    return string.Format( "{0}|{1}", this.GroupRequirementType, this.Group );
+                }
+                else if ( this.GroupType != null )
+                {
+                    return string.Format( "{0}|{1}", this.GroupRequirementType, this.GroupType );
+                }
             }
-            else
-            {
-                return base.ToString();
-            }
+
+            return base.ToString();
         }
 
         /// <summary>
@@ -157,7 +162,30 @@ namespace Rock.Model
         /// <param name="personQry">A qry containing the people whose requirements should be checked</param>
         /// <param name="groupRoleId">The group role identifier.</param>
         /// <returns></returns>
+        [Obsolete( "Use PersonQueryableMeetsGroupRequirement(rockContxt, personQry, groupId, groupRoleId) instead" )]
         public IEnumerable<PersonGroupRequirementStatus> PersonQueryableMeetsGroupRequirement( RockContext rockContext, IQueryable<Person> personQry, int? groupRoleId )
+        {
+            if ( this.GroupId.HasValue )
+            {
+                return PersonQueryableMeetsGroupRequirement( rockContext, personQry, this.GroupId.Value, groupRoleId );
+            }
+            else
+            {
+                // the new method needs to be used if this is a GroupTypeId GroupRequirement
+                throw new NotSupportedException();
+            }
+        }
+
+        /// <summary>
+        /// Returns a list of each person and their GroupRequiremnt status for this group requirement
+        /// </summary>
+        /// <param name="rockContext">The rock context.</param>
+        /// <param name="personQry">The person qry.</param>
+        /// <param name="groupId">The group identifier.</param>
+        /// <param name="groupRoleId">The group role identifier.</param>
+        /// <returns></returns>
+        /// <exception cref="System.Exception">No dataview assigned to Group Requirement Type: " + this.GroupRequirementType.Name</exception>
+        public IEnumerable<PersonGroupRequirementStatus> PersonQueryableMeetsGroupRequirement( RockContext rockContext, IQueryable<Person> personQry, int groupId, int? groupRoleId )
         {
             if ( ( this.GroupRoleId != null ) && ( groupRoleId != null ) && ( this.GroupRoleId != groupRoleId ) )
             {
@@ -281,7 +309,7 @@ namespace Rock.Model
             else
             {
                 // manual
-                var groupMemberRequirementQry = new GroupMemberRequirementService( rockContext ).Queryable().Where( a => a.GroupRequirementId == this.Id && a.RequirementMetDateTime.HasValue );
+                var groupMemberRequirementQry = new GroupMemberRequirementService( rockContext ).Queryable().Where( a => a.GroupMember.GroupId == groupId && a.GroupRequirementId == this.Id && a.RequirementMetDateTime.HasValue );
 
                 var result = personQry.ToList().Select( a =>
                     new PersonGroupRequirementStatus
@@ -299,16 +327,38 @@ namespace Rock.Model
         }
 
         /// <summary>
+        /// Persons the meets group requirement.
+        /// </summary>
+        /// <param name="personId">The person identifier.</param>
+        /// <param name="groupRoleId">The group role identifier.</param>
+        /// <returns></returns>
+        /// <exception cref="System.NotSupportedException"></exception>
+        [Obsolete( "Use PersonMeetsGroupRequirement(personId, groupId, groupRoleId) instead " )]
+        public PersonGroupRequirementStatus PersonMeetsGroupRequirement( int personId, int? groupRoleId )
+        {
+            if (this.GroupId.HasValue)
+            {
+                return PersonMeetsGroupRequirement( personId, this.GroupId.Value, groupRoleId );
+            }
+            else
+            {
+                // the new method needs to be used if this is a GroupTypeId GroupRequirement
+                throw new NotSupportedException();
+            }
+            
+        }
+
+        /// <summary>
         /// Check if the Person meets the group requirement for the role
         /// </summary>
         /// <param name="personId">The person identifier.</param>
         /// <param name="groupRoleId">The group role identifier.</param>
         /// <returns></returns>
-        public PersonGroupRequirementStatus PersonMeetsGroupRequirement( int personId, int? groupRoleId )
+        public PersonGroupRequirementStatus PersonMeetsGroupRequirement( int personId, int groupId, int? groupRoleId )
         {
             var rockContext = new RockContext();
             var personQuery = new PersonService( rockContext ).Queryable().Where( a => a.Id == personId );
-            var result = this.PersonQueryableMeetsGroupRequirement( rockContext, personQuery, groupRoleId ).FirstOrDefault();
+            var result = this.PersonQueryableMeetsGroupRequirement( rockContext, personQuery, groupId, groupRoleId ).FirstOrDefault();
             if ( result == null )
             {
                 // no result. probably because personId was zero
@@ -331,18 +381,40 @@ namespace Rock.Model
         /// <param name="rockContext">The rock context.</param>
         /// <param name="personId">The person identifier.</param>
         /// <param name="meetsGroupRequirement">The meets group requirement.</param>
+        [Obsolete( "Use UpdateGroupMemberRequirementResult(rockContext, personId, groupId, meetsGroupRequirement) instead" )]
         public void UpdateGroupMemberRequirementResult( RockContext rockContext, int personId, MeetsGroupRequirement meetsGroupRequirement )
+        {
+            if ( this.GroupId.HasValue )
+            {
+                UpdateGroupMemberRequirementResult( rockContext, personId, this.GroupId.Value, meetsGroupRequirement );
+            }
+            else
+            {
+                // the new method needs to be used if this is a GroupTypeId GroupRequirement
+                throw new NotSupportedException();
+            }
+        }
+
+        /// <summary>
+        /// Updates the group member requirement result.
+        /// </summary>
+        /// <param name="rockContext">The rock context.</param>
+        /// <param name="personId">The person identifier.</param>
+        /// <param name="groupId">The group identifier.</param>
+        /// <param name="meetsGroupRequirement">The meets group requirement.</param>
+        public void UpdateGroupMemberRequirementResult( RockContext rockContext, int personId, int groupId, MeetsGroupRequirement meetsGroupRequirement )
         {
             GroupRequirement groupRequirement = this;
             var currentDateTime = RockDateTime.Now;
             GroupMemberRequirementService groupMemberRequirementService = new GroupMemberRequirementService( rockContext );
             var groupMemberService = new GroupMemberService( rockContext );
-            var groupMemberQry = groupMemberService.Queryable( true ).Where( a => a.PersonId == personId 
+            var groupMemberQry = groupMemberService.Queryable( true ).Where( a => a.PersonId == personId && a.GroupId == groupId
                 && ( 
                     ( groupRequirement.GroupId.HasValue && groupRequirement.GroupId == a.GroupId ) 
                     ||
                     ( groupRequirement.GroupTypeId.HasValue && groupRequirement.GroupTypeId == a.Group.GroupTypeId )
                    ));
+
             if ( this.GroupRoleId != null )
             {
                 groupMemberQry = groupMemberQry.Where( a => a.GroupRoleId == this.GroupRoleId );
