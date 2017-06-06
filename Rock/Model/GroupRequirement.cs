@@ -42,11 +42,21 @@ namespace Rock.Model
         /// <value>
         /// The group identifier.
         /// </value>
-        [Required]
-        [DataMember( IsRequired = true )]
+        [DataMember]
         [Index( "IDX_GroupRequirementTypeGroup", IsUnique = true, Order = 0 )]
         [IgnoreCanDelete]
-        public int GroupId { get; set; }
+        public int? GroupId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the group type identifier.
+        /// </summary>
+        /// <value>
+        /// The group type identifier.
+        /// </value>
+        [DataMember]
+        [Index( "IDX_GroupRequirementTypeGroup", IsUnique = true, Order = 1 )]
+        [IgnoreCanDelete]
+        public int? GroupTypeId { get; set; }
 
         /// <summary>
         /// Gets or sets the group requirement type identifier.
@@ -56,7 +66,7 @@ namespace Rock.Model
         /// </value>
         [Required]
         [DataMember( IsRequired = true )]
-        [Index( "IDX_GroupRequirementTypeGroup", IsUnique = true, Order = 1 )]
+        [Index( "IDX_GroupRequirementTypeGroup", IsUnique = true, Order = 2 )]
         public int GroupRequirementTypeId { get; set; }
 
         /// <summary>
@@ -66,8 +76,17 @@ namespace Rock.Model
         /// The group role identifier.
         /// </value>
         [DataMember]
-        [Index( "IDX_GroupRequirementTypeGroup", IsUnique = true, Order = 2 )]
+        [Index( "IDX_GroupRequirementTypeGroup", IsUnique = true, Order = 3 )]
         public int? GroupRoleId { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether a member must meet this requirement before adding (only applies to DataView and SQL RequirementCheckType)
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if [must meet requirement to add member]; otherwise, <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool MustMeetRequirementToAddMember { get; set; }
 
         #endregion
 
@@ -81,6 +100,15 @@ namespace Rock.Model
         /// </value>
         [LavaInclude]
         public virtual Group Group { get; set; }
+
+        /// <summary>
+        /// Gets or sets the type of the group.
+        /// </summary>
+        /// <value>
+        /// The type of the group.
+        /// </value>
+        [LavaInclude]
+        public virtual GroupType GroupType { get; set; }
 
         /// <summary>
         /// Gets or sets the type of the group requirement.
@@ -309,7 +337,12 @@ namespace Rock.Model
             var currentDateTime = RockDateTime.Now;
             GroupMemberRequirementService groupMemberRequirementService = new GroupMemberRequirementService( rockContext );
             var groupMemberService = new GroupMemberService( rockContext );
-            var groupMemberQry = groupMemberService.Queryable( true ).Where( a => a.PersonId == personId && a.GroupId == groupRequirement.GroupId );
+            var groupMemberQry = groupMemberService.Queryable( true ).Where( a => a.PersonId == personId 
+                && ( 
+                    ( groupRequirement.GroupId.HasValue && groupRequirement.GroupId == a.GroupId ) 
+                    ||
+                    ( groupRequirement.GroupTypeId.HasValue && groupRequirement.GroupTypeId == a.Group.GroupTypeId )
+                   ));
             if ( this.GroupRoleId != null )
             {
                 groupMemberQry = groupMemberQry.Where( a => a.GroupRoleId == this.GroupRoleId );
@@ -475,7 +508,8 @@ namespace Rock.Model
         public GroupRequirementConfiguration()
         {
             // NOTE: would be nice if this would cascade delete, but doing so results in a "may cause cycles or multiple cascade paths" error
-            this.HasRequired( a => a.Group ).WithMany( a => a.GroupRequirements ).HasForeignKey( a => a.GroupId ).WillCascadeOnDelete( false );
+            this.HasOptional( a => a.Group ).WithMany( g => g.GroupRequirements).HasForeignKey( a => a.GroupId ).WillCascadeOnDelete( false );
+            this.HasOptional( a => a.GroupType ).WithMany( gt => gt.GroupRequirements ).HasForeignKey( a => a.GroupTypeId ).WillCascadeOnDelete( false );
 
             this.HasRequired( a => a.GroupRequirementType ).WithMany().HasForeignKey( a => a.GroupRequirementTypeId ).WillCascadeOnDelete( true );
             this.HasOptional( a => a.GroupRole ).WithMany().HasForeignKey( a => a.GroupRoleId ).WillCascadeOnDelete( true );
