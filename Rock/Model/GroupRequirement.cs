@@ -352,6 +352,7 @@ namespace Rock.Model
         /// Check if the Person meets the group requirement for the role
         /// </summary>
         /// <param name="personId">The person identifier.</param>
+        /// <param name="groupId">The group identifier.</param>
         /// <param name="groupRoleId">The group role identifier.</param>
         /// <returns></returns>
         public PersonGroupRequirementStatus PersonMeetsGroupRequirement( int personId, int groupId, int? groupRoleId )
