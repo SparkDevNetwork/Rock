@@ -57,6 +57,10 @@
       <HintPath>..\packages\OpenHtmlToPdf.1.12.0.0\lib\net45\OpenHtmlToPdf.dll</HintPath>
       <Private>True</Private>
     </Reference>
+    <Reference Include="Quartz, Version=2.0.0.100, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\libs\Quartz\Quartz.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.ComponentModel.DataAnnotations" />
     <Reference Include="System.Core" />
@@ -90,6 +94,8 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Data\HrContext.cs" />
+    <Compile Include="Jobs\SendTimeCardPendingApprovalReminder.cs" />
+    <Compile Include="Jobs\SendTimeCardReminder.cs" />
     <Compile Include="Migrations\001_CreateDb.cs" />
     <Compile Include="Migrations\002_AlterColumns.cs" />
     <Compile Include="Migrations\003_AddHolidaySchedule.cs" />
@@ -136,6 +142,7 @@
   <ItemGroup>
     <Service Include="{508349B6-6B84-4DF5-91F0-309BEEBAD82D}" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

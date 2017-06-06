@@ -209,6 +209,9 @@ namespace RockWeb.Plugins.church_ccv.Hr
                 Badge lPaidVacationHours = repeaterItem.FindControl( "lPaidVacationHours" ) as Badge;
                 lPaidVacationHours.Text = FormatTimeCardHours( timeCardDay.PaidVacationHours );
 
+                Badge lSalaryVacationHours = repeaterItem.FindControl("lSalaryVacationHours") as Badge;
+                lSalaryVacationHours.Text = FormatTimeCardHours(timeCardDay.PaidVacationHours);
+
                 Badge lPaidHolidayHours = repeaterItem.FindControl( "lPaidHolidayHours" ) as Badge;
                 decimal earnedHolidayHours = timeCardDay.EarnedHolidayHours ?? 0;
                 if ( earnedHolidayHours != 0 )
@@ -231,6 +234,9 @@ namespace RockWeb.Plugins.church_ccv.Hr
                 Badge lPaidSickHours = repeaterItem.FindControl( "lPaidSickHours" ) as Badge;
                 lPaidSickHours.Text = FormatTimeCardHours( timeCardDay.PaidSickHours );
 
+                Badge lSalarySickHours = repeaterItem.FindControl("lSalarySickHours") as Badge;
+                lSalarySickHours.Text = FormatTimeCardHours(timeCardDay.PaidSickHours);
+
                 decimal totalOtherHours = ( timeCardDay.PaidVacationHours ?? 0 ) + ( timeCardDay.TotalHolidayHours ?? 0 ) + ( timeCardDay.PaidSickHours ?? 0 );
                 Literal lTotalHours = repeaterItem.FindControl( "lTotalHours" ) as Literal;
                 lTotalHours.Text = FormatTimeCardHours( ( timeCardDay.TotalWorkedDuration ?? 0 ) + totalOtherHours );
@@ -244,6 +250,8 @@ namespace RockWeb.Plugins.church_ccv.Hr
                     Literal lWorkedOvertimeHoursSummary = repeaterItem.FindControl( "lWorkedOvertimeHoursSummary" ) as Literal;
                     Literal lOtherHoursSummary = repeaterItem.FindControl( "lOtherHoursSummary" ) as Literal;
                     Literal lTotalHoursSummary = repeaterItem.FindControl( "lTotalHoursSummary" ) as Literal;
+                    Literal lTotalVacationHoursSummary = repeaterItem.FindControl("lTotalVacationHoursSummary") as Literal;
+                    Literal lTotalSickHoursSummary = repeaterItem.FindControl("lTotalSickHoursSummary") as Literal;
 
                     var workedRegularSummaryHours = timeCardDay.TimeCard.GetRegularHours()
                         .Where( a => a.TimeCardDay.StartDateTime.Date <= timeCardDay.StartDateTime.Date
@@ -257,12 +265,22 @@ namespace RockWeb.Plugins.church_ccv.Hr
                         .Where( a => a.StartDateTime.Date <= timeCardDay.StartDateTime.Date
                             && a.StartDateTime.Date >= timeCardDay.StartDateTime.Date.AddDays( -6 ) )
                             .Sum( a => ( a.PaidHolidayHours ?? 0 ) + ( a.PaidSickHours ?? 0 ) + ( a.PaidVacationHours ?? 0 ) + ( a.EarnedHolidayHours ?? 0 ) );
+                    var vacationSummaryHours = timeCardDay.TimeCard.TimeCardDays
+                        .Where( a=> a.StartDateTime.Date <= timeCardDay.StartDateTime.Date
+                            && a.StartDateTime.Date >= timeCardDay.StartDateTime.Date.AddDays( -6 ) )
+                            .Sum( a=> a.PaidVacationHours );
+                    var sickSummaryHours = timeCardDay.TimeCard.TimeCardDays
+                        .Where(a => a.StartDateTime.Date <= timeCardDay.StartDateTime.Date
+                           && a.StartDateTime.Date >= timeCardDay.StartDateTime.Date.AddDays(-6))
+                            .Sum(a => a.PaidSickHours);
 
                     string subtotalItemFormat = "{0}";
                     lWorkedRegularHoursSummary.Text = string.Format( subtotalItemFormat, FormatTimeCardHours( workedRegularSummaryHours ) );
                     lWorkedOvertimeHoursSummary.Text = string.Format( subtotalItemFormat, FormatTimeCardHours( workedOvertimeSummaryHours ) );
                     lOtherHoursSummary.Text = string.Format( subtotalItemFormat, FormatTimeCardHours( otherSummaryHours ) );
                     lTotalHoursSummary.Text = string.Format( subtotalItemFormat, FormatTimeCardHours( workedRegularSummaryHours + workedOvertimeSummaryHours + otherSummaryHours ) );
+                    lTotalVacationHoursSummary.Text = string.Format(subtotalItemFormat, FormatTimeCardHours(vacationSummaryHours));
+                    lTotalSickHoursSummary.Text = string.Format(subtotalItemFormat, FormatTimeCardHours(sickSummaryHours));
                 }
 
                 Literal lTimeCardDayNameEdit = repeaterItem.FindControl( "lTimeCardDayNameEdit" ) as Literal;
@@ -383,7 +401,7 @@ namespace RockWeb.Plugins.church_ccv.Hr
             }
 
             // make sure the current person is the timecard.person or is an approver of the timecard.person
-            List<Person> approvers = TimeCardPayPeriodService.GetApproversForStaffPerson( hrContext, this.CurrentPersonId ?? 0 );
+            List<Person> approvers = TimeCardPayPeriodService.GetApproversForStaffPerson( hrContext, this.CurrentPersonId ?? 0 );              
 
             bool editMode = false;
 
@@ -425,10 +443,13 @@ namespace RockWeb.Plugins.church_ccv.Hr
 
             hfEditMode.Value = editMode.ToTrueFalse();
 
-            // only show the Submit panel if in edit mode
-            pnlPersonActions.Visible = editMode;
+            // only show the Submit panel if in edit mode and InProgress
+            if(timeCard.TimeCardStatus == TimeCardStatus.InProgress)
+            {
+                pnlPersonActions.Visible = editMode;
+            }
 
-            lTimeCardPersonName.Text = string.Format( "{0}", timeCard.PersonAlias );
+            lTimeCardPersonName.Text = string.Format( "{0}", timeCard.PersonAlias ); 
             lTitle.Text = "Pay Period: " + timeCard.TimeCardPayPeriod.ToString();
             hlblSubTitle.Text = timeCard.GetStatusText();
 
@@ -525,6 +546,52 @@ namespace RockWeb.Plugins.church_ccv.Hr
             var historyQry = timeCardHistoryService.Queryable().Where( a => a.TimeCardId == timeCard.Id ).OrderByDescending( a => a.HistoryDateTime );
             gHistory.DataSource = historyQry.ToList();
             gHistory.DataBind();
+
+            // hide hourly timecard controls and show salary timecard controls if timecardpersonid is a salary employee
+            //   except where previous timecards have hours (for hourly employees that later become salary employees). 
+            var attributeValueService = new AttributeValueService( hrContext );
+            int payrollWageTypeId = AttributeCache.Read( church.ccv.Utility.SystemGuids.Attribute.PERSON_PAYROLL_WAGE_TYPE.AsGuid() ).Id;
+
+            bool isSalaryTimeCard = attributeValueService
+                .GetByAttributeId( payrollWageTypeId )
+                .Where( a => ( a.Value == church.ccv.Utility.SystemGuids.DefinedValue.PERSON_PAYROLL_WAGE_TYPE_FULL_TIME_SALARY_EXEMPT ||
+                              a.Value == church.ccv.Utility.SystemGuids.DefinedValue.PERSON_PAYROLL_WAGE_TYPE_PART_TIME_SALARY_EXEMPT ) &&
+                              a.EntityId == timeCardPersonId )
+                .Any();
+
+            if ( int.Parse(lTotalRegularWorked.Text ) == 0)
+            {
+                if ( isSalaryTimeCard )
+                {
+                    pnlHourlyDetailRowHeader.Visible = false;
+                    pnlSalaryDetailRowHeader.Visible = true;
+                    Repeater rpr = ( Repeater ) FindControl( "rptTimeCardDay" );
+                    for (int i = 0; i < rpr.Items.Count; i++)
+                    {
+                        Panel pnlHourlyDetailRow = ( Panel ) rpr.Items[i].FindControl( "pnlHourlyDetailRow" );
+                        pnlHourlyDetailRow.Visible = false;
+
+                        Panel pnlSalaryDetailRow = ( Panel ) rpr.Items[i].FindControl( "pnlSalaryDetailRow" );
+                        pnlSalaryDetailRow.Visible = true;
+
+                        Panel pnlHourlyEditRow = ( Panel ) rpr.Items[i].FindControl( "pnlHourlyEditRow" );
+                        pnlHourlyEditRow.Visible = false;
+
+                        Panel pnlHourlyHolidayHoursEditDDL = ( Panel ) rpr.Items[i].FindControl( "pnlHourlyHolidayHoursEditDDL" );
+                        pnlHourlyHolidayHoursEditDDL.Visible = false;
+
+                        Panel pnlTimeCardSummaryHourlyRow = ( Panel ) rpr.Items[i].FindControl( "pnlTimeCardSummaryHourlyRow" );
+                        pnlTimeCardSummaryHourlyRow.Visible = false;
+
+                        Panel pnlTimeCardSummarySalaryRow = ( Panel ) rpr.Items[i].FindControl( "pnlTimeCardSummarySalaryRow" );
+                        pnlTimeCardSummarySalaryRow.Visible = true;
+                    }
+
+                    pnlHourlyTotals.Visible = false;
+                    pnlHourlyTotalsHolidayHours.Visible = false;
+                }
+            }
+
         }
 
         #endregion

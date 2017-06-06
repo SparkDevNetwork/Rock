@@ -428,7 +428,12 @@ namespace church.ccv.Hr.Model
         /// <summary>
         /// Exported
         /// </summary>
-        Exported = 3
+        Exported = 3,
+
+        /// <summary>
+        /// Requires FollowUp
+        /// </summary>
+        FollowUp = 4
     }
 
     /// <summary>

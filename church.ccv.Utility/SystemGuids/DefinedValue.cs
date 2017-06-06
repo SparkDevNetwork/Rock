@@ -87,10 +87,8 @@ namespace church.ccv.Utility.SystemGuids
         /// Member changed schools
         /// </summary>
         public const string NEXT_GEN_OPT_OUT_MOVED_SCHOOLS  = "878D7CE4-22A2-4833-B36A-792A5C731938";
-		
-		
-		
-		/// <summary>
+
+        /// <summary>
         /// Residency Competency Type
         /// </summary>
         public const string RESIDENCY_COMPETENCY_STRATEGIC_AGILITY = "E9D1F7A6-4DD4-4D30-B629-72FE3FA58FEC";
@@ -115,5 +113,18 @@ namespace church.ccv.Utility.SystemGuids
         /// </summary>
         public const string RESIDENCY_COMPETENCY_PERSONAL_COMPOSITION = "C4DE3D73-7168-4AE1-AF7C-B849E7296D81";
 
+        #region Person Payroll Wage Types
+
+        /// <summary>
+        /// Payroll Wage Type - Full Time Salary Exempt
+        /// </summary>
+        public const string PERSON_PAYROLL_WAGE_TYPE_FULL_TIME_SALARY_EXEMPT = "440145BF-3D20-4F30-8C78-E275D58EB0BF";
+
+        /// <summary>
+        /// Payroll Wage Type - Part Time Salary Exempt
+        /// </summary>
+        public const string PERSON_PAYROLL_WAGE_TYPE_PART_TIME_SALARY_EXEMPT = "CDDF9DDE-3D9D-495C-BD9B-E8186526600C";
+
+        #endregion
     }
 }

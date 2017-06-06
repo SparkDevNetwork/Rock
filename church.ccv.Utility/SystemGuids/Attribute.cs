@@ -15,5 +15,11 @@ namespace church.ccv.Utility.SystemGuids
         public const string CONTENT_CHANNEL_CATEGORY_ATTRIBUTE = "1543B44F-E602-4E81-BD4D-F400433411F7";
 
         public const string CONTENT_CHANNEL_PRIORITY_ATTRIBUTE = "7C506C91-10C3-4166-82E1-5CDC5E4A4A19";
+
+        /// <summary>
+        /// Payroll Wage Type Attribute
+        /// </summary>
+        public const string PERSON_PAYROLL_WAGE_TYPE = "06C27262-36A5-4FD3-A7CE-E11982D48FD8";
+
     }
 }
