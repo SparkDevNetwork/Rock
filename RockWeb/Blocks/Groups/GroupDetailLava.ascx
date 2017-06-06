@@ -91,7 +91,7 @@
 
             <div class="row">
                 <div class="col-md-6">
-                    <Rock:PersonPicker runat="server" ID="ppGroupMemberPerson" Label="Person" Required="true" Enabled="false"/>
+                    <Rock:PersonPicker runat="server" ID="ppGroupMemberPerson" Label="Person" Required="true"/>
                 </div>
                 <div class="col-md-6">
                     <Rock:RockRadioButtonList ID="rblStatus" runat="server" Label="Member Status" RepeatDirection="Horizontal" />
