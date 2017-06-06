@@ -559,7 +559,7 @@ namespace RockWeb.Plugins.church_ccv.Hr
                               a.EntityId == timeCardPersonId )
                 .Any();
 
-            if ( int.Parse(lTotalRegularWorked.Text ) == 0)
+            if ( double.Parse(lTotalRegularWorked.Text ) == 0)
             {
                 if ( isSalaryTimeCard )
                 {
