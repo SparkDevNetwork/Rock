@@ -2830,9 +2830,9 @@ namespace Rock.Migrations.Migrations {
         ///        You can provide the address type by specifing &apos;Home&apos;, &apos;Previous&apos;, 
         ///        &apos;Work&apos;. F [rest of string was truncated]&quot;;.
         /// </summary>
-        public static string _201705221159536_ufnCrm_GetAddress {
+        public static string _201706060019549_GroupRequirementsGroupType_ufnCrm_GetAddress {
             get {
-                return ResourceManager.GetString("_201705221159536_ufnCrm_GetAddress", resourceCulture);
+                return ResourceManager.GetString("_201706060019549_GroupRequirementsGroupType_ufnCrm_GetAddress", resourceCulture);
             }
         }
         
@@ -2859,9 +2859,9 @@ namespace Rock.Migrations.Migrations {
         ///
         ///    ALTER FUNCTION  [rest of string was truncated]&quot;;.
         /// </summary>
-        public static string _201705221159536_ufnCrm_GetSpousePersonIdFromPersonId {
+        public static string _201706060019549_GroupRequirementsGroupType_ufnCrm_GetSpousePersonIdFromPersonId {
             get {
-                return ResourceManager.GetString("_201705221159536_ufnCrm_GetSpousePersonIdFromPersonId", resourceCulture);
+                return ResourceManager.GetString("_201706060019549_GroupRequirementsGroupType_ufnCrm_GetSpousePersonIdFromPersonId", resourceCulture);
             }
         }
     }
