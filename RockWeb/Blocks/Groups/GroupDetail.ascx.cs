@@ -476,9 +476,8 @@ namespace RockWeb.Blocks.Groups
 
                 // remove any group requirements that removed in the UI
                 var selectedGroupRequirements = GroupRequirementsState.Select( a => a.Guid );
-                foreach ( var groupRequirement in group.GroupRequirements.Where( a => !selectedGroupRequirements.Contains( a.Guid ) ).ToList() )
+                foreach ( var groupRequirement in group.GetGroupRequirements( rockContext ).Where( a => a.GroupId.HasValue ).Where( a => !selectedGroupRequirements.Contains( a.Guid ) ).ToList() )
                 {
-                    group.GroupRequirements.Remove( groupRequirement );
                     groupRequirementService.Delete( groupRequirement );
                 }
 
@@ -492,14 +491,16 @@ namespace RockWeb.Blocks.Groups
                 }
             }
 
+
+            List<GroupRequirement> groupRequirementsToInsert = new List<GroupRequirement>();
             // add/update any group requirements that were added or changed in the UI (we already removed the ones that were removed above)
             foreach ( var groupRequirementState in GroupRequirementsState )
             {
-                GroupRequirement groupRequirement = group.GroupRequirements.Where( a => a.Guid == groupRequirementState.Guid ).FirstOrDefault();
+                GroupRequirement groupRequirement = group.GetGroupRequirements(rockContext).Where( a => a.GroupId.HasValue ).Where( a => a.Guid == groupRequirementState.Guid ).FirstOrDefault();
                 if ( groupRequirement == null )
                 {
                     groupRequirement = new GroupRequirement();
-                    group.GroupRequirements.Add( groupRequirement );
+                    groupRequirementsToInsert.Add( groupRequirement );
                 }
 
                 groupRequirement.CopyPropertiesFrom( groupRequirementState );
@@ -568,8 +569,7 @@ namespace RockWeb.Blocks.Groups
             group.IsSecurityRole = cbIsSecurityRole.Checked;
             group.IsActive = cbIsActive.Checked;
             group.IsPublic = cbIsPublic.Checked;
-            group.MustMeetRequirementsToAddMember = cbMembersMustMeetRequirementsOnAdd.Checked;
-
+            
             // save sync settings
             group.SyncDataViewId = dvpSyncDataview.SelectedValue.AsIntegerOrNull();
             group.WelcomeSystemEmailId = ddlWelcomeEmail.SelectedValue.AsIntegerOrNull();
@@ -711,6 +711,12 @@ namespace RockWeb.Blocks.Groups
                 {
                     // add ADMINISTRATE to the person who added the group 
                     Rock.Security.Authorization.AllowPerson( group, Authorization.ADMINISTRATE, this.CurrentPerson, rockContext );
+                }
+
+                if ( groupRequirementsToInsert.Any() )
+                {
+                    groupRequirementsToInsert.ForEach( a => a.GroupId = group.Id );
+                    groupRequirementService.AddRange( groupRequirementsToInsert );
                 }
 
                 group.SaveAttributeValues( rockContext );
@@ -924,8 +930,7 @@ namespace RockWeb.Blocks.Groups
                     Rock.Security.Authorization.Flush();
 
                 } );
-
-                NavigateToCurrentPage( new Dictionary<string, string> { { "GroupId", newGroup.Id.ToString() } } );
+                ShowDetail( newGroup.Id );
             }
         }
 
@@ -1350,7 +1355,7 @@ namespace RockWeb.Blocks.Groups
 
             ddlCampus.SetValue( group.CampusId );
 
-            GroupRequirementsState = group.GroupRequirements.ToList();
+            GroupRequirementsState = group.GetGroupRequirements( rockContext ).Where(a => a.GroupId.HasValue).ToList();
             GroupLocationsState = group.GroupLocations.ToList();
 
             var groupTypeCache = CurrentGroupTypeCache;
@@ -1376,8 +1381,6 @@ namespace RockWeb.Blocks.Groups
             BindGroupMemberAttributesGrid();
 
             BindInheritedAttributes( group.GroupTypeId, attributeService );
-
-            cbMembersMustMeetRequirementsOnAdd.Checked = group.MustMeetRequirementsToAddMember ?? false;
 
             BindGroupRequirementsGrid();
 
@@ -2399,11 +2402,13 @@ namespace RockWeb.Blocks.Groups
             {
                 ddlGroupRequirementType.SelectedValue = selectedGroupRequirement.GroupRequirementTypeId.ToString();
                 grpGroupRequirementGroupRole.GroupRoleId = selectedGroupRequirement.GroupRoleId;
+                cbMembersMustMeetRequirementOnAdd.Checked = selectedGroupRequirement.MustMeetRequirementToAddMember;
             }
             else
             {
                 ddlGroupRequirementType.SelectedIndex = 0;
                 grpGroupRequirementGroupRole.GroupRoleId = null;
+                cbMembersMustMeetRequirementOnAdd.Checked = false;
             }
 
             nbDuplicateGroupRequirement.Visible = false;
@@ -2434,6 +2439,7 @@ namespace RockWeb.Blocks.Groups
             groupRequirement.GroupRequirementTypeId = ddlGroupRequirementType.SelectedValue.AsInteger();
             groupRequirement.GroupRequirementType = new GroupRequirementTypeService( rockContext ).Get( groupRequirement.GroupRequirementTypeId );
             groupRequirement.GroupRoleId = grpGroupRequirementGroupRole.GroupRoleId;
+            groupRequirement.MustMeetRequirementToAddMember = cbMembersMustMeetRequirementOnAdd.Checked;
             if ( groupRequirement.GroupRoleId.HasValue )
             {
                 groupRequirement.GroupRole = new GroupTypeRoleService( rockContext ).Get( groupRequirement.GroupRoleId.Value );
@@ -2629,7 +2635,9 @@ namespace RockWeb.Blocks.Groups
             gGroupMemberAttributesInherited.AddCssClass( "inherited-attribute-grid" );
             gGroupMemberAttributesInherited.DataSource = GroupMemberAttributesInheritedState;
             gGroupMemberAttributesInherited.DataBind();
-            rcGroupMemberAttributesInherited.Visible = GroupMemberAttributesInheritedState.Any();
+            rcwGroupMemberAttributesInherited.Visible = GroupMemberAttributesInheritedState.Any();
+
+            rcwGroupMemberAttributes.Label = GroupMemberAttributesInheritedState.Any() ? "Group Member Attributes" : string.Empty;
         }
 
         /// <summary>
@@ -2644,15 +2652,33 @@ namespace RockWeb.Blocks.Groups
         }
 
         /// <summary>
-        /// Binds the group requirements grid.
+        /// Binds the group requirements grids
         /// </summary>
         private void BindGroupRequirementsGrid()
         {
+            var rockContext = new RockContext();
+            var groupTypeGroupRequirements = new GroupRequirementService( rockContext ).Queryable().Where( a => a.GroupTypeId.HasValue && a.GroupTypeId == CurrentGroupTypeId ).ToList();
+            var groupGroupRequirements = GroupRequirementsState.ToList();
+
+            if ( CurrentGroupTypeCache != null )
+            {
+                rcwGroupTypeGroupRequirements.Visible = groupTypeGroupRequirements.Any();
+                lGroupTypeGroupRequirementsFrom.Text = string.Format( "(From <a href='{0}' target='_blank'>{1}</a>)", this.ResolveUrl( "~/GroupType/" + CurrentGroupTypeCache.Id ), CurrentGroupTypeCache.Name );
+                rcwGroupRequirements.Label = groupTypeGroupRequirements.Any() ? "Specific Group Requirements" : string.Empty;
+            }
+
+            gGroupTypeGroupRequirements.AddCssClass( "grouptype-group-requirements-grid" );
+            gGroupTypeGroupRequirements.DataSource = groupTypeGroupRequirements.OrderBy( a => a.GroupRequirementType.Name ).ToList();
+            gGroupTypeGroupRequirements.DataBind();
+
             gGroupRequirements.AddCssClass( "group-requirements-grid" );
-            gGroupRequirements.DataSource = GroupRequirementsState.OrderBy( a => a.GroupRequirementType.Name ).ToList();
+            gGroupRequirements.DataSource = groupGroupRequirements.OrderBy( a => a.GroupRequirementType.Name ).ToList();
             gGroupRequirements.DataBind();
         }
 
+        /// <summary>
+        /// Sets the schedule display.
+        /// </summary>
         private void SetScheduleDisplay()
         {
             dowWeekly.Visible = false;

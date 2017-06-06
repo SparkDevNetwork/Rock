@@ -504,6 +504,20 @@ namespace Rock.Model
         [LavaInclude]
         public virtual GroupType InheritedGroupType { get; set; }
 
+        /// <summary>
+        /// Gets or sets the group requirements for groups of this Group Type (NOTE: Groups also can have additional GroupRequirements )
+        /// </summary>
+        /// <value>
+        /// The group requirements.
+        /// </value>
+        [DataMember]
+        public virtual ICollection<GroupRequirement> GroupRequirements
+        {
+            get { return _groupsRequirements ?? ( _groupsRequirements = new Collection<GroupRequirement>() ); }
+            set { _groupsRequirements = value; }
+        }
+        private ICollection<GroupRequirement> _groupsRequirements;
+
         #endregion
 
         #region Public Methods
