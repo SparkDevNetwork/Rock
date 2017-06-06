@@ -29,6 +29,7 @@ namespace Rock.Model
     /// <summary>
     /// Represents a connection status
     /// </summary>
+    [RockDomain( "Connection" )]
     [Table( "ConnectionStatus" )]
     [DataContract]
     public partial class ConnectionStatus : Model<ConnectionStatus>, IHasActiveFlag

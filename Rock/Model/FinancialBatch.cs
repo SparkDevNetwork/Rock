@@ -31,6 +31,7 @@ namespace Rock.Model
     /// Represents a batch or collection of <see cref="Rock.Model.FinancialTransaction">FinancialTransactions</see> for a specified date-time range, campus (if applicable) and transaction type.  A batch 
     /// has a known total value of all transactions that are included in the batch.
     /// </summary>
+    [RockDomain( "Finance" )]
     [Table( "FinancialBatch" )]
     [DataContract]
     public partial class FinancialBatch : Model<FinancialBatch>

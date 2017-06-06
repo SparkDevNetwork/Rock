@@ -26,6 +26,7 @@ namespace Rock.Model
     /// <summary>
     /// Represents the source record for the AnalyticsDimPersonHistorical and AnalyticsDimPersonCurrent views
     /// </summary>
+    [RockDomain( "Reporting" )]
     [Table( "AnalyticsSourcePersonHistorical" )]
     [DataContract]
     [HideFromReporting]
@@ -37,6 +38,7 @@ namespace Rock.Model
     /// <summary>
     /// AnalyticsSourcePersonHistorical is a real table, and AnalyticsDimPersonHistorical and AnalyticsDimPersonCurrent are VIEWs off of AnalyticsSourcePersonHistorical, so they share lots of columns
     /// </summary>
+    [RockDomain( "Reporting" )]
     public abstract class AnalyticsSourcePersonBase<T> : Entity<T>
         where T : AnalyticsSourcePersonBase<T>, new()
     {

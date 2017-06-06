@@ -30,6 +30,7 @@ namespace Rock.Model
     /// <remarks>
     /// A SiteDomain must have a matching Binding setup in IIS otherwise it will not resolve.
     /// </remarks>
+    [RockDomain( "CMS" )]
     [Table( "SiteDomain" )]
     [DataContract]
     public partial class SiteDomain : Model<SiteDomain>

@@ -29,6 +29,7 @@ namespace Rock.Model
     /// These exceptions can include several status codes, the one most often seen is 500, but can also include 404 (when configured in Global Attributes) 
     /// and other status codes. These entities are not tracked by the <see cref="Rock.Model.Audit"/> model.
     /// </summary>
+    [RockDomain( "Core" )]
     [NotAudited]
     [Table( "ExceptionLog" )]
     [DataContract]

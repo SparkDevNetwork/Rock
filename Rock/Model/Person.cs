@@ -38,6 +38,7 @@ namespace Rock.Model
     /// <summary>
     /// Represents a person or a business in Rock.
     /// </summary>
+    [RockDomain( "CRM" )]
     [Table( "Person" )]
     [DataContract]
     public partial class Person : Model<Person>, IRockIndexable, IAnalyticHistorical

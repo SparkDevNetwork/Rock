@@ -30,6 +30,7 @@ namespace Rock.Model
     /// <summary>
     /// Represents an event item occurrence.
     /// </summary>
+    [RockDomain( "Event" )]
     [Table( "EventItemOccurrence" )]
     [DataContract]
     public partial class EventItemOccurrence : Model<EventItemOccurrence>

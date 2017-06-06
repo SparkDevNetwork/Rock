@@ -108,6 +108,14 @@
                         resizeScrollbar(scrollbCategory);
 
                     })
+                    .on('rockTree:collapse', function ()
+                    {
+                        resizeScrollbar(scrollbCategory);
+                    })
+                    .on('rockTree:expand', function ()
+                    {
+                        resizeScrollbar(scrollbCategory);
+                    })
                     .rockTree({
                         restUrl: '<%=ResolveUrl( "~/api/FinancialAccounts/GetChildren/" ) %>',
                         restParams: '/'+ ($('#<%=hfexcludeInactiveGroups.ClientID%>').val() || false),

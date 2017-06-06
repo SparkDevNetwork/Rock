@@ -30,6 +30,7 @@ namespace Rock.Model
     /// Represents a device or component that interacts with and is manageable through Rock.  Examples of these can be check-in kiosks, giving kiosks, label printers, badge printers,
     /// displays, etc.
     /// </summary>
+    [RockDomain( "Core" )]
     [Table("Device")]
     [DataContract]
     public partial class Device : Model<Device>

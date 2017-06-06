@@ -30,6 +30,7 @@ namespace Rock.Model
     /// <summary>
     /// 
     /// </summary>
+    [RockDomain( "Reporting" )]
     [NotAudited]
     [Table( "ReportField" )]
     [DataContract]

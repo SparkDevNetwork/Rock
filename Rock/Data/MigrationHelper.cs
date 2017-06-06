@@ -3650,6 +3650,21 @@ END
         }
 
         /// <summary>
+        /// Adds the group type group attribute.
+        /// </summary>
+        /// <param name="groupTypeGuid">The group type unique identifier.</param>
+        /// <param name="fieldTypeGuid">The field type unique identifier.</param>
+        /// <param name="name">The name.</param>
+        /// <param name="description">The description.</param>
+        /// <param name="order">The order.</param>
+        /// <param name="defaultValue">The default value.</param>
+        /// <param name="guid">The unique identifier.</param>
+        public void AddGroupTypeGroupAttribute( string groupTypeGuid, string fieldTypeGuid, string name, string description, int order, string defaultValue, string guid )
+        {
+            AddGroupTypeGroupAttribute( groupTypeGuid, fieldTypeGuid, name, description, order, defaultValue, guid, false );
+        }
+
+        /// <summary>
         /// Adds (or Updates) a new GroupType "Group Attribute" for the given GroupType using the given values.
         /// </summary>
         /// <param name="groupTypeGuid">The group type unique identifier.</param>

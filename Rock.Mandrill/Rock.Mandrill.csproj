@@ -42,6 +42,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="..\Rock.Version\AssemblySharedInfo.cs">
+      <Link>AssemblySharedInfo.cs</Link>
+    </Compile>
     <Compile Include="Communication\Transport\MandrillSmtp.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
