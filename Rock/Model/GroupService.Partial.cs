@@ -428,7 +428,21 @@ namespace Rock.Model
         /// <param name="includeWarnings">if set to <c>true</c> [include warnings].</param>
         /// <param name="includeInactive">if set to <c>true</c> [include inactive].</param>
         /// <returns></returns>
+        [Obsolete( "Use GroupMembersNotMeetingRequirements( roup, includeWarnings, includeInactive) instead" )]
         public Dictionary<GroupMember, Dictionary<PersonGroupRequirementStatus, DateTime>> GroupMembersNotMeetingRequirements( int groupId, bool includeWarnings, bool includeInactive = false )
+        {
+            var group = new GroupService( this.Context as RockContext ).Get( groupId );
+            return GroupMembersNotMeetingRequirements( group, includeWarnings, includeInactive );
+        }
+
+        /// <summary>
+        /// Groups the members not meeting requirements.
+        /// </summary>
+        /// <param name="groupId">The group identifier.</param>
+        /// <param name="includeWarnings">if set to <c>true</c> [include warnings].</param>
+        /// <param name="includeInactive">if set to <c>true</c> [include inactive].</param>
+        /// <returns></returns>
+        public Dictionary<GroupMember, Dictionary<PersonGroupRequirementStatus, DateTime>> GroupMembersNotMeetingRequirements( Group group, bool includeWarnings, bool includeInactive = false )
         {
             Dictionary<GroupMember, Dictionary<PersonGroupRequirementStatus, DateTime>> results = new Dictionary<GroupMember, Dictionary<PersonGroupRequirementStatus, DateTime>>();
             
@@ -437,7 +451,7 @@ namespace Rock.Model
             var groupMemberService = new GroupMemberService( rockContext );
             var groupMemberRequirementService = new GroupMemberRequirementService( rockContext );
 
-            var qryGroupRequirements = groupRequirementService.Queryable().Where( a => a.GroupId == groupId ).ToList();
+            var qryGroupRequirements = groupRequirementService.Queryable().Where( a => ( a.GroupId.HasValue && a.GroupId == group.Id ) || ( a.GroupTypeId.HasValue && a.GroupTypeId == group.GroupTypeId ) ).ToList();
             bool hasGroupRequirements = qryGroupRequirements.Any();
             if ( !hasGroupRequirements )
             {
@@ -445,8 +459,8 @@ namespace Rock.Model
                 return new Dictionary<GroupMember, Dictionary<PersonGroupRequirementStatus, DateTime>>();
             }
 
-            var qryGroupMembers = groupMemberService.Queryable().Where( a => a.GroupId == groupId );
-            var qryGroupMemberRequirements = groupMemberRequirementService.Queryable().Where( a => a.GroupMember.GroupId == groupId );
+            var qryGroupMembers = groupMemberService.Queryable().Where( a => a.GroupId == group.Id );
+            var qryGroupMemberRequirements = groupMemberRequirementService.Queryable().Where( a => a.GroupMember.GroupId == group.Id );
 
             if ( !includeInactive )
             {

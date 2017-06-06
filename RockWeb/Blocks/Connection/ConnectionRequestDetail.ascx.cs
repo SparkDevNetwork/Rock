@@ -472,10 +472,13 @@ namespace RockWeb.Blocks.Connection
                                 groupMember.GroupId = connectionRequest.AssignedGroupId.Value;
                                 groupMember.GroupRoleId = connectionRequest.AssignedGroupMemberRoleId.Value;
                                 groupMember.GroupMemberStatus = connectionRequest.AssignedGroupMemberStatus.Value;
+                                var groupRequirementLookup = group.GetGroupRequirements( rockContext ).ToList().ToDictionary( k => k.Id );
 
                                 foreach ( ListItem item in cblManualRequirements.Items )
                                 {
-                                    if ( !item.Selected && group.MustMeetRequirementsToAddMember.HasValue && group.MustMeetRequirementsToAddMember.Value )
+                                    var groupRequirementId = item.Value.AsInteger();
+                                    var groupRequirement = groupRequirementLookup[groupRequirementId];
+                                    if ( !item.Selected && groupRequirement.MustMeetRequirementToAddMember )
                                     {
                                         okToConnect = false;
                                         nbRequirementsErrors.Text = "Group Requirements have not been met. Please verify all of the requirements.";
@@ -1828,15 +1831,16 @@ namespace RockWeb.Blocks.Connection
                 using ( var rockContext = new RockContext() )
                 {
                     var group = new GroupService( rockContext ).Get( groupId.Value );
-                    if ( group != null && group.MustMeetRequirementsToAddMember.HasValue && group.MustMeetRequirementsToAddMember.Value )
+                    if ( group != null )
                     {
-                        var requirementsResults = group.PersonMeetsGroupRequirements(
+                        var requirementsResults = group.PersonMeetsGroupRequirements(rockContext,
                             personId.Value,
                             roleId.Value );
 
                         if ( requirementsResults != null && requirementsResults
                             .Any( r =>
-                                r.MeetsGroupRequirement == MeetsGroupRequirement.NotMet &&
+                            r.GroupRequirement.MustMeetRequirementToAddMember &&    
+                            r.MeetsGroupRequirement == MeetsGroupRequirement.NotMet &&
                                 r.GroupRequirement.GroupRequirementType.RequirementCheckType != RequirementCheckType.Manual )
                             )
                         {
@@ -1955,7 +1959,7 @@ namespace RockWeb.Blocks.Connection
                     var group = new GroupService( rockContext ).Get( connectionRequest.AssignedGroupId.Value );
                     if ( group != null )
                     {
-                        requirementsResults = group.PersonMeetsGroupRequirements(
+                        requirementsResults = group.PersonMeetsGroupRequirements( rockContext, 
                             connectionRequest.PersonAlias.PersonId,
                             connectionRequest.AssignedGroupMemberRoleId );
 
@@ -2000,9 +2004,17 @@ namespace RockWeb.Blocks.Connection
                                 }
                                 else
                                 {
-                                    passedAllRequirements = false;
-                                    labelText = requirementResult.GroupRequirement.GroupRequirementType.NegativeLabel;
-                                    labelType = "danger";
+                                    if ( requirementResult.GroupRequirement.MustMeetRequirementToAddMember )
+                                    {
+                                        passedAllRequirements = false;
+                                        labelText = requirementResult.GroupRequirement.GroupRequirementType.NegativeLabel;
+                                        labelType = "danger";
+                                    }
+                                    else
+                                    {
+                                        labelText = string.Empty;
+                                        labelType = string.Empty;
+                                    }
                                 }
 
                                 if ( string.IsNullOrEmpty( labelText ) )
@@ -2042,7 +2054,7 @@ namespace RockWeb.Blocks.Connection
                             nbRequirementsErrors.Visible = true;
                         }
 
-                        if ( passedAllRequirements || ( group.MustMeetRequirementsToAddMember.HasValue && !group.MustMeetRequirementsToAddMember.Value ) )
+                        if ( passedAllRequirements )
                         {
                             if ( passedAllRequirements )
                             {
