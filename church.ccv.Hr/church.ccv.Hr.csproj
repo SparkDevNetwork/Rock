@@ -95,7 +95,6 @@
     </Compile>
     <Compile Include="Data\HrContext.cs" />
     <Compile Include="Jobs\SendTimeCardPendingApprovalReminder.cs" />
-    <Compile Include="Jobs\SendTimeCardReminder.cs" />
     <Compile Include="Migrations\001_CreateDb.cs" />
     <Compile Include="Migrations\002_AlterColumns.cs" />
     <Compile Include="Migrations\003_AddHolidaySchedule.cs" />
