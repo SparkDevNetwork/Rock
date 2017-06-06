@@ -150,6 +150,35 @@
 
                     $spanNames.text(self.options.defaultText);
                 });
+
+                // clicking on the 'select all' btn
+                $control.on('click', '.js-select-all', function (e)
+                {
+                  var rockTree = $control.find('.treeview').data('rockTree');
+
+                  e.preventDefault();
+                  e.stopPropagation();
+
+                  var $itemNameNodes = rockTree.$el.find('.rocktree-name');
+
+                  var allItemNodesAlreadySelected = true;
+                  $itemNameNodes.each(function (a)
+                  {
+                    if (!$(this).hasClass('selected')) {
+                      allItemNodesAlreadySelected = false;
+                    }
+                  });
+
+                  if (!allItemNodesAlreadySelected) {
+                    // mark them all as unselected (just in case some are selected already), then click them to select them 
+                    $itemNameNodes.removeClass('selected');
+                    $itemNameNodes.click();
+                  } else {
+                    // if all were already selected, toggle them to unselected
+                    rockTree.setSelected([]);
+                    $itemNameNodes.removeClass('selected');
+                  }
+                });
             },
             updateScrollbar: function (sPosition) {
                 // first, update this control's scrollbar, then the modal's

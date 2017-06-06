@@ -516,24 +516,34 @@
                 e.preventDefault();
                 e.stopPropagation();
 
-                var $itemNode = $(this).parent('li')
+                var $itemNode = $(this).parent('li');
 
                 var $childNameNodes = $itemNode.find('.rocktree-children').find('.rocktree-name');
 
                 var allChildNodesAlreadySelected = true;
                 $childNameNodes.each(function (a) {
                     if (!$(this).hasClass('selected')) {
-                            allChildNodesAlreadySelected = false;
+                      allChildNodesAlreadySelected = false;
                     }
                 });
 
                 if (!allChildNodesAlreadySelected) {
+                    // select children
                     // mark them all as unselected (just in case some are selected already), then click them to select them 
                     $childNameNodes.removeClass('selected');
                     $childNameNodes.click();
                 } else {
-                    // if all where already selected, toggle them to unselected
-                    $childNameNodes.removeClass('selected');
+                    // unselect children
+                    // mark them all as selected (just in case some are unselected already), then click them to unselect them 
+                    $childNameNodes.addClass('selected');
+                    $childNameNodes.click();
+                }
+
+                // make sure the child items are showing
+                var $closedFolders = $itemNode.find('.rocktree-icon').filter('.' + self.options.iconClasses.branchClosed.replace(/ /g, '.'))
+
+                if ($closedFolders.length) {
+                  $closedFolders.click();
                 }
             });
         }
