@@ -89,7 +89,7 @@ namespace Rock.Jobs
                 foreach ( var group in groups )
                 {
                     // check for members that don't meet requirements
-                    var groupMembersWithIssues = groupService.GroupMembersNotMeetingRequirements( group.Id, true );
+                    var groupMembersWithIssues = groupService.GroupMembersNotMeetingRequirements( group, true );
 
                     if ( groupMembersWithIssues.Count > 0 )
                     {

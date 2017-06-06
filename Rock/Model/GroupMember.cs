@@ -480,15 +480,15 @@ namespace Rock.Model
             // if the GroupMember is getting Added (or if Person or Role is different), and if this Group has requirements that must be met before the person is added, check those
             if ( this.IsNewOrChangedGroupMember( rockContext ) )
             {
-                var requirementStatuses = group.PersonMeetsGroupRequirements( rockContext, this.PersonId, this.GroupRoleId );
+                var requirementStatusesRequiredForAdd = group.PersonMeetsGroupRequirements( rockContext, this.PersonId, this.GroupRoleId )
+                    .Where( a => a.MeetsGroupRequirement == MeetsGroupRequirement.NotMet
+                    && ( ( a.GroupRequirement.GroupRequirementType.RequirementCheckType != RequirementCheckType.Manual ) && ( a.GroupRequirement.MustMeetRequirementToAddMember == true ) ) );
 
-                if ( requirementStatuses.Any( a => a.MeetsGroupRequirement == MeetsGroupRequirement.NotMet
-                    && ( ( a.GroupRequirement.GroupRequirementType.RequirementCheckType != RequirementCheckType.Manual ) && ( a.GroupRequirement.MustMeetRequirementToAddMember == true ) ) )
-                    )
+                if ( requirementStatusesRequiredForAdd.Any() )
                 {
-                    // deny if any of the non-manual requirements are not met
-                    errorMessage = "This person does not meet the following requirements for this group: "
-                        + requirementStatuses.Where( a => a.MeetsGroupRequirement == MeetsGroupRequirement.NotMet && ( a.GroupRequirement.GroupRequirementType.RequirementCheckType != RequirementCheckType.Manual ) )
+                    // deny if any of the non-manual MustMeetRequirementToAddMember requirements are not met
+                    errorMessage = "This person must meet the following requirements before they are added to this group: "
+                        + requirementStatusesRequiredForAdd
                         .Select( a => string.Format( "{0}", a.GroupRequirement.GroupRequirementType ) )
                         .ToList().AsDelimited( ", " );
 
@@ -622,7 +622,7 @@ namespace Rock.Model
             } );
 
             // get all the group requirements that apply the group member's role
-            var allGroupRequirements = this.Group.GetGroupRequirements(rockContext).Where( a => !a.GroupRoleId.HasValue || a.GroupRoleId == this.GroupRoleId ).OrderBy( a => a.GroupRequirementType.Name );
+            var allGroupRequirements = this.Group.GetGroupRequirements( rockContext ).Where( a => !a.GroupRoleId.HasValue || a.GroupRoleId == this.GroupRoleId ).OrderBy( a => a.GroupRequirementType.Name ).ToList();
 
             // outer join on group requirements
             var result = from groupRequirement in allGroupRequirements
@@ -659,7 +659,7 @@ namespace Rock.Model
 
             foreach ( var updatedRequirement in updatedRequirements )
             {
-                updatedRequirement.GroupRequirement.UpdateGroupMemberRequirementResult( rockContext, updatedRequirement.PersonId, updatedRequirement.MeetsGroupRequirement );
+                updatedRequirement.GroupRequirement.UpdateGroupMemberRequirementResult( rockContext, updatedRequirement.PersonId, this.GroupId, updatedRequirement.MeetsGroupRequirement );
             }
 
             if ( saveChanges )
