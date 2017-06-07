@@ -73,7 +73,7 @@ namespace Rock.Plugin.HotFixes
             RockMigrationHelper.UpdateWorkflowActionType( "1AF64D9F-9AD2-4A2B-B8B3-8D079567AEAE", "Create Labels", 0, "83B13E96-A024-4ED1-9B2D-A76911139553", true, false, "", "", 1, "", "B015DEB3-678A-478B-9DF4-AB4059C9A29B" ); // Unattended Check-in:Create Check-Out Labels:Create Labels
             Sql( @"
     DECLARE @WorkflowTypeId int = ( SELECT TOP 1 [Id] FROM [WorkflowType] WHERE [Guid] = '011E9F5A-60D4-4FF5-912A-290881E37EAF' )
-    DECLARE @Order int = (ISNULL(( SELECT MAX(Order) FROM [WorkflowActivityType] WHERE [Id] = @WorkflowTypeId ),-1) + 1)
+    DECLARE @Order int = (ISNULL(( SELECT MAX([Order]) FROM [WorkflowActivityType] WHERE [WorkflowTypeId] = @WorkflowTypeId ),-1) + 1)
     UPDATE [WorkflowActivityType] SET [Order] = @Order WHERE [Guid] = '1AF64D9F-9AD2-4A2B-B8B3-8D079567AEAE'
 " );
             RockMigrationHelper.AddActionTypeAttributeValue( "B015DEB3-678A-478B-9DF4-AB4059C9A29B", "CFAC142C-73CB-4886-9A5A-4ED12C80A544", @"" ); // Unattended Check-in:Create Check-Out Labels:Create Labels:Order
@@ -137,6 +137,9 @@ namespace Rock.Plugin.HotFixes
             // Attrib for BlockType: Person Select (Family Check-in):Pre-Selected Options Format
             RockMigrationHelper.AddBlockTypeAttribute( "92DCF018-F551-4890-8BA1-511D97BF6B8A", "9C204CD0-1233-41C5-818A-C5DA439445AA", "Pre-Selected Options Format", "OptionFormat", "", "", 6, @"<strong>{{ Schedule.Name }}</strong>: {{ Group.Name }} - {{ Location.Name }}", "55580865-E792-469F-B45C-45713477D033" );
 
+            // Update Family Select Next Page to direct to Action Page
+            RockMigrationHelper.AddBlockAttributeValue( "CD97D61E-7BCE-436B-ACDD-4383EB7490BA", "90ECD00A-9570-4986-B32F-02F32B656A2A", @"0586648b-9490-43c6-b18d-7f403458c080" ); // Next Page
+
             // Attrib Value for Block:Action Select, Attribute:Workflow Activity Page: Action Select, Site: Rock Check-in
             RockMigrationHelper.AddBlockAttributeValue( "F5C21AE7-4BB4-4628-9B15-7CF761C66891", "C0EEDB49-6B69-47B0-98DE-2A1A28188C5D", @"" );
             // Attrib Value for Block:Action Select, Attribute:Home Page Page: Action Select, Site: Rock Check-in
@@ -167,6 +170,10 @@ namespace Rock.Plugin.HotFixes
             RockMigrationHelper.AddBlockAttributeValue( "32B345DD-0EF4-480E-B82A-7D7191CC374B", "ADA3C354-42ED-4F28-8F68-38FBC2926CBF", @"432b615a-75ff-4b14-9c99-3e769f866950" );
             // Attrib Value for Block:Check Out Success, Attribute:Previous Page Page: Check Out Success, Site: Rock Check-in
             RockMigrationHelper.AddBlockAttributeValue( "32B345DD-0EF4-480E-B82A-7D7191CC374B", "735D4AAB-F8F4-4388-9A00-2132356187A6", @"d54fc289-df7d-48c5-91be-38bcfdebc6af" );
+
+            RockMigrationHelper.AddBlockAttributeValue( "0F82C7EB-3E71-496F-B5F4-83F32AD5EBB5", "4302646B-F6CD-492D-8850-96B9CA1CEA59", @"4af7a0e1-e991-4ae5-a2b5-c440f67a2e6a" ); // Auto Select Next Page
+            RockMigrationHelper.AddBlockAttributeValue( "0F82C7EB-3E71-496F-B5F4-83F32AD5EBB5", "55580865-E792-469F-B45C-45713477D033", @"<strong>{{ Schedule.Name }}</strong>: {{ Group.Name }} - {{ Location.Name }}" ); // Pre-Selected Options Format
+
 
         }
 
