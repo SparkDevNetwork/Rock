@@ -102,6 +102,8 @@
                                         <Rock:CurrencyBox ID="cbAccountAmount" runat="server" Label='<%#Eval( "Name" )%>' data-account-id='<%#Eval("Id")%>' CssClass="js-account-amount" onkeydown="javascript:return handleAmountBoxKeyPress(this, event.keyCode);" onkeyup="javascript:handleAmountBoxKeyUp(event.keyCode)" />
                                     </ItemTemplate>
                                 </asp:Repeater>
+
+                                <Rock:ButtonDropDownList ID="btnAddAccount" runat="server" Visible="false" Label="Add Account" DataTextField="PublicName" DataValueField="Id" OnSelectionChanged="btnAddAccount_SelectionChanged" />
                             </Rock:RockControlWrapper>
 
                             <%-- note: using disabled instead of readonly so that we can set the postback value in javascript --%>
@@ -128,7 +130,8 @@
                 <Content>
                     <div class="row">
                         <div class="col-md-6">
-                            <Rock:AccountPicker ID="apPersonalAccounts" runat="server" AllowMultiSelect="true" Label="Select Account(s)" DisplayActiveOnly="true" />
+                            <Rock:AccountPicker ID="apDisplayedPersonalAccounts" runat="server" AllowMultiSelect="true" Label="Displayed Accounts" DisplayActiveOnly="true" />
+                            <Rock:AccountPicker ID="apOptionalPersonalAccounts" runat="server" AllowMultiSelect="true" Label="Optional Accounts" DisplayActiveOnly="true" />
                         </div>
                         <div class="col-md-6">
                             <Rock:CampusPicker ID="cpAccounts" runat="server" Label="Campus" Help="Only display selected accounts that are associated with this campus (or not associated with a campus)." />
