@@ -383,6 +383,9 @@ namespace church.ccv.Actions
 
                 public bool NextGen_IsTeaching { get; set; }
                 public string NextGen_GroupIds { get; set; }
+
+                public bool LifeSteps_IsTeaching { get; set; }
+                public string LifeSteps_GroupIds { get; set; }
             }
 
             public class Result
@@ -411,6 +414,9 @@ namespace church.ccv.Actions
                 public bool NextGen_IsTeaching { get; set; }
                 public List<int> NextGen_GroupIds { get; set; }
 
+                public bool LifeSteps_IsTeaching { get; set; }
+                public List<int> LifeSteps_GroupIds { get; set; }
+
                 public bool IsTeaching( )
                 {
                     return // if any of the above teaching flags are true, then yes, they're teaching.
@@ -421,7 +427,8 @@ namespace church.ccv.Actions
                             NextSteps_SubSection_IsTeaching == true ||
                             NextSteps_IsTeaching == true ||
                             NextGen_Section_IsTeaching == true ||
-                            NextGen_IsTeaching == true) 
+                            NextGen_IsTeaching == true ||
+                            LifeSteps_IsTeaching == true) 
                     
                             ? true : false;
                 }
@@ -443,6 +450,8 @@ namespace church.ccv.Actions
 
                     groupIds.AddRange( NextGen_Section_GroupIds );
                     groupIds.AddRange( NextGen_GroupIds );
+
+                    groupIds.AddRange( LifeSteps_GroupIds );
 
                     return groupIds;
                 }
@@ -484,6 +493,9 @@ namespace church.ccv.Actions
 
                     NextGen_IsTeaching                 = sqlResultTable.NextGen_IsTeaching,
                     NextGen_GroupIds                   = sqlResultTable.NextGen_GroupIds != null ? sqlResultTable.NextGen_GroupIds.Split( ',' ).Select( Int32.Parse ).ToList( ) : new List<int>( ),
+
+                    LifeSteps_IsTeaching               = sqlResultTable.LifeSteps_IsTeaching,
+                    LifeSteps_GroupIds                 = sqlResultTable.LifeSteps_GroupIds != null ? sqlResultTable.LifeSteps_GroupIds.Split( ',' ).Select( Int32.Parse ).ToList( ) : new List<int>( ),
                 };
             }
         }
