@@ -374,6 +374,7 @@ namespace RockWeb.Blocks.Finance
                     break;
 
                 case "Campus":
+                case "CampusAccount":
                     var campus = CampusCache.Read( e.Value.AsInteger() );
                     if ( campus != null )
                     {
@@ -382,6 +383,15 @@ namespace RockWeb.Blocks.Finance
                     else
                     {
                         e.Value = string.Empty;
+                    }
+
+                    if ( e.Key == "Campus" )
+                    {
+                        e.Name = "Campus (of Batch)";
+                    }
+                    else if ( e.Key == "CampusAccount" )
+                    {
+                        e.Name = "Campus (of Account)";
                     }
 
                     break;
@@ -423,7 +433,13 @@ namespace RockWeb.Blocks.Finance
             gfTransactions.SaveUserPreference( "Currency Type", ddlCurrencyType.SelectedValue != All.Id.ToString() ? ddlCurrencyType.SelectedValue : string.Empty );
             gfTransactions.SaveUserPreference( "Credit Card Type", ddlCreditCardType.SelectedValue != All.Id.ToString() ? ddlCreditCardType.SelectedValue : string.Empty );
             gfTransactions.SaveUserPreference( "Source Type", ddlSourceType.SelectedValue != All.Id.ToString() ? ddlSourceType.SelectedValue : string.Empty );
-            gfTransactions.SaveUserPreference( "Campus", campCampus.SelectedValue );
+
+            // Campus of Batch
+            gfTransactions.SaveUserPreference( "Campus", campCampusBatch.SelectedValue );
+
+            // Campus of Account
+            gfTransactions.SaveUserPreference( "CampusAccount", campCampusAccount.SelectedValue );
+
             gfTransactions.SaveUserPreference( "Person", ppPerson.SelectedValue.ToString() );
 
             BindGrid();
@@ -817,13 +833,18 @@ namespace RockWeb.Blocks.Finance
             if ( this.ContextEntity() == null )
             {
                 var campusi = CampusCache.All();
-                campCampus.Campuses = campusi;
-                campCampus.Visible = campusi.Any();
-                campCampus.SetValue( gfTransactions.GetUserPreference( "Campus" ) );
+                campCampusBatch.Campuses = campusi;
+                campCampusBatch.Visible = campusi.Any();
+                campCampusBatch.SetValue( gfTransactions.GetUserPreference( "Campus" ) );
+
+                campCampusAccount.Campuses = campusi;
+                campCampusAccount.Visible = campusi.Any();
+                campCampusAccount.SetValue( gfTransactions.GetUserPreference( "CampusAccount" ) );
             }
             else
             {
-                campCampus.Visible = false;
+                campCampusBatch.Visible = false;
+                campCampusAccount.Visible = false;
             }
 
             // don't show the person picker if the the current context is already a specific person
@@ -1045,13 +1066,19 @@ namespace RockWeb.Blocks.Finance
                     qry = qry.Where( t => t.SourceTypeValueId == sourceTypeId );
                 }
 
-                // Campus
+                // Campus of Batch and/or Account
                 if ( this.ContextEntity() == null )
                 {
-                    var campus = CampusCache.Read( gfTransactions.GetUserPreference( "Campus" ).AsInteger() );
-                    if ( campus != null )
+                    var campusOfBatch = CampusCache.Read( gfTransactions.GetUserPreference( "Campus" ).AsInteger() );
+                    if ( campusOfBatch != null )
                     {
-                        qry = qry.Where( b => b.Batch != null && b.Batch.CampusId == campus.Id );
+                        qry = qry.Where( b => b.Batch != null && b.Batch.CampusId == campusOfBatch.Id );
+                    }
+
+                    var campusOfAccount = CampusCache.Read( gfTransactions.GetUserPreference( "CampusAccount" ).AsInteger() );
+                    if ( campusOfAccount != null )
+                    {
+                        qry = qry.Where( b => b.TransactionDetails.Any( a => a.Account.CampusId.HasValue && a.Account.CampusId == campusOfAccount.Id ) );
                     }
                 }
 
