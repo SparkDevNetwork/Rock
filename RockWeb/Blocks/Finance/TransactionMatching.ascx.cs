@@ -208,7 +208,7 @@ namespace RockWeb.Blocks.Finance
                 optionalAccounts = optionalAccounts.Where( a => blockAccountGuidList.Contains( a.Guid ) ).ToList();
             }
 
-            ddlAddAccount.Visible = optionalAccounts.Any();
+            pnlAddOptionalAccount.Visible = optionalAccounts.Any();
             ddlAddAccount.Items.Clear();
             ddlAddAccount.Items.Add( new ListItem() );
             foreach ( var account in optionalAccounts )
@@ -1051,13 +1051,15 @@ namespace RockWeb.Blocks.Finance
 
             if ( ddlAddAccount.Items.Count <= 1 )
             {
-                ddlAddAccount.Visible = false;
+                pnlAddOptionalAccount.Visible = false;
             }
 
             foreach ( var accountBox in rptAccounts.ControlsOfTypeRecursive<CurrencyBox>() )
             {
                 if ( accountBox.Attributes["data-account-id"].AsInteger() == accountId )
                 {
+                    accountBox.Text = cbOptionalAccountAmount.Text;
+                    cbOptionalAccountAmount.Text = string.Empty;
                     accountBox.Focus();
                     break;
                 }
