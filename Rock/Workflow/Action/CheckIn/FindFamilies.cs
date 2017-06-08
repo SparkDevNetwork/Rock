@@ -52,15 +52,15 @@ namespace Rock.Workflow.Action.CheckIn
             var checkInState = GetCheckInState( entity, out errorMessages );
             if ( checkInState != null && checkInState.CheckIn.SearchType != null )
             {
-                var personService = new PersonService( rockContext );
-                var memberService = new GroupMemberService( rockContext );
+                checkInState.CheckIn.Families = new List<CheckInFamily>();
 
-                Guid familyGroupTypeGuid = SystemGuid.GroupType.GROUPTYPE_FAMILY.AsGuid();
-                var dvInactive = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_INACTIVE.AsGuid() );
-
-                if ( checkInState.CheckIn.SearchType.Guid.Equals( new Guid( SystemGuid.DefinedValue.CHECKIN_SEARCH_TYPE_PHONE_NUMBER ) ) )
+                if ( !string.IsNullOrWhiteSpace( checkInState.CheckIn.SearchValue ) )
                 {
-                    string numericPhone = checkInState.CheckIn.SearchValue.AsNumeric();
+                    var personService = new PersonService( rockContext );
+                    var memberService = new GroupMemberService( rockContext );
+
+                    Guid familyGroupTypeGuid = SystemGuid.GroupType.GROUPTYPE_FAMILY.AsGuid();
+                    var dvInactive = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_INACTIVE.AsGuid() );
 
                     var personRecordTypeId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_PERSON.AsGuid() ).Id;
 
@@ -77,20 +77,59 @@ namespace Rock.Workflow.Action.CheckIn
                             m.Person.RecordStatusValueId != dvInactive.Id );
                     }
 
-                    if ( checkInState.CheckInType == null || checkInState.CheckInType.PhoneSearchType == PhoneSearchType.EndsWith )
+                    if ( checkInState.CheckIn.SearchType.Guid.Equals( SystemGuid.DefinedValue.CHECKIN_SEARCH_TYPE_PHONE_NUMBER.AsGuid() ) )
                     {
-                        familyQry = familyQry.Where( m =>
-                            m.Person.PhoneNumbers.Any( n => n.Number.EndsWith( numericPhone ) ) );
+                        string numericPhone = checkInState.CheckIn.SearchValue.AsNumeric();
+
+                        if ( checkInState.CheckInType == null || checkInState.CheckInType.PhoneSearchType == PhoneSearchType.EndsWith )
+                        {
+                            familyQry = familyQry.Where( m =>
+                                m.Person.PhoneNumbers.Any( n => n.Number.EndsWith( numericPhone ) ) );
+                        }
+                        else
+                        {
+                            familyQry = familyQry.Where( m =>
+                                m.Person.PhoneNumbers.Any( n => n.Number.Contains( numericPhone ) ) );
+                        }
+                    }
+                    else if ( checkInState.CheckIn.SearchType.Guid.Equals( SystemGuid.DefinedValue.CHECKIN_SEARCH_TYPE_NAME.AsGuid() ) )
+                    {
+                        var personIds = personService.GetByFullName( checkInState.CheckIn.SearchValue, false ).AsNoTracking().Select( p => p.Id );
+                        familyQry = familyQry.Where( f => personIds.Contains( f.PersonId ) );
+                    }
+                    else if ( checkInState.CheckIn.SearchType.Guid.Equals( SystemGuid.DefinedValue.CHECKIN_SEARCH_TYPE_SCANNED_ID.AsGuid() ) )
+                    {
+                        var entityIds = new List<int>();
+
+                        var attributeValueService = new AttributeValueService( rockContext );
+                        var attr = AttributeCache.Read( SystemGuid.Attribute.FAMILY_CHECKIN_IDENTIFIERS.AsGuid() );
+                        if ( attr != null )
+                        {
+                            entityIds = new AttributeValueService( rockContext )
+                                .Queryable().AsNoTracking()
+                                .Where( v =>
+                                    v.AttributeId == attr.Id &&
+                                    v.EntityId.HasValue &&
+                                    ( "|" + v.Value + "|" ).Contains( "|" + checkInState.CheckIn.SearchValue + "|" ) )
+                                .Select( v => v.EntityId.Value )
+                                .ToList();
+                        }
+                        familyQry = familyQry.Where( f => entityIds.Contains( f.GroupId ) );
+                    }
+                    else if ( checkInState.CheckIn.SearchType.Guid.Equals( SystemGuid.DefinedValue.CHECKIN_SEARCH_TYPE_FAMILY_ID.AsGuid() ) )
+                    {
+                        List<int> searchFamilyIds = checkInState.CheckIn.SearchValue.SplitDelimitedValues().AsIntegerList();
+                        familyQry = familyQry.Where( f => searchFamilyIds.Contains( f.GroupId ) );
                     }
                     else
                     {
-                        familyQry = familyQry.Where( m =>
-                            m.Person.PhoneNumbers.Any( n => n.Number.Contains( numericPhone ) ) );
+                        errorMessages.Add( "Invalid Search Type" );
+                        return false;
                     }
 
                     var familyIdQry = familyQry
-                        .Select( m => m.GroupId )
-                        .Distinct();
+                            .Select( m => m.GroupId )
+                            .Distinct();
 
                     int maxResults = checkInState.CheckInType != null ? checkInState.CheckInType.MaxSearchResults : 100;
                     if ( maxResults > 0 )
@@ -147,45 +186,6 @@ namespace Rock.Workflow.Action.CheckIn
                         }
                     }
                 }
-                else if ( checkInState.CheckIn.SearchType.Guid.Equals( new Guid( SystemGuid.DefinedValue.CHECKIN_SEARCH_TYPE_NAME ) ) )
-                {
-                    var people = personService.GetByFullName( checkInState.CheckIn.SearchValue, false ).AsNoTracking();
-                    if ( checkInState.CheckInType != null && checkInState.CheckInType.PreventInactivePeopele && dvInactive != null )
-                    {
-                        people = people.Where( p => p.RecordStatusValueId != dvInactive.Id );
-                    }
-
-                    foreach ( var person in people )
-                    {
-                        foreach ( var group in person.Members.Where( m => m.Group.GroupType.Guid.Equals( familyGroupTypeGuid ) ).Select( m => m.Group ).ToList() )
-                        {
-                            var family = checkInState.CheckIn.Families.Where( f => f.Group.Id == group.Id ).FirstOrDefault();
-                            if ( family == null )
-                            {
-                                family = new CheckInFamily();
-                                family.Group = group.Clone( false );
-                                family.Group.LoadAttributes( rockContext );
-                                family.Caption = group.ToString();
-
-                                if ( checkInState.CheckInType == null || !checkInState.CheckInType.PreventInactivePeopele )
-                                {
-                                    family.SubCaption = memberService.GetFirstNames( group.Id ).ToList().AsDelimited( ", " );
-                                }
-                                else
-                                {
-                                    family.SubCaption = memberService.GetFirstNames( group.Id, false, false ).ToList().AsDelimited( ", " );
-                                }
-
-                                checkInState.CheckIn.Families.Add( family );
-                            }
-                        }
-                    }
-                }
-                else
-                {
-                    errorMessages.Add( "Invalid Search Type" );
-                    return false;
-                }
 
                 return true;
             }
@@ -193,5 +193,6 @@ namespace Rock.Workflow.Action.CheckIn
             errorMessages.Add( "Invalid Check-in State" );
             return false;
         }
+
     }
 }

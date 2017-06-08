@@ -35,8 +35,11 @@ namespace RockWeb.Blocks.CheckIn
     [Description("Lists people who match the selected family and provides option of selecting multiple.")]
 
     [LinkedPage("Auto Select Next Page", "The page to navigate to after selecting people in auto-select mode.", false, "", "", 5 )]
-    [CodeEditorField( "Pre-Selected Options Format", "The format to use when displaying auto-checkin options", CodeEditorMode.Lava, CodeEditorTheme.Rock, 100, false, 
-        "<strong>{{ Schedule.Name }}</strong>: {{ Group.Name }} - {{ Location.Name }}", "", 6, "OptionFormat" )]
+    [CodeEditorField( "Pre-Selected Options Format", "The format to use when displaying auto-checkin options", CodeEditorMode.Lava, CodeEditorTheme.Rock, 100, false, @"
+<span class='auto-select-schedule'>{{ Schedule.Name }}:</span>
+<span class='auto-select-group'>{{ Group.Name }}</span>
+<span class='auto-select-location'>{{ Location.Name }}</span>
+", "", 6, "OptionFormat" )]
     public partial class MultiPersonSelect : CheckInBlock
     {
         bool _hidePhotos = false;
@@ -232,14 +235,25 @@ namespace RockWeb.Blocks.CheckIn
                             pnlChangeButton.Visible = selectedOptions.Count > 1 || AnyUnselectedOptions( person );
                         }
                     }
+                    //<div class='row'>
+                    //    <div class='col-md-4 family-personselect'>{0}</div>
+                    //    <div class='col-md-8 auto-select'>
+                    //        <div class='auto-select-caption'>is checking into...<div>
+                    //        <div class='auto-select-details'>{1}</div>
+                    //    </div>
+                    //</div>
 
                     if ( options.Any() )
                     {
                         lPersonButton.Text = string.Format( @"
 <div class='row'>
     <div class='col-md-4 family-personselect'>{0}</div>
-    <div class='col-md-8'><small>is checking into...<br/>{1}</small></div>
+    <div class='col-md-8 auto-select'>
+        <div class='auto-select-caption'>is checking into...</div>
+        <div class='auto-select-details'>{1}</div>
+    </div>
 </div>
+
 ", person.Person.FullName, options.AsDelimited( "<br/>" ) );
                     }
                     else

@@ -46,7 +46,7 @@
                                                     </a>
                                                 </asp:Panel>
                                                 <asp:Panel ID="pnlChangeButton" runat="server" CssClass="col-xs-9 col-sm-3 col-md-2" Visible="false">
-                                                    <asp:LinkButton ID="lbChange" runat="server" CssClass="btn btn-primary btn-checkin-select btn-block" CommandArgument='<%# Eval("Person.Id") %>' CommandName="Change">Change</asp:LinkButton>
+                                                    <asp:LinkButton ID="lbChange" runat="server" CssClass="btn btn-default btn-checkin-select btn-block" CommandArgument='<%# Eval("Person.Id") %>' CommandName="Change">Change</asp:LinkButton>
                                                 </asp:Panel>
                                             </div>
                                         </ItemTemplate>

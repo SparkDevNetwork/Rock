@@ -470,7 +470,7 @@ namespace Rock.Web.UI.Controls
         Rock.controls.modal.updateSize($(this));
     });
 
-    $(document).on('focusout', '.js-value-list-input', function (e) {
+    $(document).on('keyup', '.js-value-list-input', function (e) {
         updateKeyValues($(this));            
     });
 })();
