@@ -32,7 +32,7 @@
                 <asp:LinkButton ID="lbFinish" runat="server" CssClass="btn btn-default" OnClick="lbFinish_Click">Done</asp:LinkButton>
                 <asp:Panel ID="pnlEdit" runat="server">
                     <div class="row">
-                        <div class="col-md-7">
+                        <div class="col-md-6">
                             <Rock:NotificationBox ID="nbNoTransactionImageWarning" runat="server" NotificationBoxType="Warning" Text="Warning. No Images found for this transaction." />
                             <Rock:NotificationBox ID="nbIsInProcess" runat="server" NotificationBoxType="Warning" Text="Warning. This transaction is getting processed by ...." />
                             <div>
@@ -46,7 +46,7 @@
                                 </asp:Repeater>
                             </div>
                         </div>
-                        <div class="col-md-5">
+                        <div class="col-md-6">
                             <div class="row">
                                 <div class="col-md-6">
                                     <Rock:RockDropDownList ID="ddlIndividual" runat="server" Label="Individual" Help="Select a person that has previously been matched to the bank account. If the person isn't in this list, use the 'Assign to New' to select the matching person." AutoPostBack="true" OnSelectedIndexChanged="ddlIndividual_SelectedIndexChanged" />
@@ -97,13 +97,21 @@
                             
                             <Rock:NotificationBox ID="nbSaveError" runat="server" NotificationBoxType="Danger" Dismissable="true" Text="Warning. Unable to save..." />
                             <Rock:RockControlWrapper ID="rcwAccountSplit" runat="server" Label="Account Split" Help="Enter the amount that should be allocated to each account. The total must match the amount shown on the transaction image">
-                                <asp:Repeater ID="rptAccounts" runat="server">
-                                    <ItemTemplate>
-                                        <Rock:CurrencyBox ID="cbAccountAmount" runat="server" Label='<%#Eval( "Name" )%>' data-account-id='<%#Eval("Id")%>' CssClass="js-account-amount" onkeydown="javascript:return handleAmountBoxKeyPress(this, event.keyCode);" onkeyup="javascript:handleAmountBoxKeyUp(event.keyCode)" />
-                                    </ItemTemplate>
-                                </asp:Repeater>
-
-                                <Rock:ButtonDropDownList ID="btnAddAccount" runat="server" Visible="false" Label="Add Account" DataTextField="PublicName" DataValueField="Id" OnSelectionChanged="btnAddAccount_SelectionChanged" />
+                                <div class="form-horizontal label-xl js-accounts">
+                                    <asp:Repeater ID="rptAccounts" runat="server"  >
+                                        <ItemTemplate>
+                                            <Rock:CurrencyBox ID="cbAccountAmount" runat="server" Label='<%#Eval( "Name" )%>' data-account-id='<%#Eval("Id")%>' CssClass="js-account-amount input-width-md" onkeydown="javascript:return handleAmountBoxKeyPress(this, event.keyCode);" onkeyup="javascript:handleAmountBoxKeyUp(event.keyCode)" />
+                                        </ItemTemplate>
+                                    </asp:Repeater>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-8">
+                                        <Rock:RockDropDownList ID="ddlAddAccount" runat="server" CssClass="input-width-mdx js-add-account" onblur="javascript:return handleAddAccountBoxOnBlur(this, event);" onkeydown="javascript:return handleAddAccountBoxKeyPress(this, event, event.keyCode);" Visible="false"  />
+                                    </div>
+                                    <div class="col-md-4">
+                                        
+                                    </div>
+                                </div>
                             </Rock:RockControlWrapper>
 
                             <%-- note: using disabled instead of readonly so that we can set the postback value in javascript --%>
@@ -188,7 +196,36 @@
                 $('#<%=btnNext.ClientID%>').click(verifyUnallocated);
 
                 updateRemainingAccountAllocation();
+
+                // sort the amount boxes in the order that they were added
+                $('.js-accounts .currency-box').detach().sort(function (a, b)
+                {
+                    var sortA = $(a).find("input").data("sort-order");
+                    var sortB = $(b).find("input").data("sort-order");
+                    if (sortA < sortB) 
+                        return -1
+                    if (sortA > sortB)
+                        return 1
+                    return 0;
+                        
+                }).appendTo('.js-accounts');
             })
+
+            // handle onkeypress for the Add Optional Account dropdown
+            function handleAddAccountBoxKeyPress(element, event, keyCode)
+            {
+                if ((keyCode == 13) && $(element).val() != '') {
+                    __doPostBack('<%=ddlAddAccount.ClientID%>', '');
+                }
+            }
+
+            // handle onblur for the Add Optional Account dropdown
+            function handleAddAccountBoxOnBlur(element, event)
+            {
+                if ( $(element).val() != '') {
+                    __doPostBack('<%=ddlAddAccount.ClientID%>', '');
+                }
+            }
 
             // handle onkeypress for the account amount input boxes
             function handleAmountBoxKeyPress(element, keyCode)
