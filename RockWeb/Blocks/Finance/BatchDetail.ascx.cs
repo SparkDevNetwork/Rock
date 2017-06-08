@@ -40,6 +40,7 @@ namespace RockWeb.Blocks.Finance
     [LinkedPage( "Transaction Matching Page", "Page used to match transactions for a batch.", order: 1 )]
     [LinkedPage( "Audit Page", "Page used to display the history of changes to a batch.", order: 2 )]
     [DefinedTypeField( "Batch Names", "The Defined Type that contains a predefined list of batch names to choose from instead of entering it in manually when adding a new batch. Leave this blank to hide this option and let them edit the batch name manually.", false, "", "", 3 )]
+    [SecurityAction( "ReopenBatch", "The roles and/or users that can reopen a closed batch." )]
     public partial class BatchDetail : Rock.Web.UI.RockBlock, IDetailBlock
     {
         #region Control Methods
@@ -536,6 +537,14 @@ namespace RockWeb.Blocks.Finance
 
                 ddlStatus.BindToEnum<BatchStatus>();
                 ddlStatus.SelectedIndex = (int)(BatchStatus)batch.Status;
+                ddlStatus.Enabled = true;
+                if ( batch.Status == BatchStatus.Closed )
+                {
+                    if ( !IsUserAuthorized( "ReopenBatch" ) )
+                    {
+                        ddlStatus.Enabled = false;
+                    }
+                }
 
                 campCampus.Campuses = CampusCache.All();
                 if ( batch.CampusId.HasValue )
