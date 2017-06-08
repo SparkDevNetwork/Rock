@@ -52,11 +52,11 @@ namespace RockWeb.Blocks.Finance
         /// The _focus control
         /// </summary>
         private Control _focusControl = null;
-        private HashSet<int> _visibleDisplayedAccountIds
+        private List<int> _visibleDisplayedAccountIds
         {
             get
             {
-                return this.ViewState["_visibleDisplayedAccountIds"] as HashSet<int>;
+                return this.ViewState["_visibleDisplayedAccountIds"] as List<int>;
             }
 
             set
@@ -65,11 +65,11 @@ namespace RockWeb.Blocks.Finance
             }
         }
 
-        private HashSet<int> _visibleOptionalAccountIds
+        private List<int> _visibleOptionalAccountIds
         {
             get
             {
-                return this.ViewState["_visibleOptionalAccountIds"] as HashSet<int>;
+                return this.ViewState["_visibleOptionalAccountIds"] as List<int>;
             }
 
             set
@@ -121,6 +121,13 @@ namespace RockWeb.Blocks.Finance
                 hfBackNextHistory.Value = string.Empty;
                 LoadDropDowns();
                 ShowDetail( PageParameter( "BatchId" ).AsInteger() );
+            }
+            else
+            {
+                if ( this.Request.Params["__EVENTTARGET"] == ddlAddAccount.ClientID )
+                {
+                    ddlAddAccount_SelectionChanged( ddlAddAccount, new EventArgs() );
+                }
             }
         }
 
@@ -184,8 +191,8 @@ namespace RockWeb.Blocks.Finance
                 accountQry = accountQry.Where( a => !a.CampusId.HasValue || a.CampusId.Value == campusId.Value );
             }
 
-            _visibleDisplayedAccountIds = new HashSet<int>( accountQry.Select( a => a.Id ).ToList() );
-            _visibleOptionalAccountIds = new HashSet<int>();
+            _visibleDisplayedAccountIds = new List<int>( accountQry.OrderBy(a=>a.Order).Select( a => a.Id ).ToList() );
+            _visibleOptionalAccountIds = new List<int>();
 
             // make the datasource all accounts, but only show the ones that are in _visibleAccountIds or have a non-zero amount
             var allAccountList = new FinancialAccountService( rockContext ).Queryable().AsNoTracking().OrderBy( a => a.Order ).ThenBy( a => a.Name ).ToList();
@@ -201,9 +208,13 @@ namespace RockWeb.Blocks.Finance
                 optionalAccounts = optionalAccounts.Where( a => blockAccountGuidList.Contains( a.Guid ) ).ToList();
             }
 
-            btnAddAccount.Visible = optionalAccounts.Any();
-            btnAddAccount.DataSource = optionalAccounts;
-            btnAddAccount.DataBind();
+            ddlAddAccount.Visible = optionalAccounts.Any();
+            ddlAddAccount.Items.Clear();
+            ddlAddAccount.Items.Add( new ListItem() );
+            foreach ( var account in optionalAccounts )
+            {
+                ddlAddAccount.Items.Add( new ListItem( account.PublicName, account.Id.ToString() ) );
+            }
 
             rcwEnvelope.Visible = GlobalAttributesCache.Read().EnableGivingEnvelopeNumber;
         }
@@ -265,7 +276,7 @@ namespace RockWeb.Blocks.Finance
                 int? toTransactionId = null;
 
                 // reset the visible optional account ids everytime they navigate to a new transaction
-                _visibleOptionalAccountIds = new HashSet<int>();
+                _visibleOptionalAccountIds = new List<int>();
 
                 List<int> historyList = hfBackNextHistory.Value.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ).AsIntegerList().Where( a => a > 0 ).ToList();
                 int position = hfHistoryPosition.Value.AsIntegerOrNull() ?? -1;
@@ -587,10 +598,15 @@ namespace RockWeb.Blocks.Finance
 
         private void UpdateVisibleAccountBoxes()
         {
+            List<int> _sortedAccountIds = _visibleDisplayedAccountIds.ToList();
+            _sortedAccountIds.AddRange( _visibleOptionalAccountIds );
+
             foreach ( var accountBox in rptAccounts.ControlsOfTypeRecursive<CurrencyBox>() )
             {
-                accountBox.Visible = _visibleDisplayedAccountIds.Contains( accountBox.Attributes["data-account-id"].AsInteger() )
-                    || _visibleOptionalAccountIds.Contains( accountBox.Attributes["data-account-id"].AsInteger() );
+                int accountBoxAccountId = accountBox.Attributes["data-account-id"].AsInteger();
+                accountBox.Visible = _visibleDisplayedAccountIds.Contains( accountBoxAccountId ) || _visibleOptionalAccountIds.Contains( accountBoxAccountId );
+                
+                accountBox.Attributes["data-sort-order"] = _sortedAccountIds.IndexOf( accountBoxAccountId ).ToString();
             }
         }
 
@@ -1016,26 +1032,35 @@ namespace RockWeb.Blocks.Finance
         }
 
         /// <summary>
-        /// Handles the SelectionChanged event of the btnAddAccount control.
+        /// Handles the SelectionChanged event of the ddlAddAccount control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void btnAddAccount_SelectionChanged( object sender, EventArgs e )
+        protected void ddlAddAccount_SelectionChanged( object sender, EventArgs e )
         {
             // update accountboxes
-            var accountId = btnAddAccount.SelectedValue.AsIntegerOrNull();
+            var accountId = ddlAddAccount.SelectedValue.AsIntegerOrNull();
             if ( accountId.HasValue && !_visibleOptionalAccountIds.Contains( accountId.Value ) )
             {
                 _visibleOptionalAccountIds.Add( accountId.Value );
-                var itemToRemove = btnAddAccount.Items.FindByValue( accountId.Value.ToString() );
-                btnAddAccount.Items.Remove( itemToRemove );
+                var itemToRemove = ddlAddAccount.Items.FindByValue( accountId.Value.ToString() );
+                ddlAddAccount.Items.Remove( itemToRemove );
             }
 
             UpdateVisibleAccountBoxes();
 
-            if ( btnAddAccount.Items.Count == 0 )
+            if ( ddlAddAccount.Items.Count <= 1 )
             {
-                btnAddAccount.Visible = false;
+                ddlAddAccount.Visible = false;
+            }
+
+            foreach ( var accountBox in rptAccounts.ControlsOfTypeRecursive<CurrencyBox>() )
+            {
+                if ( accountBox.Attributes["data-account-id"].AsInteger() == accountId )
+                {
+                    accountBox.Focus();
+                    break;
+                }
             }
         }
 
