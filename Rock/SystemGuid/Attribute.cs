@@ -63,6 +63,11 @@ namespace Rock.SystemGuid
         /// </summary>
         public const string PERSON_GIVING_ENVELOPE_NUMBER = "76C33FBC-8799-4DF1-B2FE-A6C41AC3DD49";
 
+        /// <summary>
+        /// The family attribute for storing a family's checkin identifiers
+        /// </summary>
+        public const string FAMILY_CHECKIN_IDENTIFIERS = "8F528431-A438-4488-8DC3-CA42E66C1B37";
+
         #region eRA Attributes
 
         /// <summary>

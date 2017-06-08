@@ -90,6 +90,21 @@ namespace Rock
         }
 
         /// <summary>
+        /// Adds the specified item.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="items">The items.</param>
+        /// <param name="item">The item.</param>
+        /// <param name="IgnoreIfExists">if set to <c>true</c> [ignore if exists].</param>
+        public static void Add<T>( this List<T> items, T item, bool IgnoreIfExists )
+        {
+            if ( !IgnoreIfExists || !items.Contains( item ) )
+            {
+                items.Add( item );
+            }
+        }
+
+        /// <summary>
         /// Converts a List&lt;string&gt; to List&lt;guid&gt; only returning items that could be converted to a guid.
         /// </summary>
         /// <param name="items">The items.</param>

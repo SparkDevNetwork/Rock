@@ -18,6 +18,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
+using System.Text;
 using System.Web.UI;
 using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
@@ -37,7 +38,7 @@ namespace RockWeb.Blocks.CheckIn
 
     [LinkedPage( "Family Select Page", "", false, "", "", 5 )]
     [LinkedPage( "Scheduled Locations Page", "", false, "", "", 6 )]
-    [TextField( "Check-in Button Text", "The text to display on the check-in button.", false, Key = "CheckinButtonText" )]
+    [TextField( "Check-in Button Text", "The text to display on the check-in button.", false, "", "", 7, "CheckinButtonText" )]
     public partial class Welcome : CheckInBlock
     {
         protected override void OnInit( EventArgs e )
@@ -69,9 +70,11 @@ namespace RockWeb.Blocks.CheckIn
         {
             base.OnLoad( e );
 
-            if ( !Page.IsPostBack && CurrentCheckInState != null )
+            if ( !Page.IsPostBack )
             {
-                string script = string.Format( @"
+                if ( CurrentCheckInState != null )
+                {
+                    string script = string.Format( @"
     <script>
         $(document).ready(function (e) {{
             if (localStorage) {{
@@ -83,17 +86,37 @@ namespace RockWeb.Blocks.CheckIn
         }});
     </script>
 ", CurrentTheme, CurrentKioskId, CurrentCheckinTypeId, CurrentGroupTypeIds.AsDelimited( "," ) );
-                phScript.Controls.Add( new LiteralControl( script ) );
+                    phScript.Controls.Add( new LiteralControl( script ) );
 
-                CurrentWorkflow = null;
-                CurrentCheckInState.CheckIn = new CheckInStatus();
-                SaveState();
-                RefreshView();
+                    CurrentWorkflow = null;
+                    CurrentCheckInState.CheckIn = new CheckInStatus();
+                    SaveState();
+                    RefreshView();
 
-                if ( !string.IsNullOrWhiteSpace( GetAttributeValue( "CheckinButtonText" ) ) )
-                {
-                    lbSearch.Text = string.Format("<span>{0}</span>", GetAttributeValue( "CheckinButtonText" ));
+                    string btnText = GetAttributeValue( "CheckinButtonText" );
+                    if ( string.IsNullOrWhiteSpace( btnText ) )
+                    {
+                        btnText = CurrentCheckInState.CheckInType.AllowCheckout ? "Start" : "Check In";
+                    }
+                    lbSearch.Text = string.Format( "<span>{0}</span>", btnText );
                 }
+            }
+            else
+            {
+                if ( Request.Form["__EVENTARGUMENT"] != null )
+                {
+                    if ( Request.Form["__EVENTARGUMENT"] == "Wedge_Entry" )
+                    {
+                        var dv = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.CHECKIN_SEARCH_TYPE_SCANNED_ID );
+                        DoFamilySearch( dv, hfSearchEntry.Value );
+                    }
+                    else if ( Request.Form["__EVENTARGUMENT"] == "Family_Id_Search" )
+                    {
+                        var dv = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.CHECKIN_SEARCH_TYPE_FAMILY_ID );
+                        DoFamilySearch( dv, hfSearchEntry.Value );
+                    }
+                }
+
             }
         }
 
@@ -134,14 +157,12 @@ namespace RockWeb.Blocks.CheckIn
         /// </summary>
         private void RegisterScript()
         {
-            if ( !Page.ClientScript.IsStartupScriptRegistered( "RefreshScript" ) )
-            {
-                // Note: the OnExpiry property of the countdown jquery plugin seems to add a new callback
-                // everytime the setting is set which is why the clearCountdown method is used to prevent 
-                // a plethora of partial postbacks occurring when the countdown expires.
-                string script = string.Format( @"
+            // Note: the OnExpiry property of the countdown jquery plugin seems to add a new callback
+            // everytime the setting is set which is why the clearCountdown method is used to prevent 
+            // a plethora of partial postbacks occurring when the countdown expires.
+            var script = new StringBuilder();
+            script.AppendFormat( @"
 
-    Sys.Application.add_load(function () {{
         var timeoutSeconds = $('.js-refresh-timer-seconds').val();
         if (timeout) {{
             window.clearTimeout(timeout);
@@ -153,6 +174,7 @@ namespace RockWeb.Blocks.CheckIn
 
         function refreshKiosk() {{
             window.clearTimeout(timeout);
+            $CountdownTimer = null;
             {0};
         }}
 
@@ -173,11 +195,13 @@ namespace RockWeb.Blocks.CheckIn
                 onExpiry: clearCountdown
             }});
         }}
-    }});
-
 ", this.Page.ClientScript.GetPostBackEventReference( lbRefresh, "" ) );
-                Page.ClientScript.RegisterStartupScript( Page.GetType(), "RefreshScript", script, true );
-            }
+            ScriptManager.RegisterStartupScript( lbRefresh, lbRefresh.GetType(), "WelcomeScript", script.ToString(), true );
+        }
+
+        private void ClearSelection()
+        {
+            CurrentCheckInState.CheckIn.Families = new List<CheckInFamily>();
         }
 
         // TODO: Add support for scanner
@@ -186,7 +210,7 @@ namespace RockWeb.Blocks.CheckIn
         /// </summary>
         /// <param name="searchType">Type of the search.</param>
         /// <param name="searchValue">The search value.</param>
-        private void SomeScannerSearch( DefinedValueCache searchType, string searchValue )
+        private void DoFamilySearch( DefinedValueCache searchType, string searchValue )
         {
             CurrentCheckInState.CheckIn.UserEnteredSearch = false;
             CurrentCheckInState.CheckIn.ConfirmSingleFamily = false;
@@ -196,11 +220,19 @@ namespace RockWeb.Blocks.CheckIn
             var errors = new List<string>();
             if ( ProcessActivity( "Family Search", out errors ) )
             {
-                SaveState();
-                NavigateToLinkedPage( "FamilySelectPage" );
+                if ( !CurrentCheckInState.CheckIn.Families.Any() )
+                {
+                    maWarning.Show( "<p>Sorry, there were not any families found with the selected identifier.</p>", Rock.Web.UI.Controls.ModalAlertType.Warning );
+                }
+                else
+                {
+                    SaveState();
+                    NavigateToLinkedPage( "FamilySelectPage" );
+                }
             }
             else
             {
+                ClearSelection();
                 string errorMsg = "<p>" + errors.AsDelimited( "<br/>" ) + "</p>";
                 maWarning.Show( errorMsg, Rock.Web.UI.Controls.ModalAlertType.Warning );
             }
@@ -520,5 +552,6 @@ namespace RockWeb.Blocks.CheckIn
         {
             btnBack_Click( sender, e );
         }
+
     }
 }
