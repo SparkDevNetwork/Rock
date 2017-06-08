@@ -70,6 +70,24 @@ namespace Rock.CheckIn
         }
 
         /// <summary>
+        /// Gets or sets the action.
+        /// </summary>
+        /// <value>
+        /// The action.
+        /// </value>
+        [DataMember]
+        public CheckinAction Action { get; set; }
+
+        /// <summary>
+        /// Gets or sets the check out people.
+        /// </summary>
+        /// <value>
+        /// The check out people.
+        /// </value>
+        [DataMember]
+        public List<CheckOutPerson> CheckOutPeople { get; set; }
+
+        /// <summary>
         /// An optional value that can be set to display family name.  If not set, the Group name will be used
         /// </summary>
         [DataMember]
@@ -91,6 +109,8 @@ namespace Rock.CheckIn
             : base()
         {
             People = new List<CheckInPerson>();
+            Action = CheckinAction.CheckIn;
+            CheckOutPeople = new List<CheckOutPerson>();
         }
 
         /// <summary>
@@ -136,5 +156,21 @@ namespace Rock.CheckIn
             }
         }
 
+    }
+
+    /// <summary>
+    /// The type of checkin
+    /// </summary>
+    public enum CheckinAction
+    {
+        /// <summary>
+        /// The individual
+        /// </summary>
+        CheckIn = 0,
+
+        /// <summary>
+        /// The family
+        /// </summary>
+        CheckOut = 1
     }
 }

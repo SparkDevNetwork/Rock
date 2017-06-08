@@ -36,7 +36,6 @@ namespace Rock.SystemGuid
 
         /// <summary>
         /// Phone number search type
-        ///
         /// </summary>
         public const string CHECKIN_SEARCH_TYPE_PHONE_NUMBER = "F3F66040-C50F-4D13-9652-780305FFFE23";
 
@@ -49,6 +48,16 @@ namespace Rock.SystemGuid
         /// Power Search Type
         /// </summary>
         public const string CHECKIN_SEARCH_TYPE_NAME_AND_PHONE = "93773B0A-6E7F-1AA0-4F1D-9A4D6ACE930F";
+
+        /// <summary>
+        /// Scanned Id Search Type
+        /// </summary>
+        public const string CHECKIN_SEARCH_TYPE_SCANNED_ID = "7668CE15-E372-47EE-8FF8-6FEE09F7C858";
+
+        /// <summary>
+        /// Family Id Search Type
+        /// </summary>
+        public const string CHECKIN_SEARCH_TYPE_FAMILY_ID = "111385BB-DAEB-4CE3-A945-0B50DC15EE02";
 
         #endregion
 

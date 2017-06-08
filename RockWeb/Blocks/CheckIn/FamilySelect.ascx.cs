@@ -29,11 +29,9 @@ using Rock.Model;
 
 namespace RockWeb.Blocks.CheckIn
 {
-    [DisplayName("Family Select")]
-    [Category("Check-in")]
+    [DisplayName( "Family Select" )]
+    [Category( "Check-in" )]
     [Description( "Displays a list of families to select for checkin." )]
-
-    [LinkedPage( "Next Page (Family Check-in)", "", false, "", "", 5, "FamilyNextPage" )]
     public partial class FamilySelect : CheckInBlock
     {
         protected override void OnLoad( EventArgs e )
@@ -97,6 +95,8 @@ namespace RockWeb.Blocks.CheckIn
             {
                 family.Selected = false;
                 family.People = new List<CheckInPerson>();
+                family.Action = CheckinAction.CheckIn;
+                family.CheckOutPeople = new List<CheckOutPerson>();
             }
         }
 
@@ -150,26 +150,15 @@ namespace RockWeb.Blocks.CheckIn
 
         private void ProcessSelection()
         {
-            if ( !ProcessSelection( maWarning, () => 
-                CurrentCheckInState.CheckIn.Families.All( f => f.People.Count == 0 ),
+            if ( !ProcessSelection( maWarning, () =>
+                ( 
+                    CurrentCheckInState.CheckIn.Families.All( f => f.People.Count == 0 ) && 
+                    CurrentCheckInState.CheckIn.Families.All( f => f.Action == CheckinAction.CheckIn )
+                ),
                 "<p>Sorry, no one in your family is eligible to check-in at this location.</p>" ) )            
             {
                 ClearSelection();
             }
-        }
-
-        protected override void NavigateToNextPage( Dictionary<string, string> queryParams, bool validateSelectionRequired )
-        {
-            string pageAttributeKey = "NextPage";
-            if ( CurrentCheckInType != null &&
-                CurrentCheckInType.TypeOfCheckin == TypeOfCheckin.Family &&
-                !string.IsNullOrWhiteSpace( LinkedPageUrl( "FamilyNextPage" ) ) )
-            {
-                pageAttributeKey = "FamilyNextPage";
-            }
-
-            queryParams = CheckForOverride( queryParams );
-            NavigateToLinkedPage( pageAttributeKey, queryParams );
         }
     }
 }
