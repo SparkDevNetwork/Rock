@@ -19,17 +19,23 @@ using System;
 namespace Rock.Plugin.HotFixes
 {
     /// <summary>
-    /// Migration to add additional check-in settings.
+    /// Migration to add additional check-in features (check-out/auto-select/barcode check-in)
+    /// .
     /// </summary>
     /// <seealso cref="Rock.Plugin.Migration" />
     [MigrationNumber( 27, "1.6.4" )]
-    public class CheckinSettings : Migration
+    public class AddCheckinFeatures : Migration
     {
         /// <summary>
         /// Operations to be performed during the upgrade process.
         /// </summary>
         public override void Up()
         {
+            RockMigrationHelper.UpdateDefinedValue( "1EBCDB30-A89A-4C14-8580-8289EC2C7742", "Scanned Id", "Search for family based on a barcode, proximity card, etc.", "7668CE15-E372-47EE-8FF8-6FEE09F7C858", true );
+            RockMigrationHelper.UpdateDefinedValue( "1EBCDB30-A89A-4C14-8580-8289EC2C7742", "Family Id", "Search for family based on a Family Id", "111385BB-DAEB-4CE3-A945-0B50DC15EE02", true );
+
+            RockMigrationHelper.UpdateEntityAttribute( "Rock.Model.Group", Rock.SystemGuid.FieldType.VALUE_LIST, "GroupTypeId", "10", "Check-in Identifiers", "One or more identifiers such as a barcode, or proximity card value that can be used during check-in.", 0, "", "8F528431-A438-4488-8DC3-CA42E66C1B37", "CheckinId" );
+
             RockMigrationHelper.UpdateAttributeQualifier( "733944B7-A0D5-41B4-94D4-DE007F72B6F0", "values", "0^Family,1^Person,2^Location,3^Check-Out", "E77DF4E6-A995-4C82-BBB7-DB57739D66F3" );
 
             RockMigrationHelper.UpdateEntityAttribute( "Rock.Model.GroupType", Rock.SystemGuid.FieldType.BOOLEAN, "GroupTypePurposeValueId", "", "Allow Checkout", "", 0, "False", "37EB8C83-A5DC-4A9B-8816-D93F07B2A7C5", "core_checkin_AllowCheckout" );
@@ -132,6 +138,9 @@ namespace Rock.Plugin.HotFixes
             // Attrib for BlockType: Check Out Success:Next Page
             RockMigrationHelper.AddBlockTypeAttribute( "F499C4A9-9A60-404B-9383-B950EE6D7821", "BD53F9C9-EBA9-4D3F-82EA-DE5DD34A8108", "Next Page", "NextPage", "", "", 4, @"", "223C5BA3-B6B0-4EC6-9D38-5607837410D6" );
 
+            // Attrib for BlockType: Welcome:Check-in Button Text
+            RockMigrationHelper.AddBlockTypeAttribute( "E1BBB48E-9E9A-4B69-B25C-820ABD9DCDEE", "9C204CD0-1233-41C5-818A-C5DA439445AA", "Check-in Button Text", "CheckinButtonText", "", "The text to display on the check-in button.", 7, @"", "C211328D-3F66-4F5D-902A-2A7AF1985209" );
+
             // Attrib for BlockType: Person Select (Family Check-in):Auto Select Next Page
             RockMigrationHelper.AddBlockTypeAttribute( "92DCF018-F551-4890-8BA1-511D97BF6B8A", "BD53F9C9-EBA9-4D3F-82EA-DE5DD34A8108", "Auto Select Next Page", "AutoSelectNextPage", "", "The page to navigate to after selecting people in auto-select mode.", 5, @"", "4302646B-F6CD-492D-8850-96B9CA1CEA59" );
             // Attrib for BlockType: Person Select (Family Check-in):Pre-Selected Options Format
@@ -174,6 +183,26 @@ namespace Rock.Plugin.HotFixes
             RockMigrationHelper.AddBlockAttributeValue( "0F82C7EB-3E71-496F-B5F4-83F32AD5EBB5", "4302646B-F6CD-492D-8850-96B9CA1CEA59", @"4af7a0e1-e991-4ae5-a2b5-c440f67a2e6a" ); // Auto Select Next Page
             RockMigrationHelper.AddBlockAttributeValue( "0F82C7EB-3E71-496F-B5F4-83F32AD5EBB5", "55580865-E792-469F-B45C-45713477D033", @"<strong>{{ Schedule.Name }}</strong>: {{ Group.Name }} - {{ Location.Name }}" ); // Pre-Selected Options Format
 
+            // Add Block to Page: Action Select, Site: Rock Check-in
+            RockMigrationHelper.AddBlock( "0586648B-9490-43C6-B18D-7F403458C080", "", "49FC4B38-741E-4B0B-B395-7C1929340D88", "Idle Redirect", "Main", "", "", 1, "7A293980-9E28-4115-85EB-DA197734EED2" );
+            // Add Block to Page: Check Out Person Select, Site: Rock Check-in
+            RockMigrationHelper.AddBlock( "D54FC289-DF7D-48C5-91BE-38BCFDEBC6AF", "", "49FC4B38-741E-4B0B-B395-7C1929340D88", "Idle Redirect", "Main", "", "", 1, "258CC6B9-CA88-41E7-B578-2514FCF245B4" );
+            // Add Block to Page: Check Out Success, Site: Rock Check-in
+            RockMigrationHelper.AddBlock( "21A855BA-6D68-4504-97B4-D787452CEC29", "", "49FC4B38-741E-4B0B-B395-7C1929340D88", "Idle Redirect", "Main", "", "", 1, "04BF66EF-66E5-465D-A590-D8BA02E217B7" );
+            // update block order for pages with new blocks if the page,zone has multiple blocks
+
+            // Attrib Value for Block:Idle Redirect, Attribute:Idle Seconds Page: Action Select, Site: Rock Check-in
+            RockMigrationHelper.AddBlockAttributeValue( "7A293980-9E28-4115-85EB-DA197734EED2", "1CAC7B16-041A-4F40-8AEE-A39DFA076C14", @"20" );
+            // Attrib Value for Block:Idle Redirect, Attribute:New Location Page: Action Select, Site: Rock Check-in
+            RockMigrationHelper.AddBlockAttributeValue( "7A293980-9E28-4115-85EB-DA197734EED2", "2254B67B-9CB1-47DE-A63D-D0B56051ECD4", @"/checkin/welcome" );
+            // Attrib Value for Block:Idle Redirect, Attribute:Idle Seconds Page: Check Out Person Select, Site: Rock Check-in
+            RockMigrationHelper.AddBlockAttributeValue( "258CC6B9-CA88-41E7-B578-2514FCF245B4", "1CAC7B16-041A-4F40-8AEE-A39DFA076C14", @"20" );
+            // Attrib Value for Block:Idle Redirect, Attribute:New Location Page: Check Out Person Select, Site: Rock Check-in
+            RockMigrationHelper.AddBlockAttributeValue( "258CC6B9-CA88-41E7-B578-2514FCF245B4", "2254B67B-9CB1-47DE-A63D-D0B56051ECD4", @"/checkin/welcome" );
+            // Attrib Value for Block:Idle Redirect, Attribute:Idle Seconds Page: Check Out Success, Site: Rock Check-in
+            RockMigrationHelper.AddBlockAttributeValue( "04BF66EF-66E5-465D-A590-D8BA02E217B7", "1CAC7B16-041A-4F40-8AEE-A39DFA076C14", @"20" );
+            // Attrib Value for Block:Idle Redirect, Attribute:New Location Page: Check Out Success, Site: Rock Check-in
+            RockMigrationHelper.AddBlockAttributeValue( "04BF66EF-66E5-465D-A590-D8BA02E217B7", "2254B67B-9CB1-47DE-A63D-D0B56051ECD4", @"/checkin/welcome" );
 
         }
 
