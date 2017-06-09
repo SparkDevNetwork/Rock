@@ -1,11 +1,11 @@
 Rock McKinley 6.7
-
+ 
 + Fixed exceptions that would appear on default home page after installing Rock v6 due to an invalid filter on the content blocks (Fixes #2155).
 + Fixed issue with event details being duplicated on the Calendar Event Detail block when using the Stark theme (Fixes #2245).
 + Updated the ZebraPhoto Lava Filter so that it can be used multiple times on the same label.
 + Added 'Save Then Add' and 'Save Then View Batch' as buttons when adding a new transaction to a batch.
 + Updated Registrations to use Sliding Date Range filters for Registrations, Registrants, and Payments. This also fixed an issue where the date range filters were sometimes not using the correct dates and not including recent registrations and payments.
-+ Updated the Login block so that when a user logs in using an external provider such as Facebook or Google, their login will be remembered so they don't need to login again on every visit.
++ Updated the Login block so that when a user logs in using an external provider such as Facebook or Google, their login will be remembered and they won't need to login again on every visit.
 + Added the ability to check-in using any type of device that supports keyboard wedge. This includes bar code scanners, proximity card readers, etc.
 + Added Campus (of Account) as a filter for Transaction List.
 + Added new features to Check-in that will automatically select options based on the person's last check-in (with ability for user to change the selection).
