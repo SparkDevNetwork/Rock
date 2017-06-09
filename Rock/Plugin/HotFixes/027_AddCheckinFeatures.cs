@@ -183,7 +183,7 @@ namespace Rock.Plugin.HotFixes
             RockMigrationHelper.AddBlockAttributeValue( "32B345DD-0EF4-480E-B82A-7D7191CC374B", "735D4AAB-F8F4-4388-9A00-2132356187A6", @"d54fc289-df7d-48c5-91be-38bcfdebc6af" );
 
             RockMigrationHelper.AddBlockAttributeValue( "0F82C7EB-3E71-496F-B5F4-83F32AD5EBB5", "4302646B-F6CD-492D-8850-96B9CA1CEA59", @"4af7a0e1-e991-4ae5-a2b5-c440f67a2e6a" ); // Auto Select Next Page
-            RockMigrationHelper.AddBlockAttributeValue( "0F82C7EB-3E71-496F-B5F4-83F32AD5EBB5", "55580865-E792-469F-B45C-45713477D033", @"<strong>{{ Schedule.Name }}</strong>: {{ Group.Name }} - {{ Location.Name }}" ); // Pre-Selected Options Format
+            RockMigrationHelper.AddBlockAttributeValue( "0F82C7EB-3E71-496F-B5F4-83F32AD5EBB5", "55580865-E792-469F-B45C-45713477D033", @"{{ Schedule.Name }} - {{ Group.Name }} - {{ Location.Name }}" ); // Pre-Selected Options Format
 
             // Add Block to Page: Action Select, Site: Rock Check-in
             RockMigrationHelper.AddBlock( "0586648B-9490-43C6-B18D-7F403458C080", "", "49FC4B38-741E-4B0B-B395-7C1929340D88", "Idle Redirect", "Main", "", "", 1, "7A293980-9E28-4115-85EB-DA197734EED2" );
