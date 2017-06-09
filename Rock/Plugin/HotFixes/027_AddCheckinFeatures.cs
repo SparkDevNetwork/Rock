@@ -206,6 +206,31 @@ namespace Rock.Plugin.HotFixes
             // Attrib Value for Block:Idle Redirect, Attribute:New Location Page: Check Out Success, Site: Rock Check-in
             RockMigrationHelper.AddBlockAttributeValue( "04BF66EF-66E5-465D-A590-D8BA02E217B7", "2254B67B-9CB1-47DE-A63D-D0B56051ECD4", @"/checkin/welcome" );
 
+            Sql( @"
+update DataViewFilter
+set selection = '[
+	""SecondaryAudiences"",
+    ""8"",
+    ""b364cdee-f000-4965-ae67-0c80dda365dc""
+]' 
+where selection = '[
+    ""SecondaryAudiences"",
+	""8"",
+	""4cdee-f000-4965-ae67-0c80dda365dc\""\""
+]'
+
+update DataViewFilter
+set selection = '[
+    ""SecondaryAudiences"",
+	""8"",
+	""57b2a23f-3b0c-43a8-9f45-332120dcd0ee""
+]' 
+where selection = '[
+    ""SecondaryAudiences"",
+	""8"",
+	""2a23f-3b0c-43a8-9f45-332120dcd0ee\""\"",
+]'" );
+
         }
 
         /// <summary>
