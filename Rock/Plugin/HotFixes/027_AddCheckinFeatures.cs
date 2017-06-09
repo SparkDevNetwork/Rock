@@ -144,7 +144,9 @@ namespace Rock.Plugin.HotFixes
             // Attrib for BlockType: Person Select (Family Check-in):Auto Select Next Page
             RockMigrationHelper.AddBlockTypeAttribute( "92DCF018-F551-4890-8BA1-511D97BF6B8A", "BD53F9C9-EBA9-4D3F-82EA-DE5DD34A8108", "Auto Select Next Page", "AutoSelectNextPage", "", "The page to navigate to after selecting people in auto-select mode.", 5, @"", "4302646B-F6CD-492D-8850-96B9CA1CEA59" );
             // Attrib for BlockType: Person Select (Family Check-in):Pre-Selected Options Format
-            RockMigrationHelper.AddBlockTypeAttribute( "92DCF018-F551-4890-8BA1-511D97BF6B8A", "9C204CD0-1233-41C5-818A-C5DA439445AA", "Pre-Selected Options Format", "OptionFormat", "", "", 6, @"<strong>{{ Schedule.Name }}</strong>: {{ Group.Name }} - {{ Location.Name }}", "55580865-E792-469F-B45C-45713477D033" );
+            RockMigrationHelper.AddBlockTypeAttribute( "92DCF018-F551-4890-8BA1-511D97BF6B8A", "9C204CD0-1233-41C5-818A-C5DA439445AA", "Pre-Selected Options Format", "OptionFormat", "", "", 6, @"<span class='auto-select-schedule'>{{ Schedule.Name }}:</span>
+<span class='auto-select-group'>{{ Group.Name }}</span>
+<span class='auto-select-location'>{{ Location.Name }}</span>", "55580865-E792-469F-B45C-45713477D033" );
 
             // Update Family Select Next Page to direct to Action Page
             RockMigrationHelper.AddBlockAttributeValue( "CD97D61E-7BCE-436B-ACDD-4383EB7490BA", "90ECD00A-9570-4986-B32F-02F32B656A2A", @"0586648b-9490-43c6-b18d-7f403458c080" ); // Next Page
