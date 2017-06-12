@@ -15,7 +15,6 @@
 // </copyright>
 //
 using System;
-using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Web.UI;
@@ -30,7 +29,7 @@ namespace RockWeb.Blocks.CheckIn
 {
     [DisplayName("Person Select")]
     [Category("Check-in")]
-    [Description("Lists people who match the selected family to pick to checkin.")]
+    [Description("Lists people who match the selected family to pick to check-in or check-out.")]
     public partial class PersonSelect : CheckInBlock
     {
         protected override void OnLoad( EventArgs e )
@@ -88,7 +87,6 @@ namespace RockWeb.Blocks.CheckIn
 
                         rSelection.DataBind();
                     }
-
                 }
             }
         }
@@ -148,12 +146,13 @@ namespace RockWeb.Blocks.CheckIn
 
         protected void ProcessSelection()
         {
+            string msg = string.Format( "<p>Sorry, there are currently not any available areas that the selected person can check {0}.</p>",
+                CurrentCheckInState.CheckIn.CurrentFamily.Action == CheckinAction.CheckIn ? "into" : "out of" );
             ProcessSelection( 
                 maWarning, 
                 () => CurrentCheckInState.CheckIn.CurrentFamily.GetPeople( true )
                     .SelectMany( p => p.GroupTypes.Where( t => !t.ExcludedByFilter ) )
-                    .Count() <= 0,
-                "<p>Sorry, there are currently not any available areas that the selected person can check into.</p>" );
+                    .Count() <= 0, msg );
         }
 
     }

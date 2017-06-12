@@ -101,12 +101,12 @@ Sorry, your account has been locked.  Please contact our office at {{ 'Global' |
                         {
                             if ( !string.IsNullOrWhiteSpace( redirectUrlSetting ) )
                             {
-                                LoginUser( userName, redirectUrlSetting, false );
+                                LoginUser( userName, redirectUrlSetting, true );
                                 break;
                             }
                             else
                             {
-                                LoginUser( userName, returnUrl, false );
+                                LoginUser( userName, returnUrl, true );
                                 break;
                             }
                         }
