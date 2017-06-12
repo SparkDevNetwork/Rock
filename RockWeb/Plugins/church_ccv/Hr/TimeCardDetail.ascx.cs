@@ -425,10 +425,10 @@ namespace RockWeb.Plugins.church_ccv.Hr
             {
                 if ( this.IsUserAuthorized( Authorization.APPROVE ) || approvers.Any( a => a.Id == this.CurrentPersonId ) )
                 {
-                    // if the current person a global Approver or an approver of the timecard.person, enable the Approve button if is has been submitted.
+                    // if the current person a global Approver or an approver of the timecard.person, enable the Approve/Unapprove button if is has been submitted.
                     pnlApproverActions.Visible = ( timeCard.TimeCardStatus == TimeCardStatus.Submitted || timeCard.TimeCardStatus == TimeCardStatus.Approved );
                     btnApprove.Visible = timeCard.TimeCardStatus == TimeCardStatus.Submitted;
-                    btnUnapprove.Visible = timeCard.TimeCardStatus == TimeCardStatus.Approved;
+                    btnUnapprove.Visible = timeCard.TimeCardStatus == TimeCardStatus.Submitted || timeCard.TimeCardStatus == TimeCardStatus.Approved;
                 }
                 else
                 {
