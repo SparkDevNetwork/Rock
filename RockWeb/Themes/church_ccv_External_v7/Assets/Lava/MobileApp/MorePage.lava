@@ -60,7 +60,7 @@
 
       <h4>Students</h4>
       {% if Context.Campus.ShortCode == "MID" %}
-          <p>Jr High and High School students meet for single shared weekend experience.</p>
+          <p>Jr High and High School students meet for a single shared weekend experience.</p>
           <strong>{{ campus | Attribute: 'JrHighTime' }}</strong>
       {% else %}
           <p>Jr High and High School students meet for separate weekend experiences.</p>
