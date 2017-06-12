@@ -82,7 +82,7 @@ namespace RockWeb.Plugins.church_ccv.SafetySecurity
             lHeader.Text = "<h4>Information (Number: " + charRefWorkflow.AttributeValues["CompletionNumber"].Value + ")</h4>";
 
             // set the character reference type (professional, non-family, etc.)
-            lType.Text = "Relationship: " + charRefWorkflow.AttributeValues["Type"].Value;
+            lType.Text = "Relationship: " + charRefWorkflow.AttributeValues["Type"];
 
             // grab the people associated
             IQueryable<PersonAlias> paQuery = new PersonAliasService( rockContext ).Queryable( ).AsNoTracking( );
@@ -95,8 +95,8 @@ namespace RockWeb.Plugins.church_ccv.SafetySecurity
 
             // set the reference
             lReference.Text = "Name: " + charRefWorkflow.AttributeValues["FirstName"] + " " + charRefWorkflow.AttributeValues["LastName"];
-            lReferenceEmail.Text = "Email: " + charRefWorkflow.AttributeValues["EmailAddress"].Value;
-            lReferencePhoneNumber.Text = "Phone: " + charRefWorkflow.AttributeValues["PhoneNumber"].Value;
+            lReferenceEmail.Text = "Email: " + charRefWorkflow.AttributeValues["EmailAddress"];
+            lReferencePhoneNumber.Text = "Phone: " + charRefWorkflow.AttributeValues["PhoneNumber"];
             
 
             if ( charRefWorkflow.Status == "Completed" )
@@ -106,45 +106,53 @@ namespace RockWeb.Plugins.church_ccv.SafetySecurity
 
                 // set the responses
 
+                // Length Known
+                lFeedback_LengthKnown.Text = "<strong>" + charRefWorkflow.AttributeValues["Feedback_LengthKnown"].AttributeName + "</strong>" + "<br>" + 
+                                                          charRefWorkflow.AttributeValues["Feedback_LengthKnown"];
+
+                // Capacity Known
+                lFeedback_CapacityKnown.Text = "<strong>" + charRefWorkflow.AttributeValues["Feedback_CapacityKnown"].AttributeName + "</strong>" + "<br>" + 
+                                                          charRefWorkflow.AttributeValues["Feedback_CapacityKnown"];
+
                 // three to five traits
                 lFeedback_ThreeToFiveTraits.Text = "<strong>" + charRefWorkflow.AttributeValues["Feedback_3To5Traits"].AttributeName + "</strong>" + "<br>" + 
-                                                   charRefWorkflow.AttributeValues["Feedback_3To5Traits"].Value;
+                                                   charRefWorkflow.AttributeValues["Feedback_3To5Traits"];
 
                 // Moral Integrity
                 lFeedback_MoralIntegrity.Text = "<strong>" + charRefWorkflow.AttributeValues["Feedback_MoralIntegrity"].AttributeName + "</strong>" + "<br>" + 
-                                                charRefWorkflow.AttributeValues["Feedback_MoralIntegrity"].Value;
+                                                charRefWorkflow.AttributeValues["Feedback_MoralIntegrity"];
 
                 lFeedback_MoralIntegrityReason.Text = "<strong>" + charRefWorkflow.AttributeValues["Feedback_MoralIntegrity_Reason"].AttributeName + "</strong>" + "<br>" + 
-                                                      charRefWorkflow.AttributeValues["Feedback_MoralIntegrity_Reason"].Value;
+                                                      charRefWorkflow.AttributeValues["Feedback_MoralIntegrity_Reason"];
 
                 // Around Children
                 lFeedback_AroundChildren.Text = "<strong>" + charRefWorkflow.AttributeValues["Feedback_AroundChildren"].AttributeName + "</strong>" + "<br>" + 
-                                                charRefWorkflow.AttributeValues["Feedback_AroundChildren"].Value;
+                                                charRefWorkflow.AttributeValues["Feedback_AroundChildren"];
 
                 lFeedback_AroundChildrenDesc.Text = "<strong>" + charRefWorkflow.AttributeValues["Feedback_AroundChildren_Desc"].AttributeName + "</strong>" + "<br>" + 
-                                                    charRefWorkflow.AttributeValues["Feedback_AroundChildren_Desc"].Value;
+                                                    charRefWorkflow.AttributeValues["Feedback_AroundChildren_Desc"];
 
                 // Commitment
                 lFeedback_Commitment.Text = "<strong>" + charRefWorkflow.AttributeValues["Feedback_Commitment"].AttributeName + "</strong>" + "<br>" + 
-                                            charRefWorkflow.AttributeValues["Feedback_Commitment"].Value;
+                                            charRefWorkflow.AttributeValues["Feedback_Commitment"];
 
                 lFeedback_CommitmentAdditional.Text = "<strong>" + charRefWorkflow.AttributeValues["Feedback_Commitment_Additional"].AttributeName + "</strong>" + "<br>" + 
-                                                      charRefWorkflow.AttributeValues["Feedback_Commitment_Additional"].Value;
+                                                      charRefWorkflow.AttributeValues["Feedback_Commitment_Additional"];
 
                 // Trustworth with Children
                 lFeedback_TrustworthyWithChildren.Text = "<strong>" + charRefWorkflow.AttributeValues["Feedback_TrustworthyWithChildren"].AttributeName + "</strong>" + "<br>" + 
-                                                         charRefWorkflow.AttributeValues["Feedback_TrustworthyWithChildren"].Value;
+                                                         charRefWorkflow.AttributeValues["Feedback_TrustworthyWithChildren"];
 
                 lFeedback_TrustworthyWithChildrenReason.Text = "<strong>" + charRefWorkflow.AttributeValues["Feedback_TrustworthyWithChildren_Reason"].AttributeName + "</strong>" + "<br>" + 
-                                                               charRefWorkflow.AttributeValues["Feedback_TrustworthyWithChildren_Reason"].Value;
+                                                               charRefWorkflow.AttributeValues["Feedback_TrustworthyWithChildren_Reason"];
 
                 // Overall rating
                 lFeedback_OverallRating.Text = "<strong>" + charRefWorkflow.AttributeValues["Feedback_OverallRating"].AttributeName + "</strong>" + "<br>" + 
-                                                         charRefWorkflow.AttributeValues["Feedback_OverallRating"].Value;
+                                                         charRefWorkflow.AttributeValues["Feedback_OverallRating"];
 
                 // Additional Comments
                 lFeedback_AdditionalComments.Text = "<strong>" + charRefWorkflow.AttributeValues["Feedback_AdditionalComments"].AttributeName + "</strong>" + "<br>" + 
-                                                         charRefWorkflow.AttributeValues["Feedback_AdditionalComments"].Value;
+                                                         charRefWorkflow.AttributeValues["Feedback_AdditionalComments"];
             }
             else
             {

@@ -24,19 +24,19 @@
                             <asp:Literal ID="lType" runat="server"></asp:Literal>
                         </div>
                     </div>
-
+                    <br/>
                     <div class="row">
                         <div class="col-md-6">
                             <asp:Literal ID="lReference" runat="server"></asp:Literal>
                         </div>
                     </div>
-
+                    <br/>
                     <div class="row">
                         <div class="col-md-6">
                             <asp:Literal ID="lReferenceEmail" runat="server"></asp:Literal>
                         </div>
                     </div>
-                    
+                    <br/>
                     <div class="row">
                         <div class="col-md-6">
                             <asp:Literal ID="lReferencePhoneNumber" runat="server"></asp:Literal>
@@ -64,6 +64,26 @@
                 <h4>Responses</h4>
             </div>
             <div class="panel-body">
+
+                <%-- Question --%>
+                <div class="well">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <asp:Literal ID="lFeedback_LengthKnown" runat="server">Title</asp:Literal>
+                        </div>
+                    </div>
+                </div>
+                <%-- End --%>
+
+                <%-- Question --%>
+                <div class="well">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <asp:Literal ID="lFeedback_CapacityKnown" runat="server">Title</asp:Literal>
+                        </div>
+                    </div>
+                </div>
+                <%-- End --%>
 
                 <%-- Question --%>
                 <div class="well">
