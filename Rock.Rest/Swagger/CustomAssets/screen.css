@@ -1,8 +1,20 @@
+
+.endpoint .operations p {
+    margin: 0;
+}
+
+#resources_container {
+    width: auto !important;
+    margin: auto !important;
+    padding: auto !important;
+}
+
+
 /* Original style from softwaremaniacs.org (c) Ivan Sagalaev <Maniac@SoftwareManiacs.Org> */
 .swagger-section pre code {
-  display: block;
-  padding: 0.5em;
-  background: #F0F0F0;
+    display: block;
+    padding: 0.5em;
+    background: #F0F0F0;
 }
 .swagger-section pre code,
 .swagger-section pre .subst,
