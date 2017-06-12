@@ -59,15 +59,20 @@
       <hr>
 
       <h4>Students</h4>
-      <p>Jr High and High School students meet for separate weekend experiences.</p>
-      <p>
-        {% if Context.Campus.ShortCode == "ATH" %}
-          <strong>7th Grade</strong> Saturdays 4:30-5:30 pm<br>
-          <strong>8th Grade</strong> Saturdays 6:00-7:00 pm<br>
-        {% else %}
-          <strong>7th-8th Grade</strong> {{ campus | Attribute: 'JrHighTime' }}<br>
-        {% endif %}
-        <strong>9th-12th Grade</strong> {{ campus | Attribute: 'HighSchoolTime' }}
+      {% if Context.Campus.ShortCode == "MID" %}
+          <p>Jr High and High School students meet for single shared weekend experience.</p>
+          <strong>{{ campus | Attribute: 'JrHighTime' }}</strong>
+      {% else %}
+          <p>Jr High and High School students meet for separate weekend experiences.</p>
+          <p>
+            {% if Context.Campus.ShortCode == "ATH" %}
+              <strong>7th Grade</strong> Saturdays 4:30-5:30 pm<br>
+              <strong>8th Grade</strong> Saturdays 6:00-7:00 pm<br>
+            {% else %}
+              <strong>7th-8th Grade</strong> {{ campus | Attribute: 'JrHighTime' }}<br>
+            {% endif %}
+            <strong>9th-12th Grade</strong> {{ campus | Attribute: 'HighSchoolTime' }}
+      {% endif %}
       </p>
 		  <p><a href="external:http://my.ccv.church/students" class="btn btn-sm btn-default">Learn More</a>
 		  <a href="/parent-kid-resources" class="btn btn-sm btn-default">Parent Resources</a>
