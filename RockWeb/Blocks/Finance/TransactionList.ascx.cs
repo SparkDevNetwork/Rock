@@ -1277,13 +1277,14 @@ namespace RockWeb.Blocks.Finance
                     var campusOfBatch = CampusCache.Read( gfTransactions.GetUserPreference( "Campus" ).AsInteger() );
                     if ( campusOfBatch != null )
                     {
-                        qry = qry.Where( b => b.Batch != null && b.Batch.CampusId == campusOfBatch.Id );
+                        var qryBatchesForCampus = new FinancialBatchService( rockContext ).Queryable().Where( a => a.CampusId.HasValue && a.CampusId == campusOfBatch.Id ).Select( a => a.Id );
+                        qry = qry.Where( t => qryBatchesForCampus.Contains( t.Id ) );
                     }
-
                     var campusOfAccount = CampusCache.Read( gfTransactions.GetUserPreference( "CampusAccount" ).AsInteger() );
                     if ( campusOfAccount != null )
                     {
-                        qry = qry.Where( b => b.TransactionDetails.Any( a => a.Account.CampusId.HasValue && a.Account.CampusId == campusOfAccount.Id ) );
+                        var qryAccountsForCampus = new FinancialAccountService( rockContext ).Queryable().Where( a => a.CampusId.HasValue && a.CampusId == campusOfAccount.Id ).Select( a => a.Id );
+                        qry = qry.Where( t => qryAccountsForCampus.Contains( t.Id ) );
                     }
                 }
 
@@ -1603,7 +1604,7 @@ namespace RockWeb.Blocks.Finance
             public string Status { get; set; }
             public DateTime? SettledDate { get; set; }
             public string SettledGroupId { get; set; }
-
+              
             /// <summary>
             /// NOTE: This will only be used in "Transaction Details" mode
             /// </summary>
