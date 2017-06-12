@@ -443,8 +443,8 @@ namespace RockWeb.Plugins.church_ccv.Hr
 
             hfEditMode.Value = editMode.ToTrueFalse();
 
-            // only show the Submit panel if in edit mode and InProgress
-            if(timeCard.TimeCardStatus == TimeCardStatus.InProgress)
+            // only show the Submit panel if in edit mode and InProgress or if persion has EDIT Auth
+            if(timeCard.TimeCardStatus == TimeCardStatus.InProgress || this.IsUserAuthorized( Rock.Security.Authorization.EDIT ) )
             {
                 pnlPersonActions.Visible = editMode;
             }
