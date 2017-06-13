@@ -501,6 +501,7 @@ namespace Rock.Web.UI.Controls
             set
             {
                 EnsureChildControls();
+                this.RequiredFieldValidator.ValidationGroup = value;
                 _tbStreet1.ValidationGroup = value;
                 _tbStreet2.ValidationGroup = value;
                 _tbCity.ValidationGroup = value;
