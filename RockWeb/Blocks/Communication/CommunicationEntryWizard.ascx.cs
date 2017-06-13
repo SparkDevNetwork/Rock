@@ -32,13 +32,13 @@ using Rock.Attribute;
 namespace RockWeb.Blocks.Communication
 {
     /// <summary>
-    /// Template block for developers to use to start a new block.
+    /// 
     /// </summary>
-    [DisplayName( "Communication Entry" )]
+    [DisplayName( "Communication Entry Wizard" )]
     [Category( "Communication" )]
     [Description( "Used for creating and sending a new communications such as email, SMS, etc. to recipients." )]
  
-    public partial class CommunicationEntry : Rock.Web.UI.RockBlock
+    public partial class CommunicationEntryWizard : Rock.Web.UI.RockBlock
     {
         #region Fields
 

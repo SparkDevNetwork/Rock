@@ -437,6 +437,31 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Gets or sets the thumbnail width.
+        /// </summary>
+        /// <value>
+        /// The width of the thumbnail.
+        /// </value>
+        [
+        Bindable( true ),
+        Category( "Behavior" ),
+        DefaultValue( "" ),
+        Description( "Determines if the image should be stored with the 'Temporary' flag." )
+        ]
+        public bool UploadAsTemporary
+        {
+            get
+            {
+                return ViewState["UploadAsTemporary"] as bool? ?? true;
+            }
+
+            set
+            {
+                ViewState["UploadAsTemporary"] = value;
+            }
+        }
+
+        /// <summary>
         /// Gets or sets the thumbnail height.
         /// </summary>
         /// <value>
@@ -648,7 +673,8 @@ Rock.controls.imageUploader.initialize({{
         {10}
     }},
     postbackRemovedScript: '{12}',
-    maxUploadBytes: {13}
+    maxUploadBytes: {13},
+    isTemporary: '{14}'
 }});",
                 _fileUpload.ClientID, // {0}
                 this.BinaryFileId, // {1}
@@ -663,7 +689,8 @@ Rock.controls.imageUploader.initialize({{
                 this.DoneFunctionClientScript, // {10}
                 this.NoPictureUrl, // {11}
                 postBackRemovedScript, // {12}
-                maxUploadBytes.HasValue ? maxUploadBytes.Value.ToString() : "null" // {13} 
+                maxUploadBytes.HasValue ? maxUploadBytes.Value.ToString() : "null", // {13} 
+                this.UploadAsTemporary ? "T" : "F" // {14}
                 ); 
             ScriptManager.RegisterStartupScript( _fileUpload, _fileUpload.GetType(), "ImageUploaderScript_" + this.ClientID, script, true );
         }
