@@ -139,9 +139,7 @@ namespace RockWeb.Blocks.Groups
                     boundFields["GroupRole"].Visible = true;
                     boundFields["DateAdded"].Visible = true;
                     boundFields["MemberCount"].Visible = false;
-
-                    gGroups.IsDeleteEnabled = false;
-                    gGroups.Columns.OfType<DeleteField>().ToList().ForEach( f => f.Visible = false );
+                    gGroups.IsDeleteEnabled = true;
                 }
             }
             else
@@ -290,30 +288,64 @@ namespace RockWeb.Blocks.Groups
 
             if ( group != null )
             {
-                if ( !group.IsAuthorized( Authorization.EDIT, this.CurrentPerson ) )
-                {
-                    mdGridWarning.Show( "You are not authorized to delete this group", ModalAlertType.Information );
-                    return;
-                }
-
                 string errorMessage;
-                if ( !groupService.CanDelete( group, out errorMessage ) )
-                {
-                    mdGridWarning.Show( errorMessage, ModalAlertType.Information );
-                    return;
-                }
-
                 bool isSecurityRoleGroup = group.IsSecurityRole || group.GroupType.Guid.Equals( Rock.SystemGuid.GroupType.GROUPTYPE_SECURITY_ROLE.AsGuid() );
-                if ( isSecurityRoleGroup )
-                {
-                    Rock.Security.Role.Flush( group.Id );
-                    foreach ( var auth in authService.Queryable().Where( a => a.GroupId == group.Id ).ToList() )
-                    {
-                        authService.Delete( auth );
-                    }
-                }
+                int personEntityTypeId = EntityTypeCache.Read( "Rock.Model.Person" ).Id;
 
-                groupService.Delete( group );
+                if ( ContextTypesRequired.Any( a => a.Id == personEntityTypeId ) )
+                {
+                    var personContext = ContextEntity<Person>();
+                    GroupMemberService groupMemberService = new GroupMemberService( rockContext );
+                    RegistrationRegistrantService registrantService = new RegistrationRegistrantService( rockContext );
+                    GroupMember groupMember = group.Members.SingleOrDefault( a => a.PersonId == personContext.Id );
+
+                    if ( !groupMemberService.CanDelete( groupMember, out errorMessage ) )
+                    {
+                        mdGridWarning.Show( errorMessage, ModalAlertType.Information );
+                        return;
+                    }
+
+                    foreach ( var registrant in registrantService.Queryable().Where( r => r.GroupMemberId == groupMember.Id ) )
+                    {
+                        registrant.GroupMemberId = null;
+                    }
+
+                    if ( group.IsSecurityRole || group.GroupType.Guid.Equals( Rock.SystemGuid.GroupType.GROUPTYPE_SECURITY_ROLE.AsGuid() ) )
+                    {
+                        // person removed from SecurityRole, Flush
+                        Rock.Security.Role.Flush( group.Id );
+                    }
+
+                    groupMemberService.Delete( groupMember );
+
+                }
+                else
+                {
+                    if ( !group.IsAuthorized( Authorization.EDIT, this.CurrentPerson ) )
+                    {
+                        mdGridWarning.Show( "You are not authorized to delete this group", ModalAlertType.Information );
+                        return;
+                    }
+
+                    
+                    if ( !groupService.CanDelete( group, out errorMessage ) )
+                    {
+                        mdGridWarning.Show( errorMessage, ModalAlertType.Information );
+                        return;
+                    }
+
+                   
+                    if ( isSecurityRoleGroup )
+                    {
+                        Rock.Security.Role.Flush( group.Id );
+                        foreach ( var auth in authService.Queryable().Where( a => a.GroupId == group.Id ).ToList() )
+                        {
+                            authService.Delete( auth );
+                        }
+                    }
+
+                    groupService.Delete( group );
+                }
 
                 rockContext.SaveChanges();
 
