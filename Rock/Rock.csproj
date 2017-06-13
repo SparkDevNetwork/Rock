@@ -992,6 +992,7 @@
     <Compile Include="Plugin\HotFixes\024_PrayerRequestAttributes.cs" />
     <Compile Include="Plugin\HotFixes\026_PersonEditConnectionRecordStatus.cs" />
     <Compile Include="Plugin\HotFixes\025_PersonGivingEnvelopeAttribute.cs" />
+    <Compile Include="Plugin\HotFixes\028_CheckinTextSettings.cs" />
     <Compile Include="Plugin\HotFixes\027_AddCheckinFeatures.cs" />
     <Compile Include="Plugin\Migration.cs" />
     <Compile Include="Plugin\VersionAttribute.cs" />
