@@ -157,11 +157,16 @@ namespace RockWeb.Blocks.CheckIn
         /// </summary>
         private void RegisterScript()
         {
-            // Note: the OnExpiry property of the countdown jquery plugin seems to add a new callback
-            // everytime the setting is set which is why the clearCountdown method is used to prevent 
-            // a plethora of partial postbacks occurring when the countdown expires.
             var script = new StringBuilder();
             script.AppendFormat( @"
+
+        Sys.WebForms.PageRequestManager.getInstance().add_pageLoading(function () {{
+            // Note: We need to destroy the old countdown timer so that it does not generate multiplier
+            // expire events. There is a visual anomaly with doing this. Depending on when the response
+            // from the server is received the displayed time could display the same second for more
+            // than one second and/or skip displaying a second entirely.
+            $('.countdown-timer').countdown('destroy');
+        }});
 
         var timeoutSeconds = $('.js-refresh-timer-seconds').val();
         if (timeout) {{
@@ -178,21 +183,13 @@ namespace RockWeb.Blocks.CheckIn
             {0};
         }}
 
-        function clearCountdown() {{
-            if ($ActiveWhen.text() != '')
-            {{
-                $ActiveWhen.text('');
-                refreshKiosk();
-            }}
-        }}
-
         if ($ActiveWhen.text() != '')
         {{
             var timeActive = new Date($ActiveWhen.text());
             $CountdownTimer.countdown({{
-                until: timeActive, 
-                compact:true, 
-                onExpiry: clearCountdown
+                until: timeActive,
+                compact:true,
+                onExpiry: refreshKiosk
             }});
         }}
 ", this.Page.ClientScript.GetPostBackEventReference( lbRefresh, "" ) );
