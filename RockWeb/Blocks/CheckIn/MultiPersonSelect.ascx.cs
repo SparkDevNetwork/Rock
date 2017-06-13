@@ -40,6 +40,13 @@ namespace RockWeb.Blocks.CheckIn
 <span class='auto-select-group'>{{ Group.Name }}</span>
 <span class='auto-select-location'>{{ Location.Name }}</span>
 ", "", 6, "OptionFormat" )]
+
+    [TextField( "Title", "Title to display. Use {0} for family name.", false, "{0}", "Text", 7 )]
+    [TextField( "Caption", "", false, "Select People", "Text", 8 )]
+    [TextField( "Option Title", "Title to display on option screen. Use {0} for person's full name.", false, "{0}", "Text", 9 )]
+    [TextField( "Option Sub Title", "Sub-title to display on option screen. Use {0} for person's nick name.", false, "Please select the options that {0} would like to attend.", "Text", 10 )]
+    [TextField( "No Option Message", "", false, "Sorry, there are currently not any available areas that the selected people can check into.", "Text", 11 )]
+
     public partial class MultiPersonSelect : CheckInBlock
     {
         bool _hidePhotos = false;
@@ -157,7 +164,9 @@ namespace RockWeb.Blocks.CheckIn
                         GoBack();
                     }
 
-                    lFamilyName.Text = family.ToString();
+                    lTitle.Text = string.Format( GetAttributeValue( "Title" ), family.ToString() );
+                    lCaption.Text = GetAttributeValue( "Caption" );
+                    lCaption2.Text = lCaption.Text;
 
                     if ( _autoCheckin )
                     {
@@ -435,12 +444,12 @@ namespace RockWeb.Blocks.CheckIn
 
         protected void ProcessSelection()
         {
-            ProcessSelection( 
-                maWarning, 
+            ProcessSelection(
+                maWarning,
                 () => CurrentCheckInState.CheckIn.CurrentFamily.GetPeople( true )
-                    .SelectMany( p => p.GroupTypes.Where( t => !t.ExcludedByFilter ) ) 
+                    .SelectMany( p => p.GroupTypes.Where( t => !t.ExcludedByFilter ) )
                     .Count() <= 0,
-                "<p>Sorry, there are currently not any available areas that the selected people can check into.</p>" );
+                string.Format( "<p>{0}</p>", GetAttributeValue( "NoOptionMessage" ) ) );
         }
 
         protected string GetCheckboxClass( bool selected )
@@ -512,8 +521,8 @@ namespace RockWeb.Blocks.CheckIn
             if ( person != null )
             {
                 hfPersonId.Value = person.Person.Id.ToString();
-                lOptionTitle.Text = person.Person.FullName;
-                lOptionSubTitle.Text = string.Format( "Please select the options that {0} would like to attend.", person.Person.NickName );
+                lOptionTitle.Text = string.Format( GetAttributeValue( "OptionTitle" ), person.Person.FullName );
+                lOptionSubTitle.Text = string.Format( GetAttributeValue( "OptionSubTitle" ), person.Person.NickName );
 
                 BindOptions();
 
