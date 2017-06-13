@@ -30,6 +30,8 @@ namespace Rock.Migrations
         public override void Up()
         {
             AddColumn("dbo.Schedule", "IsActive", c => c.Boolean(nullable: false));
+            Sql( "UPDATE [Schedule] set [IsActive] = 1 where [IsActive] != 1" );
+
             AddColumn("dbo.GroupMember", "GroupOrder", c => c.Int());
             AddColumn("dbo.Metric", "SourceLava", c => c.String());
 
