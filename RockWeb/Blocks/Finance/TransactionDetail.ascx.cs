@@ -308,6 +308,7 @@ namespace RockWeb.Blocks.Finance
                 if ( savedTxn != null )
                 {
                     savedTxn.LoadAttributes();
+                    savedTxn.FinancialPaymentDetail.LoadAttributes();
                     ShowReadOnlyDetails( savedTxn );
                 }
             }
@@ -535,16 +536,6 @@ namespace RockWeb.Blocks.Finance
 
                 isValid = true;
                 savedTransactionId = txn.Id;
-
-                // Requery the batch to support EF navigation properties
-                var savedTxn = GetTransaction( txn.Id );
-                if ( savedTxn != null )
-                {
-                    savedTxn.LoadAttributes();
-                    savedTxn.FinancialPaymentDetail.LoadAttributes();
-                    ShowReadOnlyDetails( savedTxn );
-                }
-
             }
         }
 
