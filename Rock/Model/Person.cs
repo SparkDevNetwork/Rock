@@ -1155,7 +1155,7 @@ namespace Rock.Model
             get
             {
                 DateTime? bday = this.BirthDate;
-                if ( bday.HasValue )
+                if ( this.BirthYear.HasValue && bday.HasValue )
                 {
                     // Calculate years
                     DateTime today = RockDateTime.Today;
