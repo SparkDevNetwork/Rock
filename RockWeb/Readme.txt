@@ -12,7 +12,7 @@ Rock McKinley 6.7
 + Added the ability for people to check-out.
 + Added option to have transaction matching so that additional optional accounts can be easily added per transaction.
 + Improved check-in so that when searching by name, the name field will have focus when screen is displayed (Fixes #2222).
-
++ Fixed issue with check-in that was preventing people from checking in when used with a culture that formats date as dd/mm/yyyy like en-GB or en-AU (Fixes #2212).
 
 Rock McKinley 6.6
  
