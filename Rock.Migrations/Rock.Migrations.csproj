@@ -237,6 +237,10 @@
     <Compile Include="Migrations\201706060019549_GroupRequirementsGroupType.Designer.cs">
       <DependentUpon>201706060019549_GroupRequirementsGroupType.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201706141234225_CommunicationQueueAlertJob.cs" />
+    <Compile Include="Migrations\201706141234225_CommunicationQueueAlertJob.Designer.cs">
+      <DependentUpon>201706141234225_CommunicationQueueAlertJob.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\RockMigrationSQL.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
@@ -2563,6 +2567,9 @@
     <EmbeddedResource Include="Migrations\201706060019549_GroupRequirementsGroupType.resx">
       <DependentUpon>201706060019549_GroupRequirementsGroupType.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201706141234225_CommunicationQueueAlertJob.resx">
+      <DependentUpon>201706141234225_CommunicationQueueAlertJob.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 6.0\Version 1.6.0\201609282147388_WaitList.resx">
       <DependentUpon>201609282147388_WaitList.cs</DependentUpon>
     </EmbeddedResource>
@@ -4319,6 +4326,9 @@
     </Content>
     <Content Include="Migrations\201706060019549_GroupRequirementsGroupType_ufnCrm_GetSpousePersonIdFromPersonId.sql">
       <DependentUpon>201706060019549_GroupRequirementsGroupType.cs</DependentUpon>
+    </Content>
+    <Content Include="Migrations\201706141234225_CommunicationQueueAlertJob_ufnCrm_GetGradeOffset.sql">
+      <DependentUpon>201706141234225_CommunicationQueueAlertJob.cs</DependentUpon>
     </Content>
     <Content Include="Migrations\Version 6.0\Version 1.6.0\201608171937068_GivingAnalyticsAccounts_AccountTotals.sql" />
     <Content Include="Migrations\Version 6.0\Version 1.6.0\201608171937068_GivingAnalyticsAccounts_FirstLastEverDates.sql" />
