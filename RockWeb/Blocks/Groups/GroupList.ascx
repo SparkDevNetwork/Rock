@@ -42,6 +42,17 @@
 
             </div>
         </div>
+          <Rock:ModalDialog ID="modalDetails" runat="server" Title="Add to Group" ValidationGroup="GroupName">
+            <Content>
+                <div class="row">
+                    <div class="col-md-4">
+                        <Rock:RockDropDownList ID="ddlGroup" runat="server" Label="Group" DataTextField="Name" DataValueField="Id" ValidationGroup="GroupName" />
+                    </div>
+                </div>
 
+            </Content>
+        </Rock:ModalDialog>
+
+        <Rock:NotificationBox ID="nbMessage" runat="server" Title="Error" NotificationBoxType="Danger" Visible="false" />
     </ContentTemplate>
 </asp:UpdatePanel>
