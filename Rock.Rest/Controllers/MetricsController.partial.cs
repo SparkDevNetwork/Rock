@@ -166,6 +166,7 @@ namespace Rock.Rest.Controllers
     /// <summary>
     /// 
     /// </summary>
+    [RockDomain( "Reporting" )]
     public class MetricYTDData : Metric
     {
         /// <summary>

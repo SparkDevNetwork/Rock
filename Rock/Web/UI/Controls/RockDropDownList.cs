@@ -328,6 +328,13 @@ namespace Rock.Web.UI.Controls
     }});
 ", this.ClientID );
                 }
+                
+                script.AppendFormat( @"
+    $( '#{0}').on('chosen:showing_dropdown chosen:hiding_dropdown', function( evt, params ) {{
+        // update the outer modal  
+        Rock.dialogs.updateModalScrollBar('{0}');
+    }});
+", this.ClientID );
 
                 ScriptManager.RegisterStartupScript( this, this.GetType(), "ChosenScript_" + this.ClientID, script.ToString(), true );
             }

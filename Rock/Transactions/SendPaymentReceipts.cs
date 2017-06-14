@@ -21,6 +21,7 @@ using System.Linq;
 using Rock.Communication;
 using Rock.Data;
 using Rock.Model;
+using Rock.Web.Cache;
 
 namespace Rock.Transactions
 {
@@ -103,6 +104,30 @@ namespace Rock.Transactions
                         mergeFields.Add( "TransactionCode", transaction.TransactionCode );
                         mergeFields.Add( "Transaction", transaction );
                         mergeFields.Add( "Amounts", accountAmounts );
+
+                        var transactionDetailEntityList = transaction.TransactionDetails.Where( a => a.EntityTypeId.HasValue && a.EntityId.HasValue ).ToList();
+                        var transactionEntityList = new List<IEntity>();
+                        foreach ( var transactionDetailEntity in transactionDetailEntityList)
+                        {
+                            var transactionEntityType = EntityTypeCache.Read( transactionDetailEntity.EntityTypeId.Value );
+                            if ( transactionEntityType != null )
+                            {
+                                var dbContext = Reflection.GetDbContextForEntityType( transactionEntityType.GetEntityType() );
+                                IService serviceInstance = Reflection.GetServiceForEntityType( transactionEntityType.GetEntityType(), dbContext );
+                                if ( serviceInstance != null )
+                                {
+                                    System.Reflection.MethodInfo getMethod = serviceInstance.GetType().GetMethod( "Get", new Type[] { typeof( int ) } );
+                                    var transactionEntity = getMethod.Invoke( serviceInstance, new object[] { transactionDetailEntity.EntityId.Value } ) as Rock.Data.IEntity;
+                                    transactionEntityList.Add( transactionEntity );
+                                }
+                            }
+                        }
+
+                        if ( transactionEntityList.Any())
+                        {
+                            mergeFields.Add( "TransactionEntityList", transactionEntityList );
+                            mergeFields.Add( "TransactionEntity", transactionEntityList.First() );
+                        }
 
                         var appRoot = Rock.Web.Cache.GlobalAttributesCache.Read( rockContext ).GetValue( "PublicApplicationRoot" );
 

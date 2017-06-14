@@ -32,6 +32,7 @@ namespace Rock.Model
     /// are availble for one or more <see cref="Page">Pages</see> to use.  The logical layout is used to configure
     /// which blocks are present in each zone
     /// </summary>
+    [RockDomain( "CMS" )]
     [Table( "Layout" )]
     [DataContract]
     public partial class Layout : Model<Layout>

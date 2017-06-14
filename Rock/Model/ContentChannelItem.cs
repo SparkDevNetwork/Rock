@@ -32,6 +32,7 @@ namespace Rock.Model
     /// <summary>
     /// 
     /// </summary>
+    [RockDomain( "CMS" )]
     [Table( "ContentChannelItem")]
     [DataContract]
     public partial class ContentChannelItem : Model<ContentChannelItem>, IOrdered, IRockIndexable

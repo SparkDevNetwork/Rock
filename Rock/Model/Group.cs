@@ -39,6 +39,7 @@ namespace Rock.Model
     /// <remarks>
     /// In Rock any collection or defined subset of people are considered a group.
     /// </remarks>
+    [RockDomain( "Group" )]
     [Table( "Group" )]
     [DataContract]
     public partial class Group : Model<Group>, IOrdered, IHasActiveFlag, IRockIndexable
@@ -139,11 +140,11 @@ namespace Rock.Model
         [Required]
         [DataMember( IsRequired = true )]
         [Previewable]
-        public bool IsActive		
-        {		
-            get { return _isActive; }		
-            set { _isActive = value; }		
-        }		
+        public bool IsActive
+        {
+            get { return _isActive; }
+            set { _isActive = value; }
+        }
         private bool _isActive = true;
 
         /// <summary>
@@ -212,7 +213,8 @@ namespace Rock.Model
         /// <value>
         /// The must meet requirements to add member.
         /// </value>
-        [DataMember]
+        [Obsolete( "This no longer is functional. Please use GroupRequirement.MustMeetRequirementToAddMember instead." )]
+        [NotMapped]
         public bool? MustMeetRequirementsToAddMember { get; set; }
 
         /// <summary>
@@ -367,7 +369,7 @@ namespace Rock.Model
         private ICollection<GroupLocation> _groupLocations;
 
         /// <summary>
-        /// Gets or sets the group requirements.
+        /// Gets or sets the group requirements (not including GroupRequirements from the GroupType)
         /// </summary>
         /// <value>
         /// The group requirements.
@@ -407,7 +409,7 @@ namespace Rock.Model
             set { _linkages = value; }
         }
         private ICollection<EventItemOccurrenceGroupMap> _linkages;
-        
+
         /// <summary>
         /// Gets the securable object that security permissions should be inherited from.  If block is located on a page
         /// security will be inherited from the page, otherwise it will be inherited from the site.
@@ -559,17 +561,43 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Returns a list of the Group Requirements for this Group along with the status ordered by GroupRequirement Name
+        /// Gets the group requirements.
+        /// </summary>
+        /// <param name="rockContext">The rock context.</param>
+        /// <returns></returns>
+        public IQueryable<GroupRequirement> GetGroupRequirements(RockContext rockContext )
+        {
+            return new GroupRequirementService( rockContext ).Queryable().Include( a=> a.GroupRequirementType ). Where( a => ( a.GroupId.HasValue && a.GroupId == this.Id ) || ( a.GroupTypeId.HasValue && a.GroupTypeId == this.GroupTypeId ));
+        }
+
+        /// <summary>
+        /// Persons the meets group requirements.
         /// </summary>
         /// <param name="personId">The person identifier.</param>
         /// <param name="groupRoleId">The group role identifier.</param>
         /// <returns></returns>
+        [Obsolete( "Use PersonMeetsGroupRequirements(rockContext, personId, groupRoleId) instead " )]
         public IEnumerable<PersonGroupRequirementStatus> PersonMeetsGroupRequirements( int personId, int? groupRoleId )
         {
-            var result = new List<PersonGroupRequirementStatus>();
-            foreach ( var groupRequirement in this.GroupRequirements.OrderBy( a => a.GroupRequirementType.Name ) )
+            using ( var rockContext = new RockContext() )
             {
-                var requirementStatus = groupRequirement.PersonMeetsGroupRequirement( personId, groupRoleId );
+                return this.PersonMeetsGroupRequirements( rockContext, personId, groupRoleId );
+            }
+        }
+
+        /// <summary>
+        /// Persons the meets group requirements.
+        /// </summary>
+        /// <param name="rockContext">The rock context.</param>
+        /// <param name="personId">The person identifier.</param>
+        /// <param name="groupRoleId">The group role identifier.</param>
+        /// <returns></returns>
+        public IEnumerable<PersonGroupRequirementStatus> PersonMeetsGroupRequirements( RockContext rockContext, int personId, int? groupRoleId )
+        {
+            var result = new List<PersonGroupRequirementStatus>();
+            foreach ( var groupRequirement in this.GetGroupRequirements(rockContext).OrderBy( a => a.GroupRequirementType.Name ) )
+            {
+                var requirementStatus = groupRequirement.PersonMeetsGroupRequirement( personId, this.Id, groupRoleId );
                 result.Add( requirementStatus );
             }
 
@@ -587,7 +615,7 @@ namespace Rock.Model
             {
                 // manually delete any grouprequirements of this group since it can't be cascade deleted
                 var groupRequirementService = new GroupRequirementService( dbContext as RockContext );
-                var groupRequirements = groupRequirementService.Queryable().Where( a => a.GroupId == this.Id ).ToList();
+                var groupRequirements = groupRequirementService.Queryable().Where( a => a.GroupId.HasValue && a.GroupId == this.Id ).ToList();
                 if ( groupRequirements.Any() )
                 {
                     groupRequirementService.DeleteRange( groupRequirements );
@@ -596,7 +624,7 @@ namespace Rock.Model
                 // manually set any attendance search group ids to null
                 var attendanceService = new AttendanceService( dbContext as RockContext );
                 foreach ( var attendance in attendanceService.Queryable()
-                    .Where( a => 
+                    .Where( a =>
                         a.SearchResultGroupId.HasValue &&
                         a.SearchResultGroupId.Value == this.Id ) )
                 {
@@ -624,12 +652,12 @@ namespace Rock.Model
                         // validate that a campus is not required
                         var groupType = this.GroupType ?? new GroupTypeService( rockContext ).Queryable().Where( g => g.Id == this.GroupTypeId ).FirstOrDefault();
 
-                        if (groupType != null )
+                        if ( groupType != null )
                         {
-                            if (groupType.GroupsRequireCampus && this.CampusId == null )
+                            if ( groupType.GroupsRequireCampus && this.CampusId == null )
                             {
                                 errorMessage = string.Format( "{0} require a campus.", groupType.Name.Pluralize() );
-                                ValidationResults.Add( new ValidationResult( errorMessage ));
+                                ValidationResults.Add( new ValidationResult( errorMessage ) );
                                 result = false;
                             }
                         }
@@ -666,8 +694,8 @@ namespace Rock.Model
             // return people
             var groups = new GroupService( rockContext ).Queryable().AsNoTracking()
                                 .Where( g =>
-                                     g.IsActive == true 
-                                     && g.GroupType.IsIndexEnabled == true);
+                                     g.IsActive == true
+                                     && g.GroupType.IsIndexEnabled == true );
 
             int recordCounter = 0;
 
@@ -678,7 +706,7 @@ namespace Rock.Model
 
                 recordCounter++;
 
-                if (recordCounter > 100 )
+                if ( recordCounter > 100 )
                 {
                     IndexContainer.IndexDocuments( indexableItems );
                     indexableItems = new List<IndexModelBase>();

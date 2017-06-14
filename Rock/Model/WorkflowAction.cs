@@ -30,6 +30,7 @@ namespace Rock.Model
     /// <summary>
     /// Represents a persisted WorkflowAction in Rock.
     /// </summary>
+    [RockDomain( "Workflow" )]
     [Table( "WorkflowAction" )]
     [DataContract]
     public partial class WorkflowAction : Model<WorkflowAction>
@@ -297,21 +298,24 @@ namespace Rock.Model
             if ( attribute != null && Activity != null )
             {
                 string value = string.Empty;
+                int? entityId = null;
 
                 if ( attribute.EntityTypeId == new Rock.Model.Workflow().TypeId && Activity.Workflow != null )
                 {
                     value = Activity.Workflow.GetAttributeValue( attribute.Key );
+                    entityId = Activity.Workflow.Id;
                 }
                 else if ( attribute.EntityTypeId == new Rock.Model.WorkflowActivity().TypeId )
                 {
                     value = Activity.GetAttributeValue( attribute.Key );
+                    entityId = Activity.Id;
                 }
 
                 if (!string.IsNullOrWhiteSpace(value))
                 {
                     if (formatted)
                     {
-                        value = attribute.FieldType.Field.FormatValue( null, value, attribute.QualifierValues, condensed );
+                        value = attribute.FieldType.Field.FormatValue( null, attribute.EntityTypeId, entityId, value, attribute.QualifierValues, condensed );
                     }
                 }
 
@@ -417,19 +421,22 @@ namespace Rock.Model
                         if ( attribute != null && Activity != null )
                         {
                             string value = string.Empty;
+                            int? entityId = null;
 
                             if ( attribute.EntityTypeId == new Rock.Model.Workflow().TypeId && Activity.Workflow != null )
                             {
                                 value = Activity.Workflow.GetAttributeValue( attribute.Key );
+                                entityId = Activity.Workflow.Id;
                             }
                             else if ( attribute.EntityTypeId == new Rock.Model.WorkflowActivity().TypeId )
                             {
                                 value = Activity.GetAttributeValue( attribute.Key );
+                                entityId = Activity.Id;
                             }
 
                             var field = attribute.FieldType.Field;
 
-                            string formattedValue = field.FormatValue( null, value, attribute.QualifierValues, false );
+                            string formattedValue = field.FormatValue( null, attribute.EntityTypeId, entityId, value, attribute.QualifierValues, false );
 
                             var liquidFormAttribute = new LiquidFormAttribute();
                             liquidFormAttribute.Name = attribute.Name;

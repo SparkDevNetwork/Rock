@@ -29,6 +29,7 @@ namespace Rock.Model
     /// <summary>
     /// Phone Number POCO Entity.
     /// </summary>
+    [RockDomain( "CRM" )]
     [Table( "PhoneNumber" )]
     [DataContract]
     public partial class PhoneNumber : Model<PhoneNumber>

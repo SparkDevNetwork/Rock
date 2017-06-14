@@ -11,12 +11,10 @@
 <asp:UpdatePanel ID="upContent" runat="server">
 <ContentTemplate>
 
-
     <Rock:ModalAlert ID="maWarning" runat="server" />
 
-
     <div class="checkin-header">
-        <h1><asp:Literal ID="lFamilyName" runat="server"></asp:Literal></h1>
+        <h1><asp:Literal ID="lTitle" runat="server"></asp:Literal></h1>
     </div>
                 
     <div class="checkin-body">
@@ -25,7 +23,7 @@
             <div class="scroller">
 
                 <div class="control-group checkin-body-container">
-                    <label class="control-label">Select Person</label>
+                    <label class="control-label"><asp:Literal ID="lCaption" runat="server"></asp:Literal></label>
                     <div class="controls">
                         <asp:Repeater ID="rSelection" runat="server" OnItemCommand="rSelection_ItemCommand" OnItemDataBound="rSelection_ItemDataBound">
                             <ItemTemplate>

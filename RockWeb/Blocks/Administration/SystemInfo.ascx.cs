@@ -56,7 +56,7 @@ namespace RockWeb.Blocks.Administration
             base.OnInit( e );
 
             // Get Version, database info and executing assembly location
-            lRockVersion.Text = VersionInfo.GetRockProductVersionFullName();
+            lRockVersion.Text = string.Format("{0} <small>({1})</small>", VersionInfo.GetRockProductVersionFullName(), VersionInfo.GetRockProductVersionNumber() );
             lClientCulture.Text = System.Globalization.CultureInfo.CurrentCulture.ToString();
             lDatabase.Text = GetDbInfo();
             lSystemDateTime.Text = DateTime.Now.ToString( "G" ) + " " + DateTime.Now.ToString( "zzz" );

@@ -2811,5 +2811,93 @@ namespace Rock.Migrations.Migrations {
                 return ResourceManager.GetString("_201701040116351_Analytics1_spAnalytics_ETL_FinancialTransaction", resourceCulture);
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to /*
+        ///&lt;doc&gt;
+        ///    &lt;summary&gt;
+        ///         This function returns the address of the person provided.
+        ///    &lt;/summary&gt;
+        ///
+        ///    &lt;returns&gt;
+        ///        Address of the person.
+        ///    &lt;/returns&gt;
+        ///    &lt;remarks&gt;
+        ///        This function allows you to request an address for a specific person. It will return
+        ///        the first address of that type (multiple address are possible if the individual is in
+        ///        multiple families). 
+        ///        
+        ///        You can provide the address type by specifing &apos;Home&apos;, &apos;Previous&apos;, 
+        ///        &apos;Work&apos;. F [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _201706060019549_GroupRequirementsGroupType_ufnCrm_GetAddress {
+            get {
+                return ResourceManager.GetString("_201706060019549_GroupRequirementsGroupType_ufnCrm_GetAddress", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to /*
+        ///    &lt;doc&gt;
+        ///	    &lt;summary&gt;
+        /// 		    This function returns the most likely spouse for the person [Id] provided
+        ///	    &lt;/summary&gt;
+        ///
+        ///	    &lt;returns&gt;
+        ///		    Person [Id] of the most likely spouse; otherwise returns NULL
+        ///	    &lt;/returns&gt;
+        ///	    &lt;remarks&gt;
+        ///		
+        ///
+        ///	    &lt;/remarks&gt;
+        ///	    &lt;code&gt;
+        ///		    SELECT [dbo].[ufnCrm_GetSpousePersonIdFromPersonId](3) -- Ted Decker (married) 
+        ///		    SELECT [dbo].[ufnCrm_GetSpousePersonIdFromPersonId](7) -- Ben Jones (single)
+        ///	    &lt;/code&gt;
+        ///    &lt;/doc&gt;
+        ///    */
+        ///
+        ///    ALTER FUNCTION  [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _201706060019549_GroupRequirementsGroupType_ufnCrm_GetSpousePersonIdFromPersonId {
+            get {
+                return ResourceManager.GetString("_201706060019549_GroupRequirementsGroupType_ufnCrm_GetSpousePersonIdFromPersonId", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to IF object_id(&apos;[dbo].[ufnCrm_GetGradeOffset]&apos;) IS NOT NULL
+        ///BEGIN
+        ///  DROP FUNCTION [dbo].[ufnCrm_GetGradeOffset]
+        ///END
+        ///GO
+        ///
+        ///SET ANSI_NULLS ON
+        ///GO
+        ///
+        ///SET QUOTED_IDENTIFIER ON
+        ///GO
+        ///
+        ////*
+        ///&lt;doc&gt;
+        ///	&lt;summary&gt;
+        /// 		This function returns the grade offset given a graduation date. The offset can then be used with defined value to find grade
+        ///	&lt;/summary&gt;
+        ///
+        ///	&lt;returns&gt;
+        ///		The grade offset based on graduation date
+        ///	&lt;/returns&gt;
+        ///	&lt;remarks&gt;
+        ///		
+        ///	&lt;/remarks&gt;
+        ///	&lt;code&gt;
+        ///		SELECT [dbo].[ufnCrm_GetGradeOffset]( 2018, null )
+        ///	&lt; [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _201706141234225_CommunicationQueueAlertJob_ufnCrm_GetGradeOffset {
+            get {
+                return ResourceManager.GetString("_201706141234225_CommunicationQueueAlertJob_ufnCrm_GetGradeOffset", resourceCulture);
+            }
+        }
     }
 }

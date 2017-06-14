@@ -29,6 +29,7 @@ namespace Rock.Model
     /// <summary>
     /// Html Content POCO Entity.
     /// </summary>
+    [RockDomain( "CMS" )]
     [Table( "HtmlContent" )]
     [DataContract]
     public partial class HtmlContent : Model<HtmlContent>

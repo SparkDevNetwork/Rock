@@ -25,6 +25,7 @@ namespace Rock.Model
     /// AnalyticsFactFinancialTransaction is SQL View based on AnalyticsSourceFinancialTransaction
     /// and represents the fact record for an Analytic Fact Financial Transaction in Rock.
     /// </summary>
+    [RockDomain( "Reporting" )]
     [Table( "AnalyticsFactFinancialTransaction" )]
     [DataContract]
     public class AnalyticsFactFinancialTransaction : AnalyticsBaseFinancialTransaction<AnalyticsFactFinancialTransaction>

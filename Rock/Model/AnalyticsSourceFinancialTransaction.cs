@@ -28,6 +28,7 @@ namespace Rock.Model
     /// Note that this represents a combination of the FinancialTransaction and the FinancialTransactionDetail, 
     /// so if a person contributed to multiple accounts in a transaction, there will be multiple AnalyticSourceFinancialRecords.
     /// </summary>
+    [RockDomain( "Reporting" )]
     [Table( "AnalyticsSourceFinancialTransaction" )]
     [DataContract]
     [HideFromReporting]
@@ -41,7 +42,8 @@ namespace Rock.Model
     /// </summary>
     /// <typeparam name="T"></typeparam>
     /// <seealso cref="Rock.Data.Entity{T}" />
-    public abstract class AnalyticsBaseFinancialTransaction<T> : Entity<T> 
+    [RockDomain( "Reporting" )]
+    public abstract class AnalyticsBaseFinancialTransaction<T> : Entity<T>
         where T : AnalyticsBaseFinancialTransaction<T>, new()
     {
         #region Entity Properties specific to Analytics

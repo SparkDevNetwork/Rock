@@ -21,7 +21,7 @@
             // set focus to the input unless on a touch device
             var isTouchDevice = 'ontouchstart' in document.documentElement;
             if (!isTouchDevice) {
-                $('.checkin-phone-entry').focus();
+                $('.search-input').focus();
             }
         });
         
@@ -41,7 +41,7 @@
                 <div class="checkin-search-body">
 
                 <asp:Panel ID="pnlSearchPhone" runat="server">
-                    <Rock:RockTextBox ID="tbPhone" MaxLength="10" CssClass="checkin-phone-entry" runat="server" Label="Phone Number" />
+                    <Rock:RockTextBox ID="tbPhone" MaxLength="10" CssClass="search-input checkin-phone-entry" runat="server" Label="Phone Number" />
 
                     <div class="tenkey checkin-phone-keypad">
                         <div>
@@ -68,7 +68,7 @@
                 </asp:Panel>
 
                 <asp:Panel ID="pnlSearchName" runat="server">
-                    <Rock:RockTextBox ID="txtName" runat="server" Label="Name" CssClass="namesearch" />
+                    <Rock:RockTextBox ID="txtName" runat="server" Label="Name" CssClass="search-input namesearch" />
                 </asp:Panel>
 
                 <div class="checkin-actions">

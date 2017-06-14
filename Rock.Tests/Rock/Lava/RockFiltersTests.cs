@@ -642,6 +642,60 @@ namespace Rock.Tests.Rock.Lava
 
         #endregion
 
+        #region Index
+
+        /// <summary>
+        /// For use in Lava -- should extract a single element from the array.
+        /// </summary>
+        [Fact]
+        public void Index_ArrayAndInt()
+        {
+            var output = RockFilters.Index( new string[] { "value1", "value2", "value3" }, 1 );
+            Assert.Equal( "value2", output );
+        }
+
+        /// <summary>
+        /// For use in Lava -- should extract a single element from the array.
+        /// </summary>
+        [Fact]
+        public void Index_ArrayAndString()
+        {
+            var output = RockFilters.Index( new string[] { "value1", "value2", "value3" }, "1" );
+            Assert.Equal( "value2", output );
+        }
+
+        /// <summary>
+        /// For use in Lava -- should fail to extract a single element from the array.
+        /// </summary>
+        [Fact]
+        public void Index_ArrayAndInvalidString()
+        {
+            var output = RockFilters.Index( new string[] { "value1", "value2", "value3" }, "a" );
+            Assert.Equal( null, output );
+        }
+
+        /// <summary>
+        /// For use in Lava -- should fail to extract a single element from the array.
+        /// </summary>
+        [Fact]
+        public void Index_ArrayAndNegativeInt()
+        {
+            var output = RockFilters.Index( new string[] { "value1", "value2", "value3" }, -1 );
+            Assert.Equal( null, output );
+        }
+
+        /// <summary>
+        /// For use in Lava -- should fail to extract a single element from the array.
+        /// </summary>
+        [Fact]
+        public void Index_ArrayAndHugeInt()
+        {
+            var output = RockFilters.Index( new string[] { "value1", "value2", "value3" }, int.MaxValue );
+            Assert.Equal( null, output );
+        }
+
+        #endregion
+
         /// <summary>
         /// For use in Lava -- should return next occurrence for Rock's standard Saturday 4:30PM service datetime.
         /// </summary>

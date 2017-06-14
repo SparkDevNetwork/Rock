@@ -50,6 +50,9 @@ namespace Rock.Client
         public Rock.Client.Enums.GroupMemberStatus GroupMemberStatus { get; set; }
 
         /// <summary />
+        public int? GroupOrder { get; set; }
+
+        /// <summary />
         public int GroupRoleId { get; set; }
 
         /// <summary />
@@ -110,6 +113,7 @@ namespace Rock.Client
             this.ForeignKey = source.ForeignKey;
             this.GroupId = source.GroupId;
             this.GroupMemberStatus = source.GroupMemberStatus;
+            this.GroupOrder = source.GroupOrder;
             this.GroupRoleId = source.GroupRoleId;
             this.GuestCount = source.GuestCount;
             this.IsNotified = source.IsNotified;
