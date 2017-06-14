@@ -140,6 +140,7 @@ namespace RockWeb.Blocks.Groups
                     boundFields["DateAdded"].Visible = true;
                     boundFields["MemberCount"].Visible = false;
                     gGroups.IsDeleteEnabled = true;
+                    gGroups.HideDeleteButtonForIsSystem = false;
                 }
             }
             else
@@ -327,14 +328,14 @@ namespace RockWeb.Blocks.Groups
                         return;
                     }
 
-                    
+
                     if ( !groupService.CanDelete( group, out errorMessage ) )
                     {
                         mdGridWarning.Show( errorMessage, ModalAlertType.Information );
                         return;
                     }
 
-                   
+
                     if ( isSecurityRoleGroup )
                     {
                         Rock.Security.Role.Flush( group.Id );
@@ -742,7 +743,7 @@ namespace RockWeb.Blocks.Groups
                 {
                     Id = g.Id,
                     Name = g.Name
-                } ).ToList();
+                } ).OrderBy( a => a.Name ).ToList();
             ddlGroup.DataBind();
         }
 
