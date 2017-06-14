@@ -177,7 +177,7 @@
                 }
 
                 $unallocatedAmountEl.find(':input').val((unallocatedAmountCents / 100).toFixed(2));
-                if (unallocatedAmountCents == 0)
+                if (Math.round(unallocatedAmountCents) == 0)
                 {
                     $unallocatedAmountEl.hide();
                 }
