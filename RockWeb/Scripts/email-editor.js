@@ -6,33 +6,40 @@ var initJquery = function ()
   // parent window to handle the properties editing
   $(document).on('click', '.component', function (e)
   {
-    e.preventDefault(); // prevent things like links from taking you off the page
-    var componentType = "";
-
-    var classNames = $(this).attr("class").toString().split(' ');
-    $.each(classNames, function (i, className)
-    {
-      if (className.startsWith('component-')) {
-        componentParts = className.split('-');
-        componentType = componentParts[1];
-      }
-    });
-
-    console.log(componentType);
-
-    // add an id to the element if one does not already exist
-    if (!$(this).attr("id")) {
-      $(this).attr("id", newGuid());
+    if ($(this).data('state') == 'component') {
+      handleComponentClick(this, e);
     }
-
-    // clear the class noting that a component is selected
-    $('.component.selected').removeClass('selected');
-
-    // add selected class to this component
-    $(this).addClass('selected');
-
-    parent.loadPropertiesPage(componentType, $(this).attr("id"));
   });
+};
+
+var handleComponentClick = function (el, e)
+{
+  e.preventDefault(); // prevent things like links from taking you off the page
+  var componentType = "";
+
+  var classNames = $(el).attr("class").toString().split(' ');
+  $.each(classNames, function (i, className)
+  {
+    if (className.indexOf('component-') == 0) {
+      componentParts = className.split('-');
+      componentType = componentParts[1];
+    }
+  });
+
+  console.log(componentType);
+
+  // add an id to the element if one does not already exist
+  if (!$(el).attr("id")) {
+    $(el).attr("id", newGuid());
+  }
+
+  // clear the class noting that a component is selected
+  $('.component.selected').removeClass('selected');
+
+  // add selected class to this component
+  $(el).addClass('selected');
+
+  parent.loadPropertiesPage(componentType, $(el).attr("id"));
 };
 
 var initEditor = function ()
@@ -56,23 +63,21 @@ var initEditor = function ()
   })
   .on('drag', function (el)
   {
-    var currentBodyClass = document.body.className;
-    if (!currentBodyClass.includes('state-drag')) {
-      document.body.className += ' state-drag';
+    if ($(el).data('state') == 'component') {
+      handleComponentClick(el, event);
     }
+    $('body').addClass('state-drag');
   })
   .on('dragend', function (el)
   {
-    document.body.className = document.body.className.replace("state-drag", "");
+    $('body').removeClass('state-drag');
   })
   .on('drop', function (el)
   {
-    var state = el.getAttribute('data-state');
-
-    if (state == "template") {
+    if ($(el).data('state') == 'template') {
       // replace the template contents
-      el.innerHTML = el.getAttribute('data-content');
-      el.setAttribute('data-state', 'component');
+      el.innerHTML = $(el).data('content');
+      $(el).attr('data-state', 'component');
       el.removeAttribute("data-content");
     }
   });
@@ -81,19 +86,20 @@ var initEditor = function ()
   $(window).mousemove(function (e)
   {
     if (drake.dragging) {
-      var clientY = e.clientY;
-      var iframeHeight = $(this).height();
-      var contentHeight = $(document).height();
-      var mousePositionProportion = clientY / iframeHeight;
-      var scrollLevel = $(window).scrollTop();
+      var $iframeEl = $(window.frameElement);
+      var $parentWindow =$(this.parent.window);
+      var clientY = e.clientY + $iframeEl.offset().top;
+      var parentWindowHeight = $parentWindow.height();
+      var scrollLevel = $parentWindow.scrollTop();
+      var mousePositionProportion = (clientY - scrollLevel) / parentWindowHeight;
 
-      if (mousePositionProportion > .90 && (scrollLevel + iframeHeight) != contentHeight) {
+      if (mousePositionProportion > .90 ) {
         scrollLevel += 20;
-        $(window).scrollTop(scrollLevel);
+        $parentWindow.scrollTop(scrollLevel);
       }
       else if (mousePositionProportion < .10 && scrollLevel != 0) {
         scrollLevel -= 20;
-        $(window).scrollTop(scrollLevel);
+        $parentWindow.scrollTop(scrollLevel);
       }
     }
   });

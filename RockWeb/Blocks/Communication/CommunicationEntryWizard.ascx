@@ -58,7 +58,7 @@
                 <asp:Panel ID="pnlEmailEditor" runat="server" CssClass="emaileditor-wrapper">
                     <section id="emaileditor">
 			            <div id="emaileditor-designer">
-				            <iframe id="ifEmailDesigner" name="emaileditor-iframe" class="emaileditor-iframe js-emaileditor-iframe" runat="server" src="./email.html" frameborder="0" border="0" cellspacing="0"></iframe>
+				            <iframe id="ifEmailDesigner" name="emaileditor-iframe" class="emaileditor-iframe js-emaileditor-iframe" runat="server" src="javascript: window.frameElement.getAttribute('srcdoc');" frameborder="0" border="0" cellspacing="0"></iframe>
 			            </div>
 			            <div id="emaileditor-properties">
 				
@@ -70,7 +70,7 @@
 						            <a href="#" class="btn btn-primary" onclick="completeTextComponent(event);">Complete</a>
 					            </div>
 
-					            <div class="emaileditor-propertypanel propertypanel-button" data-component="button" style="display: none;">
+					            <div class="propertypanel propertypanel-button" data-component="button" style="display: none;">
 						            <h4 class="propertypanel-title">Button</h4>
 						            <hr />
 						            <div class="form-group">
@@ -184,7 +184,7 @@
 
                                 <div class="propertypanel propertypanel-image" data-component="image" style="display: none;">
 						            <h4 class="propertypanel-title">Image</h4>
-						            <Rock:ImageUploader ID="imgupImage" ClientIDMode="Static" runat="server" Label="Image" UploadAsTemporary="false" BinaryFileTypeGuid="C085916C-7126-4767-B13D-1643B70C48B6" DoneFunctionClientScript="completeImageComponent(e, data)" />
+						            <Rock:ImageUploader ID="imgupImage" ClientIDMode="Static" runat="server" Label="Image" UploadAsTemporary="false" DoneFunctionClientScript="completeImageComponent(e, data)" />
 
                                     <div class="row">
 							            <div class="col-md-6">
@@ -244,7 +244,8 @@
 
 
         <script>
-			var currentComponentId = "";
+            var currentComponentId = null;
+            
 			
 			// load in editor styles and scripts
 			var cssLink = document.createElement("link") 
