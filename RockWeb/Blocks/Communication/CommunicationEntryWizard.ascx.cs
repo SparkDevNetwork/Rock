@@ -70,6 +70,9 @@ namespace RockWeb.Blocks.Communication
 
             BaseUrl = Request.Url.Scheme + "://" + Request.Url.Authority + Request.ApplicationPath.TrimEnd( '/' ) + "/";
 
+
+            imgupImage.BinaryFileTypeGuid = Rock.SystemGuid.BinaryFiletype.DEFAULT.AsGuid();
+
             RockPage.AddScriptLink( ResolveUrl( "~/Scripts/summernote/summernote.min.js" ), true );
             RockPage.AddScriptLink( "~/Scripts/Bundles/RockHtmlEditorPlugins", false );
         }
