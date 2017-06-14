@@ -305,7 +305,7 @@ namespace Rock.Web.UI.Controls
         private void RegisterClientScript()
         {
             string script = @"
-(function () {
+;(function () {
     function updateKeyValues( e ) {
         var $span = e.closest('span.key-value-list');
         var newValue = '';
@@ -334,6 +334,9 @@ namespace Rock.Web.UI.Controls
         Rock.controls.modal.updateSize($(this));
     });
 
+    $(document).on('keyup', '.js-key-value-input', function (e) {
+        updateKeyValues($(this));            
+    });
     $(document).on('focusout', '.js-key-value-input', function (e) {
         updateKeyValues($(this));            
     });

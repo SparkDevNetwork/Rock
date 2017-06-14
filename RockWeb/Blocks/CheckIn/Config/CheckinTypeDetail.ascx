@@ -63,6 +63,8 @@
                                                 Help="Should the numbers be randomized (vs. generated in order)." />
                                         </Rock:RockControlWrapper>
                                     </div>
+                                    <Rock:RockCheckBox ID="cbAllowCheckout" runat="server" Label="Allow Checkout" Text="Yes" 
+                                        Help="Should there option for user to be able to check-out?" />
                                     <Rock:RockCheckBox ID="cbEnableManager" runat="server" Label="Enable Manager Option" Text="Yes" 
                                         Help="Should an option be displayed on the check-in welcome screen that allows user to view the management screen (after entering a passcode)?" />
                                     <Rock:RockCheckBox ID="cbEnableOverride" runat="server" Label="Enable Override" Text="Yes" 
@@ -72,6 +74,11 @@
                                     <Rock:NumberBox ID="nbAutoSelectDaysBack" runat="server" Label="Auto Select Days Back" MinimumValue="0" NumberType="Integer" 
                                         Help="The number of days back to look for a previous check-in for each person in the family (or related person). If they have previously checked 
                                         within this number of days, they will automatically be selected during the Family check-in process." />
+                                    <Rock:RockDropDownList ID="ddlAutoSelectOptions" runat="server" Label="Auto Select Options" 
+                                        Help="The options that should be pre-selected if user has previously checked in.">
+                                        <asp:ListItem Text="People Only" Value="0" />
+                                        <asp:ListItem Text="People and Their Area/Group/Location" Value="1" />
+                                    </Rock:RockDropDownList>
                                     <Rock:RockCheckBox ID="cbReuseCode" runat="server" Label="Use Same Code for Family" Text="Yes"
                                         Help="Should the same security code be used for each person from the same family that is checking in at the same time?" />
                                     <Rock:RockCheckBox ID="cbUseSameOptions" runat="server" Label="Use Same Service Options" Text="Yes"

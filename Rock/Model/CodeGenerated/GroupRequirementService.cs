@@ -93,6 +93,8 @@ namespace Rock.Model
             target.GroupId = source.GroupId;
             target.GroupRequirementTypeId = source.GroupRequirementTypeId;
             target.GroupRoleId = source.GroupRoleId;
+            target.GroupTypeId = source.GroupTypeId;
+            target.MustMeetRequirementToAddMember = source.MustMeetRequirementToAddMember;
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;
             target.CreatedByPersonAliasId = source.CreatedByPersonAliasId;

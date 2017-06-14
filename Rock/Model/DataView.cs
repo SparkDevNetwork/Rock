@@ -34,6 +34,7 @@ namespace Rock.Model
     /// <summary>
     /// Represents a filterable dataview in Rock.
     /// </summary>
+    [RockDomain( "Reporting" )]
     [Table( "DataView" )]
     [DataContract]
     public partial class DataView : Model<DataView>, ICategorized
@@ -279,7 +280,7 @@ namespace Rock.Model
                             MethodInfo getMethod = serviceInstance.GetType().GetMethod( "Get", new Type[] { typeof( ParameterExpression ), typeof( Expression ), typeof( SortProperty ) } );
                             if ( getMethod != null )
                             {
-                                if (sortProperty == null)
+                                if ( sortProperty == null )
                                 {
                                     // if no sorting is specified, just sort by Id
                                     sortProperty = new SortProperty { Direction = SortDirection.Ascending, Property = "Id" };

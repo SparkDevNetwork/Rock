@@ -822,7 +822,7 @@ namespace RockWeb.Blocks.Event
                             var rl = new RockLiteral();
                             rl.ID = "attr_" + attr.Key;
                             rl.Label = attr.Value.Name;
-                            rl.Text = attr.Value.FieldType.Field.FormatValueAsHtml( null, value, attr.Value.QualifierValues, false );
+                            rl.Text = attr.Value.FieldType.Field.FormatValueAsHtml( null, attr.Value.EntityTypeId, eventCalendarItem.Id, value, attr.Value.QualifierValues, false );
                             phAttributesView.Controls.Add( rl );
                         }
                     }

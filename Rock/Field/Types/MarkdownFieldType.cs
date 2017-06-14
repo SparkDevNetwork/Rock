@@ -124,26 +124,6 @@ namespace Rock.Field.Types
             return result;
         }
 
-        /// <summary>
-        /// Formats the value as HTML.
-        /// </summary>
-        /// <param name="parentControl">The parent control.</param>
-        /// <param name="value">The value.</param>
-        /// <param name="configurationValues">The configuration values.</param>
-        /// <param name="condensed">if set to <c>true</c> [condensed].</param>
-        /// <returns></returns>
-        public override string FormatValueAsHtml( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed = false )
-        {
-            var result = value.ConvertMarkdownToHtml();
-
-            if ( condensed )
-            {
-                return result.Truncate( 100 );
-            }
-
-            return result;
-        }
-
         #endregion
 
         #region Edit Control

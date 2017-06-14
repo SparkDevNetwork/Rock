@@ -35,6 +35,7 @@ namespace Rock.Model
     /// <remarks>
     /// Several examples include - A one time transaction to occur on 1/1/2014; an ongoing weekly transaction; a weekly transaction for 10 weeks; a monthly transaction from 1/1/2014 - 12/31/2014.
     /// </remarks>
+    [RockDomain( "Finance" )]
     [Table( "FinancialScheduledTransaction" )]
     [DataContract]
     public partial class FinancialScheduledTransaction : Model<FinancialScheduledTransaction>, IHasActiveFlag

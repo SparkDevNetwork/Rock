@@ -55,7 +55,12 @@ namespace Rock.Workflow.Action
             var attribute = AttributeCache.Read( GetAttributeValue( action, "Attribute" ).AsGuid(), rockContext );
             if ( attribute != null )
             {
-                string value = GetAttributeValue( action, "Value", true ).ResolveMergeFields( GetMergeFields( action ) );
+                string value = value = GetAttributeValue( action, "Value", true ).ResolveMergeFields( GetMergeFields( action ) );
+                if ( attribute.FieldTypeId == FieldTypeCache.Read( SystemGuid.FieldType.ENCRYPTED_TEXT.AsGuid(), rockContext ).Id )
+                {
+                    value = Security.Encryption.EncryptString( value );
+                }
+
                 SetWorkflowAttributeValue( action, attribute.Guid, value );
                 action.AddLogEntry( string.Format( "Set '{0}' attribute to '{1}'.", attribute.Name, value ) );
             }

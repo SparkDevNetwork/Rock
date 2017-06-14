@@ -1,3 +1,78 @@
+Rock McKinley 6.7
+ 
++ Fixed exceptions that would appear on default home page after installing Rock v6 due to an invalid filter on the content blocks (Fixes #2155).
++ Fixed issue with event details being duplicated on the Calendar Event Detail block when using the Stark theme (Fixes #2245).
++ Updated the ZebraPhoto Lava Filter so that it can be used multiple times on the same label.
++ Added 'Save Then Add' and 'Save Then View Batch' as buttons when adding a new transaction to a batch.
++ Updated Registrations to use Sliding Date Range filters for Registrations, Registrants, and Payments. This also fixed an issue where the date range filters were sometimes not using the correct dates and not including recent registrations and payments.
++ Updated the Login block so that when a user logs in using an external provider such as Facebook or Google, their login will be remembered and they won't need to login again on every visit.
++ Added the ability to check-in using any type of device that supports keyboard wedge. This includes bar code scanners, proximity card readers, etc.
++ Added Campus (of Account) as a filter for Transaction List.
++ Added new features to Check-in that will automatically select options based on the person's last check-in (with ability for user to change the selection).
++ Added the ability for people to check-out.
++ Added option to have transaction matching so that additional optional accounts can be easily added per transaction.
++ Improved check-in so that when searching by name, the name field will have focus when screen is displayed (Fixes #2222).
++ Fixed issue with check-in that was preventing people from checking in when used with a culture that formats date as dd/mm/yyyy like en-GB or en-AU (Fixes #2212).
+
+Rock McKinley 6.6
+ 
++ Updated the Registration Entry block so that it no longer inserts nicknames into incorrect form fields (Fixes #2040).
++ Updated Registration Instance list to include the registration's confirmation email when exporting to Excel (Fixes #2209).
++ Fixed an exception that would occur if a person without a valid record type tried to register for an event.
++ Updated the reassign action in the TransactionList so that transactions can be reassigned to businesses.
++ Fixed an issue with downloaded transactions getting assigned to incorrect schedule if multiple PayFlowPro accounts are being used for contributions (Fixes #2234).
++ Added an option to have a predefined list of Batch Names when creating a new batch.
++ Fixed giving badge not filtering by account correctly.
++ Fixed an exception that would occur in the ContributionStatementLava if no pledges were given, and updated DateRange logic to be consistent.
++ Updated the ContributionStatemementLava so that GivingGroupId logic is consistent for Pledges and Contributions.
++ Updated transaction matching so that accounts that have non-zero amounts will always show regardless of account filter.
++ Added a 'Select All' action to the Account Picker control.
++ Updated the group detail block so that unlisted phone numbers are not displayed (Fixes #2085).
++ Fixed the GroupMemberAttendanceAddWorkflow action to use the schedule attribute value setting (Fixes #2125).
++ Fixed an issue with the new account entry block that would prevent existing people with a PIN number from being able to create a normal database login (Fixes #2204).
++ Fixed an issue with Bulk Update not updating deceased people (Fixes #2108).
++ Fixed group member max count role enforcement not enforcing correctly when adding a new family.
++ Added 'Edit Connection Status' and 'Edit Record Status' as security actions on the edit person block.
++ Added an additional security action to person edit block to control who can edit the combine giving value.
++ Fixed MyAccount block throwing an exception when trying to edit/crop the person image (Fixes #2001).
++ Fixed MyAccount block adding Demographic changes twice to history (Fixes #2078).
++ Updated the workflow SetAttributeValue action to save an encrypted field type value correctly (Fixes #2167).
++ Fixed the incorrect reporting page showing when canceling or adding a category in reports (Fixes #2056).
++ Fixed ContentChannelItem data view filters not showing attributes that are defined at the content channel.
++ Updated the ContentChannelView block to use new decluttered storage for Lava commands (Fixes EntityCommands not working in ContentChannelView).
++ Added support for the "suppress-bounce" event type in the Mailgun webhook (Fixes #2082).
++ Updated SignNow integration to handle an invalid filename (Fixes #2207).
++ Removed links to missing images from Stark theme.
++ Upgraded FontAwesome to v4.7. Been looking forward to the bathtub icon... http://fontawesome.io/icon/bath/
+
+
+Rock McKinley 6.5
+
++ Fixed an issue with ValueList and KeyValueList block settings not allowing user to add new values.
++ Fixed a backward-compatibility issue with migration helper method that was affecting plugin installs.
++ Fixed an exception that would occur when saving a change to a family.
+
+
+Rock McKinley 6.4
+
++ Updated the Edit Family block to create history correctly when adding a new person (Fixes #1726).
++ Fixed mispelled 'amount' in NumberBox validation message.
++ Fixed business photo reference.
++ Fixed the GroupRegistration block to not erase matched person's data if the user did not fully fill out the form.
++ Fixed issue with not being able to delete a non note (Fixes #2123)
++ Fixed SignNow issue with document getting sent to "Applies To" person instead of "Assigned to" and an exception that would occur when sending a required registration document (Fixes #2176, Fixes #2177)
++ Updated the Communication Entry block to validate the future send date/time (Fixes #1999)
++ Updated giving analytics to display accounts in configured order rather than alphabetically.
++ Added option to show NickName when adding a new family
++ Update the Facebook authentication to deal with their "[Oauth Access Token] Format" change (Fixes #2117).
++ Fixed blocks and stock lava that use the Google Static Map API to include the Google API Key since it is now required (Fixes #1991).
++ Updated the Global Attribute Filter so that it passes original merge fields when resolving contents of attribute (Fixes #2162).
++ Updated check-in to support numeric-only security codes.
++ Added option to display phone numbers, gender, and/or spouse on the person search results.
++ Added optional phone and email fields to the new person dialog when editing an existing family. These are not displayed by default.
++ Updated transaction matching to include 'Finish' button that will mark batch as being open instead of pending, and added a campus filter to limit selected accounts by campus.
+
+
 Rock McKinley 6.3
 
 + Updated the Protect My Ministry integration to include email address when sending a request to PMM.

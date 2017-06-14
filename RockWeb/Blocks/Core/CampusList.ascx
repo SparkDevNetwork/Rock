@@ -19,7 +19,6 @@
                             <Rock:RockBoundField DataField="PhoneNumber" HeaderText="Phone Number" />
                             <Rock:RockBoundField DataField="LeaderPersonAlias.Person.FullName" HeaderText="Campus Leader" />
                             <Rock:BoolField DataField="IsActive" HeaderText="Active" />
-                            <Rock:DeleteField OnClick="gCampuses_Delete" />
                         </Columns>
                     </Rock:Grid>
                 </div>

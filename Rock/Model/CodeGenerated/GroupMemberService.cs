@@ -95,6 +95,7 @@ namespace Rock.Model
             target.ForeignKey = source.ForeignKey;
             target.GroupId = source.GroupId;
             target.GroupMemberStatus = source.GroupMemberStatus;
+            target.GroupOrder = source.GroupOrder;
             target.GroupRoleId = source.GroupRoleId;
             target.GuestCount = source.GuestCount;
             target.IsNotified = source.IsNotified;

@@ -205,6 +205,39 @@ namespace Rock.CheckIn
         }
 
         /// <summary>
+        /// Gets the available options for a person.
+        /// </summary>
+        /// <param name="onlyPreSelected">if set to <c>true</c> [only pre selected].</param>
+        /// <param name="onlyOneOptionPerSchedule">if set to <c>true</c> [only one option per schedule].</param>
+        /// <returns></returns>
+        public List<CheckInPersonSummary> GetOptions( bool onlyPreSelected, bool onlyOneOptionPerSchedule )
+        {
+            var options = new List<CheckInPersonSummary>();
+
+            foreach ( var possibleSchedule in PossibleSchedules )
+            {
+                foreach ( var groupType in GroupTypes.Where( t => t.PreSelected || !onlyPreSelected ) )
+                {
+                    foreach ( var group in groupType.Groups.Where( t => t.PreSelected || !onlyPreSelected ) )
+                    {
+                        foreach ( var location in group.Locations.Where( t => t.PreSelected || !onlyPreSelected ) )
+                        {
+                            foreach ( var schedule in location.Schedules.Where( s => s.Schedule.Id == possibleSchedule.Schedule.Id && ( s.PreSelected || !onlyPreSelected ) ) )
+                            {
+                                if ( !onlyOneOptionPerSchedule || !options.Any( o => o.Schedule.Schedule.Id == schedule.Schedule.Id ) )
+                                {
+                                    options.Add( new CheckInPersonSummary( schedule, groupType, group, location ) );
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            return options;
+        }
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="CheckInPerson" /> class.
         /// </summary>
         public CheckInPerson()
@@ -404,12 +437,57 @@ namespace Rock.CheckIn
         public CheckInLocation Location { get; set; }
 
         /// <summary>
+        /// Gets the key.
+        /// </summary>
+        /// <value>
+        /// The key.
+        /// </value>
+        public String Key
+        {
+            get
+            {
+                return $"{GroupType?.GroupType.Id}|{Group?.Group.Id}|{Location?.Location.Id}|{Schedule?.Schedule.Id}";
+            }
+        }
+
+        /// <summary>
+        /// Gets a value indicating whether this <see cref="CheckInPersonSummary"/> is selected.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if selected; otherwise, <c>false</c>.
+        /// </value>
+        public bool Selected {  get { return Schedule?.PreSelected ?? false; } }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether this <see cref="CheckInPersonSummary"/> is disabled.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if disabled; otherwise, <c>false</c>.
+        /// </value>
+        public bool Disabled { get; set; }
+
+        /// <summary>
         /// Gets or sets a value indicating whether [group type configured for label].
         /// </summary>
         /// <value>
         /// <c>true</c> if [group type configured for label]; otherwise, <c>false</c>.
         /// </value>
         public bool GroupTypeConfiguredForLabel { get; set; }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="CheckInPersonSummary"/> class.
+        /// </summary>
+        /// <param name="schedule">The schedule.</param>
+        /// <param name="groupType">Type of the group.</param>
+        /// <param name="group">The group.</param>
+        /// <param name="location">The location.</param>
+        public CheckInPersonSummary( CheckInSchedule schedule, CheckInGroupType groupType, CheckInGroup group, CheckInLocation location )
+        {
+            Schedule = schedule;
+            GroupType = groupType;
+            Group = group;
+            Location = location;
+        }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="CheckInPersonSummary" /> class.
@@ -420,12 +498,8 @@ namespace Rock.CheckIn
         /// <param name="group">The group.</param>
         /// <param name="location">The location.</param>
         public CheckInPersonSummary( KioskLabel label, CheckInSchedule schedule, CheckInGroupType groupType, CheckInGroup group, CheckInLocation location )
+            : this( schedule, groupType, group, location )
         {
-            Schedule = schedule;
-            GroupType = groupType;
-            Group = group;
-            Location = location;
-
             if ( groupType != null && groupType.GroupType != null && label != null )
             {
                 if ( groupType.GroupType.Attributes == null )

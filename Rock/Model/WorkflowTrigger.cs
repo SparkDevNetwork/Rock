@@ -27,6 +27,7 @@ namespace Rock.Model
     /// Represents an a WorkflowTrigger in Rock. A WorkflowTrigger can be setup on an EntityType or a subset of entities to start/trigger a workflow
     /// when a save or delete is performed on the entity. If the workflow does not complete successfully, the database action will not be performed.
     /// </summary>
+    [RockDomain( "Workflow" )]
     [Table( "WorkflowTrigger" )]
     [DataContract]
     public partial class WorkflowTrigger : Entity<WorkflowTrigger>

@@ -28,6 +28,7 @@ namespace Rock.Model
     /// <summary>
     /// Metric POCO Entity.
     /// </summary>
+    [RockDomain( "Reporting" )]
     [Table( "Metric" )]
     [DataContract]
     public partial class Metric : Model<Metric>
@@ -110,6 +111,15 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public string SourceSql { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Lava code that returns the data for the Metric.
+        /// </summary>
+        /// <value>
+        /// A <see cref="System.String" /> that represents the Lava code that returns the data for the Metric.
+        /// </value>
+        [DataMember]
+        public string SourceLava { get; set; }
 
         /// <summary>
         /// Gets or sets the data view identifier.

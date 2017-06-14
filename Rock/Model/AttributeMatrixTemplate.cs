@@ -27,6 +27,7 @@ namespace Rock.Model
     /// <summary>
     /// 
     /// </summary>
+    [RockDomain( "Core" )]
     [Table( "AttributeMatrixTemplate" )]
     [DataContract]
     public partial class AttributeMatrixTemplate : Model<AttributeMatrixTemplate>

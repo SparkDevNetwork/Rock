@@ -28,6 +28,7 @@ namespace Rock.Model
     /// Represents an image that is associated with a <see cref="Rock.Model.FinancialTransaction"/>. Examples could be 
     /// the front or back side of a check or an offering envelope.
     /// </summary>
+    [RockDomain( "Finance" )]
     [Table( "FinancialTransactionImage" )]
     [DataContract]
     public partial class FinancialTransactionImage : Model<FinancialTransactionImage>, IOrdered

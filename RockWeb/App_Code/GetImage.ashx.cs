@@ -259,7 +259,31 @@ namespace RockWeb
                     context.Response.Cache.SetMaxAge( new TimeSpan( 365, 0, 0, 0 ) );
                 }
 
+                // set the mime-type to that of the binary file
                 context.Response.ContentType = binaryFileMetaData.MimeType != "image/tiff" ? binaryFileMetaData.MimeType : "image/jpg";
+
+                // check that the format of the image wasn't changed by a format query parm if so adjust the mime-type to reflect the conversion
+                if ( context.Request["format"].IsNotNullOrWhitespace() )
+                {
+                    switch ( context.Request["format"] )
+                    {
+                        case "png":
+                            {
+                                context.Response.ContentType = "image/png";
+                                break;
+                            }
+                        case "gif":
+                            {
+                                context.Response.ContentType = "image/gif";
+                                break;
+                            }
+                        case "jpg":
+                            {
+                                context.Response.ContentType = "image/jpeg";
+                                break;
+                            }
+                    }
+                }
 
                 using ( var responseStream = fileContent )
                 {
