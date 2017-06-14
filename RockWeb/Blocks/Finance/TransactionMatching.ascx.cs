@@ -177,10 +177,11 @@ namespace RockWeb.Blocks.Finance
         {
             // get accounts that are both allowed by the BlockSettings and also in the personal AccountList setting
             var rockContext = new RockContext();
-            var blockAccountGuidList = GetAttributeValue( "Accounts" ).SplitDelimitedValues().Select( a => a.AsGuid() );
+            var blockAccountGuidList = GetAttributeValue( "Accounts" ).SplitDelimitedValues().Select( a => a.AsGuid() ).ToList();
 
             string keyPrefix = string.Format( "transaction-matching-{0}-", this.BlockId );
             var personalAccountGuidList = ( this.GetUserPreference( keyPrefix + "account-list" ) ?? string.Empty ).SplitDelimitedValues().Select( a => a.AsGuid() ).ToList();
+            var optionalAccountGuidList = ( this.GetUserPreference( keyPrefix + "optional-account-list" ) ?? string.Empty ).SplitDelimitedValues().Select( a => a.AsGuid() ).ToList();
 
             var accountQry = new FinancialAccountService( rockContext )
                 .Queryable()
@@ -191,10 +192,22 @@ namespace RockWeb.Blocks.Finance
             {
                 accountQry = accountQry.Where( a => blockAccountGuidList.Contains( a.Guid ) );
             }
-
-            // no personal accounts specified means "all(that are allowed in block settings)"
-            if ( personalAccountGuidList.Any() )
+            
+            if ( !personalAccountGuidList.Any() )
             {
+                if (!optionalAccountGuidList.Any())
+                {
+                    // if no personal accounts are selected, and there are no optional accounts either, show all the accounts that are allowed in block settings
+                }
+                else
+                {
+                    // if no personal accounts are selected, and but there are optional accountsr, only show the optional accounts
+                    accountQry = accountQry.Where( a => false );
+                }
+            }
+            else
+            {
+                // if there are person accounts selected, limit accounts to personal accounts
                 accountQry = accountQry.Where( a => personalAccountGuidList.Contains( a.Guid ) );
             }
 
@@ -212,9 +225,8 @@ namespace RockWeb.Blocks.Finance
             rptAccounts.DataSource = allAccountList;
             rptAccounts.DataBind();
 
-            var optionalAccountGuidList = ( this.GetUserPreference( keyPrefix + "optional-account-list" ) ?? string.Empty ).SplitDelimitedValues().Select( a => a.AsGuid() ).ToList();
             var optionalAccounts = allAccountList.Where( a => optionalAccountGuidList.Contains( a.Guid ) && !_visibleDisplayedAccountIds.Contains( a.Id ) ).ToList();
-            if ( blockAccountGuidList.Any())
+            if ( blockAccountGuidList.Any() )
             {
                 optionalAccounts = optionalAccounts.Where( a => blockAccountGuidList.Contains( a.Guid ) ).ToList();
             }
