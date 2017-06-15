@@ -63,14 +63,70 @@
 			            <div id="emaileditor-properties">
 				
 				            <div class="emaileditor-propertypanels js-propertypanels">
-					            <div class="propertypanel propertypanel-text" data-component="text" style="display: none;">
+					            <!-- Text/Html Properties -->
+                                <div class="propertypanel propertypanel-text" data-component="text" style="display: none;">
 						            <h4 class="propertypanel-title">Text</h4>
 						            <div id="text-editor">Hello Summernote</div>
 
 						            <a href="#" class="btn btn-primary" onclick="completeTextComponent(event);">Complete</a>
 					            </div>
 
-					            <div class="propertypanel propertypanel-button" data-component="button" style="display: none;">
+                                <!-- Image Properties -->
+                                <div class="propertypanel propertypanel-image" data-component="image" style="display: none;">
+						            <h4 class="propertypanel-title">Image</h4>
+						            <Rock:ImageUploader ID="imgupImage" ClientIDMode="Static" runat="server" Label="Image" UploadAsTemporary="false" DoneFunctionClientScript="completeImageComponent(e, data)" />
+
+                                    <div class="row">
+							            <div class="col-md-6">
+								            <div class="form-group">
+									            <label for="component-image-imagewidth">Width</label>
+									            <select id="component-image-imagewidth" class="form-control">
+										            <option value="0">Image Width</option>
+										            <option value="1">Full Width</option>
+									            </select>
+								            </div>
+							            </div>
+							            <div class="col-md-6">
+								            <div class="form-group">
+									            <label for="component-image-imagealign">Align</label>
+									            <select id="component-image-imagealign" class="form-control">
+										            <option value="left">Left</option>
+										            <option value="center">Center</option>
+										            <option value="right">Right</option>
+									            </select>
+								            </div>
+							            </div>
+						            </div>
+
+						            <a href="#" class="btn btn-primary" onclick="completeImageComponent(event);">Complete</a>
+					            </div>
+
+                                <!-- Section Properties -->
+                                <div class="propertypanel propertypanel-section" data-component="section" style="display: none;">
+						            <h4 class="propertypanel-title">Section</h4>
+                                    <pre>todo</pre>
+
+						            <a href="#" class="btn btn-primary" onclick="completeSectionComponent(event);">Complete</a>
+					            </div>
+
+                                <!-- Divider Properties -->
+                                <div class="propertypanel propertypanel-divider" data-component="divider" style="display: none;">
+						            <h4 class="propertypanel-title">Divider</h4>
+                                    <pre>todo</pre>
+
+						            <a href="#" class="btn btn-primary" onclick="completeDividerComponent(event);">Complete</a>
+					            </div>
+
+                                <!-- Code Properties -->
+                                <div class="propertypanel propertypanel-code" data-component="code" style="display: none;">
+						            <h4 class="propertypanel-title">Code</h4>
+                                    <pre>todo</pre>
+
+						            <a href="#" class="btn btn-primary" onclick="completeCodeComponent(event);">Complete</a>
+					            </div>
+
+					            <!-- Button Properties -->
+                                <div class="propertypanel propertypanel-button" data-component="button" style="display: none;">
 						            <h4 class="propertypanel-title">Button</h4>
 						            <hr />
 						            <div class="form-group">
@@ -182,34 +238,7 @@
 						            <a href="#" class="btn btn-primary" onclick="completeButtonComponent(event);">Complete</a>
 					            </div>
 
-                                <div class="propertypanel propertypanel-image" data-component="image" style="display: none;">
-						            <h4 class="propertypanel-title">Image</h4>
-						            <Rock:ImageUploader ID="imgupImage" ClientIDMode="Static" runat="server" Label="Image" UploadAsTemporary="false" DoneFunctionClientScript="completeImageComponent(e, data)" />
-
-                                    <div class="row">
-							            <div class="col-md-6">
-								            <div class="form-group">
-									            <label for="component-image-imagewidth">Width</label>
-									            <select id="component-image-imagewidth" class="form-control">
-										            <option value="0">Image Width</option>
-										            <option value="1">Full Width</option>
-									            </select>
-								            </div>
-							            </div>
-							            <div class="col-md-6">
-								            <div class="form-group">
-									            <label for="component-image-imagealign">Align</label>
-									            <select id="component-image-imagealign" class="form-control">
-										            <option value="left">Left</option>
-										            <option value="center">Center</option>
-										            <option value="right">Right</option>
-									            </select>
-								            </div>
-							            </div>
-						            </div>
-
-						            <a href="#" class="btn btn-primary" onclick="completeImageComponent(event);">Complete</a>
-					            </div>
+                                
 				            </div>
 
 			            </div>
@@ -244,7 +273,8 @@
 
 
         <script>
-            var currentComponentId = null;
+            var $currentComponent = $(false);
+            var $currentTextComponent = $(false);
             
 			
 			// load in editor styles and scripts
@@ -279,8 +309,10 @@
 					$(contents).find('body').prepend(editorMarkup);
 			});	
 			
-			function loadPropertiesPage( componentType, componentId ){
-				currentComponentId = componentId;
+			function loadPropertiesPage(componentType, $component)
+			{
+			    $currentComponent = $component;
+			    $currentTextComponent = $currentComponent.hasClass('component-text') ? $currentComponent : $(false);
 
 				// hide all panels
 				$('.propertypanel').hide();
@@ -291,13 +323,18 @@
 				// temp - set text of summernote
 				switch(componentType){
 					case 'text':
-						setPropertiesTextComponent(componentId);
+					    setPropertiesTextComponent($currentTextComponent);
 						break;
 					case 'button':
-						setPropertiesButtonComponent(componentId);
+					    setPropertiesButtonComponent($currentComponent);
 						break;
 				    case 'image':
-				        setPropertiesImageComponent(componentId);
+				        setPropertiesImageComponent($currentComponent);
+				        break;
+				    case 'section':
+				    case 'divider':
+				    case 'code':
+				        break;
 					default:
 						 clearPropertyPane(null);
 				}
@@ -309,7 +346,7 @@
 			// function that components will call after they have processed their own save and close logic
 			function clearPropertyPane(e){
 				$('.propertypanel').hide();
-				$('.js-emaileditor-iframe').contents().find("#" + currentComponentId).removeClass('selected');
+				$currentComponent.removeClass('selected');
 				
 				if (e != null){
 					e.preventDefault();
@@ -376,18 +413,17 @@
 				clearPropertyPane(e);
 			}
 
-			function setPropertiesButtonComponent(componentId){
-			    var component = $('.js-emaileditor-iframe').contents().find("#" + currentComponentId);
-				var buttonText = $(component).find('.button-link').text();
-				var buttonUrl = $(component).find('.button-link').attr('href');
-				var buttonBackgroundColor = $(component).find('.button-shell').css('backgroundColor');
-				var buttonFontColor = $(component).find('.button-link').css('color');
-				var buttonWidth = $(component).find('.button-shell').attr('width');
-				var buttonAlign = $(component).find('.button-innerwrap').attr('align');
-				var buttonFont = $(component).find('.button-link').css("font-family");
-				var buttonFontWeight = $(component).find('.button-link').css("font-weight");
-				var buttonFontSize = $(component).find('.button-link').css("font-size");
-				var buttonPadding = $(component).find('.button-content').css("padding");
+			function setPropertiesButtonComponent($buttonComponent){
+				var buttonText = $buttonComponent.find('.button-link').text();
+				var buttonUrl = $buttonComponent.find('.button-link').attr('href');
+				var buttonBackgroundColor = $buttonComponent.find('.button-shell').css('backgroundColor');
+				var buttonFontColor = $buttonComponent.find('.button-link').css('color');
+				var buttonWidth = $buttonComponent.find('.button-shell').attr('width');
+				var buttonAlign = $buttonComponent.find('.button-innerwrap').attr('align');
+				var buttonFont = $buttonComponent.find('.button-link').css("font-family");
+				var buttonFontWeight = $buttonComponent.find('.button-link').css("font-weight");
+				var buttonFontSize = $buttonComponent.find('.button-link').css("font-size");
+				var buttonPadding = $buttonComponent.find('.button-content').css("padding");
 
 				$('#component-button-buttontext').val(buttonText);
 				$('#component-button-buttonurl').val(buttonUrl);
@@ -412,7 +448,7 @@
 			function buttonSetButtonText(){
 				var text = $('#component-button-buttontext').val()
 
-				var component = $('.js-emaileditor-iframe').contents().find("#" + currentComponentId);
+				var component = $currentComponent;
 				$(component).find('.button-link').text(text);
 				$(component).find('.button-link').attr('title', text);
 			}
@@ -420,21 +456,21 @@
 			function buttonSetButtonUrl(){
 				var text = $('#component-button-buttonurl').val()
 
-				var component = $('.js-emaileditor-iframe').contents().find("#" + currentComponentId);
+				var component = $currentComponent;
 				$(component).find('.button-link').attr('href', text);
 			}
 
 			function buttonSetButtonBackgroundColor(){
 				var color = $('#component-button-buttonbackgroundcolor').colorpicker('getValue');
 
-				var component = $('.js-emaileditor-iframe').contents().find("#" + currentComponentId);
+				var component = $currentComponent;
 				$(component).find('.button-shell').css('backgroundColor', color);
 			}
 
 			function buttonSetButtonFontColor(){
 				var color = $('#component-button-buttonfontcolor').colorpicker('getValue');
 
-				var component = $('.js-emaileditor-iframe').contents().find("#" + currentComponentId);
+				var component = $currentComponent;
 				$(component).find('.button-link').css('color', color);
 			}
 
@@ -442,12 +478,12 @@
 				var selectValue = $('#component-button-buttonwidth').val();
 
 				if (selectValue == 0){
-				    var component = $('.js-emaileditor-iframe').contents().find("#" + currentComponentId);
+				    var component = $currentComponent;
 					$(component).find('.button-shell').removeAttr('width');
 				}
 				else 
 				{
-				    var component = $('.js-emaileditor-iframe').contents().find("#" + currentComponentId);
+				    var component = $currentComponent;
 					$(component).find('.button-shell').attr('width', '100%');
 				}
 			}
@@ -455,7 +491,7 @@
 			function buttonSetButtonAlign() {
 				var selectValue = $('#component-button-buttonalign').val();
 
-				var component = $('.js-emaileditor-iframe').contents().find("#" + currentComponentId);
+				var component = $currentComponent;
 				$(component).find('.button-innerwrap').attr('align', selectValue);
 				$(component).find('.button-innerwrap').css('text-align', selectValue);
 			}
@@ -463,28 +499,28 @@
 			function buttonSetButtonFont() {
 				var selectValue = $('#component-button-buttonfont').val();
 
-				var component = $('.js-emaileditor-iframe').contents().find("#" + currentComponentId);
+				var component = $currentComponent;
 				$(component).find('.button-link').css('font-family', selectValue);
 			}
 
 			function buttonSetButtonFontWeight() {
 				var selectValue = $('#component-button-buttonfontweight').val();
 
-				var component = $('.js-emaileditor-iframe').contents().find("#" + currentComponentId);
+				var component = $currentComponent;
 				$(component).find('.button-link').css('font-weight', selectValue);
 			}
 
 			function buttonSetButtonFontSize(){
 				var text = $('#component-button-buttonfontsize').val()
 
-				var component = $('.js-emaileditor-iframe').contents().find("#" + currentComponentId);
+				var component = $currentComponent;
 				$(component).find('.button-link').css('font-size', text);
 			}
 
 			function buttonSetButtonPadding(){
 				var text = $('#component-button-buttonpadding').val()
 
-				var component = $('.js-emaileditor-iframe').contents().find("#" + currentComponentId);
+				var component = $currentComponent;
 				$(component).find('.button-content').css('padding', text);
 			}
 		</script>
@@ -498,37 +534,38 @@
 				$('#text-editor').summernote({
 					height: 350,
 					callbacks: {
-						onChange: function(contents, $editable) {
-							updateTextComponent();
+					    onChange: function (contents, $editable)
+					    {
+                            updateTextComponent(this, contents);
 						}
 					}
 				});
 			});
 
-			function setPropertiesTextComponent(componentId){
-			    var currentConent = $('.js-emaileditor-iframe').contents().find("#" + componentId).html();
-				$('#text-editor').summernote('code', currentConent);
+			function setPropertiesTextComponent($textComponent){
+			    $('#text-editor').summernote('code', $textComponent.html());
 			}
 
-			function completeTextComponent(e){
-				updateTextComponent();
+			function completeTextComponent(e)
+			{
 				clearPropertyPane(e);
 			}
 
-			function updateTextComponent(){
-			    var sourceComponent = $('.js-emaileditor-iframe').contents().find("#" + currentComponentId);
-				sourceComponent.html($('#text-editor').summernote('code'));
+			function updateTextComponent(el, contents)
+			{
+			    if ($currentTextComponent)
+			    {
+			        $currentTextComponent.html(contents);
+			    }
 			}
 		</script>
 
         <!-- Image Component -->
         <script>
-            function setPropertiesImageComponent(componentId) {
-                var component = $('.js-emaileditor-iframe').contents().find("#" + currentComponentId);
-
-                var imageUrl = $(component).find('img').attr('src');
-                var imageWidth = $(component).find('img').attr('data-width');
-                var imageAlign = $(component).css('text-align');
+            function setPropertiesImageComponent($imageComponent) {
+                var imageUrl = $imageComponent.find('img').attr('src');
+                var imageWidth = $imageComponent.find('img').attr('data-width');
+                var imageAlign = $imageComponent.css('text-align');
 
                 $('#imgupImage').find('.imageupload-thumbnail-image').css('background-image', 'url("' + imageUrl + '")');
 
@@ -566,14 +603,14 @@
             function imageSetImageAlign(){
                 var selectValue = $('#component-image-imagealign').val();
 
-                var component = $('.js-emaileditor-iframe').contents().find("#" + currentComponentId);
+                var component = $currentComponent;
                 $(component).css('text-align', selectValue);
             }
 
             function imageSetImageWidth(){
                 var selectValue = $('#component-image-imagewidth').val();
 
-                var component = $('.js-emaileditor-iframe').contents().find("#" + currentComponentId);
+                var component = $currentComponent;
 
                 if (selectValue == 0) {
                     $(component).find('img').css('width', 'auto');
@@ -594,7 +631,7 @@
                         + '&fileName=' + data.response().result.FileName
                         + '&width=500';
 
-                var component = $('.js-emaileditor-iframe').contents().find("#" + currentComponentId);
+                var component = $currentComponent;
                 $(component).find('img').attr('src', imageUrl);
             }
         </script>
