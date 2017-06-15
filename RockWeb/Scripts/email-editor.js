@@ -6,7 +6,7 @@ var initJquery = function ()
   // parent window to handle the properties editing
   $(document).on('click', '.component', function (e)
   {
-    if ($(this).data('state') == 'component') {
+    if ($(this).attr('data-state') == 'component') {
       handleComponentClick(this, e);
     }
   });
@@ -15,6 +15,8 @@ var initJquery = function ()
 var handleComponentClick = function (el, e)
 {
   e.preventDefault(); // prevent things like links from taking you off the page
+
+  e.stopImmediatePropagation(); // prevent event from bubbling up to parents
   var componentType = "";
 
   var classNames = $(el).attr("class").toString().split(' ');
@@ -26,20 +28,13 @@ var handleComponentClick = function (el, e)
     }
   });
 
-  console.log(componentType);
-
-  // add an id to the element if one does not already exist
-  if (!$(el).attr("id")) {
-    $(el).attr("id", newGuid());
-  }
-
   // clear the class noting that a component is selected
   $('.component.selected').removeClass('selected');
 
   // add selected class to this component
   $(el).addClass('selected');
 
-  parent.loadPropertiesPage(componentType, $(el).attr("id"));
+  parent.loadPropertiesPage(componentType, $(el));
 };
 
 var initEditor = function ()
@@ -63,7 +58,7 @@ var initEditor = function ()
   })
   .on('drag', function (el)
   {
-    if ($(el).data('state') == 'component') {
+    if ($(el).attr('data-state') == 'component') {
       handleComponentClick(el, event);
     }
     $('body').addClass('state-drag');
@@ -74,9 +69,9 @@ var initEditor = function ()
   })
   .on('drop', function (el)
   {
-    if ($(el).data('state') == 'template') {
+    if ($(el).attr('data-state') == 'template') {
       // replace the template contents
-      el.innerHTML = $(el).data('content');
+      el.innerHTML = $(el).attr('data-content');
       $(el).attr('data-state', 'component');
       el.removeAttribute("data-content");
     }
@@ -111,19 +106,6 @@ loadScript("./Scripts/jquery-1.12.4.min.js", initJquery);
 
 
 // -- Helper Functions
-
-function newGuid()
-{
-  function s4()
-  {
-    return Math.floor((1 + Math.random()) * 0x10000)
-      .toString(16)
-      .substring(1);
-  }
-  return s4() + s4() + '-' + s4() + '-' + s4() + '-' +
-    s4() + '-' + s4() + s4() + s4();
-}
-
 function loadScript(url, callback)
 {
   // Adding the script tag to the head as suggested before
