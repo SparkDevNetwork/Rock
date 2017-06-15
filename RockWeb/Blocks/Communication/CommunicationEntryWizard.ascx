@@ -286,16 +286,27 @@
 			var fontAwesomeLink = document.createElement("link") 
 			fontAwesomeLink.href = "<%=BaseUrl %>Themes/Rock/Styles/font-awesome.css"; 
 			fontAwesomeLink.rel = "stylesheet"; 
-			fontAwesomeLink.type = "text/css"; 
+			fontAwesomeLink.type = "text/css";
+
+            var jqueryLoaderScript = document.createElement("script");
+            jqueryLoaderScript.type = "text/javascript";
+            jqueryLoaderScript.src = "<%=BaseUrl %>Scripts/jquery-1.12.4.min.js";
+
+            var dragulaLoaderScript = document.createElement("script");
+            dragulaLoaderScript.type = "text/javascript";
+            dragulaLoaderScript.src = "<%=BaseUrl %>Scripts/dragula.min.js";
 
 			var editorScript = document.createElement("script");
 			editorScript.type = "text/javascript";
 			editorScript.src = "<%=BaseUrl %>Scripts/email-editor.js";
 
             var editorIframe = document.getElementsByClassName('js-emaileditor-iframe')[0];
-            editorIframe.addEventListener("load", function () {
+            editorIframe.addEventListener("load", function ()
+            {
+                frames['emaileditor-iframe'].document.head.appendChild(jqueryLoaderScript);
                 frames['emaileditor-iframe'].document.head.appendChild(cssLink);
                 frames['emaileditor-iframe'].document.head.appendChild(fontAwesomeLink);
+                frames['emaileditor-iframe'].document.head.appendChild(dragulaLoaderScript);
                 frames['emaileditor-iframe'].document.head.appendChild(editorScript);
 			});
 			
