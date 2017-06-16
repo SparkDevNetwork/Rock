@@ -21,6 +21,7 @@ namespace church.ccv.Hr.Jobs
     public class SendTimeCardPendingApprovalReminder : IJob
     {
         List<NotificationItem> _notificationList = new List<NotificationItem>();
+        List<TimeCard> _submittedTimeCardList = new List<TimeCard>();
         
         /// <summary>
         /// Empty constructor for job initialization
@@ -50,22 +51,28 @@ namespace church.ccv.Hr.Jobs
                 TimeCardPayPeriodService timeCardPayPeriodService = new TimeCardPayPeriodService( hrContext );
                 TimeCardService timeCardService = new TimeCardService( hrContext );
                 
-                // Get Current Pay period
+                // Get Current Pay period and Previous Pay Period
                 var currentPayPeriodQry = timeCardPayPeriodService.Queryable().OrderByDescending( a => a.StartDate ).FirstOrDefault();
+                var lastPayPeriodQry = timeCardPayPeriodService.Queryable().OrderByDescending( a => a.StartDate ).Skip( 1 ).FirstOrDefault();
 
-                // get time cards
-                var timeCardsQry = timeCardService.Queryable().Where( a => a.TimeCardPayPeriodId == currentPayPeriodQry.Id );
-
+                // get time cards for both pay periods
+                var timeCardsQry = timeCardService.Queryable().Where( a => a.TimeCardPayPeriodId == currentPayPeriodQry.Id || a.TimeCardPayPeriodId == lastPayPeriodQry.Id );
+                
                 if ( timeCardsQry.Any() )
                 {
                     foreach ( var timeCard in timeCardsQry )
                     {
-                        // Check for time cards in "Submitted" status and if found add approver to _notificationList
+                        // Check for time cards in "Submitted" status and if found add timecard and approver to List for notification
                         if ( timeCard.TimeCardStatus == TimeCardStatus.Submitted )
                         {
+                            _submittedTimeCardList.Add( timeCard );
+
                             NotificationItem notification = new NotificationItem();
                             notification.Person = timeCard.SubmittedToPersonAlias.Person;
-                            _notificationList.Add( notification );
+                            if( !_notificationList.Where( p => p.Person == notification.Person ).Any() )
+                            {
+                                _notificationList.Add( notification );
+                            }
                         }
                     }
 
@@ -78,18 +85,21 @@ namespace church.ccv.Hr.Jobs
                         var notificationRecipients = _notificationList.GroupBy( p => p.Person.Id ).ToList();
                         foreach ( var recipientId in notificationRecipients )
                         {
-                            var recipient = _notificationList.Where( n => n.Person.Id == recipientId.Key ).Select( n => n.Person ).FirstOrDefault();
                             var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( null );
 
+                            var recipient = _notificationList.Where( n => n.Person.Id == recipientId.Key ).Select( n => n.Person ).FirstOrDefault();
                             mergeFields.Add( "Person", recipient );
 
+                            List<TimeCard> submittedTimeCards = _submittedTimeCardList.Where( n => n.SubmittedToPersonAlias.Person == recipient ).ToList();
+                            mergeFields.Add( "TimeCards", submittedTimeCards );                                                        
+                            
                             recipients.Add( new RecipientData( recipient.Email, mergeFields ) );
 
                             Email.Send( systemEmailGuid.Value, recipients, appRoot );
 
                             recipients.Clear();
                         }
-                        context.Result = string.Format( "{0} approvals pending notiication {1} sent", recipients.Count, "email".PluralizeIf( recipients.Count() != 1 ) );
+                        context.Result = string.Format( "{0} {1} pending notification {2} sent", notificationRecipients.Count, "approval".PluralizeIf( notificationRecipients.Count() != 1), "email".PluralizeIf( recipients.Count() != 1 ) );
                     }
                     else
                     {
