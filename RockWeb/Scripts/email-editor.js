@@ -12,22 +12,24 @@
         if (!options.id) {
           throw 'id is required';
         }
-
+        
         var self = this;
+        self.editorToolbar = document.getElementById('editor-toolbar');
+        self.componentSelected = options.componentSelected;
 
         // configure and load the dragula script
-        var drake = dragula([document.getElementById('editor-toolbar'), document.querySelector('.dropzone')], {
+        var drake = dragula([self.editorToolbar, document.querySelector('.dropzone')], {
           isContainer: function (el)
           {
             return el.classList.contains('dropzone');
           },
           copy: function (el, source)
           {
-            return source === document.getElementById('editor-toolbar')
+            return source === self.editorToolbar
           },
           accepts: function (el, target)
           {
-            return target !== document.getElementById('editor-toolbar')
+            return target !== self.editorToolbar
           },
           ignoreInputTextSelection: true
         })
@@ -90,6 +92,7 @@
       },
       handleComponentClick: function (el, e)
       {
+        var self = this;
         e.preventDefault(); // prevent things like links from taking you off the page
 
         e.stopImmediatePropagation(); // prevent event from bubbling up to parents
@@ -110,7 +113,9 @@
         // add selected class to this component
         $(el).addClass('selected');
 
-        parent.loadPropertiesPage(componentType, $(el));
+        if (self.componentSelected) {
+          self.componentSelected(componentType, $(el));
+        }
       }
     };
 
@@ -118,5 +123,5 @@
   }());
 }(jQuery));
 
-Rock.controls.emailEditor.initialize({ id: 'editor-toolbar' });
+
 

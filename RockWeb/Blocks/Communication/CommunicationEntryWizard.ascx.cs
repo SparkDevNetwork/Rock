@@ -47,9 +47,7 @@ namespace RockWeb.Blocks.Communication
         #endregion
 
         #region Properties
-
-        // used for public / protected properties
-        public string BaseUrl { get; set; }
+        
         #endregion
 
         #region Base Control Methods
@@ -68,13 +66,10 @@ namespace RockWeb.Blocks.Communication
             this.BlockUpdated += Block_BlockUpdated;
             this.AddConfigurationUpdateTrigger( upnlContent );
 
-            BaseUrl = Request.Url.Scheme + "://" + Request.Url.Authority + Request.ApplicationPath.TrimEnd( '/' ) + "/";
-
-
+            // TODO: Make this a block setting
             imgupImage.BinaryFileTypeGuid = Rock.SystemGuid.BinaryFiletype.DEFAULT.AsGuid();
 
-            RockPage.AddScriptLink( ResolveUrl( "~/Scripts/summernote/summernote.min.js" ), true );
-            RockPage.AddScriptLink( "~/Scripts/Bundles/RockHtmlEditorPlugins", false );
+            htmlEditor.CallbackOnChangeScript = "updateTextComponent(this, contents);";
         }
 
         /// <summary>
