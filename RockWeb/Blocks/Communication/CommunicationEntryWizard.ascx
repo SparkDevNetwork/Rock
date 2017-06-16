@@ -66,7 +66,54 @@
 					            <!-- Text/Html Properties -->
                                 <div class="propertypanel propertypanel-text" data-component="text" style="display: none;">
 						            <h4 class="propertypanel-title">Text</h4>
-						            <div id="text-editor">Hello Summernote</div>
+
+                                    <div class="row">
+							            <div class="col-md-6">
+								            <div class="form-group">
+									            <label for="component-text-backgroundcolor">Background Color</label>
+									            <div id="component-text-backgroundcolor" class="input-group colorpicker-component">
+										            <input type="text" value="" class="form-control" />
+										            <span class="input-group-addon"><i></i></span>
+									            </div>
+								            </div>
+                                            <Rock:RockDropDownList ID="ddlTextLineHeight" runat="server" Label="Line Height">
+                                                <asp:ListItem />
+                                                <asp:ListItem Text="Normal" Value="100%" />
+                                                <asp:ListItem Text="Slight" Value="125%" />
+                                                <asp:ListItem Text="1 &frac12; spacing" Value="150%" />
+                                                <asp:ListItem Text="Double space" Value="200%" />
+                                                <asp:ListItem />
+                                            </Rock:RockDropDownList>
+							            </div>
+							            <div class="col-md-6">
+                                            <div class="row">
+                                                <div class="col-md-6">
+                                                    <div class="form-group">
+									                    <label for="component-text-margin-top">Margin Top</label>
+									                    <input class="form-control" id="component-text-margin-top">
+								                    </div>
+                                                    <div class="form-group">
+									                    <label for="component-text-margin-bottom">Margin Bottom</label>
+									                    <input class="form-control" id="component-text-margin-bottom">
+								                    </div>
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <div class="form-group">
+									                    <label for="component-text-margin-left">Margin Left</label>
+									                    <input class="form-control" id="component-text-margin-left">
+								                    </div>
+                                                    <div class="form-group">
+									                    <label for="component-text-margin-right">Margin Right</label>
+									                    <input class="form-control" id="component-text-margin-right">
+								                    </div>
+                                                </div>
+                                            </div>
+                                            
+                                            
+							            </div>
+						            </div>
+
+                                    <Rock:HtmlEditor ID="htmlEditor" runat="server" Height="350" />
 
 						            <a href="#" class="btn btn-primary" onclick="completeTextComponent(event);">Complete</a>
 					            </div>
@@ -246,7 +293,7 @@
 			
 		            <div id="editor-controls" style="display: none;">
 			            <div id="editor-toolbar">
-				            <div class="component component-text" data-content="<h1>Yo MTV Raps</h1>" data-state="template">
+				            <div class="component component-text" data-content="<h1>Big News</h1><p> This is a text block. You can use it to add text to your template.</p>" data-state="template">
 					            <i class="fa fa-align-justify"></i><br /> Text
 				            </div>
 				            <div class="component component-image" data-content="<img src='<%= VirtualPathUtility.ToAbsolute("~/Assets/Images/image-placeholder.jpg") %>' style='width: 100%;' data-width='full' />" data-state="template">
@@ -275,55 +322,58 @@
         <script>
             var $currentComponent = $(false);
             var $currentTextComponent = $(false);
-            
 			
 			// load in editor styles and scripts
 			var cssLink = document.createElement("link") 
-			cssLink.href = "<%=BaseUrl %>/Themes/Rock/Styles/email-editor.css"; 
+            cssLink.href = '<%=RockPage.ResolveRockUrl("~/Themes/Rock/Styles/email-editor.css", true ) %>';
 			cssLink.rel = "stylesheet"; 
 			cssLink.type = "text/css"; 
 
-			var fontAwesomeLink = document.createElement("link") 
-			fontAwesomeLink.href = "<%=BaseUrl %>Themes/Rock/Styles/font-awesome.css"; 
+			var fontAwesomeLink = document.createElement("link")
+			fontAwesomeLink.href = '<%=RockPage.ResolveRockUrl("~/Themes/Rock/Styles/font-awesome.css", true ) %>';
 			fontAwesomeLink.rel = "stylesheet"; 
 			fontAwesomeLink.type = "text/css";
 
             var jqueryLoaderScript = document.createElement("script");
             jqueryLoaderScript.type = "text/javascript";
-            jqueryLoaderScript.src = "<%=BaseUrl %>Scripts/jquery-1.12.4.min.js";
+            jqueryLoaderScript.src = '<%=RockPage.ResolveRockUrl("~/Scripts/jquery-1.12.4.min.js", true ) %>';
 
             var dragulaLoaderScript = document.createElement("script");
             dragulaLoaderScript.type = "text/javascript";
-            dragulaLoaderScript.src = "<%=BaseUrl %>Scripts/dragula.min.js";
+            dragulaLoaderScript.src = '<%=RockPage.ResolveRockUrl("~/Scripts/dragula.min.js", true ) %>';
 
-			var editorScript = document.createElement("script");
+            var $editorIframe = $('.js-emaileditor-iframe');
+            
+            var editorScript = document.createElement("script");
 			editorScript.type = "text/javascript";
-			editorScript.src = "<%=BaseUrl %>Scripts/email-editor.js";
-
-            var editorIframe = document.getElementsByClassName('js-emaileditor-iframe')[0];
-            editorIframe.addEventListener("load", function ()
+			editorScript.src = '<%=RockPage.ResolveRockUrl("~/Scripts/email-editor.js", true ) %>';
+            editorScript.onload = function ()
             {
-                frames['emaileditor-iframe'].document.head.appendChild(jqueryLoaderScript);
-                frames['emaileditor-iframe'].document.head.appendChild(cssLink);
-                frames['emaileditor-iframe'].document.head.appendChild(fontAwesomeLink);
-                frames['emaileditor-iframe'].document.head.appendChild(dragulaLoaderScript);
-                frames['emaileditor-iframe'].document.head.appendChild(editorScript);
+                $editorIframe[0].contentWindow.Rock.controls.emailEditor.initialize({
+                    id: 'editor-window',
+                    componentSelected: loadPropertiesPage
+                });
+            };
+
+            $editorIframe.load(function ()
+			{
+			    frames['emaileditor-iframe'].document.head.appendChild(jqueryLoaderScript);
+			    frames['emaileditor-iframe'].document.head.appendChild(cssLink);
+			    frames['emaileditor-iframe'].document.head.appendChild(fontAwesomeLink);
+			    frames['emaileditor-iframe'].document.head.appendChild(dragulaLoaderScript);
+			    frames['emaileditor-iframe'].document.head.appendChild(editorScript);
+
+			    var $this = $(this);
+			    var contents = $this.contents();
+
+			    var editorMarkup = $('#editor-controls').contents();
+
+			    $(contents).find('body').prepend(editorMarkup);
 			});
-			
-
-			$(".js-emaileditor-iframe").load(function () {
-					var $this = $(this);
-					var contents = $this.contents();
-
-					var editorMarkup = $('#editor-controls').contents();
-
-					$(contents).find('body').prepend(editorMarkup);
-			});	
 			
 			function loadPropertiesPage(componentType, $component)
 			{
 			    $currentComponent = $component;
-			    $currentTextComponent = $currentComponent.hasClass('component-text') ? $currentComponent : $(false);
 
 				// hide all panels
 				$('.propertypanel').hide();
@@ -334,7 +384,7 @@
 				// temp - set text of summernote
 				switch(componentType){
 					case 'text':
-					    setPropertiesTextComponent($currentTextComponent);
+					    setPropertiesTextComponent($currentComponent);
 						break;
 					case 'button':
 					    setPropertiesButtonComponent($currentComponent);
@@ -365,6 +415,51 @@
 			}
 
 		</script>
+
+        <!-- Text Component -->
+        <script>
+            $('#component-text-backgroundcolor').colorpicker().on('changeColor', function ()
+            {
+                textSetBackgroundColor();
+            });
+
+            function textSetBackgroundColor()
+            {
+                var color = $('#component-text-backgroundcolor').colorpicker('getValue');
+                $currentTextComponent.css('backgroundColor', color);
+            }
+
+            $('#component-text-margin-top,#component-text-margin-left,#component-text-margin-right,#component-text-margin-bottom').on('change', function (e)
+            {
+                textSetMargins();
+            });
+
+            function textSetMargins()
+            {
+                $currentTextComponent
+                    .css('margin-top', ValueToUnit($('#component-text-margin-top').val()))
+                    .css('margin-left', ValueToUnit($('#component-text-margin-left').val()))
+                    .css('margin-right', ValueToUnit($('#component-text-margin-right').val()))
+                    .css('margin-bottom', ValueToUnit($('#component-text-margin-bottom').val()))
+            }
+
+            function ValueToUnit(val)
+            {
+                if ($.isNumeric(val)) {
+                    return val + 'px';
+                }
+                else {
+                    return val;
+                }
+            }
+
+            $('#<%=ddlTextLineHeight.ClientID%>').on('change', function ()
+            {
+                var lineHeight = $(this).val();
+                $currentTextComponent.css('line-height', lineHeight);
+                $currentTextComponent.find('p').css('line-height', lineHeight);
+            });
+        </script>
 
         <!-- Button Component -->
 		<script>
@@ -456,83 +551,67 @@
 				$('#component-button-buttonpadding').val(buttonPadding);
 			}
 
-			function buttonSetButtonText(){
+			function buttonSetButtonText()
+			{
 				var text = $('#component-button-buttontext').val()
-
-				var component = $currentComponent;
-				$(component).find('.button-link').text(text);
-				$(component).find('.button-link').attr('title', text);
+				$currentComponent.find('.button-link')
+                    .text(text)
+                    .attr('title', text);
 			}
 
 			function buttonSetButtonUrl(){
 				var text = $('#component-button-buttonurl').val()
-
-				var component = $currentComponent;
-				$(component).find('.button-link').attr('href', text);
+				$currentComponent.find('.button-link').attr('href', text);
 			}
 
 			function buttonSetButtonBackgroundColor(){
 				var color = $('#component-button-buttonbackgroundcolor').colorpicker('getValue');
-
-				var component = $currentComponent;
-				$(component).find('.button-shell').css('backgroundColor', color);
+				$currentComponent.find('.button-shell').css('backgroundColor', color);
 			}
 
 			function buttonSetButtonFontColor(){
 				var color = $('#component-button-buttonfontcolor').colorpicker('getValue');
-
-				var component = $currentComponent;
-				$(component).find('.button-link').css('color', color);
+				$currentComponent.find('.button-link').css('color', color);
 			}
 
 			function buttonSetButtonWidth(){
 				var selectValue = $('#component-button-buttonwidth').val();
 
 				if (selectValue == 0){
-				    var component = $currentComponent;
-					$(component).find('.button-shell').removeAttr('width');
+				    $currentComponent.find('.button-shell').removeAttr('width');
 				}
 				else 
 				{
-				    var component = $currentComponent;
-					$(component).find('.button-shell').attr('width', '100%');
+				    $currentComponent.find('.button-shell').attr('width', '100%');
 				}
 			}
 
-			function buttonSetButtonAlign() {
+			function buttonSetButtonAlign()
+			{
 				var selectValue = $('#component-button-buttonalign').val();
-
-				var component = $currentComponent;
-				$(component).find('.button-innerwrap').attr('align', selectValue);
-				$(component).find('.button-innerwrap').css('text-align', selectValue);
+				$currentComponent.find('.button-innerwrap')
+                    .attr('align', selectValue)
+                    .css('text-align', selectValue);
 			}
 
 			function buttonSetButtonFont() {
 				var selectValue = $('#component-button-buttonfont').val();
-
-				var component = $currentComponent;
-				$(component).find('.button-link').css('font-family', selectValue);
+				$currentComponent.find('.button-link').css('font-family', selectValue);
 			}
 
 			function buttonSetButtonFontWeight() {
 				var selectValue = $('#component-button-buttonfontweight').val();
-
-				var component = $currentComponent;
-				$(component).find('.button-link').css('font-weight', selectValue);
+				$currentComponent.find('.button-link').css('font-weight', selectValue);
 			}
 
 			function buttonSetButtonFontSize(){
 				var text = $('#component-button-buttonfontsize').val()
-
-				var component = $currentComponent;
-				$(component).find('.button-link').css('font-size', text);
+				$currentComponent.find('.button-link').css('font-size', text);
 			}
 
 			function buttonSetButtonPadding(){
 				var text = $('#component-button-buttonpadding').val()
-
-				var component = $currentComponent;
-				$(component).find('.button-content').css('padding', text);
+				$currentComponent.find('.button-content').css('padding', text);
 			}
 		</script>
 
@@ -540,22 +619,21 @@
 		<script>
 			// script logic for the text component
 
-			// setup summernote
-			$(document).ready(function() {
-				$('#text-editor').summernote({
-					height: 350,
-					callbacks: {
-					    onChange: function (contents, $editable)
-					    {
-                            updateTextComponent(this, contents);
-						}
-					}
-				});
-			});
+		    function setPropertiesTextComponent($textComponent)
+		    {
+		        $currentTextComponent = $currentComponent.hasClass('component-text') ? $currentComponent : $(false);
+		        $('#<%=htmlEditor.ClientID%>').summernote('code', $textComponent.html());
 
-			function setPropertiesTextComponent($textComponent){
-			    $('#text-editor').summernote('code', $textComponent.html());
-			}
+			    $('#component-text-backgroundcolor').colorpicker('setValue', $textComponent.css('backgroundColor'));
+			    $('#component-text-margin-top').val($textComponent[0].style['margin-top']);
+			    $('#component-text-margin-left').val($textComponent[0].style['margin-left']);
+			    $('#component-text-margin-right').val($textComponent[0].style['margin-right']);
+			    $('#component-text-margin-bottom').val($textComponent[0].style['margin-bottom']);
+
+                debugger
+
+                $('#<%=ddlTextLineHeight.ClientID%>').val($textComponent[0].style['line-height']);
+            }
 
 			function completeTextComponent(e)
 			{
@@ -569,7 +647,7 @@
 			        $currentTextComponent.html(contents);
 			    }
 			}
-		</script>
+        </script>
 
         <!-- Image Component -->
         <script>
