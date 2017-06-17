@@ -18,7 +18,7 @@
         self.componentSelected = options.componentSelected;
 
         // configure and load the dragula script
-        var drake = dragula([self.editorToolbar, document.querySelector('.dropzone')], {
+        self.drake = dragula([self.editorToolbar, document.querySelector('.dropzone')], {
           isContainer: function (el)
           {
             return el.classList.contains('dropzone');
@@ -54,10 +54,26 @@
           }
         });
 
+        
+
+        this.initializeEventHandlers();
+      },
+      initializeEventHandlers: function ()
+      {
+        var self = this;
+        // wire up the clicking on components to call the 
+        // parent window to handle the properties editing
+        $(document).on('click', '.component', function (e)
+        {
+          if ($(this).attr('data-state') == 'component') {
+            self.handleComponentClick(this, e);
+          }
+        });
+
         // add autoscroll capabilities during dragging
         $(window).mousemove(function (e)
         {
-          if (drake.dragging) {
+          if (self.drake.dragging) {
             var $iframeEl = $(window.frameElement);
             var $parentWindow = $(this.parent.window);
             var clientY = e.clientY + $iframeEl.offset().top;
@@ -73,20 +89,6 @@
               scrollLevel -= 20;
               $parentWindow.scrollTop(scrollLevel);
             }
-          }
-        });
-
-        this.initializeEventHandlers();
-      },
-      initializeEventHandlers: function ()
-      {
-        var self = this;
-        // wire up the clicking on components to call the 
-        // parent window to handle the properties editing
-        $(document).on('click', '.component', function (e)
-        {
-          if ($(this).attr('data-state') == 'component') {
-            self.handleComponentClick(this, e);
           }
         });
       },

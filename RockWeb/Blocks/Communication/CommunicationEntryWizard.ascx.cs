@@ -67,9 +67,7 @@ namespace RockWeb.Blocks.Communication
             this.AddConfigurationUpdateTrigger( upnlContent );
 
             // TODO: Make this a block setting
-            imgupImage.BinaryFileTypeGuid = Rock.SystemGuid.BinaryFiletype.DEFAULT.AsGuid();
-
-            htmlEditor.CallbackOnChangeScript = "updateTextComponent(this, contents);";
+            componentImageUploader.BinaryFileTypeGuid = Rock.SystemGuid.BinaryFiletype.DEFAULT.AsGuid();
         }
 
         /// <summary>
@@ -95,28 +93,6 @@ namespace RockWeb.Blocks.Communication
         {
             pnlRecipientSelection.Visible = false;
             pnlEmailEditor.Visible = true;
-        }
-        #endregion
-
-        #region Email Editor Events
-        protected void imgupImage_ImageUploaded( object sender, ImageUploaderEventArgs e )
-        {
-            ScriptManager.RegisterStartupScript(
-                Page,
-                GetType(),
-                "SaveAndCloseImageComponentUploaded",
-                "saveAndCloseImageComponent(null);",
-                true );
-        }
-
-        protected void imgupImage_ImageRemoved( object sender, ImageUploaderEventArgs e )
-        {
-            ScriptManager.RegisterStartupScript(
-                Page,
-                GetType(),
-                "SaveAndCloseImageComponentRemoved",
-                "saveAndCloseImageComponent(null);",
-                true );
         }
         #endregion
 
