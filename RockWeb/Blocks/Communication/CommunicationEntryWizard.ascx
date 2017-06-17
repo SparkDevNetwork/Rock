@@ -76,7 +76,7 @@
 										            <span class="input-group-addon"><i></i></span>
 									            </div>
 								            </div>
-                                            <Rock:RockDropDownList ID="ddlTextLineHeight" runat="server" Label="Line Height">
+                                            <Rock:RockDropDownList Id="ddlLineHeight" CssClass="js-component-text-lineheight" ClientIDMode="Static" runat="server" Label="Line Height">
                                                 <asp:ListItem />
                                                 <asp:ListItem Text="Normal" Value="100%" />
                                                 <asp:ListItem Text="Slight" Value="125%" />
@@ -90,21 +90,29 @@
                                                 <div class="col-md-6">
                                                     <div class="form-group">
 									                    <label for="component-text-margin-top">Margin Top</label>
-									                    <input class="form-control" id="component-text-margin-top">
+                                                        <div class="input-group input-width-md date">
+								                            <input class="form-control" id="component-text-margin-top" type="number"><span class="input-group-addon">px</span>
+							                            </div>
 								                    </div>
                                                     <div class="form-group">
 									                    <label for="component-text-margin-bottom">Margin Bottom</label>
-									                    <input class="form-control" id="component-text-margin-bottom">
+									                    <div class="input-group input-width-md date">
+								                            <input class="form-control" id="component-text-margin-bottom" type="number"><span class="input-group-addon">px</span>
+							                            </div>
 								                    </div>
                                                 </div>
                                                 <div class="col-md-6">
                                                     <div class="form-group">
 									                    <label for="component-text-margin-left">Margin Left</label>
-									                    <input class="form-control" id="component-text-margin-left">
+									                    <div class="input-group input-width-md date">
+								                            <input class="form-control" id="component-text-margin-left" type="number"><span class="input-group-addon">px</span>
+							                            </div>
 								                    </div>
                                                     <div class="form-group">
 									                    <label for="component-text-margin-right">Margin Right</label>
-									                    <input class="form-control" id="component-text-margin-right">
+									                    <div class="input-group input-width-md date">
+								                            <input class="form-control" id="component-text-margin-right" type="number"><span class="input-group-addon">px</span>
+							                            </div>
 								                    </div>
                                                 </div>
                                             </div>
@@ -113,28 +121,25 @@
 							            </div>
 						            </div>
 
-                                    <Rock:HtmlEditor ID="htmlEditor" runat="server" Height="350" />
-
-						            <a href="#" class="btn btn-primary" onclick="completeTextComponent(event);">Complete</a>
+                                    <Rock:HtmlEditor ID="htmlEditor" CssClass="js-component-text-htmlEditor" runat="server" Height="350" CallbackOnChangeScript="updateTextComponent(this, contents);" />
 					            </div>
 
                                 <!-- Image Properties -->
                                 <div class="propertypanel propertypanel-image" data-component="image" style="display: none;">
 						            <h4 class="propertypanel-title">Image</h4>
-						            <Rock:ImageUploader ID="imgupImage" ClientIDMode="Static" runat="server" Label="Image" UploadAsTemporary="false" DoneFunctionClientScript="completeImageComponent(e, data)" />
+						            <Rock:ImageUploader ID="componentImageUploader" ClientIDMode="Static" runat="server" Label="Image" UploadAsTemporary="false" DoneFunctionClientScript="handleImageUpdate(e, data)" />
 
                                     <div class="row">
 							            <div class="col-md-6">
 								            <div class="form-group">
-									            <label for="component-image-imagewidth">Width</label>
-									            <select id="component-image-imagewidth" class="form-control">
+									            <label for="component-image-imgcsswidth">Width</label>
+									            <select id="component-image-imgcsswidth" class="form-control">
 										            <option value="0">Image Width</option>
 										            <option value="1">Full Width</option>
 									            </select>
 								            </div>
-							            </div>
-							            <div class="col-md-6">
-								            <div class="form-group">
+
+                                            <div class="form-group">
 									            <label for="component-image-imagealign">Align</label>
 									            <select id="component-image-imagealign" class="form-control">
 										            <option value="left">Left</option>
@@ -142,34 +147,49 @@
 										            <option value="right">Right</option>
 									            </select>
 								            </div>
+                                            
+                                            <div class="form-group">
+									            <label for="component-image-resizemode">Resize Mode</label>
+									            <select id="component-image-resizemode" class="form-control">
+										            <option value="crop">Crop</option>
+										            <option value="pad">Pad</option>
+										            <option value="stretch">Stretch</option>
+									            </select>
+								            </div>
+							            </div>
+							            <div class="col-md-6">
+                                            <div class="form-group">
+									            <label for="component-image-imagewidth">Image Width</label>
+									            <div class="input-group input-width-md date">
+								                    <input class="form-control" id="component-image-imagewidth" type="number"><span class="input-group-addon">px</span>
+							                    </div>
+								            </div>
+                                            <div class="form-group">
+									            <label for="component-image-imageheight">Image Height</label>
+									            <div class="input-group input-width-md date">
+								                    <input class="form-control" id="component-image-imageheight" type="number"><span class="input-group-addon">px</span>
+							                    </div>
+								            </div>
 							            </div>
 						            </div>
-
-						            <a href="#" class="btn btn-primary" onclick="completeImageComponent(event);">Complete</a>
 					            </div>
 
                                 <!-- Section Properties -->
                                 <div class="propertypanel propertypanel-section" data-component="section" style="display: none;">
 						            <h4 class="propertypanel-title">Section</h4>
                                     <pre>todo</pre>
-
-						            <a href="#" class="btn btn-primary" onclick="completeSectionComponent(event);">Complete</a>
 					            </div>
 
                                 <!-- Divider Properties -->
                                 <div class="propertypanel propertypanel-divider" data-component="divider" style="display: none;">
 						            <h4 class="propertypanel-title">Divider</h4>
                                     <pre>todo</pre>
-
-						            <a href="#" class="btn btn-primary" onclick="completeDividerComponent(event);">Complete</a>
 					            </div>
 
                                 <!-- Code Properties -->
                                 <div class="propertypanel propertypanel-code" data-component="code" style="display: none;">
 						            <h4 class="propertypanel-title">Code</h4>
                                     <pre>todo</pre>
-
-						            <a href="#" class="btn btn-primary" onclick="completeCodeComponent(event);">Complete</a>
 					            </div>
 
 					            <!-- Button Properties -->
@@ -281,11 +301,12 @@
 							            <div class="col-md-6">
 							            </div>
 						            </div>
-
-						            <a href="#" class="btn btn-primary" onclick="completeButtonComponent(event);">Complete</a>
 					            </div>
 
-                                
+                                <div class="js-propertypanel-actions actions" style="display:none">
+                                    <a href="#" class="btn btn-primary" onclick="clearPropertyPane(event)">Complete</a>
+                                    <a href="#" class="btn btn-link" onclick="deleteCurrentComponent()">Delete</a>
+                                </div>
 				            </div>
 
 			            </div>
@@ -346,7 +367,7 @@
             
             var editorScript = document.createElement("script");
 			editorScript.type = "text/javascript";
-			editorScript.src = '<%=RockPage.ResolveRockUrl("~/Scripts/email-editor.js", true ) %>';
+			editorScript.src = '<%=RockPage.ResolveRockUrl("~/Scripts/Rock/Controls/EmailEditor/email-editor.js", true ) %>';
             editorScript.onload = function ()
             {
                 $editorIframe[0].contentWindow.Rock.controls.emailEditor.initialize({
@@ -374,23 +395,21 @@
 			function loadPropertiesPage(componentType, $component)
 			{
 			    $currentComponent = $component;
+			    var $currentPropertiesPanel = $('.js-propertypanels').find("[data-component='" + componentType + "']");
 
-				// hide all panels
+				// hide all property panels
 				$('.propertypanel').hide();
-
-				// get proper panel
-				var propertyPanel = $('.js-propertypanels').find("[data-component='" + componentType + "']");
 
 				// temp - set text of summernote
 				switch(componentType){
 					case 'text':
-					    setPropertiesTextComponent($currentComponent);
+					    Rock.controls.emailEditor.textComponentHelper.setProperties($currentComponent);
 						break;
 					case 'button':
-					    setPropertiesButtonComponent($currentComponent);
+					    Rock.controls.emailEditor.buttonComponentHelper.setProperties($currentComponent);
 						break;
 				    case 'image':
-				        setPropertiesImageComponent($currentComponent);
+				        Rock.controls.emailEditor.imageComponentHelper.setProperties($currentComponent);
 				        break;
 				    case 'section':
 				    case 'divider':
@@ -399,329 +418,53 @@
 					default:
 						 clearPropertyPane(null);
 				}
-				
 
-				propertyPanel.show();
+			    // show proper panel
+				$currentPropertiesPanel.show();
+
+			    // show panel actions
+				$('.js-propertypanel-actions').show();
 			}
 
 			// function that components will call after they have processed their own save and close logic
 			function clearPropertyPane(e){
-				$('.propertypanel').hide();
-				$currentComponent.removeClass('selected');
+
+			    // hide all property panes, hide panel actions and set current as not selected
+			    $('.propertypanel').hide();
+			    $('.js-propertypanel-actions').hide();
+			    $currentComponent.removeClass('selected');
 				
 				if (e != null){
 					e.preventDefault();
 				}
 			}
 
+            // function that will remove the currently selected component from the email html
+			function deleteCurrentComponent()
+			{
+			    $currentComponent.remove();
+			    clearPropertyPane(null);
+			}
+
 		</script>
-
+        
         <!-- Text Component -->
-        <script>
-            $('#component-text-backgroundcolor').colorpicker().on('changeColor', function ()
-            {
-                textSetBackgroundColor();
-            });
-
-            function textSetBackgroundColor()
-            {
-                var color = $('#component-text-backgroundcolor').colorpicker('getValue');
-                $currentTextComponent.css('backgroundColor', color);
-            }
-
-            $('#component-text-margin-top,#component-text-margin-left,#component-text-margin-right,#component-text-margin-bottom').on('change', function (e)
-            {
-                textSetMargins();
-            });
-
-            function textSetMargins()
-            {
-                $currentTextComponent
-                    .css('margin-top', ValueToUnit($('#component-text-margin-top').val()))
-                    .css('margin-left', ValueToUnit($('#component-text-margin-left').val()))
-                    .css('margin-right', ValueToUnit($('#component-text-margin-right').val()))
-                    .css('margin-bottom', ValueToUnit($('#component-text-margin-bottom').val()))
-            }
-
-            function ValueToUnit(val)
-            {
-                if ($.isNumeric(val)) {
-                    return val + 'px';
-                }
-                else {
-                    return val;
-                }
-            }
-
-            $('#<%=ddlTextLineHeight.ClientID%>').on('change', function ()
-            {
-                var lineHeight = $(this).val();
-                $currentTextComponent.css('line-height', lineHeight);
-                $currentTextComponent.find('p').css('line-height', lineHeight);
-            });
-        </script>
+        <script src='<%=RockPage.ResolveRockUrl("~/Scripts/Rock/Controls/EmailEditor/textComponentHelper.js", true)%>' ></script>
 
         <!-- Button Component -->
-		<script>
-			// script logic for the button component
-			
-			$('#component-button-buttonbackgroundcolor').colorpicker().on('changeColor', function() {
-				buttonSetButtonBackgroundColor();
-			});
-
-			$('#component-button-buttonfontcolor').colorpicker().on('changeColor', function() {
-				buttonSetButtonFontColor();
-			});
-
-			$('#component-button-buttontext').on('input',function(e){
-				buttonSetButtonText();
-			});
-
-			$('#component-button-buttonurl').on('input',function(e){
-				buttonSetButtonUrl();
-			});
-
-			$('#component-button-buttonwidth').on('change',function(e){
-				buttonSetButtonWidth();
-			});
-
-			$('#component-button-buttonalign').on('change',function(e){
-				buttonSetButtonAlign();
-			});
-
-			$('#component-button-buttonfont').on('change',function(e){
-				buttonSetButtonFont();
-			});
-
-			$('#component-button-buttonfontweight').on('change',function(e){
-				buttonSetButtonFontWeight()
-			});
-
-			$('#component-button-buttonfontsize').on('input',function(e){
-				buttonSetButtonFontSize();
-			});
-
-			$('#component-button-buttonpadding').on('input',function(e){
-				buttonSetButtonPadding();
-			});
-
-			function completeButtonComponent(e){
-				buttonSetButtonText();
-				buttonSetButtonUrl();
-				buttonSetButtonBackgroundColor();
-				buttonSetButtonFontColor();
-				buttonSetButtonWidth();
-				buttonSetButtonAlign();
-				buttonSetButtonFont();
-				buttonSetButtonFontWeight()
-				buttonSetButtonFontSize();
-				buttonSetButtonPadding();
-				clearPropertyPane(e);
-			}
-
-			function setPropertiesButtonComponent($buttonComponent){
-				var buttonText = $buttonComponent.find('.button-link').text();
-				var buttonUrl = $buttonComponent.find('.button-link').attr('href');
-				var buttonBackgroundColor = $buttonComponent.find('.button-shell').css('backgroundColor');
-				var buttonFontColor = $buttonComponent.find('.button-link').css('color');
-				var buttonWidth = $buttonComponent.find('.button-shell').attr('width');
-				var buttonAlign = $buttonComponent.find('.button-innerwrap').attr('align');
-				var buttonFont = $buttonComponent.find('.button-link').css("font-family");
-				var buttonFontWeight = $buttonComponent.find('.button-link').css("font-weight");
-				var buttonFontSize = $buttonComponent.find('.button-link').css("font-size");
-				var buttonPadding = $buttonComponent.find('.button-content').css("padding");
-
-				$('#component-button-buttontext').val(buttonText);
-				$('#component-button-buttonurl').val(buttonUrl);
-				$('#component-button-buttonbackgroundcolor').colorpicker('setValue', buttonBackgroundColor);
-				$('#component-button-buttonfontcolor').colorpicker('setValue', buttonFontColor);
-
-				if (buttonWidth == '100%'){
-					$('#component-button-buttonwidth').val(1);
-				}
-				else {
-					$('#component-button-buttonwidth').val(0);
-				}
-
-				$('#component-button-buttonalign').val(buttonAlign);
-
-				$('#component-button-buttonfont').val(buttonFont);
-				$('#component-button-buttonfontweight').val(buttonFontWeight);
-				$('#component-button-buttonfontsize').val(buttonFontSize);
-				$('#component-button-buttonpadding').val(buttonPadding);
-			}
-
-			function buttonSetButtonText()
-			{
-				var text = $('#component-button-buttontext').val()
-				$currentComponent.find('.button-link')
-                    .text(text)
-                    .attr('title', text);
-			}
-
-			function buttonSetButtonUrl(){
-				var text = $('#component-button-buttonurl').val()
-				$currentComponent.find('.button-link').attr('href', text);
-			}
-
-			function buttonSetButtonBackgroundColor(){
-				var color = $('#component-button-buttonbackgroundcolor').colorpicker('getValue');
-				$currentComponent.find('.button-shell').css('backgroundColor', color);
-			}
-
-			function buttonSetButtonFontColor(){
-				var color = $('#component-button-buttonfontcolor').colorpicker('getValue');
-				$currentComponent.find('.button-link').css('color', color);
-			}
-
-			function buttonSetButtonWidth(){
-				var selectValue = $('#component-button-buttonwidth').val();
-
-				if (selectValue == 0){
-				    $currentComponent.find('.button-shell').removeAttr('width');
-				}
-				else 
-				{
-				    $currentComponent.find('.button-shell').attr('width', '100%');
-				}
-			}
-
-			function buttonSetButtonAlign()
-			{
-				var selectValue = $('#component-button-buttonalign').val();
-				$currentComponent.find('.button-innerwrap')
-                    .attr('align', selectValue)
-                    .css('text-align', selectValue);
-			}
-
-			function buttonSetButtonFont() {
-				var selectValue = $('#component-button-buttonfont').val();
-				$currentComponent.find('.button-link').css('font-family', selectValue);
-			}
-
-			function buttonSetButtonFontWeight() {
-				var selectValue = $('#component-button-buttonfontweight').val();
-				$currentComponent.find('.button-link').css('font-weight', selectValue);
-			}
-
-			function buttonSetButtonFontSize(){
-				var text = $('#component-button-buttonfontsize').val()
-				$currentComponent.find('.button-link').css('font-size', text);
-			}
-
-			function buttonSetButtonPadding(){
-				var text = $('#component-button-buttonpadding').val()
-				$currentComponent.find('.button-content').css('padding', text);
-			}
-		</script>
-
-        <!-- Text Component -->
-		<script>
-			// script logic for the text component
-
-		    function setPropertiesTextComponent($textComponent)
-		    {
-		        $currentTextComponent = $currentComponent.hasClass('component-text') ? $currentComponent : $(false);
-		        $('#<%=htmlEditor.ClientID%>').summernote('code', $textComponent.html());
-
-			    $('#component-text-backgroundcolor').colorpicker('setValue', $textComponent.css('backgroundColor'));
-			    $('#component-text-margin-top').val($textComponent[0].style['margin-top']);
-			    $('#component-text-margin-left').val($textComponent[0].style['margin-left']);
-			    $('#component-text-margin-right').val($textComponent[0].style['margin-right']);
-			    $('#component-text-margin-bottom').val($textComponent[0].style['margin-bottom']);
-
-                debugger
-
-                $('#<%=ddlTextLineHeight.ClientID%>').val($textComponent[0].style['line-height']);
-            }
-
-			function completeTextComponent(e)
-			{
-				clearPropertyPane(e);
-			}
-
-			function updateTextComponent(el, contents)
-			{
-			    if ($currentTextComponent)
-			    {
-			        $currentTextComponent.html(contents);
-			    }
-			}
-        </script>
+        <script src='<%=RockPage.ResolveRockUrl("~/Scripts/Rock/Controls/EmailEditor/buttonComponentHelper.js", true)%>' ></script>
 
         <!-- Image Component -->
+        <script src='<%=RockPage.ResolveRockUrl("~/Scripts/Rock/Controls/EmailEditor/imageComponentHelper.js", true)%>' ></script>
+
         <script>
-            function setPropertiesImageComponent($imageComponent) {
-                var imageUrl = $imageComponent.find('img').attr('src');
-                var imageWidth = $imageComponent.find('img').attr('data-width');
-                var imageAlign = $imageComponent.css('text-align');
-
-                $('#imgupImage').find('.imageupload-thumbnail-image').css('background-image', 'url("' + imageUrl + '")');
-
-                if (imageWidth == 'full') {
-                    $('#component-image-imagewidth').val(1);
-                }
-                else {
-                    $('#component-image-imagewidth').val(0);
-                }
-
-                $('#component-image-imagealign').val(imageAlign);
+            function updateTextComponent(el, contents)
+            {
+                Rock.controls.emailEditor.textComponentHelper.updateTextComponent(el, contents);
             }
-
-            function completeImageComponent(e, data) {
-
-                if (data != null) {
-                    imageSetImage(data);
-                }
-
-                imageSetImageWidth();
-                imageSetImageAlign();
-
-                clearPropertyPane(e);
-            }
-
-
-            $('#component-image-imagewidth').on('change', function (e) {
-                imageSetImageWidth();
-            });
-
-            $('#component-image-imagealign').on('change', function (e) {
-                imageSetImageAlign();
-            });
-
-            function imageSetImageAlign(){
-                var selectValue = $('#component-image-imagealign').val();
-
-                var component = $currentComponent;
-                $(component).css('text-align', selectValue);
-            }
-
-            function imageSetImageWidth(){
-                var selectValue = $('#component-image-imagewidth').val();
-
-                var component = $currentComponent;
-
-                if (selectValue == 0) {
-                    $(component).find('img').css('width', 'auto');
-                    $(component).find('img').attr('data-width', 'image');
-                }
-                else {
-                    $(component).find('img').css('width', '100%');
-                    $(component).find('img').css('data-width', 'full');
-                }
-            }
-
-            function imageSetImage(data) {
-
-                var imageUrl = Rock.settings.get('baseUrl')
-                        + 'GetImage.ashx?'
-                        + 'isBinaryFile=T' 
-                        + '&id=' + data.response().result.Id
-                        + '&fileName=' + data.response().result.FileName
-                        + '&width=500';
-
-                var component = $currentComponent;
-                $(component).find('img').attr('src', imageUrl);
+            function handleImageUpdate(e, data)
+            {
+                Rock.controls.emailEditor.imageComponentHelper.handleImageUpdate(e, data);
             }
         </script>
 
