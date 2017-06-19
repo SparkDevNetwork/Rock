@@ -142,6 +142,14 @@
     <None Include="packages.config" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <PropertyGroup>
+  	<!-- There may be a better way of building this reference, but I don't see it -->
+    <MSBuildCommunityTasksPath>$(SolutionDir)\packages\MSBuildTasks.1.5.0.235\tools</MSBuildCommunityTasksPath>
+	</PropertyGroup>
+	
+	<Import Project="$(MSBuildCommunityTasksPath)\MSBuild.Community.Tasks.Targets" />
+  <!-- <Import Project="..\Build\MSBuildCommunityTasks\MSBuild.Community.Tasks.Targets" /> -->
+  
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">
@@ -149,4 +157,69 @@
   <Target Name="AfterBuild">
   </Target>
   -->
+  <PropertyGroup>
+    <BuildDir>builds</BuildDir>
+  </PropertyGroup>
+  
+  <Target Name="AfterBuild" DependsOnTargets="BuildPackageZip">
+  </Target>
+
+  <!-- Clean old stuff -->
+  <Target Name="DeleteFiles">
+    <ItemGroup>
+      <OldFiles Include="$(BuildDir)\tmp\**" />
+    </ItemGroup>
+    <Delete Files="@(OldFiles)" />
+  </Target>
+  
+  <!-- Prepare the files to be zipped -->
+  <Target Name="CopyFiles" DependsOnTargets="DeleteFiles">
+    <ItemGroup>
+      <CopyFiles Include="$(OutputPath)com.centralaz.RoomManagement.dll;$(OutputPath)itextsharp.dll" />
+      <BlockCode Include="..\RockWeb\Plugins\com_centralaz\RoomManagement\*" />
+      <VersionFile Include="builds\.version" />
+    </ItemGroup>
+    
+    <MakeDir Directories="$(BuildDir)\tmp" Condition="!Exists('$(BuildDir)\tmp')" />
+    <MakeDir Directories="$(BuildDir)\tmp\content" Condition="!Exists('$(BuildDir)\tmp\content')" />
+    <MakeDir Directories="$(BuildDir)\tmp\content\bin" Condition="!Exists('$(BuildDir)\tmp\content\bin')" />
+    <MakeDir Directories="$(BuildDir)\tmp\content\Plugins" Condition="!Exists('$(BuildDir)\tmp\content\Plugins')" />
+    <MakeDir Directories="$(BuildDir)\tmp\install" Condition="!Exists('$(BuildDir)\tmp\install')" />
+    <MakeDir Directories="$(BuildDir)\tmp\uninstall" Condition="!Exists('$(BuildDir)\tmp\uninstall')" />
+    
+    <Copy SourceFiles="@(CopyFiles)" DestinationFolder="$(BuildDir)\tmp\content\bin\" />
+    <Copy SourceFiles="@(BlockCode)" DestinationFolder="$(BuildDir)\tmp\content\Plugins\com_centralaz\RoomManagement\" />
+    
+    <!-- Just put the .version file into the install and uninstall folder so that those folders are created in the zip -->
+    <Copy SourceFiles="@(VersionFile)" DestinationFolder="$(BuildDir)\tmp\install" />
+    <Copy SourceFiles="@(VersionFile)" DestinationFolder="$(BuildDir)\tmp\uninstall" />
+  </Target>
+  
+  <!-- Create the package zip file -->
+  <Target Name="BuildPackageZip" DependsOnTargets="CopyFiles" Condition="'$(Configuration)' == 'Release'">
+    <ItemGroup>
+      <ZipFiles Include="$(BuildDir)\tmp\**" />
+    </ItemGroup>
+    <!-- 
+    	When creating a new version of this project, update the Build number 
+    	(and Major and Minor if needed) in the .version file to be the correct version.
+    	The revision number will always be automatic.
+    -->
+    <Version VersionFile="builds\.version" BuildType="None" RevisionType="Increment" >
+      <Output TaskParameter="Major" PropertyName="Major" />
+      <Output TaskParameter="Minor" PropertyName="Minor" />
+      <Output TaskParameter="Build" PropertyName="Build" />
+      <Output TaskParameter="Revision" PropertyName="Revision" />
+    </Version>
+
+	  <PropertyGroup>
+	    <PackageOut>$(BuildDir)\$(Major).$(Minor).$(Build)</PackageOut>
+	  </PropertyGroup>
+	  
+    <MakeDir Directories="$(PackageOut)" Condition="!Exists('$(PackageOut)')" />
+
+    <Message Text="Version: $(Major).$(Minor).$(Build).$(Revision)" />
+    <Zip Files="@(ZipFiles)" WorkingDirectory="$(BuildDir)\tmp\" ZipFileName="$(PackageOut)\ResourceReservation-v$(Major).$(Minor).$(Build).$(Revision).plugin" ZipLevel="9" />
+  </Target>
+  
 </Project>

@@ -105,6 +105,7 @@ namespace com.centralaz.RoomManagement.Migrations
 
             // Page: Resource Categories
             RockMigrationHelper.AddPage( "0FF1D7F4-BF6D-444A-BD71-645BD764EC40", "D65F783D-87A9-4CC9-8110-E83466A0EADB", "Resource Categories", "", "455FFF96-AE2A-435A-B3E2-F6C32754E53A", "fa fa-folder" ); // Site:Rock RMS
+            Sql( "UPDATE [Page] SET [BreadCrumbDisplayName] = 0 WHERE [Guid] = '455FFF96-AE2A-435A-B3E2-F6C32754E53A'" );
             RockMigrationHelper.UpdateBlockType( "Categories", "Block for managing categories for a specific, configured entity type.", "~/Blocks/Core/Categories.ascx", "Core", "620FC4A2-6587-409F-8972-22065919D9AC" );
             RockMigrationHelper.AddBlock( "455FFF96-AE2A-435A-B3E2-F6C32754E53A", "", "620FC4A2-6587-409F-8972-22065919D9AC", "Categories", "Main", "", "", 0, "07FFD3C4-5E22-4026-AAE3-EABE608D316A" );
             RockMigrationHelper.AddBlockTypeAttribute( "620FC4A2-6587-409F-8972-22065919D9AC", "3549BAB6-FE1B-4333-AFC4-C5ACA01BB8EB", "Entity Type", "EntityType", "", "The entity type to manage categories for.", 0, @"", "C405A507-7889-4287-8342-105B89710044" );
