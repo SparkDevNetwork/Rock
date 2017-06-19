@@ -617,7 +617,7 @@ namespace RockWeb.Blocks.Finance
 
                 if ( _focusControl == null )
                 {
-                    _focusControl = rptAccounts.ControlsOfTypeRecursive<Rock.Web.UI.Controls.CurrencyBox>().FirstOrDefault();
+                    _focusControl = rptAccounts.ControlsOfTypeRecursive<Rock.Web.UI.Controls.CurrencyBox>().Where( a => a.Visible ).FirstOrDefault();
                 }
             }
         }
@@ -977,7 +977,7 @@ namespace RockWeb.Blocks.Finance
                 // if a person was selected using the PersonPicker, set the PersonDropDown to unselected
                 ddlIndividual.SetValue( string.Empty );
                 LoadPersonPreview( ppSelectNew.PersonId.Value );
-                _focusControl = rptAccounts.ControlsOfTypeRecursive<Rock.Web.UI.Controls.CurrencyBox>().FirstOrDefault();
+                _focusControl = rptAccounts.ControlsOfTypeRecursive<Rock.Web.UI.Controls.CurrencyBox>().Where(a => a.Visible).FirstOrDefault();
                 
                 nbSaveError.Text = string.Empty;
                 nbSaveError.Visible = false;
@@ -1140,7 +1140,7 @@ namespace RockWeb.Blocks.Finance
                 {
                     accountBox.Text = cbOptionalAccountAmount.Text;
                     cbOptionalAccountAmount.Text = string.Empty;
-                    accountBox.Focus();
+                    _focusControl = accountBox;
                     break;
                 }
             }
