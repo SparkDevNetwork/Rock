@@ -34,13 +34,15 @@ using church.ccv.Utility.Groups;
 
 namespace RockWeb.Plugins.church_ccv.Groups
 {
-    [DisplayName( "NH Group Member Detail" )]
+    [DisplayName( "NS Group Member Detail" )]
     [Category( "CCV > Groups" )]
-    [Description( "Displays the details of the given Neighborhood group member " )]
-    [WorkflowTypeField( "OptOut Needs Next Steps Coach", "The workflow to use when opting out a person due to them needing a Next Steps Coach. The Person will be set as the workflow 'Entity' attribute when processing is started.", false, false, "", "" )]
-    [WorkflowTypeField( "OptOut Not Attending Group", "The workflow to use when opting out a person due to them not attending group. The Person will be set as the workflow 'Entity' attribute when processing is started.", false, false, "", "" )]
+    [Description( "Displays the details of the given Next Steps group member " )]
+    [WorkflowTypeField( "OptOut Do Not Contact Workflow", "The workflow to use when opting out a person due to them not wanting to be contacted. The Person will be set as the workflow 'Entity' attribute when processing is started.", false, false, "", "" )]
+    [WorkflowTypeField( "OptOut Unable To Reach Workflow", "The workflow to use when opting out a person due to them not beaing reachable. The Person will be set as the workflow 'Entity' attribute when processing is started.", false, false, "", "" )]
+    [WorkflowTypeField( "OptOut Neighborhood Workflow", "The workflow to use when opting out a person due to them being in a neighborhood group. The Person will be set as the workflow 'Entity' attribute when processing is started.", false, false, "", "" )]
     [WorkflowTypeField( "OptOut No Longer Attends Workflow", "The workflow to use when opting out a person due to them no longer attending CCV. The Person will be set as the workflow 'Entity' attribute when processing is started.", false, false, "", "" )]
-    public partial class NHGroupMemberDetail : ToolboxGroupMemberDetail, IDetailBlock
+    [WorkflowTypeField( "OptOut Reassign To New Coach", "Workflow used when a person should be reassigned to a new coach.", false, false, "", "" )]
+    public partial class NSGroupMemberDetail : ToolboxGroupMemberDetail, IDetailBlock
     {
         #region Control Methods
 
@@ -55,7 +57,7 @@ namespace RockWeb.Plugins.church_ccv.Groups
         public override CheckBox SMSEnabled { get { return cbSms; } }
         public override Rock.Web.UI.Controls.RockDropDownList OptOutReason { get { return ddlOptOutReason; } }
         public override Rock.Web.UI.Controls.DatePicker FollowUpDatePicker { get { return dpFollowUpDate; } }
-        public override Rock.Web.UI.Controls.RockTextBox ReassignReason { get { return null; } }
+        public override Rock.Web.UI.Controls.RockTextBox ReassignReason { get { return tbReassignReason; } }
         public override Rock.Web.UI.Controls.ImageEditor ProfilePicEditor { get { return imgPhoto; } }
 
         public override Literal EmailReceipt { get { return lReceipt; } }
@@ -64,7 +66,7 @@ namespace RockWeb.Plugins.church_ccv.Groups
         {
             base.OnInit( e );
 
-            OptOutReasonDefinedType = DefinedTypeCache.Read( new Guid( church.ccv.Utility.SystemGuids.DefinedType.NEIGHBORHOOD_OPT_OUT_REASON ) );
+            OptOutReasonDefinedType = DefinedTypeCache.Read( new Guid( church.ccv.Utility.SystemGuids.DefinedType.NEXT_STEPS_OPT_OUT_REASON ) );
         }
 
         /// <summary>
@@ -116,9 +118,7 @@ namespace RockWeb.Plugins.church_ccv.Groups
 
                 // let the base save its stuff
                 base.SaveGroupMember( groupMember, rockContext );
-                
 
-                // now we only need to save stuff specific to this toolbox
 
                 // set their home phone
                 var homeNumberType = Rock.Web.Cache.DefinedValueCache.Read( new Guid( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_HOME ) );
@@ -126,7 +126,7 @@ namespace RockWeb.Plugins.church_ccv.Groups
 
                 // set their anniversary date
                 groupMember.Person.AnniversaryDate = dpAnniversaryDate.SelectedDate;
-                
+                    
                 // using WrapTransaction because there are three Saves
                 rockContext.WrapTransaction( () =>
                 {
@@ -139,28 +139,37 @@ namespace RockWeb.Plugins.church_ccv.Groups
                     groupMember.SaveAttributeValues( rockContext );
                 } );
 
-                // pass the group to the workflow
-                var workflowAttribs = new Dictionary<string, string>();
-                workflowAttribs.Add( "Group", groupMember.Group.Guid.ToString() );
-
                 // now handle any opt-out specific behavior
                 switch ( ddlOptOutReason.SelectedValue )
                 {
-                    case church.ccv.Utility.SystemGuids.DefinedValue.NEIGHBORHOOD_OPT_OUT_NOT_ATTENDING_GROUP:
+                    case church.ccv.Utility.SystemGuids.DefinedValue.NEXT_STEPS_OPT_OUT_UNABLE_TO_REACH:
                     {
-                        StartWorkflow( "OptOutNotAttendingGroup", groupMember.Person, workflowAttribs, rockContext );
+                        StartWorkflow( "OptOutUnableToReachWorkflow", groupMember.Person, null, rockContext );
+                        break;
+                    }
+                    case church.ccv.Utility.SystemGuids.DefinedValue.NEXT_STEPS_OPT_OUT_DO_NOT_CONTACT:
+                    {
+                        StartWorkflow( "OptOutDoNotContactWorkflow", groupMember.Person, null, rockContext );
+                        break;
+                    }
+                    case church.ccv.Utility.SystemGuids.DefinedValue.NEXT_STEPS_OPT_OUT_REASSIGN_TO_NEW_COACH:
+                    {
+                        Dictionary<string, string> attribDict = new Dictionary<string, string>( );
+                        attribDict.Add( "Reason", tbReassignReason.Text );
+
+                        StartWorkflow( "OptOutReassignToNewCoach", groupMember.Person, attribDict, rockContext );
                         break;
                     }
 
-                    case church.ccv.Utility.SystemGuids.DefinedValue.NEIGHBORHOOD_OPT_OUT_NEEDS_NEXT_STEPS_COACH:
+                    case church.ccv.Utility.SystemGuids.DefinedValue.NEXT_STEPS_OPT_OUT_REGISTERED_FOR_NEIGHBORHOOD_GROUP:
                     {
-                        StartWorkflow( "OptOutNeedsNextStepsCoach", groupMember.Person, workflowAttribs, rockContext );
+                        StartWorkflow( "OptOutNeighborhoodWorkflow", groupMember.Person, null, rockContext );
                         break;
                     }
 
-                    case church.ccv.Utility.SystemGuids.DefinedValue.NEIGHBORHOOD_OPT_OUT_NO_LONGER_ATTENDING_CCV:
+                    case church.ccv.Utility.SystemGuids.DefinedValue.NEXT_STEPS_OPT_OUT_NO_LONGER_ATTENDING_CCV:
                     {
-                        StartWorkflow( "OptOutNoLongerAttendsWorkflow", groupMember.Person, workflowAttribs, rockContext );
+                        StartWorkflow( "OptOutNoLongerAttendsWorkflow", groupMember.Person, null, rockContext );
                         break;
                     }
                 }
@@ -217,8 +226,8 @@ namespace RockWeb.Plugins.church_ccv.Groups
         public void ShowDetail( int adminPersonId, int groupMemberId, int? groupId )
         {
             var rockContext = new RockContext();
-            Person adminPerson = new PersonService( rockContext ).Get( adminPersonId );
             GroupMember groupMember = new GroupMemberService( rockContext ).Get( groupMemberId );
+            Person adminPerson = new PersonService( rockContext ).Get( adminPersonId );
 
             // make sure both exist, otherwise warn one is wrong.
             if ( groupMember == null || adminPerson == null )
@@ -227,13 +236,13 @@ namespace RockWeb.Plugins.church_ccv.Groups
                 {
                     nbErrorMessage.NotificationBoxType = Rock.Web.UI.Controls.NotificationBoxType.Warning;
                     nbErrorMessage.Title = "Warning";
-                    nbErrorMessage.Text = "Group Member or Admin Person not found. Group Member may have been moved to another group or deleted.";
+                    nbErrorMessage.Text = "Group Member or Admin not found. Group Member may have been moved to another group or deleted.";
                 }
                 else
                 {
                     nbErrorMessage.NotificationBoxType = Rock.Web.UI.Controls.NotificationBoxType.Danger;
                     nbErrorMessage.Title = "Invalid Request";
-                    nbErrorMessage.Text = "An incorrect querystring parameter was used.  Valid GroupMemberId and AdminPersonId parameters are required.";
+                    nbErrorMessage.Text = "An incorrect querystring parameter was used.  Valid GroupMemberId and CoachGroupMemberId parameters are required.";
                 }
 
                 pnlEditDetails.Visible = false;
@@ -248,15 +257,15 @@ namespace RockWeb.Plugins.church_ccv.Groups
                 hfGroupId.Value = groupMember.GroupId.ToString();
                 hfGroupMemberId.Value = groupMember.Id.ToString();
                 hfAdminPersonId.Value = adminPerson.Id.ToString();
-                
-                // get their home phone number
+                              
+                // get their home and mobile phone numbers
                 var homeNumberType = Rock.Web.Cache.DefinedValueCache.Read( new Guid( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_HOME ) );
                 var homephone = groupMember.Person.PhoneNumbers.Where( p => p.NumberTypeValueId == homeNumberType.Id ).FirstOrDefault();
                 if ( homephone != null )
                 {
                     pnHome.Text = homephone.NumberFormatted;
                 }
-                
+            
                 // get their anniversary date
                 dpAnniversaryDate.SelectedDate = groupMember.Person.AnniversaryDate;
                 
@@ -272,7 +281,7 @@ namespace RockWeb.Plugins.church_ccv.Groups
                 SetControlVisibilities();
             }
         }
-        /// <summary>
+                /// <summary>
         /// Handles the SelectedIndexChanged event of the ddlOptOutReason control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
@@ -285,16 +294,20 @@ namespace RockWeb.Plugins.church_ccv.Groups
         /// <summary>
         /// Sets the control visibilities.
         /// </summary>
-        private void SetControlVisibilities()
+        private void SetControlVisibilities( )
         {
             // toggle the follow-up date on or off depending on the reason.
-            dpFollowUpDate.Visible = ddlOptOutReason.SelectedValue == church.ccv.Utility.SystemGuids.DefinedValue.NEIGHBORHOOD_OPT_OUT_FOLLOW_UP_LATER;
+            dpFollowUpDate.Visible = ddlOptOutReason.SelectedValue == church.ccv.Utility.SystemGuids.DefinedValue.NEXT_STEPS_OPT_OUT_FOLLOW_UP_LATER;
 
             // show the active / pending status picker if there's NO opt out reason.
             rblActivePendingStatus.Visible = ddlOptOutReason.SelectedValue == string.Empty;
-            
+
+            // show the reassignment reason field if that's the opt out choice selected.
+            tbReassignReason.Visible = ddlOptOutReason.SelectedValue == church.ccv.Utility.SystemGuids.DefinedValue.NEXT_STEPS_OPT_OUT_REASSIGN_TO_NEW_COACH;
+
             dpAnniversaryDate.Visible = IsMarried == true;
         }
+
         #endregion
     }
 }

@@ -40,7 +40,7 @@ namespace church.ccv.Utility.Groups
     /// </summary>
     [DisplayName( "Toolbox Group Detail Lava" )]
     [Category( "CCV > Groups" )]
-    [Description( "Presents the details of a group using Lava" )]
+    [Description( "Base class for all group detail blocks." )]
     [LinkedPage( "Person Detail Page", "Page to link to for more information on a group member.", false, "", "", 0 )]
     [LinkedPage( "Roster Page", "The page to link to to view the roster.", false, "", "", 2 )]
     [LinkedPage( "Communication Page", "The communication page to use for sending emails to the group members.", false, "", "", 4 )]
@@ -61,9 +61,10 @@ namespace church.ccv.Utility.Groups
         public abstract TimePicker MeetingTime { get; }
 
         public abstract Literal GroupName { get; }
-        //public abstract TextBox GroupDesc { get; }
-
-        //public abstract CheckBox IsActive { get; }
+        
+        // Stores a list of group attribute keys that should not be editable by the coach.
+        // by default, it's an empty list.
+        public List<string> ExcludedAttribKeys { get; private set; }
 
         protected int _groupId { get; set; }
 
@@ -169,6 +170,8 @@ namespace church.ccv.Utility.Groups
         {
             base.OnInit( e );
 
+            ExcludedAttribKeys = new List<string>( );
+
             // this event gets fired after block settings are updated. it's nice to repaint the screen if these settings would alter it
             this.BlockUpdated += Block_BlockUpdated;
             this.AddConfigurationUpdateTrigger( MainPanel );
@@ -194,7 +197,7 @@ namespace church.ccv.Utility.Groups
                 group.LoadAttributes();
 
                 AttributesPlaceholder.Controls.Clear();
-                Rock.Attribute.Helper.AddEditControls( group, AttributesPlaceholder, false, BlockValidationGroup );
+                Rock.Attribute.Helper.AddEditControls( group, AttributesPlaceholder, false, BlockValidationGroup, ExcludedAttribKeys );
             }
         }
 
@@ -434,7 +437,12 @@ namespace church.ccv.Utility.Groups
                 MainViewContent.Text = "<div class='alert alert-warning'>No group was available from the querystring.</div>";
             }
         }
-
+        
+        /// <summary>
+        /// Displays the edit panel, letting a coach edit the attributes of their group.
+        /// Pass an optional list of Group Attribute Keys to exclude if there are attributes of the group the coach
+        /// should not be allowed to edit.
+        /// </summary>
         protected void DisplayEditGroup( )
         {
             GroupEdit.Visible = true;
@@ -477,10 +485,10 @@ namespace church.ccv.Utility.Groups
                     {
                         Schedule.Visible = false;
                     }
-
+                    
                     group.LoadAttributes();
                     AttributesPlaceholder.Controls.Clear();
-                    Rock.Attribute.Helper.AddEditControls( group, AttributesPlaceholder, true, BlockValidationGroup );
+                    Rock.Attribute.Helper.AddEditControls( group, AttributesPlaceholder, true, BlockValidationGroup, ExcludedAttribKeys );
                 }
                 else
                 {

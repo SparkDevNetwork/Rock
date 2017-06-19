@@ -89,6 +89,17 @@ namespace church.ccv.Utility.SystemGuids
         public const string NEXT_GEN_OPT_OUT_MOVED_SCHOOLS  = "878D7CE4-22A2-4833-B36A-792A5C731938";
 
         /// <summary>
+        /// Person completed the short term group.
+        /// </summary>
+        public const string SHORT_TERM_OPT_OUT_COMPLETED_GROUP = "45AC7694-DF0A-4CFE-97A3-FEFA82B0B070";
+
+        /// <summary>
+        /// Person did not show for the short term group.
+        /// </summary>
+        public const string SHORT_TERM_OPT_OUT_DID_NOT_SHOW = "EC0BBE71-3937-4170-B7C4-EECB85397C11";
+
+        
+        /// <summary>
         /// Residency Competency Type
         /// </summary>
         public const string RESIDENCY_COMPETENCY_STRATEGIC_AGILITY = "E9D1F7A6-4DD4-4D30-B629-72FE3FA58FEC";

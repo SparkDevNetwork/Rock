@@ -22,6 +22,11 @@ namespace church.ccv.Utility.SystemGuids
         /// Defines the reason a coach needs to opt-out a next-gen group member.
         /// </summary>
         public const string NEXT_GEN_OPT_OUT_REASON = "93611663-D83E-464E-BEB7-3C2B61BB29BA";
+
+        /// <summary>
+        /// Defines the reason a coach needs to opt-out a short term group member.
+        /// </summary>
+        public const string SHORT_TERM_OPT_OUT_REASON = "81CEFCB6-81B1-47AE-AE1D-69F8CA78BC8F";
 		
 		
         /// <summary>

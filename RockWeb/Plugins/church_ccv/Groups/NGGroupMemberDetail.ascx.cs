@@ -32,7 +32,7 @@ using church.ccv.Utility.Groups;
 
 namespace RockWeb.Plugins.church_ccv.Groups
 {
-    [DisplayName( "Next Gen Group Member Detail" )]
+    [DisplayName( "NG Group Member Detail" )]
     [Category( "CCV > Groups" )]
     [Description( "Displays the details of the given Next Gen group member " )]
     [WorkflowTypeField( "OptOut Not Attending Group Workflow", "The workflow to use when opting out a person due to them no longer attending CCV. The Person will be set as the workflow 'Entity' attribute when processing is started.", false, false, "", "" )]

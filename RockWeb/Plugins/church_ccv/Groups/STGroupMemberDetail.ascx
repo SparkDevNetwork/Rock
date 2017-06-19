@@ -1,4 +1,4 @@
-﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="NextStepsGroupMemberDetail.ascx.cs" Inherits="RockWeb.Plugins.church_ccv.Groups.NextStepsGroupMemberDetail" %>
+﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="STGroupMemberDetail.ascx.cs" Inherits="RockWeb.Plugins.church_ccv.Groups.STGroupMemberDetail" %>
 
 <asp:UpdatePanel ID="upDetail" runat="server">
     <ContentTemplate>
@@ -30,6 +30,7 @@
                                 </small>
                                 <Rock:ImageEditor ID="imgPhoto" runat="server" BinaryFileTypeGuid="03BD8476-8A9F-4078-B628-5B538F967AFC" />
                             </h3>
+
                             <Rock:RockRadioButtonList ID="rblActivePendingStatus" runat="server" Label="Status" RepeatDirection="Horizontal" />
                             <Rock:EmailBox ID="ebEmailAddress" runat="server" Label="Email Address" RepeatDirection="Horizontal" />
                             <Rock:PhoneNumberBox ID="pnHome" runat="server" Label="Home Phone" />
@@ -49,7 +50,6 @@
 
                             <Rock:RockDropDownList ID="ddlOptOutReason" runat="server" Label="Opt Out" AutoPostBack="true" OnSelectedIndexChanged="ddlOptOutReason_SelectedIndexChanged" />
                             <Rock:DatePicker ID="dpFollowUpDate" runat="server" Label="Follow Up Date" />
-                            <Rock:RockTextBox ID="tbReassignReason" runat="server" TextMode="MultiLine" Rows="3" Label="Reason for Reassignment" />
                         </div>
                     </div>
 

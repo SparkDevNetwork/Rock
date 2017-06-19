@@ -35,7 +35,7 @@ namespace church.ccv.Utility.Groups
 {
     [DisplayName( "Toolbox Group Member Detail" )]
     [Category( "CCV > Groups" )]
-    [Description( "Displays the details of the given Next Steps group member " )]
+    [Description( "Base class for all group member detail blocks." )]
     public abstract class ToolboxGroupMemberDetail : RockBlock
     {
         #region Control Methods
