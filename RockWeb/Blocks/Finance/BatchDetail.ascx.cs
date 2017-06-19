@@ -192,6 +192,15 @@ namespace RockWeb.Blocks.Finance
                 }
 
                 BatchStatus batchStatus = (BatchStatus)ddlStatus.SelectedIndex;
+
+                string errorMessage;
+                if ( !batch.IsValidBatchStatusChange( batch.Status, batchStatus, this.CurrentPerson, out errorMessage ) )
+                {
+                    cvBatch.IsValid = false;
+                    cvBatch.ErrorMessage = errorMessage;
+                    return;
+                }
+
                 History.EvaluateChange( changes, "Status", batch.Status, batchStatus );
                 batch.Status = batchStatus;
 
@@ -536,6 +545,14 @@ namespace RockWeb.Blocks.Finance
 
                 ddlStatus.BindToEnum<BatchStatus>();
                 ddlStatus.SelectedIndex = (int)(BatchStatus)batch.Status;
+                ddlStatus.Enabled = true;
+                if ( batch.Status == BatchStatus.Closed )
+                {
+                    if ( !batch.IsAuthorized( "ReopenBatch", this.CurrentPerson ) )
+                    {
+                        ddlStatus.Enabled = false;
+                    }
+                }
 
                 campCampus.Campuses = CampusCache.All();
                 if ( batch.CampusId.HasValue )
