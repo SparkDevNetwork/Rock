@@ -101,6 +101,8 @@
 
                     <div class="actions">
                         <asp:LinkButton ID="lbSave" runat="server" Text="Save" AccessKey="s" CssClass="btn btn-primary" OnClick="lbSave_Click" />
+                        <asp:LinkButton ID="btnSaveThenAdd" runat="server" AccessKey="a" Text="Save Then Add" CssClass="btn btn-link" OnClick="btnSaveThenAdd_Click" />
+                        <asp:LinkButton ID="btnSaveThenViewBatch" runat="server" Text="Save Then View Batch" CssClass="btn btn-link" OnClick="btnSaveThenViewBatch_Click" />
                         <asp:LinkButton ID="lbCancel" runat="server" Text="Cancel" AccessKey="c" CssClass="btn btn-link" CausesValidation="false" OnClick="lbCancel_Click" />
                     </div>
                 </div>

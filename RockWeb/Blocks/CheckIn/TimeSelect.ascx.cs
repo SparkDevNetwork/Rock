@@ -23,6 +23,7 @@ using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
 
 using Rock;
+using Rock.Attribute;
 using Rock.CheckIn;
 using Rock.Model;
 
@@ -31,6 +32,11 @@ namespace RockWeb.Blocks.CheckIn
     [DisplayName("Time Select")]
     [Category("Check-in")]
     [Description("Displays a list of times to checkin for.")]
+
+    [TextField( "Title", "Title to display. Use {0} for family/person name.", false, "{0}", "Text", 5 )]
+    [TextField( "Sub Title", "Sub-Title to display. Use {0} for selected group/location name.", false, "{0}", "Text", 6 )]
+    [TextField( "Caption", "", false, "Select Time(s)", "Text", 7 )]
+
     public partial class TimeSelect : CheckInBlock
     {
         protected override void OnLoad( EventArgs e )
@@ -79,7 +85,8 @@ namespace RockWeb.Blocks.CheckIn
                             GoBack();
                         }
 
-                        lTitle.Text = family.ToString();
+                        lTitle.Text = string.Format( GetAttributeValue( "Title" ), family.ToString() );
+
                         lbSelect.Text = "Next";
                         lbSelect.Attributes.Add( "data-loading-text", "Loading..." );
                     }
@@ -110,14 +117,17 @@ namespace RockWeb.Blocks.CheckIn
                             GoBack();
                         }
 
-                        lTitle.Text = person.ToString();
-                        lSubTitle.Text = string.Format( "{0} - {1}", group.ToString(), location.ToString() );
+                        lTitle.Text = string.Format( GetAttributeValue( "Title" ), person.ToString() );
+                        lSubTitle.Text = string.Format( GetAttributeValue( "SubTitle"), string.Format( "{0} - {1}", group.ToString(), location.ToString() ) );
+
                         lbSelect.Text = "Check In";
                         lbSelect.Attributes.Add( "data-loading-text", "Printing..." );
 
                         personSchedules = location.Schedules.Where( s => !s.ExcludedByFilter ).ToList();
                         distinctSchedules = personSchedules;
                     }
+
+                    lCaption.Text = GetAttributeValue( "Caption" );
 
                     if ( distinctSchedules.Count == 1 )
                     {

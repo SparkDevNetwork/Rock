@@ -104,14 +104,14 @@
                                         </ItemTemplate>
                                     </asp:Repeater>
                                 </div>
-                                <div class="row">
+                                <asp:Panel ID="pnlAddOptionalAccount" runat="server" CssClass="row" Visible="false">
                                     <div class="col-md-8">
-                                        <Rock:RockDropDownList ID="ddlAddAccount" runat="server" CssClass="input-width-mdx js-add-account" onblur="javascript:return handleAddAccountBoxOnBlur(this, event);" onkeydown="javascript:return handleAddAccountBoxKeyPress(this, event, event.keyCode);" Visible="false"  />
+                                        <Rock:RockDropDownList ID="ddlAddAccount" runat="server" CssClass="js-add-account" onblur="javascript:return handleAddAccountBoxEvent(this, event);" onkeydown="javascript:return handleAddAccountBoxEvent(this, event);" />
                                     </div>
-                                    <div class="col-md-4">
-                                        
+                                    <div class="col-md-4" style="margin-left:-10px">
+                                        <Rock:CurrencyBox ID="cbOptionalAccountAmount" runat="server" CssClass="input-width-md" />
                                     </div>
-                                </div>
+                                </asp:Panel>
                             </Rock:RockControlWrapper>
 
                             <%-- note: using disabled instead of readonly so that we can set the postback value in javascript --%>
@@ -177,7 +177,7 @@
                 }
 
                 $unallocatedAmountEl.find(':input').val((unallocatedAmountCents / 100).toFixed(2));
-                if (unallocatedAmountCents == 0)
+                if (Math.round(unallocatedAmountCents) == 0)
                 {
                     $unallocatedAmountEl.hide();
                 }
@@ -211,19 +211,15 @@
                 }).appendTo('.js-accounts');
             })
 
-            // handle onkeypress for the Add Optional Account dropdown
-            function handleAddAccountBoxKeyPress(element, event, keyCode)
+            // handle onkeypress, onblur for the Add Optional Account dropdown
+            function handleAddAccountBoxEvent(element, event)
             {
-                if ((keyCode == 13) && $(element).val() != '') {
-                    __doPostBack('<%=ddlAddAccount.ClientID%>', '');
-                }
-            }
-
-            // handle onblur for the Add Optional Account dropdown
-            function handleAddAccountBoxOnBlur(element, event)
-            {
-                if ( $(element).val() != '') {
-                    __doPostBack('<%=ddlAddAccount.ClientID%>', '');
+                console.log(event.type);
+                if ((event.type == 'keydown' && event.keyCode == 13) || event.type == 'blur') {
+                    if ($(element).val() != '') {
+                        $('#<%=btnNext.ClientID%>').attr('disabled', 'disabled');
+                        __doPostBack('<%=ddlAddAccount.ClientID%>', '');
+                    }
                 }
             }
 

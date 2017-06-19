@@ -27,6 +27,8 @@ using System.Web.UI.HtmlControls;
 using Rock;
 using Rock.Attribute;
 using Rock.CheckIn;
+using Rock.Data;
+using Rock.Model;
 using Rock.Web.UI;
 
 namespace RockWeb.Blocks.CheckIn
@@ -34,16 +36,15 @@ namespace RockWeb.Blocks.CheckIn
     /// <summary>
     /// 
     /// </summary>
-    [DisplayName( "Success" )]
+    [DisplayName( "Check Out Success" )]
     [Category( "Check-in" )]
-    [Description( "Displays the details of a successful checkin." )]
+    [Description( "Displays the details of a successful check out." )]
 
-    [LinkedPage( "Person Select Page", "", false, "", "", 5 )]
-    [TextField( "Title", "", false, "Checked-in", "Text", 6 )]
-    [TextField( "Detail Message", "The message to display indicating person has been checked in. Use {0} for person, {1} for group, {2} for schedule, and {3} for the security code", false,
-        "{0} was checked into {1} in {2} at {3}", "Text", 7 )]
+    [TextField( "Title", "Title to display.", false, "Checked Out", "Text", 5 )]
+    [TextField( "Detail Message", "The message to display indicating person has been checked out. Use {0} for person, {1} for group, {2} for location, and {3} for schedule.", false,
+        "{0} was checked out of {1} in {2} at {3}.", "Text", 6 )]
 
-    public partial class Success : CheckInBlock
+    public partial class CheckoutSuccess : CheckInBlock
     {
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
@@ -62,7 +63,7 @@ namespace RockWeb.Blocks.CheckIn
             var bodyTag = this.Page.Master.FindControl( "bodyTag" ) as HtmlGenericControl;
             if ( bodyTag != null )
             {
-                bodyTag.AddCssClass( "checkin-success-bg" );
+                bodyTag.AddCssClass( "checkin-checkoutsuccess-bg" );
             }
         }
 
@@ -85,43 +86,49 @@ namespace RockWeb.Blocks.CheckIn
                     try
                     {
                         lTitle.Text = GetAttributeValue( "Title" );
-                        string detailMsg = GetAttributeValue( "DetailMessage" );
 
                         var printFromClient = new List<CheckInLabel>();
                         var printFromServer = new List<CheckInLabel>();
 
-                        // Print the labels
-                        foreach ( var family in CurrentCheckInState.CheckIn.Families.Where( f => f.Selected ) )
+                        using ( var rockContext = new RockContext() )
                         {
-                            lbAnother.Visible =
-                                CurrentCheckInState.CheckInType.TypeOfCheckin == TypeOfCheckin.Individual &&
-                                family.People.Count > 1;
+                            var attendanceService = new AttendanceService( rockContext );
 
-                            foreach ( var person in family.GetPeople( true ) )
+                            var now = RockDateTime.Now;
+
+                            // Print the labels
+                            foreach ( var family in CurrentCheckInState.CheckIn.Families.Where( f => f.Selected ) )
                             {
-                                foreach ( var groupType in person.GetGroupTypes( true ) )
+                                foreach ( var person in family.CheckOutPeople.Where( p => p.Selected ) )
                                 {
-                                    foreach ( var group in groupType.GetGroups( true ) )
+                                    foreach ( var attendance in attendanceService.Queryable()
+                                        .Where( a => person.AttendanceIds.Contains( a.Id ) )
+                                        .ToList() )
                                     {
-                                        foreach ( var location in group.GetLocations( true ) )
-                                        {
-                                            foreach ( var schedule in location.GetSchedules( true ) )
-                                            {
-                                                var li = new HtmlGenericControl( "li" );
-                                                li.InnerText = string.Format( detailMsg, person.ToString(), group.ToString(), location.ToString(), schedule.ToString(), person.SecurityCode );
+                                        attendance.EndDateTime = now;
 
-                                                phResults.Controls.Add( li );
-                                            }
+                                        if ( attendance.Group != null &&
+                                            attendance.Location != null &&
+                                            attendance.Schedule != null )
+                                        {
+                                            var li = new HtmlGenericControl( "li" );
+                                            li.InnerText = string.Format( GetAttributeValue( "DetailMessage" ),
+                                                person.ToString(), attendance.Group.ToString(), attendance.Location.ToString(), attendance.Schedule.ToString() );
+
+                                            phResults.Controls.Add( li );
                                         }
+
                                     }
 
-                                    if ( groupType.Labels != null && groupType.Labels.Any() )
+                                    if ( person.Labels != null && person.Labels.Any() )
                                     {
-                                        printFromClient.AddRange( groupType.Labels.Where( l => l.PrintFrom == Rock.Model.PrintFrom.Client ) );
-                                        printFromServer.AddRange( groupType.Labels.Where( l => l.PrintFrom == Rock.Model.PrintFrom.Server ) );
+                                        printFromClient.AddRange( person.Labels.Where( l => l.PrintFrom == Rock.Model.PrintFrom.Client ) );
+                                        printFromServer.AddRange( person.Labels.Where( l => l.PrintFrom == Rock.Model.PrintFrom.Server ) );
                                     }
                                 }
                             }
+
+                            rockContext.SaveChanges();
                         }
 
                         if ( printFromClient.Any() )
@@ -230,38 +237,6 @@ namespace RockWeb.Blocks.CheckIn
             else
             {
                 return input.Replace( "é", @"\82" );  // fix acute e
-            }
-        }
-
-        /// <summary>
-        /// Handles the Click event of the lbAnother control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
-        protected void lbAnother_Click( object sender, EventArgs e )
-        {
-            if ( KioskCurrentlyActive )
-            {
-                foreach ( var family in CurrentCheckInState.CheckIn.Families.Where( f => f.Selected ) )
-                {
-                    foreach ( var person in family.People.Where( p => p.Selected ) )
-                    {
-                        person.Selected = false;
-
-                        foreach ( var groupType in person.GroupTypes.Where( g => g.Selected ) )
-                        {
-                            groupType.Selected = false;
-                        }
-                    }
-                }
-
-                SaveState();
-                NavigateToLinkedPage( "PersonSelectPage" );
-
-            }
-            else
-            {
-                NavigateToHomePage();
             }
         }
 

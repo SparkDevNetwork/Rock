@@ -25,6 +25,7 @@
     {% if twitterPhoto != '' %}
     {{ twitterPhoto.Url | AddMetaTagToHead:'property','twitter:image' }}
     {% endif %}
+    
   </div>
   <div class="col-md-4 col-md-pull-8">
     <div class="well">

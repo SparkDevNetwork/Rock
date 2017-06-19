@@ -1,4 +1,4 @@
-﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="FamilySelect.ascx.cs" Inherits="RockWeb.Blocks.CheckIn.FamilySelect" %>
+﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="ActionSelect.ascx.cs" Inherits="RockWeb.Blocks.CheckIn.ActionSelect" %>
 
 <script type="text/javascript">
     Sys.Application.add_load(function () {
@@ -23,13 +23,10 @@
             <div class="scroller">
 
                 <div class="control-group checkin-body-container">
-                    <label class="control-label"><asp:Literal ID="lCaption" runat="server" /></label>
+                    <label class="control-label"><asp:Literal ID="lCaption" runat="server"></asp:Literal></label>
                     <div class="controls">
-                        <asp:Repeater ID="rSelection" runat="server" OnItemCommand="rSelection_ItemCommand">
-                            <ItemTemplate>
-                                <Rock:BootstrapButton ID="lbSelect" runat="server" CommandArgument='<%# Eval("Group.Id") %>' CssClass="btn btn-primary btn-large btn-block btn-checkin-select"  DataLoadingText="Loading..." ><%# Eval("Caption") %><span class="checkin-sub-title"><%# Eval("SubCaption") %></span></Rock:BootstrapButton>
-                            </ItemTemplate>
-                        </asp:Repeater>
+                        <Rock:BootstrapButton ID="lbCheckOut" runat="server" Text="Check Out" CssClass="btn btn-primary btn-large btn-block btn-checkin-select" OnClick="lbCheckOut_Click" DataLoadingText="Loading..." />
+                       <Rock:BootstrapButton ID="lbCheckIn" runat="server" Text="Check In" CssClass="btn btn-default btn-large btn-block btn-checkin-select" OnClick="lbCheckIn_Click" DataLoadingText="Loading..." />
                     </div>
                 </div>
 
@@ -37,9 +34,8 @@
         </div>
 
     </div>
-
-
-     <div class="checkin-footer">   
+        
+    <div class="checkin-footer">   
         <div class="checkin-actions">
             <asp:LinkButton CssClass="btn btn-default" ID="lbBack" runat="server" OnClick="lbBack_Click" Text="Back" />
             <asp:LinkButton CssClass="btn btn-default" ID="lbCancel" runat="server" OnClick="lbCancel_Click" Text="Cancel" />

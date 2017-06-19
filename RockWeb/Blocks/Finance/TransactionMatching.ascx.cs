@@ -78,6 +78,19 @@ namespace RockWeb.Blocks.Finance
             }
         }
 
+        private List<int> _allOptionalAccountIds
+        {
+            get
+            {
+                return this.ViewState["_allOptionalAccountIds"] as List<int>;
+            }
+
+            set
+            {
+                this.ViewState["_allOptionalAccountIds"] = value;
+            }
+        }
+
         #endregion
 
         #region Base Control Methods
@@ -164,10 +177,11 @@ namespace RockWeb.Blocks.Finance
         {
             // get accounts that are both allowed by the BlockSettings and also in the personal AccountList setting
             var rockContext = new RockContext();
-            var blockAccountGuidList = GetAttributeValue( "Accounts" ).SplitDelimitedValues().Select( a => a.AsGuid() );
+            var blockAccountGuidList = GetAttributeValue( "Accounts" ).SplitDelimitedValues().Select( a => a.AsGuid() ).ToList();
 
             string keyPrefix = string.Format( "transaction-matching-{0}-", this.BlockId );
             var personalAccountGuidList = ( this.GetUserPreference( keyPrefix + "account-list" ) ?? string.Empty ).SplitDelimitedValues().Select( a => a.AsGuid() ).ToList();
+            var optionalAccountGuidList = ( this.GetUserPreference( keyPrefix + "optional-account-list" ) ?? string.Empty ).SplitDelimitedValues().Select( a => a.AsGuid() ).ToList();
 
             var accountQry = new FinancialAccountService( rockContext )
                 .Queryable()
@@ -178,10 +192,22 @@ namespace RockWeb.Blocks.Finance
             {
                 accountQry = accountQry.Where( a => blockAccountGuidList.Contains( a.Guid ) );
             }
-
-            // no personal accounts specified means "all(that are allowed in block settings)"
-            if ( personalAccountGuidList.Any() )
+            
+            if ( !personalAccountGuidList.Any() )
             {
+                if (!optionalAccountGuidList.Any())
+                {
+                    // if no personal accounts are selected, and there are no optional accounts either, show all the accounts that are allowed in block settings
+                }
+                else
+                {
+                    // if no personal accounts are selected, and but there are optional accountsr, only show the optional accounts
+                    accountQry = accountQry.Where( a => false );
+                }
+            }
+            else
+            {
+                // if there are person accounts selected, limit accounts to personal accounts
                 accountQry = accountQry.Where( a => personalAccountGuidList.Contains( a.Guid ) );
             }
 
@@ -199,22 +225,15 @@ namespace RockWeb.Blocks.Finance
             rptAccounts.DataSource = allAccountList;
             rptAccounts.DataBind();
 
-            UpdateVisibleAccountBoxes();
-
-            var optionalAccountGuidList = ( this.GetUserPreference( keyPrefix + "optional-account-list" ) ?? string.Empty ).SplitDelimitedValues().Select( a => a.AsGuid() ).ToList();
             var optionalAccounts = allAccountList.Where( a => optionalAccountGuidList.Contains( a.Guid ) && !_visibleDisplayedAccountIds.Contains( a.Id ) ).ToList();
-            if ( blockAccountGuidList.Any())
+            if ( blockAccountGuidList.Any() )
             {
                 optionalAccounts = optionalAccounts.Where( a => blockAccountGuidList.Contains( a.Guid ) ).ToList();
             }
 
-            ddlAddAccount.Visible = optionalAccounts.Any();
-            ddlAddAccount.Items.Clear();
-            ddlAddAccount.Items.Add( new ListItem() );
-            foreach ( var account in optionalAccounts )
-            {
-                ddlAddAccount.Items.Add( new ListItem( account.PublicName, account.Id.ToString() ) );
-            }
+            _allOptionalAccountIds = optionalAccounts.Select( a => a.Id ).ToList();
+
+            UpdateVisibleAccountBoxes();
 
             rcwEnvelope.Visible = GlobalAttributesCache.Read().EnableGivingEnvelopeNumber;
         }
@@ -517,23 +536,16 @@ namespace RockWeb.Blocks.Finance
                         accountBox.Text = string.Empty;
                     }
 
-                    UpdateVisibleAccountBoxes();
-
                     foreach ( var detail in transactionToMatch.TransactionDetails )
                     {
                         var accountBox = rptAccounts.ControlsOfTypeRecursive<CurrencyBox>().Where( a => a.Attributes["data-account-id"].AsInteger() == detail.AccountId ).FirstOrDefault();
                         if ( accountBox != null )
                         {
                             accountBox.Text = detail.Amount.ToString();
-
-                            
-                            if ( !accountBox.Visible && detail.Amount != 0 )
-                            {
-                                // if there is a non-zero amount, show the edit box regardless of the account filter settings
-                                accountBox.Visible = true;
-                            }
                         }
                     }
+
+                    UpdateVisibleAccountBoxes();
 
                     tbSummary.Text = transactionToMatch.Summary;
 
@@ -601,13 +613,39 @@ namespace RockWeb.Blocks.Finance
             List<int> _sortedAccountIds = _visibleDisplayedAccountIds.ToList();
             _sortedAccountIds.AddRange( _visibleOptionalAccountIds );
 
+            List<int> _visibleAccountBoxes = new List<int>();
+
             foreach ( var accountBox in rptAccounts.ControlsOfTypeRecursive<CurrencyBox>() )
             {
                 int accountBoxAccountId = accountBox.Attributes["data-account-id"].AsInteger();
                 accountBox.Visible = _visibleDisplayedAccountIds.Contains( accountBoxAccountId ) || _visibleOptionalAccountIds.Contains( accountBoxAccountId );
-                
+
+                if ( !accountBox.Visible && accountBox.Text.AsDecimal() != 0 )
+                {
+                    // if there is a non-zero amount, show the edit box regardless of the account filter settings
+                    accountBox.Visible = true;
+                }
+
+                if ( accountBox.Visible )
+                {
+                    _visibleAccountBoxes.Add( accountBoxAccountId );
+                }
+
                 accountBox.Attributes["data-sort-order"] = _sortedAccountIds.IndexOf( accountBoxAccountId ).ToString();
             }
+
+            var optionalAccounts = new FinancialAccountService( new RockContext() ).GetByIds( _allOptionalAccountIds ).OrderBy( a => a.Order ).ThenBy( a => a.Name ).ToList();
+            ddlAddAccount.Items.Clear();
+            ddlAddAccount.Items.Add( new ListItem() );
+            foreach ( var account in optionalAccounts )
+            {
+                if ( !_visibleAccountBoxes.Contains( account.Id ) )
+                {
+                    ddlAddAccount.Items.Add( new ListItem( account.PublicName, account.Id.ToString() ) );
+                }
+            }
+
+            pnlAddOptionalAccount.Visible = ddlAddAccount.Items.Count > 1;
         }
 
         #endregion
@@ -1051,13 +1089,15 @@ namespace RockWeb.Blocks.Finance
 
             if ( ddlAddAccount.Items.Count <= 1 )
             {
-                ddlAddAccount.Visible = false;
+                pnlAddOptionalAccount.Visible = false;
             }
 
             foreach ( var accountBox in rptAccounts.ControlsOfTypeRecursive<CurrencyBox>() )
             {
                 if ( accountBox.Attributes["data-account-id"].AsInteger() == accountId )
                 {
+                    accountBox.Text = cbOptionalAccountAmount.Text;
+                    cbOptionalAccountAmount.Text = string.Empty;
                     accountBox.Focus();
                     break;
                 }
