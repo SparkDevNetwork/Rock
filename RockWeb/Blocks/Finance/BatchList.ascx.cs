@@ -399,6 +399,14 @@ namespace RockWeb.Blocks.Finance
                     {
                         var changes = new List<string>();
                         History.EvaluateChange( changes, "Status", batch.Status, newStatus );
+
+                        string errorMessage;
+                        if ( !batch.IsValidBatchStatusChange( batch.Status, newStatus, this.CurrentPerson, out errorMessage ) )
+                        {
+                            maWarningDialog.Show( errorMessage, ModalAlertType.Warning );
+                            return;
+                        }
+
                         batch.Status = newStatus;
 
                         if ( !batch.IsValid )
