@@ -60,6 +60,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
     [BooleanField( "Show Inactive Campuses", "Determines if inactive campuses should be shown.", true, order: 9 )]
     [BooleanField("Enable Common Last Name", "Autofills the last name field when adding a new group member with the last name of the first group member.", true, order: 11)]
     [BooleanField( "Show Nick Name", "Show an edit box for Nick Name.", false, order: 12 )]
+    [LinkedPage( "Person Detail Page", "The Page to navigate to after the family has been added. (Note that {GroupId} and {PersonId} can be included in the route). Leave blank to go to the default page of ~/Person/{PersonId}.", false, order: 13 )]
     public partial class AddGroup : Rock.Web.UI.RockBlock
     {
         #region Fields
@@ -388,6 +389,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                             var rockContext = new RockContext();
 
                             Guid? parentGroupGuid = GetAttributeValue( "ParentGroup" ).AsGuidOrNull();
+                            int? groupId = null;
 
                             try
                             {
@@ -405,6 +407,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 
                                     if ( group != null )
                                     {
+                                        groupId = group.Id;
                                         string locationKey = GetLocationKey();
                                         if ( !string.IsNullOrEmpty( locationKey ) && _verifiedLocations.ContainsKey( locationKey ) )
                                         {
@@ -413,7 +416,23 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                                     }
                                 } );
 
-                                Response.Redirect( string.Format( "~/Person/{0}", GroupMembers[0].Person.Id ), false );
+                                // If a custom PersonDetailPage is specified, navigate to that. Otherwise, just go to ~/Person/{PersonId}
+                                var queryParams = new Dictionary<string, string>();
+                                queryParams.Add( "PersonId", GroupMembers[0].Person.Id.ToString() );
+                                if ( groupId.HasValue )
+                                {
+                                    queryParams.Add( "GroupId", groupId.ToString() );
+                                }
+
+                                var personDetailUrl = LinkedPageUrl( "PersonDetailPage", queryParams );
+                                if ( !string.IsNullOrWhiteSpace( personDetailUrl ) )
+                                {
+                                    NavigateToLinkedPage( "PersonDetailPage", queryParams );
+                                }
+                                else
+                                {
+                                    Response.Redirect( string.Format( "~/Person/{0}", GroupMembers[0].Person.Id ), false );
+                                }
                             }
                             catch (GroupMemberValidationException vex)
                             {
