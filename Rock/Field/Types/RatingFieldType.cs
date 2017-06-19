@@ -149,7 +149,7 @@ namespace Rock.Field.Types
         /// <returns></returns>
         public override string FormatValueAsHtml( Control parentControl, int? entityTypeId, int? entityId, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed = false )
         {
-            return FormatValueAsHtml( parentControl, entityTypeId, entityId, value, configurationValues, condensed );
+            return FormatValueAsHtml( parentControl, value, configurationValues, condensed );
         }
 
         /// <summary>
