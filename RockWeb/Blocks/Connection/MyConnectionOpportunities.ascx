@@ -77,10 +77,11 @@
                         <Rock:RockCheckBoxList ID="cblCampus" runat="server" Label="Campus" DataTextField="Name" DataValueField="Id" RepeatDirection="Horizontal" />
                         <Rock:RockCheckBoxList ID="cblLastActivity" runat="server" Label="Last Activity" DataTextField="Name" DataValueField="Id" RepeatDirection="Horizontal" />
                     </Rock:GridFilter>
-                    <Rock:Grid ID="gRequests" runat="server" OnRowSelected="gRequests_Edit" CssClass="js-grid-requests" AllowSorting="true" >
+                    <Rock:Grid ID="gRequests" runat="server" OnRowSelected="gRequests_Edit" CssClass="js-grid-requests" AllowSorting="true" OnRowDataBound="gRequests_RowDataBound" >
                         <Columns>
                             <Rock:SelectField />
                             <Rock:RockBoundField DataField="Name" HeaderText="Name" SortExpression="PersonAlias.Person.LastName,PersonAlias.Person.NickName" />
+                            <Rock:RockLiteralField ID="lStatusIcons" HeaderText="Status" />
                             <Rock:RockBoundField DataField="Campus" HeaderText="Campus" SortExpression="Campus.Name" />
                             <Rock:RockBoundField DataField="Group" HeaderText="Group" SortExpression="AssignedGroup.Name" />
                             <Rock:RockBoundField DataField="Connector" HeaderText="Connector" SortExpression="Connector.PersonAlias.Person.LastName,Connector.PersonAlias.Person.NickName" />
