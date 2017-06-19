@@ -21,7 +21,7 @@ namespace Rock.Plugin.HotFixes
     /// 
     /// </summary>
     /// <seealso cref="Rock.Plugin.Migration" />
-    [MigrationNumber( 27, "1.6.6" )]
+    [MigrationNumber( 29, "1.6.6" )]
     public class BatchDetailReopenBatchSecurity : Migration
     {
         /// <summary>
@@ -29,11 +29,16 @@ namespace Rock.Plugin.HotFixes
         /// </summary>
         public override void Up()
         {
-            // Add 'ReopenBatch' as a security action on BatchDetail and default it to whatever might be there for EDIT on BatchDetail, and ensure that FinanceAdmin, FinanceWorker, and Admin have 'ReopenBatch' security
-            Sql( @"DECLARE @EntityTypeId INT = (
+            // Add 'ReopenBatch' as a security action on Rock.Model.FinancialBatch and default it to whatever might be there for EDIT on BatchDetail, and ensure that FinanceAdmin, FinanceWorker, and Admin have 'ReopenBatch' security
+            Sql( @"DECLARE @EntityTypeIdBlock INT = (
 		SELECT TOP 1 [Id]
 		FROM [EntityType]
 		WHERE [Name] = 'Rock.Model.Block'
+		)
+DECLARE @EntityTypeIdFinancialBatch INT = (
+		SELECT TOP 1 [Id]
+		FROM [EntityType]
+		WHERE [Name] = 'Rock.Model.FinancialBatch'
 		)
 DECLARE @BatchDetailBlockId INT = (
 		SELECT TOP 1 [Id]
@@ -55,24 +60,13 @@ DECLARE @FinanceUsersGroupId INT = (
 		FROM [Group]
 		WHERE [Guid] = '2539CF5D-E2CE-4706-8BBF-4A9DF8E763E9'
 		)
-DECLARE @Order INT = (
-		SELECT isnull(MAX([Order]), 0)
-		FROM [Auth]
-		WHERE EntityTypeId = @EntityTypeId
-			AND EntityId = @BatchDetailBlockId
-			AND [Action] = 'Edit'
-		)
+DECLARE @Order INT = 0
 
-delete from Auth where Action = 'ReopenBatch'
-			AND EntityTypeId = @EntityTypeId
-			AND EntityId = @BatchDetailBlockId
-
---select * from [Auth] 
 IF NOT EXISTS (
 		SELECT *
 		FROM Auth
 		WHERE Action = 'ReopenBatch'
-			AND EntityTypeId = @EntityTypeId
+			AND EntityTypeId = @EntityTypeIdFinancialBatch
 			AND EntityId = @BatchDetailBlockId
 		)
 BEGIN
@@ -87,8 +81,8 @@ BEGIN
 		,PersonAliasId
 		,[Guid]
 		)
-	SELECT EntityTypeid
-		,EntityId
+	SELECT @EntityTypeIdFinancialBatch
+		,0
 		,[Order]
 		,'ReopenBatch'
 		,AllowOrDeny
@@ -97,7 +91,7 @@ BEGIN
 		,PersonAliasId
 		,newid()
 	FROM [Auth]
-	WHERE EntityTypeId = @EntityTypeId
+	WHERE EntityTypeId = @EntityTypeIdBlock
 		AND EntityId = @BatchDetailBlockId
 		AND [Action] = 'Edit'
 
@@ -106,8 +100,8 @@ BEGIN
 			SELECT *
 			FROM Auth
 			WHERE Action = 'ReopenBatch'
-				AND EntityTypeId = @EntityTypeId
-				AND EntityId = @BatchDetailBlockId
+				AND EntityTypeId = @EntityTypeIdFinancialBatch
+				AND EntityId = 0
 				AND GroupId = @FinanceUsersGroupId
 			)
 	BEGIN
@@ -122,8 +116,8 @@ BEGIN
 			,[Guid]
 			)
 		VALUES (
-			@EntityTypeId
-			,@BatchDetailBlockId
+			@EntityTypeIdFinancialBatch
+			,0
 			,@Order + 1
 			,'ReopenBatch'
 			,'A'
@@ -138,8 +132,8 @@ BEGIN
 			SELECT *
 			FROM Auth
 			WHERE Action = 'ReopenBatch'
-				AND EntityTypeId = @EntityTypeId
-				AND EntityId = @BatchDetailBlockId
+				AND EntityTypeId = @EntityTypeIdFinancialBatch
+				AND EntityId = 0
 				AND GroupId = @FinanceAdminGroupId
 			)
 	BEGIN
@@ -154,8 +148,8 @@ BEGIN
 			,[Guid]
 			)
 		VALUES (
-			@EntityTypeId
-			,@BatchDetailBlockId
+			@EntityTypeIdFinancialBatch
+			,0
 			,@Order + 1
 			,'ReopenBatch'
 			,'A'
@@ -165,12 +159,13 @@ BEGIN
 			)
 	END
 
-	IF @RockAdminGroupId IS NOT NULL AND NOT EXISTS (
+	IF @RockAdminGroupId IS NOT NULL
+		AND NOT EXISTS (
 			SELECT *
 			FROM Auth
 			WHERE Action = 'ReopenBatch'
-				AND EntityTypeId = @EntityTypeId
-				AND EntityId = @BatchDetailBlockId
+				AND EntityTypeId = @EntityTypeIdFinancialBatch
+				AND EntityId = 0
 				AND GroupId = @RockAdminGroupId
 			)
 	BEGIN
@@ -185,8 +180,8 @@ BEGIN
 			,[Guid]
 			)
 		VALUES (
-			@EntityTypeId
-			,@BatchDetailBlockId
+			@EntityTypeIdFinancialBatch
+			,0
 			,@Order + 1
 			,'ReopenBatch'
 			,'A'
@@ -196,26 +191,35 @@ BEGIN
 			)
 	END
 
-	INSERT INTO [dbo].[Auth] (
-		[EntityTypeId]
-		,[EntityId]
-		,[Order]
-		,[Action]
-		,[AllowOrDeny]
-		,[SpecialRole]
-		,[Guid]
-		)
-	VALUES (
-		@EntityTypeId
-		,@BatchDetailBlockId
-		,@Order + 2
-		,'ReopenBatch'
-		,'D'
-		,1
-		,NEWID()
-		)
+	IF NOT EXISTS (
+			SELECT *
+			FROM Auth
+			WHERE Action = 'ReopenBatch'
+				AND EntityTypeId = @EntityTypeIdFinancialBatch
+				AND EntityId = 0
+				AND [SpecialRole] = 1
+			)
+	BEGIN
+		INSERT INTO [dbo].[Auth] (
+			[EntityTypeId]
+			,[EntityId]
+			,[Order]
+			,[Action]
+			,[AllowOrDeny]
+			,[SpecialRole]
+			,[Guid]
+			)
+		VALUES (
+			@EntityTypeIdFinancialBatch
+			,0
+			,@Order + 2
+			,'ReopenBatch'
+			,'D'
+			,1
+			,NEWID()
+			)
+	END
 END
-
 " );
         }
 
