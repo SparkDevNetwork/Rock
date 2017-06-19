@@ -1154,19 +1154,19 @@ namespace Rock.Model
         {
             get
             {
-                DateTime bday;
-                if ( DateTime.TryParse( BirthMonth.ToString() + "/" + BirthDay.ToString() + "/" + BirthYear, out bday ) )
+                DateTime? bday = this.BirthDate;
+                if ( this.BirthYear.HasValue && bday.HasValue )
                 {
                     // Calculate years
                     DateTime today = RockDateTime.Today;
-                    int years = today.Year - bday.Year;
+                    int years = today.Year - bday.Value.Year;
                     if ( bday > today.AddYears( -years ) )
                     {
                         years--;
                     }
 
                     // Calculate days between last and next bday (differs on leap years).
-                    DateTime lastBday = bday.AddYears( years );
+                    DateTime lastBday = bday.Value.AddYears( years );
                     DateTime nextBday = lastBday.AddYears( 1 );
                     double daysInYear = nextBday.Subtract( lastBday ).TotalDays;
 

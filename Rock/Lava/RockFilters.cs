@@ -1841,12 +1841,48 @@ namespace Rock.Lava
         /// See http://www.rockrms.com/lava/person#ZebraPhoto for details.
         /// </summary>
         /// <param name="context">The context.</param>
+        /// <param name="input">The input.</param>
+        /// <returns>
+        /// A ZPL field containing the photo data with a label of LOGO (^FS ~DYE:{fileName},P,P,{contentLength},,{zplImageData} ^FD").
+        /// </returns>
+        public static string ZebraPhoto( DotLiquid.Context context, object input )
+        {
+            return ZebraPhoto( context, input, "395" );
+        }
+        /// <summary>
+        /// Gets the profile photo for a person object in a string that zebra printers can use.
+        /// If the person has no photo, a default silhouette photo (adult/child, male/female)
+        /// photo is used.
+        /// See http://www.rockrms.com/lava/person#ZebraPhoto for details.
+        /// </summary>
+        /// <param name="context">The context.</param>
         /// <param name="input">The input, which is the person.</param>
         /// <param name="size">The size.</param>
-        /// <returns>A ZPL field containing the photo data with a label of LOGO (^FS ~DYE:LOGO,P,P,{0},,{1} ^FD").</returns>
+        /// <returns>
+        /// A ZPL field containing the photo data with a label of LOGO (^FS ~DYE:{fileName},P,P,{contentLength},,{zplImageData} ^FD").
+        /// </returns>
         public static string ZebraPhoto( DotLiquid.Context context, object input, string size )
         {
             return ZebraPhoto( context, input, size, 1.0, 1.0 );
+        }
+
+        /// <summary>
+        /// Gets the profile photo for a person object in a string that zebra printers can use.
+        /// If the person has no photo, a default silhouette photo (adult/child, male/female)
+        /// photo is used.
+        /// See http://www.rockrms.com/lava/person#ZebraPhoto for details.
+        /// </summary>
+        /// <param name="context">The context.</param>
+        /// <param name="input">The input.</param>
+        /// <param name="size">The size.</param>
+        /// <param name="brightness">The brightness.</param>
+        /// <param name="contrast">The contrast.</param>
+        /// <returns>
+        /// A ZPL field containing the photo data with a label of LOGO (^FS ~DYE:{fileName},P,P,{contentLength},,{zplImageData} ^FD").
+        /// </returns>
+        public static string ZebraPhoto( DotLiquid.Context context, object input, string size, double brightness, double contrast )
+        {
+            return ZebraPhoto( context, input, size, brightness, contrast, "LOGO" );
         }
 
         /// <summary>
@@ -1860,8 +1896,11 @@ namespace Rock.Lava
         /// <param name="size">The size.</param>
         /// <param name="brightness">The brightness adjustment (-1.0 to 1.0).</param>
         /// <param name="contrast">The contrast adjustment (-1.0 to 1.0).</param>
-        /// <returns>A ZPL field containing the photo data with a label of LOGO (^FS ~DYE:LOGO,P,P,{0},,{1} ^FD").</returns>
-        public static string ZebraPhoto( DotLiquid.Context context, object input, string size, double brightness = 1.0, double contrast = 1.0 )
+        /// <param name="fileName">Name of the file.</param>
+        /// <returns>
+        /// A ZPL field containing the photo data with a label of LOGO (^FS ~DYE:{fileName},P,P,{contentLength},,{zplImageData} ^FD").
+        /// </returns>
+        public static string ZebraPhoto( DotLiquid.Context context, object input, string size, double brightness, double contrast, string fileName )
         {
             var person = GetPerson( input );
             try
@@ -2009,7 +2048,7 @@ namespace Rock.Lava
                     convertedStream.Dispose();
                     initialPhotoStream.Dispose();
 
-                    return string.Format( "^FS ~DYE:LOGO,P,P,{0},,{1} ^FD", content.Length, zplImageData.ToString() );
+                    return string.Format( "^FS ~DYE:{0},P,P,{1},,{2} ^FD", fileName, content.Length, zplImageData.ToString() );
                 }
             }
             catch
