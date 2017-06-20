@@ -411,8 +411,10 @@ namespace Rock.UniversalSearch.Crawler
         /// <summary>
         /// Gets the response text for a given uri.
         /// </summary>
-        /// <param name="url">The url whose text needs to be fetched.</param>
-        /// <returns>The text of the response.</returns>
+        /// <param name="requestURL">The request URL.</param>
+        /// <returns>
+        /// The text of the response.
+        /// </returns>
         private string GetWebText( Uri requestURL )
         {
             try
