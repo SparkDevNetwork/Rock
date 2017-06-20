@@ -69,7 +69,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
     [CustomDropdownListField( "SMS", "Should SMS be enabled for cell phone numbers by default?", "True^SMS is enabled by default,False^SMS is not enabled by default,None^SMS option is hidden", false, "", "", 19 )]
     [AttributeCategoryField( "Attribute Categories", "The Person Attribute Categories to display attributes from", true, "Rock.Model.Person", false, "", "", 20 )]
     [BooleanField( "Show Nick Name", "Show an edit box for Nick Name.", false, order: 21 )]
-    [LinkedPage( "Person Detail Page", "The Page to navigate to after the family has been added. (Note that {GroupId} and {PersonId} can be included in the route). Leave blank to go to the default page of ~/Person/{PersonId}.", false, order: 13 )]
+    [LinkedPage( "Person Detail Page", "The Page to navigate to after the family has been added. (Note that {GroupId} and {PersonId} can be included in the route). Leave blank to go to the default page of ~/Person/{PersonId}.", false, order: 22 )]
     public partial class AddGroup : Rock.Web.UI.RockBlock
     {
         #region Fields
@@ -616,7 +616,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                 groupMemberRow.RequireGrade = nfmMembers.RequireGrade;
                 groupMemberRow.RoleId = groupMember.GroupRoleId;
                 groupMemberRow.ShowTitle = showTitle;
-                groupMemberRow.ShowMiddleName = showGrade;
+                groupMemberRow.ShowMiddleName = showMiddleName;
                 groupMemberRow.ShowSuffix = showSuffix;
                 groupMemberRow.ShowGradeColumn = _isFamilyGroupType && showGrade;
                 groupMemberRow.ShowGradePicker = groupMember.GroupRoleId == _childRoleId;
