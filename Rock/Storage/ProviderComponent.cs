@@ -36,6 +36,12 @@ namespace Rock.Storage
         /// <param name="file">The file.</param>
         public abstract void SaveContent( BinaryFile file );
 
+        public virtual void SaveContent( BinaryFile file, out long? fileSize )
+        {
+            fileSize = null;
+            SaveContent( file );
+        }
+
         /// <summary>
         /// Deletes the content from the external storage medium associated with the provider.
         /// </summary>
