@@ -677,7 +677,7 @@ namespace RockWeb.Blocks.Groups
                 phAttributes.Visible = true;
             }
 
-            var groupHasRequirements = group.GroupRequirements.Any();
+            var groupHasRequirements = group.GetGroupRequirements( rockContext ).Any();
             pnlRequirements.Visible = groupHasRequirements;
             btnReCheckRequirements.Visible = groupHasRequirements;
 
@@ -766,17 +766,23 @@ namespace RockWeb.Blocks.Groups
                 return;
             }
 
+            var selectedGroupRoleId = ddlGroupRole.SelectedValue.AsInteger();
+            if ( groupMember != null && selectedGroupRoleId != groupMember.GroupRoleId )
+            {
+                groupMember.GroupRoleId = selectedGroupRoleId;
+            }
+
             rcwRequirements.Visible = true;
 
             IEnumerable<GroupRequirementStatus> requirementsResults;
 
             if ( groupMember.IsNewOrChangedGroupMember( rockContext ) )
             {
-                requirementsResults = groupMember.Group.PersonMeetsGroupRequirements( ppGroupMemberPerson.PersonId ?? 0, ddlGroupRole.SelectedValue.AsIntegerOrNull() );
+                requirementsResults = groupMember.Group.PersonMeetsGroupRequirements( rockContext, ppGroupMemberPerson.PersonId ?? 0, ddlGroupRole.SelectedValue.AsIntegerOrNull() );
             }
             else
             {
-                requirementsResults = groupMember.GetGroupRequirementsStatuses().ToList();
+                requirementsResults = groupMember.GetGroupRequirementsStatuses( rockContext ).ToList();
             }
 
             // only show the requirements that apply to the GroupRole (or all Roles)

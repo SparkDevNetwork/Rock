@@ -211,7 +211,10 @@ namespace Rock.Workflow.Action.CheckIn
                     {
                         var labelCache = KioskLabel.Read( binaryFileGuid.Value );
                         labelCache.Order = attribute.Value.Order;
-                        if ( labelCache != null )
+                        if ( labelCache != null && (
+                            labelCache.LabelType == KioskLabelType.Family ||
+                            labelCache.LabelType == KioskLabelType.Person ||
+                            labelCache.LabelType == KioskLabelType.Location ) )
                         {
                             labels.Add( labelCache );
                         }

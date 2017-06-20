@@ -41,7 +41,7 @@ namespace Rock.Client
         public string ForeignKey { get; set; }
 
         /// <summary />
-        public int GroupId { get; set; }
+        public int? GroupId { get; set; }
 
         /// <summary />
         public int GroupRequirementTypeId { get; set; }
@@ -49,10 +49,16 @@ namespace Rock.Client
         /// <summary />
         public int? GroupRoleId { get; set; }
 
+        /// <summary />
+        public int? GroupTypeId { get; set; }
+
         /// <summary>
         /// If the ModifiedByPersonAliasId is being set manually and should not be overwritten with current user when saved, set this value to true
         /// </summary>
         public bool ModifiedAuditValuesAlreadyUpdated { get; set; }
+
+        /// <summary />
+        public bool MustMeetRequirementToAddMember { get; set; }
 
         /// <summary>
         /// Leave this as NULL to let Rock set this
@@ -92,7 +98,9 @@ namespace Rock.Client
             this.GroupId = source.GroupId;
             this.GroupRequirementTypeId = source.GroupRequirementTypeId;
             this.GroupRoleId = source.GroupRoleId;
+            this.GroupTypeId = source.GroupTypeId;
             this.ModifiedAuditValuesAlreadyUpdated = source.ModifiedAuditValuesAlreadyUpdated;
+            this.MustMeetRequirementToAddMember = source.MustMeetRequirementToAddMember;
             this.CreatedDateTime = source.CreatedDateTime;
             this.ModifiedDateTime = source.ModifiedDateTime;
             this.CreatedByPersonAliasId = source.CreatedByPersonAliasId;

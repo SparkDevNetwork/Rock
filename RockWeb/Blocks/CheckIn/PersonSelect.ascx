@@ -11,9 +11,7 @@
 <asp:UpdatePanel ID="upContent" runat="server">
 <ContentTemplate>
 
-
     <Rock:ModalAlert ID="maWarning" runat="server" />
-
 
     <div class="checkin-header">
         <h1><asp:Literal ID="lFamilyName" runat="server"></asp:Literal></h1>
