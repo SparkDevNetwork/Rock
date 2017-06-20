@@ -31,6 +31,12 @@ namespace Rock.Migrations
         {
             AddColumn("dbo.BinaryFile", "FileSize", c => c.Long());
 
+            Sql( @"
+    UPDATE bf SET [FileSize] = datalength(bfd.Content)
+    FROM [BinaryFile] bf
+    INNER JOIN [BinaryFileData] bfd ON bfd.[Id] = bf.[Id]
+    WHERE [FileSize] IS NULL
+" );
             // MP: Metric Source Lava Defined Value
             RockMigrationHelper.UpdateDefinedValue( "D6F323FF-6EF2-4DA7-A82C-61399AC1D798", "Lava", "The Metric Values are populated from custom Lava", "2868A3E8-4632-4966-84CD-EDB8B775D66C" );
 
