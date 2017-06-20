@@ -298,7 +298,7 @@ namespace RockWeb.Blocks.Checkin
                     {
                         if ( groupType.ChildGroupTypes.Count > 0 )
                         {
-                            BuildHeirarchy( groupType.ChildGroupTypes.Select( t => t.Id ).ToList(), campusId );
+                            content.Append( BuildHeirarchy( groupType.ChildGroupTypes.Select( t => t.Id ).ToList(), campusId ) );
                         }
                     }
                 }
