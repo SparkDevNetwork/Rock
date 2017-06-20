@@ -24,6 +24,7 @@ namespace Rock.Model
     /// <summary>
     /// 
     /// </summary>
+    [RockDomain( "Core" )]
     [Table( "AttributeMatrixItem" )]
     [DataContract]
     public partial class AttributeMatrixItem : Model<AttributeMatrixItem>, IOrdered

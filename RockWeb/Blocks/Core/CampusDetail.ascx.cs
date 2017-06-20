@@ -218,7 +218,8 @@ namespace RockWeb.Blocks.Core
 
             campus.LoadAttributes();
             phAttributes.Controls.Clear();
-            Rock.Attribute.Helper.AddEditControls( campus, phAttributes, true, BlockValidationGroup );
+            var excludeForEdit = campus.Attributes.Where( a => !a.Value.IsAuthorized( Rock.Security.Authorization.EDIT, this.CurrentPerson ) ).Select( a => a.Key ).ToList();
+            Rock.Attribute.Helper.AddEditControls( campus, phAttributes, true, BlockValidationGroup, excludeForEdit );
 
             // render UI based on Authorized and IsSystem
             bool readOnly = false;

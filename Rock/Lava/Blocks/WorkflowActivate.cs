@@ -67,6 +67,14 @@ namespace Rock.Lava.Blocks
     /// {% endworkflowactivate %}
     /// </code>
     /// </example>
+    /// 
+    /// <example>
+    /// Re-activate an existing workflow for immediate processing if it is in a suspended/waiting state.
+    /// <code>
+    /// {% workflowactivate WorkflowId:42 %}
+    /// {% endworkflowactivate %}
+    /// </code>
+    /// </example>
     public class WorkflowActivate : RockLavaBlockBase
     {
         private string _markup;
@@ -204,13 +212,10 @@ namespace Rock.Lava.Blocks
                         }
                     }
 
-                    /* They instead provided a WorkflowId and ActivityType, so we need to activate
-                     * an activity in an existing workflow. */
-                    else if ( parmWorkflowId != null && parmActivityType != null )
+                    /* They instead provided a WorkflowId, so we are working with an existing Workflow. */
+                    else if ( parmWorkflowId != null )
                     {
                         string id = parmWorkflowId.ToString();
-                        string type = parmActivityType.ToString();
-                        WorkflowActivityTypeCache activityType = null;
 
                         /* Get the workflow */
                         if ( id.AsGuidOrNull() != null )
@@ -232,29 +237,49 @@ namespace Rock.Lava.Blocks
                                  */
                                 if ( !workflow.IsProcessing )
                                 {
-                                    /* Get the type of activity */
-                                    if ( type.AsGuidOrNull() != null )
-                                    {
-                                        activityType = WorkflowActivityTypeCache.Read( type.AsGuid() );
-                                    }
-                                    else if ( type.AsIntegerOrNull() != null )
-                                    {
-                                        activityType = WorkflowActivityTypeCache.Read( type.AsInteger() );
-                                    }
+                                    bool hasError = false;
 
-                                    if ( activityType != null )
+                                    /* If they provided an ActivityType parameter then we need to activate
+                                     * a new activity in the workflow.
+                                     */
+                                    if ( parmActivityType != null )
                                     {
-                                        activity = WorkflowActivity.Activate( activityType, workflow );
+                                        string type = parmActivityType.ToString();
+                                        WorkflowActivityTypeCache activityType = null;
 
-                                        /* Set any workflow attributes that were specified. */
-                                        foreach ( var attr in attributes )
+                                        /* Get the type of activity */
+                                        if ( type.AsGuidOrNull() != null )
                                         {
-                                            if ( activity.Attributes.ContainsKey( attr.Key ) )
-                                            {
-                                                activity.SetAttributeValue( attr.Key, attr.Value.ToString() );
-                                            }
+                                            activityType = WorkflowActivityTypeCache.Read( type.AsGuid() );
+                                        }
+                                        else if ( type.AsIntegerOrNull() != null )
+                                        {
+                                            activityType = WorkflowActivityTypeCache.Read( type.AsInteger() );
                                         }
 
+                                        if ( activityType != null )
+                                        {
+                                            activity = WorkflowActivity.Activate( activityType, workflow );
+
+                                            /* Set any workflow attributes that were specified. */
+                                            foreach ( var attr in attributes )
+                                            {
+                                                if ( activity.Attributes.ContainsKey( attr.Key ) )
+                                                {
+                                                    activity.SetAttributeValue( attr.Key, attr.Value.ToString() );
+                                                }
+                                            }
+                                        }
+                                        else
+                                        {
+                                            context["Error"] = "Activity type was not found.";
+                                            hasError = true;
+                                        }
+                                    }
+
+                                    /* Process the existing Workflow. */
+                                    if ( !hasError )
+                                    {
                                         List<string> errorMessages;
                                         workflowService.Process( workflow, out errorMessages );
 
@@ -265,10 +290,6 @@ namespace Rock.Lava.Blocks
 
                                         context["Workflow"] = workflow;
                                         context["Activity"] = activity;
-                                    }
-                                    else
-                                    {
-                                        context["Error"] = "Activity type was not found.";
                                     }
                                 }
                                 else
@@ -305,16 +326,50 @@ namespace Rock.Lava.Blocks
         /// <exception cref="System.Exception">No parameters were found in your command. The syntax for a parameter is parmName:'' (note that you must use single quotes).</exception>
         private Dictionary<string, string> ParseMarkup( string markup, Context context )
         {
+            // first run lava across the inputted markup
+            var internalMergeFields = new Dictionary<string, object>();
+
+            // get variables defined in the lava source
+            foreach ( var scope in context.Scopes )
+            {
+                foreach ( var item in scope )
+                {
+                    internalMergeFields.AddOrReplace( item.Key, item.Value );
+                }
+            }
+
+            // get merge fields loaded by the block or container
+            foreach ( var environment in context.Environments )
+            {
+                foreach ( var item in environment )
+                {
+                    internalMergeFields.AddOrReplace( item.Key, item.Value );
+                }
+            }
+
+            var resolvedMarkup = markup.ResolveMergeFields( internalMergeFields );
+
             var parms = new Dictionary<string, string>();
 
-            var markupItems = Regex.Matches( markup, "([\\w]+):(\"[^\"]*\"|'[^']*'|(?-mix:\\(?[\\w\\-\\.\\[\\]]\\)?)+)" );
+            var markupItems = Regex.Matches( resolvedMarkup, "(.*?:('[^']+'|[\\d.]+))" )
+                .Cast<Match>()
+                .Select( m => m.Value )
+                .ToList();
 
-            foreach ( Match item in markupItems )
+            foreach ( var item in markupItems )
             {
-                var key = item.Groups[1].Value;
-                var value = context[item.Groups[2].Value].ToStringSafe();
-
-                parms.AddOrReplace( key, value );
+                var itemParts = item.ToString().Split( new char[] { ':' }, 2 );
+                if ( itemParts.Length > 1 )
+                {
+                    if ( itemParts[1].Trim()[0] == '\'' )
+                    {
+                        parms.AddOrReplace( itemParts[0].Trim().ToLower(), itemParts[1].Trim().Substring( 1, itemParts[1].Length - 2 ) );
+                    }
+                    else
+                    {
+                        parms.AddOrReplace( itemParts[0].Trim().ToLower(), itemParts[1].Trim() );
+                    }
+                }
             }
 
             return parms;

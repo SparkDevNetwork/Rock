@@ -24,6 +24,7 @@ namespace Rock.Model
     /// AnalyticsDimPersonHistorical is SQL View based on AnalyticsSourcePersonHistorical
     /// and represents the historic and current records from AnalyticsSourcePersonHistorical
     /// </summary>
+    [RockDomain( "Reporting" )]
     [Table( "AnalyticsDimPersonHistorical" )]
     [DataContract]
     public class AnalyticsDimPersonHistorical : AnalyticsDimPersonBase<AnalyticsDimPersonHistorical>
@@ -36,6 +37,7 @@ namespace Rock.Model
     /// </summary>
     /// <typeparam name="T"></typeparam>
     /// <seealso cref="Rock.Model.AnalyticsSourcePersonBase{T}" />
+    [RockDomain( "Reporting" )]
     public abstract class AnalyticsDimPersonBase<T> : AnalyticsSourcePersonBase<T>
         where T : AnalyticsDimPersonBase<T>, new()
     {

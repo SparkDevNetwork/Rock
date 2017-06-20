@@ -29,6 +29,7 @@ namespace Rock.Model
     /// <summary>
     /// Represents a connection opportunity campus
     /// </summary>
+    [RockDomain( "Connection" )]
     [Table( "ConnectionOpportunityCampus" )]
     [DataContract]
     public partial class ConnectionOpportunityCampus : Model<ConnectionOpportunityCampus>

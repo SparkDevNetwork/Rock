@@ -27,6 +27,7 @@ namespace Rock.Model
     /// <summary>
     /// Field Type POCO Entity.
     /// </summary>
+    [RockDomain( "Core" )]
     [NotAudited]
     [Table( "FieldType" )]
     [DataContract]

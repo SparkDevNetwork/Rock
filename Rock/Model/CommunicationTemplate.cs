@@ -33,6 +33,7 @@ namespace Rock.Model
     /// <summary>
     /// Represents a communication Template in Rock (i.e. email, SMS message, etc.).
     /// </summary>
+    [RockDomain( "Communication" )]
     [Table( "CommunicationTemplate" )]
     [DataContract]
     public partial class CommunicationTemplate : Model<CommunicationTemplate>

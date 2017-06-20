@@ -36,6 +36,7 @@ namespace Rock.Model
     /// Pages are hierarchical, and are used to create the structure of the site.  Each page can have one parent Page and zero or more children pages, and the 
     /// page hierarchy is used to create the SiteMap.
     /// </summary>
+    [RockDomain( "CMS" )]
     [Table( "Page" )]
     [DataContract]
     public partial class Page : Model<Page>, IOrdered

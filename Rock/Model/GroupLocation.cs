@@ -34,6 +34,7 @@ namespace Rock.Model
     /// could include a Person/Family's address, a Business' address, a church campus, a room where a Bible study meets.  Pretty much, it is any place where a 
     /// group of people meet or are located. 
     /// </remarks>
+    [RockDomain( "Group" )]
     [Table( "GroupLocation" )]
     [DataContract]
     public partial class GroupLocation : Model<GroupLocation>, IOrdered

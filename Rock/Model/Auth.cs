@@ -28,6 +28,7 @@ namespace Rock.Model
     /// Represents a user or group's security authorization to perform a specified action on a securable entity in Rock. Authorization can either be allowed or denied and local (to the entity) security will override
     /// the parent (inherited) authority. Order of Auth's does matter. The first Auth for a specific action on an entity that the user qualifies for determines if they are allowed or denied.
     /// </summary>
+    [RockDomain( "Core" )]
     [Table( "Auth" )]
     [DataContract]
     public partial class Auth : Model<Auth>, IOrdered

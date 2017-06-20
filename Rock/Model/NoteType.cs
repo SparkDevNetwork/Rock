@@ -29,6 +29,7 @@ namespace Rock.Model
     /// Represents a type or category of <see cref="Rock.Model.Note">Notes</see> in Rock, and configures the type of entities that notes of this type apply to other settings
     /// specific to the type of note.
     /// </summary>
+    [RockDomain( "Core" )]
     [Table( "NoteType" )]
     [DataContract]
     public partial class NoteType : Model<NoteType>, IOrdered

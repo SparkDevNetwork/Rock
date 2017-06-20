@@ -29,6 +29,7 @@ namespace Rock.Model
     /// <summary>
     /// Represents the linkage between event campus, registration instance, and group.
     /// </summary>
+    [RockDomain( "Event" )]
     [Table( "EventItemOccurrenceGroupMap" )]
     [DataContract]
     public partial class EventItemOccurrenceGroupMap : Model<EventItemOccurrenceGroupMap>

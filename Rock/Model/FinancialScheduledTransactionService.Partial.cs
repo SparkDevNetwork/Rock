@@ -75,10 +75,26 @@ namespace Rock.Model
         /// </summary>
         /// <param name="scheduleId">The schedule identifier.</param>
         /// <returns></returns>
+        [Obsolete( "The GetByScheduleId( scheduleId, gatewayId ) method should be used instead." )]
         public FinancialScheduledTransaction GetByScheduleId( string scheduleId )
         {
             return Queryable( "ScheduledTransactionDetails,AuthorizedPersonAlias.Person" )
                 .Where( t => t.GatewayScheduleId == scheduleId.Trim() )
+                .FirstOrDefault();
+        }
+
+        /// <summary>
+        /// Gets the by schedule identifier.
+        /// </summary>
+        /// <param name="scheduleId">The schedule identifier.</param>
+        /// <param name="gatewayId">The gateway identifier.</param>
+        /// <returns></returns>
+        public FinancialScheduledTransaction GetByScheduleId( string scheduleId, int gatewayId )
+        {
+            return Queryable( "ScheduledTransactionDetails,AuthorizedPersonAlias.Person" )
+                .Where( t =>
+                    t.FinancialGatewayId == gatewayId &&
+                    t.GatewayScheduleId == scheduleId.Trim() )
                 .FirstOrDefault();
         }
 
@@ -309,7 +325,7 @@ namespace Rock.Model
                         originalTxn = txns.OrderBy( t => t.Id ).First();
                     }
 
-                    var scheduledTransaction = new FinancialScheduledTransactionService( rockContext ).GetByScheduleId( payment.GatewayScheduleId );
+                    var scheduledTransaction = new FinancialScheduledTransactionService( rockContext ).GetByScheduleId( payment.GatewayScheduleId, gateway.Id );
 
                     // Calculate whether a transaction needs to be added
                     var txnAmount = CalculateTransactionAmount( payment, txns );

@@ -27,6 +27,7 @@ namespace Rock.Model
     /// <summary>
     /// Represents a WorkflowLog entry of a <see cref="Rock.Model.Workflow"/> instance event.
     /// </summary>
+    [RockDomain( "Workflow" )]
     [Table( "WorkflowLog" )]
     [DataContract]
     [NotAudited]

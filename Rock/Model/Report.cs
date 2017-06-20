@@ -36,6 +36,7 @@ namespace Rock.Model
     /// <summary>
     /// Represents a Report (based off of a <see cref="Rock.Model.DataView"/> in Rock.
     /// </summary>
+    [RockDomain( "Reporting" )]
     [Table( "Report" )]
     [DataContract]
     public partial class Report : Model<Report>, ICategorized
@@ -309,7 +310,7 @@ namespace Rock.Model
                             try
                             {
                                 var componentExpression = selectComponent.GetExpression( reportDbContext, idExpression, reportField.Value.Selection ?? string.Empty );
-                                if (componentExpression == null)
+                                if ( componentExpression == null )
                                 {
                                     componentExpression = Expression.Constant( null, typeof( string ) );
                                 }
@@ -328,7 +329,7 @@ namespace Rock.Model
                                         {
                                             memberExpression = Expression.Property( memberExpression ?? paramExpression, customSortPropertyPart );
                                         }
-                                        
+
                                         bindings.Add( Expression.Bind( memberInfo, memberExpression ) );
                                     }
                                 }

@@ -28,6 +28,7 @@ namespace Rock.Model
     /// <summary>
     /// Represents a value of an <see cref="Rock.Model.Attribute"/>. 
     /// </summary>
+    [RockDomain( "Core" )]
     [Table( "AttributeValue" )]
     [DataContract]
     [JsonConverter( typeof( Rock.Utility.AttributeValueJsonConverter ) )]

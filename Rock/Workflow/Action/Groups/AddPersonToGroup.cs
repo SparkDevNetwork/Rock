@@ -144,7 +144,7 @@ namespace Rock.Workflow.Action
                 groupMember.GroupId = group.Id;
                 groupMember.GroupRoleId = groupRoleId.Value;
                 groupMember.GroupMemberStatus = GroupMemberStatus.Active;
-                if ( groupMember.IsValid )
+                if ( groupMember.IsValidGroupMember( rockContext ) )
                 {
                     groupMemberService.Add( groupMember );
                     rockContext.SaveChanges();

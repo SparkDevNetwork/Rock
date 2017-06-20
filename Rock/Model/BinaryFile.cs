@@ -31,6 +31,7 @@ namespace Rock.Model
     /// <summary>
     /// Represents any file that has either been uploaded to or generated and saved to Rock.  
     /// </summary>
+    [RockDomain( "Core" )]
     [Table( "BinaryFile" )]
     [DataContract]
     public partial class BinaryFile : Model<BinaryFile>
