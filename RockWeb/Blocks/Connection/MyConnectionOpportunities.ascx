@@ -80,8 +80,8 @@
                     <Rock:Grid ID="gRequests" runat="server" OnRowSelected="gRequests_Edit" CssClass="js-grid-requests" AllowSorting="true" OnRowDataBound="gRequests_RowDataBound" >
                         <Columns>
                             <Rock:SelectField />
+                            <Rock:RockLiteralField ID="lStatusIcons" HeaderText="" ItemStyle-HorizontalAlign="Center" />
                             <Rock:RockBoundField DataField="Name" HeaderText="Name" SortExpression="PersonAlias.Person.LastName,PersonAlias.Person.NickName" />
-                            <Rock:RockLiteralField ID="lStatusIcons" HeaderText="Status" />
                             <Rock:RockBoundField DataField="Campus" HeaderText="Campus" SortExpression="Campus.Name" />
                             <Rock:RockBoundField DataField="Group" HeaderText="Group" SortExpression="AssignedGroup.Name" />
                             <Rock:RockBoundField DataField="Connector" HeaderText="Connector" SortExpression="Connector.PersonAlias.Person.LastName,Connector.PersonAlias.Person.NickName" />
