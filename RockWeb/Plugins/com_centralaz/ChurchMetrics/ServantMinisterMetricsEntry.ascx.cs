@@ -29,6 +29,8 @@ using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 using Rock.Attribute;
 using System.Data.Entity;
+using System.Web.Security;
+using Rock.Security;
 
 namespace RockWeb.Plugins.com_centralaz.ChurchMetrics
 {
@@ -479,28 +481,21 @@ namespace RockWeb.Plugins.com_centralaz.ChurchMetrics
                         {
                             if ( scheduleCategory.Categories.Any() )
                             {
-                                var campusCategory = scheduleCategory.Categories.Where( c => c.Name.Contains( campus.Name ) ).FirstOrDefault();
-                                foreach ( var schedule in new ScheduleService( rockContext )
-                                .Queryable().AsNoTracking()
-                                .Where( s =>
-                                    s.CategoryId.HasValue &&
-                                    s.CategoryId.Value == campusCategory.Id )
-                                .OrderBy( s => s.Name ) )
-                                {
-                                    services.Add( schedule );
-                                }
+                                scheduleCategory = scheduleCategory.Categories.Where( c => c.Name.Contains( campus.Name ) ).FirstOrDefault();
                             }
-                            else
-                            {
-                                foreach ( var schedule in new ScheduleService( rockContext )
-                                .Queryable().AsNoTracking()
+
+                            foreach ( var schedule in new ScheduleService( rockContext )
+                               .Queryable().AsNoTracking()
+                               .Where( s =>
+                                   s.CategoryId.HasValue &&
+                                   s.CategoryId.Value == scheduleCategory.Id )
+                                .ToList() // Here we ToList so that we can take advantage of the NextStartDateTime property
                                 .Where( s =>
-                                    s.CategoryId.HasValue &&
-                                    s.CategoryId.Value == scheduleCategory.Id )
-                                .OrderBy( s => s.Name ) )
-                                {
-                                    services.Add( schedule );
-                                }
+                                    s.NextStartDateTime.HasValue &&
+                                    s.NextStartDateTime.Value.DayOfWeek == RockDateTime.Now.DayOfWeek )
+                               .OrderBy( s => s.NextStartDateTime.Value.TimeOfDay ) )
+                            {
+                                services.Add( schedule );
                             }
                         }
                     }
@@ -568,7 +563,7 @@ namespace RockWeb.Plugins.com_centralaz.ChurchMetrics
 
                             if ( metricValue != null )
                             {
-                                serviceMetric.Value = metricValue.YValue;
+                                serviceMetric.Value = (int?)metricValue.YValue;
 
                                 if ( !string.IsNullOrWhiteSpace( metricValue.Note ) &&
                                     !notes.Contains( metricValue.Note ) )
@@ -614,6 +609,31 @@ namespace RockWeb.Plugins.com_centralaz.ChurchMetrics
         }
 
         #endregion
+
+        protected void btnLogout_Click( object sender, EventArgs e )
+        {
+            var transaction = new Rock.Transactions.UserLastActivityTransaction();
+            transaction.UserId = CurrentUser.Id;
+            transaction.LastActivityDate = RockDateTime.Now;
+            transaction.IsOnLine = false;
+            Rock.Transactions.RockQueue.TransactionQueue.Enqueue( transaction );
+
+
+            FormsAuthentication.SignOut();
+
+            // After logging out check to see if an anonymous user is allowed to view the current page.  If so
+            // redirect back to the current page, otherwise redirect to the site's default page
+            var currentPage = Rock.Web.Cache.PageCache.Read( RockPage.PageId );
+            if ( currentPage != null && currentPage.IsAuthorized( Authorization.VIEW, null ) )
+            {
+                Response.Redirect( CurrentPageReference.BuildUrl() );
+                Context.ApplicationInstance.CompleteRequest();
+            }
+            else
+            {
+                RockPage.Layout.Site.RedirectToDefaultPage();
+            }
+        }
     }
 
     public class ServiceMetricSelectItem
@@ -633,7 +653,7 @@ namespace RockWeb.Plugins.com_centralaz.ChurchMetrics
     {
         public int Id { get; set; }
         public string Name { get; set; }
-        public decimal? Value { get; set; }
+        public int? Value { get; set; }
 
         public ServiceMetric( int id, string name )
         {

@@ -46,7 +46,7 @@
                                         <asp:Label ID="lMetricTitle" runat="server" Text='<%# Eval( "Name") %>' />
                                     </div>
                                     <div class="col-xs-6">
-                                        <Rock:NumberBox ID="nbMetricValue" runat="server" NumberType="Double" Text='<%# Eval( "Value") %>' />
+                                        <Rock:NumberBox ID="nbMetricValue" runat="server" NumberType="Integer" Text='<%# Eval( "Value") %>' />
                                     </div>
                                 </div>
                                 <br />

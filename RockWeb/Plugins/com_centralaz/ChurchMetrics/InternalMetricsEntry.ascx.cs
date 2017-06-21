@@ -537,7 +537,7 @@ namespace RockWeb.Plugins.com_centralaz.ChurchMetrics
 
                             if ( metricValue != null )
                             {
-                                serviceMetric.Value = metricValue.YValue;
+                                serviceMetric.Value = (int?)metricValue.YValue;
 
                                 if ( !string.IsNullOrWhiteSpace ( metricValue.Note) &&
                                     !notes.Contains( metricValue.Note ) )
@@ -580,7 +580,7 @@ namespace RockWeb.Plugins.com_centralaz.ChurchMetrics
     {
         public int Id { get; set; }
         public string Name { get; set; }
-        public decimal? Value { get; set; }
+        public int? Value { get; set; }
 
         public InternalServiceMetric( int id, string name )
         {
