@@ -137,6 +137,7 @@ namespace RockWeb.Plugins.com_centralaz.HumanResources
                                     PreviousFixed = lc.pc.OrderByDescending( pc => pc.ActiveDate ).FirstOrDefault() != null ? lc.pc.OrderByDescending( pc => pc.ActiveDate ).FirstOrDefault().IsFixedAmount : (bool?)null,
                                     PreviousAmount = lc.pc.OrderByDescending( pc => pc.ActiveDate ).FirstOrDefault() != null ? lc.pc.OrderByDescending( pc => pc.ActiveDate ).FirstOrDefault().Amount : (double?)null
                                 } )
+                                .Distinct()
                                 .OrderBy( lc => lc.Order )
                                 .ToList();
                             mergeFields.Add( "Contributions", lavaContributions );
@@ -163,6 +164,7 @@ namespace RockWeb.Plugins.com_centralaz.HumanResources
                                     PreviousEmployeeAmount = lr.pr.OrderByDescending( pr => pr.ActiveDate ).FirstOrDefault() != null ? lr.pr.OrderByDescending( pr => pr.ActiveDate ).FirstOrDefault().EmployeeAmount : 0,
                                     PreviousEmployerAmount = lr.pr.OrderByDescending( pr => pr.ActiveDate ).FirstOrDefault() != null ? lr.pr.OrderByDescending( pr => pr.ActiveDate ).FirstOrDefault().EmployerAmount : 0
                                 } )
+                                .Distinct()
                                 .OrderBy( lc => lc.Order )
                                 .ToList();
                             mergeFields.Add( "RetirementFunds", lavaRetirementFunds );
