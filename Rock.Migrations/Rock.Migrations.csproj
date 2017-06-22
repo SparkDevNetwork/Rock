@@ -245,6 +245,10 @@
     <Compile Include="Migrations\201706201728113_BinaryFileSize.Designer.cs">
       <DependentUpon>201706201728113_BinaryFileSize.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201706220008567_VerifySecurityBlock.cs" />
+    <Compile Include="Migrations\201706220008567_VerifySecurityBlock.Designer.cs">
+      <DependentUpon>201706220008567_VerifySecurityBlock.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\RockMigrationSQL.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
@@ -2576,6 +2580,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201706201728113_BinaryFileSize.resx">
       <DependentUpon>201706201728113_BinaryFileSize.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201706220008567_VerifySecurityBlock.resx">
+      <DependentUpon>201706220008567_VerifySecurityBlock.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 6.0\Version 1.6.0\201609282147388_WaitList.resx">
       <DependentUpon>201609282147388_WaitList.cs</DependentUpon>
