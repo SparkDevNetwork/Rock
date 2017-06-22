@@ -1080,6 +1080,15 @@ namespace Rock.Web.UI
                                 }
                                 catch ( Exception ex )
                                 {
+                                    try
+                                    {
+                                        LogException( ex );
+                                    }
+                                    catch
+                                    {
+                                        //
+                                    }
+
                                     NotificationBox nbBlockLoad = new NotificationBox();
                                     nbBlockLoad.ID = string.Format( "nbBlockLoad_{0}", block.Id );
                                     nbBlockLoad.CssClass = "system-error";
