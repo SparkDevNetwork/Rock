@@ -23,10 +23,12 @@ namespace com.centralaz.RoomManagement.Migrations
     {
         public override void Up()
         {
-            AddColumn( "[dbo].[_com_centralaz_RoomManagement_Resource]", "LocationId", c => c.Int() );
+            // AddColumn is currently only available in Rock v7
+            //AddColumn( "[dbo].[_com_centralaz_RoomManagement_Resource]", "LocationId", c => c.Int() );
             //AddForeignKey( "[dbo].[_com_centralaz_RoomManagement_Resource]", "LocationId", "dbo.Location", "Id" );
             Sql( @"
-                ALTER TABLE [dbo].[_com_centralaz_RoomManagement_Resource]  WITH CHECK ADD  CONSTRAINT [FK__com_centralaz_RoomManagement_Resource_Location] FOREIGN KEY([LocationId])
+                ALTER TABLE [dbo].[_com_centralaz_RoomManagement_Resource] ADD [LocationId] INT
+                ALTER TABLE [dbo].[_com_centralaz_RoomManagement_Resource] WITH CHECK ADD  CONSTRAINT [FK__com_centralaz_RoomManagement_Resource_Location] FOREIGN KEY([LocationId])
                 REFERENCES [dbo].[Location] ([Id])
 " );
             RockMigrationHelper.AddBlockAttributeValue( "AF897B42-21AA-4A56-B0D7-9E5303D4CE53", "1322186A-862A-4CF1-B349-28ECB67229BA", @"{% include '~~/Assets/Lava/PageListAsTabs.lava' %}<hr class='margin-t-sm'></hr>" ); // Template
@@ -37,8 +39,13 @@ namespace com.centralaz.RoomManagement.Migrations
 
         public override void Down()
         {
-            DropForeignKey( "[dbo].[_com_centralaz_RoomManagement_Resource]", "LocationId" );
-            DropColumn( "[dbo].[_com_centralaz_RoomManagement_Resource]", "LocationId" );
+            // DropColumn & DropForeignKey are currently only available in Rock v7
+            //DropForeignKey( "[dbo].[_com_centralaz_RoomManagement_Resource]", "LocationId" );
+            //DropColumn( "[dbo].[_com_centralaz_RoomManagement_Resource]", "LocationId" );
+            Sql( @"
+                ALTER TABLE [dbo].[_com_centralaz_RoomManagement_Resource] DROP CONSTRAINT  [FK__com_centralaz_RoomManagement_Resource_Location]
+                ALTER TABLE [dbo].[_com_centralaz_RoomManagement_Resource] DROP COLUMN [LocationId]
+" );
         }
     }
 }

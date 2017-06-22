@@ -46,24 +46,40 @@ namespace com.centralaz.RoomManagement.Migrations
             }
             catch ( Exception )
             {
-                DropForeignKey( "[dbo].[_com_centralaz_RoomManagement_Reservation]", "FK__com_centralaz_RoomManagement_Reservation_ContactPersonAliasId" );
-                DropColumn( "[dbo].[_com_centralaz_RoomManagement_Reservation]", "ContactPersonAliasId" );
-                DropColumn( "[dbo].[_com_centralaz_RoomManagement_Reservation]", "ContactPhone" );
-                DropColumn( "[dbo].[_com_centralaz_RoomManagement_Reservation]", "ContactEmail" );
+                // DropForeignKey, DropColumn and AddColumn are currently only available in Rock v7
 
-                AddColumn( "[dbo].[_com_centralaz_RoomManagement_Reservation]", "EventContactPersonAliasId", c => c.Int() );
-                AddColumn( "[dbo].[_com_centralaz_RoomManagement_Reservation]", "EventContactPhone", c => c.String( maxLength: 50 ) );
-                AddColumn( "[dbo].[_com_centralaz_RoomManagement_Reservation]", "EventContactEmail", c => c.String( maxLength: 400 ) );
+                //DropForeignKey( "[dbo].[_com_centralaz_RoomManagement_Reservation]", "FK__com_centralaz_RoomManagement_Reservation_ContactPersonAliasId" );
+                //DropColumn( "[dbo].[_com_centralaz_RoomManagement_Reservation]", "ContactPersonAliasId" );
+                //DropColumn( "[dbo].[_com_centralaz_RoomManagement_Reservation]", "ContactPhone" );
+                //DropColumn( "[dbo].[_com_centralaz_RoomManagement_Reservation]", "ContactEmail" );
+
+                //AddColumn( "[dbo].[_com_centralaz_RoomManagement_Reservation]", "EventContactPersonAliasId", c => c.Int() );
+                //AddColumn( "[dbo].[_com_centralaz_RoomManagement_Reservation]", "EventContactPhone", c => c.String( maxLength: 50 ) );
+                //AddColumn( "[dbo].[_com_centralaz_RoomManagement_Reservation]", "EventContactEmail", c => c.String( maxLength: 400 ) );
 
                 Sql( @"
+                ALTER TABLE [dbo].[_com_centralaz_RoomManagement_Reservation] DROP CONSTRAINT [FK__com_centralaz_RoomManagement_Reservation_ContactPersonAliasId]
+                ALTER TABLE [dbo].[_com_centralaz_RoomManagement_Reservation] DROP COLUMN [ContactPersonAliasId]
+                ALTER TABLE [dbo].[_com_centralaz_RoomManagement_Reservation] DROP COLUMN [ContactPhone]
+                ALTER TABLE [dbo].[_com_centralaz_RoomManagement_Reservation] DROP COLUMN [ContactEmail]
+
+                ALTER TABLE [dbo].[_com_centralaz_RoomManagement_Reservation] ADD [EventContactPersonAliasId] INT
+                ALTER TABLE [dbo].[_com_centralaz_RoomManagement_Reservation] ADD [EventContactPhone] NVARCHAR (50)
+                ALTER TABLE [dbo].[_com_centralaz_RoomManagement_Reservation] ADD [EventContactEmail] NVARCHAR (400)
+
                 ALTER TABLE [dbo].[_com_centralaz_RoomManagement_Reservation] WITH CHECK ADD CONSTRAINT [FK__com_centralaz_RoomManagement_Reservation_EventContactPersonAliasId] FOREIGN KEY([EventContactPersonAliasId])
                 REFERENCES [dbo].[PersonAlias] ([Id])
                 " );
-                AddColumn( "[dbo].[_com_centralaz_RoomManagement_Reservation]", "AdministrativeContactPersonAliasId", c => c.Int() );
-                AddColumn( "[dbo].[_com_centralaz_RoomManagement_Reservation]", "AdministrativeContactPhone", c => c.String( maxLength: 50 ) );
-                AddColumn( "[dbo].[_com_centralaz_RoomManagement_Reservation]", "AdministrativeContactEmail", c => c.String( maxLength: 400 ) );
+
+                //AddColumn( "[dbo].[_com_centralaz_RoomManagement_Reservation]", "AdministrativeContactPersonAliasId", c => c.Int() );
+                //AddColumn( "[dbo].[_com_centralaz_RoomManagement_Reservation]", "AdministrativeContactPhone", c => c.String( maxLength: 50 ) );
+                //AddColumn( "[dbo].[_com_centralaz_RoomManagement_Reservation]", "AdministrativeContactEmail", c => c.String( maxLength: 400 ) );
 
                 Sql( @"
+                ALTER TABLE [dbo].[_com_centralaz_RoomManagement_Reservation] ADD [AdministrativeContactPersonAliasId] INT
+                ALTER TABLE [dbo].[_com_centralaz_RoomManagement_Reservation] ADD [AdministrativeContactPhone] NVARCHAR (50)
+                ALTER TABLE [dbo].[_com_centralaz_RoomManagement_Reservation] ADD [AdministrativeContactEmail] NVARCHAR (400)
+
                 ALTER TABLE [dbo].[_com_centralaz_RoomManagement_Reservation] WITH CHECK ADD CONSTRAINT [FK__com_centralaz_RoomManagement_Reservation_AdministrativeContactPersonAliasId] FOREIGN KEY([AdministrativeContactPersonAliasId])
                 REFERENCES [dbo].[PersonAlias] ([Id])
                 " );

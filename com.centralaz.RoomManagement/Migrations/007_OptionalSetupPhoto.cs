@@ -23,16 +23,23 @@ namespace com.centralaz.RoomManagement.Migrations
     {
         public override void Up()
         {
-            AddColumn( "[dbo].[_com_centralaz_RoomManagement_Reservation]", "SetupPhotoId", c => c.Int() );
+            // AddColumn is currently only available in Rock v7
+            //AddColumn( "[dbo].[_com_centralaz_RoomManagement_Reservation]", "SetupPhotoId", c => c.Int() );
             Sql( @"
+                ALTER TABLE [dbo].[_com_centralaz_RoomManagement_Reservation] ADD [SetupPhotoId] INT
                 ALTER TABLE [dbo].[_com_centralaz_RoomManagement_Reservation]  WITH CHECK ADD  CONSTRAINT [FK__com_centralaz_RoomManagement_Reservation_SetupPhoto] FOREIGN KEY([SetupPhotoId])
                 REFERENCES [dbo].[BinaryFile] ([Id])
 " );}
 
         public override void Down()
         {
-            DropForeignKey( "[dbo].[_com_centralaz_RoomManagement_Reservation]", "SetupPhotoId" );
-            DropColumn( "[dbo].[_com_centralaz_RoomManagement_Reservation]", "SetupPhotoId" );
+            // DropColumn & DropForeignKey are currently only available in Rock v7
+            //DropForeignKey( "[dbo].[_com_centralaz_RoomManagement_Reservation]", "SetupPhotoId" );
+            //DropColumn( "[dbo].[_com_centralaz_RoomManagement_Reservation]", "SetupPhotoId" );
+            Sql( @"
+                ALTER TABLE [dbo].[_com_centralaz_RoomManagement_Reservation] DROP CONSTRAINT  [FK__com_centralaz_RoomManagement_Reservation_SetupPhoto]
+                ALTER TABLE [dbo].[_com_centralaz_RoomManagement_Reservation] DROP COLUMN [SetupPhotoId]
+" );
         }
     }
 }

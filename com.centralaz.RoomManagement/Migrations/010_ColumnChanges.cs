@@ -24,9 +24,15 @@ namespace com.centralaz.RoomManagement.Migrations
         public override void Up()
         {
             #region Reservation changes
-            AddColumn( "[dbo].[_com_centralaz_RoomManagement_Reservation]", "ContactPersonAliasId", c => c.Int() );
-            AddColumn( "[dbo].[_com_centralaz_RoomManagement_Reservation]", "ContactPhone", c => c.String( maxLength: 50 ) );
-            AddColumn( "[dbo].[_com_centralaz_RoomManagement_Reservation]", "ContactEmail", c => c.String( maxLength: 400 ) );
+            // AddColumn is currently only available in Rock v7
+            //AddColumn( "[dbo].[_com_centralaz_RoomManagement_Reservation]", "ContactPersonAliasId", c => c.Int() );
+            //AddColumn( "[dbo].[_com_centralaz_RoomManagement_Reservation]", "ContactPhone", c => c.String( maxLength: 50 ) );
+            //AddColumn( "[dbo].[_com_centralaz_RoomManagement_Reservation]", "ContactEmail", c => c.String( maxLength: 400 ) );
+            Sql( @"
+                ALTER TABLE [dbo].[_com_centralaz_RoomManagement_Reservation] ADD [ContactPersonAliasId] INT
+                ALTER TABLE [dbo].[_com_centralaz_RoomManagement_Reservation] ADD [ContactPhone] NVARCHAR (50)
+                ALTER TABLE [dbo].[_com_centralaz_RoomManagement_Reservation] ADD [ContactEmail] NVARCHAR (400)
+" );
 
             Sql( @"
                 ALTER TABLE [dbo].[_com_centralaz_RoomManagement_Reservation] WITH CHECK ADD CONSTRAINT [FK__com_centralaz_RoomManagement_Reservation_ContactPersonAliasId] FOREIGN KEY([ContactPersonAliasId])
