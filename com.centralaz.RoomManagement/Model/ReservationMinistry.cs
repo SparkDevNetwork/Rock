@@ -87,7 +87,8 @@ namespace com.centralaz.RoomManagement.Model
         /// </summary>
         public ReservationMinistryConfiguration()
         {
-
+            // IMPORTANT!!
+            this.HasEntitySetName( "ReservationMinistry" );
         }
     }
 

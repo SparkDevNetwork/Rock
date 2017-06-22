@@ -86,6 +86,9 @@ namespace com.centralaz.RoomManagement.Model
         public ReservationWorkflowTriggerConfiguration()
         {
             this.HasRequired( p => p.WorkflowType ).WithMany().HasForeignKey( p => p.WorkflowTypeId ).WillCascadeOnDelete( true );
+
+            // IMPORTANT!!
+            this.HasEntitySetName( "ReservationWorkflowTrigger" );
         }
     }
 }

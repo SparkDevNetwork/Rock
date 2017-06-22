@@ -86,6 +86,9 @@ namespace com.centralaz.RoomManagement.Model
             this.HasOptional( r => r.Campus ).WithMany().HasForeignKey( r => r.CampusId ).WillCascadeOnDelete( false );
             this.HasOptional( r => r.Location ).WithMany().HasForeignKey( r => r.LocationId ).WillCascadeOnDelete( false );
             this.HasOptional( r => r.ApprovalGroup ).WithMany().HasForeignKey( r => r.ApprovalGroupId ).WillCascadeOnDelete( false );
+
+            // IMPORTANT!!
+            this.HasEntitySetName( "Resource" );
         }
     }
 

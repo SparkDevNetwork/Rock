@@ -92,6 +92,9 @@ namespace com.centralaz.RoomManagement.Model
         {
             this.HasRequired( r => r.Reservation ).WithMany( r => r.ReservationResources ).HasForeignKey( r => r.ReservationId ).WillCascadeOnDelete( true );
             this.HasRequired( r => r.Resource ).WithMany().HasForeignKey( r => r.ResourceId ).WillCascadeOnDelete( true );
+
+            // IMPORTANT!!
+            this.HasEntitySetName( "ReservationResource" );
         }
     }
 
