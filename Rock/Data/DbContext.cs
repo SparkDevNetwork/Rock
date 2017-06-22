@@ -325,7 +325,7 @@ namespace Rock.Data
                 }
             }
 
-            var indexingEnabled = IndexContainer.GetActiveComponent() == null ? false : true;
+            var indexingEnabled = updatedItems.Any(a => a.Entity is IRockIndexable) && IndexContainer.GetActiveComponent() == null ? false : true;
 
             foreach ( var item in updatedItems )
             {
