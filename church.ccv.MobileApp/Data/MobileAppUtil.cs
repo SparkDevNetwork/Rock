@@ -26,6 +26,7 @@ using Rock.Web.Cache;
 using System.Data.Entity;
 using church.ccv.MobileApp.Models;
 using System.Net;
+using church.ccv.Actions;
 
 namespace church.ccv.MobileApp
 {
@@ -40,7 +41,8 @@ namespace church.ccv.MobileApp
             {
                 50,  //Neighborhood
                 133, //Next Gen
-                139  //Young Adults
+                139, //Young Adults
+                158  //Short Term Group
             };
 
         const string GroupLeaderInfo_Key = "LeaderInformation";
@@ -365,6 +367,142 @@ namespace church.ccv.MobileApp
     // Common reusable functions for supporting the Mobile App
     public static class Util
     {
+        public static PersonData GetPersonData( string userID )
+        {
+            PersonData personData = new PersonData( );
+
+            do
+            {
+                RockContext rockContext = new RockContext( );
+                PersonService personService = new PersonService( rockContext );
+                GroupService groupService = new GroupService( rockContext );
+                UserLoginService userLoginService = new UserLoginService( rockContext );
+
+                int? personId = userLoginService.Queryable()
+                    .Where( u => u.UserName.Equals( userID ) )
+                    .Select( a => a.PersonId )
+                    .FirstOrDefault();
+
+                if ( personId.HasValue == false ) break;
+
+                // start by getting the person. if we can't do that, we should fail
+                var person = personService.Queryable().Include( a => a.PhoneNumbers ).Include(a => a.Aliases )
+                    .FirstOrDefault( p => p.Id == personId );
+
+                // do a shallow copy of the person
+                personData.Person = new Person( );
+                personData.Person.CopyPropertiesFrom( person );
+                if( personData.Person == null ) break;
+
+                // take one deep object, the aliases, so we can provide the client a PrimaryAliasId
+                personData.Person.Aliases = person.Aliases;
+                
+                var mobilePhoneType = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE.AsGuid() );
+                if ( mobilePhoneType != null )
+                {
+                    personData.CellPhoneNumber = person.PhoneNumbers.FirstOrDefault( n => n.NumberTypeValueId == mobilePhoneType.Id );
+                }
+                
+                // the rest is optional, as they may not have filled it out yet
+                Group family = person.GetFamily( );
+                
+                // take a shallow copy of the family
+                personData.Family = new Group( );
+                personData.Family.CopyPropertiesFrom( family );
+
+                // now try to get ther home address for this family
+                Guid? homeAddressGuid = Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME.AsGuidOrNull();
+                if ( homeAddressGuid.HasValue )
+                {
+                    var homeAddressDv = DefinedValueCache.Read( homeAddressGuid.Value );
+                    if ( homeAddressDv != null )
+                    {
+                        // take the group location flagged as a home address and mapped
+                        GroupLocation familyAddress = family.GroupLocations
+                            .Where( l =>
+                                l.GroupLocationTypeValueId == homeAddressDv.Id &&
+                                l.IsMappedLocation )
+                            .FirstOrDefault();
+
+                        if ( familyAddress != null )
+                        {
+                            // take a shallow copy of the address, and then copy the location.
+                            personData.FamilyAddress = new GroupLocation( );
+                            personData.FamilyAddress.CopyPropertiesFrom( familyAddress );
+
+                            personData.FamilyAddress.Location = familyAddress.Location;
+                        }
+                    }
+                }
+                
+                // their age determines whether we use adult vs student actions. If they have no age, or are >= 18, they're an adult
+                if ( person.Age.HasValue == false || person.Age >= 18 )
+                {
+                    DateTime? baptismDate;
+                    personData.IsBaptised = Actions_Adult.Baptised.IsBaptised( person.Id, out baptismDate );
+                    personData.IsERA = Actions_Adult.ERA.IsERA( person.Id );
+                    personData.IsGiving = Actions_Adult.Give.IsGiving( person.Id );
+
+                    DateTime? membershipDate;
+                    personData.IsMember = Actions_Adult.Member.IsMember( person.Id, out membershipDate );
+
+                    Actions_Adult.Mentored.Result mentoredResult;
+                    Actions_Adult.Mentored.IsMentored( person.Id, out mentoredResult );
+                    personData.IsMentored = mentoredResult.IsMentored( );
+
+                    Actions_Adult.PeerLearning.Result peerLearningResult;
+                    Actions_Adult.PeerLearning.IsPeerLearning( person.Id, out peerLearningResult );
+                    personData.IsPeerLearning = peerLearningResult.IsPeerLearning( );
+
+                    Actions_Adult.Serving.Result servingResult;
+                    Actions_Adult.Serving.IsServing( person.Id, out servingResult );
+                    personData.IsServing = servingResult.IsServing;
+
+                    Actions_Adult.Teaching.Result teachingResult;
+                    Actions_Adult.Teaching.IsTeaching( person.Id, out teachingResult );
+                    personData.IsTeaching = teachingResult.IsTeaching( );
+
+                    DateTime? startingPointDate;
+                    personData.TakenStartingPoint = Actions_Adult.StartingPoint.TakenStartingPoint( person.Id, out startingPointDate );
+                }
+                // get the students version
+                else
+                {
+                    DateTime? baptismDate;
+                    personData.IsBaptised = Actions_Student.Baptised.IsBaptised( person.Id, out baptismDate );
+                    personData.IsERA = Actions_Student.ERA.IsERA( person.Id );
+                    personData.IsGiving = Actions_Student.Give.IsGiving( person.Id );
+
+                    DateTime? membershipDate;
+                    personData.IsMember = Actions_Student.Member.IsMember( person.Id, out membershipDate );
+
+                    Actions_Student.Mentored.Result mentoredResult;
+                    Actions_Student.Mentored.IsMentored( person.Id, out mentoredResult );
+                    personData.IsMentored = mentoredResult.IsMentored( );
+
+                    Actions_Student.PeerLearning.Result peerLearningResult;
+                    Actions_Student.PeerLearning.IsPeerLearning( person.Id, out peerLearningResult );
+                    personData.IsPeerLearning = peerLearningResult.IsPeerLearning( );
+
+                    Actions_Student.Serving.Result servingResult;
+                    Actions_Student.Serving.IsServing( person.Id, out servingResult );
+                    personData.IsServing = servingResult.IsServing;
+
+                    Actions_Student.Teaching.Result teachingResult;
+                    Actions_Student.Teaching.IsTeaching( person.Id, out teachingResult );
+                    personData.IsTeaching = teachingResult.IsTeaching( );
+
+                    DateTime? startingPointDate;
+                    personData.TakenStartingPoint = Actions_Student.StartingPoint.TakenStartingPoint( person.Id, out startingPointDate );
+                }
+
+                return personData;
+            }
+            while( false );
+
+            return null;
+        }
+
         public static HttpStatusCode RegisterNewPerson( RegAccountData regAccountData )
         {
             HttpStatusCode statusCode = HttpStatusCode.InternalServerError;

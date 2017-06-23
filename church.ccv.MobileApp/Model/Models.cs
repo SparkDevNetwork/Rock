@@ -40,6 +40,36 @@ namespace church.ccv.MobileApp.Models
     }
 
     [Serializable]
+    public class PersonData
+    {
+        public Person Person;
+        
+        public PhoneNumber CellPhoneNumber;
+
+        public Group Family;
+        public GroupLocation FamilyAddress;
+
+        // Actions
+        public bool IsBaptised;
+
+        public bool IsERA;
+
+        public bool IsGiving;
+
+        public bool TakenStartingPoint;
+
+        public bool IsMember;
+
+        public bool IsServing;
+
+        public bool IsPeerLearning;
+
+        public bool IsMentored;
+
+        public bool IsTeaching;
+    }
+
+    [Serializable]
     public class LaunchData
     {
         public int MobileAppVersion;

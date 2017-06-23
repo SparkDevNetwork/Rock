@@ -106,6 +106,10 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\church.ccv.Actions\church.ccv.Actions.csproj">
+      <Project>{aeb3ebf4-253a-4438-a380-ecff89c6bdda}</Project>
+      <Name>church.ccv.Actions</Name>
+    </ProjectReference>
     <ProjectReference Include="..\church.ccv.Utility\church.ccv.Utility.csproj">
       <Project>{9199bfe3-3c75-486b-afa0-d043da822afa}</Project>
       <Name>church.ccv.Utility</Name>

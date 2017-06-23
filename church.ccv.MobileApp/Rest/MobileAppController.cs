@@ -49,6 +49,20 @@ namespace chuch.ccv.MobileApp.Rest
         }
 
         [System.Web.Http.HttpGet]
+        [System.Web.Http.Route( "api/MobileApp/PersonData" )]
+        [Authenticate, Secured]
+        public HttpResponseMessage GetPersonData( string userID )
+        {
+            PersonData personData = Util.GetPersonData( userID );
+
+            StringContent restContent = new StringContent( JsonConvert.SerializeObject( personData ), Encoding.UTF8, "application/json" );
+            return new HttpResponseMessage()
+            {
+                Content = restContent
+            };
+        }
+
+        [System.Web.Http.HttpGet]
         [System.Web.Http.Route("api/MobileApp/GroupInfo")]
         [Authenticate, Secured]
         public HttpResponseMessage GetGroupInfo( int groupId )
