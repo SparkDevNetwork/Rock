@@ -116,7 +116,7 @@
                             <li><a href="http://www.appelsiini.net/projects/lazyload">LazyLoad.js</a> (MIT)</li>
                             <li><a href="https://github.com/drvic10k/bootstrap-sortable">Bootstrap Sortable</a> (MIT)</li>
                             <li><a href="http://momentjs.com/">Moment.js</a> (MIT)</li>
-                            <li><a href="https://github.com/zeroclipboard">ZeroClipboard</a> (MIT)</li>
+                            <li><a href="https://github.com/zenorocha/clipboard.js/">clipboard.js</a> (MIT)</li>
                             <li><a href="https://github.com/IonDen/ion.rangeSlider/">RangeSlider</a> (MIT)</li>
                             <li><a href="https://github.com/Knagis/CommonMark.NET">CommonMark</a> (MIT)</li>
                             <li><a href="http://www.dotlesscss.org/">doLess</a> (Apache)</li>
