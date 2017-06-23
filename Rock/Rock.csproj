@@ -742,6 +742,7 @@
     <Compile Include="Model\CodeGenerated\AttributeMatrixItemService.cs" />
     <Compile Include="Model\CodeGenerated\AttributeMatrixService.cs" />
     <Compile Include="Model\CodeGenerated\AttributeMatrixTemplateService.cs" />
+    <Compile Include="Model\CodeGenerated\SiteUrlMapService.cs" />
     <Compile Include="Model\FinancialAccountService.Partial.cs" />
     <Compile Include="Model\InteractionService.Partial.cs" />
     <Compile Include="Model\MetricService.Partial.cs" />
@@ -1096,6 +1097,8 @@
     <Compile Include="Model\RestControllerService.Partial.cs" />
     <Compile Include="Model\Schedule.cs" />
     <Compile Include="Model\ScheduleService.Partial.cs" />
+    <Compile Include="Model\SiteDomain.cs" />
+    <Compile Include="Model\SiteUrlMapService.Partial.cs" />
     <Compile Include="Model\WorkflowActionService.Partial.cs" />
     <Compile Include="PersonProfile\Badge\Giving.cs" />
     <Compile Include="PersonProfile\Badge\GroupTypeAttendance.cs" />
@@ -1122,6 +1125,7 @@
     <Compile Include="Transactions\IndexEntityTransaction.cs" />
     <Compile Include="Transactions\BulkIndexEntityTypeTransaction.cs" />
     <Compile Include="Transactions\LaunchWorkflowsTransaction.cs" />
+    <Compile Include="Transactions\ShortLinkTransaction.cs" />
     <Compile Include="Transactions\SendPaymentReceipts.cs" />
     <Compile Include="Transactions\SendPaymentReciepts.cs" />
     <Compile Include="UniversalSearch\Crawler\Crawler.cs" />
@@ -1149,7 +1153,7 @@
     <Compile Include="Model\SignatureDocumentTemplate.cs" />
     <Compile Include="Model\SignatureDocumentTemplateService.Partial.cs" />
     <Compile Include="Model\Site.cs" />
-    <Compile Include="Model\SiteDomain.cs" />
+    <Compile Include="Model\SiteUrlMap.cs" />
     <Compile Include="Model\SiteDomainService.Partial.cs" />
     <Compile Include="Model\SiteService.Partial.cs" />
     <Compile Include="Model\SystemEmail.cs" />

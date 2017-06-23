@@ -767,6 +767,9 @@ namespace RockWeb
 
             // Add a default route for when no parameters are passed
             routes.Add( new Route( "", new Rock.Web.RockRouteHandler() ) );
+
+            // Add a default route for shortlinks
+            routes.Add( new Route( "{shortlink}", new Rock.Web.RockRouteHandler() ) );
         }
 
         /// <summary>

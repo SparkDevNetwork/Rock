@@ -49,8 +49,6 @@
                 <div class="row row-eq-height-md">
                     <div class="col-md-3 filter-options">
 
-                        <asp:HiddenField ID="hfFilterUrl" runat="server" />
-
                         <Rock:SlidingDateRangePicker ID="drpSlidingDateRange" runat="server" Label="Date Range" EnabledSlidingDateRangeTypes="Previous, Last, Current, DateRange"/>
                         <div class="clearfix">
                             <asp:Label ID="lblAdvancedOptions" runat="server" CssClass="js-advanced btn pull-right btn-default btn-xs">Advanced Options <i class="fa fa-caret-down"></i></asp:Label>
