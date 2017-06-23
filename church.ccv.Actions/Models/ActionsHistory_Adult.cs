@@ -101,6 +101,18 @@ namespace church.ccv.Actions.Models
 
             [DataMember]
             public int Teaching_NG { get; set; }
+
+            [DataMember]
+            public int Teaching_LS_SubSection { get; set; }
+
+            [DataMember]
+            public int Teaching_LS { get; set; }
+
+            [DataMember]
+            public int Teaching_ST_SubSection { get; set; }
+
+            [DataMember]
+            public int Teaching_ST { get; set; }
             // ---
         }
 }

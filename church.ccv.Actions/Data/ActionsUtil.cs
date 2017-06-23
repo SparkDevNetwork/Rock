@@ -384,8 +384,17 @@ namespace church.ccv.Actions
                 public bool NextGen_IsTeaching { get; set; }
                 public string NextGen_GroupIds { get; set; }
 
+                public bool LifeSteps_SubSection_IsTeaching { get; set; }
+                public string LifeSteps_SubSection_GroupIds { get; set; }
+
                 public bool LifeSteps_IsTeaching { get; set; }
                 public string LifeSteps_GroupIds { get; set; }
+
+                public bool ShortTerm_SubSection_IsTeaching  { get; set; }
+                public string ShortTerm_SubSection_GroupIds  { get; set; }
+
+                public bool ShortTerm_IsTeaching  { get; set; }
+                public string ShortTerm_GroupIds { get; set; }
             }
 
             public class Result
@@ -414,8 +423,17 @@ namespace church.ccv.Actions
                 public bool NextGen_IsTeaching { get; set; }
                 public List<int> NextGen_GroupIds { get; set; }
 
+                public bool LifeSteps_SubSection_IsTeaching { get; set; }
+                public List<int> LifeSteps_SubSection_GroupIds { get; set; }
+
                 public bool LifeSteps_IsTeaching { get; set; }
                 public List<int> LifeSteps_GroupIds { get; set; }
+
+                public bool ShortTerm_SubSection_IsTeaching  { get; set; }
+                public List<int> ShortTerm_SubSection_GroupIds  { get; set; }
+
+                public bool ShortTerm_IsTeaching  { get; set; }
+                public List<int> ShortTerm_GroupIds { get; set; }
 
                 public bool IsTeaching( )
                 {
@@ -428,7 +446,10 @@ namespace church.ccv.Actions
                             NextSteps_IsTeaching == true ||
                             NextGen_Section_IsTeaching == true ||
                             NextGen_IsTeaching == true ||
-                            LifeSteps_IsTeaching == true) 
+                            LifeSteps_SubSection_IsTeaching == true ||
+                            LifeSteps_IsTeaching == true ||
+                            ShortTerm_SubSection_IsTeaching == true ||
+                            ShortTerm_IsTeaching == true) 
                     
                             ? true : false;
                 }
@@ -451,7 +472,11 @@ namespace church.ccv.Actions
                     groupIds.AddRange( NextGen_Section_GroupIds );
                     groupIds.AddRange( NextGen_GroupIds );
 
+                    groupIds.AddRange( LifeSteps_SubSection_GroupIds );
                     groupIds.AddRange( LifeSteps_GroupIds );
+
+                    groupIds.AddRange( ShortTerm_SubSection_GroupIds );
+                    groupIds.AddRange( ShortTerm_GroupIds );
 
                     return groupIds;
                 }
@@ -494,8 +519,17 @@ namespace church.ccv.Actions
                     NextGen_IsTeaching                 = sqlResultTable.NextGen_IsTeaching,
                     NextGen_GroupIds                   = sqlResultTable.NextGen_GroupIds != null ? sqlResultTable.NextGen_GroupIds.Split( ',' ).Select( Int32.Parse ).ToList( ) : new List<int>( ),
 
+                    LifeSteps_SubSection_IsTeaching    = sqlResultTable.LifeSteps_SubSection_IsTeaching,
+                    LifeSteps_SubSection_GroupIds      = sqlResultTable.LifeSteps_SubSection_GroupIds != null ? sqlResultTable.LifeSteps_SubSection_GroupIds.Split( ',' ).Select( Int32.Parse ).ToList( ) : new List<int>( ),
+
                     LifeSteps_IsTeaching               = sqlResultTable.LifeSteps_IsTeaching,
                     LifeSteps_GroupIds                 = sqlResultTable.LifeSteps_GroupIds != null ? sqlResultTable.LifeSteps_GroupIds.Split( ',' ).Select( Int32.Parse ).ToList( ) : new List<int>( ),
+
+                    ShortTerm_SubSection_IsTeaching    = sqlResultTable.ShortTerm_SubSection_IsTeaching,
+                    ShortTerm_SubSection_GroupIds      = sqlResultTable.ShortTerm_SubSection_GroupIds != null ? sqlResultTable.ShortTerm_SubSection_GroupIds.Split( ',' ).Select( Int32.Parse ).ToList( ) : new List<int>( ),
+
+                    ShortTerm_IsTeaching               = sqlResultTable.ShortTerm_IsTeaching,
+                    ShortTerm_GroupIds                 = sqlResultTable.ShortTerm_GroupIds != null ? sqlResultTable.ShortTerm_GroupIds.Split( ',' ).Select( Int32.Parse ).ToList( ) : new List<int>( ),
                 };
             }
         }

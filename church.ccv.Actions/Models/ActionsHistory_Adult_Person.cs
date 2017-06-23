@@ -94,6 +94,18 @@ namespace church.ccv.Actions.Models
 
             [DataMember]
             public bool Teaching_NG { get; set; }
+
+            [DataMember]
+            public bool Teaching_LS_SubSection { get; set; }
+
+            [DataMember]
+            public bool Teaching_LS { get; set; }
+
+            [DataMember]
+            public bool Teaching_ST_SubSection { get; set; }
+
+            [DataMember]
+            public bool Teaching_ST { get; set; }
             // ---
         }
 }
