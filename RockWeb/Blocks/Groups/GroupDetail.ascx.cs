@@ -52,6 +52,7 @@ namespace RockWeb.Blocks.Groups
     [LinkedPage( "Registration Instance Page", "The page to display registration details.", false, "", "", 7 )]
     [LinkedPage( "Event Item Occurrence Page", "The page to display event item occurrence details.", false, "", "", 8 )]
     [LinkedPage( "Content Item Page", "The page to display registration details.", false, "", "", 9 )]
+    [BooleanField( "Show Copy Button", "Copies the group and all of its associated authorization rules", false, "", 10 )]
     public partial class GroupDetail : RockBlock, IDetailBlock
     {
         #region Constants
@@ -224,7 +225,6 @@ namespace RockWeb.Blocks.Groups
             btnSecurity.EntityTypeId = EntityTypeCache.Read( typeof( Rock.Model.Group ) ).Id;
 
             rblScheduleSelect.BindToEnum<ScheduleType>();
-
             // this event gets fired after block settings are updated. it's nice to repaint the screen if these settings would alter it
             this.BlockUpdated += Block_BlockUpdated;
             this.AddConfigurationUpdateTrigger( upnlGroupDetail );
@@ -249,6 +249,7 @@ namespace RockWeb.Blocks.Groups
                 {
                     pnlDetails.Visible = false;
                 }
+                btnCopy.Visible = GetAttributeValue( "ShowCopyButton" ).AsBoolean();
             }
             else
             {
@@ -694,7 +695,7 @@ namespace RockWeb.Blocks.Groups
                 cvGroup.ErrorMessage = group.ValidationResults.Select( a => a.ErrorMessage ).ToList().AsDelimited( "<br />" );
                 return;
             }
-            
+
             // use WrapTransaction since SaveAttributeValues does its own RockContext.SaveChanges()
             rockContext.WrapTransaction( () =>
             {
@@ -825,6 +826,108 @@ namespace RockWeb.Blocks.Groups
             }
         }
 
+        /// <summary>
+        /// Handles the Click event of the btnCopy control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void btnCopy_Click( object sender, EventArgs e )
+        {
+            var rockContext = new RockContext();
+            var groupService = new GroupService( rockContext );
+            var authService = new AuthService( rockContext );
+            var attributeService = new AttributeService( rockContext );
+
+            int groupId = hfGroupId.ValueAsInt();
+            var group = groupService.Queryable( "GroupType" )
+                    .Where( g => g.Id == groupId )
+                    .FirstOrDefault();
+
+            if ( group != null )
+            {
+                group.LoadAttributes( rockContext );
+                // clone the group
+                var newGroup = group.Clone( false );
+                newGroup.CreatedByPersonAlias = null;
+                newGroup.CreatedByPersonAliasId = null;
+                newGroup.CreatedDateTime = RockDateTime.Now;
+                newGroup.ModifiedByPersonAlias = null;
+                newGroup.ModifiedByPersonAliasId = null;
+                newGroup.ModifiedDateTime = RockDateTime.Now;
+                newGroup.Id = 0;
+                newGroup.Guid = Guid.NewGuid();
+                newGroup.IsSystem = false;
+                newGroup.Name = group.Name + " - Copy";
+
+                var auths = authService.GetByGroup( group.Id );
+                rockContext.WrapTransaction( () =>
+                {
+                    groupService.Add( newGroup );
+                    rockContext.SaveChanges();
+
+                    newGroup.LoadAttributes( rockContext );
+                    if ( group.Attributes != null && group.Attributes.Any() )
+                    {
+                        foreach ( var attributeKey in group.Attributes.Select( a => a.Key ) )
+                        {
+                            string value = group.GetAttributeValue( attributeKey );
+                            newGroup.SetAttributeValue( attributeKey, value );
+                        }
+                    }
+                    newGroup.SaveAttributeValues( rockContext );
+
+                    /* Take care of Group Member Attributes */
+                    var entityTypeId = EntityTypeCache.Read( typeof( GroupMember ) ).Id;
+                    string qualifierColumn = "GroupId";
+                    string qualifierValue = group.Id.ToString();
+                    // Get the existing attributes for this entity type and qualifier value
+                    var attributes = attributeService.Get( entityTypeId, qualifierColumn, qualifierValue );
+
+                    foreach ( var attribute in attributes )
+                    {
+                        var newAttribute = attribute.Clone( false );
+                        newAttribute.Id = 0;
+                        newAttribute.Guid = Guid.NewGuid();
+                        newAttribute.IsSystem = false;
+                        newAttribute.EntityTypeQualifierValue = newGroup.Id.ToString();
+
+                        foreach ( var qualifier in attribute.AttributeQualifiers )
+                        {
+                            var newQualifier = qualifier.Clone( false );
+                            newQualifier.Id = 0;
+                            newQualifier.Guid = Guid.NewGuid();
+                            newQualifier.IsSystem = false;
+
+                            newAttribute.AttributeQualifiers.Add( qualifier );
+                        }
+
+                        attributeService.Add( newAttribute );
+
+                    }
+                    rockContext.SaveChanges();
+
+                    foreach ( var auth in auths )
+                    {
+                        var newAuth = auth.Clone( false );
+                        newAuth.Id = 0;
+                        newAuth.Guid = Guid.NewGuid();
+                        newAuth.GroupId = newGroup.Id;
+                        newAuth.CreatedByPersonAlias = null;
+                        newAuth.CreatedByPersonAliasId = null;
+                        newAuth.CreatedDateTime = RockDateTime.Now;
+                        newAuth.ModifiedByPersonAlias = null;
+                        newAuth.ModifiedByPersonAliasId = null;
+                        newAuth.ModifiedDateTime = RockDateTime.Now;
+                        authService.Add( newAuth );
+                    }
+                    rockContext.SaveChanges();
+                    Rock.Security.Authorization.Flush();
+
+                } );
+                ShowDetail( newGroup.Id );
+            }
+        }
+
         #endregion
 
         #region Control Events
@@ -927,6 +1030,7 @@ namespace RockWeb.Blocks.Groups
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void Block_BlockUpdated( object sender, EventArgs e )
         {
+            btnCopy.Visible = GetAttributeValue( "ShowCopyButton" ).AsBoolean();
             var currentGroup = GetGroup( hfGroupId.Value.AsInteger() );
             if ( currentGroup != null )
             {
@@ -1471,7 +1575,7 @@ namespace RockWeb.Blocks.Groups
                     int activeGroupMemberCount = group.Members.Where( m => m.GroupMemberStatus == GroupMemberStatus.Active ).Count();
                     if ( activeGroupMemberCount > group.GroupCapacity )
                     {
-                        nbGroupCapacityMessage.Text = string.Format( "This group is over capacity by {0}.", "individual".ToQuantity((activeGroupMemberCount - group.GroupCapacity.Value)) );
+                        nbGroupCapacityMessage.Text = string.Format( "This group is over capacity by {0}.", "individual".ToQuantity( ( activeGroupMemberCount - group.GroupCapacity.Value ) ) );
                         nbGroupCapacityMessage.Visible = true;
 
                         if ( group.GroupType != null && group.GroupType.GroupCapacityRule == GroupCapacityRule.Hard )
@@ -1568,7 +1672,7 @@ namespace RockWeb.Blocks.Groups
                         {
                             var googleAPIKey = GlobalAttributesCache.Read().GetValue( "GoogleAPIKey" );
 
-                            if ( groupLocation.Location.GeoPoint != null && ! string.IsNullOrWhiteSpace( googleAPIKey ) )
+                            if ( groupLocation.Location.GeoPoint != null && !string.IsNullOrWhiteSpace( googleAPIKey ) )
                             {
                                 string markerPoints = string.Format( "{0},{1}", groupLocation.Location.GeoPoint.Latitude, groupLocation.Location.GeoPoint.Longitude );
                                 string mapLink = System.Text.RegularExpressions.Regex.Replace( mapStyle, @"\{\s*MarkerPoints\s*\}", markerPoints );

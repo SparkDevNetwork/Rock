@@ -28,6 +28,7 @@ namespace Rock.Model
     /// <summary>
     /// Represents a type or category of binary files in Rock, and configures how binary files of this type are stored and accessed.
     /// </summary>
+    [RockDomain( "Core" )]
     [Table( "BinaryFileType" )]
     [DataContract]
     public partial class BinaryFileType : Model<BinaryFileType>

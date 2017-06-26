@@ -32,6 +32,7 @@ namespace Rock.Model
     /// <summary>
     /// 
     /// </summary>
+    [RockDomain( "Event" )]
     [Table( "RegistrationRegistrantFee" )]
     [DataContract]
     public partial class RegistrationRegistrantFee : Model<RegistrationRegistrantFee>

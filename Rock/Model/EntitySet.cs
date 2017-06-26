@@ -29,6 +29,7 @@ namespace Rock.Model
     /// <summary>
     /// Entity Set POCO Entity.
     /// </summary>
+    [RockDomain( "Core" )]
     [Table( "EntitySet" )]
     [DataContract]
     [NotAudited]

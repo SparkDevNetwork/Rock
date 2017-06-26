@@ -31,6 +31,7 @@ namespace Rock.Model
     /// <summary>
     /// Represents a following suggestion type
     /// </summary>
+    [RockDomain( "Core" )]
     [Table( "FollowingSuggestionType" )]
     [DataContract]
     public partial class FollowingSuggestionType : Model<FollowingSuggestionType>, IOrdered, IHasActiveFlag

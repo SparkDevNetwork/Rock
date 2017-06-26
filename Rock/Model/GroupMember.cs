@@ -33,6 +33,7 @@ namespace Rock.Model
     /// <summary>
     /// Represents a member of a group in Rock. A group member is a <see cref="Rock.Model.Person"/> who has a relationship with a <see cref="Rock.Model.Group"/>.
     /// </summary>
+    [RockDomain( "Group" )]
     [Table( "GroupMember" )]
     [DataContract]
     public partial class GroupMember : Model<GroupMember>
@@ -351,6 +352,7 @@ namespace Rock.Model
 
         /// <summary>
         /// Gets a value indicating whether this instance is valid.
+        /// NOTE: Try using IsValidGroupMember instead
         /// </summary>
         /// <value>
         ///   <c>true</c> if this instance is valid; otherwise, <c>false</c>.
@@ -359,22 +361,37 @@ namespace Rock.Model
         {
             get
             {
-                var result = base.IsValid;
-                if ( result )
+                using ( var rockContext = new RockContext() )
                 {
-                    string errorMessage;
-                    using ( var rockContext = new RockContext() )
-                    {
-                        if ( !ValidateGroupMembership( rockContext, out errorMessage ) )
-                        {
-                            ValidationResults.Add( new ValidationResult( errorMessage ) );
-                            result = false;
-                        }
-                    }
+                    return this.IsValidGroupMember( rockContext );
                 }
-
-                return result;
             }
+        }
+
+        /// <summary>
+        /// Calls IsValid with the specified context (to avoid deadlocks)
+        /// Try to call this instead of IsValid when possible
+        /// </summary>
+        /// <param name="rockContext">The rock context.</param>
+        /// <returns>
+        ///   <c>true</c> if [is valid group member] [the specified rock context]; otherwise, <c>false</c>.
+        /// </returns>
+        public bool IsValidGroupMember( RockContext rockContext )
+        {
+            var result = base.IsValid;
+            if ( result )
+            {
+                string errorMessage;
+                
+                if ( !ValidateGroupMembership( rockContext, out errorMessage ) )
+                {
+                    ValidationResults.Add( new ValidationResult( errorMessage ) );
+                    result = false;
+                }
+                
+            }
+
+            return result;
         }
 
         /// <summary>
@@ -420,6 +437,7 @@ namespace Rock.Model
                                             .Where( m =>
                                                 m.GroupRoleId == this.GroupRoleId
                                                 && m.GroupMemberStatus == GroupMemberStatus.Active )
+                                            .Where( m => m != this)
                                             .Count();
 
                 bool roleMembershipAboveMax = false;
@@ -435,10 +453,8 @@ namespace Rock.Model
                 }
                 else
                 {
-                    GroupMemberService groupMemberService = new GroupMemberService( rockContext );
-                    var databaseRecord = groupMemberService.Get( this.Id );
                     // if existing group member changing role or status..
-                    if ( databaseRecord != null && ( this.GroupRoleId != databaseRecord.GroupRoleId || this.GroupMemberStatus != databaseRecord.GroupMemberStatus ))
+                    if ( this.IsStatusOrRoleModified( rockContext ) )
                     {
                         // verify that active count has not exceeded the max
                         if ( groupRole.MaxCount != null && ( memberCountInRole + 1 ) > groupRole.MaxCount )
@@ -508,6 +524,44 @@ namespace Rock.Model
         }
 
         /// <summary>
+        /// Determines whether this is an existing record but the GroupMemberStatus or GroupRoleId was modified since loaded from the database
+        /// </summary>
+        /// <param name="rockContext">The rock context.</param>
+        /// <returns></returns>
+        public bool IsStatusOrRoleModified( RockContext rockContext )
+        {
+            if ( this.Id == 0 )
+            {
+                // new group member
+                return false;
+            }
+            else
+            {
+                var groupMemberService = new GroupMemberService( rockContext );
+                var databaseGroupMemberRecord = groupMemberService.Get( this.Id );
+
+                if ( databaseGroupMemberRecord == null )
+                {
+                    return false;
+                }
+
+                // existing groupmember record, but person or role was changed
+                var hasChanged = ( ( this.GroupMemberStatus != databaseGroupMemberRecord.GroupMemberStatus ) || ( this.GroupRoleId != databaseGroupMemberRecord.GroupRoleId ) );
+
+                if ( !hasChanged )
+                {
+                    var entry = rockContext.Entry( this );
+                    if ( entry != null )
+                    {
+                        hasChanged = rockContext.Entry( this ).Property( "GroupMemberStatus" )?.IsModified == true || rockContext.Entry( this ).Property( "GroupRoleId" )?.IsModified == true;
+                    }
+                }
+
+                return hasChanged;
+            }
+        }
+
+        /// <summary>
         /// Determines whether this is a new group member (just added) or if either Person or Role is different than what is stored in the database
         /// </summary>
         /// <param name="rockContext">The rock context.</param>
@@ -525,7 +579,18 @@ namespace Rock.Model
                 var databaseGroupMemberRecord = groupMemberService.Get( this.Id );
 
                 // existing groupmember record, but person or role was changed
-                return ( ( this.PersonId != databaseGroupMemberRecord.PersonId ) || ( this.GroupRoleId != databaseGroupMemberRecord.GroupRoleId ) );
+                var hasChanged = ( ( this.PersonId != databaseGroupMemberRecord.PersonId ) || ( this.GroupRoleId != databaseGroupMemberRecord.GroupRoleId ) );
+
+                if ( !hasChanged )
+                {
+                    var entry = rockContext.Entry( this );
+                    if ( entry != null )
+                    {
+                        hasChanged = rockContext.Entry( this ).Property( "PersonId" )?.IsModified == true || rockContext.Entry( this ).Property( "GroupRoleId" )?.IsModified == true;
+                    }
+                }
+
+                return hasChanged;
             }
         }
 

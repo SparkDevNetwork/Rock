@@ -28,6 +28,7 @@ namespace Rock.Model
     /// Represents a collection or group of entity objects that share one or more common characteristics . A tag can either be private (owned by an individual <see cref="Rock.Model.Person"/>)
     /// or public.
     /// </summary>
+    [RockDomain( "Core" )]
     [Table( "Tag" )]
     [DataContract]
     public partial class Tag : Model<Tag>, IOrdered

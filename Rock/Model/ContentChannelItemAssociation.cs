@@ -25,6 +25,7 @@ namespace Rock.Model
     /// <summary>
     /// 
     /// </summary>
+    [RockDomain( "CMS" )]
     [Table( "ContentChannelItemAssociation" )]
     [DataContract]
     public partial class ContentChannelItemAssociation : Model<ContentChannelItemAssociation>, IOrdered

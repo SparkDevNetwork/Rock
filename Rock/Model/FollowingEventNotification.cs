@@ -27,6 +27,7 @@ namespace Rock.Model
     /// <summary>
     /// Following Event Notification
     /// </summary>
+    [RockDomain( "Core" )]
     [Table( "FollowingEventNotification" )]
     [DataContract]
     public partial class FollowingEventNotification : Model<FollowingEventNotification>

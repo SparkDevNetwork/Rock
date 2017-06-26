@@ -28,6 +28,7 @@ namespace Rock.Model
     /// <summary>
     /// Represents a note that is entered in Rock and is associated with a specific entity. For example, a note could be entered on a person, GroupMember, a device, etc or for a specific subset of an entity type.
     /// </summary>
+    [RockDomain( "Core" )]
     [Table( "Note" )]
     [DataContract]
     public partial class Note : Model<Note>

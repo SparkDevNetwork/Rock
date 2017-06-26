@@ -33,6 +33,7 @@ namespace Rock.Model
     /// Represents a type or category of <see cref="Rock.Model.Group">Groups</see> in Rock.  A GroupType is also used to configure how Groups that belong to a GroupType will operate
     /// and how they will interact with other components of Rock.
     /// </summary>
+    [RockDomain( "Group" )]
     [Table( "GroupType" )]
     [DataContract]
     public partial class GroupType : Model<GroupType>, IOrdered

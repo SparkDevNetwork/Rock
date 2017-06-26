@@ -29,6 +29,7 @@ namespace Rock.Model
     /// <summary>
     /// Represents a prayer request that a person has submitted. The PrayerRequest entity implements ICategorized which means that a prayer request can belong to a category.
     /// </summary>
+    [RockDomain( "Prayer" )]
     [Table( "PrayerRequest" )]
     [DataContract]
     public partial class PrayerRequest : Model<PrayerRequest>, ICategorized
@@ -43,7 +44,7 @@ namespace Rock.Model
         /// A <see cref="System.String" /> containing the first name of the person that this prayer request is about.
         /// </value>
         [Required]
-        [MaxLength ( 50 ) ]
+        [MaxLength( 50 )]
         [DataMember( IsRequired = true )]
         public string FirstName { get; set; }
 
@@ -65,7 +66,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         [MaxLength( 254 )]
-        [RegularExpression(@"[\w\.\'_%-]+(\+[\w-]*)?@([\w-]+\.)+[\w-]+", ErrorMessage= "The Email address is invalid")]
+        [RegularExpression( @"[\w\.\'_%-]+(\+[\w-]*)?@([\w-]+\.)+[\w-]+", ErrorMessage = "The Email address is invalid" )]
         public string Email { get; set; }
 
         /// <summary>
