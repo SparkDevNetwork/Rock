@@ -44,12 +44,24 @@ namespace Rock.Model
         [Required]
         [DataMember( IsRequired = true )]
         public int SiteId { get; set; }
-        
+
+        /// <summary>
+        /// Gets or sets the token.
+        /// </summary>
+        /// <value>
+        /// The token.
+        /// </value>
         [Required]
         [MaxLength( 50 )]
         [DataMember( IsRequired = true )]
         public string Token { get; set; }
 
+        /// <summary>
+        /// Gets or sets the URL.
+        /// </summary>
+        /// <value>
+        /// The URL.
+        /// </value>
         [Required]
         [MaxLength( 200 )]
         [DataMember( IsRequired = true )]
@@ -89,6 +101,12 @@ namespace Rock.Model
 
         private static Random _random = new Random( Guid.NewGuid().GetHashCode() );
         private static char[] alphaCharacters = new char[] { 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z' };
+
+        /// <summary>
+        /// Gets a random token.
+        /// </summary>
+        /// <param name="length">The length.</param>
+        /// <returns></returns>
         public static string GetRandomToken( int length )
         {
             StringBuilder sb = new StringBuilder();
