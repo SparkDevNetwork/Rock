@@ -5,6 +5,9 @@
         top: 200px;
     }
 </style>
+<script> 
+    var timeout = 0;
+</script>
 
 <asp:UpdatePanel ID="upContent" runat="server">
 
@@ -26,24 +29,24 @@
                 // from the server is received the displayed time could display the same second for more
                 // than one second and/or skip displaying a second entirely.
                 $('.countdown-timer').countdown('destroy');
+                if (timeout)
+                {
+                    window.clearTimeout(timeout)
+                }
             });
 
             Sys.Application.add_load(function () {
 
                 var timeoutSeconds = $('.js-refresh-timer-seconds').val();
-                if (timeout) {
-                    refreshKiosk();
+                timeout = window.setTimeout(refreshKiosk, timeoutSeconds * 1000);
+
+                function refreshKiosk() {
+                    $('.countdown-timer').countdown('destroy');
+                    PostRefresh();
                 }
-                var timeout = window.setTimeout(refreshKiosk, timeoutSeconds * 1000);
 
                 var $ActiveWhen = $('.active-when');
                 var $CountdownTimer = $('.countdown-timer');
-
-                function refreshKiosk() {
-                    window.clearTimeout(timeout);
-                    $CountdownTimer = null;
-                    PostRefresh();
-                }
 
                 if ($ActiveWhen.text() != '') {
                     var timeActive = new Date($ActiveWhen.text());
