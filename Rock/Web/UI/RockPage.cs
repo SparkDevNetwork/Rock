@@ -2516,6 +2516,11 @@ Sys.Application.add_load(function () {
             return GetClientIpAddress( new HttpRequestWrapper( HttpContext.Current.Request ) );
         }
 
+        /// <summary>
+        /// Gets the client ip address.
+        /// </summary>
+        /// <param name="request">The request.</param>
+        /// <returns></returns>
         public static string GetClientIpAddress( HttpRequestBase request )
         { 
             string ipAddress = request.ServerVariables["HTTP_X_FORWARDED_FOR"];
