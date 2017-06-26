@@ -2677,6 +2677,51 @@ namespace Rock.Lava
             return null;
         }
 
+        /// <summary>
+        /// Gets the Notes of the entity
+        /// </summary>
+        /// <param name="context">The context.</param>
+        /// <param name="input">The input.</param>
+        /// <param name="documentTemplateId">The Id number of the signed document type to query for.</param>
+        /// <param name="trueValue">The value to be returned if the person has signed the document.</param>
+        /// <param name="falseValue">The value to be returned if the person has not signed the document.</param>
+        /// <returns></returns>
+        public static object HasSignedDocument( DotLiquid.Context context, object input, object documentTemplateId, object trueValue = null, object falseValue = null )
+        {
+            int personId;
+            int templateId;
+
+            trueValue = trueValue ?? true;
+            falseValue = falseValue ?? false;
+
+            if ( input == null || documentTemplateId == null )
+            {
+                return falseValue;
+            }
+
+            templateId = documentTemplateId.ToString().AsInteger();
+
+            if ( input is Person )
+            {
+                personId = ( input as Person ).Id;
+            }
+            else
+            {
+                personId = input.ToString().AsInteger();
+            }
+
+            bool found = new SignatureDocumentService( new RockContext() )
+                .Queryable().AsNoTracking()
+                .Where( d =>
+                    d.SignatureDocumentTemplateId == templateId &&
+                    d.Status == SignatureDocumentStatus.Signed &&
+                    d.BinaryFileId.HasValue &&
+                    d.AppliesToPersonAlias.PersonId == personId )
+                .Any();
+
+            return found ? trueValue : falseValue;
+        }
+
         #endregion
 
         #region Misc Filters
