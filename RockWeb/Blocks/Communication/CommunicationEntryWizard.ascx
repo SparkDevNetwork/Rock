@@ -4,9 +4,14 @@
     <ContentTemplate>
 
         <style>
-            // always hide thead image remove
+            /* always hide thead image remove */
             .propertypanel-image .imageupload-remove {
                 display: none !important;
+            }
+
+            /* workaround for https://github.com/bevacqua/dragula/issues/421 */
+            .gu-transit .container{
+                display: none;
             }
         </style>
 
@@ -90,13 +95,13 @@
                                                 <div class="col-md-6">
                                                     <div class="form-group">
 									                    <label for="component-text-margin-top">Margin Top</label>
-                                                        <div class="input-group input-width-md date">
+                                                        <div class="input-group input-width-md">
 								                            <input class="form-control" id="component-text-margin-top" type="number"><span class="input-group-addon">px</span>
 							                            </div>
 								                    </div>
                                                     <div class="form-group">
 									                    <label for="component-text-margin-bottom">Margin Bottom</label>
-									                    <div class="input-group input-width-md date">
+									                    <div class="input-group input-width-md">
 								                            <input class="form-control" id="component-text-margin-bottom" type="number"><span class="input-group-addon">px</span>
 							                            </div>
 								                    </div>
@@ -104,13 +109,13 @@
                                                 <div class="col-md-6">
                                                     <div class="form-group">
 									                    <label for="component-text-margin-left">Margin Left</label>
-									                    <div class="input-group input-width-md date">
+									                    <div class="input-group input-width-md">
 								                            <input class="form-control" id="component-text-margin-left" type="number"><span class="input-group-addon">px</span>
 							                            </div>
 								                    </div>
                                                     <div class="form-group">
 									                    <label for="component-text-margin-right">Margin Right</label>
-									                    <div class="input-group input-width-md date">
+									                    <div class="input-group input-width-md">
 								                            <input class="form-control" id="component-text-margin-right" type="number"><span class="input-group-addon">px</span>
 							                            </div>
 								                    </div>
@@ -162,7 +167,7 @@
                                                 <div class="col-md-6">
                                                     <div class="form-group">
                                                         <label for="component-image-imagewidth">Image Width</label>
-                                                        <div class="input-group input-width-md date">
+                                                        <div class="input-group input-width-md">
                                                             <input class="form-control" id="component-image-imagewidth" type="number"><span class="input-group-addon">px</span>
                                                         </div>
                                                     </div>
@@ -170,7 +175,7 @@
                                                 <div class="col-md-6">
                                                     <div class="form-group">
                                                         <label for="component-image-imageheight">Image Height</label>
-                                                        <div class="input-group input-width-md date">
+                                                        <div class="input-group input-width-md">
                                                             <input class="form-control" id="component-image-imageheight" type="number"><span class="input-group-addon">px</span>
                                                         </div>
                                                     </div>
@@ -181,13 +186,13 @@
                                                 <div class="col-md-6">
                                                     <div class="form-group">
 									                    <label for="component-image-margin-top">Margin Top</label>
-                                                        <div class="input-group input-width-md date">
+                                                        <div class="input-group input-width-md">
 								                            <input class="form-control" id="component-image-margin-top" type="number"><span class="input-group-addon">px</span>
 							                            </div>
 								                    </div>
                                                     <div class="form-group">
 									                    <label for="component-image-margin-bottom">Margin Bottom</label>
-									                    <div class="input-group input-width-md date">
+									                    <div class="input-group input-width-md">
 								                            <input class="form-control" id="component-image-margin-bottom" type="number"><span class="input-group-addon">px</span>
 							                            </div>
 								                    </div>
@@ -195,13 +200,13 @@
                                                 <div class="col-md-6">
                                                     <div class="form-group">
 									                    <label for="component-image-margin-left">Margin Left</label>
-									                    <div class="input-group input-width-md date">
+									                    <div class="input-group input-width-md">
 								                            <input class="form-control" id="component-image-margin-left" type="number"><span class="input-group-addon">px</span>
 							                            </div>
 								                    </div>
                                                     <div class="form-group">
 									                    <label for="component-image-margin-right">Margin Right</label>
-									                    <div class="input-group input-width-md date">
+									                    <div class="input-group input-width-md">
 								                            <input class="form-control" id="component-image-margin-right" type="number"><span class="input-group-addon">px</span>
 							                            </div>
 								                    </div>
@@ -214,7 +219,24 @@
                                 <!-- Section Properties -->
                                 <div class="propertypanel propertypanel-section" data-component="section" style="display: none;">
 						            <h4 class="propertypanel-title">Section</h4>
-                                    <pre>todo</pre>
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <div class="form-group">
+                                                <label for="component-section-left-column-percent">Left Column Percent</label>
+                                                <div class="input-group input-width-md">
+                                                    <input class="form-control" id="component-section-left-column-percent" type="number"><span class="input-group-addon">%</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="form-group">
+                                                <label for="component-section-right-column-percent">Right Column Percent</label>
+                                                <div class="input-group input-width-md">
+                                                    <input class="form-control" id="component-section-right-column-percent" type="number"><span class="input-group-addon">%</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
 					            </div>
 
                                 <!-- Divider Properties -->
@@ -449,6 +471,8 @@
 				        Rock.controls.emailEditor.imageComponentHelper.setProperties($currentComponent);
 				        break;
 				    case 'section':
+				        Rock.controls.emailEditor.sectionComponentHelper.setProperties($currentComponent);
+				        break;
 				    case 'divider':
 				    case 'code':
 				        break;
@@ -493,6 +517,9 @@
 
         <!-- Image Component -->
         <script src='<%=RockPage.ResolveRockUrl("~/Scripts/Rock/Controls/EmailEditor/imageComponentHelper.js", true)%>' ></script>
+
+        <!-- Section Component -->
+        <script src='<%=RockPage.ResolveRockUrl("~/Scripts/Rock/Controls/EmailEditor/sectionComponentHelper.js", true)%>' ></script>
 
         <script>
             function updateTextComponent(el, contents)
