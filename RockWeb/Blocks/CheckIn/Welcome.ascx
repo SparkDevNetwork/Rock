@@ -106,12 +106,6 @@
 
                 });
 
-                //if ($(".js-active").is(":visible")) {
-                //    location.hash = 'active';
-                //} else {
-                //    location.hash = '';
-                //}
-
                 function submitFamilyIdSearch( familyIds ) {
                     $('#hfSearchEntry').val(familyIds);
                     __doPostBack('hfWedgeEntry', 'Family_Id_Search');
