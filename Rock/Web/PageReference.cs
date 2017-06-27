@@ -61,7 +61,7 @@ namespace Rock.Web
         /// The query string.
         /// </value>
         public NameValueCollection QueryString { get; set; }
-
+        
         /// <summary>
         /// Gets or sets the bread crumbs.
         /// </summary>
