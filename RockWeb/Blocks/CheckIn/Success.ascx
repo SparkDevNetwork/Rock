@@ -5,7 +5,7 @@
     <Rock:ModalAlert ID="maWarning" runat="server" />
 
     <div class="checkin-header">
-        <h1>Checked-in</h1>
+        <h1><asp:Literal ID="lTitle" runat="server" /></h1>
     </div>
 
     <div class="checkin-body">

@@ -37,7 +37,7 @@
 
 
     <div class="checkin-header">
-        <h1><asp:Literal ID="lPersonName" runat="server"></asp:Literal></h1>
+        <h1><asp:Literal ID="lTitle" runat="server"></asp:Literal></h1>
     </div>
                 
     <div class="checkin-body">
@@ -46,15 +46,15 @@
             <div class="scroller">
 
                 <asp:Panel ID="pnlNoOptions" runat="server" Visible="false">
-                    <h1>Sorry</h1>
-                    <h4>There are currently not any available locations that the selected individual(s) can check into.</h4>
+                    <h1><asp:Literal ID="lNoOptionTitle" runat="server" /></h1>
+                    <h4><asp:Literal ID="lNoOptionCaption" runat="server" /></h4>
                     <div class="actions">
                         <asp:LinkButton CssClass="btn btn-primary btn-checkin" ID="btnNoOptionOk" runat="server" OnClick="btnNoOptionOk_Click" Text="Ok" />
                     </div>
                 </asp:Panel>
 
                 <div id="divAbilityLevel" runat="server" class="control-group checkin-body-container">
-                    <label class="control-label">Select Ability Level</label>
+                    <label class="control-label"><asp:Literal ID="lCaption" runat="server" /></label>
                     <div class="controls">
                         <asp:Repeater ID="rSelection" runat="server" OnItemCommand="rSelection_ItemCommand" OnItemDataBound="rSelection_ItemDataBound">
                             <ItemTemplate>

@@ -38,7 +38,16 @@ namespace RockWeb.Blocks.CheckIn
 
     [LinkedPage( "Family Select Page", "", false, "", "", 5 )]
     [LinkedPage( "Scheduled Locations Page", "", false, "", "", 6 )]
-    [TextField( "Check-in Button Text", "The text to display on the check-in button.", false, "", "", 7, "CheckinButtonText" )]
+
+    [TextField( "Not Active Title", "Title displayed when there are not any active options today.", false, "Check-in Is Not Active", "Text", 7 )]
+    [TextField( "Not Active Caption", "Caption displayed when there are not any active options today.", false, "There are no current or future schedules for this kiosk today!", "Text", 8 )]
+    [TextField( "Not Active Yet Title", "Title displayed when there are active options today, but none are active now.", false, "Check-in Is Not Active Yet", "Text", 9 )]
+    [TextField( "Not Active Yet Caption", "Caption displayed when there are active options today, but none are active now. Use {0} for a countdown timer.", false, "This kiosk is not active yet.  Countdown until active: {0}.", "Text", 10 )]
+    [TextField( "Closed Title", "", false, "Closed", "Text", 11 )]
+    [TextField( "Closed Caption", "", false, "This location is currently closed.", "Text", 12 )]
+    [TextField( "Check-in Button Text", "The text to display on the check-in button. If left blank, 'Check-in' (or 'Start' when check-out is enabled) will be used.", false, "", "Text", 13, "CheckinButtonText" )]
+    [TextField( "No Option Caption", "The text to display when there are not any families found matching a scanned identifier (barcode, etc).", false, "Sorry, there were not any families found with the selected identifier.", "Text", 14 )]
+
     public partial class Welcome : CheckInBlock
     {
         protected override void OnInit( EventArgs e )
@@ -92,6 +101,13 @@ namespace RockWeb.Blocks.CheckIn
                     CurrentCheckInState.CheckIn = new CheckInStatus();
                     SaveState();
                     RefreshView();
+
+                    lNotActiveTitle.Text = GetAttributeValue( "NotActiveTitle" );
+                    lNotActiveCaption.Text = GetAttributeValue( "NotActiveCaption" );
+                    lNotActiveYetTitle.Text = GetAttributeValue( "NotActiveTitle" );
+                    lNotActiveYetCaption.Text = string.Format( GetAttributeValue( "NotActiveCaption" ), "<span class='countdown-timer'></span>" );
+                    lClosedTitle.Text = GetAttributeValue( "ClosedTitle" );
+                    lClosedCaption.Text = GetAttributeValue( "ClosedCaption" );
 
                     string btnText = GetAttributeValue( "CheckinButtonText" );
                     if ( string.IsNullOrWhiteSpace( btnText ) )
@@ -157,11 +173,16 @@ namespace RockWeb.Blocks.CheckIn
         /// </summary>
         private void RegisterScript()
         {
-            // Note: the OnExpiry property of the countdown jquery plugin seems to add a new callback
-            // everytime the setting is set which is why the clearCountdown method is used to prevent 
-            // a plethora of partial postbacks occurring when the countdown expires.
             var script = new StringBuilder();
             script.AppendFormat( @"
+
+        Sys.WebForms.PageRequestManager.getInstance().add_pageLoading(function () {{
+            // Note: We need to destroy the old countdown timer so that it does not generate multiplier
+            // expire events. There is a visual anomaly with doing this. Depending on when the response
+            // from the server is received the displayed time could display the same second for more
+            // than one second and/or skip displaying a second entirely.
+            $('.countdown-timer').countdown('destroy');
+        }});
 
         var timeoutSeconds = $('.js-refresh-timer-seconds').val();
         if (timeout) {{
@@ -178,21 +199,13 @@ namespace RockWeb.Blocks.CheckIn
             {0};
         }}
 
-        function clearCountdown() {{
-            if ($ActiveWhen.text() != '')
-            {{
-                $ActiveWhen.text('');
-                refreshKiosk();
-            }}
-        }}
-
         if ($ActiveWhen.text() != '')
         {{
             var timeActive = new Date($ActiveWhen.text());
             $CountdownTimer.countdown({{
-                until: timeActive, 
-                compact:true, 
-                onExpiry: clearCountdown
+                until: timeActive,
+                compact:true,
+                onExpiry: refreshKiosk
             }});
         }}
 ", this.Page.ClientScript.GetPostBackEventReference( lbRefresh, "" ) );
@@ -222,7 +235,7 @@ namespace RockWeb.Blocks.CheckIn
             {
                 if ( !CurrentCheckInState.CheckIn.Families.Any() )
                 {
-                    maWarning.Show( "<p>Sorry, there were not any families found with the selected identifier.</p>", Rock.Web.UI.Controls.ModalAlertType.Warning );
+                    maWarning.Show( string.Format( "<p>{0}</p>", GetAttributeValue( "NoMatchText" ) ), Rock.Web.UI.Controls.ModalAlertType.Warning );
                 }
                 else
                 {
