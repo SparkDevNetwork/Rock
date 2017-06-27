@@ -127,7 +127,7 @@
                                 <!-- Image Properties -->
                                 <div class="propertypanel propertypanel-image" data-component="image" style="display: none;">
 						            <h4 class="propertypanel-title">Image</h4>
-						            <Rock:ImageUploader ID="componentImageUploader" ClientIDMode="Static" runat="server" Label="Image" UploadAsTemporary="false" DoneFunctionClientScript="handleImageUpdate(e, data)" />
+						            <Rock:ImageUploader ID="componentImageUploader" ClientIDMode="Static" runat="server" Label="Image" UploadAsTemporary="false" DoneFunctionClientScript="handleImageUpdate(e, data)" DeleteFunctionClientScript="handleImageUpdate()" />
 
                                     <div class="row">
 							            <div class="col-md-6">
@@ -158,18 +158,55 @@
 								            </div>
 							            </div>
 							            <div class="col-md-6">
-                                            <div class="form-group">
-									            <label for="component-image-imagewidth">Image Width</label>
-									            <div class="input-group input-width-md date">
-								                    <input class="form-control" id="component-image-imagewidth" type="number"><span class="input-group-addon">px</span>
-							                    </div>
-								            </div>
-                                            <div class="form-group">
-									            <label for="component-image-imageheight">Image Height</label>
-									            <div class="input-group input-width-md date">
-								                    <input class="form-control" id="component-image-imageheight" type="number"><span class="input-group-addon">px</span>
-							                    </div>
-								            </div>
+                                            <div class="row">
+                                                <div class="col-md-6">
+                                                    <div class="form-group">
+                                                        <label for="component-image-imagewidth">Image Width</label>
+                                                        <div class="input-group input-width-md date">
+                                                            <input class="form-control" id="component-image-imagewidth" type="number"><span class="input-group-addon">px</span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <div class="form-group">
+                                                        <label for="component-image-imageheight">Image Height</label>
+                                                        <div class="input-group input-width-md date">
+                                                            <input class="form-control" id="component-image-imageheight" type="number"><span class="input-group-addon">px</span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <div class="row">
+                                                <div class="col-md-6">
+                                                    <div class="form-group">
+									                    <label for="component-image-margin-top">Margin Top</label>
+                                                        <div class="input-group input-width-md date">
+								                            <input class="form-control" id="component-image-margin-top" type="number"><span class="input-group-addon">px</span>
+							                            </div>
+								                    </div>
+                                                    <div class="form-group">
+									                    <label for="component-image-margin-bottom">Margin Bottom</label>
+									                    <div class="input-group input-width-md date">
+								                            <input class="form-control" id="component-image-margin-bottom" type="number"><span class="input-group-addon">px</span>
+							                            </div>
+								                    </div>
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <div class="form-group">
+									                    <label for="component-image-margin-left">Margin Left</label>
+									                    <div class="input-group input-width-md date">
+								                            <input class="form-control" id="component-image-margin-left" type="number"><span class="input-group-addon">px</span>
+							                            </div>
+								                    </div>
+                                                    <div class="form-group">
+									                    <label for="component-image-margin-right">Margin Right</label>
+									                    <div class="input-group input-width-md date">
+								                            <input class="form-control" id="component-image-margin-right" type="number"><span class="input-group-addon">px</span>
+							                            </div>
+								                    </div>
+                                                </div>
+                                            </div>
 							            </div>
 						            </div>
 					            </div>
