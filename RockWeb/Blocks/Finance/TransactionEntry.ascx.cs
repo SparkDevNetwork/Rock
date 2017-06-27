@@ -162,6 +162,10 @@ TransactionAcountDetails: [
     [TextField( "Entity Id Param", "The Page Parameter that will be used to set the EntityId value for the Transaction Detail Record (requires Transaction Entry Type to be configured)", false, "", "Advanced", order: 8 )]
     [CodeEditorField( "Transaction Header", "The Lava template which will be displayed prior to the Amount entry", CodeEditorMode.Lava, CodeEditorTheme.Rock, 200, false, "", "Advanced", order: 9 )]
     [BooleanField( "Enable Initial Back button", "Show a Back button on the initial page that will navigate to wherever the user was prior to the transaction entry", false, "Advanced", order:10)]
+    [BooleanField( "Append Parent Account Name", "Flag indicating if the Parent Account Name be appended to the end of the Account Name in the Additional Accounts selector.", false, "Advanced", order: 11 )]
+    [BooleanField( "Search Accounts", "Flag indicating if the Additional Accounts should be presented as a search box.", false, "Advanced", order: 12 )]
+    [TextField( "Search Accounts Search Text", "Text override for the 'Search' label.", false, "Search", "Advanced", order: 13 )]
+
 
     #endregion
 
@@ -597,6 +601,22 @@ TransactionAcountDetails: [
         protected void cblBusinessOption_SelectedIndexChanged( object sender, EventArgs e )
         {
             ShowBusiness();
+        }
+
+        /// <summary>
+        /// Handles the Click event of the lbSearchAccountsResult control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void lbSearchAccountsResult_Click( object sender, EventArgs e )
+        {
+            LinkButton linkButton = sender as LinkButton;
+            var selected = AvailableAccounts.Where( a => a.Id == ( int.Parse( linkButton.Attributes["accountid"] ) ) ).ToList();
+            AvailableAccounts = AvailableAccounts.Except( selected ).ToList();
+            SelectedAccounts.AddRange( selected );
+            rtbSearchBox.Text = string.Empty;
+
+            BindAccounts();
         }
 
         /// <summary>
@@ -1302,6 +1322,7 @@ TransactionAcountDetails: [
             bool showAll = !selectedGuids.Any();
 
             bool additionalAccounts = GetAttributeValue( "AdditionalAccounts" ).AsBoolean( true );
+            bool appendParentAccountName = GetAttributeValue( "AppendParentAccountName" ).AsBoolean( false );
 
             SelectedAccounts = new List<AccountItem>();
             AvailableAccounts = new List<AccountItem>();
@@ -1343,6 +1364,12 @@ TransactionAcountDetails: [
                         {
                             if ( additionalAccounts )
                             {
+                                if ( appendParentAccountName && account.ParentAccount != null )
+                                {
+                                    var name = account.PublicName ?? account.Name;
+                                    name = String.Format( "{0} ({1})", name, account.ParentAccount.Name );
+                                    accountItem = new AccountItem( account.Id, account.Order, account.Name, account.CampusId, name );
+                                }
                                 AvailableAccounts.Add( accountItem );
                             }
                         }
@@ -1400,10 +1427,22 @@ TransactionAcountDetails: [
             {
                 AvailableAccounts.RemoveAll( a => ( _accountCampusContextFilter == 0 && a.CampusId != _currentCampusContextId ) || ( _accountCampusContextFilter == 1 && ( a.CampusId != null && a.CampusId != _currentCampusContextId ) ) );
             }
-            
-            btnAddAccount.Visible = AvailableAccounts.Any();
-            btnAddAccount.DataSource = AvailableAccounts;
-            btnAddAccount.DataBind();
+
+            if ( GetAttributeValue( "SearchAccounts" ).AsBoolean( false ) )
+            {
+                btnAddAccount.Visible = false;
+                pnlSearchCollapse.Visible = AvailableAccounts.Any();
+                rtbSearchBox.Label = GetAttributeValue( "SearchAccountsSearchText" );
+                rptSearchAccounts.DataSource = AvailableAccounts.ToList();
+                rptSearchAccounts.DataBind();
+            }
+            else
+            {
+                pnlSearchCollapse.Visible = false;
+                btnAddAccount.Visible = AvailableAccounts.Any();
+                btnAddAccount.DataSource = AvailableAccounts;
+                btnAddAccount.DataBind();
+            }
         }
 
         /// <summary>
@@ -3039,6 +3078,7 @@ TransactionAcountDetails: [
         private void RegisterScript()
         {
             RockPage.AddScriptLink( ResolveUrl( "~/Scripts/jquery.creditCardTypeDetector.js" ) );
+            RockPage.AddScriptLink( ResolveUrl( "~/Scripts/transaction-entry-search.js" ) );
 
             int oneTimeFrequencyId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_ONE_TIME ).Id;
 
@@ -3250,6 +3290,23 @@ TransactionAcountDetails: [
                 txtAccountAmount.Label = accountHeaderTemplate.ResolveMergeFields( mergeFields );
 
                 txtAccountAmount.Text = accountItem.Amount.ToString( "N2" );
+            }
+        }
+
+        /// <summary>
+        /// Handles the ItemDataBound event of the rptSearchAccountList control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="RepeaterItemEventArgs"/> instance containing the event data.</param>
+        protected void rptSearchAccountList_ItemDataBound( object sender, RepeaterItemEventArgs e )
+        {
+            var accountItem = e.Item.DataItem as AccountItem;
+            LinkButton lbSearchAccountsResult = e.Item.FindControl( "lbSearchAccountsResult" ) as LinkButton;
+            if ( accountItem != null && lbSearchAccountsResult != null )
+            {
+                lbSearchAccountsResult.Text = accountItem.PublicName;
+                lbSearchAccountsResult.Attributes["accountid"] = accountItem.Id.ToString();
+                lbSearchAccountsResult.Attributes["style"] = "display: none; overflow: hidden; text-overflow: ellipsis; ";
             }
         }
 
