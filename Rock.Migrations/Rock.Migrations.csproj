@@ -249,6 +249,10 @@
     <Compile Include="Migrations\201706221549322_UrlMap.Designer.cs">
       <DependentUpon>201706221549322_UrlMap.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201706272251004_CommunicationUpdates.cs" />
+    <Compile Include="Migrations\201706272251004_CommunicationUpdates.Designer.cs">
+      <DependentUpon>201706272251004_CommunicationUpdates.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\RockMigrationSQL.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
@@ -2584,6 +2588,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201706221549322_UrlMap.resx">
       <DependentUpon>201706221549322_UrlMap.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201706272251004_CommunicationUpdates.resx">
+      <DependentUpon>201706272251004_CommunicationUpdates.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 6.0\Version 1.6.0\201609282147388_WaitList.resx">
       <DependentUpon>201609282147388_WaitList.cs</DependentUpon>
