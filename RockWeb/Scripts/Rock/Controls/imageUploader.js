@@ -117,6 +117,11 @@
                 else {
                     $el.attr('style', 'background-image:url(' + noPictureUrl + ');background-size:cover;background-position:50%');
                 }
+                
+                if (options.deleteFunction) {
+                  options.deleteFunction();
+                }
+
                 if (options.postbackRemovedScript) {
                     window.location = "javascript:" + options.postbackRemovedScript;
                 } else {
