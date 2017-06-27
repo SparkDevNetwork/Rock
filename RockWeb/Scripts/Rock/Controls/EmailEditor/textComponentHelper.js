@@ -19,7 +19,9 @@
 
         $('#component-text-margin-top,#component-text-margin-left,#component-text-margin-right,#component-text-margin-bottom').on('change', function (e)
         {
+          // just keep the numeric portion in case they included alpha chars
           $(this).val(parseFloat($(this).val()));
+
           self.setMargins();
         });
 
