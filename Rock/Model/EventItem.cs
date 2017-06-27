@@ -171,6 +171,7 @@ namespace Rock.Model
         /// <value>
         /// A collection containing a collection of the <see cref="Rock.Model.EventItemAudience">EventItemAudiences</see> that belong to this EventItem.
         /// </value>
+        [LavaInclude]
         public virtual ICollection<EventItemAudience> EventItemAudiences
         {
             get { return _calendarItemAudiences ?? ( _calendarItemAudiences = new Collection<EventItemAudience>() ); }

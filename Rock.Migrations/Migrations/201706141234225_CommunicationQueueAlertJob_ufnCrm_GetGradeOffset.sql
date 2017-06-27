@@ -1,3 +1,15 @@
+﻿IF object_id('[dbo].[ufnCrm_GetGradeOffset]') IS NOT NULL
+BEGIN
+  DROP FUNCTION [dbo].[ufnCrm_GetGradeOffset]
+END
+GO
+
+SET ANSI_NULLS ON
+GO
+
+SET QUOTED_IDENTIFIER ON
+GO
+
 /*
 <doc>
 	<summary>
@@ -16,7 +28,7 @@
 </doc>
 */
 
-ALTER FUNCTION [dbo].[ufnCrm_GetGradeOffset](@GraduationYear int, @TransitionDate datetime ) 
+CREATE FUNCTION [dbo].[ufnCrm_GetGradeOffset](@GraduationYear int, @TransitionDate datetime ) 
 
 RETURNS INT WITH SCHEMABINDING AS
 

@@ -17,8 +17,7 @@
 
             <asp:Panel ID="pnlSelection" runat="server">
                 <div class="checkin-header">
-                    <h1>
-                        <asp:Literal ID="lFamilyName" runat="server"></asp:Literal></h1>
+                    <h1><asp:Literal ID="lTitle" runat="server" /></h1>
                 </div>
 
                 <div class="checkin-body">
@@ -27,7 +26,7 @@
                         <div class="scroller">
 
                             <div class="control-group checkin-body-container">
-                                <label class="control-label">Select People</label>
+                                <label class="control-label"><asp:Literal ID="lCaption" runat="server" /></label>
                                 <div class="controls checkin-person-list">
                                     <asp:Repeater ID="rSelection" runat="server">
                                         <ItemTemplate>
@@ -87,7 +86,7 @@
                         <div class="scroller">
 
                             <div class="control-group checkin-body-container">
-                                <label class="control-label">Select People</label>
+                                <label class="control-label"><asp:Literal ID="lCaption2" runat="server" /></label>
                                 <div class="controls checkin-option-list">
                                     <asp:Repeater ID="rOptions" runat="server">
                                         <ItemTemplate>
