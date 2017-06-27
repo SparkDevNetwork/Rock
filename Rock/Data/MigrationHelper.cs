@@ -3534,9 +3534,9 @@ END
                     ( showInNavigation ? "1" : "0" ),
                     iconCssClass,
                     order,
-                    ( inheritedGroupTypeGuid == null ) ? "NULL" : "'" + inheritedGroupTypeGuid + "'",
+                    ( string.IsNullOrEmpty( inheritedGroupTypeGuid ) ) ? "NULL" : "'" + inheritedGroupTypeGuid + "'",
                     locationSelectionMode,
-                    ( groupTypePurposeValueGuid == null ) ? "NULL" : "'" + groupTypePurposeValueGuid + "'"
+                    ( string.IsNullOrEmpty( groupTypePurposeValueGuid ) ) ? "NULL" : "'" + groupTypePurposeValueGuid + "'"
             ) );
         }
 
