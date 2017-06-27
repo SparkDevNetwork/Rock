@@ -242,7 +242,37 @@
                                 <!-- Divider Properties -->
                                 <div class="propertypanel propertypanel-divider" data-component="divider" style="display: none;">
 						            <h4 class="propertypanel-title">Divider</h4>
-                                    <pre>todo</pre>
+                                    <div class="row">
+							            <div class="col-md-6">
+                                            <div class="form-group">
+									            <label for="component-divider-height">Height</label>
+                                                <div class="input-group input-width-md">
+								                    <input class="form-control" id="component-divider-height" type="number"><span class="input-group-addon">px</span>
+							                    </div>
+								            </div>
+                                            <div class="form-group">
+									            <label for="component-divider-color">Color</label>
+									            <div id="component-divider-color" class="input-group colorpicker-component">
+										            <input type="text" value="" class="form-control" />
+										            <span class="input-group-addon"><i></i></span>
+									            </div>
+								            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="form-group">
+									            <label for="component-divider-margin-top">Margin Top</label>
+                                                <div class="input-group input-width-md">
+								                    <input class="form-control" id="component-divider-margin-top" type="number"><span class="input-group-addon">px</span>
+							                    </div>
+								            </div>
+                                            <div class="form-group">
+									            <label for="component-divider-margin-bottom">Margin Bottom</label>
+									            <div class="input-group input-width-md">
+								                    <input class="form-control" id="component-divider-margin-bottom" type="number"><span class="input-group-addon">px</span>
+							                    </div>
+								            </div>
+                                        </div>
+                                    </div>
 					            </div>
 
                                 <!-- Code Properties -->
@@ -382,7 +412,7 @@
 				            <div class="component component-section" data-content="<table class='component component-separator' width='100%'><tr><td width='50%'><div class='dropzone'></div></td><td width='50%'><div class='dropzone'></div></td></tr></table>" data-state="template">
 					            <i class="fa fa-columns"></i> <br /> Section
 				            </div>
-				            <div class="component component-divider" data-content="<hr style='margin: 18px 0; border: 0; height: 2px; background: #aaa;' />" data-state="template">
+				            <div class="component component-divider" data-content="<hr style='margin-top: 0px; margin-bottom: 0px; border: 0; height: 4px; background: #c4c4c4;' />" data-state="template">
 					            <i class="fa fa-minus"></i> <br /> Divider
 				            </div>
 				            <div class="component component-code" data-content="Add your code here..." data-state="template">
@@ -474,6 +504,8 @@
 				        Rock.controls.emailEditor.sectionComponentHelper.setProperties($currentComponent);
 				        break;
 				    case 'divider':
+				        Rock.controls.emailEditor.dividerComponentHelper.setProperties($currentComponent);
+				        break;
 				    case 'code':
 				        break;
 					default:
@@ -520,6 +552,9 @@
 
         <!-- Section Component -->
         <script src='<%=RockPage.ResolveRockUrl("~/Scripts/Rock/Controls/EmailEditor/sectionComponentHelper.js", true)%>' ></script>
+
+        <!-- Divider Component -->
+        <script src='<%=RockPage.ResolveRockUrl("~/Scripts/Rock/Controls/EmailEditor/dividerComponentHelper.js", true)%>' ></script>
 
         <script>
             function updateTextComponent(el, contents)
