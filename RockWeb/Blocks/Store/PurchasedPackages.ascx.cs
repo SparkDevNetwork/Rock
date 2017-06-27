@@ -117,15 +117,15 @@ namespace RockWeb.Blocks.Store
             if ( installedPackage != null )
             {
                 // check that latest version is installed
-                if ( package.Versions.Count > 0 )
+                if ( package.Versions != null && package.Versions.Count > 0 )
                 {
                     RockSemanticVersion rockVersion = RockSemanticVersion.Parse( Rock.VersionInfo.VersionInfo.GetRockSemanticVersionNumber() );
                     latestVersion = package.Versions.Where( v => v.RequiredRockSemanticVersion <= rockVersion ).OrderByDescending( v => v.Id ).FirstOrDefault();
                 }
 
-                if ( installedPackage.VersionId != latestVersion.Id ) {
+                if ( latestVersion != null && installedPackage.VersionId != latestVersion.Id )
+                {
                     lbInstall.Text = "Update";
-
                     lVersionNotes.Text = String.Format( "<p><strong>Installed Version</strong><br/>{0}</p><p><strong>Latest Version</strong><br/>{1}</p>", installedPackage.VersionLabel, latestVersion.VersionLabel );
                 }
                 else 

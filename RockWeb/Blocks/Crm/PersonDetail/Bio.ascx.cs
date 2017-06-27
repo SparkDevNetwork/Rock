@@ -303,7 +303,16 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
                 {
                     nameText = string.Format( "<span class='first-word'>{0}</span> <span class='lastname'>{1}</span>", Person.NickName, Person.LastName );
                 }
-                
+
+                // Prefix with Title if they have a Title with IsFormal=True
+                if ( Person.TitleValueId.HasValue )
+                {
+                    var personTitleValue = DefinedValueCache.Read( Person.TitleValueId.Value );
+                    if ( personTitleValue != null && personTitleValue.GetAttributeValue( "IsFormal" ).AsBoolean() )
+                    {
+                        nameText = string.Format( "<span class='title'>{0}</span> ", personTitleValue.Value ) + nameText;
+                    }
+                }
 
                 // Add First Name if different from NickName.
                 if ( Person.NickName != Person.FirstName )

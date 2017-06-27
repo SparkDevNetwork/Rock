@@ -109,6 +109,7 @@ namespace Rock.Rest.Controllers
                 binaryFile.BinaryFileTypeId = binaryFileType.Id;
                 binaryFile.MimeType = uploadedFile.ContentType;
                 binaryFile.FileName = Path.GetFileName( uploadedFile.FileName );
+                binaryFile.FileSize = uploadedFile.ContentLength;
                 binaryFile.ContentStream = FileUtilities.GetFileContentStream( uploadedFile );
 
                 rockContext.SaveChanges();

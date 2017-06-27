@@ -488,6 +488,11 @@ namespace Rock.SystemGuid
         public const string INTERACTIONCHANNELTYPE_WEBSITE = "E503E77D-CF35-E09F-41A2-B213184F48E8";
 
         /// <summary>
+        /// Interaction Channel Type: UrlShortener
+        /// </summary>        
+        public const string INTERACTIONCHANNELTYPE_URLSHORTENER = "371066D5-C5F9-4783-88C8-D9AC8DC67468";
+
+        /// <summary>
         /// Interaction Channel Type: Communication
         /// </summary>
         public const string INTERACTIONCHANNELTYPE_COMMUNICATION = "55004F5C-A8ED-7CB7-47EE-5988E9F8E0A8";

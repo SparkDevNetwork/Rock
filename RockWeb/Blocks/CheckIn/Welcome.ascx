@@ -126,14 +126,14 @@
         <%-- Panel for no schedules --%>
         <asp:Panel ID="pnlNotActive" runat="server">
             <div class="checkin-header">
-                <h1>Check-in Is Not Active</h1>
+                <h1><asp:Literal ID="lNotActiveTitle" runat="server" /></h1>
             </div>
 
             <div class="checkin-body">
 
                 <div class="checkin-scroll-panel">
                     <div class="scroller">
-                        <p>There are no current or future schedules for this kiosk today!</p>
+                        <p><h1><asp:Literal ID="lNotActiveCaption" runat="server" /></h1></p>
                     </div>
                 </div>
 
@@ -143,7 +143,7 @@
         <%-- Panel for schedule not active yet --%>
         <asp:Panel ID="pnlNotActiveYet" runat="server">
             <div class="checkin-header">
-                <h1>Check-in Is Not Active Yet</h1>
+                <h1><asp:Literal ID="lNotActiveYetTitle" runat="server" /></h1>
             </div>
 
             <div class="checkin-body">
@@ -151,7 +151,7 @@
                 <div class="checkin-scroll-panel">
                     <div class="scroller">
 
-                        <p>This kiosk is not active yet.  Countdown until active: <span class="countdown-timer"></span></p>
+                        <p><asp:Literal ID="lNotActiveYetCaption" runat="server" /></p>
                         <asp:HiddenField ID="hfActiveTime" runat="server" />
 
                     </div>
@@ -163,13 +163,13 @@
         <%-- Panel for location closed --%>
         <asp:Panel ID="pnlClosed" runat="server">
             <div class="checkin-header checkin-closed-header">
-                <h1>Closed</h1>
+                <h1><asp:Literal ID="lClosedTitle" runat="server" /></h1>
             </div>
 
             <div class="checkin-body checkin-closed-body">
                 <div class="checkin-scroll-panel">
                     <div class="scroller">
-                        <p>This location is currently closed.</p>
+                        <p><asp:Literal ID="lClosedCaption" runat="server" /></p>
                     </div>
                 </div>
             </div>
