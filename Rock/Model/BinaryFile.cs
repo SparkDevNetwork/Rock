@@ -357,11 +357,14 @@ namespace Rock.Model
 
                         if ( StorageProvider != null )
                         {
-                            // save the file to the provider's new storage medium
-                            long? fileSize = null;
-                            StorageProvider.SaveContent( this, out fileSize );
+                            // save the file to the provider's new storage medium, and if the medium returns a filesize, save that value.
+                            long? outFileSize = null;
+                            StorageProvider.SaveContent( this, out outFileSize );
+                            if ( outFileSize.HasValue )
+                            {
+                                FileSize = outFileSize;
+                            }
 
-                            FileSize = fileSize;
                             Path = StorageProvider.GetPath( this );
                         }
                     }
