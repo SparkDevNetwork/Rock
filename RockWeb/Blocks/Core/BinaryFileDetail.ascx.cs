@@ -337,6 +337,7 @@ namespace RockWeb.Blocks.Core
                 if ( uploadedBinaryFile != null )
                 {
                     binaryFile.BinaryFileTypeId = uploadedBinaryFile.BinaryFileTypeId;
+                    binaryFile.FileSize = uploadedBinaryFile.FileSize;
                     var memoryStream = new MemoryStream();
                     uploadedBinaryFile.ContentStream.CopyTo( memoryStream );
                     binaryFile.ContentStream = memoryStream;
