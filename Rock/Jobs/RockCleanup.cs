@@ -41,7 +41,7 @@ namespace Rock.Jobs
     [DisallowConcurrentExecution]
     public class RockCleanup : IJob
     {
-        /// <summary> 
+        /// <summary>
         /// Empty constructor for job initilization
         /// <para>
         /// Jobs require a public empty constructor so that the
@@ -79,7 +79,7 @@ namespace Rock.Jobs
 
             try
             {
-                databaseRowsDeleted.Add( "Expired Entity Set", CleanupExpiredEntitySets( dataMap ));
+                databaseRowsDeleted.Add( "Expired Entity Set", CleanupExpiredEntitySets( dataMap ) );
             }
             catch ( Exception ex )
             {
@@ -88,7 +88,7 @@ namespace Rock.Jobs
 
             try
             {
-                databaseRowsDeleted.Add( "Old Interaction", CleanupInteractions( dataMap ));
+                databaseRowsDeleted.Add( "Old Interaction", CleanupInteractions( dataMap ) );
             }
             catch ( Exception ex )
             {
@@ -134,7 +134,7 @@ namespace Rock.Jobs
 
             try
             {
-                databaseRowsDeleted.Add( "Temporary Registration", CleanUpTemporaryRegistrations());
+                databaseRowsDeleted.Add( "Temporary Registration", CleanUpTemporaryRegistrations() );
             }
             catch ( Exception ex )
             {
@@ -143,7 +143,7 @@ namespace Rock.Jobs
 
             try
             {
-                databaseRowsDeleted.Add( "Workflow", CleanUpWorkflows( dataMap ));
+                databaseRowsDeleted.Add( "Workflow", CleanUpWorkflows( dataMap ) );
             }
             catch ( Exception ex )
             {
@@ -152,7 +152,7 @@ namespace Rock.Jobs
 
             try
             {
-                databaseRowsDeleted.Add( "Workflow Log", CleanUpWorkflowLogs( dataMap ));
+                databaseRowsDeleted.Add( "Workflow Log", CleanUpWorkflowLogs( dataMap ) );
             }
             catch ( Exception ex )
             {
@@ -161,7 +161,7 @@ namespace Rock.Jobs
 
             try
             {
-                databaseRowsDeleted.Add( "Orphaned Attribute Value", CleanupOrphanedAttributes( dataMap ));
+                databaseRowsDeleted.Add( "Orphaned Attribute Value", CleanupOrphanedAttributes( dataMap ) );
             }
             catch ( Exception ex )
             {
@@ -237,7 +237,7 @@ namespace Rock.Jobs
 
                 personRockContext.SaveChanges();
             }
-            
+
             //// Add any missing Implied/Known relationship groups
             // Known Relationship Group
             AddMissingRelationshipGroups( GroupTypeCache.Read( Rock.SystemGuid.GroupType.GROUPTYPE_KNOWN_RELATIONSHIPS ), Rock.SystemGuid.GroupRole.GROUPROLE_KNOWN_RELATIONSHIPS_OWNER.AsGuid() );
@@ -256,7 +256,7 @@ namespace Rock.Jobs
             if ( relationshipGroupType != null )
             {
                 var ownerRoleId = relationshipGroupType.Roles
-                    .Where( r => r.Guid.Equals( ownerRoleGuid ) ).Select( a => ( int? ) a.Id ).FirstOrDefault();
+                    .Where( r => r.Guid.Equals( ownerRoleGuid ) ).Select( a => (int?)a.Id ).FirstOrDefault();
                 if ( ownerRoleId.HasValue )
                 {
                     var rockContext = new RockContext();
@@ -664,7 +664,7 @@ WHERE ic.ChannelId = @channelId
                 if ( orphanedAttributeMatrices.Any() )
                 {
                     recordsDeleted += orphanedAttributeMatrices.Count;
-                    attributeMatrixItemService.DeleteRange( orphanedAttributeMatrices.SelectMany(a => a.AttributeMatrixItems) );
+                    attributeMatrixItemService.DeleteRange( orphanedAttributeMatrices.SelectMany( a => a.AttributeMatrixItems ) );
                     attributeMatrixService.DeleteRange( orphanedAttributeMatrices );
                     rockContext.SaveChanges();
                 }
@@ -683,7 +683,7 @@ WHERE ic.ChannelId = @channelId
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <returns></returns>
-        private int CleanupOrphanedAttributeValuesForEntityType<T>() where T:Rock.Data.Entity<T>, IHasAttributes, new()
+        private int CleanupOrphanedAttributeValuesForEntityType<T>() where T : Rock.Data.Entity<T>, IHasAttributes, new()
         {
             int recordsDeleted = 0;
 
