@@ -41,6 +41,28 @@ namespace RockWeb.Blocks.Communication
     [BinaryFileTypeField( "Binary File Type", "The FileType to use for images that are added to the email using the image component", true, Rock.SystemGuid.BinaryFiletype.DEFAULT )]
     public partial class CommunicationEntryWizard : Rock.Web.UI.RockBlock
     {
+        /// <summary>
+        /// Gets or sets the individual recipient person ids.
+        /// </summary>
+        /// <value>
+        /// The individual recipient person ids.
+        /// </value>
+        protected List<int> IndividualRecipientPersonIds
+        {
+            get
+            {
+                var recipients = ViewState["IndividualRecipientPersonIds"] as List<int>;
+                if ( recipients == null )
+                {
+                    recipients = new List<int>();
+                    ViewState["IndividualRecipientPersonIds"] = recipients;
+                }
+                return recipients;
+            }
+
+            set { ViewState["IndividualRecipientPersonIds"] = value; }
+        }
+
         #region Base Control Methods
 
         /// <summary>
@@ -69,7 +91,29 @@ namespace RockWeb.Blocks.Communication
             if ( !Page.IsPostBack )
             {
                 ifEmailDesigner.Attributes["srcdoc"] = sampleTemplate;
+
+                var rockContext = new RockContext();
+                var groupTypeCommunicationGroupId = GroupTypeCache.Read( Rock.SystemGuid.GroupType.GROUPTYPE_COMMUNICATIONLIST.AsGuid() ).Id;
+                var groupService = new GroupService( rockContext );
+                var groupMemberService = new GroupMemberService( rockContext );
+                var communicationGroupList = groupService.Queryable().Where( a => a.GroupTypeId == groupTypeCommunicationGroupId ).OrderBy( a => a.Order ).ThenBy( a => a.Name ).ToList();
+                
+                
+                ddlCommunicationGroupList.Items.Clear();
+                ddlCommunicationGroupList.Items.Add( new ListItem() );
+                foreach ( var communicationGroup in communicationGroupList )
+                {
+                    if ( communicationGroup.IsAuthorized( Rock.Security.Authorization.VIEW, this.CurrentPerson ) )
+                    {
+                        var groupMemberCount = groupMemberService.Queryable().Where( a => a.GroupId == communicationGroup.Id ).Count( a => a.GroupMemberStatus == GroupMemberStatus.Active );
+                        var listItemText = string.Format( "{0} ({1} {2})", communicationGroup.Name, groupMemberCount, "individual".PluralizeIf( groupMemberCount != 1 ) );
+                        ddlCommunicationGroupList.Items.Add( new ListItem( listItemText, communicationGroup.Id.ToString() ) );
+                    }
+                }
+
             }
+
+            
         }
 
         /// <summary>
@@ -105,6 +149,35 @@ namespace RockWeb.Blocks.Communication
         protected void tglRecipientSelection_CheckedChanged( object sender, EventArgs e )
         {
             pnlRecipientSelectionList.Visible = tglRecipientSelection.Checked;
+        }
+
+        /// <summary>
+        /// Handles the SelectPerson event of the ppAddPerson control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void ppAddPerson_SelectPerson( object sender, EventArgs e )
+        {
+            if ( ppAddPerson.PersonId.HasValue )
+            {
+                if ( !IndividualRecipientPersonIds.Contains( ppAddPerson.PersonId.Value ) )
+                {
+                    IndividualRecipientPersonIds.Add( ppAddPerson.PersonId.Value );
+                }
+            }
+
+            var individualRecipientCount = this.IndividualRecipientPersonIds.Count();
+            lIndividualRecipientCount.Text = string.Format( "{0} {1} selected", individualRecipientCount, "recipient".PluralizeIf( individualRecipientCount != 1 ) );
+        }
+
+        /// <summary>
+        /// Handles the Click event of the btnViewIndividualRecipients control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void btnViewIndividualRecipients_Click( object sender, EventArgs e )
+        {
+            // TODO
         }
 
         #endregion

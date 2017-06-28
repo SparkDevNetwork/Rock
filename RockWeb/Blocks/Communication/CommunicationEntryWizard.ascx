@@ -35,7 +35,7 @@
                     
                     <asp:Panel ID="pnlRecipientSelectionList" runat="server">
 
-                        <Rock:RockDropDownList ID="ddlCommunicationGroupList" runat="server" Label="List" CssClass="input-width-xxl" ValidationGroup="vgRecipientSelection" Required="false" />
+                        <Rock:RockDropDownList ID="ddlCommunicationGroupList" runat="server" Label="List" CssClass="input-width-xxl" ValidationGroup="vgRecipientSelection" Required="true" />
 
                         <label>Segments</label>
                         <p>Optionally, further refine your recipients by filtering by segment.</p>
@@ -51,7 +51,26 @@
                             <asp:ListItem Text="All segment filters" Value="all" />
                             <asp:ListItem Text="Any segment filter" Value="any" />
                         </Rock:RockRadioButtonList>
-                    </asp:Panel>                   
+                    </asp:Panel> 
+                    
+                    <asp:Panel ID="pnlRecipientSelectionIndividual" runat="server">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="control-label">
+                                    <asp:Literal ID="lIndividualRecipientCount" runat="server" Text="" />
+                                </div>
+                                <asp:LinkButton ID="btnViewIndividualRecipients" runat="server" CssClass="btn btn-default" Text="View List" CausesValidation="false" OnClick="btnViewIndividualRecipients_Click" />
+                            </div>
+                            <div class="col-md-6">
+                                <div class="pull-right">
+                                    <Rock:PersonPicker ID="ppAddPerson" runat="server" CssClass="picker-menu-right" PersonName="Add Person" OnSelectPerson="ppAddPerson_SelectPerson" />
+                                </div>
+                            </div>
+                        </div>
+
+                                
+                        
+                    </asp:Panel>
 
                     <div class="actions">
                         <asp:LinkButton ID="lbRecipientSelectionNext" runat="server" AccessKey="n" Text="Next" DataLoadingText="Next" CssClass="btn btn-primary pull-right" ValidationGroup="vgRecipientSelection" CausesValidation="true" OnClick="lbRecipientSelectionNext_Click" />

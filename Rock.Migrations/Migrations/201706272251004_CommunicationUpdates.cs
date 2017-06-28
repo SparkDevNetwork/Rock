@@ -40,7 +40,7 @@ namespace Rock.Migrations
             RockMigrationHelper.AddDefinedValueAttributeValue( "D5F097D9-0415-9584-4019-681C77FD1513", "CA8DF904-5281-86B2-433E-3C914F1A106A", "fa fa-mobile" );
 
             // group type
-            RockMigrationHelper.AddGroupType( "Communication List", "For groups used by Rock's communication tools for storing lists of people to communicate to.", "List", "Recipient", false, false, false, "fa fa-bullhorn", 0, null, 0, null, "D1D95777-FFA3-CBB3-4A6D-658706DAED33" );
+            RockMigrationHelper.AddGroupType( "Communication List", "For groups used by Rock's communication tools for storing lists of people to communicate to.", "List", "Recipient", false, true, false, "fa fa-bullhorn", 0, null, 0, null, "D1D95777-FFA3-CBB3-4A6D-658706DAED33" );
 
             RockMigrationHelper.AddGroupTypeRole( "D1D95777-FFA3-CBB3-4A6D-658706DAED33", "Recipient", "", 0, null, null, "9D85AB4E-59BC-B48A-494A-5684BA41578E", true, false, true );
 
@@ -110,7 +110,7 @@ namespace Rock.Migrations
             // Attrib Value for Block:Group List, Attribute:Display Filter Page: Communication Lists, Site: Rock RMS              
             RockMigrationHelper.AddBlockAttributeValue( "426EC86B-5784-411D-94ED-DD007E6DF783", "7E0EDF09-9374-4AC4-8591-30C08D7F1E1F", @"True" );
             // Attrib Value for Block:Group List, Attribute:Include Group Types Page: Communication Lists, Site: Rock RMS              
-            RockMigrationHelper.AddBlockAttributeValue( "426EC86B-5784-411D-94ED-DD007E6DF783", "5164FF88-A53B-4982-BE50-D56F1FE13FC6", @"aeea9303-1b33-4076-adbd-fc0f12cf3c31" );
+            RockMigrationHelper.AddBlockAttributeValue( "426EC86B-5784-411D-94ED-DD007E6DF783", "5164FF88-A53B-4982-BE50-D56F1FE13FC6", @"d1d95777-ffa3-cbb3-4a6d-658706daed33" );
             // Attrib Value for Block:Group List, Attribute:Exclude Group Types Page: Communication Lists, Site: Rock RMS              
             RockMigrationHelper.AddBlockAttributeValue( "426EC86B-5784-411D-94ED-DD007E6DF783", "0901CBFE-1980-4A1C-8AF0-4A8BD0FC46E9", @"" );
             // Attrib Value for Block:Group List, Attribute:Display Group Type Column Page: Communication Lists, Site: Rock RMS              
@@ -139,8 +139,10 @@ namespace Rock.Migrations
             RockMigrationHelper.AddBlockAttributeValue( "3FF79A87-ABC1-4DE3-B25A-8111E5D05607", "45897721-F38C-4B4B-BCF9-A81D27DBB731", @"d18e837c-9e65-4a38-8647-dff04a595d97" );
             // Attrib Value for Block:Group Detail, Attribute:Show Edit Page: Communication List Detail, Site: Rock RMS              
             RockMigrationHelper.AddBlockAttributeValue( "3FF79A87-ABC1-4DE3-B25A-8111E5D05607", "50C7E223-459E-4A1C-AE3C-2892CBD40D22", @"True" );
+            
             // Attrib Value for Block:Group Detail, Attribute:Group Types Include Page: Communication List Detail, Site: Rock RMS              
-            RockMigrationHelper.AddBlockAttributeValue( "3FF79A87-ABC1-4DE3-B25A-8111E5D05607", "15AC7A62-7BF2-44B7-93CD-EA8F96BF529A", @"aeea9303-1b33-4076-adbd-fc0f12cf3c31" );
+            RockMigrationHelper.AddBlockAttributeValue( "3FF79A87-ABC1-4DE3-B25A-8111E5D05607", "15AC7A62-7BF2-44B7-93CD-EA8F96BF529A", @"d1d95777-ffa3-cbb3-4a6d-658706daed33" );
+            
             // Attrib Value for Block:Group Detail, Attribute:Limit to Security Role Groups Page: Communication List Detail, Site: Rock RMS              
             RockMigrationHelper.AddBlockAttributeValue( "3FF79A87-ABC1-4DE3-B25A-8111E5D05607", "12295C7E-08F4-4AC5-8A34-C829620FC0B1", @"False" );
             // Attrib Value for Block:Group Detail, Attribute:Limit to Group Types that are shown in navigation Page: Communication List Detail, Site: Rock RMS              
