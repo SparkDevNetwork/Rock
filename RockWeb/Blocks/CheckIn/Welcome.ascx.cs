@@ -228,6 +228,8 @@ namespace RockWeb.Blocks.CheckIn
         /// </summary>
         private void RefreshView()
         {
+            bool isActive = false;
+
             hfRefreshTimerSeconds.Value = ( CurrentCheckInType != null ? CurrentCheckInType.RefreshInterval.ToString() : "10" );
             pnlNotActive.Visible = false;
             pnlNotActiveYet.Visible = false;
@@ -266,8 +268,19 @@ namespace RockWeb.Blocks.CheckIn
             }
             else
             {
+                isActive = true;
                 pnlActive.Visible = true;
             }
+
+            bool? wasActive = PageParameter( "IsActive" ).AsBooleanOrNull();
+            if ( !wasActive.HasValue || wasActive.Value != isActive )
+            {
+                //redirect to current page with correct IsActive querystring value
+                var qryParams = Request.QueryString.AllKeys.ToDictionary( k => k, k => this.Request.QueryString[k] );
+                qryParams.AddOrReplace( "IsActive", isActive.ToString() );
+                NavigateToCurrentPage( qryParams );
+            }
+
         }
 
         /// <summary>
