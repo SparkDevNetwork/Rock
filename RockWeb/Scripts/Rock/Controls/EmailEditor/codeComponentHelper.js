@@ -44,7 +44,15 @@
       updateCodeComponent: function (el, contents)
       {
         if (Rock.controls.emailEditor.$currentCodeComponent) {
-          Rock.controls.emailEditor.$currentCodeComponent.html(contents);
+          // just in case they typed in something that caused an exception, for example, a script tag with invalid script, show an error
+          try {
+            $('#component-code-codeEditor-error').hide();
+            Rock.controls.emailEditor.$currentCodeComponent.html(contents);
+          }
+          catch (ex) {
+            $('#component-code-codeEditor-error').html(ex.message);
+            $('#component-code-codeEditor-error').show();
+          }
         }
       }
     }
