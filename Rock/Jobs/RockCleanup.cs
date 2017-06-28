@@ -26,6 +26,7 @@ using Rock.Data;
 using System.Data.Entity;
 using Rock.Web.Cache;
 using Rock.Field.Types;
+using System.Reflection;
 
 namespace Rock.Jobs
 {
@@ -670,10 +671,18 @@ WHERE ic.ChannelId = @channelId
                 }
             }
 
-            recordsDeleted += CleanupOrphanedAttributeValuesForEntityType<AttributeMatrixItem>();
-            recordsDeleted += CleanupOrphanedAttributeValuesForEntityType<Block>();
-
-            // TODO: More CleanupOrphanedAttributeValuesForEntityType<> can be added
+            // clean up other orphaned entity attributes
+            foreach ( var cachedType in EntityTypeCache.All().Where( e => e.IsEntity && typeof( IHasAttributes ).IsAssignableFrom( e.GetEntityType() ) && !e.GetEntityType().Namespace.Equals( "Rock.Rest.Controllers" ) ) )
+            {
+                var classMethod = this.GetType().GetMethods( BindingFlags.Instance | BindingFlags.NonPublic )
+                    .First( m => m.Name == "CleanupOrphanedAttributeValuesForEntityType" );
+                var genericMethod = classMethod.MakeGenericMethod( cachedType.GetEntityType() );
+                var result = genericMethod.Invoke( this, null ) as int?;
+                if ( result.HasValue )
+                {
+                    recordsDeleted += (int)result;
+                }
+            }
 
             return recordsDeleted;
         }
