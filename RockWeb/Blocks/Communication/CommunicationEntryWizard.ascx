@@ -278,7 +278,38 @@
                                 <!-- Code Properties -->
                                 <div class="propertypanel propertypanel-code" data-component="code" style="display: none;">
 						            <h4 class="propertypanel-title">Code</h4>
-                                    <pre>todo</pre>
+                                    <Rock:CodeEditor ID="codeEditor" CssClass="js-component-code-codeEditor" runat="server" Height="350" OnChangeScript="updateCodeComponent(this, contents);" />
+
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <div class="form-group">
+                                                <label for="component-code-margin-top">Margin Top</label>
+                                                <div class="input-group input-width-md">
+                                                    <input class="form-control" id="component-code-margin-top" type="number"><span class="input-group-addon">px</span>
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <label for="component-code-margin-bottom">Margin Bottom</label>
+                                                <div class="input-group input-width-md">
+                                                    <input class="form-control" id="component-code-margin-bottom" type="number"><span class="input-group-addon">px</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="form-group">
+                                                <label for="component-code-margin-left">Margin Left</label>
+                                                <div class="input-group input-width-md">
+                                                    <input class="form-control" id="component-code-margin-left" type="number"><span class="input-group-addon">px</span>
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <label for="component-code-margin-right">Margin Right</label>
+                                                <div class="input-group input-width-md">
+                                                    <input class="form-control" id="component-code-margin-right" type="number"><span class="input-group-addon">px</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
 					            </div>
 
 					            <!-- Button Properties -->
@@ -507,6 +538,7 @@
 				        Rock.controls.emailEditor.dividerComponentHelper.setProperties($currentComponent);
 				        break;
 				    case 'code':
+				        Rock.controls.emailEditor.codeComponentHelper.setProperties($currentComponent);
 				        break;
 					default:
 						 clearPropertyPane(null);
@@ -556,10 +588,17 @@
         <!-- Divider Component -->
         <script src='<%=RockPage.ResolveRockUrl("~/Scripts/Rock/Controls/EmailEditor/dividerComponentHelper.js", true)%>' ></script>
 
+        <!-- Code Component -->
+        <script src='<%=RockPage.ResolveRockUrl("~/Scripts/Rock/Controls/EmailEditor/codeComponentHelper.js", true)%>' ></script>
+
         <script>
             function updateTextComponent(el, contents)
             {
                 Rock.controls.emailEditor.textComponentHelper.updateTextComponent(el, contents);
+            }
+            function updateCodeComponent(el, contents)
+            {
+                Rock.controls.emailEditor.codeComponentHelper.updateCodeComponent(el, contents);
             }
             function handleImageUpdate(e, data)
             {
