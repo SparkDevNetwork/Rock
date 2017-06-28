@@ -41,10 +41,10 @@
                 </Content>
             </Rock:ModalDialog>
 
-            <asp:RadioButton ID="radEmailAllowed" runat="server" Text=" I want to recieve emails about:" GroupName="grpEmailPreference" OnCheckedChanged="grpEmailPreference_CheckedChanged" AutoPostBack="true" />
+            <asp:RadioButton ID="radEmailAllowed" runat="server" Text=" I want to receive emails about:" GroupName="grpEmailPreference" OnCheckedChanged="grpEmailPreference_CheckedChanged" AutoPostBack="true" />
             <asp:CheckBoxList ID="cblSubscriptions" runat="server" RepeatDirection="Vertical" AutoPostBack="true" OnSelectedIndexChanged="cblSubscriptions_SelectedIndexChanged" ClientIDMode="AutoID" />
             <asp:RadioButton ID="radNoMassEmail" runat="server" Text=" I do not want promotional emails." GroupName="grpEmailPreference" OnCheckedChanged="grpEmailPreference_CheckedChanged" AutoPostBack="true" />
-            <asp:RadioButton ID="radDoNotEmail" runat="server" Text=" I do not want to recieve any emails." GroupName="grpEmailPreference" OnCheckedChanged="grpEmailPreference_CheckedChanged" AutoPostBack="true" />
+            <asp:RadioButton ID="radDoNotEmail" runat="server" Text=" I do not want to receive any emails." GroupName="grpEmailPreference" OnCheckedChanged="grpEmailPreference_CheckedChanged" AutoPostBack="true" />
 
 
             <div class="actions">

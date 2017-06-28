@@ -124,7 +124,7 @@
             <h3>
                 Thank you for submitting your info!
                 <br />
-                You should recieve a confirmation email shortly.
+                You should receive a confirmation email shortly.
             </h3>
             </center>
             <div class="col-md-6 col-md-offset-3">

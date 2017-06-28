@@ -32,7 +32,7 @@ using Rock.Communication;
 namespace com.centralaz.GeneralJobs.Jobs
 {
     /// <summary>
-    /// This job will send the output of your SQL as formatted HTML (via Lava) to all active group members of the specified group, with the option to also send it to members of descendant groups. If a person is a member of multiple groups in the tree they will recieve an email for each group.
+    /// This job will send the output of your SQL as formatted HTML (via Lava) to all active group members of the specified group, with the option to also send it to members of descendant groups. If a person is a member of multiple groups in the tree they will receive an email for each group.
     /// </summary>
     [CodeEditorField( "SQL Script", "The Structured Query Language (SQL) script to execute.", Rock.Web.UI.Controls.CodeEditorMode.Sql, required: true )]
     [CodeEditorField( "Formatted Output", "Optional formatting for the returned results.  If left blank, a simple table will be generated. Example: {% for row in rows %} {{ row.FirstName }}<br/> {% endfor %} <span class='tip tip-lava'></span> <span class='tip tip-html'></span>",
