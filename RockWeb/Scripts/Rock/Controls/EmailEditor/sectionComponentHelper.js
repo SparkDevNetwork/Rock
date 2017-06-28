@@ -45,6 +45,3 @@
 
   }());
 }(jQuery));
-
-// initialize
-Rock.controls.emailEditor.sectionComponentHelper.initializeEventHandlers();

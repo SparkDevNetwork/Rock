@@ -37,22 +37,11 @@ namespace RockWeb.Blocks.Communication
     [DisplayName( "Communication Entry Wizard" )]
     [Category( "Communication" )]
     [Description( "Used for creating and sending a new communications such as email, SMS, etc. to recipients." )]
- 
+
+    [BinaryFileTypeField( "Binary File Type", "The FileType to use for images that are added to the email using the image component", true, Rock.SystemGuid.BinaryFiletype.DEFAULT )]
     public partial class CommunicationEntryWizard : Rock.Web.UI.RockBlock
     {
-        #region Fields
-
-        // used for private variables
-
-        #endregion
-
-        #region Properties
-        
-        #endregion
-
         #region Base Control Methods
-
-        //  overrides of the base RockBlock methods (i.e. OnInit, OnLoad)
 
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
@@ -66,8 +55,7 @@ namespace RockWeb.Blocks.Communication
             this.BlockUpdated += Block_BlockUpdated;
             this.AddConfigurationUpdateTrigger( upnlContent );
 
-            // TODO: Make this a block setting
-            componentImageUploader.BinaryFileTypeGuid = Rock.SystemGuid.BinaryFiletype.DEFAULT.AsGuid();
+            componentImageUploader.BinaryFileTypeGuid = this.GetAttributeValue( "BinaryFileType" ).AsGuidOrNull() ?? Rock.SystemGuid.BinaryFiletype.DEFAULT.AsGuid();
         }
 
         /// <summary>
@@ -84,18 +72,6 @@ namespace RockWeb.Blocks.Communication
             }
         }
 
-        #endregion
-
-        #region Events
-
-        #region Recipient Selection Events
-        protected void lbRecipientSelectionNext_Click( object sender, EventArgs e )
-        {
-            pnlRecipientSelection.Visible = false;
-            pnlEmailEditor.Visible = true;
-        }
-        #endregion
-
         /// <summary>
         /// Handles the BlockUpdated event of the control.
         /// </summary>
@@ -103,13 +79,38 @@ namespace RockWeb.Blocks.Communication
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void Block_BlockUpdated( object sender, EventArgs e )
         {
-
+            // TODO
         }
+
+        #endregion
+
+        #region Recipient Selection Events
+
+        /// <summary>
+        /// Handles the Click event of the lbRecipientSelectionNext control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void lbRecipientSelectionNext_Click( object sender, EventArgs e )
+        {
+            pnlRecipientSelection.Visible = false;
+            pnlEmailEditor.Visible = true;
+        }
+
+        /// <summary>
+        /// Handles the CheckedChanged event of the tglRecipientSelection control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void tglRecipientSelection_CheckedChanged( object sender, EventArgs e )
+        {
+            pnlRecipientSelectionList.Visible = tglRecipientSelection.Checked;
+        }
+
         #endregion
 
         #region Methods
-
-        // helper functional methods (like BindGrid(), etc.)
+        
 
         #endregion
 
@@ -355,5 +356,7 @@ namespace RockWeb.Blocks.Communication
 </body>
 </html>
 ";
+
+        
     }
 }

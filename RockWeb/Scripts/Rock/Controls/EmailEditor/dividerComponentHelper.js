@@ -61,6 +61,3 @@
 
   }());
 }(jQuery));
-
-// initialize
-Rock.controls.emailEditor.dividerComponentHelper.initializeEventHandlers();

@@ -140,6 +140,4 @@
   }());
 }(jQuery));
 
-// initialize
-Rock.controls.emailEditor.imageComponentHelper.initializeEventHandlers();
 

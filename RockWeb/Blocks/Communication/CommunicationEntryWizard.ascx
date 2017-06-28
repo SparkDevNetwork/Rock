@@ -27,20 +27,19 @@
             </div>
             <div class="panel-body">
 
-                <asp:Panel ID="pnlRecipientSelection" runat="server" Visible="false">
+                <%-- Recipient Selection --%>
+                <asp:Panel ID="pnlRecipientSelection" runat="server" Visible="true">
                     <h4>Recipient Selection</h4>
 
-                    <Rock:Toggle ID="tglRecipientSelection" runat="server" CssClass="btn-group-justified margin-b-lg" OnText="Select From List" OffText="Select Specific Individuals" Checked="true" OnCssClass="btn-primary" OffCssClass="btn-primary" />
+                    <Rock:Toggle ID="tglRecipientSelection" runat="server" CssClass="btn-group-justified margin-b-lg" OnText="Select From List" OffText="Select Specific Individuals" Checked="true" OnCssClass="btn-primary" OffCssClass="btn-primary" ValidationGroup="vgRecipientSelection" OnCheckedChanged="tglRecipientSelection_CheckedChanged" />
                     
                     <asp:Panel ID="pnlRecipientSelectionList" runat="server">
 
-                        <Rock:RockDropDownList ID="ddlList" runat="server" Label="List" CssClass="input-width-xxl" Required="true">
-                            <asp:ListItem Text="All Members and Attendees" />
-                        </Rock:RockDropDownList>
+                        <Rock:RockDropDownList ID="ddlCommunicationGroupList" runat="server" Label="List" CssClass="input-width-xxl" ValidationGroup="vgRecipientSelection" Required="false" />
 
                         <label>Segments</label>
                         <p>Optionally, further refine your recipients by filtering by segment.</p>
-                        <asp:CheckBoxList ID="cblSegments" runat="server" RepeatDirection="Horizontal" CssClass="margin-b-lg">
+                        <asp:CheckBoxList ID="cblSegments" runat="server" RepeatDirection="Horizontal" CssClass="margin-b-lg" ValidationGroup="vgRecipientSelection">
                             <asp:ListItem Text="Male" />
                             <asp:ListItem Text="Female" />
                             <asp:ListItem Text="Under 35" />
@@ -48,19 +47,20 @@
                             <asp:ListItem Text="Members" />
                         </asp:CheckBoxList>
 
-                        <Rock:RockRadioButtonList ID="rblSegmentFilterType" runat="server" Label="Recipients Must Meet" RepeatDirection="Horizontal">
+                        <Rock:RockRadioButtonList ID="rblSegmentFilterType" runat="server" Label="Recipients Must Meet" RepeatDirection="Horizontal" ValidationGroup="vgRecipientSelection">
                             <asp:ListItem Text="All segment filters" Value="all" />
                             <asp:ListItem Text="Any segment filter" Value="any" />
                         </Rock:RockRadioButtonList>
                     </asp:Panel>                   
 
                     <div class="actions">
-                        <asp:LinkButton ID="lbRecipientSelectionNext" runat="server" AccessKey="n" Text="Next" DataLoadingText="Next" CssClass="btn btn-primary pull-right" CausesValidation="true" OnClick="lbRecipientSelectionNext_Click" />
+                        <asp:LinkButton ID="lbRecipientSelectionNext" runat="server" AccessKey="n" Text="Next" DataLoadingText="Next" CssClass="btn btn-primary pull-right" ValidationGroup="vgRecipientSelection" CausesValidation="true" OnClick="lbRecipientSelectionNext_Click" />
                     </div>
 
                 </asp:Panel>
 
-                <asp:Panel ID="pnlEmailEditor" runat="server" CssClass="emaileditor-wrapper">
+                <%-- Email Editor --%>
+                <asp:Panel ID="pnlEmailEditor" runat="server" CssClass="emaileditor-wrapper" Visible="false">
                     <section id="emaileditor">
 			            <div id="emaileditor-designer">
 				            <iframe id="ifEmailDesigner" name="emaileditor-iframe" class="emaileditor-iframe js-emaileditor-iframe" runat="server" src="javascript: window.frameElement.getAttribute('srcdoc');" frameborder="0" border="0" cellspacing="0"></iframe>
@@ -463,56 +463,75 @@
 
 
         <script>
-            var $currentComponent = $(false);
-            var $currentTextComponent = $(false);
-			
-			// load in editor styles and scripts
-			var cssLink = document.createElement("link") 
-            cssLink.href = '<%=RockPage.ResolveRockUrl("~/Themes/Rock/Styles/email-editor.css", true ) %>';
-			cssLink.rel = "stylesheet"; 
-			cssLink.type = "text/css"; 
-
-			var fontAwesomeLink = document.createElement("link")
-			fontAwesomeLink.href = '<%=RockPage.ResolveRockUrl("~/Themes/Rock/Styles/font-awesome.css", true ) %>';
-			fontAwesomeLink.rel = "stylesheet"; 
-			fontAwesomeLink.type = "text/css";
-
-            var jqueryLoaderScript = document.createElement("script");
-            jqueryLoaderScript.type = "text/javascript";
-            jqueryLoaderScript.src = '<%=RockPage.ResolveRockUrl("~/Scripts/jquery-1.12.4.min.js", true ) %>';
-
-            var dragulaLoaderScript = document.createElement("script");
-            dragulaLoaderScript.type = "text/javascript";
-            dragulaLoaderScript.src = '<%=RockPage.ResolveRockUrl("~/Scripts/dragula.min.js", true ) %>';
-
-            var $editorIframe = $('.js-emaileditor-iframe');
             
-            var editorScript = document.createElement("script");
-			editorScript.type = "text/javascript";
-			editorScript.src = '<%=RockPage.ResolveRockUrl("~/Scripts/Rock/Controls/EmailEditor/email-editor.js", true ) %>';
-            editorScript.onload = function ()
+            Sys.Application.add_load(function ()
             {
-                $editorIframe[0].contentWindow.Rock.controls.emailEditor.initialize({
-                    id: 'editor-window',
-                    componentSelected: loadPropertiesPage
+                loadEmailEditor()
+            }
+            );
+
+            function loadEmailEditor()
+            {
+                // load in editor styles and scripts
+                var cssLink = document.createElement("link")
+                cssLink.href = '<%=RockPage.ResolveRockUrl("~/Themes/Rock/Styles/email-editor.css", true ) %>';
+                cssLink.rel = "stylesheet";
+                cssLink.type = "text/css";
+
+                var fontAwesomeLink = document.createElement("link")
+                fontAwesomeLink.href = '<%=RockPage.ResolveRockUrl("~/Themes/Rock/Styles/font-awesome.css", true ) %>';
+                fontAwesomeLink.rel = "stylesheet";
+                fontAwesomeLink.type = "text/css";
+
+                var jqueryLoaderScript = document.createElement("script");
+                jqueryLoaderScript.type = "text/javascript";
+                jqueryLoaderScript.src = '<%=RockPage.ResolveRockUrl("~/Scripts/jquery-1.12.4.min.js", true ) %>';
+
+                var dragulaLoaderScript = document.createElement("script");
+                dragulaLoaderScript.type = "text/javascript";
+                dragulaLoaderScript.src = '<%=RockPage.ResolveRockUrl("~/Scripts/dragula.min.js", true ) %>';
+
+                var $editorIframe = $('.js-emaileditor-iframe');
+
+                var editorScript = document.createElement("script");
+                editorScript.type = "text/javascript";
+                editorScript.src = '<%=RockPage.ResolveRockUrl("~/Scripts/Rock/Controls/EmailEditor/email-editor.js", true ) %>';
+                editorScript.onload = function ()
+                {
+                    $editorIframe[0].contentWindow.Rock.controls.emailEditor.initialize({
+                        id: 'editor-window',
+                        componentSelected: loadPropertiesPage
+                    });
+                };
+
+                $editorIframe.load(function ()
+                {
+                    frames['emaileditor-iframe'].document.head.appendChild(jqueryLoaderScript);
+                    frames['emaileditor-iframe'].document.head.appendChild(cssLink);
+                    frames['emaileditor-iframe'].document.head.appendChild(fontAwesomeLink);
+                    frames['emaileditor-iframe'].document.head.appendChild(dragulaLoaderScript);
+                    frames['emaileditor-iframe'].document.head.appendChild(editorScript);
+
+                    var $this = $(this);
+                    var contents = $this.contents();
+
+                    var editorMarkup = $('#editor-controls').contents();
+
+                    $(contents).find('body').prepend(editorMarkup);
                 });
-            };
 
-            $editorIframe.load(function ()
-			{
-			    frames['emaileditor-iframe'].document.head.appendChild(jqueryLoaderScript);
-			    frames['emaileditor-iframe'].document.head.appendChild(cssLink);
-			    frames['emaileditor-iframe'].document.head.appendChild(fontAwesomeLink);
-			    frames['emaileditor-iframe'].document.head.appendChild(dragulaLoaderScript);
-			    frames['emaileditor-iframe'].document.head.appendChild(editorScript);
+                if ($editorIframe.length) {
+                    $editorIframe[0].src = 'javascript: window.frameElement.getAttribute("srcdoc")';
 
-			    var $this = $(this);
-			    var contents = $this.contents();
-
-			    var editorMarkup = $('#editor-controls').contents();
-
-			    $(contents).find('body').prepend(editorMarkup);
-			});
+                    // initialize component helpers
+                    Rock.controls.emailEditor.buttonComponentHelper.initializeEventHandlers();
+                    Rock.controls.emailEditor.codeComponentHelper.initializeEventHandlers();
+                    Rock.controls.emailEditor.dividerComponentHelper.initializeEventHandlers();
+                    Rock.controls.emailEditor.imageComponentHelper.initializeEventHandlers();
+                    Rock.controls.emailEditor.sectionComponentHelper.initializeEventHandlers();
+                    Rock.controls.emailEditor.textComponentHelper.initializeEventHandlers();
+                }
+            }
 			
 			function loadPropertiesPage(componentType, $component)
 			{
@@ -573,7 +592,22 @@
 			    clearPropertyPane(null);
 			}
 
-		</script>
+			function updateTextComponent(el, contents)
+			{
+			    Rock.controls.emailEditor.textComponentHelper.updateTextComponent(el, contents);
+			}
+
+			function updateCodeComponent(el, contents)
+			{
+			    Rock.controls.emailEditor.codeComponentHelper.updateCodeComponent(el, contents);
+			}
+
+			function handleImageUpdate(e, data)
+			{
+			    Rock.controls.emailEditor.imageComponentHelper.handleImageUpdate(e, data);
+			}
+
+        </script>
         
         <!-- Text Component -->
         <script src='<%=RockPage.ResolveRockUrl("~/Scripts/Rock/Controls/EmailEditor/textComponentHelper.js", true)%>' ></script>
@@ -592,21 +626,6 @@
 
         <!-- Code Component -->
         <script src='<%=RockPage.ResolveRockUrl("~/Scripts/Rock/Controls/EmailEditor/codeComponentHelper.js", true)%>' ></script>
-
-        <script>
-            function updateTextComponent(el, contents)
-            {
-                Rock.controls.emailEditor.textComponentHelper.updateTextComponent(el, contents);
-            }
-            function updateCodeComponent(el, contents)
-            {
-                Rock.controls.emailEditor.codeComponentHelper.updateCodeComponent(el, contents);
-            }
-            function handleImageUpdate(e, data)
-            {
-                Rock.controls.emailEditor.imageComponentHelper.handleImageUpdate(e, data);
-            }
-        </script>
 
     </ContentTemplate>
 </asp:UpdatePanel>
