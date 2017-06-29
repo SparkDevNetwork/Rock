@@ -14,18 +14,39 @@
 	border: 1px solid yellow;
 }
 
+.state-drag .structure-dropzone {
+	border: 1px solid green;
+}
+
+.structure-dropzone {
+	border: 1px dotted rgba(0, 0, 0, 0.3);
+	min-height: 36px;
+	width: 100%;
+}
+
 .dropzone {
 	border: 1px dotted rgba(0, 0, 0, 0.3);
 	min-height: 24px;
 	width: 100%;
 }
 
-#editor-toolbar {
+#editor-toolbar-content {
 	padding: 12px 12px 0 12px;
 	background-color: @panel-heading-bg;
 }
 
-#editor-toolbar:after {
+#editor-toolbar-content:after {
+  content: "";
+  display: table;
+  clear: both;
+}
+
+#editor-toolbar-structure {
+	padding: 12px 12px 0 12px;
+	background-color: @panel-heading-bg;
+}
+
+#editor-toolbar-structure:after {
   content: "";
   display: table;
   clear: both;
@@ -109,4 +130,9 @@ elements with nested rules, like .list .item { padding: 10px; }.*/
   -ms-filter: "progid:DXImageTransform.Microsoft.Alpha(Opacity=20)";
   filter: alpha(opacity=20);
   float: none !important; /* added to override the float from the component */
+}
+
+/* MP: workaround for https://github.com/bevacqua/dragula/issues/421 */
+.gu-transit .container{
+    display: none;
 }

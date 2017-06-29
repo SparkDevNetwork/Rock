@@ -14,22 +14,23 @@
         }
         
         var self = this;
-        self.editorToolbar = document.getElementById('editor-toolbar');
+        self.editorToolbarContent = document.getElementById('editor-toolbar-content');
+        self.editorToolbarStructure = document.getElementById('editor-toolbar-structure');
         self.componentSelected = options.componentSelected;
 
-        // configure and load the dragula script
-        self.drake = dragula([self.editorToolbar, document.querySelector('.dropzone')], {
+        // configure and load the dragula script for content components
+        self.contentDrake = dragula([self.editorToolbarContent, document.querySelector('.dropzone')], {
           isContainer: function (el)
           {
             return el.classList.contains('dropzone');
           },
           copy: function (el, source)
           {
-            return source === self.editorToolbar
+            return source === self.editorToolbarContent
           },
           accepts: function (el, target)
           {
-            return target !== self.editorToolbar
+            return target !== self.editorToolbarContent
           },
           ignoreInputTextSelection: true
         })
@@ -54,7 +55,42 @@
           }
         });
 
-        
+        // configure and load the dragula script for structure components
+        self.structureDrake = dragula([self.editorToolbarStructure, document.querySelector('.structure-dropzone')], {
+          isContainer: function (el)
+          {
+            return el.classList.contains('structure-dropzone');
+          },
+          copy: function (el, source)
+          {
+            return source === self.editorToolbarStructure
+          },
+          accepts: function (el, target)
+          {
+            return target !== self.editorToolbarStructure
+          },
+          ignoreInputTextSelection: true
+        })
+        .on('drag', function (el)
+        {
+          if ($(el).attr('data-state') == 'component') {
+            self.handleComponentClick(el, event);
+          }
+          $('body').addClass('state-drag');
+        })
+        .on('dragend', function (el)
+        {
+          $('body').removeClass('state-drag');
+        })
+        .on('drop', function (el)
+        {
+          if ($(el).attr('data-state') == 'template') {
+            // replace the template contents
+            el.innerHTML = $(el).attr('data-content');
+            $(el).attr('data-state', 'component');
+            el.removeAttribute("data-content");
+          }
+        });
 
         this.initializeEventHandlers();
       },
@@ -70,10 +106,27 @@
           }
         });
 
+        $('.js-editor-content-btn').on('click', function (e)
+        {
+          $('.js-editor-content-btn').removeClass('btn-default').addClass('btn-primary');
+          $('.js-editor-structure-btn').removeClass('btn-primary').addClass('btn-default');
+          $('.js-editor-content-toolbar').show();
+          $('.js-editor-structure-toolbar').hide();
+        });
+
+        $('.js-editor-structure-btn').on('click', function (e)
+        {
+          $('.js-editor-content-btn').removeClass('btn-primary').addClass('btn-default');
+          $('.js-editor-structure-btn').removeClass('btn-default').addClass('btn-primary');
+          $('.js-editor-content-toolbar').hide();
+          $('.js-editor-structure-toolbar').show();
+        });
+        
+
         // add autoscroll capabilities during dragging
         $(window).mousemove(function (e)
         {
-          if (self.drake.dragging) {
+          if (self.contentDrake.dragging) {
             var $iframeEl = $(window.frameElement);
             var $parentWindow = $(this.parent.window);
             var clientY = e.clientY + $iframeEl.offset().top;

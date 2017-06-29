@@ -8,11 +8,6 @@
             .propertypanel-image .imageupload-remove {
                 display: none !important;
             }
-
-            /* workaround for https://github.com/bevacqua/dragula/issues/421 */
-            .gu-transit .container{
-                display: none;
-            }
         </style>
 
 
@@ -28,7 +23,7 @@
             <div class="panel-body">
 
                 <%-- Recipient Selection --%>
-                <asp:Panel ID="pnlRecipientSelection" runat="server" Visible="true">
+                <asp:Panel ID="pnlRecipientSelection" runat="server" Visible="false">
                     <h4>Recipient Selection</h4>
 
                     <Rock:Toggle ID="tglRecipientSelection" runat="server" CssClass="btn-group-justified margin-b-lg" OnText="Select From List" OffText="Select Specific Individuals" Checked="true" OnCssClass="btn-primary" OffCssClass="btn-primary" ValidationGroup="vgRecipientSelection" OnCheckedChanged="tglRecipientSelection_CheckedChanged" />
@@ -79,7 +74,7 @@
                 </asp:Panel>
 
                 <%-- Email Editor --%>
-                <asp:Panel ID="pnlEmailEditor" runat="server" CssClass="emaileditor-wrapper" Visible="false">
+                <asp:Panel ID="pnlEmailEditor" runat="server" CssClass="emaileditor-wrapper" Visible="true">
                     <section id="emaileditor">
 			            <div id="emaileditor-designer">
 				            <iframe id="ifEmailDesigner" name="emaileditor-iframe" class="emaileditor-iframe js-emaileditor-iframe" runat="server" src="javascript: window.frameElement.getAttribute('srcdoc');" frameborder="0" border="0" cellspacing="0"></iframe>
@@ -238,24 +233,6 @@
                                 <!-- Section Properties -->
                                 <div class="propertypanel propertypanel-section" data-component="section" style="display: none;">
 						            <h4 class="propertypanel-title">Section</h4>
-                                    <div class="row">
-                                        <div class="col-md-6">
-                                            <div class="form-group">
-                                                <label for="component-section-left-column-percent">Left Column Percent</label>
-                                                <div class="input-group input-width-md">
-                                                    <input class="form-control" id="component-section-left-column-percent" type="number"><span class="input-group-addon">%</span>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div class="col-md-6">
-                                            <div class="form-group">
-                                                <label for="component-section-right-column-percent">Right Column Percent</label>
-                                                <div class="input-group input-width-md">
-                                                    <input class="form-control" id="component-section-right-column-percent" type="number"><span class="input-group-addon">%</span>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
 					            </div>
 
                                 <!-- Divider Properties -->
@@ -454,26 +431,46 @@
 		            </section>
 			
 		            <div id="editor-controls" style="display: none;">
-			            <div id="editor-toolbar">
-				            <div class="component component-text" data-content="<h1>Big News</h1><p> This is a text block. You can use it to add text to your template.</p>" data-state="template">
-					            <i class="fa fa-align-justify"></i><br /> Text
-				            </div>
-				            <div class="component component-image" data-content="<img src='<%= VirtualPathUtility.ToAbsolute("~/Assets/Images/image-placeholder.jpg") %>' style='width: 100%;' data-width='full' />" data-state="template">
-					            <i class="fa fa-picture-o"></i> <br /> Image
-				            </div>
-				            <div class="component component-section" data-content="<table class='component component-separator' width='100%'><tr><td width='50%'><div class='dropzone'></div></td><td width='50%'><div class='dropzone'></div></td></tr></table>" data-state="template">
-					            <i class="fa fa-columns"></i> <br /> Section
-				            </div>
-				            <div class="component component-divider" data-content="<hr style='margin-top: 0px; margin-bottom: 0px; border: 0; height: 4px; background: #c4c4c4;' />" data-state="template">
-					            <i class="fa fa-minus"></i> <br /> Divider
-				            </div>
-				            <div class="component component-code" data-content="Add your code here..." data-state="template">
-					            <i class="fa fa-code"></i> <br /> Code
-				            </div>
-				            <div class="component component-button" data-content="<table class='button-outerwrap' border='0' cellpadding='0' cellspacing='0' width='100%' style='min-width:100%;'><tbody><tr><td style='padding-top:0; padding-right:0; padding-bottom:0; padding-left:0;' valign='top' align='center' class='button-innerwrap'><table border='0' cellpadding='0' cellspacing='0' class='button-shell' style='display: inline-table; border-collapse: separate !important; border-radius: 3px; background-color: rgb(43, 170, 223);'><tbody><tr><td align='center' valign='middle' class='button-content' style='font-family: Arial; font-size: 16px; padding: 15px;'><a class='button-link' title='Push Me' href='http://' target='_blank' style='font-weight: bold; letter-spacing: normal; line-height: 100%; text-align: center; text-decoration: none; color: rgb(255, 255, 255);'>Push Me</a></td></tr></tbody></table></td></tr></tbody></table>" data-state="template">
-					            <i class="fa fa-square-o"></i> <br /> Button
-				            </div>
-			            </div>
+                        <div id="editor-toolbar-container">
+			                <div id="editor-toolbar-content">
+				                <div class="component component-text" data-content="<h1>Big News</h1><p> This is a text block. You can use it to add text to your template.</p>" data-state="template">
+					                <i class="fa fa-align-justify"></i><br /> Text
+				                </div>
+				                <div class="component component-image" data-content="<img src='<%= VirtualPathUtility.ToAbsolute("~/Assets/Images/image-placeholder.jpg") %>' style='width: 100%;' data-width='full' />" data-state="template">
+					                <i class="fa fa-picture-o"></i> <br /> Image
+				                </div>
+				                
+				                <div class="component component-divider" data-content="<hr style='margin-top: 0px; margin-bottom: 0px; border: 0; height: 4px; background: #c4c4c4;' />" data-state="template">
+					                <i class="fa fa-minus"></i> <br /> Divider
+				                </div>
+				                <div class="component component-code" data-content="Add your code here..." data-state="template">
+					                <i class="fa fa-code"></i> <br /> Code
+				                </div>
+				                <div class="component component-button" data-content="<table class='button-outerwrap' border='0' cellpadding='0' cellspacing='0' width='100%' style='min-width:100%;'><tbody><tr><td style='padding-top:0; padding-right:0; padding-bottom:0; padding-left:0;' valign='top' align='center' class='button-innerwrap'><table border='0' cellpadding='0' cellspacing='0' class='button-shell' style='display: inline-table; border-collapse: separate !important; border-radius: 3px; background-color: rgb(43, 170, 223);'><tbody><tr><td align='center' valign='middle' class='button-content' style='font-family: Arial; font-size: 16px; padding: 15px;'><a class='button-link' title='Push Me' href='http://' target='_blank' style='font-weight: bold; letter-spacing: normal; line-height: 100%; text-align: center; text-decoration: none; color: rgb(255, 255, 255);'>Push Me</a></td></tr></tbody></table></td></tr></tbody></table>" data-state="template">
+					                <i class="fa fa-square-o"></i> <br /> Button
+				                </div>
+			                </div>
+                            <div id="editor-toolbar-structure">
+                                <div class="component component-section" data-content="<div class='dropzone'></div>" data-state="template">
+					                <i class="fa fa-columns"></i> <br /> Section_100
+				                </div>
+                                <div class="component component-section" data-content="<table width='100%'><tr><td width='50%'><div class='dropzone'></div></td><td width='50%'><div class='dropzone'></div></td></tr></table>" data-state="template">
+					                <i class="fa fa-columns"></i> <br /> Section_2x
+				                </div>
+                                <div class="component component-section" data-content="<table width='100%'><tr><td width='33%'><div class='dropzone'></div></td><td width='34%'><div class='dropzone'></div></td><td width='33%'><div class='dropzone'></div></td></tr></table>" data-state="template">
+					                <i class="fa fa-columns"></i> <br /> Section_3x
+				                </div>
+                                <div class="component component-section" data-content="<table width='100%'><tr><td width='25%'><div class='dropzone'></div></td><td width='25%'><div class='dropzone'></div></td><td width='25%'><div class='dropzone'></div></td><td width='25%'><div class='dropzone'></div></td></tr></table>" data-state="template">
+					                <i class="fa fa-columns"></i> <br /> Section_4x
+				                </div>
+                                <div class="component component-section" data-content="<table width='100%'><tr><td width='33%'><div class='dropzone'></div></td><td width='67%'><div class='dropzone'></div></td></tr></table>" data-state="template">
+					                <i class="fa fa-columns"></i> <br /> Section_1:2
+				                </div>
+                                <div class="component component-section" data-content="<table width='100%'><tr><td width='67%'><div class='dropzone'></div></td><td width='33%'><div class='dropzone'></div></td></tr></table>" data-state="template">
+					                <i class="fa fa-columns"></i> <br /> Section_2:1
+				                </div>
+                            </div>
+                        </div>
 		            </div>	
                 </asp:Panel>
             </div>
@@ -547,7 +544,6 @@
                     Rock.controls.emailEditor.codeComponentHelper.initializeEventHandlers();
                     Rock.controls.emailEditor.dividerComponentHelper.initializeEventHandlers();
                     Rock.controls.emailEditor.imageComponentHelper.initializeEventHandlers();
-                    Rock.controls.emailEditor.sectionComponentHelper.initializeEventHandlers();
                     Rock.controls.emailEditor.textComponentHelper.initializeEventHandlers();
                 }
             }
@@ -572,7 +568,7 @@
 				        Rock.controls.emailEditor.imageComponentHelper.setProperties($currentComponent);
 				        break;
 				    case 'section':
-				        Rock.controls.emailEditor.sectionComponentHelper.setProperties($currentComponent);
+                        // no properties, just a delete button
 				        break;
 				    case 'divider':
 				        Rock.controls.emailEditor.dividerComponentHelper.setProperties($currentComponent);
@@ -636,9 +632,6 @@
 
         <!-- Image Component -->
         <script src='<%=RockPage.ResolveRockUrl("~/Scripts/Rock/Controls/EmailEditor/imageComponentHelper.js", true)%>' ></script>
-
-        <!-- Section Component -->
-        <script src='<%=RockPage.ResolveRockUrl("~/Scripts/Rock/Controls/EmailEditor/sectionComponentHelper.js", true)%>' ></script>
 
         <!-- Divider Component -->
         <script src='<%=RockPage.ResolveRockUrl("~/Scripts/Rock/Controls/EmailEditor/dividerComponentHelper.js", true)%>' ></script>

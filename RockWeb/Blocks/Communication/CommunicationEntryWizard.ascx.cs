@@ -340,16 +340,16 @@ namespace RockWeb.Blocks.Communication
             <table border=""0"" cellpadding=""0"" cellspacing=""0"" width=""100%"" style=""max-width: 500px;"" class=""responsive-table"">
                 <tr>
                     <td style=""font-size: 25px; font-family: Helvetica, Arial, sans-serif; color: #333333; padding-top: 30px;"">
+					    <div class=""structure-dropzone"">
 					
-					
-                        <div class=""dropzone"">
+                            <div class=""dropzone"">
 
-							<div class=""component component-text"" data-content=""<h1>Yo MTV Raps</h1>"" data-state=""component"">
-								<h1>Hello There!</h1>
-							</div>
+							    <div class=""component component-text"" data-content=""<h1>Hello There!</h1>"" data-state=""component"">
+								    <h1>Hello There!</h1>
+							    </div>
 
-						</div>
-                    
+						    </div>
+                        </div>
 					
 					</td>
                 </tr>
@@ -380,8 +380,11 @@ namespace RockWeb.Blocks.Communication
                                     <td align=""left"" valign=""top"" width=""150"">
                                     <![endif]-->
                                     
+                                    <div class=""structure-dropzone"">
 									
 									<div class=""dropzone""></div>
+
+                                    </div>
 
                                 </td>
                             </tr>
