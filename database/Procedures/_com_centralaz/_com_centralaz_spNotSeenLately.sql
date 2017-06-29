@@ -10,9 +10,7 @@
 	</summary>
 
 	<returns>
-		* Person Id
-		* FirstName
-		* LastName
+		* Last name, First name (as HTML link to profile page)
 		* Gender
 		* Campus
 		* Grade
@@ -109,6 +107,9 @@ DECLARE @year INT = DATEPART(year, @today)
 DECLARE @GradeTransitionDate DATETIME
 SELECT @GradeTransitionDate =  CAST( [Value] + '/' + CAST(@year AS varchar) AS DATETIME)  FROM Attribute a INNER JOIN AttributeValue av on av.AttributeId = a.Id WHERE a.[Key] = 'GradeTransitionDate'
 
+DECLARE @InternalAppRoot NVARCHAR(MAX)
+SELECT @InternalAppRoot =  av.[Value] FROM Attribute a INNER JOIN AttributeValue av on av.AttributeId = a.Id WHERE a.[Key] = 'InternalApplicationRoot'
+
 SET @Wk1StartDate = @MissedEndDate
 SET @Wk2StartDate = DATEADD( wk, -1, @MissedEndDate) 
 SET @Wk3StartDate = DATEADD( wk, -2, @MissedEndDate) 
@@ -120,9 +121,18 @@ SET @Wk8StartDate = DATEADD( wk, -7, @MissedEndDate)
 
 --SELECT @Wk1StartDate, @Wk2StartDate, @Wk3StartDate, @Wk4StartDate, @Wk5StartDate, @Wk6StartDate, @Wk7StartDate,@Wk8StartDate
 
-SELECT p.Id, p.FirstName, p.LastName, CASE WHEN p.Gender = 1 THEN 'Male' ELSE 'Female' END as 'Gender', c.Name as 'Campus', 12 - [dbo].ufnCrm_GetGradeOffset( p.GraduationYear, @GradeTransitionDate ) as 'Grade', 
-paBC.Value as 'BestContact', pnBP.NumberFormatted as 'BestPhone',
-pnHP.NumberFormatted as 'Home', pnCP.NumberFormatted as 'Cell',  [dbo].[ufnCrm_GetAddress](p.Id, 'Home', 'Full') AS 'Address',
+SELECT '<a href="'+@InternalAppRoot+'/Person/'+CAST(p.Id as varchar)+'">' + p.LastName + ', ' + p.FirstName + '</a>' as 'Name',
+	CASE WHEN p.Gender = 1 THEN 'Male' ELSE 'Female' END as 'Gender', 
+	c.Name as 'Campus', 
+	12 - [dbo].ufnCrm_GetGradeOffset( p.GraduationYear, @GradeTransitionDate ) as 'Grade', 
+	CASE WHEN paBC.Value IS NOT NULL THEN paBC.Value
+		WHEN pnBP.NumberFormatted IS NOT NULL THEN pnBP.NumberFormatted
+		WHEN pnCP.NumberFormatted IS NOT NULL THEN pnCP.NumberFormatted
+		WHEN pnHP.NumberFormatted IS NOT NULL THEN pnHP.NumberFormatted
+		ELSE p.Email 
+		END AS 'BestContact',
+	p.Email,
+	[dbo].[ufnCrm_GetAddress](p.Id, 'Home', 'Full') AS 'Address',
 
 		(	SELECT top 1 ( SELECT CONVERT(VARCHAR(20), att.StartDateTime, 100) + ' ' + g.Name)
 			FROM   Attendance AS att 
