@@ -168,7 +168,7 @@ namespace Rock.Workflow.Action.CheckIn
                                 m.GroupId == familyId &&
                                 m.Person.NickName != null );
 
-                        if ( checkInState.CheckInType != null && checkInState.CheckInType.PreventInactivePeopele && dvInactive != null )
+                        if ( checkInState.CheckInType != null && checkInState.CheckInType.PreventInactivePeople && dvInactive != null )
                         {
                             familyMemberQry = familyMemberQry
                                 .Where( m =>

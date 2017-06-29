@@ -89,7 +89,7 @@ namespace Rock.Workflow.Action.CheckIn
                 var family = checkInState.CheckIn.CurrentFamily;
                 if ( family != null )
                 {
-                    bool preventInactive = ( checkInState.CheckInType != null && checkInState.CheckInType.PreventInactivePeopele );
+                    bool preventInactive = ( checkInState.CheckInType != null && checkInState.CheckInType.PreventInactivePeople );
                     var dvInactive = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_INACTIVE.AsGuid() );
 
                     var groupMemberService = new GroupMemberService( rockContext );
