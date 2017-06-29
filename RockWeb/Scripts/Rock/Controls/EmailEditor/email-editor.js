@@ -32,6 +32,12 @@
           {
             return target !== self.editorToolbarContent
           },
+          invalid: function (el, handle)
+          {
+            var isStructureRelated = $(el).closest($(self.editorToolbarStructure)).length // is it from the structures toolbar
+              || $(el).closest('.component').hasClass('component-section'); // is it an existing structure component in the email
+            return isStructureRelated;
+          },
           ignoreInputTextSelection: true
         })
         .on('drag', function (el)
@@ -68,6 +74,12 @@
           accepts: function (el, target)
           {
             return target !== self.editorToolbarStructure
+          },
+          invalid: function (el, handle)
+          {
+            var isStructureRelated = $(el).closest($(self.editorToolbarStructure)).length // is it from the structures toolbar
+              || $(el).closest('.component').hasClass('component-section'); // is it an existing structure component in the email
+            return !isStructureRelated;
           },
           ignoreInputTextSelection: true
         })
