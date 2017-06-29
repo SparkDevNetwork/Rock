@@ -154,13 +154,13 @@ namespace RockWeb.Plugins.com_centralaz.Widgets
                     registrationList = JsonConvert.DeserializeObject<List<RegistrationInstanceCount>>( json );
                 }
 
-                // Delete nonexisting items
+                // Delete non-existing items
                 foreach ( var registrationInstanceCount in registrationList )
                 {
                     var registration = registrationInstanceService.Get( registrationInstanceCount.InstanceId );
                     if ( registration != null )
                     {
-                        var registrationTemplateAttributeIds = registrationTemplateFormFieldService.Queryable()
+                        var registrationTemplateAttributeIds = registrationTemplateFormFieldService.Queryable().AsNoTracking()
                             .Where( rtff => rtff.RegistrationTemplateForm.RegistrationTemplateId == registration.RegistrationTemplateId )
                             .Select( rtff => rtff.AttributeId )
                             .ToList();
@@ -214,7 +214,7 @@ namespace RockWeb.Plugins.com_centralaz.Widgets
                         registrationList.Add( registrationInstanceCount );
                     }
 
-                    var registrationTemplateAttributeList = registrationTemplateFormFieldService.Queryable()
+                    var registrationTemplateAttributeList = registrationTemplateFormFieldService.Queryable().AsNoTracking()
                             .Where( rtff =>
                                 rtff.RegistrationTemplateForm.RegistrationTemplateId == registration.RegistrationTemplateId &&
                                 ( rtff.Attribute.FieldType.Guid == _multiSelectGuid || rtff.Attribute.FieldType.Guid == _singleSelectGuid ) )
@@ -360,7 +360,7 @@ namespace RockWeb.Plugins.com_centralaz.Widgets
 
                             foreach ( var registrationAttribute in registrationInstance.InstanceAttributes.Where( a => a.IsSelected ).ToList() )
                             {
-                                var qualifier = attributeQualifierService.Queryable().Where( q => q.Key == "values" && q.AttributeId == registrationAttribute.AttributeId ).FirstOrDefault();
+                                var qualifier = attributeQualifierService.Queryable().AsNoTracking().Where( q => q.Key == "values" && q.AttributeId == registrationAttribute.AttributeId ).FirstOrDefault();
                                 if ( qualifier != null && !String.IsNullOrWhiteSpace( qualifier.Value ) )
                                 {
                                     registrationAttribute.AttributeValues = new List<AttributeValueCount>();
@@ -373,7 +373,7 @@ namespace RockWeb.Plugins.com_centralaz.Widgets
                                         {
                                             attributeValueCount.ValueName = nameAndValue[0];
 
-                                            attributeValueCount.Count = attributeValueService.Queryable().Where( av =>
+                                            attributeValueCount.Count = attributeValueService.Queryable().AsNoTracking().Where( av =>
                                                 av.AttributeId == registrationAttribute.AttributeId &&
                                                 av.EntityId.HasValue &&
                                                 ( ( av.Attribute.EntityType.Guid == _registrantGuid && registrantIdList.Contains( av.EntityId.Value ) ) ||
@@ -386,7 +386,7 @@ namespace RockWeb.Plugins.com_centralaz.Widgets
                                             var value = nameAndValue[0];
                                             attributeValueCount.ValueName = nameAndValue[1];
 
-                                            attributeValueCount.Count = attributeValueService.Queryable().Where( av =>
+                                            attributeValueCount.Count = attributeValueService.Queryable().AsNoTracking().Where( av =>
                                                 av.AttributeId == registrationAttribute.AttributeId &&
                                                 av.EntityId.HasValue &&
                                                 ( ( av.Attribute.EntityType.Guid == _registrantGuid && registrantIdList.Contains( av.EntityId.Value ) ) ||
