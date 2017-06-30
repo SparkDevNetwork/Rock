@@ -173,46 +173,15 @@ namespace RockWeb.Blocks.CheckIn
         /// </summary>
         private void RegisterScript()
         {
-            // Note: the OnExpiry property of the countdown jquery plugin seems to add a new callback
-            // everytime the setting is set which is why the clearCountdown method is used to prevent 
-            // a plethora of partial postbacks occurring when the countdown expires.
             var script = new StringBuilder();
             script.AppendFormat( @"
 
-        var timeoutSeconds = $('.js-refresh-timer-seconds').val();
-        if (timeout) {{
-            window.clearTimeout(timeout);
-        }}
-        var timeout = window.setTimeout(refreshKiosk, timeoutSeconds * 1000);
-
-        var $ActiveWhen = $('.active-when');
-        var $CountdownTimer = $('.countdown-timer');
-
-        function refreshKiosk() {{
-            window.clearTimeout(timeout);
-            $CountdownTimer = null;
+        function PostRefresh() {{
             {0};
         }}
 
-        function clearCountdown() {{
-            if ($ActiveWhen.text() != '')
-            {{
-                $ActiveWhen.text('');
-                refreshKiosk();
-            }}
-        }}
-
-        if ($ActiveWhen.text() != '')
-        {{
-            var timeActive = new Date($ActiveWhen.text());
-            $CountdownTimer.countdown({{
-                until: timeActive, 
-                compact:true, 
-                onExpiry: clearCountdown
-            }});
-        }}
 ", this.Page.ClientScript.GetPostBackEventReference( lbRefresh, "" ) );
-            ScriptManager.RegisterStartupScript( lbRefresh, lbRefresh.GetType(), "WelcomeScript", script.ToString(), true );
+            ScriptManager.RegisterStartupScript( lbRefresh, lbRefresh.GetType(), "refresh-postback", script.ToString(), true );
         }
 
         private void ClearSelection()
@@ -259,6 +228,8 @@ namespace RockWeb.Blocks.CheckIn
         /// </summary>
         private void RefreshView()
         {
+            bool isActive = false;
+
             hfRefreshTimerSeconds.Value = ( CurrentCheckInType != null ? CurrentCheckInType.RefreshInterval.ToString() : "10" );
             pnlNotActive.Visible = false;
             pnlNotActiveYet.Visible = false;
@@ -297,8 +268,19 @@ namespace RockWeb.Blocks.CheckIn
             }
             else
             {
+                isActive = true;
                 pnlActive.Visible = true;
             }
+
+            bool? wasActive = PageParameter( "IsActive" ).AsBooleanOrNull();
+            if ( !wasActive.HasValue || wasActive.Value != isActive )
+            {
+                //redirect to current page with correct IsActive querystring value
+                var qryParams = Request.QueryString.AllKeys.ToDictionary( k => k, k => this.Request.QueryString[k] );
+                qryParams.AddOrReplace( "IsActive", isActive.ToString() );
+                NavigateToCurrentPage( qryParams );
+            }
+
         }
 
         /// <summary>

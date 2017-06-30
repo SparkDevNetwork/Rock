@@ -135,7 +135,7 @@ namespace Rock.Model
                 }
                 binaryFile.StorageEntitySettings = reader["StorageEntitySettings"] as string;
                 binaryFile.Path = reader["Path"] as string;
-
+                binaryFile.FileSize = reader["FileSize"] as long?;
                 binaryFile.DatabaseData = new BinaryFileData();
 
                 // read the fileContent from the database just in case it's stored in the database, otherwise, the Provider will get it

@@ -311,7 +311,9 @@ namespace Rock.Model
                                     binaryFile.IsTemporary = false;
                                     binaryFile.BinaryFileTypeId = signatureDocument.SignatureDocumentTemplate.BinaryFileTypeId;
                                     binaryFile.MimeType = "application/pdf";
-                                    binaryFile.FileName = new FileInfo( documentPath ).Name;
+                                    var fi = new FileInfo( documentPath );
+                                    binaryFile.FileName = fi.Name;
+                                    binaryFile.FileSize = fi.Length;
                                     binaryFile.ContentStream = new FileStream( documentPath, FileMode.Open );
                                     binaryFileService.Add( binaryFile );
                                     rockContext.SaveChanges();

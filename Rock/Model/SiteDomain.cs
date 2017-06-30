@@ -33,7 +33,7 @@ namespace Rock.Model
     [RockDomain( "CMS" )]
     [Table( "SiteDomain" )]
     [DataContract]
-    public partial class SiteDomain : Model<SiteDomain>
+    public partial class SiteDomain : Model<SiteDomain>, IOrdered
     {
 
         #region Entity Properties
@@ -71,6 +71,16 @@ namespace Rock.Model
         [MaxLength( 200 )]
         [DataMember( IsRequired = true )]
         public string Domain { get; set; }
+
+        /// <summary>
+        /// Gets or sets the order.
+        /// </summary>
+        /// <value>
+        /// The order.
+        /// </value>
+        [Required]
+        [DataMember( IsRequired = true )]
+        public int Order { get; set; }
 
         #endregion
 

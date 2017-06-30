@@ -428,30 +428,17 @@ namespace RockWeb.Blocks.Finance
                     // Save Transaction Details
                     foreach ( var editorTxnDetail in TransactionDetailsState )
                     {
-                        string oldAccountName = string.Empty;
-                        string newAccountName = string.Empty;
-                        decimal oldAmount = 0.0M;
-                        decimal newAmount = 0.0M;
-
                         // Add or Update the activity type
                         var txnDetail = txn.TransactionDetails.FirstOrDefault( d => d.Guid.Equals( editorTxnDetail.Guid ) );
-                        if ( txnDetail != null )
-                        {
-                            oldAccountName = AccountName( txnDetail.AccountId );
-                            oldAmount = txnDetail.Amount;
-                        }
-                        else 
+                        if ( txnDetail == null )
                         {
                             txnDetail = new FinancialTransactionDetail();
                             txnDetail.Guid = editorTxnDetail.Guid;
                             txn.TransactionDetails.Add( txnDetail );
                         }
 
-                        newAccountName = AccountName( editorTxnDetail.AccountId );
-                        newAmount = UseSimpleAccountMode ? tbSingleAccountAmount.Text.AsDecimal() : editorTxnDetail.Amount;
-
                         txnDetail.AccountId = editorTxnDetail.AccountId;
-                        txnDetail.Amount = newAmount;
+                        txnDetail.Amount = UseSimpleAccountMode ? tbSingleAccountAmount.Text.AsDecimal() : editorTxnDetail.Amount; 
                         txnDetail.Summary = editorTxnDetail.Summary;
 
                         if ( editorTxnDetail.AttributeValues != null )
