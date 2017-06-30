@@ -30,6 +30,9 @@ namespace Rock.Rest.Controllers
     /// </summary>
     public partial class AnalyticsSourceAttendancesController : Rock.Rest.ApiController<Rock.Model.AnalyticsSourceAttendance>
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="AnalyticsSourceAttendancesController"/> class.
+        /// </summary>
         public AnalyticsSourceAttendancesController() : base( new Rock.Model.AnalyticsSourceAttendanceService( new Rock.Data.RockContext() ) ) { } 
     }
 }

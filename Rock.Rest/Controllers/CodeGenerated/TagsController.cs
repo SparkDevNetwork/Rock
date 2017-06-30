@@ -30,6 +30,9 @@ namespace Rock.Rest.Controllers
     /// </summary>
     public partial class TagsController : Rock.Rest.ApiController<Rock.Model.Tag>
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="TagsController"/> class.
+        /// </summary>
         public TagsController() : base( new Rock.Model.TagService( new Rock.Data.RockContext() ) ) { } 
     }
 }

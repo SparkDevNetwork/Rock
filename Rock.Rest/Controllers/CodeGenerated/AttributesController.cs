@@ -30,6 +30,9 @@ namespace Rock.Rest.Controllers
     /// </summary>
     public partial class AttributesController : Rock.Rest.ApiController<Rock.Model.Attribute>
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="AttributesController"/> class.
+        /// </summary>
         public AttributesController() : base( new Rock.Model.AttributeService( new Rock.Data.RockContext() ) ) { } 
     }
 }

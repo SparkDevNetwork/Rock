@@ -30,6 +30,9 @@ namespace Rock.Rest.Controllers
     /// </summary>
     public partial class ReportFieldsController : Rock.Rest.ApiController<Rock.Model.ReportField>
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ReportFieldsController"/> class.
+        /// </summary>
         public ReportFieldsController() : base( new Rock.Model.ReportFieldService( new Rock.Data.RockContext() ) ) { } 
     }
 }
