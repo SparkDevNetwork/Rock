@@ -1319,6 +1319,8 @@ namespace Rock.Data
         {
             if ( useSqlBulkCopy )
             {
+                // set timeout to 5 minutes, just in case (the default is 30 seconds)
+                EntityFramework.Utilities.Configuration.BulkCopyTimeout = 300;
                 EntityFramework.Utilities.Configuration.SqlBulkCopyOptions = System.Data.SqlClient.SqlBulkCopyOptions.CheckConstraints;
                 EntityFramework.Utilities.EFBatchOperation.For( this, this.Set<T>() ).InsertAll( records );
             }
