@@ -16,16 +16,19 @@
 //
 using System;
 using System.Collections.Generic;
-using System.Configuration;
 using System.IO;
+using System.Linq;
 using System.Net;
 using System.Text;
-using System.Text.RegularExpressions;
+using System.Web;
+
 using HtmlAgilityPack;
+using RestSharp;
+
 using Rock.Model;
+using Rock.Security;
 using Rock.UniversalSearch.Crawler.RobotsTxt;
 using Rock.UniversalSearch.IndexModels;
-using Rock.Web.Cache;
 
 namespace Rock.UniversalSearch.Crawler
 {
@@ -41,6 +44,7 @@ namespace Rock.UniversalSearch.Crawler
         private string _baseUrl = string.Empty;
         private Robots _robotHelper = null;
         private string _startUrl = string.Empty;
+        private CookieContainer _cookieContainer = null;
 
         string[] nonLinkStartsWith = new string[] { "#", "javascript:", "mailto:" };
         #endregion
@@ -62,7 +66,21 @@ namespace Rock.UniversalSearch.Crawler
         /// <summary>
         /// Crawls a site.
         /// </summary>
+        /// <param name="site">The site.</param>
+        /// <returns></returns>
         public int CrawlSite(Site site)
+        {
+            return CrawlSite( site, null, null );
+        }
+
+        /// <summary>
+        /// Crawls a site.
+        /// </summary>
+        /// <param name="site">The site.</param>
+        /// <param name="loginId">The login identifier.</param>
+        /// <param name="password">The password.</param>
+        /// <returns></returns>
+        public int CrawlSite( Site site, string loginId, string password )
         {
             _site = site;
             
@@ -75,10 +93,32 @@ namespace Rock.UniversalSearch.Crawler
 
             _baseUrl = startingUri.Scheme + "://" + startingUri.Authority;
 
+            _cookieContainer = new CookieContainer();
+
+            // If a loginId and password were included, get an authentication cookie
+            if ( loginId.IsNotNullOrWhitespace() && password.IsNotNullOrWhitespace() )
+            {
+                var loginParam = new LoginParameters();
+                loginParam.Username = loginId;
+                loginParam.Password = password;
+                loginParam.Persisted = false;
+
+                var baseUri = new Uri( _baseUrl );
+                var authUri = new Uri( baseUri, "api/Auth/Login" );
+                var restClient = new RestClient( authUri );
+                restClient.CookieContainer = _cookieContainer;
+
+                var request = new RestRequest( Method.POST );
+                request.RequestFormat = DataFormat.Json;
+                request.AddBody( loginParam );
+
+                var response = restClient.Execute( request );
+            }
+
             CrawlPage( _site.IndexStartingLocation );
 
             return _previouslyCrawledPages.Count;
-        }      
+        }
 
         /// <summary>
         /// Crawls a page.
@@ -102,7 +142,7 @@ namespace Rock.UniversalSearch.Crawler
 
                         // ensure the page should be indexed by looking at the robot and rock conventions
                         HtmlNode metaRobot = htmlDoc.DocumentNode.SelectSingleNode( "//meta[@name='robot']" );
-                        if ( metaRobot == null || metaRobot.Attributes["content"] != null || !metaRobot.Attributes["content"].Value.Contains( "noindex" ) )
+                        if ( metaRobot == null || metaRobot.Attributes["content"] == null || !metaRobot.Attributes["content"].Value.Contains( "noindex" ) )
                         {
                             _previouslyCrawledPages.Add( url );
 
@@ -352,33 +392,38 @@ namespace Rock.UniversalSearch.Crawler
         /// <returns>The text of the response.</returns>
         private string GetWebText( string url )
         {
-            /* for future to impersonate a rock person while indexing
-            var ticket = new System.Web.Security.FormsAuthenticationTicket( 1, userName, RockDateTime.Now,
-                RockDateTime.Now.Add( System.Web.Security.FormsAuthentication.Timeout ), isPersisted,
-                IsImpersonated.ToString(), System.Web.Security.FormsAuthentication.FormsCookiePath );
-
-            var encryptedTicket = System.Web.Security.FormsAuthentication.Encrypt( ticket );
-
-            var httpCookie = new System.Web.HttpCookie( System.Web.Security.FormsAuthentication.FormsCookieName, encryptedTicket );
-            httpCookie.HttpOnly = true;
-            httpCookie.Path = System.Web.Security.FormsAuthentication.FormsCookiePath;
-            httpCookie.Secure = System.Web.Security.FormsAuthentication.RequireSSL;
-            if ( System.Web.Security.FormsAuthentication.CookieDomain != null )
-                httpCookie.Domain = System.Web.Security.FormsAuthentication.CookieDomain;
-            if ( ticket.IsPersistent )
-                httpCookie.Expires = ticket.Expiration;*/
-
             try
             {
                 Uri requestURL;
 
-                if ( Uri.TryCreate( url, UriKind.RelativeOrAbsolute, out requestURL )
-                        && (requestURL.Scheme == Uri.UriSchemeHttp || requestURL.Scheme == Uri.UriSchemeHttps)
-                        && IsValidUrl( url ) )
+                if ( Uri.TryCreate( url, UriKind.RelativeOrAbsolute, out requestURL ) && IsValidUrl( url ) )
+                {
+                    return GetWebText( requestURL );
+                }
+            }
+            catch
+            {
+            }
+
+            return string.Empty;
+        }
+
+        /// <summary>
+        /// Gets the response text for a given uri.
+        /// </summary>
+        /// <param name="requestURL">The request URL.</param>
+        /// <returns>
+        /// The text of the response.
+        /// </returns>
+        private string GetWebText( Uri requestURL )
+        {
+            try
+            {
+                if ( requestURL.Scheme == Uri.UriSchemeHttp || requestURL.Scheme == Uri.UriSchemeHttps )
                 {
                     HttpWebRequest request = (HttpWebRequest)HttpWebRequest.Create( requestURL );
+                    request.CookieContainer = _cookieContainer;
                     request.AllowAutoRedirect = false;
-
                     request.UserAgent = _userAgent;
 
                     HttpWebResponse response = (HttpWebResponse)request.GetResponse();
@@ -386,7 +431,6 @@ namespace Rock.UniversalSearch.Crawler
                     // make sure the response was text
                     if ( response.ContentType.StartsWith( "text" ) )
                     {
-
                         // handle redirects by indexing the redirect only if it shares the same hostname
                         if ( (int)response.StatusCode >= 300 && (int)response.StatusCode <= 399 )
                         {
@@ -394,18 +438,20 @@ namespace Rock.UniversalSearch.Crawler
                             {
                                 string redirectUrl = response.Headers["Location"];
 
-                                var originalUri = new Uri( url );
-                                var redirectUri = new Uri( redirectUrl );
-
-                                if ( originalUri.Host == redirectUri.Host )
+                                var redirectUri = new Uri( redirectUrl, UriKind.RelativeOrAbsolute );
+                                if ( !redirectUri.IsAbsoluteUri )
                                 {
-                                    return GetWebText( redirectUrl );
+                                    redirectUri = new Uri( new Uri( _baseUrl ), redirectUri );
+                                }
+
+                                if ( requestURL.Host == redirectUri.Host )
+                                {
+                                    return GetWebText( redirectUri );
                                 }
                                 else
                                 {
                                     return string.Empty;
                                 }
-
                             }
                             else
                             {

@@ -162,6 +162,26 @@ namespace Rock.Model
 
         #endregion
 
+        #region ISecured overrides
+
+        /// <summary>
+        /// Gets the supported actions.
+        /// </summary>
+        /// <value>
+        /// The supported actions.
+        /// </value>
+        public override Dictionary<string, string> SupportedActions
+        {
+            get
+            {
+                var supportedActions = base.SupportedActions;
+                supportedActions.AddOrReplace( "ReopenBatch", "The roles and/or users that can reopen a closed batch." );
+                return supportedActions;
+            }
+        }
+
+        #endregion ISecured overrides
+
         #region Public Methods
 
         /// <summary>
@@ -196,6 +216,31 @@ namespace Rock.Model
 
                 return result;
             }
+        }
+
+        /// <summary>
+        /// Determines whether [is valid batch status change] [the specified original status].
+        /// </summary>
+        /// <param name="origStatus">The original status.</param>
+        /// <param name="newStatus">The new status.</param>
+        /// <param name="currentPerson">The current person.</param>
+        /// <param name="errorMessage">The error message.</param>
+        /// <returns>
+        ///   <c>true</c> if [is valid batch status change] [the specified original status]; otherwise, <c>false</c>.
+        /// </returns>
+        public bool IsValidBatchStatusChange(BatchStatus origStatus, BatchStatus newStatus, Person currentPerson, out string errorMessage)
+        {
+            errorMessage = string.Empty;
+            if ( origStatus == BatchStatus.Closed && newStatus != BatchStatus.Closed )
+            {
+                if ( !this.IsAuthorized( "ReopenBatch", currentPerson ) )
+                {
+                    errorMessage = "User is not authorized to reopen a closed batch";
+                    return false;
+                }
+            }
+
+            return true;
         }
 
         /// <summary>
