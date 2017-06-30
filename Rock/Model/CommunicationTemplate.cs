@@ -71,14 +71,13 @@ namespace Rock.Model
         public int? SenderPersonAliasId { get; set; }
 
         /// <summary>
-        /// Gets or sets the Subject of the Communication
+        /// Gets or sets the image file identifier.
         /// </summary>
         /// <value>
-        /// A <see cref="System.String"/> that represents the Subject of the communication.
+        /// The image file identifier.
         /// </value>
         [DataMember]
-        [MaxLength( 100 )]
-        public string Subject { get; set; }
+        public int? ImageFileId { get; set; }
 
         /// <summary>
         /// Gets or sets the EntityTypeId of the <see cref="Rock.Model.EntityType"/> for the Communication Medium that is being used for this Communication.
@@ -108,6 +107,141 @@ namespace Rock.Model
             }
         }
 
+        #region Email Fields
+
+        /// <summary>
+        /// Gets or sets the name of the Communication
+        /// </summary>
+        /// <value>
+        /// A <see cref="System.String"/> that represents the name of the communication.
+        /// </value>
+        [DataMember]
+        [MaxLength( 100 )]
+        public string Subject { get; set; }
+
+        /// <summary>
+        /// Gets or sets from name.
+        /// </summary>
+        /// <value>
+        /// From name.
+        /// </value>
+        [DataMember]
+        [MaxLength( 100 )]
+        public string FromName { get; set; }
+
+        /// <summary>
+        /// Gets or sets from email.
+        /// </summary>
+        /// <value>
+        /// From email.
+        /// </value>
+        [DataMember]
+        [MaxLength( 100 )]
+        public string FromEmail { get; set; }
+
+        /// <summary>
+        /// Gets or sets the reply to email.
+        /// </summary>
+        /// <value>
+        /// The reply to email.
+        /// </value>
+        [DataMember]
+        [MaxLength( 100 )]
+        public string ReplyToEmail { get; set; }
+
+        /// <summary>
+        /// Gets or sets the cc emails.
+        /// </summary>
+        /// <value>
+        /// The cc emails.
+        /// </value>
+        [DataMember]
+        public string CCEmails { get; set; }
+
+        /// <summary>
+        /// Gets or sets the BCC emails.
+        /// </summary>
+        /// <value>
+        /// The BCC emails.
+        /// </value>
+        [DataMember]
+        public string BCCEmails { get; set; }
+
+        /// <summary>
+        /// Gets or sets the message.
+        /// </summary>
+        /// <value>
+        /// The message.
+        /// </value>
+        [DataMember]
+        public string Message { get; set; }
+
+        /// <summary>
+        /// Gets or sets the message meta data.
+        /// </summary>
+        /// <value>
+        /// The message meta data.
+        /// </value>
+        [DataMember]
+        public string MessageMetaData { get; set; }
+
+        #endregion
+
+        #region SMS Properties
+
+        /// <summary>
+        /// Gets or sets from number.
+        /// </summary>
+        /// <value>
+        /// From number.
+        /// </value>
+        [DataMember]
+        [MaxLength( 100 )]
+        public string FromNumber { get; set; }
+
+        /// <summary>
+        /// Gets or sets the message.
+        /// </summary>
+        /// <value>
+        /// The message.
+        /// </value>
+        [DataMember]
+        public string SMSMessage { get; set; }
+
+        #endregion
+
+        #region Push Notification Properties
+
+        /// <summary>
+        /// Gets or sets from number.
+        /// </summary>
+        /// <value>
+        /// From number.
+        /// </value>
+        [DataMember]
+        [MaxLength( 100 )]
+        public string Title { get; set; }
+
+        /// <summary>
+        /// Gets or sets the message.
+        /// </summary>
+        /// <value>
+        /// The message.
+        /// </value>
+        [DataMember]
+        public string PushMessage { get; set; }
+
+        /// <summary>
+        /// Gets or sets from number.
+        /// </summary>
+        /// <value>
+        /// From number.
+        /// </value>
+        [DataMember]
+        [MaxLength( 100 )]
+        public string PushSound { get; set; }
+
+        #endregion
         #endregion
 
         #region Virtual Properties
