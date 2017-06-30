@@ -467,6 +467,10 @@
     <Compile Include="Communication\Medium\PushNotification.cs" />
     <Compile Include="Communication\Medium\Sms.cs" />
     <Compile Include="Communication\RecipientData.cs" />
+    <Compile Include="Communication\RockEmailMessage.cs" />
+    <Compile Include="Communication\RockMessage.cs" />
+    <Compile Include="Communication\RockPushMessage.cs" />
+    <Compile Include="Communication\RockSMSMessage.cs" />
     <Compile Include="Communication\SMTPComponent.cs" />
     <Compile Include="Communication\TransportComponent.cs" />
     <Compile Include="Communication\TransportContainer.cs" />
@@ -743,6 +747,7 @@
     <Compile Include="Model\CodeGenerated\AttributeMatrixService.cs" />
     <Compile Include="Model\CodeGenerated\AttributeMatrixTemplateService.cs" />
     <Compile Include="Model\CodeGenerated\SiteUrlMapService.cs" />
+    <Compile Include="Model\CommunicationAttachment.cs" />
     <Compile Include="Model\FinancialAccountService.Partial.cs" />
     <Compile Include="Model\InteractionService.Partial.cs" />
     <Compile Include="Model\MetricService.Partial.cs" />
