@@ -30,6 +30,9 @@ namespace Rock.Rest.Controllers
     /// </summary>
     public partial class GroupRequirementTypesController : Rock.Rest.ApiController<Rock.Model.GroupRequirementType>
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="GroupRequirementTypesController"/> class.
+        /// </summary>
         public GroupRequirementTypesController() : base( new Rock.Model.GroupRequirementTypeService( new Rock.Data.RockContext() ) ) { } 
     }
 }

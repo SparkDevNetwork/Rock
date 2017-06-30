@@ -30,6 +30,9 @@ namespace Rock.Rest.Controllers
     /// </summary>
     public partial class DataViewFiltersController : Rock.Rest.ApiController<Rock.Model.DataViewFilter>
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="DataViewFiltersController"/> class.
+        /// </summary>
         public DataViewFiltersController() : base( new Rock.Model.DataViewFilterService( new Rock.Data.RockContext() ) ) { } 
     }
 }

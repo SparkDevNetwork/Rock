@@ -30,6 +30,9 @@ namespace Rock.Rest.Controllers
     /// </summary>
     public partial class PagesController : Rock.Rest.ApiController<Rock.Model.Page>
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="PagesController"/> class.
+        /// </summary>
         public PagesController() : base( new Rock.Model.PageService( new Rock.Data.RockContext() ) ) { } 
     }
 }

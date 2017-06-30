@@ -30,6 +30,9 @@ namespace Rock.Rest.Controllers
     /// </summary>
     public partial class ServiceJobsController : Rock.Rest.ApiController<Rock.Model.ServiceJob>
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ServiceJobsController"/> class.
+        /// </summary>
         public ServiceJobsController() : base( new Rock.Model.ServiceJobService( new Rock.Data.RockContext() ) ) { } 
     }
 }

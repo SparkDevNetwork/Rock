@@ -152,6 +152,13 @@ namespace RockWeb.Blocks.Cms
                     }
                 }
 
+                // Remove the '{shortlink}' route (will be added back after specific routes)
+                var shortLinkRoute = RouteTable.Routes.OfType<Route>().Where( r => r.Url == "{shortlink}" ).FirstOrDefault();
+                if ( shortLinkRoute != null )
+                {
+                    RouteTable.Routes.Remove( shortLinkRoute );
+                }
+
                 // Add new route
                 var pageAndRouteId = new Rock.Web.PageAndRouteId { PageId = pageRoute.PageId, RouteId = pageRoute.Id };
                 var existingRoute = RouteTable.Routes.OfType<Route>().FirstOrDefault( r => r.Url == pageRoute.Route );
@@ -167,6 +174,8 @@ namespace RockWeb.Blocks.Cms
                     pageAndRouteIds.Add( pageAndRouteId );
                     RouteTable.Routes.AddPageRoute( pageRoute.Route, pageAndRouteIds );
                 }
+
+                RouteTable.Routes.Add( new Route( "{shortlink}", new Rock.Web.RockRouteHandler() ) );
 
                 NavigateToParentPage();
             }

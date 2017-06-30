@@ -30,6 +30,9 @@ namespace Rock.Rest.Controllers
     /// </summary>
     public partial class NoteTypesController : Rock.Rest.ApiController<Rock.Model.NoteType>
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="NoteTypesController"/> class.
+        /// </summary>
         public NoteTypesController() : base( new Rock.Model.NoteTypeService( new Rock.Data.RockContext() ) ) { } 
     }
 }
