@@ -30,6 +30,9 @@ namespace Rock.Rest.Controllers
     /// </summary>
     public partial class AuditsController : Rock.Rest.ApiController<Rock.Model.Audit>
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="AuditsController"/> class.
+        /// </summary>
         public AuditsController() : base( new Rock.Model.AuditService( new Rock.Data.RockContext() ) ) { } 
     }
 }

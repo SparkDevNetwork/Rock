@@ -30,6 +30,9 @@ namespace Rock.Rest.Controllers
     /// </summary>
     public partial class EventItemOccurrenceGroupMapsController : Rock.Rest.ApiController<Rock.Model.EventItemOccurrenceGroupMap>
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="EventItemOccurrenceGroupMapsController"/> class.
+        /// </summary>
         public EventItemOccurrenceGroupMapsController() : base( new Rock.Model.EventItemOccurrenceGroupMapService( new Rock.Data.RockContext() ) ) { } 
     }
 }

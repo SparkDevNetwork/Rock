@@ -30,6 +30,9 @@ namespace Rock.Rest.Controllers
     /// </summary>
     public partial class EntitySetsController : Rock.Rest.ApiController<Rock.Model.EntitySet>
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="EntitySetsController"/> class.
+        /// </summary>
         public EntitySetsController() : base( new Rock.Model.EntitySetService( new Rock.Data.RockContext() ) ) { } 
     }
 }

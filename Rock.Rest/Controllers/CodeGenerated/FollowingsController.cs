@@ -30,6 +30,9 @@ namespace Rock.Rest.Controllers
     /// </summary>
     public partial class FollowingsController : Rock.Rest.ApiController<Rock.Model.Following>
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="FollowingsController"/> class.
+        /// </summary>
         public FollowingsController() : base( new Rock.Model.FollowingService( new Rock.Data.RockContext() ) ) { } 
     }
 }

@@ -30,6 +30,9 @@ namespace Rock.Rest.Controllers
     /// </summary>
     public partial class SystemEmailsController : Rock.Rest.ApiController<Rock.Model.SystemEmail>
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="SystemEmailsController"/> class.
+        /// </summary>
         public SystemEmailsController() : base( new Rock.Model.SystemEmailService( new Rock.Data.RockContext() ) ) { } 
     }
 }

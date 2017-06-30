@@ -24,14 +24,12 @@
                         <div class="row">
                             <div class="col-md-6">
                                 <Rock:DataTextBox ID="tbName" runat="server" SourceTypeName="Rock.Model.Category, Rock" PropertyName="Name" />
+                                <Rock:DataTextBox ID="tbDescription" runat="server" SourceTypeName="Rock.Model.Category, Rock" PropertyName="Description" TextMode="MultiLine" Rows="4" />
                                 <Rock:CategoryPicker ID="cpParentCategory" runat="server" Label="Parent Category" />
-                                <Rock:DataTextBox ID="tbIconCssClass" runat="server" SourceTypeName="Rock.Model.Category, Rock" PropertyName="IconCssClass" />
-                                <Rock:DataTextBox ID="tbHighlightColor" runat="server" SourceTypeName="Rock.Model.Category, Rock" PropertyName="HighlightColor" />
                             </div>
                             <div class="col-md-6">
-                                <Rock:RockLiteral ID="lblEntityTypeName" runat="server" Label="Entity Type" />
-                                <Rock:RockLiteral ID="lblEntityTypeQualifierColumn" runat="server" Label="Entity Type Qualifier Column" />
-                                <Rock:RockLiteral ID="lblEntityTypeQualifierValue" runat="server" Label="Entity Type Qualifier Value" />
+                                <Rock:DataTextBox ID="tbIconCssClass" runat="server" SourceTypeName="Rock.Model.Category, Rock" PropertyName="IconCssClass" />
+                                <Rock:DataTextBox ID="tbHighlightColor" runat="server" SourceTypeName="Rock.Model.Category, Rock" PropertyName="HighlightColor" />
                             </div>
                         </div>
 

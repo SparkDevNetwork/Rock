@@ -30,6 +30,9 @@ namespace Rock.Rest.Controllers
     /// </summary>
     public partial class PluginMigrationsController : Rock.Rest.ApiController<Rock.Model.PluginMigration>
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="PluginMigrationsController"/> class.
+        /// </summary>
         public PluginMigrationsController() : base( new Rock.Model.PluginMigrationService( new Rock.Data.RockContext() ) ) { } 
     }
 }

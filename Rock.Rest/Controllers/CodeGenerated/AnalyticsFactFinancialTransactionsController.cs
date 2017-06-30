@@ -30,6 +30,9 @@ namespace Rock.Rest.Controllers
     /// </summary>
     public partial class AnalyticsFactFinancialTransactionsController : Rock.Rest.ApiController<Rock.Model.AnalyticsFactFinancialTransaction>
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="AnalyticsFactFinancialTransactionsController"/> class.
+        /// </summary>
         public AnalyticsFactFinancialTransactionsController() : base( new Rock.Model.AnalyticsFactFinancialTransactionService( new Rock.Data.RockContext() ) ) { } 
     }
 }
