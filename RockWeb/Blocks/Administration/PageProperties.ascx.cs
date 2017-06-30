@@ -710,6 +710,13 @@ namespace RockWeb.Blocks.Administration
                         }
                     }
 
+                    // Remove the '{shortlink}' route (will be added back after specific routes)
+                    var shortLinkRoute = RouteTable.Routes.OfType<Route>().Where( r => r.Url == "{shortlink}" ).FirstOrDefault();
+                    if ( shortLinkRoute != null )
+                    {
+                        RouteTable.Routes.Remove( shortLinkRoute );
+                    }
+
                     // Add any routes that were added
                     foreach ( var pageRoute in new PageRouteService( rockContext ).GetByPageId( page.Id ) )
                     {
@@ -732,6 +739,8 @@ namespace RockWeb.Blocks.Administration
                             }
                         }
                     }
+
+                    RouteTable.Routes.Add( new Route( "{shortlink}", new Rock.Web.RockRouteHandler() ) );
 
                     if ( orphanedIconFileId.HasValue )
                     {
