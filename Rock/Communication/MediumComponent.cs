@@ -15,8 +15,10 @@
 // </copyright>
 //
 using System;
+using System.Linq;
 
 using Rock.Attribute;
+using Rock.Data;
 using Rock.Extension;
 using Rock.Model;
 using Rock.Web.Cache;
@@ -71,13 +73,15 @@ namespace Rock.Communication
         /// <param name="communication">The communication.</param>
         /// <param name="person">The person.</param>
         /// <returns></returns>
+        [Obsolete("The GetCommunication now creates the HTML Preview directly")]
         public abstract string GetHtmlPreview( Model.Communication communication, Person person );
-            
+
         /// <summary>
         /// Gets the read-only message details.
         /// </summary>
         /// <param name="communication">The communication.</param>
         /// <returns></returns>
+        [Obsolete( "The CommunicationDetail block now creates the details" )]
         public abstract string GetMessageDetails( Model.Communication communication );
 
         /// <summary>
@@ -93,6 +97,7 @@ namespace Rock.Communication
         /// <value>
         /// <c>true</c> if [supports bulk communication]; otherwise, <c>false</c>.
         /// </value>
+        [Obsolete( "All meduims now support bulk communications")]
         public abstract bool SupportsBulkCommunication
         {
             get;
@@ -104,12 +109,73 @@ namespace Rock.Communication
         /// <param name="communication">The communication.</param>
         public virtual void Send( Rock.Model.Communication communication )
         {
+            var rockContext = new RockContext();
+            var communicationService = new CommunicationService( rockContext );
+
+            communication = communicationService.Queryable()
+                .FirstOrDefault( t => t.Id == communication.Id );
+
+            if ( communication != null &&
+                communication.Status == Model.CommunicationStatus.Approved &&
+                communication.HasPendingRecipients( rockContext ) &&
+                ( !communication.FutureSendDateTime.HasValue || communication.FutureSendDateTime.Value.CompareTo( RockDateTime.Now ) <= 0 ) )
+            {
+                // Update any recipients that should not get sent the communication
+                var recipients = new CommunicationRecipientService( rockContext )
+                    .Queryable( "PersonAlias.Person" )
+                    .Where( r =>
+                        r.CommunicationId == communication.Id &&
+                        ( !r.MediumEntityTypeId.HasValue || r.MediumEntityTypeId.Value == this.EntityType.Id ) &&
+                        r.Status == CommunicationRecipientStatus.Pending )
+                    .ToList();
+
+                foreach ( var recipient in recipients )
+                {
+                    var person = recipient.PersonAlias.Person;
+
+                    if ( person.IsDeceased )
+                    {
+                        recipient.Status = CommunicationRecipientStatus.Failed;
+                        recipient.StatusNote = "Person is deceased";
+                    }
+                    else if ( person.EmailPreference == Model.EmailPreference.DoNotEmail )
+                    {
+                        recipient.Status = CommunicationRecipientStatus.Failed;
+                        recipient.StatusNote = "Communication Preference of 'Do Not Send Communication'";
+                    }
+                    else if ( person.EmailPreference == Model.EmailPreference.NoMassEmails && communication.IsBulkCommunication )
+                    {
+                        recipient.Status = CommunicationRecipientStatus.Failed;
+                        recipient.StatusNote = "Communication Preference of 'No Bulk Communication'";
+                    }
+                    else
+                    {
+                        ValidateRecipientForMedium( person, recipient );
+                    }
+                }
+
+                // Add Each Medium attribute values as a medium data value
+                foreach ( var attr in this.Attributes.Select( a => a.Value ) )
+                {
+                    string value = this.GetAttributeValue( attr.Key );
+                    if ( value.IsNotNullOrWhitespace() )
+                    {
+                        communication.SetMediumDataValue( attr.Key, GetAttributeValue( attr.Key ) );
+                    }
+                }
+
+                rockContext.SaveChanges();
+            }
+
             var transport = Transport;
             if ( transport != null && transport.IsActive )
             {
                 transport.Send( communication );
             }
+
         }
+
+
     }
 
 }
