@@ -37,6 +37,17 @@
                                         </asp:Repeater>
                                         <Rock:ButtonDropDownList ID="btnAddAccount" runat="server" Visible="false" Label=" "
                                             DataTextField="PublicName" DataValueField="Id" OnSelectionChanged="btnAddAccount_SelectionChanged" />
+                                        
+                                        <asp:Panel ID="pnlSearchCollapse" ClientIDMode="Static" runat="server" class="form-group well" Style="height: auto;">
+                                            <Rock:RockTextBox ID="rtbSearchBox" ClientIDMode="Static" runat="server"></Rock:RockTextBox>
+                                            <asp:Repeater ID="rptSearchAccounts" runat="server" OnItemDataBound="rptSearchAccountList_ItemDataBound">
+                                                <HeaderTemplate><div id="searchCollapse"></HeaderTemplate>
+                                                <ItemTemplate>
+                                                    <asp:LinkButton ID="lbSearchAccountsResult" runat="server" CssClass="btn btn-default btn-block" OnClick="lbSearchAccountsResult_Click"></asp:LinkButton>
+                                                </ItemTemplate>
+                                                <FooterTemplate></div></FooterTemplate>
+                                            </asp:Repeater>
+                                        </asp:Panel>
 
                                         <div class="form-group">
                                             <label runat="server" id="lblTotalAmountLabel">Total</label>
