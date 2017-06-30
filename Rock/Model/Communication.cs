@@ -27,6 +27,7 @@ using Newtonsoft.Json;
 
 using Rock.Data;
 using Rock.Communication;
+using Rock.Web.Cache;
 
 namespace Rock.Model
 {
@@ -42,6 +43,53 @@ namespace Rock.Model
         #region Entity Properties
 
         /// <summary>
+        /// Gets or sets the name of the Communication
+        /// </summary>
+        /// <value>
+        /// A <see cref="System.String"/> that represents the name of the communication.
+        /// </value>
+        [DataMember]
+        [MaxLength( 100 )]
+        public string Name { get; set; }
+
+        /// <summary>
+        /// Gets or sets the communication type value identifier.
+        /// </summary>
+        /// <value>
+        /// The communication type value identifier.
+        /// </value>
+        [Required]
+        [DataMember]
+        public CommunicationType CommunicationType { get; set; }
+
+        /// <summary>
+        /// Gets or sets the list that email is being sent to.
+        /// </summary>
+        /// <value>
+        /// The list group identifier.
+        /// </value>
+        [DataMember]
+        public int? ListGroupId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the segments that list is being filtered to (comma-delimited list of dataview guids).
+        /// </summary>
+        /// <value>
+        /// The segments.
+        /// </value>
+        [DataMember]
+        public string Segments { get; set; }
+
+        /// <summary>
+        /// Gets or sets if communication is targeted to people in all selected segments or any selected segments.
+        /// </summary>
+        /// <value>
+        /// The segment criteria.
+        /// </value>
+        [DataMember]
+        public SegmentCriteria SegmentCriteria { get; set; }
+
+        /// <summary>
         /// Gets or sets the sender person alias identifier.
         /// </summary>
         /// <value>
@@ -49,16 +97,6 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public int? SenderPersonAliasId { get; set; }
-
-        /// <summary>
-        /// Gets or sets the Subject of the Communication
-        /// </summary>
-        /// <value>
-        /// A <see cref="System.String"/> that represents the Subject of the communication.
-        /// </value>
-        [DataMember]
-        [MaxLength( 100 )]
-        public string Subject { get; set; }
 
         /// <summary>
         /// Gets or sets the is bulk communication.
@@ -177,6 +215,142 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public string EnabledLavaCommands { get; set; }
+
+        #region Email Fields
+
+        /// <summary>
+        /// Gets or sets the name of the Communication
+        /// </summary>
+        /// <value>
+        /// A <see cref="System.String"/> that represents the name of the communication.
+        /// </value>
+        [DataMember]
+        [MaxLength( 100 )]
+        public string Subject { get; set; }
+
+        /// <summary>
+        /// Gets or sets from name.
+        /// </summary>
+        /// <value>
+        /// From name.
+        /// </value>
+        [DataMember]
+        [MaxLength( 100 )]
+        public string FromName { get; set; }
+
+        /// <summary>
+        /// Gets or sets from email.
+        /// </summary>
+        /// <value>
+        /// From email.
+        /// </value>
+        [DataMember]
+        [MaxLength( 100 )]
+        public string FromEmail { get; set; }
+
+        /// <summary>
+        /// Gets or sets the reply to email.
+        /// </summary>
+        /// <value>
+        /// The reply to email.
+        /// </value>
+        [DataMember]
+        [MaxLength( 100 )]
+        public string ReplyToEmail { get; set; }
+
+        /// <summary>
+        /// Gets or sets the cc emails.
+        /// </summary>
+        /// <value>
+        /// The cc emails.
+        /// </value>
+        [DataMember]
+        public string CCEmails { get; set; }
+
+        /// <summary>
+        /// Gets or sets the BCC emails.
+        /// </summary>
+        /// <value>
+        /// The BCC emails.
+        /// </value>
+        [DataMember]
+        public string BCCEmails { get; set; }
+
+        /// <summary>
+        /// Gets or sets the message.
+        /// </summary>
+        /// <value>
+        /// The message.
+        /// </value>
+        [DataMember]
+        public string Message { get; set; }
+
+        /// <summary>
+        /// Gets or sets the message meta data.
+        /// </summary>
+        /// <value>
+        /// The message meta data.
+        /// </value>
+        [DataMember]
+        public string MessageMetaData { get; set; }
+
+        #endregion
+
+        #region SMS Properties
+
+        /// <summary>
+        /// Gets or sets the SMS from number.
+        /// </summary>
+        /// <value>
+        /// From number.
+        /// </value>
+        [DataMember]
+        public int? SMSFromDefinedValueId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the message.
+        /// </summary>
+        /// <value>
+        /// The message.
+        /// </value>
+        [DataMember]
+        public string SMSMessage { get; set; }
+
+        #endregion
+
+        #region Push Notification Properties
+
+        /// <summary>
+        /// Gets or sets from number.
+        /// </summary>
+        /// <value>
+        /// From number.
+        /// </value>
+        [DataMember]
+        [MaxLength( 100 )]
+        public string PushTitle { get; set; }
+
+        /// <summary>
+        /// Gets or sets the message.
+        /// </summary>
+        /// <value>
+        /// The message.
+        /// </value>
+        [DataMember]
+        public string PushMessage { get; set; }
+
+        /// <summary>
+        /// Gets or sets from number.
+        /// </summary>
+        /// <value>
+        /// From number.
+        /// </value>
+        [DataMember]
+        [MaxLength( 100 )]
+        public string PushSound { get; set; }
+
+        #endregion
+
         #endregion
 
         #region Virtual Properties
@@ -212,6 +386,20 @@ namespace Rock.Model
             set { _recipients = value; }
         }
         private ICollection<CommunicationRecipient> _recipients;
+
+        /// <summary>
+        /// Gets or sets the attachments.
+        /// </summary>
+        /// <value>
+        /// The attachments.
+        /// </value>
+        [DataMember]
+        public virtual ICollection<CommunicationAttachment> Attachments
+        {
+            get { return _attachments ?? ( _attachments = new Collection<CommunicationAttachment>() ); }
+            set { _attachments = value; }
+        }
+        private ICollection<CommunicationAttachment> _attachments;
 
         /// <summary>
         /// Gets or sets the <see cref="Rock.Model.EntityType"/> of the communications Medium that is being used by this Communication.
@@ -285,6 +473,9 @@ namespace Rock.Model
             set { _additionalMergeFields = value; }
         }
         private List<string> _additionalMergeFields = new List<string>();
+
+        [DataMember]
+        public virtual DefinedValue SMSFromDefinedValue { get; set; }
 
         #endregion
 
@@ -364,7 +555,7 @@ namespace Rock.Model
         /// </returns>
         public override string ToString()
         {
-            return this.Subject;
+            return this.Name;
         }
 
         #endregion
@@ -375,15 +566,7 @@ namespace Rock.Model
 
         #region Static Methods
 
-        private static object _obj = null;
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="Communication"/> class.
-        /// </summary>
-        public Communication()
-        {
-            _obj = new object();
-        }
+        private static object _obj = new object();
 
         /// <summary>
         /// Gets the next pending.
@@ -416,9 +599,87 @@ namespace Rock.Model
 
             return recipient;
         }
-        #endregion
 
+        public static bool Send( Rock.Model.Communication communication, out List<string> errorMsgs )
+        {
+            bool error = false;
+            errorMsgs = new List<string>();
+
+            var rockContext = new RockContext();
+
+            // Requery the communication
+            var communicationService = new CommunicationService( rockContext );
+            communication = communicationService.Queryable().FirstOrDefault( t => t.Id == communication.Id );
+
+            bool hasPendingRecipients;
+            if ( communication != null &&
+                communication.Status == CommunicationStatus.Approved &&
+                ( !communication.FutureSendDateTime.HasValue || communication.FutureSendDateTime.Value.CompareTo( RockDateTime.Now ) <= 0 ) )
+            {
+                var qryRecipients = new CommunicationRecipientService( rockContext ).Queryable();
+                hasPendingRecipients = qryRecipients
+                    .Where( r => 
+                        r.CommunicationId == communication.Id &&
+                        r.Status == Model.CommunicationRecipientStatus.Pending )
+                    .Any();
+            }
+            else
+            {
+                hasPendingRecipients = false;
+            }
+
+            if ( hasPendingRecipients )
+            {
+                if ( communication.CommunicationType == CommunicationType.Email || communication.CommunicationType == CommunicationType.UserPreference )
+                {
+                    string errorMsg = string.Empty;
+                    var transport = TransportComponent.GetByMedium( Rock.SystemGuid.EntityType.COMMUNICATION_MEDIUM_EMAIL, out errorMsg );
+                    if ( transport != null )
+                    {
+                        transport.Send( communication );
+                    }
+                    else
+                    {
+                        errorMsgs.Add( errorMsg );
+                    }
+
+                }
+
+                if ( communication.CommunicationType == CommunicationType.SMS || communication.CommunicationType == CommunicationType.UserPreference )
+                {
+                    string errorMsg = string.Empty;
+                    var transport = TransportComponent.GetByMedium( Rock.SystemGuid.EntityType.COMMUNICATION_MEDIUM_SMS, out errorMsg );
+                    if ( transport != null )
+                    {
+                        transport.Send( communication );
+                    }
+                    else
+                    {
+                        errorMsgs.Add( errorMsg );
+                    }
+                }
+
+                if ( communication.CommunicationType == CommunicationType.PushNotification || communication.CommunicationType == CommunicationType.UserPreference )
+                {
+                    string errorMsg = string.Empty;
+                    var transport = TransportComponent.GetByMedium( Rock.SystemGuid.EntityType.COMMUNICATION_MEDIUM_PUSH_NOTIFICATION, out errorMsg );
+                    if ( transport != null )
+                    {
+                        transport.Send( communication );
+                    }
+                    else
+                    {
+                        errorMsgs.Add( errorMsg );
+                    }
+                }
+            }
+
+            return !error && !errorMsgs.Any();
+        }
+
+        #endregion
     }
+
 
     #region Entity Configuration
 
@@ -435,10 +696,13 @@ namespace Rock.Model
             this.HasOptional( c => c.MediumEntityType ).WithMany().HasForeignKey( c => c.MediumEntityTypeId ).WillCascadeOnDelete( false );
             this.HasOptional( c => c.SenderPersonAlias ).WithMany().HasForeignKey( c => c.SenderPersonAliasId ).WillCascadeOnDelete( false );
             this.HasOptional( c => c.ReviewerPersonAlias ).WithMany().HasForeignKey( c => c.ReviewerPersonAliasId ).WillCascadeOnDelete( false );
+            this.HasOptional( c => c.SMSFromDefinedValue ).WithMany().HasForeignKey( c => c.SMSFromDefinedValueId ).WillCascadeOnDelete( false );
         }
     }
 
     #endregion
+
+    #region Enumerations
 
     /// <summary>
     /// The status of a communication
@@ -473,5 +737,48 @@ namespace Rock.Model
 
     }
 
+    /// <summary>
+    /// Type of communication
+    /// </summary>
+    public enum CommunicationType
+    {
+        /// <summary>
+        /// UserPreference
+        /// </summary>
+        UserPreference = 0,
+
+        /// <summary>
+        /// Email
+        /// </summary>
+        Email = 1,
+
+        /// <summary>
+        /// SMS
+        /// </summary>
+        SMS = 2,
+
+        /// <summary>
+        /// Push notification
+        /// </summary>
+        PushNotification = 3,
+    }
+
+    /// <summary>
+    /// Flag indicating if communication is for all selected segments or any segments
+    /// </summary>
+    public enum SegmentCriteria
+    {
+        /// <summary>
+        /// All
+        /// </summary>
+        All = 0,
+
+        /// <summary>
+        /// Any
+        /// </summary>
+        Any = 1,
+    }
+
+    #endregion
 }
 
