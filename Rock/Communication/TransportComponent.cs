@@ -103,6 +103,38 @@ namespace Rock.Communication
         /// <param name="themeRoot">The theme root.</param>
         /// <param name="attachments">The attachments.</param>
         public abstract void Send( List<string> recipients, string from, string fromName, string subject, string body, string appRoot = null, string themeRoot = null, List<Attachment> attachments = null );
+
+        /// <summary>
+        /// Gets the active transport for a given medium identifier.
+        /// </summary>
+        /// <param name="mediumGuid">The medium unique identifier.</param>
+        /// <returns></returns>
+        public static TransportComponent GetByMedium( string mediumGuid, out string errorMessage )
+        {
+            var mediumEntity = EntityTypeCache.Read( mediumGuid.AsGuid() );
+            if ( mediumEntity == null )
+            {
+                errorMessage = "Could not determine the Communication Medium.";
+                return null;
+            }
+
+            var medium = MediumContainer.GetComponent( mediumEntity.Name );
+            if ( medium == null || !medium.IsActive )
+            {
+                errorMessage = "Could not find the active Communication Medium.";
+                return null;
+            }
+
+            var transport = medium.Transport;
+            if ( transport == null || !transport.IsActive )
+            {
+                errorMessage = "Could not find the active Communication Transport.";
+                return null;
+            }
+
+            errorMessage = string.Empty;
+            return transport;
+        }
     }
    
 }
