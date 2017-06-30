@@ -617,7 +617,11 @@ namespace Rock.Model
                 ( !communication.FutureSendDateTime.HasValue || communication.FutureSendDateTime.Value.CompareTo( RockDateTime.Now ) <= 0 ) )
             {
                 var qryRecipients = new CommunicationRecipientService( rockContext ).Queryable();
-                hasPendingRecipients = qryRecipients.Where( a => a.CommunicationId == communication.Id ).Where( r => r.Status == Model.CommunicationRecipientStatus.Pending ).Any();
+                hasPendingRecipients = qryRecipients
+                    .Where( r => 
+                        r.CommunicationId == communication.Id &&
+                        r.Status == Model.CommunicationRecipientStatus.Pending )
+                    .Any();
             }
             else
             {
@@ -628,28 +632,44 @@ namespace Rock.Model
             {
                 if ( communication.CommunicationType == CommunicationType.Email || communication.CommunicationType == CommunicationType.UserPreference )
                 {
-                    var transport = TransportComponent.GetByMedium( Rock.SystemGuid.EntityType.COMMUNICATION_MEDIUM_EMAIL );
+                    string errorMsg = string.Empty;
+                    var transport = TransportComponent.GetByMedium( Rock.SystemGuid.EntityType.COMMUNICATION_MEDIUM_EMAIL, out errorMsg );
                     if ( transport != null )
                     {
                         transport.Send( communication );
                     }
+                    else
+                    {
+                        errorMsgs.Add( errorMsg );
+                    }
+
                 }
 
                 if ( communication.CommunicationType == CommunicationType.SMS || communication.CommunicationType == CommunicationType.UserPreference )
                 {
-                    var transport = TransportComponent.GetByMedium( Rock.SystemGuid.EntityType.COMMUNICATION_MEDIUM_SMS );
+                    string errorMsg = string.Empty;
+                    var transport = TransportComponent.GetByMedium( Rock.SystemGuid.EntityType.COMMUNICATION_MEDIUM_SMS, out errorMsg );
                     if ( transport != null )
                     {
                         transport.Send( communication );
+                    }
+                    else
+                    {
+                        errorMsgs.Add( errorMsg );
                     }
                 }
 
                 if ( communication.CommunicationType == CommunicationType.PushNotification || communication.CommunicationType == CommunicationType.UserPreference )
                 {
-                    var transport = TransportComponent.GetByMedium( Rock.SystemGuid.EntityType.COMMUNICATION_MEDIUM_PUSH_NOTIFICATION );
+                    string errorMsg = string.Empty;
+                    var transport = TransportComponent.GetByMedium( Rock.SystemGuid.EntityType.COMMUNICATION_MEDIUM_PUSH_NOTIFICATION, out errorMsg );
                     if ( transport != null )
                     {
                         transport.Send( communication );
+                    }
+                    else
+                    {
+                        errorMsgs.Add( errorMsg );
                     }
                 }
             }

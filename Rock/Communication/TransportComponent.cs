@@ -44,26 +44,6 @@ namespace Rock.Communication
         }
 
         /// <summary>
-        /// Validates the recipient for medium.
-        /// </summary>
-        /// <param name="person">The person.</param>
-        /// <param name="recipient">The recipient.</param>
-        public virtual void ValidateRecipientForMedium( Person person, CommunicationRecipient recipient )
-        {
-        }
-
-        /// <summary>
-        /// Sends the specified message.
-        /// </summary>
-        /// <param name="message">The message.</param>
-        /// <param name="errorMessage">The error message.</param>
-        public virtual bool Send( RockMessage message, out List<string> errorMessage )
-        {
-            errorMessage = new List<string>();
-            return true;
-        }
-
-        /// <summary>
         /// Sends the specified communication.
         /// </summary>
         /// <param name="communication">The communication.</param>
@@ -76,7 +56,6 @@ namespace Rock.Communication
         /// <param name="recipients">The recipients.</param>
         /// <param name="appRoot">The application root.</param>
         /// <param name="themeRoot">The theme root.</param>
-        [Obsolete( "Use Send( RockMessage message, out List<string> errorMessage ) method instead" )]
         public abstract void Send( SystemEmail template, List<RecipientData> recipients, string appRoot, string themeRoot );
 
         /// <summary>
@@ -86,7 +65,6 @@ namespace Rock.Communication
         /// <param name="recipients">The recipients.</param>
         /// <param name="appRoot">The application root.</param>
         /// <param name="themeRoot">The theme root.</param>
-        [Obsolete( "Use Send( RockMessage message, out List<string> errorMessage ) method instead" )]
         public abstract void Send(Dictionary<string, string> mediumData, List<string> recipients, string appRoot, string themeRoot);
 
         /// <summary>
@@ -98,7 +76,6 @@ namespace Rock.Communication
         /// <param name="body">The body.</param>
         /// <param name="appRoot">The application root.</param>
         /// <param name="themeRoot">The theme root.</param>
-        [Obsolete( "Use Send( RockMessage message, out List<string> errorMessage ) method instead" )]
         public abstract void Send(List<string> recipients, string from, string subject, string body, string appRoot = null, string themeRoot = null);
 
         /// <summary>
@@ -111,8 +88,8 @@ namespace Rock.Communication
         /// <param name="appRoot">The application root.</param>
         /// <param name="themeRoot">The theme root.</param>
         /// /// <param name="attachments">Attachments.</param>
-        [Obsolete( "Use Send( RockMessage message, out List<string> errorMessage ) method instead" )]
         public abstract void Send(List<string> recipients, string from, string subject, string body, string appRoot = null, string themeRoot = null, List<Attachment> attachments = null);
+
 
         /// <summary>
         /// Sends the specified recipients.
@@ -125,7 +102,6 @@ namespace Rock.Communication
         /// <param name="appRoot">The application root.</param>
         /// <param name="themeRoot">The theme root.</param>
         /// <param name="attachments">The attachments.</param>
-        [Obsolete( "Use Send( RockMessage message, out List<string> errorMessage ) method instead" )]
         public abstract void Send( List<string> recipients, string from, string fromName, string subject, string body, string appRoot = null, string themeRoot = null, List<Attachment> attachments = null );
 
         /// <summary>
@@ -159,7 +135,6 @@ namespace Rock.Communication
             errorMessage = string.Empty;
             return transport;
         }
-
     }
    
 }
