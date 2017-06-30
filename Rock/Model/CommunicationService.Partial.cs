@@ -28,6 +28,7 @@ namespace Rock.Model
     /// </summary>
     public partial class CommunicationService 
     {
+
         /// <summary>
         /// Creates the email communication.
         /// </summary>
@@ -42,7 +43,8 @@ namespace Rock.Model
         /// <param name="recipientStatus">The recipient status.</param>
         /// <param name="senderPersonAliasId">The sender person alias identifier.</param>
         /// <returns></returns>
-        public Communication CreateEmailCommunication( 
+        public Communication CreateEmailCommunication
+        ( 
             List<string> recipientEmails, 
             string fromName,
             string fromAddress,
