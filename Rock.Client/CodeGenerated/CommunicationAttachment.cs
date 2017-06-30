@@ -27,15 +27,15 @@ using System.Collections.Generic;
 namespace Rock.Client
 {
     /// <summary>
-    /// Base client model for CommunicationRecipient that only includes the non-virtual fields. Use this for PUT/POSTs
+    /// Base client model for CommunicationAttachment that only includes the non-virtual fields. Use this for PUT/POSTs
     /// </summary>
-    public partial class CommunicationRecipientEntity
+    public partial class CommunicationAttachmentEntity
     {
         /// <summary />
         public int Id { get; set; }
 
         /// <summary />
-        public string AdditionalMergeValuesJson { get; set; }
+        public int BinaryFileId { get; set; }
 
         /// <summary />
         public int CommunicationId { get; set; }
@@ -46,37 +46,10 @@ namespace Rock.Client
         /// <summary />
         public string ForeignKey { get; set; }
 
-        /// <summary />
-        public int? MediumEntityTypeId { get; set; }
-
         /// <summary>
         /// If the ModifiedByPersonAliasId is being set manually and should not be overwritten with current user when saved, set this value to true
         /// </summary>
         public bool ModifiedAuditValuesAlreadyUpdated { get; set; }
-
-        /// <summary />
-        public string OpenedClient { get; set; }
-
-        /// <summary />
-        public DateTime? OpenedDateTime { get; set; }
-
-        /// <summary />
-        public int PersonAliasId { get; set; }
-
-        /// <summary />
-        public string ResponseCode { get; set; }
-
-        /// <summary />
-        public Rock.Client.Enums.CommunicationRecipientStatus Status { get; set; }
-
-        /// <summary />
-        public string StatusNote { get; set; }
-
-        /// <summary />
-        public string TransportEntityTypeName { get; set; }
-
-        /// <summary />
-        public string UniqueMessageId { get; set; }
 
         /// <summary>
         /// Leave this as NULL to let Rock set this
@@ -105,26 +78,17 @@ namespace Rock.Client
         public int? ForeignId { get; set; }
 
         /// <summary>
-        /// Copies the base properties from a source CommunicationRecipient object
+        /// Copies the base properties from a source CommunicationAttachment object
         /// </summary>
         /// <param name="source">The source.</param>
-        public void CopyPropertiesFrom( CommunicationRecipient source )
+        public void CopyPropertiesFrom( CommunicationAttachment source )
         {
             this.Id = source.Id;
-            this.AdditionalMergeValuesJson = source.AdditionalMergeValuesJson;
+            this.BinaryFileId = source.BinaryFileId;
             this.CommunicationId = source.CommunicationId;
             this.ForeignGuid = source.ForeignGuid;
             this.ForeignKey = source.ForeignKey;
-            this.MediumEntityTypeId = source.MediumEntityTypeId;
             this.ModifiedAuditValuesAlreadyUpdated = source.ModifiedAuditValuesAlreadyUpdated;
-            this.OpenedClient = source.OpenedClient;
-            this.OpenedDateTime = source.OpenedDateTime;
-            this.PersonAliasId = source.PersonAliasId;
-            this.ResponseCode = source.ResponseCode;
-            this.Status = source.Status;
-            this.StatusNote = source.StatusNote;
-            this.TransportEntityTypeName = source.TransportEntityTypeName;
-            this.UniqueMessageId = source.UniqueMessageId;
             this.CreatedDateTime = source.CreatedDateTime;
             this.ModifiedDateTime = source.ModifiedDateTime;
             this.CreatedByPersonAliasId = source.CreatedByPersonAliasId;
@@ -136,19 +100,10 @@ namespace Rock.Client
     }
 
     /// <summary>
-    /// Client model for CommunicationRecipient that includes all the fields that are available for GETs. Use this for GETs (use CommunicationRecipientEntity for POST/PUTs)
+    /// Client model for CommunicationAttachment that includes all the fields that are available for GETs. Use this for GETs (use CommunicationAttachmentEntity for POST/PUTs)
     /// </summary>
-    public partial class CommunicationRecipient : CommunicationRecipientEntity
+    public partial class CommunicationAttachment : CommunicationAttachmentEntity
     {
-        /// <summary />
-        public Dictionary<string, Object> AdditionalMergeValues { get; set; }
-
-        /// <summary />
-        public EntityType MediumEntityType { get; set; }
-
-        /// <summary />
-        public PersonAlias PersonAlias { get; set; }
-
         /// <summary>
         /// NOTE: Attributes are only populated when ?loadAttributes is specified. Options for loadAttributes are true, false, 'simple', 'expanded' 
         /// </summary>
