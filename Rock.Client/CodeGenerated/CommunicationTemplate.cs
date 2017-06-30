@@ -35,6 +35,12 @@ namespace Rock.Client
         public int Id { get; set; }
 
         /// <summary />
+        public string BCCEmails { get; set; }
+
+        /// <summary />
+        public string CCEmails { get; set; }
+
+        /// <summary />
         public string Description { get; set; }
 
         /// <summary />
@@ -44,10 +50,28 @@ namespace Rock.Client
         public string ForeignKey { get; set; }
 
         /// <summary />
+        public string FromEmail { get; set; }
+
+        /// <summary />
+        public string FromName { get; set; }
+
+        /// <summary />
+        public string FromNumber { get; set; }
+
+        /// <summary />
+        public int? ImageFileId { get; set; }
+
+        /// <summary />
         public string MediumDataJson { get; set; }
 
         /// <summary />
         public int? MediumEntityTypeId { get; set; }
+
+        /// <summary />
+        public string Message { get; set; }
+
+        /// <summary />
+        public string MessageMetaData { get; set; }
 
         /// <summary>
         /// If the ModifiedByPersonAliasId is being set manually and should not be overwritten with current user when saved, set this value to true
@@ -58,10 +82,25 @@ namespace Rock.Client
         public string Name { get; set; }
 
         /// <summary />
+        public string PushMessage { get; set; }
+
+        /// <summary />
+        public string PushSound { get; set; }
+
+        /// <summary />
+        public string ReplyToEmail { get; set; }
+
+        /// <summary />
         public int? SenderPersonAliasId { get; set; }
 
         /// <summary />
+        public string SMSMessage { get; set; }
+
+        /// <summary />
         public string Subject { get; set; }
+
+        /// <summary />
+        public string Title { get; set; }
 
         /// <summary>
         /// Leave this as NULL to let Rock set this
@@ -96,15 +135,28 @@ namespace Rock.Client
         public void CopyPropertiesFrom( CommunicationTemplate source )
         {
             this.Id = source.Id;
+            this.BCCEmails = source.BCCEmails;
+            this.CCEmails = source.CCEmails;
             this.Description = source.Description;
             this.ForeignGuid = source.ForeignGuid;
             this.ForeignKey = source.ForeignKey;
+            this.FromEmail = source.FromEmail;
+            this.FromName = source.FromName;
+            this.FromNumber = source.FromNumber;
+            this.ImageFileId = source.ImageFileId;
             this.MediumDataJson = source.MediumDataJson;
             this.MediumEntityTypeId = source.MediumEntityTypeId;
+            this.Message = source.Message;
+            this.MessageMetaData = source.MessageMetaData;
             this.ModifiedAuditValuesAlreadyUpdated = source.ModifiedAuditValuesAlreadyUpdated;
             this.Name = source.Name;
+            this.PushMessage = source.PushMessage;
+            this.PushSound = source.PushSound;
+            this.ReplyToEmail = source.ReplyToEmail;
             this.SenderPersonAliasId = source.SenderPersonAliasId;
+            this.SMSMessage = source.SMSMessage;
             this.Subject = source.Subject;
+            this.Title = source.Title;
             this.CreatedDateTime = source.CreatedDateTime;
             this.ModifiedDateTime = source.ModifiedDateTime;
             this.CreatedByPersonAliasId = source.CreatedByPersonAliasId;

@@ -38,6 +38,15 @@ namespace Rock.Client
         public string AdditionalMergeFieldsJson { get; set; }
 
         /// <summary />
+        public string BCCEmails { get; set; }
+
+        /// <summary />
+        public string CCEmails { get; set; }
+
+        /// <summary />
+        public Rock.Client.Enums.CommunicationType CommunicationType { get; set; }
+
+        /// <summary />
         public string EnabledLavaCommands { get; set; }
 
         /// <summary />
@@ -47,10 +56,19 @@ namespace Rock.Client
         public string ForeignKey { get; set; }
 
         /// <summary />
+        public string FromEmail { get; set; }
+
+        /// <summary />
+        public string FromName { get; set; }
+
+        /// <summary />
         public DateTime? FutureSendDateTime { get; set; }
 
         /// <summary />
         public bool IsBulkCommunication { get; set; }
+
+        /// <summary />
+        public int? ListGroupId { get; set; }
 
         /// <summary />
         public string MediumDataJson { get; set; }
@@ -58,10 +76,31 @@ namespace Rock.Client
         /// <summary />
         public int? MediumEntityTypeId { get; set; }
 
+        /// <summary />
+        public string Message { get; set; }
+
+        /// <summary />
+        public string MessageMetaData { get; set; }
+
         /// <summary>
         /// If the ModifiedByPersonAliasId is being set manually and should not be overwritten with current user when saved, set this value to true
         /// </summary>
         public bool ModifiedAuditValuesAlreadyUpdated { get; set; }
+
+        /// <summary />
+        public string Name { get; set; }
+
+        /// <summary />
+        public string PushMessage { get; set; }
+
+        /// <summary />
+        public string PushSound { get; set; }
+
+        /// <summary />
+        public string PushTitle { get; set; }
+
+        /// <summary />
+        public string ReplyToEmail { get; set; }
 
         /// <summary />
         public DateTime? ReviewedDateTime { get; set; }
@@ -73,7 +112,19 @@ namespace Rock.Client
         public int? ReviewerPersonAliasId { get; set; }
 
         /// <summary />
+        public Rock.Client.Enums.SegmentCriteria SegmentCriteria { get; set; }
+
+        /// <summary />
+        public string Segments { get; set; }
+
+        /// <summary />
         public int? SenderPersonAliasId { get; set; }
+
+        /// <summary />
+        public int? SMSFromDefinedValueId { get; set; }
+
+        /// <summary />
+        public string SMSMessage { get; set; }
 
         /// <summary />
         public Rock.Client.Enums.CommunicationStatus Status { get; set; }
@@ -115,18 +166,35 @@ namespace Rock.Client
         {
             this.Id = source.Id;
             this.AdditionalMergeFieldsJson = source.AdditionalMergeFieldsJson;
+            this.BCCEmails = source.BCCEmails;
+            this.CCEmails = source.CCEmails;
+            this.CommunicationType = source.CommunicationType;
             this.EnabledLavaCommands = source.EnabledLavaCommands;
             this.ForeignGuid = source.ForeignGuid;
             this.ForeignKey = source.ForeignKey;
+            this.FromEmail = source.FromEmail;
+            this.FromName = source.FromName;
             this.FutureSendDateTime = source.FutureSendDateTime;
             this.IsBulkCommunication = source.IsBulkCommunication;
+            this.ListGroupId = source.ListGroupId;
             this.MediumDataJson = source.MediumDataJson;
             this.MediumEntityTypeId = source.MediumEntityTypeId;
+            this.Message = source.Message;
+            this.MessageMetaData = source.MessageMetaData;
             this.ModifiedAuditValuesAlreadyUpdated = source.ModifiedAuditValuesAlreadyUpdated;
+            this.Name = source.Name;
+            this.PushMessage = source.PushMessage;
+            this.PushSound = source.PushSound;
+            this.PushTitle = source.PushTitle;
+            this.ReplyToEmail = source.ReplyToEmail;
             this.ReviewedDateTime = source.ReviewedDateTime;
             this.ReviewerNote = source.ReviewerNote;
             this.ReviewerPersonAliasId = source.ReviewerPersonAliasId;
+            this.SegmentCriteria = source.SegmentCriteria;
+            this.Segments = source.Segments;
             this.SenderPersonAliasId = source.SenderPersonAliasId;
+            this.SMSFromDefinedValueId = source.SMSFromDefinedValueId;
+            this.SMSMessage = source.SMSMessage;
             this.Status = source.Status;
             this.Subject = source.Subject;
             this.CreatedDateTime = source.CreatedDateTime;
@@ -148,6 +216,9 @@ namespace Rock.Client
         public List<string> AdditionalMergeFields { get; set; }
 
         /// <summary />
+        public ICollection<CommunicationAttachment> Attachments { get; set; }
+
+        /// <summary />
         public Dictionary<string, string> MediumData { get; set; }
 
         /// <summary />
@@ -161,6 +232,9 @@ namespace Rock.Client
 
         /// <summary />
         public PersonAlias SenderPersonAlias { get; set; }
+
+        /// <summary />
+        public DefinedValue SMSFromDefinedValue { get; set; }
 
         /// <summary>
         /// NOTE: Attributes are only populated when ?loadAttributes is specified. Options for loadAttributes are true, false, 'simple', 'expanded' 
