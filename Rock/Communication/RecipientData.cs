@@ -15,6 +15,7 @@
 // </copyright>
 //
 using System.Collections.Generic;
+using Rock.Model;
 
 namespace Rock.Communication
 {
@@ -30,6 +31,22 @@ namespace Rock.Communication
         /// To.
         /// </value>
         public string To { get; set; }
+
+        /// <summary>
+        /// Gets or sets the name.
+        /// </summary>
+        /// <value>
+        /// The name.
+        /// </value>
+        public string Name { get; set; }
+
+        /// <summary>
+        /// Gets or sets the communication recipient identifier.
+        /// </summary>
+        /// <value>
+        /// The communication recipient identifier.
+        /// </value>
+        public string CommunicationRecipientId { get; set; }
 
         /// <summary>
         /// Gets or sets the merge fields.
@@ -65,6 +82,15 @@ namespace Rock.Communication
         public RecipientData( string to, Dictionary<string, object> mergeFields )
             : this( to )
         {
+            MergeFields = mergeFields;
+        }
+
+        public RecipientData( CommunicationRecipient recipient, Dictionary<string, object> mergeFields )
+        {
+            var person = recipient?.PersonAlias?.Person;
+            To = person?.Email;
+            Name = person?.FullName;
+
             MergeFields = mergeFields;
         }
     }

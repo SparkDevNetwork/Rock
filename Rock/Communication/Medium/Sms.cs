@@ -57,36 +57,10 @@ namespace Rock.Communication.Medium
         /// <param name="communication">The communication.</param>
         /// <param name="person">The person.</param>
         /// <returns></returns>
+        [Obsolete( "The GetCommunication now creates the HTML Preview directly" )]
         public override string GetHtmlPreview( Model.Communication communication, Person person )
         {
-            var rockContext = new RockContext();
-
-            // Requery the Communication object
-            communication = new CommunicationService( rockContext ).Get( communication.Id );
-
-            var globalAttributes = Rock.Web.Cache.GlobalAttributesCache.Read();
-            var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( null );
-
-            if ( person != null )
-            {
-                mergeFields.Add( "Person", person );
-
-                var recipient = new CommunicationRecipientService( rockContext ).Queryable().Where(a => a.CommunicationId == communication.Id).Where( r => r.PersonAlias != null && r.PersonAlias.PersonId == person.Id ).FirstOrDefault();
-                if ( recipient != null )
-                {
-                    // Add any additional merge fields created through a report
-                    foreach ( var mergeField in recipient.AdditionalMergeValues )
-                    {
-                        if ( !mergeFields.ContainsKey( mergeField.Key ) )
-                        {
-                            mergeFields.Add( mergeField.Key, mergeField.Value );
-                        }
-                    }
-                }
-            }
-
-            string message = communication.GetMediumDataValue( "Message" );
-            return message.ResolveMergeFields( mergeFields, communication.EnabledLavaCommands );
+            throw new NotSupportedException();
         }
 
         /// <summary>
@@ -94,14 +68,10 @@ namespace Rock.Communication.Medium
         /// </summary>
         /// <param name="communication">The communication.</param>
         /// <returns></returns>
+        [Obsolete( "The CommunicationDetail block now creates the details" )]
         public override string GetMessageDetails( Model.Communication communication )
         {
-            StringBuilder sb = new StringBuilder();
-
-            AppendMediumData( communication, sb, "FromValue" );
-            AppendMediumData( communication, sb, "Message" );
-
-            return sb.ToString();
+            throw new NotSupportedException();
         }
 
         private void AppendMediumData( Model.Communication communication, StringBuilder sb, string key )
@@ -255,23 +225,21 @@ namespace Rock.Communication.Medium
         /// <param name="rockContext">A context to use for database calls.</param>
         private void CreateCommunication( int fromPersonAliasId, string fromPersonName, int toPersonAliasId, string message, string transportPhone, string responseCode, Rock.Data.RockContext rockContext )
         {
-
             // add communication for reply
             var communication = new Rock.Model.Communication();
+            communication.Name = string.Format( "From: {0}", fromPersonName );
+            communication.CommunicationType = CommunicationType.SMS;
+            communication.SenderPersonAliasId = fromPersonAliasId;
             communication.IsBulkCommunication = false;
             communication.Status = CommunicationStatus.Approved;
-            communication.SenderPersonAliasId = fromPersonAliasId;
-            communication.Subject = string.Format( "From: {0}", fromPersonName );
-
-            communication.SetMediumDataValue( "Message", message );
-            communication.SetMediumDataValue( "FromValue", transportPhone );
-
-            communication.MediumEntityTypeId = EntityTypeCache.Read( "Rock.Communication.Medium.Sms" ).Id;
+            communication.SMSMessage = message;
+            communication.FromNumber = transportPhone;
 
             var recipient = new Rock.Model.CommunicationRecipient();
             recipient.Status = CommunicationRecipientStatus.Pending;
             recipient.PersonAliasId = toPersonAliasId;
             recipient.ResponseCode = responseCode;
+            recipient.MediumEntityTypeId = EntityTypeCache.Read( "Rock.Communication.Medium.Sms" ).Id;
             communication.Recipients.Add( recipient );
 
             var communicationService = new Rock.Model.CommunicationService( rockContext );
@@ -325,11 +293,12 @@ namespace Rock.Communication.Medium
         /// <value>
         /// <c>true</c> if [supports bulk communication]; otherwise, <c>false</c>.
         /// </value>
+        [Obsolete( "All meduims now support bulk communications" )]
         public override bool SupportsBulkCommunication
         {
             get
             {
-                return false;
+                return true;
             }
         }
 

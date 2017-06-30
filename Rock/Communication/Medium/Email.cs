@@ -14,6 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
@@ -64,66 +65,10 @@ You can view an online version of this email here:
         /// <param name="communication">The communication.</param>
         /// <param name="person">The person.</param>
         /// <returns></returns>
+        [Obsolete( "The GetCommunication now creates the HTML Preview directly" )]
         public override string GetHtmlPreview( Model.Communication communication, Person person )
         {
-            var rockContext = new RockContext();
-
-            StringBuilder sbContent = new StringBuilder();
-
-            var globalAttributes = Rock.Web.Cache.GlobalAttributesCache.Read();
-            var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( null );
-
-            // Requery the Communication object
-            communication = new CommunicationService( rockContext ).Get( communication.Id );
-            mergeFields.Add( "Communication", communication );
-
-            if ( person != null )
-            {
-                mergeFields.Add( "Person", person );
-
-                var recipient = new CommunicationRecipientService( rockContext ).Queryable().Where( a => a.CommunicationId == communication.Id ).Where( r => r.PersonAlias != null && r.PersonAlias.PersonId == person.Id ).FirstOrDefault();
-                if ( recipient != null )
-                {
-                    // Add any additional merge fields created through a report
-                    foreach ( var mergeField in recipient.AdditionalMergeValues )
-                    {
-                        if ( !mergeFields.ContainsKey( mergeField.Key ) )
-                        {
-                            mergeFields.Add( mergeField.Key, mergeField.Value );
-                        }
-                    }
-                }
-            }
-
-            // Body
-            string htmlContent = communication.GetMediumDataValue( "HtmlMessage" );
-            sbContent.Append( Email.ProcessHtmlBody( communication, globalAttributes, mergeFields ) );
-
-            // Attachments
-            StringBuilder sbAttachments = new StringBuilder();
-            string attachmentIds = communication.GetMediumDataValue( "Attachments" );
-            if ( !string.IsNullOrWhiteSpace( attachmentIds ) )
-            {
-                sbContent.Append( "<br/><br/>" );
-
-                var binaryFileService = new BinaryFileService( rockContext );
-
-                foreach ( string idVal in attachmentIds.SplitDelimitedValues() )
-                {
-                    int binaryFileId = int.MinValue;
-                    if ( int.TryParse( idVal, out binaryFileId ) )
-                    {
-                        var binaryFile = binaryFileService.Get( binaryFileId );
-                        if ( binaryFile != null )
-                        {
-                            sbContent.AppendFormat( "<a target='_blank' href='{0}GetFile.ashx?id={1}'>{2}</a><br/>",
-                                System.Web.VirtualPathUtility.ToAbsolute( "~" ), binaryFile.Id, binaryFile.FileName );
-                        }
-                    }
-                }
-            }
-
-            return sbContent.ToString();
+            throw new NotSupportedException();
         }
 
         /// <summary>
@@ -131,159 +76,24 @@ You can view an online version of this email here:
         /// </summary>
         /// <param name="communication">The communication.</param>
         /// <returns></returns>
+        [Obsolete( "The CommunicationDetail block now creates the details" )]
         public override string GetMessageDetails( Model.Communication communication )
         {
-            StringBuilder sb = new StringBuilder();
-
-            sb.AppendLine("<div class='row'>");
-            sb.AppendLine( "<div class='col-md-6'>" );
-
-            AppendMediumData( communication, sb, "FromName" );
-            AppendMediumData( communication, sb, "FromAddress" );
-            AppendMediumData( communication, sb, "ReplyTo" );
-            AppendMediumData( communication, sb, "Subject" );
-
-            sb.AppendLine( "</div>" );
-            sb.AppendLine( "<div class='col-md-6'>" );
-            AppendAttachmentData( sb, communication.GetMediumDataValue( "Attachments" ) );
-            sb.AppendLine( "</div>" );
-            sb.AppendLine( "</div>" );
-
-            string value = communication.GetMediumDataValue( "HtmlMessage" );
-            if (!string.IsNullOrWhiteSpace(value))
-            {
-                AppendMediumData( sb, "HtmlMessage", string.Format( @"
-                        <iframe id='js-email-body-iframe' class='email-body'></iframe>
-                        <script id='email-body' type='text/template'>{0}</script>
-                        <script type='text/javascript'>
-                            var doc = document.getElementById('js-email-body-iframe').contentWindow.document;
-                            doc.open();
-                            doc.write('<html><head><title></title></head><body>' +  $('#email-body').html() + '</body></html>');
-                            doc.close();
-                        </script>
-                    ", value ) );
-            }
-
-            AppendMediumData( communication, sb, "TextMessage" );
-
-            return sb.ToString();
-        }
-
-        private void AppendMediumData(Model.Communication communication, StringBuilder sb, string key)
-        {
-            string value = communication.GetMediumDataValue( key );
-            if (!string.IsNullOrWhiteSpace(value))
-            {
-                AppendMediumData( sb, key, value );
-            }
-        }
-
-        private void AppendAttachmentData(StringBuilder sb, string value)
-        {
-            var attachments = new Dictionary<int, string>();
-
-            var fileIds = new List<int>();
-            value.SplitDelimitedValues().ToList().ForEach( v => fileIds.Add( v.AsInteger() ) );
-
-            new BinaryFileService( new RockContext() ).Queryable()
-                .Where( f => fileIds.Contains( f.Id ) )
-                .Select( f => new
-                {
-                    f.Id,
-                    f.FileName
-                } )
-                .ToList()
-                .ForEach( f => attachments.Add( f.Id, f.FileName ) );
-
-            if (attachments.Any())
-            {
-                StringBuilder sbAttachments = new StringBuilder();
-                sbAttachments.Append( "<ul>" );
-                foreach(var keyValue in attachments)
-                {
-                    sbAttachments.AppendFormat( "<li><a target='_blank' href='{0}GetFile.ashx?id={1}'>{2}</a></li>",
-                        System.Web.VirtualPathUtility.ToAbsolute( "~" ), keyValue.Key, keyValue.Value );
-                }
-                sbAttachments.Append( "</ul>" );
-
-                AppendMediumData( sb, "Attachments", sbAttachments.ToString() );
-            }
-        }
-
-        private void AppendMediumData( StringBuilder sb, string key, string value )
-        {
-            sb.AppendFormat( "<div class='form-group'><label class='control-label'>{0}</label><p class='form-control-static'>{1}</p></div>",
-                key.SplitCase(), value );
+            throw new NotSupportedException();
         }
 
         /// <summary>
-        /// Sends the specified communication.
+        /// Validates the recipient for medium.
         /// </summary>
-        /// <param name="communication">The communication.</param>
-        public override void Send( Model.Communication communication )
+        /// <param name="person">The person.</param>
+        /// <param name="recipient">The recipient.</param>
+        public override void ValidateRecipientForMedium( Person person, CommunicationRecipient recipient )
         {
-            var rockContext = new RockContext();
-            var communicationService = new CommunicationService( rockContext );
-
-            communication = communicationService.Queryable()
-                .FirstOrDefault( t => t.Id == communication.Id );
-
-            if ( communication != null &&
-                communication.Status == Model.CommunicationStatus.Approved &&
-                communication.HasPendingRecipients( rockContext ) &&
-                ( !communication.FutureSendDateTime.HasValue || communication.FutureSendDateTime.Value.CompareTo( RockDateTime.Now ) <= 0 ) )
+            if ( !person.IsEmailActive )
             {
-                // Update any recipients that should not get sent the communication
-                var recipientService = new CommunicationRecipientService( rockContext );
-                foreach ( var recipient in recipientService.Queryable( "PersonAlias.Person" )
-                    .Where( r =>
-                        r.CommunicationId == communication.Id &&
-                        r.Status == CommunicationRecipientStatus.Pending )
-                    .ToList() )
-                {
-                    var person = recipient.PersonAlias.Person;
-                    if ( !person.IsEmailActive)
-                    {
-                        recipient.Status = CommunicationRecipientStatus.Failed;
-                        recipient.StatusNote = "Email is not active";
-                    }
-                    if ( person.IsDeceased )
-                    {
-                        recipient.Status = CommunicationRecipientStatus.Failed;
-                        recipient.StatusNote = "Person is deceased";
-                    }
-                    if ( person.EmailPreference == Model.EmailPreference.DoNotEmail )
-                    {
-                        recipient.Status = CommunicationRecipientStatus.Failed;
-                        recipient.StatusNote = "Email Preference of 'Do Not Email'";
-                    }
-                    else if ( person.EmailPreference == Model.EmailPreference.NoMassEmails && communication.IsBulkCommunication )
-                    {
-                        recipient.Status = CommunicationRecipientStatus.Failed;
-                        recipient.StatusNote = "Email Preference of 'No Mass Emails'";
-                    }
-                }
-
-                // If an unsubscribe value has been entered, and this is a bulk email, add the text
-                if ( communication.IsBulkCommunication )
-                {
-                    string unsubscribeHtml = GetAttributeValue( "UnsubscribeHTML" );
-                    if ( !string.IsNullOrWhiteSpace( unsubscribeHtml ) )
-                    {
-                        communication.SetMediumDataValue( "UnsubscribeHTML", unsubscribeHtml );
-                    }
-                }
-
-                string defaultPlainText = GetAttributeValue( "DefaultPlainText" );
-                if ( !string.IsNullOrWhiteSpace( defaultPlainText ) )
-                {
-                    communication.SetMediumDataValue( "DefaultPlainText", defaultPlainText );
-                }
-
-                rockContext.SaveChanges();
+                recipient.Status = CommunicationRecipientStatus.Failed;
+                recipient.StatusNote = "Email is not active";
             }
-
-            base.Send( communication );
         }
 
         /// <summary>
@@ -299,8 +109,8 @@ You can view an online version of this email here:
             Dictionary<string, object> mergeObjects,
             Person currentPersonOverride = null )
         {
-            string htmlBody = communication.GetMediumDataValue( "HtmlMessage" );
-            if ( !string.IsNullOrWhiteSpace( htmlBody ) )
+            string htmlBody = communication.Message;
+            if ( htmlBody.IsNotNullOrWhitespace() )
             {
                 // Get the unsubscribe content and add a merge field for it
                 string unsubscribeHtml = communication.GetMediumDataValue( "UnsubscribeHTML" ).ResolveMergeFields( mergeObjects, currentPersonOverride );
@@ -353,15 +163,7 @@ You can view an online version of this email here:
         {
 
             string defaultPlainText = communication.GetMediumDataValue( "DefaultPlainText" );
-            string plainTextBody = communication.GetMediumDataValue( "TextMessage" );
-
-            if ( string.IsNullOrWhiteSpace( plainTextBody ) && !string.IsNullOrWhiteSpace(defaultPlainText))
-            {
-                plainTextBody = defaultPlainText;
-            }
-
-            return plainTextBody.ResolveMergeFields( mergeObjects, currentPersonOverride, communication.EnabledLavaCommands );
-
+            return defaultPlainText.ResolveMergeFields( mergeObjects, currentPersonOverride, communication.EnabledLavaCommands );
         }
 
         /// <summary>
@@ -370,9 +172,10 @@ You can view an online version of this email here:
         /// <value>
         /// <c>true</c> if [supports bulk communication]; otherwise, <c>false</c>.
         /// </value>
+        [Obsolete( "All meduims now support bulk communications" )]
         public override bool SupportsBulkCommunication
         {
-            get 
+            get
             {
                 return true;
             }
