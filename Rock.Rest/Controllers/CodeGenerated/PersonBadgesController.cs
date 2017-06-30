@@ -30,6 +30,9 @@ namespace Rock.Rest.Controllers
     /// </summary>
     public partial class PersonBadgesController : Rock.Rest.ApiController<Rock.Model.PersonBadge>
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="PersonBadgesController"/> class.
+        /// </summary>
         public PersonBadgesController() : base( new Rock.Model.PersonBadgeService( new Rock.Data.RockContext() ) ) { } 
     }
 }

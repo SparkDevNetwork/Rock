@@ -30,6 +30,9 @@ namespace Rock.Rest.Controllers
     /// </summary>
     public partial class AttributeMatrixTemplatesController : Rock.Rest.ApiController<Rock.Model.AttributeMatrixTemplate>
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="AttributeMatrixTemplatesController"/> class.
+        /// </summary>
         public AttributeMatrixTemplatesController() : base( new Rock.Model.AttributeMatrixTemplateService( new Rock.Data.RockContext() ) ) { } 
     }
 }

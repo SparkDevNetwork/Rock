@@ -30,6 +30,9 @@ namespace Rock.Rest.Controllers
     /// </summary>
     public partial class WorkflowActionFormAttributesController : Rock.Rest.ApiController<Rock.Model.WorkflowActionFormAttribute>
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="WorkflowActionFormAttributesController"/> class.
+        /// </summary>
         public WorkflowActionFormAttributesController() : base( new Rock.Model.WorkflowActionFormAttributeService( new Rock.Data.RockContext() ) ) { } 
     }
 }

@@ -30,6 +30,9 @@ namespace Rock.Rest.Controllers
     /// </summary>
     public partial class PersonDuplicatesController : Rock.Rest.ApiController<Rock.Model.PersonDuplicate>
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="PersonDuplicatesController"/> class.
+        /// </summary>
         public PersonDuplicatesController() : base( new Rock.Model.PersonDuplicateService( new Rock.Data.RockContext() ) ) { } 
     }
 }

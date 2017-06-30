@@ -30,6 +30,9 @@ namespace Rock.Rest.Controllers
     /// </summary>
     public partial class FinancialScheduledTransactionDetailsController : Rock.Rest.ApiController<Rock.Model.FinancialScheduledTransactionDetail>
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="FinancialScheduledTransactionDetailsController"/> class.
+        /// </summary>
         public FinancialScheduledTransactionDetailsController() : base( new Rock.Model.FinancialScheduledTransactionDetailService( new Rock.Data.RockContext() ) ) { } 
     }
 }

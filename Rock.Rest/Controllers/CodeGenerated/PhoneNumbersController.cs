@@ -30,6 +30,9 @@ namespace Rock.Rest.Controllers
     /// </summary>
     public partial class PhoneNumbersController : Rock.Rest.ApiController<Rock.Model.PhoneNumber>
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="PhoneNumbersController"/> class.
+        /// </summary>
         public PhoneNumbersController() : base( new Rock.Model.PhoneNumberService( new Rock.Data.RockContext() ) ) { } 
     }
 }

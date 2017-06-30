@@ -30,6 +30,9 @@ namespace Rock.Rest.Controllers
     /// </summary>
     public partial class DataViewsController : Rock.Rest.ApiController<Rock.Model.DataView>
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="DataViewsController"/> class.
+        /// </summary>
         public DataViewsController() : base( new Rock.Model.DataViewService( new Rock.Data.RockContext() ) ) { } 
     }
 }
