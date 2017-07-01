@@ -54,6 +54,7 @@ namespace RockWeb.Blocks.Groups
     [LinkedPage( "Content Item Page", "The page to display registration details.", false, "", "", 9 )]
     [BooleanField( "Show Copy Button", "Copies the group and all of its associated authorization rules", false, "", 10 )]
     [LinkedPage( "Group List Page", "The page to display related Group List.", false, "", "", 11 )]
+    [LinkedPage( "Fundraising Progress Page", "The page to display fundraising progress for all its members.", false, "", "", 12 )]
 
     public partial class GroupDetail : RockBlock, IDetailBlock
     {
@@ -1729,6 +1730,20 @@ namespace RockWeb.Blocks.Groups
             else
             {
                 hlMap.Visible = false;
+            }
+
+            string fundraisingProgressUrl = LinkedPageUrl( "FundraisingProgressPage", pageParams );
+            var groupTypeIdFundraising = GroupTypeCache.Read( Rock.SystemGuid.GroupType.GROUPTYPE_FUNDRAISINGOPPORTUNITY.AsGuid() ).Id;
+            var fundraisingGroupTypeIdList = new GroupTypeService( rockContext ).Queryable().Where( a => a.Id == groupTypeIdFundraising || a.InheritedGroupTypeId == groupTypeIdFundraising ).Select( a => a.Id ).ToList();
+
+            if ( fundraisingProgressUrl.IsNotNullOrWhitespace() && fundraisingGroupTypeIdList.Contains( group.GroupTypeId ) )
+            {
+                hlFundraisingProgress.NavigateUrl = fundraisingProgressUrl;
+                hlFundraisingProgress.Visible = true;
+            }
+            else
+            {
+                hlFundraisingProgress.Visible = false;
             }
 
             btnSecurity.Visible = group.IsAuthorized( Authorization.ADMINISTRATE, CurrentPerson );
