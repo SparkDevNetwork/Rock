@@ -105,11 +105,11 @@ namespace Rock.Rest.Controllers
         /// <exception cref="System.Web.Http.HttpResponseException"></exception>
         [Authenticate, Secured]
         [HttpGet]
-        [System.Web.Http.Route("api/People/GetCurrentPerson")]
+        [System.Web.Http.Route( "api/People/GetCurrentPerson" )]
         public Person GetCurrentPerson()
         {
             var rockContext = new Rock.Data.RockContext();
-            return new PersonService(rockContext).Get(GetPerson().Id);
+            return new PersonService( rockContext ).Get( GetPerson().Id );
         }
 
         /// <summary>
@@ -152,14 +152,14 @@ namespace Rock.Rest.Controllers
         [System.Web.Http.Route( "api/People/GetByUserName/{username}" )]
         public Person GetByUserName( string username )
         {
-            int? personId = new UserLoginService( (Rock.Data.RockContext)Service.Context ).Queryable()
+            int? personId = new UserLoginService( ( Rock.Data.RockContext ) Service.Context ).Queryable()
                 .Where( u => u.UserName.Equals( username ) )
                 .Select( a => a.PersonId )
                 .FirstOrDefault();
 
             if ( personId != null )
             {
-                return Service.Queryable().Include( a => a.PhoneNumbers).Include(a => a.Aliases )
+                return Service.Queryable().Include( a => a.PhoneNumbers ).Include( a => a.Aliases )
                     .FirstOrDefault( p => p.Id == personId.Value );
             }
 
@@ -177,7 +177,7 @@ namespace Rock.Rest.Controllers
         [System.Web.Http.Route( "api/People/GetByPersonAliasId/{personAliasId}" )]
         public Person GetByPersonAliasId( int personAliasId )
         {
-            int? personId = new PersonAliasService( (Rock.Data.RockContext)Service.Context ).Queryable()
+            int? personId = new PersonAliasService( ( Rock.Data.RockContext ) Service.Context ).Queryable()
                 .Where( u => u.Id.Equals( personAliasId ) ).Select( a => a.PersonId ).FirstOrDefault();
             if ( personId != null )
             {
@@ -195,11 +195,11 @@ namespace Rock.Rest.Controllers
         /// <exception cref="System.Web.Http.HttpResponseException"></exception>
         [Authenticate, Secured]
         [HttpGet]
-        [System.Web.Http.Route("api/People/GetGraduationYear/{gradeOffset}")]
+        [System.Web.Http.Route( "api/People/GetGraduationYear/{gradeOffset}" )]
         public int GetGraduationYear( int gradeOffset )
         {
             int? graduationYear = Person.GraduationYearFromGradeOffset( gradeOffset );
-            if( graduationYear.HasValue )
+            if ( graduationYear.HasValue )
             {
                 return graduationYear.Value;
             }
@@ -230,7 +230,7 @@ namespace Rock.Rest.Controllers
             }
 
             System.Web.HttpContext.Current.Items.Add( "CurrentPerson", GetPerson() );
-            PersonService.SaveNewPerson( person, (Rock.Data.RockContext)Service.Context, null, false );
+            PersonService.SaveNewPerson( person, ( Rock.Data.RockContext ) Service.Context, null, false );
 
             return ControllerContext.Request.CreateResponse( HttpStatusCode.Created, person.Id );
         }
@@ -244,7 +244,7 @@ namespace Rock.Rest.Controllers
         {
             SetProxyCreation( true );
 
-            var rockContext = (RockContext)Service.Context;
+            var rockContext = ( RockContext ) Service.Context;
             var existingPerson = Service.Get( id );
             if ( existingPerson != null )
             {
@@ -285,7 +285,7 @@ namespace Rock.Rest.Controllers
                 {
                     System.Web.HttpContext.Current.Items.Add( "CurrentPerson", GetPerson() );
 
-                    int? modifiedByPersonAliasId = person.ModifiedAuditValuesAlreadyUpdated ? person.ModifiedByPersonAliasId : (int?)null;
+                    int? modifiedByPersonAliasId = person.ModifiedAuditValuesAlreadyUpdated ? person.ModifiedByPersonAliasId : ( int? ) null;
 
                     HistoryService.SaveChanges(
                         rockContext,
@@ -326,7 +326,7 @@ namespace Rock.Rest.Controllers
 
             System.Web.HttpContext.Current.Items.Add( "CurrentPerson", GetPerson() );
 
-            PersonService.AddPersonToFamily( person, person.Id == 0, familyId, groupRoleId, (Rock.Data.RockContext)Service.Context );
+            PersonService.AddPersonToFamily( person, person.Id == 0, familyId, groupRoleId, ( Rock.Data.RockContext ) Service.Context );
 
             return ControllerContext.Request.CreateResponse( HttpStatusCode.Created, person.Id );
         }
@@ -350,11 +350,11 @@ namespace Rock.Rest.Controllers
             var person = this.Get( personId );
             CheckCanEdit( person );
 
-            PersonService.AddPersonToFamily( person, false, familyId, groupRoleId, (Rock.Data.RockContext)Service.Context );
+            PersonService.AddPersonToFamily( person, false, familyId, groupRoleId, ( Rock.Data.RockContext ) Service.Context );
 
             if ( removeFromOtherFamilies )
             {
-                PersonService.RemovePersonFromOtherFamilies( familyId, personId, (Rock.Data.RockContext)Service.Context );
+                PersonService.RemovePersonFromOtherFamilies( familyId, personId, ( Rock.Data.RockContext ) Service.Context );
             }
 
             return ControllerContext.Request.CreateResponse( HttpStatusCode.Created, person.Id );
@@ -403,7 +403,8 @@ namespace Rock.Rest.Controllers
                     Name = showFullNameReversed
                     ? Person.FormatFullNameReversed( a.LastName, a.NickName, a.SuffixValueId, a.RecordTypeValueId )
                     : Person.FormatFullName( a.NickName, a.LastName, a.SuffixValueId, a.RecordTypeValueId ),
-                    IsActive = a.RecordStatusValueId.HasValue && a.RecordStatusValueId == activeRecordStatusValueId
+                    IsActive = a.RecordStatusValueId.HasValue && a.RecordStatusValueId == activeRecordStatusValueId,
+                    RecordStatus = a.RecordStatusValueId.HasValue ? DefinedValueCache.Read( a.RecordStatusValueId.Value ).Value : string.Empty
                 } );
 
                 return simpleResult.AsQueryable();
@@ -643,7 +644,7 @@ namespace Rock.Rest.Controllers
         public string GetImpersonationParameter( int personId )
         {
             string result = string.Empty;
-            
+
             var rockContext = this.Service.Context as Rock.Data.RockContext;
 
             var person = new PersonService( rockContext ).Get( personId );
@@ -720,7 +721,7 @@ namespace Rock.Rest.Controllers
                 int? age = person.Age;
                 if ( age.HasValue )
                 {
-                    html.AppendFormat( "<div><strong>Age</strong> {0}</div>" , age );
+                    html.AppendFormat( "<div><strong>Age</strong> {0}</div>", age );
                 }
 
                 if ( !string.IsNullOrWhiteSpace( person.Email ) )
@@ -790,7 +791,7 @@ namespace Rock.Rest.Controllers
         ///   <c>true</c> if this instance is active; otherwise, <c>false</c>.
         /// </value>
         public bool IsActive { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the image HTML tag.
         /// </summary>
