@@ -3094,6 +3094,20 @@ namespace Rock.Lava
         }
 
         /// <summary>
+        /// Adds the script link.
+        /// </summary>
+        /// <param name="input">The input.</param>
+        /// <param name="scriptUrl">The script URL.</param>
+        /// <returns></returns>
+        public static string AddScriptLink( string input, bool fingerprintLink = false )
+        {
+            RockPage page = HttpContext.Current.Handler as RockPage;
+            RockPage.AddScriptLink( page, ResolveRockUrl( input ), fingerprintLink );
+
+            return String.Empty;
+        }
+
+        /// <summary>
         /// Clients the specified input.
         /// </summary>
         /// <param name="input">The input.</param>
