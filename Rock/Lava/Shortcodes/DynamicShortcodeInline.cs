@@ -67,7 +67,7 @@ namespace Rock.Lava.Shortcodes
             {
                 var parms = ParseMarkup( _markup, context );
 
-                var results = shortcode.Markup.ResolveMergeFields( parms );
+                var results = shortcode.Markup.ResolveMergeFields( parms, shortcode.EnabledLavaCommands );
 
                 result.Write( results );
             }
