@@ -119,6 +119,24 @@ namespace Rock.Model
         [Required]
         [DataMember( IsRequired = true )]
         public TagType TagType { get; set; }
+
+        /// <summary>
+        /// Gets or sets the enabled lava commands.
+        /// </summary>
+        /// <value>
+        /// The enabled lava commands.
+        /// </value>
+        [MaxLength( 500 )]
+        public string EnabledLavaCommands{ get; set; }
+
+        /// <summary>
+        /// Gets or sets the parameters.
+        /// </summary>
+        /// <value>
+        /// The parameters.
+        /// </value>
+        [MaxLength( 2500 )]
+        public string Parameters { get; set; }
         #endregion
     }
 

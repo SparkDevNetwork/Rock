@@ -110,6 +110,22 @@ namespace Rock.Web.Cache
         /// </value>
         public TagType TagType { get; set; }
 
+        /// <summary>
+        /// Gets or sets the parameters.
+        /// </summary>
+        /// <value>
+        /// The parameters.
+        /// </value>
+        public string Parameters { get; set; }
+
+        /// <summary>
+        /// Gets or sets the enabled lava commands.
+        /// </summary>
+        /// <value>
+        /// The enabled lava commands.
+        /// </value>
+        public string EnabledLavaCommands { get; set; }
+
         #endregion
 
         #region Public Methods
@@ -133,6 +149,8 @@ namespace Rock.Web.Cache
                 this.TagName = shortcode.TagName;
                 this.Markup = shortcode.Markup;
                 this.TagType = shortcode.TagType;
+                this.Parameters = shortcode.Parameters;
+                this.EnabledLavaCommands = shortcode.EnabledLavaCommands;
             }
         }
 
