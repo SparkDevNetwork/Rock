@@ -3108,6 +3108,21 @@ namespace Rock.Lava
         }
 
         /// <summary>
+        /// Adds the CSS link.
+        /// </summary>
+        /// <param name="input">The input.</param>
+        /// <param name="cssUrl">The CSS URL.</param>
+        /// <param name="fingerprintLink">if set to <c>true</c> [fingerprint link].</param>
+        /// <returns></returns>
+        public static string AddCssLink( string input, bool fingerprintLink = false )
+        {
+            RockPage page = HttpContext.Current.Handler as RockPage;
+            RockPage.AddCSSLink( page, ResolveRockUrl( input ), fingerprintLink );
+
+            return String.Empty;
+        }
+
+        /// <summary>
         /// Clients the specified input.
         /// </summary>
         /// <param name="input">The input.</param>
