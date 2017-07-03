@@ -2777,12 +2777,16 @@ namespace Rock.Lava
             if ( input.StartsWith( "~~" ) )
             {
                 string theme = "Rock";
-                if ( page.Theme != null )
+                if ( page.Theme.IsNotNullOrWhitespace() )
                 {
                     theme = page.Theme;
                 }
+                else if ( page.Site != null && page.Site.Theme.IsNotNullOrWhitespace() )
+                {
+                    theme = page.Site.Theme;
+                }
 
-                input = "~/Themes/" + page.Theme + (input.Length > 2 ? input.Substring( 2 ) : string.Empty);
+                input = "~/Themes/" + theme + (input.Length > 2 ? input.Substring( 2 ) : string.Empty);
             }
 
             return page.ResolveUrl( input );
