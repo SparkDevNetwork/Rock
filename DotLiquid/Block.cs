@@ -91,8 +91,6 @@ namespace DotLiquid
                         }
                         else
                         {
-                            // This tag is not registered with the system
-                            // pass it to the current block for special handling or error reporting
                             UnknownTag( fullShortCodeMatch.Groups[1].Value, fullShortCodeMatch.Groups[2].Value, tokens );
                         }
                     }

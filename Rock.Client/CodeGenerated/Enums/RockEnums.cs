@@ -499,6 +499,14 @@ namespace Rock.Client.Enums
 
     /// <summary>
     /// </summary>
+    public enum TagType
+    {
+        Inline = 0x1,
+        Block = 0x2,
+    }
+
+    /// <summary>
+    /// </summary>
     public enum TransactionGraphBy
     {
         Total = 0x0,
