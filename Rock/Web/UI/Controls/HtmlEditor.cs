@@ -688,6 +688,12 @@ onChange: function(contents, $editable) {{
 
             string summernoteInitScript = $@"
 $(document).ready( function() {{
+
+    // workaround for https://github.com/summernote/summernote/issues/2017 and/or https://github.com/summernote/summernote/issues/1984
+    if(!!document.createRange) {{
+      document.getSelection().removeAllRanges();
+    }}
+
     var summerNoteEditor_{this.ClientID} = $('#{this.ClientID}').summernote({{
         height: '{this.Height}', //set editable area's height
         toolbar: Rock.htmlEditor.toolbar_RockCustomConfig{this.Toolbar.ConvertToString()},
