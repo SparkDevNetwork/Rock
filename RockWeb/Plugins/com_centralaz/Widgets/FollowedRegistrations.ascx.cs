@@ -61,7 +61,23 @@ namespace RockWeb.Plugins.com_centralaz.Widgets
 				</ul>
 			{% endif %}
 		{% endfor %}
-	</ul>
+		{% for instanceFee in registrationInstance.InstanceFees %}			
+			{% if instanceFee.FeeValues | Size > 0 %}
+
+                {% assign firstFee = instanceFee.FeeValues | First %}
+                {% if instanceFee.FeeValues | Size == 1 and instanceFee.FeeName == firstFee.ValueName %}
+                    <li>{{firstFee.ValueName}} <small class='text-muted'>(fee)</small> : {{firstFee.Count}}</li>
+                {% else %}
+				    <li>{{ instanceFee.FeeName }} <small class='text-muted'>(fee)</small></li>
+				    <ul>
+					    {% for feeValue in instanceFee.FeeValues %}
+						    <li>{{feeValue.ValueName}} : {{feeValue.Count}}</li>		
+					    {% endfor %}
+				    </ul>
+			    {% endif %}
+			{% endif %}
+		{% endfor %}
+    </ul>
 {% endfor %}
 
 {% if HasMore %}
@@ -142,6 +158,7 @@ namespace RockWeb.Plugins.com_centralaz.Widgets
                 var attributeValueService = new AttributeValueService( rockContext );
                 var registrationInstanceService = new RegistrationInstanceService( rockContext );
                 var registrationTemplateFormFieldService = new RegistrationTemplateFormFieldService( rockContext );
+                var registrationTemplateFeeService = new RegistrationTemplateFeeService( rockContext );
 
                 int personId = this.CurrentPersonId.Value;
                 IQueryable<IEntity> qryFollowedItems = followingService.GetFollowedItems( registrationEntityType.Id, personId );
@@ -155,7 +172,8 @@ namespace RockWeb.Plugins.com_centralaz.Widgets
                 }
 
                 // Delete non-existing items
-                foreach ( var registrationInstanceCount in registrationList )
+                // Use registrationList.ToList() otherwise when an item is removed, an 'collection was modified' exception will be thrown.
+                foreach ( var registrationInstanceCount in registrationList.ToList() )
                 {
                     var registration = registrationInstanceService.Get( registrationInstanceCount.InstanceId );
                     if ( registration != null )
@@ -164,7 +182,9 @@ namespace RockWeb.Plugins.com_centralaz.Widgets
                             .Where( rtff => rtff.RegistrationTemplateForm.RegistrationTemplateId == registration.RegistrationTemplateId )
                             .Select( rtff => rtff.AttributeId )
                             .ToList();
-                        foreach ( var instanceAttributeCount in registrationInstanceCount.InstanceAttributes )
+
+                        // Use ...ToList() otherwise when an item is removed, an 'collection was modified' exception will be thrown.
+                        foreach ( var instanceAttributeCount in registrationInstanceCount.InstanceAttributes.ToList() )
                         {
                             if ( registrationTemplateAttributeIds.Contains( instanceAttributeCount.AttributeId ) )
                             {
@@ -211,6 +231,7 @@ namespace RockWeb.Plugins.com_centralaz.Widgets
                         registrationInstanceCount.InstanceName = registration.Name;
                         registrationInstanceCount.InstanceId = registration.Id;
                         registrationInstanceCount.InstanceAttributes = new List<InstanceAttributeCount>();
+                        registrationInstanceCount.InstanceFees = new List<InstanceFeeCount>();
                         registrationList.Add( registrationInstanceCount );
                     }
 
@@ -238,6 +259,37 @@ namespace RockWeb.Plugins.com_centralaz.Widgets
                             }
                         }
                     }
+
+                    var registrationTemplateFeeList = registrationTemplateFeeService.Queryable().AsNoTracking()
+                            .Where( rtf =>
+                                rtf.RegistrationTemplateId == registration.RegistrationTemplateId &&
+                                ( rtf.FeeType == RegistrationFeeType.Multiple || rtf.FeeType == RegistrationFeeType.Single ) )
+                            .Select( rtf => rtf )
+                            .ToList();
+
+                    if ( registrationInstanceCount.InstanceFees == null )
+                    {
+                        registrationInstanceCount.InstanceFees = new List<InstanceFeeCount>();
+                    }
+
+                    foreach ( var fee in registrationTemplateFeeList )
+                    {
+                        var instanceFeeCount = registrationInstanceCount.InstanceFees.Where( i => fee.Id == i.RegistrationTemplateFeeId ).FirstOrDefault();
+                        if ( instanceFeeCount == null )
+                        {
+                            //var qualifier =  fee. feeAttributeQualifiers.Where( q => q.Key == "values" ).FirstOrDefault();
+                            //if ( qualifier != null && !String.IsNullOrWhiteSpace( qualifier.Value ) )
+                            //{
+                                instanceFeeCount = new InstanceFeeCount();
+                                instanceFeeCount.FeeName = fee.Name;
+                                instanceFeeCount.RegistrationTemplateFeeId = fee.Id;
+                                instanceFeeCount.InstanceId = registration.Id;
+                                instanceFeeCount.FeeValues = new List<AttributeValueCount>();
+                                registrationInstanceCount.InstanceFees.Add( instanceFeeCount );
+                            //}
+                        }
+                    }
+
                 }
 
                 rptFollowedRegistrations.DataSource = registrationList;
@@ -257,6 +309,7 @@ namespace RockWeb.Plugins.com_centralaz.Widgets
             foreach ( RepeaterItem registrationItem in rptFollowedRegistrations.Items )
             {
                 var cblValues = registrationItem.FindControl( "cblValues" ) as CheckBoxList;
+                var cblFeeValues = registrationItem.FindControl( "cblFeeValues" ) as CheckBoxList;
                 var lName = registrationItem.FindControl( "lName" ) as Literal;
                 var hfRegistrationId = registrationItem.FindControl( "hfRegistrationId" ) as HiddenField;
 
@@ -264,6 +317,7 @@ namespace RockWeb.Plugins.com_centralaz.Widgets
                 registrationInstanceCount.InstanceName = lName.Text;
                 registrationInstanceCount.InstanceId = hfRegistrationId.ValueAsInt();
                 registrationInstanceCount.InstanceAttributes = new List<InstanceAttributeCount>();
+                registrationInstanceCount.InstanceFees = new List<InstanceFeeCount>();
                 registrationList.Add( registrationInstanceCount );
 
                 foreach ( ListItem checkbox in cblValues.Items )
@@ -274,6 +328,16 @@ namespace RockWeb.Plugins.com_centralaz.Widgets
                     instanceAttributeCount.IsSelected = checkbox.Selected;
                     instanceAttributeCount.InstanceId = registrationInstanceCount.InstanceId;
                     registrationInstanceCount.InstanceAttributes.Add( instanceAttributeCount );
+                }
+
+                foreach ( ListItem checkbox in cblFeeValues.Items )
+                {
+                    var instanceFeeCount = new InstanceFeeCount();
+                    instanceFeeCount.FeeName = checkbox.Text;
+                    instanceFeeCount.RegistrationTemplateFeeId = checkbox.Value.AsInteger();
+                    instanceFeeCount.IsSelected = checkbox.Selected;
+                    instanceFeeCount.InstanceId = registrationInstanceCount.InstanceId;
+                    registrationInstanceCount.InstanceFees.Add( instanceFeeCount );
                 }
             }
 
@@ -305,6 +369,8 @@ namespace RockWeb.Plugins.com_centralaz.Widgets
         protected void rptFollowedRegistrations_ItemDataBound( object sender, RepeaterItemEventArgs e )
         {
             var cblValues = e.Item.FindControl( "cblValues" ) as CheckBoxList;
+            var cblFeeValues = e.Item.FindControl( "cblFeeValues" ) as CheckBoxList;
+
             var lName = e.Item.FindControl( "lName" ) as Literal;
             var hfRegistrationId = e.Item.FindControl( "hfRegistrationId" ) as HiddenField;
             var registrationInstanceCount = e.Item.DataItem as RegistrationInstanceCount;
@@ -317,6 +383,16 @@ namespace RockWeb.Plugins.com_centralaz.Widgets
                 ListItem listItem = new ListItem( attribute.AttributeName, attribute.AttributeId.ToString() );
                 listItem.Selected = attribute.IsSelected;
                 cblValues.Items.Add( listItem );
+            }
+
+            if ( registrationInstanceCount.InstanceFees != null )
+            {
+                foreach ( var fee in registrationInstanceCount.InstanceFees )
+                {
+                    ListItem listItem = new ListItem( fee.FeeName, fee.RegistrationTemplateFeeId.ToString() );
+                    listItem.Selected = fee.IsSelected;
+                    cblFeeValues.Items.Add( listItem );
+                }
             }
         }
 
@@ -340,7 +416,7 @@ namespace RockWeb.Plugins.com_centralaz.Widgets
                 var attributeValueService = new AttributeValueService( rockContext );
                 var attributeQualifierService = new AttributeQualifierService( rockContext );
                 var registrationInstanceService = new RegistrationInstanceService( rockContext );
-
+                
                 IQueryable<IEntity> qryFollowedItems = followingService.GetFollowedItems( entityType.Id, personId );
 
                 var userPreference = this.GetUserPreference( "FollowedRegistrations" );
@@ -358,6 +434,7 @@ namespace RockWeb.Plugins.com_centralaz.Widgets
                             var registrantIdList = registration.Registrations.SelectMany( r => r.Registrants ).Select( s => s.Id ).Distinct().ToList();
                             var personIdList = registration.Registrations.SelectMany( r => r.Registrants ).Select( s => s.PersonId ).Distinct().ToList();
 
+                            // Display subtotals for each matching attribute
                             foreach ( var registrationAttribute in registrationInstance.InstanceAttributes.Where( a => a.IsSelected ).ToList() )
                             {
                                 var qualifier = attributeQualifierService.Queryable().AsNoTracking().Where( q => q.Key == "values" && q.AttributeId == registrationAttribute.AttributeId ).FirstOrDefault();
@@ -396,6 +473,49 @@ namespace RockWeb.Plugins.com_centralaz.Widgets
                                         }
 
                                         registrationAttribute.AttributeValues.Add( attributeValueCount );
+                                    }
+                                }
+                            }
+
+                            // Display subtotals for each matching Fee
+                            if ( registrationInstance.InstanceFees != null )
+                            {
+                                var feeIds = registrationInstance.InstanceFees.Where( a => a.IsSelected ).Select( f => f.RegistrationTemplateFeeId ).ToList();
+                                var fees = registration.Registrations.SelectMany( r => r.Registrants )
+                                    .SelectMany( rr => rr.Fees )
+                                    .Where( f => feeIds.Contains( f.RegistrationTemplateFeeId ) );
+
+                                foreach ( var registrationFee in registrationInstance.InstanceFees.Where( f => f.IsSelected ).ToList() )
+                                {
+                                    registrationFee.FeeValues = new List<AttributeValueCount>();
+
+                                    // Process multiple type fees:
+                                    var multipleTypeOptions = fees.Where( f => f.RegistrationTemplateFeeId == registrationFee.RegistrationTemplateFeeId && f.RegistrationTemplateFee.FeeType == RegistrationFeeType.Multiple )
+                                        .OrderBy( f => f.RegistrationTemplateFee.Name )
+                                        .Select( o => o.Option ).Distinct();
+
+                                    foreach ( var feeOption in multipleTypeOptions )
+                                    {
+                                        var feeValueCount = new AttributeValueCount();
+                                        feeValueCount.ValueName = feeOption;
+                                        feeValueCount.Count = fees.Where( f => f.Option == feeOption && f.RegistrationTemplateFeeId == registrationFee.RegistrationTemplateFeeId && f.RegistrationTemplateFee.FeeType == RegistrationFeeType.Multiple )
+                                            .Sum( f=>f.Quantity );
+                                        registrationFee.FeeValues.Add( feeValueCount );
+                                    }
+
+                                    // Process single type fees:
+                                    var singleTypeOptions = fees.Where( f => f.RegistrationTemplateFeeId == registrationFee.RegistrationTemplateFeeId && f.RegistrationTemplateFee.FeeType == RegistrationFeeType.Single )
+                                        .OrderBy( f => f.RegistrationTemplateFee.Order )
+                                        .Select( f => f.RegistrationTemplateFee.Name ).Distinct();
+
+                                    foreach ( var feeOption in singleTypeOptions )
+                                    {
+                                        var feeValueCount = new AttributeValueCount();
+                                        feeValueCount.ValueName = feeOption;
+                                        var matchingFees = fees.Where( f => f.RegistrationTemplateFee.Name == feeOption && f.RegistrationTemplateFeeId == registrationFee.RegistrationTemplateFeeId && f.RegistrationTemplateFee.FeeType == RegistrationFeeType.Single );
+                                        feeValueCount.Count = matchingFees.Sum( f => f.Quantity );
+
+                                        registrationFee.FeeValues.Add( feeValueCount );
                                     }
                                 }
                             }
@@ -453,12 +573,13 @@ namespace RockWeb.Plugins.com_centralaz.Widgets
 
         #region Helper Classes
 
-        [DotLiquid.LiquidType( "InstanceName", "InstanceId", "InstanceAttributes", "Count" )]
+        [DotLiquid.LiquidType( "InstanceName", "InstanceId", "InstanceAttributes", "InstanceFees", "Count" )]
         public class RegistrationInstanceCount
         {
             public string InstanceName { get; set; }
             public int InstanceId { get; set; }
             public List<InstanceAttributeCount> InstanceAttributes { get; set; }
+            public List<InstanceFeeCount> InstanceFees { get; set; }
             public int Count { get; set; }
         }
 
@@ -468,6 +589,16 @@ namespace RockWeb.Plugins.com_centralaz.Widgets
             public List<AttributeValueCount> AttributeValues { get; set; }
             public String AttributeName { get; set; }
             public int AttributeId { get; set; }
+            public int InstanceId { get; set; }
+            public bool IsSelected { get; set; }
+        }
+
+        [DotLiquid.LiquidType( "FeeValues", "FeeName", "RegistrationTemplateFeeId", "InstanceId", "IsSelected" )]
+        public class InstanceFeeCount
+        {
+            public List<AttributeValueCount> FeeValues { get; set; }
+            public String FeeName { get; set; }
+            public int RegistrationTemplateFeeId { get; set; }
             public int InstanceId { get; set; }
             public bool IsSelected { get; set; }
         }

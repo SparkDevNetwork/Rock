@@ -35,6 +35,7 @@
                             </div>
                             <div class="col-md-6">
                                 <asp:CheckBoxList ID="cblValues" runat="server" RepeatDirection="Vertical" />
+                                <asp:CheckBoxList ID="cblFeeValues" runat="server" RepeatDirection="Vertical" />
                             </div>
                         </div>
                         <br />
