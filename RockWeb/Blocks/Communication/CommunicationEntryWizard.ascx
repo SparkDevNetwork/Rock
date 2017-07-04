@@ -23,29 +23,27 @@
             <div class="panel-body">
 
                 <%-- Recipient Selection --%>
-                <asp:Panel ID="pnlRecipientSelection" runat="server" Visible="false">
+                <asp:Panel ID="pnlRecipientSelection" runat="server" Visible="true">
                     <h4>Recipient Selection</h4>
 
                     <Rock:Toggle ID="tglRecipientSelection" runat="server" CssClass="btn-group-justified margin-b-lg" OnText="Select From List" OffText="Select Specific Individuals" Checked="true" OnCssClass="btn-primary" OffCssClass="btn-primary" ValidationGroup="vgRecipientSelection" OnCheckedChanged="tglRecipientSelection_CheckedChanged" />
                     
                     <asp:Panel ID="pnlRecipientSelectionList" runat="server">
 
-                        <Rock:RockDropDownList ID="ddlCommunicationGroupList" runat="server" Label="List" CssClass="input-width-xxl" ValidationGroup="vgRecipientSelection" Required="true" />
+                        <Rock:RockDropDownList ID="ddlCommunicationGroupList" runat="server" Label="List" CssClass="input-width-xxl" ValidationGroup="vgRecipientSelection" Required="true"  OnSelectedIndexChanged="ddlCommunicationGroupList_SelectedIndexChanged" AutoPostBack="true" />
 
-                        <label>Segments</label>
-                        <p>Optionally, further refine your recipients by filtering by segment.</p>
-                        <asp:CheckBoxList ID="cblSegments" runat="server" RepeatDirection="Horizontal" CssClass="margin-b-lg" ValidationGroup="vgRecipientSelection">
-                            <asp:ListItem Text="Male" />
-                            <asp:ListItem Text="Female" />
-                            <asp:ListItem Text="Under 35" />
-                            <asp:ListItem Text="35 and older" />
-                            <asp:ListItem Text="Members" />
-                        </asp:CheckBoxList>
+                        
+                        <asp:Panel ID="pnlCommunicationGroupSegments" runat="server">
+                            <label>Segments</label>
+                            <p>Optionally, further refine your recipients by filtering by segment.</p>
+                            <asp:CheckBoxList ID="cblCommunicationGroupSegments" runat="server" RepeatDirection="Horizontal" CssClass="margin-b-lg" ValidationGroup="vgRecipientSelection" OnSelectedIndexChanged="cblCommunicationGroupSegments_SelectedIndexChanged" AutoPostBack="true" />
 
-                        <Rock:RockRadioButtonList ID="rblSegmentFilterType" runat="server" Label="Recipients Must Meet" RepeatDirection="Horizontal" ValidationGroup="vgRecipientSelection">
-                            <asp:ListItem Text="All segment filters" Value="all" />
-                            <asp:ListItem Text="Any segment filter" Value="any" />
-                        </Rock:RockRadioButtonList>
+                            <Rock:RockRadioButtonList ID="rblCommunicationGroupSegmentFilterType" runat="server" Label="Recipients Must Meet" RepeatDirection="Horizontal" ValidationGroup="vgRecipientSelection" AutoPostBack="true" OnSelectedIndexChanged="rblCommunicationGroupSegmentFilterType_SelectedIndexChanged" />
+                            
+                            <div class="control-label">
+                                <asp:Literal ID="lRecipientFromListCount" runat="server" Text="" />
+                            </div>
+                        </asp:Panel>
                     </asp:Panel> 
                     
                     <asp:Panel ID="pnlRecipientSelectionIndividual" runat="server">
@@ -62,19 +60,34 @@
                                 </div>
                             </div>
                         </div>
-
-                                
                         
                     </asp:Panel>
 
                     <div class="actions">
-                        <asp:LinkButton ID="lbRecipientSelectionNext" runat="server" AccessKey="n" Text="Next" DataLoadingText="Next" CssClass="btn btn-primary pull-right" ValidationGroup="vgRecipientSelection" CausesValidation="true" OnClick="lbRecipientSelectionNext_Click" />
+                        <asp:LinkButton ID="btnRecipientSelectionNext" runat="server" AccessKey="n" Text="Next" DataLoadingText="Next" CssClass="btn btn-primary pull-right" ValidationGroup="vgRecipientSelection" CausesValidation="true" OnClick="btnRecipientSelectionNext_Click" />
+                    </div>
+
+                </asp:Panel>
+
+                <%-- Medium Selection --%>
+                <asp:Panel ID="pnlMediumSelection" runat="server" Visible="false" >
+                    <div class="row">
+                        <div class="col-md-6">
+                            <Rock:RockTextBox ID="tbCommunicationName" runat="server" Label="Communication Name" Required="true" ValidationGroup="vgMediumSelection"/>
+                        </div>
+                        <div class="col-md-6">
+                            <Rock:Toggle ID="tglBulkCommunication" runat="server" OnText="Yes" OffText="No" ActiveButtonCssClass="btn-primary" Help="Select this option if you are sending this email to a group of people. This will include the option for recipients to unsubscribe and will not send the email to any recipients that have already asked to be unsubscribed." Checked="false" Label="Is The Communication Bulk" />
+                        </div>
+                    </div>
+
+                    <div class="actions">
+                        <asp:LinkButton ID="btnMediumSelectionNext" runat="server" AccessKey="n" Text="Next" DataLoadingText="Next" CssClass="btn btn-primary pull-right" ValidationGroup="vgMediumSelection" CausesValidation="true" OnClick="btnMediumSelectionNext_Click" />
                     </div>
 
                 </asp:Panel>
 
                 <%-- Email Editor --%>
-                <asp:Panel ID="pnlEmailEditor" runat="server" CssClass="emaileditor-wrapper" Visible="true">
+                <asp:Panel ID="pnlEmailEditor" runat="server" CssClass="emaileditor-wrapper" Visible="false">
                     <section id="emaileditor">
 			            <div id="emaileditor-designer">
 				            <iframe id="ifEmailDesigner" name="emaileditor-iframe" class="emaileditor-iframe js-emaileditor-iframe" runat="server" src="javascript: window.frameElement.getAttribute('srcdoc');" frameborder="0" border="0" cellspacing="0"></iframe>
@@ -135,12 +148,10 @@
 								                    </div>
                                                 </div>
                                             </div>
-                                            
-                                            
 							            </div>
 						            </div>
 
-                                    <Rock:HtmlEditor ID="htmlEditor" CssClass="js-component-text-htmlEditor" runat="server" Height="350" CallbackOnChangeScript="updateTextComponent(this, contents);" />
+                                    <Rock:HtmlEditor ID="htmlEditor" CssClass="js-component-text-htmlEditor" runat="server" Height="350" CallbackOnChangeScript="updateTextComponent(this, contents);" Visible="false" />
 					            </div>
 
                                 <!-- Image Properties -->
@@ -482,7 +493,9 @@
             
             Sys.Application.add_load(function ()
             {
-                loadEmailEditor()
+                if ($('#<%=pnlEmailEditor.ClientID%>').length) {
+                    loadEmailEditor()
+                }
             }
             );
 

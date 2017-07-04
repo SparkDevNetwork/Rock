@@ -16,9 +16,11 @@
 //
 using System;
 using System.Collections.Generic;
+using System.Data.Entity;
 using System.ComponentModel;
 using System.IO;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
@@ -92,28 +94,43 @@ namespace RockWeb.Blocks.Communication
             {
                 ifEmailDesigner.Attributes["srcdoc"] = sampleTemplate;
 
-                var rockContext = new RockContext();
-                var groupTypeCommunicationGroupId = GroupTypeCache.Read( Rock.SystemGuid.GroupType.GROUPTYPE_COMMUNICATIONLIST.AsGuid() ).Id;
-                var groupService = new GroupService( rockContext );
-                var groupMemberService = new GroupMemberService( rockContext );
-                var communicationGroupList = groupService.Queryable().Where( a => a.GroupTypeId == groupTypeCommunicationGroupId ).OrderBy( a => a.Order ).ThenBy( a => a.Name ).ToList();
-                
-                
-                ddlCommunicationGroupList.Items.Clear();
-                ddlCommunicationGroupList.Items.Add( new ListItem() );
-                foreach ( var communicationGroup in communicationGroupList )
-                {
-                    if ( communicationGroup.IsAuthorized( Rock.Security.Authorization.VIEW, this.CurrentPerson ) )
-                    {
-                        var groupMemberCount = groupMemberService.Queryable().Where( a => a.GroupId == communicationGroup.Id ).Count( a => a.GroupMemberStatus == GroupMemberStatus.Active );
-                        var listItemText = string.Format( "{0} ({1} {2})", communicationGroup.Name, groupMemberCount, "individual".PluralizeIf( groupMemberCount != 1 ) );
-                        ddlCommunicationGroupList.Items.Add( new ListItem( listItemText, communicationGroup.Id.ToString() ) );
-                    }
-                }
+                LoadDropDowns();
 
+                tglRecipientSelection_CheckedChanged( null, null );
+            }
+        }
+
+        /// <summary>
+        /// Loads the drop downs.
+        /// </summary>
+        private void LoadDropDowns()
+        {
+            var rockContext = new RockContext();
+
+            // load communication group list
+            var groupTypeCommunicationGroupId = GroupTypeCache.Read( Rock.SystemGuid.GroupType.GROUPTYPE_COMMUNICATIONLIST.AsGuid() ).Id;
+            var groupService = new GroupService( rockContext );
+
+            var communicationGroupList = groupService.Queryable().Where( a => a.GroupTypeId == groupTypeCommunicationGroupId ).OrderBy( a => a.Order ).ThenBy( a => a.Name ).ToList();
+
+            ddlCommunicationGroupList.Items.Clear();
+            ddlCommunicationGroupList.Items.Add( new ListItem() );
+            foreach ( var communicationGroup in communicationGroupList )
+            {
+                if ( communicationGroup.IsAuthorized( Rock.Security.Authorization.VIEW, this.CurrentPerson ) )
+                {
+
+                    ddlCommunicationGroupList.Items.Add( new ListItem( communicationGroup.Name, communicationGroup.Id.ToString() ) );
+                }
             }
 
-            
+            LoadCommunicationSegmentFilters();
+
+            rblCommunicationGroupSegmentFilterType.Items.Clear();
+            rblCommunicationGroupSegmentFilterType.Items.Add( new ListItem( "All segment filters", FilterExpressionType.GroupAll.ToString() ) { Selected = true } );
+            rblCommunicationGroupSegmentFilterType.Items.Add( new ListItem( "Any segment filters", FilterExpressionType.GroupAny.ToString() ) );
+
+            UpdateRecipientFromListCount();
         }
 
         /// <summary>
@@ -128,17 +145,41 @@ namespace RockWeb.Blocks.Communication
 
         #endregion
 
-        #region Recipient Selection Events
+        #region Recipient Selection
 
         /// <summary>
-        /// Handles the Click event of the lbRecipientSelectionNext control.
+        /// Loads the common communication segment filters along with any additional filters that are defined for the selected communication list
+        /// </summary>
+        private void LoadCommunicationSegmentFilters()
+        {
+            var rockContext = new RockContext();
+
+            // load common communication segments (each communication list may have additional segments)
+            var dataviewService = new DataViewService( rockContext );
+            var categoryIdCommunicationSegments = CategoryCache.Read( Rock.SystemGuid.Category.DATAVIEW_COMMUNICATION_SEGMENTS.AsGuid() ).Id;
+            var commonSegmentDataViewList = dataviewService.Queryable().Where( a => a.CategoryId == categoryIdCommunicationSegments ).OrderBy( a => a.Name ).ToList();
+
+            cblCommunicationGroupSegments.Items.Clear();
+            foreach ( var commonSegmentDataView in commonSegmentDataViewList )
+            {
+                if ( commonSegmentDataView.IsAuthorized( Rock.Security.Authorization.VIEW, this.CurrentPerson ) )
+                {
+                    cblCommunicationGroupSegments.Items.Add( new ListItem( commonSegmentDataView.Name, commonSegmentDataView.Id.ToString() ) );
+                }
+            }
+
+            pnlCommunicationGroupSegments.Visible = cblCommunicationGroupSegments.Items.Count > 0;
+        }
+
+        /// <summary>
+        /// Handles the Click event of the btnRecipientSelectionNext control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void lbRecipientSelectionNext_Click( object sender, EventArgs e )
+        protected void btnRecipientSelectionNext_Click( object sender, EventArgs e )
         {
             pnlRecipientSelection.Visible = false;
-            pnlEmailEditor.Visible = true;
+            pnlMediumSelection.Visible = true;
         }
 
         /// <summary>
@@ -149,6 +190,7 @@ namespace RockWeb.Blocks.Communication
         protected void tglRecipientSelection_CheckedChanged( object sender, EventArgs e )
         {
             pnlRecipientSelectionList.Visible = tglRecipientSelection.Checked;
+            pnlRecipientSelectionIndividual.Visible = !tglRecipientSelection.Checked;
         }
 
         /// <summary>
@@ -180,10 +222,131 @@ namespace RockWeb.Blocks.Communication
             // TODO
         }
 
-        #endregion
+        /// <summary>
+        /// Handles the SelectedIndexChanged event of the cblCommunicationGroupSegments control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void cblCommunicationGroupSegments_SelectedIndexChanged( object sender, EventArgs e )
+        {
+            UpdateRecipientFromListCount();
+        }
+
+        /// <summary>
+        /// Handles the SelectedIndexChanged event of the ddlCommunicationGroupList control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void ddlCommunicationGroupList_SelectedIndexChanged( object sender, EventArgs e )
+        {
+            UpdateRecipientFromListCount();
+        }
+
+        /// <summary>
+        /// Handles the SelectedIndexChanged event of the rblCommunicationGroupSegmentFilterType control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void rblCommunicationGroupSegmentFilterType_SelectedIndexChanged( object sender, EventArgs e )
+        {
+            UpdateRecipientFromListCount();
+        }
+
+        /// <summary>
+        /// Updates the recipient from list count.
+        /// </summary>
+        private void UpdateRecipientFromListCount()
+        {
+            IQueryable<GroupMember> groupMemberQuery = null;
+
+            groupMemberQuery = GetRecipientFromListSelection( groupMemberQuery );
+
+            if ( groupMemberQuery != null )
+            {
+                int groupMemberCount = groupMemberQuery.Count();
+                lRecipientFromListCount.Visible = true;
+
+                lRecipientFromListCount.Text = string.Format( "{0} {1} selected", groupMemberCount, "recipient".PluralizeIf( groupMemberCount != 1 ) );
+            }
+            else
+            {
+                lRecipientFromListCount.Visible = false;
+            }
+        }
+
+        /// <summary>
+        /// Gets the GroupMember Query for the recipients selected on the 'Select From List' tab
+        /// </summary>
+        /// <param name="groupMemberQuery">The group member query.</param>
+        /// <returns></returns>
+        private IQueryable<GroupMember> GetRecipientFromListSelection( IQueryable<GroupMember> groupMemberQuery )
+        {
+            var rockContext = new RockContext();
+            var groupMemberService = new GroupMemberService( rockContext );
+            var personService = new PersonService( rockContext );
+            var dataViewService = new DataViewService( rockContext );
+            int? communicationGroupId = ddlCommunicationGroupList.SelectedValue.AsIntegerOrNull();
+            if ( communicationGroupId.HasValue )
+            {
+                groupMemberQuery = groupMemberService.Queryable().Where( a => a.GroupId == communicationGroupId.Value && a.GroupMemberStatus == GroupMemberStatus.Active );
+
+                var segmentFilterType = rblCommunicationGroupSegmentFilterType.SelectedValueAsEnum<FilterExpressionType>();
+                var segmentDataViewIds = cblCommunicationGroupSegments.Items.OfType<ListItem>().Where( a => a.Selected ).Select( a => a.Value.AsInteger() ).ToList();
+
+                Expression segmentExpression = null;
+                ParameterExpression paramExpression = personService.ParameterExpression;
+                var segmentDataViewList = dataViewService.GetByIds( segmentDataViewIds ).AsNoTracking().ToList();
+                foreach ( var segmentDataView in segmentDataViewList )
+                {
+                    List<string> errorMessages;
+
+                    var exp = segmentDataView.GetExpression( personService, paramExpression, out errorMessages );
+                    if ( exp != null )
+                    {
+                        if ( segmentExpression == null )
+                        {
+                            segmentExpression = exp;
+                        }
+                        else
+                        {
+
+                            if ( segmentFilterType == FilterExpressionType.GroupAll )
+                            {
+                                segmentExpression = Expression.AndAlso( segmentExpression, exp );
+                            }
+                            else
+                            {
+                                segmentExpression = Expression.OrElse( segmentExpression, exp );
+                            }
+                        }
+                    }
+                }
+
+                if ( segmentExpression != null )
+                {
+                    var personQry = personService.Get( paramExpression, segmentExpression );
+                    groupMemberQuery = groupMemberQuery.Where( a => personQry.Any( p => p.Id == a.PersonId ) );
+                }
+            }
+
+            return groupMemberQuery;
+        }
+
+        #endregion Recipient Selection
+
+        #region Medium Selection
+
+        protected void btnMediumSelectionNext_Click( object sender, EventArgs e )
+        {
+            pnlMediumSelection.Visible = false;
+            pnlEmailEditor.Visible = true;
+            htmlEditor.Visible = true;
+        }
+
+        #endregion Medium Selection
 
         #region Methods
-        
+
 
         #endregion
 
@@ -432,6 +595,9 @@ namespace RockWeb.Blocks.Communication
 </body>
 </html>
 ";
+
+
+
 
         
     }
