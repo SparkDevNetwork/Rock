@@ -73,12 +73,6 @@
                         </div>
                     </div>
 
-                    <div class="actions">
-                        <asp:LinkButton ID="btnEdit" runat="server" AccessKey="m" ToolTip="Alt+m" Text="Edit" CssClass="btn btn-primary" CausesValidation="false" OnClick="btnEdit_Click" />
-                        <%--                    <Rock:ModalAlert ID="mdDeleteWarning" runat="server" />
-                        <asp:LinkButton ID="btnDelete" runat="server" Text="Delete" CssClass="btn btn-link btn-sm" CausesValidation="false" OnClick="btnDelete_Click" />--%>
-                    </div>
-
                 </fieldset>
             </div>
 

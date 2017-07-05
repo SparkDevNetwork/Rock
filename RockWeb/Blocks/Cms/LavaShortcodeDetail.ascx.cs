@@ -142,7 +142,7 @@ namespace RockWeb.Blocks.Core
             }
 
             hfLavaShortcodeId.Value = lavaShortcode.Id.ToString();
-       
+
             // render UI based on Authorized and IsSystem
             bool readOnly = false;
 
@@ -161,20 +161,11 @@ namespace RockWeb.Blocks.Core
 
             if ( readOnly )
             {
-                btnEdit.Visible = false;
                 ShowReadonlyDetails( lavaShortcode );
             }
             else
             {
-                btnEdit.Visible = true;
-                if ( lavaShortcode.Id > 0 )
-                {
-                    ShowReadonlyDetails( lavaShortcode );
-                }
-                else
-                {
-                    ShowEditDetails( lavaShortcode );
-                }
+                ShowEditDetails( lavaShortcode );
             }
         }
 
@@ -225,7 +216,7 @@ namespace RockWeb.Blocks.Core
             kvlParameters.Value = lavaShortcode.Parameters;
 
             rblTagType.BindToEnum<TagType>();
-            rblTagType.SetValue( (int)lavaShortcode.TagType );
+            rblTagType.SetValue( ( int ) lavaShortcode.TagType );
         }
 
         /// <summary>
