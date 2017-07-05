@@ -68,6 +68,16 @@ namespace Rock.Lava
         }
 
         /// <summary>
+        /// Uniques the identifier.
+        /// </summary>
+        /// <param name="input">The input.</param>
+        /// <returns></returns>
+        public static string UniqueIdentifier( object input )
+        {
+            return Guid.NewGuid().ToString();
+        }
+
+        /// <summary>
         /// Withes the fallback.
         /// </summary>
         /// <param name="input">The input.</param>
