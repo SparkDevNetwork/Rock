@@ -24,6 +24,13 @@ namespace Rock.SystemGuid
     public class Category
     {
 
+        #region Defined Type Categories
+        /// <summary>
+        /// History changes for an event registration
+        /// </summary>
+        public const string DEFINEDTYPE_CMS = "6B1B3106-B7F5-BBA2-4F81-8300F21F6661";
+        #endregion    
+
         #region History Categories
 
         /// <summary>

@@ -123,6 +123,11 @@ namespace Rock.SystemGuid
         public const string DATAVIEW = "57F8FA29-DCF1-4F74-8553-87E90F234139";
 
         /// <summary>
+        /// The guid for the Rock.Model.DefinedType entity.
+        /// </summary>
+        public const string DEFINED_TYPE = "6028D502-79F4-4A74-9323-525E90F900C7";
+
+        /// <summary>
         /// The guid for the Rock.Model.FinancialAccount entity.
         /// </summary>
         public const string FINANCIAL_ACCOUNT = "798BCE48-6AA7-4983-9214-F9BCEFB4521D";
