@@ -61,6 +61,14 @@ namespace DotLiquid
             Shortcodes[name] = typeof( T );
         }
 
+        public static void UnregisterShortcode( string name )
+        {
+            if ( Shortcodes.ContainsKey( name ) )
+            {
+                Shortcodes.Remove( name );
+            }
+        }
+
         public static Type GetShortcodeType( string name )
         {
             Type result;

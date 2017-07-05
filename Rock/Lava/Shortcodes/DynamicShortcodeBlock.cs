@@ -24,6 +24,8 @@ namespace Rock.Lava.Shortcodes
 
         string _markup = string.Empty;
         string _tagName = string.Empty;
+        LavaShortcodeCache _shortcode;
+
         StringBuilder _blockMarkup = new StringBuilder();
 
         /// <summary>
@@ -41,10 +43,32 @@ namespace Rock.Lava.Shortcodes
             }
         }
 
+        /// <summary>
+        /// Initializes the specified tag name.
+        /// </summary>
+        /// <param name="tagName">Name of the tag.</param>
+        /// <param name="markup">The markup.</param>
+        /// <param name="tokens">The tokens.</param>
+        /// <exception cref="System.Exception">Could not find the variable to place results in.</exception>
+        public override void Initialize( string tagName, string markup, List<string> tokens )
+        {
+            _markup = markup;
+            _tagName = tagName;
+            _shortcode = LavaShortcodeCache.Read( _tagName );
+
+            base.Initialize( tagName, markup, tokens );
+        }
+
+        /// <summary>
+        /// Parses the specified tokens.
+        /// </summary>
+        /// <param name="tokens">The tokens.</param>
         protected override void Parse( List<string> tokens )
         {
             // Get the block markup. The list of tokens contains all of the lava from the start tag to
             // the end of the template. This will pull out just the internals of the block.
+
+            var endTagFound = false;
 
             var endTag = $@"{{\[\s*end{ _tagName }\s*\]}}";
             Regex rgx = new Regex( endTag );
@@ -58,28 +82,19 @@ namespace Rock.Lava.Shortcodes
                 Match endTagMatch = rgx.Match( token );
                 if ( endTagMatch.Success )
                 {
-                    return;
+                    endTagFound = true;
+                    break;
                 }
                 else
                 {
-                    _blockMarkup.Append(token);
+                    _blockMarkup.Append( token );
                 }
             }
-        }
 
-        /// <summary>
-        /// Initializes the specified tag name.
-        /// </summary>
-        /// <param name="tagName">Name of the tag.</param>
-        /// <param name="markup">The markup.</param>
-        /// <param name="tokens">The tokens.</param>
-        /// <exception cref="System.Exception">Could not find the variable to place results in.</exception>
-        public override void Initialize( string tagName, string markup, List<string> tokens )
-        {
-            _markup = markup;
-            _tagName = tagName;
-            
-            base.Initialize( tagName, markup, tokens );
+            if ( !endTagFound )
+            {
+                AssertMissingDelimitation();
+            }
         }
 
         /// <summary>
@@ -170,6 +185,17 @@ namespace Rock.Lava.Shortcodes
             var resolvedMarkup = markup.ResolveMergeFields( internalMergeFields );
 
             var parms = new Dictionary<string, object>();
+
+            // create all the parameters from the shortcode with their default values
+            var shortcodeParms = _shortcode.Parameters.Split( '|' ).ToList();
+            foreach ( var shortcodeParm in shortcodeParms )
+            {
+                var shortcodeParmKV = shortcodeParm.Split( '^' );
+                if ( shortcodeParmKV.Length == 2 )
+                {
+                    parms.AddOrReplace( shortcodeParmKV[0], shortcodeParmKV[1] );
+                }
+            }
 
             var markupItems = Regex.Matches( resolvedMarkup, "(.*?:'[^']+')" )
                 .Cast<Match>()

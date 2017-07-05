@@ -18,11 +18,12 @@ using System;
 using System.ComponentModel;
 using System.Linq;
 using System.Web.UI;
-
+using DotLiquid;
 using Rock;
 using Rock.Attribute;
 using Rock.Constants;
 using Rock.Data;
+using Rock.Lava.Shortcodes;
 using Rock.Model;
 using Rock.Security;
 using Rock.Web;
@@ -110,6 +111,22 @@ namespace RockWeb.Blocks.Core
 
             rockContext.SaveChanges();
 
+            // unregister shortcode
+            if ( hfOriginalTagName.Value.IsNotNullOrWhitespace() )
+            {
+                Template.UnregisterShortcode( hfOriginalTagName.Value );
+            }
+
+            // register shortcode
+            if (lavaShortcode.TagType == TagType.Block )
+            {
+                Template.RegisterShortcode<DynamicShortcodeBlock>( lavaShortcode.TagName );
+            }
+            else
+            {
+                Template.RegisterShortcode<DynamicShortcodeInline>( lavaShortcode.TagName );
+            }
+                        
             LavaShortcodeCache.Flush( lavaShortcode.Id );
 
             NavigateToParentPage();
@@ -214,6 +231,7 @@ namespace RockWeb.Blocks.Core
             ceMarkup.Text = lavaShortcode.Markup;
             tbTagName.Text = lavaShortcode.TagName;
             kvlParameters.Value = lavaShortcode.Parameters;
+            hfOriginalTagName.Value = lavaShortcode.TagName;
 
             rblTagType.BindToEnum<TagType>();
             rblTagType.SetValue( ( int ) lavaShortcode.TagType );

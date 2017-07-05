@@ -22,6 +22,7 @@ namespace Rock.Lava.Shortcodes
 
         string _markup = string.Empty;
         string _tagName = string.Empty;
+        LavaShortcodeCache _shortcode;
 
         /// <summary>
         /// Method that will be run at Rock startup
@@ -49,6 +50,7 @@ namespace Rock.Lava.Shortcodes
         {
             _markup = markup;
             _tagName = tagName;
+            _shortcode = LavaShortcodeCache.Read( _tagName );
 
             base.Initialize( tagName, markup, tokens );
         }
@@ -60,14 +62,11 @@ namespace Rock.Lava.Shortcodes
         /// <param name="result">The result.</param>
         public override void Render( Context context, TextWriter result )
         {
-            // get shortcode
-            var shortcode = LavaShortcodeCache.Read( _tagName );
-
-            if (shortcode != null )
+            if (_shortcode != null )
             {
                 var parms = ParseMarkup( _markup, context );
 
-                var results = shortcode.Markup.ResolveMergeFields( parms, shortcode.EnabledLavaCommands );
+                var results = _shortcode.Markup.ResolveMergeFields( parms, _shortcode.EnabledLavaCommands );
 
                 result.Write( results );
             }
@@ -109,6 +108,17 @@ namespace Rock.Lava.Shortcodes
             var resolvedMarkup = markup.ResolveMergeFields( internalMergeFields );
 
             var parms = new Dictionary<string, object>();
+
+            // create all the parameters from the shortcode with their default values
+            var shortcodeParms = _shortcode.Parameters.Split( '|' ).ToList();
+            foreach (var shortcodeParm in shortcodeParms )
+            {
+                var shortcodeParmKV = shortcodeParm.Split( '^' );
+                if (shortcodeParmKV.Length == 2 )
+                {
+                    parms.AddOrReplace( shortcodeParmKV[0], shortcodeParmKV[1] );
+                }
+            }
 
             var markupItems = Regex.Matches( resolvedMarkup, "(.*?:'[^']+')" )
                 .Cast<Match>()
