@@ -114,9 +114,18 @@ namespace Rock.Lava.Shortcodes
                 var blockMarkup = _blockMarkup.ToString();
 
                 // merge the block markup in
-                Regex rgx = new Regex( @"{{\s*blockContent\s*}}" );
-                lavaTemplate = rgx.Replace( lavaTemplate, blockMarkup );
+                if ( blockMarkup.IsNotNullOrWhitespace() )
+                {
+                    Regex rgx = new Regex( @"{{\s*blockContent\s*}}", RegexOptions.IgnoreCase );
+                    lavaTemplate = rgx.Replace( lavaTemplate, blockMarkup );
 
+                    parms.Add( "blockContentExists", true );
+                }
+                else
+                {
+                    parms.Add( "blockContentExists", false );
+                }  
+                
                 // next ensure they did not use any entity commands in the block that are not allowed
                 // this is needed as the shortcode it configured to allow entities for processing that
                 // might allow more entities than the source block, template, action, etc allows

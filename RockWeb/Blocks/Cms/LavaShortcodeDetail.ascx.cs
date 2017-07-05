@@ -108,6 +108,7 @@ namespace RockWeb.Blocks.Core
             lavaShortcode.TagName = tbTagName.Text;
             lavaShortcode.Markup = ceMarkup.Text;
             lavaShortcode.Parameters = kvlParameters.Value;
+            lavaShortcode.EnabledLavaCommands = lcpLavaCommands.Text;
 
             rockContext.SaveChanges();
 
@@ -232,6 +233,7 @@ namespace RockWeb.Blocks.Core
             tbTagName.Text = lavaShortcode.TagName;
             kvlParameters.Value = lavaShortcode.Parameters;
             hfOriginalTagName.Value = lavaShortcode.TagName;
+            lcpLavaCommands.Text = lavaShortcode.EnabledLavaCommands;
 
             rblTagType.BindToEnum<TagType>();
             rblTagType.SetValue( ( int ) lavaShortcode.TagType );
