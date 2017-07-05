@@ -1,20 +1,4 @@
-﻿// <copyright>
-// Copyright by the Spark Development Network
-//
-// Licensed under the Rock Community License (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-// http://www.rockrms.com/license
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-// </copyright>
-//
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Data;
 using System.IO;
 using System.Linq;
@@ -22,29 +6,37 @@ using System.Text;
 using System.Text.RegularExpressions;
 using DotLiquid;
 using DotLiquid.Exceptions;
+using DotLiquid.Util;
 using Rock.Data;
+using Rock.Web.Cache;
+using Rock.Model;
 
-namespace Rock.Lava.Blocks
+namespace Rock.Lava.Shortcodes
 {
     /// <summary>
-    /// Sql stores the result of provided SQL query into a variable.
     /// 
-    /// {% sql results %}
-    /// SELECT [FirstName], [LastName] FROM [Person]
-    /// {% endsql %}
     /// </summary>
-    public class Sql : RockLavaBlockBase
+    public class DynamicShortcodeInline : RockLavaShortcodeBase
     {
         private static readonly Regex Syntax = new Regex( @"(\w+)" );
 
         string _markup = string.Empty;
+        string _tagName = string.Empty;
+        LavaShortcodeCache _shortcode;
 
         /// <summary>
         /// Method that will be run at Rock startup
         /// </summary>
         public override void OnStartup()
         {
-            Template.RegisterTag<Sql>( "sql" );
+            // get all the inline dynamic shortcodes and register them
+            var inlineShortCodes = LavaShortcodeCache.All( false ).Where( s => s.TagType == TagType.Inline );
+
+            foreach(var shortcode in inlineShortCodes )
+            {
+                // register this shortcode
+                Template.RegisterShortcode<DynamicShortcodeInline>( shortcode.TagName );
+            }
         }
 
         /// <summary>
@@ -57,6 +49,8 @@ namespace Rock.Lava.Blocks
         public override void Initialize( string tagName, string markup, List<string> tokens )
         {
             _markup = markup;
+            _tagName = tagName;
+            _shortcode = LavaShortcodeCache.Read( _tagName );
 
             base.Initialize( tagName, markup, tokens );
         }
@@ -68,41 +62,17 @@ namespace Rock.Lava.Blocks
         /// <param name="result">The result.</param>
         public override void Render( Context context, TextWriter result )
         {
-            // first ensure that sql commands are allowed in the context
-            if ( !this.IsAuthorized( context ) )
+            if (_shortcode != null )
             {
-                result.Write( string.Format( RockLavaBlockBase.NotAuthorizedMessage, this.Name ) );
-                base.Render( context, result );
-                return;
-            }
-
-            using ( TextWriter sql = new StringWriter() )
-            {
-                base.Render( context, sql );
-
                 var parms = ParseMarkup( _markup, context );
 
-                if ( parms["statement"] == "select" )
-                {
-                    var results = DbService.GetDataSet( sql.ToString(), CommandType.Text, null, null );
+                var results = _shortcode.Markup.ResolveMergeFields( parms, _shortcode.EnabledLavaCommands );
 
-                    var dropRows = new List<DataRowDrop>();
-                    if ( results.Tables.Count == 1 )
-                    {
-                        foreach ( DataRow row in results.Tables[0].Rows )
-                        {
-                            dropRows.Add( new DataRowDrop( row ) );
-                        }
-                    }
-
-                    context.Scopes.Last()[parms["return"]] = dropRows;
-                }
-                else if (parms["statement"] == "command" )
-                {
-                    int numOfRowEffected = new RockContext().Database.ExecuteSqlCommand( sql.ToString() );
-
-                    context.Scopes.Last()[parms["return"]] = numOfRowEffected;
-                }
+                result.Write( results );
+            }
+            else
+            {
+                result.Write( $"An error occurred while processing the {0} shortcode.", _tagName );
             }
         }
 
@@ -113,7 +83,7 @@ namespace Rock.Lava.Blocks
         /// <param name="context">The context.</param>
         /// <returns></returns>
         /// <exception cref="System.Exception">No parameters were found in your command. The syntax for a parameter is parmName:'' (note that you must use single quotes).</exception>
-        private Dictionary<string, string> ParseMarkup( string markup, Context context )
+        private Dictionary<string, object> ParseMarkup( string markup, Context context )
         {
             // first run lava across the inputted markup
             var internalMergeFields = new Dictionary<string, object>();
@@ -137,9 +107,18 @@ namespace Rock.Lava.Blocks
             }
             var resolvedMarkup = markup.ResolveMergeFields( internalMergeFields );
 
-            var parms = new Dictionary<string, string>();
-            parms.Add( "return", "results" );
-            parms.Add( "statement", "select" );
+            var parms = new Dictionary<string, object>();
+
+            // create all the parameters from the shortcode with their default values
+            var shortcodeParms = _shortcode.Parameters.Split( '|' ).ToList();
+            foreach (var shortcodeParm in shortcodeParms )
+            {
+                var shortcodeParmKV = shortcodeParm.Split( '^' );
+                if (shortcodeParmKV.Length == 2 )
+                {
+                    parms.AddOrReplace( shortcodeParmKV[0], shortcodeParmKV[1] );
+                }
+            }
 
             var markupItems = Regex.Matches( resolvedMarkup, "(.*?:'[^']+')" )
                 .Cast<Match>()
@@ -155,30 +134,6 @@ namespace Rock.Lava.Blocks
                 }
             }
             return parms;
-        }
-
-
-        /// <summary>
-        ///
-        /// </summary>
-        private class DataRowDrop : DotLiquid.Drop
-        {
-            private readonly DataRow _dataRow;
-
-            public DataRowDrop( DataRow dataRow )
-            {
-                _dataRow = dataRow;
-            }
-
-            public override object BeforeMethod( string method )
-            {
-                if ( _dataRow.Table.Columns.Contains( method ) )
-                {
-                    return _dataRow[method];
-                }
-
-                return null;
-            }
         }
     }
 }
