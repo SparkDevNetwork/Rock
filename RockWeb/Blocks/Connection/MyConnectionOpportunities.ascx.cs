@@ -74,10 +74,10 @@ namespace RockWeb.Blocks.Connection
     {% if ConnectionRequestStatusIcons.IsUnassigned %}
     <span class='badge badge-warning js-legend-badge' data-toggle='tooltip' data-original-title='Unassigned'>&nbsp;</span>
     {% endif %}
-    {% if ConnectionRequestStatusIcons.IsIdle %}
+    {% if ConnectionRequestStatusIcons.IsCritical %}
     <span class='badge badge-critical js-legend-badge' data-toggle='tooltip' data-original-title='Critical'>&nbsp;</span>
     {% endif %}
-    {% if ConnectionRequestStatusIcons.IsCritical %}
+    {% if ConnectionRequestStatusIcons.IsIdle %}
     <span class='badge badge-danger js-legend-badge' data-toggle='tooltip' data-original-title='{{ IdleTooltip }}'>&nbsp;</span> 
     {% endif %}
 </div>
