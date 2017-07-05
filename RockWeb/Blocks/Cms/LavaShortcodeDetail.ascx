@@ -50,7 +50,7 @@
                                 <Rock:KeyValueList ID="kvlParameters" runat="server" Label="Parameters" Help="List the parameters for your shortcode. If you provide a value here it will become the default value if none is provided." />
                             </div>
                             <div class="col-md-6">
-                                
+                                <Rock:LavaCommandsPicker id="lcpLavaCommands" runat="server" Label="Enabled Lava Commands" />
                             </div>
                         </div>
 
