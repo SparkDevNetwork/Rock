@@ -8,7 +8,7 @@
         <asp:Panel ID="pnlLavaShortcodeList" CssClass="panel panel-block" runat="server">
 
             <div class="panel-heading">
-                <h1 class="panel-title"><i class="fa fa-lightbulb-o"></i> Lava Shortcode List</h1>
+                <h1 class="panel-title"><i class="fa fa-cube"></i> Lava Shortcode List</h1>
             </div>
             <div class="panel-body">
                 <div class="grid grid-panel">

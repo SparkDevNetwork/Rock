@@ -7,7 +7,7 @@
             <asp:HiddenField ID="hfLavaShortcodeId" runat="server" />
 
             <div class="panel-heading">
-                <h1 class="panel-title"><i class="fa fa-lightbulb-o"></i>
+                <h1 class="panel-title"><i class="fa fa-cube"></i>
                     <asp:Literal ID="lActionTitle" runat="server" /></h1>
 
                 <div class="panel-labels">
@@ -29,17 +29,27 @@
                             </div>
                         </div>
 
+                        <div class="row">
+                            <div class="col-md-6">
+                                <Rock:DataTextBox ID="tbTagName" runat="server" Help="This will be the name of the shortcode when used in Lava." SourceTypeName="Rock.Model.LavaShortcode, Rock" PropertyName="TagName" />
+                            </div>
+                            <div class="col-md-6">
+                                <Rock:RockRadioButtonList ID="rblTagType" Required="true" runat="server" Help="Block tags require an end tag while inline do not." Label="TagType" RepeatDirection="Horizontal" />
+                            </div>
+                        </div>
+
                         <Rock:DataTextBox ID="tbDescription" runat="server" SourceTypeName="Rock.Model.LavaShortcode, Rock" PropertyName="Description" TextMode="MultiLine" Rows="4" />
 
-                        <Rock:HtmlEditor ID="htmlDocumentation" runat="server" Label="Documentation" Help="Technical description of the internals of the shortcode" />
+                        <Rock:HtmlEditor ID="htmlDocumentation" runat="server" Label="Documentation" Help="Technical description of the internals of the shortcode" Height="250" />
+
+                        <Rock:CodeEditor ID="ceMarkup" Label="Shortcode Markup" runat="server" Height="250" Required="true" RequiredErrorMessage="Please provide Lava markup for this shortcode." />
 
                         <div class="row">
                             <div class="col-md-6">
-                                <Rock:DataTextBox ID="tbTagName" runat="server" SourceTypeName="Rock.Model.LavaShortcode, Rock" PropertyName="TagName" />
-                                <Rock:RockRadioButtonList ID="rblTagType" Required="true" runat="server" Label="TagType" RepeatDirection="Horizontal" />
+                                <Rock:KeyValueList ID="kvlParameters" runat="server" Label="Parameters" Help="List the parameters for your shortcode. If you provide a value here it will become the default value if none is provided." />
                             </div>
                             <div class="col-md-6">
-                                <Rock:DataTextBox ID="tbMarkup" runat="server" SourceTypeName="Rock.Model.LavaShortcode, Rock" PropertyName="Markup" TextMode="MultiLine" Rows="4" />
+                                
                             </div>
                         </div>
 

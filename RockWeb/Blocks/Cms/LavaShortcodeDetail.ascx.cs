@@ -105,9 +105,13 @@ namespace RockWeb.Blocks.Core
             lavaShortcode.Documentation = htmlDocumentation.Text;
             lavaShortcode.TagType = rblTagType.SelectedValueAsEnum<TagType>();
             lavaShortcode.TagName = tbTagName.Text;
-            lavaShortcode.Markup = tbMarkup.Text;
+            lavaShortcode.Markup = ceMarkup.Text;
+            lavaShortcode.Parameters = kvlParameters.Value;
 
             rockContext.SaveChanges();
+
+            LavaShortcodeCache.Flush( lavaShortcode.Id );
+
             NavigateToParentPage();
         }
 
@@ -216,9 +220,10 @@ namespace RockWeb.Blocks.Core
             cbIsActive.Checked = lavaShortcode.IsActive;
             tbDescription.Text = lavaShortcode.Description;
             htmlDocumentation.Text = lavaShortcode.Documentation;
-            tbMarkup.Text = lavaShortcode.Markup;
+            ceMarkup.Text = lavaShortcode.Markup;
             tbTagName.Text = lavaShortcode.TagName;
-            
+            kvlParameters.Value = lavaShortcode.Parameters;
+
             rblTagType.BindToEnum<TagType>();
             rblTagType.SetValue( (int)lavaShortcode.TagType );
         }
