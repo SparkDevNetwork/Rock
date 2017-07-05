@@ -32,6 +32,7 @@
                         <div class="row">
                             <div class="col-md-6">
                                 <Rock:DataTextBox ID="tbTagName" runat="server" Help="This will be the name of the shortcode when used in Lava." SourceTypeName="Rock.Model.LavaShortcode, Rock" PropertyName="TagName" />
+                                <asp:HiddenField ID="hfOriginalTagName" runat="server" />
                             </div>
                             <div class="col-md-6">
                                 <Rock:RockRadioButtonList ID="rblTagType" Required="true" runat="server" Help="Block tags require an end tag while inline do not." Label="TagType" RepeatDirection="Horizontal" />
@@ -42,7 +43,7 @@
 
                         <Rock:HtmlEditor ID="htmlDocumentation" runat="server" Label="Documentation" Help="Technical description of the internals of the shortcode" Height="250" />
 
-                        <Rock:CodeEditor ID="ceMarkup" Label="Shortcode Markup" runat="server" Height="250" Required="true" RequiredErrorMessage="Please provide Lava markup for this shortcode." />
+                        <Rock:CodeEditor ID="ceMarkup" Label="Shortcode Markup" runat="server" EditorHeight="350" Required="true" RequiredErrorMessage="Please provide Lava markup for this shortcode." />
 
                         <div class="row">
                             <div class="col-md-6">
