@@ -1339,7 +1339,7 @@ namespace RockWeb.Blocks.Connection
 
                 groups = new GroupService( new RockContext() )
                                 .Queryable().AsNoTracking()
-                                .Where( g => g.GroupTypeId == placementGroupTypeId
+                                .Where( g => g.GroupTypeId == placementGroupTypeId && g.IsActive
                                              && ( g.Campus == null || g.CampusId == connectionRequest.CampusId ) )
                                 .ToList();
 
@@ -1349,6 +1349,7 @@ namespace RockWeb.Blocks.Connection
                 var opportunityGroupIds = connectionRequest.ConnectionOpportunity.ConnectionOpportunityGroups.Select( o => o.Id ).ToList();
 
                 groups = connectionRequest.ConnectionOpportunity.ConnectionOpportunityGroups
+                                    .Where(g => g.Group.IsActive)
                                     .Where( g =>
                                         g.Group.Campus == null ||
                                         g.Group.CampusId == connectionRequest.CampusId ||
