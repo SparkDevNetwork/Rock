@@ -92,7 +92,7 @@ namespace RockWeb.Blocks.Communication
 
             if ( !Page.IsPostBack )
             {
-                ifEmailDesigner.Attributes["srcdoc"] = sampleTemplate;
+                
 
                 LoadDropDowns();
 
@@ -131,6 +131,8 @@ namespace RockWeb.Blocks.Communication
             rblCommunicationGroupSegmentFilterType.Items.Add( new ListItem( "Any segment filters", FilterExpressionType.GroupAny.ToString() ) );
 
             UpdateRecipientFromListCount();
+
+            BindTemplatePicker();
         }
 
         /// <summary>
@@ -336,21 +338,159 @@ namespace RockWeb.Blocks.Communication
 
         #region Medium Selection
 
+        /// <summary>
+        /// Handles the Click event of the btnMediumSelectionPrevious control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void btnMediumSelectionPrevious_Click( object sender, EventArgs e )
+        {
+            pnlMediumSelection.Visible = false;
+            pnlRecipientSelection.Visible = true;
+        }
+
+        /// <summary>
+        /// Handles the Click event of the btnMediumSelectionNext control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnMediumSelectionNext_Click( object sender, EventArgs e )
         {
             pnlMediumSelection.Visible = false;
-            pnlEmailEditor.Visible = true;
-            htmlEditor.Visible = true;
+            pnlTemplateSelection.Visible = true;
+
+        }
+
+        /// <summary>
+        /// Handles the CheckedChanged event of the tglSendDateTime control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void tglSendDateTime_CheckedChanged( object sender, EventArgs e )
+        {
+            dtpSendDateTime.Visible = !tglSendDateTime.Checked;
         }
 
         #endregion Medium Selection
 
+        #region Template Selection
+
+
+        /// <summary>
+        /// Binds the template picker.
+        /// </summary>
+        private void BindTemplatePicker()
+        {
+            var rockContext = new RockContext();
+
+            // TODO: Limit to 'non-legacy' templates
+            var templateQuery = new CommunicationTemplateService( rockContext ).Queryable().OrderBy( a => a.Name );
+
+            // get list of templates that the current user is authorized to View
+            var templateList = templateQuery.AsNoTracking().ToList().Where( a => a.IsAuthorized( Rock.Security.Authorization.VIEW, this.CurrentPerson ) ).ToList();
+
+            rptSelectTemplate.DataSource = templateList;
+            rptSelectTemplate.DataBind();
+        }
+
+        /// <summary>
+        /// Handles the ItemDataBound event of the rptSelectTemplate control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="RepeaterItemEventArgs"/> instance containing the event data.</param>
+        protected void rptSelectTemplate_ItemDataBound( object sender, RepeaterItemEventArgs e )
+        {
+            // TODO
+            CommunicationTemplate communicationTemplate = e.Item.DataItem as CommunicationTemplate;
+            
+            if ( communicationTemplate != null )
+            {
+                Literal lTemplateImagePreview = e.Item.FindControl( "lTemplateImagePreview" ) as Literal;
+                Literal lTemplateName = e.Item.FindControl( "lTemplateName" ) as Literal;
+                Literal lTemplateDescription = e.Item.FindControl( "lTemplateDescription" ) as Literal;
+                LinkButton btnSelectTemplate = e.Item.FindControl( "btnSelectTemplate" ) as LinkButton;
+
+                lTemplateImagePreview.Text = this.GetImageTag( communicationTemplate.ImageFileId );
+                lTemplateName.Text = communicationTemplate.Name;
+                lTemplateDescription.Text = communicationTemplate.Description;
+                btnSelectTemplate.CommandName = "CommunicationTemplateId";
+                btnSelectTemplate.CommandArgument = communicationTemplate.Id.ToString();
+            }
+
+        }
+
+        /// <summary>
+        /// Handles the Click event of the btnSelectTemplate control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void btnSelectTemplate_Click( object sender, EventArgs e )
+        {
+            hfSelectedCommunicationTemplateId.Value = ( sender as LinkButton ).CommandArgument;
+            pnlTemplateSelection.Visible = false;
+
+            var templateHtml = new CommunicationTemplateService( new RockContext() ).Get( hfSelectedCommunicationTemplateId.Value.AsInteger() ).Message;
+            //templateHtml = this.sampleTemplate;
+            ifEmailDesigner.Attributes["srcdoc"] = templateHtml;
+
+            // TODO
+            pnlEmailEditor.Visible = true;
+        }
+
+        /// <summary>
+        /// Handles the Click event of the btnTemplateSelectionPrevious control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void btnTemplateSelectionPrevious_Click( object sender, EventArgs e )
+        {
+            pnlTemplateSelection.Visible = false;
+            pnlMediumSelection.Visible = true;
+        }
+
+        /// <summary>
+        /// Handles the Click event of the btnTemplateSelectionNext control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void btnTemplateSelectionNext_Click( object sender, EventArgs e )
+        {
+            //pnlTemplateSelection.Visible = false;
+
+            // TODO
+            //pnlEmailEditor.Visible = true;
+        }
+
+        #endregion Template Selection
+
+        #region Email Editor
+
+        /// <summary>
+        /// Handles the Click event of the btnEmailEditorPrevious control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void btnEmailEditorPrevious_Click( object sender, EventArgs e )
+        {
+            pnlTemplateSelection.Visible = true;
+            pnlEmailEditor.Visible = false;
+        }
+
+        /// <summary>
+        /// Handles the Click event of the btnEmailEditorNext control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void btnEmailEditorNext_Click( object sender, EventArgs e )
+        {
+            // TODO
+        }
+
+        #endregion Email Editor
+
         #region Methods
 
-
         #endregion
-
-
 
         // remove before flight
         string sampleTemplate = @"<!DOCTYPE html>
@@ -597,8 +737,14 @@ namespace RockWeb.Blocks.Communication
 ";
 
 
+        protected void btnEmailSummaryPrevious_Click( object sender, EventArgs e )
+        {
 
+        }
 
-        
+        protected void btnEmailSummaryNext_Click( object sender, EventArgs e )
+        {
+
+        }
     }
 }
