@@ -467,7 +467,7 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
 
                         document.Add( listItemTable );
 
-                        if ( ! string.IsNullOrWhiteSpace( reservationSummary.Note ) )
+                        if ( !string.IsNullOrWhiteSpace( reservationSummary.Note ) )
                         {
                             //document.Add( Chunk.NEWLINE );
                             var listNoteTable = new PdfPTable( 1 );
@@ -520,7 +520,8 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
                 ReservationEndDateTime = r.ReservationEndDateTime,
                 EventDateTimeDescription = r.EventTimeDescription,
                 ReservationDateTimeDescription = r.ReservationTimeDescription,
-                SetupPhotoId = r.SetupPhotoId
+                SetupPhotoId = r.SetupPhotoId,
+                SetupPhotoLink = ResolveRockUrl( String.Format( "~/GetImage.ashx?id={0}", r.SetupPhotoId ?? 0 ) )
             } )
             .OrderBy( r => r.EventStartDateTime )
             .GroupBy( r => r.EventStartDateTime.Date )

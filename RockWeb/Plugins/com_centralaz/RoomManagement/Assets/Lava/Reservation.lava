@@ -73,7 +73,7 @@
 			</div>
 			<div class="col-xs-1">
 			  {% if reservationSummary.SetupPhotoId %}
-				<a href='{{ '~' | ResolveRockUrl }}GetImage.ashx?id={{ reservationSummary.SetupPhotoId }}' target='_blank'><img src='{{ '~' | ResolveRockUrl }}GetImage.ashx?id={{ reservationSummary.SetupPhotoId }}&maxwidth=30&maxheight=30'/></a>
+				<a href='{{ reservationSummary.SetupPhotoLink }}' target='_blank'><img src='{{ reservationSummary.SetupPhotoLink }}&maxwidth=30&maxheight=30'/></a>
 				{% endif %}
 			</div>
 			<div class="col-xs-1">
