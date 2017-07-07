@@ -603,8 +603,9 @@ namespace RockWeb.Blocks.Fundraising
             }
 
             // if btnContributionsTab is the only visible tab, hide the tab since there is nothing else to tab to
-            if ( !btnUpdatesTab.Visible )
+            if ( !btnUpdatesTab.Visible && btnContributionsTab.Visible )
             {
+                SetActiveTab( "Contributions" );
                 btnContributionsTab.Visible = false;
             }
         }
