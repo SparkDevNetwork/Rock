@@ -85,8 +85,17 @@
             <legend><asp:Literal ID="lAction" runat="server"></asp:Literal> Block</legend>
             <Rock:DataTextBox ID="tbBlockName" runat="server" SourceTypeName="Rock.Model.Block, Rock" PropertyName="Name" Required="true" 
                 ValidationGroup="ZoneBlockValidationGroup" CssClass="input-large"/>
-            <Rock:DataDropDownList ID="ddlBlockType" runat="server" SourceTypeName="Rock.Model.Block, Rock" PropertyName="BlockTypeId" Label="Type" 
-                AutoPostBack="true" OnSelectedIndexChanged="ddlBlockType_SelectedIndexChanged" CssClass="input-large" ValidationGroup="ZoneBlockValidationGroup" />
+            <div class="row">
+                <div class="col-md-6">
+                    <Rock:RockDropDownList ID="ddlBlockType" runat="server" Label="Type" AutoPostBack="true" OnSelectedIndexChanged="ddlBlockType_SelectedIndexChanged" />
+                </div>
+                <div class="col-md-6 padding-t-md">
+                    <label>Common Block Types</label><br />
+                    <asp:LinkButton ID="btnHtmlContentQuickSetting" runat="server" Text="HTML Content" CssClass="btn btn-default btn-xs" OnClick="btnNewBlockQuickSetting_Click" />
+                    <asp:LinkButton ID="btnContentChannelQuickSetting" runat="server" Text="Content Channel View" CssClass="btn btn-default btn-xs" OnClick="btnNewBlockQuickSetting_Click" />
+                    <asp:LinkButton ID="btnPageMenuQuickSetting" runat="server" Text="Page Menu" CssClass="btn btn-default btn-xs" OnClick="btnNewBlockQuickSetting_Click" />
+                </div>
+            </div>
         </fieldset>
 
         <div class="actions">
