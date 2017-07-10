@@ -80,8 +80,10 @@
     <Compile Include="Search\Report\Name.cs" />
     <Compile Include="Search\WorkflowType\Name.cs" />
     <Compile Include="SystemGuids\Attribute.cs" />
+    <Compile Include="SystemGuids\BinaryFileType.cs" />
     <Compile Include="SystemGuids\Category.cs" />
     <Compile Include="SystemGuids\EmailTemplate.cs" />
+    <Compile Include="SystemGuids\Group.cs" />
     <Compile Include="SystemGuids\Schedule.cs" />
     <Compile Include="Workflow\Action\PostWebhook.cs" />
     <Compile Include="Workflow\Action\SetPersonMobileSMSNumber.cs" />

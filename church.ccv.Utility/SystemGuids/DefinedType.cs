@@ -34,5 +34,10 @@ namespace church.ccv.Utility.SystemGuids
         /// </summary>
         public const string RESIDENCY_POINT_OF_ASSESSMENT_TYPE = "338A8802-4022-404F-9FA2-150F1FB3838F";
 
+        /// <summary>
+        /// The types of results for a Care Request
+        /// </summary>
+        public const string CARE_RESULT_TYPE = "DAD62E69-9FFE-4225-9097-2758969297F3";
+
     }
 }
