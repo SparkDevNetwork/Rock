@@ -45,7 +45,7 @@ namespace RockWeb.Plugins.church_ccv.SafetySecurity
         const int sBackgroundCheck_WorkflowId = 26;
         const int sCharacterReference_WorkflowId = 203;
         const int sSendNewCharacterReference_WorkflowId = 213;
-        const int sResendApplication_WorkflowId = 211;
+        const int sResendApplication_WorkflowId = 231;
 
         private int VSInstanceId { get; set; }
 
@@ -251,7 +251,7 @@ namespace RockWeb.Plugins.church_ccv.SafetySecurity
                         lApplicationWorkflow.Text = "<a href=/WorkflowEntry/" + sResendApplication_WorkflowId.ToString( );
 
                         // now add the query params needed to re-send this application
-                        lApplicationWorkflow.Text += string.Format( "?ApplicationWorkflowGuid={0}&ApplicantEmail={1}&ApplicantFirstName={2}&ApplicantLastName={3}&SourceVolunteerScreeningId={4}>", applicationWorkflow.Guid, person.Email, person.FirstName, person.LastName, vsInstance.Id );
+                        lApplicationWorkflow.Text += string.Format( "?ApplicationWorkflowGuid={0}&ApplicantEmail={1}&ApplicantFirstName={2}&ApplicantLastName={3}&SourceVolunteerScreeningId={4}&ApplicationWorkflowTypeId={5}>", applicationWorkflow.Guid, person.Email, person.FirstName, person.LastName, vsInstance.Id, applicationWorkflow.WorkflowTypeId );
                         lApplicationWorkflow.Text += "Resend Application</a>";
                         lDateApplicationCompleted.Text = "Application has not yet been returned.";
                     }

@@ -133,9 +133,18 @@ namespace RockWeb.Plugins.church_ccv.SafetySecurity
             // setup the status / state
             ddlStatus.Items.Clear( );
             ddlStatus.Items.Add( string.Empty );
-            ddlStatus.Items.Add( VolunteerScreening.sState_HandedOff );
-            ddlStatus.Items.Add( VolunteerScreening.sState_InReview );
             ddlStatus.Items.Add( VolunteerScreening.sState_Waiting );
+            ddlStatus.Items.Add( VolunteerScreening.sState_InReviewWithCampus );
+            ddlStatus.Items.Add( VolunteerScreening.sState_InReviewWithSecurity );
+            ddlStatus.Items.Add( VolunteerScreening.sState_Accepted );
+
+            // JHM 7-10-17
+            // HORRIBLE HACK - If the application was sent before we ended testing, we need to support old states and attributes.
+            // We need to do this because we have 100+ applications that were sent out (and not yet completed) during our testing phase. I was hoping for like, 10.
+            // We can get rid of this when all workflows of type 202 are marked as 'completed'
+            ddlStatus.Items.Add( VolunteerScreening.sState_HandedOff_TestVersion );
+            ddlStatus.Items.Add( VolunteerScreening.sState_InReview_TestVersion );
+
             ddlStatus.SetValue( rFilter.GetUserPreference( "Status" ) );
 
             // setup the STARS applicants
@@ -182,7 +191,7 @@ namespace RockWeb.Plugins.church_ccv.SafetySecurity
         {
             using ( RockContext rockContext = new RockContext( ) )
             {
-                // get all the volunteer screening instances tied to this person
+                // get all volunteer screening instances
                 var vsQuery = new Service<VolunteerScreening>( rockContext ).Queryable( ).AsNoTracking( );
                 var paQuery = new Service<PersonAlias>( rockContext ).Queryable( ).AsNoTracking( );
                 var wfQuery = new Service<Workflow>( rockContext ).Queryable( ).AsNoTracking( );
@@ -278,12 +287,24 @@ namespace RockWeb.Plugins.church_ccv.SafetySecurity
 
         string IsStars( Workflow workflow )
         {
+            // JHM 7-10-17
+            // HORRIBLE HACK - If the application was sent before we ended testing, we need to support old states and attributes.
+            // We need to do this because we have 100+ applications that were sent out (and not yet completed) during our testing phase. I was hoping for like, 10.
+            // We can get rid of this when all workflows of type 202 are marked as 'completed'
             if( workflow.AttributeValues.ContainsKey( "ApplyingForStars" ) )
             {
                 return workflow.AttributeValues [ "ApplyingForStars" ].ToString( );
             }
+            else
+            {
+                // The newer applications will simply have 'STARS' in their name
+                if( workflow.Name.Contains( "STARS" ) )
+                {
+                    return "Yes";
+                }
 
-            return string.Empty;
+                return "No";
+            }
         }
 
         string ParseCompletedDate( DateTime sentDate, DateTime completedDate )
