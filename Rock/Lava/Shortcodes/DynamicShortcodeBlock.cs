@@ -68,10 +68,17 @@ namespace Rock.Lava.Shortcodes
             // Get the block markup. The list of tokens contains all of the lava from the start tag to
             // the end of the template. This will pull out just the internals of the block.
 
+            // We must take into consideration nested tags of the same type
+
             var endTagFound = false;
 
+            var startTag = $@"{{\[\s*{ _tagName }\s*\]}}";
             var endTag = $@"{{\[\s*end{ _tagName }\s*\]}}";
-            Regex rgx = new Regex( endTag );
+
+            var childTags = 0;
+
+            Regex regExStart = new Regex( startTag );
+            Regex regExEnd = new Regex( endTag );
 
             NodeList = NodeList ?? new List<object>();
             NodeList.Clear();
@@ -79,15 +86,34 @@ namespace Rock.Lava.Shortcodes
             string token;
             while ( ( token = tokens.Shift() ) != null )
             {
-                Match endTagMatch = rgx.Match( token );
-                if ( endTagMatch.Success )
+
+                Match startTagMatch = regExStart.Match( token );
+                if ( startTagMatch.Success )
                 {
-                    endTagFound = true;
-                    break;
+                    childTags++; // increment the child tag counter
+                    _blockMarkup.Append( token );
                 }
                 else
                 {
-                    _blockMarkup.Append( token );
+                    Match endTagMatch = regExEnd.Match( token );
+
+                    if ( endTagMatch.Success )
+                    {
+                        if (childTags > 0 )
+                        {
+                            childTags--; // decrement the child tag counter
+                            _blockMarkup.Append( token );
+                        }
+                        else
+                        {
+                            endTagFound = true;
+                            break;
+                        }
+                    }
+                    else
+                    {
+                        _blockMarkup.Append( token );
+                    }
                 }
             }
 
