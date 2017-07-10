@@ -33,6 +33,20 @@ namespace Rock.Lava.Blocks
     public class RockLavaBlockBase : DotLiquid.Block, IRockStartup
     {
         /// <summary>
+        /// Gets the not authorized message.
+        /// </summary>
+        /// <value>
+        /// The not authorized message.
+        /// </value>
+        public static string NotAuthorizedMessage
+        {
+            get
+            {
+                return "The Lava command '{0}' is not configured for this template.";
+            }
+        }
+        
+        /// <summary>
         /// Determines whether the specified command is authorized.
         /// </summary>
         /// <param name="context">The context.</param>
