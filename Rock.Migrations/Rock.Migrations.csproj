@@ -249,17 +249,13 @@
     <Compile Include="Migrations\201706221549322_UrlMap.Designer.cs">
       <DependentUpon>201706221549322_UrlMap.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201706272251004_CommunicationUpdates.cs" />
-    <Compile Include="Migrations\201706272251004_CommunicationUpdates.Designer.cs">
-      <DependentUpon>201706272251004_CommunicationUpdates.cs</DependentUpon>
+    <Compile Include="Migrations\201707052116053_LavaShortcodes.cs" />
+    <Compile Include="Migrations\201707052116053_LavaShortcodes.Designer.cs">
+      <DependentUpon>201707052116053_LavaShortcodes.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201706302335586_communicationV2.cs" />
-    <Compile Include="Migrations\201706302335586_communicationV2.Designer.cs">
-      <DependentUpon>201706302335586_communicationV2.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Migrations\201706302352023_CommunicationSegments.cs" />
-    <Compile Include="Migrations\201706302352023_CommunicationSegments.Designer.cs">
-      <DependentUpon>201706302352023_CommunicationSegments.cs</DependentUpon>
+    <Compile Include="Migrations\201707101648235_CommonBlockTypes.cs" />
+    <Compile Include="Migrations\201707101648235_CommonBlockTypes.Designer.cs">
+      <DependentUpon>201707101648235_CommonBlockTypes.cs</DependentUpon>
     </Compile>
     <Compile Include="Migrations\RockMigrationSQL.Designer.cs">
       <AutoGen>True</AutoGen>
@@ -2597,14 +2593,11 @@
     <EmbeddedResource Include="Migrations\201706221549322_UrlMap.resx">
       <DependentUpon>201706221549322_UrlMap.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201706272251004_CommunicationUpdates.resx">
-      <DependentUpon>201706272251004_CommunicationUpdates.cs</DependentUpon>
+    <EmbeddedResource Include="Migrations\201707052116053_LavaShortcodes.resx">
+      <DependentUpon>201707052116053_LavaShortcodes.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201706302335586_communicationV2.resx">
-      <DependentUpon>201706302335586_communicationV2.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201706302352023_CommunicationSegments.resx">
-      <DependentUpon>201706302352023_CommunicationSegments.cs</DependentUpon>
+    <EmbeddedResource Include="Migrations\201707101648235_CommonBlockTypes.resx">
+      <DependentUpon>201707101648235_CommonBlockTypes.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 6.0\Version 1.6.0\201609282147388_WaitList.resx">
       <DependentUpon>201609282147388_WaitList.cs</DependentUpon>
@@ -4365,6 +4358,9 @@
     </Content>
     <Content Include="Migrations\201706141234225_CommunicationQueueAlertJob_ufnCrm_GetGradeOffset.sql">
       <DependentUpon>201706141234225_CommunicationQueueAlertJob.cs</DependentUpon>
+    </Content>
+    <Content Include="Migrations\201707101648235_CommonBlockTypes_spCore_BinaryFileGet.sql">
+      <DependentUpon>201707101648235_CommonBlockTypes.cs</DependentUpon>
     </Content>
     <Content Include="Migrations\Version 6.0\Version 1.6.0\201608171937068_GivingAnalyticsAccounts_AccountTotals.sql" />
     <Content Include="Migrations\Version 6.0\Version 1.6.0\201608171937068_GivingAnalyticsAccounts_FirstLastEverDates.sql" />

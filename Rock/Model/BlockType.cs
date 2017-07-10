@@ -50,6 +50,16 @@ namespace Rock.Model
         public bool IsSystem { get; set; }
 
         /// <summary>
+        /// Gets or sets a value indicating whether this blocktype is commonly used
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if this instance is common; otherwise, <c>false</c>.
+        /// </value>
+        [Required]
+        [DataMember( IsRequired = true )]
+        public bool IsCommon { get; set; }
+
+        /// <summary>
         /// Gets or sets relative path to the .Net ASCX UserControl that provides the HTML Markup and code for the BlockType. This property is required.
         /// </summary>
         /// <value>

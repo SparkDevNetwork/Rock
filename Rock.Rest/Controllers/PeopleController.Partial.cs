@@ -167,6 +167,93 @@ namespace Rock.Rest.Controllers
         }
 
         /// <summary>
+        /// Gets a list of people's names, email, gender and birthdate, to see if there are potential duplicates.
+        /// For example, you might want to use this during account creation to warn that the person might already have an account.
+        /// </summary>
+        /// <param name="lastName">The last name.</param>
+        /// <param name="emailAddress">The email address.</param>
+        /// <returns></returns>
+        [Authenticate, Secured]
+        [HttpGet]
+        [System.Web.Http.Route( "api/People/GetPotentialDuplicates" )]
+        public IEnumerable<DuplicatePersonInfo> GetPotentialDuplicates( string lastName, string emailAddress )
+        {
+            // return a limited number of fields so that this endpoint could be made available to a wider audience
+            return Get().Where( a => a.Email == emailAddress && a.LastName == lastName ).ToList().Select( a => new DuplicatePersonInfo
+            {
+                Id = a.Id,
+                Name = a.FullName,
+                Email = a.Email,
+                Gender = a.Gender,
+                BirthDay = a.BirthDay,
+                BirthMonth = a.BirthMonth,
+                BirthYear = a.BirthYear
+            } );
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public class DuplicatePersonInfo
+        {
+            /// <summary>
+            /// Gets or sets the identifier.
+            /// </summary>
+            /// <value>
+            /// The identifier.
+            /// </value>
+            public int Id { get; set; }
+
+            /// <summary>
+            /// Gets or sets the name.
+            /// </summary>
+            /// <value>
+            /// The name.
+            /// </value>
+            public string Name { get; set; }
+
+            /// <summary>
+            /// Gets or sets the email.
+            /// </summary>
+            /// <value>
+            /// The email.
+            /// </value>
+            public string Email { get; set; }
+
+            /// <summary>
+            /// Gets or sets the gender.
+            /// </summary>
+            /// <value>
+            /// The gender.
+            /// </value>
+            public Gender Gender { get; set; }
+
+            /// <summary>
+            /// Gets or sets the birth month.
+            /// </summary>
+            /// <value>
+            /// The birth month.
+            /// </value>
+            public int? BirthMonth { get; set;  }
+
+            /// <summary>
+            /// Gets or sets the birth day.
+            /// </summary>
+            /// <value>
+            /// The birth day.
+            /// </value>
+            public int? BirthDay { get; set; }
+
+            /// <summary>
+            /// Gets or sets the birth year.
+            /// </summary>
+            /// <value>
+            /// The birth year.
+            /// </value>
+            public int? BirthYear { get; set; }
+        }
+
+        /// <summary>
         /// GET the Person by person alias identifier.
         /// </summary>
         /// <param name="personAliasId">The person alias identifier.</param>
