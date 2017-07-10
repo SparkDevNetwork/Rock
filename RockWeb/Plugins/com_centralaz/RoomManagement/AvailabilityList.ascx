@@ -36,7 +36,7 @@
                         <Columns>
                             <Rock:RockBoundField DataField="Id" HeaderText="Id" Visible="false" />
                             <Rock:RockBoundField DataField="IsAvailable" HeaderText="IsAvailable" Visible="false" />
-                            <Rock:RockBoundField DataField="Name" HeaderText="Location" />
+                            <Rock:RockBoundField DataField="Name" HeaderText="Location" HtmlEncode="false" />
                             <Rock:RockBoundField DataField="Availability" HeaderText="Availability" HtmlEncode="false" />
                         </Columns>
                     </Rock:Grid>

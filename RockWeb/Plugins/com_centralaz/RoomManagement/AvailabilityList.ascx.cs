@@ -312,6 +312,10 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
                 locationList = locationService.Queryable().AsNoTracking().Where( l => l.Name != null && l.Name != string.Empty ).ToList();
             }
 
+            var locationIds = locationList.Select( l => l.Id ).ToList();
+            var locationResourceList = new ResourceService( rockContext ).Queryable().Where( r => r.LocationId.HasValue && locationIds.Contains( r.LocationId.Value ) ).ToList();
+
+
             // Filter by Time
             var today = RockDateTime.Today;
             var filterStartDateTime = dtpStartDateTime.SelectedDateTime ?? today;
@@ -322,7 +326,10 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
             gLocations.DataSource = locationList.Select( l => new
             {
                 Id = l.Id,
-                Name = l.Name,
+                Name = String.Format( "{0}<small>{1}{2}</small>",
+                            l.Name,
+                            locationResourceList.Where( r => r.LocationId.HasValue && r.LocationId == l.Id ).Any() ? "</br>" : String.Empty,
+                            locationResourceList.Where( r => r.LocationId.HasValue && r.LocationId == l.Id ).Select( r => r.Name + " (" + r.Quantity + ")" ).ToList().AsDelimited( "</br>" ) ),
                 IsAvailable = !reservationSummaryList.Any( r => r.ReservationLocations.Any( rl => rl.ApprovalState != ReservationLocationApprovalState.Denied && rl.LocationId == l.Id ) ),
                 Availability = reservationSummaryList.Any( r => r.ReservationLocations.Any( rl => rl.ApprovalState != ReservationLocationApprovalState.Denied && rl.LocationId == l.Id ) ) ? reservationSummaryList.Where( r => r.ReservationLocations.Any( rl => rl.ApprovalState != ReservationLocationApprovalState.Denied && rl.LocationId == l.Id ) ).Select( r => r.ReservationName + "</br>" + r.ReservationDateTimeDescription ).ToList().AsDelimited( "</br></br>" ) : "Available"
             } ).OrderBy( l => l.Name ).ToList();
@@ -374,7 +381,7 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
                 {
                     Id = resource.Id,
                     Name = resource.Name,
-                    LocationName = ( resource.Location == null ) ?  "" : resource.Location.Name,
+                    LocationName = ( resource.Location == null ) ? "" : resource.Location.Name,
                     IsAvailable = resource.Quantity - reservedResources > 0,
                     Availability = resource.Quantity - reservedResources > 0 ? String.Format( "{0} Available", resource.Quantity - reservedResources ) : reservationSummaryList.Where( reservation => reservation.ReservationResources.Any( rr => rr.ApprovalState != ReservationResourceApprovalState.Denied && rr.ResourceId == resource.Id ) ).Select( reservation => reservation.ReservationName + "</br>" + reservation.ReservationDateTimeDescription ).ToList().AsDelimited( "</br></br>" )
                 };
