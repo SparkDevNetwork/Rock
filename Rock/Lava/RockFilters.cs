@@ -3107,7 +3107,7 @@ namespace Rock.Lava
         /// Adds the script link.
         /// </summary>
         /// <param name="input">The input.</param>
-        /// <param name="scriptUrl">The script URL.</param>
+        /// <param name="fingerprintLink">if set to <c>true</c> [fingerprint link].</param>
         /// <returns></returns>
         public static string AddScriptLink( string input, bool fingerprintLink = false )
         {
@@ -3121,7 +3121,6 @@ namespace Rock.Lava
         /// Adds the CSS link.
         /// </summary>
         /// <param name="input">The input.</param>
-        /// <param name="cssUrl">The CSS URL.</param>
         /// <param name="fingerprintLink">if set to <c>true</c> [fingerprint link].</param>
         /// <returns></returns>
         public static string AddCssLink( string input, bool fingerprintLink = false )

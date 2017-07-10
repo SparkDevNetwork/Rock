@@ -256,6 +256,12 @@ namespace Rock.Web.Cache
                 .FirstOrDefault();
         }
 
+        /// <summary>
+        /// Reads the specified tag name.
+        /// </summary>
+        /// <param name="tagName">Name of the tag.</param>
+        /// <param name="rockContext">The rock context.</param>
+        /// <returns></returns>
         public static LavaShortcodeCache Read( string tagName, RockContext rockContext = null )
         {
             int id = GetOrAddExisting( tagName,
