@@ -385,7 +385,11 @@ namespace RockWeb.Plugins.com_centralaz.ChurchMetrics
             {
                 bddlService.Items.Add( new ListItem( service.Name, service.Id.ToString() ) );
             }
-            bddlService.SetValue( _selectedServiceId.Value );
+
+            if ( _selectedServiceId.HasValue )
+            {
+                bddlService.SetValue( _selectedServiceId.Value );
+            }
         }
 
         /// <summary>
