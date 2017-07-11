@@ -114,7 +114,6 @@ namespace Rock.Model
             target.ExpirationYearEncrypted = source.ExpirationYearEncrypted;
             target.ForeignGuid = source.ForeignGuid;
             target.ForeignKey = source.ForeignKey;
-            target.HistoryChanges = source.HistoryChanges;
             target.NameOnCardEncrypted = source.NameOnCardEncrypted;
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;

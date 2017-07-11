@@ -213,7 +213,8 @@ namespace Rock.Model
         /// <value>
         /// The must meet requirements to add member.
         /// </value>
-        [DataMember]
+        [Obsolete( "This no longer is functional. Please use GroupRequirement.MustMeetRequirementToAddMember instead." )]
+        [NotMapped]
         public bool? MustMeetRequirementsToAddMember { get; set; }
 
         /// <summary>
@@ -368,7 +369,7 @@ namespace Rock.Model
         private ICollection<GroupLocation> _groupLocations;
 
         /// <summary>
-        /// Gets or sets the group requirements.
+        /// Gets or sets the group requirements (not including GroupRequirements from the GroupType)
         /// </summary>
         /// <value>
         /// The group requirements.
@@ -560,17 +561,43 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Returns a list of the Group Requirements for this Group along with the status ordered by GroupRequirement Name
+        /// Gets the group requirements.
+        /// </summary>
+        /// <param name="rockContext">The rock context.</param>
+        /// <returns></returns>
+        public IQueryable<GroupRequirement> GetGroupRequirements(RockContext rockContext )
+        {
+            return new GroupRequirementService( rockContext ).Queryable().Include( a=> a.GroupRequirementType ). Where( a => ( a.GroupId.HasValue && a.GroupId == this.Id ) || ( a.GroupTypeId.HasValue && a.GroupTypeId == this.GroupTypeId ));
+        }
+
+        /// <summary>
+        /// Persons the meets group requirements.
         /// </summary>
         /// <param name="personId">The person identifier.</param>
         /// <param name="groupRoleId">The group role identifier.</param>
         /// <returns></returns>
+        [Obsolete( "Use PersonMeetsGroupRequirements(rockContext, personId, groupRoleId) instead " )]
         public IEnumerable<PersonGroupRequirementStatus> PersonMeetsGroupRequirements( int personId, int? groupRoleId )
         {
-            var result = new List<PersonGroupRequirementStatus>();
-            foreach ( var groupRequirement in this.GroupRequirements.OrderBy( a => a.GroupRequirementType.Name ) )
+            using ( var rockContext = new RockContext() )
             {
-                var requirementStatus = groupRequirement.PersonMeetsGroupRequirement( personId, groupRoleId );
+                return this.PersonMeetsGroupRequirements( rockContext, personId, groupRoleId );
+            }
+        }
+
+        /// <summary>
+        /// Persons the meets group requirements.
+        /// </summary>
+        /// <param name="rockContext">The rock context.</param>
+        /// <param name="personId">The person identifier.</param>
+        /// <param name="groupRoleId">The group role identifier.</param>
+        /// <returns></returns>
+        public IEnumerable<PersonGroupRequirementStatus> PersonMeetsGroupRequirements( RockContext rockContext, int personId, int? groupRoleId )
+        {
+            var result = new List<PersonGroupRequirementStatus>();
+            foreach ( var groupRequirement in this.GetGroupRequirements(rockContext).OrderBy( a => a.GroupRequirementType.Name ) )
+            {
+                var requirementStatus = groupRequirement.PersonMeetsGroupRequirement( personId, this.Id, groupRoleId );
                 result.Add( requirementStatus );
             }
 
@@ -588,7 +615,7 @@ namespace Rock.Model
             {
                 // manually delete any grouprequirements of this group since it can't be cascade deleted
                 var groupRequirementService = new GroupRequirementService( dbContext as RockContext );
-                var groupRequirements = groupRequirementService.Queryable().Where( a => a.GroupId == this.Id ).ToList();
+                var groupRequirements = groupRequirementService.Queryable().Where( a => a.GroupId.HasValue && a.GroupId == this.Id ).ToList();
                 if ( groupRequirements.Any() )
                 {
                     groupRequirementService.DeleteRange( groupRequirements );

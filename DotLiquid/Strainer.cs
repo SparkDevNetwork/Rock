@@ -73,29 +73,60 @@ namespace DotLiquid
 
 		public object Invoke(string method, List<object> args)
 		{
-			// First, try to find a method with the same number of arguments.
-			var methodInfo = _methods[method].FirstOrDefault(m => m.GetParameters().Length == args.Count);
+            ParameterInfo[] parameterInfos = null;
 
-			// If we failed to do so, try one with max numbers of arguments, hoping
-			// that those not explicitly specified will be taken care of
-			// by default values
-			if (methodInfo == null)
-				methodInfo = _methods[method].OrderByDescending(m => m.GetParameters().Length).First();
+            // First, try to find a method with the same number of arguments.
+            var methodInfo = _methods[method].FirstOrDefault(m => m.GetParameters().Length == args.Count);
+            if ( methodInfo != null )
+            {
+                // If this method's first parameter is a context, ignore this method for now
+                parameterInfos = methodInfo.GetParameters();
+                if ( parameterInfos.Length > 0 && parameterInfos[0].ParameterType == typeof( Context ) )
+                {
+                    methodInfo = null;
+                }
+            }
 
-			ParameterInfo[] parameterInfos = methodInfo.GetParameters();
+            // Second, try to find a method with one extra parameter where first parameter is a context
+            if ( methodInfo == null )
+            {
+                methodInfo = _methods[method].FirstOrDefault( m => m.GetParameters().Length == args.Count + 1 );
+                if ( methodInfo != null )
+                {
+                    // If this method's first parameter is NOT a context, ignore this method for now
+                    parameterInfos = methodInfo.GetParameters();
+                    if ( parameterInfos.Length <= 0 || parameterInfos[0].ParameterType != typeof( Context ) )
+                    {
+                        methodInfo = null;
+                    }
+                }
+            }
 
-			// If first parameter is Context, send in actual context.
-			if (parameterInfos.Length > 0 && parameterInfos[0].ParameterType == typeof(Context))
-				args.Insert(0, _context);
+            // If we failed to do so, try one with max numbers of arguments, hoping
+            // that those not explicitly specified will be taken care of
+            // by default values
+            if ( methodInfo == null )
+            {
+                methodInfo = _methods[method].OrderByDescending( m => m.GetParameters().Length ).First();
+                parameterInfos = methodInfo.GetParameters();
+            }
 
-			// Add in any default parameters - .NET won't do this for us.
-			if (parameterInfos.Length > args.Count)
-				for (int i = args.Count; i < parameterInfos.Length; ++i)
-				{
-					if ((parameterInfos[i].Attributes & ParameterAttributes.HasDefault) != ParameterAttributes.HasDefault)
-						throw new SyntaxException(Liquid.ResourceManager.GetString("StrainerFilterHasNoValueException"), method, parameterInfos[i].Name);
-					args.Add(parameterInfos[i].DefaultValue);
-				}
+            // If first parameter is Context, send in actual context.
+            if ( parameterInfos.Length > 0 && parameterInfos[0].ParameterType == typeof( Context ) )
+            {
+                args.Insert( 0, _context );
+            }
+
+            // Add in any default parameters - .NET won't do this for us.
+            if ( parameterInfos.Length > args.Count )
+            {
+                for ( int i = args.Count; i < parameterInfos.Length; ++i )
+                {
+                    if ( ( parameterInfos[i].Attributes & ParameterAttributes.HasDefault ) != ParameterAttributes.HasDefault )
+                        throw new SyntaxException( Liquid.ResourceManager.GetString( "StrainerFilterHasNoValueException" ), method, parameterInfos[i].Name );
+                    args.Add( parameterInfos[i].DefaultValue );
+                }
+            }
 
 			try
 			{

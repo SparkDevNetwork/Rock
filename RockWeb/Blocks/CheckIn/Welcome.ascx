@@ -1,6 +1,12 @@
 ﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="Welcome.ascx.cs" Inherits="RockWeb.Blocks.CheckIn.Welcome" %>
-
+<style>
+    .js-search-value {
+        position:absolute;
+        top: 200px;
+    }
+</style>
 <asp:UpdatePanel ID="upContent" runat="server">
+
     <Triggers>
         <%-- make sure lbLogin and lbCancel causes a full postback due to an issue with buttons not firing in IE after clicking the login button --%>
         <asp:PostBackTrigger ControlID="lbLogin" />
@@ -8,9 +14,73 @@
     </Triggers>
 
     <ContentTemplate>
+
+        <asp:HiddenField ID="hfSearchEntry" runat="server" ClientIDMode="Static" />
+
         <script>
 
             Sys.Application.add_load(function () {
+
+                var lastKeyPress = 0;
+                var keyboardBuffer = '';
+                var swipeProcessing = false;
+
+                $(document).off('keypress');
+                $(document).on('keypress', function (e) {
+
+                    //console.log('Keypressed: ' + e.which + ' - ' + String.fromCharCode(e.which));
+                    var date = new Date();
+
+                    if ($(".js-active").is(":visible")) {
+
+                        // if the character is a line break stop buffering and call postback
+                        if (e.which == 13) {
+                            if (keyboardBuffer.length != 0 && !swipeProcessing) {
+                                $('#hfSearchEntry').val(keyboardBuffer);
+                                keyboardBuffer = '';
+                                swipeProcessing = true;
+                                __doPostBack('hfSearchEntry', 'Wedge_Entry');
+                            }
+                        }
+                        else {
+                            if ((date.getTime() - lastKeyPress) > 500) {
+                                keyboardBuffer = String.fromCharCode(e.which);
+                            } else if ((date.getTime() - lastKeyPress) < 100) {
+                                keyboardBuffer += String.fromCharCode(e.which);
+                            }
+                        }
+
+                        // if the character is a line break stop buffering and call postback
+                        if (e.which == 13 && keyboardBuffer.length != 0) {
+                            if (!swipeProcessing) {
+                                $('#hfSearchEntry').val(keyboardBuffer);
+                                keyboardBuffer = '';
+                                swipeProcessing = true;
+                                console.log('processing');
+                                __doPostBack('hfSearchEntry', 'Wedge_Entry');
+                            }
+                        }
+
+                        // stop the keypress
+                        e.preventDefault();
+
+                    } 
+
+                    lastKeyPress = date.getTime();
+
+                });
+
+                if ($(".js-active").is(":visible")) {
+                    location.hash = 'active';
+                } else {
+                    location.hash = '';
+                }
+
+                function submitFamilyIdSearch( familyIds ) {
+                    $('#hfSearchEntry').val(familyIds);
+                    __doPostBack('hfWedgeEntry', 'Family_Id_Search');
+                }
+
                 if ($('.js-manager-login').is(':visible')) {
                     $('.tenkey a.digit').click(function () {
                         $phoneNumber = $("input[id$='tbPIN']");
@@ -56,14 +126,14 @@
         <%-- Panel for no schedules --%>
         <asp:Panel ID="pnlNotActive" runat="server">
             <div class="checkin-header">
-                <h1>Check-in Is Not Active</h1>
+                <h1><asp:Literal ID="lNotActiveTitle" runat="server" /></h1>
             </div>
 
             <div class="checkin-body">
 
                 <div class="checkin-scroll-panel">
                     <div class="scroller">
-                        <p>There are no current or future schedules for this kiosk today!</p>
+                        <p><h1><asp:Literal ID="lNotActiveCaption" runat="server" /></h1></p>
                     </div>
                 </div>
 
@@ -73,7 +143,7 @@
         <%-- Panel for schedule not active yet --%>
         <asp:Panel ID="pnlNotActiveYet" runat="server">
             <div class="checkin-header">
-                <h1>Check-in Is Not Active Yet</h1>
+                <h1><asp:Literal ID="lNotActiveYetTitle" runat="server" /></h1>
             </div>
 
             <div class="checkin-body">
@@ -81,7 +151,7 @@
                 <div class="checkin-scroll-panel">
                     <div class="scroller">
 
-                        <p>This kiosk is not active yet.  Countdown until active: <span class="countdown-timer"></span></p>
+                        <p><asp:Literal ID="lNotActiveYetCaption" runat="server" /></p>
                         <asp:HiddenField ID="hfActiveTime" runat="server" />
 
                     </div>
@@ -93,26 +163,26 @@
         <%-- Panel for location closed --%>
         <asp:Panel ID="pnlClosed" runat="server">
             <div class="checkin-header checkin-closed-header">
-                <h1>Closed</h1>
+                <h1><asp:Literal ID="lClosedTitle" runat="server" /></h1>
             </div>
 
             <div class="checkin-body checkin-closed-body">
                 <div class="checkin-scroll-panel">
                     <div class="scroller">
-                        <p>This location is currently closed.</p>
+                        <p><asp:Literal ID="lClosedCaption" runat="server" /></p>
                     </div>
                 </div>
             </div>
         </asp:Panel>
 
         <%-- Panel for active checkin --%>
-        <asp:Panel ID="pnlActive" runat="server">
+        <asp:Panel ID="pnlActive" runat="server" CssClass="js-active">
 
             <div class="checkin-body">
                 <div class="checkin-scroll-panel">
                     <div class="scroller">
                         <div class="checkin-search-actions checkin-start">
-                            <asp:LinkButton CssClass="btn btn-primary btn-checkin" ID="lbSearch" runat="server" OnClick="lbSearch_Click"><span>Check In</span></asp:LinkButton>
+                            <asp:LinkButton CssClass="btn btn-primary btn-checkin" ID="lbSearch" runat="server" OnClick="lbSearch_Click" Text="Check In"></asp:LinkButton>
                         </div>
                     </div>
                 </div>

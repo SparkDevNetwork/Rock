@@ -147,7 +147,7 @@ namespace Rock.Model
         /// The history changes.
         /// </value>
         [NotMapped]
-        public List<string> HistoryChanges { get; set; }
+        public virtual List<string> HistoryChanges { get; set; }
 
         #endregion
 
