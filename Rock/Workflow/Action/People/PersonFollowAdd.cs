@@ -41,7 +41,8 @@ namespace Rock.Workflow.Action
     [WorkflowAttribute( "Person", "Workflow attribute that contains the person who is following the entity.", true, "", "", 0, null,
         new string[] { "Rock.Field.Types.PersonFieldType" } )]
     [EntityTypeField( "Entity Type", "Workflow attribute that contains the entity type to follow.", true, "", 1, "EntityType" )]
-    [WorkflowTextOrAttribute( "Entity To Follow", "Attribute Value", "The Entity Id or an attribute that contains the person or group to follow. <span class='tip tip-lava'></span>", true, "", "", 2, "Entity" )]
+    [WorkflowTextOrAttribute( "Entity To Follow", "Attribute Value", "The Entity Id or an attribute that contains the person or group to follow. <span class='tip tip-lava'></span>", true, "", "", 2, "Entity",
+        new string[] { "Rock.Field.Types.PersonFieldType", "Rock.Field.Types.GroupFieldType" } )]
     public class PersonFollowAdd : ActionComponent
     {
         /// <summary>
@@ -96,7 +97,7 @@ namespace Rock.Workflow.Action
 
             //get entity
             int entityId = 0;
-            string attributeEntity = GetAttributeValue( action, "Entity" ).ResolveMergeFields( GetMergeFields( action ) );
+            string attributeEntity = GetAttributeValue( action, "Entity" );
             int? intEntity = attributeEntity.AsIntegerOrNull();
             Guid? guidEntity = attributeEntity.AsGuidOrNull();
             if ( intEntity.HasValue )

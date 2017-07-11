@@ -91,11 +91,9 @@
                 </div>
                 <div class="col-md-6 padding-t-md">
                     <label>Common Block Types</label><br />
-                    <asp:Repeater ID="rptCommonBlockTypes" runat="server" OnItemDataBound="rptCommonBlockTypes_ItemDataBound">
-                        <ItemTemplate>
-                            <asp:LinkButton ID="btnNewBlockQuickSetting" runat="server" Text="Todo" CssClass="btn btn-default btn-xs" OnClick="btnNewBlockQuickSetting_Click" />
-                        </ItemTemplate>
-                    </asp:Repeater>
+                    <asp:LinkButton ID="btnHtmlContentQuickSetting" runat="server" Text="HTML Content" CssClass="btn btn-default btn-xs" OnClick="btnNewBlockQuickSetting_Click" />
+                    <asp:LinkButton ID="btnContentChannelQuickSetting" runat="server" Text="Content Channel View" CssClass="btn btn-default btn-xs" OnClick="btnNewBlockQuickSetting_Click" />
+                    <asp:LinkButton ID="btnPageMenuQuickSetting" runat="server" Text="Page Menu" CssClass="btn btn-default btn-xs" OnClick="btnNewBlockQuickSetting_Click" />
                 </div>
             </div>
         </fieldset>

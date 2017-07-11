@@ -21,7 +21,6 @@ using System.Data.Entity;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.Dynamic;
-using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -582,11 +581,6 @@ namespace Rock.Lava
                 return string.Empty;
             }
 
-            if (@string == null )
-            {
-                return input.ToString();
-            }
-
             string inputAsString = input.ToString();
 
             return inputAsString == null
@@ -729,7 +723,7 @@ namespace Rock.Lava
 
             if ( input.ToString() == "Now" )
             {
-                input = RockDateTime.Now.ToString( "yyyy-MM-dd HH:mm:ss.fff", CultureInfo.InvariantCulture );
+                input = RockDateTime.Now.ToString();
             }
 
             if ( string.IsNullOrWhiteSpace( format ) ) 
@@ -2820,7 +2814,7 @@ namespace Rock.Lava
             Guid? inputAsGuid = null;
 
             // ensure they provided a cache type
-            if ( input == null || cacheType.IsNullOrWhiteSpace() )
+            if ( cacheType.IsNullOrWhiteSpace() )
             {
                 return null;
             }
@@ -2958,17 +2952,6 @@ namespace Rock.Lava
                                 return NoteTypeCache.Read( inputAsGuid.Value );
                             }
                         }
-                    /*case "ContentChannel":
-                        {
-                            if ( inputAsInt.HasValue )
-                            {
-                                return ContentChannelCache.Read( inputAsInt.Value );
-                            }
-                            else
-                            {
-                                return ContentChannelCache.Read( inputAsGuid.Value );
-                            }
-                        }*/
                     default:
                         {
                             return $"Cache type {cacheType} not supported.";
@@ -3124,7 +3107,7 @@ namespace Rock.Lava
         /// Adds the script link.
         /// </summary>
         /// <param name="input">The input.</param>
-        /// <param name="fingerprintLink">if set to <c>true</c> [fingerprint link].</param>
+        /// <param name="scriptUrl">The script URL.</param>
         /// <returns></returns>
         public static string AddScriptLink( string input, bool fingerprintLink = false )
         {
@@ -3138,6 +3121,7 @@ namespace Rock.Lava
         /// Adds the CSS link.
         /// </summary>
         /// <param name="input">The input.</param>
+        /// <param name="cssUrl">The CSS URL.</param>
         /// <param name="fingerprintLink">if set to <c>true</c> [fingerprint link].</param>
         /// <returns></returns>
         public static string AddCssLink( string input, bool fingerprintLink = false )
