@@ -41,9 +41,6 @@ namespace Rock.Client
         public string Documentation { get; set; }
 
         /// <summary />
-        public string EnabledLavaCommands { get; set; }
-
-        /// <summary />
         public Guid? ForeignGuid { get; set; }
 
         /// <summary />
@@ -65,9 +62,6 @@ namespace Rock.Client
 
         /// <summary />
         public string Name { get; set; }
-
-        /// <summary />
-        public string Parameters { get; set; }
 
         /// <summary />
         public string TagName { get; set; }
@@ -110,7 +104,6 @@ namespace Rock.Client
             this.Id = source.Id;
             this.Description = source.Description;
             this.Documentation = source.Documentation;
-            this.EnabledLavaCommands = source.EnabledLavaCommands;
             this.ForeignGuid = source.ForeignGuid;
             this.ForeignKey = source.ForeignKey;
             this.IsActive = source.IsActive;
@@ -118,7 +111,6 @@ namespace Rock.Client
             this.Markup = source.Markup;
             this.ModifiedAuditValuesAlreadyUpdated = source.ModifiedAuditValuesAlreadyUpdated;
             this.Name = source.Name;
-            this.Parameters = source.Parameters;
             this.TagName = source.TagName;
             this.TagType = source.TagType;
             this.CreatedDateTime = source.CreatedDateTime;

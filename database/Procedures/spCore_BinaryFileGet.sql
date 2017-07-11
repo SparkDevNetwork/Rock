@@ -39,7 +39,6 @@ BEGIN
         , bf.[Guid]
 		, bf.[StorageEntitySettings]
 		, bf.[Path]
-		, bf.[FileSize]
         /* if the BinaryFile as StorageEntityTypeId set, use that. Otherwise use the default StorageEntityTypeId from BinaryFileType  */
         , COALESCE (bfse.[Name],bftse.[Name] ) as [StorageEntityTypeName]
         , bfd.[Content]

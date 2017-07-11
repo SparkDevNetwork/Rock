@@ -128,14 +128,10 @@ namespace Rock.UniversalSearch.IndexComponents
         {
             if ( !string.IsNullOrWhiteSpace( GetAttributeValue( "NodeUrl" ) ) )
             {
-                try
-                {
-                    var node = new Uri( GetAttributeValue( "NodeUrl" ) );
-                    var config = new ConnectionSettings( node );
-                    config.DisableDirectStreaming();
-                    _client = new ElasticClient( config );
-                }
-                catch (Exception ex ){}
+                var node = new Uri( GetAttributeValue( "NodeUrl" ) );
+                var config = new ConnectionSettings( node );
+                config.DisableDirectStreaming();
+                _client = new ElasticClient( config );
             }
         }
 
