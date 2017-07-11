@@ -21,6 +21,7 @@ using System.Data.Entity;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.Dynamic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -728,7 +729,7 @@ namespace Rock.Lava
 
             if ( input.ToString() == "Now" )
             {
-                input = RockDateTime.Now.ToString();
+                input = RockDateTime.Now.ToString( "yyyy-MM-dd HH:mm:ss.fff", CultureInfo.InvariantCulture );
             }
 
             if ( string.IsNullOrWhiteSpace( format ) ) 
@@ -2819,7 +2820,7 @@ namespace Rock.Lava
             Guid? inputAsGuid = null;
 
             // ensure they provided a cache type
-            if ( cacheType.IsNullOrWhiteSpace() )
+            if ( input == null || cacheType.IsNullOrWhiteSpace() )
             {
                 return null;
             }
@@ -2957,6 +2958,17 @@ namespace Rock.Lava
                                 return NoteTypeCache.Read( inputAsGuid.Value );
                             }
                         }
+                    /*case "ContentChannel":
+                        {
+                            if ( inputAsInt.HasValue )
+                            {
+                                return ContentChannelCache.Read( inputAsInt.Value );
+                            }
+                            else
+                            {
+                                return ContentChannelCache.Read( inputAsGuid.Value );
+                            }
+                        }*/
                     default:
                         {
                             return $"Cache type {cacheType} not supported.";
