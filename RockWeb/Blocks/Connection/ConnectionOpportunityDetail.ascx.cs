@@ -591,6 +591,7 @@ namespace RockWeb.Blocks.Connection
                         groupStateObj.GroupTypeId = group.GroupTypeId;
                         groupStateObj.CampusId = group.CampusId;
                         groupStateObj.CampusName = group.Campus != null ? group.Campus.Name : string.Empty;
+                        groupStateObj.Guid = Guid.NewGuid();
                         GroupsState.Add( groupStateObj );
                     }
 
