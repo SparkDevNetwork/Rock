@@ -151,6 +151,7 @@
     <Compile Include="CodeGenerated\InteractionComponent.cs" />
     <Compile Include="CodeGenerated\InteractionDeviceType.cs" />
     <Compile Include="CodeGenerated\InteractionSession.cs" />
+    <Compile Include="CodeGenerated\LavaShortcode.cs" />
     <Compile Include="CodeGenerated\Layout.cs" />
     <Compile Include="CodeGenerated\Location.cs" />
     <Compile Include="CodeGenerated\LoginParameters.cs" />
@@ -169,6 +170,7 @@
     <Compile Include="CodeGenerated\PageContext.cs" />
     <Compile Include="CodeGenerated\PageRoute.cs" />
     <Compile Include="CodeGenerated\Person.cs" />
+    <Compile Include="CodeGenerated\PersonalDevice.cs" />
     <Compile Include="CodeGenerated\PersonAlias.cs" />
     <Compile Include="CodeGenerated\PersonBadge.cs" />
     <Compile Include="CodeGenerated\PersonDuplicate.cs" />
@@ -198,6 +200,7 @@
     <Compile Include="CodeGenerated\SignatureDocumentTemplate.cs" />
     <Compile Include="CodeGenerated\Site.cs" />
     <Compile Include="CodeGenerated\SiteDomain.cs" />
+    <Compile Include="CodeGenerated\SiteUrlMap.cs" />
     <Compile Include="CodeGenerated\SystemEmail.cs" />
     <Compile Include="CodeGenerated\SystemGuid\RockSystemGuids.cs" />
     <Compile Include="CodeGenerated\Tag.cs" />
