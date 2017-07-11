@@ -581,6 +581,11 @@ namespace Rock.Lava
                 return string.Empty;
             }
 
+            if (@string == null )
+            {
+                return input.ToString();
+            }
+
             string inputAsString = input.ToString();
 
             return inputAsString == null
