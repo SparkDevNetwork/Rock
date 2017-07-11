@@ -178,7 +178,7 @@ namespace Rock.Lava.Shortcodes
                     }
 
                     var results = lavaTemplate.ResolveMergeFields( parms, enabledCommands );
-                    result.Write( results );
+                    result.Write( results.Trim() );
                     base.Render( context, result );
                 }
             }
