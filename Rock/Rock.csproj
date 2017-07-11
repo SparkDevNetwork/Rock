@@ -712,7 +712,6 @@
     <Compile Include="Lava\Shortcodes\RockLavaShortcodeBlockBase.cs" />
     <Compile Include="Lava\Shortcodes\RockLavaShortcodeBase.cs" />
     <Compile Include="Lava\Shortcodes\BootstrapAlert.cs" />
-    <Compile Include="Lava\Shortcodes\YouTube.cs" />
     <Compile Include="MergeTemplates\HtmlMergeTemplateType.cs" />
     <Compile Include="MergeTemplates\MergeTemplateType.cs" />
     <Compile Include="MergeTemplates\MergeTemplateTypeContainer.cs" />
@@ -1343,7 +1342,6 @@
     <Compile Include="Security\Authentication\Twitter.cs" />
     <Compile Include="Transactions\SaveCommunicationTransaction.cs" />
     <Compile Include="UniversalSearch\FormattedSearchResult.cs" />
-    <Compile Include="UniversalSearch\IndexComponents\ElasticsearchAws.cs" />
     <Compile Include="UniversalSearch\IndexComponents\Elasticsearch.cs" />
     <Compile Include="UniversalSearch\IndexContainer.cs" />
     <Compile Include="UniversalSearch\IndexComponent.cs" />
