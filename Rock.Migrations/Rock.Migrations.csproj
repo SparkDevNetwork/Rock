@@ -257,6 +257,10 @@
     <Compile Include="Migrations\201707101648235_CommonBlockTypes.Designer.cs">
       <DependentUpon>201707101648235_CommonBlockTypes.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201707121812263_UniversalSearchContentChannelUpdates.cs" />
+    <Compile Include="Migrations\201707121812263_UniversalSearchContentChannelUpdates.Designer.cs">
+      <DependentUpon>201707121812263_UniversalSearchContentChannelUpdates.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\RockMigrationSQL.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
@@ -2598,6 +2602,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201707101648235_CommonBlockTypes.resx">
       <DependentUpon>201707101648235_CommonBlockTypes.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201707121812263_UniversalSearchContentChannelUpdates.resx">
+      <DependentUpon>201707121812263_UniversalSearchContentChannelUpdates.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 6.0\Version 1.6.0\201609282147388_WaitList.resx">
       <DependentUpon>201609282147388_WaitList.cs</DependentUpon>
