@@ -155,6 +155,7 @@ namespace RockWeb.Blocks.Administration
             {
                 if ( !Page.IsPostBack )
                 {
+                    LoadDropDowns();
                     BindGrids();
                 }
             }
@@ -732,26 +733,43 @@ namespace RockWeb.Blocks.Administration
         }
 
         /// <summary>
+        /// Loads the drop downs.
+        /// </summary>
+        private void LoadDropDowns()
+        {
+            var rockContext = new RockContext();
+            var commonBlockTypes = new BlockTypeService( rockContext ).Queryable().Where( a => a.IsCommon ).OrderBy( a => a.Name ).AsNoTracking().ToList();
+
+            rptCommonBlockTypes.DataSource = commonBlockTypes;
+            rptCommonBlockTypes.DataBind();
+        }
+
+        /// <summary>
+        /// Handles the ItemDataBound event of the rptCommonBlockTypes control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="RepeaterItemEventArgs"/> instance containing the event data.</param>
+        protected void rptCommonBlockTypes_ItemDataBound( object sender, RepeaterItemEventArgs e )
+        {
+            LinkButton btnNewBlockQuickSetting = e.Item.FindControl( "btnNewBlockQuickSetting" ) as LinkButton;
+            var blockType = e.Item.DataItem as BlockType;
+            if ( blockType != null && btnNewBlockQuickSetting != null )
+            {
+                btnNewBlockQuickSetting.Text = blockType.Name;
+                btnNewBlockQuickSetting.CommandArgument = blockType.Id.ToString();
+            }
+        }
+
+        /// <summary>
         /// Handles the Click event of the btnNewBlockQuickSetting control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnNewBlockQuickSetting_Click( object sender, EventArgs e )
         {
-            BlockTypeCache quickSettingBlockType = null;
+            LinkButton btnNewBlockQuickSetting = sender as LinkButton;
 
-            if ( sender == btnHtmlContentQuickSetting )
-            {
-                quickSettingBlockType = BlockTypeCache.Read( Rock.SystemGuid.BlockType.HTML_CONTENT.AsGuid() );
-            }
-            else if ( sender == btnContentChannelQuickSetting )
-            {
-                quickSettingBlockType = BlockTypeCache.Read( Rock.SystemGuid.BlockType.CONTENT_CHANNEL_VIEW.AsGuid() );
-            }
-            else if ( sender == btnPageMenuQuickSetting )
-            {
-                quickSettingBlockType = BlockTypeCache.Read( Rock.SystemGuid.BlockType.PAGE_MENU.AsGuid() );
-            }
+            BlockTypeCache quickSettingBlockType = BlockTypeCache.Read( btnNewBlockQuickSetting.CommandArgument.AsInteger() );
 
             if ( quickSettingBlockType != null )
             {
