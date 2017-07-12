@@ -90,12 +90,14 @@ namespace Rock.Model
             target.Id = source.Id;
             target.Description = source.Description;
             target.Documentation = source.Documentation;
+            target.EnabledLavaCommands = source.EnabledLavaCommands;
             target.ForeignGuid = source.ForeignGuid;
             target.ForeignKey = source.ForeignKey;
             target.IsActive = source.IsActive;
             target.IsSystem = source.IsSystem;
             target.Markup = source.Markup;
             target.Name = source.Name;
+            target.Parameters = source.Parameters;
             target.TagName = source.TagName;
             target.TagType = source.TagType;
             target.CreatedDateTime = source.CreatedDateTime;

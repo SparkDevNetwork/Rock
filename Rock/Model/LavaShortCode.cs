@@ -145,7 +145,14 @@ namespace Rock.Model
     /// </summary>
     public enum TagType
     {
+        /// <summary>
+        /// The inline
+        /// </summary>
         Inline = 1,
+        
+        /// <summary>
+        /// The block
+        /// </summary>
         Block = 2
     }
 
