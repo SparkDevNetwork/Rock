@@ -302,23 +302,23 @@ namespace RockWeb.Blocks.CheckIn
             tbPIN.Text = string.Empty;
 
             // Get room counts
-            List<int> locations = new List<int>();		
-            foreach ( var groupType in CurrentCheckInState.Kiosk.FilteredGroupTypes( CurrentCheckInState.ConfiguredGroupTypes ) )		
-            {		
-                var lUl = new HtmlGenericControl( "ul" );		
-                lUl.AddCssClass( "kioskmanager-count-locations" );		
-                phCounts.Controls.Add( lUl );		
-		
-                foreach ( var location in groupType.KioskGroups.SelectMany( g => g.KioskLocations ).OrderBy( l => l.Location.Name).Distinct() )		
-                {		
-                    if ( !locations.Contains( location.Location.Id ) )		
-                    {		
-                        locations.Add( location.Location.Id );		
-                        var locationAttendance = KioskLocationAttendance.Read( location.Location.Id );		
-		
-                        if ( locationAttendance != null )		
-                        {		
-                            var lLi = new HtmlGenericControl( "li" );		
+            List<int> locations = new List<int>();
+            foreach ( var groupType in CurrentCheckInState.Kiosk.FilteredGroupTypes( CurrentCheckInState.ConfiguredGroupTypes ) )
+            {
+                var lUl = new HtmlGenericControl( "ul" );
+                lUl.AddCssClass( "kioskmanager-count-locations" );
+                phCounts.Controls.Add( lUl );
+
+                foreach ( var location in groupType.KioskGroups.SelectMany( g => g.KioskLocations ).OrderBy( l => l.Location.Name ).Distinct() )
+                {
+                    if ( !locations.Contains( location.Location.Id ) )
+                    {
+                        locations.Add( location.Location.Id );
+                        var locationAttendance = KioskLocationAttendance.Read( location.Location.Id );
+
+                        if ( locationAttendance != null )
+                        {
+                            var lLi = new HtmlGenericControl( "li" );
                             lUl.Controls.Add( lLi );
                             lLi.InnerHtml = string.Format( "<strong>{0}</strong>: {1}", locationAttendance.LocationName, locationAttendance.CurrentCount );
 
@@ -326,9 +326,9 @@ namespace RockWeb.Blocks.CheckIn
                             gUl.AddCssClass( "kioskmanager-count-groups" );
                             lLi.Controls.Add( gUl );
 
-                            foreach ( var groupAttendance in locationAttendance.Groups )		
-                            {		
-                                var gLi = new HtmlGenericControl( "li" );		
+                            foreach ( var groupAttendance in locationAttendance.Groups )
+                            {
+                                var gLi = new HtmlGenericControl( "li" );
                                 gUl.Controls.Add( gLi );
                                 gLi.InnerHtml = string.Format( "<strong>{0}</strong>: {1}", groupAttendance.GroupName, groupAttendance.CurrentCount );
 
@@ -336,16 +336,16 @@ namespace RockWeb.Blocks.CheckIn
                                 sUl.AddCssClass( "kioskmanager-count-schedules" );
                                 gLi.Controls.Add( sUl );
 
-                                foreach ( var scheduleAttendance in groupAttendance.Schedules.Where( s => s.IsActive ) )		
-                                {		
-                                    var sLi = new HtmlGenericControl( "li" );		
+                                foreach ( var scheduleAttendance in groupAttendance.Schedules.Where( s => s.IsActive ) )
+                                {
+                                    var sLi = new HtmlGenericControl( "li" );
                                     sUl.Controls.Add( sLi );
-                                    sLi.InnerHtml = string.Format( "<strong>{0}</strong>: {1}", scheduleAttendance.ScheduleName, scheduleAttendance.CurrentCount );		
-                                }		
-                            }		
-                        }		
-                    }		
-                }		
+                                    sLi.InnerHtml = string.Format( "<strong>{0}</strong>: {1}", scheduleAttendance.ScheduleName, scheduleAttendance.CurrentCount );
+                                }
+                            }
+                        }
+                    }
+                }
             }
 
             pnlManagerLogin.Visible = true;
@@ -417,7 +417,7 @@ namespace RockWeb.Blocks.CheckIn
                     }
                 }
             }
-            
+
             maWarning.Show( "Sorry, we couldn't find an account matching that PIN.", Rock.Web.UI.Controls.ModalAlertType.Warning );
         }
 
@@ -443,11 +443,11 @@ namespace RockWeb.Blocks.CheckIn
                 var groupTypesLocations = this.GetGroupTypesLocations( rockContext );
                 var selectQry = groupTypesLocations
                     .Select( a => new
-                        {
-                            LocationId = a.Id,
-                            Name = a.Name,
-                            a.IsActive
-                        } )
+                    {
+                        LocationId = a.Id,
+                        Name = a.Name,
+                        a.IsActive
+                    } )
                     .OrderBy( a => a.Name );
 
                 rLocations.DataSource = selectQry.ToList();
