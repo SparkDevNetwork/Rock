@@ -33,17 +33,17 @@ using Rock.Security;
 namespace RockWeb.Blocks.WorkFlow
 {
     /// <summary>
-    /// Block to display active workflow activities assigned to the current user that have a form entry action.  The display format is controlled by a liquid template.
+    /// Block to display active workflow activities assigned to the current user that have a form entry action.  The display format is controlled by a lava template.
     /// </summary>
-    [DisplayName( "My Workflows Liquid" )]
+    [DisplayName( "My Workflows Lava" )]
     [Category( "WorkFlow" )]
-    [Description( "Block to display active workflow activities assigned to the current user that have a form entry action.  The display format is controlled by a liquid template." )]
+    [Description( "Block to display active workflow activities assigned to the current user that have a form entry action.  The display format is controlled by a lava template." )]
 
     [CustomRadioListField("Role", "Display the active workflows that the current user Initiated, or is currently Assigned To.", "0^Assigned To,1^Initiated", true, "0", "", 0 )]
     [CategoryField( "Categories", "Optional categories to limit display to.", true, "Rock.Model.WorkflowType", "", "", false, "", "", 1 )]
     [BooleanField( "Include Child Categories", "Should descendent categories of the selected Categories be included?", true, "", 2 )]
-    [CodeEditorField( "Contents", @"The Liquid template to use for displaying activities assigned to current user. 
-The following object model is available to the liquid template (Note: and workflow or activity attributes will also be available 
+    [CodeEditorField( "Contents", @"The Lava template to use for displaying activities assigned to current user. 
+The following object model is available to the lava template (Note: and workflow or activity attributes will also be available 
 as fields on the workflow or activity)...
 <pre>
 {
