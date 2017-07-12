@@ -174,7 +174,7 @@ namespace Rock.CheckIn
 
             set
             {
-                if (this.CurrentCheckInState != null)
+                if ( this.CurrentCheckInState != null )
                 {
                     this.CurrentCheckInState.ManagerLoggedIn = value;
                 }
@@ -274,7 +274,7 @@ namespace Rock.CheckIn
                         if ( CurrentWorkflow == null )
                         {
                             CurrentWorkflow = Rock.Model.Workflow.Activate( workflowType, CurrentCheckInState.Kiosk.Device.Name, rockContext );
-                            
+
                             if ( IsOverride )
                             {
                                 CurrentWorkflow.SetAttributeValue( "Override", "True" );
@@ -313,7 +313,7 @@ namespace Rock.CheckIn
         /// </summary>
         protected void SaveState()
         {
-            if ( !string.IsNullOrWhiteSpace( CurrentTheme))
+            if ( !string.IsNullOrWhiteSpace( CurrentTheme ) )
             {
                 Session["CheckInTheme"] = CurrentTheme;
             }
@@ -664,8 +664,8 @@ namespace Rock.CheckIn
                 var page = Rock.Web.Cache.PageCache.Read( pageReference.PageId );
                 if ( page != null )
                 {
-                    foreach( var block in page.Blocks.OrderBy( b => b.Order ) )
-                    { 
+                    foreach ( var block in page.Blocks.OrderBy( b => b.Order ) )
+                    {
                         var control = TemplateControl.LoadControl( block.BlockType.Path );
                         if ( control != null )
                         {
