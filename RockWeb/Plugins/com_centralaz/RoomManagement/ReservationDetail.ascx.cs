@@ -49,7 +49,7 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
     [BooleanField( "Save Communication History", "Should a record of this communication be saved to the recipient's profile", false, "", 2 )]
     [BooleanField( "Require Setup & Cleanup Time", "Should the setup and cleanup time be required to be supplied?", true, "", 3, "RequireSetupCleanupTime" )]
     [IntegerField( "Defatult Setup & Cleanup Time", "If you wish to default to a particular setup and cleanup time, you can supply a value here. (Use -1 to indicate no default value)", false, -1, "", 4, "DefaultSetupCleanupTime" )]
-    [BooleanField( "Require Number Attending", "Should the Number Attending be required to be supplied?", true, "", 5  )]
+    [BooleanField( "Require Number Attending", "Should the Number Attending be required to be supplied?", true, "", 5 )]
 
     public partial class ReservationDetail : Rock.Web.UI.RockBlock
     {
@@ -68,7 +68,7 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
         /// <value>
         /// The base resource REST URL.
         /// </value>
-        private string BaseResourceRestUrl 
+        private string BaseResourceRestUrl
         {
             get
             {
@@ -76,10 +76,17 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
 
                 if ( baseResourceRestUrl == null )
                 {
+                    srpResource.CampusId = ddlCampus.SelectedValueAsInt();
+                    srpResource.SetExtraRestParams(srpResource.ShowAllResources);
+
                     ViewState["BaseResourceRestUrl"] = srpResource.ItemRestUrlExtraParams;
                     baseResourceRestUrl = srpResource.ItemRestUrlExtraParams;
                 }
                 return baseResourceRestUrl;
+            }
+            set
+            {
+                ViewState["BaseResourceRestUrl"] = value;
             }
         }
 
@@ -475,6 +482,18 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
             ReturnToParentPage();
         }
 
+        /// <summary>
+        /// Handles the SelectedIndexChanged event of the ddlCampus control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void ddlCampus_SelectedIndexChanged( object sender, EventArgs e )
+        {
+            srpResource.CampusId = ddlCampus.SelectedValueAsInt();
+            srpResource.SetExtraRestParams( srpResource.ShowAllResources );
+
+            BaseResourceRestUrl = srpResource.ItemRestUrlExtraParams;
+        }
 
         /// <summary>
         /// Handles the Click event of the btnDelete control.
@@ -482,7 +501,7 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void btnDelete_OnClick( object sender, EventArgs e )
-        { 
+        {
             if ( PageParameter( "ReservationId" ).AsIntegerOrNull() != null )
             {
                 RockContext rockContext = new RockContext();
@@ -1144,7 +1163,7 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
                 else
                 {
                     // Try using their mobile number
-                    Guid mobilePhoneValueGuid = new Guid( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE);
+                    Guid mobilePhoneValueGuid = new Guid( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE );
                     var mobilePhone = CurrentPerson.PhoneNumbers.Where( p => p.NumberTypeValue.Guid == mobilePhoneValueGuid ).FirstOrDefault();
                     if ( mobilePhone != null )
                     {
@@ -1481,9 +1500,10 @@ namespace RockWeb.Plugins.com_centralaz.RoomManagement
 
             // Get the selected locations and pass them as extra params to the Resource rest call so
             // we don't get any resources that are attached to other/non-selected locations.
-            var locationIds = LocationsState.Select( a => a.LocationId ).ToList().AsDelimited(",");
+            var locationIds = LocationsState.Select( a => a.LocationId ).ToList().AsDelimited( "," );
 
             string encodedCalendarContent = Uri.EscapeUriString( sbSchedule.iCalendarContent );
+            srpResource.CampusId = ddlCampus.SelectedValueAsInt();
             srpResource.ItemRestUrlExtraParams = BaseResourceRestUrl + String.Format( "&reservationId={0}&iCalendarContent={1}&setupTime={2}&cleanupTime={3}{4}", reservationId, encodedCalendarContent, nbSetupTime.Text.AsInteger(), nbCleanupTime.Text.AsInteger(), string.IsNullOrWhiteSpace( locationIds ) ? "" : "&locationIds=" + locationIds );
             slpLocation.ItemRestUrlExtraParams = BaseLocationRestUrl + String.Format( "?reservationId={0}&iCalendarContent={1}&setupTime={2}&cleanupTime={3}&attendeeCount={4}", reservationId, encodedCalendarContent, nbSetupTime.Text.AsInteger(), nbCleanupTime.Text.AsInteger(), nbAttending.Text.AsInteger() );
         }

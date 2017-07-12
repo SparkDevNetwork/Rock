@@ -34,10 +34,27 @@ namespace com.centralaz.RoomManagement.Web.UI.Controls
     {
         #region Controls
 
+        public int? CampusId
+        {
+            get { return ViewState["CampusId"] as int? ?? 0; }
+            set
+            {
+                ViewState["CampusId"] = value;
+            }
+        }
+
         /// <summary>
         /// The checkbox to show inactive groups
         /// </summary>
         private RockCheckBox _cbShowAllResources;
+
+        public bool ShowAllResources
+        {
+            get
+            {
+                return _cbShowAllResources.Checked;
+            }
+        }
 
         #endregion
 
@@ -65,7 +82,7 @@ namespace com.centralaz.RoomManagement.Web.UI.Controls
         /// <param name="e">An <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnInit( EventArgs e )
         {
-            ItemRestUrlExtraParams = "?includeAllCampuses=false";
+            ItemRestUrlExtraParams = "?includeAllCampuses=false&campusId=" + ( CampusId != null ? CampusId.ToString() : "0" );
             this.IconCssClass = "fa fa-cogs";
             base.OnInit( e );
         }
@@ -182,9 +199,9 @@ namespace com.centralaz.RoomManagement.Web.UI.Controls
         /// <summary>
         /// Sets the extra rest parameters.
         /// </summary>
-        private void SetExtraRestParams( bool includeAllCampuses = false )
+        public void SetExtraRestParams( bool includeAllCampuses = false )
         {
-            ItemRestUrlExtraParams = "?includeAllCampuses=" + includeAllCampuses.ToTrueFalse() + "&getCategorizedItems=true&showUnnamedEntityItems=true&showCategoriesThatHaveNoChildren=true";
+            ItemRestUrlExtraParams = "?includeAllCampuses=" + includeAllCampuses.ToTrueFalse() + "&campusId=" + ( CampusId != null ? CampusId.ToString() : "0" ) + "&getCategorizedItems=true&showUnnamedEntityItems=true&showCategoriesThatHaveNoChildren=true";
         }
 
         /// <summary>
