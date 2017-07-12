@@ -789,7 +789,7 @@ namespace RockWeb.Blocks.Event
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void fRegistrants_ApplyFilterClick( object sender, EventArgs e )
         {
-            fRegistrants.SaveUserPreference( "Registrants Date Range", "Registration Date Range",  sdrpRegistrantDateRange.DelimitedValues );
+            fRegistrants.SaveUserPreference( "Registrants Date Range", "Registration Date Range", sdrpRegistrantDateRange.DelimitedValues );
             fRegistrants.SaveUserPreference( "First Name", tbRegistrantFirstName.Text );
             fRegistrants.SaveUserPreference( "Last Name", tbRegistrantLastName.Text );
             fRegistrants.SaveUserPreference( "In Group", ddlInGroup.SelectedValue );
@@ -1030,7 +1030,7 @@ namespace RockWeb.Blocks.Event
                         lRegistrant.Text = registrant.PersonAlias.Person.FullNameReversed +
                             ( Signers != null && !Signers.Contains( registrant.PersonAlias.PersonId ) ?
                                 " <i class='fa fa-pencil-square-o text-danger'></i>" :
-                                string.Empty  );
+                                string.Empty );
                     }
                     else
                     {
@@ -1094,7 +1094,7 @@ namespace RockWeb.Blocks.Event
                 }
 
                 // add addresses if exporting
-                if (_homeAddresses.Count > 0 )
+                if ( _homeAddresses.Count > 0 )
                 {
                     var lStreet1 = e.Row.FindControl( "lStreet1" ) as Literal;
                     var lStreet2 = e.Row.FindControl( "lStreet2" ) as Literal;
@@ -1104,7 +1104,7 @@ namespace RockWeb.Blocks.Event
                     var lCountry = e.Row.FindControl( "lCountry" ) as Literal;
 
                     var location = _homeAddresses[registrant.PersonId.Value];
-                    if (location != null )
+                    if ( location != null )
                     {
                         lStreet1.Text = location.Street1;
                         lStreet2.Text = location.Street2;
@@ -1488,7 +1488,7 @@ namespace RockWeb.Blocks.Event
                     try
                     {
                         var item = new Rock.Model.EntitySetItem();
-                        item.EntityId = (int)key;
+                        item.EntityId = ( int ) key;
                         entitySet.Items.Add( item );
                     }
                     catch
@@ -1785,7 +1785,7 @@ namespace RockWeb.Blocks.Event
                     lWaitListOrder.Text = ( _waitListOrder.IndexOf( registrant.Id ) + 1 ).ToString();
                 }
 
-                
+
                 // Set the campus
                 var lCampus = e.Row.FindControl( "lCampus" ) as Literal;
                 if ( lCampus != null && PersonCampusIds != null )
@@ -1871,7 +1871,7 @@ namespace RockWeb.Blocks.Event
                         int? groupId = gp.SelectedValueAsInt();
                         if ( groupId.HasValue )
                         {
-                            int registrantId = (int)gGroupPlacements.DataKeys[row.RowIndex].Value;
+                            int registrantId = ( int ) gGroupPlacements.DataKeys[row.RowIndex].Value;
                             placements.AddOrIgnore( groupId.Value, new List<int>() );
                             placements[groupId.Value].Add( registrantId );
                         }
@@ -2152,6 +2152,12 @@ namespace RockWeb.Blocks.Event
             lWorkflowType.Text = RegistrationInstance.RegistrationWorkflowType != null ?
                 RegistrationInstance.RegistrationWorkflowType.Name : string.Empty;
             lWorkflowType.Visible = !string.IsNullOrWhiteSpace( lWorkflowType.Text );
+            lStartDate.Text = RegistrationInstance.StartDateTime.HasValue ? 
+                                RegistrationInstance.StartDateTime.Value.ToShortDateString() : string.Empty;
+            lStartDate.Visible = RegistrationInstance.StartDateTime.HasValue;
+            lEndDate.Text = RegistrationInstance.EndDateTime.HasValue ?
+                                RegistrationInstance.EndDateTime.Value.ToShortDateString() : string.Empty;
+            lEndDate.Visible = RegistrationInstance.EndDateTime.HasValue;
 
             lDetails.Visible = !string.IsNullOrWhiteSpace( RegistrationInstance.Details );
             lDetails.Text = RegistrationInstance.Details;
@@ -2390,7 +2396,7 @@ namespace RockWeb.Blocks.Event
                             .Select( r => new
                             {
                                 RegistrationId = r.Id,
-                                DiscountCosts = r.Registrants.Sum( p => (decimal?)( p.DiscountedCost( r.DiscountPercentage, r.DiscountAmount) ) ) ?? 0.0m,
+                                DiscountCosts = r.Registrants.Sum( p => ( decimal? ) ( p.DiscountedCost( r.DiscountPercentage, r.DiscountAmount ) ) ) ?? 0.0m,
                             } ).ToList()
                             .ForEach( c =>
                                 rCosts.AddOrReplace( c.RegistrationId, c.DiscountCosts ) );
@@ -3092,7 +3098,7 @@ namespace RockWeb.Blocks.Event
             }
         }
 
-        private void ClearGrid(Grid grid )
+        private void ClearGrid( Grid grid )
         {
             // Remove any of the dynamic person fields
             var dynamicColumns = new List<string> {
@@ -3151,7 +3157,7 @@ namespace RockWeb.Blocks.Event
 
             ClearGrid( gGroupPlacements );
             ClearGrid( gRegistrants );
-            ClearGrid( gWaitList );            
+            ClearGrid( gWaitList );
 
             if ( RegistrantFields != null )
             {
@@ -3444,7 +3450,7 @@ namespace RockWeb.Blocks.Event
                         {
                             if ( control is IRockControl )
                             {
-                                var rockControl = (IRockControl)control;
+                                var rockControl = ( IRockControl ) control;
                                 rockControl.Label = attribute.Name;
                                 rockControl.Help = attribute.Description;
                                 phRegistrantFormFieldFilters.Controls.Add( control );
@@ -3476,7 +3482,7 @@ namespace RockWeb.Blocks.Event
                         {
                             if ( control2 is IRockControl )
                             {
-                                var rockControl2 = (IRockControl)control2;
+                                var rockControl2 = ( IRockControl ) control2;
                                 rockControl2.Label = attribute.Name;
                                 rockControl2.Help = attribute.Description;
                                 phWaitListFormFieldFilters.Controls.Add( control2 );
@@ -3626,11 +3632,11 @@ namespace RockWeb.Blocks.Event
                         {
                             if ( sortProperty.Direction == SortDirection.Ascending )
                             {
-                                qry = qry.OrderBy( t => t.TransactionDetails.Sum( d => (decimal?)d.Amount ) ?? 0.00M );
+                                qry = qry.OrderBy( t => t.TransactionDetails.Sum( d => ( decimal? ) d.Amount ) ?? 0.00M );
                             }
                             else
                             {
-                                qry = qry.OrderByDescending( t => t.TransactionDetails.Sum( d => (decimal?)d.Amount ) ?? 0.0M );
+                                qry = qry.OrderByDescending( t => t.TransactionDetails.Sum( d => ( decimal? ) d.Amount ) ?? 0.0M );
                             }
                         }
                         else
@@ -4137,9 +4143,9 @@ namespace RockWeb.Blocks.Event
 
         #region Linkages Tab
 
-            /// <summary>
-            /// Binds the registrations filter.
-            /// </summary>
+        /// <summary>
+        /// Binds the registrations filter.
+        /// </summary>
         private void BindLinkagesFilter()
         {
             cblCampus.DataSource = CampusCache.All();

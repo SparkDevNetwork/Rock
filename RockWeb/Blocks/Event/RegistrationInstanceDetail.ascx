@@ -89,11 +89,13 @@
                                 <Rock:RockLiteral ID="lName" runat="server" Label="Name" />
                                 <Rock:RockLiteral ID="lMaxAttendees" runat="server" Label="Maximum Attendees" />
                                 <Rock:RockLiteral ID="lWorkflowType" runat="server" Label="Registration Workflow" />
+                                <Rock:RockLiteral ID="lStartDate" runat="server" Label="Registration Starts" />
                             </div>
                             <div class="col-md-6">
                                 <Rock:RockLiteral ID="lCost" runat="server" Label="Cost" />
                                 <Rock:RockLiteral ID="lMinimumInitialPayment" runat="server" Label="Minimum Initial Payment" />
                                 <Rock:RockLiteral ID="lAccount" runat="server" Label="Account" />
+                                <Rock:RockLiteral ID="lEndDate" runat="server" Label="Registration Ends" />
                             </div>
                         </div>
 
@@ -128,7 +130,7 @@
                     <li id="liLinkage" runat="server">
                         <asp:LinkButton ID="lbLinkage" runat="server" Text="Linkages" OnClick="lbTab_Click" />
                     </li>
-                     <li id="liWaitList" runat="server">
+                    <li id="liWaitList" runat="server">
                         <asp:LinkButton ID="lbWaitList" runat="server" Text="Wait List" OnClick="lbTab_Click" />
                     </li>
                     <li id="liGroupPlacement" runat="server">
@@ -138,7 +140,7 @@
 
                 <asp:Panel ID="pnlRegistrations" runat="server" Visible="false" CssClass="panel panel-block">
                     <div class="panel-heading">
-                        <h1 class="panel-title"><i class="fa fa-user"></i> Registrations</h1>
+                        <h1 class="panel-title"><i class="fa fa-user"></i>Registrations</h1>
                     </div>
                     <div class="panel-body">
                         <Rock:ModalAlert ID="mdRegistrationsGridWarning" runat="server" />
@@ -196,7 +198,7 @@
 
                 <asp:Panel ID="pnlRegistrants" runat="server" Visible="false" CssClass="panel panel-block">
                     <div class="panel-heading">
-                        <h1 class="panel-title"><i class="fa fa-users"></i> Registrants</h1>
+                        <h1 class="panel-title"><i class="fa fa-users"></i>Registrants</h1>
                     </div>
                     <div class="panel-body">
                         <Rock:ModalAlert ID="mdRegistrantsGridWarning" runat="server" />
@@ -205,7 +207,7 @@
                                 <Rock:SlidingDateRangePicker ID="sdrpRegistrantDateRange" runat="server" Label="Registration Date Range" />
                                 <Rock:RockTextBox ID="tbRegistrantFirstName" runat="server" Label="First Name" />
                                 <Rock:RockTextBox ID="tbRegistrantLastName" runat="server" Label="Last Name" />
-                                <Rock:RockDropDownList ID="ddlInGroup" runat="server" Label="In Group"  />    
+                                <Rock:RockDropDownList ID="ddlInGroup" runat="server" Label="In Group" />
                                 <Rock:RockDropDownList ID="ddlSignedDocument" runat="server" Label="Signed Document" />
                                 <asp:PlaceHolder ID="phRegistrantFormFieldFilters" runat="server" />
                             </Rock:GridFilter>
@@ -263,7 +265,7 @@
 
                 <asp:Panel ID="pnlPayments" runat="server" Visible="false" CssClass="panel panel-block">
                     <div class="panel-heading">
-                        <h1 class="panel-title"><i class="fa fa-credit-card"></i> Payments</h1>
+                        <h1 class="panel-title"><i class="fa fa-credit-card"></i>Payments</h1>
                     </div>
                     <div class="panel-body">
                         <Rock:ModalAlert ID="mdPaymentsGridWarning" runat="server" />
@@ -298,7 +300,7 @@
 
                 <asp:Panel ID="pnlLinkages" runat="server" Visible="false" CssClass="panel panel-block">
                     <div class="panel-heading">
-                        <h1 class="panel-title"><i class="fa fa-link"></i> Linkages</h1>
+                        <h1 class="panel-title"><i class="fa fa-link"></i>Linkages</h1>
                     </div>
                     <div class="panel-body">
                         <Rock:ModalAlert ID="mdLinkagesGridWarning" runat="server" />
@@ -332,7 +334,7 @@
 
                 <asp:Panel ID="pnlWaitList" runat="server" Visible="false" CssClass="panel panel-block">
                     <div class="panel-heading">
-                        <h1 class="panel-title"><i class="fa fa-clock-o"></i> Wait List</h1>
+                        <h1 class="panel-title"><i class="fa fa-clock-o"></i>Wait List</h1>
                     </div>
                     <div class="panel-body">
                         <Rock:ModalAlert ID="mdWaitListWarning" runat="server" />
@@ -346,7 +348,7 @@
                             <Rock:Grid ID="gWaitList" runat="server" DisplayType="Full" AllowSorting="true" OnRowSelected="gWaitList_RowSelected" RowItemText="Wait List Individual" PersonIdField="PersonId" ExportSource="ColumnOutput">
                                 <Columns>
                                     <Rock:SelectField ItemStyle-Width="48px" />
-                                    <Rock:RockTemplateField HeaderText="Wait List Order" >
+                                    <Rock:RockTemplateField HeaderText="Wait List Order">
                                         <ItemTemplate>
                                             <asp:Literal ID="lWaitListOrder" runat="server"></asp:Literal>
                                         </ItemTemplate>
@@ -366,7 +368,7 @@
 
                 <asp:Panel ID="pnlGroupPlacement" runat="server" Visible="false" CssClass="panel panel-block">
                     <div class="panel-heading">
-                        <h1 class="panel-title"><i class="fa fa-link"></i> Group Placement</h1>
+                        <h1 class="panel-title"><i class="fa fa-link"></i>Group Placement</h1>
                     </div>
                     <div class="panel-body">
                         <div class="row">
