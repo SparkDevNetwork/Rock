@@ -80,6 +80,12 @@
                             });
                         });
 
+                        // js for when a file download is clicked, allow standard href functionality.
+                        $('.js-file-list .js-download-file').off('click');
+                        $('.js-file-list .js-download-file').on('click', function (e, data) {
+                            e.stopPropagation();
+                        });
+
                         // js for when a folder is selected
                         $('.js-folder-treeview .treeview').off('rockTree:selected');
                         $('.js-folder-treeview .treeview').on('rockTree:selected', function (e, data) {
