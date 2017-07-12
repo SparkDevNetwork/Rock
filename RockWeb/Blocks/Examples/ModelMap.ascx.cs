@@ -258,7 +258,7 @@ namespace RockWeb.Blocks.Examples
                         {
                             Name = p.Name,
                             IsInherited = p.DeclaringType != type,
-                            IsVirtual = p.GetGetMethod() != null && p.GetGetMethod().IsVirtual,
+                            IsVirtual = p.GetGetMethod() != null && p.GetGetMethod().IsVirtual && !p.GetGetMethod().IsFinal,
                             IsLavaInclude = p.IsDefined( typeof( LavaIncludeAttribute ) ) || p.IsDefined( typeof( DataMemberAttribute ) ),
                             NotMapped = p.IsDefined( typeof( NotMappedAttribute ) ),
                             Required = p.IsDefined( typeof( RequiredAttribute ) ),
