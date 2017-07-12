@@ -1,3 +1,8 @@
+Rock McKinley 6.8
+
++ Fixed an issue with an early version of the v6.7 install missing an updated file.
+
+
 Rock McKinley 6.7
  
 + Fixed exceptions that would appear on default home page after installing Rock v6 due to an invalid filter on the content blocks (Fixes #2155).
@@ -13,6 +18,7 @@ Rock McKinley 6.7
 + Added option to have transaction matching so that additional optional accounts can be easily added per transaction.
 + Improved check-in so that when searching by name, the name field will have focus when screen is displayed (Fixes #2222).
 + Fixed issue with check-in that was preventing people from checking in when used with a culture that formats date as dd/mm/yyyy like en-GB or en-AU (Fixes #2212).
+
 
 Rock McKinley 6.6
  
