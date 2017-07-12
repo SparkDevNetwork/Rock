@@ -930,7 +930,8 @@ namespace RockWeb.Blocks.Groups
                     Rock.Security.Authorization.Flush();
 
                 } );
-                ShowDetail( newGroup.Id );
+
+                NavigateToCurrentPage( new Dictionary<string, string> { { "GroupId", newGroup.Id.ToString() } } );
             }
         }
 
