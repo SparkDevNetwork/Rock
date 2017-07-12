@@ -417,7 +417,7 @@ namespace Rock.Model
                 throw new Exception( "Specified relationshipRoleId is not a known relationships role" );
             }
 
-            var knownRelationshipGroup = groupMemberService.Queryable()
+            var knownRelationshipGroup = groupMemberService.Queryable(true)
                 .Where( m =>
                     m.PersonId == personId &&
                     m.GroupRole.Guid.Equals( ownerRole.Guid ) )
@@ -441,7 +441,7 @@ namespace Rock.Model
             }
 
             // Add relationships
-            var relationshipMember = groupMemberService.Queryable()
+            var relationshipMember = groupMemberService.Queryable(true)
                 .FirstOrDefault( m =>
                     m.GroupId == knownRelationshipGroup.Id &&
                     m.PersonId == relatedPersonId &&
@@ -489,7 +489,7 @@ namespace Rock.Model
            }
 
            // find the personId's "known relationship" group
-           int? knownRelationshipGroupId = groupMemberService.Queryable()
+           int? knownRelationshipGroupId = groupMemberService.Queryable(true)
                .Where( m =>
                    m.PersonId == personId &&
                    m.GroupRoleId == ownerRole.Id )
@@ -548,7 +548,7 @@ namespace Rock.Model
             }
 
             // lookup the relationship to delete
-            var relationshipMember = groupMemberService.Queryable()
+            var relationshipMember = groupMemberService.Queryable(true)
                 .FirstOrDefault( m =>
                     m.GroupId == knownRelationshipGroup.Id &&
                     m.PersonId == relatedPersonId &&
