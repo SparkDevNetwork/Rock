@@ -1339,7 +1339,6 @@
     <Compile Include="Security\Authentication\Twitter.cs" />
     <Compile Include="Transactions\SaveCommunicationTransaction.cs" />
     <Compile Include="UniversalSearch\FormattedSearchResult.cs" />
-    <Compile Include="UniversalSearch\IndexComponents\ElasticsearchAws.cs" />
     <Compile Include="UniversalSearch\IndexComponents\Elasticsearch.cs" />
     <Compile Include="UniversalSearch\IndexContainer.cs" />
     <Compile Include="UniversalSearch\IndexComponent.cs" />
