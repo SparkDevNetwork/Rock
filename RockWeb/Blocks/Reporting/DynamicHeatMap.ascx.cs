@@ -305,15 +305,10 @@ namespace RockWeb.Blocks.Reporting
             }
 
             var groupMemberService = new GroupMemberService( rockContext );
+            var groupLocationTypeHome = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME.AsGuid() );
+            int groupLocationTypeHomeId = groupLocationTypeHome != null ? groupLocationTypeHome.Id : 0;
             var groupTypeFamily = GroupTypeCache.GetFamilyGroupType();
-            int groupTypeFamilyId = groupTypeFamily.Id;
-            var groupRoleAdultId = groupTypeFamily.Roles.FirstOrDefault( a => a.Guid == Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_ADULT.AsGuid() ).Id;
-            var groupLocationTypeHomeId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME.AsGuid() ).Id;
-            int[] connectionStatusValueIds = new[] { 
-                DefinedValueCache.Read(Rock.SystemGuid.DefinedValue.PERSON_CONNECTION_STATUS_ATTENDEE.AsGuid()).Id,
-                DefinedValueCache.Read(Rock.SystemGuid.DefinedValue.PERSON_CONNECTION_STATUS_MEMBER.AsGuid()).Id };
-
-            int recordStatusActiveId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_ACTIVE.AsGuid() ).Id;
+            int groupTypeFamilyId = groupTypeFamily != null ? groupTypeFamily.Id : 0;
 
             // if there is a DataViewId page parameter, use that instead of the Block or Filter dataview setting (the filter control won't be visible if there is a DataViewId page parameter)
             int? dataViewId = this.PageParameter( "DataViewId" ).AsIntegerOrNull();
