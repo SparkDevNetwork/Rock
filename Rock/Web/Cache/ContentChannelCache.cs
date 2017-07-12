@@ -20,6 +20,7 @@ using System.Data.Entity;
 using System.Linq;
 using Rock.Data;
 using Rock.Model;
+using Rock.Security;
 
 namespace Rock.Web.Cache
 {
@@ -258,6 +259,25 @@ namespace Rock.Web.Cache
 
         }
         private List<int> parentContentChannelIds = null;
+
+        /// <summary>
+        /// Gets the parent authority.
+        /// </summary>
+        /// <value>
+        /// The parent authority.
+        /// </value>
+        public override ISecured ParentAuthority
+        {
+            get
+            {
+                using ( var rockContext = new RockContext() )
+                {
+                    var contentChannelType = new Model.ContentChannelTypeService( rockContext ).Get( ContentChannelTypeId );
+                    return contentChannelType != null ? contentChannelType : base.ParentAuthority;
+                }
+                
+            }
+        }
 
         #endregion
 
