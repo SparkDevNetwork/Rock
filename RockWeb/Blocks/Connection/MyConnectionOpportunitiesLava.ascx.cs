@@ -35,7 +35,7 @@ namespace RockWeb.Blocks.Connection
     [Category( "Connection" )]
     [Description( "Block to display connection opportunities that are assigned to the current user. The display format is controlled by a lava template." )]
 
-    [LinkedPage( "Detail Page", "Page used to view details of a request.", false, "", "", 1 )]
+    [LinkedPage( "Detail Page", "Page used to view details of a request.", false, Rock.SystemGuid.Page.CONNECTION_REQUEST_DETAIL, "", 1 )]
     [ConnectionTypesField( "Connection Types", "Optional list of connection types to limit the display to (All will be displayed by default).", false, order: 2 )]
     [CodeEditorField( "Contents", @"The Lava template to use for displaying connection opportunities assigned to current user.", CodeEditorMode.Lava, CodeEditorTheme.Rock, 400, false, @"{% include '~~/Assets/Lava/MyConnectionOpportunitiesSortable.lava' %}", "", 3 )]
     public partial class MyConnectionOpportunitiesLava : Rock.Web.UI.RockBlock
