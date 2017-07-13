@@ -57,7 +57,7 @@ namespace RockWeb.Blocks.Core
             gDevice.Actions.AddClick += gDevice_Add;
             gDevice.GridRebind += gDevice_GridRebind;
 
-            AddAttributeColumns();
+            AddDynamicColumns();
 
             // Block Security and special attributes (RockPage takes care of View)
             bool canAddEditDelete = IsUserAuthorized( Authorization.EDIT );
@@ -217,21 +217,14 @@ namespace RockWeb.Blocks.Core
         #region Internal Methods
 
         /// <summary>
-        /// Add all the common attribute columns that are defined on Devices.
+        /// Add all the dynamic columns needed to properly display devices.
         /// </summary>
-        protected void AddAttributeColumns()
+        protected void AddDynamicColumns()
         {
             // Remove attribute columns
             foreach ( var column in gDevice.Columns.OfType<AttributeField>().ToList() )
             {
                 gDevice.Columns.Remove( column );
-            }
-
-            var deleteColumn = gDevice.Columns.OfType<DeleteField>().FirstOrDefault();
-            var insertAt = gDevice.Columns.Count;
-            if ( deleteColumn != null )
-            {
-                insertAt = gDevice.Columns.IndexOf( deleteColumn );
             }
 
             // Add attribute columns
@@ -260,9 +253,13 @@ namespace RockWeb.Blocks.Core
                         boundField.ItemStyle.HorizontalAlign = attributeCache.FieldType.Field.AlignValue;
                     }
 
-                    gDevice.Columns.Insert( insertAt, boundField );
+                    gDevice.Columns.Add( boundField );
                 }
             }
+
+            var deleteField = new DeleteField();
+            gDevice.Columns.Add( deleteField );
+            deleteField.Click += gDevice_Delete;
         }
 
         /// <summary>
