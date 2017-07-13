@@ -724,21 +724,49 @@ namespace Rock.Web.UI
             }
 
             // If the impersonated query key was included then set the current person
-            Page.Trace.Warn( "Checking for person impersanation" );
-            string impersonatedPersonKey = PageParameter( "rckipid" );
-            if ( !String.IsNullOrEmpty( impersonatedPersonKey ) )
+            Page.Trace.Warn( "Checking for person impersonation" );
+            string impersonatedPersonKeyParam = PageParameter( "rckipid" );
+            string impersonatedPersonKeyIdentity = string.Empty;
+            if ( HttpContext.Current?.User?.Identity?.Name != null )
+            {
+                if ( HttpContext.Current.User.Identity.Name.StartsWith( "rckipid=" ) )
+                {
+                    // get the impersonatedPersonKey from the Auth ticket
+                    impersonatedPersonKeyIdentity = HttpContext.Current.User.Identity.Name.Substring( 8 );
+                }
+            }
+
+            // if there is a impersonatedPersonKeyParam specified, and it isn't already associated with the current HttpContext.Current.User.Identity,
+            // then set the currentuser and ticket using the impersonatedPersonKeyParam
+            if ( !string.IsNullOrEmpty( impersonatedPersonKeyParam ) && impersonatedPersonKeyParam != impersonatedPersonKeyIdentity )
             {
                 Rock.Model.PersonService personService = new Model.PersonService( rockContext );
 
-                Rock.Model.Person impersonatedPerson = personService.GetByEncryptedKey( impersonatedPersonKey );
+                Rock.Model.Person impersonatedPerson = personService.GetByImpersonationToken( impersonatedPersonKeyParam, this.PageId );
                 if ( impersonatedPerson == null )
                 {
-                    impersonatedPerson = personService.GetByUrlEncodedKey( impersonatedPersonKey );
+                    impersonatedPerson = personService.GetByUrlEncodedKey( impersonatedPersonKeyParam );
                 }
                 if ( impersonatedPerson != null )
                 {
-                    Rock.Security.Authorization.SetAuthCookie( "rckipid=" + impersonatedPerson.EncryptedKey, false, true );
+                    Rock.Security.Authorization.SetAuthCookie( "rckipid=" + impersonatedPersonKeyParam, false, true );
                     CurrentUser = impersonatedPerson.GetImpersonatedUser();
+                }
+            }
+            else if ( !string.IsNullOrEmpty( impersonatedPersonKeyIdentity ) )
+            {
+                var impersonationToken = impersonatedPersonKeyIdentity;
+                var personToken = new PersonTokenService( rockContext ).GetByImpersonationToken( impersonationToken );
+                if ( personToken != null )
+                {
+                    // attempting to use a page specific impersonation token for a different page, so log them out
+                    if ( personToken.PageId.HasValue && personToken.PageId != this.PageId )
+                    {
+                        FormsAuthentication.SignOut();
+                        Response.Redirect( Request.RawUrl, false );
+                        Context.ApplicationInstance.CompleteRequest();
+                        return;
+                    }
                 }
             }
 

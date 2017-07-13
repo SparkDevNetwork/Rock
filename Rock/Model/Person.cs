@@ -1302,8 +1302,26 @@ namespace Rock.Model
         {
             get
             {
-                var encryptedKey = this.EncryptedKey;
-                return "rckipid=" + HttpUtility.UrlEncode( encryptedKey );
+                return "rckipid=" + this.UrlEncodedKey;
+            }
+        }
+
+
+        /// <summary>
+        /// Gets a URL friendly version of the EncryptedKey for the entity.
+        /// </summary>
+        /// <value>
+        /// A <see cref="T:System.String" /> that represents a URL friendly version of the entity's unique key.
+        /// </value>
+        [NotMapped]
+        [LavaInclude]
+        public override string UrlEncodedKey
+        {
+            get
+            {
+                // in the case of Person, use an encrypted PersonToken instead of the base.UrlEncodedKey
+                var encryptedPersonToken = PersonToken.CreateNew( this.PrimaryAlias );
+                return encryptedPersonToken;
             }
         }
 

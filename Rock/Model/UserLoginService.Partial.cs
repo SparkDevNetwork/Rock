@@ -186,10 +186,12 @@ namespace Rock.Model
             {
                 if ( userName.StartsWith( "rckipid=" ) )
                 {
-                    Rock.Model.PersonService personService = new Model.PersonService( rockContext );
-                    Rock.Model.Person impersonatedPerson = personService.GetByEncryptedKey( userName.Substring( 8 ) );
-                    if ( impersonatedPerson != null )
-                        return impersonatedPerson.GetImpersonatedUser();
+                    Rock.Model.PersonTokenService personTokenService = new Model.PersonTokenService( rockContext );
+                    Rock.Model.PersonToken personToken = personTokenService.GetByImpersonationToken( userName.Substring( 8 ) );
+                    if ( personToken?.PersonAlias?.Person != null )
+                    {
+                        return personToken.PersonAlias.Person.GetImpersonatedUser();
+                    }
                 }
                 else
                 {

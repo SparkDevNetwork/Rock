@@ -534,6 +534,7 @@ namespace Rock.Client.SystemGuid
         public const string COMMUNICATIONS_ROCK_SETTINGS = "199DC522-F4D6-4D82-AF44-3C16EE9D2CDA";
         public const string CONFIGURATION = "4AB679AF-C8CC-427C-A615-0BF9F52E8E3E";
         public const string CONFIRM = "D73F83B4-E20E-4F95-9A2C-511FB669F44C";
+        public const string CONNECTION_REQUEST_DETAIL = "50f04e77-8d3b-4268-80ab-bc15dd6cb262";
         public const string CONNECTIONS = "530860ED-BC73-4A43-8E7C-69533EF2B6AD";
         public const string CONTACT_US = "B1E63FE3-779C-4388-AFE4-FD6DFC034932";
         public const string CONTENT = "117B547B-9D71-4EE9-8047-176676F5DC8C";
