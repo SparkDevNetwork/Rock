@@ -46,6 +46,7 @@ namespace RockWeb.Blocks.Finance
     [LinkedPage( "Scheduled Transaction Detail Page", "Page used to view scheduled transaction detail.", true, "", "", 1 )]
     [LinkedPage( "Registration Detail Page", "Page used to view an event registration.", true, "", "", 2 )]
     [TextField( "Refund Batch Name Suffix", "The suffix to append to new batch name when refunding transactions. If left blank, the batch name will be the same as the original transaction's batch name.", false, " - Refund", "", 3 )]
+    [BooleanField( "Carry Over Account", "Keep Last Used Account when adding multiple transactions in the same session.", true, "", 4 )]
     public partial class TransactionDetail : Rock.Web.UI.RockBlock, IDetailBlock
     {
         #region Properties
@@ -155,6 +156,8 @@ namespace RockWeb.Blocks.Finance
             gAccountsEdit.Actions.AddClick += gAccountsEdit_AddClick;
             gAccountsEdit.GridRebind += gAccountsEdit_GridRebind;
             gAccountsEdit.RowDataBound += gAccountsEdit_RowDataBound;
+
+            apAccount.DisplayActiveOnly = true;
 
             //function toggleCheckImages() {
             //    var image1src = $('#<%=imgCheck.ClientID%>').attr("src");
@@ -1135,12 +1138,15 @@ namespace RockWeb.Blocks.Finance
                     txn.SourceTypeValueId = Session["NewTxnDefault_SourceType"] as int?;
                     txn.FinancialPaymentDetail.CurrencyTypeValueId = Session["NewTxnDefault_CurrencyType"] as int?;
                     txn.FinancialPaymentDetail.CreditCardTypeValueId = Session["NewTxnDefault_CreditCardType"] as int?;
-                    int? accountId = Session["NewTxnDefault_Account"] as int?;
-                    if ( accountId.HasValue )
+                    if ( this.GetAttributeValue( "CarryOverAccount" ).AsBoolean() )
                     {
-                        var txnDetail = new FinancialTransactionDetail();
-                        txnDetail.AccountId = accountId.Value;
-                        txn.TransactionDetails.Add( txnDetail );
+                        int? accountId = Session["NewTxnDefault_Account"] as int?;
+                        if ( accountId.HasValue )
+                        {
+                            var txnDetail = new FinancialTransactionDetail();
+                            txnDetail.AccountId = accountId.Value;
+                            txn.TransactionDetails.Add( txnDetail );
+                        }
                     }
                 }
             }
