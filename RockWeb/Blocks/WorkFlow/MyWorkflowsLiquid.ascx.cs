@@ -374,7 +374,14 @@ as fields on the workflow or activity)...
                 RockPage.SaveSharedItem( "ActiveForms", formActions );
             }
 
-            return formActions;
+            // find first form for each activity
+            var firstForms = new List<WorkflowAction>();
+            foreach( var activityId in formActions.Select( a => a.ActivityId ).Distinct().ToList() )
+            {
+                firstForms.Add( formActions.First( a => a.ActivityId == activityId ) );
+            }
+
+            return firstForms;
         }
 
         private List<int> GetCategories( RockContext rockContext )
