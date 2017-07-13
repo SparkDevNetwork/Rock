@@ -1291,7 +1291,8 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Gets the impersonation parameter.
+        /// Creates and stores a new PersonToken for a person using the default ExpireDateTime and UsageLimit.
+        /// Returns the encrypted URLEncoded Token along with the ImpersonationParameter key in the form of "rckipid={ImpersonationParameter}"
         /// </summary>
         /// <value>
         /// A <see cref="System.String"/> representing the impersonation parameter.
@@ -1306,9 +1307,9 @@ namespace Rock.Model
             }
         }
 
-
         /// <summary>
-        /// Gets a URL friendly version of the EncryptedKey for the entity.
+        /// Creates and stores a new PersonToken for a person using the default ExpireDateTime and UsageLimit.
+        /// Returns the encrypted URLEncoded Token which can be used as a rckipid.
         /// </summary>
         /// <value>
         /// A <see cref="T:System.String" /> that represents a URL friendly version of the entity's unique key.

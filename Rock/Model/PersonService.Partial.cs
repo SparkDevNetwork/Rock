@@ -1302,7 +1302,7 @@ namespace Rock.Model
         /// <returns></returns>
         public override Person GetByEncryptedKey( string encryptedKey )
         {
-            return GetByEncryptedKey( encryptedKey, true, null );
+            return GetByEncryptedKey( encryptedKey, true, true, null );
         }
 
         /// <summary>
@@ -1316,7 +1316,7 @@ namespace Rock.Model
         [Obsolete( "Use GetByEncryptedKey( string encryptedKey, bool followMerges, int? pageId ) instead" )]
         public Person GetByEncryptedKey( string encryptedKey, bool followMerges)
         {
-            return GetByEncryptedKey( encryptedKey, true, null );
+            return GetByEncryptedKey( encryptedKey, true, true, null );
         }
 
         /// <summary>
@@ -1325,9 +1325,9 @@ namespace Rock.Model
         /// <param name="impersonationToken">The impersonation token.</param>
         /// <param name="pageId">The page identifier.</param>
         /// <returns></returns>
-        public Person GetByImpersonationToken( string impersonationToken, int? pageId )
+        public Person GetByImpersonationToken( string impersonationToken, bool incrementUsage, int? pageId )
         {
-            return GetByEncryptedKey( impersonationToken, true, pageId );
+            return GetByEncryptedKey( impersonationToken, true, incrementUsage, pageId );
         }
 
         /// <summary>
@@ -1339,7 +1339,7 @@ namespace Rock.Model
         /// <returns>
         /// The <see cref="Rock.Model.Person" /> associated with the provided Key, otherwise null.
         /// </returns>
-        public Person GetByEncryptedKey( string encryptedKey, bool followMerges, int? pageId )
+        public Person GetByEncryptedKey( string encryptedKey, bool followMerges, bool incrementUsage, int? pageId )
         {
             // first, see if it exists as a PersonToken
             using ( var personTokenRockContext = new RockContext() )
@@ -1347,9 +1347,12 @@ namespace Rock.Model
                 var personToken = new PersonTokenService( personTokenRockContext ).GetByImpersonationToken( encryptedKey );
                 if ( personToken != null )
                 {
-                    personToken.TimesUsed++;
-                    personToken.LastUsedDateTime = RockDateTime.Now;
-                    personTokenRockContext.SaveChanges();
+                    if ( incrementUsage )
+                    {
+                        personToken.TimesUsed++;
+                        personToken.LastUsedDateTime = RockDateTime.Now;
+                        personTokenRockContext.SaveChanges();
+                    }
                     if ( personToken.UsageLimit.HasValue )
                     {
                         if ( personToken.TimesUsed > personToken.UsageLimit.Value )
