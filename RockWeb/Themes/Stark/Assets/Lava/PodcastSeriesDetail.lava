@@ -32,7 +32,7 @@
 {% assign item = Items | First %}
 {% if item  %}
 	
-	<artcile class="series-detail">
+	<article class="series-detail">
 		{% assign seriesImageGuid = item | Attribute:'SeriesImage','RawValue' %}
 		<div class="series-banner" style="background-image: url('/GetImage.ashx?Guid={{ seriesImageGuid }}');" ></div>
 
@@ -75,10 +75,11 @@
 			{% for message in item.ChildItems %}
 				<li>
 					<a href="{{ LinkedPages.DetailPage }}?Item={{ message.ChildContentChannelItem.Id }}">
-						{{ message.ChildContentChannelItem.Title }}</li>
+						{{ message.ChildContentChannelItem.Title }}
 					</a>
+        </li>
 			{% endfor %}
-		</o/>
+		</ol>
 		
 	</article>
 	
