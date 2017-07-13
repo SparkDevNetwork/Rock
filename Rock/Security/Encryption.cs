@@ -370,5 +370,24 @@ namespace Rock.Security
             return dataEncryptionKey;
         }
 
+        /// <summary>
+        /// Generates the unique token which can be used to create the token for a PersonToken
+        /// NOTE: Use PersonToken.CreateNew to get this as a usable rckipid
+        /// from https://stackoverflow.com/a/14644367/1755417
+        /// </summary>
+        /// <returns></returns>
+        public static string GenerateUniqueToken()
+        {
+            // Include the creation datetime
+            byte[] time = BitConverter.GetBytes( DateTime.UtcNow.ToBinary() );
+
+            // Make it unique with a guid
+            byte[] key = Guid.NewGuid().ToByteArray();
+
+            string token = Convert.ToBase64String( time.Concat( key ).ToArray() );
+
+            return token;
+        }
+
     }
 }

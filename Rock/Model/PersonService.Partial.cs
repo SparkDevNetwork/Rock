@@ -634,7 +634,7 @@ namespace Rock.Model
             Guid businessGuid = Rock.SystemGuid.GroupRole.GROUPROLE_KNOWN_RELATIONSHIPS_BUSINESS.AsGuid();
             Guid ownerGuid = Rock.SystemGuid.GroupRole.GROUPROLE_KNOWN_RELATIONSHIPS_OWNER.AsGuid();
 
-            var rockContext = (RockContext)this.Context;
+            var rockContext = ( RockContext ) this.Context;
             return new GroupMemberService( rockContext )
                 .Queryable().AsNoTracking()
                 .Where( m =>
@@ -1302,7 +1302,7 @@ namespace Rock.Model
         /// <returns></returns>
         public override Person GetByEncryptedKey( string encryptedKey )
         {
-            return GetByEncryptedKey( encryptedKey, true );
+            return GetByEncryptedKey( encryptedKey, true, null );
         }
 
         /// <summary>
@@ -1313,20 +1313,96 @@ namespace Rock.Model
         /// <returns>
         /// The <see cref="Rock.Model.Person" /> associated with the provided Key, otherwise null.
         /// </returns>
-        public Person GetByEncryptedKey( string encryptedKey, bool followMerges )
+        [Obsolete( "Use GetByEncryptedKey( string encryptedKey, bool followMerges, int? pageId ) instead" )]
+        public Person GetByEncryptedKey( string encryptedKey, bool followMerges)
         {
-            var person = base.GetByEncryptedKey( encryptedKey );
-            if ( person != null )
+            return GetByEncryptedKey( encryptedKey, true, null );
+        }
+
+        /// <summary>
+        /// Gets the Person by impersonation token (rckipid) and validates it against a Rock.Model.PersonToken
+        /// </summary>
+        /// <param name="impersonationToken">The impersonation token.</param>
+        /// <param name="pageId">The page identifier.</param>
+        /// <returns></returns>
+        public Person GetByImpersonationToken( string impersonationToken, int? pageId )
+        {
+            return GetByEncryptedKey( impersonationToken, true, pageId );
+        }
+
+        /// <summary>
+        /// Special override of Entity.GetByEncryptedKey for Person. Gets the Person by impersonation token (rckipid) and validates it against a Rock.Model.PersonToken
+        /// </summary>
+        /// <param name="encryptedKey">A <see cref="System.String" /> containing an encrypted key value.</param>
+        /// <param name="followMerges">if set to <c>true</c> [follow merges]. (only applies if using PersonTokenLegacyFallback)</param>
+        /// <param name="pageId">The page identifier.</param>
+        /// <returns>
+        /// The <see cref="Rock.Model.Person" /> associated with the provided Key, otherwise null.
+        /// </returns>
+        public Person GetByEncryptedKey( string encryptedKey, bool followMerges, int? pageId )
+        {
+            // first, see if it exists as a PersonToken
+            using ( var personTokenRockContext = new RockContext() )
             {
-                return person;
+                var personToken = new PersonTokenService( personTokenRockContext ).GetByImpersonationToken( encryptedKey );
+                if ( personToken != null )
+                {
+                    personToken.TimesUsed++;
+                    personToken.LastUsedDateTime = RockDateTime.Now;
+                    personTokenRockContext.SaveChanges();
+                    if ( personToken.UsageLimit.HasValue )
+                    {
+                        if ( personToken.TimesUsed > personToken.UsageLimit.Value )
+                        {
+                            // over usagelimit, so return null;
+                            return null;
+                        }
+                    }
+
+                    if ( personToken.ExpireDateTime.HasValue )
+                    {
+                        if ( personToken.ExpireDateTime.Value < RockDateTime.Now )
+                        {
+                            // expired, so return null
+                            return null;
+                        }
+                    }
+
+                    if ( personToken.PageId.HasValue && pageId.HasValue )
+                    {
+                        if ( personToken.PageId.Value != pageId.Value )
+                        {
+                            // personkey was for a specific page and this is not that page, so return null
+                            return null;
+                        }
+                    }
+
+                    if ( personToken.PersonAlias != null )
+                    {
+                        // refetch using PersonService using rockContext instead of personTokenRockContext which was used to save the changes to personKey
+                        return this.Get( personToken.PersonAlias.PersonId );
+                    }
+                }
             }
 
-            if ( followMerges )
+            // TODO, check global attributes for legacy rckipid settings
+            bool tokenUseLegacyFallback = GlobalAttributesCache.Read().GetValue( "core.PersonTokenUseLegacyFallback" ).AsBoolean();
+            if ( tokenUseLegacyFallback )
             {
-                var personAlias = new PersonAliasService( ( RockContext ) this.Context ).GetByAliasEncryptedKey( encryptedKey );
-                if ( personAlias != null )
+                var person = base.GetByEncryptedKey( encryptedKey );
+                if ( person != null )
                 {
-                    return personAlias.Person;
+                    return person;
+                }
+
+                // NOTE: we only need the followMerges when using PersonTokenUseLegacyFallback since the PersonToken method would already take care of PersonMerge since it is keyed off of PersonAliasId
+                if ( followMerges )
+                {
+                    var personAlias = new PersonAliasService( this.Context as RockContext ).GetByAliasEncryptedKey( encryptedKey );
+                    if ( personAlias != null )
+                    {
+                        return personAlias.Person;
+                    }
                 }
             }
 
