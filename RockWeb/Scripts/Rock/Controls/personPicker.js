@@ -231,7 +231,7 @@
                         var inactiveWarning = "";
 
                         if (!item.IsActive) {
-                            inactiveWarning = " <small>(Inactive)</small>";
+                            inactiveWarning = " <small>(" + item.RecordStatus + ")</small>";
                         }
 
                         var $div = $('<div/>').attr('class', 'radio'),
