@@ -827,7 +827,7 @@ $(document).ready(function() {
 
                         if ( ItemCacheDuration.HasValue && ItemCacheDuration.Value > 0 && !queryParameterFiltering )
                         {
-                            var cacheItemPolicy = new CacheItemPolicy { AbsoluteExpiration = DateTimeOffset.Now.AddSeconds( cacheDuration ) };
+                            var cacheItemPolicy = new CacheItemPolicy { AbsoluteExpiration = DateTimeOffset.Now.AddSeconds( ItemCacheDuration.Value ) };
                             AddCacheItem( CONTENT_CACHE_KEY, items, cacheItemPolicy );
                         }
 
