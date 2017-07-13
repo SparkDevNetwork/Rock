@@ -169,6 +169,7 @@ namespace Rock.Communication.Medium
             errorMessage = string.Empty;
             
             string transportPhone = string.Empty;
+            toPhone = toPhone.RemoveSpaces();
 
             using ( Rock.Data.RockContext rockContext = new Rock.Data.RockContext() )
             {
