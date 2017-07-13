@@ -742,7 +742,7 @@ namespace Rock.Web.UI
             {
                 Rock.Model.PersonService personService = new Model.PersonService( rockContext );
 
-                Rock.Model.Person impersonatedPerson = personService.GetByImpersonationToken( impersonatedPersonKeyParam, this.PageId );
+                Rock.Model.Person impersonatedPerson = personService.GetByImpersonationToken( impersonatedPersonKeyParam, true, this.PageId );
                 if ( impersonatedPerson == null )
                 {
                     impersonatedPerson = personService.GetByUrlEncodedKey( impersonatedPersonKeyParam );
@@ -751,6 +751,7 @@ namespace Rock.Web.UI
                 {
                     Rock.Security.Authorization.SetAuthCookie( "rckipid=" + impersonatedPersonKeyParam, false, true );
                     CurrentUser = impersonatedPerson.GetImpersonatedUser();
+                    UserLoginService.UpdateLastLogin( "rckipid=" + impersonatedPersonKeyParam );
                 }
             }
             else if ( !string.IsNullOrEmpty( impersonatedPersonKeyIdentity ) )
