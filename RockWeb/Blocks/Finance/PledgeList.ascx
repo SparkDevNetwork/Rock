@@ -19,9 +19,9 @@
                     </Rock:GridFilter>
                     <Rock:Grid ID="gPledges" runat="server" AutoGenerateColumns="False" ExportSource="ColumnOutput" AllowSorting="True" AllowPaging="True" OnRowSelected="gPledges_Edit">
                         <Columns>
-                            <Rock:RockBoundField DataField="PersonAlias.Person" HeaderText="Person" SortExpression="PersonAlias.Person.LastName,PersonAlias.Person.NickName" ExcelExportBehavior="IncludeIfVisible" />
-                            <Rock:RockBoundField DataField="Group.Name" HeaderText="For" SortExpression="Group.Name" ExcelExportBehavior="IncludeIfVisible" />
-                            <Rock:RockBoundField DataField="Account.Name" HeaderText="Account" SortExpression="Account.Name" ExcelExportBehavior="IncludeIfVisible" />
+                            <Rock:RockBoundField DataField="PersonAlias.Person" HeaderText="Person" SortExpression="PersonAlias.Person.LastName,PersonAlias.Person.NickName" />
+                            <Rock:RockBoundField DataField="Group.Name" HeaderText="For" SortExpression="Group.Name" />
+                            <Rock:RockBoundField DataField="Account.Name" HeaderText="Account" SortExpression="Account.Name" />
                             <Rock:CurrencyField DataField="TotalAmount" HeaderText="Total Amount" SortExpression="TotalAmount" />
                             <Rock:RockBoundField DataField="PledgeFrequencyValue" HeaderText="Payment Schedule" SortExpression="PledgeFrequencyValue" />
                             <Rock:DateField DataField="StartDate" HeaderText="Starts" SortExpression="StartDate"/>
