@@ -47,7 +47,7 @@ namespace Rock.Search.Other
             get
             {
                 var defaults = new Dictionary<string, string>();
-                defaults.Add( "SearchLabel", "Universal" );
+                defaults.Add( "SearchLabel", "Search" );
                 return defaults;
             }
         }
