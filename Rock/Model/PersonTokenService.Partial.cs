@@ -14,15 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
-using System;
-using System.Collections.Generic;
-using System.Data.Entity;
-using System.Data.Entity.Spatial;
 using System.Linq;
-
-using Rock;
-using Rock.Data;
-using Rock.Web.Cache;
 
 namespace Rock.Model
 {
@@ -38,7 +30,16 @@ namespace Rock.Model
         /// <returns></returns>
         public PersonToken GetByImpersonationToken( string impersonationToken )
         {
+            // the impersonationToken should normally be a UrlEncoded string, but it is possible that the caller already UrlDecoded it, so first try without UrlDecoding it
             var decryptedToken = Rock.Security.Encryption.DecryptString( impersonationToken );
+
+            if ( decryptedToken == null )
+            {
+                // do a Replace('!', '%') on the token before UrlDecoding because we did a Replace('%', '!') after we UrlEncoded it (to make it embeddable in HTML and cross browser compatible)
+                string urlDecodedKey = System.Web.HttpUtility.UrlDecode( impersonationToken.Replace( '!', '%' ) );
+                decryptedToken = Rock.Security.Encryption.DecryptString( urlDecodedKey );
+            }
+
             return this.Queryable().FirstOrDefault( a => a.Token == decryptedToken );
         }
     }

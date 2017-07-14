@@ -723,58 +723,14 @@ namespace Rock.Web.UI
                 stopwatchInitEvents.Restart();
             }
 
-            // If the impersonated query key was included then set the current person
+            // If the impersonated query key was included or is in session then set the current person
             Page.Trace.Warn( "Checking for person impersonation" );
-            string impersonatedPersonKeyParam = PageParameter( "rckipid" );
-            string impersonatedPersonKeyIdentity = string.Empty;
-            if ( HttpContext.Current?.User?.Identity?.Name != null )
-            {
-                if ( HttpContext.Current.User.Identity.Name.StartsWith( "rckipid=" ) )
-                {
-                    // get the impersonatedPersonKey from the Auth ticket
-                    impersonatedPersonKeyIdentity = HttpContext.Current.User.Identity.Name.Substring( 8 );
-                }
-            }
-
-            // if there is a impersonatedPersonKeyParam specified, and it isn't already associated with the current HttpContext.Current.User.Identity,
-            // then set the currentuser and ticket using the impersonatedPersonKeyParam
-            if ( !string.IsNullOrEmpty( impersonatedPersonKeyParam ) && impersonatedPersonKeyParam != impersonatedPersonKeyIdentity )
-            {
-                Rock.Model.PersonService personService = new Model.PersonService( rockContext );
-
-                Rock.Model.Person impersonatedPerson = personService.GetByImpersonationToken( impersonatedPersonKeyParam, true, this.PageId );
-                if ( impersonatedPerson == null )
-                {
-                    impersonatedPerson = personService.GetByUrlEncodedKey( impersonatedPersonKeyParam );
-                }
-                if ( impersonatedPerson != null )
-                {
-                    Rock.Security.Authorization.SetAuthCookie( "rckipid=" + impersonatedPersonKeyParam, false, true );
-                    CurrentUser = impersonatedPerson.GetImpersonatedUser();
-                    UserLoginService.UpdateLastLogin( "rckipid=" + impersonatedPersonKeyParam );
-                }
-            }
-            else if ( !string.IsNullOrEmpty( impersonatedPersonKeyIdentity ) )
-            {
-                var impersonationToken = impersonatedPersonKeyIdentity;
-                var personToken = new PersonTokenService( rockContext ).GetByImpersonationToken( impersonationToken );
-                if ( personToken != null )
-                {
-                    // attempting to use a page specific impersonation token for a different page, so log them out
-                    if ( personToken.PageId.HasValue && personToken.PageId != this.PageId )
-                    {
-                        FormsAuthentication.SignOut();
-                        Response.Redirect( Request.RawUrl, false );
-                        Context.ApplicationInstance.CompleteRequest();
-                        return;
-                    }
-                }
-            }
+            ProcessImpersonation( rockContext );
 
             // Get current user/person info
             Page.Trace.Warn( "Getting CurrentUser" );
             Rock.Model.UserLogin user = CurrentUser;
-
+            
             if ( showDebugTimings )
             {
                 slDebugTimings.AppendFormat( "GetCurrentUser [{0}ms]\n", stopwatchInitEvents.Elapsed.TotalMilliseconds );
@@ -1426,6 +1382,69 @@ namespace Rock.Web.UI
                         ID="lblShowDebugTimings",
                         Text = string.Format( "<pre>{0}</pre>", slDebugTimings.ToString() )
                     } );
+                }
+            }
+        }
+
+        /// <summary>
+        /// Checks for and processes any impersonation parameters
+        /// </summary>
+        /// <param name="rockContext">The rock context.</param>
+        private void ProcessImpersonation( RockContext rockContext )
+        {
+            string impersonatedPersonKeyParam = PageParameter( "rckipid" );
+            string impersonatedPersonKeyIdentity = string.Empty;
+            if ( HttpContext.Current?.User?.Identity?.Name != null )
+            {
+                if ( HttpContext.Current.User.Identity.Name.StartsWith( "rckipid=" ) )
+                {
+                    // get the impersonatedPersonKey from the Auth ticket
+                    impersonatedPersonKeyIdentity = HttpContext.Current.User.Identity.Name.Substring( 8 );
+                }
+            }
+
+            // if there is a impersonatedPersonKeyParam specified, and it isn't already associated with the current HttpContext.Current.User.Identity,
+            // then set the currentuser and ticket using the impersonatedPersonKeyParam
+            if ( !string.IsNullOrEmpty( impersonatedPersonKeyParam ) && impersonatedPersonKeyParam != impersonatedPersonKeyIdentity )
+            {
+                Rock.Model.PersonService personService = new Model.PersonService( rockContext );
+
+                Rock.Model.Person impersonatedPerson = personService.GetByImpersonationToken( impersonatedPersonKeyParam, true, this.PageId );
+                if ( impersonatedPerson != null )
+                {
+                    Rock.Security.Authorization.SetAuthCookie( "rckipid=" + impersonatedPersonKeyParam, false, true );
+                    CurrentUser = impersonatedPerson.GetImpersonatedUser();
+                    UserLoginService.UpdateLastLogin( "rckipid=" + impersonatedPersonKeyParam );
+                }
+                else
+                {
+                    // Attempting to use an impersonation token that doesn't exist or is no longer valid, so log them out
+                    FormsAuthentication.SignOut();
+
+                    // strip the rckipid param off of the url
+                    var redirectUrl = Request.RawUrl.Replace( "rckipid=" + impersonatedPersonKeyParam, string.Empty );
+                    Response.Redirect( redirectUrl, false );
+                    Context.ApplicationInstance.CompleteRequest();
+                    return;
+                }
+            }
+            else if ( !string.IsNullOrEmpty( impersonatedPersonKeyIdentity ) )
+            {
+                if ( !this.IsPostBack )
+                {
+                    var impersonationToken = impersonatedPersonKeyIdentity;
+                    var personToken = new PersonTokenService( rockContext ).GetByImpersonationToken( impersonationToken );
+                    if ( personToken != null )
+                    {
+                        // attempting to use a page specific impersonation token for a different page, so log them out
+                        if ( personToken.PageId.HasValue && personToken.PageId != this.PageId )
+                        {
+                            FormsAuthentication.SignOut();
+                            Response.Redirect( Request.RawUrl, false );
+                            Context.ApplicationInstance.CompleteRequest();
+                            return;
+                        }
+                    }
                 }
             }
         }
