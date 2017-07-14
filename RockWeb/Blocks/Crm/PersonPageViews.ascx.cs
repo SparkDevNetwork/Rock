@@ -214,8 +214,19 @@ namespace RockWeb.Blocks.Crm
 
             int skipCount = pageNumber * sessionCount;
 
-            // NOTE: Since this block shows a history of sites a person visited in Rock, require Person.UrlEncodedKey instead of Person.Id so that URL can't be manually edited with a different PersonId
-            var person = new PersonService( rockContext ).GetByImpersonationToken( PageParameter( "Person" ), false, this.PageCache.Id );
+            Person person = null;
+            Guid? personGuid = PageParameter( "PersonGuid" ).AsGuidOrNull();
+
+            // NOTE: Since this block shows a history of sites a person visited in Rock, require Person.Guid instead of Person.Id to reduce the risk of somebody manually editing the URL to see somebody else pageview history
+            if ( personGuid.HasValue )
+            {
+                person = new PersonService( rockContext ).Get( personGuid.Value );
+            }
+            else if ( !string.IsNullOrEmpty( PageParameter( "Person" ) ) )
+            {
+                // Just in case Person (Person Token) was used, look up by Impersonation Token
+                person = new PersonService( rockContext ).GetByImpersonationToken( PageParameter( "Person" ), false, this.PageCache.Id );
+            }
 
             if ( person != null )
             {

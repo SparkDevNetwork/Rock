@@ -63,9 +63,8 @@ namespace Rock.PersonProfile.Badge
                     {
                         int pageId = Rock.Web.Cache.PageCache.Read( Guid.Parse( GetAttributeValue( badge, "PageViewDetails" ) ) ).Id;
 
-                        // NOTE: Since this block shows a history of sites a person visited in Rock, use Person.GetImpersonationToken instead of Person.Id so that URL can't be manually edited with a different PersonId
-                        var personToken = Person.GetImpersonationToken( null, null, pageId );
-                        detailPageUrl = System.Web.VirtualPathUtility.ToAbsolute( $"~/page/{pageId}?Person={personToken}&SiteId={siteId}" );
+                        // NOTE: Since this block shows a history of sites a person visited in Rock, use Person.Guid instead of Person.Id to reduce the risk of somebody manually editing the URL to see somebody else pageview history
+                        detailPageUrl = System.Web.VirtualPathUtility.ToAbsolute( $"~/page/{pageId}?PersonGuid={Person.Guid}&SiteId={siteId}" );
                     }
 
                     writer.Write( $"<div class='badge badge-lastvisitonsite badge-id-{badge.Id}' data-toggle='tooltip' data-original-title=''>" );
