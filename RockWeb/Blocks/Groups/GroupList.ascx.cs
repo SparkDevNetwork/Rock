@@ -68,8 +68,6 @@ namespace RockWeb.Blocks.Groups
 
             ApplyBlockSettings();
 
-            BindFilter();
-
             modalDetails.SaveClick += modalDetails_SaveClick;
 
             this.BlockUpdated += GroupList_BlockUpdated;
@@ -84,6 +82,7 @@ namespace RockWeb.Blocks.Groups
         {
             if ( !Page.IsPostBack )
             {
+                BindFilter();
                 BindGrid();
             }
 
