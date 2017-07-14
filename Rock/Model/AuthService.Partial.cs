@@ -25,7 +25,7 @@ namespace Rock.Model
     /// <summary>
     /// Data access/service class for <see cref="Rock.Model.Auth"/> entity type objects.
     /// </summary>
-    public partial class AuthService 
+    public partial class AuthService
     {
         /// <summary>
         /// Returns an enumerable collection of <see cref="Rock.Model.Auth"/> entities by <see cref="Rock.Model.EntityType"/> and entity Id.
@@ -38,9 +38,9 @@ namespace Rock.Model
         public IQueryable<Auth> Get( int entityTypeId, int? entityId )
         {
             return Queryable( "PersonAlias" )
-                .Where( t => 
-                    t.EntityTypeId == entityTypeId && 
-                    ( t.EntityId == entityId || ( entityId == null && t.EntityId == null ) ) 
+                .Where( t =>
+                    t.EntityTypeId == entityTypeId &&
+                    ( t.EntityId == entityId || ( entityId == null && t.EntityId == null ) )
                 )
                 .OrderBy( t => t.Order );
         }
@@ -56,6 +56,20 @@ namespace Rock.Model
         {
             return Get( entityTypeId, entityId )
                 .Where( t => t.Action == action );
+        }
+
+        /// <summary>
+        /// Returns an enumerable collection of <see cref="Rock.Model.Auth"/> entities by <see cref="Rock.Model.EntityType"/> and entity Id.
+        /// </summary>
+        /// <param name="groupId">A <see cref="System.Int32"/> represent the groupId of the security Role.</param>
+        /// <returns>
+        /// An enumerable list of <see cref="Rock.Model.Auth" /> entities that secure a specific entity.
+        /// </returns>
+        public IQueryable<Auth> GetByGroup( int groupId )
+        {
+            return Queryable()
+                .Where( t => t.GroupId == groupId )
+                .OrderBy( t => t.Order );
         }
     }
 }

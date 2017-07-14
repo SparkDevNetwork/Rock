@@ -30,6 +30,9 @@ namespace Rock.Rest.Controllers
     /// </summary>
     public partial class InteractionSessionsController : Rock.Rest.ApiController<Rock.Model.InteractionSession>
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="InteractionSessionsController"/> class.
+        /// </summary>
         public InteractionSessionsController() : base( new Rock.Model.InteractionSessionService( new Rock.Data.RockContext() ) ) { } 
     }
 }

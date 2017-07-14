@@ -30,6 +30,9 @@ namespace Rock.Rest.Controllers
     /// </summary>
     public partial class PersonPreviousNamesController : Rock.Rest.ApiController<Rock.Model.PersonPreviousName>
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="PersonPreviousNamesController"/> class.
+        /// </summary>
         public PersonPreviousNamesController() : base( new Rock.Model.PersonPreviousNameService( new Rock.Data.RockContext() ) ) { } 
     }
 }

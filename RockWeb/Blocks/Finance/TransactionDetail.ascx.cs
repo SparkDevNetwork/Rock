@@ -46,6 +46,7 @@ namespace RockWeb.Blocks.Finance
     [LinkedPage( "Scheduled Transaction Detail Page", "Page used to view scheduled transaction detail.", true, "", "", 1 )]
     [LinkedPage( "Registration Detail Page", "Page used to view an event registration.", true, "", "", 2 )]
     [TextField( "Refund Batch Name Suffix", "The suffix to append to new batch name when refunding transactions. If left blank, the batch name will be the same as the original transaction's batch name.", false, " - Refund", "", 3 )]
+    [BooleanField( "Carry Over Account", "Keep Last Used Account when adding multiple transactions in the same session.", true, "", 4 )]
     public partial class TransactionDetail : Rock.Web.UI.RockBlock, IDetailBlock
     {
         #region Properties
@@ -155,6 +156,8 @@ namespace RockWeb.Blocks.Finance
             gAccountsEdit.Actions.AddClick += gAccountsEdit_AddClick;
             gAccountsEdit.GridRebind += gAccountsEdit_GridRebind;
             gAccountsEdit.RowDataBound += gAccountsEdit_RowDataBound;
+
+            apAccount.DisplayActiveOnly = true;
 
             //function toggleCheckImages() {
             //    var image1src = $('#<%=imgCheck.ClientID%>').attr("src");
@@ -297,6 +300,32 @@ namespace RockWeb.Blocks.Finance
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void lbSave_Click( object sender, EventArgs e )
         {
+            bool isValid;
+            int? savedTransactionId;
+            SaveFinancialTransaction( out isValid, out savedTransactionId );
+
+            if ( isValid && savedTransactionId.HasValue )
+            {
+                // Requery the batch to support EF navigation properties
+                var savedTxn = GetTransaction( savedTransactionId.Value );
+                if ( savedTxn != null )
+                {
+                    savedTxn.LoadAttributes();
+                    savedTxn.FinancialPaymentDetail.LoadAttributes();
+                    ShowReadOnlyDetails( savedTxn );
+                }
+            }
+        }
+
+        /// <summary>
+        /// Saves the financial transaction.
+        /// </summary>
+        /// <param name="isValid">if set to <c>true</c> [is valid].</param>
+        /// <param name="savedTransactionId">The saved transaction identifier.</param>
+        private void SaveFinancialTransaction(out bool isValid, out int? savedTransactionId )
+        {
+            savedTransactionId = null;
+            isValid = false;
             var rockContext = new RockContext();
 
             var txnService = new FinancialTransactionService( rockContext );
@@ -402,30 +431,17 @@ namespace RockWeb.Blocks.Finance
                     // Save Transaction Details
                     foreach ( var editorTxnDetail in TransactionDetailsState )
                     {
-                        string oldAccountName = string.Empty;
-                        string newAccountName = string.Empty;
-                        decimal oldAmount = 0.0M;
-                        decimal newAmount = 0.0M;
-
                         // Add or Update the activity type
                         var txnDetail = txn.TransactionDetails.FirstOrDefault( d => d.Guid.Equals( editorTxnDetail.Guid ) );
-                        if ( txnDetail != null )
-                        {
-                            oldAccountName = AccountName( txnDetail.AccountId );
-                            oldAmount = txnDetail.Amount;
-                        }
-                        else 
+                        if ( txnDetail == null )
                         {
                             txnDetail = new FinancialTransactionDetail();
                             txnDetail.Guid = editorTxnDetail.Guid;
                             txn.TransactionDetails.Add( txnDetail );
                         }
 
-                        newAccountName = AccountName( editorTxnDetail.AccountId );
-                        newAmount = UseSimpleAccountMode ? tbSingleAccountAmount.Text.AsDecimal() : editorTxnDetail.Amount;
-
                         txnDetail.AccountId = editorTxnDetail.AccountId;
-                        txnDetail.Amount = newAmount;
+                        txnDetail.Amount = UseSimpleAccountMode ? tbSingleAccountAmount.Text.AsDecimal() : editorTxnDetail.Amount; 
                         txnDetail.Summary = editorTxnDetail.Summary;
 
                         if ( editorTxnDetail.AttributeValues != null )
@@ -508,14 +524,44 @@ namespace RockWeb.Blocks.Finance
                     Session.Remove("NewTxnDefault_Account");
                 }
 
-                // Requery the batch to support EF navigation properties
-                var savedTxn = GetTransaction( txn.Id );
-                if ( savedTxn != null )
-                {
-                    savedTxn.LoadAttributes();
-                    savedTxn.FinancialPaymentDetail.LoadAttributes();
-                    ShowReadOnlyDetails( savedTxn );
-                }
+                isValid = true;
+                savedTransactionId = txn.Id;
+            }
+        }
+
+        /// <summary>
+        /// Handles the Click event of the btnSaveThenAdd control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void btnSaveThenAdd_Click( object sender, EventArgs e )
+        {
+            bool isValid;
+            int? savedTransactionId;
+            SaveFinancialTransaction( out isValid, out savedTransactionId );
+
+            if ( isValid )
+            {
+                ShowDetail( 0, hfBatchId.Value.AsIntegerOrNull() );
+            }
+        }
+
+        /// <summary>
+        /// Handles the Click event of the btnSaveThenViewBatch control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void btnSaveThenViewBatch_Click( object sender, EventArgs e )
+        {
+            bool isValid;
+            int? savedTransactionId;
+            SaveFinancialTransaction( out isValid, out savedTransactionId );
+
+            if ( isValid )
+            {
+                Dictionary<string, string> qryParams = new Dictionary<string, string>();
+                qryParams.Add( "batchId", hfBatchId.Value );
+                NavigateToLinkedPage( "BatchDetailPage", qryParams );
             }
         }
 
@@ -1092,12 +1138,15 @@ namespace RockWeb.Blocks.Finance
                     txn.SourceTypeValueId = Session["NewTxnDefault_SourceType"] as int?;
                     txn.FinancialPaymentDetail.CurrencyTypeValueId = Session["NewTxnDefault_CurrencyType"] as int?;
                     txn.FinancialPaymentDetail.CreditCardTypeValueId = Session["NewTxnDefault_CreditCardType"] as int?;
-                    int? accountId = Session["NewTxnDefault_Account"] as int?;
-                    if ( accountId.HasValue )
+                    if ( this.GetAttributeValue( "CarryOverAccount" ).AsBoolean() )
                     {
-                        var txnDetail = new FinancialTransactionDetail();
-                        txnDetail.AccountId = accountId.Value;
-                        txn.TransactionDetails.Add( txnDetail );
+                        int? accountId = Session["NewTxnDefault_Account"] as int?;
+                        if ( accountId.HasValue )
+                        {
+                            var txnDetail = new FinancialTransactionDetail();
+                            txnDetail.AccountId = accountId.Value;
+                            txn.TransactionDetails.Add( txnDetail );
+                        }
                     }
                 }
             }
@@ -1353,6 +1402,8 @@ namespace RockWeb.Blocks.Finance
                             TransactionDateTime = r.FinancialTransaction.TransactionDateTime.Value.ToShortDateString() + " " +
                                 r.FinancialTransaction.TransactionDateTime.Value.ToShortTimeString(),
                             TransactionCode = r.FinancialTransaction.TransactionCode,
+                            r.RefundReasonValue,
+                            r.RefundReasonSummary,
                             TotalAmount = r.FinancialTransaction.TotalAmount
                         } )
                         .ToList();
@@ -1452,6 +1503,17 @@ namespace RockWeb.Blocks.Finance
                 ddlCurrencyType.SetValue( txn.FinancialPaymentDetail != null ? txn.FinancialPaymentDetail.CurrencyTypeValueId : (int?)null );
                 ddlCreditCardType.SetValue( txn.FinancialPaymentDetail != null ? txn.FinancialPaymentDetail.CreditCardTypeValueId : (int?)null );
                 SetCreditCardVisibility();
+
+                if ( txn.Id == 0 )
+                {
+                    btnSaveThenAdd.Visible = true;
+                    btnSaveThenViewBatch.Visible = !string.IsNullOrEmpty( LinkedPageUrl( "BatchDetailPage" ) ) && txn.BatchId.HasValue;
+                }
+                else
+                {
+                    btnSaveThenAdd.Visible = false;
+                    btnSaveThenViewBatch.Visible = false;
+                }
 
                 if ( txn.RefundDetails != null )
                 {
@@ -1792,5 +1854,7 @@ namespace RockWeb.Blocks.Finance
 
         #endregion
 
+
+        
     }
 }

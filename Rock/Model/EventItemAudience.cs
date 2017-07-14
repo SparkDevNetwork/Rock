@@ -29,6 +29,7 @@ namespace Rock.Model
     /// <summary>
     /// Represents a EventItemAudience.
     /// </summary>
+    [RockDomain( "Event" )]
     [Table( "EventItemAudience" )]
     [DataContract]
     public partial class EventItemAudience : Model<EventItemAudience>

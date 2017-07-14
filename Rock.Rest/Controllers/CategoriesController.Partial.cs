@@ -45,6 +45,8 @@ namespace Rock.Rest.Controllers
         /// <param name="showCategoriesThatHaveNoChildren">if set to <c>true</c> [show categories that have no children].</param>
         /// <param name="includedCategoryIds">The included category ids.</param>
         /// <param name="excludedCategoryIds">The excluded category ids.</param>
+        /// <param name="defaultIconCssClass">The default icon CSS class.</param>
+        /// <param name="includeInactiveItems">if set to <c>true</c> [include inactive items].</param>
         /// <returns></returns>
         [Authenticate, Secured]
         [System.Web.Http.Route( "api/Categories/GetChildren/{id}" )]
@@ -242,6 +244,7 @@ namespace Rock.Rest.Controllers
         /// <param name="serviceInstance">The service instance.</param>
         /// <param name="categoryId">The category id.</param>
         /// <param name="showUnnamedEntityItems">if set to <c>true</c> [show unnamed entity items].</param>
+        /// <param name="excludeInactiveItems">if set to <c>true</c> [exclude inactive items].</param>
         /// <returns></returns>
         private IQueryable<ICategorized> GetCategorizedItems( IService serviceInstance, int categoryId, bool showUnnamedEntityItems, bool excludeInactiveItems )
         {

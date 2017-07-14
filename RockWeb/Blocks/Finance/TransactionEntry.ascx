@@ -168,7 +168,7 @@
                                     </div>
 
                                     <div id="divACHPaymentInfo" runat="server" visible="false" class="tab-pane">
-                                        <Rock:RockTextBox ID="txtAccountName" runat="server" Label="Account Name" />
+                                        <Rock:RockTextBox ID="txtAccountName" runat="server" Label="Name on Account" />
                                         <Rock:RockTextBox ID="txtRoutingNumber" runat="server" Label="Routing #" />
                                         <Rock:RockTextBox ID="txtAccountNumber" runat="server" Label="Account #" />
                                         <Rock:RockRadioButtonList ID="rblAccountType" runat="server" RepeatDirection="Horizontal" Label="Account Type">

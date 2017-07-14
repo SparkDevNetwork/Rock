@@ -67,8 +67,15 @@
                                 <Rock:RockDropDownList ID="ddlSourceType" runat="server" Label="Source Type" AutoPostBack="true" OnSelectedIndexChanged="ddlSourceType_SelectedIndexChanged" />
 
                                     <asp:Panel ID="pnlSQLSourceType" runat="server">
-                                        <Rock:CodeEditor ID="ceSourceSql" runat="server" Label="Source SQL" EditorMode="Sql" />
-                                        <Rock:NotificationBox ID="nbSQLHelp" runat="server" Visible="false" />
+                                        <label>Source SQL</label><a class="help" href="javascript: $('.js-sourcesql-help').toggle;"><i class="fa fa-question-circle"></i></a>
+                                        <div class="alert alert-info js-sourcesql-help" id="nbSQLHelp" runat="server" style="display: none;"></div>
+                                        <Rock:CodeEditor ID="ceSourceSql" runat="server" EditorMode="Sql" />
+                                    </asp:Panel>
+
+                                    <asp:Panel ID="pnlLavaSourceType" runat="server">
+                                        <label>Source Lava</label><a class="help" href="javascript: $('.js-sourcelava-help').toggle;"><i class="fa fa-question-circle"></i></a>
+                                        <div class="alert alert-info js-sourcelava-help" id="nbLavaHelp" runat="server" style="display: none;"></div>
+                                        <Rock:CodeEditor ID="ceSourceLava" runat="server" EditorMode="Lava" />
                                     </asp:Panel>
                             
                                     <asp:Panel ID="pnlDataviewSourceType" runat="server">

@@ -104,6 +104,14 @@ namespace Rock.CheckIn
         public bool ReuseSameCode { get { return GetSetting( "core_checkin_ReuseSameCode" ).AsBoolean( false ); } }
 
         /// <summary>
+        /// Gets a value indicating whether [allow checkout].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [allow checkout]; otherwise, <c>false</c>.
+        /// </value>
+        public bool AllowCheckout { get { return GetSetting( "core_checkin_AllowCheckout" ).AsBoolean( false ); } }
+
+        /// <summary>
         /// Gets a value indicating whether [use same options].
         /// </summary>
         /// <value>
@@ -200,12 +208,21 @@ namespace Rock.CheckIn
         public bool PreventDuplicateCheckin { get { return GetSetting( "core_checkin_PreventDuplicateCheckin" ).AsBoolean( false ); } }
         
         /// <summary>
-        /// Gets a value indicating whether [prevent inactive peopele].
+        /// Gets a value indicating whether [prevent inactive people]. Obsolete as of 1.7.0.
         /// </summary>
         /// <value>
-        /// <c>true</c> if [prevent inactive peopele]; otherwise, <c>false</c>.
+        /// <c>true</c> if [prevent inactive people]; otherwise, <c>false</c>.
         /// </value>
+        [Obsolete( "Use PreventInactivePeople instead.", true )]
         public bool PreventInactivePeopele { get { return GetSetting( "core_checkin_PreventInactivePeople" ).AsBoolean( false ); } }
+
+        /// <summary>
+        /// Gets a value indicating whether [prevent inactive people].
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if [prevent inactive people]; otherwise, <c>false</c>.
+        /// </value>
+        public bool PreventInactivePeople { get { return GetSetting( "core_checkin_PreventInactivePeople" ).AsBoolean( false ); } }
 
         /// <summary>
         /// Gets a value indicating whether [display location count].
@@ -222,6 +239,14 @@ namespace Rock.CheckIn
         /// The automatic select days back.
         /// </value>
         public int AutoSelectDaysBack { get { return GetSetting( "core_checkin_AutoSelectDaysBack" ).AsIntegerOrNull() ?? 10; } }
+
+        /// <summary>
+        /// Gets or sets the automatic select options.
+        /// </summary>
+        /// <value>
+        /// The automatic select options.
+        /// </value>
+        public int? AutoSelectOptions { get { return GetSetting( "core_checkin_AutoSelectOptions" ).AsIntegerOrNull();  } }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="CheckinType"/> class.

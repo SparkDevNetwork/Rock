@@ -369,6 +369,9 @@ namespace RockWeb.Blocks.Cms
                 Response.Redirect( pageReference.BuildUrl(), false );
             }
 
+            // flush cache
+            ContentChannelCache.Flush( contentChannel.Id );
+
         }
 
         /// <summary>
@@ -693,7 +696,7 @@ namespace RockWeb.Blocks.Cms
                 {
                     if ( contentChannel.AttributeValues.ContainsKey( attribute.Key ) )
                     {
-                        string value = attribute.FieldType.Field.FormatValueAsHtml( null,
+                        string value = attribute.FieldType.Field.FormatValueAsHtml( null, attribute.EntityTypeId, contentChannel.Id,
                             contentChannel.AttributeValues[attribute.Key].Value, attribute.QualifierValues, false );
                         descriptionListLeft.Add( attribute.Name, value );
                     }

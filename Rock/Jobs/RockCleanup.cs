@@ -26,6 +26,7 @@ using Rock.Data;
 using System.Data.Entity;
 using Rock.Web.Cache;
 using Rock.Field.Types;
+using System.Reflection;
 
 namespace Rock.Jobs
 {
@@ -41,7 +42,7 @@ namespace Rock.Jobs
     [DisallowConcurrentExecution]
     public class RockCleanup : IJob
     {
-        /// <summary> 
+        /// <summary>
         /// Empty constructor for job initilization
         /// <para>
         /// Jobs require a public empty constructor so that the
@@ -79,7 +80,7 @@ namespace Rock.Jobs
 
             try
             {
-                databaseRowsDeleted.Add( "Expired Entity Set", CleanupExpiredEntitySets( dataMap ));
+                databaseRowsDeleted.Add( "Expired Entity Set", CleanupExpiredEntitySets( dataMap ) );
             }
             catch ( Exception ex )
             {
@@ -88,7 +89,7 @@ namespace Rock.Jobs
 
             try
             {
-                databaseRowsDeleted.Add( "Old Interaction", CleanupInteractions( dataMap ));
+                databaseRowsDeleted.Add( "Old Interaction", CleanupInteractions( dataMap ) );
             }
             catch ( Exception ex )
             {
@@ -134,7 +135,7 @@ namespace Rock.Jobs
 
             try
             {
-                databaseRowsDeleted.Add( "Temporary Registration", CleanUpTemporaryRegistrations());
+                databaseRowsDeleted.Add( "Temporary Registration", CleanUpTemporaryRegistrations() );
             }
             catch ( Exception ex )
             {
@@ -143,7 +144,7 @@ namespace Rock.Jobs
 
             try
             {
-                databaseRowsDeleted.Add( "Workflow", CleanUpWorkflows( dataMap ));
+                databaseRowsDeleted.Add( "Workflow", CleanUpWorkflows( dataMap ) );
             }
             catch ( Exception ex )
             {
@@ -152,7 +153,7 @@ namespace Rock.Jobs
 
             try
             {
-                databaseRowsDeleted.Add( "Workflow Log", CleanUpWorkflowLogs( dataMap ));
+                databaseRowsDeleted.Add( "Workflow Log", CleanUpWorkflowLogs( dataMap ) );
             }
             catch ( Exception ex )
             {
@@ -161,7 +162,7 @@ namespace Rock.Jobs
 
             try
             {
-                databaseRowsDeleted.Add( "Orphaned Attribute Value", CleanupOrphanedAttributes( dataMap ));
+                databaseRowsDeleted.Add( "Orphaned Attribute Value", CleanupOrphanedAttributes( dataMap ) );
             }
             catch ( Exception ex )
             {
@@ -237,7 +238,7 @@ namespace Rock.Jobs
 
                 personRockContext.SaveChanges();
             }
-            
+
             //// Add any missing Implied/Known relationship groups
             // Known Relationship Group
             AddMissingRelationshipGroups( GroupTypeCache.Read( Rock.SystemGuid.GroupType.GROUPTYPE_KNOWN_RELATIONSHIPS ), Rock.SystemGuid.GroupRole.GROUPROLE_KNOWN_RELATIONSHIPS_OWNER.AsGuid() );
@@ -256,7 +257,7 @@ namespace Rock.Jobs
             if ( relationshipGroupType != null )
             {
                 var ownerRoleId = relationshipGroupType.Roles
-                    .Where( r => r.Guid.Equals( ownerRoleGuid ) ).Select( a => ( int? ) a.Id ).FirstOrDefault();
+                    .Where( r => r.Guid.Equals( ownerRoleGuid ) ).Select( a => (int?)a.Id ).FirstOrDefault();
                 if ( ownerRoleId.HasValue )
                 {
                     var rockContext = new RockContext();
@@ -269,6 +270,7 @@ namespace Rock.Jobs
                     var personIdsWithoutKnownRelationshipGroup = personService.Queryable().Where( p => !qryGroupOwnerPersonIds.Contains( p.Id ) ).Select( a => a.Id ).ToList();
 
                     var groupsToInsert = new List<Group>();
+                    var groupGroupMembersToInsert = new Dictionary<Guid, GroupMember>();
                     foreach ( var personId in personIdsWithoutKnownRelationshipGroup )
                     {
                         var groupMember = new GroupMember();
@@ -277,16 +279,30 @@ namespace Rock.Jobs
 
                         var group = new Group();
                         group.Name = relationshipGroupType.Name;
+                        group.Guid = Guid.NewGuid();
                         group.GroupTypeId = relationshipGroupType.Id;
-                        group.Members.Add( groupMember );
+
+                        groupGroupMembersToInsert.Add( group.Guid, groupMember );
 
                         groupsToInsert.Add( group );
                     }
 
-                    new GroupService( rockContext ).AddRange( groupsToInsert );
+                    if ( groupsToInsert.Any() )
+                    {
+                        // use BulkInsert just in case there are a large number of groups and group members to insert
+                        rockContext.BulkInsert( groupsToInsert );
 
-                    // save with disablePrePostProcessing=true since we don't need History records for when the person was added to the group (and the presavechanges is super slow if there are lots of inserts)
-                    rockContext.SaveChanges( true );
+                        Dictionary<Guid, int> groupIdLookup = new GroupService( rockContext ).Queryable().Where( a => a.GroupTypeId == relationshipGroupType.Id ).Select( a => new { a.Id, a.Guid } ).ToDictionary( k => k.Guid, v => v.Id );
+                        var groupMembersToInsert = new List<GroupMember>();
+                        foreach ( var groupGroupMember in groupGroupMembersToInsert )
+                        {
+                            var groupMember = groupGroupMember.Value;
+                            groupMember.GroupId = groupIdLookup[groupGroupMember.Key];
+                            groupMembersToInsert.Add( groupMember );
+                        }
+
+                        rockContext.BulkInsert( groupMembersToInsert );
+                    }
                 }
             }
         }
@@ -641,24 +657,32 @@ WHERE ic.ChannelId = @channelId
 
                 var matrixFieldTypeId = FieldTypeCache.Read<MatrixFieldType>().Id;
                 // get a list of attribute Matrix Guids that are actually in use
-                var usedAttributeMatrices = new AttributeValueService( rockContext ).Queryable().Where( a => a.Attribute.FieldTypeId == matrixFieldTypeId ).Select( a => a.Value );
+                var usedAttributeMatrices = new AttributeValueService( rockContext ).Queryable().Where( a => a.Attribute.FieldTypeId == matrixFieldTypeId ).Select( a => a.Value ).ToList().AsGuidList();
 
                 // clean up any orphaned attribute matrices
                 var dayAgo = RockDateTime.Now.AddDays( 0 );
-                var orphanedAttributeMatrices = attributeMatrixService.Queryable().Where( a => ( a.CreatedDateTime < dayAgo ) && !usedAttributeMatrices.Contains( a.Guid.ToString() ) ).ToList();
+                var orphanedAttributeMatrices = attributeMatrixService.Queryable().Where( a => ( a.CreatedDateTime < dayAgo ) && !usedAttributeMatrices.Contains( a.Guid ) ).ToList();
                 if ( orphanedAttributeMatrices.Any() )
                 {
                     recordsDeleted += orphanedAttributeMatrices.Count;
-                    attributeMatrixItemService.DeleteRange( orphanedAttributeMatrices.SelectMany(a => a.AttributeMatrixItems) );
+                    attributeMatrixItemService.DeleteRange( orphanedAttributeMatrices.SelectMany( a => a.AttributeMatrixItems ) );
                     attributeMatrixService.DeleteRange( orphanedAttributeMatrices );
                     rockContext.SaveChanges();
                 }
             }
 
-            recordsDeleted += CleanupOrphanedAttributeValuesForEntityType<AttributeMatrixItem>();
-            recordsDeleted += CleanupOrphanedAttributeValuesForEntityType<Block>();
-
-            // TODO: More CleanupOrphanedAttributeValuesForEntityType<> can be added
+            // clean up other orphaned entity attributes
+            foreach ( var cachedType in EntityTypeCache.All().Where( e => e.IsEntity && typeof( IHasAttributes ).IsAssignableFrom( e.GetEntityType() ) && !e.GetEntityType().Namespace.Equals( "Rock.Rest.Controllers" ) ) )
+            {
+                var classMethod = this.GetType().GetMethods( BindingFlags.Instance | BindingFlags.NonPublic )
+                    .First( m => m.Name == "CleanupOrphanedAttributeValuesForEntityType" );
+                var genericMethod = classMethod.MakeGenericMethod( cachedType.GetEntityType() );
+                var result = genericMethod.Invoke( this, null ) as int?;
+                if ( result.HasValue )
+                {
+                    recordsDeleted += (int)result;
+                }
+            }
 
             return recordsDeleted;
         }
@@ -668,7 +692,7 @@ WHERE ic.ChannelId = @channelId
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <returns></returns>
-        private int CleanupOrphanedAttributeValuesForEntityType<T>() where T:Rock.Data.Entity<T>, IHasAttributes, new()
+        private int CleanupOrphanedAttributeValuesForEntityType<T>() where T : Rock.Data.Entity<T>, IHasAttributes, new()
         {
             int recordsDeleted = 0;
 

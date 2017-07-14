@@ -417,7 +417,7 @@ namespace Rock.Model
                 throw new Exception( "Specified relationshipRoleId is not a known relationships role" );
             }
 
-            var knownRelationshipGroup = groupMemberService.Queryable()
+            var knownRelationshipGroup = groupMemberService.Queryable(true)
                 .Where( m =>
                     m.PersonId == personId &&
                     m.GroupRole.Guid.Equals( ownerRole.Guid ) )
@@ -441,7 +441,7 @@ namespace Rock.Model
             }
 
             // Add relationships
-            var relationshipMember = groupMemberService.Queryable()
+            var relationshipMember = groupMemberService.Queryable(true)
                 .FirstOrDefault( m =>
                     m.GroupId == knownRelationshipGroup.Id &&
                     m.PersonId == relatedPersonId &&
@@ -489,7 +489,7 @@ namespace Rock.Model
            }
 
            // find the personId's "known relationship" group
-           int? knownRelationshipGroupId = groupMemberService.Queryable()
+           int? knownRelationshipGroupId = groupMemberService.Queryable(true)
                .Where( m =>
                    m.PersonId == personId &&
                    m.GroupRoleId == ownerRole.Id )
@@ -548,7 +548,7 @@ namespace Rock.Model
             }
 
             // lookup the relationship to delete
-            var relationshipMember = groupMemberService.Queryable()
+            var relationshipMember = groupMemberService.Queryable(true)
                 .FirstOrDefault( m =>
                     m.GroupId == knownRelationshipGroup.Id &&
                     m.PersonId == relatedPersonId &&
@@ -565,6 +565,55 @@ namespace Rock.Model
                 groupMemberService.Delete( relationshipMember );
                 rockContext.SaveChanges();
             }
+        }
+
+        /// <summary>
+        /// Reorders the group member group.
+        /// </summary>
+        /// <param name="items">The items.</param>
+        /// <param name="oldIndex">The old index.</param>
+        /// <param name="newIndex">The new index.</param>
+        public virtual void ReorderGroupMemberGroup( List<GroupMember> items, int oldIndex, int newIndex )
+        {
+            GroupMember movedItem = items[oldIndex];
+            if ( movedItem != null )
+            {
+                items.RemoveAt( oldIndex );
+                if ( newIndex >= items.Count )
+                {
+                    items.Add( movedItem );
+                }
+                else
+                {
+                    items.Insert( newIndex, movedItem );
+                }
+            }
+
+            SetGroupMemberGroupOrder( items );
+        }
+
+        /// <summary>
+        /// Ensures that the GroupMember.GroupOrder is set for the sortedList of GroupMembers,
+        /// and returns true if any updates to GroupMember.GroupOrder where made
+        /// </summary>
+        /// <param name="sortedItems">The sorted items.</param>
+        /// <returns></returns>
+        public virtual bool SetGroupMemberGroupOrder( List<GroupMember> sortedItems )
+        {
+            bool changesMade = false;
+            int order = 0;
+            foreach ( GroupMember item in sortedItems )
+            {
+                if ( item.GroupOrder != order )
+                {
+                    item.GroupOrder = order;
+                    changesMade = true;
+                }
+
+                order++;
+            }
+
+            return changesMade;
         }
     }
 }

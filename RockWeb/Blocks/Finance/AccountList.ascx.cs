@@ -37,7 +37,7 @@ namespace RockWeb.Blocks.Finance
     [Category( "Finance" )]
     [Description( "Block for viewing list of financial accounts." )]
     [LinkedPage( "Detail Page" )]
-    public partial class AccountList : RockBlock
+    public partial class AccountList : RockBlock, ISecondaryBlock
     {
         #region Control Methods
 
@@ -159,7 +159,11 @@ namespace RockWeb.Blocks.Finance
                 rockContext.SaveChanges();
             }
 
-            BindGrid();
+            var qryParams = new Dictionary<string, string>();
+            qryParams["AccountId"] = PageParameter( "AccountId" );
+            qryParams["ExpandedIds"] = PageParameter( "ExpandedIds" );
+
+            NavigateToPage( RockPage.Guid, qryParams );
         }
 
         /// <summary>
@@ -223,9 +227,25 @@ namespace RockWeb.Blocks.Finance
         /// <returns></returns>
         private IQueryable<FinancialAccount> GetAccounts( RockContext rockContext )
         {
+            int? parentAccountId = PageParameter( "AccountId" ).AsIntegerOrNull();
+
+            if ( parentAccountId.HasValue )
+            {
+                lActionTitle.Text = "Child Accounts".FormatAsHtmlTitle();
+            }
+            else
+            {
+                lActionTitle.Text = "List Accounts".FormatAsHtmlTitle();
+            }
+
             var accountService = new FinancialAccountService( rockContext );
             SortProperty sortProperty = rGridAccount.SortProperty;
             var accountQuery = accountService.Queryable();
+
+            if ( parentAccountId.HasValue )
+            {
+                accountQuery = accountQuery.Where( account => account.ParentAccountId == parentAccountId.Value );
+            }
 
             string accountNameFilter = rAccountFilter.GetUserPreference( "Account Name" );
             if ( !string.IsNullOrEmpty( accountNameFilter ) )
@@ -257,7 +277,7 @@ namespace RockWeb.Blocks.Finance
                 accountQuery = accountQuery.Where( account => account.IsTaxDeductible == ( taxDeductibleFilter == "Yes" ) );
             }
 
-            accountQuery = accountQuery.OrderBy( a => a.Order );
+            accountQuery = accountQuery.OrderBy( a => a.Order ).ThenBy( f => f.Name );
 
             return accountQuery;
         }
@@ -328,6 +348,11 @@ namespace RockWeb.Blocks.Finance
                     rGridAccount.Columns.Add( boundField );
                 }
             }
+        }
+
+        public void SetVisible( bool visible )
+        {
+            divDetails.Visible = visible;
         }
 
         #endregion

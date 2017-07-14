@@ -31,6 +31,7 @@ namespace Rock.Model
     /// <summary>
     /// 
     /// </summary>
+    [RockDomain( "CMS" )]
     [Table( "ContentChannel" )]
     [DataContract]
     public partial class ContentChannel : Model<ContentChannel>
@@ -297,7 +298,7 @@ namespace Rock.Model
             var contentChannelItems = new ContentChannelItemService( rockContext ).Queryable()
                                             .Where( i =>
                                                 i.ContentChannelId == contentChannelId
-                                                && (i.ContentChannel.RequiresApproval == false || i.ContentChannel.ContentChannelType.DisableStatus || i.Status == ContentChannelItemStatus.Approved) );
+                                                && ( i.ContentChannel.RequiresApproval == false || i.ContentChannel.ContentChannelType.DisableStatus || i.Status == ContentChannelItemStatus.Approved ) );
 
             foreach ( var item in contentChannelItems )
             {

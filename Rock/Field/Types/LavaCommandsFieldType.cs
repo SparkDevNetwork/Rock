@@ -17,7 +17,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
@@ -26,7 +25,8 @@ using Rock.Web.UI.Controls;
 namespace Rock.Field.Types
 {
     /// <summary>
-    /// Field Type used to display a dropdown list of System.Drawing.Color options
+    /// Field Type used to display a checkboxlist of LavaCommands
+    /// Stored as a comma-delimited list of LavaCommand names
     /// </summary>
     [Serializable]
     public class LavaCommandsFieldType : FieldType
@@ -44,17 +44,7 @@ namespace Rock.Field.Types
         /// </returns>
         public override Control EditControl( Dictionary<string, ConfigurationValue> configurationValues, string id )
         {
-            var editControl = new RockCheckBoxList { ID = id };
-            editControl.RepeatDirection = RepeatDirection.Horizontal;
-
-            editControl.Items.Add( "All" );
-
-            foreach(var command in Rock.Lava.LavaHelper.GetLavaCommands() )
-            {
-                editControl.Items.Add( command );
-            }
-
-            return editControl;
+            return new LavaCommandsPicker { ID = id };
         }
 
         /// <summary>
@@ -65,10 +55,9 @@ namespace Rock.Field.Types
         /// <returns></returns>
         public override string GetEditValue( Control control, Dictionary<string, ConfigurationValue> configurationValues )
         {
-            if ( control != null && control is RockCheckBoxList )
+            if ( control != null && control is LavaCommandsPicker )
             {
-                var selectedItems = ((RockCheckBoxList)control).SelectedValues;
-                return string.Join( ",", selectedItems );
+                return ( ( LavaCommandsPicker ) control ).SelectedLavaCommands.AsDelimited( "," );
             }
 
             return null;
@@ -84,24 +73,14 @@ namespace Rock.Field.Types
         {
             if ( value != null )
             {
-                if ( control != null && control is RockCheckBoxList )
+                if ( control != null && control is LavaCommandsPicker )
                 {
-                    var checkboxControl = (RockCheckBoxList)control;
-                    List<string> selectedCommands = value.Split( ',' ).ToList();
-
-                    foreach ( var command in selectedCommands )
-                    {
-                        var item = checkboxControl.Items.FindByText( command );
-                        if ( item != null )
-                        {
-                            item.Selected = true;
-                        }
-                    }
+                    var lavaCommandsPicker = ( LavaCommandsPicker ) control;
+                    lavaCommandsPicker.SelectedLavaCommands = value.SplitDelimitedValues().ToList();
                 }
             }
         }
 
         #endregion
-
     }
 }

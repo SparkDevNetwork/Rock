@@ -75,10 +75,26 @@ namespace Rock.Model
         /// </summary>
         /// <param name="scheduleId">The schedule identifier.</param>
         /// <returns></returns>
+        [Obsolete( "The GetByScheduleId( scheduleId, gatewayId ) method should be used instead." )]
         public FinancialScheduledTransaction GetByScheduleId( string scheduleId )
         {
             return Queryable( "ScheduledTransactionDetails,AuthorizedPersonAlias.Person" )
                 .Where( t => t.GatewayScheduleId == scheduleId.Trim() )
+                .FirstOrDefault();
+        }
+
+        /// <summary>
+        /// Gets the by schedule identifier.
+        /// </summary>
+        /// <param name="scheduleId">The schedule identifier.</param>
+        /// <param name="gatewayId">The gateway identifier.</param>
+        /// <returns></returns>
+        public FinancialScheduledTransaction GetByScheduleId( string scheduleId, int gatewayId )
+        {
+            return Queryable( "ScheduledTransactionDetails,AuthorizedPersonAlias.Person" )
+                .Where( t =>
+                    t.FinancialGatewayId == gatewayId &&
+                    t.GatewayScheduleId == scheduleId.Trim() )
                 .FirstOrDefault();
         }
 
@@ -258,16 +274,16 @@ namespace Rock.Model
             int totalNoMatchingTransaction = 0;
             int totalAdded = 0;
             int totalReversals = 0;
+            int totalFailures = 0;
             int totalStatusChanges = 0;
 
-            var batches = new List<FinancialBatch>();
             var batchSummary = new Dictionary<Guid, List<Decimal>>();
             var initialControlAmounts = new Dictionary<Guid, decimal>();
 
             var gatewayComponent = gateway.GetGatewayComponent();
 
             var newTransactions = new List<FinancialTransaction>();
-            var failedScheduledPayments = new List<FinancialTransaction>();
+            var failedPayments = new List<FinancialTransaction>();
 
             var contributionTxnType = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.TRANSACTION_TYPE_CONTRIBUTION.AsGuid() );
 
@@ -297,9 +313,11 @@ namespace Rock.Model
                 {
                     totalPayments++;
 
+                    var financialTransactionService = new FinancialTransactionService( rockContext );
+
                     // Find existing payments with same transaction code
                     FinancialTransaction originalTxn = null;
-                    var txns = new FinancialTransactionService( rockContext )
+                    var txns = financialTransactionService
                         .Queryable( "TransactionDetails" )
                         .Where( t => t.TransactionCode == payment.TransactionCode )
                         .ToList();
@@ -308,7 +326,7 @@ namespace Rock.Model
                         originalTxn = txns.OrderBy( t => t.Id ).First();
                     }
 
-                    var scheduledTransaction = new FinancialScheduledTransactionService( rockContext ).GetByScheduleId( payment.GatewayScheduleId );
+                    var scheduledTransaction = new FinancialScheduledTransactionService( rockContext ).GetByScheduleId( payment.GatewayScheduleId, gateway.Id );
 
                     // Calculate whether a transaction needs to be added
                     var txnAmount = CalculateTransactionAmount( payment, txns );
@@ -472,14 +490,21 @@ namespace Rock.Model
                                 currencyTypeValue,
                                 creditCardTypevalue,
                                 transaction.TransactionDateTime.Value,
-                                gateway.GetBatchTimeOffset(),
-                                batches );
+                                gateway.GetBatchTimeOffset() );
 
                             var batchChanges = new List<string>();
                             if ( batch.Id != 0 )
                             {
                                 initialControlAmounts.AddOrIgnore( batch.Guid, batch.ControlAmount );
+
+                                transaction.BatchId = batch.Id;
+                                financialTransactionService.Add( transaction );
                             }
+                            else
+                            {
+                                batch.Transactions.Add( transaction );
+                            }
+
                             batch.ControlAmount += transaction.TotalAmount;
 
                             batch.Transactions.Add( transaction );
@@ -489,9 +514,14 @@ namespace Rock.Model
                                 newTransactions.Add( transaction );
                             }
 
-                            if ( txnAmount == 0.0M && payment.IsFailure && scheduledTransaction != null && ( failedPaymentEmail.HasValue || failedPaymentWorkflowType.HasValue ) )
+                            if ( 
+                                payment.IsFailure && 
+                                ( 
+                                    ( txnAmount == 0.0M && scheduledTransaction != null && originalTxn == null ) || 
+                                    ( txnAmount < 0.0M && originalTxn != null ) 
+                                ) )
                             {
-                                failedScheduledPayments.Add( transaction );
+                                failedPayments.Add( transaction );
                             }
 
                             // Add summary
@@ -501,13 +531,15 @@ namespace Rock.Model
                             }
                             batchSummary[batch.Guid].Add( txnAmount );
 
-                            if ( txnAmount >= 0.0M )
-                            {
-                                totalAdded++;
-                            }
-                            else
+                            totalAdded++;
+
+                            if ( txnAmount < 0.0M )
                             {
                                 totalReversals++;
+                            }
+                            else if ( txnAmount == 0.0M )
+                            {
+                                totalFailures++;
                             }
                         }
                         else
@@ -564,12 +596,12 @@ namespace Rock.Model
             }
 
             // Queue transactions to launch failed payment workflow
-            if ( failedScheduledPayments.Any() )
+            if ( failedPayments.Any() )
             {
                 if ( failedPaymentEmail.HasValue )
                 {
                     // Queue a transaction to send payment failure
-                    var newTransactionIds = failedScheduledPayments.Select( t => t.Id ).ToList();
+                    var newTransactionIds = failedPayments.Select( t => t.Id ).ToList();
                     var sendPaymentFailureTxn = new Rock.Transactions.SendPaymentReceipts( failedPaymentEmail.Value, newTransactionIds );
                     Rock.Transactions.RockQueue.TransactionQueue.Enqueue( sendPaymentFailureTxn );
                 }
@@ -577,7 +609,7 @@ namespace Rock.Model
                 if ( failedPaymentWorkflowType.HasValue )
                 {
                     // Queue a transaction to launch workflow
-                    var workflowDetails = failedScheduledPayments.Select( p => new LaunchWorkflowDetails( p ) ).ToList();
+                    var workflowDetails = failedPayments.Select( p => new LaunchWorkflowDetails( p ) ).ToList();
                     var launchWorkflowsTxn = new Rock.Transactions.LaunchWorkflowsTransaction( failedPaymentWorkflowType.Value, workflowDetails );
                     Rock.Transactions.RockQueue.TransactionQueue.Enqueue( launchWorkflowsTxn );
                 }
@@ -615,28 +647,42 @@ namespace Rock.Model
                     ( totalReversals == 1 ? "payment was" : "payments were" ) );
             }
 
-            foreach ( var batchItem in batchSummary )
+            if ( totalFailures > 0 )
             {
-                int items = batchItem.Value.Count;
-                if ( items > 0 )
+                sb.AppendFormat( "<li>{0} {1} recorded as a failed transaction.</li>", totalFailures.ToString( "N0" ),
+                    ( totalFailures == 1 ? "payment was" : "payments were" ) );
+            }
+
+            using ( var rockContext = new RockContext() )
+            {
+                var batches = new FinancialBatchService( rockContext )
+                    .Queryable().AsNoTracking()
+                    .Where( b => batchSummary.Keys.Contains( b.Guid ) )
+                    .ToList();
+
+                foreach ( var batchItem in batchSummary )
                 {
-                    var batch = batches
-                        .Where( b => b.Guid.Equals( batchItem.Key ) )
-                        .FirstOrDefault();
-
-                    string batchName = string.Format( "'{0} ({1})'", batch.Name, batch.BatchStartDateTime.Value.ToString( "d" ) );
-                    if ( !string.IsNullOrWhiteSpace( batchUrlFormat ) )
+                    int items = batchItem.Value.Count;
+                    if ( items > 0 )
                     {
-                        batchName = string.Format( "<a href='{0}'>{1}</a>", string.Format( batchUrlFormat, batch.Id ), batchName );
+                        var batch = batches
+                            .Where( b => b.Guid.Equals( batchItem.Key ) )
+                            .FirstOrDefault();
+
+                        string batchName = string.Format( "'{0} ({1})'", batch.Name, batch.BatchStartDateTime.Value.ToString( "d" ) );
+                        if ( !string.IsNullOrWhiteSpace( batchUrlFormat ) )
+                        {
+                            batchName = string.Format( "<a href='{0}'>{1}</a>", string.Format( batchUrlFormat, batch.Id ), batchName );
+                        }
+
+                        decimal sum = batchItem.Value.Sum();
+
+                        string summaryformat = items == 1 ?
+                            "<li>{0} transaction of {1} was added to the {2} batch.</li>" :
+                            "<li>{0} transactions totaling {1} were added to the {2} batch</li>";
+
+                        sb.AppendFormat( summaryformat, items.ToString( "N0" ), sum.FormatAsCurrency(), batchName );
                     }
-
-                    decimal sum = batchItem.Value.Sum();
-
-                    string summaryformat = items == 1 ?
-                        "<li>{0} transaction of {1} was added to the {2} batch.</li>" :
-                        "<li>{0} transactions totaling {1} were added to the {2} batch</li>";
-
-                    sb.AppendFormat( summaryformat, items.ToString( "N0" ), sum.FormatAsCurrency(), batchName );
                 }
             }
 

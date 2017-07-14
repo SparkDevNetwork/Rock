@@ -36,7 +36,6 @@ namespace Rock.SystemGuid
 
         /// <summary>
         /// Phone number search type
-        ///
         /// </summary>
         public const string CHECKIN_SEARCH_TYPE_PHONE_NUMBER = "F3F66040-C50F-4D13-9652-780305FFFE23";
 
@@ -49,6 +48,16 @@ namespace Rock.SystemGuid
         /// Power Search Type
         /// </summary>
         public const string CHECKIN_SEARCH_TYPE_NAME_AND_PHONE = "93773B0A-6E7F-1AA0-4F1D-9A4D6ACE930F";
+
+        /// <summary>
+        /// Scanned Id Search Type
+        /// </summary>
+        public const string CHECKIN_SEARCH_TYPE_SCANNED_ID = "7668CE15-E372-47EE-8FF8-6FEE09F7C858";
+
+        /// <summary>
+        /// Family Id Search Type
+        /// </summary>
+        public const string CHECKIN_SEARCH_TYPE_FAMILY_ID = "111385BB-DAEB-4CE3-A945-0B50DC15EE02";
 
         #endregion
 
@@ -275,6 +284,11 @@ namespace Rock.SystemGuid
         /// </summary>
         public const string METRIC_SOURCE_VALUE_TYPE_SQL = "6A1E1A1B-A636-4E12-B90C-D7FD1BDAE764";
 
+        /// <summary>
+        /// Metric values are populated from custom Lava
+        /// </summary>
+        public const string METRIC_SOURCE_VALUE_TYPE_LAVA = "2868A3E8-4632-4966-84CD-EDB8B775D66C";
+
         #endregion
 
         #region Person Marital Status
@@ -472,6 +486,11 @@ namespace Rock.SystemGuid
         /// Interaction Channel Type: Website
         /// </summary>
         public const string INTERACTIONCHANNELTYPE_WEBSITE = "E503E77D-CF35-E09F-41A2-B213184F48E8";
+
+        /// <summary>
+        /// Interaction Channel Type: UrlShortener
+        /// </summary>        
+        public const string INTERACTIONCHANNELTYPE_URLSHORTENER = "371066D5-C5F9-4783-88C8-D9AC8DC67468";
 
         /// <summary>
         /// Interaction Channel Type: Communication

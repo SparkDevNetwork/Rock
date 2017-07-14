@@ -30,6 +30,9 @@ namespace Rock.Rest.Controllers
     /// </summary>
     public partial class ConnectionOpportunityGroupsController : Rock.Rest.ApiController<Rock.Model.ConnectionOpportunityGroup>
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ConnectionOpportunityGroupsController"/> class.
+        /// </summary>
         public ConnectionOpportunityGroupsController() : base( new Rock.Model.ConnectionOpportunityGroupService( new Rock.Data.RockContext() ) ) { } 
     }
 }

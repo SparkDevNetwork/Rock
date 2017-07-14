@@ -137,6 +137,11 @@ namespace Rock.SystemGuid
         /// <summary>
         /// Guid for Default link list
         /// </summary>
+        public const string LAVA_SHORTCODES = "3B1AF656-7AEF-52A8-4E2C-5EFF75A1A23A";
+
+        /// <summary>
+        /// Guid for Default link list
+        /// </summary>
         public const string LINKLIST_DEFAULT_LIST = "7E7969BD-945C-4472-8A80-889EF5833776";
 
         /// <summary>

@@ -30,6 +30,9 @@ namespace Rock.Rest.Controllers
     /// </summary>
     public partial class RestActionsController : Rock.Rest.ApiController<Rock.Model.RestAction>
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="RestActionsController"/> class.
+        /// </summary>
         public RestActionsController() : base( new Rock.Model.RestActionService( new Rock.Data.RockContext() ) ) { } 
     }
 }

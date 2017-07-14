@@ -288,7 +288,7 @@ namespace RockWeb.Blocks.Cms
             .Select( a => new
             {
                 Name = a.Value.Name,
-                Value = a.Value.FieldType.Field.FormatValue( null, person.GetAttributeValue( a.Key ), a.Value.QualifierValues, a.Value.FieldType.Class == typeof( Rock.Field.Types.ImageFieldType ).FullName )
+                Value = a.Value.FieldType.Field.FormatValue( null, a.Value.EntityTypeId, person.Id, person.GetAttributeValue( a.Key ), a.Value.QualifierValues, a.Value.FieldType.Class == typeof( Rock.Field.Types.ImageFieldType ).FullName )
             } )
             .OrderBy( av => av.Name )
             .ToList()
@@ -834,7 +834,7 @@ namespace RockWeb.Blocks.Cms
                     .Select( a => new
                     {
                         Name = a.Value.Name,
-                        Value = a.Value.FieldType.Field.FormatValue( null, CurrentPerson.GetAttributeValue( a.Key ), a.Value.QualifierValues, a.Value.FieldType.Class == typeof( Rock.Field.Types.ImageFieldType ).FullName )
+                        Value = a.Value.FieldType.Field.FormatValue( null, a.Value.EntityTypeId, CurrentPerson.Id, CurrentPerson.GetAttributeValue( a.Key ), a.Value.QualifierValues, a.Value.FieldType.Class == typeof( Rock.Field.Types.ImageFieldType ).FullName )
                     } )
                     .OrderBy( av => av.Name )
                     .ToList()
@@ -887,7 +887,7 @@ namespace RockWeb.Blocks.Cms
                                 .Select( a => new
                                 {
                                     Name = a.Value.Name,
-                                    Value = a.Value.FieldType.Field.FormatValue( null, group.GetAttributeValue( a.Key ), a.Value.QualifierValues, a.Value.FieldType.Class == typeof( Rock.Field.Types.ImageFieldType ).FullName )
+                                    Value = a.Value.FieldType.Field.FormatValue( null, a.Value.EntityTypeId, group.Id, group.GetAttributeValue( a.Key ), a.Value.QualifierValues, a.Value.FieldType.Class == typeof( Rock.Field.Types.ImageFieldType ).FullName )
                                 } )
                                 .OrderBy( av => av.Name )
                                 .ToList()
@@ -955,7 +955,7 @@ namespace RockWeb.Blocks.Cms
                         if ( person != null )
                         {
                             imgPhoto.BinaryFileId = person.PhotoId;
-                            imgPhoto.NoPictureUrl = Person.GetPersonPhotoUrl( person, 200, 200 );
+                            imgPhoto.NoPictureUrl = Person.GetPersonNoPictureUrl( person, 200, 200 );
                             ddlTitle.SelectedValue = person.TitleValueId.HasValue ? person.TitleValueId.Value.ToString() : string.Empty;
                             tbFirstName.Text = person.FirstName;
                             tbNickName.Text = person.NickName;

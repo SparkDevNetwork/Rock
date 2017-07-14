@@ -361,6 +361,11 @@ namespace Rock.SystemGuid
         public const string CONNECTIONS = "530860ED-BC73-4A43-8E7C-69533EF2B6AD";
 
         /// <summary>
+        /// The connection request detail page guid
+        /// </summary>
+        public const string CONNECTION_REQUEST_DETAIL = "50f04e77-8d3b-4268-80ab-bc15dd6cb262";
+
+        /// <summary>
         /// Gets the Contact Us page guid
         /// ParentPage: Connect
         /// </summary>

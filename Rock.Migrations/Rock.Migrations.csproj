@@ -60,6 +60,9 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="..\Rock.Version\AssemblySharedInfo.cs">
+      <Link>AssemblySharedInfo.cs</Link>
+    </Compile>
     <Compile Include="HotFixMigrations\001_FixLabelMergeFields.cs" />
     <Compile Include="HotFixMigrations\002_FixAttendanceEmail.cs" />
     <Compile Include="HotFixMigrations\003_AddAttendanceIndex.cs" />
@@ -218,9 +221,54 @@
     <Compile Include="Migrations\201705051826156_SiteBlocks.Designer.cs">
       <DependentUpon>201705051826156_SiteBlocks.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201705091624275_LavaWebhookDefinedType.cs" />
-    <Compile Include="Migrations\201705091624275_LavaWebhookDefinedType.Designer.cs">
-      <DependentUpon>201705091624275_LavaWebhookDefinedType.cs</DependentUpon>
+    <Compile Include="Migrations\201705122302485_GroupMemberGroupOrder.cs" />
+    <Compile Include="Migrations\201705122302485_GroupMemberGroupOrder.Designer.cs">
+      <DependentUpon>201705122302485_GroupMemberGroupOrder.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201705221159536_AccountTreeView.cs" />
+    <Compile Include="Migrations\201705221159536_AccountTreeView.Designer.cs">
+      <DependentUpon>201705221159536_AccountTreeView.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201705231726383_NewModelMap.cs" />
+    <Compile Include="Migrations\201705231726383_NewModelMap.Designer.cs">
+      <DependentUpon>201705231726383_NewModelMap.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201706060019549_GroupRequirementsGroupType.cs" />
+    <Compile Include="Migrations\201706060019549_GroupRequirementsGroupType.Designer.cs">
+      <DependentUpon>201706060019549_GroupRequirementsGroupType.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201706141234225_CommunicationQueueAlertJob.cs" />
+    <Compile Include="Migrations\201706141234225_CommunicationQueueAlertJob.Designer.cs">
+      <DependentUpon>201706141234225_CommunicationQueueAlertJob.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201706201728113_BinaryFileSize.cs" />
+    <Compile Include="Migrations\201706201728113_BinaryFileSize.Designer.cs">
+      <DependentUpon>201706201728113_BinaryFileSize.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201706221549322_UrlMap.cs" />
+    <Compile Include="Migrations\201706221549322_UrlMap.Designer.cs">
+      <DependentUpon>201706221549322_UrlMap.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201707052116053_LavaShortcodes.cs" />
+    <Compile Include="Migrations\201707052116053_LavaShortcodes.Designer.cs">
+      <DependentUpon>201707052116053_LavaShortcodes.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201707101648235_CommonBlockTypes.cs" />
+    <Compile Include="Migrations\201707101648235_CommonBlockTypes.Designer.cs">
+      <DependentUpon>201707101648235_CommonBlockTypes.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201707121812263_UniversalSearchContentChannelUpdates.cs" />
+    <Compile Include="Migrations\201707121812263_UniversalSearchContentChannelUpdates.Designer.cs">
+      <DependentUpon>201707121812263_UniversalSearchContentChannelUpdates.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201707132057256_UniversalSearchBoostAttrib.cs" />
+    <Compile Include="Migrations\201707132057256_UniversalSearchBoostAttrib.Designer.cs">
+      <DependentUpon>201707132057256_UniversalSearchBoostAttrib.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\RockMigrationSQL.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>RockMigrationSQL.resx</DependentUpon>
     </Compile>
     <Compile Include="Migrations\Version 6.0\Version 1.6.0\201609282147388_WaitList.cs" />
     <Compile Include="Migrations\Version 6.0\Version 1.6.0\201609282147388_WaitList.Designer.cs">
@@ -365,11 +413,6 @@
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Migrations\RockCSharpMigrationCodeGenerator.cs" />
     <Compile Include="Migrations\RockMigration.cs" />
-    <Compile Include="Migrations\RockMigrationSQL1.Designer.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>RockMigrationSQL.resx</DependentUpon>
-    </Compile>
     <Compile Include="Migrations\Version 0.0 %28Pre Beta%29\Version 0.0.2\201311251734059_CreateDatabase.cs" />
     <Compile Include="Migrations\Version 0.0 %28Pre Beta%29\Version 0.0.2\201311251734059_CreateDatabase.Designer.cs">
       <DependentUpon>201311251734059_CreateDatabase.cs</DependentUpon>
@@ -2469,6 +2512,7 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201611291825562_AddInteractionFieldsBackWithModifications.resx">
       <DependentUpon>201611291825562_AddInteractionFieldsBackWithModifications.cs</DependentUpon>
+      <SubType>Designer</SubType>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201612052305420_WorkflowTypeCleanupFields.resx">
       <DependentUpon>201612052305420_WorkflowTypeCleanupFields.cs</DependentUpon>
@@ -2536,8 +2580,38 @@
     <EmbeddedResource Include="Migrations\201705051826156_SiteBlocks.resx">
       <DependentUpon>201705051826156_SiteBlocks.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201705091624275_LavaWebhookDefinedType.resx">
-      <DependentUpon>201705091624275_LavaWebhookDefinedType.cs</DependentUpon>
+    <EmbeddedResource Include="Migrations\201705122302485_GroupMemberGroupOrder.resx">
+      <DependentUpon>201705122302485_GroupMemberGroupOrder.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201705221159536_AccountTreeView.resx">
+      <DependentUpon>201705221159536_AccountTreeView.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201705231726383_NewModelMap.resx">
+      <DependentUpon>201705231726383_NewModelMap.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201706060019549_GroupRequirementsGroupType.resx">
+      <DependentUpon>201706060019549_GroupRequirementsGroupType.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201706141234225_CommunicationQueueAlertJob.resx">
+      <DependentUpon>201706141234225_CommunicationQueueAlertJob.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201706201728113_BinaryFileSize.resx">
+      <DependentUpon>201706201728113_BinaryFileSize.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201706221549322_UrlMap.resx">
+      <DependentUpon>201706221549322_UrlMap.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201707052116053_LavaShortcodes.resx">
+      <DependentUpon>201707052116053_LavaShortcodes.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201707101648235_CommonBlockTypes.resx">
+      <DependentUpon>201707101648235_CommonBlockTypes.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201707121812263_UniversalSearchContentChannelUpdates.resx">
+      <DependentUpon>201707121812263_UniversalSearchContentChannelUpdates.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201707132057256_UniversalSearchBoostAttrib.resx">
+      <DependentUpon>201707132057256_UniversalSearchBoostAttrib.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 6.0\Version 1.6.0\201609282147388_WaitList.resx">
       <DependentUpon>201609282147388_WaitList.cs</DependentUpon>
@@ -2646,8 +2720,8 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\RockMigrationSQL.resx">
       <Generator>PublicResXFileCodeGenerator</Generator>
-      <LastGenOutput>RockMigrationSQL1.Designer.cs</LastGenOutput>
       <SubType>Designer</SubType>
+      <LastGenOutput>RockMigrationSQL.Designer.cs</LastGenOutput>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 0.0 %28Pre Beta%29\Version 0.0.2\201311251734059_CreateDatabase.resx">
       <DependentUpon>201311251734059_CreateDatabase.cs</DependentUpon>
@@ -4289,6 +4363,18 @@
     </Content>
     <Content Include="Migrations\201701040116351_Analytics1_spAnalytics_ETL_FinancialTransaction.sql">
       <DependentUpon>201701040116351_Analytics1.cs</DependentUpon>
+    </Content>
+    <Content Include="Migrations\201706060019549_GroupRequirementsGroupType_ufnCrm_GetAddress.sql">
+      <DependentUpon>201706060019549_GroupRequirementsGroupType.cs</DependentUpon>
+    </Content>
+    <Content Include="Migrations\201706060019549_GroupRequirementsGroupType_ufnCrm_GetSpousePersonIdFromPersonId.sql">
+      <DependentUpon>201706060019549_GroupRequirementsGroupType.cs</DependentUpon>
+    </Content>
+    <Content Include="Migrations\201706141234225_CommunicationQueueAlertJob_ufnCrm_GetGradeOffset.sql">
+      <DependentUpon>201706141234225_CommunicationQueueAlertJob.cs</DependentUpon>
+    </Content>
+    <Content Include="Migrations\201707101648235_CommonBlockTypes_spCore_BinaryFileGet.sql">
+      <DependentUpon>201707101648235_CommonBlockTypes.cs</DependentUpon>
     </Content>
     <Content Include="Migrations\Version 6.0\Version 1.6.0\201608171937068_GivingAnalyticsAccounts_AccountTotals.sql" />
     <Content Include="Migrations\Version 6.0\Version 1.6.0\201608171937068_GivingAnalyticsAccounts_FirstLastEverDates.sql" />

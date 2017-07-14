@@ -34,6 +34,7 @@ namespace Rock.Model
     /// Site Model Entity. A Site in Rock is a collection of <see cref="Page">pages</see> and usually 
     /// associated with one or more <see cref="SiteDomain">SiteDomains </see>.
     /// </summary>
+    [RockDomain( "CMS" )]
     [Table( "Site" )]
     [DataContract]
     public partial class Site : Model<Site>, IRockIndexable
@@ -308,7 +309,8 @@ namespace Rock.Model
         ///   <c>true</c> if [allow indexing]; otherwise, <c>false</c>.
         /// </value>
         [DataMember]
-        public bool AllowIndexing {
+        public bool AllowIndexing
+        {
             get { return _allowIndexing; }
             set { _allowIndexing = value; }
         }
@@ -490,6 +492,35 @@ namespace Rock.Model
         [DataMember]
         public virtual Page MobilePage { get; set; }
 
+        /// <summary>
+        /// Gets the default domain URI.
+        /// </summary>
+        /// <value>
+        /// The default domain URI.
+        /// </value>
+        [LavaInclude]
+        public virtual Uri DefaultDomainUri 
+        {
+            get 
+            {
+                try
+                {
+                    string protocol = this.RequiresEncryption ? "https://" : "http://";
+                    string host = this.SiteDomains.OrderBy( d => d.Order ).Select( d => d.Domain ).FirstOrDefault();
+                    if ( host != null )
+                    {
+                        host = host.ToLower().StartsWith( "http://" ) ? host.Substring( 7 ) : host;
+                        host = host.ToLower().StartsWith( "https://" ) ? host.Substring( 8 ) : host;
+
+                        return new Uri( protocol + host );
+                    }
+                }
+                catch { }
+
+                return null;
+            }
+        }
+
         #endregion
 
         #region Methods
@@ -509,14 +540,14 @@ namespace Rock.Model
         /// Bulks the index documents.
         /// </summary>
         public void BulkIndexDocuments()
-        {            
+        {
             // get list of sites that with indexing enabled
             var sites = new SiteService( new RockContext() ).Queryable().Where( s => s.IsIndexEnabled );
-            
-            foreach(var site in sites )
+
+            foreach ( var site in sites )
             {
                 // delete current items index
-                IndexContainer.DeleteDocumentByProperty(typeof(SitePageIndex), "SiteId", site.Id );
+                IndexContainer.DeleteDocumentByProperty( typeof( SitePageIndex ), "SiteId", site.Id );
 
                 // clear current documents out
                 var pageCount = new Crawler().CrawlSite( site );

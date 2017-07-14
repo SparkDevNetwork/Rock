@@ -30,6 +30,9 @@ namespace Rock.Rest.Controllers
     /// </summary>
     public partial class BenevolenceRequestsController : Rock.Rest.ApiController<Rock.Model.BenevolenceRequest>
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="BenevolenceRequestsController"/> class.
+        /// </summary>
         public BenevolenceRequestsController() : base( new Rock.Model.BenevolenceRequestService( new Rock.Data.RockContext() ) ) { } 
     }
 }

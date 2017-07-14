@@ -27,6 +27,7 @@ namespace Rock.Model
     /// Represents A collection of <see cref="Rock.Model.GroupScheduleExclusion"/> entities. This is used to 
     /// specify date ranges that groups occurrences do not occur for groups of a particular group type.
     /// </summary>
+    [RockDomain( "Group" )]
     [Table( "GroupScheduleExclusion" )]
     [DataContract]
     public partial class GroupScheduleExclusion : Model<GroupScheduleExclusion>

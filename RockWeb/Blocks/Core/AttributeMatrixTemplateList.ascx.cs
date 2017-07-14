@@ -136,7 +136,7 @@ namespace RockWeb.Blocks.Core
             if ( attributeMatrixTemplate != null )
             {
                 string errorMessage;
-                if ( !attributeMatrixTemplateService.CanDelete( attributeMatrixTemplate, out errorMessage ) )
+                if ( !attributeMatrixTemplateService.CanDelete( attributeMatrixTemplate, true, out errorMessage ) )
                 {
                     mdGridWarning.Show( errorMessage, ModalAlertType.Information );
                     return;
@@ -164,17 +164,13 @@ namespace RockWeb.Blocks.Core
 
             var matrixFieldTypeId = FieldTypeCache.Read<MatrixFieldType>().Id;
 
-            // get a list of attribute Matrix Guids that are actually in use so that only could the ones are that used in the InstanceCount
-            var usedAttributeMatrices = new AttributeValueService( rockContext ).Queryable().Where( a => a.Attribute.FieldTypeId == matrixFieldTypeId ).Select( a => a.Value );
-
             var qry = attributeMatrixTemplateService.Queryable()
                 .Select( a => new
                 {
                     a.Id,
                     a.Name,
                     a.Description,
-                    a.IsActive,
-                    InstanceCount = a.AttributeMatrices.Where( m => usedAttributeMatrices.Contains( m.Guid.ToString() ) ).Count()
+                    a.IsActive
                 } ).Sort( gList.SortProperty ?? new SortProperty { Property = "Name" } );
 
             gList.SetLinqDataSource( qry );

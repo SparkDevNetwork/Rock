@@ -40,12 +40,12 @@ namespace Rock.Field.Types
         public override System.Collections.Generic.List<System.Web.UI.Control> ConfigurationControls()
         {
             var controls = base.ConfigurationControls();
-            var textbox = controls[0] as RockTextBox;
-            textbox.Label = "Date Time Format";
-            textbox.Help = "The format string to use for date (default is system short date and time).";
+            _tbDateFormat.Label = "Date Time Format";
+            _tbDateFormat.Help = "The format string to use for date (default is system short date and time).";
 
-            var cbDisplayCurrent = controls[2] as RockCheckBox;
-            cbDisplayCurrent.Help = "Include option to specify value as the current time.";
+            _ddlDatePickerMode.Visible = false;
+
+            _cbDisplayCurrent.Help = "Include option to specify value as the current time.";
 
             return controls;
         }
@@ -212,14 +212,14 @@ namespace Rock.Field.Types
                     {
                         dtp.CurrentTimeOffsetMinutes = valueParts[1].AsInteger();
                     }
+                    else
+                    {
+                        dtp.CurrentTimeOffsetMinutes = 0;
+                    }
                 }
                 else
                 {
-                    var dt = value.AsDateTime();
-                    if ( dt.HasValue )
-                    {
-                        dtp.SelectedDateTime = dt;
-                    }
+                    dtp.SelectedDateTime = value.AsDateTime();
                 }
             }
         }

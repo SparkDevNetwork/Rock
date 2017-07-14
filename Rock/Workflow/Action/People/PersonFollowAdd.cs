@@ -41,10 +41,17 @@ namespace Rock.Workflow.Action
     [WorkflowAttribute( "Person", "Workflow attribute that contains the person who is following the entity.", true, "", "", 0, null,
         new string[] { "Rock.Field.Types.PersonFieldType" } )]
     [EntityTypeField( "Entity Type", "Workflow attribute that contains the entity type to follow.", true, "", 1, "EntityType" )]
-    [WorkflowTextOrAttribute( "Entity To Follow", "Attribute Value", "The Entity Id or an attribute that contains the person or group to follow. <span class='tip tip-lava'></span>", true, "", "", 2, "Entity",
-        new string[] { "Rock.Field.Types.PersonFieldType", "Rock.Field.Types.GroupFieldType" } )]
+    [WorkflowTextOrAttribute( "Entity To Follow", "Attribute Value", "The Entity Id or an attribute that contains the person or group to follow. <span class='tip tip-lava'></span>", true, "", "", 2, "Entity" )]
     public class PersonFollowAdd : ActionComponent
     {
+        /// <summary>
+        /// Executes the action.
+        /// </summary>
+        /// <param name="rockContext">The rock context.</param>
+        /// <param name="action">The workflow action.</param>
+        /// <param name="entity">The entity.</param>
+        /// <param name="errorMessages">The error messages.</param>
+        /// <returns></returns>
         public override bool Execute( RockContext rockContext, WorkflowAction action, object entity, out List<string> errorMessages )
         {
             errorMessages = new List<string>();
@@ -89,7 +96,7 @@ namespace Rock.Workflow.Action
 
             //get entity
             int entityId = 0;
-            string attributeEntity = GetAttributeValue( action, "Entity" );
+            string attributeEntity = GetAttributeValue( action, "Entity" ).ResolveMergeFields( GetMergeFields( action ) );
             int? intEntity = attributeEntity.AsIntegerOrNull();
             Guid? guidEntity = attributeEntity.AsGuidOrNull();
             if ( intEntity.HasValue )

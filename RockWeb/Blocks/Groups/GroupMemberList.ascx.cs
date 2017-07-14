@@ -207,7 +207,7 @@ namespace RockWeb.Blocks.Groups
         Rock.dialogs.confirm('Are you sure you want to delete this group member?', function (result) {
             if (result) {
                 if ( $btn.closest('tr').hasClass('js-has-registration') ) {
-                    Rock.dialogs.confirm('This group member was added through a registration. Are you really sure that you want to delete this group member and remove the link from the registration? ', function (result) {
+                    Rock.dialogs.confirm('This group member was added through a registration. Are you sure that you want to delete this group member and remove the link from the registration? ', function (result) {
                         if (result) {
                             window.location = e.target.href ? e.target.href : e.target.parentElement.href;
                         }
@@ -1089,11 +1089,11 @@ namespace RockWeb.Blocks.Groups
 
                     SortProperty sortProperty = gGroupMembers.SortProperty;
 
-                    bool hasGroupRequirements = new GroupRequirementService( rockContext ).Queryable().Where( a => a.GroupId == _group.Id ).Any();
+                    bool hasGroupRequirements = new GroupRequirementService( rockContext ).Queryable().Where( a => ( a.GroupId.HasValue && a.GroupId == _group.Id ) || ( a.GroupTypeId.HasValue && a.GroupTypeId == _group.GroupTypeId ) ).Any();
 
                     // If there are group requirements that that member doesn't meet, show an icon in the grid
                     bool includeWarnings = false;
-                    var groupMemberIdsThatLackGroupRequirements = new GroupService( rockContext ).GroupMembersNotMeetingRequirements( _group.Id, includeWarnings ).Select( a => a.Key.Id );
+                    var groupMemberIdsThatLackGroupRequirements = new GroupService( rockContext ).GroupMembersNotMeetingRequirements( _group, includeWarnings ).Select( a => a.Key.Id );
 
                     List<GroupMember> groupMembersList = null;
                     if ( sortProperty != null && sortProperty.Property != "FirstAttended" && sortProperty.Property != "LastAttended" )
@@ -1224,6 +1224,7 @@ namespace RockWeb.Blocks.Groups
                         FirstAttended = attendanceFirstLast.Where( a => a.Key == m.PersonId ).Select( a => a.Value.Start ).FirstOrDefault(),
                         LastAttended = attendanceFirstLast.Where( a => a.Key == m.PersonId ).Select( a => a.Value.End ).FirstOrDefault(),
                         Email = m.Person.Email,
+                        Gender = isExporting ? m.Person.Gender.ToString() : string.Empty,
                         HomePhone = isExporting && homePhoneType != null ?
                             m.Person.PhoneNumbers
                                 .Where( p => p.NumberTypeValueId.HasValue && p.NumberTypeValueId.Value == homePhoneType.Id )
@@ -1243,7 +1244,8 @@ namespace RockWeb.Blocks.Groups
                         GroupRole = m.GroupRole.Name,
                         m.GroupMemberStatus,
                         RecordStatusValueId = m.Person.RecordStatusValueId,
-                        IsDeceased = m.Person.IsDeceased
+                        IsDeceased = m.Person.IsDeceased,
+                        m.Person.MaritalStatusValueId
                     } ).ToList();
 
                     if ( sortProperty != null )

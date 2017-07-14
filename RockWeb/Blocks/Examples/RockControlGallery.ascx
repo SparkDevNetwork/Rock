@@ -295,6 +295,11 @@
                         <Rock:DatePicker ID="dpExample" runat="server" Label="Rock:DatePicker" />
                     </div>
 
+                    <a id="DatePartsPicker"></a>
+                    <div runat="server" class="r-example">
+                        <Rock:DatePartsPicker ID="dppExample" runat="server" Label="Rock:DatePartsPicker" OnSelectedDatePartsChanged="dppExample_SelectedDatePartsChanged" />
+                    </div>
+
                     <a id="DateTimePicker"></a>
                     <div runat="server" class="r-example">
                         <Rock:DateTimePicker ID="dtpExample" runat="server" Label="Rock:DateTimePicker" />
@@ -344,6 +349,11 @@
                     <a id="GroupPicker"></a>
                     <div runat="server" class="r-example">
                         <Rock:GroupPicker ID="gpExample" runat="server" Label="Rock:GroupPicker" />
+                    </div>
+
+                    <a id="GroupPicker2"></a>
+                    <div runat="server" class="r-example">
+                        <Rock:GroupPicker ID="grExampleMultip" runat="server" Label="Rock:GroupPicker (Multiselect)" AllowMultiSelect="true" />
                     </div>
 
                     <a id="GroupTypePicker"></a>

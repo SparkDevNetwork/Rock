@@ -36,6 +36,7 @@ namespace Rock.Model
     /// <summary>
     /// Represents details about the bank account or credit card that was used to make a payment
     /// </summary>
+    [RockDomain( "Finance" )]
     [Table( "FinancialPaymentDetail" )]
     [DataContract]
     public partial class FinancialPaymentDetail : Model<FinancialPaymentDetail>
@@ -226,7 +227,7 @@ namespace Rock.Model
         /// The history changes.
         /// </value>
         [NotMapped]
-        public List<string> HistoryChanges { get; set; }
+        public virtual List<string> HistoryChanges { get; set; }
 
         #endregion
 
