@@ -2958,7 +2958,7 @@ namespace Rock.Lava
                                 return NoteTypeCache.Read( inputAsGuid.Value );
                             }
                         }
-                    /*case "ContentChannel":
+                    case "ContentChannel":
                         {
                             if ( inputAsInt.HasValue )
                             {
@@ -2968,7 +2968,7 @@ namespace Rock.Lava
                             {
                                 return ContentChannelCache.Read( inputAsGuid.Value );
                             }
-                        }*/
+                        }
                     default:
                         {
                             return $"Cache type {cacheType} not supported.";

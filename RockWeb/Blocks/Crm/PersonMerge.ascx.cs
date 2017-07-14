@@ -47,8 +47,9 @@ namespace RockWeb.Blocks.Crm
         #region Fields
 
         private List<string> headingKeys = new List<string> {
-            "PhoneNumbers", 
-            "PersonAttributes"
+            "PhoneNumbers",
+            "PersonAttributes",
+            "FamilyAttributes"
         };
 
         #endregion
@@ -142,7 +143,7 @@ namespace RockWeb.Blocks.Crm
                 nbMergeRequestAlreadySubmitted.Visible = false;
             }
             else
-            { 
+            {
                 nbNotAuthorized.Visible = true;
 
                 int? setId = PageParameter( "Set" ).AsIntegerOrNull();
@@ -464,6 +465,25 @@ namespace RockWeb.Blocks.Crm
                             {
                                 var attribute = primaryPerson.Attributes[attributeKey];
                                 Rock.Attribute.Helper.SaveAttributeValue( primaryPerson, attribute, newValue, rockContext );
+                            }
+                        }
+
+                        //Update the family attributes
+                        var primaryFamily = primaryPerson.GetFamily();
+                        if ( primaryFamily != null )
+                        {
+                            primaryFamily.LoadAttributes( rockContext );
+                            foreach ( var property in MergeData.Properties.Where( p => p.Key.StartsWith( "groupattr_" ) ) )
+                            {
+                                string attributeKey = property.Key.Substring( 10 );
+                                string oldValue = primaryFamily.GetAttributeValue( attributeKey ) ?? string.Empty;
+                                string newValue = GetNewStringValue( property.Key, changes ) ?? string.Empty;
+
+                                if ( !oldValue.Equals( newValue ) )
+                                {
+                                    var attribute = primaryFamily.Attributes[attributeKey];
+                                    Rock.Attribute.Helper.SaveAttributeValue( primaryFamily, attribute, newValue, rockContext );
+                                }
                             }
                         }
 
@@ -959,6 +979,23 @@ namespace RockWeb.Blocks.Crm
                         bool condensed = attribute.Value.FieldType.Class == typeof( Rock.Field.Types.ImageFieldType ).FullName;
                         string formattedValue = attribute.Value.FieldType.Field.FormatValue( null, attribute.Value.EntityTypeId, person.Id, value, attribute.Value.QualifierValues, condensed );
                         AddProperty( "attr_" + attribute.Key, attribute.Value.Name, person.Id, value, formattedValue );
+                    }
+                }
+            }
+
+            foreach ( var person in people )
+            {
+                AddProperty( "FamilyAttributes", "Family Attributes", 0, string.Empty );
+                var family = person.GetFamily();
+                family.LoadAttributes();
+                foreach ( var attribute in family.Attributes.OrderBy( a => a.Value.Order ) )
+                {
+                    if ( attribute.Value.IsAuthorized( Rock.Security.Authorization.VIEW, currentPerson ) )
+                    {
+                        string value = family.GetAttributeValue( attribute.Key );
+                        bool condensed = attribute.Value.FieldType.Class == typeof( Rock.Field.Types.ImageFieldType ).FullName;
+                        string formattedValue = attribute.Value.FieldType.Field.FormatValue( null, attribute.Value.EntityTypeId, person.Id, value, attribute.Value.QualifierValues, condensed );
+                        AddProperty( "groupattr_" + attribute.Key, attribute.Value.Name, person.Id, value, formattedValue );
                     }
                 }
             }

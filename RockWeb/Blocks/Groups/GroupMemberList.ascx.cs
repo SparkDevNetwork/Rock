@@ -1244,7 +1244,8 @@ namespace RockWeb.Blocks.Groups
                         GroupRole = m.GroupRole.Name,
                         m.GroupMemberStatus,
                         RecordStatusValueId = m.Person.RecordStatusValueId,
-                        IsDeceased = m.Person.IsDeceased
+                        IsDeceased = m.Person.IsDeceased,
+                        m.Person.MaritalStatusValueId
                     } ).ToList();
 
                     if ( sortProperty != null )
