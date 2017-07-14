@@ -218,6 +218,18 @@ namespace Rock.Model
             return rckipidRegEx.Replace( url, "rckipid=XXXXXXXXXXXXXXXXXXXXXXXXXXXX" );
         }
 
+        /// <summary>
+        /// Removes any instances of a rckipid parameter within the specified url so that isn't included.
+        /// This is also handy if you are redirecting to the login page and don't want to include the magic token.
+        /// </summary>
+        /// <param name="url">The URL.</param>
+        /// <returns></returns>
+        public static string RemoveRockMagicToken( string url )
+        {
+            // remove rock magic token
+            return rckipidRegEx.Replace( url, "" );
+        }
+
         #endregion Public Methods
     }
 
