@@ -1296,7 +1296,31 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Gets the by encrypted key.
+        /// Special override of Entity.GetByUrlEncodedKey for Person. Gets the Person by impersonation token (rckipid) and validates it against a Rock.Model.PersonToken
+        /// NOTE: You might want to use GetByImpersonationToken instead to prevent a token from being used that was limited to a specific page
+        /// </summary>
+        /// <param name="impersonationToken">The impersonation token.</param>
+        /// <param name="pageId">The page identifier.</param>
+        /// <returns></returns>
+        public override Person GetByUrlEncodedKey( string encodedKey )
+        {
+            return GetByImpersonationToken( encodedKey, false, null );
+        }
+
+        /// <summary>
+        /// Gets the Person by impersonation token (rckipid) and validates it against a Rock.Model.PersonToken
+        /// </summary>
+        /// <param name="impersonationToken">The impersonation token.</param>
+        /// <param name="incrementUsage">if set to <c>true</c> [increment usage].</param>
+        /// <param name="pageId">The page identifier.</param>
+        /// <returns></returns>
+        public Person GetByImpersonationToken( string impersonationToken, bool incrementUsage, int? pageId )
+        {
+            return GetByEncryptedKey( impersonationToken, true, incrementUsage, pageId );
+        }
+
+        /// <summary>
+        /// Special override of Entity.GetByEncryptedKey for Person. Gets the Person by impersonation token (rckipid) and validates it against a Rock.Model.PersonToken
         /// </summary>
         /// <param name="encryptedKey">The encrypted key.</param>
         /// <returns></returns>
@@ -1317,17 +1341,6 @@ namespace Rock.Model
         public Person GetByEncryptedKey( string encryptedKey, bool followMerges)
         {
             return GetByEncryptedKey( encryptedKey, true, true, null );
-        }
-
-        /// <summary>
-        /// Gets the Person by impersonation token (rckipid) and validates it against a Rock.Model.PersonToken
-        /// </summary>
-        /// <param name="impersonationToken">The impersonation token.</param>
-        /// <param name="pageId">The page identifier.</param>
-        /// <returns></returns>
-        public Person GetByImpersonationToken( string impersonationToken, bool incrementUsage, int? pageId )
-        {
-            return GetByEncryptedKey( impersonationToken, true, incrementUsage, pageId );
         }
 
         /// <summary>
@@ -1388,7 +1401,6 @@ namespace Rock.Model
                 }
             }
 
-            // TODO, check global attributes for legacy rckipid settings
             bool tokenUseLegacyFallback = GlobalAttributesCache.Read().GetValue( "core.PersonTokenUseLegacyFallback" ).AsBoolean();
             if ( tokenUseLegacyFallback )
             {
