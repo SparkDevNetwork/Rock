@@ -19,6 +19,7 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
+using System.Text.RegularExpressions;
 using Rock.Data;
 using Rock.Web.Cache;
 
@@ -196,8 +197,25 @@ namespace Rock.Model
 
                 var encryptedToken = Rock.Security.Encryption.EncryptString( token );
 
-                return System.Web.HttpUtility.UrlEncode( encryptedToken );
+                // do a Replace('%', '!') after we UrlEncode it (to make it more safely embeddable in HTML and cross browser compatible)
+                return System.Web.HttpUtility.UrlEncode( encryptedToken ).Replace( '%', '!' );
             }
+        }
+
+        /// <summary>
+        /// The rckipid reg ex
+        /// </summary>
+        private static Regex rckipidRegEx = new Regex( @"rckipid=([^&]*)", RegexOptions.Compiled );
+
+        /// <summary>
+        /// Obfuscates any instances of a rckipid parameter within the specified url so that doesn't get displayed or stored 
+        /// </summary>
+        /// <param name="url">The URL.</param>
+        /// <returns></returns>
+        public static string ObfuscateRockMagicToken(string url)
+        {
+            // obfuscate rock magic token
+            return rckipidRegEx.Replace( url, "rckipid=XXXXXXXXXXXXXXXXXXXXXXXXXXXX" );
         }
 
         #endregion Public Methods

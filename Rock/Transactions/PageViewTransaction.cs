@@ -187,8 +187,7 @@ namespace Rock.Transactions
                     interactionService.Add( interaction );
 
                     // obfuscate rock magic token
-                    Regex rgx = new Regex( @"rckipid=([^&]*)" );
-                    string cleanUrl = rgx.Replace( this.Url, "rckipid=XXXXXXXXXXXXXXXXXXXXXXXXXXXX" );
+                    string cleanUrl = PersonToken.ObfuscateRockMagicToken( this.Url );
 
                     interaction.InteractionData = cleanUrl;
                     interaction.Operation = "View";
