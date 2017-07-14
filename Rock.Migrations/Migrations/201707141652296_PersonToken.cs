@@ -18,7 +18,7 @@ namespace Rock.Migrations
 {
     using System;
     using System.Data.Entity.Migrations;
-    
+
     /// <summary>
     ///
     /// </summary>
@@ -32,27 +32,27 @@ namespace Rock.Migrations
             CreateTable(
                 "dbo.PersonToken",
                 c => new
-                    {
-                        Id = c.Int(nullable: false, identity: true),
-                        PersonAliasId = c.Int(nullable: false),
-                        Token = c.String(maxLength: 32),
-                        ExpireDateTime = c.DateTime(),
-                        TimesUsed = c.Int(nullable: false),
-                        UsageLimit = c.Int(),
-                        LastUsedDateTime = c.DateTime(),
-                        PageId = c.Int(),
-                        Guid = c.Guid(nullable: false),
-                        ForeignId = c.Int(),
-                        ForeignGuid = c.Guid(),
-                        ForeignKey = c.String(maxLength: 100),
-                    })
-                .PrimaryKey(t => t.Id)
-                .ForeignKey("dbo.Page", t => t.PageId, cascadeDelete: true)
-                .ForeignKey("dbo.PersonAlias", t => t.PersonAliasId, cascadeDelete: true)
-                .Index(t => t.PersonAliasId)
-                .Index(t => t.Token, unique: true)
-                .Index(t => t.PageId)
-                .Index(t => t.Guid, unique: true);
+                {
+                    Id = c.Int( nullable: false, identity: true ),
+                    PersonAliasId = c.Int( nullable: false ),
+                    Token = c.String( maxLength: 32 ),
+                    ExpireDateTime = c.DateTime(),
+                    TimesUsed = c.Int( nullable: false ),
+                    UsageLimit = c.Int(),
+                    LastUsedDateTime = c.DateTime(),
+                    PageId = c.Int(),
+                    Guid = c.Guid( nullable: false ),
+                    ForeignId = c.Int(),
+                    ForeignGuid = c.Guid(),
+                    ForeignKey = c.String( maxLength: 100 ),
+                } )
+                .PrimaryKey( t => t.Id )
+                .ForeignKey( "dbo.Page", t => t.PageId, cascadeDelete: true )
+                .ForeignKey( "dbo.PersonAlias", t => t.PersonAliasId, cascadeDelete: true )
+                .Index( t => t.PersonAliasId )
+                .Index( t => t.Token, unique: true )
+                .Index( t => t.PageId )
+                .Index( t => t.Guid, unique: true );
 
             // Add global attributes for Person Tokens
             RockMigrationHelper.AddGlobalAttribute( SystemGuid.FieldType.BOOLEAN, "", "", "Person Token Use Legacy Fallback", @"Use the pre-v7 person token lookup if the impersonation token can't be found using the v7 person tokens.", 0, true.ToString(), "8063EAE0-5FFC-4113-8F7B-A45CC0BE3B63", "core.PersonTokenUseLegacyFallback" );
@@ -66,7 +66,7 @@ namespace Rock.Migrations
   " );
 
         }
-        
+
         /// <summary>
         /// Operations to be performed during the downgrade process.
         /// </summary>
@@ -77,13 +77,13 @@ namespace Rock.Migrations
             RockMigrationHelper.DeleteAttribute( "D4EDDB65-5861-442B-8109-A4EBBE9A961F" );
             RockMigrationHelper.DeleteAttribute( "28D921E5-045F-49BE-A8F3-C8FA60331D45" );
 
-            DropForeignKey("dbo.PersonToken", "PersonAliasId", "dbo.PersonAlias");
-            DropForeignKey("dbo.PersonToken", "PageId", "dbo.Page");
-            DropIndex("dbo.PersonToken", new[] { "Guid" });
-            DropIndex("dbo.PersonToken", new[] { "PageId" });
-            DropIndex("dbo.PersonToken", new[] { "Token" });
-            DropIndex("dbo.PersonToken", new[] { "PersonAliasId" });
-            DropTable("dbo.PersonToken");
+            DropForeignKey( "dbo.PersonToken", "PersonAliasId", "dbo.PersonAlias" );
+            DropForeignKey( "dbo.PersonToken", "PageId", "dbo.Page" );
+            DropIndex( "dbo.PersonToken", new[] { "Guid" } );
+            DropIndex( "dbo.PersonToken", new[] { "PageId" } );
+            DropIndex( "dbo.PersonToken", new[] { "Token" } );
+            DropIndex( "dbo.PersonToken", new[] { "PersonAliasId" } );
+            DropTable( "dbo.PersonToken" );
         }
     }
 }
