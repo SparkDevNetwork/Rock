@@ -116,11 +116,12 @@ namespace RockWeb.Blocks.Cms
                 }
 
                 ConfigureSettings();
-                
+
                 // if this is from the smart search apply some additional configuration
+                var showRefineSearch = PageParameter( "ShowRefineSearch" ).AsBoolean();
                 if ( !string.IsNullOrWhiteSpace( PageParameter( "SmartSearch" ) ) )
                 {
-                    ConfigureSmartSearchSettings();
+                    lbRefineSearch.Visible = showRefineSearch;
                 }
 
                 if ( !string.IsNullOrWhiteSpace(PageParameter( "Q" ) ) )
@@ -206,7 +207,7 @@ namespace RockWeb.Blocks.Cms
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnSearch_Click( object sender, EventArgs e )
         {
-            Response.Redirect( BuildUrl() );
+            Response.Redirect( BuildUrl(0, false ) );
         }
 
         /// <summary>
@@ -300,15 +301,20 @@ namespace RockWeb.Blocks.Cms
                 StringBuilder formattedResults = new StringBuilder();
                 formattedResults.Append( "<ul class='list-unstyled'>" );
 
+                var showScores = GetAttributeValue( "ShowScores" ).AsBoolean();
+
+                // for speed we will get the common merge fields and pass them to the formatter so it does not have to be done repeattedly in the loop (it's a bit expensive)
+                var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( null, CurrentPerson );
+
                 foreach ( var result in results )
                 {
-                    var formattedResult = result.FormatSearchResult( CurrentPerson );
+                    var formattedResult = result.FormatSearchResult( CurrentPerson, null, mergeFields );
 
                     if ( formattedResult.IsViewAllowed )
                     {
                         formattedResults.Append( string.Format( "{0}", formattedResult.FormattedResult ) );
 
-                        if ( GetAttributeValue( "ShowScores" ).AsBoolean() )
+                        if ( showScores )
                         {
                             formattedResults.Append( string.Format( "<div class='pull-right'><small>{0}</small></div>", result.Score ) );
                         }
@@ -320,7 +326,6 @@ namespace RockWeb.Blocks.Cms
                 formattedResults.Append( "</ul>" );
 
                 tbSearch.Text = term;
-
                 lResults.Text = formattedResults.ToString();
             }
 
@@ -506,7 +511,7 @@ namespace RockWeb.Blocks.Cms
         /// Builds the URL.
         /// </summary>
         /// <returns></returns>
-        private string BuildUrl(int pageOffset = 0)
+        private string BuildUrl(int pageOffset = 0, Boolean respectSmartSearch = true) // respect smart search flag allows a search that started as a smart search to be converted to a normal search via refining the search
         {
             var pageReference = new PageReference();
             pageReference.PageId = CurrentPageReference.PageId;
@@ -517,7 +522,7 @@ namespace RockWeb.Blocks.Cms
                 pageReference.Parameters.AddOrReplace("Q", tbSearch.Text);
             }
 
-            if ( PageParameter("SmartSearch").IsNotNullOrWhitespace() )
+            if ( PageParameter("SmartSearch").IsNotNullOrWhitespace() && respectSmartSearch )
             {
                 pageReference.Parameters.AddOrReplace( "SmartSearch", "true" );
             }
@@ -732,7 +737,7 @@ namespace RockWeb.Blocks.Cms
                 indexableEntities = indexableEntities.Where( i => enabledModelIds.Contains( i.Id ) ).ToList();
             }
 
-                foreach ( var entity in indexableEntities )
+            foreach ( var entity in indexableEntities )
             {
                 var entityType = entity.GetEntityType();
 
@@ -771,14 +776,6 @@ namespace RockWeb.Blocks.Cms
                     }
                 }
             }
-        }
-
-        /// <summary>
-        /// Configures the smart search settings.
-        /// </summary>
-        private void ConfigureSmartSearchSettings()
-        {
-            lbRefineSearch.Visible = false;
         }
 
         /// <summary>

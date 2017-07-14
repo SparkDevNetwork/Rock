@@ -362,6 +362,7 @@
     <Compile Include="Attribute\CustomDropdownListFieldAttribute.cs" />
     <Compile Include="Attribute\CustomRadioListFieldAttribute.cs" />
     <Compile Include="Attribute\DataViewFieldAttribute.cs" />
+    <Compile Include="Attribute\DataViewsFieldAttribute.cs" />
     <Compile Include="Attribute\DateFieldAttribute.cs" />
     <Compile Include="Attribute\DateRangeFieldAttribute.cs" />
     <Compile Include="Attribute\DateTimeFieldAttribute.cs" />
@@ -530,6 +531,7 @@
     <Compile Include="Field\IFieldType.cs" />
     <Compile Include="Field\ILinkableFieldType.cs" />
     <Compile Include="Field\SelectFromListFieldType.cs" />
+    <Compile Include="Field\Types\DataViewsFieldType.cs" />
     <Compile Include="Field\Types\LavaFieldType.cs" />
     <Compile Include="Field\Types\AccountFieldType.cs" />
     <Compile Include="Field\Types\AccountsFieldType.cs" />
@@ -1110,6 +1112,7 @@
     <Compile Include="PersonProfile\Badge\Giving.cs" />
     <Compile Include="PersonProfile\Badge\GroupTypeAttendance.cs" />
     <Compile Include="PersonProfile\Badge\InDataView.cs" />
+    <Compile Include="Reporting\DataFilter\Person\FinancialPledgeDataViewFilter.cs" />
     <Compile Include="Reporting\DataFilter\Person\FinancialTransactionDataViewFilter.cs" />
     <Compile Include="Reporting\DataFilter\Person\InRegistrationInstanceRegistrationTemplateFilter.cs" />
     <Compile Include="Reporting\DataFilter\Person\InLocationGeofenceFilter.cs" />
@@ -1373,6 +1376,7 @@
     <Compile Include="Web\Cache\WorkflowTypeCache.cs" />
     <Compile Include="Web\UI\Controls\AttributeMatrixEditor.cs" />
     <Compile Include="Web\UI\Controls\DynamicPlaceholder.cs" />
+    <Compile Include="Web\UI\Controls\Pickers\DataViewsPicker.cs" />
     <Compile Include="Web\UI\Controls\Pickers\DatePartsPicker.cs" />
     <Compile Include="Web\UI\Controls\Pickers\LavaCommandsPicker.cs" />
     <Compile Include="Web\UI\Controls\SSNBox.cs" />

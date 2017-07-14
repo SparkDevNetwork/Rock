@@ -12,7 +12,7 @@
                 <div class="grid grid-panel">
                     <Rock:GridFilter ID="gfSettings" runat="server" OnDisplayFilterValue="rFilter_DisplayFilterValue">
                         <Rock:GroupTypePicker ID="gtpGroupType" runat="server" Label="Group Type" />
-            
+                        <Rock:RockDropDownList ID="ddlGroupTypePurpose" runat="server" Label="Group Type Purpose"/>
                         <Rock:RockDropDownList ID="ddlActiveFilter" runat="server" Label="Active Status">
                             <asp:ListItem Text="[All]" Value="all"></asp:ListItem>
                             <asp:ListItem Text="Active" Value="active"></asp:ListItem>
