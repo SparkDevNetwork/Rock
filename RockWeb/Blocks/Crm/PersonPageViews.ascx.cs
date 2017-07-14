@@ -214,7 +214,8 @@ namespace RockWeb.Blocks.Crm
 
             int skipCount = pageNumber * sessionCount;
 
-            var person = new PersonService( rockContext ).GetByUrlEncodedKey( PageParameter( "Person" ) );
+            // NOTE: Since this block shows a history of sites a person visited in Rock, require Person.UrlEncodedKey instead of Person.Id so that URL can't be manually edited with a different PersonId
+            var person = new PersonService( rockContext ).GetByImpersonationToken( PageParameter( "Person" ), false, this.PageCache.Id );
 
             if ( person != null )
             {
