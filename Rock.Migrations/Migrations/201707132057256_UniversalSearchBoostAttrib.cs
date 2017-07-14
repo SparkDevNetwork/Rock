@@ -33,10 +33,10 @@ namespace Rock.Migrations
             RockMigrationHelper.AddGlobalAttribute( SystemGuid.FieldType.KEY_VALUE_LIST, "", "", "Universal Search Index Boost", "Allows you to boost certain universal search indexes.", 1000, "personindex^4", "757F912F-55E0-76A9-46D2-345BB61D7B02", "UniversalSearchIndexBoost" );
 
             // Add Fundraising Page/Block
-            RockMigrationHelper.AddPage( "4E237286-B715-4109-A578-C1445EC02707", "D65F783D-87A9-4CC9-8110-E83466A0EADB", "Fundraising", "", "3E0F2EF9-DC32-4DFD-B213-A410AE5B6AB7", "" ); // Site:Rock RMS
+            RockMigrationHelper.AddPage( true, "4E237286-B715-4109-A578-C1445EC02707", "D65F783D-87A9-4CC9-8110-E83466A0EADB", "Fundraising", "", "3E0F2EF9-DC32-4DFD-B213-A410AE5B6AB7", "" ); // Site:Rock RMS
             RockMigrationHelper.UpdateBlockType( "Fundraising Progress", "Progress for all people in a fundraising opportunity", "~/Blocks/Fundraising/FundraisingProgress.ascx", "Fundraising", "75D2BC14-34DF-42EA-8DBB-3F5294B290A9" );
             // Add Block to Page: Fundraising, Site: Rock RMS
-            RockMigrationHelper.AddBlock( "3E0F2EF9-DC32-4DFD-B213-A410AE5B6AB7", "", "75D2BC14-34DF-42EA-8DBB-3F5294B290A9", "Fundraising Progress", "Main", @"", @"", 0, "59A24C5E-8214-4F84-AE4C-648B3C5E3975" );
+            RockMigrationHelper.AddBlock( true, "3E0F2EF9-DC32-4DFD-B213-A410AE5B6AB7", "", "75D2BC14-34DF-42EA-8DBB-3F5294B290A9", "Fundraising Progress", "Main", @"", @"", 0, "59A24C5E-8214-4F84-AE4C-648B3C5E3975" );
 
             // Group List Page setting inside Group Detail Block
             // Attrib for BlockType: Group Detail:Group List Page
