@@ -478,7 +478,7 @@ namespace Rock.Web.Cache
                 DateTime transitionDate;
 
                 // Check Date Validity
-                if ( !DateTime.TryParseExact( formattedTransitionDate, "MM/dd/yyyy", CultureInfo.InvariantCulture,
+                if ( !DateTime.TryParseExact( formattedTransitionDate, new[] { "MM/dd/yyyy", "M/dd/yyyy", "M/d/yyyy", "MM/d/yyyy" }, CultureInfo.InvariantCulture,
                     DateTimeStyles.AllowWhiteSpaces, out transitionDate ) )
                 {
                     transitionDate = new DateTime( RockDateTime.Today.Year, 6, 1 );
