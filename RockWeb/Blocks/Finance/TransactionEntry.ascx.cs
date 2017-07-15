@@ -965,7 +965,15 @@ TransactionAcountDetails: [
                 string personKey = PageParameter( "Person" );
                 if ( !string.IsNullOrWhiteSpace( personKey ) )
                 {
-                    _targetPerson = new PersonService( rockContext ).GetByUrlEncodedKey( personKey );
+                    _targetPerson = new PersonService( rockContext ).GetByImpersonationToken( personKey, true, this.PageCache.Id );
+
+                    if ( _targetPerson == null )
+                    {
+                        nbInvalidPersonWarning.Text = "Invalid or Expired Person Token specified";
+                        nbInvalidPersonWarning.NotificationBoxType = NotificationBoxType.Danger;
+                        nbInvalidPersonWarning.Visible = true;
+                        return;
+                    }
                 }
             }
 
