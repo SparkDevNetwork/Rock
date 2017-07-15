@@ -725,7 +725,10 @@ namespace Rock.Web.UI
 
             // If the impersonated query key was included or is in session then set the current person
             Page.Trace.Warn( "Checking for person impersonation" );
-            ProcessImpersonation( rockContext );
+            if (!ProcessImpersonation( rockContext ) )
+            {
+                return;
+            }
 
             // Get current user/person info
             Page.Trace.Warn( "Getting CurrentUser" );
@@ -1388,9 +1391,10 @@ namespace Rock.Web.UI
 
         /// <summary>
         /// Checks for and processes any impersonation parameters
+        /// Returns False if an invalid token was specified
         /// </summary>
         /// <param name="rockContext">The rock context.</param>
-        private void ProcessImpersonation( RockContext rockContext )
+        private bool ProcessImpersonation( RockContext rockContext )
         {
             string impersonatedPersonKeyParam = PageParameter( "rckipid" );
             string impersonatedPersonKeyIdentity = string.Empty;
@@ -1420,12 +1424,10 @@ namespace Rock.Web.UI
                 {
                     // Attempting to use an impersonation token that doesn't exist or is no longer valid, so log them out
                     FormsAuthentication.SignOut();
-
-                    // strip the rckipid param off of the url
-                    var redirectUrl = Request.RawUrl.Replace( "rckipid=" + impersonatedPersonKeyParam, string.Empty );
-                    Response.Redirect( redirectUrl, false );
+                    Session["InvalidPersonToken"] = true;
+                    Response.Redirect( PersonToken.RemoveRockMagicToken(Request.RawUrl), false );
                     Context.ApplicationInstance.CompleteRequest();
-                    return;
+                    return false;
                 }
             }
             else if ( !string.IsNullOrEmpty( impersonatedPersonKeyIdentity ) )
@@ -1440,13 +1442,16 @@ namespace Rock.Web.UI
                         if ( personToken.PageId.HasValue && personToken.PageId != this.PageId )
                         {
                             FormsAuthentication.SignOut();
+                            Session["InvalidPersonToken"] = true;
                             Response.Redirect( Request.RawUrl, false );
                             Context.ApplicationInstance.CompleteRequest();
-                            return;
+                            return false;
                         }
                     }
                 }
             }
+
+            return true;
         }
 
         /// <summary>
