@@ -99,7 +99,7 @@ namespace Rock.Rest.Controllers
         /// <exception cref="HttpResponseException"></exception>
         [Authenticate, Secured]
         [HttpGet]
-        public Tag Get( int entityTypeId, int ownerId, string name, string entityQualifier, string entityQualifierValue, string categoryIds = null )
+        public Tag Get( int entityTypeId, int ownerId, string name, string entityQualifier, string entityQualifierValue )
         {
             string tagName = WebUtility.UrlDecode( name );
             var tag = ( ( TagService ) Service )
