@@ -393,8 +393,8 @@ namespace RockWeb.Blocks.Checkin
                     CampusName = a.Campus.Name,
                     ScheduleName = a.Schedule.Name,
                     Person = a.PersonAlias.Person,
-                    GroupName = a.Group.Name,
-                    GroupTypeId = a.Group.GroupTypeId,
+                    GroupName = a.Group != null ? a.Group.Name : string.Empty,
+                    GroupTypeId = a.Group != null ? (int?)a.Group.GroupTypeId : null,
                     StartDateTime = a.StartDateTime,
                     EndDateTime = a.EndDateTime,
                     DidAttend = a.DidAttend
