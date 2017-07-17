@@ -30,6 +30,10 @@ using System.Collections.Generic;
 
 namespace Rock.Follow.Event
 {
+    /// <summary>
+    /// Following Event based on person history change
+    /// </summary>
+    /// <seealso cref="Rock.Follow.EventComponent" />
     [Description( "Person History" )]
     [Export( typeof( EventComponent ) )]
     [ExportMetadata( "ComponentName", "PersonHistory" )]
@@ -49,6 +53,12 @@ namespace Rock.Follow.Event
         static readonly string ModifiedRegex = "Modified.*<span class=['\"]field-name['\"]>(.*)<\\/span>.*<span class=['\"]field-value['\"]>(.*)<\\/span>.*<span class=['\"]field-value['\"]>(.*)<\\/span>";
         static readonly string DeletedRegex = "Deleted.*<span class=['\"]field-name['\"]>(.*)<\\/span>.*<span class=['\"]field-value['\"]>(.*)<\\/span>";
 
+        /// <summary>
+        /// Gets the followed entity type identifier.
+        /// </summary>
+        /// <value>
+        /// The followed entity type identifier.
+        /// </value>
         public override Type FollowedType
         {
             get
@@ -57,6 +67,13 @@ namespace Rock.Follow.Event
             }
         }
 
+        /// <summary>
+        /// Determines whether [has event happened] [the specified entity].
+        /// </summary>
+        /// <param name="followingEvent">The following event.</param>
+        /// <param name="entity">The entity.</param>
+        /// <param name="lastNotified">The last notified.</param>
+        /// <returns></returns>
         public override bool HasEventHappened( FollowingEventType followingEvent, IEntity entity, DateTime? lastNotified )
         {
             if ( followingEvent != null && entity != null )
