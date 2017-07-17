@@ -234,12 +234,12 @@ namespace Rock.Web.UI.Controls
             RockControlHelper.CreateChildControls( this, Controls );
 
             monthDropDownList = new DropDownList();
-            monthDropDownList.CssClass = "form-control input-width-sm";
+            monthDropDownList.CssClass = "form-control input-width-sm js-month";
             monthDropDownList.ID = "monthDropDownList_" + this.ID;
             monthDropDownList.SelectedIndexChanged += monthDayDropDownList_SelectedIndexChanged;
 
             dayDropDownList = new DropDownList();
-            dayDropDownList.CssClass = "form-control input-width-sm";
+            dayDropDownList.CssClass = "form-control input-width-sm js-day";
             dayDropDownList.ID = "dayDropDownList_" + this.ID;
             dayDropDownList.SelectedIndexChanged += monthDayDropDownList_SelectedIndexChanged;
 

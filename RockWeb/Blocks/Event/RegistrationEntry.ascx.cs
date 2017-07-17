@@ -3624,7 +3624,7 @@ namespace RockWeb.Blocks.Event
         /// </summary>
         private void RegisterClientScript()
         {
-            RockPage.AddScriptLink( ResolveUrl( "~/Scripts/jquery.creditCardTypeDetector.js" ) );
+            RockPage.AddScriptLink(ResolveUrl("~/Scripts/jquery.payment.min.js"));
 
             string script = string.Format( @"
     // Adjust the label of 'is in the same family' based on value of first name entered
@@ -3672,9 +3672,6 @@ namespace RockWeb.Blocks.Event
         $('#{4}').text( '{6}' + amountRemaining.toFixed(2) );
         
     }});
-
-    // Detect credit card type
-    $('.credit-card').creditCardTypeDetector({{ 'credit_card_logos': '.card-logos' }});
 
     // Toggle credit card display if saved card option is available
     $('div.radio-content').prev('div.radio-list').find('input:radio').unbind('click').on('click', function () {{
