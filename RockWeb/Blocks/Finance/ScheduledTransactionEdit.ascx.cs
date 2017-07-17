@@ -1339,6 +1339,7 @@ achieve our mission.  We are so grateful for your commitment.
         private void RegisterScript()
         {
             RockPage.AddScriptLink(ResolveUrl("~/Scripts/jquery.payment.min.js"));
+            RockPage.AddScriptLink(ResolveUrl("~/Scripts/Rock/Validate/creditcardvalidation.js"));
 
             int oneTimeFrequencyId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_ONE_TIME ).Id;
 

@@ -3625,6 +3625,7 @@ namespace RockWeb.Blocks.Event
         private void RegisterClientScript()
         {
             RockPage.AddScriptLink(ResolveUrl("~/Scripts/jquery.payment.min.js"));
+            RockPage.AddScriptLink(ResolveUrl("~/Scripts/Rock/Validate/creditcardvalidation.js"));
 
             string script = string.Format( @"
     // Adjust the label of 'is in the same family' based on value of first name entered

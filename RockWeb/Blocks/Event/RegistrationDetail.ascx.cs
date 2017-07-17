@@ -1490,6 +1490,7 @@ namespace RockWeb.Blocks.Event
         private void RegisterClientScript()
         {
             RockPage.AddScriptLink(ResolveUrl("~/Scripts/jquery.payment.min.js"));
+            RockPage.AddScriptLink(ResolveUrl("~/Scripts/Rock/Validate/creditcardvalidation.js"));
 
             string deleteScript = @"
 

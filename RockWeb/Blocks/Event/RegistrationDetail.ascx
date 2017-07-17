@@ -193,6 +193,7 @@
                                         <Rock:RockTextBox ID="txtCardFirstName" runat="server" Label="First Name on Card" Visible="false" Required="true" ValidationGroup="Payment" ></Rock:RockTextBox>
                                         <Rock:RockTextBox ID="txtCardLastName" runat="server" Label="Last Name on Card" Visible="false" Required="true" ValidationGroup="Payment"></Rock:RockTextBox>
                                         <Rock:RockTextBox ID="txtCardName" runat="server" Label="Name on Card" Visible="false" Required="true" ValidationGroup="Payment" ></Rock:RockTextBox>
+                                        <Rock:RockTextBox ID="txtCreditCard" runat="server" Label="Credit Card #" MaxLength="19" CssClass="cc-num js-numeric" FormGroupCssClass="required" Required="true" ValidationGroup="Payment" type="tel" autocomplete="cc-number" />
 
                                         <ul class="card-logos list-unstyled">
                                             <li class="card-visa"></li>
