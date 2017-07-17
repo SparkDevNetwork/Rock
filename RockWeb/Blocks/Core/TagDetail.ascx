@@ -73,6 +73,10 @@
                             <asp:LinkButton ID="btnEdit" runat="server" AccessKey="m" ToolTip="Alt+m" Text="Edit" CssClass="btn btn-primary" OnClick="btnEdit_Click" />
                             <Rock:ModalAlert ID="mdDeleteWarning" runat="server" />
                             <asp:LinkButton ID="btnDelete" runat="server" Text="Delete" CssClass="btn btn-link" OnClick="btnDelete_Click" />
+                            
+                            <span class="pull-right">
+                                <Rock:SecurityButton ID="btnSecurity" runat="server" class="btn btn-sm btn-security" Title="Secure Group" />
+                            </span>
                         </div>
 
                     </fieldset>

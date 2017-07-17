@@ -24,6 +24,7 @@ using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
+using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
@@ -56,7 +57,7 @@ namespace RockWeb.Blocks.Core
             _canConfigure = IsUserAuthorized( Authorization.ADMINISTRATE );
 
             btnDelete.Attributes["onclick"] = string.Format( "javascript: return Rock.dialogs.confirmDelete(event, '{0}');", Group.FriendlyTypeName );
-
+            btnSecurity.EntityTypeId = EntityTypeCache.Read( typeof( Rock.Model.Tag ) ).Id;
         }
 
         /// <summary>
@@ -392,6 +393,9 @@ namespace RockWeb.Blocks.Core
             lReadOnlyTitle.Text = tag.Name.FormatAsHtmlTitle();
             lDescription.Text = tag.Description;
             hlEntityType.Text = tag.EntityType.FriendlyName;
+
+            btnSecurity.Visible = tag.IsAuthorized( Authorization.ADMINISTRATE, CurrentPerson );
+            btnSecurity.EntityId = tag.Id;
         }
 
         #endregion

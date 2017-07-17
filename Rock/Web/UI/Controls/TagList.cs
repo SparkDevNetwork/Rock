@@ -176,7 +176,7 @@ Rock.controls.tagList.initialize({{
                     string.IsNullOrWhiteSpace( EntityQualifierValue ) ? string.Empty : EntityQualifierValue,
                     (!AllowNewTags).ToString().ToLower(),
                     DelaySave.ToString().ToLower() );
-                ScriptManager.RegisterStartupScript(this, this.GetType(), "tag_picker_" + this.ID, script, true);
+                ScriptManager.RegisterStartupScript(this, this.GetType(), "tag_picker_" + this.ID, script, true );
             }
         }
 
@@ -188,30 +188,47 @@ Rock.controls.tagList.initialize({{
         /// Updates the control with the current tags that exist for the current entity
         /// </summary>
         /// <param name="currentPersonId">The current person identifier.</param>
-        public void GetTagValues(int? currentPersonId)
+        public void GetTagValues( int? currentPersonId )
         {
             var sb = new StringBuilder();
 
             using ( var rockContext = new RockContext() )
             {
+            
                 var service = new TaggedItemService( rockContext );
-                foreach ( dynamic item in service.Get(
-                    EntityTypeId, EntityQualifierColumn, EntityQualifierValue, currentPersonId, EntityGuid )
-                    .Select( i => new
-                    {
-                        OwnerId = ( i.Tag.OwnerPersonAlias != null ? i.Tag.OwnerPersonAlias.PersonId : (int?)null ),
-                        Name = i.Tag.Name
-                    } ) )
+                var items = service.Get(
+                            EntityTypeId, EntityQualifierColumn, EntityQualifierValue, currentPersonId, EntityGuid )
+                            .Select( a => a.Tag )
+                            .OrderBy( a => a.Name );
+
+                var person = GetCurrentPerson();
+
+                foreach ( var item in items )
                 {
-                    if ( sb.Length > 0 )
-                        sb.Append( ',' );
-                    sb.Append( item.Name );
-                    if ( currentPersonId.HasValue && item.OwnerId == currentPersonId.Value )
-                        sb.Append( "^personal" );
+                    if ( item.IsAuthorized( Rock.Security.Authorization.VIEW, person ) )
+                    {
+                        if ( sb.Length > 0 )
+                            sb.Append( ',' );
+                        sb.Append( item.Name );
+                        if ( currentPersonId.HasValue && item?.OwnerPersonAlias.PersonId == currentPersonId.Value )
+                            sb.Append( "^personal" );
+                    }
                 }
             }
 
+
             this.Text = sb.ToString();
+        }
+
+        private Person GetCurrentPerson()
+        {
+            var rockPage = this.Page as RockPage;
+            if ( rockPage != null )
+            {
+                return rockPage.CurrentPerson;
+            }
+
+            return null;
         }
 
         /// <summary>

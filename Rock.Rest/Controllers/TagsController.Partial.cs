@@ -15,6 +15,7 @@
 // </copyright>
 //
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Web.Http;
@@ -101,18 +102,26 @@ namespace Rock.Rest.Controllers
         public Tag Get( int entityTypeId, int ownerId, string name, string entityQualifier, string entityQualifierValue )
         {
             string tagName = WebUtility.UrlDecode( name );
-            var tag = ( (TagService)Service )
+            var tag = ( ( TagService ) Service )
                 .Get( entityTypeId, entityQualifier, entityQualifierValue, ownerId ).FirstOrDefault( t => t.Name == tagName );
 
-            if ( tag != null )
+            var person = GetPerson();
+
+            if ( tag == null )
+            {
+                // NOTE: This exception is expected when adding a new Tag.  The Javascript responds to the NotFound error by prompting them to create a new tag
+                throw new HttpResponseException( HttpStatusCode.NotFound );
+            }
+
+            if ( tag.IsAuthorized( Rock.Security.Authorization.VIEW, person ) )
             {
                 return tag;
             }
             else
             {
-                // NOTE: This exception is expected when adding a new Tag.  The Javascript responds to the NotFound error by prompting them to create a new tag
-                throw new HttpResponseException( HttpStatusCode.NotFound );
+                throw new HttpResponseException( HttpStatusCode.Unauthorized );
             }
+
         }
 
         /// <summary>
@@ -160,12 +169,25 @@ namespace Rock.Rest.Controllers
         [HttpGet]
         public IQueryable<Tag> AvailableNames( int entityTypeId, int ownerId, Guid entityGuid, string name, string entityQualifier, string entityQualifierValue )
         {
-            return ( (TagService)Service )
+            var tags = ( ( TagService ) Service )
                 .Get( entityTypeId, entityQualifier, entityQualifierValue, ownerId )
                 .Where( t =>
                     t.Name.StartsWith( name ) &&
                     !t.TaggedItems.Any( i => i.EntityGuid == entityGuid ) )
                 .OrderBy( t => t.Name );
+
+            var person = GetPerson();
+            var tagItems = new List<Tag>();
+
+            foreach ( var tag in tags )
+            {
+                if ( tag.IsAuthorized( Rock.Security.Authorization.VIEW, person ) )
+                {
+                    tagItems.Add( tag );
+                }
+            }
+
+            return tagItems.AsQueryable<Tag>();
         }
     }
 }
