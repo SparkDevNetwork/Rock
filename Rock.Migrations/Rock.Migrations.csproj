@@ -269,6 +269,10 @@
     <Compile Include="Migrations\201707171725146_UniversalSearchPages.Designer.cs">
       <DependentUpon>201707171725146_UniversalSearchPages.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201707172127488_TagChanges.cs" />
+    <Compile Include="Migrations\201707172127488_TagChanges.Designer.cs">
+      <DependentUpon>201707172127488_TagChanges.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\RockMigrationSQL.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
@@ -2620,6 +2624,9 @@
     <EmbeddedResource Include="Migrations\201707171725146_UniversalSearchPages.resx">
       <DependentUpon>201707171725146_UniversalSearchPages.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201707172127488_TagChanges.resx">
+      <DependentUpon>201707172127488_TagChanges.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 6.0\Version 1.6.0\201609282147388_WaitList.resx">
       <DependentUpon>201609282147388_WaitList.cs</DependentUpon>
     </EmbeddedResource>
@@ -4384,7 +4391,7 @@
       <DependentUpon>201707101648235_CommonBlockTypes.cs</DependentUpon>
     </Content>
     <Content Include="Migrations\201707171725146_UniversalSearchPages_spDbaRebuildIndexes.sql">
-		<DependentUpon>201707171725146_UniversalSearchPages.cs</DependentUpon>
+      <DependentUpon>201707171725146_UniversalSearchPages.cs</DependentUpon>
     </Content>
     <Content Include="Migrations\Version 6.0\Version 1.6.0\201608171937068_GivingAnalyticsAccounts_AccountTotals.sql" />
     <Content Include="Migrations\Version 6.0\Version 1.6.0\201608171937068_GivingAnalyticsAccounts_FirstLastEverDates.sql" />
