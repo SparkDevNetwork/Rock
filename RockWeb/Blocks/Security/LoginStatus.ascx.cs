@@ -23,6 +23,7 @@ using Rock;
 using Rock.Attribute;
 using Rock.Security;
 using System.Text;
+using System.Text.RegularExpressions;
 
 namespace RockWeb.Blocks.Security
 {
@@ -196,7 +197,10 @@ namespace RockWeb.Blocks.Security
                 var currentPage = Rock.Web.Cache.PageCache.Read( RockPage.PageId );
                 if ( currentPage != null && currentPage.IsAuthorized(Authorization.VIEW, null))
                 {
-                    Response.Redirect( CurrentPageReference.BuildUrl() );
+                    string url = CurrentPageReference.BuildUrl();
+                    Regex rgx = new Regex( @"[?&]rckipid=([^&]*)" );
+                    string cleanUrl = rgx.Replace( url, string.Empty );
+                    Response.Redirect( cleanUrl );
                     Context.ApplicationInstance.CompleteRequest();
                 }
                 else
