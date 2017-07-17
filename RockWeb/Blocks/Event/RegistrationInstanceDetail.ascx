@@ -89,11 +89,13 @@
                                 <Rock:RockLiteral ID="lName" runat="server" Label="Name" />
                                 <Rock:RockLiteral ID="lMaxAttendees" runat="server" Label="Maximum Attendees" />
                                 <Rock:RockLiteral ID="lWorkflowType" runat="server" Label="Registration Workflow" />
+                                <Rock:RockLiteral ID="lStartDate" runat="server" Label="Registration Starts" />
                             </div>
                             <div class="col-md-6">
                                 <Rock:RockLiteral ID="lCost" runat="server" Label="Cost" />
                                 <Rock:RockLiteral ID="lMinimumInitialPayment" runat="server" Label="Minimum Initial Payment" />
                                 <Rock:RockLiteral ID="lAccount" runat="server" Label="Account" />
+                                <Rock:RockLiteral ID="lEndDate" runat="server" Label="Registration Ends" />
                             </div>
                         </div>
 
@@ -137,7 +139,7 @@
                     <li id="liLinkage" runat="server">
                         <asp:LinkButton ID="lbLinkage" runat="server" Text="Linkages" OnClick="lbTab_Click" />
                     </li>
-                     <li id="liWaitList" runat="server">
+                    <li id="liWaitList" runat="server">
                         <asp:LinkButton ID="lbWaitList" runat="server" Text="Wait List" OnClick="lbTab_Click" />
                     </li>
                     <li id="liGroupPlacement" runat="server">
@@ -214,7 +216,7 @@
                                 <Rock:SlidingDateRangePicker ID="sdrpRegistrantDateRange" runat="server" Label="Registration Date Range" />
                                 <Rock:RockTextBox ID="tbRegistrantFirstName" runat="server" Label="First Name" />
                                 <Rock:RockTextBox ID="tbRegistrantLastName" runat="server" Label="Last Name" />
-                                <Rock:RockDropDownList ID="ddlInGroup" runat="server" Label="In Group"  />    
+                                <Rock:RockDropDownList ID="ddlInGroup" runat="server" Label="In Group"  />
                                 <Rock:RockDropDownList ID="ddlSignedDocument" runat="server" Label="Signed Document" />
                                 <asp:PlaceHolder ID="phRegistrantFormFieldFilters" runat="server" />
                             </Rock:GridFilter>
@@ -355,7 +357,7 @@
                             <Rock:Grid ID="gWaitList" runat="server" DisplayType="Full" AllowSorting="true" OnRowSelected="gWaitList_RowSelected" RowItemText="Wait List Individual" PersonIdField="PersonId" ExportSource="ColumnOutput">
                                 <Columns>
                                     <Rock:SelectField ItemStyle-Width="48px" />
-                                    <Rock:RockTemplateField HeaderText="Wait List Order" >
+                                    <Rock:RockTemplateField HeaderText="Wait List Order ">
                                         <ItemTemplate>
                                             <asp:Literal ID="lWaitListOrder" runat="server"></asp:Literal>
                                         </ItemTemplate>

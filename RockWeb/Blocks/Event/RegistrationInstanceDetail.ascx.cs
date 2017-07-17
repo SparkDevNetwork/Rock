@@ -1785,7 +1785,7 @@ namespace RockWeb.Blocks.Event
                     lWaitListOrder.Text = ( _waitListOrder.IndexOf( registrant.Id ) + 1 ).ToString();
                 }
 
-                
+
                 // Set the campus
                 var lCampus = e.Row.FindControl( "lCampus" ) as Literal;
                 if ( lCampus != null && PersonCampusIds != null )
@@ -2152,6 +2152,12 @@ namespace RockWeb.Blocks.Event
             lWorkflowType.Text = RegistrationInstance.RegistrationWorkflowType != null ?
                 RegistrationInstance.RegistrationWorkflowType.Name : string.Empty;
             lWorkflowType.Visible = !string.IsNullOrWhiteSpace( lWorkflowType.Text );
+            lStartDate.Text = RegistrationInstance.StartDateTime.HasValue ? 
+                                RegistrationInstance.StartDateTime.Value.ToShortDateString() : string.Empty;
+            lStartDate.Visible = RegistrationInstance.StartDateTime.HasValue;
+            lEndDate.Text = RegistrationInstance.EndDateTime.HasValue ?
+                                RegistrationInstance.EndDateTime.Value.ToShortDateString() : string.Empty;
+            lEndDate.Visible = RegistrationInstance.EndDateTime.HasValue;
 
             lStartDate.Text = RegistrationInstance.StartDateTime.HasValue ?
                 RegistrationInstance.StartDateTime.Value.ToShortDateString() : string.Empty;
@@ -3158,7 +3164,7 @@ namespace RockWeb.Blocks.Event
 
             ClearGrid( gGroupPlacements );
             ClearGrid( gRegistrants );
-            ClearGrid( gWaitList );            
+            ClearGrid( gWaitList );
 
             if ( RegistrantFields != null )
             {
@@ -4144,9 +4150,9 @@ namespace RockWeb.Blocks.Event
 
         #region Linkages Tab
 
-            /// <summary>
-            /// Binds the registrations filter.
-            /// </summary>
+        /// <summary>
+        /// Binds the registrations filter.
+        /// </summary>
         private void BindLinkagesFilter()
         {
             cblCampus.DataSource = CampusCache.All();
