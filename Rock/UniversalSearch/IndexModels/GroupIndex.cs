@@ -156,6 +156,7 @@ namespace Rock.UniversalSearch.IndexModels
         /// </summary>
         /// <param name="person">The person.</param>
         /// <param name="displayOptions">The display options.</param>
+        /// <param name="mergeFields">The merge fields.</param>
         /// <returns></returns>
         public override FormattedSearchResult FormatSearchResult( Person person, Dictionary<string, object> displayOptions = null, Dictionary<string, object> mergeFields = null )
         {

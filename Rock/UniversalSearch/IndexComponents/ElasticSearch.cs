@@ -135,7 +135,7 @@ namespace Rock.UniversalSearch.IndexComponents
                     config.DisableDirectStreaming();
                     _client = new ElasticClient( config );
                 }
-                catch (Exception ex ){}
+                catch {}
             }
         }
 
