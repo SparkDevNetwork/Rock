@@ -24,6 +24,7 @@ using Rock.Attribute;
 using Rock.Security;
 using System.Text;
 using System.Text.RegularExpressions;
+using Rock.Model;
 
 namespace RockWeb.Blocks.Security
 {
@@ -198,8 +199,8 @@ namespace RockWeb.Blocks.Security
                 if ( currentPage != null && currentPage.IsAuthorized(Authorization.VIEW, null))
                 {
                     string url = CurrentPageReference.BuildUrl();
-                    Regex rgx = new Regex( @"[?&]rckipid=([^&]*)" );
-                    string cleanUrl = rgx.Replace( url, string.Empty );
+
+                    string cleanUrl = PersonToken.RemoveRockMagicToken( url );
                     Response.Redirect( cleanUrl );
                     Context.ApplicationInstance.CompleteRequest();
                 }
