@@ -452,7 +452,14 @@ TransactionAcountDetails: [
                         ShowBusiness();
                     }
                 }
+
                 SetPage( 1 );
+
+                // If an invalid PersonToken was specified, hide everything except for the error message
+                if (nbInvalidPersonWarning.Visible)
+                {
+                    pnlSelection.Visible = false;
+                }
 
                 // Get the list of accounts that can be used
                 GetAccounts();
@@ -965,7 +972,8 @@ TransactionAcountDetails: [
                 string personKey = PageParameter( "Person" );
                 if ( !string.IsNullOrWhiteSpace( personKey ) )
                 {
-                    _targetPerson = new PersonService( rockContext ).GetByImpersonationToken( personKey, true, this.PageCache.Id );
+                    var incrementKeyUsage = !this.IsPostBack;
+                    _targetPerson = new PersonService( rockContext ).GetByImpersonationToken( personKey, incrementKeyUsage, this.PageCache.Id );
 
                     if ( _targetPerson == null )
                     {

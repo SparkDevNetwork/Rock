@@ -9,6 +9,7 @@
         <asp:HiddenField ID="hfTransactionGuid" runat="server" Value="" />
 
         <Rock:NotificationBox ID="nbMessage" runat="server" Visible="false"></Rock:NotificationBox>
+        <Rock:NotificationBox ID="nbInvalidPersonWarning" runat="server" Visible="false"></Rock:NotificationBox>
 
         <asp:Panel ID="pnlSelection" CssClass="panel panel-block" runat="server">
 
@@ -29,7 +30,7 @@
                                 <div class="panel-heading"><h3 class="panel-title"><asp:Literal ID="lContributionInfoTitle" runat="server" /></h3></div>
                                 <div class="panel-body">
                                     <fieldset>
-                                        <Rock:NotificationBox ID="nbInvalidPersonWarning" runat="server" Visible="false"></Rock:NotificationBox>
+                                        
                                         <asp:Repeater ID="rptAccountList" runat="server" OnItemDataBound="rptAccountList_ItemDataBound">
                                             <ItemTemplate>
                                                 <Rock:CurrencyBox ID="txtAccountAmount" runat="server" Placeholder="0.00" CssClass="account-amount" />

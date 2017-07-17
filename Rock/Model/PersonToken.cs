@@ -175,10 +175,10 @@ namespace Rock.Model
                 }
                 else
                 {
-                    int? tokenExpireDays = GlobalAttributesCache.Read().GetValue( "core.PersonTokenExpireDays" ).AsIntegerOrNull();
-                    if ( tokenExpireDays.HasValue )
+                    int? tokenExpireMinutes = GlobalAttributesCache.Read().GetValue( "core.PersonTokenExpireMinutes" ).AsIntegerOrNull();
+                    if ( tokenExpireMinutes.HasValue )
                     {
-                        personToken.ExpireDateTime = RockDateTime.Now.AddDays( tokenExpireDays.Value );
+                        personToken.ExpireDateTime = RockDateTime.Now.AddMinutes( tokenExpireMinutes.Value );
                     }
                     else
                     {

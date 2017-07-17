@@ -16,7 +16,6 @@
 //
 using System;
 using System.ComponentModel;
-using System.Web.UI;
 using Rock;
 using Rock.Attribute;
 using Rock.Data;
@@ -26,14 +25,18 @@ using Rock.Web.UI;
 namespace RockWeb.Blocks.Crm.PersonDetail
 {
     /// <summary>
-    /// Block for displaying the history of changes to a particular user.
+    /// 
     /// </summary>
     [DisplayName( "Person Transaction Links" )]
     [Category( "CRM > Person Detail" )]
-    [Description( "Block for displaying links to adding and scheduling transactions for a person." )]
+    [Description( "Block for displaying links to add and schedule transactions for a person." )]
 
     [LinkedPage( "Add Transaction Page", "", true, Rock.SystemGuid.Page.ADD_TRANSACTION, "", 0 )]
-    public partial class TransactionLinks : PersonBlock
+    [BooleanField( "Is Secondary Block", "Flag indicating whether this block is considered secondary and should be hidden when other secondary blocks are hidden.", false, "", 1 )]
+
+    [IntegerField( "Person Token Expire Minutes", "The number of minutes the person token for the transaction is valid after it is issued.", true, 60, "", 2 )]
+    [IntegerField( "Person Token Usage Limit", "The maximum number of times the person token for the transaction can be used.", false, 1, "", 3 )]
+    public partial class TransactionLinks : PersonBlock, ISecondaryBlock
     {
         #region Base Control Methods
 
@@ -57,6 +60,8 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         protected override void OnLoad( EventArgs e )
         {
             base.OnLoad( e );
+
+            pnlContent.Visible = ( Person != null && Person.Id != 0 );
         }
 
         #endregion
@@ -82,10 +87,11 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnAddTransaction_Click( object sender, EventArgs e )
         {
-            var page = new PageService( new RockContext() ).Get( this.GetAttributeValue( "AddTransactionPage" ).AsGuid() );
-            if ( page != null )
+            var addTransactionPage = new PageService( new RockContext() ).Get( this.GetAttributeValue( "AddTransactionPage" ).AsGuid() );
+            if ( addTransactionPage != null )
             {
-                var personKey = this.Person.GetImpersonationToken( DateTime.Now.AddMinutes( 5 ), 1, page.Id );
+                // create a limited-use personkey that will last long enough for them to go thru all the 'postbacks' while posting a transaction
+                var personKey = this.Person.GetImpersonationToken( DateTime.Now.AddMinutes( this.GetAttributeValue( "PersonTokenExpireMinutes" ).AsIntegerOrNull() ?? 60 ), this.GetAttributeValue( "PersonTokenUsageLimit" ).AsIntegerOrNull(), addTransactionPage.Id );
                 Response.Redirect( string.Format( "~/AddTransaction?Person={0}", personKey ) );
             }
         }
@@ -102,6 +108,23 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         }
 
         #endregion
+
+        #region Secondary Block
+
+        /// <summary>
+        /// Hook so that other blocks can set the visibility of all ISecondaryBlocks on its page
+        /// </summary>
+        /// <param name="visible">if set to <c>true</c> [visible].</param>
+        public void SetVisible( bool visible )
+        {
+            if ( this.GetAttributeValue( "IsSecondaryBlock" ).AsBooleanOrNull() ?? false )
+            {
+                // hide the entire block
+                this.Visible = visible;
+            }
+        }
+
+        #endregion Secondary Block
     }
 }
 
