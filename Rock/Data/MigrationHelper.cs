@@ -604,7 +604,12 @@ namespace Rock.Data
                 DECLARE @PageId int = ( SELECT TOP 1 [Id] FROM [Page] WHERE [Guid] = '{0}' )
                 IF @PageId IS NOT NULL
                 BEGIN
-                    DELETE [PageView] WHERE [PageId] = @PageId
+
+                    IF OBJECT_ID(N'[dbo].[PageView]', 'U') IS NOT NULL
+                    BEGIN
+                        DELETE [PageView] WHERE [PageId] = @PageId
+                    END
+
                     DELETE [Page] WHERE [Id] = @PageId
                 END
 ",
