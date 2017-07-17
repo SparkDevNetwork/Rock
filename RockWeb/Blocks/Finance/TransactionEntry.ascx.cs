@@ -421,7 +421,7 @@ TransactionAcountDetails: [
             }
 
             // Check if this is a transfer and that the person is the authorized person on the transaction
-            if ( PageParameter( "transfer" ) != null && PageParameter( "ScheduledTransactionId" ) != null )
+            if ( !string.IsNullOrWhiteSpace( PageParameter( "transfer" ) ) && !string.IsNullOrWhiteSpace( PageParameter( "ScheduledTransactionId" ) ) )
             {
                 InitializeTransfer( PageParameter( "ScheduledTransactionId" ).AsIntegerOrNull() );
             }
