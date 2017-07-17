@@ -218,7 +218,7 @@ namespace Rock.Reporting
                     }
                     else
                     {
-                        qryAttributes = qryAttributes.Where( a => a.EntityTypeQualifierColumn == string.Empty && a.EntityTypeQualifierValue == string.Empty );
+                        qryAttributes = qryAttributes.Where( a => string.IsNullOrEmpty( a.EntityTypeQualifierColumn ) && string.IsNullOrEmpty( a.EntityTypeQualifierValue ) );
                     }
 
                     var attributeIdList = qryAttributes.Select( a => a.Id ).ToList();
