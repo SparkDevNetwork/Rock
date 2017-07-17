@@ -204,6 +204,8 @@ namespace RockWeb.Blocks.Core
                 tag.EntityTypeId = entityTypeId;
                 tag.EntityTypeQualifierColumn = qualifierCol;
                 tag.EntityTypeQualifierValue = qualifierVal;
+                tag.CategoryId = cpCategory.SelectedValueAsInt();
+                tag.IsActive = cbIsActive.Checked;
                 rockContext.SaveChanges();
 
                 var qryParams = new Dictionary<string, string>();
@@ -309,7 +311,7 @@ namespace RockWeb.Blocks.Core
 
             bool readOnly = false;
 
-            if ( !_canConfigure && ( tag.OwnerPersonAlias == null || tag.OwnerPersonAlias.PersonId != CurrentPersonId ) )
+            if ( !_canConfigure && !tag.IsAuthorized( Authorization.EDIT, CurrentPerson ) )
             {
                 readOnly = true;
                 nbEditModeMessage.Text = EditModeMessage.ReadOnlyEditActionNotAllowed( Tag.FriendlyTypeName );
@@ -352,10 +354,12 @@ namespace RockWeb.Blocks.Core
             if ( tag.Id == 0 )
             {
                 lReadOnlyTitle.Text = ActionTitle.Add( Tag.FriendlyTypeName ).FormatAsHtmlTitle();
+                hlStatus.Visible = false;
             }
             else
             {
                 lReadOnlyTitle.Text = tag.Name.FormatAsHtmlTitle();
+                SetLabel( tag );
             }
 
             SetEditMode( true );
@@ -373,6 +377,9 @@ namespace RockWeb.Blocks.Core
                 ppOwner.SetValue( null );
             }
 
+            cpCategory.SetValue( tag.CategoryId );
+
+            cbIsActive.Checked = tag.IsActive;
             ddlEntityType.Items.Clear();
             new EntityTypeService( new RockContext() ).GetEntityListItems().ForEach( l => ddlEntityType.Items.Add( l ) );
             ddlEntityType.SelectedValue = tag.EntityTypeId.ToString();
@@ -391,11 +398,28 @@ namespace RockWeb.Blocks.Core
         {
             SetEditMode( false );
             lReadOnlyTitle.Text = tag.Name.FormatAsHtmlTitle();
+
+            SetLabel( tag );
+
             lDescription.Text = tag.Description;
             hlEntityType.Text = tag.EntityType.FriendlyName;
 
             btnSecurity.Visible = tag.IsAuthorized( Authorization.ADMINISTRATE, CurrentPerson );
             btnSecurity.EntityId = tag.Id;
+        }
+
+        private void SetLabel( Tag tag )
+        {
+            if ( tag.IsActive )
+            {
+                hlStatus.Text = "Active";
+                hlStatus.LabelType = LabelType.Success;
+            }
+            else
+            {
+                hlStatus.Text = "Inactive";
+                hlStatus.LabelType = LabelType.Danger;
+            }
         }
 
         #endregion
