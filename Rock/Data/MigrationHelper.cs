@@ -601,7 +601,12 @@ namespace Rock.Data
         {
             Migration.Sql( string.Format( @"
 
-                DELETE [Page] WHERE [Guid] = '{0}'
+                DECLARE @PageId int = ( SELECT TOP 1 [Id] FROM [Page] WHERE [Guid] = '{0}' )
+                IF @PageId IS NOT NULL
+                BEGIN
+                    DELETE [PageView] WHERE [PageId] = @PageId
+                    DELETE [Page] WHERE [Id] = @PageId
+                END
 ",
                     guid
                     ) );
