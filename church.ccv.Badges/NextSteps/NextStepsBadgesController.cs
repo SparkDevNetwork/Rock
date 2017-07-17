@@ -85,7 +85,6 @@ namespace church.ccv.Badges.NextSteps
 
             using ( RockContext rockContext = new RockContext() )
             {
-                
                 var person = new PersonService( rockContext ).Get( personGuid );
                 
                 if ( person != null )
@@ -112,13 +111,15 @@ namespace church.ccv.Badges.NextSteps
                     List<int> teachingGroups = null;
                     bool isTeaching = false;
 
+                    List<int> sharedStoryIds = null;
+                    bool sharedStory = false;
+
                     // handle adults
                     if( isAdult == true )
                     {
                         isERA = Actions_Adult.ERA.IsERA( person.Id );
                         isGiving = Actions_Adult.Give.IsGiving( person.Id );
                         isBaptised = Actions_Adult.Baptised.IsBaptised( person.Id, out baptismDate );
-
 
                         // Peer Learning
                         Actions_Adult.PeerLearning.Result peerLearningResult;
@@ -142,6 +143,10 @@ namespace church.ccv.Badges.NextSteps
 
                         isTeaching = teachingResult.IsTeaching( );
                         teachingGroups = teachingResult.GetCombinedTeachingGroups( );
+
+
+                        // Shared Story
+                        sharedStory = Actions_Adult.ShareStory.SharedStory( person.Id, out sharedStoryIds );
                     }
                     else
                     {
@@ -172,6 +177,9 @@ namespace church.ccv.Badges.NextSteps
 
                         isTeaching = teachingResult.IsTeaching( );
                         teachingGroups = teachingResult.GetCombinedTeachingGroups( );
+
+                        // Shared Story
+                        sharedStory = Actions_Student.ShareStory.SharedStory( person.Id, out sharedStoryIds );
                     }
 
                     // Worshipping
@@ -388,6 +396,11 @@ namespace church.ccv.Badges.NextSteps
                             }
                         }
                     }
+
+                    // shared story
+                    stepsBarResult.SharedStoryResult = new ShareStoryResult();
+                    stepsBarResult.SharedStoryResult.SharedStory = sharedStory;
+                    stepsBarResult.SharedStoryResult.SharedStoryIds = sharedStoryIds;
                 }
             }
 
@@ -470,9 +483,17 @@ namespace church.ccv.Badges.NextSteps
             /// </value>
             public CoachingResult CoachingResult { get; set; }
 
+            public ShareStoryResult SharedStoryResult { get; set; }
+
             public bool IsAdult { get; set; }
         }
-
+        
+        public class ShareStoryResult
+        {
+            public bool SharedStory { get; set; }
+            public List<int> SharedStoryIds { get; set; }
+        }
+        
         /// <summary>
         /// Membership Date
         /// </summary>
