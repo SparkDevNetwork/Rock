@@ -472,10 +472,13 @@
   <data name="_201701040116351_Analytics1_spAnalytics_ETL_FinancialTransaction" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>201701040116351_analytics1_spanalytics_etl_financialtransaction.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
   </data>
-  <data name="_201705221159536_ufnCrm_GetAddress" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>201705221159536_ufncrm_getaddress.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
+  <data name="_201706060019549_GroupRequirementsGroupType_ufnCrm_GetAddress" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>201706060019549_GroupRequirementsGroupType_ufnCrm_GetAddress.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
   </data>
-  <data name="_201705221159536_ufnCrm_GetSpousePersonIdFromPersonId" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>201705221159536_ufncrm_getspousepersonidfrompersonid.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
+  <data name="_201706060019549_GroupRequirementsGroupType_ufnCrm_GetSpousePersonIdFromPersonId" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>201706060019549_GroupRequirementsGroupType_ufnCrm_GetSpousePersonIdFromPersonId.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
+  </data>
+  <data name="_201706141234225_CommunicationQueueAlertJob_ufnCrm_GetGradeOffset" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>201706141234225_communicationqueuealertjob_ufncrm_getgradeoffset.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
   </data>
 </root>

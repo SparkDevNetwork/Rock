@@ -476,28 +476,25 @@ namespace Rock.Model
                     return false;
                 }
             }
-            
+
             // if the GroupMember is getting Added (or if Person or Role is different), and if this Group has requirements that must be met before the person is added, check those
             if ( this.IsNewOrChangedGroupMember( rockContext ) )
             {
-                if ( group.MustMeetRequirementsToAddMember ?? false )
+                var requirementStatusesRequiredForAdd = group.PersonMeetsGroupRequirements( rockContext, this.PersonId, this.GroupRoleId )
+                    .Where( a => a.MeetsGroupRequirement == MeetsGroupRequirement.NotMet
+                    && ( ( a.GroupRequirement.GroupRequirementType.RequirementCheckType != RequirementCheckType.Manual ) && ( a.GroupRequirement.MustMeetRequirementToAddMember == true ) ) );
+
+                if ( requirementStatusesRequiredForAdd.Any() )
                 {
-                    var requirementStatuses = group.PersonMeetsGroupRequirements( this.PersonId, this.GroupRoleId );
+                    // deny if any of the non-manual MustMeetRequirementToAddMember requirements are not met
+                    errorMessage = "This person must meet the following requirements before they are added to this group: "
+                        + requirementStatusesRequiredForAdd
+                        .Select( a => string.Format( "{0}", a.GroupRequirement.GroupRequirementType ) )
+                        .ToList().AsDelimited( ", " );
 
-                    if ( requirementStatuses.Any( a => a.MeetsGroupRequirement == MeetsGroupRequirement.NotMet ) )
-                    {
-                        // deny if any of the non-manual requirements are not met
-                        errorMessage = "This person does not meet the following requirements for this group: "
-                            + requirementStatuses.Where( a => a.MeetsGroupRequirement == MeetsGroupRequirement.NotMet )
-                            .Select( a => string.Format( "{0}", a.GroupRequirement.GroupRequirementType ) )
-                            .ToList().AsDelimited( ", " );
-
-                        return false;
-                    }
+                    return false;
                 }
             }
-
-            
 
             // check group capacity
             if ( groupType.GroupCapacityRule == GroupCapacityRule.Hard && group.GroupCapacity.HasValue )
@@ -598,7 +595,21 @@ namespace Rock.Model
         /// Returns the current values of the group requirements statuses for this GroupMember from the last time they were calculated ordered by GroupRequirementType.Name
         /// </summary>
         /// <returns></returns>
+        [Obsolete( "Use GetGroupRequirementsStatuses(rockContext) instead" )]
         public IEnumerable<GroupRequirementStatus> GetGroupRequirementsStatuses()
+        {
+            using (var rockContext = new RockContext() )
+            {
+                return GetGroupRequirementsStatuses( rockContext );
+            }
+        }
+
+        /// <summary>
+        /// Gets the group requirements statuses.
+        /// </summary>
+        /// <param name="rockContext">The rock context.</param>
+        /// <returns></returns>
+        public IEnumerable<GroupRequirementStatus> GetGroupRequirementsStatuses(RockContext rockContext)
         {
             var metRequirements = this.GroupMemberRequirements.Select( a => new
             {
@@ -611,7 +622,7 @@ namespace Rock.Model
             } );
 
             // get all the group requirements that apply the group member's role
-            var allGroupRequirements = this.Group.GroupRequirements.Where( a => !a.GroupRoleId.HasValue || a.GroupRoleId == this.GroupRoleId ).OrderBy( a => a.GroupRequirementType.Name );
+            var allGroupRequirements = this.Group.GetGroupRequirements( rockContext ).Where( a => !a.GroupRoleId.HasValue || a.GroupRoleId == this.GroupRoleId ).OrderBy( a => a.GroupRequirementType.Name ).ToList();
 
             // outer join on group requirements
             var result = from groupRequirement in allGroupRequirements
@@ -638,17 +649,17 @@ namespace Rock.Model
             // recalculate and store in the database if the groupmember isn't new or changed
             var groupMemberRequirementsService = new GroupMemberRequirementService( rockContext );
             var group = this.Group ?? new GroupService( rockContext ).Queryable( "GroupRequirements" ).FirstOrDefault( a => a.Id == this.GroupId );
-            if ( !group.GroupRequirements.Any() )
+            if ( !group.GetGroupRequirements( rockContext ).Any() )
             {
                 // group doesn't have requirements so no need to calculate
                 return;
             }
 
-            var updatedRequirements = group.PersonMeetsGroupRequirements( this.PersonId, this.GroupRoleId );
+            var updatedRequirements = group.PersonMeetsGroupRequirements( rockContext, this.PersonId, this.GroupRoleId );
 
             foreach ( var updatedRequirement in updatedRequirements )
             {
-                updatedRequirement.GroupRequirement.UpdateGroupMemberRequirementResult( rockContext, updatedRequirement.PersonId, updatedRequirement.MeetsGroupRequirement );
+                updatedRequirement.GroupRequirement.UpdateGroupMemberRequirementResult( rockContext, updatedRequirement.PersonId, this.GroupId, updatedRequirement.MeetsGroupRequirement );
             }
 
             if ( saveChanges )

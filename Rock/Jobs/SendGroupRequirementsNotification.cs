@@ -66,7 +66,6 @@ namespace Rock.Jobs
 
             if ( systemEmailGuid.HasValue )
             {
-
                 var selectedGroupTypes = new List<Guid>();
                 if ( !string.IsNullOrWhiteSpace( dataMap.GetString( "GroupTypes" ) ) )
                 {
@@ -77,17 +76,20 @@ namespace Rock.Jobs
 
                 var accountAbilityGroupGuid = dataMap.GetString( "AccountabilityGroup" ).AsGuid();
 
+                var groupRequirementsQry = new GroupRequirementService( rockContext ).Queryable();
+
+
                 // get groups matching of the types provided
                 GroupService groupService = new GroupService( rockContext );
                 var groups = groupService.Queryable().AsNoTracking()
                                 .Where( g => selectedGroupTypes.Contains( g.GroupType.Guid )
                                     && g.IsActive == true
-                                    && g.GroupRequirements.Any() );
+                                    && groupRequirementsQry.Any( a => ( a.GroupId.HasValue && a.GroupId == g.Id ) || ( a.GroupTypeId.HasValue && a.GroupTypeId == g.GroupTypeId ) ) );
 
                 foreach ( var group in groups )
                 {
                     // check for members that don't meet requirements
-                    var groupMembersWithIssues = groupService.GroupMembersNotMeetingRequirements( group.Id, true );
+                    var groupMembersWithIssues = groupService.GroupMembersNotMeetingRequirements( group, true );
 
                     if ( groupMembersWithIssues.Count > 0 )
                     {

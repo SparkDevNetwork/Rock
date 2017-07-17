@@ -2830,9 +2830,9 @@ namespace Rock.Migrations.Migrations {
         ///        You can provide the address type by specifing &apos;Home&apos;, &apos;Previous&apos;, 
         ///        &apos;Work&apos;. F [rest of string was truncated]&quot;;.
         /// </summary>
-        public static string _201705221159536_ufnCrm_GetAddress {
+        public static string _201706060019549_GroupRequirementsGroupType_ufnCrm_GetAddress {
             get {
-                return ResourceManager.GetString("_201705221159536_ufnCrm_GetAddress", resourceCulture);
+                return ResourceManager.GetString("_201706060019549_GroupRequirementsGroupType_ufnCrm_GetAddress", resourceCulture);
             }
         }
         
@@ -2859,9 +2859,44 @@ namespace Rock.Migrations.Migrations {
         ///
         ///    ALTER FUNCTION  [rest of string was truncated]&quot;;.
         /// </summary>
-        public static string _201705221159536_ufnCrm_GetSpousePersonIdFromPersonId {
+        public static string _201706060019549_GroupRequirementsGroupType_ufnCrm_GetSpousePersonIdFromPersonId {
             get {
-                return ResourceManager.GetString("_201705221159536_ufnCrm_GetSpousePersonIdFromPersonId", resourceCulture);
+                return ResourceManager.GetString("_201706060019549_GroupRequirementsGroupType_ufnCrm_GetSpousePersonIdFromPersonId", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to IF object_id(&apos;[dbo].[ufnCrm_GetGradeOffset]&apos;) IS NOT NULL
+        ///BEGIN
+        ///  DROP FUNCTION [dbo].[ufnCrm_GetGradeOffset]
+        ///END
+        ///GO
+        ///
+        ///SET ANSI_NULLS ON
+        ///GO
+        ///
+        ///SET QUOTED_IDENTIFIER ON
+        ///GO
+        ///
+        ////*
+        ///&lt;doc&gt;
+        ///	&lt;summary&gt;
+        /// 		This function returns the grade offset given a graduation date. The offset can then be used with defined value to find grade
+        ///	&lt;/summary&gt;
+        ///
+        ///	&lt;returns&gt;
+        ///		The grade offset based on graduation date
+        ///	&lt;/returns&gt;
+        ///	&lt;remarks&gt;
+        ///		
+        ///	&lt;/remarks&gt;
+        ///	&lt;code&gt;
+        ///		SELECT [dbo].[ufnCrm_GetGradeOffset]( 2018, null )
+        ///	&lt; [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _201706141234225_CommunicationQueueAlertJob_ufnCrm_GetGradeOffset {
+            get {
+                return ResourceManager.GetString("_201706141234225_CommunicationQueueAlertJob_ufnCrm_GetGradeOffset", resourceCulture);
             }
         }
     }
