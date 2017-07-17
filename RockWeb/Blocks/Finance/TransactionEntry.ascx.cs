@@ -1276,8 +1276,8 @@ TransactionAcountDetails: [
             txtAccountName.Visible = _achGatewayComponent != null && _achGatewayComponent.PromptForBankAccountName( _achGateway );
 
             // Determine if billing address should be displayed
-            cbBillingAddress.Visible = _ccGatewayComponent.PromptForBillingAddress( _ccGateway );
-            divBillingAddress.Visible = _ccGatewayComponent.PromptForBillingAddress( _ccGateway );
+            cbBillingAddress.Visible = _ccGatewayComponent != null && _ccGatewayComponent.PromptForBillingAddress( _ccGateway );
+            divBillingAddress.Visible = _ccGatewayComponent != null && _ccGatewayComponent.PromptForBillingAddress( _ccGateway );
         }
 
         #endregion
