@@ -1404,20 +1404,41 @@ namespace Rock.Model
             bool tokenUseLegacyFallback = GlobalAttributesCache.Read().GetValue( "core.PersonTokenUseLegacyFallback" ).AsBoolean();
             if ( tokenUseLegacyFallback )
             {
-                var person = base.GetByEncryptedKey( encryptedKey );
-                if ( person != null )
-                {
-                    return person;
-                }
+                return GetByLegacyEncryptedKey( encryptedKey, followMerges );
+            }
 
-                // NOTE: we only need the followMerges when using PersonTokenUseLegacyFallback since the PersonToken method would already take care of PersonMerge since it is keyed off of PersonAliasId
-                if ( followMerges )
+            return null;
+        }
+
+        /// <summary>
+        /// Looks up a person using a Pre-V7 PersonToken. 
+        /// </summary>
+        /// <param name="encryptedKey">The encrypted key.</param>
+        /// <param name="followMerges">if set to <c>true</c> [follow merges].</param>
+        /// <returns></returns>
+        internal Person GetByLegacyEncryptedKey( string encryptedKey, bool followMerges )
+        {
+            // it may have been urlencoded, but first try without urldecoding, just in case
+            var person = base.GetByEncryptedKey( encryptedKey );
+            if ( person == null )
+            {
+                string key = encryptedKey.Replace( '!', '%' );
+                key = System.Web.HttpUtility.UrlDecode( key );
+                person = base.GetByEncryptedKey( key );
+            }
+
+            if ( person != null )
+            {
+                return person;
+            }
+
+            // NOTE: we only need the followMerges when using PersonTokenUseLegacyFallback since the PersonToken method would already take care of PersonMerge since it is keyed off of PersonAliasId
+            if ( followMerges )
+            {
+                var personAlias = new PersonAliasService( this.Context as RockContext ).GetByAliasEncryptedKey( encryptedKey );
+                if ( personAlias != null )
                 {
-                    var personAlias = new PersonAliasService( this.Context as RockContext ).GetByAliasEncryptedKey( encryptedKey );
-                    if ( personAlias != null )
-                    {
-                        return personAlias.Person;
-                    }
+                    return personAlias.Person;
                 }
             }
 

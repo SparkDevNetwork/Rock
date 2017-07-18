@@ -15,6 +15,7 @@
 // </copyright>
 //
 using System.Linq;
+using Rock.Web.Cache;
 
 namespace Rock.Model
 {
@@ -40,7 +41,29 @@ namespace Rock.Model
                 decryptedToken = Rock.Security.Encryption.DecryptString( urlDecodedKey );
             }
 
-            return this.Queryable().FirstOrDefault( a => a.Token == decryptedToken );
+            var personToken = this.Queryable().FirstOrDefault( a => a.Token == decryptedToken );
+            if ( personToken == null )
+            {
+                bool tokenUseLegacyFallback = GlobalAttributesCache.Read().GetValue( "core.PersonTokenUseLegacyFallback" ).AsBoolean();
+                if ( tokenUseLegacyFallback )
+                {
+                    var person = new PersonService( this.Context as Rock.Data.RockContext ).GetByLegacyEncryptedKey( impersonationToken, true );
+                    if ( person != null )
+                    {
+                        // if LegacyFallback is enabled, and we found a person, create a fake PersonToken
+                        personToken = new PersonToken
+                        {
+                            PersonAlias = person.PrimaryAlias,
+                            ExpireDateTime = null,
+                            PageId = null,
+                            LastUsedDateTime = RockDateTime.Now,
+                            UsageLimit = null
+                        };
+                    }
+                }
+            }
+
+            return personToken;
         }
     }
 }
