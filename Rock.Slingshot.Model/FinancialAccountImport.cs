@@ -32,7 +32,7 @@
         /// <value>
         /// The campus identifier.
         /// </value>
-        public int CampusId { get; set; }
+        public int? CampusId { get; set; }
 
         /// <summary>
         /// Gets or sets the parent financial account foreign identifier.
