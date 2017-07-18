@@ -159,11 +159,11 @@ namespace RockWeb.Plugins.com_centralaz.Cms
                 }
             }
 
-            PageViewService pageViewService = new PageViewService( rockContext );
+            InteractionService interactionService = new InteractionService( rockContext );
 
             foreach ( var page in descendantPages.OrderBy( a => a.Order ).ThenBy( a => a.InternalName ) )
             {
-                sb.Append( AddPage( page, rockContext, pageViewService ) );
+                sb.Append( AddPage( page, rockContext, interactionService ) );
             }
 
             lPages.Text = sb.ToString();
@@ -171,7 +171,7 @@ namespace RockWeb.Plugins.com_centralaz.Cms
         }
         #endregion
 
-        protected string AddPage( PageCache page, RockContext rockContext, PageViewService pageViewService )
+        protected string AddPage( PageCache page, RockContext rockContext, InteractionService interactionService )
         {
 
             var sb = new StringBuilder();
@@ -181,8 +181,8 @@ namespace RockWeb.Plugins.com_centralaz.Cms
                 string cssClass = _referencedPages.ContainsKey( page.Guid.ToString() ) ? "well" : "alert alert-danger";
                 var routes = string.Join( ", ", page.PageRoutes.Select( o => o.Route ) );
                 routes = string.IsNullOrWhiteSpace( routes ) ? string.Empty : "<small><b class='text-muted'>ROUTES:</b></small> " + routes;
-
-                var pageViews = pageViewService.Queryable().Where( p => p.PageId == page.Id ).AsNoTracking();
+                int pageEntityTypeId = EntityTypeCache.Read<Rock.Model.Page>().Id;
+                var pageViews = interactionService.Queryable().Where( i => i.InteractionComponent.EntityId == page.Id && i.InteractionComponent.Channel.ComponentEntityTypeId == pageEntityTypeId ).AsNoTracking();
                 var pageViewsCssClass = pageViews.Count() == 0 ? "text-warning" : "text-muted";
 
                 sb.AppendFormat( @"
