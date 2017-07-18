@@ -97,7 +97,7 @@ namespace RockWeb.Blocks.Administration
                     int? siteId = ddlSite.SelectedValueAsInt();
                     if ( siteId.HasValue )
                     {
-                        tbToken.Text = new SiteUrlMapService( rockContext ).GetUniqueToken( siteId.Value, _minTokenLength );
+                        tbToken.Text = new PageShortLinkService( rockContext ).GetUniqueToken( siteId.Value, _minTokenLength );
                     }
                 }
 
@@ -137,11 +137,11 @@ namespace RockWeb.Blocks.Administration
             Page.Validate( BlockValidationGroup );
             if ( Page.IsValid )
             {
-                SiteUrlMap link = null;
+                PageShortLink link = null;
 
                 using ( var rockContext = new RockContext() )
                 {
-                    var service = new SiteUrlMapService( rockContext );
+                    var service = new PageShortLinkService( rockContext );
 
                     var errors = new List<string>();
 
@@ -175,7 +175,7 @@ namespace RockWeb.Blocks.Administration
                         return;
                     }
 
-                    link = new SiteUrlMap();
+                    link = new PageShortLink();
                     link.SiteId = siteId.Value;
                     link.Token = token;
                     link.Url = url;
