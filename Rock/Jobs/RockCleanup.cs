@@ -660,7 +660,7 @@ WHERE ic.ChannelId = @channelId
                 var usedAttributeMatrices = new AttributeValueService( rockContext ).Queryable().Where( a => a.Attribute.FieldTypeId == matrixFieldTypeId ).Select( a => a.Value ).ToList().AsGuidList();
 
                 // clean up any orphaned attribute matrices
-                var dayAgo = RockDateTime.Now.AddDays( 0 );
+                var dayAgo = RockDateTime.Now.AddDays( -1 );
                 var orphanedAttributeMatrices = attributeMatrixService.Queryable().Where( a => ( a.CreatedDateTime < dayAgo ) && !usedAttributeMatrices.Contains( a.Guid ) ).ToList();
                 if ( orphanedAttributeMatrices.Any() )
                 {
