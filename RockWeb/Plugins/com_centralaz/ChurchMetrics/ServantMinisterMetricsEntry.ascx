@@ -50,7 +50,7 @@
                         </asp:Repeater>
                     </div>
 
-                    <Rock:RockTextBox ID="tbNote" runat="server" Label="Note" TextMode="MultiLine" Rows="4" />
+                    <Rock:RockTextBox ID="tbNote" runat="server" Label="Note" TextMode="MultiLine" Rows="2" />
 
                     <div class="actions">
                         <asp:LinkButton ID="btnSave" runat="server" Text="Save" AccessKey="s" CssClass="btn btn-primary" Font-Size="XX-Large" OnClick="btnSave_Click" />
