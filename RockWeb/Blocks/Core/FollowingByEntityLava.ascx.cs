@@ -221,6 +221,8 @@ namespace RockWeb.Blocks.Core
             }
 
             rockContext.SaveChanges();
+
+            LoadContent();
         }
 
         #endregion
