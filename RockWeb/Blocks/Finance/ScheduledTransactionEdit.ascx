@@ -104,8 +104,8 @@
                                             <fieldset>
                                                 <Rock:RockRadioButtonList ID="rblSavedAch" runat="server" Label=" " CssClass="radio-list" RepeatDirection="Vertical" DataValueField="Id" DataTextField="Name" />
                                                 <div id="divNewBank" runat="server" class="radio-content">
-                                                    <Rock:RockTextBox ID="txtRoutingNumber" runat="server" Label="Routing #" />
-                                                    <Rock:RockTextBox ID="txtAccountNumber" runat="server" Label="Account #" />
+                                                    <Rock:RockTextBox ID="txtRoutingNumber" runat="server" Label="Routing Number" />
+                                                    <Rock:RockTextBox ID="txtAccountNumber" runat="server" Label="Account Number" />
                                                     <Rock:RockRadioButtonList ID="rblAccountType" runat="server" RepeatDirection="Horizontal" Label="Account Type">
                                                         <asp:ListItem Text="Checking" Selected="true" />
                                                         <asp:ListItem Text="Savings" />
