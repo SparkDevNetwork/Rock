@@ -991,6 +991,7 @@
     <Compile Include="Plugin\HotFixes\018_RestrictGroupRegistrationGroupTypes.cs" />
     <Compile Include="Plugin\HotFixes\024_PrayerRequestAttributes.cs" />
     <Compile Include="Plugin\HotFixes\030_MyConnectionOpportunitiesLava.cs" />
+    <Compile Include="Plugin\HotFixes\031_AttendanceAnalyticsGivingId.cs" />
     <Compile Include="Plugin\HotFixes\029_BatchDetailReopenBatchSecurity.cs" />
     <Compile Include="Plugin\HotFixes\026_PersonEditConnectionRecordStatus.cs" />
     <Compile Include="Plugin\HotFixes\025_PersonGivingEnvelopeAttribute.cs" />
