@@ -63,7 +63,7 @@ namespace Rock.Workflow.Action
             if ( guidPersonAttribute.HasValue )
             {
                 var attributePerson = AttributeCache.Read( guidPersonAttribute.Value, rockContext );
-                if ( attributePerson != null || attributePerson.FieldType.Class != "Rock.Field.Types.PersonFieldType" )
+                if ( attributePerson != null && attributePerson.FieldType.Class == "Rock.Field.Types.PersonFieldType" )
                 {
                     Guid? attributePersonValue = action.GetWorklowAttributeValue( guidPersonAttribute.Value ).AsGuidOrNull();
                     if ( attributePersonValue.HasValue )
@@ -71,13 +71,13 @@ namespace Rock.Workflow.Action
                         personAlias = new PersonAliasService( rockContext ).Queryable()
                             .Where( a => a.Guid.Equals( attributePersonValue.Value ) )
                             .FirstOrDefault();
-                        if ( personAlias == null )
-                        {
-                            errorMessages.Add( string.Format( "Person could not be found for selected value ('{0}')!", guidPersonAttribute.ToString() ) );
-                            return false;
-                        }
                     }
                 }
+            }
+            if ( personAlias == null )
+            {
+                errorMessages.Add( string.Format( "Person could not be found for selected value ('{0}')!", guidPersonAttribute.ToString() ) );
+                return false;
             }
 
             //get entity type
@@ -93,27 +93,31 @@ namespace Rock.Workflow.Action
                 }
             }
 
-            //get entity
-            IEntity entityToFollow = GetEntity( entityType, rockContext, action );
-            if ( entityToFollow != null )
+            var followingService = new FollowingService( rockContext );
+
+            //get entity(ies)
+            List<IEntity> entitiesToFollow = GetEntities( entityType, rockContext, action );
+            if ( entitiesToFollow != null && entitiesToFollow.Any() )
             {
-                var followingService = new FollowingService( rockContext );
-
-                var following = followingService.Queryable()
-                    .FirstOrDefault( f =>
-                        f.EntityTypeId == entityType.Id &&
-                        f.EntityId == entityToFollow.Id &&
-                        f.PersonAlias.Person.Id == personAlias.PersonId );
-
-                if ( following == null )
+                foreach ( var entityToFollow in entitiesToFollow )
                 {
-                    following = new Following();
-                    following.EntityTypeId = entityType.Id;
-                    following.EntityId = entityToFollow.Id;
-                    following.PersonAliasId = personAlias.Id;
-                    followingService.Add( following );
-                    rockContext.SaveChanges();
+                    var following = followingService.Queryable()
+                        .FirstOrDefault( f =>
+                            f.EntityTypeId == entityType.Id &&
+                            f.EntityId == entityToFollow.Id &&
+                            f.PersonAlias.Person.Id == personAlias.PersonId );
+
+                    if ( following == null )
+                    {
+                        following = new Following();
+                        following.EntityTypeId = entityType.Id;
+                        following.EntityId = entityToFollow.Id;
+                        following.PersonAliasId = personAlias.Id;
+                        followingService.Add( following );
+                    }
                 }
+
+                rockContext.SaveChanges();
 
                 return true;
             }
@@ -133,15 +137,19 @@ namespace Rock.Workflow.Action
         /// <param name="rockContext">The rock context.</param>
         /// <param name="action">The action.</param>
         /// <returns></returns>
-        private IEntity GetEntity( EntityTypeCache entityType, RockContext rockContext, WorkflowAction action )
+        private List<IEntity> GetEntities( EntityTypeCache entityType, RockContext rockContext, WorkflowAction action )
         {
+            var entityTypeService = new EntityTypeService( rockContext );
+
+            List<IEntity> entities = new List<IEntity>();
+
             string entityValue = GetAttributeValue( action, "Entity" ).ResolveMergeFields( GetMergeFields( action ) );
 
             // If an ID was specified, just use that as the entity id to follow
             int? intEntity = entityValue.AsIntegerOrNull();
             if ( intEntity.HasValue )
             {
-                return new EntityTypeService( rockContext ).GetEntity( entityType.Id, intEntity.Value );
+                AddEntityById( entityTypeService, entityType.Id, intEntity.Value, entities );
             }
 
             Guid? guidEntity = entityValue.AsGuidOrNull();
@@ -152,21 +160,65 @@ namespace Rock.Workflow.Action
                 var attribute = AttributeCache.Read( guidEntity.Value, rockContext );
                 if ( attribute != null )
                 {
-                    // It was for an attribute. That attribute's field type needs to be an IEntityFieldType (like person or group)
+                    // It was for an attribute, get the value
+                    string attributeValue = action.GetWorklowAttributeValue( guidEntity.Value );
+
+                    // First check if that attribute's field type is an IEntityFieldType (like person or group)
                     var entityFieldType = attribute.FieldType.Field as IEntityFieldType;
                     if ( entityFieldType != null )
                     {
-                        return entityFieldType.GetEntity( action.GetWorklowAttributeValue( guidEntity.Value ) );
+                        var entity = entityFieldType.GetEntity( attributeValue );
+                        if ( entity != null )
+                        {
+                            entities.Add( entity );
+                        }
+                    }
+                    else 
+                    {
+                        // not an entity attribute... maybe its a list of ints or guids
+                        var values = attributeValue.SplitDelimitedValues();
+                        foreach( int intValue in values.AsIntegerList() )
+                        {
+                            AddEntityById( entityTypeService, entityType.Id, intValue, entities );
+                        }
+                        foreach( Guid guidValue in values.AsGuidList() )
+                        { 
+                            AddEntityByGuid( entityTypeService, entityType.Id, guidValue, entities );
+                        }
                     }
                 }
                 else
                 {
                     // It was not for an attribute, so it must be the entity's guid
-                    return new EntityTypeService( rockContext ).GetEntity( entityType.Id, guidEntity.Value );
+                    AddEntityByGuid( entityTypeService, entityType.Id, guidEntity.Value, entities );
                 }
             }
 
-            return null;
+            return entities;
+        }
+
+        private void AddEntityById( EntityTypeService service, int entityTypeId, int? entityId, List<IEntity> entities )
+        {
+            if ( entityId.HasValue )
+            {
+                var entity = service.GetEntity( entityTypeId, entityId.Value );
+                if ( entity != null )
+                {
+                    entities.Add( entity );
+                }
+            }
+        }
+
+        private void AddEntityByGuid( EntityTypeService service, int entityTypeId, Guid? entityGuid, List<IEntity> entities )
+        {
+            if ( entityGuid.HasValue )
+            {
+                var entity = service.GetEntity( entityTypeId, entityGuid.Value );
+                if ( entity != null )
+                {
+                    entities.Add( entity );
+                }
+            }
         }
     }
 }
