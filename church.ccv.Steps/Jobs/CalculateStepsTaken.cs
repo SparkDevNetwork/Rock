@@ -163,6 +163,7 @@ namespace church.ccv.Steps
                         ProcessServing( pastYearStepsQuery, lastProcessedHistory, latestHistory );
                         ProcessCoaching( pastYearStepsQuery, lastProcessedHistory, latestHistory );
                         ProcessConnected( pastYearStepsQuery, lastProcessedHistory, latestHistory );
+                        ProcessSharing( pastYearStepsQuery, lastProcessedHistory, latestHistory );
                         
                         // delete any duplicate steps (this can occur if the job failed mid-course in the past)
                         var dedupe = @"DELETE FROM [_church_ccv_Steps_StepTaken] WHERE [Id] IN(
@@ -420,6 +421,38 @@ namespace church.ccv.Steps
             if ( stepCounter > 0 )
             {
                 _resultMessages.Append( string.Format( "Connected Steps {0}, ", stepCounter ) );
+            }
+        }
+
+        private void ProcessSharing( IQueryable<StepTaken> pastYearStepsQuery, IQueryable<ActionsHistory_Adult_Person> prevRunHistory, IQueryable<ActionsHistory_Adult_Person> latestHistory )
+        {
+            // get a list of people who shared in the past year
+            IQueryable<int> sharingStepPersonAliasIds = pastYearStepsQuery.Where( s => s.StepMeasureId == _sharingMeasureId ).Select( s => s.PersonAlias.Id );
+                                
+            // find all people who weren't sharing when we last ran, but now are.
+            var newSteps = latestHistory.Join( prevRunHistory, ah => ah.PersonAliasId, ph => ph.PersonAliasId, ( ah, ph ) => 
+                                               new
+                                               {
+                                                   PersonAliasId = ah.PersonAliasId,
+                                                   DateTaken = ah.Date,
+                                                   PrevSharedStory = ph.SharedStory,
+                                                   CurrSharedStory = ah.SharedStory
+                                               })
+                                        .Where( a => sharingStepPersonAliasIds.Contains( a.PersonAliasId ) == false &&
+                                                     a.PrevSharedStory == false && 
+                                                     a.CurrSharedStory == true )
+                                        .Select( s => new NewStep
+                                        {
+                                            PersonAliasId = s.PersonAliasId,
+                                            DateTaken = s.DateTaken
+                                        })
+                                        .ToList( );
+
+            int stepCounter = SaveSteps( _sharingMeasureId, newSteps );
+
+            if ( stepCounter > 0 )
+            {
+                _resultMessages.Append( string.Format( "Shared Steps {0}, ", stepCounter ) );
             }
         }
 

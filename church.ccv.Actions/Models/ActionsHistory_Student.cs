@@ -41,6 +41,9 @@ namespace church.ccv.Actions.Models
             [DataMember]
             public int Serving { get; set; }
 
+            [DataMember]
+            public int SharedStory { get; set; }
+
             // CCV Considers this "Connected". But if / when they change it,
             // the concept will remain the same. Learning from peers.
             [DataMember]
