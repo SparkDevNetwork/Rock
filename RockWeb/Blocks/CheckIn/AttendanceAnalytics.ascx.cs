@@ -1023,6 +1023,7 @@ function(item) {
                         person.NickName = row["NickName"].ToString();
                         person.LastName = row["LastName"].ToString();
                         person.Email = row["Email"].ToString();
+                        person.GivingId = row["GivingId"].ToString();
                         person.Birthdate = row["BirthDate"] as DateTime?;
                         person.Age = Person.GetAge( person.Birthdate );
 
@@ -1036,6 +1037,7 @@ function(item) {
                             parent.NickName = row["ParentNickName"].ToString();
                             parent.LastName = row["ParentLastName"].ToString();
                             parent.Email = row["ParentEmail"].ToString();
+                            parent.GivingId = row["ParentGivingId"].ToString();
                             parent.Birthdate = row["ParentBirthDate"] as DateTime?;
                             parent.Age = Person.GetAge( parent.Birthdate );
                             result.Parent = parent;
@@ -1048,6 +1050,7 @@ function(item) {
                             child.NickName = row["ChildNickName"].ToString();
                             child.LastName = row["ChildLastName"].ToString();
                             child.Email = row["ChildEmail"].ToString();
+                            child.GivingId = row["ChildGivingId"].ToString();
                             child.Birthdate = row["ChildBirthDate"] as DateTime?;
                             child.Age = Person.GetAge( child.Birthdate );
                             result.Child = child;
@@ -1174,6 +1177,7 @@ function(item) {
                             person.NickName = row["NickName"].ToString();
                             person.LastName = row["LastName"].ToString();
                             person.Email = row["Email"].ToString();
+                            person.GivingId = row["GivingId"].ToString();
                             person.Birthdate = row["BirthDate"] as DateTime?;
                             person.Age = Person.GetAge( person.Birthdate );
                             person.ConnectionStatusValueId = row["ConnectionStatusValueId"] as int?;
@@ -1186,6 +1190,7 @@ function(item) {
                                 parent.NickName = row["ParentNickName"].ToString();
                                 parent.LastName = row["ParentLastName"].ToString();
                                 parent.Email = row["ParentEmail"].ToString();
+                                parent.GivingId = row["ParentGivingId"].ToString();
                                 parent.Birthdate = row["ParentBirthDate"] as DateTime?;
                                 parent.Age = Person.GetAge( parent.Birthdate );
                                 result.Parent = parent;
@@ -1198,6 +1203,7 @@ function(item) {
                                 child.NickName = row["ChildNickName"].ToString();
                                 child.LastName = row["ChildLastName"].ToString();
                                 child.Email = row["ChildEmail"].ToString();
+                                child.GivingId = row["ChildGivingId"].ToString();
                                 child.Birthdate = row["ChildBirthDate"] as DateTime?;
                                 child.Age = Person.GetAge( child.Birthdate );
                                 result.Child = child;
@@ -1285,6 +1291,12 @@ function(item) {
                 parentEmailField.ExcelExportBehavior = includeParents ? ExcelExportBehavior.AlwaysInclude : ExcelExportBehavior.NeverInclude;
             }
 
+            var parentGivingId = gAttendeesAttendance.Columns.OfType<RockBoundField>().FirstOrDefault( a => a.HeaderText == "Parent GivingId" );
+            if ( parentGivingId != null )
+            {
+                parentGivingId.ExcelExportBehavior = includeParents ? ExcelExportBehavior.AlwaysInclude : ExcelExportBehavior.NeverInclude;
+            }
+
             var childHyperLinkField = gAttendeesAttendance.Columns.OfType<HyperLinkField>().FirstOrDefault( a => a.HeaderText == "Child" );
             if ( childHyperLinkField != null )
             {
@@ -1308,6 +1320,12 @@ function(item) {
             if ( childAgeField != null )
             {
                 childAgeField.ExcelExportBehavior = includeChildren ? ExcelExportBehavior.AlwaysInclude : ExcelExportBehavior.NeverInclude;
+            }
+
+            var childGivingId = gAttendeesAttendance.Columns.OfType<RockBoundField>().FirstOrDefault( a => a.HeaderText == "Child GivingId" );
+            if ( childGivingId != null )
+            {
+                childGivingId.ExcelExportBehavior = includeChildren ? ExcelExportBehavior.AlwaysInclude : ExcelExportBehavior.NeverInclude;
             }
 
             SortProperty sortProperty = gAttendeesAttendance.SortProperty;
@@ -2129,6 +2147,8 @@ function(item) {
             public string Email { get; set; }
 
             public int? Age { get; set; }
+
+            public string GivingId { get; set; }
 
             public DateTime? Birthdate { get; set; }
 
