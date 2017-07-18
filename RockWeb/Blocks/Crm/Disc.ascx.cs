@@ -99,7 +99,7 @@ namespace Rockweb.Blocks.Crm
             {
                 try
                 {
-                    _targetPerson = new PersonService( new RockContext() ).GetByUrlEncodedKey( personKey );
+                    _targetPerson = new PersonService( new RockContext() ).GetByImpersonationToken( personKey, true, this.PageCache.Id );
                 }
                 catch
                 {
