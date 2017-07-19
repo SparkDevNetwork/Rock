@@ -43,7 +43,7 @@ namespace RockWeb.Blocks.WorkFlow
     [CategoryField( "Categories", "Optional categories to limit display to.", true, "Rock.Model.WorkflowType", "", "", false, "", "", 1 )]
     [BooleanField( "Include Child Categories", "Should descendent categories of the selected Categories be included?", true, "", 2 )]
     [CodeEditorField( "Contents", @"The Lava template to use for displaying activities assigned to current user.", CodeEditorMode.Lava, CodeEditorTheme.Rock, 400, false, @"{% include '/Assets/Lava/MyWorkflowsSortable.lava' %}", "", 3 )]
-    public partial class MyWorkflowsLiquid : Rock.Web.UI.RockBlock
+    public partial class MyWorkflowsLava : Rock.Web.UI.RockBlock
     {
         #region Fields
 
