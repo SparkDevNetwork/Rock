@@ -67,16 +67,15 @@ namespace RockWeb.Blocks.Fundraising
             if ( this.GetAttributeValue( "ShowClipboardIcon" ).AsBoolean() )
             {
                 // Setup for being able to copy text to clipboard
-                RockPage.AddScriptLink( this.Page, "~/Scripts/ZeroClipboard/ZeroClipboard.js" );
+                RockPage.AddScriptLink( this.Page, "~/Scripts/clipboard.js/clipboard.min.js" );
                 string script = string.Format( @"
-    var client = new ZeroClipboard( $('#{0}'));
+    new Clipboard('#{0}');
     $('#{0}').tooltip();
 ", btnCopyToClipboard.ClientID );
                 ScriptManager.RegisterStartupScript( btnCopyToClipboard, btnCopyToClipboard.GetType(), "share-copy", script, true );
-                btnCopyToClipboard.Attributes["data-clipboard-target"] = hfShareUrl.ClientID;
 
                 Uri uri = new Uri( Request.Url.ToString() );
-                hfShareUrl.Value = uri.Scheme + "://" + uri.GetComponents( UriComponents.HostAndPort, UriFormat.UriEscaped ) + CurrentPageReference.BuildUrl();
+                btnCopyToClipboard.Attributes["data-clipboard-text"] = uri.Scheme + "://" + uri.GetComponents( UriComponents.HostAndPort, UriFormat.UriEscaped ) + CurrentPageReference.BuildUrl();
                 btnCopyToClipboard.Visible = true;
             }
             else

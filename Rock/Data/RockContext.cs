@@ -1331,6 +1331,14 @@ namespace Rock.Data
         public DbSet<SiteDomain> SiteDomains { get; set; }
 
         /// <summary>
+        /// Gets or sets the site URL maps.
+        /// </summary>
+        /// <value>
+        /// The site URL maps.
+        /// </value>
+        public DbSet<SiteUrlMap> SiteUrlMaps { get; set; }
+
+        /// <summary>
         /// Gets or sets the system emails.
         /// </summary>
         /// <value>

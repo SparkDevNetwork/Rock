@@ -33,18 +33,32 @@ namespace Rock.Storage.Provider
         /// <summary>
         /// Saves the binary file contents to the external storage medium associated with the provider.
         /// </summary>
-        /// <param name="file">The file.</param>
-        public override void SaveContent( BinaryFile file )
+        /// <param name="binaryFile">The binary file.</param>
+        public override void SaveContent( BinaryFile binaryFile )
         {
-            if ( file.DatabaseData == null )
+            long? fileSize = null;
+            SaveContent( binaryFile, out fileSize );
+        }
+
+        /// <summary>
+        /// Saves the binary file contents to the external storage medium associated with the provider.
+        /// </summary>
+        /// <param name="binaryFile">The binary file.</param>
+        /// <param name="fileSize">Size of the file.</param>
+        /// <exception cref="System.ArgumentException">File Data must not be null.</exception>
+        public override void SaveContent( BinaryFile binaryFile, out long? fileSize )
+        { 
+            if ( binaryFile.DatabaseData == null )
             {
-                file.DatabaseData = new BinaryFileData();
+                binaryFile.DatabaseData = new BinaryFileData();
             }
 
-            using ( var stream = file.ContentStream )
+            using ( var stream = binaryFile.ContentStream )
             {
-                file.DatabaseData.Content = stream.ReadBytesToEnd();
+                binaryFile.DatabaseData.Content = stream.ReadBytesToEnd();
             }
+
+            fileSize = binaryFile.DatabaseData.Content.Length;
         }
 
         /// <summary>

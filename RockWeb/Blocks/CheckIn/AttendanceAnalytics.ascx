@@ -38,8 +38,6 @@
                 <div class="row row-eq-height-md">
                     <div class="col-md-3 filter-options">
 
-                        <asp:HiddenField ID="hfFilterUrl" runat="server" />
-
                         <Rock:GroupTypePicker ID="ddlAttendanceType" runat="server" Label="Attendance Type" AutoPostBack="true" OnSelectedIndexChanged="ddlCheckinType_SelectedIndexChanged" />
                         <Rock:NotificationBox ID="nbGroupTypeWarning" runat="server" NotificationBoxType="Warning" Text="Please select a group type template in the block settings." Dismissable="false" />
 

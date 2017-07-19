@@ -79,6 +79,15 @@ namespace Rock.Model
         public string FileName { get; set; }
 
         /// <summary>
+        /// Gets or sets the size of the file.
+        /// </summary>
+        /// <value>
+        /// The size of the file in bytes.
+        /// </value>
+        [DataMember]
+        public long? FileSize { get; set; }
+
+        /// <summary>
         /// Gets or sets the Mime Type for the file. This property is required
         /// </summary>
         /// <value>
@@ -349,7 +358,10 @@ namespace Rock.Model
                         if ( StorageProvider != null )
                         {
                             // save the file to the provider's new storage medium
-                            StorageProvider.SaveContent( this );
+                            long? fileSize = null;
+                            StorageProvider.SaveContent( this, out fileSize );
+
+                            FileSize = fileSize;
                             Path = StorageProvider.GetPath( this );
                         }
                     }
@@ -396,7 +408,10 @@ namespace Rock.Model
 
                     if ( _contentIsDirty && StorageProvider != null )
                     {
-                        StorageProvider.SaveContent( this );
+                        long? fileSize = null;
+                        StorageProvider.SaveContent( this, out fileSize );
+
+                        FileSize = fileSize;
                         Path = StorageProvider.GetPath( this );
                     }
                 }
