@@ -163,6 +163,39 @@ namespace church.ccv.Actions
         }
 
         /// <summary>
+        /// Share Story
+        /// </summary>
+        public static class ShareStory
+        {
+            class ResultTable
+            {
+                public int PersonId { get; set; }
+                public bool SharedStory { get; set; }
+                public string StoryIds { get; set; }
+            }
+
+            public static bool SharedStory( int personId, out List<int> storyIds )
+            {
+                // assume null
+                storyIds = null;
+
+                RockContext rockContext = new RockContext( );
+                var result = rockContext.Database.SqlQuery<ResultTable>
+                    (
+                        "SELECT TOP 1 * FROM dbo._church_ccv_ufnActions_Adult_SharedStory(@PersonId)",
+                        new SqlParameter( "@PersonId", personId ) { SqlDbType = SqlDbType.Int, IsNullable = false }
+                    ).ToList( ).SingleOrDefault( );
+
+                if ( result.SharedStory == true )
+                {
+                    storyIds = result.StoryIds != null ? result.StoryIds.Split( ',' ).Select( Int32.Parse ).ToList( ) : new List<int>( );
+                }
+                        
+                return result.SharedStory;
+            }
+        }
+
+        /// <summary>
         /// Peer Learning
         /// </summary>
         public static class PeerLearning
@@ -682,6 +715,39 @@ namespace church.ccv.Actions
                 }
                         
                 return result.TakenStartingPoint;
+            }
+        }
+
+        /// <summary>
+        /// Share Story
+        /// </summary>
+        public static class ShareStory
+        {
+            class ResultTable
+            {
+                public int PersonId { get; set; }
+                public bool SharedStory { get; set; }
+                public string StoryIds { get; set; }
+            }
+
+            public static bool SharedStory( int personId, out List<int> storyIds )
+            {
+                // assume null
+                storyIds = null;
+
+                RockContext rockContext = new RockContext( );
+                var result = rockContext.Database.SqlQuery<ResultTable>
+                    (
+                        "SELECT TOP 1 * FROM dbo._church_ccv_ufnActions_Student_SharedStory(@PersonId)",
+                        new SqlParameter( "@PersonId", personId ) { SqlDbType = SqlDbType.Int, IsNullable = false }
+                    ).ToList( ).SingleOrDefault( );
+
+                if ( result.SharedStory == true )
+                {
+                    storyIds = result.StoryIds != null ? result.StoryIds.Split( ',' ).Select( Int32.Parse ).ToList( ) : new List<int>( );
+                }
+                        
+                return result.SharedStory;
             }
         }
 

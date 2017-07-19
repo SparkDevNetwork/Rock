@@ -724,14 +724,53 @@ namespace church.ccv.Steps
         {
             using ( RockContext rockContext = new RockContext() )
             {
-                // not implemented sending in values so graphs will work as tbd
-                
-                var measureCountsByCampusAdults = new List<CampusMeasure>( );
-                var measureCountsByRegionAdult = new List<RegionMeasure>( );
+                // sum the number of adults performing the action per-campus
+                var measureCountsByCampusAdults = actionsHistory_Campus_Adult.Select( ah => new CampusMeasure
+                                                                                {
+                                                                                    CampusId = ah.Key,
+                                                                                    MeasureValue = ah.Sum( c => c.SharedStory )
+                                                                                }).ToList( );
 
-                var measureCountsByCampusStudents = new List<CampusMeasure>( );
+                // Regions require two steps.
+                //1. take the region ID, total people, and total people performing the action
+                var adultRegionMeasureCounts = actionsHistory_Region_Adult.Select( ah => new
+                                                                                {
+                                                                                    RegionId = ah.RegionId,
+                                                                                    AdultCount = ah.TotalPeople,
+                                                                                    AdultMeasureCount = ah.SharedStory
+                                                                                }).ToList( );
+            
+                // 2. now resolve the PastorPersonAliasId from the RegionId, and store the results in the measure object SaveMetrics wants.
+                var measureCountsByRegionAdult = adultRegionMeasureCounts.Select( am => new RegionMeasure
+                {
+                    PastorPersonAliasId = regionList.Where( a => a.RegionId == am.RegionId ).SingleOrDefault( ).PastorPersonAliasId,
+                    AdultCount = am.AdultCount,
+                    AdultMeasureCount = am.AdultMeasureCount
+                }).ToList( );
+
+
+
+                // sum the number of students performing the action per-campus
+                var measureCountsByCampusStudents = actionsHistory_Campus_Student.Select( ah => new CampusMeasure
+                                                                                        {
+                                                                                            CampusId = ah.Key,
+                                                                                            MeasureValue = ah.Sum( c => c.SharedStory )
+                                                                                        }).ToList( );
+                // NOTE: Even tho students are in Regions, they aren't evaluated by region. They're evaluated according to NG groups and whoever is over that group.
+                // Someday we'll need to add support for that.
                 
-                var measureCountsByCampusAll = new List<CampusMeasure>( );
+                
+                // TOTAL ADULTS + STUDENTS (Used for Weekend Attendance)
+                // to get this, join the tables on the campus ID, and then create a CampusMeasure object with the sum of the campus totals for adult/student
+                var measureCountsByCampusAll = measureCountsByCampusAdults
+                                                .Join( measureCountsByCampusStudents,
+                                                        adult => adult.CampusId, student => student.CampusId, ( a, s ) =>
+                                                        new CampusMeasure
+                                                        {
+                                                            CampusId = a.CampusId,
+                                                            MeasureValue = a.MeasureValue + s.MeasureValue
+                                                        } )
+                                                .ToList();
 
                 SaveMetrics( _sharingMeasureId, metricDependencies, measureCountsByCampusAll, measureCountsByCampusAdults, measureCountsByCampusStudents, measureCountsByRegionAdult );
             }

@@ -13,6 +13,7 @@ namespace church.ccv.Badges.NextSteps
 
     [LinkedPage("Baptism Registration Page", "The page to link to for registering for baptism.")]
     [IntegerField("Baptism Event Id", "The event id to use for pulling upcoming baptisms.")]
+    [IntegerField("Shared Story WorkflowType Id", "The workflow type used for sharing a story.")]
     [LinkedPage( "Connection Group Registration Page", "The page to link to for registering for connection group." )]
     [LinkedPage( "Next Step Group Registration Page", "The page to link to for registering for a next step group." )]
     [LinkedPage("Group List Page", "The page to list all of the groups of a certain type")]
@@ -20,6 +21,7 @@ namespace church.ccv.Badges.NextSteps
     [LinkedPage("Serving Connection Page", "The page to use for creating new serving connections.")]
     [LinkedPage( "Young Adult Group Registration Page", "The page to link to for registering for a young adult group." )]
     [LinkedPage( "Next Gen Group Registration Page", "The page to link to for registering for a next gen group." )]
+    [LinkedPage( "Shared Story Review Page", "The page used for reviewing a Shared Story." )]
     public class NextStepsBar : Rock.PersonProfile.BadgeComponent
     {
         /// <summary>
@@ -37,6 +39,8 @@ namespace church.ccv.Badges.NextSteps
             int groupDetailsPageId = GetPageIdFromLinkedPageAttribute( "GroupDetailsPage", badge );
             int groupListPageId = GetPageIdFromLinkedPageAttribute( "GroupListPage", badge );
             int youngAdultGroupRegistrationPageId = GetPageIdFromLinkedPageAttribute( "YoungAdultGroupRegistrationPage", badge );
+            int sharedStoryReviewPage = GetPageIdFromLinkedPageAttribute( "SharedStoryReviewPage", badge );
+            string sharedStoryWorkflowTypeId = GetAttributeValue(badge, "SharedStoryWorkflowTypeId");
 
             writer.Write( string.Format( @"<div class='badge-group badge-group-steps js-badge-group-steps badge-id-{0}'>
                 <a class='badge badge-baptism badge-icon step-nottaken' data-toggle='tooltip' data-original-title='{1} is not baptized' data-container='body' href='/page/{4}?PersonGuid={2}&EventItemId={3}'>
@@ -54,8 +58,11 @@ namespace church.ccv.Badges.NextSteps
                 <div class='badge badge-tithe badge-icon step-nottaken' data-toggle='tooltip' data-original-title='{1} is not giving' data-container='body'>
                     <i class='icon ccv-tithe'></i>
                 </div>
-                <a class='badge badge-coach badge-icon step-nottaken' data-toggle='tooltip' data-original-title='{1} is not coaching' data-container='body'  href='/page/{7}?PersonGuid={2}'>
+                <a class='badge badge-coach badge-icon step-nottaken' data-toggle='tooltip' data-original-title='{1} is not coaching' data-container='body' href='/page/{7}?PersonGuid={2}'>
                     <i class='icon ccv-coach'></i>
+                </a>
+                <a class='badge badge-share badge-icon step-nottaken' data-toggle='tooltip' data-original-title='{1} has not shared a story' data-container='body' href='/WorkflowEntry/{8}?PersonId={9}&Internal=True'>
+                    <i class='icon ccv-share'></i>
                 </a>
             </div>", 
                 badge.Id // 0
@@ -66,6 +73,8 @@ namespace church.ccv.Badges.NextSteps
                 , connectionGroupRegistrationPageId // 5
                 , servingConnectionPageId // 6
                 , nextStepGroupRegistrationPageId // 7
+                , sharedStoryWorkflowTypeId // 8
+                , Person.Id // 9
             ) );
             
             writer.Write( string.Format(
@@ -305,7 +314,71 @@ namespace church.ccv.Badges.NextSteps
                 }}
 
                 // sharing
-                // not implemented yet
+                if (data.SharedStoryResult.SharedStory) {{
+
+                    // create content for popover
+                    var popoverContent = firstName + "" has shared the following stories: <ul styling='padding-left: 20px;'>"";
+
+                    // disable the anchor tag
+                    $badge.find( '.badge-share' ).on( ""click"", function( e ) {{
+                        e.preventDefault();
+                    }});
+
+                    $.each( data.SharedStoryResult.SharedStoryIds, function (index, storyId)
+                    {{
+                        popoverContent = popoverContent + ""<li><a href='/page/"" + {11} + ""?workflowId="" + storyId + ""'>"" + ""Story "" + (index + 1) + ""</a></li>"";
+
+                        // display 3
+                        if ( index == 2 )
+                        {{
+                            return false;
+                        }}
+                    }});
+
+                    var popoverContent = popoverContent + ""</ul>"";
+
+                    // check for more than three stories
+                    if (data.SharedStoryResult.SharedStoryIds.length > 3) {{
+                        popoverContent = popoverContent + ""<p>For more stories, see the Extended Attributes tab.</p>"";
+                    }}
+
+                    var popoverContent = popoverContent + ""<p class='margin-b-none margin-t-sm'><a href='/WorkflowEntry/"" + {12} + ""?PersonId={2}&Internal=True' class='btn btn-primary btn-block btn-xs'>Submit Story</a></p>"";
+
+                    $badge.find('.badge-share').removeClass('step-nottaken');
+                    $badge.find('.badge-share').attr('data-toggle', 'popover');
+                    $badge.find('.badge-share').attr('data-container', 'body');
+                    $badge.find('.badge-share').attr('data-content', popoverContent);
+
+                    $badge.find('.badge-share').attr('data-original-title', firstName + ' has shared ' + data.SharedStoryResult.SharedStoryIds.length + ' stories. &nbsp;&nbsp;<i class=""fa fa-mouse-pointer""></i>');
+
+                    var sharePopoverIsOpen = false;
+
+                    $badge.find('.badge-share').popover({{
+                        html: true,
+                        placement: 'top',
+                        trigger: 'manual'
+                    }});
+
+                    // fancy pants to allow the tooltip and popover to work on the same control
+                    $badge.find('.badge-share').on('click', function ()
+                    {{
+                        if ( sharePopoverIsOpen )
+                        {{
+                            $badge.find( '.badge-share' ).popover( 'hide' );
+                            sharePopoverIsOpen = false;
+                            $badge.find('.badge-share').attr('data-original-title', firstName + ' has shared ' + data.SharedStoryResult.SharedStoryIds.length + ' stories. &nbsp;&nbsp;<i class=""fa fa-mouse-pointer""></i>');
+                        }}
+                        else {{
+                            $badge.find( '.badge-share' ).attr( 'data-original-title', '' );
+                            $badge.find( '.badge-share' ).popover( 'show' );
+                            sharePopoverIsOpen = true;
+                            $badge.find( '.badge-share' ).tooltip( 'hide' );
+                        }}
+                    }});
+                }}
+                else {{
+                    $badge.find( '.badge-share' ).attr( 'data-original-title', firstName + ' has not shared a story.' );
+                }}
 
                 // coaching
                 if (data.CoachingResult.IsCoaching) {{
@@ -398,7 +471,9 @@ namespace church.ccv.Badges.NextSteps
                  groupListPageId, // 7
                  nextStepGroupRegistrationPageId, // 8
                  youngAdultGroupRegistrationPageId, // 9
-                 nextGenGroupRegistrationPageId //10
+                 nextGenGroupRegistrationPageId, //10
+                 sharedStoryReviewPage, //11
+                 sharedStoryWorkflowTypeId //12
             ));
         }
 
