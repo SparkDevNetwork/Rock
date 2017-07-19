@@ -17,6 +17,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Data.Entity;
 using System.Linq;
 using System.Web.Routing;
 using System.Web.UI;
@@ -213,7 +214,13 @@ namespace RockWeb.Blocks.Administration
         private void LoadSites( RockContext rockContext )
         {
             ddlSite.Items.Clear();
-            foreach ( SiteCache site in new SiteService( rockContext ).Queryable().OrderBy( s => s.Name ).Select( a => a.Id ).ToList().Select( a => SiteCache.Read( a ) ) )
+            foreach ( SiteCache site in new SiteService( rockContext )
+                .Queryable().AsNoTracking()
+                .Where( s => s.EnabledForShortening )
+                .OrderBy( s => s.Name )
+                .Select( a => a.Id )
+                .ToList()
+                .Select( a => SiteCache.Read( a ) ) )
             {
                 ddlSite.Items.Add( new ListItem( site.Name, site.Id.ToString() ) );
             }

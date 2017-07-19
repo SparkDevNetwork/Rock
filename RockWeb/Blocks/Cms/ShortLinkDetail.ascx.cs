@@ -30,6 +30,7 @@ using System.IO;
 using System.ComponentModel;
 using Rock.Security;
 using Rock.Attribute;
+using System.Data.Entity;
 
 namespace RockWeb.Blocks.Crm
 {
@@ -315,7 +316,13 @@ namespace RockWeb.Blocks.Crm
             ddlSite.Items.Clear();
             using ( var rockContext = new RockContext() )
             {
-                foreach ( SiteCache site in new SiteService( rockContext ).Queryable().OrderBy( s => s.Name ).Select( a => a.Id ).ToList().Select( a => SiteCache.Read( a ) ) )
+                foreach ( SiteCache site in new SiteService( rockContext )
+                    .Queryable().AsNoTracking()
+                    .Where( s => s.EnabledForShortening )
+                    .OrderBy( s => s.Name )
+                    .Select( a => a.Id )
+                    .ToList()
+                    .Select( a => SiteCache.Read( a ) ) )
                 {
                     ddlSite.Items.Add( new ListItem( site.Name, site.Id.ToString() ) );
                 }

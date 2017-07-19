@@ -42,9 +42,9 @@ namespace Rock.Workflow.Action
         false, "", "", 1, "Token", new string[] { "Rock.Field.Types.TextFieldType" } )]
     [WorkflowTextOrAttribute( "Target Url", "Target Url",
         "The url that the short link will redirect to. <span class='tip tip-lava'></span>",
-        false, "", "", 2, "Url", new string[] { "Rock.Field.Types.TextFieldType", "Rock.Field.Types.UrlLinkFieldType" } )]
+        true, "", "", 2, "Url", new string[] { "Rock.Field.Types.TextFieldType", "Rock.Field.Types.UrlLinkFieldType" } )]
     [WorkflowAttribute( "Attribute", "The attribute to store the generated short link's url to.", 
-        true, "", "", 3, "Attribute", new string[] { "Rock.Field.Types.TextFieldType", "Rock.Field.Types.UrlLinkFieldType" } )]
+        false, "", "", 3, "Attribute", new string[] { "Rock.Field.Types.TextFieldType", "Rock.Field.Types.UrlLinkFieldType" } )]
     [IntegerField( "Random Token Length", "The number of characters to use when generating a random unique token.", false, 7, "", 4 )]
     [BooleanField( "Allow Token Re-use", "If a short link already exists with the same token, should it be updated to the new URL? If this is not allowed, this action will fail due to existing short link.", true, "", 5, "Overwrite" )]
     public class CreateShortLink : ActionComponent
