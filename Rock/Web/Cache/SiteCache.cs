@@ -423,6 +423,22 @@ namespace Rock.Web.Cache
         public bool AllowIndexing { get; set; }
 
         /// <summary>
+        /// Gets or sets a value indicating whether this instance is index enabled.
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if this instance is index enabled; otherwise, <c>false</c>.
+        /// </value>
+        public bool IsIndexEnabled { get; set; }
+
+        /// <summary>
+        /// Gets or sets the index starting location.
+        /// </summary>
+        /// <value>
+        /// The index starting location.
+        /// </value>
+        public string IndexStartingLocation { get; set; }
+
+        /// <summary>
         /// Gets the default page.
         /// </summary>
         public PageCache DefaultPage
@@ -445,6 +461,22 @@ namespace Rock.Web.Cache
         ///   <c>true</c> if [requires encryption]; otherwise, <c>false</c>.
         /// </value>
         public bool RequiresEncryption { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether this site should be available to be used for shortlinks (the shortlink can still reference url of other sites).
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [enabled for shortening]; otherwise, <c>false</c>.
+        /// </value>
+        public bool EnabledForShortening { get; set; } = true;
+
+        /// <summary>
+        /// Gets or sets the favicon binary file identifier.
+        /// </summary>
+        /// <value>
+        /// The favicon binary file identifier.
+        /// </value>
+        public int? FavIconBinaryFileId { get; set; }
 
         #endregion
 
@@ -469,14 +501,16 @@ namespace Rock.Web.Cache
                 this.DefaultPageRouteId = site.DefaultPageRouteId;
                 this.LoginPageId = site.LoginPageId;
                 this.LoginPageRouteId = site.LoginPageRouteId;
-                this.CommunicationPageId = site.CommunicationPageId;
-                this.CommunicationPageRouteId = site.CommunicationPageRouteId;
+                this.ChangePasswordPageId = site.ChangePasswordPageId;
+                this.ChangePasswordPageRouteId = site.ChangePasswordPageRouteId;
                 this.RegistrationPageId = site.RegistrationPageId;
                 this.RegistrationPageRouteId = site.RegistrationPageRouteId;
-                this.ErrorPage = site.ErrorPage;
-                this.GoogleAnalyticsCode = site.GoogleAnalyticsCode;
                 this.PageNotFoundPageId = site.PageNotFoundPageId;
                 this.PageNotFoundPageRouteId = site.PageNotFoundPageRouteId;
+                this.CommunicationPageId = site.CommunicationPageId;
+                this.CommunicationPageRouteId = site.CommunicationPageRouteId;
+                this.ErrorPage = site.ErrorPage;
+                this.GoogleAnalyticsCode = site.GoogleAnalyticsCode;
                 this.EnableMobileRedirect = site.EnableMobileRedirect;
                 this.MobilePageId = site.MobilePageId;
                 this.ExternalUrl = site.ExternalUrl;
@@ -485,8 +519,11 @@ namespace Rock.Web.Cache
                 this.EnablePageViews = site.EnablePageViews;
                 this.PageHeaderContent = site.PageHeaderContent;
                 this.AllowIndexing = site.AllowIndexing;
-                this.ChangePasswordPageId = site.ChangePasswordPageId;
+                this.IsIndexEnabled = site.IsIndexEnabled;
+                this.IndexStartingLocation = site.IndexStartingLocation;
                 this.RequiresEncryption = site.RequiresEncryption;
+                this.EnabledForShortening = site.EnabledForShortening;
+                this.FavIconBinaryFileId = site.FavIconBinaryFileId;
 
                 foreach ( var domain in site.SiteDomains.Select( d => d.Domain ).ToList() )
                 {
