@@ -28,6 +28,7 @@ using Rock.Web.Cache;
 using Rock.Model;
 using System;
 using Rock.Lava.Blocks;
+using System.Dynamic;
 
 namespace Rock.Lava.Shortcodes
 {
@@ -158,6 +159,14 @@ namespace Rock.Lava.Shortcodes
                 var lavaTemplate = shortcode.Markup;
                 var blockMarkup = _blockMarkup.ToString();
 
+                // pull child paramters from block content
+                Dictionary<string, object> childParamters;
+                blockMarkup = GetChildParameters( blockMarkup, out childParamters );
+                foreach(var item in childParamters )
+                {
+                    parms.AddOrReplace( item.Key, item.Value );
+                }
+
                 // merge the block markup in
                 if ( blockMarkup.IsNotNullOrWhitespace() )
                 {
@@ -205,6 +214,109 @@ namespace Rock.Lava.Shortcodes
             {
                 result.Write( $"An error occurred while processing the {0} shortcode.", _tagName );
             }
+        }
+
+        private string GetChildParameters(string blockContent, out Dictionary<string, object> childParameters )
+        {
+            childParameters = new Dictionary<string, object>();
+
+            var startTagStartExpress = new Regex( @"\[\[\s*" );
+
+            var matchExists = true;
+            while ( matchExists )
+            {
+                var match = startTagStartExpress.Match( blockContent );
+                if ( match.Success )
+                {
+                    int starTagStartIndex = match.Index;
+
+                    // get the name of the paramter
+                    var parmNameMatch = new Regex( @"[\w-]*" ).Match( blockContent, starTagStartIndex + match.Length );
+                    if ( parmNameMatch.Success )
+                    {
+                        var parmNameStartIndex = parmNameMatch.Index;
+                        var parmNameEndIndex = parmNameStartIndex + parmNameMatch.Length;
+                        var parmName = blockContent.Substring( parmNameStartIndex, parmNameMatch.Length );
+
+                        // get end of the tag index
+                        var startTagEndIndex = blockContent.IndexOf( "]]", parmNameStartIndex ) + 2;
+
+                        // get the tags parameters
+                        var tagParms = blockContent.Substring( parmNameEndIndex, startTagEndIndex - parmNameEndIndex ).Trim();
+
+                        // get the closing tag location
+                        var endTagMatchExpression = String.Format( @"\[\[\s*end{0}\s*\]\]", parmName );
+                        var endTagMatch = new Regex( endTagMatchExpression ).Match( blockContent, starTagStartIndex );
+
+                        if ( endTagMatch != null )
+                        {
+                            var endTagStartIndex = endTagMatch.Index;
+                            var endTagEndIndex = endTagStartIndex + endTagMatch.Length;
+
+                            // get the parm content (the string between the two parm tags)
+                            var parmContent = blockContent.Substring( startTagEndIndex, endTagStartIndex - startTagEndIndex ).Trim();
+
+                            // create dynamic object from parms
+                            var dynamicParm = new ExpandoObject() as IDictionary<string, Object>;
+                            dynamicParm.Add( "content", parmContent );
+
+                            var parmItems = Regex.Matches( tagParms, "(.*?:'[^']+')" )
+                                .Cast<Match>()
+                                .Select( m => m.Value )
+                                .ToList();
+
+                            foreach ( var item in parmItems )
+                            {
+                                var itemParts = item.ToString().Split( new char[] { ':' }, 2 );
+                                if ( itemParts.Length > 1 )
+                                {
+                                    dynamicParm.Add( itemParts[0].Trim().ToLower(), itemParts[1].Trim().Substring( 1, itemParts[1].Length - 2 ) );
+                                }
+                            }
+
+                            // add new parm to a collection of parms and as a single parm id none exist
+                            if ( childParameters.ContainsKey(parmName + "s") )
+                            {
+                                var parmList = (List<object>)childParameters[parmName + "s"];
+                                parmList.Add( dynamicParm );
+                            }
+                            else
+                            {
+                                var parmList = new List<object>();
+                                parmList.Add( dynamicParm );
+                                childParameters.Add( parmName + "s", parmList );
+                            }
+
+                            if ( !childParameters.ContainsKey( parmName ) )
+                            {
+                                childParameters.Add( parmName, dynamicParm );
+                            }
+
+                            // pull this tag out of the block content
+                            blockContent = blockContent.Remove( starTagStartIndex, endTagEndIndex - starTagStartIndex );
+                        }
+                        else
+                        {
+                            // there was no matching end tag, for safety sake we'd better bail out of loop
+                            matchExists = false;
+                            blockContent = blockContent + "Warning: missing end tag end" + parmName;
+                        }
+                    }
+                    else
+                    {
+                        // there was no parm name on the tag, for safety sake we'd better bail out of loop
+                        matchExists = false;
+                        blockContent = blockContent + "Warning: invalid child parameter definition.";
+                    }
+                    
+                }
+                else
+                {
+                    matchExists = false; // we're done here
+                }
+            }
+
+            return blockContent.Trim();
         }
 
         /// <summary>
