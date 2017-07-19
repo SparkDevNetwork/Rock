@@ -13,7 +13,7 @@ namespace Rock.Migrations
         
         string IMigrationMetadata.Id
         {
-            get { return "201707172102179_PersonToken"; }
+            get { return "201707182003055_PersonToken"; }
         }
         
         string IMigrationMetadata.Source

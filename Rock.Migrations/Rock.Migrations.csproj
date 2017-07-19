@@ -269,9 +269,13 @@
     <Compile Include="Migrations\201707171725146_UniversalSearchPages.Designer.cs">
       <DependentUpon>201707171725146_UniversalSearchPages.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201707172102179_PersonToken.cs" />
-    <Compile Include="Migrations\201707172102179_PersonToken.Designer.cs">
-      <DependentUpon>201707172102179_PersonToken.cs</DependentUpon>
+    <Compile Include="Migrations\201707172127488_TagChanges.cs" />
+    <Compile Include="Migrations\201707172127488_TagChanges.Designer.cs">
+      <DependentUpon>201707172127488_TagChanges.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201707182003055_PersonToken.cs" />
+    <Compile Include="Migrations\201707182003055_PersonToken.Designer.cs">
+      <DependentUpon>201707182003055_PersonToken.cs</DependentUpon>
     </Compile>
     <Compile Include="Migrations\RockMigrationSQL.Designer.cs">
       <AutoGen>True</AutoGen>
@@ -2624,8 +2628,11 @@
     <EmbeddedResource Include="Migrations\201707171725146_UniversalSearchPages.resx">
       <DependentUpon>201707171725146_UniversalSearchPages.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201707172102179_PersonToken.resx">
-      <DependentUpon>201707172102179_PersonToken.cs</DependentUpon>
+    <EmbeddedResource Include="Migrations\201707172127488_TagChanges.resx">
+      <DependentUpon>201707172127488_TagChanges.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201707182003055_PersonToken.resx">
+      <DependentUpon>201707182003055_PersonToken.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 6.0\Version 1.6.0\201609282147388_WaitList.resx">
       <DependentUpon>201609282147388_WaitList.cs</DependentUpon>
