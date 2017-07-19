@@ -27,9 +27,9 @@ using System.Collections.Generic;
 namespace Rock.Client
 {
     /// <summary>
-    /// Base client model for SiteUrlMap that only includes the non-virtual fields. Use this for PUT/POSTs
+    /// Base client model for PageShortLink that only includes the non-virtual fields. Use this for PUT/POSTs
     /// </summary>
-    public partial class SiteUrlMapEntity
+    public partial class PageShortLinkEntity
     {
         /// <summary />
         public int Id { get; set; }
@@ -81,10 +81,10 @@ namespace Rock.Client
         public int? ForeignId { get; set; }
 
         /// <summary>
-        /// Copies the base properties from a source SiteUrlMap object
+        /// Copies the base properties from a source PageShortLink object
         /// </summary>
         /// <param name="source">The source.</param>
-        public void CopyPropertiesFrom( SiteUrlMap source )
+        public void CopyPropertiesFrom( PageShortLink source )
         {
             this.Id = source.Id;
             this.ForeignGuid = source.ForeignGuid;
@@ -104,9 +104,9 @@ namespace Rock.Client
     }
 
     /// <summary>
-    /// Client model for SiteUrlMap that includes all the fields that are available for GETs. Use this for GETs (use SiteUrlMapEntity for POST/PUTs)
+    /// Client model for PageShortLink that includes all the fields that are available for GETs. Use this for GETs (use PageShortLinkEntity for POST/PUTs)
     /// </summary>
-    public partial class SiteUrlMap : SiteUrlMapEntity
+    public partial class PageShortLink : PageShortLinkEntity
     {
         /// <summary>
         /// NOTE: Attributes are only populated when ?loadAttributes is specified. Options for loadAttributes are true, false, 'simple', 'expanded' 
