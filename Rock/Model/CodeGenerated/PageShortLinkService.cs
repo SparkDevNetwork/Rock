@@ -61,7 +61,7 @@ namespace Rock.Model
     public static partial class PageShortLinkExtensionMethods
     {
         /// <summary>
-        /// Clones this SiteUrlMap object to a new PageShortLink object
+        /// Clones this PageShortLink object to a new PageShortLink object
         /// </summary>
         /// <param name="source">The source.</param>
         /// <param name="deepCopy">if set to <c>true</c> a deep copy is made. If false, only the basic entity properties are copied.</param>
@@ -81,7 +81,7 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Copies the properties from another PageShortLink object to this SiteUrlMap object
+        /// Copies the properties from another PageShortLink object to this PageShortLink object
         /// </summary>
         /// <param name="target">The target.</param>
         /// <param name="source">The source.</param>
