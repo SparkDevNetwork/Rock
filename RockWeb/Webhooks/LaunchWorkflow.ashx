@@ -132,7 +132,7 @@ public class LaunchWorkflow : IHttpHandler
         {
             foreach ( DefinedValueCache hook in dt.DefinedValues.OrderBy( h => h.Order ) )
             {
-                if ( hook.GetAttributeValue( "ProcessRequest" ).ResolveMergeFields( requestDict ).AsBoolean() )
+                if ( hook.GetAttributeValue( "ProcessRequest" ).ResolveMergeFields( requestDict ).Trim().AsBoolean() )
                 {
                     hooks.Add( hook );
                 }
@@ -190,6 +190,7 @@ public class LaunchWorkflow : IHttpHandler
         dictionary.Add( "RemoteAddress", httpContext.Request.UserHostAddress );
         dictionary.Add( "RemoteName", httpContext.Request.UserHostName );
         dictionary.Add( "ServerName", httpContext.Request.Url.Host );
+        dictionary.Add( "ContentType", httpContext.Request.ContentType );
 
         // Add in the raw body content.
         using ( StreamReader reader = new StreamReader( httpContext.Request.InputStream, Encoding.UTF8 ) )

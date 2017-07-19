@@ -11,6 +11,7 @@
         <asp:Panel ID="pnlDetails" CssClass="panel panel-block" runat="server" Visible="false">
 
             <asp:HiddenField ID="hfDeviceId" runat="server" />
+            <asp:HiddenField ID="hfTypeId" runat="server" />
 
             <div class="panel-heading">
                 <h1 class="panel-title"><i class="fa fa-desktop"></i>
@@ -67,6 +68,12 @@
                                         Help="When this device needs to print, where should the printing be initiated from?  Either the server running Rock, or from the actual client device? " />
                                 </div>
                             </asp:Panel>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <Rock:DynamicPlaceHolder ID="phAttributes" runat="server" />
                         </div>
                     </div>
 

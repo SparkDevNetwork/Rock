@@ -66,13 +66,20 @@ namespace RockWeb.Blocks.Administration
             RockPage.AddScriptLink( this.Page, "~/Scripts/clipboard.js/clipboard.min.js" );
             string script = string.Format( @"
     function updateClipboardText() {{
-        $('#btnSave').attr('data-clipboard-text', $('#{0}').val() + $('#{1}').val() );
+        var scLink = $('#{0}').val() + $('#{1}').val();
+        $('.js-copy-to-clipboard').attr('data-clipboard-text', scLink );
+        $('.js-copy-to-clipboard').html(scLink);
+        $('#btnSave').attr('data-clipboard-text', scLink );
     }}
 
     $('#{1}').on('input', function() {{ updateClipboardText(); }});
 
     new Clipboard('#btnSave');
+    new Clipboard('.js-copy-to-clipboard');
+    $('.js-copy-to-clipboard').tooltip();
+
     updateClipboardText();
+
 ", hfSiteUrl.ClientID, tbToken.ClientID );
             ScriptManager.RegisterStartupScript( tbToken, tbToken.GetType(), "save-short-link", script, true );
 
@@ -97,7 +104,7 @@ namespace RockWeb.Blocks.Administration
                     int? siteId = ddlSite.SelectedValueAsInt();
                     if ( siteId.HasValue )
                     {
-                        tbToken.Text = new SiteUrlMapService( rockContext ).GetUniqueToken( siteId.Value, _minTokenLength );
+                        tbToken.Text = new PageShortLinkService( rockContext ).GetUniqueToken( siteId.Value, _minTokenLength );
                     }
                 }
 
@@ -137,11 +144,11 @@ namespace RockWeb.Blocks.Administration
             Page.Validate( BlockValidationGroup );
             if ( Page.IsValid )
             {
-                SiteUrlMap link = null;
+                PageShortLink link = null;
 
                 using ( var rockContext = new RockContext() )
                 {
-                    var service = new SiteUrlMapService( rockContext );
+                    var service = new PageShortLinkService( rockContext );
 
                     var errors = new List<string>();
 
@@ -175,7 +182,7 @@ namespace RockWeb.Blocks.Administration
                         return;
                     }
 
-                    link = new SiteUrlMap();
+                    link = new PageShortLink();
                     link.SiteId = siteId.Value;
                     link.Token = token;
                     link.Url = url;

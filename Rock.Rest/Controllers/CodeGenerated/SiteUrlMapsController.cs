@@ -26,13 +26,13 @@ using Rock.Model;
 namespace Rock.Rest.Controllers
 {
     /// <summary>
-    /// SiteUrlMaps REST API
+    /// PageShortLinks REST API
     /// </summary>
-    public partial class SiteUrlMapsController : Rock.Rest.ApiController<Rock.Model.SiteUrlMap>
+    public partial class PageShortLinksController : Rock.Rest.ApiController<Rock.Model.PageShortLink>
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="SiteUrlMapsController"/> class.
+        /// Initializes a new instance of the <see cref="PageShortLinksController"/> class.
         /// </summary>
-        public SiteUrlMapsController() : base( new Rock.Model.SiteUrlMapService( new Rock.Data.RockContext() ) ) { } 
+        public PageShortLinksController() : base( new Rock.Model.PageShortLinkService( new Rock.Data.RockContext() ) ) { } 
     }
 }

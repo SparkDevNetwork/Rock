@@ -50,12 +50,12 @@ namespace Rock.UniversalSearch.IndexModels
         public string NickName { get; set; }
 
         /// <summary>
-        /// Gets or sets the last name.
+        /// Gets or sets the last name.  
         /// </summary>
         /// <value>
         /// The last name.
         /// </value>
-        [RockIndexField( Boost = 2 )]
+        [RockIndexField( Boost = 2.5 )] // gives slight nudge to last name over first name
         public string LastName { get; set; }
 
         /// <summary>

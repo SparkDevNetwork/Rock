@@ -1,4 +1,20 @@
-﻿using System.Collections.Generic;
+﻿// <copyright>
+// Copyright by the Spark Development Network
+//
+// Licensed under the Rock Community License (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.rockrms.com/license
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+// </copyright>
+//
+using System.Collections.Generic;
 using System.Data;
 using System.IO;
 using System.Linq;
@@ -67,13 +83,14 @@ namespace Rock.Lava.Shortcodes
                 var parms = ParseMarkup( _markup, context );
 
                 var results = _shortcode.Markup.ResolveMergeFields( parms, _shortcode.EnabledLavaCommands );
-
                 result.Write( results );
             }
             else
             {
                 result.Write( $"An error occurred while processing the {0} shortcode.", _tagName );
             }
+
+            base.Render( context, result );
         }
 
         /// <summary>
@@ -85,6 +102,8 @@ namespace Rock.Lava.Shortcodes
         /// <exception cref="System.Exception">No parameters were found in your command. The syntax for a parameter is parmName:'' (note that you must use single quotes).</exception>
         private Dictionary<string, object> ParseMarkup( string markup, Context context )
         {
+            var parms = new Dictionary<string, object>();
+
             // first run lava across the inputted markup
             var internalMergeFields = new Dictionary<string, object>();
 
@@ -94,6 +113,7 @@ namespace Rock.Lava.Shortcodes
                 foreach ( var item in scope )
                 {
                     internalMergeFields.AddOrReplace( item.Key, item.Value );
+                    parms.AddOrReplace( item.Key, item.Value );
                 }
             }
 
@@ -103,11 +123,10 @@ namespace Rock.Lava.Shortcodes
                 foreach ( var item in context.Environments[0] )
                 {
                     internalMergeFields.AddOrReplace( item.Key, item.Value );
+                    parms.AddOrReplace( item.Key, item.Value );
                 }
             }
             var resolvedMarkup = markup.ResolveMergeFields( internalMergeFields );
-
-            var parms = new Dictionary<string, object>();
 
             // create all the parameters from the shortcode with their default values
             var shortcodeParms = _shortcode.Parameters.Split( '|' ).ToList();

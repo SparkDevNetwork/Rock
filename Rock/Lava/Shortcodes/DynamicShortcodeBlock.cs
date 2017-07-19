@@ -1,4 +1,20 @@
-﻿using System.Collections.Generic;
+﻿// <copyright>
+// Copyright by the Spark Development Network
+//
+// Licensed under the Rock Community License (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.rockrms.com/license
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+// </copyright>
+//
+using System.Collections.Generic;
 using System.Data;
 using System.IO;
 using System.Linq;
@@ -130,6 +146,9 @@ namespace Rock.Lava.Shortcodes
         /// <param name="result">The result.</param>
         public override void Render( Context context, TextWriter result )
         {
+            //RenderAll( NodeList, context, result );
+
+
             var shortcode = LavaShortcodeCache.Read( _tagName );
 
             if ( shortcode != null )
@@ -145,11 +164,11 @@ namespace Rock.Lava.Shortcodes
                     Regex rgx = new Regex( @"{{\s*blockContent\s*}}", RegexOptions.IgnoreCase );
                     lavaTemplate = rgx.Replace( lavaTemplate, blockMarkup );
 
-                    parms.Add( "blockContentExists", true );
+                    parms.AddOrReplace( "blockContentExists", true );
                 }
                 else
                 {
-                    parms.Add( "blockContentExists", false );
+                    parms.AddOrReplace( "blockContentExists", false );
                 }  
                 
                 // next ensure they did not use any entity commands in the block that are not allowed
@@ -197,28 +216,6 @@ namespace Rock.Lava.Shortcodes
         /// <exception cref="System.Exception">No parameters were found in your command. The syntax for a parameter is parmName:'' (note that you must use single quotes).</exception>
         private Dictionary<string, object> ParseMarkup( string markup, Context context )
         {
-            // first run lava across the inputted markup
-            var internalMergeFields = new Dictionary<string, object>();
-
-            // get variables defined in the lava source
-            foreach ( var scope in context.Scopes )
-            {
-                foreach ( var item in scope )
-                {
-                    internalMergeFields.AddOrReplace( item.Key, item.Value );
-                }
-            }
-
-            // get merge fields loaded by the block or container
-            if ( context.Environments.Count > 0 )
-            {
-                foreach ( var item in context.Environments[0] )
-                {
-                    internalMergeFields.AddOrReplace( item.Key, item.Value );
-                }
-            }
-            var resolvedMarkup = markup.ResolveMergeFields( internalMergeFields );
-
             var parms = new Dictionary<string, object>();
 
             // create all the parameters from the shortcode with their default values
@@ -231,6 +228,30 @@ namespace Rock.Lava.Shortcodes
                     parms.AddOrReplace( shortcodeParmKV[0], shortcodeParmKV[1] );
                 }
             }
+
+            // first run lava across the inputted markup
+            var internalMergeFields = new Dictionary<string, object>();
+
+            // get variables defined in the lava source
+            foreach ( var scope in context.Scopes )
+            {
+                foreach ( var item in scope )
+                {
+                    internalMergeFields.AddOrReplace( item.Key, item.Value );
+                    //parms.AddOrReplace( item.Key, item.Value );
+                }
+            }
+
+            // get merge fields loaded by the block or container
+            if ( context.Environments.Count > 0 )
+            {
+                foreach ( var item in context.Environments[0] )
+                {
+                    internalMergeFields.AddOrReplace( item.Key, item.Value );
+                    parms.AddOrReplace( item.Key, item.Value );
+                }
+            }
+            var resolvedMarkup = markup.ResolveMergeFields( internalMergeFields );
 
             var markupItems = Regex.Matches( resolvedMarkup, "(.*?:'[^']+')" )
                 .Cast<Match>()

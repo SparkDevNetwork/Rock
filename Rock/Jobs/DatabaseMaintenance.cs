@@ -44,6 +44,7 @@ namespace Rock.Jobs
     [IntegerField( "Minimum Index Page Count", "The minimum size in pages that an index must be before it's considered for being re-built. Default value is 100.", false, 100, category: "Advanced", order: 5 )]
     [IntegerField( "Minimum Fragmentation Percentage", "The minimum fragmentation percentage for an index to be considered for re-indexing. If the fragmentation is below is amount nothing will be done. Default value is 10%.", false, 10, category: "Advanced", order: 6 )]
     [IntegerField( "Rebuild Threshold Percentage", "The threshold percentage where a REBUILD will be completed instead of a REORGANIZE. Default value is 30%.", false, 30, category: "Advanced", order: 7 )]
+    [BooleanField( "Use ONLINE Index Rebuild", "Use the ONLINE option when rebuilding indexes. NOTE: This is only supported on SQL Enterprise and Azure SQL Database.", false, category: "Advanced", order: 8 )]
     [DisallowConcurrentExecution]
     public class DatabaseMaintenance : IJob
     {
@@ -78,6 +79,7 @@ namespace Rock.Jobs
             int minimumIndexPageCount = dataMap.GetString( "MinimumIndexPageCount" ).AsInteger();
             int minimunFragmentationPercentage = dataMap.GetString( "MinimumFragmentationPercentage" ).AsInteger();
             int rebuildThresholdPercentage = dataMap.GetString( "RebuildThresholdPercentage" ).AsInteger();
+            bool useONLINEIndexRebuild = dataMap.GetString( "UseONLINEIndexRebuild" ).AsBoolean();
 
             string alertEmail = dataMap.GetString( "AlertEmail" );
 
@@ -130,6 +132,7 @@ namespace Rock.Jobs
                     parms.Add( "@PageCountLimit", minimumIndexPageCount );
                     parms.Add( "@MinFragmentation", minimunFragmentationPercentage );
                     parms.Add( "@MinFragmentationRebuild", rebuildThresholdPercentage );
+                    parms.Add( "@UseONLINEIndexRebuild", useONLINEIndexRebuild );
 
                     stopwatch = Stopwatch.StartNew();
                     DbService.ExecuteCommand( "spDbaRebuildIndexes", System.Data.CommandType.StoredProcedure, parms, commandTimeout );
