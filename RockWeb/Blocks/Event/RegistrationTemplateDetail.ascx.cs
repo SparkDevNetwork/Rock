@@ -444,7 +444,8 @@ namespace RockWeb.Blocks.Event
             // attribute field grid actions
             gFields.DataKeyNames = new string[] { "Guid" };
             gFields.Actions.ShowAdd = true;
-            gFields.Actions.AddClick += gFields_AddClick; ;
+            gFields.Actions.AddClick += gFields_AddClick;
+            ;
             gFields.GridRebind += gFields_GridRebind;
             gFields.RowDataBound += gFields_RowDataBound;
             gFields.GridReorder += gFields_GridReorder;
@@ -453,7 +454,8 @@ namespace RockWeb.Blocks.Event
             // assign discounts grid actions
             gDiscounts.DataKeyNames = new string[] { "Guid" };
             gDiscounts.Actions.ShowAdd = true;
-            gDiscounts.Actions.AddClick += gDiscounts_AddClick; ;
+            gDiscounts.Actions.AddClick += gDiscounts_AddClick;
+            ;
             gDiscounts.GridRebind += gDiscounts_GridRebind;
             gDiscounts.GridReorder += gDiscounts_GridReorder;
 
@@ -463,7 +465,7 @@ namespace RockWeb.Blocks.Event
             gFees.Actions.AddClick += gFees_AddClick;
             gFees.GridRebind += gFees_GridRebind;
             gFees.GridReorder += gFees_GridReorder;
-            
+
             btnSecurity.EntityTypeId = EntityTypeCache.Read( typeof( Rock.Model.RegistrationTemplate ) ).Id;
 
             string deleteScript = @"
@@ -521,7 +523,7 @@ namespace RockWeb.Blocks.Event
                             {
                                 case "re-order-form":
                                     {
-                                        SortForms( guid, newIndex+1 );
+                                        SortForms( guid, newIndex + 1 );
                                         break;
                                     }
                             }
@@ -554,7 +556,7 @@ namespace RockWeb.Blocks.Event
             breadCrumbs.Add( new BreadCrumb( this.PageCache.PageTitle, pageReference ) );
             return breadCrumbs;
         }
-        
+
         /// <summary>
         /// Saves any user control view-state changes that have occurred since the last page postback.
         /// </summary>
@@ -563,8 +565,8 @@ namespace RockWeb.Blocks.Event
         /// </returns>
         protected override object SaveViewState()
         {
-            var jsonSetting = new JsonSerializerSettings 
-            { 
+            var jsonSetting = new JsonSerializerSettings
+            {
                 ReferenceLoopHandling = ReferenceLoopHandling.Ignore,
                 ContractResolver = new Rock.Utility.IgnoreUrlEncodedKeyContractResolver()
             };
@@ -782,11 +784,11 @@ namespace RockWeb.Blocks.Event
             }
 
             RegistrationNotify notify = RegistrationNotify.None;
-            foreach( ListItem li in cblNotify.Items )
+            foreach ( ListItem li in cblNotify.Items )
             {
                 if ( li.Selected )
                 {
-                    notify = notify | (RegistrationNotify)li.Value.AsInteger();
+                    notify = notify | ( RegistrationNotify ) li.Value.AsInteger();
                 }
             }
 
@@ -858,7 +860,7 @@ namespace RockWeb.Blocks.Event
 
                 if ( FormFieldsState.ContainsKey( form.Guid ) )
                 {
-                    foreach( var formField in FormFieldsState[ form.Guid ])
+                    foreach ( var formField in FormFieldsState[form.Guid] )
                     {
                         if ( !formField.IsValid )
                         {
@@ -877,10 +879,10 @@ namespace RockWeb.Blocks.Event
             var validGroupMemberAttributeIds = groupMember.Attributes.Select( a => a.Value.Id ).ToList();
 
             // Remove any group member attributes that are not valid based on selected group type
-            foreach( var fieldList in FormFieldsState.Select( s => s.Value ) )
+            foreach ( var fieldList in FormFieldsState.Select( s => s.Value ) )
             {
-                foreach( var formField in fieldList
-                    .Where( a => 
+                foreach ( var formField in fieldList
+                    .Where( a =>
                         a.FieldSource == RegistrationFieldSource.GroupMemberAttribute &&
                         a.AttributeId.HasValue &&
                         !validGroupMemberAttributeIds.Contains( a.AttributeId.Value ) )
@@ -933,7 +935,7 @@ namespace RockWeb.Blocks.Event
                         f.RegistrationTemplateId == RegistrationTemplate.Id &&
                         !formUiGuids.Contains( f.Guid ) ) )
                 {
-                    foreach( var formField in form.Fields.ToList() )
+                    foreach ( var formField in form.Fields.ToList() )
                     {
                         form.Fields.Remove( formField );
                         registrationTemplateFormFieldService.Delete( formField );
@@ -942,7 +944,7 @@ namespace RockWeb.Blocks.Event
                 }
 
                 // delete fields that aren't assigned in the UI anymore
-                var fieldUiGuids = FormFieldsState.SelectMany( a => a.Value).Select( f => f.Guid ).ToList();
+                var fieldUiGuids = FormFieldsState.SelectMany( a => a.Value ).Select( f => f.Guid ).ToList();
                 foreach ( var formField in registrationTemplateFormFieldService
                     .Queryable()
                     .Where( a =>
@@ -1193,7 +1195,7 @@ namespace RockWeb.Blocks.Event
             ParseControls();
 
             nbMaxRegistrants.Visible = cbMultipleRegistrants.Checked;
-            
+
             BuildControls();
         }
 
@@ -2009,7 +2011,7 @@ namespace RockWeb.Blocks.Event
                 }
                 else
                 {
-                    LoadStateDetails(registrationTemplate, rockContext);
+                    LoadStateDetails( registrationTemplate, rockContext );
                     ShowEditDetails( registrationTemplate, rockContext );
                 }
             }
@@ -2038,9 +2040,9 @@ namespace RockWeb.Blocks.Event
 
                 // Add first name field if it doesn't exist
                 if ( !defaultForm.Fields
-                    .Any( f => 
+                    .Any( f =>
                         f.FieldSource == RegistrationFieldSource.PersonField &&
-                        f.PersonFieldType == RegistrationPersonFieldType.FirstName ))
+                        f.PersonFieldType == RegistrationPersonFieldType.FirstName ) )
                 {
                     var formField = new RegistrationTemplateFormField();
                     formField.FieldSource = RegistrationFieldSource.PersonField;
@@ -2144,9 +2146,9 @@ namespace RockWeb.Blocks.Event
             cbDisplayInLine.Checked = RegistrationTemplate.SignatureDocumentAction == SignatureDocumentAction.Embed;
             wtpRegistrationWorkflow.SetValue( RegistrationTemplate.RegistrationWorkflowTypeId );
 
-            foreach( ListItem li in cblNotify.Items )
+            foreach ( ListItem li in cblNotify.Items )
             {
-                RegistrationNotify notify = (RegistrationNotify)li.Value.AsInteger();
+                RegistrationNotify notify = ( RegistrationNotify ) li.Value.AsInteger();
                 li.Selected = ( RegistrationTemplate.Notify & notify ) == notify;
             }
 
@@ -2187,7 +2189,7 @@ namespace RockWeb.Blocks.Event
             tbWaitListTransitionFromEmail.Text = RegistrationTemplate.WaitListTransitionFromEmail;
             tbWaitListTransitionSubject.Text = RegistrationTemplate.WaitListTransitionSubject;
             ceWaitListTransitionEmailTemplate.Text = RegistrationTemplate.WaitListTransitionEmailTemplate;
-            
+
             tbRegistrationTerm.Text = RegistrationTemplate.RegistrationTerm;
             tbRegistrantTerm.Text = RegistrationTemplate.RegistrantTerm;
             tbFeeTerm.Text = RegistrationTemplate.FeeTerm;
@@ -2325,7 +2327,7 @@ namespace RockWeb.Blocks.Event
 
             ddlSignatureDocumentTemplate.Items.Clear();
             ddlSignatureDocumentTemplate.Items.Add( new ListItem() );
-            foreach( var documentType in new SignatureDocumentTemplateService( rockContext )
+            foreach ( var documentType in new SignatureDocumentTemplateService( rockContext )
                 .Queryable().AsNoTracking()
                 .OrderBy( t => t.Name ) )
             {
@@ -2344,7 +2346,7 @@ namespace RockWeb.Blocks.Event
         private void ParseControls( bool expandInvalid = false )
         {
             ExpandedForms = new List<Guid>();
-            FormState = FormState.Take(1).ToList();
+            FormState = FormState.Take( 1 ).ToList();
 
             int order = 1;
             foreach ( var formEditor in phForms.Controls.OfType<RegistrationTemplateFormEditor>() )
@@ -2411,7 +2413,7 @@ namespace RockWeb.Blocks.Event
             if ( setValues )
             {
                 control.Expanded = ExpandedForms.Contains( form.Guid );
-                if ( !control.Expanded && showInvalid && !form.IsValid)
+                if ( !control.Expanded && showInvalid && !form.IsValid )
                 {
                     control.Expanded = true;
                 }
@@ -2435,7 +2437,7 @@ namespace RockWeb.Blocks.Event
             if ( FormFieldsState != null && FormFieldsState.Any() )
             {
                 gFields.DataSource = FormFieldsState.First().Value
-                    .OrderBy( a => a.Order)
+                    .OrderBy( a => a.Order )
                     .Select( a => new
                     {
                         a.Id,
@@ -2443,7 +2445,7 @@ namespace RockWeb.Blocks.Event
                         Name = ( a.FieldSource != RegistrationFieldSource.PersonField && a.Attribute != null ) ?
                             a.Attribute.Name : a.PersonFieldType.ConvertToString(),
                         FieldSource = a.FieldSource.ConvertToString(),
-                        FieldType = ( a.FieldSource != RegistrationFieldSource.PersonField && a.Attribute != null ) ? 
+                        FieldType = ( a.FieldSource != RegistrationFieldSource.PersonField && a.Attribute != null ) ?
                             a.Attribute.FieldTypeId : 0,
                         a.IsInternal,
                         a.IsSharedValue,
@@ -2501,7 +2503,9 @@ namespace RockWeb.Blocks.Event
                 {
                     if ( attr.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
                     {
-                        ddlPersonAttributes.Items.Add( new ListItem( attr.Name, attr.Id.ToString() ) );
+                        var listItem = new ListItem( attr.Name, attr.Id.ToString() );
+                        listItem.Attributes.Add( "title", string.Format( "{0} - {1}", attr.Id.ToString(), attr.Key ) );
+                        ddlPersonAttributes.Items.Add( listItem );
                     }
                 }
 
@@ -2551,7 +2555,7 @@ namespace RockWeb.Blocks.Event
 
                 hfFormGuid.Value = formGuid.ToString();
                 hfAttributeGuid.Value = formFieldGuid.ToString();
-                
+
                 lPersonField.Visible = formField.FieldSource == RegistrationFieldSource.PersonField && (
                     formField.PersonFieldType == RegistrationPersonFieldType.FirstName ||
                     formField.PersonFieldType == RegistrationPersonFieldType.LastName );
@@ -2588,7 +2592,7 @@ namespace RockWeb.Blocks.Event
 
             cbInternalField.Visible = true;
             cbCommonValue.Visible = true;
-            cbUsePersonCurrentValue.Visible = 
+            cbUsePersonCurrentValue.Visible =
                 fieldSource == RegistrationFieldSource.PersonAttribute ||
                 fieldSource == RegistrationFieldSource.PersonField;
 
@@ -2679,7 +2683,7 @@ namespace RockWeb.Blocks.Event
             int order = 0;
             fieldList.ForEach( a => a.Order = order++ );
         }
-        
+
         #endregion
 
         #region Discount Methods
@@ -2712,7 +2716,7 @@ namespace RockWeb.Blocks.Event
         /// <param name="discountGuid">The discount unique identifier.</param>
         private void ShowDiscountEdit( Guid discountGuid )
         {
-            var discount = DiscountState.FirstOrDefault( d => d.Guid.Equals( discountGuid ));
+            var discount = DiscountState.FirstOrDefault( d => d.Guid.Equals( discountGuid ) );
             if ( discount == null )
             {
                 discount = new RegistrationTemplateDiscount();
@@ -2778,7 +2782,7 @@ namespace RockWeb.Blocks.Event
         /// <param name="feeGuid">The fee unique identifier.</param>
         private void ShowFeeEdit( Guid feeGuid )
         {
-            var fee = FeeState.FirstOrDefault( d => d.Guid.Equals( feeGuid ));
+            var fee = FeeState.FirstOrDefault( d => d.Guid.Equals( feeGuid ) );
             if ( fee == null )
             {
                 fee = new RegistrationTemplateFee();
@@ -2887,5 +2891,5 @@ namespace RockWeb.Blocks.Event
 
         #endregion
 
-}
+    }
 }
