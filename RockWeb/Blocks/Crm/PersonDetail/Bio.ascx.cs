@@ -49,15 +49,17 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
     &lt;li&gt;&lt;a href='~/WorkflowEntry/4?PersonId={0}' tabindex='0'&gt;Fourth Action&lt;/a&gt;&lt;/li&gt;
 </pre>
 ", Rock.Web.UI.Controls.CodeEditorMode.Html, Rock.Web.UI.Controls.CodeEditorTheme.Rock, 200, false, "", "", 2, "Actions" )]
-    [LinkedPage( "Business Detail Page", "The page to redirect user to if a business is is requested.", false, "", "", 3 )]
-    [BooleanField( "Display Country Code", "When enabled prepends the country code to all phone numbers.", false, "", 4 )]
-    [BooleanField( "Display Middle Name", "Display the middle name of the person.", false, "", 5)]
+    [BooleanField( "Disable Impersonation", "Should the Impersonate custom action be disabled? Note: If left enabled, it is only visible to Rock Administrators.", true, "", 3 )]
+    [LinkedPage( "Impersonation Start Page", "The page to navigate to after clicking the Impersonate action.", false, Rock.SystemGuid.Page.EXTERNAL_HOMEPAGE, "", 4)]
+    [LinkedPage( "Business Detail Page", "The page to redirect user to if a business is is requested.", false, "", "", 5 )]
+    [BooleanField( "Display Country Code", "When enabled prepends the country code to all phone numbers.", false, "", 6 )]
+    [BooleanField( "Display Middle Name", "Display the middle name of the person.", false, "", 7)]
     [CodeEditorField( "Custom Content", "Custom Content will be rendered after the person's demographic information <span class='tip tip-lava'></span>.",
-        Rock.Web.UI.Controls.CodeEditorMode.Lava, Rock.Web.UI.Controls.CodeEditorTheme.Rock, 200, false, "", "", 6, "CustomContent" )]
-    [BooleanField( "Allow Following", "Should people be able to follow a person by selecting the star on the person's photo?", true, "", 7)]
-    [BooleanField( "Display Tags", "Should tags be displayed?", true, "", 8 )]
-    [BooleanField( "Display Graduation", "Should the Grade/Graduation be displayed", true, "", 9 )]
-    [BooleanField( "Display Anniversary Date", "Should the Anniversary Date be displayed?", true, "", 10 )]
+        Rock.Web.UI.Controls.CodeEditorMode.Lava, Rock.Web.UI.Controls.CodeEditorTheme.Rock, 200, false, "", "", 8, "CustomContent" )]
+    [BooleanField( "Allow Following", "Should people be able to follow a person by selecting the star on the person's photo?", true, "", 9)]
+    [BooleanField( "Display Tags", "Should tags be displayed?", true, "", 10 )]
+    [BooleanField( "Display Graduation", "Should the Grade/Graduation be displayed", true, "", 11 )]
+    [BooleanField( "Display Anniversary Date", "Should the Anniversary Date be displayed?", true, "", 12 )]
     public partial class Bio : PersonBlock
     {
         #region Base Control Methods
@@ -112,6 +114,20 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
                 }
 
                 lbEditPerson.Visible = IsUserAuthorized( Rock.Security.Authorization.EDIT );
+
+                // only show if the Impersonation button if the feature is enabled, it isn't the same person that is logged in, and the current user is authorized to Administrate the person
+                bool disableImpersonation = this.GetAttributeValue( "DisableImpersonation" ).AsBoolean();
+                lbImpersonate.Visible = false;
+                if ( !disableImpersonation )
+                {
+                    if ( Person.Id != this.CurrentPersonId )
+                    {
+                        if ( Person.IsAuthorized( Rock.Security.Authorization.ADMINISTRATE, this.CurrentPerson ) )
+                        {
+                            lbImpersonate.Visible = true;
+                        }
+                    }
+                }
             }
         }
 
@@ -374,6 +390,29 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
             }
         }
 
+        /// <summary>
+        /// Handles the Click event of the lbImpersonate control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void lbImpersonate_Click( object sender, EventArgs e )
+        {
+            if ( Person != null )
+            {
+                if ( Person.IsAuthorized( Rock.Security.Authorization.ADMINISTRATE, this.CurrentPerson ) )
+                {
+                    var impersonationToken = this.Person.GetImpersonationToken( RockDateTime.Now.AddMinutes( 5 ), 1, null );
+
+                    // store the current user in Session["ImpersonatedByUser"] so that we can log back in as them from the Admin Bar
+                    Session["ImpersonatedByUser"] = this.CurrentUser;
+
+                    var qryParams = new Dictionary<string, string>();
+                    qryParams.Add( "rckipid", impersonationToken );
+                    NavigateToLinkedPage( "ImpersonationStartPage", qryParams );
+                }
+            }
+        }
+
         #endregion
 
         #region Methods
@@ -386,8 +425,7 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
         /// <param name="number">The number.</param>
         /// <param name="phoneNumberTypeId">The phone number type identifier.</param>
         /// <returns></returns>
-        protected string
-        FormatPhoneNumber( bool unlisted, object countryCode, object number, int phoneNumberTypeId, bool smsEnabled = false )
+        protected string FormatPhoneNumber( bool unlisted, object countryCode, object number, int phoneNumberTypeId, bool smsEnabled = false )
         {
             string formattedNumber = "Unlisted";
 

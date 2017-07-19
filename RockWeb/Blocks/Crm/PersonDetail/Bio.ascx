@@ -21,6 +21,7 @@
                     </a>
                     <ul class="dropdown-menu dropdown-menu-right">
                         <asp:Literal ID="lActions" runat="server" />
+                        <li><asp:LinkButton ID="lbImpersonate" runat="server" Visible="false" OnClick="lbImpersonate_Click"><i class='fa-fw fa fa-unlock'></i>&nbsp;Impersonate</asp:LinkButton></li>
                     </ul>
                 </li>
             </ul>
