@@ -45,7 +45,7 @@ namespace RockWeb.Blocks.Cms
     [AttributeField( Rock.SystemGuid.EntityType.GROUP, "GroupTypeId", Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY, "Family Attributes", "The family attributes that should be displayed / edited.", false, true, order: 6 )]
     [AttributeField( Rock.SystemGuid.EntityType.PERSON, "Person Attributes (adults)", "The person attributes that should be displayed / edited for adults.", false, true, order: 7 )]
     [AttributeField( Rock.SystemGuid.EntityType.PERSON, "Person Attributes (children)", "The person attributes that should be displayed / edited for children.", false, true, order: 8 )]
-    [BooleanField( "Disable Name Edit", "Whether the First and Last Names can be edited.", false, "Advanced", order: 0 )]
+    [BooleanField( "Disable Name Edit", "Whether the First and Last Names can be edited.", false, order: 0 )]
 
     public partial class PublicProfileEdit : RockBlock
     {
