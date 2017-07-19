@@ -209,8 +209,7 @@ namespace RockWeb.Blocks.Cms
                 Token = pageShortLink.Token;
                 Url = pageShortLink.Url;
 
-                var uri = pageShortLink.Site.DefaultDomainUri;
-                var url = uri != null ? uri.ToString() : Rock.Web.Cache.GlobalAttributesCache.Read().GetValue( "PublicApplicationRoot" );
+                var url = pageShortLink.Site.DefaultDomainUri.ToString();
                 ShortLink = url.EnsureTrailingForwardslash() + Token;
             }
         }

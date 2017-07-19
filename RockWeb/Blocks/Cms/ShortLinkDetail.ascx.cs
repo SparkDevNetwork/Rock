@@ -289,8 +289,7 @@ namespace RockWeb.Blocks.Crm
             lToken.Text = shortLink.Token;
             lUrl.Text = shortLink.Url;
 
-            var uri = shortLink.Site.DefaultDomainUri;
-            var url = uri != null ? uri.ToString() : Rock.Web.Cache.GlobalAttributesCache.Read().GetValue( "PublicApplicationRoot" );
+            var url = shortLink.Site.DefaultDomainUri.ToString();
             string link = url.EnsureTrailingForwardslash() + shortLink.Token;
 
             btnCopy.Attributes["data-clipboard-text"] = link;

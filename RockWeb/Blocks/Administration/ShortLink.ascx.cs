@@ -226,15 +226,12 @@ namespace RockWeb.Blocks.Administration
             {
                 using ( var rockContext = new RockContext() )
                 {
-                    var siteUrl = new SiteService( rockContext ).GetDefaultDomainUri( siteId.Value ) ??
-                        new Uri( Request.Url.GetLeftPart( UriPartial.Authority ) );
-                    hfSiteUrl.Value = siteUrl.ToString();
+                    hfSiteUrl.Value = new SiteService( rockContext ).GetDefaultDomainUri( siteId.Value ).ToString();
                 }
             }
             else
             {
                 hfSiteUrl.Value = string.Empty;
-
             }
         }
 
