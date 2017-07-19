@@ -123,7 +123,15 @@ namespace RockWeb.Plugins.cc_newspring.Blocks.WorkflowAlert
                 RockPage.SaveSharedItem( "ActiveForms", formActions );
             }
 
-            return formActions;
+            // find first form for each activity
+            var firstForms = new List<WorkflowAction>();
+            foreach( var activityId in formActions.Select( a => a.ActivityId ).Distinct().ToList() )
+            {
+                firstForms.Add( formActions.First( a => a.ActivityId == activityId ) );
+            }
+
+            return firstForms;
+
         }
 
         /// <summary>
