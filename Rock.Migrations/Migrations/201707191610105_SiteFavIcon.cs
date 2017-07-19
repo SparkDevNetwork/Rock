@@ -34,6 +34,11 @@ namespace Rock.Migrations
             CreateIndex("dbo.Site", "FavIconBinaryFileId");
             AddForeignKey("dbo.Site", "FavIconBinaryFileId", "dbo.BinaryFile", "Id");
 
+            Sql( @"
+    UPDATE [Site] SET [EnabledForShortening] = 1
+	WHERE [Guid] NOT IN ( '05E96F7B-B75E-4987-825A-B6F51F8D9CAA', 'A5FA7C3C-A238-4E0B-95DE-B540144321EC', '15AEFC01-ACB3-4F5D-B83E-AB3AB7F2A54A' )
+" );
+
             // SK: Rename MyWorkflowsLiquid to MyWorkflowsLava.cs
             Sql( @"
     DELETE [BlockType] WHERE [Path]='~/Blocks/WorkFlow/MyWorkflowsLava.ascx'
