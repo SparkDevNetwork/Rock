@@ -422,6 +422,12 @@ namespace Rock.Model
                         if ( impersonated )
                         {
                             summary.Append( "Impersonated user logged in" );
+
+                            var impersonatedByUser = HttpContext.Current?.Session["ImpersonatedByUser"] as UserLogin;
+                            if ( impersonatedByUser != null )
+                            {
+                                summary.Append( $" ( impersonated by { impersonatedByUser.Person.FullName } ) " );
+                            }
                         }
                         else
                         {
