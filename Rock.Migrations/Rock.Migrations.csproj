@@ -281,6 +281,10 @@
     <Compile Include="Migrations\201707191610105_SiteFavIcon.Designer.cs">
       <DependentUpon>201707191610105_SiteFavIcon.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201707192232303_MetaModels.cs" />
+    <Compile Include="Migrations\201707192232303_MetaModels.Designer.cs">
+      <DependentUpon>201707192232303_MetaModels.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\RockMigrationSQL.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
@@ -2640,6 +2644,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201707191610105_SiteFavIcon.resx">
       <DependentUpon>201707191610105_SiteFavIcon.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201707192232303_MetaModels.resx">
+      <DependentUpon>201707192232303_MetaModels.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 6.0\Version 1.6.0\201609282147388_WaitList.resx">
       <DependentUpon>201609282147388_WaitList.cs</DependentUpon>
