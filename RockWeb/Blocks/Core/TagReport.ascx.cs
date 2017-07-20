@@ -28,6 +28,7 @@ using Rock;
 using System.Web.UI.WebControls;
 using Rock.Web.UI.Controls;
 using Rock.Data;
+using Rock.Security;
 
 namespace RockWeb.Blocks.Core
 {
@@ -77,9 +78,14 @@ namespace RockWeb.Blocks.Core
             if ( int.TryParse( PageParameter( "tagId" ), out tagId ) && tagId > 0 )
             {
                 Tag _tag = new TagService( new RockContext() ).Get( tagId );
-
-                if ( _tag != null )
+                if ( _tag != null && 
+                    ( 
+                        ( _tag.OwnerPersonAlias != null && _tag.OwnerPersonAlias.PersonId == CurrentPersonId ) ||
+                        ( _tag.IsAuthorized( Authorization.VIEW, CurrentPerson ) ) 
+                    ) )
                 {
+                    pnlGrid.Visible = true;
+
                     TagId = tagId;
                     TagEntityType = EntityTypeCache.Read( _tag.EntityTypeId );
 
@@ -125,6 +131,10 @@ namespace RockWeb.Blocks.Core
                             }
                         }
                     }
+                }
+                else
+                {
+                    pnlGrid.Visible = false;
                 }
             }
         }
