@@ -710,6 +710,13 @@
     <Compile Include="Lava\LavaSupportLevel.cs" />
     <Compile Include="Lava\LegacyLavaSyntaxDetectedException.cs" />
     <Compile Include="Lava\RockFilters.cs" />
+    <Compile Include="Lava\Shortcodes\DynamicShortcodeBlock.cs" />
+    <Compile Include="Lava\Shortcodes\DynamicShortcodeInline.cs" />
+    <Compile Include="Lava\Shortcodes\IRockShortcode.cs" />
+    <Compile Include="Lava\Shortcodes\RockLavaShortcodeBlockBase.cs" />
+    <Compile Include="Lava\Shortcodes\RockLavaShortcodeBase.cs" />
+    <Compile Include="Lava\Shortcodes\BootstrapAlert.cs" />
+    <Compile Include="Lava\Shortcodes\YouTube.cs" />
     <Compile Include="MergeTemplates\HtmlMergeTemplateType.cs" />
     <Compile Include="MergeTemplates\MergeTemplateType.cs" />
     <Compile Include="MergeTemplates\MergeTemplateTypeContainer.cs" />
@@ -743,6 +750,7 @@
     <Compile Include="Model\CodeGenerated\AnalyticsSourceFamilyHistoricalService.cs" />
     <Compile Include="Model\AttributeMatrixTemplateService.partial.cs" />
     <Compile Include="Model\CodeGenerated\CommunicationAttachmentService.cs" />
+    <Compile Include="Model\CodeGenerated\LavaShortcodeService.cs" />
     <Compile Include="Model\CodeGenerated\PersonalDeviceService.cs" />
     <Compile Include="Model\CodeGenerated\AttributeMatrixItemService.cs" />
     <Compile Include="Model\CodeGenerated\AttributeMatrixService.cs" />
@@ -1104,6 +1112,7 @@
     <Compile Include="Model\Schedule.cs" />
     <Compile Include="Model\ScheduleService.Partial.cs" />
     <Compile Include="Model\SiteDomain.cs" />
+    <Compile Include="Model\LavaShortCode.cs" />
     <Compile Include="Model\SiteUrlMapService.Partial.cs" />
     <Compile Include="Model\WorkflowActionService.Partial.cs" />
     <Compile Include="PersonProfile\Badge\Giving.cs" />
@@ -1362,6 +1371,7 @@
     <Compile Include="Utility\ExtensionMethods\QuartzExtensions.cs" />
     <Compile Include="Utility\FileUtilities.cs" />
     <Compile Include="Utility\IRockOwinStartup.cs" />
+    <Compile Include="Web\Cache\LavaShortcodeCache.cs" />
     <Compile Include="Web\UI\Controls\Communication\PushNotification.cs" />
     <Compile Include="Web\Cache\WorkflowActionFormAttributeCache.cs" />
     <Compile Include="Web\Cache\WorkflowActivityTypeCache.cs" />
@@ -1371,6 +1381,7 @@
     <Compile Include="Web\UI\Controls\AttributeMatrixEditor.cs" />
     <Compile Include="Web\UI\Controls\DynamicPlaceholder.cs" />
     <Compile Include="Web\UI\Controls\Pickers\DatePartsPicker.cs" />
+    <Compile Include="Web\UI\Controls\Pickers\LavaCommandsPicker.cs" />
     <Compile Include="Web\UI\Controls\SSNBox.cs" />
     <Compile Include="Web\UI\RockHiddenFieldPageStatePersister.cs" />
     <Compile Include="Web\UI\Controls\Grid\LavaBoundField.cs" />

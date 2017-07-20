@@ -30,6 +30,9 @@ namespace Rock.Rest.Controllers
     /// </summary>
     public partial class CommunicationsController : Rock.Rest.ApiController<Rock.Model.Communication>
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="CommunicationsController"/> class.
+        /// </summary>
         public CommunicationsController() : base( new Rock.Model.CommunicationService( new Rock.Data.RockContext() ) ) { } 
     }
 }

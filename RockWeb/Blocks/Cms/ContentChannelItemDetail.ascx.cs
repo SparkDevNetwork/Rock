@@ -727,7 +727,7 @@ namespace RockWeb.Blocks.Cms
 
                 hlContentChannel.Text = contentItem.ContentChannel.Name;
 
-                hlStatus.Visible = contentItem.ContentChannel.RequiresApproval;
+                hlStatus.Visible = contentItem.ContentChannel.RequiresApproval && !contentItem.ContentChannelType.DisableStatus;
 
                 hlStatus.Text = contentItem.Status.ConvertToString();
 
@@ -751,7 +751,6 @@ namespace RockWeb.Blocks.Cms
                         contentItem.ApprovedDateTime.Value.ToShortTimeString() );
                 }
                 hlStatus.ToolTip = statusDetail.ToString();
-                hlStatus.Visible = !contentItem.ContentChannelType.DisableStatus;
 
                 tbTitle.Text = contentItem.Title;
 

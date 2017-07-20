@@ -30,6 +30,9 @@ namespace Rock.Rest.Controllers
     /// </summary>
     public partial class GroupMemberWorkflowTriggersController : Rock.Rest.ApiController<Rock.Model.GroupMemberWorkflowTrigger>
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="GroupMemberWorkflowTriggersController"/> class.
+        /// </summary>
         public GroupMemberWorkflowTriggersController() : base( new Rock.Model.GroupMemberWorkflowTriggerService( new Rock.Data.RockContext() ) ) { } 
     }
 }

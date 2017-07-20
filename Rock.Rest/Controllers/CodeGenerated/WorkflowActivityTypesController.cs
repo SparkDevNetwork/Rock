@@ -30,6 +30,9 @@ namespace Rock.Rest.Controllers
     /// </summary>
     public partial class WorkflowActivityTypesController : Rock.Rest.ApiController<Rock.Model.WorkflowActivityType>
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="WorkflowActivityTypesController"/> class.
+        /// </summary>
         public WorkflowActivityTypesController() : base( new Rock.Model.WorkflowActivityTypeService( new Rock.Data.RockContext() ) ) { } 
     }
 }
