@@ -277,6 +277,12 @@ namespace RockWeb.Blocks.Finance
             NavigateToLinkedPage( "DetailPage", "businessId", id );
         }
 
+        protected string FormatContactInfo( string phone, string address )
+        {
+            var values = new List<string> { phone, address, "&nbsp;", "&nbsp" };
+            return values.Where( v => v.IsNotNullOrWhitespace() ).Take( 2 ).ToList().AsDelimited( "<br/>" );
+        }
+
         #endregion Internal Methods
     }
 }
