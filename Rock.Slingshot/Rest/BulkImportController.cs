@@ -139,5 +139,34 @@ namespace Rock.Slingshot.Rest.Controllers
             var responseText = Slingshot.BulkImportHelper.BulkScheduleImport( scheduleImports );
             return ControllerContext.Request.CreateResponse<string>( HttpStatusCode.Created, responseText );
         }
+
+        /// <summary>
+        /// Bulk Import of Financial Pledges
+        /// </summary>
+        /// <param name="financialPledgeImports">The financial pledge imports.</param>
+        /// <returns></returns>
+        [System.Web.Http.Route( "api/BulkImport/FinancialPledgeImport" )]
+        [HttpPost]
+        [Authenticate, Secured]
+        public System.Net.Http.HttpResponseMessage FinancialPledgeImport( [FromBody]List<Rock.Slingshot.Model.FinancialPledgeImport> financialPledgeImports )
+        {
+            var responseText = Slingshot.BulkImportHelper.BulkFinancialPledgeImport( financialPledgeImports );
+            return ControllerContext.Request.CreateResponse<string>( HttpStatusCode.Created, responseText );
+        }
+
+        /// <summary>
+        /// Bulk Import of Notes
+        /// </summary>
+        /// <param name="noteImports">The note imports.</param>
+        /// <param name="entityTypeId">The entity type identifier.</param>
+        /// <returns></returns>
+        [System.Web.Http.Route( "api/BulkImport/NoteImport" )]
+        [HttpPost]
+        [Authenticate, Secured]
+        public System.Net.Http.HttpResponseMessage NoteImport( [FromBody]List<Rock.Slingshot.Model.NoteImport> noteImports, int entityTypeId )
+        {
+            var responseText = Slingshot.BulkImportHelper.BulkNoteImport( noteImports, entityTypeId );
+            return ControllerContext.Request.CreateResponse<string>( HttpStatusCode.Created, responseText );
+        }
     }
 }
