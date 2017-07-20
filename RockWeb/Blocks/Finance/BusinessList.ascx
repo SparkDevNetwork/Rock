@@ -30,8 +30,8 @@
                             <Rock:RockTemplateField>
                                 <HeaderTemplate>Contact Information</HeaderTemplate>
                                 <ItemTemplate>
-                                    <%# Eval("PhoneNumber") %><br />
-                                    <%# Eval("Email") %>
+                                    <%# Eval("PhoneNumber") %>  <%# !string.IsNullOrEmpty( (string)Eval( "PhoneNumber" ) )? "<br />":string.Empty %>
+                                    <%# Eval("Email") %> <%# string.IsNullOrEmpty( (string)Eval( "PhoneNumber" ) )? "<br />&nbsp; ":string.Empty %>
                                 </ItemTemplate>
                             </Rock:RockTemplateField>
                             <Rock:RockTemplateField>
