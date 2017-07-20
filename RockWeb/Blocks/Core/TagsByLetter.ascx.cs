@@ -165,11 +165,10 @@ namespace RockWeb.Blocks.Core
                      ( t.IsActive || _showInActive ) )
                 .Select(t => new
                 {
-                    Id = t.Id,
-                    Name = t.Name,
+                    Tag = t,
                     Count = t.TaggedItems.Count()
                 })
-                .OrderBy(t => t.Name);
+                .OrderBy(t => t.Tag.Name);
 
             // create dictionary to group by first letter of name
             Dictionary<char, List<TagSummary>> tagAlphabit = new Dictionary<char, List<TagSummary>>();
@@ -186,24 +185,29 @@ namespace RockWeb.Blocks.Core
             // load tags
             var tags = qry.ToList();
 
-            foreach ( var tag in tags )
+            foreach ( var tagInfo in tags )
             {
-                var tagSummary = new TagSummary { Id = tag.Id, Name = tag.Name, Count = tag.Count };
-                char key = (char)tag.Name.Substring( 0, 1 ).ToUpper()[0];
+                bool canView = ownerId.HasValue && tagInfo.Tag.OwnerPersonAlias.PersonId == ownerId.Value;
+                canView = canView || tagInfo.Tag.IsAuthorized( Rock.Security.Authorization.VIEW, CurrentPerson );
+                if ( canView )
+                {
+                    var tagSummary = new TagSummary { Id = tagInfo.Tag.Id, Name = tagInfo.Tag.Name, Count = tagInfo.Count };
+                    char key = (char)tagSummary.Name.Substring( 0, 1 ).ToUpper()[0];
 
-                if ( Char.IsNumber( key ) )
-                {
-                    key = '#';
-                }
-                else
-                {
-                    if ( !Char.IsLetter( key ) )
+                    if ( Char.IsNumber( key ) )
                     {
-                        key = '*';
+                        key = '#';
                     }
-                }
+                    else
+                    {
+                        if ( !Char.IsLetter( key ) )
+                        {
+                            key = '*';
+                        }
+                    }
 
-                tagAlphabit[key].Add(tagSummary);
+                    tagAlphabit[key].Add( tagSummary );
+                }
             }
 
             // display tags

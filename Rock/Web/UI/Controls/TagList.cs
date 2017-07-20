@@ -259,7 +259,7 @@ Rock.controls.tagList.initialize({{
                         if ( sb.Length > 0 )
                             sb.Append( ',' );
                         sb.Append( item.Name );
-                        if ( currentPersonId.HasValue && item?.OwnerPersonAlias.PersonId == currentPersonId.Value )
+                        if ( currentPersonId.HasValue && item?.OwnerPersonAlias?.PersonId == currentPersonId.Value )
                             sb.Append( "^personal" );
                     }
                 }
