@@ -1,0 +1,184 @@
+﻿// <copyright>
+// Copyright by the Spark Development Network
+//
+// Licensed under the Rock Community License (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.rockrms.com/license
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+// </copyright>
+//
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.IO;
+using System.Linq;
+using System.Web.UI;
+using System.Web.UI.WebControls;
+
+using Rock;
+using Rock.Data;
+using Rock.Model;
+using Rock.Web.Cache;
+using Rock.Web.UI.Controls;
+using Rock.Attribute;
+using Rock.Web;
+
+namespace RockWeb.Blocks.BulkImport
+{
+    /// <summary>
+    /// 
+    /// </summary>
+    [DisplayName( "Bulk Import" )]
+    [Category( "BulkImport" )]
+    [Description( "Block to import Slingshot files into Rock using BulkImport" )]
+    [EmailField( "Email" )]
+    public partial class BulkImportTool : Rock.Web.UI.RockBlock
+    {
+        #region Base Control Methods
+
+        /// <summary>
+        /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
+        /// </summary>
+        /// <param name="e">An <see cref="T:System.EventArgs" /> object that contains the event data.</param>
+        protected override void OnInit( EventArgs e )
+        {
+            base.OnInit( e );
+
+            // this event gets fired after block settings are updated. it's nice to repaint the screen if these settings would alter it
+            this.BlockUpdated += Block_BlockUpdated;
+            this.AddConfigurationUpdateTrigger( upnlContent );
+        }
+
+        /// <summary>
+        /// Raises the <see cref="E:System.Web.UI.Control.Load" /> event.
+        /// </summary>
+        /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
+        protected override void OnLoad( EventArgs e )
+        {
+            base.OnLoad( e );
+
+            if ( !Page.IsPostBack )
+            {
+                // added for your convenience
+            }
+        }
+
+        #endregion
+
+        #region Events
+
+        // handlers called by the controls on your block
+
+        /// <summary>
+        /// Handles the BlockUpdated event of the control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void Block_BlockUpdated( object sender, EventArgs e )
+        {
+
+        }
+
+        /// <summary>
+        /// Handles the FileUploaded event of the fupSlingshotFile control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="FileUploaderEventArgs"/> instance containing the event data.</param>
+        protected void fupSlingshotFile_FileUploaded( object sender, FileUploaderEventArgs e )
+        {
+            btnImport.Visible = false;
+            var physicalSlingshotFile = this.Request.MapPath( fupSlingshotFile.UploadedContentFilePath );
+            if ( File.Exists( physicalSlingshotFile ) )
+            {
+                FileInfo fileInfo = new FileInfo( physicalSlingshotFile );
+                if ( fileInfo.Extension.Equals( ".slingshot", StringComparison.OrdinalIgnoreCase ) )
+                {
+                    lSlingshotFileInfo.Text = new DescriptionList()
+                        .Add( "File Name", fileInfo.Name )
+                        .Add( "Date/Time", fileInfo.CreationTime )
+                        .Add( "Size (MB) ", Math.Round( ( ( decimal ) fileInfo.Length / 1024 / 1024 ), 2 ) )
+                        .Html;
+                    btnImport.Visible = true;
+                }
+                else
+                {
+                    lSlingshotFileInfo.Text = "<div class='alert alert-warning'>" + fileInfo.Name + " is not a slingshot file. Please select a valid slingshot file.</div>";
+                    File.Delete( physicalSlingshotFile );
+                }
+            }
+            else
+            {
+                lSlingshotFileInfo.Text = "-";
+            }
+        }
+
+        /// <summary>
+        /// Handles the FileRemoved event of the fupSlingshotFile control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="FileUploaderEventArgs"/> instance containing the event data.</param>
+        protected void fupSlingshotFile_FileRemoved( object sender, FileUploaderEventArgs e )
+        {
+            btnImport.Visible = false;
+            lSlingshotFileInfo.Text = "";
+        }
+
+        private Rock.Slingshot.Importer _importer;
+
+        protected void btnImport_Click( object sender, EventArgs e )
+        {
+            var physicalSlingshotFile = this.Request.MapPath( fupSlingshotFile.UploadedContentFilePath );
+            _importer = new Rock.Slingshot.Importer( physicalSlingshotFile );
+            _importer.OnProgress += _importer_OnProgress;
+            _importer.DoImport();
+
+            System.Diagnostics.Debug.WriteLine( string.Join( Environment.NewLine, _importer.Exceptions.Select( a => a.Message ).ToArray() ) );
+            System.Diagnostics.Debug.WriteLine( "Import Complete" );
+        }
+
+        /// <summary>
+        /// Handles the ProgressChanged event of the BackgroundWorker control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="ProgressChangedEventArgs"/> instance containing the event data.</param>
+        private void _importer_OnProgress( object sender, object e )
+        {
+            string resultText = string.Empty;
+            if ( e is string )
+            {
+                System.Diagnostics.Debug.WriteLine( e.ToString() );
+            }
+
+            var resultsCopy = _importer.Results.ToArray();
+            foreach ( var result in resultsCopy )
+            {
+                resultText += string.Format( "\n\n{0}\n\n{1}", result.Key, result.Value );
+            }
+
+            System.Diagnostics.Debug.WriteLine( resultText );
+        }
+
+        /// <summary>
+        /// Handles the RunWorkerCompleted event of the BackgroundWorker control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="RunWorkerCompletedEventArgs"/> instance containing the event data.</param>
+        private void BackgroundWorker_RunWorkerCompleted( object sender, RunWorkerCompletedEventArgs e )
+        {
+            
+        }
+
+        #endregion
+
+        #region Methods
+
+        #endregion
+    }
+}
