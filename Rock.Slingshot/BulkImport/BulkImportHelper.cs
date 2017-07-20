@@ -11,6 +11,7 @@ using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
 using System.Web;
+using System.Reflection;
 
 namespace Rock.Slingshot
 {
@@ -19,6 +20,8 @@ namespace Rock.Slingshot
     /// </summary>
     public static class BulkImportHelper
     {
+        #region AttendanceImport
+
         /// <summary>
         /// Bulks the attendance import.
         /// </summary>
@@ -104,12 +107,15 @@ namespace Rock.Slingshot
             return responseText;
         }
 
+        #endregion AttendanceImport
+
+        #region FinancialAccountImport
+
         /// <summary>
         /// Bulks the financial account import.
         /// </summary>
         /// <param name="financialAccountImports">The financial account imports.</param>
         /// <returns></returns>
-        /// <exception cref="System.NotImplementedException"></exception>
         public static string BulkFinancialAccountImport( List<FinancialAccountImport> financialAccountImports )
         {
             Stopwatch stopwatchTotal = Stopwatch.StartNew();
@@ -181,12 +187,15 @@ namespace Rock.Slingshot
             return responseText;
         }
 
+        #endregion FinancialAccountImport
+
+        #region FinancialBatchImport
+
         /// <summary>
         /// Bulks the financial batch import.
         /// </summary>
         /// <param name="financialBatchImports">The financial batch imports.</param>
         /// <returns></returns>
-        /// <exception cref="System.NotImplementedException"></exception>
         public static string BulkFinancialBatchImport( List<FinancialBatchImport> financialBatchImports )
         {
             Stopwatch stopwatchTotal = Stopwatch.StartNew();
@@ -260,12 +269,15 @@ namespace Rock.Slingshot
             return responseText;
         }
 
+        #endregion FinancialBatchImport
+
+        #region FinancialTransactionImport
+
         /// <summary>
         /// Bulks the financial transaction import.
         /// </summary>
         /// <param name="financialTransactionImports">The financial transaction imports.</param>
         /// <returns></returns>
-        /// <exception cref="System.NotImplementedException"></exception>
         public static string BulkFinancialTransactionImport( List<FinancialTransactionImport> financialTransactionImports )
         {
             Stopwatch stopwatchTotal = Stopwatch.StartNew();
@@ -385,6 +397,10 @@ namespace Rock.Slingshot
 
             return responseText;
         }
+
+        #endregion FinancialTransactionImport
+
+        #region GroupImport
 
         /// <summary>
         /// Bulks the group import.
@@ -599,6 +615,10 @@ WHERE gta.GroupTypeId IS NULL" );
             return responseText;
         }
 
+        #endregion GroupImport
+
+        #region LocationImport
+
         /// <summary>
         /// Bulks the location import.
         /// </summary>
@@ -665,6 +685,10 @@ WHERE gta.GroupTypeId IS NULL" );
 
             return responseText;
         }
+
+        #endregion LocationImport
+
+        #region PersonImport
 
         private static string _defaultPhoneCountryCode = null;
         private static int _recordTypePersonId;
@@ -733,7 +757,7 @@ WHERE gta.GroupTypeId IS NULL" );
             foreach ( var personImport in personImports )
             {
                 progress++;
-                if ( progress % 100 == 0 && personUpdatesMS > 0)
+                if ( progress % 100 == 0 && personUpdatesMS > 0 )
                 {
                     if ( initiatedWithWebRequest && HttpContext.Current?.Response?.IsClientConnected != true )
                     {
@@ -1266,6 +1290,10 @@ WHERE gta.GroupTypeId IS NULL" );
             }
         }
 
+        #endregion PersonImport
+
+        #region PhotoImport
+
         /// <summary>
         /// Bulks the photo import.
         /// </summary>
@@ -1418,6 +1446,10 @@ WHERE g.GroupTypeId = {familyGroupType.Id}
             return responseText;
         }
 
+        #endregion PhotoImport
+
+        #region ScheduleImport
+
         /// <summary>
         /// Bulks the schedule import.
         /// </summary>
@@ -1477,5 +1509,154 @@ WHERE g.GroupTypeId = {familyGroupType.Id}
 
             return responseText;
         }
+
+        #endregion ScheduleImport
+
+        #region FinancialPledgeImport
+
+        /// <summary>
+        /// Bulks the financial pledge import.
+        /// </summary>
+        /// <param name="financialPledgeImports">The financial pledge imports.</param>
+        /// <returns></returns>
+        public static string BulkFinancialPledgeImport( List<FinancialPledgeImport> financialPledgeImports )
+        {
+            Stopwatch stopwatchTotal = Stopwatch.StartNew();
+
+            RockContext rockContext = new RockContext();
+
+            var qryFinancialPledgesWithForeignIds = new FinancialPledgeService( rockContext ).Queryable().Where( a => a.ForeignId.HasValue );
+
+            var financialPledgeAlreadyExistForeignIdHash = new HashSet<int>( qryFinancialPledgesWithForeignIds.Select( a => a.ForeignId.Value ).ToList() );
+
+            var personAliasIdLookup = new PersonAliasService( rockContext ).Queryable().Where( a => a.Person.ForeignId.HasValue && a.PersonId == a.AliasPersonId )
+                .Select( a => new { PersonAliasId = a.Id, PersonForeignId = a.Person.ForeignId } ).ToDictionary( k => k.PersonForeignId.Value, v => v.PersonAliasId );
+
+            var financialAccountIdLookup = new FinancialAccountService( rockContext ).Queryable().Where( a => a.ForeignId.HasValue )
+                .Select( a => new { a.Id, a.ForeignId } )
+                .ToList().ToDictionary( k => k.ForeignId.Value, v => v.Id );
+
+            int groupTypeIdFamily = GroupTypeCache.GetFamilyGroupType().Id;
+            var familyGroupIdLookup = new GroupService( rockContext ).Queryable().Where( a => a.ForeignId.HasValue )
+                .Select( a => new { a.Id, a.ForeignId } )
+                .ToList().ToDictionary( k => k.ForeignId.Value, v => v.Id );
+
+            List<FinancialPledge> financialPledgesToInsert = new List<FinancialPledge>();
+            var newFinancialPledgeImports = financialPledgeImports.Where( a => !financialPledgeAlreadyExistForeignIdHash.Contains( a.FinancialPledgeForeignId ) ).ToList();
+
+            foreach ( var financialPledgeImport in newFinancialPledgeImports )
+            {
+                var financialPledge = new FinancialPledge();
+                financialPledge.ForeignId = financialPledgeImport.FinancialPledgeForeignId;
+                financialPledge.PersonAliasId = personAliasIdLookup.GetValueOrNull( financialPledgeImport.PersonForeignId );
+
+                if ( financialPledgeImport.FinancialAccountForeignId.HasValue )
+                {
+                    financialPledge.AccountId = financialAccountIdLookup.GetValueOrNull( financialPledgeImport.FinancialAccountForeignId.Value );
+                }
+
+                if ( financialPledgeImport.GroupForeignId.HasValue )
+                {
+                    financialPledge.GroupId = familyGroupIdLookup.GetValueOrNull( financialPledgeImport.GroupForeignId.Value );
+                }
+
+                financialPledge.TotalAmount = financialPledgeImport.TotalAmount;
+
+                financialPledge.PledgeFrequencyValueId = financialPledgeImport.PledgeFrequencyValueId;
+                financialPledge.StartDate = financialPledgeImport.StartDate;
+                financialPledge.EndDate = financialPledgeImport.EndDate;
+
+                financialPledgesToInsert.Add( financialPledge );
+            }
+
+            rockContext.BulkInsert( financialPledgesToInsert );
+
+            stopwatchTotal.Stop();
+            var responseText = $"[{stopwatchTotal.Elapsed.TotalMilliseconds}ms] Bulk Insert {financialPledgesToInsert.Count} Financial Pledges";
+
+            return responseText;
+        }
+
+        #endregion FinancialPledgeImport
+
+        #region NoteImport
+
+        /// <summary>
+        /// Bulks the note import.
+        /// </summary>
+        /// <param name="noteImports">The note imports.</param>
+        /// <param name="entityTypeId">The entity type identifier.</param>
+        /// <returns></returns>
+        public static string BulkNoteImport( List<NoteImport> noteImports, int entityTypeId )
+        {
+            Stopwatch stopwatchTotal = Stopwatch.StartNew();
+
+            var entityTypeCache = EntityTypeCache.Read( entityTypeId );
+
+            // first check for invalid NoteType or NoteType.EntityType
+            var noteTypeList = noteImports.Select( a => a.NoteTypeId ).Distinct().ToList().Select( a => NoteTypeCache.Read( a ) ).ToList();
+            if ( noteTypeList.Any( a => a == null ) )
+            {
+                return "WARNING: Unable to determine NoteType for one or more notes. No Notes imported.";
+            }
+            else if ( noteTypeList.Where( a => a != null ).Any( a => a.EntityTypeId != entityTypeId ) )
+            {
+                return "WARNING: NoteType for one or more notes is not for the specified entityTypeId. No Notes imported.";
+            }
+
+            RockContext rockContext = new RockContext();
+
+            var qryNotesWithForeignIds = new NoteService( rockContext ).Queryable().Where( a => a.ForeignId.HasValue );
+
+            var noteAlreadyExistForeignIdHash = new HashSet<int>( qryNotesWithForeignIds.Select( a => a.ForeignId.Value ).ToList() );
+
+            Type entityType = entityTypeCache.GetEntityType();
+            var entityService = Reflection.GetServiceForEntityType( entityType, rockContext );
+            MethodInfo queryableMethodInfo = entityService.GetType().GetMethod( "Queryable", new Type[] { } );
+            IQueryable<IEntity> entityQuery = queryableMethodInfo.Invoke( entityService, null ) as IQueryable<IEntity>;
+
+            var entityIdLookup = entityQuery.Where( a => a.ForeignId.HasValue )
+                .Select( a => new { a.Id, a.ForeignId } )
+                .ToList().ToDictionary( k => k.ForeignId.Value, v => v.Id );
+
+            List<Note> notesToInsert = new List<Note>();
+            var newNoteImports = noteImports.Where( a => !noteAlreadyExistForeignIdHash.Contains( a.NoteForeignId ) ).ToList();
+
+            int noteImportErrors = 0;
+
+            foreach ( var noteImport in newNoteImports )
+            {
+                var note = new Note();
+                note.ForeignId = noteImport.NoteForeignId;
+                note.EntityId = entityIdLookup.GetValueOrNull( noteImport.EntityForeignId );
+                note.NoteTypeId = noteImport.NoteTypeId;
+                note.Caption = noteImport.Caption ?? string.Empty;
+                if ( note.Caption.Length > 200 )
+                {
+                    note.Caption = note.Caption.Truncate( 200 );
+                }
+
+                note.IsAlert = noteImport.IsAlert;
+                note.IsPrivateNote = noteImport.IsPrivateNote;
+                note.Text = noteImport.Text;
+
+                notesToInsert.Add( note );
+            }
+
+            rockContext.BulkInsert( notesToInsert );
+
+            stopwatchTotal.Stop();
+            string responseText = string.Empty;
+            if (noteImportErrors > 0 )
+            {
+                responseText += $"WARNING: Unable to import {noteImportErrors} notes due to invalid NoteType or NoteType EntityType mismatch.\n";
+            }
+
+            responseText += $"[{stopwatchTotal.Elapsed.TotalMilliseconds}ms] Bulk Insert {notesToInsert.Count} {entityTypeCache.FriendlyName} notes.";
+
+            return responseText;
+        }
+
+        #endregion NoteImport
     }
 }

@@ -42,6 +42,8 @@
   <ItemGroup>
     <Compile Include="AttendanceImport.cs" />
     <Compile Include="AttributeValueImport.cs" />
+    <Compile Include="NoteImport.cs" />
+    <Compile Include="FinancialPledgeImport.cs" />
     <Compile Include="FinancialAccountImport.cs" />
     <Compile Include="FinancialBatchImport.cs" />
     <Compile Include="FinancialTransactionDetailImport.cs" />
