@@ -68,6 +68,16 @@ namespace Rock.Lava
         }
 
         /// <summary>
+        /// Uniques the identifier.
+        /// </summary>
+        /// <param name="input">The input.</param>
+        /// <returns></returns>
+        public static string UniqueIdentifier( object input )
+        {
+            return Guid.NewGuid().ToString();
+        }
+
+        /// <summary>
         /// Withes the fallback.
         /// </summary>
         /// <param name="input">The input.</param>
@@ -2777,12 +2787,16 @@ namespace Rock.Lava
             if ( input.StartsWith( "~~" ) )
             {
                 string theme = "Rock";
-                if ( page.Theme != null )
+                if ( page.Theme.IsNotNullOrWhitespace() )
                 {
                     theme = page.Theme;
                 }
+                else if ( page.Site != null && page.Site.Theme.IsNotNullOrWhitespace() )
+                {
+                    theme = page.Site.Theme;
+                }
 
-                input = "~/Themes/" + page.Theme + (input.Length > 2 ? input.Substring( 2 ) : string.Empty);
+                input = "~/Themes/" + theme + (input.Length > 2 ? input.Substring( 2 ) : string.Empty);
             }
 
             return page.ResolveUrl( input );
@@ -3087,6 +3101,34 @@ namespace Rock.Lava
             }
 
             return null;
+        }
+
+        /// <summary>
+        /// Adds the script link.
+        /// </summary>
+        /// <param name="input">The input.</param>
+        /// <param name="fingerprintLink">if set to <c>true</c> [fingerprint link].</param>
+        /// <returns></returns>
+        public static string AddScriptLink( string input, bool fingerprintLink = false )
+        {
+            RockPage page = HttpContext.Current.Handler as RockPage;
+            RockPage.AddScriptLink( page, ResolveRockUrl( input ), fingerprintLink );
+
+            return String.Empty;
+        }
+
+        /// <summary>
+        /// Adds the CSS link.
+        /// </summary>
+        /// <param name="input">The input.</param>
+        /// <param name="fingerprintLink">if set to <c>true</c> [fingerprint link].</param>
+        /// <returns></returns>
+        public static string AddCssLink( string input, bool fingerprintLink = false )
+        {
+            RockPage page = HttpContext.Current.Handler as RockPage;
+            RockPage.AddCSSLink( page, ResolveRockUrl( input ), fingerprintLink );
+
+            return String.Empty;
         }
 
         /// <summary>

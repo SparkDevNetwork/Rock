@@ -30,6 +30,9 @@ namespace Rock.Rest.Controllers
     /// </summary>
     public partial class LayoutsController : Rock.Rest.ApiController<Rock.Model.Layout>
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="LayoutsController"/> class.
+        /// </summary>
         public LayoutsController() : base( new Rock.Model.LayoutService( new Rock.Data.RockContext() ) ) { } 
     }
 }

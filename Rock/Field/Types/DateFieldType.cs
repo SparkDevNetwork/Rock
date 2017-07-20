@@ -391,14 +391,14 @@ namespace Rock.Field.Types
                     {
                         datePicker.CurrentDateOffsetDays = valueParts[1].AsInteger();
                     }
+                    else
+                    {
+                        datePicker.CurrentDateOffsetDays = 0;
+                    }
                 }
                 else
                 {
-                    var dt = value.AsDateTime();
-                    if ( dt.HasValue )
-                    {
-                        datePicker.SelectedDate = dt;
-                    }
+                    datePicker.SelectedDate = value.AsDateTime();
                 }
             }
             else if ( datePartsPicker != null )

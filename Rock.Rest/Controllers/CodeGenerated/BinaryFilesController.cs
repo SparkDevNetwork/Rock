@@ -30,6 +30,9 @@ namespace Rock.Rest.Controllers
     /// </summary>
     public partial class BinaryFilesController : Rock.Rest.ApiController<Rock.Model.BinaryFile>
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="BinaryFilesController"/> class.
+        /// </summary>
         public BinaryFilesController() : base( new Rock.Model.BinaryFileService( new Rock.Data.RockContext() ) ) { } 
     }
 }

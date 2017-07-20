@@ -35,6 +35,10 @@ namespace Westwind.Web.WebApi
     /// </summary>
     public class NakedBodyParameterBinding : HttpParameterBinding
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="NakedBodyParameterBinding"/> class.
+        /// </summary>
+        /// <param name="descriptor">An <see cref="T:System.Web.Http.Controllers.HttpParameterDescriptor" /> that describes the parameters.</param>
         public NakedBodyParameterBinding( HttpParameterDescriptor descriptor )
             : base( descriptor )
         {
@@ -88,6 +92,9 @@ namespace Westwind.Web.WebApi
             throw new InvalidOperationException( "Only string and byte[] are supported for [NakedBody] parameters" );
         }
 
+        /// <summary>
+        /// Returns a value indicating whether this <see cref="T:System.Web.Http.Controllers.HttpParameterBinding" /> instance will read the entity body of the HTTP message.
+        /// </summary>
         public override bool WillReadBody
         {
             get
@@ -107,6 +114,10 @@ namespace Westwind.Web.WebApi
     /// </summary>
     public class EmptyTask
     {
+        /// <summary>
+        /// Starts this instance.
+        /// </summary>
+        /// <returns></returns>
         public static Task Start()
         {
             var taskSource = new TaskCompletionSource<AsyncVoid>();

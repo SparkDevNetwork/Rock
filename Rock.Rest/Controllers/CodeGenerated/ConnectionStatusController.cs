@@ -30,6 +30,9 @@ namespace Rock.Rest.Controllers
     /// </summary>
     public partial class ConnectionStatusController : Rock.Rest.ApiController<Rock.Model.ConnectionStatus>
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ConnectionStatusController"/> class.
+        /// </summary>
         public ConnectionStatusController() : base( new Rock.Model.ConnectionStatusService( new Rock.Data.RockContext() ) ) { } 
     }
 }
