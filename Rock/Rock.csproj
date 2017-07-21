@@ -749,6 +749,7 @@
     <Compile Include="Model\CodeGenerated\AttributeMatrixService.cs" />
     <Compile Include="Model\CodeGenerated\AttributeMatrixTemplateService.cs" />
     <Compile Include="Model\CodeGenerated\PageShortLinkService.cs" />
+    <Compile Include="Model\CodeGenerated\PersonTokenService.cs" />
     <Compile Include="Model\FinancialAccountService.Partial.cs" />
     <Compile Include="Model\InteractionService.Partial.cs" />
     <Compile Include="Model\MetaFirstNameGenderLookup.cs" />
@@ -1080,6 +1081,8 @@
     <Compile Include="Model\PersonDuplicate.cs" />
     <Compile Include="Model\PersonPreviousName.cs" />
     <Compile Include="Model\PersonService.Partial.cs" />
+    <Compile Include="Model\PersonToken.cs" />
+    <Compile Include="Model\PersonTokenService.Partial.cs" />
     <Compile Include="Model\PersonViewed.cs" />
     <Compile Include="Model\PersonViewedService.Partial.cs" />
     <Compile Include="Model\PhoneNumber.cs" />
